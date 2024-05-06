@@ -12,9 +12,29 @@ jobs:
       - name: Checkout 🛎️
         uses: actions/checkout@v3
 
-      - name: Install and Build 🔧
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' # 사용하려는 Node.js 버전으로 변경하세요.
+  
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+  
+      - name: Yarn Cache
+        uses: actions/cache@v3
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.OS }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.OS }}-yarn-
+      
+      - name: Install Dependencies
+        run: yarn install
+
+      - name: Build 🔧
         run: |
-          yarn install
           yarn build && touch ./out/.nojekyll
 
       - name: Deploy 🚀
