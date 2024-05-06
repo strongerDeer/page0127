@@ -1,9 +1,9 @@
-import "firebase/auth";
-import { initializeApp, FirebaseApp, getApp, getApps } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
-import { getAuth } from "firebase/auth";
+import 'firebase/auth';
+import { initializeApp, FirebaseApp, getApp, getApps } from 'firebase/app';
+// import { getAnalytics } from "firebase/analytics";
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
+import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_API_KEY,
@@ -23,4 +23,4 @@ export let app: FirebaseApp =
 export const auth = getAuth(app);
 export const store = getFirestore(app);
 export const storage = getStorage(app);
-export const analytics = getAnalytics(app);
+// export const analytics = getAnalytics(app);

@@ -1,13 +1,13 @@
-"use client";
-import { useState } from "react";
-import { searchBook } from "../utils/searchBook";
-import Image from "next/image";
+'use client';
+import { useState } from 'react';
+import { searchBook } from '../utils/searchBook';
+import Image from 'next/image';
 
 export default function Home() {
   const [books, setBooks] = useState({ total: 0, item: [] });
 
   const handleSearch = async () => {
-    const data = await searchBook("어린왕자");
+    const data = await searchBook('어린왕자');
 
     setBooks({
       total: data.totalResults,
@@ -26,10 +26,10 @@ export default function Home() {
               width={200}
               height={400}
               style={{
-                width: "auto",
-                height: "auto",
-                aspectRatio: "200/400",
-                objectFit: "cover",
+                width: 'auto',
+                height: 'auto',
+                aspectRatio: '200/400',
+                objectFit: 'cover',
               }}
             />
             {item.title}

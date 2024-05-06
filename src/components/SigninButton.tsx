@@ -1,18 +1,18 @@
-"use client";
+'use client';
 // next.js
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
 
 // firebase
-import { auth, store } from "@firebase/firebaeApp";
+import { auth, store } from '@firebase/firebaeApp';
 import {
   GithubAuthProvider,
   GoogleAuthProvider,
   signInWithPopup,
-} from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+} from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 
 // lib
-import { toast } from "react-toastify";
+import { toast } from 'react-toastify';
 
 export default function SigninButton({
   type,
@@ -27,27 +27,27 @@ export default function SigninButton({
     let provider;
 
     switch (type) {
-      case "google":
+      case 'google':
         provider = new GoogleAuthProvider();
         break;
-      case "github":
+      case 'github':
         provider = new GithubAuthProvider();
     }
 
     await signInWithPopup(
       auth,
-      provider as GoogleAuthProvider | GithubAuthProvider
+      provider as GoogleAuthProvider | GithubAuthProvider,
     )
       .then(async (res) => {
         // 유저 정보 저장
-        await setDoc(doc(store, "users", res.user.uid), {
+        await setDoc(doc(store, 'users', res.user.uid), {
           email: res.user.email,
           displayName: res.user.displayName,
           photoURL: res.user.photoURL,
         });
 
-        router.push("/");
-        toast.success("로그인 되었습니다.");
+        router.push('/');
+        toast.success('로그인 되었습니다.');
       })
       .catch((err) => {
         console.log(err);
@@ -58,7 +58,7 @@ export default function SigninButton({
 
   return (
     <button type="button" onClick={onClick}>
-      {type} {signup ? "회원가입" : "로그인"}
+      {type} {signup ? '회원가입' : '로그인'}
     </button>
   );
 }

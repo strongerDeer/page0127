@@ -1,4 +1,4 @@
-import SigninButton from "@components/SigninButton";
+import SigninButton from '@components/SigninButton';
 
 // 로그인 페이지
 export default async function signinPage() {
