@@ -9,7 +9,7 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/page0127/ttb/api/:path*',
+        source: '/ttb/api/:path*',
         destination: 'http://www.aladin.co.kr/ttb/api/:path*',
       },
     ];
