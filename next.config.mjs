@@ -1,6 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'export',
+  basePath: '/page0127',
+  assetPrefix:
+    process.env.NODE_ENV === 'production'
+      ? 'https://strongerdeer.github.io/page0127/'
+      : '',
   async rewrites() {
     return [
       {
