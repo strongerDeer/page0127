@@ -8,7 +8,10 @@ export default function Header() {
   const { user } = useContext(AuthContext);
 
   return (
-    <header>
+    <header className="flex justify-between">
+      <h1>
+        <Link href="/">page0127</Link>
+      </h1>
       {!user ? <Link href="/auth/signin">로그인</Link> : <LogoutButton />}
     </header>
   );

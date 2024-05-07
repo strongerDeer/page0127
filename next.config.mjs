@@ -4,12 +4,12 @@ const nextConfig = {
   basePath: '/page0127',
   assetPrefix:
     process.env.NODE_ENV === 'production'
-      ? 'https://strongerdeer.github.io/page0127/'
+      ? 'https://strongerdeer.github.io/page0127'
       : '',
   async rewrites() {
     return [
       {
-        source: '/:path*',
+        source: '/page0127/ttb/api/:path*',
         destination: 'http://www.aladin.co.kr/ttb/api/:path*',
       },
     ];
