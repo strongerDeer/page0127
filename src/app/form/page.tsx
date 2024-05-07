@@ -1,4 +1,5 @@
 'use client';
+
 import { BookInterface } from '@models/BookInterface';
 import { searchBook } from '@utils/searchBook';
 import Image from 'next/image';
@@ -9,12 +10,11 @@ export default function FormPage() {
 
   const onChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const data = await searchBook(e.target.value);
-
-    console.log(data);
+    setBooks({
+      total: data.totalResults,
+      item: data.item,
+    });
   };
-
-  // "9791158394646" "K542936989"
-  console.log(books.item);
 
   return (
     <>
