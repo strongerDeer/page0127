@@ -2,12 +2,8 @@
 import { useState } from 'react';
 import { searchBook } from '../utils/searchBook';
 import Image from 'next/image';
+import { BookInterface } from '@models/BookInterface';
 
-interface bookInfo {
-  isbn: string;
-  cover: string;
-  title: string;
-}
 export default function Home() {
   const [books, setBooks] = useState({ total: 0, item: [] });
 
@@ -23,7 +19,7 @@ export default function Home() {
   return (
     <main>
       <ul>
-        {books.item.map((item: bookInfo) => (
+        {books.item.map((item: BookInterface) => (
           <li key={item.isbn}>
             <Image
               src={item.cover}
