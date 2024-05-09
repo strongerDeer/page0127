@@ -1,7 +1,7 @@
 'use client';
 
 import { BookInterface } from '@models/BookInterface';
-import { searchBook } from '@utils/searchBook';
+import { getDataBook, searchBook } from '@utils/searchBook';
 import Image from 'next/image';
 import { ChangeEvent, useEffect, useState } from 'react';
 
@@ -32,6 +32,13 @@ export default function FormPage() {
     };
   }, [keyword]);
 
+  const onClick = async (isbn: string) => {
+    const data = await getDataBook(isbn);
+
+    if (data) {
+      console.log(data);
+    }
+  };
   return (
     <>
       <h2>도서입력</h2>
@@ -47,19 +54,21 @@ export default function FormPage() {
               <h3>{keyword} 검색결과</h3>
               {books.item.map((item: BookInterface) => (
                 <li key={item.isbn}>
-                  <Image
-                    src={item.cover}
-                    alt=""
-                    width={200}
-                    height={400}
-                    style={{
-                      width: 'auto',
-                      height: 'auto',
-                      aspectRatio: '200/400',
-                      objectFit: 'cover',
-                    }}
-                  />
-                  {item.title}
+                  <button type="button" onClick={() => onClick(item.isbn)}>
+                    <Image
+                      src={item.cover}
+                      alt=""
+                      width={200}
+                      height={400}
+                      style={{
+                        width: 'auto',
+                        height: 'auto',
+                        aspectRatio: '200/400',
+                        objectFit: 'cover',
+                      }}
+                    />
+                    {item.title}
+                  </button>
                 </li>
               ))}
             </>

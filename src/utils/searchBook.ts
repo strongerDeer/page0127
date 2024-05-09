@@ -10,3 +10,12 @@ export const searchBook = async (query: string) => {
 
   return data;
 };
+
+export const getDataBook = async (isbn: string) => {
+  const url = `/ttb/api/ItemLookUp.aspx?ttbkey=${process.env.NEXT_PUBLIC_ALADIN_API}&itemIdType=ISBN&ItemId=${isbn}&output=js&Version=20131101`;
+
+  const response = await fetch(url);
+  const data = await response.json();
+
+  return data;
+};
