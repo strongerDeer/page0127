@@ -1,26 +1,31 @@
 'use client';
-import { useState } from 'react';
-import { searchBook } from '../utils/searchBook';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { BookInterface } from '@models/BookInterface';
+
+import { InputBookInterface } from './form/page';
+import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { store } from '@firebase/firebaeApp';
+import { getBooks } from '@remote/book';
 
 export default function Home() {
-  const [books, setBooks] = useState({ total: 0, item: [] });
+  const [books, setBooks] = useState<InputBookInterface[] | null>(null);
 
-  const handleSearch = async () => {
-    const data = await searchBook('어린왕자');
-
-    setBooks({
-      total: data.totalResults,
-      item: data.item,
-    });
-  };
+  useEffect(() => {
+    const bookData = async () => {
+      const data = await getBooks();
+      if (data) {
+        setBooks(data);
+      }
+    };
+    bookData();
+  }, []);
 
   return (
     <main>
+      2024년 {books?.length}권
       <ul>
-        {books.item.map((item: BookInterface) => (
-          <li key={item.isbn}>
+        {books?.map((item: InputBookInterface, index) => (
+          <li key={item.id}>
             <Image
               src={item.cover}
               alt=""
@@ -32,12 +37,12 @@ export default function Home() {
                 aspectRatio: '200/400',
                 objectFit: 'cover',
               }}
+              priority={index < 4 ? true : false}
             />
             {item.title}
           </li>
         ))}
       </ul>
-      안녕하세요😀😀 <button onClick={handleSearch}>Search</button>
     </main>
   );
 }

@@ -8,12 +8,10 @@ import 'react-toastify/dist/ReactToastify.css';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <AuthContextProvider>
-        <ToastContainer />
-        <Header />
-        {children}
-      </AuthContextProvider>
-    </>
+    <AuthContextProvider>
+      <ToastContainer />
+      <Header />
+      {children}
+    </AuthContextProvider>
   );
 }

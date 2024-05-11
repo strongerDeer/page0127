@@ -1,14 +1,33 @@
 'use client';
 
+import { AuthContext } from '@contexts/AuthContext';
+import { store } from '@firebase/firebaeApp';
 import { BookInterface } from '@models/BookInterface';
 import { getDataBook, searchBook } from '@utils/searchBook';
+import { addDoc, collection } from 'firebase/firestore';
 import Image from 'next/image';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useContext, useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+
+export interface InputBookInterface {
+  id: string;
+  title: string;
+  author: string;
+  description: string;
+  categoryName: string;
+  category: string;
+  cover: string;
+  pubDate: string;
+  publisher: string;
+}
 
 export default function FormPage() {
+  const { user } = useContext(AuthContext);
   const [isLoding, setIsLoading] = useState<boolean>(false);
   const [keyword, setKeyword] = useState<string>('');
   const [books, setBooks] = useState({ total: 0, item: [] });
+
+  const [book, setBook] = useState<InputBookInterface | null>(null);
 
   const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const newKeyword = e.target.value;
@@ -32,13 +51,47 @@ export default function FormPage() {
     };
   }, [keyword]);
 
-  const onClick = async (isbn: string) => {
+  const onClick = async (isbn: string, img: string) => {
     const data = await getDataBook(isbn);
 
     if (data) {
-      console.log(data);
+      const book = data.item[0];
+
+      const bookData = {
+        title: book.title,
+        author: book.author,
+        description: book.description,
+        categoryName: book.categoryName,
+        category: book.categoryName.split('>')[1],
+        cover: img,
+        pubDate: book.pubDate,
+        publisher: book.publisher,
+      };
+      setBook(bookData as InputBookInterface);
+      setBooks({ total: 0, item: [] });
     }
   };
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      await addDoc(collection(store, 'books'), {
+        ...book,
+        createdAt: new Date()?.toLocaleDateString('ko', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        }),
+        uid: user?.uid,
+      });
+      toast.success('등록완료!');
+    } catch (error) {
+      console.log(error);
+    } finally {
+    }
+  };
+
+  // 이미지는 searchdata 사용
   return (
     <>
       <h2>도서입력</h2>
@@ -54,7 +107,10 @@ export default function FormPage() {
               <h3>{keyword} 검색결과</h3>
               {books.item.map((item: BookInterface) => (
                 <li key={item.isbn}>
-                  <button type="button" onClick={() => onClick(item.isbn)}>
+                  <button
+                    type="button"
+                    onClick={() => onClick(item.isbn, item.cover)}
+                  >
                     <Image
                       src={item.cover}
                       alt=""
@@ -76,6 +132,38 @@ export default function FormPage() {
             keyword && <>데이터 없음</>
           )}
         </>
+      )}
+      {book && (
+        <form onSubmit={onSubmit}>
+          <Image src={book.cover} width={200} height={200} alt="" />
+          <ul>
+            <li>
+              <label></label>
+              <input type="text" value={book.title} readOnly />
+            </li>
+            <li>
+              <input type="text" value={book.author} readOnly />
+            </li>
+            <li>
+              <input type="text" value={book.category} readOnly />
+            </li>
+            <li>
+              <input type="text" value={book.description} readOnly />
+            </li>
+            <li>
+              <input type="text" value={book.pubDate} readOnly />
+            </li>
+            <li>
+              <input type="text" value={book.publisher} readOnly />
+            </li>
+          </ul>
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded flex justify-center items-center"
+          >
+            저장
+          </button>
+        </form>
       )}
     </>
   );
