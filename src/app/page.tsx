@@ -3,8 +3,6 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
 import { InputBookInterface } from './form/page';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
-import { store } from '@firebase/firebaeApp';
 import { getBooks } from '@remote/book';
 
 export default function Home() {
@@ -39,7 +37,8 @@ export default function Home() {
               }}
               priority={index < 4 ? true : false}
             />
-            {item.title}
+            <p> {item.title}</p>
+            <p> {item.category}</p>
           </li>
         ))}
       </ul>

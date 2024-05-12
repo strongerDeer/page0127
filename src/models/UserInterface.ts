@@ -5,4 +5,14 @@ export interface UserInterface {
   displayName?: string | null;
   photoURL?: string | null;
   provider?: string | null;
+  category?: Category;
+}
+
+export interface Category {
+  novel: number;
+  computer: number;
+  essay: number;
+  improvement: number;
+  humanity: number;
+  other: number;
 }

@@ -1,6 +1,7 @@
-import { auth } from '@firebase/firebaeApp';
+import { auth, store } from '@firebase/firebaeApp';
 import { UserInterface } from '@models/UserInterface';
 import { onAuthStateChanged } from 'firebase/auth';
+import { collection, doc, getDoc } from 'firebase/firestore';
 
 import { createContext, useEffect, useState } from 'react';
 
@@ -24,15 +25,15 @@ export const AuthContextProvider = ({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(authData, (user) => {
+    const unsubscribe = onAuthStateChanged(authData, async (user) => {
       if (user) {
-        setCurrentUser({
-          uid: user.uid,
-          displayName: user.displayName,
-          photoURL: user?.photoURL,
-          email: user?.email,
-          provider: user?.providerData[0].providerId,
-        });
+        const docSnap = await getDoc(doc(store, 'users', user?.uid));
+
+        if (docSnap.exists()) {
+          setCurrentUser(docSnap.data());
+        } else {
+          setCurrentUser(null);
+        }
       } else {
         setCurrentUser(null);
       }

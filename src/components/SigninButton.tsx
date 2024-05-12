@@ -44,6 +44,13 @@ export default function SigninButton({
           email: res.user.email,
           displayName: res.user.displayName,
           photoURL: res.user.photoURL,
+          provider: res.user.providerData[0].providerId,
+          novel: 0,
+          computer: 0,
+          essay: 0,
+          improvement: 0,
+          humanity: 0,
+          other: 0,
         });
 
         router.push('/');

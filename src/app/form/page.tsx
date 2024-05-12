@@ -4,7 +4,7 @@ import { AuthContext } from '@contexts/AuthContext';
 import { store } from '@firebase/firebaeApp';
 import { BookInterface } from '@models/BookInterface';
 import { getDataBook, searchBook } from '@utils/searchBook';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, doc, setDoc, updateDoc } from 'firebase/firestore';
 import Image from 'next/image';
 import { ChangeEvent, useContext, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -19,6 +19,7 @@ export interface InputBookInterface {
   cover: string;
   pubDate: string;
   publisher: string;
+  readDate: string;
 }
 
 export default function FormPage() {
@@ -33,6 +34,8 @@ export default function FormPage() {
     const newKeyword = e.target.value;
     setKeyword(newKeyword);
   };
+
+  console.log(user);
 
   useEffect(() => {
     const timeout = setTimeout(async () => {
@@ -83,6 +86,31 @@ export default function FormPage() {
           second: '2-digit',
         }),
         uid: user?.uid,
+      });
+
+      let cate = 'other';
+      switch (book?.category) {
+        case '소설/시/희곡':
+          cate = 'novel';
+          break;
+        case '컴퓨터/모바일':
+          cate = 'computer';
+          break;
+        case '에세이':
+          cate = 'essay';
+          break;
+        case '자기계발':
+          cate = 'improvement';
+          break;
+        case '인문학':
+          cate = 'humanity';
+          break;
+      }
+
+      await updateDoc(doc(store, `users/${user?.uid}`), {
+        category: {
+          ...user?.category,
+        },
       });
       toast.success('등록완료!');
     } catch (error) {
