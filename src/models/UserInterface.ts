@@ -5,14 +5,16 @@ export interface UserInterface {
   displayName?: string | null;
   photoURL?: string | null;
   provider?: string | null;
-  category?: Category;
+  bookCount?: Category;
 }
 
 export interface Category {
+  total: number;
   novel: number;
   computer: number;
   essay: number;
   improvement: number;
   humanity: number;
   other: number;
+  economy: number;
 }

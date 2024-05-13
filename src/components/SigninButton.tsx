@@ -9,7 +9,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc } from 'firebase/firestore';
 
 // lib
 import { toast } from 'react-toastify';
@@ -45,12 +45,6 @@ export default function SigninButton({
           displayName: res.user.displayName,
           photoURL: res.user.photoURL,
           provider: res.user.providerData[0].providerId,
-          novel: 0,
-          computer: 0,
-          essay: 0,
-          improvement: 0,
-          humanity: 0,
-          other: 0,
         });
 
         router.push('/');
