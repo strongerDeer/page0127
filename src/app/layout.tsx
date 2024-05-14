@@ -3,6 +3,7 @@ import localFont from 'next/font/local';
 import '@styles/globals.css';
 
 import Layout from '@components/layouts/Layout';
+import { ModalContext } from '@contexts/ModalContext';
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -36,7 +37,9 @@ export default function RootLayout({
   return (
     <html lang="ko-KR" className={pretendard.className}>
       <body>
-        <Layout>{children}</Layout>
+        <ModalContext>
+          <Layout>{children}</Layout>
+        </ModalContext>
       </body>
     </html>
   );
