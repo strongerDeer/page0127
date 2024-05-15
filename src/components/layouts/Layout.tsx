@@ -11,7 +11,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <AuthContextProvider>
       <ToastContainer />
       <Header />
-      {children}
+      <div className="max-width">{children}</div>
     </AuthContextProvider>
   );
 }

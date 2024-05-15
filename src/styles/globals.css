@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+.max-width{
+  @apply max-w-screen-2xl mx-auto px-8
+}

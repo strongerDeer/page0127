@@ -10,10 +10,10 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 
-type ModalProps = ComponentProps<typeof Modal>;
+export type ModalProps = ComponentProps<typeof Modal>;
 type ModalOptions = Omit<ModalProps, 'open'>;
 
-interface ModalContextValue {
+export interface ModalContextValue {
   open: (option: ModalOptions) => void;
   close: () => void;
 }
@@ -50,8 +50,10 @@ export const ModalContext = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
+  const values = { open, close };
+
   return (
-    <Context.Provider value={{ open, close }}>
+    <Context.Provider value={values}>
       {children}
       {rootRef.current
         ? createPortal(<Modal {...modalState} />, rootRef.current)
@@ -61,10 +63,10 @@ export const ModalContext = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const useModalContext = () => {
-  const value = useContext(Context);
+  const values = useContext(Context);
 
-  if (value === null) {
+  if (values === null) {
     throw new Error('ModalContext 안에서 사용해주세요!');
   }
-  return value;
+  return values;
 };

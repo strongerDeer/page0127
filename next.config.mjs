@@ -13,7 +13,10 @@ const nextConfig = {
     ];
   },
   images: {
-    remotePatterns: [{ protocol: 'https', hostname: 'image.aladin.co.kr' }],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'image.aladin.co.kr' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
+    ],
   },
 };
 

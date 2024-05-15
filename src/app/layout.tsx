@@ -37,9 +37,7 @@ export default function RootLayout({
   return (
     <html lang="ko-KR" className={pretendard.className}>
       <body>
-        <ModalContext>
-          <Layout>{children}</Layout>
-        </ModalContext>
+        <Layout>{children}</Layout>
       </body>
     </html>
   );

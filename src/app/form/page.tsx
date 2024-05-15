@@ -46,6 +46,8 @@ export default function FormPage() {
       if (keyword !== '') {
         setIsLoading(true);
         const data = await searchBook(keyword);
+        console.log(data);
+
         setBooks({ total: data.totalResults, item: data.item });
         setIsLoading(false);
       } else {
@@ -60,6 +62,8 @@ export default function FormPage() {
 
   const onClick = async (isbn: string, img: string) => {
     const data = await getDataBook(isbn);
+
+    console.log(data);
 
     if (data) {
       const book = data.item[0];

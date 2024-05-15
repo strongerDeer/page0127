@@ -1,5 +1,3 @@
-'use client';
-
 // https://kosis.kr/statHtml/statHtml.do?orgId=101&tblId=DT_1SSCL020R&vw_cd=MT_ZTITLE&list_id=D21B_2009&seqNo=&lang_mode=ko&language=kor&obj_var_id=&itm_id=&conn_path=MT_ZTITLE
 import { AuthContext } from '@contexts/AuthContext';
 import {
@@ -44,12 +42,12 @@ const options = {
       borderWidth: 2,
       tension: 0.2,
     },
-    point: {
-      pointBackgroundColor: '#58D4AF',
-      pointBorderColor: '#58D4AF',
-      pointRadius: 2,
-      pointBorderWidth: 2,
-    },
+  },
+  point: {
+    pointBackgroundColor: '#58D4AF',
+    pointBorderColor: '#58D4AF',
+    pointRadius: 2,
+    pointBorderWidth: 2,
   },
 
   scales: {
@@ -75,7 +73,6 @@ const options = {
 export default function Chart() {
   const { category } = useContext(AuthContext);
 
-  console.log(category);
   const data = {
     labels: [
       '인문',

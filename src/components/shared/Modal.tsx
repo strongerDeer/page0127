@@ -1,4 +1,3 @@
-import { title } from 'process';
 import Dimmed from './Dimmed';
 
 interface ModalProps {

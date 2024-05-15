@@ -32,6 +32,7 @@ const RAW_RUNTIME_STATE =
           ["@types/react-dom", "npm:18.3.0"],\
           ["autoprefixer", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:10.4.19"],\
           ["chart.js", "npm:4.4.2"],\
+          ["clsx", "npm:2.1.1"],\
           ["date-fns", "npm:3.6.0"],\
           ["eslint", "npm:8.57.0"],\
           ["eslint-config-next", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:14.1.4"],\
@@ -46,6 +47,7 @@ const RAW_RUNTIME_STATE =
           ["react-chartjs-2", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:5.2.0"],\
           ["react-dom", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:18.3.1"],\
           ["react-toastify", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:10.0.5"],\
+          ["sass", "npm:1.77.1"],\
           ["tailwindcss", "npm:3.4.3"],\
           ["typescript", "patch:typescript@npm%3A5.4.5#optional!builtin<compat/typescript>::version=5.4.5&hash=5adc0c"]\
         ],\
@@ -3842,6 +3844,15 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["immutable", [\
+      ["npm:4.3.6", {\
+        "packageLocation": "../../../../.yarn/berry/cache/immutable-npm-4.3.6-2cc137ece1-10c0.zip/node_modules/immutable/",\
+        "packageDependencies": [\
+          ["immutable", "npm:4.3.6"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["import-fresh", [\
       ["npm:3.3.0", {\
         "packageLocation": "../../../../.yarn/berry/cache/import-fresh-npm-3.3.0-3e34265ca9-10c0.zip/node_modules/import-fresh/",\
@@ -4735,7 +4746,7 @@ const RAW_RUNTIME_STATE =
           ["postcss", "npm:8.4.31"],\
           ["react", "npm:18.3.1"],\
           ["react-dom", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:18.3.1"],\
-          ["sass", null],\
+          ["sass", "npm:1.77.1"],\
           ["styled-jsx", "virtual:18a3c4774db646e15efff6e98754da1315a30330cadb0275814b6ee17cbf2834d276f8f235b80316e5716963599040cb2707cbf8e7291ec00ed2903c20f9b39d#npm:5.1.1"]\
         ],\
         "packagePeers": [\
@@ -5063,6 +5074,7 @@ const RAW_RUNTIME_STATE =
           ["@types/react-dom", "npm:18.3.0"],\
           ["autoprefixer", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:10.4.19"],\
           ["chart.js", "npm:4.4.2"],\
+          ["clsx", "npm:2.1.1"],\
           ["date-fns", "npm:3.6.0"],\
           ["eslint", "npm:8.57.0"],\
           ["eslint-config-next", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:14.1.4"],\
@@ -5077,6 +5089,7 @@ const RAW_RUNTIME_STATE =
           ["react-chartjs-2", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:5.2.0"],\
           ["react-dom", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:18.3.1"],\
           ["react-toastify", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:10.0.5"],\
+          ["sass", "npm:1.77.1"],\
           ["tailwindcss", "npm:3.4.3"],\
           ["typescript", "patch:typescript@npm%3A5.4.5#optional!builtin<compat/typescript>::version=5.4.5&hash=5adc0c"]\
         ],\
@@ -5762,6 +5775,18 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "../../../../.yarn/berry/cache/safer-buffer-npm-2.1.2-8d5c0b705e-10c0.zip/node_modules/safer-buffer/",\
         "packageDependencies": [\
           ["safer-buffer", "npm:2.1.2"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["sass", [\
+      ["npm:1.77.1", {\
+        "packageLocation": "../../../../.yarn/berry/cache/sass-npm-1.77.1-270068d8f7-10c0.zip/node_modules/sass/",\
+        "packageDependencies": [\
+          ["sass", "npm:1.77.1"],\
+          ["chokidar", "npm:3.6.0"],\
+          ["immutable", "npm:4.3.6"],\
+          ["source-map-js", "npm:1.2.0"]\
         ],\
         "linkType": "HARD"\
       }]\
