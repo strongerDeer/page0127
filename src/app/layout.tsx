@@ -12,22 +12,20 @@ export const metadata: Metadata = {
 const pretendard = localFont({
   src: [
     {
-      path: './font/Pretendard-Regular.woff',
+      path: './font/subset-Pretendard-Regular.woff2',
       weight: '400',
-      style: 'normal',
     },
 
     {
-      path: './font/Pretendard-SemiBold.woff',
+      path: './font/subset-Pretendard-SemiBold.woff2',
       weight: '600',
-      style: 'normal',
     },
     {
-      path: './font/Pretendard-Bold.woff',
+      path: './font/subset-Pretendard-Bold.woff2',
       weight: '700',
-      style: 'normal',
     },
   ],
+  variable: '--font-pretendard',
 });
 export default function RootLayout({
   children,
