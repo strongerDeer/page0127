@@ -10,19 +10,6 @@ import Image from 'next/image';
 import { ChangeEvent, useContext, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
-export interface InputBookInterface {
-  id: string;
-  title: string;
-  author: string;
-  description: string;
-  categoryName: string;
-  category: string;
-  cover: string;
-  pubDate: string;
-  publisher: string;
-  readDate: string;
-}
-
 export default function FormPage() {
   const { user, category } = useContext(AuthContext);
   const [isLoding, setIsLoading] = useState<boolean>(false);
@@ -74,7 +61,8 @@ export default function FormPage() {
         description: book.description,
         categoryName: book.categoryName,
         category: book.categoryName.split('>')[1],
-        cover: img,
+        frontCover: img,
+        frontCover: img,
         pubDate: book.pubDate,
         publisher: book.publisher,
       };
