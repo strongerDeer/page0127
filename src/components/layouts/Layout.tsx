@@ -5,13 +5,18 @@ import Header from './Header';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import DeleteBookModal from '@components/DeleteBookModal';
+import { ModalContext } from '@contexts/ModalContext';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <AuthContextProvider>
-      <ToastContainer />
-      <Header />
-      <div className="max-width">{children}</div>
+      <ModalContext>
+        <ToastContainer />
+        <Header />
+        <div className="max-width">{children}</div>
+        {/* <DeleteBookModal /> */}
+      </ModalContext>
     </AuthContextProvider>
   );
 }

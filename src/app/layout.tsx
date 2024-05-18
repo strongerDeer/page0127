@@ -3,7 +3,6 @@ import localFont from 'next/font/local';
 import '@styles/globals.css';
 
 import Layout from '@components/layouts/Layout';
-import { ModalContext } from '@contexts/ModalContext';
 
 export const metadata: Metadata = {
   title: 'Create Next App',

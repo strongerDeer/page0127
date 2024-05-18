@@ -3,8 +3,10 @@ import Modal from '@components/shared/Modal';
 import {
   ComponentProps,
   createContext,
+  useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -31,12 +33,23 @@ export const ModalContext = ({ children }: { children: React.ReactNode }) => {
   const rootRef = useRef<Element | null>(null);
   const [modalState, setModalState] = useState<ModalProps>(defaultValues);
 
-  const open = (options: ModalOptions) => {
+  // useCallback: 리렌더링시에 함수를 새롭게 만들지 않겠다.
+  const open = useCallback((options: ModalOptions) => {
     setModalState({ ...options, isOpened: true });
-  };
-  const close = () => {
+  }, []);
+
+  const close = useCallback(() => {
     setModalState(defaultValues);
-  };
+  }, []);
+
+  // useMemo: 리렌더링 사이에 계산 결과를 캐싱
+  const values = useMemo(
+    () => ({
+      open,
+      close,
+    }),
+    [open, close],
+  );
 
   useEffect(() => {
     const root = document.createElement('div');
@@ -49,8 +62,6 @@ export const ModalContext = ({ children }: { children: React.ReactNode }) => {
       }
     };
   }, []);
-
-  const values = { open, close };
 
   return (
     <Context.Provider value={values}>

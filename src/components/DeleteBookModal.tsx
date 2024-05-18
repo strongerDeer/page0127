@@ -1,3 +1,4 @@
+'use client';
 import {
   ModalContextValue,
   ModalProps,
@@ -19,7 +20,7 @@ export default function DeleteBookModal() {
         close();
       },
     } as ModalProps);
-  }, []); // eslint-disable-line
+  }, [open, close]);
 
   return null;
 }
