@@ -113,6 +113,7 @@ export default function CreatePage() {
           await setDoc(doc(store, 'books', book?.id), {
             ...book,
             createdTime: serverTimestamp(),
+            lastUpdatedTime: serverTimestamp(),
             readUser: arrayUnion(user?.uid),
             readUserCount: 1,
             grade10User:
@@ -186,6 +187,7 @@ export default function CreatePage() {
           await setDoc(doc(store, `users/${user?.uid}/book/${book.id}`), {
             ...book,
             createdTime: serverTimestamp(),
+            lastUpdatedTime: serverTimestamp(),
             readDate: readDate,
             memo: memo,
             grad: grade,

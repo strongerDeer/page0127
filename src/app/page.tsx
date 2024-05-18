@@ -1,35 +1,16 @@
-'use client';
-import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 
-import { InputBookInterface } from './form/page';
-import { getBooks } from '@remote/book';
+import { BookListSkeleton } from '@components/BookList';
 
-import BookItem from '@components/BookItem';
+const BookList = dynamic(() => import('@components/BookList'), {
+  ssr: false,
+  loading: () => <BookListSkeleton />,
+});
 
 export default function Home() {
-  const [books, setBooks] = useState<InputBookInterface[] | null>(null);
-
-  useEffect(() => {
-    const bookData = async () => {
-      const data = await getBooks();
-      if (data) {
-        setBooks(data);
-      }
-    };
-    bookData();
-  }, []);
-
   return (
     <main>
-      2024년 {books?.length}권
-      <ul className="grid grid-cols-4 gap-16">
-        {books?.map((item: InputBookInterface, index) => (
-          <li key={index}>
-            ₩
-            <BookItem item={item} index={index} />
-          </li>
-        ))}
-      </ul>
+      <BookList />
     </main>
   );
 }

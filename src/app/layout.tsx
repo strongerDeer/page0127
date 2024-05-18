@@ -32,8 +32,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko-KR" className={pretendard.className}>
-      <body>
+    <html lang="ko-KR">
+      <body className={pretendard.className}>
         <Layout>{children}</Layout>
       </body>
     </html>

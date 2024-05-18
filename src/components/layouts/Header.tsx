@@ -1,8 +1,10 @@
-import { useContext } from 'react';
+import { Suspense, useContext } from 'react';
 import { AuthContext } from '@contexts/AuthContext';
 
 import LogoutButton from '@components/LogoutButton';
 import Link from 'next/link';
+import Loading from '@components/Loading';
+import Chart from '@components/Chart';
 
 export default function Header() {
   const { user } = useContext(AuthContext);
