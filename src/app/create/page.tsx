@@ -13,8 +13,6 @@ import {
   increment,
   getDoc,
   serverTimestamp,
-  getDocs,
-  collection,
   arrayRemove,
 } from 'firebase/firestore';
 import { store } from '@firebase/firebaeApp';
@@ -43,7 +41,7 @@ export interface BooksData {
 const today = format(new Date(), 'yyyy-MM-dd');
 
 export default function CreatePage() {
-  const { user, category } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const [title, setTitle] = useState('');
   const [isLoding, setIsLoading] = useState<boolean>(false);
   const [booksData, setBooksData] = useState<BooksData | null>(null);
@@ -152,30 +150,10 @@ export default function CreatePage() {
           }
         }
 
-        const checkCategory = (category: string) => {
-          switch (category) {
-            case '소설/시/희곡':
-              return '소설시희곡';
-            case '컴퓨터/모바일':
-              return '컴퓨터모바일';
-            case '에세이':
-              return '에세이';
-            case '자기계발':
-              return '자기계발';
-            case '인문학':
-              return '인문학';
-            case '경제경영':
-              return '경제경영';
-            default:
-              return '기타';
-          }
-        };
-
         // 유저 카데고리 정보 저장
-
         await updateDoc(doc(store, `users/${user?.uid}`), {
           total: arrayUnion(book.id),
-          [`${checkCategory(book.category)}`]: arrayUnion(book.id),
+          [`${book.category.replaceAll('/', '')}`]: arrayUnion(book.id),
         });
 
         // 유저에 책장에 데이터 저장하기

@@ -7,10 +7,36 @@ import Chart from '@components/Chart';
 import Share from '@components/Share';
 
 export default function MyPage() {
-  const { user } = useContext(AuthContext);
+  const { user, userBooks } = useContext(AuthContext);
 
+  console.log(userBooks);
   return (
     <>
+      <p>dfdfd</p>
+
+      {userBooks && (
+        <div className="flex gap-2 flex-wrap">
+          {userBooks.map((book) => (
+            <div key={book.id} className="flex border">
+              <Image
+                src={book.flipCover}
+                alt={book.title}
+                width={20}
+                height={200}
+                className="w-auto h-40 border-r"
+              />
+              <Image
+                src={book.frontCover}
+                alt={book.title}
+                width={500}
+                height={500}
+                className="w-auto h-40"
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
       <div>
         <Image
           src={user?.photoURL || ''}
@@ -23,7 +49,9 @@ export default function MyPage() {
         <p>{user?.email}</p>
       </div>
       <Share />
-      <Chart />
+      <div className="w-1/1">
+        <Chart />
+      </div>
     </>
   );
 }

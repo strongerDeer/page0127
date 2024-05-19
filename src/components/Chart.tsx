@@ -71,41 +71,31 @@ const options = {
 };
 
 export default function Chart() {
-  const { category } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
 
   const data = {
     labels: [
-      '인문',
+      '인문학',
       '경제경영',
       '소설/시/희곡',
       '자기계발',
       '컴퓨터/모바일',
       '에세이',
-      '기타',
     ],
     datasets: [
       {
-        label: '평균',
-        data: [3, 3, 2, 3, 1, 3, 1],
-        backgroundColor: 'rgb(98, 208, 243, 0.2)',
-        borderColor: '#62D0F3',
-        borderDash: [4, 4],
-        pointBackgroundColor: '#62D0F3',
-        pointBorderColor: '#62D0F3',
-      },
-      {
-        label: '강혜진님',
+        label: user?.displayName || '',
         data: [
-          category?.humanity,
-          category?.economy,
-          category?.novel,
-          category?.improvement,
-          category?.computer,
-          category?.essay,
-          category?.other,
+          user?.인문학?.length || 0,
+          user?.경제경영?.length || 0,
+          user?.소설시희곡?.length || 0,
+          user?.자기계발?.length || 0,
+          user?.컴퓨터모바일?.length || 0,
+          user?.에세이?.length || 0,
         ],
       },
     ],
   };
+
   return <Radar options={options} data={data} />;
 }
