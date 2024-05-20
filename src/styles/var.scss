@@ -1,0 +1,22 @@
+$maxW: 1190;
+
+@mixin ellipse($num: 1, $lineHeight: 1.6) {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: $num;
+  height: 1em * $num * $lineHeight;
+}
+
+@mixin grid($width, $gap1: 2.4rem, $gap2: 2.5rem) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax($width, 1fr));
+  gap: $gap1 $gap2;
+  @media screen and (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+@function fcSize($min, $max) {
+  @return clamp($min * 0.1rem, (100vw / $maxW) * $max, $max * 0.1rem);
+}

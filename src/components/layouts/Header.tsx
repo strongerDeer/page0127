@@ -5,6 +5,7 @@ import LogoutButton from '@components/LogoutButton';
 import Link from 'next/link';
 import Loading from '@components/Loading';
 import Chart from '@components/Chart';
+import Button from '@components/shared/Button';
 
 export default function Header() {
   const { user } = useContext(AuthContext);
@@ -20,7 +21,8 @@ export default function Header() {
           <Link href="/auth/signin">로그인</Link>
         ) : (
           <>
-            <Link href="/my">마이페이지</Link>
+            <Button href="/my">마이페이지</Button>
+
             <LogoutButton />
           </>
         )}

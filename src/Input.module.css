@@ -1,0 +1,21 @@
+.wrap {
+  @apply flex flex-col gap-1;
+}
+.wrap label {
+  @apply text-gray-600 text-sm transition-all;
+}
+.wrap input[type=text],
+.wrap input[type=search],
+.wrap input[type=email],
+.wrap input[type=date] {
+  @apply border border-gray-300 rounded h-10 px-4 outline-none transition-all;
+}
+.wrap:focus-within label {
+  @apply text-blue-500;
+}
+.wrap:focus-within input[type=text],
+.wrap:focus-within input[type=search],
+.wrap:focus-within input[type=email],
+.wrap:focus-within input[type=date] {
+  @apply border-blue-500  outline-blue-100 outline-offset-0 outline-2;
+}

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
-import '@styles/globals.css';
+
+import '@styles/theme.scss';
+import '@styles/globals.scss';
 
 import Layout from '@components/layouts/Layout';
 

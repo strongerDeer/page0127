@@ -1,0 +1,12 @@
+.btn {
+  border-radius: 0.4em;
+  padding: 0.5em 1em;
+}
+.btn.solid {
+  background-color: var(--primary);
+  color: #fff;
+}
+.btn.outline {
+  border: 1px solid var(--primary);
+  color: var(--primary);
+}

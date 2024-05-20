@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import '@/styles/var.scss';
+
+
+html {
+  font-size: 62.5%;
+}
+body {
+  min-width: 28rem;
+  overflow-x: scroll;
+  font-size: fcSize(14, 16);
+  font-weight: 400;
+  line-height: 1.4;
+}
+.max-width{
+  @apply max-w-screen-2xl mx-auto px-8
+}

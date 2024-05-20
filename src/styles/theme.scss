@@ -1,0 +1,156 @@
+$light-theme: (
+  background: #fff,
+  background-rgb: '255, 255, 255',
+
+  primary: #2e6ff2,
+  primary-lighten: #447ef3,
+  primary-darken: #145df0,
+  primary-text: #ffffff,
+  primary-rgb: '46, 111, 242',
+  primary-a11y: #2861d2,
+
+  surface: #121314,
+  surface-lighten: #1d1f20,
+  surface-darken: #050505,
+  surface-text: #ffffff,
+  surface-rgb: '18, 19, 20',
+
+  grayLv1: #f3f5fa,
+  grayLv1-lighten: #fff,
+  grayLv1-darken: #caccd3,
+  grayLv1-text: #121314,
+  grayLv1-rgb: '243, 245, 250',
+
+  grayLv2: #d9dbe0,
+  grayLv2-lighten: #e6e7ea,
+  grayLv2-darken: #caccd3,
+  grayLv2-text: #121314,
+  grayLv2-rgb: '217, 219, 224',
+
+  grayLv3: #8d9299,
+  grayLv3-lighten: #9ba0a6,
+  grayLv3-darken: #80868e,
+  grayLv3-text: #ffffff,
+  grayLv3-rgb: '141, 146, 153',
+  grayLv3-aA11y: #6c7074,
+
+  grayLv4: #47494d,
+  grayLv4-lighten: #53565a,
+  grayLv4-darken: #3b3c40,
+  grayLv4-text: #ffffff,
+  grayLv4-rgb: '71, 73, 77',
+
+  error: #ff3440,
+  error-lighten: #ff4d57,
+  error-darken: #ff1a27,
+  error-text: #ffffff,
+  error-rgb: '255, 52, 64',
+
+  warn: #ffc533,
+  warn-lighten: #ffcc4d,
+  warn-darken: #ffbe1a,
+  warn-text: #121314,
+  warn-rgb: '255, 197, 51',
+
+  activation: #dee8ff,
+  activation-rgb: '222, 232, 255',
+
+  code-pink: #c93864,
+  code-purple: #964dd1,
+  code-blue: #2e5dd6,
+  code-green: #328026,
+  code-orange: #e37c00,
+);
+$dark-theme: (
+  background: #1f2123,
+  background-rgb: '31, 33, 35',
+
+  primary: #3075ff,
+  primary-lighten: #2e6ff2,
+  primary-darken: #145df0,
+  primary-text: #ffffff,
+  primary-rgb: '48, 117, 255',
+  primary-a11y: #2861d2,
+
+  surface: #ffffff,
+  surface-lighten: #f5f8ff,
+  surface-darken: #e5edff,
+  surface-text: #121314,
+  surface-rgb: '255, 255, 255',
+
+  grayLv1: #121314,
+  grayLv1-lighten: #1d1f20,
+  grayLv1-darken: #050505,
+  grayLv1-text: #fff,
+  grayLv1-rgb: '18, 19, 20',
+
+  grayLv2: #595f66,
+  grayLv2-lighten: #646b72,
+  grayLv2-darken: #4c5157,
+  grayLv2-text: #fff,
+  grayLv2-rgb: '89, 95, 102',
+
+  grayLv3: #8d9299,
+  grayLv3-lighten: #9ba0a6,
+  grayLv3-darken: #80868e,
+  grayLv3-text: #121314,
+  grayLv3-rgb: '141, 146, 153',
+  grayLv3-aA11y: #6c7074,
+
+  grayLv4: #f3f5fa,
+  grayLv4-lighten: #fff,
+  grayLv4-darken: #caccd3,
+  grayLv4-text: #121314,
+  grayLv4-rgb: '243, 245, 250',
+
+  error: #fc7377,
+  error-lighten: #ff3440,
+  error-darken: #ff1a27,
+  error-text: #ffffff,
+  error-rgb: '252, 115, 119',
+
+  warn: #ffe187,
+  warn-lighten: #ffc533,
+  warn-darken: #ffbe1a,
+  warn-text: #121314,
+  warn-rgb: '255, 225, 135',
+
+  activation: #2b3444,
+  activation-rgb: '43, 52, 68',
+
+  code-pink: #ed4779,
+  code-purple: #c893fd,
+  code-blue: #618dff,
+  code-green: #50c140,
+  code-orange: #ffa52a,
+);
+
+:root {
+  @each $k, $v in $light-theme {
+    --#{$k}: #{$v};
+  }
+}
+
+:root {
+  .theme-light {
+    @each $k, $v in $light-theme {
+      --#{$k}: #{$v};
+    }
+  }
+}
+
+:root {
+  .theme-dark {
+    @each $k, $v in $dark-theme {
+      --#{$k}: #{$v};
+    }
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    @each $k, $v in $dark-theme {
+      --#{$k}: #{$v};
+    }
+  }
+}

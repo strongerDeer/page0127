@@ -2,6 +2,7 @@
 import { auth } from '@firebase/firebaeApp';
 import { signOut } from 'firebase/auth';
 import { toast } from 'react-toastify';
+import Button from './shared/Button';
 
 export default function LogoutButton() {
   const onClick = async () => {
@@ -18,8 +19,8 @@ export default function LogoutButton() {
   };
 
   return (
-    <button type="button" onClick={onClick}>
+    <Button type="button" onClick={onClick}>
       Logout
-    </button>
+    </Button>
   );
 }

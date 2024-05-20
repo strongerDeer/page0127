@@ -1,0 +1,43 @@
+@import '@/styles/var.scss';
+.btn{
+  border-radius: 0.4em;
+  padding:0 1em;
+  height:2.4em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+
+  &.solid{
+    background-color: var(--primary);
+    color:#fff;
+  }
+  &.outline{
+    border: 1px solid var(--primary);
+    color: var(--primary);
+  }
+
+  &:enabled{
+    cursor: pointer;
+
+  }
+  &:disabled{
+    border: 1px solid var(--grayLv2);
+    background-color: var(--grayLv2);
+    color: var(--grayLv3);    
+  }
+
+
+
+
+  &.sm{
+    font-size: fcSize(12, 14);
+  }
+  &.md{
+    font-size: fcSize(14, 16);
+  }
+  &.lg{
+    font-size: fcSize(16, 18);
+  }
+
+}
