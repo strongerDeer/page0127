@@ -6,31 +6,21 @@ import Image from 'next/image';
 import Chart from '@components/Chart';
 import Share from '@components/Share';
 
+import styles from './page.module.scss';
 export default function MyPage() {
   const { user, userBooks } = useContext(AuthContext);
 
-  console.log(userBooks);
   return (
     <>
-      <p>dfdfd</p>
-
       {userBooks && (
-        <div className="flex gap-2 flex-wrap">
+        <div className={styles.bookContainer}>
           {userBooks.map((book) => (
-            <div key={book.id} className="flex border">
+            <div key={book.id} className={book.grad >= 5 ? styles.front : ''}>
               <Image
-                src={book.flipCover}
+                src={book.grad >= 5 ? book.frontCover : book.flipCover}
                 alt={book.title}
-                width={20}
-                height={200}
-                className="w-auto h-40 border-r"
-              />
-              <Image
-                src={book.frontCover}
-                alt={book.title}
-                width={500}
-                height={500}
-                className="w-auto h-40"
+                width={100}
+                height={100}
               />
             </div>
           ))}
@@ -49,7 +39,7 @@ export default function MyPage() {
         <p>{user?.email}</p>
       </div>
       <Share />
-      <div className="w-1/1">
+      <div className="w-1/3 m-auto">
         <Chart />
       </div>
     </>

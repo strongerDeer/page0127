@@ -24,6 +24,7 @@ function BookList() {
                   priority={index < 4 ? true : false}
                 />
               </div>
+
               <div className="flex flex-col text-center">
                 <h3 className="font-bold">{item.title}</h3>
                 <p>{item.category}</p>

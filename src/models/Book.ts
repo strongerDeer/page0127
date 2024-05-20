@@ -17,6 +17,7 @@ export interface Book {
   frontCover: string;
   flipCover: string;
 
+  grad: number;
   grade10User: string[];
 }
 

@@ -32,6 +32,7 @@ export interface InputBookInterface {
   pubDate: string;
   publisher: string;
   readDate: string;
+  page: number;
 }
 
 export interface BooksData {
@@ -92,6 +93,7 @@ export default function CreatePage() {
         flipCover: flipCover,
         pubDate: book.pubDate,
         publisher: book.publisher,
+        page: book.subInfo.itemPage,
       };
       setBook(bookData as InputBookInterface);
       setBooksData(null);
