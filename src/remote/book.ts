@@ -1,4 +1,4 @@
-import { InputBookInterface } from '@app/form/page';
+import { InputBookInterface } from '@app/create/page';
 import { store } from '@firebase/firebaeApp';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 
