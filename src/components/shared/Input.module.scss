@@ -1,0 +1,76 @@
+.wrap{
+  display:  flex;
+  flex-direction: column;
+  gap:0.4rem;
+
+  label{
+    color: var(--grayLv4);
+    transition: all 0.3s;
+    font-size: 0.9em;
+  }
+
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="date"]{
+
+
+    border: 1px solid var(--grayLv2);
+    border-radius: 0.4em;
+    height:4rem;
+    padding: 0 0.8rem;
+    outline: none;
+    transition: all 0.3s;
+
+    &::placeholder{
+      font-size: 0.9em;
+    }
+  }
+
+  &:focus-within{
+    label{
+      color: var(--primary);
+    }
+
+    input[type="text"],
+    input[type="search"],
+    input[type="email"],
+    input[type="date"]{
+      border-color: var(--primary);
+
+      outline-offset: 0;
+      outline-width: 3px;
+      outline-style: solid;
+      outline-color: rgba(var(--primary-rgb),0.1);
+
+    }
+  }
+
+  &.error {
+    label{
+      color: var(--error);
+    }
+    input[type="text"],
+    input[type="search"],
+    input[type="email"],
+    input[type="date"]{
+      border-color: var(--error);
+
+      :focus-within &{
+          outline-color: rgba(var(--error-rgb),0.1);
+        }
+      
+    }
+
+  }
+
+
+}
+.helpMessage{
+  font-size: 0.9em;
+  color: var(--grayLv4);
+  .error &{
+    color: var(--error)!important;
+  }
+}
+

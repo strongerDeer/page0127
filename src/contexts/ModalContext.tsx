@@ -24,22 +24,27 @@ const Context = createContext<ModalContextValue | undefined>(undefined);
 
 const defaultValues: ModalProps = {
   isOpened: false,
+  title: '',
   body: null,
   actionClickEvent: () => {},
   closeModal: () => {},
 };
 
-export const ModalContext = ({ children }: { children: React.ReactNode }) => {
+export const ModalContextProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const rootRef = useRef<Element | null>(null);
   const [modalState, setModalState] = useState<ModalProps>(defaultValues);
 
   // useCallback: 리렌더링시에 함수를 새롭게 만들지 않겠다.
-  const open = useCallback((options: ModalOptions) => {
-    setModalState({ ...options, isOpened: true });
-  }, []);
-
   const close = useCallback(() => {
     setModalState(defaultValues);
+  }, []);
+
+  const open = useCallback((options: ModalOptions) => {
+    setModalState({ ...options, isOpened: true });
   }, []);
 
   // useMemo: 리렌더링 사이에 계산 결과를 캐싱

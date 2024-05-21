@@ -2,8 +2,8 @@ import Dimmed from './Dimmed';
 
 interface ModalProps {
   isOpened: boolean;
-  title?: string;
-  body: React.ReactNode;
+  title: string;
+  body?: React.ReactNode;
   actionButtonLabel?: string;
   actionClickEvent: () => void;
 

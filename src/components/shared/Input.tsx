@@ -1,16 +1,15 @@
 'use client';
-interface InputProps {
-  id: string;
+
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
-  type?: string;
-  value?: string;
+  hasError?: boolean;
+  helpMessage?: React.ReactNode;
   setValue?: React.Dispatch<React.SetStateAction<string>>;
-  className?: string;
-  onChange?: React.ChangeEventHandler<HTMLInputElement>;
 }
+
 import { clsx } from 'clsx';
 import styles from './Input.module.scss';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 
 export default function Input({
   type = 'text',
@@ -18,7 +17,10 @@ export default function Input({
   id,
   className,
   value,
+  hasError,
+  helpMessage,
   setValue,
+  ...rest
 }: InputProps) {
   const [state, setState] = useState<string>('');
 
@@ -31,9 +33,16 @@ export default function Input({
     }
   };
   return (
-    <div className={clsx([styles.wrap, className])}>
+    <div className={clsx([styles.wrap, hasError && styles.error, className])}>
       <label htmlFor={id}>{label}</label>
-      <input id={id} type={type} value={value || state} onChange={onChange} />
+      <input
+        id={id}
+        type={type}
+        value={value || state}
+        onChange={onChange}
+        {...rest}
+      />
+      {helpMessage && <p className={styles.helpMessage}>{helpMessage}</p>}
     </div>
   );
 }

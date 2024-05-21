@@ -1,7 +1,7 @@
 'use client';
 import { useContext, useEffect, useState } from 'react';
 
-import Input from '@components/Input';
+import Input from '@components/shared/Input';
 import Image from 'next/image';
 import { getDataBook, searchBook } from '@utils/searchBook';
 import { BookInterface } from '@models/BookInterface';
