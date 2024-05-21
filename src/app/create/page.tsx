@@ -168,16 +168,16 @@ export default function CreatePage() {
             ...book,
             createdTime: serverTimestamp(),
             lastUpdatedTime: serverTimestamp(),
-            readDate: readDate,
+            readDate: new Date(readDate),
             memo: memo,
-            grad: grade,
+            grade: grade,
           });
         } else {
           await updateDoc(doc(store, `users/${user?.uid}/book/${book.id}`), {
             lastUpdatedTime: serverTimestamp(),
-            readDate: readDate,
+            readDate: new Date(readDate),
             memo: memo,
-            grad: grade,
+            grade: grade,
           });
         }
 

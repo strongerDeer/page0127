@@ -13,11 +13,12 @@ export interface Book {
 
   createdTime: StampTime;
   lastUpdatedTime: StampTime;
+  readDate: StampTime;
 
   frontCover: string;
   flipCover: string;
 
-  grad: number;
+  grade: number;
   grade10User: string[];
 }
 

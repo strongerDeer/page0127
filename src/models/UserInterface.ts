@@ -5,6 +5,7 @@ export interface UserInterface {
   displayName?: string | null;
   photoURL?: string | null;
   provider?: string | null;
+  goals?: number;
 
   total?: string[];
   소설시희곡?: string[];

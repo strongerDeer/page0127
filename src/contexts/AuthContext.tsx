@@ -2,6 +2,7 @@ import { auth, store } from '@firebase/firebaeApp';
 import { Book } from '@models/Book';
 import { UserInterface } from '@models/UserInterface';
 import { onAuthStateChanged } from 'firebase/auth';
+
 import {
   collection,
   doc,
@@ -9,6 +10,7 @@ import {
   onSnapshot,
   orderBy,
   query,
+  where,
 } from 'firebase/firestore';
 
 import { createContext, useEffect, useState } from 'react';
@@ -41,15 +43,19 @@ export const AuthContextProvider = ({
         onSnapshot(doc(store, 'users', user?.uid), (doc) => {
           setCurrentUser({ uid: user?.uid, ...doc.data() });
         });
+
         const snapshot = await getDocs(
           query(
             collection(store, `users/${user?.uid}/book`),
-            orderBy('lastUpdatedTime', 'desc'),
+            // where('readDate', '>=', new Date('2023-01-01')),
+            // where('readDate', '<', new Date('2024-01-01')),
+            orderBy('readDate', 'desc'),
           ),
         );
         const userBooks = snapshot.docs.map((doc) => ({
           ...(doc.data() as Book),
         }));
+
         setUserBooks(userBooks);
       } else {
         setCurrentUser(null);

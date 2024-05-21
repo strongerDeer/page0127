@@ -9,7 +9,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { doc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
 // lib
 import { toast } from 'react-toastify';
@@ -39,14 +39,16 @@ export default function SigninButton({
       provider as GoogleAuthProvider | GithubAuthProvider,
     )
       .then(async (res) => {
-        // 유저 정보 저장
-        await setDoc(doc(store, 'users', res.user.uid), {
-          email: res.user.email,
-          displayName: res.user.displayName,
-          photoURL: res.user.photoURL,
-          provider: res.user.providerData[0].providerId,
-        });
-
+        const userData = await getDoc(doc(store, 'users', res.user.uid));
+        if (!userData.exists()) {
+          // 유저 정보 저장
+          await setDoc(doc(store, 'users', res.user.uid), {
+            email: res.user.email,
+            displayName: res.user.displayName,
+            photoURL: res.user.photoURL,
+            provider: res.user.providerData[0].providerId,
+          });
+        }
         router.push('/');
         toast.success('로그인 되었습니다.');
       })
