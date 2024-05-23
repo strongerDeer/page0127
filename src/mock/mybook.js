@@ -1,5 +1,38 @@
 export const my_book_list = [
   {
+    title: '슬픔을 공부하는 슬픔',
+    memo: '',
+    description:
+      "문학평론가 신형철이 4년 만에 새로운 산문집을 출간한다. 이번 산문집은 「한겨레21」에 연재됐던 '신형철의 문학 사용법'을 비롯, 각종 일간지와 문예지 등에 연재했던 글과 미발표 원고를 모아 엮은 것이다.",
+    frontCover:
+      // 'https://image.aladin.co.kr/product/16234/14/cover500/k322534566_2.jpg',
+      'https://image.aladin.co.kr/product/30695/70/cover500/K902830843_1.jpg',
+    flipCover:
+      //  'https://image.aladin.co.kr/product/16234/14/spineflip/k322534566_d.jpg',
+      'https://image.aladin.co.kr/product/30695/70/spineflip/K902830843_d.jpg',
+    lastUpdatedTime: {
+      seconds: 1716475960,
+      nanoseconds: 76000000,
+    },
+    publisher: '한겨레출판',
+    grade: 3,
+    categoryName: '국내도서>에세이>한국에세이',
+    page: 428,
+    author: '신형철 (지은이)',
+    readDate: {
+      seconds: 1716249600,
+      nanoseconds: 0,
+    },
+    createdTime: {
+      seconds: 1716475960,
+      nanoseconds: 76000000,
+    },
+    pubDate: '2018-09-22',
+    id: 'K322534566',
+
+    category: '에세이',
+  },
+  {
     categoryName: '국내도서>인문학>심리학/정신분석학>교양 심리학',
     publisher: '갤리온',
     readDate: {

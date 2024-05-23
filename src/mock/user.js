@@ -8,6 +8,7 @@ export const user_data = {
   email: 'dreamfulbud@gmail.com',
   provider: 'google.com',
   total: [
+    'K322534566',
     '8901276534',
     '8932918406',
     'K152832802',
@@ -36,6 +37,7 @@ export const user_data = {
     'K152832802',
     'K372638623',
     'K662936837',
+    'K322534566',
   ],
   인문학: [
     '8901280485',
