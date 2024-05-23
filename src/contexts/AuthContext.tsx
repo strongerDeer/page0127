@@ -49,7 +49,7 @@ export const AuthContextProvider = ({
             collection(store, `users/${user?.uid}/book`),
             // where('readDate', '>=', new Date('2023-01-01')),
             // where('readDate', '<', new Date('2024-01-01')),
-            orderBy('readDate', 'desc'),
+            orderBy('readDate', 'asc'),
           ),
         );
         const userBooks = snapshot.docs.map((doc) => ({

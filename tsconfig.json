@@ -22,7 +22,9 @@
       "@*": ["src/*"],
       "@app/*": ["src/app/*"],
       "@modles/*": ["src/models/*"],
-      "@font/*": ["src/font/*"]
+      "@font/*": ["src/font/*"],
+      "@mock/*": ["src/mock/*"],
+      "@constants/*": ["src/constants/*"],
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

@@ -8,6 +8,8 @@ import Share from '@components/Share';
 
 import styles from './page.module.scss';
 import { Book } from '@models/Book';
+import Link from 'next/link';
+import BookItem from '@components/BookItem';
 export default function MyPage() {
   const { user, userBooks } = useContext(AuthContext);
 
@@ -73,22 +75,6 @@ export default function MyPage() {
       </progress>
       {bookList2024?.length}/ {user?.goals}
       <p style={{ whiteSpace: 'pre' }}>{text}</p>
-      {/* {user?.goals && (
-        <p>
-          한달에 약 {monthBook}권을 읽어야해요. {thisMonth}월 기준{' '}
-          {thisMonth * monthBook}권을 읽었어야 해요!
-        </p>
-      )}
-      {diff > 5 ? (
-        <p>조금 더 달려볼까요? {diff}권 남았어요!</p>
-      ) : diff <= 0 ? (
-        <p>
-          아주 잘하고 있어요! {thisMonth}월 기준 {Math.abs(diff)}권 넘게 읽고
-          있어요!
-        </p>
-      ) : (
-        <p>조금만 더 {diff}권 남았어요!</p>
-      )} */}
       <div className="flex items-center ">
         <div>
           <Image
@@ -110,56 +96,28 @@ export default function MyPage() {
       {bookList2024 && bookList2024?.length > 0 && (
         <div className={styles.bookContainer}>
           {bookList2024.map((book) => (
-            <div key={book.id} className={book.grade >= 5 ? styles.front : ''}>
-              <Image
-                src={book.grade >= 5 ? book.frontCover : book.flipCover}
-                alt={book.title}
-                width={100}
-                height={100}
-              />
-            </div>
+            <BookItem key={book.id} book={book} />
           ))}
         </div>
       )}
       {bookList2023 && bookList2023?.length > 0 && (
         <div className={styles.bookContainer}>
           {bookList2023.map((book) => (
-            <div key={book.id} className={book.grade >= 5 ? styles.front : ''}>
-              <Image
-                src={book.grade >= 5 ? book.frontCover : book.flipCover}
-                alt={book.title}
-                width={100}
-                height={100}
-              />
-            </div>
+            <BookItem key={book.id} book={book} />
           ))}
         </div>
       )}
       {bookList2022 && bookList2022?.length > 0 && (
         <div className={styles.bookContainer}>
           {bookList2022.map((book) => (
-            <div key={book.id} className={book.grade >= 5 ? styles.front : ''}>
-              <Image
-                src={book.grade >= 5 ? book.frontCover : book.flipCover}
-                alt={book.title}
-                width={100}
-                height={100}
-              />
-            </div>
+            <BookItem key={book.id} book={book} />
           ))}
         </div>
       )}
       {bookListPrev && bookListPrev?.length > 0 && (
         <div className={styles.bookContainer}>
           {bookListPrev.map((book) => (
-            <div key={book.id} className={book.grade >= 5 ? styles.front : ''}>
-              <Image
-                src={book.grade >= 5 ? book.frontCover : book.flipCover}
-                alt={book.title}
-                width={100}
-                height={100}
-              />
-            </div>
+            <BookItem key={book.id} book={book} />
           ))}
         </div>
       )}

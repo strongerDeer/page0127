@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-
 import Input from '@components/shared/Input';
 import Button from '@components/shared/Button';
+import { book_list, banner_list } from '@mock/data';
+import { my_book_list } from '@mock/mybook';
+import { grade_list } from '@mock/grade';
+import { user_data } from '@mock/user';
 
 import {
   AlertContextValue,
@@ -15,14 +17,91 @@ import {
   ModalProps,
   useModalContext,
 } from '@contexts/ModalContext';
+import { doc, writeBatch } from 'firebase/firestore';
+import { store } from '@firebase/firebaeApp';
+import { toast } from 'react-toastify';
+import { COLLECTIONS } from '@constants';
 
 export default function TestPage() {
   const { open: alertOpen } = useAlertContext() as AlertContextValue;
   const { open: modalOpen, close: modalClose } =
     useModalContext() as ModalContextValue;
 
+  const addMockData = async (text: string) => {
+    const batch = writeBatch(store);
+
+    let list;
+    let collect;
+
+    switch (text) {
+      case 'book':
+        list = book_list;
+        collect = COLLECTIONS.BOOKS;
+        break;
+      case 'mybook':
+        list = my_book_list;
+        collect = `${COLLECTIONS.USER}/7Wokh8fs9pN5J2qQDZYfEExyxB03/book`;
+        break;
+      case 'banner':
+        list = banner_list;
+        collect = COLLECTIONS.BANNERS;
+        break;
+    }
+
+    if (list && collect) {
+      list.map((data) => {
+        const docRef = doc(store, collect, data.id);
+        batch.set(docRef, data);
+      });
+
+      await batch.commit();
+      toast.success(`${text} 리스트 추가완료!`);
+    }
+  };
+
+  const addGrageData = async () => {
+    const batch = writeBatch(store);
+
+    grade_list.map((data) => {
+      const docRef = doc(
+        store,
+        `${COLLECTIONS.BOOKS}/${data.id}/grade/7Wokh8fs9pN5J2qQDZYfEExyxB03`,
+      );
+      batch.set(docRef, data);
+    });
+
+    await batch.commit();
+    toast.success('점수 리스트 추가완료!');
+  };
+
+  const addUserData = async () => {
+    const batch = writeBatch(store);
+
+    const docRef = doc(
+      store,
+      `${COLLECTIONS.USER}/7Wokh8fs9pN5J2qQDZYfEExyxB03`,
+    );
+    batch.set(docRef, user_data);
+
+    await batch.commit();
+    toast.success('점수 리스트 추가완료!');
+  };
   return (
     <main>
+      <div className="flex gap-2 mb-10">
+        <Button variant="outline" onClick={() => addMockData('book')}>
+          북 리스트 추가하기
+        </Button>
+        <Button variant="outline" onClick={() => addMockData('mybook')}>
+          나의 북 리스트 추가하기
+        </Button>
+        <Button onClick={() => addGrageData()}>나의 점수 추가하기</Button>
+        <Button onClick={() => addUserData()}>내정보 추가하기</Button>
+        <Button onClick={() => addMockData('banner')}>
+          배너 리스트 추가하기
+        </Button>
+      </div>
+
       <h2>링크</h2>
 
       <h3>Solid</h3>
@@ -101,32 +180,34 @@ export default function TestPage() {
         hasError
         helpMessage="정확한 이메일을 입력해주세요"
       />
-      <Button
-        onClick={() => {
-          modalOpen({
-            title: 'dddd',
-            body: 'dddd',
-            actionClickEvent: () => {
-              console.log('삭제하였습니다');
-            },
-            closeModal: () => {
-              modalClose();
-            },
-          } as ModalProps);
-        }}
-      >
-        Modal
-      </Button>
-      <Button
-        onClick={() => {
-          alertOpen({
-            title: 'dddd',
-            body: 'dddd',
-          } as AlertProps);
-        }}
-      >
-        Alert
-      </Button>
+      <div className="flex gap-2 my-4">
+        <Button
+          onClick={() => {
+            modalOpen({
+              title: 'dddd',
+              body: 'dddd',
+              actionClickEvent: () => {
+                console.log('삭제하였습니다');
+              },
+              closeModal: () => {
+                modalClose();
+              },
+            } as ModalProps);
+          }}
+        >
+          Modal
+        </Button>
+        <Button
+          onClick={() => {
+            alertOpen({
+              title: 'dddd',
+              body: 'dddd',
+            } as AlertProps);
+          }}
+        >
+          Alert
+        </Button>
+      </div>
     </main>
   );
 }
