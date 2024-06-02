@@ -61,11 +61,11 @@ export const ModalContextProvider = ({
     rootRef.current = root;
     document.body.appendChild(root);
 
-    return () => {
-      if (rootRef.current) {
-        document.body.removeChild(rootRef.current);
-      }
-    };
+    // return () => {
+    //   if (rootRef.current) {
+    //     document.body.removeChild(rootRef.current);
+    //   }
+    // };
   }, []);
 
   return (

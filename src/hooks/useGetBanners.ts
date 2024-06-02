@@ -1,33 +1,31 @@
 'use client';
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaeApp';
-import { Book } from '@models/Book';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { Banner } from '@models/Banner';
+
+import { collection, getDocs, query } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
-export async function getBooks() {
-  const bookQuery = query(
-    collection(store, COLLECTIONS.BOOKS),
-    orderBy('lastUpdatedTime', 'desc'),
-  );
+export async function getFirebaseDocs() {
+  const dataQuery = query(collection(store, COLLECTIONS.BANNERS));
 
-  const snapshot = await getDocs(bookQuery);
-  const books = snapshot.docs.map((doc) => ({
-    ...(doc.data() as Book),
+  const snapshot = await getDocs(dataQuery);
+  const data = snapshot.docs.map((doc) => ({
+    ...(doc.data() as Banner),
   }));
 
-  return books;
+  return data;
 }
 
-export default function useGetBookList() {
-  const [data, setData] = useState<Book[] | null>(null);
+export default function useGetBanners() {
+  const [data, setData] = useState<Banner[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
     try {
       setIsLoading(true);
-      getBooks().then((data) => {
+      getFirebaseDocs().then((data) => {
         setData(data);
       });
     } catch (error) {

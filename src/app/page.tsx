@@ -1,13 +1,12 @@
 import dynamic from 'next/dynamic';
-import Banners from '@components/Banners';
 
 import { BookListSkeleton } from '@components/BookList';
+import Banners from '@components/Banners';
 
 export default function Home() {
   return (
     <main>
-
-
+      <Banners />
       <BookList />
     </main>
   );

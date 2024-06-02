@@ -21,7 +21,8 @@
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18",
     "react-toastify": "^10.0.5",
-    "sass": "^1.77.1"
+    "sass": "^1.77.1",
+    "swiper": "^11.1.4"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -35,7 +36,7 @@
     "postcss": "^8",
     "prettier": "^3.2.5",
     "tailwindcss": "^3.3.0",
-    "typescript": "^5"
+    "typescript": "5.0"
   },
   "packageManager": "yarn@4.2.1"
 }

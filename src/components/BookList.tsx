@@ -9,7 +9,6 @@ import Link from 'next/link';
 function BookList() {
   const { data: books } = useGetBookList();
 
-  console.log(books);
   return (
     <>
       {books && <>2024년 {books?.length}권</>}
