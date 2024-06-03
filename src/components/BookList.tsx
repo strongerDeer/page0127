@@ -1,42 +1,65 @@
 'use client';
-import useGetBookList from '@hooks/useGetBookList';
+
+import { useInfiniteQuery } from 'react-query';
+import { getBooks } from '@remote/book';
+
+import { flatten } from 'lodash';
+import InfiniteScroll from 'react-infinite-scroll-component';
 import withSuspense from '@hooks/withSuspense';
 import { Book } from '@models/Book';
-import Image from 'next/image';
+
 import { Skeleton } from './Skeleton';
-import Link from 'next/link';
+import BookListItem from './BookListItem';
+import { COLLECTIONS } from '@constants';
+import { useCallback } from 'react';
 
 function BookList() {
-  const { data: books } = useGetBookList();
+  const {
+    data,
+    hasNextPage = false,
+    fetchNextPage,
+    isFetching,
+  } = useInfiniteQuery(
+    [COLLECTIONS.BOOKS],
+    ({ pageParam }) => {
+      return getBooks(pageParam);
+    },
+    {
+      getNextPageParam: (snapshot) => {
+        return snapshot.lastVisible;
+      },
+    },
+  );
+
+  const loadMore = useCallback(() => {
+    if (hasNextPage === false || isFetching) {
+      return;
+    }
+    fetchNextPage();
+  }, [fetchNextPage, hasNextPage, isFetching]);
+
+  if (data === null) {
+    return null;
+  }
+
+  const books = flatten(data?.pages.map(({ data }) => data));
 
   return (
     <>
       {books && <>2024년 {books?.length}권</>}
-      <ul className="grid grid-cols-4 gap-16">
-        {books?.map((item: Book, index) => (
-          <li key={index}>
-            <Link href={`/book/${item.id}`}>
-              <article className="flex flex-col gap-8 items-center">
-                <div className="w-40 h-40 aspect-[1/2] flex justify-center">
-                  <Image
-                    src={item.frontCover}
-                    alt=""
-                    width={200}
-                    height={400}
-                    className="max-h-full w-auto border border-slate-200 shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)]"
-                    priority={index < 4 ? true : false}
-                  />
-                </div>
-
-                <div className="flex flex-col text-center">
-                  <h3 className="font-bold">{item.title}</h3>
-                  <p>{item.category}</p>
-                </div>
-              </article>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <InfiniteScroll
+        dataLength={books.length}
+        hasMore={hasNextPage}
+        loader={<>Loading...</>}
+        next={loadMore}
+        scrollThreshold="100px"
+      >
+        <ul className="grid grid-cols-4 gap-16">
+          {books.map((item: Book, index: number) => (
+            <BookListItem key={item.id} index={index} {...item} />
+          ))}
+        </ul>
+      </InfiniteScroll>
     </>
   );
 }
@@ -44,7 +67,7 @@ function BookList() {
 export function BookListSkeleton() {
   return (
     <>
-      2024년
+      {/* 2024년
       <ul className="grid grid-cols-4 gap-16">
         {[...new Array(5)].map((_, index) => (
           <li key={index}>
@@ -59,7 +82,7 @@ export function BookListSkeleton() {
             </article>
           </li>
         ))}
-      </ul>
+      </ul> */}
     </>
   );
 }
