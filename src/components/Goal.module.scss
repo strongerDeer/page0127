@@ -1,0 +1,48 @@
+.goal {
+  display: flex;
+  gap: 1rem 2rem;
+  flex-wrap: wrap;
+  .content {
+    width: 24rem;
+    flex-shrink: 0;
+
+    h2 {
+      font-size: 1.6em;
+      font-weight: 600;
+    }
+    p {
+      font-size: 1.1em;
+    }
+  }
+  .progressBar {
+    flex-grow: 1;
+    min-width: 24rem;
+    flex-shrink: 0;
+  }
+}
+
+.progressBar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  .progress {
+    background-color: var(--activation);
+    flex-grow: 1;
+  }
+  .progress,
+  .bar {
+    height: 2rem;
+    border-radius: 2rem;
+  }
+
+  .bar {
+    background-color: var(--primary);
+  }
+  .text {
+    strong {
+      color: var(--primary);
+      font-size: 1.2em;
+    }
+  }
+}

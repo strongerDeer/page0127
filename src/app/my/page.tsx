@@ -8,8 +8,9 @@ import Share from '@components/Share';
 
 import styles from './page.module.scss';
 import { Book } from '@models/Book';
-import Link from 'next/link';
+
 import BookItem from '@components/BookItem';
+import Goal from '@components/Goal';
 export default function MyPage() {
   const { user, userBooks } = useContext(AuthContext);
 
@@ -17,7 +18,6 @@ export default function MyPage() {
   const [bookList2023, setBookList2023] = useState<Book[] | null>(null);
   const [bookList2022, setBookList2022] = useState<Book[] | null>(null);
   const [bookListPrev, setBookListPrev] = useState<Book[] | null>(null);
-  const [text, setText] = useState<string>('');
 
   useEffect(() => {
     if (userBooks) {
@@ -46,35 +46,10 @@ export default function MyPage() {
     }
   }, [userBooks]);
 
-  useEffect(() => {
-    if (user?.goals && bookList2024) {
-      const monthBook = Number((user.goals / 12).toFixed(1));
-      const thisMonth = new Date().getMonth() + 1;
-      const diff = thisMonth * monthBook - bookList2024?.length;
-
-      let text = '';
-      if (bookList2024.length > user?.goals) {
-        text = `목표를 달성했어요!\n목표보다 ${bookList2024.length - user?.goals}권 더 읽었어요!`;
-      } else if (bookList2024.length === user?.goals) {
-        text = `목표를 달성했어요! 좀 더 읽어볼까요?`;
-      } else if (diff > 5) {
-        text = `조금 더 달려볼까요? ${thisMonth}월 기준 ${diff}권 더 읽어야 목표 달성이 가능해요!`;
-      } else if (diff <= 0) {
-        text = `아주 잘하고 있어요! ${thisMonth}월 기준 ${Math.abs(diff)}권 넘게 읽고 있어요!`;
-      } else {
-        text = `조금만 더 ${diff}권 남았어요!`;
-      }
-      setText(text);
-    }
-  }, [user?.goals, bookList2024]);
   return (
     <>
-      <label htmlFor="file">목표권수</label>
-      <progress id="file" max={user?.goals} value={bookList2024?.length}>
-        {user?.goals}
-      </progress>
-      {bookList2024?.length}/ {user?.goals}
-      <p style={{ whiteSpace: 'pre' }}>{text}</p>
+      {bookList2024?.length && <Goal bookLength={bookList2024.length} />}
+
       <div className="flex items-center ">
         <div>
           <Image
