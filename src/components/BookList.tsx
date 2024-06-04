@@ -3,7 +3,7 @@
 import { useInfiniteQuery } from 'react-query';
 import { getBooks } from '@remote/book';
 
-import { flatten } from 'lodash';
+import { flatten, transform } from 'lodash';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import withSuspense from '@hooks/withSuspense';
 import { Book } from '@models/Book';
@@ -12,7 +12,7 @@ import { Skeleton } from './Skeleton';
 import BookListItem from './BookListItem';
 import { COLLECTIONS } from '@constants';
 import { useCallback } from 'react';
-
+import { motion } from 'framer-motion';
 function BookList() {
   const {
     data,
@@ -56,7 +56,14 @@ function BookList() {
       >
         <ul className="grid grid-cols-4 gap-16">
           {books.map((item: Book, index: number) => (
-            <BookListItem key={item.id} index={index} {...item} />
+            <motion.li
+              key={item.id}
+              initial={{ opacity: 0, translateY: '20%' }}
+              animate={{ opacity: 1, translateY: '0%' }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+            >
+              <BookListItem index={index} {...item} />
+            </motion.li>
           ))}
         </ul>
       </InfiniteScroll>

@@ -3,7 +3,7 @@ export interface Book {
   readUser: string[];
   title: string;
   category: string;
-  readUserCount: 1;
+  readUserCount: number;
   id: string;
   categoryName: string;
   description: string;

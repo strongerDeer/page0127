@@ -10,6 +10,7 @@ interface ButtonProps {
   variant?: string;
   size?: string;
   disabled?: boolean;
+  full?: boolean;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
@@ -22,6 +23,7 @@ export default function Button(props: ButtonProps) {
     size = 'md',
     className,
     disabled,
+    full,
     onClick,
   } = props;
 
@@ -29,6 +31,8 @@ export default function Button(props: ButtonProps) {
     styles.btn,
     styles[variant],
     styles[size],
+    full && styles['full'],
+
     className,
   ]);
 

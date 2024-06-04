@@ -8,7 +8,7 @@ interface bookItemProps extends Book {
 export default function BookListItem(props: bookItemProps) {
   const { id, frontCover, title, category, index } = props;
   return (
-    <li>
+    <>
       <Link href={`/book/${id}`}>
         <article className="flex flex-col gap-8 items-center">
           <div className="w-40 h-40 aspect-[1/2] flex justify-center">
@@ -28,6 +28,6 @@ export default function BookListItem(props: bookItemProps) {
           </div>
         </article>
       </Link>
-    </li>
+    </>
   );
 }
