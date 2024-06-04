@@ -11,7 +11,7 @@ export default function Header() {
   const { user } = useContext(AuthContext);
 
   return (
-    <header className="flex justify-between items-center px-8 h-16 border-b mb-16">
+    <header className="flex justify-between items-center px-8 h-16 border-b">
       <h1>
         <Link href="/">page0127</Link>
       </h1>

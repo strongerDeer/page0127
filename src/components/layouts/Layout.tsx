@@ -29,7 +29,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <div id="root-portal"></div>
               <ToastContainer />
               <Header />
-              <div className="max-width">{children}</div>
+              <div>{children}</div>
             </AlertContextProvider>
           </QueryClientProvider>
         </ModalContextProvider>
