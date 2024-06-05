@@ -1,13 +1,14 @@
-import { Suspense, useContext } from 'react';
+import { useContext } from 'react';
 import { AuthContext } from '@contexts/AuthContext';
 
 import LogoutButton from '@components/LogoutButton';
 import Link from 'next/link';
-import Loading from '@components/Loading';
-import Chart from '@components/Chart';
 import Button from '@components/shared/Button';
+import { usePathname } from 'next/navigation';
 
 export default function Header() {
+  const pathname = usePathname();
+  const showSignButton = pathname.includes('signup' || 'signin') === false;
   const { user } = useContext(AuthContext);
 
   return (
@@ -18,7 +19,14 @@ export default function Header() {
 
       <div className="flex gap-4">
         {!user ? (
-          <Link href="/auth/signin">로그인</Link>
+          <>
+            {!pathname.includes('signin') && (
+              <Link href="/auth/signin">로그인</Link>
+            )}
+            {!pathname.includes('signup') && (
+              <Link href="/auth/signup">회원가입</Link>
+            )}
+          </>
         ) : (
           <>
             <Button href="/my">마이페이지</Button>

@@ -1,76 +1,71 @@
-.wrap{
-  display:  flex;
+.wrap {
+  display: flex;
   flex-direction: column;
-  gap:0.4rem;
+  gap: 0.4rem;
 
-  label{
+  label {
     color: var(--grayLv4);
     transition: all 0.3s;
     font-size: 0.9em;
   }
 
-  input[type="text"],
-  input[type="search"],
-  input[type="email"],
-  input[type="date"]{
-
-
+  input[type='text'],
+  input[type='search'],
+  input[type='email'],
+  input[type='password'],
+  input[type='date'] {
     border: 1px solid var(--grayLv2);
     border-radius: 0.4em;
-    height:4rem;
+    height: 4rem;
     padding: 0 0.8rem;
     outline: none;
     transition: all 0.3s;
 
-    &::placeholder{
+    &::placeholder {
       font-size: 0.9em;
     }
   }
 
-  &:focus-within{
-    label{
+  &:focus-within {
+    label {
       color: var(--primary);
     }
 
-    input[type="text"],
-    input[type="search"],
-    input[type="email"],
-    input[type="date"]{
+    input[type='text'],
+    input[type='search'],
+    input[type='email'],
+    input[type='password'],
+    input[type='date'] {
       border-color: var(--primary);
 
       outline-offset: 0;
       outline-width: 3px;
       outline-style: solid;
-      outline-color: rgba(var(--primary-rgb),0.1);
-
+      outline-color: rgba(var(--primary-rgb), 0.1);
     }
   }
 
   &.error {
-    label{
+    label {
       color: var(--error);
     }
-    input[type="text"],
-    input[type="search"],
-    input[type="email"],
-    input[type="date"]{
+    input[type='text'],
+    input[type='search'],
+    input[type='email'],
+    input[type='password'],
+    input[type='date'] {
       border-color: var(--error);
 
-      :focus-within &{
-          outline-color: rgba(var(--error-rgb),0.1);
-        }
-      
+      :focus-within & {
+        outline-color: rgba(var(--error-rgb), 0.1);
+      }
     }
-
   }
-
-
 }
-.helpMessage{
+.helpMessage {
   font-size: 0.9em;
   color: var(--grayLv4);
-  .error &{
-    color: var(--error)!important;
+  .error & {
+    color: var(--error) !important;
   }
 }
-
