@@ -40,6 +40,9 @@ export default function Input({
         type={type}
         value={value || state}
         onChange={onChange}
+        autoComplete={
+          type === 'email' ? 'email' : type === 'nickname' ? 'nickname' : 'off'
+        }
         {...rest}
       />
       {helpMessage && <p className={styles.helpMessage}>{helpMessage}</p>}
