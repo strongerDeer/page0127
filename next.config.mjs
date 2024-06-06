@@ -1,9 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // assetPrefix:
-  //   process.env.NODE_ENV === 'production'
-  //     ? 'https://strongerdeer.github.io/page0127'
-  //     : '',
   async rewrites() {
     return [
       {
