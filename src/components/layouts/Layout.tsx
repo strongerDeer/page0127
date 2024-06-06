@@ -21,17 +21,20 @@ const client = new QueryClient({
 });
 
 import styles from './Layout.module.scss';
+import { RecoilRoot } from 'recoil';
+import AuthGuard from '@components/auth/AuthGuard';
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <ToastContainer />
-      <div id="root-portal"></div>
-      <div className={styles.layout}>
-        <Header />
-        <div className={styles.layout__contents}>{children}</div>
-        <Footer />
-      </div>
-      {/* <AuthContextProvider>
+    <RecoilRoot>
+      <AuthGuard>
+        <ToastContainer />
+        <div id="root-portal"></div>
+        <div className={styles.layout}>
+          <Header />
+          <div className={styles.layout__contents}>{children}</div>
+          <Footer />
+        </div>
+        {/* <AuthContextProvider>
         <ModalContextProvider>
           <QueryClientProvider client={client}>
             <AlertContextProvider>
@@ -42,6 +45,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </QueryClientProvider>
         </ModalContextProvider>
       </AuthContextProvider> */}
-    </>
+      </AuthGuard>
+    </RecoilRoot>
   );
 }

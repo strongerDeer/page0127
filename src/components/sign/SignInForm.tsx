@@ -1,20 +1,28 @@
 'use client';
+import { useRouter } from 'next/navigation';
 import { ChangeEvent, useCallback, useMemo, useState } from 'react';
 
-import styles from './Form.module.scss';
+//firebase
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@firebase/firebaeApp';
+import { FirebaseError } from 'firebase/app';
+
+//lib
+import { toast } from 'react-toastify';
+
+import { FormValues, InputArr } from '@models/sign';
 
 import Input from '@components/form/Input';
-
-import { FormValues } from '@models/Sign';
-
 import Button from '@components/shared/Button';
-import { InputArr } from '@models/Sign';
 import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
+
+import styles from './Form.module.scss';
 import validate from './validate';
 
 type SignInFormValues = Omit<FormValues, 'nickname' | 'rePassword'>;
 
 export default function SignInForm({ inputArr }: { inputArr: InputArr[] }) {
+  const router = useRouter();
   const isMoile = false;
 
   // controlled 방식 사용 : state 사용
@@ -41,17 +49,25 @@ export default function SignInForm({ inputArr }: { inputArr: InputArr[] }) {
 
   const errors = useMemo(() => validate(formValues), [formValues]);
 
-  console.log();
-
   const isSubmit = Object.keys(errors).length === 0;
-  console.log(errors, isSubmit);
-  const handleSubmit = async (formValues: SignInFormValues) => {
+
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
     const { email, password } = formValues;
 
     // 데이터 전송
     try {
+      await signInWithEmailAndPassword(auth, email, password);
+      toast.success('로그인 되었습니다!');
+      router.push('/');
     } catch (error) {
-      if (error) {
+      if (error instanceof FirebaseError) {
+        if (error.code === 'auth/invalid-credential') {
+          toast.error('error: 이메일과 비밀번호를 다시 확인해 주세요');
+        }
+        if (error) {
+          console.log(error);
+        }
       }
     }
   };
@@ -82,14 +98,14 @@ export default function SignInForm({ inputArr }: { inputArr: InputArr[] }) {
           type="submit"
           text="로그인"
           disabled={isSubmit === false}
-          onClick={() => handleSubmit(formValues)}
+          onClick={() => handleSubmit}
         />
       ) : (
         <Button
           type="submit"
-          onClick={() => handleSubmit(formValues)}
           size="lg"
           disabled={isSubmit === false}
+          onClick={handleSubmit}
         >
           로그인
         </Button>

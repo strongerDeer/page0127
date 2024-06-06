@@ -1,6 +1,6 @@
 import SignInForm from '@components/sign/SignInForm';
 import SocialLogin from '@components/sign/SocialBtnContainer';
-import { InputArr } from '@models/Sign';
+import { InputArr } from '@models/sign';
 import Link from 'next/link';
 
 // 로그인 입력정보

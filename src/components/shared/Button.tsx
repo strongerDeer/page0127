@@ -23,6 +23,9 @@ export default function Button(props: ButtonProps) {
       <Link
         href={href}
         target={href.includes('http') ? '_blank' : '_self'}
+        style={assignInlineVars({
+          [variant_color]: `var(--${color})`,
+        })}
         className={buttonStyle({ variant: variant })}
       >
         {children}

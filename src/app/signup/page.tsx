@@ -1,6 +1,6 @@
 import SignUpForm from '@components/sign/SignUpForm';
 import SocialLogin from '@components/sign/SocialBtnContainer';
-import { InputArr } from '@models/Sign';
+import { InputArr } from '@models/sign';
 
 // 회원가입 입력정보
 const inputArr: InputArr[] = [

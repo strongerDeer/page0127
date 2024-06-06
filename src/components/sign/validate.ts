@@ -1,4 +1,4 @@
-import { FormValues } from '@models/Sign';
+import { FormValues } from '@models/sign';
 import validator from 'validator';
 
 export default function validate(
