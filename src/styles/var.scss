@@ -1,5 +1,7 @@
 $maxW: 1190;
-$boxShadow: 0px 1px 10px 1px rgba(170, 170, 170, 0.2);
+$borderRadius: 0.4em;
+$boxShadow: 5px 5px 2rem 0 rgba(0, 0, 0, 0.05);
+$boxShadowSmall: 3px 3px 1rem 0 rgba(0, 0, 0, 0.15);
 
 @mixin ellipse($num: 1, $lineHeight: 1.6) {
   overflow: hidden;

@@ -2,14 +2,13 @@ import { clsx } from 'clsx';
 import Link from 'next/link';
 import styles from './Button.module.scss';
 
-interface ButtonProps {
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   href?: string;
   type?: 'button' | 'submit' | 'reset';
   children?: React.ReactNode;
   className?: string;
   variant?: string;
   size?: string;
-  disabled?: boolean;
   full?: boolean;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
 }
@@ -22,9 +21,8 @@ export default function Button(props: ButtonProps) {
     variant = 'solid',
     size = 'md',
     className,
-    disabled,
     full,
-    onClick,
+    ...rest
   } = props;
 
   const classList = clsx([
@@ -49,12 +47,7 @@ export default function Button(props: ButtonProps) {
   }
 
   return (
-    <button
-      type={type}
-      className={classList}
-      disabled={disabled}
-      onClick={onClick}
-    >
+    <button type={type} className={classList} {...rest}>
       {children}
     </button>
   );

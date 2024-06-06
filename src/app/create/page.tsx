@@ -43,7 +43,7 @@ const today = format(new Date(), 'yyyy-MM-dd');
 
 export default function CreatePage() {
   const { user } = useContext(AuthContext);
-  console.log(user);
+
   const [title, setTitle] = useState('');
   const [isLoding, setIsLoading] = useState<boolean>(false);
   const [booksData, setBooksData] = useState<BooksData | null>(null);

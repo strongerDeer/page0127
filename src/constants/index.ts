@@ -3,3 +3,8 @@ export const COLLECTIONS = {
   BOOKS: 'books',
   BANNERS: 'banners',
 };
+
+export const NO_PROFILE = '/images/no-profile.png';
+
+export const STORAGE_DOWNLOAD_URL_STR =
+  'https://firebasestorage.googleapis.com';
