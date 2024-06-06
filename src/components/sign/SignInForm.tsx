@@ -3,13 +3,14 @@ import { ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 import styles from './Form.module.scss';
 
-import Input from '@components/shared/Input';
-import FixedBottomButton from '@components/FixedBottomButton';
+import Input from '@components/form/Input';
+
 import { FormValues } from '@models/Sign';
-import validate from '@utils/validate';
 
 import Button from '@components/shared/Button';
 import { InputArr } from '@models/Sign';
+import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
+import validate from './validate';
 
 type SignInFormValues = Omit<FormValues, 'nickname' | 'rePassword'>;
 
@@ -77,7 +78,7 @@ export default function SignInForm({ inputArr }: { inputArr: InputArr[] }) {
       ))}
 
       {isMoile ? (
-        <FixedBottomButton
+        <ButtonFixedBottom
           type="submit"
           text="로그인"
           disabled={isSubmit === false}

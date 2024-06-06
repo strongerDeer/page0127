@@ -1,17 +1,9 @@
-import { clsx } from 'clsx';
 import Link from 'next/link';
-import styles from './Button.module.scss';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  href?: string;
-  type?: 'button' | 'submit' | 'reset';
-  children?: React.ReactNode;
-  className?: string;
-  variant?: string;
-  size?: string;
-  full?: boolean;
-  onClick?: React.MouseEventHandler<HTMLButtonElement>;
-}
+import { assignInlineVars } from '@vanilla-extract/dynamic';
+import { buttonStyle, variant_color } from './Button.css';
+import { ButtonProps } from './types';
+import clsx from 'clsx';
 
 export default function Button(props: ButtonProps) {
   const {
@@ -22,24 +14,16 @@ export default function Button(props: ButtonProps) {
     size = 'md',
     className,
     full,
+    color = 'primary',
     ...rest
   } = props;
-
-  const classList = clsx([
-    styles.btn,
-    styles[variant],
-    styles[size],
-    full && styles['full'],
-
-    className,
-  ]);
 
   if (href) {
     return (
       <Link
         href={href}
         target={href.includes('http') ? '_blank' : '_self'}
-        className={classList}
+        className={buttonStyle({ variant: variant })}
       >
         {children}
       </Link>
@@ -47,7 +31,14 @@ export default function Button(props: ButtonProps) {
   }
 
   return (
-    <button type={type} className={classList} {...rest}>
+    <button
+      type={type}
+      style={assignInlineVars({
+        [variant_color]: `var(--${color})`,
+      })}
+      className={clsx([buttonStyle({ variant, size })], className)}
+      {...rest}
+    >
       {children}
     </button>
   );

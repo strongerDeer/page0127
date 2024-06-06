@@ -1,0 +1,20 @@
+.buttonFixedBottom {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--background);
+  padding: 1rem 2rem;
+
+  animation: slideUp 0.3s ease-in-out;
+  z-index: 100;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0%);
+  }
+}

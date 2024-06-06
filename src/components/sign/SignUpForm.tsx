@@ -3,10 +3,9 @@ import { ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 import styles from './Form.module.scss';
 
-import Input from '@components/shared/Input';
-import FixedBottomButton from '@components/FixedBottomButton';
+import Input from '@components/form/Input';
 import { FormValues } from '@models/Sign';
-import validate from '@utils/validate';
+
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth, store } from '@firebase/firebaeApp';
 import { doc, setDoc } from 'firebase/firestore';
@@ -20,6 +19,8 @@ import { toast } from 'react-toastify';
 import { storage } from '@firebase/firebaeApp';
 import Button from '@components/shared/Button';
 import { InputArr } from '@models/Sign';
+import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
+import validate from './validate';
 
 export default function SignUpForm({ inputArr }: { inputArr: InputArr[] }) {
   const isMoile = false;
@@ -129,7 +130,7 @@ export default function SignUpForm({ inputArr }: { inputArr: InputArr[] }) {
       ))}
 
       {isMoile ? (
-        <FixedBottomButton
+        <ButtonFixedBottom
           type="submit"
           text="회원가입"
           disabled={isSubmit === false}

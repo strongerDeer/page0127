@@ -6,13 +6,14 @@ import Banners from '@components/Banners';
 export default function Home() {
   return (
     <main>
-      <Banners />
-      <BookList />
+      main
+      {/* <Banners />
+      <BookList /> */}
     </main>
   );
 }
 
-const BookList = dynamic(() => import('@components/BookList'), {
-  ssr: false,
-  loading: () => <BookListSkeleton />,
-});
+// const BookList = dynamic(() => import('@components/BookList'), {
+//   ssr: false,
+//   loading: () => <BookListSkeleton />,
+// });

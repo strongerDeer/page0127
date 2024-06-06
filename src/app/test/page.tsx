@@ -1,6 +1,6 @@
 'use client';
 
-import Input from '@components/shared/Input';
+import Input from '@components/form/Input';
 import Button from '@components/shared/Button';
 import { book_list, banner_list } from '@mock/data';
 import { my_book_list } from '@mock/mybook';
