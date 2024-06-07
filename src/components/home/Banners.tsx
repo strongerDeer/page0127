@@ -5,6 +5,7 @@ import Link from 'next/link';
 // lib
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
+import { Banner } from '@models/banner';
 
 export default function Banners() {
   const { data: banners } = useGetBanners();
@@ -14,7 +15,7 @@ export default function Banners() {
       <h2 className="a11y-hidden">배너</h2>
       {banners && (
         <Swiper spaceBetween={8}>
-          {banners?.map((item) => (
+          {banners?.map((item: Banner) => (
             <SwiperSlide
               key={item.id}
               className="bg-blue-100 px-8 py-6 rounded-xl flex items-center h-32"

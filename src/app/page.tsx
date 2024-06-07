@@ -1,6 +1,6 @@
 import dynamic from 'next/dynamic';
 
-import { BookListSkeleton } from '@components/BookList';
+// import { BookListSkeleton } from '@components/BookList';
 import Banners from '@components/home/Banners';
 import Visual from '@components/home/Visual';
 
