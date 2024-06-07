@@ -1,33 +1,32 @@
 'use client';
-import { userAtom } from '@atoms/user';
+import { userAtom, userLoadingAtom } from '@atoms/user';
 import { auth } from '@firebase/firebaeApp';
 import { onAuthStateChanged } from 'firebase/auth';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSetRecoilState } from 'recoil';
 
 // 인증처리
-export default function AuthGuard({ children }: { children: React.ReactNode }) {
-  const [initialize, setInitialize] = useState<boolean>(false);
-
+export default function AuthGuard() {
   const setUser = useSetRecoilState(userAtom);
+  const setIsLoading = useSetRecoilState(userLoadingAtom);
 
-  onAuthStateChanged(auth, (user) => {
-    if (user !== null) {
-      setUser({
-        uid: user.uid,
-        displayName: user.displayName ?? '',
-        email: user.email ?? '',
-        photoURL: user.photoURL ?? '',
-      });
-    } else {
-      setUser(null);
-    }
-    setInitialize(true);
-  });
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUser({
+          uid: user.uid,
+          displayName: user.displayName ?? '',
+          email: user.email ?? '',
+          photoURL: user.photoURL ?? '',
+        });
+      } else {
+        setUser(null);
+      }
+      setIsLoading(false);
 
-  if (initialize === false) {
-    // 로딩 추가
-    return <div>인증 처리 로딩중....</div>;
-  }
-  return <>{children}</>;
+      return () => unsubscribe();
+    });
+  }, [auth]);
+
+  return null;
 }

@@ -9,12 +9,13 @@ import { usePathname } from 'next/navigation';
 import styles from './Header.module.scss';
 
 import Button from '@components/shared/Button';
-import useUser from '@hooks/auth/useUser';
+import useUser, { useUserLoading } from '@hooks/auth/useUser';
 import { useCallback } from 'react';
 import LogoutButton from '@components/sign/LogoutButton';
 export default function Header() {
   const pathname = usePathname();
   const user = useUser();
+  const isLoading = useUserLoading();
 
   const renderButton = useCallback(() => {
     if (user !== null) {
@@ -39,7 +40,9 @@ export default function Header() {
       <Link href="/" className={styles.header__h1}>
         <h1>page0127</h1>
       </Link>
-      <div className={styles.header__right}>{renderButton()}</div>
+      {!isLoading && (
+        <div className={styles.header__right}>{renderButton()}</div>
+      )}
     </header>
   );
 }
