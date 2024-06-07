@@ -5,8 +5,6 @@ import '@styles/theme.scss';
 import '@styles/globals.scss';
 
 import Layout from '@components/layouts/Layout';
-import AuthGuard from '@components/auth/AuthGuard';
-import { RecoilRoot } from 'recoil';
 
 export const metadata: Metadata = {
   title: 'page 0127',

@@ -5,7 +5,7 @@ export type ButtonProps = {
   type?: 'button' | 'submit' | 'reset';
   children?: React.ReactNode;
   className?: string;
-  variant?: 'solid' | 'outline';
+  variant?: 'solid' | 'outline' | 'link';
   size?: 'sm' | 'md' | 'lg';
   full?: boolean;
   color?: string;

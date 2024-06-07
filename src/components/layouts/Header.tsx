@@ -16,7 +16,6 @@ export default function Header() {
   const pathname = usePathname();
   const user = useUser();
 
-  console.log('😀', user);
   const renderButton = useCallback(() => {
     if (user !== null) {
       return (

@@ -8,19 +8,34 @@ import { signOut } from 'firebase/auth';
 import { toast } from 'react-toastify';
 
 import Button from '../shared/Button';
+import { useRouter } from 'next/navigation';
+import { useAlertContext } from '@contexts/AlertContext';
+import { useModalContext } from '@contexts/ModalContext';
 
 export default function LogoutButton({ text }: { text?: string }) {
-  const onClick = async () => {
-    const confirm = window.confirm('로그아웃 하시겠습니까?');
+  const router = useRouter();
 
-    if (confirm) {
-      try {
-        await signOut(auth);
-        toast.success('로그아웃 되었습니다!');
-      } catch (error) {
-        console.log(error);
-      }
-    }
+  const { open, close } = useModalContext();
+
+  const onClick = async () => {
+    open({
+      title: '로그아웃 하시겠습니까?',
+      buttonLabel: '로그아웃',
+      onButtonClick: async () => {
+        try {
+          await signOut(auth);
+          router.push('/');
+          close();
+          toast.success('로그아웃 되었습니다!');
+        } catch (error) {
+          console.log(error);
+        }
+      },
+      closeButtonLabel: '취소',
+      closeModal: () => {
+        close();
+      },
+    });
   };
 
   return (

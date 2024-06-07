@@ -10,7 +10,7 @@ export const buttonStyle = recipe({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-
+    transition: 'all 0.3s',
     // @ts-ignore
     '&:enabled': {
       cursor: 'pointer',
@@ -39,9 +39,17 @@ export const buttonStyle = recipe({
         color: '#fff',
       },
       outline: {
+        border: '1px solid',
         borderColor: variant_color,
         color: variant_color,
         // background: 'red',
+      },
+      link: {
+        color: variant_color,
+
+        '&:hover': {
+          backgroundColor: 'var(--activation)',
+        },
       },
     },
   },

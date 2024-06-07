@@ -1,5 +1,5 @@
 'use client';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 //firebase
@@ -23,6 +23,7 @@ type SignInFormValues = Omit<FormValues, 'nickname' | 'rePassword'>;
 
 export default function SignInForm({ inputArr }: { inputArr: InputArr[] }) {
   const router = useRouter();
+
   const isMoile = false;
 
   // controlled 방식 사용 : state 사용
@@ -59,7 +60,7 @@ export default function SignInForm({ inputArr }: { inputArr: InputArr[] }) {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast.success('로그인 되었습니다!');
-      router.push('/');
+      router.back();
     } catch (error) {
       if (error instanceof FirebaseError) {
         if (error.code === 'auth/invalid-credential') {

@@ -1,15 +1,20 @@
 import dynamic from 'next/dynamic';
 
 import { BookListSkeleton } from '@components/BookList';
-import Banners from '@components/Banners';
+import Banners from '@components/home/Banners';
+import Visual from '@components/home/Visual';
 
 export default function Home() {
   return (
-    <main>
-      main
-      {/* <Banners />
+    <>
+      <Visual />
+      <div className="max-width">
+        <Banners />
+        {/* <Banners />
       <BookList /> */}
-    </main>
+        <main>main</main>
+      </div>
+    </>
   );
 }
 
