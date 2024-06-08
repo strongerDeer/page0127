@@ -1,14 +1,16 @@
 'use client';
-import useGetBanners from '@hooks/useGetBanners';
 import Link from 'next/link';
 
 // lib
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import { Banner } from '@models/banner';
+import { useQuery } from 'react-query';
+import { COLLECTIONS } from '@constants';
+import { getBaners } from '@remote/banners';
 
 export default function Banners() {
-  const { data: banners } = useGetBanners();
+  const { data: banners } = useQuery([COLLECTIONS.BANNERS], () => getBaners());
 
   return (
     <section>

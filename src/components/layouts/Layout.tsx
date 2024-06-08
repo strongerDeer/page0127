@@ -32,19 +32,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <ToastContainer />
       <AlertContextProvider>
         <ModalContextProvider>
-          <div id="root-portal"></div>
-          <div className={styles.layout}>
-            <Header />
-            <div className={styles.layout__contents}>{children}</div>
-            <Footer />
-          </div>
+          <QueryClientProvider client={client}>
+            <div id="root-portal"></div>
+            <div className={styles.layout}>
+              <Header />
+              <div className={styles.layout__contents}>{children}</div>
+              <Footer />
+            </div>
+          </QueryClientProvider>
         </ModalContextProvider>
       </AlertContextProvider>
-      {/*
-          <QueryClientProvider client={client}>
-                      
-          </QueryClientProvider>
-        */}
     </RecoilRoot>
   );
 }

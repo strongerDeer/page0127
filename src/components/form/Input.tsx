@@ -9,7 +9,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 import { clsx } from 'clsx';
 import styles from './Input.module.scss';
-import { ReactNode, useState } from 'react';
+import { useState } from 'react';
 
 export default function Input({
   type = 'text',
