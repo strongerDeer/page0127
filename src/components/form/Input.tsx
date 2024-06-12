@@ -1,35 +1,42 @@
 'use client';
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputProps<T> extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   hasError?: boolean;
   helpMessage?: React.ReactNode;
-  setValue?: React.Dispatch<React.SetStateAction<string>>;
+  setValue?: React.Dispatch<React.SetStateAction<T>>;
 }
 
 import { clsx } from 'clsx';
 import styles from './Input.module.scss';
 import { useState } from 'react';
 
-export default function Input({
+export default function Input<T>({
   type = 'text',
   label,
   id,
+  name,
   className,
   value,
   hasError,
   helpMessage,
   setValue,
   ...rest
-}: InputProps) {
+}: InputProps<T>) {
   const [state, setState] = useState<string>('');
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const currentValue = e.target.value;
+    const { name, value } = e.target;
     if (setValue) {
-      setValue(currentValue);
+      setValue((prev: T) => {
+        if (typeof prev === 'string') {
+          return value as unknown as T;
+        } else {
+          return { ...prev, [name]: value } as unknown as T;
+        }
+      });
     } else {
-      setState(currentValue);
+      setState(value);
     }
   };
   return (
@@ -37,6 +44,7 @@ export default function Input({
       <label htmlFor={id}>{label}</label>
       <input
         id={id}
+        name={name}
         type={type}
         value={value || state}
         onChange={onChange}

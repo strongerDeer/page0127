@@ -23,23 +23,52 @@ export interface ImgDataProp {
   flipCover: string;
 }
 
+export interface BookData {
+  id: string;
+  title: string;
+  subTitle: string | null;
+  frontCover: string;
+  flipCover: string;
+  readDate: string;
+  memo: string;
+  grade: number;
+
+  author: string;
+  publisher: string;
+  pubDate: string;
+  description: string;
+  categoryName: string;
+  category: string;
+  page: number | null;
+  price: number | null;
+}
+
 export default function TemplateBookCreate() {
   const [bookData, setBookData] = useState<any>({
+    id: '',
     title: '',
+    subTitle: null,
     frontCover: '',
     flipCover: '',
     readDate: '',
     memo: '',
-    grade: null,
+    grade: 3,
 
     author: '',
     publisher: '',
     pubDate: '',
     description: '',
-    isbn: null,
     categoryName: '',
+    category: '',
+    page: null,
+    price: null,
   });
 
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    console.log(bookData);
+  };
   return (
     <div className="max-width">
       <h2 className="title1">책 등록</h2>
@@ -64,11 +93,36 @@ export default function TemplateBookCreate() {
             )}
           </div>
         </div>
-        <form className={styles.form}>
-          <Input label="제목" id="bookTitle" value={bookData.title} readOnly />
-          <Input label="완독 날짜" id="readDate" type="date" />
-          <Input label="메모" id="memo" />
-          <Select options={options} />
+        <form className={styles.form} onSubmit={onSubmit}>
+          <Input
+            label="제목"
+            id="bookTitle"
+            name="title"
+            value={bookData.title}
+            readOnly
+          />
+          <Input
+            label="완독 날짜"
+            id="readDate"
+            name="readDate"
+            type="date"
+            value={bookData.readDate}
+            setValue={setBookData}
+          />
+          <Input
+            label="메모"
+            id="memo"
+            name="memo"
+            value={bookData.memo}
+            setValue={setBookData}
+          />
+          <Select
+            options={options}
+            value={bookData.grade}
+            setValue={setBookData}
+            id="grade"
+            name="grade"
+          />
           <Button type="submit">책장 추가</Button>
         </form>
       </div>
