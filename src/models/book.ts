@@ -22,29 +22,22 @@
 }
 */
 export interface Book {
-  id: string;
-
+  id: string | null;
   title: string;
-  pubDate: string;
-  description: string;
-  author: string;
-  publisher: string;
+  subTitle: string | null;
   frontCover: string;
   flipCover: string;
-
-  category: string;
+  author: string;
+  publisher: string;
+  pubDate: string;
+  description: string;
   categoryName: string;
-
-  createdTime: StampTime;
-  lastUpdatedTime: StampTime;
-
-  readDate: StampTime;
-  grade: number;
+  category: string;
+  page: number | null;
+  price: number | null;
+  readDate: string;
   memo: string;
-
-  readUser: string[];
-  readUserCount: number;
-  grade10User: string[];
+  grade: { [key: number]: string[] };
 }
 
 export interface StampTime {

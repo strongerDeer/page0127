@@ -7,38 +7,44 @@ interface Option {
   text: string;
 }
 
-interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+interface SelectProps<T> extends React.SelectHTMLAttributes<HTMLSelectElement> {
   options: Option[];
-  setValue?: React.Dispatch<React.SetStateAction<number | BookData>>;
+  setValue?: React.Dispatch<React.SetStateAction<T>>;
 }
 
-export default function Select({ options, id, value, setValue }: SelectProps) {
-  const [state, setState] = useState<number | null>(null);
+export default function Select<T>({
+  options,
+  id,
+  value,
+  setValue,
+}: SelectProps<T>) {
+  const [state, setState] = useState<T | null>(null);
 
   const onChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { id, value } = e.target;
     if (setValue) {
       setValue((prev) => {
         if (typeof prev === 'number') {
-          return Number(value);
+          return Number(value) as unknown as T;
         } else {
-          return { ...prev, [id]: Number(value) };
+          return { ...prev, [id]: Number(value) as unknown as T };
         }
       });
     } else {
-      setState(Number(value));
+      setState(Number(value) as unknown as T);
     }
   };
   return (
     <div className={styles.wrap}>
       <label>점수</label>
-      <select className={styles.select} onChange={onChange} id={id}>
+      <select
+        className={styles.select}
+        onChange={onChange}
+        id={id}
+        defaultValue={value}
+      >
         {options.map((option) => (
-          <option
-            key={option.value}
-            value={option.value}
-            selected={option.value === value}
-          >
+          <option key={option.value} value={option.value.toString()}>
             {option.text}
           </option>
         ))}

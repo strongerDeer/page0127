@@ -5,8 +5,13 @@ import Input from '@components/form/Input';
 import SearchBook from '@components/form/SearchBook';
 import Select from '@components/form/Select';
 import Button from '@components/shared/Button';
+import useUser from '@hooks/auth/useUser';
+import { addBook, addBookInShelf, addCategory } from '@remote/shelf';
+import { format } from 'date-fns';
+
 import Image from 'next/image';
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 
 const options = [
   { value: 10, text: '10점: 인생책 등극!' },
@@ -24,15 +29,11 @@ export interface ImgDataProp {
 }
 
 export interface BookData {
-  id: string;
+  id: string | null;
   title: string;
   subTitle: string | null;
   frontCover: string;
   flipCover: string;
-  readDate: string;
-  memo: string;
-  grade: number;
-
   author: string;
   publisher: string;
   pubDate: string;
@@ -43,17 +44,22 @@ export interface BookData {
   price: number | null;
 }
 
+export interface MyData {
+  readDate: string;
+  memo: string;
+  grade: number;
+}
 export default function TemplateBookCreate() {
-  const [bookData, setBookData] = useState<any>({
-    id: '',
+  const user = useUser();
+  const today = format(new Date(), 'yyyy-MM-dd');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const [bookData, setBookData] = useState<BookData>({
+    id: null,
     title: '',
     subTitle: null,
     frontCover: '',
     flipCover: '',
-    readDate: '',
-    memo: '',
-    grade: 3,
-
     author: '',
     publisher: '',
     pubDate: '',
@@ -63,11 +69,33 @@ export default function TemplateBookCreate() {
     page: null,
     price: null,
   });
+  const [myData, setMyData] = useState<MyData>({
+    readDate: today,
+    memo: '',
+    grade: 3,
+  });
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    console.log(bookData);
+    if (user && bookData.id) {
+      setIsLoading(true);
+      try {
+        // 전체 책 추가
+        addBook(user.uid, bookData.id, bookData, myData);
+        // 유저 카테고리 저장하기
+        addCategory(user.uid, bookData.id, bookData.category);
+        // 내 책장에 저장하기
+        addBookInShelf(user.uid, bookData.id, { ...bookData, ...myData });
+
+        toast.success('등록완료!');
+      } catch (error) {
+        console.error('Error saving book:', error);
+        toast.error('책 등록 중 오류가 발생했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
   };
   return (
     <div className="max-width">
@@ -106,24 +134,27 @@ export default function TemplateBookCreate() {
             id="readDate"
             name="readDate"
             type="date"
-            value={bookData.readDate}
-            setValue={setBookData}
+            value={myData.readDate}
+            max={today}
+            setValue={setMyData}
           />
           <Input
             label="메모"
             id="memo"
             name="memo"
-            value={bookData.memo}
-            setValue={setBookData}
+            value={myData.memo}
+            setValue={setMyData}
           />
           <Select
             options={options}
-            value={bookData.grade}
-            setValue={setBookData}
+            value={myData.grade.toString()}
+            setValue={setMyData}
             id="grade"
             name="grade"
           />
-          <Button type="submit">책장 추가</Button>
+          <Button type="submit">
+            {isLoading ? '등록 중...' : '책장 추가'}
+          </Button>
         </form>
       </div>
     </div>
