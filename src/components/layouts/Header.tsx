@@ -21,7 +21,7 @@ export default function Header() {
     if (user !== null) {
       return (
         <>
-          <Button href="/my">마이페이지</Button>
+          <Button href={`/shelf/${user.uid}`}>마이페이지</Button>
           <LogoutButton text="로그아웃" />
         </>
       );

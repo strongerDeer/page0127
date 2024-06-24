@@ -23,7 +23,7 @@
       "@components/*": ["src/components/*"],
       "@styles/*": ["src/styles/*"],
       "@contexts/*": ["src/contexts/*"],
-      "@modles/*": ["src/models/*"],
+      "@models/*": ["src/models/*"],
       "@remote/*": ["src/remote/*"],
       "@constants/*": ["src/constants/*"],
       "@atoms/*": ["src/atoms/*"],

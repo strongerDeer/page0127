@@ -24,7 +24,7 @@ type SignInFormValues = Omit<FormValues, 'nickname' | 'rePassword'>;
 export default function SignInForm({ inputArr }: { inputArr: InputArr[] }) {
   const router = useRouter();
 
-  const isMoile = false;
+  const isMobile = false;
 
   // controlled 방식 사용 : state 사용
   const [formValues, setFormValues] = useState<SignInFormValues>({
@@ -94,7 +94,7 @@ export default function SignInForm({ inputArr }: { inputArr: InputArr[] }) {
         />
       ))}
 
-      {isMoile ? (
+      {isMobile ? (
         <ButtonFixedBottom
           type="submit"
           text="로그인"

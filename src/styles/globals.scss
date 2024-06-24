@@ -17,6 +17,9 @@ body {
   background-color: var(--background);
   color: var(--surface);
 }
+svg {
+  display: inline-block;
+}
 .max-width {
   margin: auto;
   width: $maxWidth;
