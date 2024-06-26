@@ -14,13 +14,13 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 
 const options = [
-  { value: 10, text: '10점: 인생책 등극!' },
-  { value: 5, text: '5점: 추천' },
-  { value: 4, text: '4점: 오 꽤괜' },
-  { value: 3, text: '3점: 나쁘지 않았다!' },
-  { value: 2, text: '2점: 음...내 취향은 아닌걸로!' },
-  { value: 1, text: '1점: 꾸역꾸역' },
-  { value: 0, text: '0점: 할많하안' },
+  { value: 10, label: '10점: 인생책 등극!' },
+  { value: 5, label: '5점: 추천' },
+  { value: 4, label: '4점: 오 꽤괜' },
+  { value: 3, label: '3점: 나쁘지 않았다!' },
+  { value: 2, label: '2점: 음...내 취향은 아닌걸로!' },
+  { value: 1, label: '1점: 꾸역꾸역' },
+  { value: 0, label: '0점: 할많하안' },
 ];
 
 export interface ImgDataProp {
@@ -47,7 +47,7 @@ export interface BookData {
 export interface MyData {
   readDate: string;
   memo: string;
-  grade: number;
+  grade: string;
 }
 export default function TemplateBookCreate() {
   const user = useUser();
@@ -72,7 +72,7 @@ export default function TemplateBookCreate() {
   const [myData, setMyData] = useState<MyData>({
     readDate: today,
     memo: '',
-    grade: 3,
+    grade: '',
   });
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -146,11 +146,14 @@ export default function TemplateBookCreate() {
             setValue={setMyData}
           />
           <Select
+            label="점수"
             options={options}
-            value={myData.grade.toString()}
+            value={myData.grade}
             setValue={setMyData}
+            placeholder="이 책에 대한 점수는?"
             id="grade"
             name="grade"
+            required
           />
           <Button type="submit">
             {isLoading ? '등록 중...' : '책장 추가'}

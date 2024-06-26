@@ -2,12 +2,13 @@ import Agreement from '@components/shared/Agreement';
 import Button from '@components/shared/Button';
 import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
 import { MEMBERSHIP_LIST } from '@constants/membership';
+import { MembershipValues } from '@models/membership';
 import { useCallback, useState } from 'react';
 
 export default function Terms({
   onNext,
 }: {
-  onNext: (terms: string[]) => void;
+  onNext: (terms: MembershipValues['terms']) => void;
 }) {
   const isMobile = false;
   const [termsAgreements, setTermsAgreements] = useState(() => {
@@ -34,7 +35,7 @@ export default function Terms({
   const isAllAgreement = Object.values(termsAgreements).every(
     (checked) => checked,
   );
-  console.log(isAllAgreement);
+
   return (
     <div>
       <Agreement>

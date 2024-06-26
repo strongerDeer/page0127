@@ -1,54 +1,42 @@
-import { useState } from 'react';
+import { forwardRef } from 'react';
 import styles from './Select.module.scss';
-import { BookData } from '@components/templates/TemplateBookCreate';
-
-interface Option {
-  value: number;
-  text: string;
-}
-
-interface SelectProps<T> extends React.SelectHTMLAttributes<HTMLSelectElement> {
+import { Option } from '@models/membership';
+interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  label?: string;
+  placeholder?: string;
   options: Option[];
-  setValue?: React.Dispatch<React.SetStateAction<T>>;
+  setValue: React.Dispatch<React.SetStateAction<any>>;
 }
 
-export default function Select<T>({
-  options,
-  id,
-  value,
-  setValue,
-}: SelectProps<T>) {
-  const [state, setState] = useState<T | null>(null);
-
+const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
+  { label, placeholder, options, setValue, ...props },
+  ref,
+) {
   const onChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { id, value } = e.target;
-    if (setValue) {
-      setValue((prev) => {
-        if (typeof prev === 'number') {
-          return Number(value) as unknown as T;
-        } else {
-          return { ...prev, [id]: Number(value) as unknown as T };
-        }
-      });
-    } else {
-      setState(Number(value) as unknown as T);
-    }
+    setValue((prev: any) => ({ ...prev, [id]: value }));
   };
+
   return (
     <div className={styles.wrap}>
-      <label>점수</label>
+      <label>{label}</label>
       <select
+        ref={ref}
         className={styles.select}
         onChange={onChange}
-        id={id}
-        defaultValue={value}
+        {...props}
       >
+        <option disabled hidden value="">
+          {placeholder}
+        </option>
         {options.map((option) => (
-          <option key={option.value} value={option.value.toString()}>
-            {option.text}
+          <option key={option.value} value={option.value}>
+            {option.label}
           </option>
         ))}
       </select>
     </div>
   );
-}
+});
+
+export default Select;

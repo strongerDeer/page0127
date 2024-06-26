@@ -12,4 +12,13 @@ export interface MembershipValues {
   terms: Term['id'][];
   appliedAt: Date;
   cardId: string;
+
+  option1: string;
+  option2: string;
+  option3: string;
+}
+
+export interface Option {
+  label: string;
+  value: string | number | undefined;
 }

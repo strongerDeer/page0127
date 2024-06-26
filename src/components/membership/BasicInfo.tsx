@@ -1,18 +1,78 @@
 import Select from '@components/form/Select';
+import Button from '@components/shared/Button';
+import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
+import { option1, option2, option3 } from '@constants/membership';
+import { MembershipValues } from '@models/membership';
+import { useState } from 'react';
 
-export default function BasicInfo() {
-  const options = [
-    { value: 10, text: '10점: 인생책 등극!' },
-    { value: 5, text: '5점: 추천' },
-    { value: 4, text: '4점: 오 꽤괜' },
-    { value: 3, text: '3점: 나쁘지 않았다!' },
-    { value: 2, text: '2점: 음...내 취향은 아닌걸로!' },
-    { value: 1, text: '1점: 꾸역꾸역' },
-    { value: 0, text: '0점: 할많하안' },
-  ];
+export type InfoValues = Pick<
+  MembershipValues,
+  'option1' | 'option2' | 'option3'
+>;
+
+export default function BasicInfo({
+  onNext,
+}: {
+  onNext: (infoValues: InfoValues) => void;
+}) {
+  const isMobile = false;
+  const [infoValues, setInfoValues] = useState<InfoValues>({
+    option1: '',
+    option2: '',
+    option3: '',
+  });
+
+  const isAllSelected = Object.values(infoValues).every((value) => value);
+
   return (
     <div>
-      <Select options={options} />
+      <Select
+        label="option1"
+        options={option1}
+        placeholder="값을 선택해주세요!"
+        value={infoValues.option1}
+        setValue={setInfoValues}
+        id="option1"
+        name="option1"
+        required
+      />
+      <Select
+        label="option2"
+        options={option2}
+        placeholder="값을 선택해주세요!"
+        value={infoValues.option2}
+        setValue={setInfoValues}
+        id="option2"
+        name="option2"
+        required
+      />
+      <Select
+        label="option3"
+        options={option3}
+        value={infoValues.option3}
+        setValue={setInfoValues}
+        placeholder="값을 선택해주세요!"
+        id="option3"
+        name="option3"
+        required
+      />
+
+      {isMobile ? (
+        <ButtonFixedBottom
+          text="다음"
+          disabled={!isAllSelected}
+          onClick={() => onNext(infoValues)}
+        />
+      ) : (
+        <Button
+          size="lg"
+          full
+          disabled={!isAllSelected}
+          onClick={() => onNext(infoValues)}
+        >
+          다음
+        </Button>
+      )}
     </div>
   );
 }

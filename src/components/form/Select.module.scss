@@ -16,5 +16,11 @@
     padding: 0 0.8rem;
     outline: none;
     transition: all 0.3s;
+
+    &:required:invalid {
+      background-color: var(--grayLv1);
+      font-size: 0.95em;
+      color: var(--grayLv3);
+    }
   }
 }
