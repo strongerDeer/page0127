@@ -16,6 +16,10 @@ export interface MembershipValues {
   option1: string;
   option2: string;
   option3: string;
+
+  isRadio1: boolean;
+  isRadio2: boolean;
+  isRadio3: boolean;
 }
 
 export interface Option {

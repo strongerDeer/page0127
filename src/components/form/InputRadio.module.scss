@@ -1,0 +1,43 @@
+.box {
+  & + .box {
+    margin-top: 4rem;
+  }
+  p {
+    font-weight: bold;
+    margin-bottom: 0.5em;
+  }
+  .radioWrap {
+    display: flex;
+    gap: 1rem;
+
+    div {
+      flex-basis: 0;
+      flex-grow: 1;
+      position: relative;
+
+      input {
+        position: absolute;
+        appearance: none;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        outline-offset: 0;
+      }
+
+      input:checked + label {
+        background-color: var(--primary);
+        color: #fff;
+      }
+      label {
+        height: 4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        border: 1px solid var(--grayLv2);
+        border-radius: 0.4rem;
+      }
+    }
+  }
+}
