@@ -3,7 +3,7 @@ import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function page() {
+export default function DonePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const success = searchParams.get('success');
