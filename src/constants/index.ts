@@ -2,6 +2,7 @@ export const COLLECTIONS = {
   USER: 'users',
   BOOKS: 'books',
   BANNERS: 'banners',
+  MEMBERSHIP: 'membership',
 };
 
 export const NO_PROFILE = '/images/no-profile.png';
