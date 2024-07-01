@@ -23,10 +23,10 @@ export default function BookDetail({ data }: { data: Book }) {
     // lastUpdatedTime,
   } = data;
 
-  const scores = [0, 1, 2, 3, 4, 5, 10];
-  const grades = scores.map((score) => ({
+  const scores = ['0', '1', '2', '3', '4', '5', '10'];
+  const grades = scores.map((score: string) => ({
     score,
-    length: grade[score].length,
+    length: grade[score] ? grade[score].length : 0,
   }));
 
   let length = 0;
@@ -34,7 +34,7 @@ export default function BookDetail({ data }: { data: Book }) {
 
   grades.forEach(({ score, length: gradeLength }) => {
     length += gradeLength;
-    sum += score * gradeLength;
+    sum += Number(score) * gradeLength;
   });
 
   const avg = sum / length;
@@ -73,7 +73,7 @@ export default function BookDetail({ data }: { data: Book }) {
             <p>출판일: {pubDate}</p>
             <p>page: {page}</p>
             <p>price: {price}</p>
-            <p>인생책: {grade[10].length}</p>
+            <p>인생책: {grade['10'] ? grade['10'].length : 0}</p>
           </div>
         </div>
       </div>

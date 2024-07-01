@@ -99,11 +99,12 @@ export default function SearchBook({ setBookData }: SearchBookProps) {
         name="search"
         type="search"
         value={keyword}
+        placeholder="어떤 책을 읽었나요?"
         setValue={setKeyword}
       />
 
       {isLoading ? (
-        <>loding....</>
+        <>loading....</>
       ) : books ? (
         books.length > 0 ? (
           <ul>

@@ -12,6 +12,7 @@ import Button from '@components/shared/Button';
 import useUser, { useUserLoading } from '@hooks/auth/useUser';
 import { useCallback } from 'react';
 import LogoutButton from '@components/sign/LogoutButton';
+import Icon from '@components/icon/Icon';
 export default function Header() {
   const pathname = usePathname();
   const user = useUser();
@@ -21,8 +22,14 @@ export default function Header() {
     if (user !== null) {
       return (
         <>
-          <Button href={`/shelf/${user.uid}`}>마이페이지</Button>
-          <LogoutButton text="로그아웃" />
+          <Button href={`/book/create`}>읽은 책 등록</Button>
+          <Button href={`/shelf/${user.uid}`} variant="outline" color="grayLv4">
+            나의 책장
+          </Button>
+          <LogoutButton variant="outline" color="grayLv4">
+            <Icon name="arrowRight" color="grayLv3" />
+            <span className="a11y-hidden">로그아웃</span>
+          </LogoutButton>
         </>
       );
     } else {

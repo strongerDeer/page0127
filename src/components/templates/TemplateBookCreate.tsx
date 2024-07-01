@@ -10,6 +10,7 @@ import { addBook, addBookInShelf, addCategory } from '@remote/shelf';
 import { format } from 'date-fns';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 
@@ -51,6 +52,7 @@ export interface MyData {
 }
 export default function TemplateBookCreate() {
   const user = useUser();
+  const router = useRouter();
   const today = format(new Date(), 'yyyy-MM-dd');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -88,7 +90,8 @@ export default function TemplateBookCreate() {
         // 내 책장에 저장하기
         addBookInShelf(user.uid, bookData.id, { ...bookData, ...myData });
 
-        toast.success('등록완료!');
+        toast.success('책장에 등록되었습니다!');
+        router.push(`/shelf/${user.uid}`);
       } catch (error) {
         console.error('Error saving book:', error);
         toast.error('책 등록 중 오류가 발생했습니다.');
@@ -156,7 +159,7 @@ export default function TemplateBookCreate() {
             required
           />
           <Button type="submit">
-            {isLoading ? '등록 중...' : '책장 추가'}
+            {isLoading ? '등록 중...' : '책장에 등록'}
           </Button>
         </form>
       </div>

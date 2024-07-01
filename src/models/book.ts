@@ -37,7 +37,7 @@ export interface Book {
   price: number | null;
   readDate: string;
   memo: string;
-  grade: { [key: number]: string[] };
+  grade: { [key: string]: string[] };
 }
 
 export interface StampTime {

@@ -9,10 +9,20 @@ import { toast } from 'react-toastify';
 
 import Button from '../shared/Button';
 import { useRouter } from 'next/navigation';
-import { useAlertContext } from '@contexts/AlertContext';
 import { useModalContext } from '@contexts/ModalContext';
+import React from 'react';
 
-export default function LogoutButton({ text }: { text?: string }) {
+export default function LogoutButton({
+  children,
+  text,
+  variant,
+  color,
+}: {
+  children?: React.ReactNode;
+  text?: string;
+  variant?: 'outline' | 'solid' | 'link';
+  color?: string;
+}) {
   const router = useRouter();
 
   const { open, close } = useModalContext();
@@ -39,8 +49,8 @@ export default function LogoutButton({ text }: { text?: string }) {
   };
 
   return (
-    <Button type="button" onClick={onClick}>
-      {text ? text : 'Logout'}
+    <Button type="button" onClick={onClick} variant={variant} color={color}>
+      {children ? children : text ? text : 'Logout'}
     </Button>
   );
 }

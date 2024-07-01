@@ -130,14 +130,7 @@ async function createBook(
       createdTime: serverTimestamp(),
       lastUpdatedTime: serverTimestamp(),
       readUser: arrayUnion(uid),
-      [`grade.0`]: arrayRemove(uid),
-      [`grade.1`]: arrayRemove(uid),
-      [`grade.2`]: arrayRemove(uid),
-      [`grade.3`]: arrayRemove(uid),
-      [`grade.4`]: arrayRemove(uid),
-      [`grade.5`]: arrayRemove(uid),
-      [`grade.10`]: arrayRemove(uid),
-      [`grade.${myData.grade}`]: arrayUnion(uid),
+      grade: { [`${myData.grade}`]: arrayUnion(uid) },
     });
   } catch (error) {
     console.error('Error creating book:', error);
@@ -156,14 +149,16 @@ async function updateBook(
       ...data,
       lastUpdatedTime: serverTimestamp(),
       readUser: arrayUnion(uid),
-      [`grade.0`]: arrayRemove(uid),
-      [`grade.1`]: arrayRemove(uid),
-      [`grade.2`]: arrayRemove(uid),
-      [`grade.3`]: arrayRemove(uid),
-      [`grade.4`]: arrayRemove(uid),
-      [`grade.5`]: arrayRemove(uid),
-      [`grade.10`]: arrayRemove(uid),
-      [`grade.${myData.grade}`]: arrayUnion(uid),
+      grade: {
+        0: arrayRemove(uid),
+        1: arrayRemove(uid),
+        2: arrayRemove(uid),
+        3: arrayRemove(uid),
+        4: arrayRemove(uid),
+        5: arrayRemove(uid),
+        10: arrayRemove(uid),
+        [`${myData.grade}`]: arrayUnion(uid),
+      },
     });
   } catch (error) {
     console.error('Error updating book:', error);
