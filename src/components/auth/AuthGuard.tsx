@@ -2,7 +2,7 @@
 import { userAtom, userLoadingAtom } from '@atoms/user';
 import { auth } from '@firebase/firebaeApp';
 import { onAuthStateChanged } from 'firebase/auth';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useSetRecoilState } from 'recoil';
 
 // 인증처리
@@ -26,7 +26,7 @@ export default function AuthGuard() {
 
       return () => unsubscribe();
     });
-  }, [auth]);
+  }, [setUser, setIsLoading]);
 
   return null;
 }

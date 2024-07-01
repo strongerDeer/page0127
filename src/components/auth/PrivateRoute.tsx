@@ -2,7 +2,7 @@
 import useUser, { useUserLoading } from '@hooks/auth/useUser';
 import { useAlertContext } from '@contexts/AlertContext';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 
 export default function PrivateRoute({
   children,
@@ -15,7 +15,7 @@ export default function PrivateRoute({
   const router = useRouter();
   const { open } = useAlertContext();
 
-  useEffect(() => {
+  const checkAuth = useCallback(() => {
     if (!user) {
       open({
         title: '로그인이 필요해요!',
@@ -25,7 +25,11 @@ export default function PrivateRoute({
         },
       });
     }
-  }, [path]);
+  }, [user, open, router]);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth, path]);
 
   if (isLoading) {
     return <>Loading...</>;
