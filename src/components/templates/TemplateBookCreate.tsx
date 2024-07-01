@@ -118,7 +118,7 @@ export default function TemplateBookCreate() {
               />
             ) : (
               <>
-                '책 제목'을 검색하여 입력하면
+                책 제목을 검색하여 입력하면
                 <br /> 책 이미지가 등록됩니다!
               </>
             )}
