@@ -40,7 +40,7 @@ export default function TemplateMembership() {
       setReadyToPoll(true);
     },
     onError: () => {
-      window.history.back();
+      router.back();
     },
   });
 

@@ -28,7 +28,6 @@
       "@constants/*": ["src/constants/*"],
       "@atoms/*": ["src/atoms/*"],
       "@hooks/*": ["src/hooks/*"],
-
       "@mock/*": ["src/mock/*"]
     }
   },
