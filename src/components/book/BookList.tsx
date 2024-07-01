@@ -8,7 +8,6 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import withSuspense from '@hooks/withSuspense';
 import { Book } from '@models/book';
 
-import { Skeleton } from '../../../bak/components/Skeleton';
 import BookListItem from './BookListItem';
 import { COLLECTIONS } from '@constants';
 import { useCallback } from 'react';

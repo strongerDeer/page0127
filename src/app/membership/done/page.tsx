@@ -1,5 +1,6 @@
 'use client';
-import FixedBottomButton from 'bak/components/FixedBottomButton';
+import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
+
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function page() {
@@ -12,7 +13,7 @@ export default function page() {
         ? '카드가 발급되었습니다'
         : '카드발급에 실패하였습니다.'}
 
-      <FixedBottomButton text="확인" onClick={() => router.back()} />
+      <ButtonFixedBottom text="확인" onClick={() => router.back()} />
     </div>
   );
 }
