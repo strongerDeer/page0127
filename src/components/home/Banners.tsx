@@ -7,10 +7,10 @@ import 'swiper/css';
 import { Banner } from '@models/banner';
 import { useQuery } from 'react-query';
 import { COLLECTIONS } from '@constants';
-import { getBaners } from '@remote/banners';
+import { getBanners } from '@remote/banners';
 
 export default function Banners() {
-  const { data: banners } = useQuery([COLLECTIONS.BANNERS], () => getBaners());
+  const { data: banners } = useQuery([COLLECTIONS.BANNERS], () => getBanners());
 
   return (
     <section>

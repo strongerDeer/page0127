@@ -3,7 +3,7 @@ import { store } from '@firebase/firebaeApp';
 import { COLLECTIONS } from '@constants';
 import { Banner } from '@models/banner';
 
-export async function getBaners() {
+export async function getBanners() {
   const snapshot = await getDocs(collection(store, COLLECTIONS.BANNERS));
 
   const data = snapshot.docs.map((doc) => ({
