@@ -54,7 +54,7 @@ export default function SocialButton({
             provider: res.user.providerData[0].providerId,
           });
         }
-        router.push('/');
+        router.back();
         toast.success('로그인 되었습니다.');
       })
       .catch((err) => {

@@ -34,7 +34,6 @@ export default function LogoutButton({
       onButtonClick: async () => {
         try {
           await signOut(auth);
-          router.push('/');
           close();
           toast.success('로그아웃 되었습니다!');
         } catch (error) {
