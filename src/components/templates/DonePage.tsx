@@ -1,6 +1,5 @@
 'use client';
 import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
-
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function DonePage() {

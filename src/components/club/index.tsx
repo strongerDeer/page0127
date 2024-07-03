@@ -9,7 +9,6 @@ import {
   ApplyClubValues,
   InfoValues,
 } from '@models/applyClub';
-import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function ApplyClub({

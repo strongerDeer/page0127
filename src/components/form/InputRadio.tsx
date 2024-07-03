@@ -1,4 +1,4 @@
-import { CardInfoValues } from '@components/club/CardInfo';
+import { CardInfoValues } from '@models/applyClub';
 import styles from './InputRadio.module.scss';
 export default function InputRadio({
   title,
