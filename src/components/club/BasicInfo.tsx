@@ -1,14 +1,9 @@
 import Select from '@components/form/Select';
 import Button from '@components/shared/Button';
 import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
-import { option1, option2, option3 } from '@constants/membership';
-import { MembershipValues } from '@models/membership';
+import { option1, option2, option3 } from '@constants/applyClub';
+import { InfoValues } from '@models/applyClub';
 import { useState } from 'react';
-
-export type InfoValues = Pick<
-  MembershipValues,
-  'option1' | 'option2' | 'option3'
->;
 
 export default function BasicInfo({
   onNext,

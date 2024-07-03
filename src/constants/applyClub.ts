@@ -1,6 +1,6 @@
-import { Option, Term } from '@models/membership';
+import { Option, Term } from '@models/applyClub';
 
-export const MEMBERSHIP_LIST = [
+export const CLUB_APPLY_LIST = [
   {
     id: '01',
     title: '멤버쉽 관련 안내 및 필수 동의',

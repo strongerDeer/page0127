@@ -1,5 +1,4 @@
 import Icon from '@components/icon/Icon';
-import { MEMBERSHIP_LIST } from '@constants/membership';
 import Link from 'next/link';
 
 export default function Agreement({ children }: { children: React.ReactNode }) {

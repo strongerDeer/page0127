@@ -1,10 +1,11 @@
 import PrivateRoute from '@components/auth/PrivateRoute';
-import TemplateMembership from '@components/templates/TemplateMembership';
+import TemplateApplyClub from '@components/templates/TemplateApplyClub';
 
-export default function page() {
+export default function page({ params }: { params: { id: string } }) {
+  const { id } = params;
   return (
     <PrivateRoute>
-      <TemplateMembership />
+      <TemplateApplyClub id={id} />
     </PrivateRoute>
   );
 }

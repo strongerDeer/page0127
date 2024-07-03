@@ -1,18 +1,18 @@
 import Agreement from '@components/shared/Agreement';
 import Button from '@components/shared/Button';
 import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
-import { MEMBERSHIP_LIST } from '@constants/membership';
-import { MembershipValues } from '@models/membership';
+import { CLUB_APPLY_LIST } from '@constants/applyClub';
+import { ApplyClubValues } from '@models/applyClub';
 import { useCallback, useState } from 'react';
 
 export default function Terms({
   onNext,
 }: {
-  onNext: (terms: MembershipValues['terms']) => void;
+  onNext: (terms: ApplyClubValues['terms']) => void;
 }) {
   const isMobile = false;
   const [termsAgreements, setTermsAgreements] = useState(() => {
-    return MEMBERSHIP_LIST.reduce<Record<string, boolean>>(
+    return CLUB_APPLY_LIST.reduce<Record<string, boolean>>(
       (prev, term) => ({
         ...prev,
         [term.id]: false,
@@ -45,7 +45,7 @@ export default function Terms({
         >
           약관에 동의
         </Agreement.Title>
-        {MEMBERSHIP_LIST.map(({ id, title, link, required }) => (
+        {CLUB_APPLY_LIST.map(({ id, title, link, required }) => (
           <Agreement.Description
             key={id}
             link={link}

@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import styles from './Select.module.scss';
-import { Option } from '@models/membership';
+import { Option } from '@models/applyClub';
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   placeholder?: string;

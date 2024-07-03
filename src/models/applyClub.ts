@@ -14,11 +14,11 @@ export const APPLY_STATUS = {
   REJECT: 'REJECT',
 } as const;
 
-export interface MembershipValues {
+export interface ApplyClubValues {
   userId: User['uid'];
   terms: Term['id'][];
   appliedAt: Date;
-  // cardId: string;
+  clubId: string;
 
   option1: string;
   option2: string;
@@ -30,7 +30,21 @@ export interface MembershipValues {
   status: keyof typeof APPLY_STATUS;
 }
 
+export type InfoValues = Pick<
+  ApplyClubValues,
+  'option1' | 'option2' | 'option3'
+>;
+
+export type CardInfoValues = Pick<
+  ApplyClubValues,
+  'isRadio1' | 'isRadio2' | 'isRadio3'
+>;
+
 export interface Option {
   label: string;
   value: string | number | undefined;
+}
+
+export interface Club {
+  name: string;
 }

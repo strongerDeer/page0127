@@ -1,13 +1,8 @@
 import InputRadio from '@components/form/InputRadio';
 import Button from '@components/shared/Button';
 import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
-import { MembershipValues } from '@models/membership';
+import { CardInfoValues } from '@models/applyClub';
 import { useState } from 'react';
-
-export type CardInfoValues = Pick<
-  MembershipValues,
-  'isRadio1' | 'isRadio2' | 'isRadio3'
->;
 
 export default function CardInfo({
   onNext,

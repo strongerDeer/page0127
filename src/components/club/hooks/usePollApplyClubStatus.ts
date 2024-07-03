@@ -1,18 +1,18 @@
-import { APPLY_STATUS } from '@models/membership';
+import { APPLY_STATUS } from '@models/applyClub';
 import { useQuery } from 'react-query';
 
-interface usePollMembershipStatusProps {
+interface usePollApplyClubStatusProps {
   onSuccess: () => void;
   onError: () => void;
   enabled: boolean;
 }
 
-export default function usePollMembershipStatus({
+export default function usePollApplyClubStatus({
   onSuccess,
   onError,
   enabled,
-}: usePollMembershipStatusProps) {
-  return useQuery(['membershipStatus'], () => getMembershipStatus(), {
+}: usePollApplyClubStatusProps) {
+  return useQuery(['applyClubStatus'], () => getClubStatus(), {
     enabled,
     refetchInterval: 2_000,
     staleTime: 0,
@@ -27,7 +27,7 @@ export default function usePollMembershipStatus({
   });
 }
 
-function getMembershipStatus() {
+function getClubStatus() {
   const values = [
     APPLY_STATUS.READY,
     APPLY_STATUS.PROGRESS,
@@ -38,7 +38,7 @@ function getMembershipStatus() {
   const status = values[Math.floor(Math.random() * values.length)];
 
   if (status === APPLY_STATUS.REJECT) {
-    throw new Error('카드 발급에 실패했습니다');
+    throw new Error('모임 신청에 실패했습니다');
   }
   return status;
 }

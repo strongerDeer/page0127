@@ -1,4 +1,5 @@
 'use client';
+
 import { getClubs } from '@remote/club';
 import Link from 'next/link';
 import { useEffect } from 'react';

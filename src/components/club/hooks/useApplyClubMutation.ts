@@ -1,27 +1,28 @@
 import { useAlertContext } from '@contexts/AlertContext';
-import { MembershipValues } from '@models/membership';
-import { membership } from '@remote/membership';
+import { ApplyClubValues } from '@models/applyClub';
+import { applyClub } from '@remote/applyClub';
 import { useMutation } from 'react-query';
 
-interface useMembershipMutationProps {
+interface useApplyClubMutationProps {
   onSuccess: () => void;
   onError: () => void;
 }
 
-export default function useMembershipMutation({
+export default function useApplyClubMutation({
   onSuccess,
   onError,
-}: useMembershipMutationProps) {
+}: useApplyClubMutationProps) {
   const { open } = useAlertContext();
+
   return useMutation(
-    (membershipValues: MembershipValues) => membership(membershipValues),
+    (applyClubValues: ApplyClubValues) => applyClub(applyClubValues),
     {
       onSuccess: () => {
         onSuccess();
       },
       onError: () => {
         open({
-          title: '멤버십을 신청하지 못했어요. 나중에 다시 시도해주세요',
+          title: '클럽 신청을 하지 못했어요. 나중에 다시 시도해주세요',
           onButtonClick: () => {
             onError();
           },
