@@ -25,7 +25,7 @@ export default function PrivateRoute({
         },
       });
     }
-  }, [user, open, router]);
+  }, [user, open, router, isLoading]);
 
   useEffect(() => {
     checkAuth();
