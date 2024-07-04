@@ -28,6 +28,7 @@ export interface ApplyClubValues {
   isRadio2: boolean;
   isRadio3: boolean;
   status: keyof typeof APPLY_STATUS;
+  step: number;
 }
 
 export type InfoValues = Pick<

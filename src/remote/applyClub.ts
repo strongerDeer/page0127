@@ -35,3 +35,26 @@ export async function updateApplyClub({
 
   updateDoc(applied.ref, applyClubValues);
 }
+
+export async function getAppliedClub({
+  userId,
+  clubId,
+}: {
+  userId: string;
+  clubId: string;
+}) {
+  const snapshot = await getDocs(
+    query(
+      collection(store, COLLECTIONS.CLUB_APPLY),
+      where('userId', '==', userId),
+      where('clubId', '==', clubId),
+    ),
+  );
+
+  if (snapshot.docs.length === 0) {
+    return null;
+  }
+  const [applied] = snapshot.docs;
+
+  return applied.data() as ApplyClubValues;
+}

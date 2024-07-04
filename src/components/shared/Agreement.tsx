@@ -14,7 +14,6 @@ function AgreementTitle({
   checked: boolean;
   onChange: (e: React.MouseEvent<HTMLElement>, checked: boolean) => void;
 }) {
-  console.log(checked);
   return (
     <li onClick={(e) => onChange(e, !checked)}>
       <Icon

@@ -13,6 +13,7 @@ import useUser, { useUserLoading } from '@hooks/auth/useUser';
 import { useCallback } from 'react';
 import LogoutButton from '@components/sign/LogoutButton';
 import Icon from '@components/icon/Icon';
+import MyImage from '@components/shared/MyImage';
 export default function Header() {
   const pathname = usePathname();
   const user = useUser();
@@ -23,6 +24,9 @@ export default function Header() {
       return (
         <>
           <Button href={`/book/create`}>읽은 책 등록</Button>
+          <Link href="/my">
+            <MyImage />
+          </Link>
           <Button href={`/shelf/${user.uid}`} variant="outline" color="grayLv4">
             나의 책장
           </Button>

@@ -11,6 +11,6 @@ export async function getMyBooks(uid: string) {
   const data = snapshot.docs.map((doc) => ({
     ...(doc.data() as Book),
   }));
-  console.log(data);
+
   return data;
 }

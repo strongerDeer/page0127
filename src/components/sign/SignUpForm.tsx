@@ -75,7 +75,6 @@ export default function SignUpForm({ inputArr }: { inputArr: InputArr[] }) {
           if (profileImage !== '') {
             // 1. 이미지키 생성
             const imgKey = `${user.uid}/${uuidv4()}`;
-            console.log('😀', imgKey);
 
             // 2. firebase storage에 이미지 저장
             const storageRef = ref(storage, imgKey);
