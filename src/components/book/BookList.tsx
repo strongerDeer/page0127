@@ -3,7 +3,7 @@
 import { useInfiniteQuery } from 'react-query';
 import { getBooks } from '@remote/book';
 
-import { flatten } from 'lodash';
+import flatten from 'lodash.flatten';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import withSuspense from '@hooks/withSuspense';
 import { Book } from '@models/book';

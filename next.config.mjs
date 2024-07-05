@@ -1,7 +1,6 @@
-// const { createVanillaExtractPlugin } = require('@vanilla-extract/next-plugin');
-
 import { createVanillaExtractPlugin } from '@vanilla-extract/next-plugin';
-/** @type {import('next').NextConfig} */
+import withBundleAnalyzer from '@next/bundle-analyzer';
+
 const nextConfig = {
   async rewrites() {
     return [
@@ -20,4 +19,11 @@ const nextConfig = {
 };
 
 const withVanillaExtract = createVanillaExtractPlugin();
-export default withVanillaExtract(nextConfig);
+
+// Bundle Analyzer 설정
+const analyzeBundles = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
+
+// 플러그인 적용
+export default analyzeBundles(withVanillaExtract(nextConfig));
