@@ -12,6 +12,12 @@ import { updateApplyClub } from '@remote/applyClub';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+const STATUS_MESSAGE = {
+  [APPLY_STATUS.READY]: '준비하고 있습니다',
+  [APPLY_STATUS.PROGRESS]: '확인중이에요! 잠시만 기다려 주세요',
+  [APPLY_STATUS.COMPLETE]: '모임 신청이 완료되었습니다!',
+};
+
 export default function TemplateApplyClub({ id }: { id: string }) {
   const router = useRouter();
   const user = useUser();
@@ -45,7 +51,7 @@ export default function TemplateApplyClub({ id }: { id: string }) {
     },
   });
 
-  usePollApplyClubStatus({
+  const { data: status } = usePollApplyClubStatus({
     onSuccess: async () => {
       await updateApplyClub({
         clubId: id,
@@ -83,7 +89,7 @@ export default function TemplateApplyClub({ id }: { id: string }) {
 
   if (readyToPoll || isLoading) {
     // TODO: 개선
-    return <>Loading...</>;
+    return <>{STATUS_MESSAGE[status ?? 'READY']}</>;
   }
 
   return <ApplyClub onSubmit={mutate} id={id} />;

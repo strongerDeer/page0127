@@ -12,6 +12,7 @@ import BookListItem from './BookListItem';
 import { COLLECTIONS } from '@constants';
 import { useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { Skeleton } from '@components/shared/Skeleton';
 
 function BookList() {
   const {
@@ -74,7 +75,7 @@ function BookList() {
 export function BookListSkeleton() {
   return (
     <>
-      {/* 2024년
+      2024년
       <ul className="grid grid-cols-4 gap-16">
         {[...new Array(5)].map((_, index) => (
           <li key={index}>
@@ -89,7 +90,7 @@ export function BookListSkeleton() {
             </article>
           </li>
         ))}
-      </ul> */}
+      </ul>
     </>
   );
 }

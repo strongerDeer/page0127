@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import styles from './BookDetail.module.scss';
 import { Book } from '@models/book';
+import Review from './Review';
 export default function BookDetail({ data }: { data: Book }) {
   const {
     title,
@@ -77,6 +78,9 @@ export default function BookDetail({ data }: { data: Book }) {
           </div>
         </div>
       </div>
+
+      <div className="h-[1000px]"></div>
+      <Review />
     </>
   );
 }

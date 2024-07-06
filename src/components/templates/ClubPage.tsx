@@ -19,7 +19,7 @@ export default function ClubPage({ id }: { id: string }) {
     <div>
       {data?.name} 독서모임 상세
       <ButtonFixedBottom
-        text="신청하기"
+        text="모임에 바로 신청하고 혜택받기!"
         onClick={() => router.push(`/club/${id}/apply`)}
       />
     </div>

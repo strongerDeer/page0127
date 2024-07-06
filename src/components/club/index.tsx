@@ -2,6 +2,7 @@
 import BasicInfo from '@components/club/BasicInfo';
 import CardInfo from '@components/club/CardInfo';
 import Terms from '@components/club/Terms';
+import ProgressBar from '@components/shared/ProgressBar';
 import useUser from '@hooks/auth/useUser';
 import {
   APPLY_STATUS,
@@ -11,6 +12,7 @@ import {
 } from '@models/applyClub';
 import { useEffect, useState } from 'react';
 
+const LAST_STEP = 3;
 export default function ApplyClub({
   id,
   onSubmit,
@@ -82,6 +84,12 @@ export default function ApplyClub({
   };
   return (
     <div>
+      <ProgressBar
+        value={applyClubValues.step as number}
+        total={LAST_STEP}
+        height="1rem"
+        hiddenText
+      />
       {applyClubValues.step === 0 ? <Terms onNext={handleTermsChange} /> : null}
       {applyClubValues.step === 1 ? (
         <BasicInfo onNext={handleBasicInfoChange} />

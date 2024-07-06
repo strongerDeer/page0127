@@ -1,12 +1,15 @@
-import Banners from '@components/home/Banners';
+import Banners, { BannerSkeleton } from '@components/home/Banners';
 import Visual from '@components/home/Visual';
+import { Suspense } from 'react';
 
 export default function Home() {
   return (
     <>
       <Visual />
       <div className="max-width">
-        <Banners />
+        <Suspense fallback={<BannerSkeleton />}>
+          <Banners />
+        </Suspense>
         <main>main</main>
       </div>
     </>

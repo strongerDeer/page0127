@@ -1,9 +1,16 @@
-import BookList from '@components/book/BookList';
+import dynamic from 'next/dynamic';
+import { BookListSkeleton } from '@components/book/BookList';
 
-export default function Page() {
+export default function Home() {
   return (
-    <div>
+    <main>
+      main
       <BookList />
-    </div>
+    </main>
   );
 }
+
+const BookList = dynamic(() => import('@components/book/BookList'), {
+  ssr: false,
+  loading: () => <BookListSkeleton />,
+});

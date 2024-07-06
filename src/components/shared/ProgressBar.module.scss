@@ -1,0 +1,25 @@
+.progressBar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  .progress {
+    background-color: var(--activation);
+    flex-grow: 1;
+  }
+  .progress,
+  .bar {
+    border-radius: 2rem;
+  }
+
+  .bar {
+    background-color: var(--primary);
+    height: 100%;
+  }
+  .text {
+    strong {
+      color: var(--primary);
+      font-size: 1.2em;
+    }
+  }
+}

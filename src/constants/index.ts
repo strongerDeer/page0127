@@ -3,7 +3,7 @@ export const COLLECTIONS = {
   BOOKS: 'books',
   BANNERS: 'banners',
   CLUBS: 'clubs',
-  CLUB_APPLY: 'card_apply',
+  CLUB_APPLY: 'club_apply',
 };
 
 export const NO_PROFILE = '/images/no-profile.png';
