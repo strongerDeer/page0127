@@ -1,4 +1,5 @@
 {
+  "extends": "./tsconfig.paths.json",
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
@@ -16,21 +17,14 @@
       {
         "name": "next"
       }
-    ],
-    "baseUrl": ".",
-    "paths": {
-      "@*": ["src/*"],
-      "@components/*": ["src/components/*"],
-      "@styles/*": ["src/styles/*"],
-      "@contexts/*": ["src/contexts/*"],
-      "@models/*": ["src/models/*"],
-      "@remote/*": ["src/remote/*"],
-      "@constants/*": ["src/constants/*"],
-      "@atoms/*": ["src/atoms/*"],
-      "@hooks/*": ["src/hooks/*"],
-      "@mock/*": ["src/mock/*"]
-    }
+    ]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "./tsconfig.paths.json"
+  ],
   "exclude": ["node_modules"]
 }
