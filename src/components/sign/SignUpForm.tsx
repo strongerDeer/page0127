@@ -29,10 +29,10 @@ import { FirebaseError } from 'firebase/app';
 
 export default function SignUpForm({ inputArr }: { inputArr: InputArr[] }) {
   const router = useRouter();
-  const isMoile = false;
+  const isMobile = false;
   const [profileImage, setProfileImg] = useState<string>('');
   // controlled 방식 사용 : state 사용
-  const [formValues, setFormValues] = useState<FormValues>({
+  const [formValues, setFormValues] = useState<Omit<FormValues, 'photoURL'>>({
     email: '',
     password: '',
     rePassword: '',
@@ -139,7 +139,7 @@ export default function SignUpForm({ inputArr }: { inputArr: InputArr[] }) {
         />
       ))}
 
-      {isMoile ? (
+      {isMobile ? (
         <ButtonFixedBottom
           type="submit"
           text="회원가입"

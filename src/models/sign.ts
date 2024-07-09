@@ -3,6 +3,7 @@ export interface FormValues {
   password: string;
   rePassword: string;
   nickname: string;
+  photoURL: string;
   [key: string]: string;
 }
 

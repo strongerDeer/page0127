@@ -1,8 +1,11 @@
+'use client';
 import SignInForm from '@components/sign/SignInForm';
 import SocialLogin from '@components/sign/SocialBtnContainer';
+import useUser from '@hooks/auth/useUser';
 import { InputArr } from '@models/sign';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 // 로그인 입력정보
 const inputArr: InputArr[] = [
@@ -21,6 +24,11 @@ const inputArr: InputArr[] = [
 ];
 // 로그인 페이지
 export default function SignInPage() {
+  const router = useRouter();
+  const user = useUser();
+  if (user) {
+    router.replace('/');
+  }
   return (
     <div className="max-width">
       <h2 className="title1">로그인</h2>

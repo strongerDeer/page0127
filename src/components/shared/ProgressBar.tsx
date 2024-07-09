@@ -7,7 +7,7 @@ export default function ProgressBar({
 }: {
   value: number;
   total: number;
-  height: string;
+  height?: string;
   hiddenText?: boolean;
 }) {
   return (

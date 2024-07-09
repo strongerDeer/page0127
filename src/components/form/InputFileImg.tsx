@@ -63,6 +63,7 @@ export default function InputFileImg(props: InputFileLabelProps) {
           onChange={onChange}
           ref={fileRef}
           {...rest}
+          accept="image/*"
         />
         <label className={styles.label} htmlFor={id}>
           <Icon name="image" color="#fff" />

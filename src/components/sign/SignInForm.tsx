@@ -19,7 +19,10 @@ import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
 import styles from './Form.module.scss';
 import validate from './validate';
 
-type SignInFormValues = Omit<FormValues, 'nickname' | 'rePassword'>;
+type SignInFormValues = Omit<
+  FormValues,
+  'nickname' | 'rePassword' | 'photoURL'
+>;
 
 export default function SignInForm({ inputArr }: { inputArr: InputArr[] }) {
   const router = useRouter();
