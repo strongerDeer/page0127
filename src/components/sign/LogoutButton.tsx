@@ -1,5 +1,6 @@
 'use client';
 
+import styles from './LogoutButton.module.scss';
 //firebase
 import { auth } from '@firebase/firebaeApp';
 import { signOut } from 'firebase/auth';
@@ -7,24 +8,14 @@ import { signOut } from 'firebase/auth';
 // lib
 import { toast } from 'react-toastify';
 
-import Button from '../shared/Button';
-import { useRouter } from 'next/navigation';
 import { useModalContext } from '@contexts/ModalContext';
 import React from 'react';
 
 export default function LogoutButton({
   children,
-  text,
-  variant,
-  color,
 }: {
   children?: React.ReactNode;
-  text?: string;
-  variant?: 'outline' | 'solid' | 'link';
-  color?: string;
 }) {
-  const router = useRouter();
-
   const { open, close } = useModalContext();
 
   const onClick = async () => {
@@ -48,8 +39,8 @@ export default function LogoutButton({
   };
 
   return (
-    <Button type="button" onClick={onClick} variant={variant} color={color}>
-      {children ? children : text ? text : 'Logout'}
-    </Button>
+    <button className={styles.logout} type="button" onClick={onClick}>
+      {children}
+    </button>
   );
 }

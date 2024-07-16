@@ -15,11 +15,15 @@ export default function Icon({
       fillRule="evenodd"
       clipRule="evenodd"
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 40 40"
+      viewBox={`0 0 ${iconData.width} ${iconData.height}`}
       fill={color ? colorCheck : '#000'}
       style={{ width: '2.4rem', height: '2.4rem' }}
     >
-      {iconData?.path.map((path, index) => <path key={index} d={path} />)}
+      {typeof iconData?.path === 'string' ? (
+        <path d={iconData?.path} />
+      ) : (
+        iconData?.path.map((path, index) => <path key={index} d={path} />)
+      )}
     </svg>
   );
 }
