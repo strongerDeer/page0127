@@ -1,43 +1,17 @@
 'use client';
 
-import { useInfiniteQuery } from 'react-query';
-import { getBooks } from '@remote/book';
-
 import flatten from 'lodash.flatten';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import withSuspense from '@hooks/withSuspense';
 import { Book } from '@models/book';
 
 import BookListItem from './BookListItem';
-import { COLLECTIONS } from '@constants';
-import { useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@components/shared/Skeleton';
+import useBooks from './useBooks';
 
 function BookList() {
-  const {
-    data,
-    hasNextPage = false,
-    fetchNextPage,
-    isFetching,
-  } = useInfiniteQuery(
-    [COLLECTIONS.BOOKS],
-    ({ pageParam }) => {
-      return getBooks(pageParam);
-    },
-    {
-      getNextPageParam: (snapshot) => {
-        return snapshot.lastVisible;
-      },
-    },
-  );
-
-  const loadMore = useCallback(() => {
-    if (hasNextPage === false || isFetching) {
-      return;
-    }
-    fetchNextPage();
-  }, [fetchNextPage, hasNextPage, isFetching]);
+  const { data, hasNextPage, loadMore } = useBooks();
 
   if (data === null) {
     return null;
@@ -51,7 +25,7 @@ function BookList() {
       <InfiniteScroll
         dataLength={books.length}
         hasMore={hasNextPage}
-        loader={<>Loading...</>}
+        loader={!hasNextPage && <>Loading...</>}
         next={loadMore}
         scrollThreshold="100px"
       >
