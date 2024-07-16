@@ -17,7 +17,12 @@ import Header from './Header';
 import Footer from './Footer';
 
 const client = new QueryClient({
-  defaultOptions: {},
+  defaultOptions: {
+    //쿼리 실패 시 재시도 횟수를 0으로 설정. 기본값 3
+    queries: {
+      retry: 0,
+    },
+  },
 });
 
 import styles from './Layout.module.scss';
