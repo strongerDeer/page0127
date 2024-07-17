@@ -1,18 +1,14 @@
 'use client';
-import { getBook } from '@remote/book';
-import { COLLECTIONS } from '@constants';
-import { useQuery } from 'react-query';
 import BookDetail from '@components/book/BookDetail';
+import useBook from '@components/book/useBook';
 
 export default function Page({ params }: { params: { id: string } }) {
   const { id = '' } = params;
 
-  const { data: book } = useQuery([COLLECTIONS.BOOKS, id], () => getBook(id), {
-    enabled: id !== '',
-  });
+  const { data: book, isLoading } = useBook({ id });
 
-  if (!book) {
-    return null;
+  if (!book || isLoading) {
+    return <>Loading...</>;
   }
 
   return (
