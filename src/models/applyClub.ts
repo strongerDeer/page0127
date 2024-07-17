@@ -48,6 +48,7 @@ export interface Option {
 
 export interface Club {
   name: string;
+  availableCount: number;
   events?: {
     name: string;
     promotionEndTime?: string;

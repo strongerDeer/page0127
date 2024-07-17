@@ -1,17 +1,16 @@
 'use client';
 
+import useClubs from '@components/club/hooks/useClubs';
 import Tag from '@components/shared/Tag';
 import { Club } from '@models/applyClub';
-import { getClubs } from '@remote/club';
 import restTime from '@utils/restTime';
 import { differenceInMilliseconds, parseISO } from 'date-fns';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useQuery } from 'react-query';
 
 // TODO: 페이징 처리 필요
 export default function ClubListPage() {
-  const { data, isLoading } = useQuery(['clubs'], () => getClubs());
+  const { data, isLoading } = useClubs();
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -27,7 +26,16 @@ export default function ClubListPage() {
         {data.map((club) => (
           <li key={club.id}>
             <TagComponent club={club} />
-            <Link href={`/club/${club.id}`}>{club.name}</Link>
+            <Link href={`/club/${club.id}`}>
+              <span>{club.name}</span>
+              <span>
+                {club.availableCount === 0
+                  ? '모집마감'
+                  : club.availableCount < 3
+                    ? '마감임박'
+                    : '모집중'}
+              </span>
+            </Link>
           </li>
         ))}
       </ul>
