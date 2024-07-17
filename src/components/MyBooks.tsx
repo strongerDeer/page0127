@@ -9,9 +9,7 @@ import Chart from './my/Chart';
 import { geUser } from '@remote/user';
 
 export default function MyBooks({ pageUid }: { pageUid: string }) {
-  const { data: book } = useQuery([COLLECTIONS.BOOKS], () =>
-    getMyBooks(pageUid),
-  );
+  const { data: book } = useQuery(['myBooks'], () => getMyBooks(pageUid));
 
   const { data: userData } = useQuery([COLLECTIONS.USER], () =>
     geUser(pageUid),
@@ -27,7 +25,7 @@ export default function MyBooks({ pageUid }: { pageUid: string }) {
           </React.Fragment>
         ))}
       </div>
-      <div>{userData && <Chart userData={userData} />}</div>
+      <div>{userData?.category && <Chart userData={userData} />}</div>
     </div>
   );
 }

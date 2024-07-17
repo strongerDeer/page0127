@@ -15,7 +15,7 @@ export default function MyPage() {
       <MyImage />
 
       <ProgressBar value={20} total={50} />
-      <LogoutButton text="로그아웃" />
+      <LogoutButton>로그아웃</LogoutButton>
     </div>
   );
 }

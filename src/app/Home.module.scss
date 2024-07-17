@@ -1,0 +1,15 @@
+@import '@/styles/var.scss';
+
+.titleWrap {
+  display: flex;
+  justify-content: space-between;
+
+  margin: fcSize(24, 32) 0 fcSize(8, 12);
+  h2 {
+    font-weight: bold;
+    font-size: 1.2em;
+  }
+  a {
+    color: var(--primary);
+  }
+}
