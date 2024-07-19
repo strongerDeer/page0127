@@ -4,8 +4,6 @@ import { COLLECTIONS } from '@constants';
 import { Book } from '@models/book';
 
 export async function getMyBooks(uid: string) {
-  console.log(`${COLLECTIONS.USER}/${uid}/book`);
-
   const snapshot = await getDocs(
     collection(store, `${COLLECTIONS.USER}/${uid}/book`),
   );

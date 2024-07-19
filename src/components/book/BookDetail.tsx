@@ -3,6 +3,7 @@ import Image from 'next/image';
 import styles from './BookDetail.module.scss';
 import { Book } from '@models/book';
 import Review from './Review';
+import LifeUsers from './LifeUsers';
 export default function BookDetail({ data }: { data: Book }) {
   const {
     title,
@@ -17,7 +18,7 @@ export default function BookDetail({ data }: { data: Book }) {
     author,
     frontCover,
     grade,
-
+    readUser,
     // id,
     // flipCover,
     // createdTime,
@@ -53,6 +54,7 @@ export default function BookDetail({ data }: { data: Book }) {
               initial={{ opacity: 0, translateY: '50%' }}
               whileInView={{ opacity: 1, translateY: '0%' }}
               transition={{ duration: 0.3 }}
+              viewport={{ once: true }}
             >
               <Image src={frontCover} width={320} height={320} alt="" />
             </motion.div>
@@ -79,6 +81,7 @@ export default function BookDetail({ data }: { data: Book }) {
         </div>
       </div>
 
+      <LifeUsers userIds={readUser} />
       <div className="h-[1000px]"></div>
       <Review />
     </>

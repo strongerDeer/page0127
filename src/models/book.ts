@@ -15,6 +15,7 @@ export interface Book {
   readDate: string;
   memo: string;
   grade: { [key: string]: string[] };
+  readUser: string[];
 }
 
 export interface StampTime {

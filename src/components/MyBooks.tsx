@@ -4,20 +4,21 @@ import { getMyBooks } from '@remote/mybook';
 import { useQuery } from 'react-query';
 import Image from 'next/image';
 import React from 'react';
-import ShareBtn from './my/ShareBtn';
 import Chart from './my/Chart';
-import { geUser } from '@remote/user';
+import { getUser } from '@remote/user';
+import ActionButtons from './ActionButtons';
 
 export default function MyBooks({ pageUid }: { pageUid: string }) {
   const { data: book } = useQuery(['myBooks'], () => getMyBooks(pageUid));
 
   const { data: userData } = useQuery([COLLECTIONS.USER], () =>
-    geUser(pageUid),
+    getUser(pageUid),
   );
 
   return (
     <div>
-      <ShareBtn />
+      {userData && <ActionButtons userData={userData} />}
+
       <div className="flex">
         {book?.map((book) => (
           <React.Fragment key={book.id}>
