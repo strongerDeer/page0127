@@ -1,0 +1,11 @@
+@import '@/styles/var.scss';
+.background {
+  width: 100%;
+  height: fcSize(120, 200);
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 0 30%;
+  }
+}

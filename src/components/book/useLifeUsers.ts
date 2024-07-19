@@ -6,7 +6,7 @@ export default function useLifeUsers({ userIds }: { userIds: string[] }) {
     ['lifeUsers', JSON.stringify(userIds)],
     () => getLifeUsers(userIds),
     {
-      enabled: userIds.length > 0,
+      enabled: userIds?.length > 0,
     },
   );
 }

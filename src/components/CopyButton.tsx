@@ -1,17 +1,25 @@
+'use client';
 import { useState } from 'react';
 import styles from './CopyButton.module.scss';
 import clsx from 'clsx';
 import Icon from '@components/icon/Icon';
+import { toast } from 'react-toastify';
 
-export default function CopyButton({ text }: { text: string }) {
+export default function CopyButton({
+  copy,
+  buttonLabel = '복사',
+}: {
+  copy: string;
+  buttonLabel: string;
+}) {
   const TIME = 1200;
   const [isClicked, setIsClicked] = useState<boolean | null>(null);
 
   const copyText = async () => {
-    if (text !== '') {
+    if (copy !== '') {
       if (navigator.clipboard) {
         try {
-          await navigator.clipboard.writeText(text);
+          await navigator.clipboard.writeText(copy);
           setIsClicked(true);
           setTimeout(() => {
             setIsClicked(false);
@@ -24,7 +32,7 @@ export default function CopyButton({ text }: { text: string }) {
         }
       } else {
         const textarea = document.createElement('textarea');
-        textarea.value = text;
+        textarea.value = copy;
         textarea.style.top = '0';
         textarea.style.left = '0';
         textarea.style.position = 'fixed';
@@ -50,7 +58,7 @@ export default function CopyButton({ text }: { text: string }) {
         }, TIME);
       }
     } else {
-      alert('작성된 코드가 없습니다');
+      toast.error('복사할 콘텐츠가 없습니다.');
     }
   };
   return (

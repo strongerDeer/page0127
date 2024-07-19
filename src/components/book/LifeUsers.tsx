@@ -1,3 +1,4 @@
+'use client';
 import Image from 'next/image';
 import useLifeUsers from './useLifeUsers';
 import Link from 'next/link';

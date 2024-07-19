@@ -14,7 +14,7 @@ export interface Book {
   price: number | null;
   readDate: string;
   memo: string;
-  grade: { [key: string]: string[] };
+  grade: { [key: string]: string[] } | string;
   readUser: string[];
 }
 

@@ -5,6 +5,28 @@ $borderRadius: 0.4em;
 $boxShadow: 5px 5px 2rem 0 rgba(0, 0, 0, 0.05);
 $boxShadowSmall: 3px 3px 1rem 0 rgba(0, 0, 0, 0.15);
 
+.max-width {
+  margin: auto;
+  width: $maxWidth;
+  max-width: calc(100% - $pad * 2);
+}
+.a11y-hidden {
+  clip: rect(1px, 1px, 1px, 1px);
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+}
+
+.title1 {
+  font-size: 2.4rem;
+  font-weight: 200;
+  margin: fcSize(60, 80) 0 1em 0;
+}
+
 @mixin ellipse($num: 1, $lineHeight: 1.6) {
   overflow: hidden;
   display: -webkit-box;

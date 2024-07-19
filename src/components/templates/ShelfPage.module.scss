@@ -1,0 +1,9 @@
+@import '@/styles/var.scss';
+
+.wrap {
+  @extend .max-width;
+
+  position: relative;
+  padding: 4rem;
+  display: flex;
+}

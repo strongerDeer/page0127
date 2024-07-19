@@ -19,25 +19,3 @@ body {
 svg {
   display: inline-block;
 }
-.max-width {
-  margin: auto;
-  width: $maxWidth;
-  max-width: calc(100% - $pad * 2);
-}
-
-.a11y-hidden {
-  clip: rect(1px, 1px, 1px, 1px);
-  clip-path: inset(50%);
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  padding: 0;
-  position: absolute;
-}
-
-.title1 {
-  font-size: 2.4rem;
-  font-weight: 200;
-  margin: fcSize(60, 80) 0 1em 0;
-}
