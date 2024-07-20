@@ -12,10 +12,12 @@ export interface Book {
   category: string;
   page: number | null;
   price: number | null;
-  readDate: string;
-  memo: string;
-  grade: { [key: string]: string[] } | string;
-  readUser: string[];
+
+  readDate?: string;
+  memo?: string;
+  grade?: { [key: string]: string[] } | string;
+  readUser?: string[];
+  like?: string[];
 }
 
 export interface StampTime {

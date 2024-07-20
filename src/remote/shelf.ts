@@ -1,4 +1,5 @@
 import { BookData, MyData } from '@components/templates/TemplateBookCreate';
+import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
 import {
   arrayRemove,
@@ -145,7 +146,7 @@ async function updateBook(
   myData: MyData,
 ) {
   try {
-    await updateDoc(doc(store, 'books', bookId), {
+    await updateDoc(doc(store, COLLECTIONS.BOOKS, bookId), {
       ...data,
       lastUpdatedTime: serverTimestamp(),
       readUser: arrayUnion(uid),

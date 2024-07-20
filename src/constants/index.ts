@@ -4,6 +4,7 @@ export const COLLECTIONS = {
   BANNERS: 'banners',
   CLUBS: 'clubs',
   CLUB_APPLY: 'club_apply',
+  LIKE: 'like',
 };
 
 export const NO_PROFILE = '/images/no-profile.png';

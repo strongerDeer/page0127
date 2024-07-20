@@ -1,12 +1,13 @@
 import { Book } from '@models/book';
 import Image from 'next/image';
 import Link from 'next/link';
+import LikeButton from './LikeButton';
 
 interface bookItemProps extends Book {
   index: number;
 }
 export default function BookListItem(props: bookItemProps) {
-  const { id, frontCover, title, category, index } = props;
+  const { id, frontCover, title, category, index, like = [] } = props;
   return (
     <>
       <Link href={`/book/${id}`}>
@@ -26,6 +27,7 @@ export default function BookListItem(props: bookItemProps) {
             <h3 className="font-bold">{title}</h3>
             <p>{category}</p>
           </div>
+          {id && <LikeButton bookId={id} like={like} />}
         </article>
       </Link>
     </>
