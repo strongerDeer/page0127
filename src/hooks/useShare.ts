@@ -12,7 +12,7 @@ export default function useShare() {
       window.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
-          title: `${title} | page0127`,
+          title: `${title} | page0127.`,
           description,
           imageUrl,
           link: {

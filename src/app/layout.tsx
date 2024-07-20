@@ -6,7 +6,7 @@ import Layout from '@components/layouts/Layout';
 import { pretendard } from './font';
 
 export const metadata: Metadata = {
-  title: 'page 0127',
+  title: 'page 0127.',
   description: '나만의 온라인 서재',
 };
 
