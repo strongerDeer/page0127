@@ -2,7 +2,7 @@
 
 import styles from './LogoutButton.module.scss';
 //firebase
-import { auth } from '@firebase/firebaeApp';
+import { auth } from '@firebase/firebaseApp';
 import { signOut } from 'firebase/auth';
 
 // lib

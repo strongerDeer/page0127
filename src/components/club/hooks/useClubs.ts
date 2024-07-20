@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from 'react-query';
 import { getClubs } from '@remote/club';
 import { useEffect } from 'react';
 import { collection, onSnapshot } from 'firebase/firestore';
-import { store } from '@firebase/firebaeApp';
+import { store } from '@firebase/firebaseApp';
 import { COLLECTIONS } from '@constants';
 import { Club } from '@models/applyClub';
 

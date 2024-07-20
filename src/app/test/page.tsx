@@ -2,7 +2,7 @@
 
 import { toast } from 'react-toastify';
 import { doc, writeBatch } from 'firebase/firestore';
-import { store } from '@firebase/firebaeApp';
+import { store } from '@firebase/firebaseApp';
 
 import { banner_list, book_list } from '@mock/data';
 import { grade_list } from '@mock/grade';

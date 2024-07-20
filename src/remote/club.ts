@@ -8,7 +8,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore';
-import { store } from '@firebase/firebaeApp';
+import { store } from '@firebase/firebaseApp';
 import { COLLECTIONS } from '@constants';
 import { Club, ApplyClubValues } from '@models/applyClub';
 

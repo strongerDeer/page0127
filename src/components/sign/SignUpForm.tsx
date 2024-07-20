@@ -4,7 +4,7 @@ import { ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 //firebase
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth, store } from '@firebase/firebaeApp';
+import { auth, store } from '@firebase/firebaseApp';
 import { doc, setDoc } from 'firebase/firestore';
 
 //lib
@@ -21,7 +21,7 @@ import styles from './Form.module.scss';
 import validate from './validate';
 
 // 프로필이미지 관련
-import { storage } from '@firebase/firebaeApp';
+import { storage } from '@firebase/firebaseApp';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import InputFileImg from '@components/form/InputFileImg';
 import { v4 as uuidv4 } from 'uuid';

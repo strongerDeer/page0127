@@ -1,5 +1,5 @@
 import { BookData, MyData } from '@components/templates/TemplateBookCreate';
-import { store } from '@firebase/firebaeApp';
+import { store } from '@firebase/firebaseApp';
 import {
   arrayRemove,
   arrayUnion,

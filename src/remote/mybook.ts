@@ -1,5 +1,5 @@
 import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
-import { store } from '@firebase/firebaeApp';
+import { store } from '@firebase/firebaseApp';
 import { COLLECTIONS } from '@constants';
 import { Book } from '@models/book';
 

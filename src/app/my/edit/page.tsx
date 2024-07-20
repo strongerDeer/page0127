@@ -5,7 +5,7 @@ import InputFileImg from '@components/form/InputFileImg';
 import Button from '@components/shared/Button';
 import validate from '@components/sign/validate';
 import { COLLECTIONS } from '@constants';
-import { auth, store } from '@firebase/firebaeApp';
+import { auth, store } from '@firebase/firebaseApp';
 import useUser from '@hooks/auth/useUser';
 import { FormValues, InputArr } from '@models/sign';
 import { FirebaseError } from 'firebase/app';

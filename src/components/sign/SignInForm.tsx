@@ -4,7 +4,7 @@ import { ChangeEvent, useCallback, useMemo, useState } from 'react';
 
 //firebase
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@firebase/firebaeApp';
+import { auth } from '@firebase/firebaseApp';
 import { FirebaseError } from 'firebase/app';
 
 //lib

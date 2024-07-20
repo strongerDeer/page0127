@@ -1,5 +1,5 @@
 import { COLLECTIONS } from '@constants';
-import { store } from '@firebase/firebaeApp';
+import { store } from '@firebase/firebaseApp';
 import { User } from '@models/user';
 import {
   collection,
