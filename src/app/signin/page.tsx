@@ -1,6 +1,6 @@
 'use client';
 import SignInForm from '@components/sign/SignInForm';
-import SocialLogin from '@components/sign/SocialBtnContainer';
+import SocialLoginButtons from '@components/sign/SocialLoginButtons';
 import useUser from '@hooks/auth/useUser';
 import { InputArr } from '@models/sign';
 
@@ -33,7 +33,7 @@ export default function SignInPage() {
     <div className="max-width">
       <h2 className="title1">로그인</h2>
       <SignInForm inputArr={inputArr} />
-      <SocialLogin />
+      <SocialLoginButtons />
 
       <Link href="/auth/signup">아직 계정이 없으신가요?</Link>
     </div>

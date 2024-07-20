@@ -1,6 +1,6 @@
 'use client';
 import SignUpForm from '@components/sign/SignUpForm';
-import SocialLogin from '@components/sign/SocialBtnContainer';
+import SocialLoginButtons from '@components/sign/SocialLoginButtons';
 import useUser from '@hooks/auth/useUser';
 import { InputArr } from '@models/sign';
 import { useRouter } from 'next/navigation';
@@ -39,7 +39,7 @@ export default function SignUpPage() {
     <div className="max-width">
       <h2 className="title1">회원가입</h2>
       <SignUpForm inputArr={inputArr} />
-      <SocialLogin />
+      <SocialLoginButtons signUp />
     </div>
   );
 }
