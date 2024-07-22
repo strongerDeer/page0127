@@ -1,8 +1,8 @@
 export const COLLECTIONS = {
   USER: 'users',
+  BANNERS: 'banners',
   BOOKS: 'books',
   BOOK_LIKE: 'book_like',
-  BANNERS: 'banners',
   CLUBS: 'clubs',
   CLUB_APPLY: 'club_apply',
 };

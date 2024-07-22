@@ -10,17 +10,15 @@ import { motion } from 'framer-motion';
 import { Skeleton } from '@components/shared/Skeleton';
 import useBooks from './useBooks';
 import useBookLike from '@hooks/useBookLike';
-import { lightFormat } from 'date-fns';
+import { LikeBook } from '@models/likeBook';
 
 function BookList() {
   const { data, hasNextPage, loadMore } = useBooks();
-  const { data: bookLikes } = useBookLike();
+  const { data: bookLikes, mutate: bookLike } = useBookLike();
 
-  if (data === null) {
+  if (data === null || bookLikes === null) {
     return null;
   }
-
-  console.log('ddd', bookLikes);
 
   const books = flatten(data?.pages.map(({ data }) => data));
 
@@ -42,7 +40,12 @@ function BookList() {
               animate={{ opacity: 1, translateY: '0%' }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
             >
-              <BookListItem index={index} {...item} />
+              <BookListItem
+                index={index}
+                bookLikes={bookLikes as LikeBook[]}
+                bookLike={bookLike}
+                {...item}
+              />
             </motion.li>
           ))}
         </ul>
