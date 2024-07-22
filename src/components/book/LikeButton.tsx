@@ -1,10 +1,10 @@
 import Icon from '@components/icon/Icon';
 import { COLLECTIONS } from '@constants';
-import { useAlertContext } from '@contexts/AlertContext';
 import { useModalContext } from '@contexts/ModalContext';
 import { store } from '@firebase/firebaseApp';
 import useUser from '@hooks/auth/useUser';
-import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
+
+import { arrayRemove, arrayUnion, doc, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 
 export default function LikeButton({
@@ -20,12 +20,14 @@ export default function LikeButton({
   const { open, close } = useModalContext();
   const router = useRouter();
 
-  async function addLike() {
+  async function handleLike() {
     if (userId) {
       try {
-        await updateDoc(doc(store, COLLECTIONS.BOOKS, bookId), {
-          like: arrayUnion(userId),
-        });
+        if (isClickedLike) {
+          // 취소
+        } else {
+          // 좋아요
+        }
       } catch (error) {}
     } else {
       open({
@@ -33,6 +35,7 @@ export default function LikeButton({
         body: '로그인 페이지로 이동합니다',
         onButtonClick: () => {
           router.push('/signin');
+          close();
         },
         closeModal: () => {
           close();
@@ -42,7 +45,7 @@ export default function LikeButton({
   }
 
   return (
-    <button type="button" onClick={addLike}>
+    <button type="button" onClick={handleLike}>
       {isClickedLike ? (
         <Icon name="heartFill" color="error" />
       ) : (

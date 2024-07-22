@@ -1,7 +1,6 @@
-export interface Like {
+export interface BookLike {
   id: string;
   bookId: string;
-  bookTitle: string;
   userId: string;
   order: number;
 }

@@ -9,13 +9,18 @@ import BookListItem from './BookListItem';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@components/shared/Skeleton';
 import useBooks from './useBooks';
+import useBookLike from '@hooks/useBookLike';
+import { lightFormat } from 'date-fns';
 
 function BookList() {
   const { data, hasNextPage, loadMore } = useBooks();
+  const { data: bookLikes } = useBookLike();
 
   if (data === null) {
     return null;
   }
+
+  console.log('ddd', bookLikes);
 
   const books = flatten(data?.pages.map(({ data }) => data));
 

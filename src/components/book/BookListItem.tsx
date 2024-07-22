@@ -27,9 +27,9 @@ export default function BookListItem(props: bookItemProps) {
             <h3 className="font-bold">{title}</h3>
             <p>{category}</p>
           </div>
-          {id && <LikeButton bookId={id} like={like} />}
         </article>
       </Link>
+      {id && <LikeButton bookId={id} like={like} />}
     </>
   );
 }

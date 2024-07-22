@@ -2,7 +2,7 @@ import { Skeleton } from '@components/shared/Skeleton';
 import { useInView } from 'react-intersection-observer';
 import { useQuery } from 'react-query';
 
-export default function () {
+export default function Review() {
   const { ref, inView } = useInView({
     triggerOnce: true,
   });

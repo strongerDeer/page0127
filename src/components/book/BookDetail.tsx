@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import styles from './BookDetail.module.scss';
-import { Book } from '@models/book';
+import { Book, Grade } from '@models/book';
 import Review from './Review';
 import LifeUsers from './LifeUsers';
 export default function BookDetail({ data }: { data: Book }) {
@@ -25,10 +25,10 @@ export default function BookDetail({ data }: { data: Book }) {
     // lastUpdatedTime,
   } = data;
 
-  const scores = ['0', '1', '2', '3', '4', '5', '10'];
-  const grades = scores.map((score: string) => ({
+  const scores = ['0', '1', '2', '3', '4', '5', '10'] as const;
+  const grades = scores.map((score) => ({
     score,
-    length: grade[score] ? grade[score].length : 0,
+    length: getGradeLength(grade, score),
   }));
 
   let length = 0;
@@ -39,7 +39,7 @@ export default function BookDetail({ data }: { data: Book }) {
     sum += Number(score) * gradeLength;
   });
 
-  const avg = sum / length;
+  const avg = length > 0 ? (sum / length).toFixed(2) : '0.00';
 
   return (
     <>
@@ -76,14 +76,20 @@ export default function BookDetail({ data }: { data: Book }) {
             <p>출판일: {pubDate}</p>
             <p>page: {page}</p>
             <p>price: {price}</p>
-            <p>인생책: {grade['10'] ? grade['10'].length : 0}</p>
+            <p>인생책: {getGradeLength(grade, '10')}</p>
           </div>
         </div>
       </div>
 
-      <LifeUsers userIds={readUser} />
+      {readUser && <LifeUsers userIds={readUser} />}
       <div className="h-[1000px]"></div>
       <Review />
     </>
   );
+}
+
+function getGradeLength(grade: Book['grade'], score: keyof Grade): number {
+  if (!grade) return 0;
+  if (typeof grade === 'string') return 0;
+  return grade[score]?.length ?? 0;
 }

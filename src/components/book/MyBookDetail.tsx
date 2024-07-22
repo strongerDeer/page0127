@@ -74,7 +74,7 @@ export default function MyBookDetail({ data }: { data: Book }) {
         </div>
       </div>
 
-      <LifeUsers userIds={readUser} />
+      {readUser && <LifeUsers userIds={readUser} />}
       <div className="h-[1000px]"></div>
       <Review />
     </>

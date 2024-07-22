@@ -14,8 +14,8 @@ export default function KakaoShareButton({ userData }: { userData: User }) {
       <button
         onClick={() => {
           share({
-            title: userData.displayName,
-            description: userData.displayName,
+            title: userData.displayName ?? '',
+            description: userData.displayName ?? '',
             imageUrl: userData.photoURL || '',
             buttonLabel: `${userData.displayName} 책장 구경하기`,
           });

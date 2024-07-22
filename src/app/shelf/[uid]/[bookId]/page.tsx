@@ -4,7 +4,7 @@ import MyBookDetail from '@components/book/MyBookDetail';
 
 import useMyBook from '@components/book/useMyBook';
 
-export default function page({
+export default function Page({
   params,
 }: {
   params: { uid: string; bookId: string };

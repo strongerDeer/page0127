@@ -8,8 +8,9 @@ import { COLLECTIONS } from '@constants';
 import { auth, store } from '@firebase/firebaseApp';
 import useUser from '@hooks/auth/useUser';
 import { FormValues, InputArr } from '@models/sign';
+import { User } from '@models/user';
 import { FirebaseError } from 'firebase/app';
-import { getAuth, updateProfile } from 'firebase/auth';
+import { updateProfile } from 'firebase/auth';
 import { collection, doc, updateDoc } from 'firebase/firestore';
 import { ChangeEvent, useCallback, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -81,7 +82,7 @@ export default function MyEditPage() {
           },
         );
 
-        setUser({ ...user, photoURL: '' });
+        setUser({ ...user, photoURL: '' } as User);
       }
     } catch (error) {
       if (error instanceof FirebaseError) {

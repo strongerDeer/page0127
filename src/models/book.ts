@@ -15,11 +15,20 @@ export interface Book {
 
   readDate?: string;
   memo?: string;
-  grade?: { [key: string]: string[] } | string;
+  grade?: Grade | string;
   readUser?: string[];
   like?: string[];
 }
 
+export interface Grade {
+  '0': string[];
+  '1': string[];
+  '2': string[];
+  '3': string[];
+  '4': string[];
+  '5': string[];
+  '10': string[];
+}
 export interface StampTime {
   seconds: number;
   nanoseconds: number;
