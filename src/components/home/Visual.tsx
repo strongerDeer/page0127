@@ -11,13 +11,7 @@ export default function Visual() {
         <p>My Personal Online Library</p>
       </div>
 
-      <Image
-        src="/images/main-visual.jpg"
-        alt=""
-        width={1920}
-        height={400}
-        priority={true}
-      />
+      <Image src="/images/main-visual.jpg" alt="" sizes="100vw" fill priority />
     </div>
   );
 }
