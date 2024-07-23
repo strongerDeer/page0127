@@ -33,7 +33,7 @@ export default function TemplateSign({
       <SocialLoginButtons signUp={title === '로그인' ? false : true} />
 
       {title === '로그인' ? (
-        <Link href="/auth/signup">아직 계정이 없다면, 회원가입ㅎ</Link>
+        <Link href="/auth/signup">아직 계정이 없다면, 회원가입하세요!</Link>
       ) : (
         <Link href="/auth/signin">이미 계정이 있다면, 로그인</Link>
       )}
