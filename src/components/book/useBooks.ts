@@ -1,31 +1,29 @@
-import { useInfiniteQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { getBooks } from '@remote/book';
-import { useCallback } from 'react';
+import { useEffect } from 'react';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { COLLECTIONS } from '@constants';
+import { store } from '@firebase/firebaseApp';
+import { Book } from '@models/book';
 
 export default function useBooks() {
-  const {
-    data,
-    hasNextPage = false,
-    fetchNextPage,
-    isFetching,
-  } = useInfiniteQuery(
-    ['books'],
-    ({ pageParam }) => {
-      return getBooks(pageParam);
-    },
-    {
-      getNextPageParam: (snapshot) => {
-        return snapshot.lastVisible;
+  const client = useQueryClient();
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(store, COLLECTIONS.BOOKS),
+      (snapshot) => {
+        const newBooks = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        client.setQueryData(['books'], newBooks);
       },
-    },
-  );
+    );
+    return () => {
+      unsubscribe();
+    };
+  }, [client]);
 
-  const loadMore = useCallback(() => {
-    if (hasNextPage === false || isFetching) {
-      return;
-    }
-    fetchNextPage();
-  }, [fetchNextPage, hasNextPage, isFetching]);
-
-  return { data, hasNextPage, isFetching, loadMore };
+  return useQuery(['books'], () => getBooks());
 }

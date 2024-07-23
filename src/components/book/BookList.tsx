@@ -9,47 +9,29 @@ import BookListItem from './BookListItem';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@components/shared/Skeleton';
 import useBooks from './useBooks';
-import useBookLike from '@hooks/useBookLike';
-import { LikeBook } from '@models/likeBook';
 
 function BookList() {
-  const { data, hasNextPage, loadMore } = useBooks();
-  const { data: bookLikes, mutate: bookLike } = useBookLike();
-
-  if (data === null || bookLikes === null) {
+  const { data } = useBooks();
+  if (!data) {
     return null;
   }
 
-  const books = flatten(data?.pages.map(({ data }) => data));
-
   return (
     <>
-      {books && <>2024년 {books?.length}권</>}
-      <InfiniteScroll
-        dataLength={books.length}
-        hasMore={hasNextPage}
-        loader={!hasNextPage && <>Loading...</>}
-        next={loadMore}
-        scrollThreshold="100px"
-      >
-        <ul className="grid grid-cols-4 gap-16">
-          {books.map((item: Book, index: number) => (
-            <motion.li
-              key={item.id}
-              initial={{ opacity: 0, translateY: '20%' }}
-              animate={{ opacity: 1, translateY: '0%' }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-            >
-              <BookListItem
-                index={index}
-                bookLikes={bookLikes as LikeBook[]}
-                bookLike={bookLike}
-                {...item}
-              />
-            </motion.li>
-          ))}
-        </ul>
-      </InfiniteScroll>
+      {data && <>{data.length}권</>}
+
+      <ul className="grid grid-cols-4 gap-16">
+        {data.map((item: Book, index: number) => (
+          <motion.li
+            key={item.id}
+            initial={{ opacity: 0, translateY: '20%' }}
+            animate={{ opacity: 1, translateY: '0%' }}
+            transition={{ duration: 0.3, delay: index * 0.05 }}
+          >
+            <BookListItem index={index} {...item} />
+          </motion.li>
+        ))}
+      </ul>
     </>
   );
 }

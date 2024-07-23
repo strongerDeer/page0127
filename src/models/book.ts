@@ -17,7 +17,7 @@ export interface Book {
   memo?: string;
   grade?: Grade | string;
   readUser?: string[];
-  like?: string[];
+  likeUsers?: string[];
 }
 
 export interface Grade {

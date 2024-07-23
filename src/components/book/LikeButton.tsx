@@ -1,27 +1,44 @@
 import Icon from '@components/icon/Icon';
+import { COLLECTIONS } from '@constants';
+import { store } from '@firebase/firebaseApp';
 
 import useUser from '@hooks/auth/useUser';
-import { LikeBook } from '@models/likeBook';
+import {
+  arrayRemove,
+  arrayUnion,
+  collection,
+  doc,
+  updateDoc,
+} from 'firebase/firestore';
 
 export default function LikeButton({
   bookId,
-  bookLikes,
-  bookLike,
+  likeUsers = [],
 }: {
   bookId: string;
-  bookLikes: LikeBook[];
-  bookLike: ({ bookId }: { bookId: string }) => void;
+  likeUsers?: string[];
 }) {
   const userId = useUser()?.uid;
+  const isLiked = likeUsers?.includes(userId as string);
 
-  async function handleLike(e: React.MouseEvent<HTMLButtonElement>) {
-    bookLike({ bookId });
-  }
-  const isLike = Boolean(bookLikes?.find((like) => like.userId === userId));
-
+  const handleLike = async () => {
+    if (!isLiked) {
+      await updateDoc(doc(collection(store, COLLECTIONS.BOOKS), bookId), {
+        likeUsers: arrayUnion(userId),
+      });
+    } else {
+      await updateDoc(doc(collection(store, COLLECTIONS.BOOKS), bookId), {
+        likeUsers: arrayRemove(userId),
+      });
+    }
+  };
   return (
     <button type="button" onClick={handleLike}>
-      {isLike ? <Icon name="heartFill" color="error" /> : <Icon name="heart" />}
+      {isLiked ? (
+        <Icon name="heartFill" color="error" />
+      ) : (
+        <Icon name="heart" />
+      )}
     </button>
   );
 }

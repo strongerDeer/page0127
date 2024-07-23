@@ -6,11 +6,9 @@ import { LikeBook } from '@models/likeBook';
 
 interface bookItemProps extends Book {
   index: number;
-  bookLikes: LikeBook[];
-  bookLike: ({ bookId }: { bookId: string }) => void;
 }
 export default function BookListItem(props: bookItemProps) {
-  const { id, frontCover, title, category, index, bookLikes, bookLike } = props;
+  const { id, frontCover, title, category, index, likeUsers } = props;
 
   return (
     <>
@@ -33,9 +31,7 @@ export default function BookListItem(props: bookItemProps) {
           </div>
         </article>
       </Link>
-      {id && (
-        <LikeButton bookId={id} bookLikes={bookLikes} bookLike={bookLike} />
-      )}
+      {id && <LikeButton bookId={id} likeUsers={likeUsers} />}
     </>
   );
 }
