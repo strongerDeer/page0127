@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
+import { pretendard } from '@font';
 import '@styles/theme.scss';
 import '@styles/globals.scss';
 
 import Layout from '@components/layouts/Layout';
-import { pretendard } from './font';
 
 export const metadata: Metadata = {
   title: 'page 0127.',

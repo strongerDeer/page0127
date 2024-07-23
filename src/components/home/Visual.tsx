@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import styles from './Visual.module.scss';
 import clsx from 'clsx';
-import { cormorant } from '@app/font';
+import { cormorant } from '@font';
 
 export default function Visual() {
   return (

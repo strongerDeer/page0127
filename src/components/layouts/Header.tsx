@@ -14,7 +14,7 @@ import { useCallback } from 'react';
 import LogoutButton from '@components/sign/LogoutButton';
 import Icon from '@components/icon/Icon';
 import MyImage from '@components/shared/MyImage';
-import { cormorant } from '@app/font';
+import { cormorant } from '@font';
 export default function Header() {
   const pathname = usePathname();
   const user = useUser();
