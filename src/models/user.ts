@@ -4,6 +4,8 @@ export interface User {
   displayName?: string;
   photoURL?: string | null;
 
+  follower?: string[];
+  following?: string[];
   total?: string[];
   provider?: string | null;
   category?: { [key: string]: string[] } | null;

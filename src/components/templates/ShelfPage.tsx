@@ -9,7 +9,7 @@ import { getUser } from '@remote/user';
 import { useQuery } from 'react-query';
 
 import styles from './ShelfPage.module.scss';
-
+import FollowButton from '@components/follow/FollowButton';
 import ProfileImage from '@components/shared/ProfileImage';
 
 export default function ShelfPage({ pageUid }: { pageUid: string }) {
@@ -19,6 +19,7 @@ export default function ShelfPage({ pageUid }: { pageUid: string }) {
       <Background />
       <div className={styles.wrap}>
         <div>
+          <FollowButton pageUid={pageUid} />
           <ProfileImage photoURL={userData?.photoURL || ''} />
           <p>{userData?.displayName}</p>
           <p>여기는 나를 소개하는 공간입니다</p>
