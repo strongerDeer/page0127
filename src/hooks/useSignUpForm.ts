@@ -5,10 +5,9 @@ import { toast } from 'react-toastify';
 
 import { FormValues } from '@models/sign';
 
-import validate from '@components/sign/validate';
-
 import postSignUp from '@remote/sign';
 import { FirebaseError } from 'firebase/app';
+import signUpValidate from '@components/sign/singUpValidate';
 
 export type SignUpFormValues = Omit<FormValues, 'photoURL'>;
 
@@ -43,7 +42,7 @@ export const useSignUpForm = () => {
     }));
   }, []);
 
-  const errors = useMemo(() => validate(formValues, 'signUp'), [formValues]);
+  const errors = useMemo(() => signUpValidate(formValues), [formValues]);
 
   const isSubmit = Object.keys(errors).length === 0;
 

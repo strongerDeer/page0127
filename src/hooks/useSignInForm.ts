@@ -5,10 +5,9 @@ import { toast } from 'react-toastify';
 
 import { FormValues } from '@models/sign';
 
-import validate from '@components/sign/validate';
-
 import postSign from '@remote/sign';
 import { FirebaseError } from 'firebase/app';
+import signInValidate from '@components/sign/signInValidate';
 
 export type SignInFormValues = Omit<
   FormValues,
@@ -42,10 +41,11 @@ export const useSignInForm = () => {
     }));
   }, []);
 
-  const errors = useMemo(() => validate(formValues, 'signUp'), [formValues]);
+  const errors = useMemo(() => signInValidate(formValues), [formValues]);
 
   const isSubmit = Object.keys(errors).length === 0;
 
+  console.log(isSubmit);
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     try {
