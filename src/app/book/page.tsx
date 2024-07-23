@@ -1,5 +1,4 @@
-import dynamic from 'next/dynamic';
-import { BookListSkeleton } from '@components/book/BookList';
+import BookList from '@components/book/BookList';
 
 export default function Home() {
   return (
@@ -9,8 +8,3 @@ export default function Home() {
     </main>
   );
 }
-
-const BookList = dynamic(() => import('@components/book/BookList'), {
-  ssr: false,
-  loading: () => <BookListSkeleton />,
-});

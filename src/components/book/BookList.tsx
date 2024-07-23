@@ -1,16 +1,13 @@
 'use client';
 
-import flatten from 'lodash.flatten';
-import InfiniteScroll from 'react-infinite-scroll-component';
-import withSuspense from '@hooks/withSuspense';
+import { motion } from 'framer-motion';
+
+import useBooks from '@hooks/useBooks';
 import { Book } from '@models/book';
 
 import BookListItem from './BookListItem';
-import { motion } from 'framer-motion';
-import { Skeleton } from '@components/shared/Skeleton';
-import useBooks from './useBooks';
 
-function BookList() {
+export default function BookList() {
   const { data } = useBooks();
   if (!data) {
     return null;
@@ -35,28 +32,3 @@ function BookList() {
     </>
   );
 }
-
-export function BookListSkeleton() {
-  return (
-    <>
-      2024년
-      <ul className="grid grid-cols-4 gap-16">
-        {[...new Array(5)].map((_, index) => (
-          <li key={index}>
-            <article className="flex flex-col gap-8 items-center">
-              <div className="w-40 h-40 aspect-[1/2] flex justify-center">
-                <Skeleton width="8rem" height="10rem" />
-              </div>
-              <div className="flex flex-col text-center gap-2">
-                <Skeleton width="10rem" height="1em" />
-                <Skeleton width="10rem" height="1em" />
-              </div>
-            </article>
-          </li>
-        ))}
-      </ul>
-    </>
-  );
-}
-
-export default withSuspense(BookList, { fallback: <BookListSkeleton /> });
