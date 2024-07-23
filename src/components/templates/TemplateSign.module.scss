@@ -1,0 +1,13 @@
+@import '@/styles/var.scss';
+
+.signContainer {
+  @extend .max-width;
+
+  width: 48rem;
+  margin-top: fcSize(20, 80);
+
+  h2 {
+    @extend .title1;
+    margin-bottom: fcSize(16, 32);
+  }
+}

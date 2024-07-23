@@ -4,11 +4,10 @@ import Button from '@components/shared/Button';
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-interface ButtonFixedBottomProps {
+interface ButtonFixedBottomProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement | HTMLAnchorElement> {
   text: string;
   type?: 'button' | 'submit' | 'reset';
-  disabled?: boolean;
-  onClick?: () => void;
 }
 export default function ButtonFixedBottom({
   text,

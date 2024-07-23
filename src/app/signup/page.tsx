@@ -1,9 +1,6 @@
-'use client';
-import SignUpForm from '@components/sign/SignUpForm';
-import SocialLoginButtons from '@components/sign/SocialLoginButtons';
-import useUser from '@hooks/auth/useUser';
+import TemplateSign from '@components/templates/TemplateSign';
+
 import { InputArr } from '@models/sign';
-import { useRouter } from 'next/navigation';
 
 // 회원가입 입력정보
 const inputArr: InputArr[] = [
@@ -29,17 +26,5 @@ const inputArr: InputArr[] = [
 ];
 
 export default function SignUpPage() {
-  const router = useRouter();
-  const user = useUser();
-
-  if (user) {
-    router.replace('/');
-  }
-  return (
-    <div className="max-width">
-      <h2 className="title1">회원가입</h2>
-      <SignUpForm inputArr={inputArr} />
-      <SocialLoginButtons signUp />
-    </div>
-  );
+  return <TemplateSign title="회원가입" inputArr={inputArr} />;
 }

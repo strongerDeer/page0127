@@ -11,11 +11,12 @@ import useLikeBooks from '@hooks/useLikeBooks';
 export default function MyPage() {
   const user = useUser();
   const { data } = useLikeBooks();
+
   return (
     <div>
       {user?.displayName}
 
-      <ProfileImage photoURL={user?.photoURL || ''} />
+      <ProfileImage photoURL={user?.photoURL as string} />
 
       <ProgressBar value={20} total={50} />
       <LogoutButton>로그아웃</LogoutButton>

@@ -14,13 +14,14 @@ import ProfileImage from '@components/shared/ProfileImage';
 
 export default function ShelfPage({ pageUid }: { pageUid: string }) {
   const { data: userData } = useQuery(['users'], () => getUser(pageUid));
+
   return (
     <div>
       <Background />
       <div className={styles.wrap}>
         <div>
           <FollowButton pageUid={pageUid} />
-          <ProfileImage photoURL={userData?.photoURL || ''} />
+          <ProfileImage photoURL={userData?.photoURL as string} />
           <p>{userData?.displayName}</p>
           <p>여기는 나를 소개하는 공간입니다</p>
           <p>
