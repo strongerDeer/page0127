@@ -3,7 +3,7 @@ import { userAtom } from '@atoms/user';
 import Input from '@components/form/Input';
 import InputFileImg from '@components/form/InputFileImg';
 import Button from '@components/shared/Button';
-import validate from '@components/sign/validate';
+import signUpValidate from '@components/sign/singUpValidate';
 import { COLLECTIONS } from '@constants';
 import { auth, store } from '@firebase/firebaseApp';
 import useUser from '@hooks/auth/useUser';
@@ -49,7 +49,7 @@ export default function MyEditPage() {
 
   const [inputDirty, setInputDirty] = useState<Partial<EditFormValues>>({});
 
-  const errors = useMemo(() => validate(formValues, 'signUp'), [formValues]);
+  const errors = useMemo(() => signUpValidate(formValues), [formValues]);
   const isSubmit = Object.keys(errors).length === 0;
 
   const handleFormValues = useCallback((e: ChangeEvent<HTMLInputElement>) => {
