@@ -2,7 +2,6 @@
 import ActionButtons from '@components/ActionButtons';
 import MyBooks from '@components/MyBooks';
 import Chart from '@components/my/Chart';
-import MyImage from '@components/shared/MyImage';
 import ProgressBar from '@components/shared/ProgressBar';
 import Background from '@components/shelf/Background';
 
@@ -11,6 +10,8 @@ import { useQuery } from 'react-query';
 
 import styles from './ShelfPage.module.scss';
 
+import ProfileImage from '@components/shared/ProfileImage';
+
 export default function ShelfPage({ pageUid }: { pageUid: string }) {
   const { data: userData } = useQuery(['users'], () => getUser(pageUid));
   return (
@@ -18,7 +19,7 @@ export default function ShelfPage({ pageUid }: { pageUid: string }) {
       <Background />
       <div className={styles.wrap}>
         <div>
-          <MyImage />
+          <ProfileImage photoURL={userData?.photoURL || ''} />
           <p>{userData?.displayName}</p>
           <p>여기는 나를 소개하는 공간입니다</p>
           <p>

@@ -2,11 +2,17 @@
 import useUser from '@hooks/auth/useUser';
 import Image from 'next/image';
 
-export default function MyImage({ width }: { width?: number }) {
-  const user = useUser();
+export default function ProfileImage({
+  photoURL,
+  width,
+}: {
+  photoURL?: string;
+  width?: number;
+}) {
+  const src = photoURL ? photoURL : '/images/no-profile.png';
   return (
     <Image
-      src={user?.photoURL ?? '/images/no-profile.png'}
+      src={src}
       alt=""
       width={width || 80}
       height={width || 80}

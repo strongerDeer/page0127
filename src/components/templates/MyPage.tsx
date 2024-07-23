@@ -2,7 +2,7 @@
 
 import LikeBooks from '@components/LikeBooks';
 import BookList from '@components/book/BookList';
-import MyImage from '@components/shared/MyImage';
+import ProfileImage from '@components/shared/ProfileImage';
 import ProgressBar from '@components/shared/ProgressBar';
 import LogoutButton from '@components/sign/LogoutButton';
 import useUser from '@hooks/auth/useUser';
@@ -15,7 +15,7 @@ export default function MyPage() {
     <div>
       {user?.displayName}
 
-      <MyImage />
+      <ProfileImage photoURL={user?.photoURL || ''} />
 
       <ProgressBar value={20} total={50} />
       <LogoutButton>로그아웃</LogoutButton>
