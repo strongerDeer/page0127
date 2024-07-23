@@ -1,4 +1,4 @@
-export interface Banner {
+export interface I_Banner {
   id: string;
   title: string;
   description: string;

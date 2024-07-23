@@ -4,21 +4,23 @@ import Link from 'next/link';
 // lib
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
-import { Banner } from '@models/banner';
-import { useQuery } from 'react-query';
-import { COLLECTIONS } from '@constants';
-import { getBanners } from '@remote/banners';
-import withSuspense from '@hooks/withSuspense';
+import { I_Banner } from '@models/banner';
+
 import { Skeleton } from '@components/shared/Skeleton';
+import useBanners from '@hooks/useBanner';
+import withSuspense from '@hooks/withSuspense';
 
-function Banners() {
-  const { data: banners } = useQuery([COLLECTIONS.BANNERS], () => getBanners());
+function Banner() {
+  const { data, isLoading } = useBanners();
 
+  if (isLoading || data === null || data?.length === 0) {
+    return null;
+  }
   return (
-    <section>
+    <section className="mt-[-4rem]">
       <h2 className="a11y-hidden">배너</h2>
       <Swiper spaceBetween={8}>
-        {banners?.map((item: Banner) => (
+        {data?.map((item: I_Banner) => (
           <SwiperSlide
             key={item.id}
             className="bg-blue-100 px-8 py-6 rounded-xl flex items-center h-32"
@@ -60,4 +62,4 @@ export function BannerSkeleton() {
   );
 }
 
-export default withSuspense(Banners, { fallback: <BannerSkeleton /> });
+export default withSuspense(Banner, { fallback: <BannerSkeleton /> });
