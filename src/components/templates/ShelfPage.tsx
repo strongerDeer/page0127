@@ -23,7 +23,7 @@ export default function ShelfPage({ pageUid }: { pageUid: string }) {
           <FollowButton pageUid={pageUid} />
           <ProfileImage photoURL={userData?.photoURL as string} />
           <p>{userData?.displayName}</p>
-          <p>여기는 나를 소개하는 공간입니다</p>
+          {userData?.intro && <p>{userData?.intro}</p>}
           <p>
             <span>팔로워</span> <strong>00</strong>
           </p>
@@ -31,7 +31,10 @@ export default function ShelfPage({ pageUid }: { pageUid: string }) {
             <span>팔로잉</span> <strong>00</strong>
           </p>
           {userData && <ActionButtons userData={userData} />}
-          <ProgressBar value={20} total={50} />
+          <ProgressBar
+            value={Number(userData?.total?.length) || 0}
+            total={Number(userData?.goal) || 1}
+          />
           {userData?.category && <Chart userData={userData} />}
         </div>
 

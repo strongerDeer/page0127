@@ -12,9 +12,11 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { COLLECTIONS } from '@constants';
 import { FirebaseError } from 'firebase/app';
+import { useModalContext } from '@contexts/ModalContext';
 
 export default function useSocialSignIn() {
   const router = useRouter();
+  const { open, close } = useModalContext();
 
   const logIn = useCallback(
     async (type: string) => {
@@ -74,7 +76,23 @@ export default function useSocialSignIn() {
   );
 
   const logOut = useCallback(() => {
-    signOut(auth);
+    open({
+      title: '로그아웃 하시겠습니까?',
+      buttonLabel: '로그아웃',
+      onButtonClick: async () => {
+        try {
+          await signOut(auth);
+          close();
+          toast.success('로그아웃 되었습니다!');
+        } catch (error) {
+          console.log(error);
+        }
+      },
+      closeButtonLabel: '취소',
+      closeModal: () => {
+        close();
+      },
+    });
   }, []);
   return { logIn, logOut };
 }

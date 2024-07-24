@@ -4,7 +4,7 @@ export interface User {
   displayName?: string;
   photoURL?: string | null;
 
-  goal?: number;
+  goal?: string;
   intro?: string;
 
   follower?: string[];
@@ -15,11 +15,9 @@ export interface User {
 }
 
 export interface Profile {
-  uid: string;
   displayName: string;
-  photoURL?: string | null;
-  goal?: number;
-  intro?: string;
-  password: string;
-  rePassword: string;
+  photoURL: string;
+  goal: string;
+  intro: string;
+  [key: string]: string;
 }

@@ -42,21 +42,41 @@ export default function Input<T>({
   return (
     <div className={clsx([styles.wrap, hasError && styles.error, className])}>
       <label htmlFor={id}>{label}</label>
-      <input
-        id={id}
-        name={name}
-        type={type}
-        value={value || state}
-        onChange={onChange}
-        autoComplete={
-          type === 'email'
-            ? 'email'
-            : type === 'displayName'
-              ? 'displayName'
-              : 'off'
-        }
-        {...rest}
-      />
+      {type === 'number' ? (
+        <input
+          id={id}
+          name={name}
+          type={type}
+          value={value || state}
+          onChange={onChange}
+          autoComplete={
+            type === 'email'
+              ? 'email'
+              : type === 'displayName'
+                ? 'displayName'
+                : 'off'
+          }
+          min={1}
+          max={1000}
+          {...rest}
+        />
+      ) : (
+        <input
+          id={id}
+          name={name}
+          type={type}
+          value={value || state}
+          onChange={onChange}
+          autoComplete={
+            type === 'email'
+              ? 'email'
+              : type === 'displayName'
+                ? 'displayName'
+                : 'off'
+          }
+          {...rest}
+        />
+      )}
       {helpMessage && <p className={styles.helpMessage}>{helpMessage}</p>}
     </div>
   );

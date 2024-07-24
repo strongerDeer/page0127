@@ -1,0 +1,10 @@
+@import '@/styles/var.scss';
+
+.myPage {
+  @extend .max-width;
+
+  .btns {
+    display: flex;
+    gap: 0.4rem;
+  }
+}

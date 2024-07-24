@@ -27,7 +27,7 @@ export default function useLikeBooks() {
     return () => {
       unsubscribe();
     };
-  }, [client]);
+  }, [client, userId]);
 
   return useQuery(['books'], () => getLikeBooks(userId as string));
 }

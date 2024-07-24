@@ -9,12 +9,14 @@ import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
 import Input from '@components/form/Input';
 import InputFileImg from '@components/form/InputFileImg';
 import { useEditProfileForm } from '@hooks/useEditProfileForm';
+import useUser from '@hooks/auth/useUser';
 
 export default function EditProfileForm({
   inputArr,
 }: {
   inputArr: InputArr[];
 }) {
+  const user = useUser();
   const isMobile = false;
 
   const {

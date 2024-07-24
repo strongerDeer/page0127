@@ -11,15 +11,16 @@ import styles from './Header.module.scss';
 import Button from '@components/shared/Button';
 import useUser, { useUserLoading } from '@hooks/auth/useUser';
 import { useCallback } from 'react';
-import LogoutButton from '@components/sign/LogoutButton';
 import Icon from '@components/icon/Icon';
 
 import { cormorant } from '@font';
 import ProfileImage from '@components/shared/ProfileImage';
+import useSocialSignIn from '@components/sign/useSocialSignIn';
 export default function Header() {
   const pathname = usePathname();
   const user = useUser();
   const isLoading = useUserLoading();
+  const { logOut } = useSocialSignIn();
 
   const renderButton = useCallback(() => {
     if (user !== null) {
@@ -32,10 +33,10 @@ export default function Header() {
           <Button href={`/shelf/${user.uid}`} variant="outline" color="grayLv4">
             나의 책장
           </Button>
-          <LogoutButton>
+          <button type="button" onClick={logOut}>
             <Icon name="logout" color="grayLv3" />
             <span className="a11y-hidden">로그아웃</span>
-          </LogoutButton>
+          </button>
         </>
       );
     } else {

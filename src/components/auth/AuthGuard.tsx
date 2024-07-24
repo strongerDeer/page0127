@@ -4,6 +4,8 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@firebase/firebaseApp';
 import { useSetRecoilState } from 'recoil';
 import { userAtom, userLoadingAtom } from '@atoms/user';
+import { useQuery } from 'react-query';
+import { getUser } from '@remote/user';
 
 // 인증처리
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -14,12 +16,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        setUser({
-          uid: user.uid,
-          email: user.email ?? '',
-          displayName: user.displayName ?? '',
-          photoURL: user.photoURL ?? '',
-        });
+        const userData = await getUser(user.uid);
+        setUser(userData);
       } else {
         setUser(null);
       }

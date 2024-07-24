@@ -1,20 +1,12 @@
-import validator from 'validator';
-import { SignUpFormValues } from '@hooks/useSignUpForm';
+import { Profile } from '@models/user';
 
-export default function editProfileValidate(formValues: SignUpFormValues) {
-  const { password, rePassword, displayName } = formValues;
-  let errors: SignUpFormValues = {};
+type Validator = Omit<Profile, 'displayName'>;
 
-  if (password.length < 8) {
-    errors.password = '비밀번호를 8글자 이상 입력해주세요';
-  }
-  if (rePassword.length < 8) {
-    errors.rePassword = '비밀번호를 8글자 이상 입력해주세요';
-  } else if (validator.equals(password, rePassword) === false) {
-    errors.rePassword = '비밀번호가 일치하지 않습니다.';
-  }
+export default function editProfileValidate(formValues: Validator) {
+  const { displayName } = formValues;
+  let errors: Validator = {};
 
-  if (displayName?.length < 2) {
+  if (displayName.length < 2) {
     errors.displayName = '닉네임은 2글자 이상 입력해주세요';
   }
 

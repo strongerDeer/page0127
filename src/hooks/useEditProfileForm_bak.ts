@@ -1,24 +1,30 @@
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+
 import { toast } from 'react-toastify';
+
 import { FormValues } from '@models/sign';
+
 import { FirebaseError } from 'firebase/app';
+
 import editProfileValidate from '@components/sign/editProfileValidate';
 import { Profile } from '@models/user';
 import useUser from './auth/useUser';
 import EditProfile from '@remote/profile';
 
 export const useEditProfileForm = () => {
-  const user = useUser();
   const router = useRouter();
+  const user = useUser();
 
   const [profileImage, setProfileImg] = useState<string>(user?.photoURL || '');
 
   // controlled 방식 사용 : state 사용
   const [formValues, setFormValues] = useState<Omit<Profile, 'photoURL'>>({
+    password: '',
+    rePassword: '',
     displayName: user?.displayName || '',
-    goal: user?.goal || '1',
-    intro: user?.intro || '',
+    goal: '1',
+    intro: '',
   });
 
   const [inputDirty, setInputDirty] = useState<Partial<FormValues>>({});
@@ -41,21 +47,10 @@ export const useEditProfileForm = () => {
 
   const errors = useMemo(() => editProfileValidate(formValues), [formValues]);
 
-  const isProfileChanged = useMemo(() => {
-    if (!user) return false;
-    return (
-      user.displayName !== formValues.displayName ||
-      user.goal !== formValues.goal ||
-      user.intro !== formValues.intro ||
-      user.photoURL !== profileImage
-    );
-  }, [user, formValues, profileImage]);
-
-  const isSubmit = Object.keys(errors).length === 0 && isProfileChanged;
+  const isSubmit = Object.keys(errors).length === 0;
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-
     try {
       await edit(formValues, profileImage);
       toast.success('수정되었습니다.');
