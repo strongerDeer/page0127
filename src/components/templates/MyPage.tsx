@@ -19,7 +19,7 @@ export default function MyPage() {
       <strong>{user?.displayName}</strong>
       {user?.intro && <p>{user?.intro}</p>}
       <ProgressBar
-        value={Number(user?.total?.length)}
+        value={Number(user?.total?.length) || 0}
         total={Number(user?.goal) || 1}
       />
 
