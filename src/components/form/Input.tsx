@@ -49,7 +49,11 @@ export default function Input<T>({
         value={value || state}
         onChange={onChange}
         autoComplete={
-          type === 'email' ? 'email' : type === 'nickname' ? 'nickname' : 'off'
+          type === 'email'
+            ? 'email'
+            : type === 'displayName'
+              ? 'displayName'
+              : 'off'
         }
         {...rest}
       />

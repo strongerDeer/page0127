@@ -22,7 +22,7 @@ const inputArr: InputArr[] = [
     label: '비밀번호 확인',
     placeholder: '8자 이상',
   },
-  { id: 'nickname', type: 'text', label: '닉네임', placeholder: '2자 이상' },
+  { id: 'displayName', type: 'text', label: '닉네임', placeholder: '2자 이상' },
 ];
 
 export default function SignUpPage() {

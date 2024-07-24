@@ -1,10 +1,6 @@
 import { doc, setDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadString } from 'firebase/storage';
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  updateProfile,
-} from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 
 import { COLLECTIONS } from '@constants';
 import { SignUpFormValues } from '@hooks/useSignUpForm';
@@ -13,8 +9,8 @@ import { auth, storage, store } from '@firebase/firebaseApp';
 import { v4 as uuidv4 } from 'uuid';
 import { SignInFormValues } from '@hooks/useSignInForm';
 
-export default function postSign() {
-  const signUp = async (formValues: SignUpFormValues, profileImage: string) => {
+export default function editProfile() {
+  const edit = async (formValues: SignUpFormValues, profileImage: string) => {
     const { email, password, displayName } = formValues;
 
     await createUserWithEmailAndPassword(auth, email, password).then(
@@ -51,9 +47,6 @@ export default function postSign() {
       },
     );
   };
-  const signIn = async (formValues: SignInFormValues) => {
-    const { email, password } = formValues;
-    await signInWithEmailAndPassword(auth, email, password);
-  };
-  return { signUp, signIn };
+
+  return { edit };
 }

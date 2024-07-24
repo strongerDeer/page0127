@@ -5,28 +5,28 @@ import { toast } from 'react-toastify';
 
 import { FormValues } from '@models/sign';
 
-import postSignUp from '@remote/sign';
 import { FirebaseError } from 'firebase/app';
-import signUpValidate from '@components/sign/singUpValidate';
+import editProfile from '@remote/profile';
+import editProfileValidate from '@components/sign/editProfileValidate';
+import { Profile } from '@models/user';
 
-export type SignUpFormValues = Omit<FormValues, 'photoURL'>;
-
-export const useSignUpForm = () => {
+export const useEditProfileForm = () => {
   const router = useRouter();
 
   const [profileImage, setProfileImg] = useState<string>('');
 
   // controlled 방식 사용 : state 사용
-  const [formValues, setFormValues] = useState<SignUpFormValues>({
-    email: '',
+  const [formValues, setFormValues] = useState<Profile>({
     password: '',
     rePassword: '',
     displayName: '',
+    goal: 0,
+    intro: '',
   });
 
   const [inputDirty, setInputDirty] = useState<Partial<FormValues>>({});
 
-  const { signUp } = postSignUp();
+  const { edit } = editProfile();
 
   // 계속해서 리렌더링 발생. 외부 값의 영향을 받지 않음으로 useCallback 사용
   const handleFormValues = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -42,14 +42,14 @@ export const useSignUpForm = () => {
     }));
   }, []);
 
-  const errors = useMemo(() => signUpValidate(formValues), [formValues]);
+  const errors = useMemo(() => editProfileValidate(formValues), [formValues]);
 
   const isSubmit = Object.keys(errors).length === 0;
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     try {
-      await signUp(formValues, profileImage);
+      await edit(formValues, profileImage);
       toast.success('회원가입 되었습니다!');
       router.push('/');
     } catch (error) {

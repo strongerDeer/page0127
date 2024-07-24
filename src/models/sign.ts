@@ -2,7 +2,7 @@ export interface FormValues {
   email: string;
   password: string;
   rePassword: string;
-  nickname: string;
+  displayName: string;
   photoURL: string;
   [key: string]: string;
 }

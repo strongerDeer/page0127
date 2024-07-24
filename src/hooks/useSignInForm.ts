@@ -11,7 +11,7 @@ import signInValidate from '@components/sign/signInValidate';
 
 export type SignInFormValues = Omit<
   FormValues,
-  'nickname' | 'rePassword' | 'photoURL'
+  'displayName' | 'rePassword' | 'photoURL'
 >;
 
 export const useSignInForm = () => {
