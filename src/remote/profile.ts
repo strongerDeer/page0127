@@ -23,7 +23,9 @@ export default function EditProfile() {
 
       let photoURL = user?.photoURL;
 
-      if (profileImage !== '' && user?.photoURL !== profileImage) {
+      if (user?.photoURL !== null && profileImage === '') {
+        photoURL = null;
+      } else if (profileImage !== '' && user?.photoURL !== profileImage) {
         // 1. 이미지 키 생성
         const imgKey = `${auth.currentUser.uid}/${uuidv4()}`;
 
