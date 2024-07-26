@@ -1,9 +1,14 @@
 'use client';
 import { collection, doc, updateDoc } from 'firebase/firestore';
-import { getDownloadURL, ref, uploadString } from 'firebase/storage';
+import {
+  deleteObject,
+  getDownloadURL,
+  ref,
+  uploadString,
+} from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 
-import { COLLECTIONS } from '@constants';
+import { COLLECTIONS, STORAGE_DOWNLOAD_URL_STR } from '@constants';
 import { SignUpFormValues } from '@hooks/useSignUpForm';
 import { auth, storage, store } from '@firebase/firebaseApp';
 
@@ -19,8 +24,11 @@ export default function EditProfile() {
   const setUser = useSetRecoilState(userAtom);
   const edit = async (formValues: SignUpFormValues, profileImage: string) => {
     if (auth.currentUser) {
+      // 기존 이미지 삭제
+      if (user?.photoURL !== profileImage) {
+        deleteImageInStorage(user?.photoURL as string);
+      }
       // 프로필 이미지 경로 생성
-
       let photoURL = user?.photoURL;
 
       if (user?.photoURL !== null && profileImage === '') {
@@ -63,6 +71,16 @@ export default function EditProfile() {
 
   return { edit };
 }
+
+const deleteImageInStorage = async (imgUrl: string) => {
+  if (!imgUrl || !imgUrl.includes(STORAGE_DOWNLOAD_URL_STR)) return;
+
+  try {
+    await deleteObject(ref(storage, imgUrl));
+  } catch (error) {
+    console.error('Error deleting image:', error);
+  }
+};
 
 /*
 // 비밀번호 변경
