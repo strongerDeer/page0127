@@ -1,51 +1,23 @@
-import { ChangeEvent, useCallback, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { toast } from 'react-toastify';
-
-import { FormValues } from '@models/sign';
+import { FirebaseError } from 'firebase/app';
 
 import postSign from '@remote/sign';
-import { FirebaseError } from 'firebase/app';
 import signInValidate from '@components/sign/signInValidate';
-
-export type SignInFormValues = Omit<
-  FormValues,
-  'displayName' | 'rePassword' | 'photoURL'
->;
+import { useForm } from './useForm';
+import { SignInFormValues } from '@models/sign';
 
 export const useSignInForm = () => {
   const router = useRouter();
-
-  // controlled 방식 사용 : state 사용
-  const [formValues, setFormValues] = useState<SignInFormValues>({
-    email: '',
-    password: '',
-  });
-
-  const [inputDirty, setInputDirty] = useState<Partial<FormValues>>({});
-
   const { signIn } = postSign();
-
-  // 계속해서 리렌더링 발생. 외부 값의 영향을 받지 않음으로 useCallback 사용
-  const handleFormValues = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormValues((prev) => ({ ...prev, [name]: value }));
-  }, []);
-
-  const handleBlur = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const { name } = e.target;
-    setInputDirty((prev) => ({
-      ...prev,
-      [name]: 'true',
-    }));
-  }, []);
+  const { formValues, inputDirty, handleFormValues, handleBlur } =
+    useForm<SignInFormValues>({ email: '', password: '' });
 
   const errors = useMemo(() => signInValidate(formValues), [formValues]);
-
   const isSubmit = Object.keys(errors).length === 0;
 
-  console.log(isSubmit);
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     try {
