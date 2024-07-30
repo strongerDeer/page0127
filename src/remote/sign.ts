@@ -7,11 +7,10 @@ import {
 } from 'firebase/auth';
 
 import { COLLECTIONS } from '@constants';
-import { SignUpFormValues } from '@hooks/useSignUpForm';
 import { auth, storage, store } from '@firebase/firebaseApp';
 
 import { v4 as uuidv4 } from 'uuid';
-import { SignInFormValues } from '@hooks/useSignInForm';
+import { SignInFormValues, SignUpFormValues } from '@models/sign';
 
 export default function postSign() {
   const signUp = async (formValues: SignUpFormValues, profileImage: string) => {

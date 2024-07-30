@@ -93,6 +93,6 @@ export default function useSocialSignIn() {
         close();
       },
     });
-  }, []);
+  }, [open, close]);
   return { logIn, logOut };
 }

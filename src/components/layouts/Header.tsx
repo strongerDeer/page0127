@@ -47,7 +47,7 @@ export default function Header() {
         </>
       );
     }
-  }, [user, pathname]);
+  }, [logOut, user, pathname]);
 
   return (
     <header className={styles.header}>

@@ -9,7 +9,6 @@ import {
 import { updateProfile } from 'firebase/auth';
 
 import { COLLECTIONS, STORAGE_DOWNLOAD_URL_STR } from '@constants';
-import { SignUpFormValues } from '@hooks/useSignUpForm';
 import { auth, storage, store } from '@firebase/firebaseApp';
 
 import { v4 as uuidv4 } from 'uuid';
@@ -18,6 +17,7 @@ import { useSetRecoilState } from 'recoil';
 import { userAtom } from '@atoms/user';
 import { User } from '@models/user';
 import useUser from '@hooks/auth/useUser';
+import { SignUpFormValues } from '@models/sign';
 
 export default function EditProfile() {
   const user = useUser();

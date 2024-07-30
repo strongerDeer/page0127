@@ -2,7 +2,7 @@
 import styles from './Form.module.scss';
 
 import { useSignInForm } from '@hooks/useSignInForm';
-import { InputArr } from '@models/sign';
+import { InputArr, SignInFormValues } from '@models/sign';
 
 import Button from '@components/shared/Button';
 import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
@@ -31,7 +31,7 @@ export default function SignUpForm({ inputArr }: { inputArr: InputArr[] }) {
           name={id}
           label={label}
           placeholder={placeholder}
-          value={formValues[id]}
+          value={formValues[id as keyof SignInFormValues]}
           hasError={Boolean(inputDirty[id]) && Boolean(errors?.[id])}
           helpMessage={
             Boolean(inputDirty[id]) && errors[id] ? errors[id] : null

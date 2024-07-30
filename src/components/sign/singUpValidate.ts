@@ -1,9 +1,9 @@
 import validator from 'validator';
-import { SignUpFormValues } from '@hooks/useSignUpForm';
+import { EditFormValues, SignUpFormValues } from '@models/sign';
 
 export default function signUpValidate(formValues: SignUpFormValues) {
   const { email, password, rePassword, displayName } = formValues;
-  let errors: SignUpFormValues = {};
+  let errors: EditFormValues = {};
 
   if (validator.isEmail(email) === false) {
     errors.email = '이메일을 확인해주세요';
