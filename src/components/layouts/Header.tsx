@@ -28,7 +28,7 @@ export default function Header() {
         <>
           <Button href={`/book/create`}>읽은 책 등록</Button>
           <Link href="/my">
-            <ProfileImage width={40} photoURL={user.photoURL as string} />
+            <ProfileImage width={40} photoURL={user?.photoURL as string} />
           </Link>
           <Button href={`/shelf/${user.uid}`} variant="outline" color="grayLv4">
             나의 책장
