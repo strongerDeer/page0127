@@ -28,6 +28,12 @@ export default function MyPage() {
         <Button href="/my/edit-profile" variant="outline">
           프로필 수정
         </Button>
+
+        {!user?.provider && (
+          <Button href="/my/edit-password" variant="outline">
+            비밀번호 변경
+          </Button>
+        )}
       </div>
 
       <p>좋아요한 책</p>

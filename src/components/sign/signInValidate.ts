@@ -1,10 +1,9 @@
-import { EditFormValues } from '@models/sign';
-import { SignInFormValues } from '@models/sign';
+import { FormErrors, SignInFormValues } from '@models/sign';
 import validator from 'validator';
 
 export default function signInValidate(formValues: SignInFormValues) {
   const { email, password } = formValues;
-  let errors: EditFormValues = {};
+  let errors: FormErrors = {};
 
   if (validator.isEmail(email) === false) {
     errors.email = '이메일을 확인해주세요';

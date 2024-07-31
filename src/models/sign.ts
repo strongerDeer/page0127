@@ -19,6 +19,10 @@ export interface InputArr {
 export type SignInFormValues = Pick<FormValues, 'email' | 'password'>;
 export type SignUpFormValues = Omit<FormValues, 'photoURL'>;
 export type EditFormValues = Omit<Profile, 'photoURL'>;
+export type EditPasswordFormValues = Pick<
+  FormValues,
+  'password' | 'rePassword'
+> & { currentPassword: string };
 export interface FormErrors {
   [key: string]: string;
 }
