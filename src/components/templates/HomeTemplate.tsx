@@ -23,13 +23,6 @@ export default function HomeTemplate() {
             <Link href="/book">도서 더보기</Link>
           </div>
           {data && <BookList data={data} />}
-
-          <div className={styles.titleWrap}>
-            <h2>인기 모임</h2>
-            <Link href="/club">모임 더보기</Link>
-          </div>
-
-          <h2>인기 리더</h2>
         </main>
       </div>
     </div>
