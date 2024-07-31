@@ -29,7 +29,7 @@ export default function PrivateRoute({
 
   useEffect(() => {
     checkAuth();
-  }, [checkAuth, path]);
+  }, [user, checkAuth, path]);
 
   if (isLoading) {
     return <>Loading...</>;
