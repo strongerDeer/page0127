@@ -7,6 +7,7 @@
     color: var(--grayLv4);
     transition: all 0.3s;
     font-size: 0.9em;
+    user-select: none;
   }
 
   input[type='number'],
@@ -24,6 +25,11 @@
 
     &::placeholder {
       font-size: 0.9em;
+    }
+
+    &:disabled {
+      background-color: var(--grayLv1);
+      color: var(--grayLv3);
     }
   }
 

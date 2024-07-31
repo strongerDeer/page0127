@@ -34,6 +34,7 @@ export default function EditProfileForm({
   return (
     <form className={styles.form}>
       <InputFileImg value={profileImage} setValue={setProfileImg} />
+      <Input label="이메일" value={user?.email} disabled />
       {inputArr.map(({ id, type, label, placeholder }) => (
         <Input
           key={id}
