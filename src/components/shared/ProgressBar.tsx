@@ -13,10 +13,19 @@ export default function ProgressBar({
   return (
     <div className={styles.progressBar}>
       <div className={styles.progress} style={{ height: height }}>
+        {/* 읽은 책 */}
         <div
           className={styles.bar}
           style={{
-            width: `${(value / total) * 100}%`,
+            width: `${(value / Math.max(total, value)) * 100}%`,
+          }}
+        ></div>
+
+        {/* 목표 */}
+        <div
+          className={styles.total}
+          style={{
+            left: `${(total / Math.max(total, value)) * 100}%`,
           }}
         ></div>
       </div>

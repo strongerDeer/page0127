@@ -4,6 +4,7 @@
   gap: 1rem;
 
   .progress {
+    position: relative;
     background-color: var(--activation);
     flex-grow: 1;
   }
@@ -14,7 +15,33 @@
 
   .bar {
     background-color: var(--primary);
+
     height: 100%;
+  }
+  .total {
+    position: absolute;
+    top: 50%;
+
+    background-color: var(--primary);
+
+    width: 1.2rem;
+    height: 1.2rem;
+    border-radius: 50%;
+    border: 2px solid var(--background);
+    transform: translate(-50%, -50%);
+
+    &::after {
+      content: '';
+      background: url(/images/icon/flag.svg) no-repeat right 50% / 80%;
+      display: block;
+      width: 3.2rem;
+      height: 3.2rem;
+
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translate(-31%, -110%);
+    }
   }
   .text {
     strong {
