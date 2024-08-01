@@ -30,7 +30,11 @@ export default function Header() {
           <Link href="/my">
             <ProfileImage width={40} photoURL={user?.photoURL as string} />
           </Link>
-          <Button href={`/shelf/${user.uid}`} variant="outline" color="grayLv4">
+          <Button
+            href={`/shelf/${user?.uid}`}
+            variant="outline"
+            color="grayLv4"
+          >
             나의 책장
           </Button>
           <button type="button" onClick={logOut}>

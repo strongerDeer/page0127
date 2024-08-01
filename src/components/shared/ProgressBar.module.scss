@@ -1,8 +1,27 @@
 .progressBar {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.4rem 1rem;
+  width: 100%;
+  flex-wrap: wrap;
 
+  .label {
+    font-size: 0.9em;
+    width: 100%;
+    position: relative;
+    padding-left: 0.9em;
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0.2rem;
+      transform: translateY(-50%);
+      width: 0.4em;
+      height: 0.4em;
+      background-color: var(--grayLv3);
+      margin-right: 0.5em;
+    }
+  }
   .progress {
     position: relative;
     background-color: var(--activation);

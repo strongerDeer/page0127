@@ -18,6 +18,8 @@ export default function Button(props: ButtonProps) {
     ...rest
   } = props;
 
+  const classStyle = clsx([buttonStyle({ variant, size })], className);
+
   if (href) {
     return (
       <Link
@@ -26,7 +28,7 @@ export default function Button(props: ButtonProps) {
         style={assignInlineVars({
           [variant_color]: `var(--${color})`,
         })}
-        className={buttonStyle({ variant: variant })}
+        className={classStyle}
       >
         {children}
       </Link>
@@ -39,7 +41,7 @@ export default function Button(props: ButtonProps) {
       style={assignInlineVars({
         [variant_color]: `var(--${color})`,
       })}
-      className={clsx([buttonStyle({ variant, size })], className)}
+      className={classStyle}
       {...rest}
     >
       {children}

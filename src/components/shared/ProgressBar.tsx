@@ -12,6 +12,7 @@ export default function ProgressBar({
 }) {
   return (
     <div className={styles.progressBar}>
+      <p className={styles.label}>목표</p>
       <div className={styles.progress} style={{ height: height }}>
         {/* 읽은 책 */}
         <div

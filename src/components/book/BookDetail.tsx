@@ -87,7 +87,7 @@ export default function BookDetail({ data }: { data: Book }) {
           {readUser && <LifeUsers userIds={readUser} />}
 
           {id && <LikeButton bookId={id} likeUsers={likeUsers} />}
-          {user?.uid && likeUsers?.includes(user.uid) ? <>읽었어요!</> : <></>}
+          {user?.uid && readUser?.includes(user.uid) ? <>읽었어요!</> : <></>}
         </div>
       </div>
     </>

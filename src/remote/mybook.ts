@@ -1,11 +1,21 @@
-import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+} from 'firebase/firestore';
 import { store } from '@firebase/firebaseApp';
 import { COLLECTIONS } from '@constants';
 import { Book } from '@models/book';
 
 export async function getMyBooks(uid: string) {
   const snapshot = await getDocs(
-    collection(store, `${COLLECTIONS.USER}/${uid}/book`),
+    query(
+      collection(store, `${COLLECTIONS.USER}/${uid}/book`),
+      orderBy('readDate', 'asc'),
+    ),
   );
 
   const data = snapshot.docs.map((doc) => ({
