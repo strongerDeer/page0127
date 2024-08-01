@@ -4,6 +4,8 @@ import styles from './BookDetail.module.scss';
 import { Book, Grade } from '@models/book';
 import Review from './Review';
 import LifeUsers from './LifeUsers';
+import LikeButton from './LikeButton';
+import useUser from '@hooks/auth/useUser';
 export default function BookDetail({ data }: { data: Book }) {
   const {
     title,
@@ -19,11 +21,14 @@ export default function BookDetail({ data }: { data: Book }) {
     frontCover,
     grade,
     readUser,
-    // id,
+    id,
+    likeUsers,
     // flipCover,
     // createdTime,
     // lastUpdatedTime,
   } = data;
+
+  const user = useUser();
 
   const scores = ['0', '1', '2', '3', '4', '5', '10'] as const;
   const grades = scores.map((score) => ({
@@ -78,12 +83,13 @@ export default function BookDetail({ data }: { data: Book }) {
             <p>price: {price}</p>
             <p>인생책: {getGradeLength(grade, '10')}</p>
           </div>
+
+          {readUser && <LifeUsers userIds={readUser} />}
+
+          {id && <LikeButton bookId={id} likeUsers={likeUsers} />}
+          {user?.uid && likeUsers?.includes(user.uid) ? <>읽었어요!</> : <></>}
         </div>
       </div>
-
-      {readUser && <LifeUsers userIds={readUser} />}
-      <div className="h-[1000px]"></div>
-      <Review />
     </>
   );
 }

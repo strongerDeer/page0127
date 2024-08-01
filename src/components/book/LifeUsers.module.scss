@@ -1,0 +1,15 @@
+.lifeUsers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  text-align: center;
+  font-size: 0.9em;
+  color: var(--grayLv3);
+
+  img {
+    width: 5rem;
+    aspect-ratio: 1/1;
+    border-radius: 50%;
+    margin-bottom: 0.4rem;
+  }
+}

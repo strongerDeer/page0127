@@ -4,6 +4,9 @@ import useLifeUsers from './useLifeUsers';
 import Link from 'next/link';
 import { useState } from 'react';
 import Button from '@components/shared/Button';
+import { NO_PROFILE } from '@constants';
+
+import styles from './LifeUsers.module.scss';
 
 const SHOW_USER = 5;
 export default function LifeUsers({ userIds }: { userIds: string[] }) {
@@ -20,12 +23,16 @@ export default function LifeUsers({ userIds }: { userIds: string[] }) {
       : data?.slice(0, SHOW_USER);
 
   return (
-    <div>
+    <div className={styles.lifeUsers}>
       {userList?.map((user) => (
         <Link key={user.id} href={`/shelf/${user.id}`}>
-          {user.photoURL && (
-            <Image src={user.photoURL} alt="" width={100} height={100} />
-          )}
+          <Image
+            src={user.photoURL || NO_PROFILE}
+            alt=""
+            width={100}
+            height={100}
+          />
+
           {user.displayName}
         </Link>
       ))}
