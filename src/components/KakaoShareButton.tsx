@@ -2,6 +2,9 @@ import useShare from '@hooks/useShare';
 import { User } from '@models/user';
 import Script from 'next/script';
 
+import styles from './Button.module.scss';
+
+import Icon from './icon/Icon';
 declare global {
   interface Window {
     Kakao: any;
@@ -12,6 +15,8 @@ export default function KakaoShareButton({ userData }: { userData: User }) {
   return (
     <>
       <button
+        className={styles.button}
+        title="카카오톡 공유하기"
         onClick={() => {
           share({
             title: userData.displayName ?? '',
@@ -21,7 +26,8 @@ export default function KakaoShareButton({ userData }: { userData: User }) {
           });
         }}
       >
-        카카오톡 공유하기
+        <Icon name="share" color="grayLv3" />
+        <span className="a11y-hidden">카카오톡 공유하기</span>
       </button>
       <Script
         src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.1/kakao.min.js"

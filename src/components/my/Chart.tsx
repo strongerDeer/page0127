@@ -1,6 +1,5 @@
 // https://kosis.kr/statHtml/statHtml.do?orgId=101&tblId=DT_1SSCL020R&vw_cd=MT_ZTITLE&list_id=D21B_2009&seqNo=&lang_mode=ko&language=kor&obj_var_id=&itm_id=&conn_path=MT_ZTITLE
 
-import useUser from '@hooks/auth/useUser';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,8 +10,8 @@ import {
   Filler,
   Tooltip,
   Legend,
+  ChartOptions,
 } from 'chart.js';
-import { useContext } from 'react';
 import { Radar } from 'react-chartjs-2';
 
 ChartJS.register(
@@ -26,7 +25,7 @@ ChartJS.register(
   Legend,
 );
 
-const options = {
+const options: ChartOptions<'radar'> = {
   responsive: true,
   plugins: {
     legend: {
@@ -38,17 +37,17 @@ const options = {
   },
   elements: {
     line: {
-      backgroundColor: 'rgba(88, 212, 175, 0.2)',
-      borderColor: '#58D4AF',
+      backgroundColor: 'rgba(46, 111, 242, 0.2)',
+      borderColor: '#2e6ff2',
       borderWidth: 2,
-      // tension: 0.2,
+      tension: 0.1,
     },
-  },
-  point: {
-    pointBackgroundColor: '#58D4AF',
-    pointBorderColor: '#58D4AF',
-    pointRadius: 2,
-    pointBorderWidth: 2,
+    point: {
+      backgroundColor: '#2e6ff2',
+      borderColor: '#2e6ff2',
+      radius: 2,
+      borderWidth: 2,
+    },
   },
 
   scales: {
@@ -76,12 +75,12 @@ export default function Chart({ userData }: { userData?: any }) {
 
   const data = {
     labels: [
-      '인문학',
-      '경제경영',
-      '소설/시/희곡',
-      '자기계발',
-      '컴퓨터/모바일',
-      '에세이',
+      `인문학(${category['인문학']?.length})`,
+      `경제경영(${category['경제경영']?.length})`,
+      `소설/시/희곡(${category['소설시희곡']?.length})`,
+      `자기계발(${category['자기계발']?.length})`,
+      `컴퓨터/모바일(${category['컴퓨터모바일']?.length})`,
+      `에세이(${category['에세이']?.length})`,
     ],
     datasets: [
       {

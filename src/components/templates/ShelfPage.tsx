@@ -21,21 +21,35 @@ export default function ShelfPage({ pageUid }: { pageUid: string }) {
       <div className={styles.wrap}>
         <div>
           <FollowButton pageUid={pageUid} />
-          <ProfileImage photoURL={userData?.photoURL as string} />
-          <p>{userData?.displayName}</p>
-          {userData?.intro && <p>{userData?.intro}</p>}
-          <p>
-            <span>팔로워</span> <strong>00</strong>
-          </p>
-          <p>
-            <span>팔로잉</span> <strong>00</strong>
-          </p>
+
+          <div className={styles.info}>
+            <ProfileImage photoURL={userData?.photoURL as string} />
+
+            <p className={styles.displayName}>{userData?.displayName}</p>
+            {userData?.intro && (
+              <p className={styles.intro}>{userData?.intro}</p>
+            )}
+          </div>
+
+          <div className={styles.follow}>
+            <p>
+              <span>팔로워</span> <strong>00</strong>
+            </p>
+            <span></span>
+            <p>
+              <span>팔로잉</span> <strong>00</strong>
+            </p>
+          </div>
           {userData && <ActionButtons userData={userData} />}
-          <ProgressBar
-            value={Number(userData?.total?.length) || 0}
-            total={Number(userData?.goal) || 1}
-          />
-          {userData?.category && <Chart userData={userData} />}
+
+          <div>
+            <ProgressBar
+              value={Number(userData?.total?.length) || 0}
+              total={Number(userData?.goal) || 1}
+            />
+
+            {userData?.category && <Chart userData={userData} />}
+          </div>
         </div>
 
         <MyBooks pageUid={pageUid} />

@@ -76,7 +76,7 @@ export default function CopyButton({
       {isClicked ? (
         <Icon name="check" color="primary" />
       ) : (
-        <Icon name="copy" color="grayLv3" />
+        <Icon name="link" color="grayLv3" />
       )}
       {isClicked ? (
         <span>복사 완료!</span>
