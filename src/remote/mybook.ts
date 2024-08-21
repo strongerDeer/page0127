@@ -14,7 +14,7 @@ export async function getMyBooks(uid: string) {
   const snapshot = await getDocs(
     query(
       collection(store, `${COLLECTIONS.USER}/${uid}/book`),
-      orderBy('readDate', 'asc'),
+      orderBy('readDate', 'desc'),
     ),
   );
 

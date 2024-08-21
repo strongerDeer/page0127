@@ -1,0 +1,44 @@
+.books {
+  padding: 1rem 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 2rem 0;
+
+  div {
+    position: relative;
+    flex-shrink: 0;
+
+    &::after {
+      content: '';
+      width: calc(100% + 4rem);
+      transform: translateX(-2rem);
+      height: 1rem;
+      background-color: #f1f1f1;
+      border-bottom: 1px solid #eee;
+      display: block;
+      position: absolute;
+      bottom: -1rem;
+      z-index: 2;
+
+      left: 0;
+    }
+    a:focus-visible {
+      position: relative;
+      z-index: 3;
+    }
+  }
+
+  img {
+    width: auto;
+    height: 24rem;
+    border: 1px solid #eee;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    margin: 0 0.1rem;
+  }
+
+  .best {
+    padding: 0 1rem;
+  }
+}
