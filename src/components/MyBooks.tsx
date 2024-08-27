@@ -14,13 +14,13 @@ export default function MyBooks({ pageUid }: { pageUid: string }) {
 
   const [imgSrc, setImgSrc] = useState<{ [key: string]: string }>({});
 
-  const latestYear = new Date().getFullYear();
+  const latestYear = String(new Date().getFullYear());
 
   const latestBook = book?.filter(
     (book) => book.readDate && book.readDate > `${latestYear}-01-01`,
   ) as Book[];
 
-  const [activeYear, setActiveYear] = useState<number>(latestYear);
+  const [activeYear, setActiveYear] = useState<string>(latestYear);
   const [bookData, setBookData] = useState<Book[]>(latestBook);
 
   const onError = (bookId: string) => {
@@ -31,18 +31,24 @@ export default function MyBooks({ pageUid }: { pageUid: string }) {
   };
 
   useEffect(() => {
-    const filteredBook = book?.filter(
-      (book) =>
-        book.readDate &&
-        book.readDate > `${activeYear}-01-01` &&
-        book.readDate < `${activeYear + 1}-01-01`,
-    ) as Book[];
+    let filteredBook = book as Book[];
+    if (activeYear !== '전체') {
+      filteredBook = book?.filter(
+        (book) =>
+          book.readDate &&
+          book.readDate > `${activeYear}-01-01` &&
+          book.readDate < `${activeYear + 1}-01-01`,
+      ) as Book[];
+    }
 
     setBookData(filteredBook);
   }, [activeYear, book]);
 
   const handleYear = (e: React.MouseEvent<HTMLButtonElement>) => {
-    setActiveYear(Number(e.currentTarget.textContent));
+    const value = e.currentTarget.textContent;
+    if (value) {
+      setActiveYear(value);
+    }
   };
   return (
     <div>
@@ -54,12 +60,17 @@ export default function MyBooks({ pageUid }: { pageUid: string }) {
         </li>
         <li>
           <button type="button" onClick={handleYear}>
-            {latestYear - 1}
+            {Number(latestYear) - 1}
           </button>
         </li>
         <li>
           <button type="button" onClick={handleYear}>
-            {latestYear - 2}
+            {Number(latestYear) - 2}
+          </button>
+        </li>
+        <li>
+          <button type="button" onClick={handleYear}>
+            전체
           </button>
         </li>
       </ul>
@@ -89,7 +100,7 @@ export default function MyBooks({ pageUid }: { pageUid: string }) {
           ))}
         </div>
       ) : (
-        <div>데이터가 없습니다</div>
+        <div>등록된 책이 없어요</div>
       )}
     </div>
   );
