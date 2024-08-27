@@ -27,6 +27,18 @@
     a:focus-visible {
       position: relative;
       z-index: 3;
+      transform: translateY(-10%);
+    }
+
+    a {
+      display: block;
+      transition: all 0.3s;
+    }
+    &:hover {
+      a {
+        transform: translateY(-3%) scale(1.1);
+        transform-origin: 50% 100%;
+      }
     }
   }
 

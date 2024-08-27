@@ -19,7 +19,7 @@ export default function ShelfPage({ pageUid }: { pageUid: string }) {
     <div>
       <Background />
       <div className={styles.wrap}>
-        <div>
+        <div className={styles.left}>
           <FollowButton pageUid={pageUid} />
 
           <div className={styles.info}>

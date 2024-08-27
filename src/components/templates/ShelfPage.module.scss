@@ -7,6 +7,10 @@
   padding: 4rem;
   display: flex;
   align-items: flex-start;
+  gap: 8rem;
+  .left {
+    width: 32rem;
+  }
 }
 .info {
   display: flex;
