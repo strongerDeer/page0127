@@ -19,3 +19,16 @@ body {
 svg {
   display: inline-block;
 }
+
+.section {
+  margin: 4rem 0;
+}
+.sub_title {
+  font-weight: bold;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  span {
+    font-size: 0.95em;
+    color: var(--primary);
+  }
+}

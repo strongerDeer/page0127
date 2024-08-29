@@ -5,6 +5,7 @@ export const COLLECTIONS = {
   BOOK_LIKE: 'book_like',
   CLUBS: 'clubs',
   CLUB_APPLY: 'club_apply',
+  REVIEW: 'review',
 };
 
 export const NO_PROFILE = '/images/no-profile.png';

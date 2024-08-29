@@ -49,6 +49,18 @@ export default function ShelfPage({ pageUid }: { pageUid: string }) {
             />
 
             {userData?.category && <Chart userData={userData} />}
+
+            <div>
+              <p>가장 많이 읽은 카테고리: {userData?.total?.length}</p>
+              <p>가장 두꺼운 책: {userData?.total?.length}</p>
+              <p>가장 비싼 책: {userData?.total?.length}</p>
+              <p>가장 좋아하는 작가: {userData?.total?.length}</p>
+              <p>가장 좋아하는 출판사: {userData?.total?.length}</p>
+
+              <p>총 읽은 책: {userData?.total?.length}</p>
+              <p>총 읽은 쪽수: {userData?.total?.length}</p>
+              <p>총 읽은 가격: {userData?.total?.length}</p>
+            </div>
           </div>
         </div>
 

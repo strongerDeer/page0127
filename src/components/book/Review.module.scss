@@ -1,0 +1,76 @@
+@import '@/styles/var.scss';
+
+.review {
+  margin: fcSize(24, 40) 0;
+}
+
+.reviewForm {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 3rem;
+
+  & > :first-child {
+    flex-grow: 1;
+  }
+  button {
+    height: 4rem;
+  }
+}
+.reviewList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  li {
+    position: relative;
+    .profileLink {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      font-size: 0.95em;
+
+      .displayName {
+        font-weight: 600;
+      }
+      .time {
+        color: var(--grayLv3);
+        font-size: 0.85em;
+        position: relative;
+        padding-left: 1rem;
+
+        &::before {
+          content: '';
+          width: 1px;
+          height: 0.8em;
+          display: block;
+          position: absolute;
+          top: 50%;
+          left: 0;
+          transform: translateY(-50%);
+          background-color: var(--grayLv3);
+          margin-right: 0.5em;
+        }
+      }
+    }
+    .content {
+      padding-left: 5rem;
+    }
+    .delButton {
+      color: var(--error);
+      position: absolute;
+      right: 0;
+      top: 0;
+      font-size: 0.9em;
+    }
+  }
+}
+
+.nodata {
+  color: var(--grayLv4);
+  text-align: center;
+  background-color: var(--grayLv1);
+  padding: 2rem 1rem;
+  font-size: 0.95em;
+  border-radius: 1rem;
+}

@@ -1,25 +1,97 @@
+import Input from '@components/form/Input';
+import Button from '@components/shared/Button';
+import ProfileImage from '@components/shared/ProfileImage';
 import { Skeleton } from '@components/shared/Skeleton';
-import { useInView } from 'react-intersection-observer';
-import { useQuery } from 'react-query';
+import useUser from '@hooks/auth/useUser';
+import { useReview } from '@hooks/useReview';
+import { format } from 'date-fns';
+import { ChangeEvent, useCallback, useState } from 'react';
 
-export default function Review() {
-  const { ref, inView } = useInView({
-    triggerOnce: true,
-  });
-  const { data = [], isLoading } = useQuery(
-    ['review'],
-    () => {
-      return new Promise<string[]>((resolve) => {
-        setTimeout(() => {
-          resolve(['너무좋아요', '꼭 읽어보세요']);
-        }, 2_000);
-      });
-    },
-    { enabled: inView },
-  );
+import styles from './Review.module.scss';
+import Link from 'next/link';
+import {
+  ModalContextValue,
+  ModalProps,
+  useModalContext,
+} from '@contexts/ModalContext';
+import { toast } from 'react-toastify';
+export default function Review({ bookId }: { bookId: string }) {
+  const user = useUser();
+  const { data: reviews, isLoading, write, remove } = useReview({ bookId });
+  const { open: modalOpen, close: modalClose } =
+    useModalContext() as ModalContextValue;
+
+  const [text, setText] = useState<string>('');
+
+  const reviewRows = useCallback(() => {
+    if (reviews?.length === 0) {
+      return (
+        <p className={styles.nodata}>
+          아직 작성된 댓글이 없습니다. 첫 댓글을 작성해보세요!
+        </p>
+      );
+    }
+    return (
+      <ul className={styles.reviewList}>
+        {reviews?.map((review) => (
+          <li key={review.id}>
+            <div className={styles.profileLink}>
+              <Link href={`/shelf/${review.userId}`}>
+                <ProfileImage
+                  photoURL={review.user?.photoURL || ''}
+                  width={40}
+                />
+              </Link>
+              <Link href={`/shelf/${review.userId}`}>
+                <p className={styles.displayName}>{review.user?.displayName}</p>
+              </Link>
+
+              <p className={styles.time}>
+                {format(review.createdAt, 'yyyy-MM-dd')}
+              </p>
+            </div>
+            <div className={styles.content}>
+              <p>{review.text}</p>
+            </div>
+            {review.userId === user?.uid && (
+              <button
+                onClick={() => {
+                  modalOpen({
+                    title: '댓글 삭제',
+                    body: '작성한 댓글을 삭제하시겠습니까?',
+                    buttonLabel: '삭제',
+
+                    closeButtonLabel: '취소',
+                    onButtonClick: () => {
+                      remove({ reviewId: review.id, bookId: review.bookId });
+                      toast.success('댓글이 삭제되었습니다');
+                      modalClose();
+                    },
+                    closeModal: () => {
+                      modalClose();
+                    },
+                  } as ModalProps);
+                }}
+                className={styles.delButton}
+              >
+                삭제
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    );
+  }, [reviews]);
+
+  const handleTextChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    setText(e.target.value);
+  }, []);
 
   return (
-    <div ref={ref}>
+    <div className={styles.review}>
+      <h2 className="sub_title">
+        댓글 <span>{reviews?.length}</span>
+      </h2>
       {isLoading ? (
         <>
           <Skeleton />
@@ -27,9 +99,31 @@ export default function Review() {
         </>
       ) : (
         <>
-          {data.map((review, index) => (
-            <p key={index}>{review}</p>
-          ))}
+          {user != null ? (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const success = await write(text);
+                if (success === true) {
+                  setText('');
+                }
+              }}
+              className={styles.reviewForm}
+            >
+              <Input
+                label="리뷰작성"
+                value={text}
+                onChange={handleTextChange}
+                placeholder="책에대한 당신의 이야기를 남겨주세요!"
+                hiddenLabel
+              />
+              <Button disabled={text === ''} type="submit">
+                작성
+              </Button>
+            </form>
+          ) : null}
+
+          {reviewRows()}
         </>
       )}
     </div>

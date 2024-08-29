@@ -1,38 +1,82 @@
-import { Book } from '@models/book';
-import Image from 'next/image';
 import Link from 'next/link';
+import Image from 'next/image';
+
+import { Book } from '@models/book';
+import useUser from '@hooks/auth/useUser';
 import LikeButton from './LikeButton';
-import { LikeBook } from '@models/likeBook';
+import styles from './BookListItem.module.scss';
 
 interface bookItemProps extends Book {
   index: number;
 }
 export default function BookListItem(props: bookItemProps) {
-  const { id, frontCover, title, category, index, likeUsers } = props;
+  const user = useUser();
+  const {
+    id,
+    description,
+    flipCover,
+    frontCover,
+    title,
+    category,
+    index,
+    likeUsers,
+    publisher,
+    author,
+    subTitle,
+    readUser,
+  } = props;
 
   return (
     <>
-      <Link href={`/book/${id}`}>
-        <article className="flex flex-col gap-8 items-center">
-          <div className="w-40 h-40 aspect-[1/2] flex justify-center">
-            <Image
-              src={frontCover}
-              alt=""
-              width={200}
-              height={400}
-              className="max-h-full w-auto border border-slate-200 shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)]"
-              priority={index < 4 ? true : false}
-            />
-          </div>
+      <article className={styles.article}>
+        <Link href={`/book/${id}`}>
+          <div className={styles.perspective}>
+            <div className={styles.cover}>
+              <div className={styles.bookImg}>
+                <div className={styles.flipCover}>
+                  <Image
+                    src={flipCover}
+                    alt=""
+                    width={200}
+                    height={400}
+                    priority={index < 4 ? true : false}
+                  />
+                </div>
+                <Image
+                  src={frontCover}
+                  alt=""
+                  width={200}
+                  height={400}
+                  priority={index < 4 ? true : false}
+                />
+                {user && readUser?.includes(user.uid) && (
+                  <div className={styles.read}>
+                    <span className="a11y-hidden">읽음</span>
+                  </div>
+                )}
+              </div>
+            </div>
 
-          <div className="flex flex-col text-center">
-            <h3 className="font-bold">{title}</h3>
-            <p>{category}</p>
+            <div className={styles.addCon}>
+              <p className={styles.description}>{description}</p>
+              <p className={styles.publisher}>{publisher}</p>
+              <p className={styles.category}>{category}</p>
+            </div>
           </div>
-        </article>
-      </Link>
+        </Link>
 
-      {likeUsers && id && <LikeButton bookId={id} likeUsers={likeUsers} />}
+        <div className={styles.content}>
+          <h3 className={styles.title}>
+            <Link href={`/book/${id}`}>
+              {title}
+
+              {subTitle && <span>{subTitle}</span>}
+            </Link>
+          </h3>
+          <p className={styles.author}>{author}</p>
+        </div>
+        {id && <LikeButton bookId={id} likeUsers={likeUsers} />}
+      </article>
     </>
   );
 }

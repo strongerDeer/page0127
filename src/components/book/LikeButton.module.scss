@@ -1,0 +1,29 @@
+.likeButton {
+  position: relative;
+  svg {
+    transition: all 0.3s;
+  }
+  &:hover {
+    svg {
+      fill: var(--error);
+    }
+  }
+}
+
+.floatingHeart {
+  position: absolute;
+  pointer-events: none;
+  animation: float-and-fade 1s ease-out forwards;
+}
+
+@keyframes float-and-fade {
+  0% {
+    transform: translateY(0) scale(1) rotate(-20deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-100px) scale(2) rotate(20deg);
+    opacity: 0;
+  }
+}

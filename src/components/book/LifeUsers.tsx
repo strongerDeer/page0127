@@ -25,15 +25,17 @@ export default function LifeUsers({ userIds }: { userIds: string[] }) {
   return (
     <div className={styles.lifeUsers}>
       {userList?.map((user) => (
-        <Link key={user.id} href={`/shelf/${user.id}`}>
+        <Link
+          key={user.id}
+          href={`/shelf/${user.id}`}
+          title={`${user.displayName}의 책장 바로가기`}
+        >
           <Image
             src={user.photoURL || NO_PROFILE}
             alt=""
             width={100}
             height={100}
           />
-
-          {user.displayName}
         </Link>
       ))}
       {data && data?.length > SHOW_USER && showMore === false && (

@@ -6,6 +6,7 @@ import Review from './Review';
 import LifeUsers from './LifeUsers';
 import LikeButton from './LikeButton';
 import useUser from '@hooks/auth/useUser';
+import { format } from 'date-fns';
 export default function BookDetail({ data }: { data: Book }) {
   const {
     title,
@@ -50,7 +51,7 @@ export default function BookDetail({ data }: { data: Book }) {
     <>
       <div className={styles.bookDetail}>
         <div className={styles.bg}>
-          <Image src={frontCover} width={100} height={100} alt="" />
+          <Image src={frontCover} width={100} height={100} alt="" priority />
         </div>
         <div className="max-width">
           <div className={styles.top}>
@@ -67,9 +68,20 @@ export default function BookDetail({ data }: { data: Book }) {
               <h2>{title}</h2>
               <h3>{subTitle}</h3>
               <p>{author}</p>
-              <p>{publisher}</p>
+              <p>
+                {publisher} {format(pubDate, 'yyyy.MM.dd')}
+              </p>
 
               <p>⭐️⭐️⭐️⭐️⭐️{avg}</p>
+
+              <div>
+                {id && <LikeButton bookId={id} likeUsers={likeUsers} />}
+                {user?.uid && readUser?.includes(user.uid) ? (
+                  <>읽었어요!</>
+                ) : (
+                  <></>
+                )}
+              </div>
             </div>
           </div>
 
@@ -78,16 +90,27 @@ export default function BookDetail({ data }: { data: Book }) {
             <p>{categoryName}</p>
             <p>{description}</p>
 
-            <p>출판일: {pubDate}</p>
             <p>page: {page}</p>
             <p>price: {price}</p>
-            <p>인생책: {getGradeLength(grade, '10')}</p>
           </div>
 
-          {readUser && <LifeUsers userIds={readUser} />}
+          <section className="section">
+            <h3 className="sub_title">
+              이 책을 읽은 리더들 <span>{readUser?.length}</span>
+            </h3>
+          </section>
 
-          {id && <LikeButton bookId={id} likeUsers={likeUsers} />}
-          {user?.uid && readUser?.includes(user.uid) ? <>읽었어요!</> : <></>}
+          <section className="section">
+            <h3 className="sub_title">
+              이 책을 읽은 인생책으로 뽑은 리더들{' '}
+              <span>{getGradeLength(grade, '10')}</span>
+            </h3>
+            {grade && grade[10] && (
+              <LifeUsers userIds={grade[10] as string[]} />
+            )}
+          </section>
+
+          {id && <Review bookId={id} />}
         </div>
       </div>
     </>

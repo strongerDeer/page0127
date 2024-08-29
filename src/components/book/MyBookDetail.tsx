@@ -23,7 +23,7 @@ export default function MyBookDetail({ data }: { data: Book }) {
 
     memo,
 
-    // id,
+    id,
     // flipCover,
     // createdTime,
     // lastUpdatedTime,
@@ -33,7 +33,7 @@ export default function MyBookDetail({ data }: { data: Book }) {
     <>
       <div className={styles.bookDetail}>
         <div className={styles.bg}>
-          <Image src={frontCover} width={100} height={100} alt="" />
+          <Image src={frontCover} width={100} height={100} alt="" priority />
         </div>
         <div className="max-width">
           <div className={styles.top}>
@@ -71,12 +71,10 @@ export default function MyBookDetail({ data }: { data: Book }) {
 
             <p>{memo}</p>
           </div>
+
+          {readUser && <LifeUsers userIds={readUser} />}
         </div>
       </div>
-
-      {readUser && <LifeUsers userIds={readUser} />}
-      <div className="h-[1000px]"></div>
-      <Review />
     </>
   );
 }

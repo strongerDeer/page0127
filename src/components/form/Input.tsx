@@ -4,6 +4,7 @@ interface InputProps<T> extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   hasError?: boolean;
   helpMessage?: React.ReactNode;
+  hiddenLabel?: boolean;
   setValue?: React.Dispatch<React.SetStateAction<T>>;
 }
 
@@ -20,6 +21,7 @@ export default function Input<T>({
   value,
   hasError,
   helpMessage,
+  hiddenLabel,
   setValue,
   ...rest
 }: InputProps<T>) {
@@ -41,7 +43,9 @@ export default function Input<T>({
   };
   return (
     <div className={clsx([styles.wrap, hasError && styles.error, className])}>
-      <label htmlFor={id}>{label}</label>
+      <label htmlFor={id} className={hiddenLabel ? 'a11y-hidden' : ''}>
+        {label}
+      </label>
       {type === 'number' ? (
         <input
           id={id}
