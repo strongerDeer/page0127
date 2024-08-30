@@ -1,5 +1,6 @@
 'use client';
 import BookDetail from '@components/book/BookDetail';
+import useUser from '@hooks/auth/useUser';
 import useBook from '@hooks/useBook';
 
 export default function Page({ params }: { params: { id: string } }) {

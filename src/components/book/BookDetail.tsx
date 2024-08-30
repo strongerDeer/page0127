@@ -7,6 +7,8 @@ import LifeUsers from './LifeUsers';
 import LikeButton from './LikeButton';
 import useUser from '@hooks/auth/useUser';
 import { format } from 'date-fns';
+import useMyBook from './useMyBook';
+
 export default function BookDetail({ data }: { data: Book }) {
   const {
     title,
@@ -30,6 +32,11 @@ export default function BookDetail({ data }: { data: Book }) {
   } = data;
 
   const user = useUser();
+
+  const { data: myBook } = useMyBook({
+    uid: user?.uid as string,
+    bookId: id as string,
+  });
 
   const scores = ['0', '1', '2', '3', '4', '5', '10'] as const;
   const grades = scores.map((score) => ({
@@ -64,51 +71,68 @@ export default function BookDetail({ data }: { data: Book }) {
             >
               <Image src={frontCover} width={320} height={320} alt="" />
             </motion.div>
+
             <div className={styles.bookInfo}>
               <h2>{title}</h2>
               <h3>{subTitle}</h3>
               <p>{author}</p>
+
               <p>
                 {publisher} {format(pubDate, 'yyyy.MM.dd')}
               </p>
+              <p>{description}</p>
+              <div className={styles.box}>
+                <div className={styles.inner}>
+                  <p>
+                    <span>분야</span>
+                    {category}
+                  </p>
 
-              <p>⭐️⭐️⭐️⭐️⭐️{avg}</p>
+                  <p>
+                    <span>페이지</span>
+                    {page}
+                  </p>
+                  <p>
+                    <span>가격</span>
+                    {price}원
+                  </p>
+                </div>
+              </div>
 
               <div>
                 {id && <LikeButton bookId={id} likeUsers={likeUsers} />}
-                {user?.uid && readUser?.includes(user.uid) ? (
-                  <>읽었어요!</>
-                ) : (
-                  <></>
-                )}
               </div>
             </div>
           </div>
 
-          <div className={styles.bookContents}>
-            <p>{category}</p>
-            <p>{categoryName}</p>
-            <p>{description}</p>
-
-            <p>page: {page}</p>
-            <p>price: {price}</p>
-          </div>
+          {user && readUser?.includes(user.uid) && (
+            <section className="section">
+              <h3 className="sub_title">나의 메모</h3>
+              <p>
+                나의 점수: {myBook?.grade as string}점 / 평균 {avg}
+              </p>
+              <p>완독일: {myBook?.readDate}</p>
+              <p>{myBook?.memo}</p>
+            </section>
+          )}
 
           <section className="section">
             <h3 className="sub_title">
               이 책을 읽은 리더들 <span>{readUser?.length}</span>
             </h3>
+
+            <p>평점: ⭐️⭐️⭐️⭐️⭐️{avg}</p>
           </section>
 
-          <section className="section">
-            <h3 className="sub_title">
-              이 책을 읽은 인생책으로 뽑은 리더들{' '}
-              <span>{getGradeLength(grade, '10')}</span>
-            </h3>
-            {grade && grade[10] && (
+          {grade && grade[10] && (
+            <section className="section">
+              <h3 className="sub_title">
+                이 책을 읽은 인생책으로 뽑은 리더들{' '}
+                <span>{getGradeLength(grade, '10')}</span>
+              </h3>
               <LifeUsers userIds={grade[10] as string[]} />
-            )}
-          </section>
+            </section>
+          )}
 
           {id && <Review bookId={id} />}
         </div>
