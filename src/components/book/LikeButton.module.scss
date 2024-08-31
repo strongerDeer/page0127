@@ -1,4 +1,21 @@
 .likeButton {
+  &.showText {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    font-size: 0.95em;
+
+    color: var(--grayLv4);
+    transition: all 0.3s;
+
+    .liked {
+      color: var(--error);
+    }
+
+    &:hover {
+      color: var(--error);
+    }
+  }
   position: relative;
   svg {
     transition: all 0.3s;

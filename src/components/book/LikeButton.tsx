@@ -12,12 +12,15 @@ import {
 } from 'firebase/firestore';
 import { useCallback, useState } from 'react';
 import styles from './LikeButton.module.scss';
+import clsx from 'clsx';
 
 export default function LikeButton({
   bookId,
+  showText,
   likeUsers = [],
 }: {
   bookId: string;
+  showText?: boolean;
   likeUsers?: string[];
 }) {
   const userId = useUser()?.uid;
@@ -51,7 +54,11 @@ export default function LikeButton({
     }
   };
   return (
-    <button type="button" onClick={handleLike} className={styles.likeButton}>
+    <button
+      type="button"
+      onClick={handleLike}
+      className={clsx(showText && styles.showText, styles.likeButton)}
+    >
       {isLiked ? (
         <Icon name="heartFill" color="error" />
       ) : (
@@ -69,6 +76,7 @@ export default function LikeButton({
           }}
         />
       ))}
+      {showText && <span className={isLiked ? styles.liked : ''}>좋아요</span>}
     </button>
   );
 }

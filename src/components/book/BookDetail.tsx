@@ -8,6 +8,8 @@ import LikeButton from './LikeButton';
 import useUser from '@hooks/auth/useUser';
 import { format } from 'date-fns';
 import useMyBook from './useMyBook';
+import clsx from 'clsx';
+import Link from 'next/link';
 
 export default function BookDetail({ data }: { data: Book }) {
   const {
@@ -62,15 +64,25 @@ export default function BookDetail({ data }: { data: Book }) {
         </div>
         <div className="max-width">
           <div className={styles.top}>
-            <motion.div
-              className={styles.bookImg}
-              initial={{ opacity: 0, translateY: '50%' }}
-              whileInView={{ opacity: 1, translateY: '0%' }}
-              transition={{ duration: 0.3 }}
-              viewport={{ once: true }}
-            >
-              <Image src={frontCover} width={320} height={320} alt="" />
-            </motion.div>
+            <div className={styles.leftWrap}>
+              <motion.div
+                className={styles.bookImg}
+                initial={{ opacity: 0, translateY: '50%' }}
+                whileInView={{ opacity: 1, translateY: '0%' }}
+                transition={{ duration: 0.3 }}
+                viewport={{ once: true }}
+              >
+                <Image src={frontCover} width={320} height={320} alt="" />
+              </motion.div>
+              <div className={styles.buttons}>
+                {id && (
+                  <LikeButton bookId={id} likeUsers={likeUsers} showText />
+                )}
+                <Link href="#" className={styles.createMyBook}>
+                  읽은 책 등록
+                </Link>
+              </div>
+            </div>
 
             <div className={styles.bookInfo}>
               <h2>{title}</h2>
@@ -80,7 +92,7 @@ export default function BookDetail({ data }: { data: Book }) {
               <p>
                 {publisher} {format(pubDate, 'yyyy.MM.dd')}
               </p>
-              <p>{description}</p>
+
               <div className={styles.box}>
                 <div className={styles.inner}>
                   <p>
@@ -99,20 +111,26 @@ export default function BookDetail({ data }: { data: Book }) {
                 </div>
               </div>
 
-              <div>
-                {id && <LikeButton bookId={id} likeUsers={likeUsers} />}
-              </div>
+              <p className={styles.description}>{description}</p>
             </div>
           </div>
 
           {user && readUser?.includes(user.uid) && (
-            <section className="section">
+            <section className={clsx('section', styles.myContents)}>
               <h3 className="sub_title">나의 메모</h3>
-              <p>
-                나의 점수: {myBook?.grade as string}점 / 평균 {avg}
-              </p>
-              <p>완독일: {myBook?.readDate}</p>
-              <p>{myBook?.memo}</p>
+              <div className={styles.myWrap}>
+                <p>
+                  {Number(myBook?.grade) !== 10 ? (
+                    <>
+                      {'⭐️'.repeat(Number(myBook?.grade))} {myBook?.grade}점
+                    </>
+                  ) : (
+                    <>나의 인생책!</>
+                  )}
+                </p>
+                <p>완독일: {myBook?.readDate}</p>
+              </div>
+              {myBook?.memo && <p className={styles.memo}>{myBook?.memo}</p>}
             </section>
           )}
 

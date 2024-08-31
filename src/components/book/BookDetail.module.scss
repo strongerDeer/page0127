@@ -8,28 +8,51 @@
   }
   .top {
     display: flex;
-    gap: 2rem;
+    gap: 3.2rem;
 
-    .bookImg {
+    // 모바일
+    @media screen and (max-width: 640px) {
+      flex-wrap: wrap;
+      justify-content: center;
+      color: var(--surface);
+    }
+    // 데스크탑
+    @media screen and (min-width: 641px) {
+      justify-content: center;
+      color: #fff;
+    }
+
+    .leftWrap {
       flex-shrink: 0;
-      height: fcSize(240, 320);
-      img {
-        width: auto;
-        height: 100%;
-        box-shadow: $boxShadow;
-        border-radius: 0.4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      .bookImg {
+        height: fcSize(240, 320);
+
+        img {
+          width: auto;
+          height: 100%;
+          box-shadow: $boxShadow;
+          border-radius: 0.4rem;
+        }
       }
     }
     .bookInfo {
-      color: #fff;
       flex-grow: 1;
       display: flex;
       flex-direction: column;
       gap: 0.4rem;
+      padding: 1rem 0;
       h2 {
         font-size: 1.8em;
         letter-spacing: -0.1rem;
       }
+    }
+    .description {
+      color: var(--surface);
+      line-height: 1.6;
     }
   }
 }
@@ -70,6 +93,7 @@
   color: var(--surface);
   border-radius: 1rem;
   padding: 2.4rem 0;
+  margin: 1rem 0;
   .inner {
     background-color: var(--grayLv2);
     display: flex;
@@ -90,4 +114,43 @@
       font-weight: 600;
     }
   }
+}
+
+.myContents {
+  border-radius: 1rem;
+  .myWrap {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  p {
+  }
+  .memo {
+    padding: 1rem 2rem;
+    margin-top: 1rem;
+    background-color: var(--grayLv1);
+    border-radius: 1rem;
+  }
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+
+  a,
+  button {
+    border: 1px solid var(--grayLv2);
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 4rem;
+    border-radius: 0.4em;
+  }
+}
+.createMyBook {
+  color: var(--grayLv4);
+  font-size: 0.95em;
 }
