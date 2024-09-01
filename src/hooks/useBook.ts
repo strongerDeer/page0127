@@ -10,19 +10,21 @@ export default function useBook({ id }: { id: string }) {
   const client = useQueryClient();
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(
-      doc(store, COLLECTIONS.BOOKS, id),
-      (snapshot) => {
-        const newBook = snapshot.data();
-        client.setQueryData(['book', id], newBook);
-      },
-    );
-    return () => {
-      unsubscribe();
-    };
+    if (id) {
+      const unsubscribe = onSnapshot(
+        doc(store, COLLECTIONS.BOOKS, id),
+        (snapshot) => {
+          const newBook = snapshot.data();
+          client.setQueryData(['book', id], newBook);
+        },
+      );
+      return () => {
+        unsubscribe();
+      };
+    }
   }, [id, client]);
 
   return useQuery(['book', id], () => getBook(id), {
-    enabled: id !== '',
+    enabled: !!id,
   });
 }

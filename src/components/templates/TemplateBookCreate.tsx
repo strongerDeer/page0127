@@ -77,7 +77,7 @@ export default function TemplateBookCreate() {
   });
 
   useEffect(() => {
-    if (data) {
+    if (bookId && data) {
       setBookData(data);
     }
   }, [data, bookId]);
