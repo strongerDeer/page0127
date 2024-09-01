@@ -140,7 +140,8 @@
   width: 100%;
 
   a,
-  button {
+  button,
+  p {
     border: 1px solid var(--grayLv2);
     flex-grow: 1;
     display: flex;
@@ -148,6 +149,11 @@
     justify-content: center;
     height: 4rem;
     border-radius: 0.4em;
+  }
+  p {
+    color: var(--grayLv3);
+    background-color: var(--grayLv1);
+    border: 1px solid var(--grayLv1);
   }
 }
 .createMyBook {

@@ -6,12 +6,13 @@ import SearchBook from '@components/form/SearchBook';
 import Select from '@components/form/Select';
 import Button from '@components/shared/Button';
 import useUser from '@hooks/auth/useUser';
+import useBook from '@hooks/useBook';
 import { addBook, addBookInShelf, addCategory } from '@remote/shelf';
 import { format } from 'date-fns';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 const options = [
@@ -56,6 +57,9 @@ export default function TemplateBookCreate() {
   const today = format(new Date(), 'yyyy-MM-dd');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const bookId = useSearchParams().get('bookId');
+  const { data } = useBook({ id: bookId as string });
+
   const [bookData, setBookData] = useState<BookData>({
     id: null,
     title: '',
@@ -71,6 +75,13 @@ export default function TemplateBookCreate() {
     page: null,
     price: null,
   });
+
+  useEffect(() => {
+    if (data) {
+      setBookData(data);
+    }
+  }, [data, bookId]);
+
   const [myData, setMyData] = useState<MyData>({
     readDate: today,
     memo: '',
@@ -100,6 +111,7 @@ export default function TemplateBookCreate() {
       }
     }
   };
+
   return (
     <div className="max-width">
       <h2 className="title1">책 등록</h2>

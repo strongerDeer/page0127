@@ -78,9 +78,16 @@ export default function BookDetail({ data }: { data: Book }) {
                 {id && (
                   <LikeButton bookId={id} likeUsers={likeUsers} showText />
                 )}
-                <Link href="#" className={styles.createMyBook}>
-                  읽은 책 등록
-                </Link>
+                {user && readUser?.includes(user.uid) ? (
+                  <p>읽었어요!</p>
+                ) : (
+                  <Link
+                    href={{ pathname: '/book/create', query: { bookId: id } }}
+                    className={styles.createMyBook}
+                  >
+                    읽은 책 등록
+                  </Link>
+                )}
               </div>
             </div>
 
