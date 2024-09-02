@@ -2,10 +2,21 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import styles from './BookDetail.module.scss';
 import { Book } from '@models/book';
-import Review from './Review';
 import LifeUsers from './LifeUsers';
+import { removeMyBook } from '@remote/mybook';
+import {
+  ModalContextValue,
+  ModalProps,
+  useModalContext,
+} from '@contexts/ModalContext';
+import { toast } from 'react-toastify';
+import useUser from '@hooks/auth/useUser';
+import { useRouter } from 'next/navigation';
 export default function MyBookDetail({ data }: { data: Book }) {
-  console.log(data);
+  const router = useRouter();
+  const user = useUser();
+  const { open: modalOpen, close: modalClose } =
+    useModalContext() as ModalContextValue;
   const {
     title,
     category,
@@ -73,6 +84,30 @@ export default function MyBookDetail({ data }: { data: Book }) {
           </div>
 
           {readUser && <LifeUsers userIds={readUser} />}
+          {user && user.uid && id && grade && (
+            <button
+              type="button"
+              onClick={() => {
+                modalOpen({
+                  title: '읽은 책 삭제',
+                  body: '책장에서 해당 책을 삭제하시겠습니까?',
+                  buttonLabel: '삭제',
+                  closeButtonLabel: '취소',
+                  onButtonClick: () => {
+                    removeMyBook(user.uid, id, data);
+                    modalClose();
+                    router.replace(`/shelf/${user.uid}`);
+                    toast.success('책이 삭제되었습니다');
+                  },
+                  closeModal: () => {
+                    modalClose();
+                  },
+                } as ModalProps);
+              }}
+            >
+              삭제
+            </button>
+          )}
         </div>
       </div>
     </>
