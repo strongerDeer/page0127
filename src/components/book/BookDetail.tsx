@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import useMyBook from './useMyBook';
 import clsx from 'clsx';
 import Link from 'next/link';
+import ScrollProgressBar from '@components/shared/ScrollProgressBar';
 
 export default function BookDetail({ data }: { data: Book }) {
   const {
@@ -59,6 +60,7 @@ export default function BookDetail({ data }: { data: Book }) {
   return (
     <>
       <div className={styles.bookDetail}>
+        <ScrollProgressBar />
         <div className={styles.bg}>
           <Image src={frontCover} width={100} height={100} alt="" priority />
         </div>
