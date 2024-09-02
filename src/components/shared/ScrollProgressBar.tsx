@@ -31,7 +31,6 @@ export default function ScrollProgressBar() {
     };
   }, []);
 
-  console.log(progress);
   return (
     <div
       style={{
