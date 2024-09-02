@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from 'react-query';
-import { getBooks, getLikeBooks } from '@remote/book';
+import { getBooks } from '@remote/book';
 import { useEffect } from 'react';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { COLLECTIONS } from '@constants';
