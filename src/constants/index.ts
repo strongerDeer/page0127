@@ -8,6 +8,7 @@ export const COLLECTIONS = {
   REVIEW: 'review',
 };
 
+export const DEFAULT_GOAL = 12;
 export const NO_PROFILE = '/images/no-profile.png';
 
 export const STORAGE_DOWNLOAD_URL_STR =

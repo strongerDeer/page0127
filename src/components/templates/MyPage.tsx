@@ -11,6 +11,7 @@ import useSocialSignIn from '@components/sign/useSocialSignIn';
 import { useState } from 'react';
 import useMyBooks from '@hooks/useMyBooks';
 import ProgressBar from '@components/shared/ProgressBar';
+import { DEFAULT_GOAL } from '@constants';
 export default function MyPage() {
   const user = useUser();
   const { data } = useLikeBooks();
@@ -29,7 +30,7 @@ export default function MyPage() {
 
         <ProgressBar
           value={Number(user?.total?.length) || 0}
-          total={Number(user?.goal) || 1}
+          total={Number(user?.goal) || DEFAULT_GOAL}
         />
       </div>
       <div className={styles.btns}>

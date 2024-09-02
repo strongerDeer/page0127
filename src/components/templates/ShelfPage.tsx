@@ -11,6 +11,7 @@ import { useQuery } from 'react-query';
 import styles from './ShelfPage.module.scss';
 import FollowButton from '@components/follow/FollowButton';
 import ProfileImage from '@components/shared/ProfileImage';
+import { DEFAULT_GOAL } from '@constants';
 
 export default function ShelfPage({ pageUid }: { pageUid: string }) {
   const { data: userData } = useQuery(['users'], () => getUser(pageUid));
@@ -45,7 +46,7 @@ export default function ShelfPage({ pageUid }: { pageUid: string }) {
           <div>
             <ProgressBar
               value={Number(userData?.total?.length) || 0}
-              total={Number(userData?.goal) || 1}
+              total={Number(userData?.goal) || DEFAULT_GOAL}
             />
 
             {userData?.category && <Chart userData={userData} />}
