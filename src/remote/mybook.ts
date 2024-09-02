@@ -1,12 +1,13 @@
 import {
   collection,
+  getDocs,
+  query,
   doc,
   getDoc,
-  getDocs,
   orderBy,
-  query,
 } from 'firebase/firestore';
 import { store } from '@firebase/firebaseApp';
+
 import { COLLECTIONS } from '@constants';
 import { Book } from '@models/book';
 
@@ -18,9 +19,13 @@ export async function getMyBooks(uid: string) {
     ),
   );
 
-  const data = snapshot.docs.map((doc) => ({
-    ...(doc.data() as Book),
-  }));
+  const data = snapshot.docs.map(
+    (doc) =>
+      ({
+        id: doc.id,
+        ...doc.data(),
+      }) as Book,
+  );
 
   return data;
 }

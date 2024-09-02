@@ -1,27 +1,26 @@
 import { useQuery, useQueryClient } from 'react-query';
-import { getMyBooks } from '@remote/mybook';
+import { getBooks, getReadBooks } from '@remote/book';
 import { useEffect } from 'react';
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
+import useUser from './auth/useUser';
 
-export default function useMyBooks({ userId }: { userId: string }) {
+export default function useReadBooks({ userId }: { userId: string }) {
   const client = useQueryClient();
 
   useEffect(() => {
-    if (!userId) return;
-
     const unsubscribe = onSnapshot(
       query(
-        collection(store, `${COLLECTIONS.USER}/${userId}/book`),
-        orderBy('readDate', 'desc'),
+        collection(store, COLLECTIONS.BOOKS),
+        where('readUser', 'array-contains', userId),
       ),
       (snapshot) => {
         const newBooks = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-        client.setQueryData(['myBooks', userId], newBooks);
+        client.setQueryData(['readBooks'], newBooks);
       },
     );
     return () => {
@@ -29,7 +28,5 @@ export default function useMyBooks({ userId }: { userId: string }) {
     };
   }, [client]);
 
-  return useQuery(['myBooks', userId], () => getMyBooks(userId), {
-    enabled: !!userId,
-  });
+  return useQuery(['readBooks'], () => getReadBooks(userId));
 }

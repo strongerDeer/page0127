@@ -9,13 +9,14 @@ import styles from './MyPage.module.scss';
 import Button from '@components/shared/Button';
 import useSocialSignIn from '@components/sign/useSocialSignIn';
 import { useState } from 'react';
-import useMyBooks from '@hooks/useMyBooks';
 import ProgressBar from '@components/shared/ProgressBar';
 import { DEFAULT_GOAL } from '@constants';
+import useReadBooks from '@hooks/useReadBooks';
 export default function MyPage() {
   const user = useUser();
   const { data } = useLikeBooks();
-  const { data: myBook } = useMyBooks({ userId: user?.uid as string });
+  const { data: readBook } = useReadBooks({ userId: user?.uid as string });
+
   const { logOut } = useSocialSignIn();
 
   const [activeTab, setActiveTab] = useState('read');
@@ -73,8 +74,8 @@ export default function MyPage() {
       </div>
 
       <section className={styles.contents}>
-        {activeTab === 'read' && myBook ? (
-          <BookList data={myBook} />
+        {activeTab === 'read' && readBook ? (
+          <BookList data={readBook} />
         ) : activeTab === 'like' && data ? (
           <BookList data={data} />
         ) : (

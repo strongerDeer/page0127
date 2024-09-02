@@ -1,11 +1,7 @@
 import {
   collection,
   getDocs,
-  QuerySnapshot,
   query,
-  limit,
-  startAfter,
-  orderBy,
   doc,
   getDoc,
   where,
@@ -14,18 +10,18 @@ import { store } from '@firebase/firebaseApp';
 
 import { COLLECTIONS } from '@constants';
 import { Book } from '@models/book';
-import useUser from '@hooks/auth/useUser';
 
 export async function getBooks() {
-  let snapshot = await getDocs(query(collection(store, COLLECTIONS.BOOKS)));
-
-  return snapshot.docs.map(
+  const snapshot = await getDocs(query(collection(store, COLLECTIONS.BOOKS)));
+  const data = snapshot.docs.map(
     (doc) =>
       ({
         id: doc.id,
         ...doc.data(),
       }) as Book,
   );
+
+  return data;
 }
 
 export async function getBook(id: string) {
@@ -51,4 +47,22 @@ export async function getLikeBooks(userId: string) {
         ...doc.data(),
       }) as Book,
   );
+}
+
+export async function getReadBooks(userId: string) {
+  const snapshot = await getDocs(
+    query(
+      collection(store, COLLECTIONS.BOOKS),
+      where('readUser', 'array-contains', userId),
+    ),
+  );
+  const data = snapshot.docs.map(
+    (doc) =>
+      ({
+        id: doc.id,
+        ...doc.data(),
+      }) as Book,
+  );
+
+  return data;
 }
