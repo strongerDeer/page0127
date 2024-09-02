@@ -74,32 +74,32 @@ export async function addCategory(
   bookId: string,
   category: string,
 ) {
-  let categorText = '기타';
+  let categoryText = '기타';
   switch (category) {
     case '컴퓨터/모바일':
-      categorText = '컴퓨터모바일';
+      categoryText = '컴퓨터모바일';
       break;
     case '소설/시/희곡':
-      categorText = '소설시희곡';
+      categoryText = '소설시희곡';
       break;
     case '에세이':
-      categorText = '에세이';
+      categoryText = '에세이';
       break;
     case '경제경영':
-      categorText = '경제경영';
+      categoryText = '경제경영';
       break;
     case '인문학':
-      categorText = '인문학';
+      categoryText = '인문학';
       break;
     case '자기계발':
-      categorText = '자기계발';
+      categoryText = '자기계발';
       break;
   }
 
   try {
     await updateDoc(doc(store, `users/${uid}`), {
       total: arrayUnion(bookId),
-      [`category.${categorText}`]: arrayUnion(bookId),
+      [`category.${categoryText}`]: arrayUnion(bookId),
     });
   } catch (error) {
     console.error('Error updating book:', error);
