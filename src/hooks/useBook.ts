@@ -1,3 +1,5 @@
+'use client';
+
 import { useQuery, useQueryClient } from 'react-query';
 import { getBook } from '@remote/book';
 
