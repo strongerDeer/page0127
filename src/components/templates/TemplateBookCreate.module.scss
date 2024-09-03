@@ -1,14 +1,23 @@
 @import '@/styles/var.scss';
 
+.wrap {
+  margin: 4rem auto;
+
+  h2 {
+    margin-bottom: 1rem;
+  }
+}
 .bookCreate {
   $gap: fcSize(40, 80);
   display: flex;
   align-items: flex-start;
   gap: $gap;
-  margin-top: 8rem;
+  margin-top: 3rem;
+  width: 100%;
 
   .coverWrap {
     flex-shrink: 0;
+    flex-grow: 1;
 
     display: flex;
     align-items: center;
@@ -31,6 +40,7 @@
 
   .form {
     flex-grow: 1;
+    width: 100%;
 
     display: flex;
     flex-direction: column;
@@ -45,5 +55,6 @@
   }
   @media screen and (max-width: 640px) {
     flex-direction: column;
+    align-items: center;
   }
 }

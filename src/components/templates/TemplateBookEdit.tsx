@@ -2,18 +2,17 @@
 import styles from './TemplateBookCreate.module.scss';
 
 import Input from '@components/form/Input';
-import SearchBook from '@components/form/SearchBook';
 import Select from '@components/form/Select';
 import Button from '@components/shared/Button';
-import useUser from '@hooks/auth/useUser';
-import useBook from '@hooks/useBook';
+
+import { Book } from '@models/book';
 import { addBook, addBookInShelf, addCategory } from '@remote/shelf';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { toast } from 'react-toastify';
 
 const options = [
@@ -52,61 +51,43 @@ export interface MyData {
   memo: string;
   grade: string;
 }
-export default function TemplateBookCreate({ bookId }: { bookId?: string }) {
-  const user = useUser();
+export default function TemplateBookEdit({
+  uid,
+  data,
+}: {
+  uid: string;
+  data: Book;
+}) {
   const router = useRouter();
   const today = format(new Date(), 'yyyy-MM-dd');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const paramsBookId = useSearchParams().get('bookId') || bookId;
-  const { data } = useBook({ id: paramsBookId as string });
-
-  const [bookData, setBookData] = useState<BookData>({
-    id: null,
-    title: '',
-    subTitle: null,
-    frontCover: '',
-    flipCover: '',
-    author: '',
-    publisher: '',
-    pubDate: '',
-    description: '',
-    categoryName: '',
-    category: '',
-    page: null,
-    price: null,
-  });
-
-  useEffect(() => {
-    if (bookId && data) {
-      setBookData(data);
-    }
-  }, [data, bookId]);
+  const [bookData, setBookData] = useState<Book>(data);
 
   const [myData, setMyData] = useState<MyData>({
-    readDate: today,
-    memo: '',
-    grade: '',
+    readDate: data.readDate || today,
+    memo: data.memo || '',
+    grade: (data.grade as string) || '',
   });
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (user && bookData.id) {
+    if (uid && bookData.id) {
       setIsLoading(true);
       try {
         // 전체 책 추가
-        addBook(user.uid, bookData.id, bookData, myData);
+        addBook(uid, bookData.id, bookData, myData);
         // 유저 카테고리 저장하기
-        addCategory(user.uid, bookData.id, bookData.category);
+        addCategory(uid, bookData.id, bookData.category);
         // 내 책장에 저장하기
-        addBookInShelf(user.uid, bookData.id, { ...bookData, ...myData });
+        addBookInShelf(uid, bookData.id, { ...bookData, ...myData });
 
-        toast.success('책장에 등록되었습니다!');
-        router.push(`/shelf/${user.uid}`);
+        toast.success('수정 되었습니다!');
+        router.push(`/shelf/${uid}`);
       } catch (error) {
         console.error('Error saving book:', error);
-        toast.error('책 등록 중 오류가 발생했습니다.');
+        toast.error('책 수정 중 오류가 발생했습니다.');
       } finally {
         setIsLoading(false);
       }
@@ -115,26 +96,12 @@ export default function TemplateBookCreate({ bookId }: { bookId?: string }) {
 
   return (
     <div className={clsx('max-width', styles.wrap)}>
-      <h2 className="title1">책 등록</h2>
-
-      <SearchBook setBookData={setBookData} />
+      <h2 className="title1">책 수정</h2>
 
       <div className={styles.bookCreate}>
         <div className={styles.coverWrap}>
           <div className={styles.coverBox}>
-            {bookData.frontCover ? (
-              <Image
-                src={bookData.frontCover}
-                alt=""
-                width={400}
-                height={400}
-              />
-            ) : (
-              <>
-                책 제목을 검색하여 입력하면
-                <br /> 책 이미지가 등록됩니다!
-              </>
-            )}
+            <Image src={bookData.frontCover} alt="" width={400} height={400} />
           </div>
         </div>
         <form className={styles.form} onSubmit={onSubmit}>
@@ -171,9 +138,7 @@ export default function TemplateBookCreate({ bookId }: { bookId?: string }) {
             name="grade"
             required
           />
-          <Button type="submit">
-            {isLoading ? '등록 중...' : '책장에 등록'}
-          </Button>
+          <Button type="submit">{isLoading ? '등록 중...' : '수정'}</Button>
         </form>
       </div>
     </div>
