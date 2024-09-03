@@ -24,5 +24,5 @@ export default function useBooks() {
     };
   }, [client]);
 
-  return useQuery(['books'], () => getBooks());
+  return useQuery(['books'], () => getBooks(), { suspense: true });
 }

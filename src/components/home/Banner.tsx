@@ -8,7 +8,7 @@ import { I_Banner } from '@models/banner';
 
 import { Skeleton } from '@components/shared/Skeleton';
 import useBanners from '@hooks/useBanner';
-import withSuspense from '@hooks/withSuspense';
+import withSuspense from '@components/shared/hocs/withSuspense';
 
 function Banner() {
   const { data, isLoading } = useBanners();

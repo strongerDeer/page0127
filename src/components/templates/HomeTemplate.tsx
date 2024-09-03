@@ -7,8 +7,9 @@ import { Suspense } from 'react';
 
 import styles from './HomeTemplate.module.scss';
 import useBooks from '@hooks/useBooks';
+import withSuspense from '@components/shared/hocs/withSuspense';
 
-export default function HomeTemplate() {
+function HomeTemplate() {
   const { data } = useBooks();
   return (
     <div>
@@ -28,3 +29,7 @@ export default function HomeTemplate() {
     </div>
   );
 }
+
+export default withSuspense(HomeTemplate, {
+  fallback: <div>책 데이터를 불러오는 중...</div>,
+});
