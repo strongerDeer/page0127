@@ -4,8 +4,6 @@ import Link from 'next/link';
 // lib
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
-import { I_Banner } from '@models/banner';
-
 import { Skeleton } from '@components/shared/Skeleton';
 import useBanners from '@hooks/useBanner';
 import withSuspense from '@components/shared/hocs/withSuspense';
@@ -20,17 +18,17 @@ function Banner() {
     <section className="mt-[-4rem]">
       <h2 className="a11y-hidden">배너</h2>
       <Swiper spaceBetween={8}>
-        {data?.map((item: I_Banner) => (
+        {data?.map((item) => (
           <SwiperSlide
             key={item.id}
             className="bg-blue-100 px-8 py-6 rounded-xl flex items-center h-32"
           >
             {item.link ? (
               <Link href={item.link}>
-                <Item title={item.title} description={item.description} />
+                <Item title={item.title} description={item.subTitle} />
               </Link>
             ) : (
-              <Item title={item.title} description={item.description} />
+              <Item title={item.title} description={item.subTitle} />
             )}
           </SwiperSlide>
         ))}
@@ -56,7 +54,7 @@ const Item = ({
 
 export function BannerSkeleton() {
   return (
-    <section>
+    <section className="mt-[-4rem]" style={{ zIndex: 100 }}>
       <Skeleton className="bg-blue-100 px-8 py-6 rounded-xl flex items-center h-32" />
     </section>
   );

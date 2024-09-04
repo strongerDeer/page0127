@@ -1,14 +1,18 @@
+import dynamic from 'next/dynamic';
 import PrivateRoute from '@components/auth/PrivateRoute';
-import TemplateApplyClub from '@components/templates/TemplateApplyClub';
-import { Suspense } from 'react';
+
+const TemplateApplyClub = dynamic(
+  () => import('@components/templates/TemplateApplyClub'),
+  {
+    ssr: false,
+  },
+);
 
 export default function page({ params }: { params: { id: string } }) {
   const { id } = params;
   return (
     <PrivateRoute>
-      <Suspense fallback={<></>}>
-        <TemplateApplyClub id={id} />
-      </Suspense>
+      <TemplateApplyClub id={id} />
     </PrivateRoute>
   );
 }

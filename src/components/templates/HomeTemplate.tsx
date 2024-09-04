@@ -1,23 +1,23 @@
 'use client';
-import BookList from '@components/book/BookList';
-import Banners, { BannerSkeleton } from '@components/home/Banner';
-import Visual from '@components/home/Visual';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { Suspense } from 'react';
 
 import styles from './HomeTemplate.module.scss';
-import useBooks from '@hooks/useBooks';
-import withSuspense from '@components/shared/hocs/withSuspense';
 
-function HomeTemplate() {
+import BookList from '@components/book/BookList';
+import Visual from '@components/home/Visual';
+import useBooks from '@hooks/useBooks';
+const Banners = dynamic(() => import('@components/home/Banner'), {
+  ssr: false,
+});
+
+export default function HomeTemplate() {
   const { data } = useBooks();
   return (
     <div>
       <Visual />
       <div className="max-width">
-        <Suspense fallback={<BannerSkeleton />}>
-          <Banners />
-        </Suspense>
+        <Banners />
         <main>
           <div className={styles.titleWrap}>
             <h2>인기 도서</h2>
@@ -29,7 +29,3 @@ function HomeTemplate() {
     </div>
   );
 }
-
-export default withSuspense(HomeTemplate, {
-  fallback: <div>책 데이터를 불러오는 중...</div>,
-});

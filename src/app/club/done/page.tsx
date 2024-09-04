@@ -1,10 +1,10 @@
-import DonePage from '@components/templates/DonePage';
-import { Suspense } from 'react';
+import dynamic from 'next/dynamic';
+
+const DonePage = dynamic(() => import('@components/templates/DonePage'), {
+  loading: () => <>loading...</>,
+  ssr: false,
+});
 
 export default function Page() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <DonePage />
-    </Suspense>
-  );
+  return <DonePage />;
 }

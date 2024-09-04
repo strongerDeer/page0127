@@ -1,6 +1,8 @@
 export interface I_Banner {
-  id: string;
   title: string;
-  description: string;
+  subTitle: string;
+  hasAccount: boolean;
+  backgroundColor: string;
   link: string;
+  imgUrl: string;
 }
