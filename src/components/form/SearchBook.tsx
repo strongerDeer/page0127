@@ -45,7 +45,7 @@ export default function SearchBook({ setBookData }: SearchBookProps) {
     [keyword],
     () => getSearchBook(keyword),
     {
-      enabled: keyword !== '',
+      enabled: !!keyword,
     },
   );
 

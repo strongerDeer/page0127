@@ -70,6 +70,10 @@ export default function TemplateBookEdit({
     grade: (data.grade as string) || '',
   });
 
+  const handleGradeChange = (value: string) => {
+    setMyData((prevData) => ({ ...prevData, grade: value }));
+  };
+
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -132,7 +136,7 @@ export default function TemplateBookEdit({
             label="점수"
             options={options}
             value={myData.grade}
-            setValue={setMyData}
+            onChange={handleGradeChange}
             placeholder="이 책에 대한 점수는?"
             id="grade"
             name="grade"

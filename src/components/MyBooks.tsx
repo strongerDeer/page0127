@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 
 import styles from './MyBooks.module.scss';
 import { Book } from '@models/book';
+import Select from './form/Select';
 
 export default function MyBooks({ pageUid }: { pageUid: string }) {
   const { data: book } = useMyBooks({ userId: pageUid });
@@ -21,6 +22,7 @@ export default function MyBooks({ pageUid }: { pageUid: string }) {
   ) as Book[];
 
   const [activeYear, setActiveYear] = useState<string>(latestYear);
+  const [activeCategory, setActiveCategory] = useState<string>('전체');
   const [bookData, setBookData] = useState<Book[]>(latestBook);
 
   const onError = (bookId: string) => {
@@ -40,36 +42,59 @@ export default function MyBooks({ pageUid }: { pageUid: string }) {
           book.readDate < `${activeYear + 1}-01-01`,
       ) as Book[];
     }
+    if (activeCategory !== '전체') {
+      filteredBook = book?.filter(
+        (book) => book.category === activeCategory,
+      ) as Book[];
+    }
 
     setBookData(filteredBook);
-  }, [activeYear, book]);
+  }, [activeYear, book, activeCategory]);
 
-  const handleYear = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const value = e.currentTarget.textContent;
-    if (value) {
-      setActiveYear(value);
-    }
-  };
   return (
     <div>
+      <Select
+        label="점수"
+        options={[
+          { value: '전체', label: '전체' },
+          { value: latestYear.toString(), label: `${latestYear}` },
+          {
+            value: (Number(latestYear) - 1).toString(),
+            label: `${Number(latestYear) - 1}`,
+          },
+          {
+            value: (Number(latestYear) - 2).toString(),
+            label: `${Number(latestYear) - 2}`,
+          },
+        ]}
+        value={activeYear}
+        onChange={setActiveYear}
+        id="year"
+        name="year"
+      />
       <ul className="flex gap-4">
         <li>
-          <button type="button" onClick={handleYear}>
-            {latestYear}
+          <button
+            type="button"
+            onClick={() => {
+              setActiveCategory('소설/시/희곡');
+            }}
+          >
+            소설/시/희곡
           </button>
         </li>
         <li>
-          <button type="button" onClick={handleYear}>
+          <button type="button" onClick={() => {}}>
             {Number(latestYear) - 1}
           </button>
         </li>
         <li>
-          <button type="button" onClick={handleYear}>
+          <button type="button" onClick={() => {}}>
             {Number(latestYear) - 2}
           </button>
         </li>
         <li>
-          <button type="button" onClick={handleYear}>
+          <button type="button" onClick={() => {}}>
             전체
           </button>
         </li>

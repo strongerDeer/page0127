@@ -1,20 +1,22 @@
 import { forwardRef } from 'react';
 import styles from './Select.module.scss';
 import { Option } from '@models/applyClub';
-interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+
+interface SelectProps
+  extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
   label?: string;
   placeholder?: string;
   options: Option[];
-  setValue: React.Dispatch<React.SetStateAction<any>>;
+  value: string;
+  onChange: (value: string) => void;
 }
 
 const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
-  { label, placeholder, options, setValue, ...props },
+  { label, placeholder, options, onChange, ...props },
   ref,
 ) {
-  const onChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { id, value } = e.target;
-    setValue((prev: any) => ({ ...prev, [id]: value }));
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    onChange(e.target.value);
   };
 
   return (
@@ -23,7 +25,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
       <select
         ref={ref}
         className={styles.select}
-        onChange={onChange}
+        onChange={handleChange}
         {...props}
       >
         <option disabled hidden value="">
