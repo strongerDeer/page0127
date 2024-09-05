@@ -6,7 +6,6 @@ import {
   arrayUnion,
   doc,
   getDoc,
-  serverTimestamp,
   setDoc,
   updateDoc,
 } from 'firebase/firestore';
@@ -29,8 +28,8 @@ async function createBookInMyShelf(
   try {
     await setDoc(doc(store, `users/${uid}/book/${bookId}`), {
       ...data,
-      createdTime: serverTimestamp(),
-      lastUpdatedTime: serverTimestamp(),
+      createdTime: new Date(),
+      lastUpdatedTime: new Date(),
     });
   } catch (error) {
     console.error('Error creating book:', error);
@@ -46,7 +45,7 @@ async function updateBookInMyShelf(
   try {
     await updateDoc(doc(store, `users/${uid}/book/${bookId}`), {
       ...data,
-      lastUpdatedTime: serverTimestamp(),
+      lastUpdatedTime: new Date(),
     });
   } catch (error) {
     console.error('Error updating book:', error);
@@ -128,8 +127,8 @@ async function createBook(
   try {
     await setDoc(doc(store, 'books', bookId), {
       ...data,
-      createdTime: serverTimestamp(),
-      lastUpdatedTime: serverTimestamp(),
+      createdTime: new Date(),
+      lastUpdatedTime: new Date(),
       readUser: arrayUnion(uid),
       grade: { [`${myData.grade}`]: arrayUnion(uid) },
     });
@@ -148,7 +147,7 @@ async function updateBook(
   try {
     await updateDoc(doc(store, COLLECTIONS.BOOKS, bookId), {
       ...data,
-      lastUpdatedTime: serverTimestamp(),
+      lastUpdatedTime: new Date(),
       readUser: arrayUnion(uid),
       grade: {
         0: arrayRemove(uid),

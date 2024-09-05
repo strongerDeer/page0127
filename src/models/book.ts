@@ -1,5 +1,4 @@
 export interface Book {
-  id: string | null;
   title: string;
   subTitle: string | null;
   frontCover: string;
@@ -29,10 +28,6 @@ export interface Grade {
   '5': string[];
   '10': string[];
 }
-export interface StampTime {
-  seconds: number;
-  nanoseconds: number;
-}
 
 export interface MyBook {
   id: string;
@@ -51,6 +46,6 @@ export interface MyBook {
   readDate: string;
   memo: string;
   grade: string;
-  createdTime: StampTime;
-  lastUpdatedTime: StampTime;
+  createdTime: Date;
+  lastUpdatedTime: Date;
 }

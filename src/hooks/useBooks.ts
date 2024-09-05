@@ -1,7 +1,8 @@
+'use client';
 import { useQuery, useQueryClient } from 'react-query';
 import { getBooks } from '@remote/book';
 import { useEffect } from 'react';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
 
@@ -10,7 +11,10 @@ export default function useBooks() {
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
-      collection(store, COLLECTIONS.BOOKS),
+      query(
+        collection(store, COLLECTIONS.BOOKS),
+        orderBy('createdTime', 'desc'),
+      ),
       (snapshot) => {
         const newBooks = snapshot.docs.map((doc) => ({
           id: doc.id,

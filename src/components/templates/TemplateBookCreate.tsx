@@ -113,6 +113,10 @@ export default function TemplateBookCreate({ bookId }: { bookId?: string }) {
     }
   };
 
+  const handleGradeChange = (value: string) => {
+    setMyData((prevData) => ({ ...prevData, grade: value }));
+  };
+
   return (
     <div className={clsx('max-width', styles.wrap)}>
       <h2 className="title1">책 등록</h2>
@@ -165,7 +169,7 @@ export default function TemplateBookCreate({ bookId }: { bookId?: string }) {
             label="점수"
             options={options}
             value={myData.grade}
-            setValue={setMyData}
+            onChange={handleGradeChange}
             placeholder="이 책에 대한 점수는?"
             id="grade"
             name="grade"
