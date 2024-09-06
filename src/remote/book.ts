@@ -90,3 +90,16 @@ export async function getReadBooks(userId: string) {
 
   return data;
 }
+
+export async function getSearchBooks(keyword: string) {
+  const searchQuery = query(
+    collection(store, COLLECTIONS.BOOKS),
+    // keyword로 시작하는 모든 책 찾기
+    where('title', '>=', keyword),
+    where('title', '<=', keyword + '\uf8ff'),
+  );
+
+  const snapshot = await getDocs(searchQuery);
+
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Book) }));
+}

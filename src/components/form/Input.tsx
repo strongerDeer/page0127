@@ -2,7 +2,7 @@
 
 import { clsx } from 'clsx';
 import styles from './Input.module.scss';
-import { useState } from 'react';
+import { forwardRef, useState } from 'react';
 
 interface InputProps<T> extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -12,19 +12,23 @@ interface InputProps<T> extends React.InputHTMLAttributes<HTMLInputElement> {
   setValue?: React.Dispatch<React.SetStateAction<T>>;
 }
 
-export default function Input<T>({
-  type = 'text',
-  label,
-  id,
-  name,
-  className,
-  value,
-  hasError,
-  helpMessage,
-  hiddenLabel,
-  setValue,
-  ...rest
-}: InputProps<T>) {
+function Input<T>(
+  {
+    type = 'text',
+    label,
+    id,
+    name,
+    className,
+    value,
+    hasError,
+    helpMessage,
+    hiddenLabel,
+    setValue,
+
+    ...rest
+  }: InputProps<T>,
+  ref: React.Ref<HTMLInputElement>,
+) {
   const [state, setState] = useState<string>('');
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,6 +59,7 @@ export default function Input<T>({
         value={value?.toString() || state}
         onChange={onChange}
         autoComplete={type === 'email' ? 'email' : 'off'}
+        ref={ref}
         {...(type === 'number' ? { min: 1, max: 1000 } : {})}
         {...rest}
       />
@@ -63,3 +68,5 @@ export default function Input<T>({
     </div>
   );
 }
+
+export default forwardRef(Input);
