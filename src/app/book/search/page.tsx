@@ -1,31 +1,32 @@
 'use client';
-import {
-  ChangeEvent,
-  FormEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 
 import Input from '@components/form/Input';
-import Button from '@components/shared/Button';
 import { useQuery } from 'react-query';
 import BookList from '@components/book/BookList';
 import { getSearchBooks } from '@remote/book';
+import useDebounce from '@hooks/useDebounce';
 
 export default function Page() {
   const [keyword, setKeyword] = useState<string>('');
+  const debouncedKeyword = useDebounce(keyword);
+
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { data } = useQuery(['books', keyword], () => getSearchBooks(keyword), {
-    enabled: !!keyword,
-  });
+  const { data } = useQuery(
+    ['books', debouncedKeyword],
+    () => getSearchBooks(debouncedKeyword),
+    {
+      enabled: !!debouncedKeyword,
+    },
+  );
+
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
   }, []);
+
   const handleKeyword = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setKeyword(e.target.value);
   }, []);
