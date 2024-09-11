@@ -18,8 +18,6 @@ export default function FollowButton({ pageUid }: { pageUid: string }) {
   }
   const isFollowed = false;
   const handleFollow = async () => {
-    console.log(pageUid);
-
     if (!isFollowed) {
       await updateDoc(doc(collection(store, COLLECTIONS.USER), pageUid), {
         follower: arrayUnion(userId),

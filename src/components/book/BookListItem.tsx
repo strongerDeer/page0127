@@ -29,8 +29,6 @@ export default function BookListItem(props: bookItemProps) {
 
   const { data: likeUsers } = useLikeBooks();
 
-  console.log('😀', likeUsers);
-
   return (
     <>
       <article className={styles.article}>

@@ -21,7 +21,6 @@ export default function createBanner() {
     imgUrl: '',
   });
 
-  console.log(banner);
   const [image, setImage] = useState<string>('');
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
