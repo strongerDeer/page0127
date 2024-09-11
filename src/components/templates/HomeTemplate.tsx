@@ -37,9 +37,10 @@ export default function HomeTemplate({ books }: { books: Book[] }) {
           />
           <div className={styles.titleWrap}>
             <h2>인기 도서</h2>
-
             <BookList data={books.slice(0, 8)} />
-            <Link href="/book">도서 더보기</Link>
+            <Link href="/book" className={styles.more}>
+              도서 더보기
+            </Link>
           </div>
         </main>
       </div>

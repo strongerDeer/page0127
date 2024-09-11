@@ -1,10 +1,10 @@
 import { useQuery, useQueryClient } from 'react-query';
-import { getLikeBooks } from '@remote/book';
 import { useEffect } from 'react';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
 import useUser from './auth/useUser';
+import getBookLikes from '@remote/likeBook';
 
 export default function useLikeBooks() {
   const userId = useUser()?.uid;
@@ -13,7 +13,7 @@ export default function useLikeBooks() {
   useEffect(() => {
     const unsubscribe = onSnapshot(
       query(
-        collection(store, COLLECTIONS.BOOKS),
+        collection(store, COLLECTIONS.BOOK_LIKE),
         where('likeUsers', 'array-contains', userId),
       ),
       (snapshot) => {
@@ -21,7 +21,7 @@ export default function useLikeBooks() {
           id: doc.id,
           ...doc.data(),
         }));
-        client.setQueryData(['books'], newBooks);
+        client.setQueryData(['likeBooks'], newBooks);
       },
     );
     return () => {
@@ -29,5 +29,13 @@ export default function useLikeBooks() {
     };
   }, [client, userId]);
 
-  return useQuery(['books'], () => getLikeBooks(userId as string));
+  const data = useQuery(
+    ['likeBooks'],
+    () => getBookLikes({ userId: userId as string }),
+    {
+      enabled: !!userId,
+    },
+  );
+
+  return { data };
 }

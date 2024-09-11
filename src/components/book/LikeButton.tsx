@@ -13,6 +13,7 @@ import {
 import { useCallback, useState } from 'react';
 import styles from './LikeButton.module.scss';
 import clsx from 'clsx';
+import { toggleLike } from '@remote/likeBook';
 
 export default function LikeButton({
   bookId,
@@ -42,15 +43,12 @@ export default function LikeButton({
   }, []);
 
   const handleLike = async (e: React.MouseEvent) => {
-    if (!isLiked) {
-      await updateDoc(doc(collection(store, COLLECTIONS.BOOKS), bookId), {
-        likeUsers: arrayUnion(userId),
-      });
+    if (userId) {
+      toggleLike(bookId, userId);
       createHeart(e);
-    } else {
-      await updateDoc(doc(collection(store, COLLECTIONS.BOOKS), bookId), {
-        likeUsers: arrayRemove(userId),
-      });
+      // await updateDoc(doc(collection(store, COLLECTIONS.BOOKS), bookId), {
+      //   likeUsers: arrayUnion(userId),
+      // });
     }
   };
   return (

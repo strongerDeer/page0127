@@ -2,7 +2,6 @@ import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
 import { LikeBook } from '@models/likeBook';
 import {
-  QueryDocumentSnapshot,
   collection,
   deleteDoc,
   doc,
@@ -22,7 +21,7 @@ export default async function getBookLikes({ userId }: { userId: string }) {
   );
 
   return snapshot.docs.map(
-    (doc: QueryDocumentSnapshot) =>
+    (doc) =>
       ({
         id: doc.id,
         ...doc.data(),

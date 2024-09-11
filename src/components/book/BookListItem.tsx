@@ -3,8 +3,9 @@ import Image from 'next/image';
 
 import { Book } from '@models/book';
 import useUser from '@hooks/auth/useUser';
-import LikeButton from './LikeButton';
+
 import styles from './BookListItem.module.scss';
+import useLikeBooks from '@hooks/useLikeBooks';
 
 interface bookItemProps extends Book {
   index: number;
@@ -19,12 +20,16 @@ export default function BookListItem(props: bookItemProps) {
     title,
     category,
     index,
-    likeUsers,
+
     publisher,
     author,
     subTitle,
     readUser,
   } = props;
+
+  const { data: likeUsers } = useLikeBooks();
+
+  console.log('😀', likeUsers);
 
   return (
     <>
@@ -75,7 +80,7 @@ export default function BookListItem(props: bookItemProps) {
           </h3>
           <p className={styles.author}>{author}</p>
         </div>
-        {id && <LikeButton bookId={id} likeUsers={likeUsers} />}
+        {/* {id && <LikeButton bookId={id} likeUsers={likeUsers} />} */}
       </article>
     </>
   );
