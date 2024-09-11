@@ -10,6 +10,8 @@
       "@models/*": ["src/models/*"],
       "@remote/*": ["src/remote/*"],
 
+      "@connect/*": ["src/connect/*"],
+
       "@constants/*": ["src/constants/*"],
       "@atoms/*": ["src/atoms/*"],
       "@hooks/*": ["src/hooks/*"],

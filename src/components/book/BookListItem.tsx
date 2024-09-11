@@ -2,10 +2,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 import { Book } from '@models/book';
-import useUser from '@hooks/auth/useUser';
 
 import styles from './BookListItem.module.scss';
 import useLikeBooks from '@hooks/useLikeBooks';
+import useUser from '@connect/user/useUser';
 
 interface bookItemProps extends Book {
   index: number;

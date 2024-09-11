@@ -2,7 +2,6 @@ import Icon from '@components/icon/Icon';
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
 
-import useUser from '@hooks/auth/useUser';
 import {
   arrayRemove,
   arrayUnion,
@@ -14,6 +13,7 @@ import { useCallback, useState } from 'react';
 import styles from './LikeButton.module.scss';
 import clsx from 'clsx';
 import { toggleLike } from '@remote/likeBook';
+import useUser from '@connect/user/useUser';
 
 export default function LikeButton({
   bookId,

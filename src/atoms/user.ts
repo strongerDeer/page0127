@@ -1,4 +1,4 @@
-import { User } from '@models/user';
+import { User } from '@connect/user';
 import { atom } from 'recoil';
 
 export const userAtom = atom<User | null>({

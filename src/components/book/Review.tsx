@@ -2,7 +2,7 @@ import Input from '@components/form/Input';
 import Button from '@components/shared/Button';
 import ProfileImage from '@components/shared/ProfileImage';
 import { Skeleton } from '@components/shared/Skeleton';
-import useUser from '@hooks/auth/useUser';
+import useUser from '@connect/user/useUser';
 import { useReview } from '@hooks/useReview';
 import { format } from 'date-fns';
 import { ChangeEvent, useCallback, useState } from 'react';

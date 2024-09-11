@@ -1,6 +1,6 @@
 'use client';
 import Button from '@components/shared/Button';
-import useUser from '@hooks/auth/useUser';
+import useUser from '@connect/user/useUser';
 
 export default function Club() {
   const user = useUser();

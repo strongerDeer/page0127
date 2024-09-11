@@ -7,7 +7,7 @@ import {
 } from 'firebase/auth';
 import { auth } from '@firebase/firebaseApp';
 import { EditPasswordFormValues } from '@models/sign';
-import useUser from '@hooks/auth/useUser';
+import useUser from '@connect/user/useUser';
 
 export default function EditPassword() {
   const user = useUser();

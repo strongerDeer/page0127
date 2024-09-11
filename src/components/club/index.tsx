@@ -3,7 +3,7 @@ import BasicInfo from '@components/club/BasicInfo';
 import CardInfo from '@components/club/CardInfo';
 import Terms from '@components/club/Terms';
 import ProgressBar from '@components/shared/ProgressBar';
-import useUser from '@hooks/auth/useUser';
+import useUser from '@connect/user/useUser';
 import {
   APPLY_STATUS,
   CardInfoValues,

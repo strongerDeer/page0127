@@ -5,13 +5,13 @@ import Chart from '@components/my/Chart';
 import ProgressBar from '@components/shared/ProgressBar';
 import Background from '@components/shelf/Background';
 
-import { getUser } from '@remote/user';
 import { useQuery } from 'react-query';
 
 import styles from './ShelfPage.module.scss';
 import FollowButton from '@components/follow/FollowButton';
 import ProfileImage from '@components/shared/ProfileImage';
 import { DEFAULT_GOAL } from '@constants';
+import { getUser } from '@connect/user/user';
 
 export default function ShelfPage({ pageUid }: { pageUid: string }) {
   const { data: userData } = useQuery(['users'], () => getUser(pageUid));

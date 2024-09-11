@@ -9,7 +9,7 @@ import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
 import Input from '@components/form/Input';
 import InputFileImg from '@components/form/InputFileImg';
 import { useEditProfileForm } from '@hooks/useEditProfileForm';
-import useUser from '@hooks/auth/useUser';
+import useUser from '@connect/user/useUser';
 
 export default function EditProfileForm({
   inputArr,

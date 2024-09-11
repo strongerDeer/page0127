@@ -5,7 +5,7 @@ import useAppliedClub from '@components/club/hooks/useAppliedClub';
 import useApplyClubMutation from '@components/club/hooks/useApplyClubMutation';
 import usePollApplyClubStatus from '@components/club/hooks/usePollApplyClubStatus';
 import { useAlertContext } from '@contexts/AlertContext';
-import useUser from '@hooks/auth/useUser';
+import useUser from '@connect/user/useUser';
 import { APPLY_STATUS } from '@models/applyClub';
 import { updateApplyClub } from '@remote/applyClub';
 

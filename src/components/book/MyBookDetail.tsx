@@ -10,7 +10,7 @@ import {
   useModalContext,
 } from '@contexts/ModalContext';
 import { toast } from 'react-toastify';
-import useUser from '@hooks/auth/useUser';
+import useUser from '@connect/user/useUser';
 import { useRouter } from 'next/navigation';
 export default function MyBookDetail({ data }: { data: Book }) {
   const router = useRouter();

@@ -1,6 +1,6 @@
 'use client';
 import TemplateEditPassword from '@components/templates/TemplateEditPassword';
-import useUser from '@hooks/auth/useUser';
+import useUser from '@connect/user/useUser';
 
 import { InputArr } from '@models/sign';
 import { useRouter } from 'next/navigation';

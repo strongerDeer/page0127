@@ -5,12 +5,12 @@ import { Book, Grade } from '@models/book';
 import Review from './Review';
 import LifeUsers from './LifeUsers';
 import LikeButton from './LikeButton';
-import useUser from '@hooks/auth/useUser';
 import { format } from 'date-fns';
 import useMyBook from './useMyBook';
 import clsx from 'clsx';
 import Link from 'next/link';
 import ScrollProgressBar from '@components/shared/ScrollProgressBar';
+import useUser from '@connect/user/useUser';
 
 export default function BookDetail({ data }: { data: Book }) {
   const {

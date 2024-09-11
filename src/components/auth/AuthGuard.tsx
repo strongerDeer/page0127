@@ -4,8 +4,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@firebase/firebaseApp';
 import { useSetRecoilState } from 'recoil';
 import { userAtom, userLoadingAtom } from '@atoms/user';
-import { useQuery } from 'react-query';
-import { getUser } from '@remote/user';
+import { getUser } from '@connect/user/user';
 
 // 인증처리
 export default function AuthGuard({ children }: { children: React.ReactNode }) {

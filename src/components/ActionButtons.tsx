@@ -4,7 +4,7 @@ import CopyButton from './CopyButton';
 import KakaoShareButton from './KakaoShareButton';
 
 import styles from './ActionButtons.module.scss';
-import useUser from '@hooks/auth/useUser';
+import useUser from '@connect/user/useUser';
 export default function ActionButtons({ userData }: { userData: User }) {
   const user = useUser();
   return (

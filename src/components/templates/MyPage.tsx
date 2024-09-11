@@ -2,7 +2,7 @@
 
 import BookList from '@components/book/BookList';
 import ProfileImage from '@components/shared/ProfileImage';
-import useUser from '@hooks/auth/useUser';
+import useUser from '@connect/user/useUser';
 import useLikeBooks from '@hooks/useLikeBooks';
 
 import styles from './MyPage.module.scss';

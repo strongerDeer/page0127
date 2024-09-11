@@ -3,7 +3,7 @@
 import { InputArr } from '@models/sign';
 import SignInForm from '@components/sign/SignInForm';
 import SocialLoginButtons from '@components/sign/SocialLoginButtons';
-import useUser from '@hooks/auth/useUser';
+import useUser from '@connect/user/useUser';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 

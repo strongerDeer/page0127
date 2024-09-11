@@ -5,7 +5,7 @@ import Input from '@components/form/Input';
 import SearchBook from '@components/form/SearchBook';
 import Select from '@components/form/Select';
 import Button from '@components/shared/Button';
-import useUser from '@hooks/auth/useUser';
+import useUser from '@connect/user/useUser';
 import useBook from '@hooks/useBook';
 import { addBook, addBookInShelf, addCategory } from '@remote/shelf';
 import clsx from 'clsx';

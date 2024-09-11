@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
-import useUser from './auth/useUser';
+import useUser from '@connect/user/useUser';
 import getBookLikes from '@remote/likeBook';
 
 export default function useLikeBooks() {

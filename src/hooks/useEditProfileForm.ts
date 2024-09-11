@@ -8,7 +8,7 @@ import EditProfile from '@remote/profile';
 import editProfileValidate from '@components/sign/editProfileValidate';
 import { useForm } from './useForm';
 
-import useUser from './auth/useUser';
+import useUser from '@connect/user/useUser';
 import { EditFormValues } from '@models/sign';
 
 export const useEditProfileForm = () => {

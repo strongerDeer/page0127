@@ -1,7 +1,7 @@
 import Button from '@components/shared/Button';
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
-import useUser from '@hooks/auth/useUser';
+import useUser from '@connect/user/useUser';
 import {
   arrayRemove,
   arrayUnion,

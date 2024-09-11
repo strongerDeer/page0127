@@ -1,9 +1,10 @@
 import getBookLikes, { toggleLike } from '@remote/likeBook';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import useUser from './auth/useUser';
+
 import { useAlertContext } from '@contexts/AlertContext';
 import { useRouter } from 'next/navigation';
 import { useModalContext } from '@contexts/ModalContext';
+import useUser from '@connect/user/useUser';
 
 export default function useBookLike() {
   const user = useUser();

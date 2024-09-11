@@ -1,5 +1,5 @@
 'use client';
-import useUser from '@hooks/auth/useUser';
+import useUser from '@connect/user/useUser';
 import Image from 'next/image';
 
 import styles from './ProfileImage.module.scss';

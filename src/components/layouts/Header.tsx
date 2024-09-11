@@ -9,13 +9,13 @@ import { usePathname } from 'next/navigation';
 import styles from './Header.module.scss';
 
 import Button from '@components/shared/Button';
-import useUser, { useUserLoading } from '@hooks/auth/useUser';
 import { useCallback } from 'react';
 import Icon from '@components/icon/Icon';
 
 import { cormorant } from '@font';
 import ProfileImage from '@components/shared/ProfileImage';
 import useSocialSignIn from '@components/sign/useSocialSignIn';
+import useUser, { useUserLoading } from '@connect/user/useUser';
 export default function Header() {
   const pathname = usePathname();
   const user = useUser();

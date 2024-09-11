@@ -1,6 +1,5 @@
 'use client';
-import useUser, { useUserLoading } from '@hooks/auth/useUser';
-import { useAlertContext } from '@contexts/AlertContext';
+import useUser, { useUserLoading } from '@connect/user/useUser';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useCallback } from 'react';
 

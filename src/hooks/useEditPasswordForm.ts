@@ -6,7 +6,7 @@ import { FirebaseError } from 'firebase/app';
 
 import { useForm } from './useForm';
 
-import useUser from './auth/useUser';
+import useUser from '@connect/user/useUser';
 import { EditPasswordFormValues } from '@models/sign';
 import EditPassword from '@remote/password';
 import editPasswordValidate from '@components/sign/editPasswordValidate';
