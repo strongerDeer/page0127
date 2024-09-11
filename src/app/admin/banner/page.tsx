@@ -2,7 +2,7 @@
 import Button from '@components/shared/Button';
 import useBanner from '@hooks/useBanner';
 
-export default function banners() {
+export default function Banners() {
   const { data } = useBanner();
 
   return (

@@ -1,10 +1,10 @@
 import useShare from '@hooks/useShare';
-import { User } from '@models/user';
 import Script from 'next/script';
 
 import styles from './Button.module.scss';
 
 import Icon from './icon/Icon';
+import { User } from '@connect/user';
 declare global {
   interface Window {
     Kakao: any;

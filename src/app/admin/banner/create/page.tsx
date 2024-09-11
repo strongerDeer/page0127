@@ -11,7 +11,7 @@ import { collection, doc, setDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 
-export default function createBanner() {
+export default function CreateBanner() {
   const [banner, setBanner] = useState<I_Banner>({
     title: '',
     subTitle: '',
