@@ -3,7 +3,6 @@
 import BookList from '@components/book/BookList';
 import ProfileImage from '@components/shared/ProfileImage';
 import useUser from '@connect/user/useUser';
-import useLikeBooks from '@hooks/useLikeBooks';
 
 import styles from './MyPage.module.scss';
 import Button from '@components/shared/Button';
@@ -12,9 +11,10 @@ import { useState } from 'react';
 import ProgressBar from '@components/shared/ProgressBar';
 import { DEFAULT_GOAL } from '@constants';
 import useReadBooks from '@hooks/useReadBooks';
+import useLikeBook from '@connect/like/useLikeBook';
 export default function MyPage() {
   const user = useUser();
-  const { data } = useLikeBooks();
+  const { data } = useLikeBook();
   const { data: readBook } = useReadBooks({ userId: user?.uid as string });
 
   const { logOut } = useSocialSignIn();

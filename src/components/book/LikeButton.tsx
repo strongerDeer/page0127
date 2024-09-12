@@ -2,30 +2,22 @@ import Icon from '@components/icon/Icon';
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
 
-import {
-  arrayRemove,
-  arrayUnion,
-  collection,
-  doc,
-  updateDoc,
-} from 'firebase/firestore';
 import { useCallback, useState } from 'react';
 import styles from './LikeButton.module.scss';
 import clsx from 'clsx';
-import { toggleLike } from '@remote/likeBook';
 import useUser from '@connect/user/useUser';
+import { toggleLike } from '@connect/like/likeBook';
 
 export default function LikeButton({
   bookId,
+  isLike,
   showText,
-  likeUsers = [],
 }: {
   bookId: string;
+  isLike: boolean;
   showText?: boolean;
-  likeUsers?: string[];
 }) {
   const userId = useUser()?.uid;
-  const isLiked = likeUsers?.includes(userId as string);
   const [hearts, setHearts] = useState<
     Array<{ id: number; x: number; y: number }>
   >([]);
@@ -57,11 +49,7 @@ export default function LikeButton({
       onClick={handleLike}
       className={clsx(showText && styles.showText, styles.likeButton)}
     >
-      {isLiked ? (
-        <Icon name="heartFill" color="error" />
-      ) : (
-        <Icon name="heart" />
-      )}
+      {isLike ? <Icon name="heartFill" color="error" /> : <Icon name="heart" />}
       {hearts.map((heart) => (
         <Icon
           key={heart.id}
@@ -74,7 +62,7 @@ export default function LikeButton({
           }}
         />
       ))}
-      {showText && <span className={isLiked ? styles.liked : ''}>좋아요</span>}
+      {showText && <span className={isLike ? styles.liked : ''}>좋아요</span>}
     </button>
   );
 }

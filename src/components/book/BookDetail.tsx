@@ -11,8 +11,10 @@ import clsx from 'clsx';
 import Link from 'next/link';
 import ScrollProgressBar from '@components/shared/ScrollProgressBar';
 import useUser from '@connect/user/useUser';
+import useLikeBook from '@connect/like/useLikeBook';
 
 export default function BookDetail({ data }: { data: Book }) {
+  const { data: likeBooks } = useLikeBook();
   const {
     title,
     category,
@@ -28,7 +30,7 @@ export default function BookDetail({ data }: { data: Book }) {
     grade,
     readUser,
     id,
-    likeUsers,
+
     // flipCover,
     // createdTime,
     // lastUpdatedTime,
@@ -78,7 +80,11 @@ export default function BookDetail({ data }: { data: Book }) {
               </motion.div>
               <div className={styles.buttons}>
                 {id && (
-                  <LikeButton bookId={id} likeUsers={likeUsers} showText />
+                  <LikeButton
+                    bookId={id}
+                    isLike={likeBooks?.includes(id)}
+                    showText
+                  />
                 )}
                 {user && readUser?.includes(user.uid) ? (
                   <p>읽었어요!</p>

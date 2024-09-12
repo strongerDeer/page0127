@@ -1,10 +1,10 @@
-import getBookLikes, { toggleLike } from '@remote/likeBook';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 
 import { useAlertContext } from '@contexts/AlertContext';
 import { useRouter } from 'next/navigation';
 import { useModalContext } from '@contexts/ModalContext';
 import useUser from '@connect/user/useUser';
+import getBookLike, { toggleLike } from '@connect/like/likeBook';
 
 export default function useBookLike() {
   const user = useUser();
@@ -14,7 +14,7 @@ export default function useBookLike() {
   const { open: alertOpen } = useAlertContext();
   const { data } = useQuery(
     ['book-likes'],
-    () => getBookLikes({ userId: user?.uid as string }),
+    () => getBookLike({ userId: user?.uid as string }),
     {
       enabled: user !== null,
     },

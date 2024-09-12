@@ -1,27 +1,23 @@
+'use client';
 import { useQuery, useQueryClient } from 'react-query';
 import { useEffect } from 'react';
-import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
 import useUser from '@connect/user/useUser';
-import getBookLikes from '@remote/likeBook';
+import getBookLike from './likeBook';
+import { LikeBook } from '.';
 
-export default function useLikeBooks() {
+export default function useLikeBook() {
   const userId = useUser()?.uid;
   const client = useQueryClient();
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
-      query(
-        collection(store, COLLECTIONS.BOOK_LIKE),
-        where('likeUsers', 'array-contains', userId),
-      ),
+      doc(collection(store, COLLECTIONS.BOOK_LIKE), userId),
       (snapshot) => {
-        const newBooks = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        client.setQueryData(['likeBooks'], newBooks);
+        const newLike = snapshot.data()?.bookList;
+        client.setQueryData(['likeBooks'], newLike);
       },
     );
     return () => {
@@ -29,9 +25,9 @@ export default function useLikeBooks() {
     };
   }, [client, userId]);
 
-  const data = useQuery(
+  const { data } = useQuery(
     ['likeBooks'],
-    () => getBookLikes({ userId: userId as string }),
+    () => getBookLike({ userId: userId as string }),
     {
       enabled: !!userId,
     },

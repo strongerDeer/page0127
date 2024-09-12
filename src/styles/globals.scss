@@ -20,6 +20,22 @@ svg {
   display: inline-block;
 }
 
+.section01 {
+  position: relative;
+  margin: fcSize(32, 64) 0;
+  .title {
+    font-size: 1.2em;
+    font-weight: bold;
+  }
+  .more {
+    position: absolute;
+    top: 0;
+    right: 0;
+    color: var(--primary);
+  }
+}
+
+// 아래 정리 필요 삭제
 .section {
   margin: 4rem 0;
 }

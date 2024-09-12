@@ -62,20 +62,6 @@ export async function getBook(id: string) {
   };
 }
 
-// export async function getLikeBooks({ userId }: { userId: string }) {
-//   let snapshot = await getDocs(
-//     query(
-//       collection(store, COLLECTIONS.BOOKS),
-//       where('likeUsers', 'array-contains', userId),
-//     ),
-//   );
-
-//   return snapshot.docs.map((doc) => ({
-//     id: doc.id,
-//     ...(doc.data() as Book),
-//   }));
-// }
-
 export async function getReadBooks(userId: string) {
   const snapshot = await getDocs(
     query(
