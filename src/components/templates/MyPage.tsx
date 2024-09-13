@@ -12,14 +12,15 @@ import ProgressBar from '@components/shared/ProgressBar';
 import { DEFAULT_GOAL } from '@constants';
 import useReadBooks from '@hooks/useReadBooks';
 import useLikeBook from '@connect/like/useLikeBook';
+import useFilteredBook from '@connect/book/useFilteredBook';
 export default function MyPage() {
+  const [activeTab, setActiveTab] = useState('read');
   const user = useUser();
-  const { data } = useLikeBook();
-  const { data: readBook } = useReadBooks({ userId: user?.uid as string });
-
   const { logOut } = useSocialSignIn();
 
-  const [activeTab, setActiveTab] = useState('read');
+  const { data: likeData } = useLikeBook();
+  const { data: readBook } = useReadBooks({ userId: user?.uid as string });
+  const { data: likes } = useFilteredBook({ like: likeData || [] });
 
   return (
     <div className={styles.myPage}>
@@ -76,8 +77,8 @@ export default function MyPage() {
       <section className={styles.contents}>
         {activeTab === 'read' && readBook ? (
           <BookList data={readBook} />
-        ) : activeTab === 'like' && data ? (
-          <BookList data={data} />
+        ) : activeTab === 'like' && likes ? (
+          <BookList data={likes} />
         ) : (
           <>참여중인 모임</>
         )}
