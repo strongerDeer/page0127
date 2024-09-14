@@ -1,15 +1,21 @@
 'use client';
 
+import { forwardRef, useState, ChangeEvent } from 'react';
 import { clsx } from 'clsx';
 import styles from './Input.module.scss';
-import { forwardRef, useState } from 'react';
 
-interface InputProps<T> extends React.InputHTMLAttributes<HTMLInputElement> {
+type InputValue = string | number;
+
+type InputChangeHandler<T> = (value: InputValue, name: string) => void;
+
+interface InputProps<T>
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   label: string;
   hasError?: boolean;
   helpMessage?: React.ReactNode;
   hiddenLabel?: boolean;
   setValue?: React.Dispatch<React.SetStateAction<T>>;
+  onChange?: InputChangeHandler<T>;
 }
 
 function Input<T>(
@@ -24,49 +30,54 @@ function Input<T>(
     helpMessage,
     hiddenLabel,
     setValue,
-
+    onChange,
     ...rest
   }: InputProps<T>,
   ref: React.Ref<HTMLInputElement>,
 ) {
-  const [state, setState] = useState<string>('');
+  const [internalValue, setInternalValue] = useState<InputValue>('');
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    const newValue = type === 'number' ? Number(value) : value;
+
     if (setValue) {
       setValue((prev: T) => {
-        if (typeof prev === 'string') {
-          return value as unknown as T;
-        } else {
-          return { ...prev, [name]: value } as unknown as T;
+        if (typeof prev === 'object' && prev !== null) {
+          return { ...prev, [name]: newValue } as T;
         }
+        return newValue as unknown as T;
       });
     } else {
-      setState(value);
+      setInternalValue(newValue);
     }
+
+    onChange?.(newValue, name);
   };
 
+  const inputValue = value?.toString() || internalValue;
+
   return (
-    <div className={clsx([styles.wrap, hasError && styles.error, className])}>
+    <div className={clsx(styles.wrap, hasError && styles.error, className)}>
       <label htmlFor={id} className={clsx(hiddenLabel && 'a11y-hidden')}>
         {label}
       </label>
-
       <input
         id={id}
         name={name}
         type={type}
-        value={value?.toString() || state}
-        onChange={onChange}
+        value={inputValue}
+        onChange={handleChange}
         autoComplete={type === 'email' ? 'email' : 'off'}
         ref={ref}
         {...(type === 'number' ? { min: 1, max: 1000 } : {})}
         {...rest}
       />
-
       {helpMessage && <p className={styles.helpMessage}>{helpMessage}</p>}
     </div>
   );
 }
 
-export default forwardRef(Input);
+export default forwardRef(Input) as <T>(
+  props: InputProps<T> & { ref?: React.Ref<HTMLInputElement> },
+) => JSX.Element;
