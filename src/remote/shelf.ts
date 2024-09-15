@@ -1,6 +1,7 @@
-import { BookData, MyData } from '@components/templates/TemplateBookCreate';
+import { MyData } from '@components/templates/TemplateBookCreate';
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
+import { Book } from '@models/book';
 import {
   arrayRemove,
   arrayUnion,
@@ -20,14 +21,13 @@ async function checkBookExistsInMyShelf(uid: string, bookId: string) {
   }
 }
 
-async function createBookInMyShelf(
-  uid: string,
-  bookId: string,
-  data: BookData,
-) {
+async function createBookInMyShelf(uid: string, bookId: string, data: Book) {
   try {
     await setDoc(doc(store, `users/${uid}/book/${bookId}`), {
-      ...data,
+      title: data.title,
+      memo: data.memo,
+      grade: data.grade,
+      readDate: data.readDate,
       createdTime: new Date(),
       lastUpdatedTime: new Date(),
     });
@@ -37,14 +37,13 @@ async function createBookInMyShelf(
   }
 }
 
-async function updateBookInMyShelf(
-  uid: string,
-  bookId: string,
-  data: BookData,
-) {
+async function updateBookInMyShelf(uid: string, bookId: string, data: Book) {
   try {
     await updateDoc(doc(store, `users/${uid}/book/${bookId}`), {
-      ...data,
+      title: data.title,
+      memo: data.memo,
+      grade: data.grade,
+      readDate: data.readDate,
       lastUpdatedTime: new Date(),
     });
   } catch (error) {
@@ -54,11 +53,7 @@ async function updateBookInMyShelf(
 }
 
 // 내 책장 추가
-export async function addBookInShelf(
-  uid: string,
-  bookId: string,
-  data: BookData,
-) {
+export async function addBookInShelf(uid: string, bookId: string, data: Book) {
   let hasBook = await checkBookExistsInMyShelf(uid, bookId);
   if (!hasBook) {
     await createBookInMyShelf(uid, bookId, data);
@@ -121,7 +116,7 @@ async function checkBookExists(bookId: string) {
 async function createBook(
   uid: string,
   bookId: string,
-  data: BookData,
+  data: Book,
   myData: MyData,
 ) {
   try {
@@ -141,7 +136,7 @@ async function createBook(
 async function updateBook(
   uid: string,
   bookId: string,
-  data: BookData,
+  data: Book,
   myData: MyData,
 ) {
   try {
@@ -169,7 +164,7 @@ async function updateBook(
 export async function addBook(
   uid: string,
   bookId: string,
-  data: BookData,
+  data: Book,
   myData: MyData,
 ) {
   let hasBook = await checkBookExists(bookId);

@@ -7,6 +7,7 @@ import Select from '@components/form/Select';
 import Button from '@components/shared/Button';
 import useUser from '@connect/user/useUser';
 import useBook from '@hooks/useBook';
+import { Book } from '@models/book';
 import { addBook, addBookInShelf, addCategory } from '@remote/shelf';
 import clsx from 'clsx';
 import { format } from 'date-fns';
@@ -31,22 +32,6 @@ export interface ImgDataProp {
   flipCover: string;
 }
 
-export interface BookData {
-  id: string | null;
-  title: string;
-  subTitle: string | null;
-  frontCover: string;
-  flipCover: string;
-  author: string;
-  publisher: string;
-  pubDate: string;
-  description: string;
-  categoryName: string;
-  category: string;
-  page: number | null;
-  price: number | null;
-}
-
 export interface MyData {
   readDate: string;
   memo: string;
@@ -61,8 +46,7 @@ export default function TemplateBookCreate({ bookId }: { bookId?: string }) {
   const paramsBookId = useSearchParams().get('bookId') || bookId;
   const { data } = useBook({ id: paramsBookId as string });
 
-  const [bookData, setBookData] = useState<BookData>({
-    id: null,
+  const [bookData, setBookData] = useState<Book>({
     title: '',
     subTitle: null,
     frontCover: '',
