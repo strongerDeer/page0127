@@ -24,12 +24,15 @@ async function checkBookExistsInMyShelf(uid: string, bookId: string) {
 async function createBookInMyShelf(uid: string, bookId: string, data: Book) {
   try {
     await setDoc(doc(store, `users/${uid}/book/${bookId}`), {
+      flipCover: data.flipCover,
+      frontCover: data.frontCover,
       title: data.title,
       memo: data.memo,
       grade: data.grade,
       readDate: data.readDate,
-      createdTime: new Date(),
+
       lastUpdatedTime: new Date(),
+      createdTime: new Date(),
     });
   } catch (error) {
     console.error('Error creating book:', error);
@@ -40,7 +43,6 @@ async function createBookInMyShelf(uid: string, bookId: string, data: Book) {
 async function updateBookInMyShelf(uid: string, bookId: string, data: Book) {
   try {
     await updateDoc(doc(store, `users/${uid}/book/${bookId}`), {
-      title: data.title,
       memo: data.memo,
       grade: data.grade,
       readDate: data.readDate,

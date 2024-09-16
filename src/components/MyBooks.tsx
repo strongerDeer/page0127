@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import styles from './MyBooks.module.scss';
 import { Book } from '@models/book';
 import Select from './form/Select';
+import useFilteredBook from '@connect/book/useFilteredBook';
 
 export default function MyBooks({ pageUid }: { pageUid: string }) {
   const { data: book } = useMyBooks({ userId: pageUid });
