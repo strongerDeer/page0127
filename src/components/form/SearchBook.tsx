@@ -4,10 +4,7 @@ import Input from './Input';
 import { getBookInfo, getSearchBook } from '@remote/aladin';
 import { useQuery } from 'react-query';
 import Image from 'next/image';
-import {
-  BookData,
-  ImgDataProp,
-} from '@components/templates/TemplateBookCreate';
+import { Book } from '@connect/book';
 
 interface AladinBook {
   title: string;
@@ -35,7 +32,7 @@ interface AladinBook {
 }
 
 interface SearchBookProps {
-  setBookData: React.Dispatch<React.SetStateAction<BookData>>;
+  setBookData: React.Dispatch<React.SetStateAction<Book>>;
 }
 
 export default function SearchBook({ setBookData }: SearchBookProps) {

@@ -12,7 +12,7 @@ import {
 import { store } from '@firebase/firebaseApp';
 
 import { COLLECTIONS } from '@constants';
-import { Book } from '@models/book';
+import { Book } from '@connect/book';
 
 export async function getMyBooks(uid: string) {
   const snapshot = await getDocs(
@@ -43,16 +43,12 @@ export async function getMyBook(uid: string, bookId: string) {
   };
 }
 
-export async function removeMyBook(uid: string, bookId: string, data: Book) {
-  // 나의 책 데이터 삭제
-  const myBookRef = doc(store, `${COLLECTIONS.USER}/${uid}/book/${bookId}`);
-
-  // 책 데이터에서 점수 및 읽은 유저 삭제
-  await updateDoc(doc(collection(store, COLLECTIONS.BOOKS), bookId), {
-    readUser: arrayRemove(uid),
-    [`grade.${data.grade}`]: arrayRemove(uid),
-  });
-
+export async function removeMyBook(
+  uid: string,
+  bookId: string,
+  data: Book,
+  grade: string,
+) {
   let categoryText = '기타';
   switch (data.category) {
     case '컴퓨터/모바일':
@@ -75,10 +71,27 @@ export async function removeMyBook(uid: string, bookId: string, data: Book) {
       break;
   }
 
-  // 유저 정보
+  const book = await getDoc(doc(collection(store, COLLECTIONS.BOOKS), bookId));
+  const readUser = book.data()?.readUser;
+
+  // 전체 책 데이터에서 삭제
+  if (readUser.length === 1 && readUser.includes(uid)) {
+    const bookRef = doc(store, `${COLLECTIONS.BOOKS}/${bookId}`);
+    await deleteDoc(bookRef);
+  } else {
+    // 책 데이터에서 점수 및 읽은 유저 삭제
+    await updateDoc(doc(collection(store, COLLECTIONS.BOOKS), bookId), {
+      readUser: arrayRemove(uid),
+      [`grade.${grade}`]: arrayRemove(uid),
+    });
+  }
+  // 나의 정보
   await updateDoc(doc(collection(store, COLLECTIONS.USER), uid), {
     [`category.${categoryText}`]: arrayRemove(bookId),
     total: arrayRemove(bookId),
   });
+
+  // 나의 책 데이터 삭제
+  const myBookRef = doc(store, `${COLLECTIONS.USER}/${uid}/book/${bookId}`);
   return deleteDoc(myBookRef);
 }

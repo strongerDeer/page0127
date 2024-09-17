@@ -4,10 +4,11 @@ export const variant_color = createVar();
 
 export const buttonStyle = recipe({
   base: {
+    verticalAlign: 'middle',
     borderRadius: '0.4em',
     padding: '0 1em',
     height: '2.4em',
-    display: 'flex',
+    display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'all 0.3s',
@@ -19,6 +20,13 @@ export const buttonStyle = recipe({
       border: '1px solid var(--grayLv2)',
       backgroundColor: 'var(--grayLv2)',
       color: 'var(--grayLv3)',
+    },
+    '& + button': {
+      marginLeft: '0.4rem',
+    },
+    '& svg': {
+      maxHeight: '1.3em',
+      aspectRatio: '1/1',
     },
   },
   variants: {

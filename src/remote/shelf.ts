@@ -1,7 +1,7 @@
 import { MyData } from '@components/templates/TemplateBookCreate';
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
-import { Book } from '@models/book';
+import { Book } from '@connect/book';
 import {
   arrayRemove,
   arrayUnion,
@@ -27,6 +27,8 @@ async function createBookInMyShelf(uid: string, bookId: string, data: Book) {
       flipCover: data.flipCover,
       frontCover: data.frontCover,
       title: data.title,
+      subTitle: data.subTitle,
+      author: data.author,
       memo: data.memo,
       grade: data.grade,
       readDate: data.readDate,

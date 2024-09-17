@@ -1,4 +1,4 @@
-import { Profile } from '@models/user';
+import { Profile } from '@connect/user';
 
 export interface FormValues {
   email: string;

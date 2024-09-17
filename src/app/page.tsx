@@ -1,15 +1,17 @@
 import getFireBaseData from '@utils/getFirebaseData';
 import { COLLECTIONS } from '@constants';
-import { Book } from '@models/book';
 import Visual from '@components/home/Visual';
 import Club from '@components/home/Club';
 import Link from 'next/link';
 import BookList from '@components/book/BookList';
 import Banner from '@components/home/Banner';
 import Search from '@components/home/Search';
+import { Book } from '@connect/book';
+import { orderBy } from 'firebase/firestore';
 
 export default async function HomePage() {
-  const books = await getFireBaseData<Book>(COLLECTIONS.BOOKS);
+  const option = orderBy('createdTime', 'asc');
+  const books = await getFireBaseData<Book>(COLLECTIONS.BOOKS, option);
 
   return (
     <div>

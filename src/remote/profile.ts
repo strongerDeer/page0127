@@ -15,7 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { useSetRecoilState } from 'recoil';
 import { userAtom } from '@atoms/user';
-import { User } from '@models/user';
+import { User } from '@connect/user';
 import useUser from '@connect/user/useUser';
 import { SignUpFormValues } from '@models/sign';
 

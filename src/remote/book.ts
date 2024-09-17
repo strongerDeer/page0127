@@ -5,15 +5,13 @@ import {
   doc,
   getDoc,
   where,
-  QuerySnapshot,
   limit,
-  startAfter,
   orderBy,
 } from 'firebase/firestore';
 import { store } from '@firebase/firebaseApp';
 
 import { COLLECTIONS } from '@constants';
-import { Book } from '@models/book';
+import { Book } from '@connect/book';
 
 export async function getBooks() {
   let bookQuery = query(
@@ -65,8 +63,8 @@ export async function getBook(id: string) {
 export async function getReadBooks(userId: string) {
   const snapshot = await getDocs(
     query(
-      collection(store, COLLECTIONS.BOOKS),
-      where('readUser', 'array-contains', userId),
+      collection(store, `${COLLECTIONS.USER}/${userId}/book`),
+      orderBy('readDate', 'desc'),
     ),
   );
   const data = snapshot.docs.map((doc) => ({

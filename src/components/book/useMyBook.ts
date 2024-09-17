@@ -1,4 +1,4 @@
-import { getMyBook } from '@remote/mybook';
+import { getMyBook } from '@connect/mybook/mybook';
 import { useQuery } from 'react-query';
 
 export default function useMyBook({

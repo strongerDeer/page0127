@@ -1,3 +1,4 @@
+import { useCallback, useState, useMemo } from 'react';
 import Input from '@components/form/Input';
 import Button from '@components/shared/Button';
 import ProfileImage from '@components/shared/ProfileImage';
@@ -5,7 +6,6 @@ import { Skeleton } from '@components/shared/Skeleton';
 import useUser from '@connect/user/useUser';
 import { useReview } from '@hooks/useReview';
 import { format } from 'date-fns';
-import { ChangeEvent, useCallback, useState } from 'react';
 
 import styles from './Review.module.scss';
 import Link from 'next/link';
@@ -60,7 +60,6 @@ export default function Review({ bookId }: { bookId: string }) {
                     title: '댓글 삭제',
                     body: '작성한 댓글을 삭제하시겠습니까?',
                     buttonLabel: '삭제',
-
                     closeButtonLabel: '취소',
                     onButtonClick: () => {
                       remove({ reviewId: review.id, bookId: review.bookId });
@@ -81,11 +80,7 @@ export default function Review({ bookId }: { bookId: string }) {
         ))}
       </ul>
     );
-  }, [reviews]);
-
-  const handleTextChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setText(e.target.value);
-  }, []);
+  }, [reviews, user?.uid, modalOpen, modalClose, remove]);
 
   return (
     <div className={styles.review}>
@@ -113,7 +108,7 @@ export default function Review({ bookId }: { bookId: string }) {
               <Input
                 label="리뷰작성"
                 value={text}
-                onChange={handleTextChange}
+                setValue={setText}
                 placeholder="책에대한 당신의 이야기를 남겨주세요!"
                 hiddenLabel
               />

@@ -1,4 +1,4 @@
-import { User } from './user';
+import { User } from '@connect/user';
 
 export interface Term {
   id: string;

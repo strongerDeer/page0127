@@ -21,7 +21,7 @@ export default function BasicInfo({
 
   return (
     <div>
-      <Select
+      {/* <Select
         label="option1"
         options={option1}
         placeholder="값을 선택해주세요!"
@@ -50,7 +50,7 @@ export default function BasicInfo({
         id="option3"
         name="option3"
         required
-      />
+      /> */}
 
       {isMobile ? (
         <ButtonFixedBottom

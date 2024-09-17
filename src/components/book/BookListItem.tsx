@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 
-import { Book } from '@models/book';
+import { Book } from '@connect/book';
 
 import styles from './BookListItem.module.scss';
 import useUser from '@connect/user/useUser';
@@ -27,6 +27,9 @@ export default function BookListItem(props: bookItemProps) {
     subTitle,
     readUser,
     isLike,
+
+    memo,
+    readDate,
   } = props;
 
   return (
@@ -52,7 +55,8 @@ export default function BookListItem(props: bookItemProps) {
                   height={400}
                   priority={index < 4 ? true : false}
                 />
-                {user && readUser?.includes(user.uid) && (
+
+                {user && (readDate || readUser?.includes(user.uid)) && (
                   <div className={styles.read}>
                     <span className="a11y-hidden">읽음</span>
                   </div>
@@ -61,9 +65,13 @@ export default function BookListItem(props: bookItemProps) {
             </div>
 
             <div className={styles.addCon}>
-              <p className={styles.description}>{description}</p>
-              <p className={styles.publisher}>{publisher}</p>
-              <p className={styles.category}>{category}</p>
+              <p className={styles.description}>{memo || description}</p>
+              {!memo && (
+                <>
+                  {publisher && <p className={styles.publisher}>{publisher}</p>}
+                  {category && <p className={styles.category}>{category}</p>}
+                </>
+              )}
             </div>
           </div>
         </Link>

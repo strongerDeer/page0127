@@ -5,7 +5,7 @@ import Input from '@components/form/Input';
 import Select from '@components/form/Select';
 import Button from '@components/shared/Button';
 
-import { Book } from '@models/book';
+import { Book } from '@connect/book';
 import { addBook, addBookInShelf, addCategory } from '@remote/shelf';
 import clsx from 'clsx';
 import { format } from 'date-fns';
@@ -53,16 +53,17 @@ export interface MyData {
 }
 export default function TemplateBookEdit({
   uid,
+  bookId,
   data,
 }: {
   uid: string;
+  bookId: string;
   data: Book;
 }) {
   const router = useRouter();
+  console.log(uid, data);
   const today = format(new Date(), 'yyyy-MM-dd');
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const [bookData, setBookData] = useState<Book>(data);
 
   const [myData, setMyData] = useState<MyData>({
     readDate: data.readDate || today,
@@ -77,24 +78,23 @@ export default function TemplateBookEdit({
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (uid && bookData.id) {
-      setIsLoading(true);
-      try {
-        // 전체 책 추가
-        addBook(uid, bookData.id, bookData, myData);
-        // 유저 카테고리 저장하기
-        addCategory(uid, bookData.id, bookData.category);
-        // 내 책장에 저장하기
-        addBookInShelf(uid, bookData.id, { ...bookData, ...myData });
+    setIsLoading(true);
+    try {
+      // 전체 책 추가
 
-        toast.success('수정 되었습니다!');
-        router.push(`/shelf/${uid}`);
-      } catch (error) {
-        console.error('Error saving book:', error);
-        toast.error('책 수정 중 오류가 발생했습니다.');
-      } finally {
-        setIsLoading(false);
-      }
+      addBook(uid, bookId, data, myData);
+      // 유저 카테고리 저장하기
+      addCategory(uid, bookId, data.category);
+      // 내 책장에 저장하기
+      addBookInShelf(uid, bookId, { ...data, ...myData });
+
+      toast.success('수정 되었습니다!');
+      router.push(`/shelf/${uid}`);
+    } catch (error) {
+      console.error('Error saving book:', error);
+      toast.error('책 수정 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -105,7 +105,7 @@ export default function TemplateBookEdit({
       <div className={styles.bookCreate}>
         <div className={styles.coverWrap}>
           <div className={styles.coverBox}>
-            <Image src={bookData.frontCover} alt="" width={400} height={400} />
+            <Image src={data.frontCover} alt="" width={400} height={400} />
           </div>
         </div>
         <form className={styles.form} onSubmit={onSubmit}>
@@ -113,7 +113,7 @@ export default function TemplateBookEdit({
             label="제목"
             id="bookTitle"
             name="title"
-            value={bookData.title}
+            value={data.title}
             readOnly
           />
           <Input

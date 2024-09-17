@@ -6,7 +6,9 @@ import styles from './Input.module.scss';
 
 type InputValue = string | number;
 
-type InputChangeHandler<T> = (value: InputValue, name: string) => void;
+type InputChangeHandler =
+  | ((value: InputValue, name: string) => void)
+  | ((e: ChangeEvent<HTMLInputElement>) => void);
 
 interface InputProps<T>
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
@@ -15,7 +17,7 @@ interface InputProps<T>
   helpMessage?: React.ReactNode;
   hiddenLabel?: boolean;
   setValue?: React.Dispatch<React.SetStateAction<T>>;
-  onChange?: InputChangeHandler<T>;
+  onChange?: InputChangeHandler;
 }
 
 function Input<T>(
@@ -52,7 +54,18 @@ function Input<T>(
       setInternalValue(newValue);
     }
 
-    onChange?.(newValue, name);
+    if (onChange) {
+      if (typeof onChange === 'function') {
+        if (onChange.length === 2) {
+          (onChange as (value: InputValue, name: string) => void)(
+            newValue,
+            name,
+          );
+        } else {
+          (onChange as (e: ChangeEvent<HTMLInputElement>) => void)(e);
+        }
+      }
+    }
   };
 
   const inputValue = value?.toString() || internalValue;

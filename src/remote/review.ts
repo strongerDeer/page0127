@@ -1,6 +1,6 @@
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
-import { User } from '@models/user';
+import { User } from '@connect/user';
 import {
   collection,
   deleteDoc,

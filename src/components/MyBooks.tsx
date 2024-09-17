@@ -7,7 +7,7 @@ import useMyBooks from '@hooks/useMyBooks';
 import { useEffect, useState } from 'react';
 
 import styles from './MyBooks.module.scss';
-import { Book } from '@models/book';
+import { Book } from '@connect/book';
 import Select from './form/Select';
 import useFilteredBook from '@connect/book/useFilteredBook';
 

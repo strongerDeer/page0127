@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import styles from './BookDetail.module.scss';
-import { Book, Grade } from '@models/book';
+import { Book, Grade } from '@connect/book';
 import Review from './Review';
 import LifeUsers from './LifeUsers';
 import LikeButton from './LikeButton';
@@ -12,8 +12,23 @@ import Link from 'next/link';
 import ScrollProgressBar from '@components/shared/ScrollProgressBar';
 import useUser from '@connect/user/useUser';
 import useLikeBook from '@connect/like/useLikeBook';
+import Button from '@components/shared/Button';
+import Icon from '@components/icon/Icon';
+
+import { toast } from 'react-toastify';
+import {
+  ModalContextValue,
+  ModalProps,
+  useModalContext,
+} from '@contexts/ModalContext';
+import { useRouter } from 'next/navigation';
+import { removeMyBook } from '@connect/mybook/mybook';
 
 export default function BookDetail({ data }: { data: Book }) {
+  const router = useRouter();
+
+  const { open: modalOpen, close: modalClose } =
+    useModalContext() as ModalContextValue;
   const { data: likeBooks } = useLikeBook();
   const {
     title,
@@ -146,7 +161,36 @@ export default function BookDetail({ data }: { data: Book }) {
                 <p>완독일: {myBook?.readDate}</p>
               </div>
               {myBook?.memo && <p className={styles.memo}>{myBook?.memo}</p>}
-              <Link href={`/shelf/${user.uid}/${id}/edit`}>수정하기</Link>
+              <Button href={`/shelf/${user.uid}/${id}/edit`}>수정하기</Button>
+              <Button
+                variant="outline"
+                color="error"
+                onClick={() => {
+                  modalOpen({
+                    title: '읽은 책 삭제',
+                    body: '책장에서 해당 책을 삭제하시겠습니까?',
+                    buttonLabel: '삭제',
+                    closeButtonLabel: '취소',
+                    onButtonClick: () => {
+                      removeMyBook(
+                        user.uid,
+                        id as string,
+                        data,
+                        myBook?.grade as string,
+                      );
+                      modalClose();
+                      router.replace(`/shelf/${user.uid}`);
+                      toast.success('책이 삭제되었습니다');
+                    },
+                    closeModal: () => {
+                      modalClose();
+                    },
+                  } as ModalProps);
+                }}
+              >
+                <Icon name="delete" color="error" />
+                삭제
+              </Button>
             </section>
           )}
 

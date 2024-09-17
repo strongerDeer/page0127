@@ -46,27 +46,21 @@ export default function CreateBanner() {
           id="title"
           name="title"
           value={banner.title}
-          onChange={(e) =>
-            setBanner((prev) => ({ ...prev, title: e.target.value }))
-          }
+          setValue={setBanner}
         />
         <Input
           label="내용"
           id="subTitle"
           name="subTitle"
           value={banner.subTitle}
-          onChange={(e) =>
-            setBanner((prev) => ({ ...prev, subTitle: e.target.value }))
-          }
+          setValue={setBanner}
         />
         <Input
           label="배경색"
           id="backgroundColor"
           name="backgroundColor"
           value={banner.backgroundColor}
-          onChange={(e) =>
-            setBanner((prev) => ({ ...prev, backgroundColor: e.target.value }))
-          }
+          setValue={setBanner}
         />
         <label>
           <input
@@ -87,9 +81,7 @@ export default function CreateBanner() {
           id="link"
           name="link"
           value={banner.link}
-          onChange={(e) =>
-            setBanner((prev) => ({ ...prev, link: e.target.value }))
-          }
+          setValue={setBanner}
         />
 
         <Button type="submit">배너 등록</Button>

@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 
-import { Book } from '@models/book';
+import { Book } from '@connect/book';
 
 import BookListItem from './BookListItem';
 import useLikeBook from '@connect/like/useLikeBook';

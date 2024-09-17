@@ -1,7 +1,5 @@
 'use client';
 
-import MyBookDetail from '@components/book/MyBookDetail';
-
 import useMyBook from '@components/book/useMyBook';
 import TemplateBookEdit from '@components/templates/TemplateBookEdit';
 
@@ -14,5 +12,9 @@ export default function Page({
 
   const { data } = useMyBook({ uid: uid, bookId: bookId });
 
-  return <div>{data && <TemplateBookEdit uid={uid} data={data} />}</div>;
+  return (
+    <div>
+      {data && <TemplateBookEdit uid={uid} data={data} bookId={bookId} />}
+    </div>
+  );
 }

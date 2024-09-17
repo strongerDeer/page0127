@@ -27,10 +27,6 @@ export default function Page() {
     }
   }, []);
 
-  const handleKeyword = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setKeyword(e.target.value);
-  }, []);
-
   return (
     <div>
       <Input
@@ -38,7 +34,7 @@ export default function Page() {
         hiddenLabel
         ref={inputRef}
         value={keyword}
-        onChange={handleKeyword}
+        setValue={setKeyword}
       />
       {keyword !== '' && data?.length === 0 ? (
         <>찾으시는 데이터가 없습니다.</>

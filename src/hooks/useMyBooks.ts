@@ -1,9 +1,9 @@
 import { useQuery, useQueryClient } from 'react-query';
-import { getMyBooks } from '@remote/mybook';
 import { useEffect } from 'react';
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
+import { getMyBooks } from '@connect/mybook/mybook';
 
 export default function useMyBooks({ userId }: { userId: string }) {
   const client = useQueryClient();
@@ -27,7 +27,7 @@ export default function useMyBooks({ userId }: { userId: string }) {
     return () => {
       unsubscribe();
     };
-  }, [client]);
+  }, [client, userId]);
 
   return useQuery(['myBooks', userId], () => getMyBooks(userId), {
     enabled: !!userId,

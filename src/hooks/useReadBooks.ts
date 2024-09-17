@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from 'react-query';
 import { getReadBooks } from '@remote/book';
 import { useEffect } from 'react';
-import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
 
@@ -11,8 +11,8 @@ export default function useReadBooks({ userId }: { userId: string }) {
   useEffect(() => {
     const unsubscribe = onSnapshot(
       query(
-        collection(store, COLLECTIONS.BOOKS),
-        where('readUser', 'array-contains', userId),
+        collection(store, `${COLLECTIONS.USER}/${userId}/book`),
+        orderBy('readDate', 'desc'),
       ),
       (snapshot) => {
         const newBooks = snapshot.docs.map((doc) => ({
@@ -25,7 +25,7 @@ export default function useReadBooks({ userId }: { userId: string }) {
     return () => {
       unsubscribe();
     };
-  }, [client]);
+  }, [client, userId]);
 
   return useQuery(['readBooks'], () => getReadBooks(userId));
 }

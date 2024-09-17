@@ -7,7 +7,7 @@ import Select from '@components/form/Select';
 import Button from '@components/shared/Button';
 import useUser from '@connect/user/useUser';
 import useBook from '@hooks/useBook';
-import { Book } from '@models/book';
+import { Book } from '@connect/book';
 import { addBook, addBookInShelf, addCategory } from '@remote/shelf';
 import clsx from 'clsx';
 import { format } from 'date-fns';

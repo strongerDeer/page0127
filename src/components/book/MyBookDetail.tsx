@@ -1,9 +1,8 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import styles from './BookDetail.module.scss';
-import { Book } from '@models/book';
+import { Book } from '@connect/book';
 import LifeUsers from './LifeUsers';
-import { removeMyBook } from '@remote/mybook';
 import {
   ModalContextValue,
   ModalProps,
@@ -12,6 +11,7 @@ import {
 import { toast } from 'react-toastify';
 import useUser from '@connect/user/useUser';
 import { useRouter } from 'next/navigation';
+import { removeMyBook } from '@connect/mybook/mybook';
 export default function MyBookDetail({ data }: { data: Book }) {
   const router = useRouter();
   const user = useUser();
@@ -94,7 +94,7 @@ export default function MyBookDetail({ data }: { data: Book }) {
                   buttonLabel: '삭제',
                   closeButtonLabel: '취소',
                   onButtonClick: () => {
-                    removeMyBook(user.uid, id, data);
+                    removeMyBook(user.uid, id, data, grade as string);
                     modalClose();
                     router.replace(`/shelf/${user.uid}`);
                     toast.success('책이 삭제되었습니다');
