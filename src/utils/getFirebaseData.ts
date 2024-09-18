@@ -1,21 +1,20 @@
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
 import {
-  QueryFieldFilterConstraint,
+  QueryConstraint,
   collection,
   getDocs,
-  orderBy,
   query,
 } from 'firebase/firestore';
 import { useEffect } from 'react';
 
 const getFireBaseData = async <T>(
   col: (typeof COLLECTIONS)[keyof typeof COLLECTIONS],
-  option?: QueryFieldFilterConstraint,
+  option?: QueryConstraint[],
 ): Promise<T[]> => {
   let q = query(collection(store, col));
   if (option) {
-    q = query(collection(store, col), option);
+    q = query(collection(store, col), ...option);
   }
   const snapshot = await getDocs(q);
 

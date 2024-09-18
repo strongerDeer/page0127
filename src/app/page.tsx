@@ -10,8 +10,9 @@ import { Book } from '@connect/book';
 import { orderBy } from 'firebase/firestore';
 
 export default async function HomePage() {
-  const option = orderBy('createdTime', 'asc');
-  const books = await getFireBaseData<Book>(COLLECTIONS.BOOKS, option);
+  const books = await getFireBaseData<Book>(COLLECTIONS.BOOKS, [
+    orderBy('createdTime', 'desc'),
+  ]);
 
   return (
     <div>
