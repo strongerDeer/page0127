@@ -1,10 +1,21 @@
 import type { Metadata, ResolvingMetadata } from 'next';
 import BookDetailPage from '@components/templates/BookDetailPage';
 import { getBook } from '@remote/book';
+import { collection, getDocs, query } from 'firebase/firestore';
+import { store } from '@firebase/firebaseApp';
+import { COLLECTIONS } from '@constants';
 
 type Props = {
   params: { id: string };
 };
+
+export async function generateStaticParams() {
+  let q = query(collection(store, COLLECTIONS.BOOKS));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((doc) => ({
+    id: doc.id,
+  }));
+}
 
 export async function generateMetadata(
   { params }: Props,

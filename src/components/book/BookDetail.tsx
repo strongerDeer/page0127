@@ -120,7 +120,7 @@ export default function BookDetail({ data }: { data: Book }) {
               <p>{author}</p>
 
               <p>
-                {publisher} {format(pubDate, 'yyyy.MM.dd')}
+                {publisher} {pubDate && format(pubDate, 'yyyy.MM.dd')}
               </p>
 
               <div className={styles.box}>
