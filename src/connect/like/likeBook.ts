@@ -1,6 +1,5 @@
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
-import { LikeBook } from './';
 import {
   arrayRemove,
   arrayUnion,

@@ -6,7 +6,6 @@ import {
   getDocs,
   query,
 } from 'firebase/firestore';
-import { useEffect } from 'react';
 
 const getFireBaseData = async <T>(
   col: (typeof COLLECTIONS)[keyof typeof COLLECTIONS],
