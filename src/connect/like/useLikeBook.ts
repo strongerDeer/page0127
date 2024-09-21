@@ -6,13 +6,13 @@ import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
 import useUser from '@connect/user/useUser';
 import getBookLike from './likeBook';
-import { LikeBook } from '.';
 
 export default function useLikeBook() {
   const userId = useUser()?.uid;
   const client = useQueryClient();
 
   useEffect(() => {
+    if (!userId) return;
     const unsubscribe = onSnapshot(
       doc(collection(store, COLLECTIONS.BOOK_LIKE), userId),
       (snapshot) => {
