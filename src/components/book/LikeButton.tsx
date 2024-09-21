@@ -1,12 +1,16 @@
 import Icon from '@components/icon/Icon';
-import { COLLECTIONS } from '@constants';
-import { store } from '@firebase/firebaseApp';
 
 import { useCallback, useState } from 'react';
 import styles from './LikeButton.module.scss';
 import clsx from 'clsx';
 import useUser from '@connect/user/useUser';
 import { toggleLike } from '@connect/like/likeBook';
+import {
+  ModalContextValue,
+  ModalProps,
+  useModalContext,
+} from '@contexts/ModalContext';
+import { useRouter } from 'next/navigation';
 
 export default function LikeButton({
   bookId,
@@ -21,6 +25,10 @@ export default function LikeButton({
   const [hearts, setHearts] = useState<
     Array<{ id: number; x: number; y: number }>
   >([]);
+
+  const router = useRouter();
+  const { open: modalOpen, close: modalClose } =
+    useModalContext() as ModalContextValue;
 
   const createHeart = useCallback((e: React.MouseEvent) => {
     const heart = {
@@ -38,9 +46,19 @@ export default function LikeButton({
     if (userId) {
       toggleLike(bookId, userId);
       createHeart(e);
-      // await updateDoc(doc(collection(store, COLLECTIONS.BOOKS), bookId), {
-      //   likeUsers: arrayUnion(userId),
-      // });
+    } else {
+      modalOpen({
+        title: '로그인이 필요해요!',
+        body: '로그인 페이지로 이동합니다',
+
+        onButtonClick: () => {
+          router.push('/signin');
+          modalClose();
+        },
+        closeModal: () => {
+          modalClose();
+        },
+      } as ModalProps);
     }
   };
   return (
