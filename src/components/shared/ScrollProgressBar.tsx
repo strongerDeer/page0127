@@ -34,7 +34,7 @@ export default function ScrollProgressBar() {
   return (
     <div
       style={{
-        zIndex: '100',
+        zIndex: '20',
         position: 'sticky',
         top: '0',
         backgroundColor: 'var(--grayLv2)',
