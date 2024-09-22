@@ -77,8 +77,8 @@ export default function MyPage() {
       <section className={styles.contents}>
         {activeTab === 'read' && readBook ? (
           <BookList data={readBook} />
-        ) : activeTab === 'like' && likes ? (
-          <BookList data={likes} />
+        ) : activeTab === 'like' ? (
+          <BookList data={likes || []} />
         ) : (
           <>참여중인 모임</>
         )}
