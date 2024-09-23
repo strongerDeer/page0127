@@ -20,7 +20,6 @@ export const useEditProfileForm = () => {
   const { formValues, inputDirty, handleFormValues, handleBlur } =
     useForm<EditFormValues>({
       displayName: user?.displayName || '',
-      goal: user?.goal || '1',
       intro: user?.intro || '',
     });
 
@@ -28,7 +27,6 @@ export const useEditProfileForm = () => {
     if (!user) return false;
     return (
       user.displayName !== formValues.displayName ||
-      user.goal !== formValues.goal ||
       user.intro !== formValues.intro ||
       user.photoURL !== profileImage
     );

@@ -11,3 +11,9 @@
     margin-bottom: fcSize(16, 32);
   }
 }
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}

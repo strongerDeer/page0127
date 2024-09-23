@@ -53,7 +53,6 @@ export default function EditProfile() {
         doc(collection(store, COLLECTIONS.USER), auth.currentUser.uid),
         {
           displayName: formValues.displayName,
-          goal: formValues.goal,
           intro: formValues.intro,
           photoURL: photoURL,
         },
@@ -62,7 +61,6 @@ export default function EditProfile() {
       setUser({
         ...user,
         displayName: formValues.displayName,
-        goal: formValues.goal,
         intro: formValues.intro,
         photoURL: photoURL,
       } as User);

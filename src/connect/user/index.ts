@@ -17,7 +17,6 @@ export interface User {
 export interface Profile {
   displayName: string;
   photoURL: string;
-  goal: string;
   intro: string;
   [key: string]: string;
 }

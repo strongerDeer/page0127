@@ -1,4 +1,4 @@
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { store } from '@firebase/firebaseApp';
 
 import { COLLECTIONS } from '@constants';

@@ -43,6 +43,10 @@ export default function MyPage() {
           프로필 수정
         </Button>
 
+        <Button size="sm" href="/my/goal" variant="outline">
+          목표 수정
+        </Button>
+
         {!user?.provider && (
           <Button size="sm" href="/my/edit-password" variant="outline">
             비밀번호 변경
