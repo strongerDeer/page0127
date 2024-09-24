@@ -81,8 +81,11 @@ export default function useSocialSignIn() {
       buttonLabel: '로그아웃',
       onButtonClick: async () => {
         try {
-          await signOut(auth);
+          router.push('/');
           close();
+          setTimeout(() => {
+            signOut(auth);
+          }, 100);
           toast.success('로그아웃 되었습니다!');
         } catch (error) {
           console.log(error);
@@ -93,6 +96,6 @@ export default function useSocialSignIn() {
         close();
       },
     });
-  }, [open, close]);
+  }, [open, close, router]);
   return { logIn, logOut };
 }

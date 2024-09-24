@@ -16,6 +16,8 @@ export default function PrivateRoute({
   const { open } = useAlertContext();
 
   const checkAuth = useCallback(() => {
+    if (isLoading) return;
+
     if (!isLoading && !user) {
       open({
         title: '로그인이 필요해요!',
@@ -29,7 +31,7 @@ export default function PrivateRoute({
 
   useEffect(() => {
     checkAuth();
-  }, [user, checkAuth, path]);
+  }, [user, checkAuth, path, router]);
 
   if (isLoading) {
     return <>Loading...</>;
