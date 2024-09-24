@@ -6,7 +6,7 @@ import Select from '@components/form/Select';
 import Button from '@components/shared/Button';
 
 import { Book } from '@connect/book';
-import { addBook, addBookInShelf, addCategory } from '@remote/shelf';
+import { addBook, addBookInShelf, addUserData } from '@remote/shelf';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 
@@ -81,10 +81,11 @@ export default function TemplateBookEdit({
     setIsLoading(true);
     try {
       // 전체 책 추가
-
       addBook(uid, bookId, data, myData);
-      // 유저 카테고리 저장하기
-      addCategory(uid, bookId, data.category);
+
+      // count 데이터 저장하기
+      addUserData(uid, data, myData);
+
       // 내 책장에 저장하기
       addBookInShelf(uid, bookId, { ...data, ...myData });
 

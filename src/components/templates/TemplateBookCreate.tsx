@@ -8,7 +8,7 @@ import Button from '@components/shared/Button';
 import useUser from '@connect/user/useUser';
 import useBook from '@hooks/useBook';
 import { Book } from '@connect/book';
-import { addBook, addBookInShelf, addCategory } from '@remote/shelf';
+import { addBook, addBookInShelf, addUserData } from '@remote/shelf';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 
@@ -81,8 +81,10 @@ export default function TemplateBookCreate({ bookId }: { bookId?: string }) {
       try {
         // 전체 책 추가
         addBook(user.uid, bookData.id, bookData, myData);
-        // 유저 카테고리 저장하기
-        addCategory(user.uid, bookData.id, bookData.category);
+
+        // count 데이터 저장하기
+        addUserData(user.uid, bookData, myData);
+
         // 내 책장에 저장하기
         addBookInShelf(user.uid, bookData.id, { ...bookData, ...myData });
 

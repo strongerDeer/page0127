@@ -66,41 +66,49 @@ export async function addBookInShelf(uid: string, bookId: string, data: Book) {
   }
 }
 
-// 카테고리 추가
-export async function addCategory(
-  uid: string,
-  bookId: string,
-  category: string,
-) {
-  let categoryText = '기타';
-  switch (category) {
-    case '컴퓨터/모바일':
-      categoryText = '컴퓨터모바일';
-      break;
-    case '소설/시/희곡':
-      categoryText = '소설시희곡';
-      break;
-    case '에세이':
-      categoryText = '에세이';
-      break;
-    case '경제경영':
-      categoryText = '경제경영';
-      break;
-    case '인문학':
-      categoryText = '인문학';
-      break;
-    case '자기계발':
-      categoryText = '자기계발';
-      break;
-  }
+// 년도별, 카테고리별, 점수별, 출판사 데이터 추가
+export async function addUserData(uid: string, bookData: Book, myData: MyData) {
+  const { category, publisher, id: bookId } = bookData;
+  const { readDate, grade } = myData;
+
+  const [year, month] = readDate.split('-');
+  console.log(year, month);
 
   try {
-    await updateDoc(doc(store, `users/${uid}`), {
-      total: arrayUnion(bookId),
-      [`category.${categoryText}`]: arrayUnion(bookId),
-    });
+    const totalQuery = doc(store, `${COLLECTIONS.USER}/${uid}/count/total`);
+    const yearQuery = doc(store, `${COLLECTIONS.USER}/${uid}/count/year`);
+    const categoryQuery = doc(
+      store,
+      `${COLLECTIONS.USER}/${uid}/count/category`,
+    );
+    const gradeQuery = doc(store, `${COLLECTIONS.USER}/${uid}/count/grade`);
+    const publisherQuery = doc(
+      store,
+      `${COLLECTIONS.USER}/${uid}/count/publisher`,
+    );
+
+    // console.log(totalQuery);
+    await setDoc(totalQuery, { book: arrayUnion(bookId) }, { merge: true });
+    await setDoc(
+      yearQuery,
+      { [year]: { [month]: arrayUnion(bookId) } },
+      { merge: true },
+    );
+    await setDoc(
+      categoryQuery,
+      {
+        [category.replaceAll('/', '')]: arrayUnion(bookId),
+      },
+      { merge: true },
+    );
+    await setDoc(gradeQuery, { [grade]: arrayUnion(bookId) }, { merge: true });
+    await setDoc(
+      publisherQuery,
+      { [publisher]: arrayUnion(bookId) },
+      { merge: true },
+    );
   } catch (error) {
-    console.error('Error updating book:', error);
+    console.error('유저 데이터 추가 에러:', error);
     throw error;
   }
 }
