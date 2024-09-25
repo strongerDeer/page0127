@@ -61,7 +61,7 @@ export default function TemplateBookEdit({
   data: Book;
 }) {
   const router = useRouter();
-  console.log(uid, data);
+
   const today = format(new Date(), 'yyyy-MM-dd');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
