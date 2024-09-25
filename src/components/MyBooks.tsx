@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import styles from './MyBooks.module.scss';
 import { Book } from '@connect/book';
 import Select from './form/Select';
-import useFilteredBook from '@connect/book/useFilteredBook';
+import CategoryTab from './my/CategoryTab';
 
 export default function MyBooks({ pageUid }: { pageUid: string }) {
   const { data: book } = useMyBooks({ userId: pageUid });
@@ -54,6 +54,7 @@ export default function MyBooks({ pageUid }: { pageUid: string }) {
 
   return (
     <div>
+      <CategoryTab />
       <Select
         label="점수"
         options={[
