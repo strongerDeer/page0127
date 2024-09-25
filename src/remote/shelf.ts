@@ -5,6 +5,7 @@ import { Book } from '@connect/book';
 import {
   arrayRemove,
   arrayUnion,
+  collection,
   doc,
   getDoc,
   setDoc,
@@ -72,39 +73,21 @@ export async function addUserData(uid: string, bookData: Book, myData: MyData) {
   const { readDate, grade } = myData;
 
   const [year, month] = readDate.split('-');
-  console.log(year, month);
 
   try {
-    const totalQuery = doc(store, `${COLLECTIONS.USER}/${uid}/count/total`);
-    const yearQuery = doc(store, `${COLLECTIONS.USER}/${uid}/count/year`);
-    const categoryQuery = doc(
-      store,
-      `${COLLECTIONS.USER}/${uid}/count/category`,
-    );
-    const gradeQuery = doc(store, `${COLLECTIONS.USER}/${uid}/count/grade`);
-    const publisherQuery = doc(
-      store,
-      `${COLLECTIONS.USER}/${uid}/count/publisher`,
-    );
-
-    // console.log(totalQuery);
-    await setDoc(totalQuery, { book: arrayUnion(bookId) }, { merge: true });
-    await setDoc(
-      yearQuery,
-      { [year]: { [month]: arrayUnion(bookId) } },
-      { merge: true },
+    const totalQuery = doc(
+      collection(store, `${COLLECTIONS.USER}/${uid}/total`),
+      year,
     );
     await setDoc(
-      categoryQuery,
+      totalQuery,
       {
-        [category.replaceAll('/', '')]: arrayUnion(bookId),
+        books: arrayUnion(bookId),
+        month: { [month]: arrayUnion(bookId) },
+        category: { [category.replaceAll('/', '')]: arrayUnion(bookId) },
+        grade: { [grade]: arrayUnion(bookId) },
+        publisher: { [publisher]: arrayUnion(bookId) },
       },
-      { merge: true },
-    );
-    await setDoc(gradeQuery, { [grade]: arrayUnion(bookId) }, { merge: true });
-    await setDoc(
-      publisherQuery,
-      { [publisher]: arrayUnion(bookId) },
       { merge: true },
     );
   } catch (error) {

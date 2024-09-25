@@ -12,10 +12,16 @@ import FollowButton from '@components/follow/FollowButton';
 import ProfileImage from '@components/shared/ProfileImage';
 import { DEFAULT_GOAL } from '@constants';
 import { getUser } from '@connect/user/user';
+import useUserCount from '@connect/user/useUserCount';
+import BarChart from '@components/my/BarChart';
 
 export default function ShelfPage({ pageUid }: { pageUid: string }) {
   const { data: userData } = useQuery(['users'], () => getUser(pageUid));
 
+  const year = String(new Date().getFullYear());
+  const { data: counterData } = useUserCount(pageUid, year);
+
+  console.log();
   return (
     <div>
       <Background />
@@ -45,13 +51,23 @@ export default function ShelfPage({ pageUid }: { pageUid: string }) {
 
           <div>
             <ProgressBar
-              value={Number(userData?.total?.length) || 0}
+              value={Number(counterData?.books.length) || 0}
               total={Number(userData?.goal) || DEFAULT_GOAL}
             />
 
-            {userData?.category && <Chart userData={userData} />}
+            {counterData?.category && (
+              <Chart
+                title={`${userData?.displayName}의 ${year}년` || ''}
+                userData={counterData?.category}
+              />
+            )}
 
-            <div>
+            <BarChart
+              title={`${userData?.displayName}의 ${year}년` || ''}
+              userData={counterData?.month}
+            />
+
+            {/* <div>
               <p>가장 많이 읽은 카테고리: {userData?.total?.length}</p>
               <p>가장 두꺼운 책: {userData?.total?.length}</p>
               <p>가장 비싼 책: {userData?.total?.length}</p>
@@ -61,7 +77,7 @@ export default function ShelfPage({ pageUid }: { pageUid: string }) {
               <p>총 읽은 책: {userData?.total?.length}</p>
               <p>총 읽은 쪽수: {userData?.total?.length}</p>
               <p>총 읽은 가격: {userData?.total?.length}</p>
-            </div>
+            </div> */}
           </div>
         </div>
 

@@ -55,7 +55,7 @@ export default function useSocialSignIn() {
             createUser,
           );
         }
-        router.back();
+        router.push('/');
         toast.success('로그인 되었습니다.');
       } catch (error) {
         console.log(error);
@@ -85,7 +85,7 @@ export default function useSocialSignIn() {
           close();
           setTimeout(() => {
             signOut(auth);
-          }, 100);
+          }, 300);
           toast.success('로그아웃 되었습니다!');
         } catch (error) {
           console.log(error);

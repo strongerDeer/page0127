@@ -70,29 +70,33 @@ const options: ChartOptions<'radar'> = {
   },
 };
 
-export default function Chart({ userData }: { userData?: any }) {
-  const { category, displayName } = userData;
+interface Category {
+  [category: string]: string[];
+}
+export default function Chart({
+  title,
+  userData,
+}: {
+  title: string;
+  userData: Category;
+}) {
+  const labelTexts = [
+    '컴퓨터모바일',
+    '소설시희곡',
+    '에세이',
+    '경제경영',
+    '인문학',
+    '자기계발',
+  ];
 
   const data = {
-    labels: [
-      `인문학(${category['인문학']?.length})`,
-      `경제경영(${category['경제경영']?.length})`,
-      `소설/시/희곡(${category['소설시희곡']?.length})`,
-      `자기계발(${category['자기계발']?.length})`,
-      `컴퓨터/모바일(${category['컴퓨터모바일']?.length})`,
-      `에세이(${category['에세이']?.length})`,
-    ],
+    labels: labelTexts.map(
+      (label) => `${label} (${userData[label]?.length || 0})`,
+    ),
     datasets: [
       {
-        label: displayName || '',
-        data: [
-          category['인문학']?.length || 0,
-          category['경제경영']?.length || 0,
-          category['소설시희곡']?.length || 0,
-          category['자기계발']?.length || 0,
-          category['컴퓨터모바일']?.length || 0,
-          category['에세이']?.length || 0,
-        ],
+        label: title,
+        data: labelTexts.map((label) => userData[label]?.length || 0),
       },
     ],
   };
