@@ -29,7 +29,7 @@ const options: ChartOptions<'bar'> = {
       display: false,
     },
   },
-  backgroundColor: 'rgba(46, 111, 242, 1)',
+  // backgroundColor: 'rgba(46, 111, 242, 1)',
 
   scales: {
     x: {
@@ -51,7 +51,6 @@ export default function BarChart({
   title: string;
   userData: any;
 }) {
-  console.log(userData);
   const labelTexts = [
     '01',
     '02',
@@ -71,10 +70,17 @@ export default function BarChart({
     labels: labelTexts.map((label) => `${Number(label)}`),
     datasets: [
       {
-        label: '',
+        label: title,
         data: labelTexts.map((label) =>
           userData && userData[label] ? userData[label]?.length || 0 : 0,
         ),
+        backgroundColor: labelTexts.map((label) => {
+          if (Number(label) === new Date().getMonth() + 1) {
+            return 'rgba(46, 111, 242, 1)';
+          } else {
+            return 'rgba(46, 111, 242, 0.4)';
+          }
+        }),
         borderRadius: 4,
       },
     ],

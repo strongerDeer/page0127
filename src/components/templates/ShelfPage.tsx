@@ -55,17 +55,16 @@ export default function ShelfPage({ pageUid }: { pageUid: string }) {
               total={Number(userData?.goal) || DEFAULT_GOAL}
             />
 
+            <BarChart
+              title={`${userData?.displayName}의 ${year}년` || ''}
+              userData={counterData?.month}
+            />
             {counterData?.category && (
               <Chart
                 title={`${userData?.displayName}의 ${year}년` || ''}
                 userData={counterData?.category}
               />
             )}
-
-            <BarChart
-              title={`${userData?.displayName}의 ${year}년` || ''}
-              userData={counterData?.month}
-            />
 
             {/* <div>
               <p>가장 많이 읽은 카테고리: {userData?.total?.length}</p>
