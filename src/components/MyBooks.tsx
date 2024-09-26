@@ -8,23 +8,22 @@ import { useEffect, useState } from 'react';
 
 import styles from './MyBooks.module.scss';
 import { Book } from '@connect/book';
-import Select from './form/Select';
 import CategoryTab from './my/CategoryTab';
+import YearTab from './my/YearTab';
 
 export default function MyBooks({ pageUid }: { pageUid: string }) {
+  const nowYear = String(new Date().getFullYear());
   const { data: book } = useMyBooks({ userId: pageUid });
-
-  const [imgSrc, setImgSrc] = useState<{ [key: string]: string }>({});
-
-  const latestYear = String(new Date().getFullYear());
-
   const latestBook = book?.filter(
-    (book) => book.readDate && book.readDate > `${latestYear}-01-01`,
+    (book) => book.readDate && book.readDate > `${nowYear}-01-01`,
   ) as Book[];
 
-  const [activeYear, setActiveYear] = useState<string>(latestYear);
-  const [activeCategory, setActiveCategory] = useState<string>('전체');
+  // 카테고리 , 연도별
+  const [category, setCategory] = useState<string>('All');
+  const [year, setYear] = useState<string>(nowYear);
   const [bookData, setBookData] = useState<Book[]>(latestBook);
+
+  const [imgSrc, setImgSrc] = useState<{ [key: string]: string }>({});
 
   const onError = (bookId: string) => {
     setImgSrc((prev) => ({
@@ -33,75 +32,33 @@ export default function MyBooks({ pageUid }: { pageUid: string }) {
     }));
   };
 
+  console.log(book);
+
   useEffect(() => {
     let filteredBook = book as Book[];
-    if (activeYear !== '전체') {
+    if (year !== 'All') {
       filteredBook = book?.filter(
         (book) =>
           book.readDate &&
-          book.readDate > `${activeYear}-01-01` &&
-          book.readDate < `${activeYear + 1}-01-01`,
+          book.readDate > `${year}-01-01` &&
+          book.readDate < `${year + 1}-01-01`,
       ) as Book[];
     }
-    if (activeCategory !== '전체') {
+    if (category !== 'All') {
       filteredBook = book?.filter(
-        (book) => book.category === activeCategory,
+        (book) => book.category === category,
       ) as Book[];
     }
 
     setBookData(filteredBook);
-  }, [activeYear, book, activeCategory]);
+  }, [year, book, category]);
 
   return (
     <div>
-      <CategoryTab />
-      <Select
-        label="점수"
-        options={[
-          { value: '전체', label: '전체' },
-          { value: latestYear.toString(), label: `${latestYear}` },
-          {
-            value: (Number(latestYear) - 1).toString(),
-            label: `${Number(latestYear) - 1}`,
-          },
-          {
-            value: (Number(latestYear) - 2).toString(),
-            label: `${Number(latestYear) - 2}`,
-          },
-        ]}
-        value={activeYear}
-        onChange={setActiveYear}
-        id="year"
-        name="year"
-      />
-      <ul className="flex gap-4">
-        <li>
-          <button
-            type="button"
-            onClick={() => {
-              setActiveCategory('소설/시/희곡');
-            }}
-          >
-            소설/시/희곡
-          </button>
-        </li>
-        <li>
-          <button type="button" onClick={() => {}}>
-            {Number(latestYear) - 1}
-          </button>
-        </li>
-        <li>
-          <button type="button" onClick={() => {}}>
-            {Number(latestYear) - 2}
-          </button>
-        </li>
-        <li>
-          <button type="button" onClick={() => {}}>
-            전체
-          </button>
-        </li>
-      </ul>
-      <h2>{activeYear} 읽은 도서</h2>
+      <h2>{year}</h2>
+      <YearTab value={year} setValue={setYear} />
+      <CategoryTab value={category} setValue={setCategory} />
+
       {bookData && bookData.length > 0 ? (
         <div className={styles.books}>
           {bookData?.map((book) => (

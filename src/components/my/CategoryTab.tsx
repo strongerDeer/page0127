@@ -1,12 +1,15 @@
-'use client';
 import Button from '@components/shared/Button';
-import { useState } from 'react';
+import React, { useState } from 'react';
 
-export default function CategoryTab() {
-  const [category, setCategory] = useState<string>('');
-
-  console.log(category);
+export default function CategoryTab({
+  value,
+  setValue,
+}: {
+  value: string;
+  setValue: React.Dispatch<React.SetStateAction<string>>;
+}) {
   const categories = [
+    'All',
     '컴퓨터모바일',
     '소설시희곡',
     '에세이',
@@ -18,10 +21,10 @@ export default function CategoryTab() {
     <div>
       {categories.map((category) => (
         <Button
-          variant="outline"
+          variant={value === category ? 'solid' : 'outline'}
           size="sm"
           onClick={() => {
-            setCategory(category);
+            setValue(category);
           }}
         >
           {category}
