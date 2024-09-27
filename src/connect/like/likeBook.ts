@@ -1,37 +1,41 @@
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
 import {
-  arrayRemove,
-  arrayUnion,
   collection,
+  deleteDoc,
   doc,
-  getDoc,
+  getDocs,
+  orderBy,
+  query,
   setDoc,
-  updateDoc,
 } from 'firebase/firestore';
 
 export default async function getBookLike({ userId }: { userId: string }) {
-  const q = doc(collection(store, COLLECTIONS.BOOK_LIKE), userId);
-  const snapshot = await getDoc(q);
-  const data = snapshot.data()?.bookList;
+  const q = query(
+    collection(store, `${COLLECTIONS.USER}/${userId}/like`),
+    orderBy('createdTime', 'desc'),
+  );
+  const snapshot = await getDocs(q);
+  const data = snapshot.docs.map((doc) => doc.id);
+
   return data;
 }
 
 // 좋아요 토글
 export async function toggleLike(bookId: string, userId: string) {
-  const q = doc(collection(store, COLLECTIONS.BOOK_LIKE), userId);
-  const snapshot = await getDoc(q);
+  const q = query(collection(store, `${COLLECTIONS.USER}/${userId}/like`));
+  const snapshot = await getDocs(q);
+  const data = snapshot.docs.map((doc) => doc.id);
 
-  if (!snapshot.exists()) {
-    // 새로 생성
-    await setDoc(q, {
-      bookList: arrayUnion(bookId),
-    });
+  if (data.includes(bookId)) {
+    deleteDoc(doc(store, `${COLLECTIONS.USER}/${userId}/like/${bookId}`));
   } else {
-    if (snapshot.data().bookList.includes(bookId)) {
-      await updateDoc(q, { bookList: arrayRemove(bookId) });
-    } else {
-      await updateDoc(q, { bookList: arrayUnion(bookId) });
-    }
+    await setDoc(
+      doc(collection(store, `${COLLECTIONS.USER}/${userId}/like`), bookId),
+      {
+        createdTime: new Date(),
+      },
+      { merge: true },
+    );
   }
 }

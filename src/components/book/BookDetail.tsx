@@ -97,7 +97,7 @@ export default function BookDetail({ data }: { data: Book }) {
                 {id && (
                   <LikeButton
                     bookId={id}
-                    isLike={likeBooks?.includes(id)}
+                    isLike={likeBooks?.includes(id) || false}
                     showText
                   />
                 )}
