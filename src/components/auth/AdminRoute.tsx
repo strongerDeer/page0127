@@ -14,23 +14,21 @@ export default function AdminRoute({
   const router = useRouter();
 
   const checkAuth = useCallback(() => {
-    if (!isLoading && !user) {
-      router.push('/404');
+    if (isLoading) return;
+    if (!user || user?.uid !== process.env.NEXT_PUBLIC_ADMIN_ID) {
+      router.replace('/404');
     }
-    if (user?.uid !== process.env.NEXT_PUBLIC_ADMIN_ID) {
-      router.push('/404');
-    }
-  }, [user, router, isLoading]);
+  }, [user, isLoading, router]);
 
   useEffect(() => {
     checkAuth();
-  }, [user, checkAuth, path]);
+  }, [user, checkAuth, router]);
 
   if (isLoading) {
     return <>Loading...</>;
   }
 
-  if (user) {
+  if (user?.uid === process.env.NEXT_PUBLIC_ADMIN_ID) {
     return <>{children}</>;
   }
 
