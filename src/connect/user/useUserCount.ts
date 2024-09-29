@@ -22,7 +22,7 @@ export default function useUserCount(userId: string, year: string) {
     return () => {
       unsubscribe();
     };
-  }, [client, userId]);
+  }, [client, userId, year]);
 
   return useQuery(['total', userId], () => getUserCount(userId, year), {
     enabled: !!userId,

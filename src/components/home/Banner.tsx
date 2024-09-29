@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import { Skeleton } from '@components/shared/Skeleton';
-import useBanners from '@hooks/useBanner';
+
 import withSuspense from '@components/shared/hocs/withSuspense';
+import useBanner from '@connect/banner/useBanner';
 
 function Banner() {
-  const { data, isLoading } = useBanners();
+  const { data, isLoading } = useBanner('active');
 
   if (isLoading || data === null || data?.length === 0) {
     return null;
