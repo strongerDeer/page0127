@@ -35,7 +35,7 @@ export default function BookList({ data }: { data: Book[] }) {
           >
             <BookListItem
               index={index}
-              isLike={likeBooks?.includes(item.id)}
+              isLike={likeBooks?.includes(item.id as string) || false}
               {...item}
             />
           </motion.li>

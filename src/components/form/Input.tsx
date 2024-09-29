@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, useState, ChangeEvent } from 'react';
+import { forwardRef, useState, ChangeEvent, useCallback } from 'react';
 import { clsx } from 'clsx';
 import styles from './Input.module.scss';
 
@@ -39,34 +39,37 @@ function Input<T>(
 ) {
   const [internalValue, setInternalValue] = useState<InputValue>('');
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    const newValue = type === 'number' ? Number(value) : value;
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const { name, value } = e.target;
+      const newValue = type === 'number' ? Number(value) : value;
 
-    if (setValue) {
-      setValue((prev: T) => {
-        if (typeof prev === 'object' && prev !== null) {
-          return { ...prev, [name]: newValue } as T;
-        }
-        return newValue as unknown as T;
-      });
-    } else {
-      setInternalValue(newValue);
-    }
+      if (setValue) {
+        setValue((prev: T) => {
+          if (typeof prev === 'object' && prev !== null) {
+            return { ...prev, [name]: newValue } as T;
+          }
+          return newValue as unknown as T;
+        });
+      } else {
+        setInternalValue(newValue);
+      }
 
-    if (onChange) {
-      if (typeof onChange === 'function') {
-        if (onChange.length === 2) {
-          (onChange as (value: InputValue, name: string) => void)(
-            newValue,
-            name,
-          );
-        } else {
-          (onChange as (e: ChangeEvent<HTMLInputElement>) => void)(e);
+      if (onChange) {
+        if (typeof onChange === 'function') {
+          if (onChange.length === 2) {
+            (onChange as (value: InputValue, name: string) => void)(
+              newValue,
+              name,
+            );
+          } else {
+            (onChange as (e: ChangeEvent<HTMLInputElement>) => void)(e);
+          }
         }
       }
-    }
-  };
+    },
+    [onChange, setValue, type],
+  );
 
   const inputValue = value?.toString() || internalValue;
 
