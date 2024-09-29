@@ -12,6 +12,7 @@ export default function YearTab({
     <div>
       {years.map((year) => (
         <Button
+          key={year}
           variant={value === year ? 'solid' : 'outline'}
           size="sm"
           onClick={() => {

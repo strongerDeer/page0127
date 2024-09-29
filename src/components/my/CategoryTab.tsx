@@ -21,6 +21,7 @@ export default function CategoryTab({
     <div>
       {categories.map((category) => (
         <Button
+          key={category}
           variant={value === category ? 'solid' : 'outline'}
           size="sm"
           onClick={() => {
