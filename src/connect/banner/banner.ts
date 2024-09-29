@@ -28,21 +28,6 @@ export async function getBanners(type: BannerType) {
   return data;
 }
 
-export async function getEndBanners() {
-  const q = query(
-    collection(store, COLLECTIONS.BANNERS),
-    where('endDate', '<=', today),
-  );
-  const snapshot = await getDocs(q);
-
-  const data = snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...(doc.data() as I_Banner),
-  }));
-
-  return data;
-}
-
 export function deleteBanner(bannerId: string) {
   const bannerDoc = doc(collection(store, COLLECTIONS.BANNERS), bannerId);
 
