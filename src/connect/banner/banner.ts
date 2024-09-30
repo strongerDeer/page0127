@@ -1,17 +1,8 @@
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  query,
-  where,
-} from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDocs, query } from 'firebase/firestore';
 import { store } from '@firebase/firebaseApp';
 import { COLLECTIONS } from '@constants';
 import { I_Banner } from '.';
 import { BannerType, bannerConfig } from './useBanner';
-
-const today = new Date();
 
 export async function getBanners(type: BannerType) {
   const q = query(
