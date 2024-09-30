@@ -6,6 +6,7 @@ export const COLLECTIONS = {
   CLUBS: 'clubs',
   CLUB_APPLY: 'club_apply',
   REVIEW: 'review',
+  FAQ: 'faq',
 };
 
 export const DEFAULT_GOAL = 12;

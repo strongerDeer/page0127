@@ -1,0 +1,12 @@
+.wrap {
+  display: flex;
+  gap: 4rem;
+  margin-top: 4rem;
+}
+.menu {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 15rem;
+  flex-shrink: 0;
+}

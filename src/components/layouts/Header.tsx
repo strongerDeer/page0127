@@ -1,11 +1,5 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-// import { useContext } from 'react';
-
-// import { AuthContext } from '@contexts/AuthContext';
-
-// import Button from '@components/shared/Button';
-
 import styles from './Header.module.scss';
 
 import Button from '@components/shared/Button';
@@ -26,6 +20,9 @@ export default function Header() {
     if (user !== null) {
       return (
         <>
+          {user?.uid === process.env.NEXT_PUBLIC_ADMIN_ID && (
+            <Button href={`/admin`}>관리자</Button>
+          )}
           <Button href={`/book/create`}>읽은 책 등록</Button>
           <Link href="/my">
             <ProfileImage width={40} photoURL={user?.photoURL as string} />
