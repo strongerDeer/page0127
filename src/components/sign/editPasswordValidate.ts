@@ -1,5 +1,5 @@
+import { EditPasswordFormValues, FormErrors } from '@connect/sign';
 import validator from 'validator';
-import { EditPasswordFormValues, FormErrors } from '@models/sign';
 
 export default function editPasswordValidate(
   formValues: EditPasswordFormValues,

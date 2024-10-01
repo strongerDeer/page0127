@@ -1,12 +1,11 @@
 'use client';
 import styles from './Form.module.scss';
 
-import { EditPasswordFormValues, InputArr } from '@models/sign';
-
 import Button from '@components/shared/Button';
 import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
 import Input from '@components/form/Input';
 import { useEditPasswordForm } from '@hooks/useEditPasswordForm';
+import { EditPasswordFormValues, InputArr } from '@connect/sign';
 
 export default function EditPasswordForm({
   inputArr,

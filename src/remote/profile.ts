@@ -17,7 +17,7 @@ import { useSetRecoilState } from 'recoil';
 import { userAtom } from '@atoms/user';
 import { User } from '@connect/user';
 import useUser from '@connect/user/useUser';
-import { SignUpFormValues } from '@models/sign';
+import { SignUpFormValues } from '@connect/sign';
 
 export default function EditProfile() {
   const user = useUser();

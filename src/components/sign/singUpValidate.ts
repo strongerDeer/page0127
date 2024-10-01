@@ -1,5 +1,5 @@
+import { FormErrors, SignUpFormValues } from '@connect/sign';
 import validator from 'validator';
-import { FormErrors, SignUpFormValues } from '@models/sign';
 
 export default function signUpValidate(formValues: SignUpFormValues) {
   const { email, password, rePassword, displayName } = formValues;

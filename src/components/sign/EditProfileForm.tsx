@@ -1,15 +1,13 @@
 'use client';
 import styles from './Form.module.scss';
 
-import { useSignUpForm } from '@hooks/useSignUpForm';
-import { InputArr } from '@models/sign';
-
 import Button from '@components/shared/Button';
 import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
 import Input from '@components/form/Input';
 import InputFileImg from '@components/form/InputFileImg';
 import { useEditProfileForm } from '@hooks/useEditProfileForm';
 import useUser from '@connect/user/useUser';
+import { InputArr } from '@connect/sign';
 
 export default function EditProfileForm({
   inputArr,

@@ -1,12 +1,11 @@
 'use client';
 import styles from './Form.module.scss';
 
-import { useSignInForm } from '@hooks/useSignInForm';
-import { InputArr, SignInFormValues } from '@models/sign';
-
 import Button from '@components/shared/Button';
 import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
 import Input from '@components/form/Input';
+import { useSignInForm } from '@connect/sign/useSignInForm';
+import { InputArr, SignInFormValues } from '@connect/sign';
 
 export default function SignUpForm({ inputArr }: { inputArr: InputArr[] }) {
   const isMobile = false;

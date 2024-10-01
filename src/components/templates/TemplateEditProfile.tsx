@@ -1,7 +1,6 @@
 'use client';
 
-import { InputArr } from '@models/sign';
-
+import { InputArr } from '@connect/sign';
 import styles from './TemplateSign.module.scss';
 import EditProfileForm from '@components/sign/EditProfileForm';
 

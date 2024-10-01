@@ -1,6 +1,5 @@
 import TemplateEditProfile from '@components/templates/TemplateEditProfile';
-
-import { InputArr } from '@models/sign';
+import { InputArr } from '@connect/sign';
 
 // 입력정보
 const inputArr: InputArr[] = [

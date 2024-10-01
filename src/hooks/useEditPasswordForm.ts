@@ -4,12 +4,11 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { FirebaseError } from 'firebase/app';
 
-import { useForm } from './useForm';
-
 import useUser from '@connect/user/useUser';
-import { EditPasswordFormValues } from '@models/sign';
 import EditPassword from '@remote/password';
 import editPasswordValidate from '@components/sign/editPasswordValidate';
+import { EditPasswordFormValues } from '@connect/sign';
+import { useForm } from '@connect/sign/useForm';
 
 export const useEditPasswordForm = () => {
   const user = useUser();

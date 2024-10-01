@@ -16,7 +16,7 @@ import useFilteredBook from '@connect/book/useFilteredBook';
 export default function MyPage() {
   const [activeTab, setActiveTab] = useState('read');
   const user = useUser();
-  const { logOut } = useSocialSignIn();
+  const { logOut, deleteProviderAccount } = useSocialSignIn();
 
   const { data: likeData } = useLikeBook();
   const { data: readBook } = useReadBooks({ userId: user?.uid as string });
@@ -36,6 +36,21 @@ export default function MyPage() {
         />
       </div>
       <div className={styles.btns}>
+        {user?.provider ? (
+          <Button
+            onClick={() =>
+              deleteProviderAccount({
+                uid: user?.uid,
+                provider: user.provider || '',
+              })
+            }
+          >
+            회원탈퇴
+          </Button>
+        ) : (
+          <Button href="/leave">회원탈퇴</Button>
+        )}
+
         <Button size="sm" onClick={logOut}>
           로그아웃
         </Button>

@@ -6,10 +6,10 @@ import { FirebaseError } from 'firebase/app';
 
 import EditProfile from '@remote/profile';
 import editProfileValidate from '@components/sign/editProfileValidate';
-import { useForm } from './useForm';
 
 import useUser from '@connect/user/useUser';
-import { EditFormValues } from '@models/sign';
+import { useForm } from '@connect/sign/useForm';
+import { EditFormValues } from '@connect/sign';
 
 export const useEditProfileForm = () => {
   const user = useUser();

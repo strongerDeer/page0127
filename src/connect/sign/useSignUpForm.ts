@@ -4,10 +4,10 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { FirebaseError } from 'firebase/app';
 
-import postSignUp from '@remote/sign';
+import { SignUpFormValues } from './';
+import postSignUp from './sign';
 import signUpValidate from '@components/sign/singUpValidate';
 import { useForm } from './useForm';
-import { SignUpFormValues } from '@models/sign';
 
 export const useSignUpForm = () => {
   const router = useRouter();

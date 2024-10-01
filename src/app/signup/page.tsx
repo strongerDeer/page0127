@@ -1,6 +1,5 @@
 import TemplateSign from '@components/templates/TemplateSign';
-
-import { InputArr } from '@models/sign';
+import { InputArr } from '@connect/sign';
 
 // 회원가입 입력정보
 const inputArr: InputArr[] = [

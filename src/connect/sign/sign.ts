@@ -10,9 +10,13 @@ import { COLLECTIONS } from '@constants';
 import { auth, storage, store } from '@firebase/firebaseApp';
 
 import { v4 as uuidv4 } from 'uuid';
-import { SignInFormValues, SignUpFormValues } from '@models/sign';
+import { SignInFormValues, SignUpFormValues } from './';
+import { useSetRecoilState } from 'recoil';
+import { userAtom } from '@atoms/user';
+import { User } from '@connect/user';
 
-export default function postSign() {
+export default function PostSign() {
+  const setUser = useSetRecoilState(userAtom);
   const signUp = async (formValues: SignUpFormValues, profileImage: string) => {
     const { email, password, displayName } = formValues;
 
@@ -45,14 +49,30 @@ export default function postSign() {
             provider: null,
           };
 
-          await setDoc(doc(store, COLLECTIONS.USER, user.uid), newUser);
+          await setDoc(doc(store, COLLECTIONS.USER, user.uid), newUser, {
+            merge: true,
+          });
+
+          setUser(newUser as User);
         }
       },
     );
   };
   const signIn = async (formValues: SignInFormValues) => {
     const { email, password } = formValues;
-    await signInWithEmailAndPassword(auth, email, password);
+    await signInWithEmailAndPassword(auth, email, password).then(
+      async ({ user }) => {
+        setUser({
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+          provider: user.providerData[0].providerId,
+        } as User);
+
+        console.log('________', user);
+      },
+    );
   };
   return { signUp, signIn };
 }

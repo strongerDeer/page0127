@@ -31,7 +31,7 @@ export default function CreateFaq({ params }: { params: { id: string } }) {
 
       setFaq(data);
     });
-  }, []);
+  }, [id]);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

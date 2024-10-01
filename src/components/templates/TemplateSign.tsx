@@ -1,6 +1,5 @@
 'use client';
 
-import { InputArr } from '@models/sign';
 import SignInForm from '@components/sign/SignInForm';
 import SocialLoginButtons from '@components/sign/SocialLoginButtons';
 import useUser from '@connect/user/useUser';
@@ -9,6 +8,7 @@ import Link from 'next/link';
 
 import styles from './TemplateSign.module.scss';
 import SignUpForm from '@components/sign/SignUpForm';
+import { InputArr } from '@connect/sign';
 
 export default function TemplateSign({
   title,

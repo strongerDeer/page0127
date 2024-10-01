@@ -1,8 +1,8 @@
 'use client';
 import TemplateEditPassword from '@components/templates/TemplateEditPassword';
+import { InputArr } from '@connect/sign';
 import useUser from '@connect/user/useUser';
 
-import { InputArr } from '@models/sign';
 import { useRouter } from 'next/navigation';
 
 // 입력정보

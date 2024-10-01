@@ -1,4 +1,4 @@
-import { FormErrors, SignInFormValues } from '@models/sign';
+import { FormErrors, SignInFormValues } from '@connect/sign';
 import validator from 'validator';
 
 export default function signInValidate(formValues: SignInFormValues) {

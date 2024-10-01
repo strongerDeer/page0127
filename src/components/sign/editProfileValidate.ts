@@ -1,4 +1,4 @@
-import { EditFormValues, FormErrors } from '@models/sign';
+import { EditFormValues, FormErrors } from '@connect/sign';
 
 export default function editProfileValidate(formValues: EditFormValues) {
   const { displayName } = formValues;
