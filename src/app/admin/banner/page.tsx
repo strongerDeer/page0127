@@ -31,6 +31,7 @@ export default function BannerPage() {
             >
               <h3>{activeBanner.title}</h3>
               <p>{activeBanner.subTitle}</p>
+              <p>{activeBanner.view}</p>
 
               <Button
                 onClick={() => {

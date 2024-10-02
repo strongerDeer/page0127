@@ -9,20 +9,23 @@ import { Skeleton } from '@components/shared/Skeleton';
 import withSuspense from '@components/shared/hocs/withSuspense';
 import useBanner from '@connect/banner/useBanner';
 
+import styles from './Banner.module.scss';
+
 function Banner() {
-  const { data, isLoading } = useBanner('active');
+  const { data, isLoading } = useBanner('default');
 
   if (isLoading || data === null || data?.length === 0) {
     return null;
   }
   return (
-    <section className="mt-[-4rem]">
+    <section className={styles.section}>
       <h2 className="a11y-hidden">배너</h2>
       <Swiper spaceBetween={8}>
         {data?.map((item) => (
           <SwiperSlide
             key={item.id}
-            className="bg-blue-100 px-8 py-6 rounded-xl flex items-center h-32"
+            className={styles.slideItem}
+            style={{ backgroundColor: item.backgroundColor, color: item.color }}
           >
             {item.link ? (
               <Link href={item.link}>

@@ -1,6 +1,7 @@
 'use client';
 import Input from '@components/form/Input';
 import InputFileImg from '@components/form/InputFileImg';
+import InputRadio from '@components/form/InputRadio';
 import BannerItem from '@components/home/BannerItem';
 import Button from '@components/shared/Button';
 import { I_Banner } from '@connect/banner';
@@ -20,7 +21,7 @@ export default function CreateBanner() {
     color: '',
     link: '',
     imgUrl: '',
-    hasAccount: false,
+    view: 'all',
     startDate: '',
     endDate: '',
   });
@@ -86,20 +87,17 @@ export default function CreateBanner() {
           value={banner.backgroundColor}
           setValue={setBanner}
         />
-        <label>
-          <input
-            type="checkbox"
-            name="account"
-            onChange={(e) => {
-              if (e.target.checked) {
-                setBanner((prev) => ({ ...prev, hasAccount: true }));
-              } else {
-                setBanner((prev) => ({ ...prev, hasAccount: false }));
-              }
-            }}
-          />
-          로그인 계정만
-        </label>
+        <InputRadio
+          title="노출"
+          name="view"
+          list={[
+            { value: 'login', label: '로그인' },
+            { value: 'logout', label: '로그아웃' },
+            { value: 'all', label: '모두' },
+          ]}
+          setValue={setBanner}
+        />
+
         <Input
           label="url"
           id="link"

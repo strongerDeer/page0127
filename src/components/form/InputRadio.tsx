@@ -1,20 +1,22 @@
 import { CardInfoValues } from '@models/applyClub';
 import styles from './InputRadio.module.scss';
-export default function InputRadio({
+
+type RadioValue = boolean | string;
+
+export default function InputRadio<T extends { [key: string]: any }>({
   title,
   name,
   list,
-
   setValue,
 }: {
   title?: string;
   name: string;
-  list: { value: boolean; label: string }[];
-  setValue: React.Dispatch<React.SetStateAction<CardInfoValues>>;
+  list: { value: RadioValue; label: string }[];
+  setValue: React.Dispatch<React.SetStateAction<T>>;
 }) {
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setValue((prev: any) => ({ ...prev, [name]: Boolean(value) }));
+    setValue((prev: T) => ({ ...prev, [name]: value }));
   };
   return (
     <div className={styles.box}>
@@ -28,7 +30,7 @@ export default function InputRadio({
               name={name}
               value={String(item.value)}
               onChange={onChange}
-              defaultChecked={item.value === true}
+              defaultChecked={item.value === true || item.value === 'all'}
             />
             <label htmlFor={`${name}${index}`}>{item.label}</label>
           </div>

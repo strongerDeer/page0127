@@ -1,8 +1,7 @@
 export interface I_Banner {
   title: string;
   subTitle: string;
-  hasAccount: boolean;
-
+  view: 'all' | 'login' | 'logout';
   color: string;
   backgroundColor: string;
 
