@@ -5,7 +5,8 @@ import ProfileImage from '@components/shared/ProfileImage';
 import { Skeleton } from '@components/shared/Skeleton';
 import useUser from '@connect/user/useUser';
 import { useReview } from '@hooks/useReview';
-import { format } from 'date-fns';
+import { differenceInDays, format, formatDistanceToNow } from 'date-fns';
+import { ko } from 'date-fns/locale';
 
 import styles from './Review.module.scss';
 import Link from 'next/link';
@@ -15,6 +16,23 @@ import {
   useModalContext,
 } from '@contexts/ModalContext';
 import { toast } from 'react-toastify';
+
+function formatRelativeTime(date: Date) {
+  const now = new Date();
+
+  const dayDiff = differenceInDays(now, date);
+
+  if (dayDiff < 3) {
+    const distance = formatDistanceToNow(date, {
+      addSuffix: true,
+      locale: ko,
+    });
+    return distance === '1분 미만 전' ? '방금 전' : distance;
+  } else {
+    return format(date, 'yyyy.MM.dd HH:mm', { locale: ko });
+  }
+}
+
 export default function Review({ bookId }: { bookId: string }) {
   const user = useUser();
   const { data: reviews, isLoading, write, remove } = useReview({ bookId });
@@ -47,7 +65,7 @@ export default function Review({ bookId }: { bookId: string }) {
               </Link>
 
               <p className={styles.time}>
-                {format(review.createdAt, 'yyyy-MM-dd')}
+                {formatRelativeTime(review.createdAt)}
               </p>
             </div>
             <div className={styles.content}>
