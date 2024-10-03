@@ -5,6 +5,8 @@ import '@styles/globals.scss';
 
 import Layout from '@components/layouts/Layout';
 
+export const dynamicParams = false;
+
 export const metadata: Metadata = {
   // metadataBase: new URL('https://'),
   title: 'page 0127.',
