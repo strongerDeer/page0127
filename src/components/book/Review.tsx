@@ -43,8 +43,6 @@ export default function Review({ bookId }: { bookId: string }) {
 
   const [text, setText] = useState<string>('');
 
-  const { data: likeComment } = useCommentLike();
-
   const reviewRows = useCallback(() => {
     if (reviews?.length === 0) {
       return (
@@ -76,12 +74,7 @@ export default function Review({ bookId }: { bookId: string }) {
               <p>{review.text}</p>
             </div>
 
-            {review.id && (
-              <CommentLikeButton
-                commentId={review.id}
-                isLike={likeComment?.includes(review.id) || false}
-              />
-            )}
+            <CommentLikeButton commentId={review.id} />
             {review.userId === user?.uid && (
               <button
                 onClick={() => {

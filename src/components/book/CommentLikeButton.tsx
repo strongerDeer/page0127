@@ -11,20 +11,24 @@ import {
   useModalContext,
 } from '@contexts/ModalContext';
 import { useRouter } from 'next/navigation';
+import useCommentLike from '@connect/commentLike/useCommentLike';
 
 export default function CommentLikeButton({
   commentId,
-  isLike,
+
   showText,
 }: {
   commentId: string;
-  isLike: boolean;
+
   showText?: boolean;
 }) {
   const userId = useUser()?.uid;
   const [hearts, setHearts] = useState<
     Array<{ id: number; x: number; y: number }>
   >([]);
+
+  const { data: likeComments } = useCommentLike();
+  const isLike = likeComments?.includes(commentId) || false;
 
   const router = useRouter();
   const { open: modalOpen, close: modalClose } =
