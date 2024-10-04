@@ -16,6 +16,8 @@ import {
   useModalContext,
 } from '@contexts/ModalContext';
 import { toast } from 'react-toastify';
+import CommentLikeButton from './CommentLikeButton';
+import useCommentLike from '@connect/commentLike/useCommentLike';
 
 function formatRelativeTime(date: Date) {
   const now = new Date();
@@ -40,6 +42,8 @@ export default function Review({ bookId }: { bookId: string }) {
     useModalContext() as ModalContextValue;
 
   const [text, setText] = useState<string>('');
+
+  const { data: likeComment } = useCommentLike();
 
   const reviewRows = useCallback(() => {
     if (reviews?.length === 0) {
@@ -71,6 +75,13 @@ export default function Review({ bookId }: { bookId: string }) {
             <div className={styles.content}>
               <p>{review.text}</p>
             </div>
+
+            {review.id && (
+              <CommentLikeButton
+                commentId={review.id}
+                isLike={likeComment?.includes(review.id) || false}
+              />
+            )}
             {review.userId === user?.uid && (
               <button
                 onClick={() => {
