@@ -17,6 +17,9 @@ const nextConfig = {
       { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
     ],
   },
+  experimental: {
+    webVitalsAttribution: ['CLS', 'LCP'],
+  },
 };
 
 const withVanillaExtract = createVanillaExtractPlugin();

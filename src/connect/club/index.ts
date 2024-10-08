@@ -4,7 +4,7 @@ export interface Term {
   id: string;
   title: string;
   link?: string;
-  required?: boolean;
+  mandatory: boolean;
 }
 
 export const APPLY_STATUS = {
@@ -47,10 +47,10 @@ export interface Option {
 }
 
 export interface Club {
-  name: string;
+  title: string;
   availableCount: number;
   events?: {
-    name: string;
+    title: string;
     promotionEndTime?: string;
   };
 }

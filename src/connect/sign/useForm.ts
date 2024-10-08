@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { FormValues } from './';
+import { FormValues } from '.';
 
 export const useForm = <T extends Partial<FormValues>>(initialState: T) => {
   // controlled 방식 사용 : state 사용

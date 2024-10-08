@@ -1,8 +1,9 @@
 import Agreement from '@components/shared/Agreement';
 import Button from '@components/shared/Button';
 import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
+import { ApplyClubValues } from '@connect/club';
 import { CLUB_APPLY_LIST } from '@constants/applyClub';
-import { ApplyClubValues } from '@models/applyClub';
+
 import { useCallback, useState } from 'react';
 
 export default function Terms({
@@ -45,7 +46,7 @@ export default function Terms({
         >
           약관에 동의
         </Agreement.Title>
-        {CLUB_APPLY_LIST.map(({ id, title, link, required }) => (
+        {CLUB_APPLY_LIST.map(({ id, title, link, mandatory }) => (
           <Agreement.Description
             key={id}
             link={link}
@@ -57,7 +58,7 @@ export default function Terms({
               }))
             }
           >
-            {required ? '(필수) ' : '(선택) '}
+            {mandatory ? '(필수) ' : '(선택) '}
             {title}
           </Agreement.Description>
         ))}

@@ -1,7 +1,8 @@
 import { useAlertContext } from '@contexts/AlertContext';
-import { ApplyClubValues } from '@models/applyClub';
-import { applyClub } from '@remote/applyClub';
+
 import { useMutation } from 'react-query';
+import { applyClub } from './club';
+import { ApplyClubValues } from '.';
 
 interface useApplyClubMutationProps {
   onSuccess: () => void;

@@ -10,7 +10,7 @@ import {
 } from 'firebase/firestore';
 import { store } from '@firebase/firebaseApp';
 import { COLLECTIONS } from '@constants';
-import { Club, ApplyClubValues } from '@models/applyClub';
+import { ApplyClubValues, Club } from '@connect/club';
 
 export async function getClubs() {
   const snapshot = await getDocs(collection(store, COLLECTIONS.CLUBS));

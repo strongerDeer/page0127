@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { FirebaseError } from 'firebase/app';
 
-import { SignInFormValues } from './';
+import { SignInFormValues } from '.';
 import postSign from './sign';
 import signInValidate from '@components/sign/signInValidate';
 import { useForm } from './useForm';

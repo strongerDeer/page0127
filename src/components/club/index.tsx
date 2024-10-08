@@ -3,13 +3,14 @@ import BasicInfo from '@components/club/BasicInfo';
 import CardInfo from '@components/club/CardInfo';
 import Terms from '@components/club/Terms';
 import ProgressBar from '@components/shared/ProgressBar';
-import useUser from '@connect/user/useUser';
 import {
   APPLY_STATUS,
-  CardInfoValues,
   ApplyClubValues,
+  CardInfoValues,
   InfoValues,
-} from '@models/applyClub';
+} from '@connect/club';
+import useUser from '@connect/user/useUser';
+
 import { useEffect, useState } from 'react';
 
 const LAST_STEP = 3;

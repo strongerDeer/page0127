@@ -1,6 +1,6 @@
 import { forwardRef } from 'react';
 import styles from './Select.module.scss';
-import { Option } from '@models/applyClub';
+import { Option } from '@connect/club';
 
 interface SelectProps
   extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {

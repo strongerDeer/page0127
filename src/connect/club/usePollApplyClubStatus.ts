@@ -1,5 +1,5 @@
-import { APPLY_STATUS } from '@models/applyClub';
 import { useQuery } from 'react-query';
+import { APPLY_STATUS } from '.';
 
 interface usePollApplyClubStatusProps {
   onSuccess: () => void;

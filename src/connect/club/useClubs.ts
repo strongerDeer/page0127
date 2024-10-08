@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { store } from '@firebase/firebaseApp';
 import { COLLECTIONS } from '@constants';
-import { Club } from '@models/applyClub';
+import { Club } from '.';
 
 export default function useClubs() {
   const client = useQueryClient();

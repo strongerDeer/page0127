@@ -1,8 +1,9 @@
 'use client';
 
-import useClubs from '@components/club/hooks/useClubs';
 import Tag from '@components/shared/Tag';
-import { Club } from '@models/applyClub';
+import { Club } from '@connect/club';
+import useClubs from '@connect/club/useClubs';
+
 import restTime from '@utils/restTime';
 import { differenceInMilliseconds, parseISO } from 'date-fns';
 import Link from 'next/link';
@@ -27,7 +28,7 @@ export default function ClubListPage() {
           <li key={club.id}>
             <TagComponent club={club} />
             <Link href={`/club/${club.id}`}>
-              <span>{club.name}</span>
+              <span>{club.title}</span>
               <span>
                 {club.availableCount === 0
                   ? '모집마감'

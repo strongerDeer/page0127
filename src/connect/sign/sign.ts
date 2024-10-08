@@ -10,7 +10,7 @@ import { COLLECTIONS } from '@constants';
 import { auth, storage, store } from '@firebase/firebaseApp';
 
 import { v4 as uuidv4 } from 'uuid';
-import { SignInFormValues, SignUpFormValues } from './';
+import { SignInFormValues, SignUpFormValues } from '.';
 import { useSetRecoilState } from 'recoil';
 import { userAtom } from '@atoms/user';
 import { User } from '@connect/user';

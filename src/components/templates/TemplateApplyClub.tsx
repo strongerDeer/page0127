@@ -1,16 +1,17 @@
 'use client';
 
 import ApplyClub from '@components/club';
-import useAppliedClub from '@components/club/hooks/useAppliedClub';
-import useApplyClubMutation from '@components/club/hooks/useApplyClubMutation';
-import usePollApplyClubStatus from '@components/club/hooks/usePollApplyClubStatus';
+
 import { useAlertContext } from '@contexts/AlertContext';
 import useUser from '@connect/user/useUser';
-import { APPLY_STATUS } from '@models/applyClub';
-import { updateApplyClub } from '@remote/applyClub';
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import useAppliedClub from '@connect/club/useAppliedClub';
+import { APPLY_STATUS } from '@connect/club';
+import usePollApplyClubStatus from '@connect/club/usePollApplyClubStatus';
+import { updateApplyClub } from '@connect/club/club';
+import useApplyClubMutation from '@connect/club/useApplyClubMutation';
 
 const STATUS_MESSAGE = {
   [APPLY_STATUS.READY]: '준비하고 있습니다',

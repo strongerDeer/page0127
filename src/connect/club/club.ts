@@ -8,7 +8,7 @@ import {
 } from 'firebase/firestore';
 import { store } from '@firebase/firebaseApp';
 import { COLLECTIONS } from '@constants';
-import { ApplyClubValues } from '@models/applyClub';
+import { ApplyClubValues } from '.';
 
 export async function applyClub(applyClubValues: ApplyClubValues) {
   return addDoc(collection(store, COLLECTIONS.CLUB_APPLY), applyClubValues);

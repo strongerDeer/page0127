@@ -1,6 +1,6 @@
-import { ApplyClubValues } from '@models/applyClub';
-import { getAppliedClub } from '@remote/applyClub';
 import { UseQueryOptions, useQuery } from 'react-query';
+import { ApplyClubValues } from '.';
+import { getAppliedClub } from './club';
 
 export default function useAppliedClub({
   userId,

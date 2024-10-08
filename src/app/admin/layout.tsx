@@ -15,6 +15,9 @@ export default function layout({ children }: { children: React.ReactNode }) {
           <Button href="/admin/faq" variant="link">
             FAQ
           </Button>
+          <Button href="/admin/club" variant="link">
+            모임
+          </Button>
         </div>
 
         <div className={styles.contents}> {children}</div>

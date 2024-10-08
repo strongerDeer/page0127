@@ -1,17 +1,17 @@
-import { Option, Term } from '@models/applyClub';
+import { Option, Term } from '@connect/club';
 
 export const CLUB_APPLY_LIST = [
   {
     id: '01',
     title: '멤버쉽 관련 안내 및 필수 동의',
     link: '#',
-    required: true,
+    mandatory: true,
   },
   {
     id: '02',
     title: '개인정보 요약 동의서',
     link: '#',
-    required: false,
+    mandatory: false,
   },
 ] as Term[];
 

@@ -1,4 +1,3 @@
-import { CardInfoValues } from '@models/applyClub';
 import styles from './InputRadio.module.scss';
 
 type RadioValue = boolean | string;

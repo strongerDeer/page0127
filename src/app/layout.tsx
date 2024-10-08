@@ -36,6 +36,7 @@ export default function RootLayout({
   return (
     <html lang="ko-KR" className={pretendard.className}>
       <body>
+        <WebVitals />
         <Layout>{children}</Layout>
       </body>
     </html>

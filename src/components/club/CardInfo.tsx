@@ -1,7 +1,8 @@
 import InputRadio from '@components/form/InputRadio';
 import Button from '@components/shared/Button';
 import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
-import { CardInfoValues } from '@models/applyClub';
+import { CardInfoValues } from '@connect/club';
+
 import { useState } from 'react';
 
 export default function CardInfo({
