@@ -30,7 +30,13 @@ import { RecoilRoot } from 'recoil';
 import AuthGuard from '@components/auth/AuthGuard';
 import { AlertContextProvider } from '@contexts/AlertContext';
 import { ModalContextProvider } from '@contexts/ModalContext';
+import { useReportWebVitals } from 'next/web-vitals';
+
 export default function Layout({ children }: { children: React.ReactNode }) {
+  useReportWebVitals((metric) => {
+    console.log(metric);
+  });
+
   return (
     <RecoilRoot>
       <AuthGuard>
