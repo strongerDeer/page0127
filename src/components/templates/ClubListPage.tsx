@@ -71,7 +71,7 @@ const TagComponent = ({ club }: { club: Club }) => {
     }
   }, [club.events]);
 
-  const name = club.events?.name;
+  const name = club.events?.title;
   const promotionTxt =
     remainedTime > 0 ? `- ${restTime(remainedTime)} 남음` : '';
 
