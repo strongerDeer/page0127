@@ -1,5 +1,6 @@
 export const COLLECTIONS = {
   USER: 'users',
+  COUNTERS: 'counters',
   BANNERS: 'banners',
   BOOKS: 'books',
   BOOK_LIKE: 'book_like',

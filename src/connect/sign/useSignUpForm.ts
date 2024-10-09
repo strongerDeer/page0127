@@ -5,14 +5,14 @@ import { toast } from 'react-toastify';
 import { FirebaseError } from 'firebase/app';
 
 import { SignUpFormValues } from '.';
-import postSignUp from './sign';
 import signUpValidate from '@components/sign/singUpValidate';
 import { useForm } from './useForm';
+import useLogin from './useLogin';
 
 export const useSignUpForm = () => {
   const router = useRouter();
   const [profileImage, setProfileImg] = useState<string>('');
-  const { signUp } = postSignUp();
+  const { signUp } = useLogin();
 
   const { formValues, inputDirty, handleFormValues, handleBlur } =
     useForm<SignUpFormValues>({

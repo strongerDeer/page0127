@@ -32,17 +32,17 @@ export default function TemplateSettingGoal() {
       setGoal((prev) => ({ ...prev, ...goals }));
     }
   }, [goals]);
-  const userId = useUser()?.uid;
+  const user = useUser();
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (userId) {
-      updateGoal({ userId: userId, data: goal });
+    if (user?.uid) {
+      updateGoal({ userId: user?.uid, data: goal });
       if (goal[currentYear] !== 0) {
-        updateUserGoal(userId, goal[currentYear]);
+        updateUserGoal(user?.uid, goal[currentYear]);
       }
-      router.push(`/shelf/${userId}`);
+      router.push(`/shelf/${user?.showId}`);
     }
   };
 

@@ -7,6 +7,7 @@ import {
   arrayUnion,
   collection,
   doc,
+  setDoc,
   updateDoc,
 } from 'firebase/firestore';
 
@@ -19,7 +20,7 @@ export default function FollowButton({ pageUid }: { pageUid: string }) {
   const isFollowed = false;
   const handleFollow = async () => {
     if (!isFollowed) {
-      await updateDoc(doc(collection(store, COLLECTIONS.USER), pageUid), {
+      await setDoc(doc(collection(store, COLLECTIONS.USER), pageUid), {
         follower: arrayUnion(userId),
       });
     } else {

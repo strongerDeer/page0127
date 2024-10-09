@@ -55,8 +55,10 @@ export default function TemplateBookEdit({
   uid,
   bookId,
   data,
+  showId,
 }: {
   uid: string;
+  showId: string;
   bookId: string;
   data: Book;
 }) {
@@ -90,7 +92,7 @@ export default function TemplateBookEdit({
       addBookInShelf(uid, bookId, { ...data, ...myData });
 
       toast.success('수정 되었습니다!');
-      router.push(`/shelf/${uid}`);
+      router.push(`/shelf/${showId}`);
     } catch (error) {
       console.error('Error saving book:', error);
       toast.error('책 수정 중 오류가 발생했습니다.');

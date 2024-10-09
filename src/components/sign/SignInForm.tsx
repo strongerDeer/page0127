@@ -6,6 +6,7 @@ import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
 import Input from '@components/form/Input';
 import { useSignInForm } from '@connect/sign/useSignInForm';
 import { InputArr, SignInFormValues } from '@connect/sign';
+import useLogin from '@connect/sign/useLogin';
 
 export default function SignUpForm({ inputArr }: { inputArr: InputArr[] }) {
   const isMobile = false;
@@ -17,11 +18,18 @@ export default function SignUpForm({ inputArr }: { inputArr: InputArr[] }) {
     isSubmit,
     handleFormValues,
     handleBlur,
-    handleSubmit,
   } = useSignInForm();
 
+  const { emailLogin } = useLogin();
+
   return (
-    <form className={styles.form}>
+    <form
+      className={styles.form}
+      onSubmit={(e) => {
+        e.preventDefault();
+        emailLogin(formValues);
+      }}
+    >
       {inputArr.map(({ id, type, label, placeholder }) => (
         <Input
           key={id}
@@ -41,19 +49,9 @@ export default function SignUpForm({ inputArr }: { inputArr: InputArr[] }) {
       ))}
 
       {isMobile ? (
-        <ButtonFixedBottom
-          type="submit"
-          text="로그인"
-          disabled={!isSubmit}
-          onClick={handleSubmit}
-        />
+        <ButtonFixedBottom type="submit" text="로그인" disabled={!isSubmit} />
       ) : (
-        <Button
-          type="submit"
-          size="lg"
-          disabled={!isSubmit}
-          onClick={handleSubmit}
-        >
+        <Button type="submit" size="lg" disabled={!isSubmit}>
           로그인
         </Button>
       )}

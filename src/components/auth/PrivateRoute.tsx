@@ -23,7 +23,7 @@ export default function PrivateRoute({
         title: '로그인이 필요해요!',
         body: '로그인 페이지로 이동합니다',
         onButtonClick: () => {
-          router.push('/signin');
+          router.push('/login');
         },
       });
     }

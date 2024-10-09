@@ -6,15 +6,15 @@ import TemplateBookEdit from '@components/templates/TemplateBookEdit';
 export default function Page({
   params,
 }: {
-  params: { uid: string; bookId: string };
+  params: { showId: string; bookId: string };
 }) {
-  const { uid, bookId } = params;
+  const { showId, bookId } = params;
 
-  const { data } = useMyBook({ uid: uid, bookId: bookId });
+  // const { data } = useMyBook({ uid: uid, bookId: bookId });
 
   return (
     <div>
-      {data && <TemplateBookEdit uid={uid} data={data} bookId={bookId} />}
+      {/* {data && <TemplateBookEdit uid={uid} data={data} bookId={bookId} />} */}
     </div>
   );
 }

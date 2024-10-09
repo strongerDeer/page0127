@@ -1,14 +1,14 @@
 'use client';
 import Input from '@components/form/Input';
 import Button from '@components/shared/Button';
-import useSocialSignIn from '@components/sign/useSocialSignIn';
+import useLogin from '@connect/sign/useLogin';
 import useUser from '@connect/user/useUser';
 import { useState } from 'react';
 
 export default function Page() {
   const user = useUser();
   const [password, setPassword] = useState('');
-  const { deleteAccount } = useSocialSignIn();
+  const { deleteAccount } = useLogin();
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

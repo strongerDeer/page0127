@@ -96,7 +96,7 @@ export default function MyBookDetail({ data }: { data: Book }) {
                   onButtonClick: () => {
                     removeMyBook(user.uid, id, data, grade as string);
                     modalClose();
-                    router.replace(`/shelf/${user.uid}`);
+                    router.replace(`/shelf/${user.showId}`);
                     toast.success('책이 삭제되었습니다');
                   },
                   closeModal: () => {

@@ -8,13 +8,14 @@ import Icon from '@components/icon/Icon';
 
 import { cormorant } from '@font';
 import ProfileImage from '@components/shared/ProfileImage';
-import useSocialSignIn from '@components/sign/useSocialSignIn';
 import useUser, { useUserLoading } from '@connect/user/useUser';
+import useLogin from '@connect/sign/useLogin';
+
 export default function Header() {
   const pathname = usePathname();
   const user = useUser();
   const isLoading = useUserLoading();
-  const { logOut } = useSocialSignIn();
+  const { logOut } = useLogin();
 
   const renderButton = useCallback(() => {
     if (user !== null) {
@@ -28,7 +29,7 @@ export default function Header() {
             <ProfileImage width={40} photoURL={user?.photoURL as string} />
           </Link>
           <Button
-            href={`/shelf/${user?.uid}`}
+            href={`/shelf/${user?.showId}`}
             variant="outline"
             color="grayLv4"
           >
@@ -43,8 +44,8 @@ export default function Header() {
     } else {
       return (
         <>
-          {!pathname.includes('signin') && <Link href="/signin">로그인</Link>}
-          {!pathname.includes('signup') && <Link href="/signup">회원가입</Link>}
+          {!pathname.includes('login') && <Link href="/login">로그인</Link>}
+          {!pathname.includes('join') && <Link href="/join">회원가입</Link>}
         </>
       );
     }
