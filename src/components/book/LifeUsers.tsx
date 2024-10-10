@@ -27,7 +27,7 @@ export default function LifeUsers({ userIds }: { userIds: string[] }) {
       {userList?.map((user) => (
         <Link
           key={user.id}
-          href={`/shelf/${user.id}`}
+          href={`/shelf/${user.userId}`}
           title={`${user.displayName}의 책장 바로가기`}
         >
           <Image

@@ -29,7 +29,7 @@ export default function Header() {
             <ProfileImage width={40} photoURL={user?.photoURL as string} />
           </Link>
           <Button
-            href={`/shelf/${user?.uid}`}
+            href={`/shelf/${user?.userId}`}
             variant="outline"
             color="grayLv4"
           >

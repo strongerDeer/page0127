@@ -3,13 +3,11 @@ import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
 import { Book } from '@connect/book';
 import {
-  arrayRemove,
   arrayUnion,
   collection,
   doc,
   getDoc,
   setDoc,
-  updateDoc,
 } from 'firebase/firestore';
 
 async function checkBookExistsInMyShelf(uid: string, bookId: string) {

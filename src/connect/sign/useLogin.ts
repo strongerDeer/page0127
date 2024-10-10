@@ -30,7 +30,7 @@ import {
 } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 import { useSetRecoilState } from 'recoil';
-import { SocialLoginType } from '@connect/user';
+import { SocialLoginType, User } from '@connect/user';
 import { SignInFormValues, SignUpFormValues } from '.';
 import { getDownloadURL, ref, uploadString } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
@@ -41,6 +41,7 @@ import useUser from '@connect/user/useUser';
 export default function useLogin() {
   const user = useUser();
   const router = useRouter();
+  const setUser = useSetRecoilState(userAtom);
   const { open, close } = useModalContext();
   const authUser = auth.currentUser;
 
@@ -51,7 +52,7 @@ export default function useLogin() {
     const userId = await getUserId(baseId);
 
     try {
-      const userData = {
+      const userData: User = {
         uid,
         userId,
         displayName: displayName,
@@ -61,14 +62,15 @@ export default function useLogin() {
         bookCount: 0,
         followersCount: 0,
         followingCount: 0,
-        email: email,
-        createdAt: user.metadata.creationTime,
+        email: email as string,
+        createdAt: user.metadata.creationTime as string,
         provider: user.providerData[0].providerId as SocialLoginType,
       };
 
       await setDoc(doc(store, `${COLLECTIONS.USER}/${uid}`), userData, {
         merge: true,
       });
+      setUser(userData);
     } catch (error) {
       console.error('Error creating user documents:', error);
     }
@@ -103,6 +105,7 @@ export default function useLogin() {
         }
         // 3. 새로운 유저
         createUser(user);
+        router.push('/');
         toast.success('가입되었습니다!');
       }
     } catch (error) {

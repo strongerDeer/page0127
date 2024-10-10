@@ -6,7 +6,7 @@ export type SocialLoginType =
 export interface User {
   uid: string;
   userId: string;
-  displayName: string;
+  displayName: string | null;
   photoURL: string | null;
   introduce: string | null;
   currentGoal: number;

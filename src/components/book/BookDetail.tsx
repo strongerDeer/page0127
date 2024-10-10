@@ -179,7 +179,7 @@ export default function BookDetail({ data }: { data: Book }) {
                         myBook?.grade as string,
                       );
                       modalClose();
-                      router.replace(`/shelf/${user.uid}`);
+                      router.replace(`/shelf/${user.userId}`);
                       toast.success('책이 삭제되었습니다');
                     },
                     closeModal: () => {

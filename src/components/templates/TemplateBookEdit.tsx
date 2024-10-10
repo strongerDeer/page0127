@@ -6,6 +6,7 @@ import Select from '@components/form/Select';
 import Button from '@components/shared/Button';
 
 import { Book } from '@connect/book';
+import useUser from '@connect/user/useUser';
 import { addBook, addBookInShelf, addUserData } from '@remote/shelf';
 import clsx from 'clsx';
 import { format } from 'date-fns';
@@ -60,8 +61,8 @@ export default function TemplateBookEdit({
   bookId: string;
   data: Book;
 }) {
+  const user = useUser();
   const router = useRouter();
-
   const today = format(new Date(), 'yyyy-MM-dd');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -90,7 +91,7 @@ export default function TemplateBookEdit({
       addBookInShelf(uid, bookId, { ...data, ...myData });
 
       toast.success('수정 되었습니다!');
-      router.push(`/shelf/${uid}`);
+      router.push(`/shelf/${user?.userId}`);
     } catch (error) {
       console.error('Error saving book:', error);
       toast.error('책 수정 중 오류가 발생했습니다.');
