@@ -7,6 +7,7 @@ import Input from '@components/form/Input';
 import InputFileImg from '@components/form/InputFileImg';
 import { useSignUpForm } from '@connect/sign/useSignUpForm';
 import { InputArr } from '@connect/sign';
+import useLogin from '@connect/sign/useLogin';
 
 export default function SignUpForm({ inputArr }: { inputArr: InputArr[] }) {
   const isMobile = false;
@@ -20,11 +21,17 @@ export default function SignUpForm({ inputArr }: { inputArr: InputArr[] }) {
     handleFormValues,
     handleBlur,
     setProfileImg,
-    handleSubmit,
   } = useSignUpForm();
+  const { signUp } = useLogin();
 
   return (
-    <form className={styles.form}>
+    <form
+      className={styles.form}
+      onSubmit={(e) => {
+        e.preventDefault();
+        signUp(formValues, profileImage);
+      }}
+    >
       <InputFileImg value={profileImage} setValue={setProfileImg} />
       {inputArr.map(({ id, type, label, placeholder }) => (
         <Input
@@ -45,19 +52,9 @@ export default function SignUpForm({ inputArr }: { inputArr: InputArr[] }) {
       ))}
 
       {isMobile ? (
-        <ButtonFixedBottom
-          type="submit"
-          text="회원가입"
-          disabled={!isSubmit}
-          onClick={handleSubmit}
-        />
+        <ButtonFixedBottom type="submit" text="회원가입" disabled={!isSubmit} />
       ) : (
-        <Button
-          type="submit"
-          size="lg"
-          disabled={!isSubmit}
-          onClick={handleSubmit}
-        >
+        <Button type="submit" size="lg" disabled={!isSubmit}>
           회원가입
         </Button>
       )}

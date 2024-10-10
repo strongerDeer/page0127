@@ -11,49 +11,29 @@ import styles from './ShelfPage.module.scss';
 import FollowButton from '@components/follow/FollowButton';
 import ProfileImage from '@components/shared/ProfileImage';
 import { DEFAULT_GOAL } from '@constants';
-import getUserCount, { getUid, getUser } from '@connect/user/user';
-
+import { getUser } from '@connect/user/user';
+import useUserCount from '@connect/user/useUserCount';
 import BarChart from '@components/my/BarChart';
 
-export default function ShelfPage({ pageId }: { pageId: string }) {
+export default function ShelfPage({ pageUid }: { pageUid: string }) {
+  const { data: userData } = useQuery(['users'], () => getUser(pageUid));
+
   const year = String(new Date().getFullYear());
-
-  const { data: uid } = useQuery(['uid', pageId], () => getUid(pageId), {
-    staleTime: Infinity, // uid는 잘 변경되지 않으므로 staleTime을 Infinity로 설정
-  });
-  const uidQuery = useQuery(['uid', pageId], () => getUid(pageId), {
-    staleTime: Infinity, // uid는 잘 변경되지 않으므로 staleTime을 Infinity로 설정
-  });
-
-  const { data: userData } = useQuery(
-    ['users', uid],
-    () => getUser(uidQuery.data as string),
-    {
-      enabled: !!uid, // uid가 있을 때만 이 쿼리 실행
-    },
-  );
-
-  const { data: counterData } = useQuery(
-    ['userCount', uid, year],
-    () => getUserCount(uidQuery.data as string, year),
-    {
-      enabled: !!uid, // uid가 있을 때만 이 쿼리 실행
-    },
-  );
+  const { data: counterData } = useUserCount(pageUid, year);
 
   return (
     <div>
       <Background />
       <div className={styles.wrap}>
         <div className={styles.left}>
-          {uid && <FollowButton pageUid={uid} />}
+          <FollowButton pageUid={pageUid} />
 
           <div className={styles.info}>
             <ProfileImage photoURL={userData?.photoURL as string} />
 
             <p className={styles.displayName}>{userData?.displayName}</p>
-            {userData?.intro && (
-              <p className={styles.intro}>{userData?.intro}</p>
+            {userData?.introduce && (
+              <p className={styles.intro}>{userData?.introduce}</p>
             )}
           </div>
 
@@ -65,14 +45,15 @@ export default function ShelfPage({ pageId }: { pageId: string }) {
             <p>
               <span>팔로잉</span> <strong>00</strong>
             </p>
-            {uid && <FollowButton pageUid={uid} />}
+
+            <FollowButton pageUid={pageUid} />
           </div>
           {userData && <ActionButtons userData={userData} />}
 
           <div>
             <ProgressBar
               value={Number(counterData?.books.length) || 0}
-              total={Number(userData?.goal) || DEFAULT_GOAL}
+              total={Number(userData?.currentGoal) || DEFAULT_GOAL}
             />
 
             <BarChart
@@ -100,7 +81,7 @@ export default function ShelfPage({ pageId }: { pageId: string }) {
           </div>
         </div>
 
-        {uid && <MyBooks pageUid={uid} />}
+        <MyBooks pageUid={pageUid} />
       </div>
     </div>
   );

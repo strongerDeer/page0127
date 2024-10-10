@@ -4,13 +4,14 @@ import Button from '@components/shared/Button';
 import { assignInlineVars } from '@vanilla-extract/dynamic';
 import { buttonStyle, variant_color } from './SocialButton.css';
 import useLogin from '@connect/sign/useLogin';
+import { SocialLoginType } from '@connect/user';
 
 export default function SocialButton({
   type,
   signUp,
   color,
 }: {
-  type: 'google' | 'github';
+  type: SocialLoginType;
   color?: string;
   signUp?: boolean;
 }) {

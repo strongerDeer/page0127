@@ -1,23 +1,26 @@
+export type SocialLoginType =
+  | 'password' // 이메일/비밀번호 인증
+  | 'google.com'
+  | 'github.com';
+
 export interface User {
   uid: string;
-  showId: string;
+  userId: string;
+  displayName: string;
+  photoURL: string | null;
+  introduce: string | null;
+  currentGoal: number;
+  bookCount: number;
+  followersCount: number;
+  followingCount: number;
   email: string;
-  displayName?: string;
-  photoURL?: string | null;
-
-  goal?: string;
-  intro?: string;
-
-  follower?: string[];
-  following?: string[];
-  total?: string[];
-  provider?: string | null;
-  category?: { [key: string]: string[] } | null;
+  createdAt: string;
+  provider: SocialLoginType;
 }
 
 export interface Profile {
   displayName: string;
   photoURL: string;
-  intro: string;
+  introduce: string;
   [key: string]: string;
 }

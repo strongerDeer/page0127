@@ -20,14 +20,14 @@ export const useEditProfileForm = () => {
   const { formValues, inputDirty, handleFormValues, handleBlur } =
     useForm<EditFormValues>({
       displayName: user?.displayName || '',
-      intro: user?.intro || '',
+      intro: user?.introduce || '',
     });
 
   const isProfileChanged = useMemo(() => {
     if (!user) return false;
     return (
       user.displayName !== formValues.displayName ||
-      user.intro !== formValues.intro ||
+      user.introduce !== formValues.introduce ||
       user.photoURL !== profileImage
     );
   }, [user, formValues, profileImage]);

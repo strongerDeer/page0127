@@ -89,7 +89,7 @@ export default function TemplateBookCreate({ bookId }: { bookId?: string }) {
         addBookInShelf(user.uid, bookData.id, { ...bookData, ...myData });
 
         toast.success('책장에 등록되었습니다!');
-        router.push(`/shelf/${user.showId}`);
+        router.push(`/shelf/${user.uid}`);
       } catch (error) {
         console.error('Error saving book:', error);
         toast.error('책 등록 중 오류가 발생했습니다.');

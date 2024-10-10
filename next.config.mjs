@@ -15,10 +15,8 @@ const nextConfig = {
       { protocol: 'https', hostname: 'image.aladin.co.kr' },
       { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
       { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
+      { protocol: 'https', hostname: 'avatars.githubusercontent.com' },
     ],
-  },
-  experimental: {
-    webVitalsAttribution: ['CLS', 'LCP'],
   },
 };
 

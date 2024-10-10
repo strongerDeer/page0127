@@ -42,7 +42,7 @@ export default function TemplateSettingGoal() {
       if (goal[currentYear] !== 0) {
         updateUserGoal(user?.uid, goal[currentYear]);
       }
-      router.push(`/shelf/${user?.showId}`);
+      router.push(`/shelf/${user?.uid}`);
     }
   };
 

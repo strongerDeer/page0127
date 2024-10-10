@@ -29,11 +29,11 @@ export default function MyPage() {
         <ProfileImage photoURL={user?.photoURL as string} />
         <p className={styles.displayName}>{user?.displayName}</p>
         <p className={styles.email}>{user?.email}</p>
-        {user?.intro && <p className={styles.intro}>{user?.intro}</p>}
+        {user?.introduce && <p className={styles.intro}>{user?.introduce}</p>}
 
         <ProgressBar
-          value={Number(user?.total?.length) || 0}
-          total={Number(user?.goal) || DEFAULT_GOAL}
+          value={Number(user?.bookCount) || 0}
+          total={Number(user?.currentGoal) || DEFAULT_GOAL}
         />
       </div>
       <div className={styles.btns}>

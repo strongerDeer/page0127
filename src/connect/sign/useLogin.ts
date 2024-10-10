@@ -18,10 +18,19 @@ import {
   updateProfile,
   UserCredential,
 } from 'firebase/auth';
-import { deleteDoc, doc, runTransaction } from 'firebase/firestore';
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  where,
+} from 'firebase/firestore';
 import { toast } from 'react-toastify';
 import { useSetRecoilState } from 'recoil';
-import { User } from '@connect/user';
+import { SocialLoginType } from '@connect/user';
 import { SignInFormValues, SignUpFormValues } from '.';
 import { getDownloadURL, ref, uploadString } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
@@ -29,14 +38,77 @@ import { useCallback } from 'react';
 import { useModalContext } from '@contexts/ModalContext';
 import useUser from '@connect/user/useUser';
 
-type SocialLoginType = 'google' | 'github';
-
 export default function useLogin() {
   const user = useUser();
   const router = useRouter();
-  const setUser = useSetRecoilState(userAtom);
   const { open, close } = useModalContext();
   const authUser = auth.currentUser;
+
+  const createUser = async (user: UserCredential['user']) => {
+    const { uid, displayName, email, photoURL } = user;
+
+    let baseId = email?.split('@')[0] || uid;
+    const userId = await getUserId(baseId);
+
+    try {
+      const userData = {
+        uid,
+        userId,
+        displayName: displayName,
+        photoURL: photoURL,
+        introduce: '',
+        currentGoal: 0,
+        bookCount: 0,
+        followersCount: 0,
+        followingCount: 0,
+        email: email,
+        createdAt: user.metadata.creationTime,
+        provider: user.providerData[0].providerId as SocialLoginType,
+      };
+
+      await setDoc(doc(store, `${COLLECTIONS.USER}/${uid}`), userData, {
+        merge: true,
+      });
+    } catch (error) {
+      console.error('Error creating user documents:', error);
+    }
+  };
+
+  // SNS 회원가입/로그인
+  const socialLogin = async (type: SocialLoginType) => {
+    const providerType =
+      type === 'google.com'
+        ? new GoogleAuthProvider()
+        : new GithubAuthProvider();
+
+    try {
+      const { user } = await signInWithPopup(auth, providerType);
+      const { uid, email } = user;
+
+      const counterDoc = await getDoc(doc(store, `${COLLECTIONS.USER}/${uid}`));
+
+      // 1. 저장된 유저
+      if (counterDoc.exists()) {
+        toast.success('로그인 되었습니다.');
+      } else {
+        const isEmailAvailable = await checkEmailAvailable(
+          email as string,
+          uid,
+        );
+        // 2. 이미 가입된 이메일
+        if (isEmailAvailable === 'unavailable') {
+          return toast.error(
+            '이미 사용중인 이메일이에요. 아이디/비밀번호를 입력해 로그인해주세요!',
+          );
+        }
+        // 3. 새로운 유저
+        createUser(user);
+        toast.success('가입되었습니다!');
+      }
+    } catch (error) {
+      socialLoginError(error);
+    }
+  };
 
   // email 회원가입
   const signUp = async (formValues: SignUpFormValues, profileImage: string) => {
@@ -51,43 +123,80 @@ export default function useLogin() {
       await updateProfile(user, { displayName });
       let photoURL =
         (await uploadProfileImage(user.uid, profileImage)) || user.photoURL;
-      const userData = await handleUserData({ ...user, photoURL });
-      router.push('/');
-      setUser(userData);
-      toast.success('가입되었습니다.');
-    } catch (error) {}
+      const userData = { ...user, displayName, photoURL };
+      createUser(userData);
+      toast.success('가입되었습니다!');
+    } catch (error) {
+      console.error('Sign up error:', error);
+      if (error instanceof FirebaseError) {
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            toast.error('이미 사용 중인 이메일입니다.');
+            break;
+          case 'auth/invalid-email':
+            toast.error('유효하지 않은 이메일 형식입니다.');
+            break;
+          case 'auth/weak-password':
+            toast.error('비밀번호가 너무 약합니다.');
+            break;
+          default:
+            toast.error('회원가입 중 오류가 발생했습니다.');
+        }
+      } else {
+        toast.error('회원가입 중 오류가 발생했습니다.');
+      }
+    }
   };
 
   // email 로그인
   const emailLogin = async (formValues: SignInFormValues) => {
     const { email, password } = formValues;
     try {
-      const { user } = await signInWithEmailAndPassword(auth, email, password);
-      const userData = await handleUserData(user);
-      router.push('/');
-      setUser(userData);
-      toast.success('로그인 되었습니다.');
+      await signInWithEmailAndPassword(auth, email, password);
+      toast.success('로그인되었습니다!');
     } catch (error) {
       emailLoginError(error);
     }
   };
 
-  // SNS 회원가입/로그인
-  const socialLogin = async (type: SocialLoginType) => {
-    const provider =
-      type === 'google' ? new GoogleAuthProvider() : new GithubAuthProvider();
+  const getUserId = async (baseId: string) => {
+    const counterDoc = await getDoc(
+      doc(store, `${COLLECTIONS.COUNTERS}/userIdCounter`),
+    );
+    let counter = 1;
 
-    try {
-      const { user } = await signInWithPopup(auth, provider);
-      const userData = await handleUserData(user);
-      router.push('/');
-      setUser(userData);
-      toast.success('로그인 되었습니다.');
-    } catch (error) {
-      socialLoginError(error);
+    if (counterDoc.exists()) {
+      const data = counterDoc.data();
+      counter = (data[baseId] || 0) + 1;
     }
+
+    let userId = counter === 1 ? baseId : `${baseId}${counter - 1}`;
+
+    await setDoc(
+      doc(store, `${COLLECTIONS.COUNTERS}/userIdCounter`),
+      { [baseId]: counter },
+      {
+        merge: true,
+      },
+    );
+
+    return userId;
   };
 
+  const checkEmailAvailable = async (email: string, uid: string) => {
+    if (!email) return;
+    const snapshot = await getDocs(
+      query(collection(store, COLLECTIONS.USER), where('email', '==', email)),
+    );
+
+    if (!snapshot.empty && uid !== snapshot.docs[0].id) {
+      return 'unavailable';
+    } else if (!snapshot.empty && uid === snapshot.docs[0].id) {
+      return 'myEmail';
+    } else {
+      return 'available';
+    }
+  };
   // 프로필 이미지 업데이트
   const uploadProfileImage = async (uid: string, profileImage: string) => {
     if (profileImage === '') return null;
@@ -96,59 +205,6 @@ export default function useLogin() {
     const storageRef = ref(storage, imgKey);
     const data = await uploadString(storageRef, profileImage, 'data_url');
     return await getDownloadURL(data?.ref);
-  };
-
-  const handleUserData = async (
-    user: UserCredential['user'],
-  ): Promise<User> => {
-    const baseId = user.email?.split('@')[0] || user.uid;
-    let userData: User = {
-      uid: user.uid,
-      showId: '',
-      email: user.email || '',
-      displayName: user.displayName || '',
-      photoURL: user.photoURL,
-      provider: user.providerData[0].providerId,
-    };
-
-    await runTransaction(store, async (transaction) => {
-      const userDoc = doc(store, COLLECTIONS.USER, user.uid);
-      const userSnap = await transaction.get(userDoc);
-
-      if (userSnap.exists()) {
-        const existingUser = userSnap.data() as User;
-        userData.showId = existingUser.showId;
-      } else {
-        const { showId, counter } = await generateUniqueShowId(
-          transaction,
-          baseId,
-        );
-        userData.showId = showId;
-
-        transaction.set(
-          doc(store, COLLECTIONS.COUNTERS, 'userIdCounter'),
-          { [baseId]: counter },
-          { merge: true },
-        );
-        transaction.set(userDoc, userData, { merge: true });
-      }
-    });
-
-    return userData;
-  };
-
-  const generateUniqueShowId = async (transaction: any, baseId: string) => {
-    const counterDoc = doc(store, COLLECTIONS.COUNTERS, 'userIdCounter');
-    const counterSnap = await transaction.get(counterDoc);
-
-    let counter = 1;
-    if (counterSnap.exists()) {
-      const data = counterSnap.data();
-      counter = (data[baseId] || 0) + 1;
-    }
-
-    const showId = counter === 1 ? baseId : `${baseId}${counter - 1}`;
-    return { showId, counter };
   };
 
   const emailLoginError = (error: unknown) => {
@@ -186,7 +242,6 @@ export default function useLogin() {
           router.push('/');
           setTimeout(() => {
             signOut(auth);
-            setUser(null);
           }, 300);
           toast.success('로그아웃 되었습니다!');
         } catch (error) {
@@ -198,7 +253,7 @@ export default function useLogin() {
         close();
       },
     });
-  }, [open, close, router, setUser]);
+  }, [open, close, router]);
 
   const deleteAccount = useCallback(
     ({
@@ -225,8 +280,6 @@ export default function useLogin() {
 
             await deleteDoc(doc(store, COLLECTIONS.USER, uid));
             await deleteUser(authUser);
-
-            setUser(null);
             toast.success('탈퇴 되었습니다!');
           } catch (error) {
             if (error instanceof FirebaseError) {
@@ -242,7 +295,7 @@ export default function useLogin() {
         },
       });
     },
-    [open, close, router, setUser, user, authUser],
+    [open, close, router, user, authUser],
   );
 
   const reauthenticateUser = useCallback(
