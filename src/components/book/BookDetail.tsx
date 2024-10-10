@@ -161,7 +161,7 @@ export default function BookDetail({ data }: { data: Book }) {
                 <p>완독일: {myBook?.readDate}</p>
               </div>
               {myBook?.memo && <p className={styles.memo}>{myBook?.memo}</p>}
-              <Button href={`/shelf/${user.uid}/${id}/edit`}>수정하기</Button>
+              <Button href={`/my/${id}/edit`}>수정하기</Button>
               <Button
                 variant="outline"
                 color="error"
