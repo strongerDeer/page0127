@@ -5,9 +5,9 @@ import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
 import useUser from '@connect/user/useUser';
-import getBookLike from './likeBook';
+import getFollowing from './follow';
 
-export default function useLikeBook() {
+export default function useFollowing() {
   const uid = useUser()?.uid;
   const client = useQueryClient();
 
@@ -15,12 +15,12 @@ export default function useLikeBook() {
     if (!uid) return;
     const unsubscribe = onSnapshot(
       query(
-        collection(store, `${COLLECTIONS.USER}/${uid}/like`),
-        orderBy('createdTime', 'desc'),
+        collection(store, `${COLLECTIONS.USER}/${uid}/following`),
+        orderBy('userId', 'desc'),
       ),
       (snapshot) => {
-        const newLike = snapshot.docs.map((doc) => doc.id);
-        client.setQueryData(['likeBooks'], newLike);
+        const newData = snapshot.docs.map((doc) => doc.id);
+        client.setQueryData(['following', uid], newData);
       },
     );
     return () => {
@@ -29,8 +29,8 @@ export default function useLikeBook() {
   }, [client, uid]);
 
   const { data } = useQuery(
-    ['likeBooks'],
-    () => getBookLike({ userId: uid as string }),
+    ['following', uid],
+    () => getFollowing({ uid: uid as string }),
     {
       enabled: !!uid,
     },

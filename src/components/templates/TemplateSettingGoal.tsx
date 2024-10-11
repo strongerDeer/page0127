@@ -38,11 +38,11 @@ export default function TemplateSettingGoal() {
     e.preventDefault();
 
     if (user?.uid) {
-      updateGoal({ userId: user?.uid, data: goal });
+      updateGoal({ uid: user?.uid, data: goal });
       if (goal[currentYear] !== 0) {
         updateUserGoal(user?.uid, goal[currentYear]);
       }
-      router.push(`/shelf/${user?.uid}`);
+      router.push(`/shelf/${user?.userId}`);
     }
   };
 

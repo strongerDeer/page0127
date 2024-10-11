@@ -8,26 +8,23 @@ import Background from '@components/shelf/Background';
 import { useQuery } from 'react-query';
 
 import styles from './ShelfPage.module.scss';
-import FollowButton from '@components/follow/FollowButton';
 import ProfileImage from '@components/shared/ProfileImage';
 import { DEFAULT_GOAL } from '@constants';
-import { getUser } from '@connect/user/user';
+import { getUserByUserId } from '@connect/user/user';
 import useUserCount from '@connect/user/useUserCount';
 import BarChart from '@components/my/BarChart';
 
-export default function ShelfPage({ pageUid }: { pageUid: string }) {
-  const { data: userData } = useQuery(['users'], () => getUser(pageUid));
+export default function ShelfPage({ userId }: { userId: string }) {
+  const { data: userData } = useQuery(['users'], () => getUserByUserId(userId));
 
   const year = String(new Date().getFullYear());
-  const { data: counterData } = useUserCount(pageUid, year);
+  const { data: counterData } = useUserCount(userData?.uid, year);
 
   return (
     <div>
       <Background />
       <div className={styles.wrap}>
         <div className={styles.left}>
-          <FollowButton pageUid={pageUid} />
-
           <div className={styles.info}>
             <ProfileImage photoURL={userData?.photoURL as string} />
 
@@ -39,16 +36,21 @@ export default function ShelfPage({ pageUid }: { pageUid: string }) {
 
           <div className={styles.follow}>
             <p>
-              <span>팔로워</span> <strong>00</strong>
+              <span>팔로워</span> <strong>{userData?.followersCount}</strong>
             </p>
             <span></span>
             <p>
-              <span>팔로잉</span> <strong>00</strong>
+              <span>팔로잉</span> <strong>{userData?.followingCount}</strong>
             </p>
-
-            <FollowButton pageUid={pageUid} />
           </div>
-          {userData && <ActionButtons userData={userData} />}
+          {userData && (
+            <ActionButtons
+              userId={userId}
+              uid={userData.uid}
+              displayName={userData.displayName}
+              photoURL={userData.displayName}
+            />
+          )}
 
           <div>
             <ProgressBar
@@ -81,7 +83,7 @@ export default function ShelfPage({ pageUid }: { pageUid: string }) {
           </div>
         </div>
 
-        <MyBooks pageUid={pageUid} />
+        <MyBooks uid={userData?.uid} userId={userId} />
       </div>
     </div>
   );

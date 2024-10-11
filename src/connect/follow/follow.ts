@@ -1,29 +1,19 @@
+import { User } from '@connect/user';
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
 import {
   collection,
-  deleteDoc,
   doc,
+  getDoc,
   getDocs,
   orderBy,
   query,
-  setDoc,
 } from 'firebase/firestore';
 
-export async function getFollower({ userId }: { userId: string }) {
+export default async function getFollowing({ uid }: { uid: string }) {
   const q = query(
-    collection(store, `${COLLECTIONS.USER}/${userId}/follower`),
-    orderBy('createdTime', 'desc'),
-  );
-  const snapshot = await getDocs(q);
-  const data = snapshot.docs.map((doc) => doc.id);
-
-  return data;
-}
-export async function getFollowing({ userId }: { userId: string }) {
-  const q = query(
-    collection(store, `${COLLECTIONS.USER}/${userId}/following`),
-    orderBy('createdTime', 'desc'),
+    collection(store, `${COLLECTIONS.USER}/${uid}/following`),
+    orderBy('userId', 'desc'),
   );
   const snapshot = await getDocs(q);
   const data = snapshot.docs.map((doc) => doc.id);
@@ -31,21 +21,31 @@ export async function getFollowing({ userId }: { userId: string }) {
   return data;
 }
 
-// 팔로우 토글
-export async function toggleFollow(bookId: string, userId: string) {
-  const q = query(collection(store, `${COLLECTIONS.USER}/${userId}/follow`));
+export async function getFollower({ uid }: { uid: string }) {
+  const q = query(
+    collection(store, `${COLLECTIONS.USER}/${uid}/follower`),
+    orderBy('userId', 'desc'),
+  );
   const snapshot = await getDocs(q);
   const data = snapshot.docs.map((doc) => doc.id);
 
-  if (data.includes(bookId)) {
-    deleteDoc(doc(store, `${COLLECTIONS.USER}/${userId}/follow/${bookId}`));
-  } else {
-    await setDoc(
-      doc(collection(store, `${COLLECTIONS.USER}/${userId}/follow`), bookId),
-      {
-        createdTime: new Date(),
-      },
-      { merge: true },
-    );
-  }
+  return data;
+}
+
+export async function getFilteredUser(array: string[]) {
+  const lists = array.filter((item) => !!item);
+
+  const promises = lists.map((uid) =>
+    getDoc(doc(collection(store, COLLECTIONS.USER), uid)),
+  );
+
+  const userSnapshot = await Promise.all(promises);
+  const data = userSnapshot
+    .filter((snapshot) => snapshot.exists())
+    .map((snapshot) => ({
+      id: snapshot.id,
+      ...(snapshot.data() as User),
+    }));
+
+  return data;
 }

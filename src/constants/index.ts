@@ -2,6 +2,8 @@ export const COLLECTIONS = {
   USER: 'users',
   PROFILE: 'user_profiles',
   COUNTERS: 'counters',
+  FOLLOWER: 'follower',
+  FOLLOWING: 'following',
   BANNERS: 'banners',
   BOOKS: 'books',
   BOOK_LIKE: 'book_like',

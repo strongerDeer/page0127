@@ -11,9 +11,15 @@ import { Book } from '@connect/book';
 import CategoryTab from './my/CategoryTab';
 import YearTab from './my/YearTab';
 
-export default function MyBooks({ pageUid }: { pageUid: string }) {
+export default function MyBooks({
+  uid,
+  userId,
+}: {
+  uid: string;
+  userId: string;
+}) {
   const nowYear = String(new Date().getFullYear());
-  const { data: book } = useMyBooks({ userId: pageUid });
+  const { data: book } = useMyBooks({ userId: uid });
   const latestBook = book?.filter(
     (book) => book.readDate && book.readDate > `${nowYear}-01-01`,
   ) as Book[];
@@ -31,8 +37,6 @@ export default function MyBooks({ pageUid }: { pageUid: string }) {
       [bookId]: '/images/no-book.jpg',
     }));
   };
-
-  console.log(book);
 
   useEffect(() => {
     let filteredBook = book as Book[];
@@ -66,7 +70,7 @@ export default function MyBooks({ pageUid }: { pageUid: string }) {
               className={book.grade === '10' ? styles.best : ''}
               key={book.id}
             >
-              <Link href={`/shelf/${pageUid}/${book.id}`}>
+              <Link href={`/shelf/${userId}/${book.id}`}>
                 {book.id && (
                   <Image
                     src={

@@ -4,13 +4,18 @@ import Script from 'next/script';
 import styles from './Button.module.scss';
 
 import Icon from './icon/Icon';
-import { User } from '@connect/user';
 declare global {
   interface Window {
     Kakao: any;
   }
 }
-export default function KakaoShareButton({ userData }: { userData: User }) {
+export default function KakaoShareButton({
+  displayName,
+  photoURL,
+}: {
+  displayName: string;
+  photoURL: string;
+}) {
   const share = useShare();
   return (
     <>
@@ -19,10 +24,10 @@ export default function KakaoShareButton({ userData }: { userData: User }) {
         title="카카오톡 공유하기"
         onClick={() => {
           share({
-            title: userData.displayName ?? '',
-            description: userData.displayName ?? '',
-            imageUrl: userData.photoURL || '',
-            buttonLabel: `${userData.displayName} 책장 구경하기`,
+            title: displayName,
+            description: displayName,
+            imageUrl: photoURL || '',
+            buttonLabel: `${displayName} 책장 구경하기`,
           });
         }}
       >

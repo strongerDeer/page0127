@@ -1,33 +1,37 @@
 import Button from '@components/shared/Button';
-import { COLLECTIONS } from '@constants';
-import { store } from '@firebase/firebaseApp';
 import useUser from '@connect/user/useUser';
-import {
-  arrayRemove,
-  arrayUnion,
-  collection,
-  doc,
-  setDoc,
-  updateDoc,
-} from 'firebase/firestore';
+import useFollow from '@connect/follow/useFollow';
 
-export default function FollowButton({ pageUid }: { pageUid: string }) {
-  const userId = useUser()?.uid;
+export default function FollowButton({
+  isFollowing,
+  uid,
+  userId,
+}: {
+  isFollowing: boolean;
+  uid: string;
+  userId: string;
+}) {
+  const myData = useUser();
+  const { toggleFollow } = useFollow();
 
-  if (pageUid === userId) {
+  if (uid === myData?.uid || !myData?.uid) {
     return null;
   }
-  const isFollowed = false;
-  const handleFollow = async () => {
-    if (!isFollowed) {
-      await setDoc(doc(collection(store, COLLECTIONS.USER), pageUid), {
-        follower: arrayUnion(userId),
-      });
-    } else {
-      await updateDoc(doc(collection(store, COLLECTIONS.USER), pageUid), {
-        follower: arrayRemove(userId),
-      });
-    }
-  };
-  return <Button onClick={handleFollow}>팔로우</Button>;
+
+  return (
+    <Button
+      onClick={() =>
+        toggleFollow({
+          targetUid: uid,
+          targetId: userId,
+          myUid: myData.uid,
+          myId: myData.userId,
+        })
+      }
+      variant={isFollowing ? 'outline' : 'solid'}
+      color={isFollowing ? 'error' : 'primary'}
+    >
+      {isFollowing ? '팔로우 취소' : '팔로우 하기'}
+    </Button>
+  );
 }

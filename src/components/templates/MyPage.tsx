@@ -13,8 +13,19 @@ import useReadBooks from '@hooks/useReadBooks';
 import useLikeBook from '@connect/like/useLikeBook';
 import useFilteredBook from '@connect/book/useFilteredBook';
 import useLogin from '@connect/sign/useLogin';
+import useFollowing from '@connect/follow/useFollowing';
+import useFilteredUser from '@connect/follow/useFilteredUser';
+import {
+  AlertContextValue,
+  AlertProps,
+  useAlertContext,
+} from '@contexts/AlertContext';
+import useFollower from '@connect/follow/useFollower';
+import { useRouter } from 'next/navigation';
+import FollowButton from '@components/follow/FollowButton';
 
 export default function MyPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('read');
   const user = useUser();
   const { logOut, deleteProviderAccount } = useLogin();
@@ -22,6 +33,14 @@ export default function MyPage() {
   const { data: likeData } = useLikeBook();
   const { data: readBook } = useReadBooks({ userId: user?.uid as string });
   const { data: likes } = useFilteredBook({ like: likeData || [] });
+
+  const { data: following } = useFollowing();
+  const { data: follower } = useFollower();
+
+  const { data: followingUsers } = useFilteredUser({ array: following || [] });
+  const { data: followerUsers } = useFilteredUser({ array: follower || [] });
+
+  console.log(followerUsers);
 
   return (
     <div className={styles.myPage}>
@@ -92,6 +111,22 @@ export default function MyPage() {
         >
           참여중인 모임
         </button>
+
+        <button
+          type="button"
+          className={activeTab === 'following' ? styles.active : ''}
+          onClick={() => setActiveTab('following')}
+        >
+          팔로잉 {following?.length}
+        </button>
+
+        <button
+          type="button"
+          className={activeTab === 'follower' ? styles.active : ''}
+          onClick={() => setActiveTab('follower')}
+        >
+          팔로워 {follower?.length}
+        </button>
       </div>
 
       <section className={styles.contents}>
@@ -99,8 +134,65 @@ export default function MyPage() {
           <BookList data={readBook} />
         ) : activeTab === 'like' ? (
           <BookList data={likes || []} />
-        ) : (
+        ) : activeTab === 'club' ? (
           <>참여중인 모임</>
+        ) : activeTab === 'follower' ? (
+          <>
+            {followerUsers && followerUsers.length > 0 ? (
+              <ul>
+                {followerUsers?.map((user) => (
+                  <li className="flex gap-4 align-center">
+                    <button
+                      onClick={() => {
+                        router.push(`/shelf/${user.userId}`);
+                      }}
+                    >
+                      <ProfileImage photoURL={user.photoURL || ''} width={40} />
+                    </button>
+                    <p>
+                      {user.userId}| {user.displayName}{' '}
+                    </p>
+
+                    <FollowButton
+                      isFollowing={following?.includes(user.uid) || false}
+                      uid={user.uid}
+                      userId={user.userId}
+                    />
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <>아직 팔로워하는 유저가 없어요</>
+            )}
+          </>
+        ) : (
+          <>
+            {followingUsers && followingUsers.length > 0 ? (
+              <ul>
+                {followingUsers?.map((user) => (
+                  <li className="flex gap-4 align-center">
+                    <button
+                      onClick={() => {
+                        router.push(`/shelf/${user.userId}`);
+                      }}
+                    >
+                      <ProfileImage photoURL={user.photoURL || ''} width={40} />
+                    </button>
+                    <p>
+                      {user.userId}| {user.displayName}{' '}
+                    </p>
+                    <FollowButton
+                      isFollowing={following?.includes(user.uid) || false}
+                      uid={user.uid}
+                      userId={user.userId}
+                    />
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <>아직 팔로우하는 유저가 없어요</>
+            )}
+          </>
         )}
         {/* {data && <BookList data={data} />} */}
       </section>
