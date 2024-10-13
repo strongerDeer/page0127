@@ -9,6 +9,7 @@ import {
   updateDoc,
   arrayRemove,
   increment,
+  where,
 } from 'firebase/firestore';
 import { store } from '@firebase/firebaseApp';
 
@@ -34,9 +35,16 @@ export async function getMyBooks(uid: string) {
   return data;
 }
 
-export async function getMyBook(uid: string, bookId: string) {
+export async function getMyBook(userId: string, bookId: string) {
+  const uid = await getDocs(
+    query(
+      collection(store, `${COLLECTIONS.USER}`),
+      where('userId', '==', userId),
+    ),
+  );
+
   const snapshot = await getDoc(
-    doc(store, `${COLLECTIONS.USER}/${uid}/book/${bookId}`),
+    doc(store, `${COLLECTIONS.USER}/${uid.docs[0].data().uid}/book/${bookId}`),
   );
 
   return {
@@ -50,28 +58,6 @@ export async function removeMyBook(
   data: Book,
   grade: string,
 ) {
-  let categoryText = '기타';
-  switch (data.category) {
-    case '컴퓨터/모바일':
-      categoryText = '컴퓨터모바일';
-      break;
-    case '소설/시/희곡':
-      categoryText = '소설시희곡';
-      break;
-    case '에세이':
-      categoryText = '에세이';
-      break;
-    case '경제경영':
-      categoryText = '경제경영';
-      break;
-    case '인문학':
-      categoryText = '인문학';
-      break;
-    case '자기계발':
-      categoryText = '자기계발';
-      break;
-  }
-
   const book = await getDoc(doc(collection(store, COLLECTIONS.BOOKS), bookId));
   const readUser = book.data()?.readUser;
 
@@ -88,9 +74,8 @@ export async function removeMyBook(
   }
   // 나의 정보
   await updateDoc(doc(collection(store, COLLECTIONS.USER), uid), {
-    [`category.${categoryText}`]: arrayRemove(bookId),
-    total: arrayRemove(bookId),
     currentBook: increment(-1),
+    totalBook: increment(-1),
   });
 
   // 나의 책 데이터 삭제

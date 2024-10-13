@@ -10,12 +10,13 @@ export default function CategoryTab({
 }) {
   const categories = [
     'All',
-    '컴퓨터모바일',
-    '소설시희곡',
+    '컴퓨터/모바일',
+    '소설/시/희곡',
     '에세이',
     '경제경영',
     '인문학',
     '자기계발',
+    '기타',
   ];
   return (
     <div>

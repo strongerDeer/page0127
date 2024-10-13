@@ -11,6 +11,7 @@ export interface User {
   introduce: string | null;
   currentGoal: number;
   currentBook: number;
+  totalBook: number;
   followersCount: number;
   followingCount: number;
   email: string;

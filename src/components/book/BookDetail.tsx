@@ -54,7 +54,7 @@ export default function BookDetail({ data }: { data: Book }) {
   const user = useUser();
 
   const { data: myBook } = useMyBook({
-    uid: user?.uid as string,
+    userId: user?.userId as string,
     bookId: id as string,
   });
 
@@ -116,7 +116,7 @@ export default function BookDetail({ data }: { data: Book }) {
 
             <div className={styles.bookInfo}>
               <h2>{title}</h2>
-              <h3>{subTitle}</h3>
+              {subTitle && <h3>{subTitle}</h3>}
               <p>{author}</p>
 
               <p>

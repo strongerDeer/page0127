@@ -60,6 +60,7 @@ export default function useLogin() {
         introduce: '',
         currentGoal: 0,
         currentBook: 0,
+        totalBook: 0,
         followersCount: 0,
         followingCount: 0,
         email: email as string,

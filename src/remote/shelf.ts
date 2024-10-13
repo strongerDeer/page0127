@@ -72,7 +72,7 @@ export async function addUserData(uid: string, bookData: Book, myData: MyData) {
 
     await setDoc(
       doc(store, `${COLLECTIONS.USER}/${uid}`),
-      { currentBook: increment(1) },
+      { currentBook: increment(1), totalBook: increment(1) },
       {
         merge: true,
       },

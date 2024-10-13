@@ -8,7 +8,10 @@ export default function Page({ params }: { params: { bookId: string } }) {
   const user = useUser();
   const { bookId } = params;
 
-  const { data } = useMyBook({ uid: user?.uid as string, bookId: bookId });
+  const { data } = useMyBook({
+    userId: user?.userId as string,
+    bookId: bookId,
+  });
 
   return (
     <div>

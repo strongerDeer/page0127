@@ -7,11 +7,11 @@ import useMyBook from '@components/book/useMyBook';
 export default function Page({
   params,
 }: {
-  params: { uid: string; bookId: string };
+  params: { userId: string; bookId: string };
 }) {
-  const { uid, bookId } = params;
+  const { userId, bookId } = params;
 
-  const { data, isLoading } = useMyBook({ uid, bookId });
+  const { data, isLoading } = useMyBook({ userId, bookId });
 
   if (!data || isLoading) {
     return <>Loading...</>;
@@ -19,7 +19,7 @@ export default function Page({
 
   return (
     <div>
-      <MyBookDetail data={data} />
+      <MyBookDetail bookId={bookId} data={data} />
     </div>
   );
 }

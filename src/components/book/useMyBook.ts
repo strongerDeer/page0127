@@ -2,17 +2,17 @@ import { getMyBook } from '@connect/mybook/mybook';
 import { useQuery } from 'react-query';
 
 export default function useMyBook({
-  uid,
+  userId,
   bookId,
 }: {
-  uid: string;
+  userId: string;
   bookId: string;
 }) {
   return useQuery(
-    [`${uid}-${bookId}`, uid, bookId],
-    () => getMyBook(uid, bookId),
+    [`${userId}-${bookId}`, userId, bookId],
+    () => getMyBook(userId, bookId),
     {
-      enabled: uid !== '' && bookId !== '',
+      enabled: userId !== '' && bookId !== '',
     },
   );
 }
