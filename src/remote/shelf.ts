@@ -7,6 +7,7 @@ import {
   collection,
   doc,
   getDoc,
+  increment,
   setDoc,
 } from 'firebase/firestore';
 
@@ -67,6 +68,14 @@ export async function addUserData(uid: string, bookData: Book, myData: MyData) {
         publisher: { [publisher]: arrayUnion(bookId) },
       },
       { merge: true },
+    );
+
+    await setDoc(
+      doc(store, `${COLLECTIONS.USER}/${uid}`),
+      { currentBook: increment(1) },
+      {
+        merge: true,
+      },
     );
   } catch (error) {
     console.error('유저 데이터 추가 에러:', error);

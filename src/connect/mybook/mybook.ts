@@ -8,6 +8,7 @@ import {
   deleteDoc,
   updateDoc,
   arrayRemove,
+  increment,
 } from 'firebase/firestore';
 import { store } from '@firebase/firebaseApp';
 
@@ -89,6 +90,7 @@ export async function removeMyBook(
   await updateDoc(doc(collection(store, COLLECTIONS.USER), uid), {
     [`category.${categoryText}`]: arrayRemove(bookId),
     total: arrayRemove(bookId),
+    currentBook: increment(-1),
   });
 
   // 나의 책 데이터 삭제

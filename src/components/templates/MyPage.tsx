@@ -51,7 +51,7 @@ export default function MyPage() {
         {user?.introduce && <p className={styles.intro}>{user?.introduce}</p>}
 
         <ProgressBar
-          value={Number(user?.bookCount) || 0}
+          value={Number(user?.currentBook) || 0}
           total={Number(user?.currentGoal) || DEFAULT_GOAL}
         />
       </div>

@@ -10,7 +10,7 @@ export interface User {
   photoURL: string | null;
   introduce: string | null;
   currentGoal: number;
-  bookCount: number;
+  currentBook: number;
   followersCount: number;
   followingCount: number;
   email: string;

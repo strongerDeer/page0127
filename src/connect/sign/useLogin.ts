@@ -59,7 +59,7 @@ export default function useLogin() {
         photoURL: photoURL,
         introduce: '',
         currentGoal: 0,
-        bookCount: 0,
+        currentBook: 0,
         followersCount: 0,
         followingCount: 0,
         email: email as string,
