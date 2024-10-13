@@ -141,7 +141,7 @@ export default function MyPage() {
             {followerUsers && followerUsers.length > 0 ? (
               <ul>
                 {followerUsers?.map((user) => (
-                  <li className="flex gap-4 align-center">
+                  <li key={user.id} className="flex gap-4 align-center">
                     <button
                       onClick={() => {
                         router.push(`/shelf/${user.userId}`);
@@ -170,7 +170,7 @@ export default function MyPage() {
             {followingUsers && followingUsers.length > 0 ? (
               <ul>
                 {followingUsers?.map((user) => (
-                  <li className="flex gap-4 align-center">
+                  <li key={user.id} className="flex gap-4 align-center">
                     <button
                       onClick={() => {
                         router.push(`/shelf/${user.userId}`);
