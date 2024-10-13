@@ -31,7 +31,7 @@ export default function MyEditPage() {
   const user = useUser();
   const router = useRouter();
 
-  if (user?.provider) {
+  if (user?.provider !== 'password') {
     router.replace('/my');
   } else {
     return <TemplateEditPassword inputArr={inputArr} />;
