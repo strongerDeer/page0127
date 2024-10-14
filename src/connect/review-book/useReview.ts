@@ -1,6 +1,6 @@
-import { getReviews, removeReview, writeReview } from '@remote/review';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import useUser from '@connect/user/useUser';
+import { getReviews, removeReview, writeReview } from './review';
 
 export function useReview({ bookId }: { bookId: string }) {
   const user = useUser();
@@ -15,7 +15,8 @@ export function useReview({ bookId }: { bookId: string }) {
       const newReview = {
         createdAt: new Date(),
         bookId,
-        userId: user?.uid as string,
+        uid: user?.uid as string,
+        userId: user?.userId as string,
         text,
       };
 

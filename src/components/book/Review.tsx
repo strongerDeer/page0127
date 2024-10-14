@@ -4,7 +4,7 @@ import Button from '@components/shared/Button';
 import ProfileImage from '@components/shared/ProfileImage';
 import { Skeleton } from '@components/shared/Skeleton';
 import useUser from '@connect/user/useUser';
-import { useReview } from '@hooks/useReview';
+
 import { differenceInDays, format, formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
@@ -17,7 +17,7 @@ import {
 } from '@contexts/ModalContext';
 import { toast } from 'react-toastify';
 import CommentLikeButton from './CommentLikeButton';
-import useCommentLike from '@connect/commentLike/useCommentLike';
+import { useReview } from '@connect/review-book/useReview';
 
 function formatRelativeTime(date: Date) {
   const now = new Date();
@@ -75,7 +75,7 @@ export default function Review({ bookId }: { bookId: string }) {
             </div>
 
             <CommentLikeButton commentId={review.id} />
-            {review.userId === user?.uid && (
+            {review.uid === user?.uid && (
               <button
                 onClick={() => {
                   modalOpen({

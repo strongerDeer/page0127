@@ -1,10 +1,9 @@
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useState } from 'react';
 import Input from '@components/form/Input';
 import Button from '@components/shared/Button';
 import ProfileImage from '@components/shared/ProfileImage';
 import { Skeleton } from '@components/shared/Skeleton';
 import useUser from '@connect/user/useUser';
-import { useReview } from '@hooks/useReview';
 import { differenceInDays, format, formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
@@ -18,7 +17,7 @@ import {
 import { toast } from 'react-toastify';
 import CommentLikeButton from './CommentLikeButton';
 import useGetUid from '@connect/user/useGetUid';
-import { useShelfReview } from '@hooks/useShelfReview';
+import { useShelfReview } from '@connect/review-shelf/useShelfReview';
 
 function formatRelativeTime(date: Date) {
   const now = new Date();
@@ -119,7 +118,7 @@ export default function MyReview({
         ))}
       </ul>
     );
-  }, [reviews, user?.uid, modalOpen, modalClose, remove]);
+  }, [reviews, user?.uid, modalOpen, modalClose, remove, targetUser?.uid]);
 
   return (
     <div className={styles.review}>

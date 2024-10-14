@@ -1,6 +1,10 @@
-import { getShelfReviews, removeReview, writeReview } from '@remote/review';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import useUser from '@connect/user/useUser';
+import {
+  getShelfReviews,
+  removeShelfReview,
+  writeShelfReview,
+} from './shelfReview';
 
 export function useShelfReview({
   shelfUid,
@@ -27,7 +31,7 @@ export function useShelfReview({
         text,
       };
 
-      await writeReview(newReview);
+      await writeShelfReview(newReview);
 
       return true;
     },
@@ -48,7 +52,7 @@ export function useShelfReview({
       reviewId: string;
       bookId: string;
     }) => {
-      return removeReview({ uid, reviewId, bookId });
+      return removeShelfReview({ uid, reviewId, bookId });
     },
     {
       onSuccess: () => {
