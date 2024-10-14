@@ -20,11 +20,13 @@ import clsx from 'clsx';
 import Button from '@components/shared/Button';
 import Icon from '@components/icon/Icon';
 import useBook from '@hooks/useBook';
-import Review from './Review';
+import MyReview from './MyReview';
 export default function MyBookDetail({
+  userId,
   bookId,
   data,
 }: {
+  userId: string;
   bookId: string;
   data: Book;
 }) {
@@ -181,7 +183,7 @@ export default function MyBookDetail({
               삭제
             </button>
           )}
-          {bookId && <Review bookId={bookId} />}
+          {bookId && <MyReview userId={userId} bookId={bookId} />}
         </div>
       </div>
     </>

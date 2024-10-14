@@ -19,7 +19,7 @@ export default function Page({
 
   return (
     <div>
-      <MyBookDetail bookId={bookId} data={data} />
+      <MyBookDetail userId={userId} bookId={bookId} data={data} />
     </div>
   );
 }
