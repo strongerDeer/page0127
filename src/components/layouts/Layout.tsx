@@ -1,20 +1,24 @@
 'use client';
 
-// query
+import { useReportWebVitals } from 'next/web-vitals';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import { RecoilRoot } from 'recoil';
 
 // toast
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 // context
-// import { AuthContextProvider } from '@contexts/AuthContext';
-// import { ModalContextProvider } from '@contexts/ModalContext';
-// import { AlertContextProvider } from '@contexts/AlertContext';
+import { AlertContextProvider } from '@contexts/AlertContext';
+import { ModalContextProvider } from '@contexts/ModalContext';
+import { ThemeProvider } from '@contexts/ThemeContext';
 
 // components
 import Header from './Header';
 import Footer from './Footer';
+import AuthGuard from '@components/auth/AuthGuard';
+
+import styles from './Layout.module.scss';
 
 const client = new QueryClient({
   defaultOptions: {
@@ -25,13 +29,6 @@ const client = new QueryClient({
   },
 });
 
-import styles from './Layout.module.scss';
-import { RecoilRoot } from 'recoil';
-import AuthGuard from '@components/auth/AuthGuard';
-import { AlertContextProvider } from '@contexts/AlertContext';
-import { ModalContextProvider } from '@contexts/ModalContext';
-import { useReportWebVitals } from 'next/web-vitals';
-
 export default function Layout({ children }: { children: React.ReactNode }) {
   useReportWebVitals((metric) => {
     console.log(metric);
@@ -41,18 +38,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <RecoilRoot>
       <AuthGuard>
         <ToastContainer />
-        <AlertContextProvider>
-          <ModalContextProvider>
-            <QueryClientProvider client={client}>
-              <div id="root-portal"></div>
-              <div className={styles.layout}>
-                <Header />
-                <div className={styles.layout__contents}>{children}</div>
-                <Footer />
-              </div>
-            </QueryClientProvider>
-          </ModalContextProvider>
-        </AlertContextProvider>
+        <ThemeProvider>
+          <AlertContextProvider>
+            <ModalContextProvider>
+              <QueryClientProvider client={client}>
+                <div id="root-portal"></div>
+                <div className={styles.layout}>
+                  <Header />
+                  <div className={styles.layout__contents}>{children}</div>
+                  <Footer />
+                </div>
+              </QueryClientProvider>
+            </ModalContextProvider>
+          </AlertContextProvider>
+        </ThemeProvider>
       </AuthGuard>
     </RecoilRoot>
   );

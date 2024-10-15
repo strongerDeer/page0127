@@ -1,3 +1,4 @@
+import Script from 'next/script';
 import type { Metadata } from 'next';
 import { pretendard } from '@font';
 import '@styles/theme.scss';
@@ -35,6 +36,19 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko-KR" className={pretendard.className}>
+      <head>
+        <Script strategy="beforeInteractive">
+          {`
+            (function() {
+              function getInitialTheme() {
+                const storedTheme = localStorage.getItem('theme');
+                return storedTheme || 'light'
+              }
+              document.documentElement.dataset.theme = getInitialTheme()
+            })()
+          `}
+        </Script>
+      </head>
       <body>
         <Layout>{children}</Layout>
       </body>
