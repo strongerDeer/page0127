@@ -1,91 +1,102 @@
+//
+
 'use client';
-import { useState } from 'react';
+import { ChangeEvent, useCallback, useMemo, useState } from 'react';
 import Input from './Input';
-import { getBookInfo, getSearchBook } from '@remote/aladin';
 import { useQuery } from 'react-query';
+import { getBookInfo, getSearchBook } from '@connect/aladin/aladin';
 import Image from 'next/image';
 import { Book } from '@connect/book';
+import { debounce } from 'lodash';
+import { AladinBook } from '@connect/aladin';
+import Loading from '@components/Loading';
 
-interface AladinBook {
-  title: string;
-  link: string;
-  author: string;
-  pubDate: string;
-  description: string;
-  isbn: string;
-  isbn13: string;
-  itemId: number;
-  priceSales: number;
-  priceStandard: number;
-  mallType: string;
-  stockStatus: string;
-  mileage: number;
-  cover: string;
-  categoryId: number;
-  categoryName: string;
-  publisher: string;
-  salesPoint: number;
-  adult: false;
-  fixedPrice: true;
-  customerReviewRank: number;
-  subInfo: any;
-}
-
-interface SearchBookProps {
+export default function SearchBook({
+  setBookData,
+}: {
   setBookData: React.Dispatch<React.SetStateAction<Book>>;
-}
-
-export default function SearchBook({ setBookData }: SearchBookProps) {
+}) {
   const [keyword, setKeyword] = useState<string>('');
+  const [debouncedKeyword, setDebounceKeyword] = useState('');
 
-  const { data: books, isLoading } = useQuery(
-    [keyword],
-    () => getSearchBook(keyword),
+  const debouncedSearch = useMemo(
+    () => debounce((keyword) => setDebounceKeyword(keyword), 300),
+    [],
+  );
+
+  const handleSearchChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setKeyword(value);
+      debouncedSearch(value);
+    },
+    [debouncedSearch],
+  );
+
+  const {
+    data: books,
+    isLoading,
+    isError,
+    error,
+  } = useQuery(
+    ['search-books', debouncedKeyword],
+    () => getSearchBook(debouncedKeyword),
     {
-      enabled: !!keyword,
+      enabled: !!debouncedKeyword,
     },
   );
 
+  // 에러 메시지를 안전하게 추출하는 함수
+  const getErrorMessage = (error: unknown): string => {
+    if (error instanceof Error) return error.message;
+    return String(error);
+  };
+
   const inputImgData = async (book: AladinBook) => {
-    const {
-      isbn,
-      title,
-      cover,
-      author,
-      publisher,
-      pubDate,
-      description,
-      categoryName,
-      priceStandard,
-    } = book;
+    try {
+      const {
+        isbn,
+        title,
+        cover,
+        author,
+        publisher,
+        pubDate,
+        description,
+        categoryName,
+        priceStandard,
+      } = book;
 
-    const imgArr = cover.split('cover200');
+      const imgArr = cover.split('cover200');
 
-    const data = await getBookInfo(isbn);
-    const subTitle = data?.[0]?.subInfo?.subTitle ?? null;
-    const itemPage = data?.[0]?.subInfo?.itemPage ?? null;
+      const data = await getBookInfo(isbn);
+      const subTitle = data?.[0]?.subInfo?.subTitle ?? null;
+      const itemPage = data?.[0]?.subInfo?.itemPage ?? null;
 
-    setBookData((prev) => ({
-      ...prev,
-      id: isbn,
-      title: title.split('-')[0].trim(),
-      subTitle: subTitle,
-      frontCover: `${imgArr[0]}cover500${imgArr[1]}`,
-      flipCover: `${imgArr[0]}spineflip${imgArr[1].split('_')[0]}_d.jpg`,
+      setBookData((prev) => ({
+        ...prev,
+        id: isbn,
+        title: title.split('-')[0].trim(),
+        subTitle: subTitle,
+        frontCover: `${imgArr[0]}cover500${imgArr[1]}`,
+        flipCover: `${imgArr[0]}spineflip${imgArr[1].split('_')[0]}_d.jpg`,
 
-      author: author.split('(지은이)')[0].trim(),
-      publisher: publisher,
-      pubDate: pubDate,
-      description: description,
+        author: author.split('(지은이)')[0].trim(),
+        publisher: publisher,
+        pubDate: pubDate,
+        description: description,
 
-      categoryName: categoryName,
+        categoryName: categoryName,
 
-      category: categoryName.split('>')[1],
+        category: categoryName.split('>')[1],
 
-      page: itemPage,
-      price: priceStandard ?? null,
-    }));
-    setKeyword('');
+        page: itemPage,
+        price: priceStandard ?? null,
+      }));
+      setKeyword('');
+      setDebounceKeyword('');
+    } catch (error) {
+      console.error('Error updating book data:', error);
+    }
   };
 
   return (
@@ -96,28 +107,31 @@ export default function SearchBook({ setBookData }: SearchBookProps) {
         name="search"
         type="search"
         value={keyword}
+        onChange={handleSearchChange}
         placeholder="어떤 책을 읽었나요?"
-        setValue={setKeyword}
+        maxLength={50}
       />
-
-      {isLoading ? (
-        <>loading....</>
-      ) : books ? (
-        books.length > 0 ? (
-          <ul>
-            {books.map((book: AladinBook) => (
-              <li key={book.isbn}>
-                <button type="button" onClick={() => inputImgData(book)}>
-                  <Image src={book.cover} width={80} height={80} alt="" />
-                  {book.title} | {book.author} | {book.publisher}
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>{keyword}에 대한 검색결과가 없습니다.</p>
-        )
-      ) : null}
+      {isLoading && <Loading />}
+      {isError && <div>오류: {getErrorMessage(error)}</div>}
+      {books && books.length > 0 && (
+        <ul>
+          {books.map((book: AladinBook) => (
+            <li key={book.isbn}>
+              <button type="button" onClick={() => inputImgData(book)}>
+                <Image
+                  src={book.cover}
+                  width={80}
+                  height={80}
+                  style={{ width: 'auto', height: 'auto' }}
+                  alt=""
+                />
+                {book.title} | {book.author} | {book.publisher}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {books && books.length === 0 && <>검색결과가 없습니다.</>}
     </>
   );
 }
