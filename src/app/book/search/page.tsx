@@ -4,8 +4,9 @@ import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import Input from '@components/form/Input';
 import { useQuery } from 'react-query';
 import BookList from '@components/book/BookList';
-import { getSearchBooks } from '@remote/book';
+
 import useDebounce from '@hooks/useDebounce';
+import { getSearchBooks } from '@connect/book/books';
 
 export default function Page() {
   const [keyword, setKeyword] = useState<string>('');

@@ -1,10 +1,11 @@
 'use client';
 import { useQuery, useQueryClient } from 'react-query';
-import { getBooks } from '@remote/book';
+
 import { useEffect } from 'react';
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
+import { getBooks } from '@connect/book/books';
 
 export default function useBooks() {
   const client = useQueryClient();

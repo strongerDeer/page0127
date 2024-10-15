@@ -1,9 +1,10 @@
 import type { Metadata, ResolvingMetadata } from 'next';
 import BookDetailPage from '@components/templates/BookDetailPage';
-import { getBook } from '@remote/book';
+
 import { collection, getDocs, query } from 'firebase/firestore';
 import { store } from '@firebase/firebaseApp';
 import { COLLECTIONS } from '@constants';
+import { getBook } from '@connect/book/books';
 
 type Props = {
   params: { id: string };
