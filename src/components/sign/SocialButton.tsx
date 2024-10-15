@@ -27,7 +27,7 @@ export default function SocialButton({
       })}
       className={buttonStyle({ variant: 'outline' })}
     >
-      {type} {signUp ? '회원가입' : '로그인'}
+      {type.split('.')[0]} {signUp ? '회원가입' : '로그인'}
     </Button>
   );
 }

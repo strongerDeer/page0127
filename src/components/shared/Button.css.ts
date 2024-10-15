@@ -21,9 +21,7 @@ export const buttonStyle = recipe({
       backgroundColor: 'var(--grayLv2)',
       color: 'var(--grayLv3)',
     },
-    '& + button': {
-      marginLeft: '0.4rem',
-    },
+
     '& svg': {
       maxHeight: '1.3em',
       aspectRatio: '1/1',
