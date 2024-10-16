@@ -57,6 +57,7 @@ export default function useLogin() {
         userId,
         displayName: displayName,
         photoURL: photoURL,
+        backgroundURL: '',
         introduce: '',
         currentGoal: 0,
         currentBook: 0,

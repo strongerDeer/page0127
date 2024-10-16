@@ -175,7 +175,6 @@ export default function BookDetail({ data }: { data: Book }) {
                       removeMyBook(
                         user.uid,
                         id as string,
-                        data,
                         myBook?.grade as string,
                       );
                       modalClose();

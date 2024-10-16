@@ -7,7 +7,7 @@ import Button from '@components/shared/Button';
 
 import { Book } from '@connect/book';
 import useUser from '@connect/user/useUser';
-import { addBook, addBookInShelf, addUserData } from '@remote/shelf';
+import { addBook, addBookInShelf, updateUserData } from '@remote/shelf';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 
@@ -83,13 +83,13 @@ export default function TemplateBookEdit({
     try {
       // 전체 책 추가
       addBook(uid, bookId, data, myData);
-
+      console.log('1111');
       // count 데이터 저장하기
-      addUserData(uid, data, myData);
-
+      updateUserData(uid, data, myData);
+      console.log('2222');
       // 내 책장에 저장하기
       addBookInShelf(uid, bookId, { ...data, ...myData });
-
+      console.log('3333');
       toast.success('수정 되었습니다!');
       router.push(`/shelf/${user?.userId}`);
     } catch (error) {

@@ -3,6 +3,7 @@ import { COLLECTIONS } from '@constants';
 import { store } from '@firebase/firebaseApp';
 import { Book } from '@connect/book';
 import {
+  arrayRemove,
   arrayUnion,
   collection,
   doc,
@@ -45,9 +46,9 @@ export async function addBookInShelf(uid: string, bookId: string, data: Book) {
     throw error;
   }
 }
-
 // 년도별, 카테고리별, 점수별, 출판사 데이터 추가
 export async function addUserData(uid: string, bookData: Book, myData: MyData) {
+  console.log('😀___', bookData);
   const { category, publisher, id: bookId } = bookData;
   const { readDate, grade } = myData;
 
@@ -58,13 +59,18 @@ export async function addUserData(uid: string, bookData: Book, myData: MyData) {
       collection(store, `${COLLECTIONS.USER}/${uid}/total`),
       year,
     );
+
     await setDoc(
       totalQuery,
       {
         books: arrayUnion(bookId),
-        month: { [month]: arrayUnion(bookId) },
+        month: {
+          [month]: arrayUnion(bookId),
+        },
         category: { [category.replaceAll('/', '')]: arrayUnion(bookId) },
-        grade: { [grade]: arrayUnion(bookId) },
+        grade: {
+          [grade]: arrayUnion(bookId),
+        },
         publisher: { [publisher]: arrayUnion(bookId) },
       },
       { merge: true },
@@ -77,6 +83,80 @@ export async function addUserData(uid: string, bookData: Book, myData: MyData) {
         merge: true,
       },
     );
+  } catch (error) {
+    console.error('유저 데이터 추가 에러:', error);
+    throw error;
+  }
+}
+// 년도별, 카테고리별, 점수별, 출판사 데이터 추가
+export async function updateUserData(
+  uid: string,
+  bookData: Book,
+  myData: MyData,
+) {
+  const {
+    category,
+    publisher,
+    id: bookId,
+    readDate: prevReadDate,
+    grade: prevGrade,
+  } = bookData;
+  const { readDate, grade } = myData;
+
+  const [prevYear, prevMonth] = (prevReadDate as string).split('-');
+  const [year, month] = readDate.split('-');
+
+  try {
+    const totalQuery = doc(
+      collection(store, `${COLLECTIONS.USER}/${uid}/total`),
+      year,
+    );
+
+    const prevTotalQuery = doc(
+      collection(store, `${COLLECTIONS.USER}/${uid}/total`),
+      prevYear,
+    );
+
+    await setDoc(
+      prevTotalQuery,
+      {
+        books: arrayRemove(bookId),
+        month: {
+          [prevMonth]: arrayRemove(bookId),
+        },
+        category: { [category.replaceAll('/', '')]: arrayRemove(bookId) },
+        grade: {
+          [prevGrade as string]: arrayRemove(bookId),
+        },
+        publisher: { [publisher]: arrayRemove(bookId) },
+      },
+      { merge: true },
+    );
+
+    await setDoc(
+      totalQuery,
+      {
+        books: arrayUnion(bookId),
+        month: {
+          [month]: arrayUnion(bookId),
+        },
+        category: { [category.replaceAll('/', '')]: arrayUnion(bookId) },
+        grade: {
+          [grade]: arrayUnion(bookId),
+        },
+        publisher: { [publisher]: arrayUnion(bookId) },
+      },
+      { merge: true },
+    );
+
+    await setDoc(
+      doc(store, `${COLLECTIONS.USER}/${uid}`),
+      { currentBook: increment(1), totalBook: increment(1) },
+      {
+        merge: true,
+      },
+    );
+    console.log('😀😀😀😀😀😀');
   } catch (error) {
     console.error('유저 데이터 추가 에러:', error);
     throw error;

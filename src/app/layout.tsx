@@ -37,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="ko-KR" data-theme="auto" className={pretendard.className}>
       <head>
-        <Script strategy="beforeInteractive">
+        <Script id="theme" strategy="beforeInteractive">
           {`
             (function() {
               function getInitialTheme() {

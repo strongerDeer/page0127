@@ -52,12 +52,7 @@ export async function getMyBook(userId: string, bookId: string) {
   };
 }
 
-export async function removeMyBook(
-  uid: string,
-  bookId: string,
-  data: Book,
-  grade: string,
-) {
+export async function removeMyBook(uid: string, bookId: string, grade: string) {
   const book = await getDoc(doc(collection(store, COLLECTIONS.BOOKS), bookId));
   const readUser = book.data()?.readUser;
 
