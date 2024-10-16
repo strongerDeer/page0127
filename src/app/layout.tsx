@@ -35,14 +35,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko-KR" className={pretendard.className}>
+    <html lang="ko-KR" data-theme="auto" className={pretendard.className}>
       <head>
         <Script strategy="beforeInteractive">
           {`
             (function() {
               function getInitialTheme() {
                 const storedTheme = localStorage.getItem('theme');
-                return storedTheme || 'light'
+                return storedTheme || 'auto'
               }
               document.documentElement.dataset.theme = getInitialTheme()
             })()

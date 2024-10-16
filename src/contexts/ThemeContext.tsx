@@ -10,7 +10,7 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  let [theme, setTheme] = useState<string>('light');
+  let [theme, setTheme] = useState<string>('auto');
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('theme');
