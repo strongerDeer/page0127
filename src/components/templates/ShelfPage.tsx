@@ -13,16 +13,16 @@ import { DEFAULT_GOAL } from '@constants';
 import { getUserByUserId } from '@connect/user/user';
 import useUserCount from '@connect/user/useUserCount';
 import BarChart from '@components/my/BarChart';
+import useGetUser from '@connect/user/useGetUser';
 
 export default function ShelfPage({ userId }: { userId: string }) {
-  const { data: userData } = useQuery(['users'], () => getUserByUserId(userId));
-
+  const { data: userData } = useGetUser(userId);
   const year = String(new Date().getFullYear());
   const { data: counterData } = useUserCount(userData?.uid, year);
 
   return (
     <div>
-      <Background />
+      <Background backgroundURL={userData?.backgroundURL} />
       <div className={styles.wrap}>
         <div className={styles.left}>
           <div className={styles.info}>

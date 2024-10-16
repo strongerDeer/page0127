@@ -15,6 +15,9 @@ export const useEditProfileForm = () => {
   const user = useUser();
   const router = useRouter();
   const [profileImage, setProfileImg] = useState<string>(user?.photoURL || '');
+  const [backgroundImage, setBackgroundImg] = useState<string>(
+    user?.backgroundURL || '',
+  );
   const { edit } = EditProfile();
 
   const { formValues, inputDirty, handleFormValues, handleBlur } =
@@ -28,9 +31,10 @@ export const useEditProfileForm = () => {
     return (
       user.displayName !== formValues.displayName ||
       user.introduce !== formValues.introduce ||
-      user.photoURL !== profileImage
+      user.photoURL !== profileImage ||
+      user.backgroundURL !== backgroundImage
     );
-  }, [user, formValues, profileImage]);
+  }, [user, formValues, profileImage, backgroundImage]);
 
   const errors = useMemo(() => editProfileValidate(formValues), [formValues]);
   const isSubmit = Object.keys(errors).length === 0 && isProfileChanged;
@@ -38,7 +42,7 @@ export const useEditProfileForm = () => {
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     try {
-      await edit(formValues, profileImage);
+      await edit(formValues, profileImage, backgroundImage);
       toast.success('수정되었습니다.');
       router.push('/my');
     } catch (error) {
@@ -61,5 +65,7 @@ export const useEditProfileForm = () => {
     handleSubmit,
     profileImage,
     setProfileImg,
+    backgroundImage,
+    setBackgroundImg,
   };
 };

@@ -8,6 +8,7 @@ export interface User {
   userId: string;
   displayName: string | null;
   photoURL: string | null;
+  backgroundURL: string | null;
   introduce: string | null;
   currentGoal: number;
   currentBook: number;

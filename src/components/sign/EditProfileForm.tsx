@@ -5,9 +5,9 @@ import Button from '@components/shared/Button';
 import ButtonFixedBottom from '@components/shared/ButtonFixedBottom';
 import Input from '@components/form/Input';
 import InputFileImg from '@components/form/InputFileImg';
-import { useEditProfileForm } from '@hooks/useEditProfileForm';
 import useUser from '@connect/user/useUser';
 import { InputArr } from '@connect/sign';
+import { useEditProfileForm } from '@connect/profile/useEditProfileForm';
 
 export default function EditProfileForm({
   inputArr,
@@ -27,11 +27,17 @@ export default function EditProfileForm({
     handleBlur,
     setProfileImg,
     handleSubmit,
+    backgroundImage,
+    setBackgroundImg,
   } = useEditProfileForm();
 
   return (
     <form className={styles.form}>
-      <InputFileImg value={profileImage} setValue={setProfileImg} />
+      <InputFileImg
+        id="profile"
+        value={profileImage}
+        setValue={setProfileImg}
+      />
       <Input label="이메일" value={user?.email} disabled />
       {inputArr.map(({ id, type, label, placeholder }) => (
         <Input
@@ -50,6 +56,12 @@ export default function EditProfileForm({
           onBlur={handleBlur}
         />
       ))}
+
+      <InputFileImg
+        id="background"
+        value={backgroundImage}
+        setValue={setBackgroundImg}
+      />
 
       {isMobile ? (
         <ButtonFixedBottom

@@ -1,5 +1,5 @@
 'use client';
-import { collection, doc, updateDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
 import {
   deleteObject,
   getDownloadURL,
@@ -22,14 +22,22 @@ import { SignUpFormValues } from '@connect/sign';
 export default function EditProfile() {
   const user = useUser();
   const setUser = useSetRecoilState(userAtom);
-  const edit = async (formValues: SignUpFormValues, profileImage: string) => {
+  const edit = async (
+    formValues: SignUpFormValues,
+    profileImage: string,
+    backgroundImage: string,
+  ) => {
     if (auth.currentUser) {
       // 기존 이미지 삭제
       if (user?.photoURL !== profileImage) {
         deleteImageInStorage(user?.photoURL as string);
       }
+      if (user?.backgroundURL !== backgroundImage) {
+        deleteImageInStorage(user?.backgroundURL as string);
+      }
       // 프로필 이미지 경로 생성
       let photoURL = user?.photoURL;
+      let backgroundURL = user?.backgroundURL;
 
       if (user?.photoURL !== null && profileImage === '') {
         photoURL = null;
@@ -43,19 +51,41 @@ export default function EditProfile() {
         photoURL = await getDownloadURL(data?.ref);
       }
 
+      if (user?.backgroundURL !== null && backgroundImage === '') {
+        backgroundURL = null;
+      } else if (
+        backgroundImage !== '' &&
+        user?.backgroundURL !== backgroundImage
+      ) {
+        // 1. 이미지 키 생성
+        const imgKey = `${auth.currentUser.uid}/${uuidv4()}`;
+
+        // 2. firebase storage에 이미지 저장
+        const storageRef = ref(storage, imgKey);
+        const data = await uploadString(
+          storageRef,
+          backgroundImage,
+          'data_url',
+        );
+        backgroundURL = await getDownloadURL(data?.ref);
+      }
+
       // 기본 로그인 업데이트
       await updateProfile(auth.currentUser, {
         displayName: formValues.displayName,
         photoURL: photoURL,
       });
+
       // users 정보 업데이트
-      await updateDoc(
+      await setDoc(
         doc(collection(store, COLLECTIONS.USER), auth.currentUser.uid),
         {
           displayName: formValues.displayName,
-          introduce: formValues.introduce,
+          introduce: formValues.introduce || '',
           photoURL: photoURL,
+          backgroundURL: backgroundURL,
         },
+        { merge: true },
       );
 
       setUser({
@@ -63,6 +93,7 @@ export default function EditProfile() {
         displayName: formValues.displayName,
         introduce: formValues.introduce,
         photoURL: photoURL,
+        backgroundURL: backgroundURL,
       } as User);
     }
   };
