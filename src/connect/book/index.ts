@@ -13,7 +13,7 @@ export interface Book {
   page: number | null;
   price: number | null;
 
-  readDate?: string;
+  readDate: string;
   memo?: string;
   grade?: Grade | string;
   readUser?: string[];

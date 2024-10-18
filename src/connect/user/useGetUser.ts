@@ -17,7 +17,7 @@ export default function useGetUser(userId: string) {
         where('userId', '==', userId),
       ),
       (snapshot) => {
-        const newData = snapshot.docs[0].data();
+        const newData = snapshot.docs[0]?.data();
         client.setQueryData([`${userId}`], newData);
       },
     );

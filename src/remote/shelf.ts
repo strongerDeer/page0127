@@ -10,6 +10,7 @@ import {
   getDoc,
   increment,
   setDoc,
+  updateDoc,
 } from 'firebase/firestore';
 
 async function checkBookExistsInMyShelf(uid: string, bookId: string) {
@@ -48,7 +49,6 @@ export async function addBookInShelf(uid: string, bookId: string, data: Book) {
 }
 // 년도별, 카테고리별, 점수별, 출판사 데이터 추가
 export async function addUserData(uid: string, bookData: Book, myData: MyData) {
-  console.log('😀___', bookData);
   const { category, publisher, id: bookId } = bookData;
   const { readDate, grade } = myData;
 
@@ -102,63 +102,71 @@ export async function updateUserData(
     grade: prevGrade,
   } = bookData;
   const { readDate, grade } = myData;
-
-  const [prevYear, prevMonth] = (prevReadDate as string).split('-');
   const [year, month] = readDate.split('-');
+  const [prevYear, prevMonth] = prevReadDate.split('-');
 
   try {
+    const prevQuery = doc(
+      collection(store, `${COLLECTIONS.USER}/${uid}/total`),
+      prevYear,
+    );
     const totalQuery = doc(
       collection(store, `${COLLECTIONS.USER}/${uid}/total`),
       year,
     );
 
-    const prevTotalQuery = doc(
-      collection(store, `${COLLECTIONS.USER}/${uid}/total`),
-      prevYear,
-    );
+    const updateData: any = {};
 
-    await setDoc(
-      prevTotalQuery,
-      {
+    // 년도가 바뀌면
+    if (prevYear !== year) {
+      console.log('ddd', prevYear, year);
+      // 기존 년도 에서는 삭제
+      await updateDoc(prevQuery, {
         books: arrayRemove(bookId),
-        month: {
+        // month: {
+        //   [prevMonth]: arrayRemove(bookId),
+        // },
+        // category: { [category.replaceAll('/', '')]: arrayRemove(bookId) },
+        // grade: {
+        //   [prevGrade as string]: arrayRemove(bookId),
+        // },
+        // publisher: { [publisher]: arrayRemove(bookId) },
+      });
+
+      // 변경된 년도에 추가
+      // await setDoc(
+      //   totalQuery,
+      //   {
+      //     books: arrayUnion(bookId),
+      //     month: {
+      //       [month]: arrayUnion(bookId),
+      //     },
+      //     category: { [category.replaceAll('/', '')]: arrayUnion(bookId) },
+      //     grade: {
+      //       [grade]: arrayUnion(bookId),
+      //     },
+      //     publisher: { [publisher]: arrayUnion(bookId) },
+      //   },
+      //   { merge: true },
+      // );
+    } else {
+      // 변경된 년도에 추가
+      if (prevMonth !== month) {
+        updateData.month = {
           [prevMonth]: arrayRemove(bookId),
-        },
-        category: { [category.replaceAll('/', '')]: arrayRemove(bookId) },
-        grade: {
-          [prevGrade as string]: arrayRemove(bookId),
-        },
-        publisher: { [publisher]: arrayRemove(bookId) },
-      },
-      { merge: true },
-    );
-
-    await setDoc(
-      totalQuery,
-      {
-        books: arrayUnion(bookId),
-        month: {
           [month]: arrayUnion(bookId),
-        },
-        category: { [category.replaceAll('/', '')]: arrayUnion(bookId) },
-        grade: {
+        };
+      }
+      if (prevGrade !== grade) {
+        updateData.grade = {
+          [prevGrade as string]: arrayRemove(bookId),
           [grade]: arrayUnion(bookId),
-        },
-        publisher: { [publisher]: arrayUnion(bookId) },
-      },
-      { merge: true },
-    );
-
-    await setDoc(
-      doc(store, `${COLLECTIONS.USER}/${uid}`),
-      { currentBook: increment(1), totalBook: increment(1) },
-      {
-        merge: true,
-      },
-    );
-    console.log('😀😀😀😀😀😀');
+        };
+      }
+      await setDoc(totalQuery, updateData, { merge: true });
+    }
   } catch (error) {
-    console.error('유저 데이터 추가 에러:', error);
+    console.error('유저 데이터 업데이트 에러:', error);
     throw error;
   }
 }

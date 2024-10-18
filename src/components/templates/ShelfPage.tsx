@@ -5,12 +5,9 @@ import Chart from '@components/my/Chart';
 import ProgressBar from '@components/shared/ProgressBar';
 import Background from '@components/shelf/Background';
 
-import { useQuery } from 'react-query';
-
 import styles from './ShelfPage.module.scss';
 import ProfileImage from '@components/shared/ProfileImage';
 import { DEFAULT_GOAL } from '@constants';
-import { getUserByUserId } from '@connect/user/user';
 import useUserCount from '@connect/user/useUserCount';
 import BarChart from '@components/my/BarChart';
 import useGetUser from '@connect/user/useGetUser';
