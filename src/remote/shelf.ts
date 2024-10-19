@@ -48,7 +48,12 @@ export async function addBookInShelf(uid: string, bookId: string, data: Book) {
   }
 }
 // 년도별, 카테고리별, 점수별, 출판사 데이터 추가
-export async function addUserData(uid: string, bookData: Book, myData: MyData) {
+
+export async function addCountData(
+  uid: string,
+  bookData: Book,
+  myData: MyData,
+) {
   const { category, publisher, id: bookId } = bookData;
   const { readDate, grade } = myData;
 
@@ -56,20 +61,20 @@ export async function addUserData(uid: string, bookData: Book, myData: MyData) {
 
   try {
     const totalQuery = doc(
-      collection(store, `${COLLECTIONS.USER}/${uid}/total`),
-      year,
+      collection(store, `${COLLECTIONS.USER}/${uid}/counter`),
+      'total',
     );
 
     await setDoc(
       totalQuery,
       {
-        books: arrayUnion(bookId),
-        month: {
-          [month]: arrayUnion(bookId),
+        totalBook: arrayUnion(bookId),
+        date: {
+          [`${year}-${month}`]: arrayUnion(bookId),
         },
         category: { [category.replaceAll('/', '')]: arrayUnion(bookId) },
         grade: {
-          [grade]: arrayUnion(bookId),
+          [`${grade}`]: arrayUnion(bookId),
         },
         publisher: { [publisher]: arrayUnion(bookId) },
       },
@@ -88,81 +93,43 @@ export async function addUserData(uid: string, bookData: Book, myData: MyData) {
     throw error;
   }
 }
-// 년도별, 카테고리별, 점수별, 출판사 데이터 추가
-export async function updateUserData(
+
+export async function updateCountData(
+  bookId: string,
   uid: string,
   bookData: Book,
   myData: MyData,
 ) {
-  const {
-    category,
-    publisher,
-    id: bookId,
-    readDate: prevReadDate,
-    grade: prevGrade,
-  } = bookData;
+  console.log('Updating count data:', { uid, bookData, myData });
+
+  const { readDate: prevReadDate, grade: prevGrade } = bookData;
   const { readDate, grade } = myData;
   const [year, month] = readDate.split('-');
   const [prevYear, prevMonth] = prevReadDate.split('-');
 
   try {
-    const prevQuery = doc(
-      collection(store, `${COLLECTIONS.USER}/${uid}/total`),
-      prevYear,
-    );
     const totalQuery = doc(
-      collection(store, `${COLLECTIONS.USER}/${uid}/total`),
-      year,
+      collection(store, `${COLLECTIONS.USER}/${uid}/counter`),
+      'total',
     );
 
-    const updateData: any = {};
+    const updateData: Record<string, any> = {};
 
-    // 년도가 바뀌면
-    if (prevYear !== year) {
-      console.log('ddd', prevYear, year);
-      // 기존 년도 에서는 삭제
-      await updateDoc(prevQuery, {
-        books: arrayRemove(bookId),
-        // month: {
-        //   [prevMonth]: arrayRemove(bookId),
-        // },
-        // category: { [category.replaceAll('/', '')]: arrayRemove(bookId) },
-        // grade: {
-        //   [prevGrade as string]: arrayRemove(bookId),
-        // },
-        // publisher: { [publisher]: arrayRemove(bookId) },
-      });
+    if (prevGrade !== grade) {
+      updateData.grade = {
+        [`${prevGrade}`]: arrayRemove(bookId),
+        [`${grade}`]: arrayUnion(bookId),
+      };
+    }
 
-      // 변경된 년도에 추가
-      // await setDoc(
-      //   totalQuery,
-      //   {
-      //     books: arrayUnion(bookId),
-      //     month: {
-      //       [month]: arrayUnion(bookId),
-      //     },
-      //     category: { [category.replaceAll('/', '')]: arrayUnion(bookId) },
-      //     grade: {
-      //       [grade]: arrayUnion(bookId),
-      //     },
-      //     publisher: { [publisher]: arrayUnion(bookId) },
-      //   },
-      //   { merge: true },
-      // );
-    } else {
-      // 변경된 년도에 추가
-      if (prevMonth !== month) {
-        updateData.month = {
-          [prevMonth]: arrayRemove(bookId),
-          [month]: arrayUnion(bookId),
-        };
-      }
-      if (prevGrade !== grade) {
-        updateData.grade = {
-          [prevGrade as string]: arrayRemove(bookId),
-          [grade]: arrayUnion(bookId),
-        };
-      }
+    if (prevYear !== year || prevMonth !== month) {
+      updateData.date = {
+        [`${prevYear}-${prevMonth}`]: arrayRemove(bookId),
+        [`${year}-${month}`]: arrayUnion(bookId),
+      };
+    }
+
+    if (Object.keys(updateData).length > 0) {
       await setDoc(totalQuery, updateData, { merge: true });
     }
   } catch (error) {
@@ -170,7 +137,6 @@ export async function updateUserData(
     throw error;
   }
 }
-
 export async function addBook(
   uid: string,
   bookId: string,

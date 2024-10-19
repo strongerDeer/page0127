@@ -141,6 +141,7 @@ export default function MyBookDetail({
                       user?.uid as string,
                       bookId as string,
                       grade as string,
+                      readDate as string,
                     );
                     modalClose();
                     router.replace(`/shelf/${user?.userId}`);
@@ -168,7 +169,12 @@ export default function MyBookDetail({
                   buttonLabel: '삭제',
                   closeButtonLabel: '취소',
                   onButtonClick: () => {
-                    removeMyBook(user.uid, bookId, grade as string);
+                    removeMyBook(
+                      user.uid,
+                      bookId,
+                      grade as string,
+                      readDate as string,
+                    );
                     modalClose();
                     router.replace(`/shelf/${user.userId}`);
                     toast.success('책이 삭제되었습니다');

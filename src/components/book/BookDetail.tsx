@@ -176,6 +176,7 @@ export default function BookDetail({ data }: { data: Book }) {
                         user.uid,
                         id as string,
                         myBook?.grade as string,
+                        myBook?.readDate as string,
                       );
                       modalClose();
                       router.replace(`/shelf/${user.userId}`);
