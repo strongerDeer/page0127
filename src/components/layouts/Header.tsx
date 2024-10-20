@@ -3,7 +3,7 @@ import { usePathname } from 'next/navigation';
 import styles from './Header.module.scss';
 
 import Button from '@components/shared/Button';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import Icon from '@components/icon/Icon';
 
 import { cormorant } from '@font';
@@ -17,6 +17,49 @@ export default function Header() {
   const isLoading = useUserLoading();
   const { logOut } = useLogin();
 
+  const [isOpenMenu, setIsOpenMenu] = useState<boolean>(false);
+
+  const ProfileButton = () => {
+    return (
+      <>
+        <button
+          onClick={() => {
+            setIsOpenMenu((prev) => !prev);
+            console.log('ddd');
+          }}
+        >
+          <ProfileImage width={40} photoURL={user?.photoURL as string} />
+        </button>
+        {isOpenMenu && (
+          <div>
+            <Link href={`/shelf/${user?.userId}`}>
+              <Icon name="alert" color="grayLv3" />
+              나의 책장
+            </Link>
+            <Link href="/my">
+              <Icon name="person" color="grayLv3" />
+              마이페이지
+            </Link>
+            <Link href="/my/edit-profile">
+              <Icon name="edit" color="grayLv3" />
+              프로필 수정
+            </Link>
+
+            <Link href="/my/goal">
+              <Icon name="flag" color="grayLv3" />
+              목표 권수 수정
+            </Link>
+
+            <button onClick={logOut}>
+              <Icon name="logout" color="grayLv3" />
+              로그아웃
+            </button>
+          </div>
+        )}
+      </>
+    );
+  };
+
   const renderButton = useCallback(() => {
     if (user !== null) {
       return (
@@ -24,21 +67,44 @@ export default function Header() {
           {user?.uid === process.env.NEXT_PUBLIC_ADMIN_ID && (
             <Button href={`/admin`}>관리자</Button>
           )}
-          <Button href={`/book/create`}>읽은 책 등록</Button>
-          <Link href="/my">
-            <ProfileImage width={40} photoURL={user?.photoURL as string} />
+
+          <Link href="/book/create">
+            <Icon name="addBook" color="#29D063" />
+            <span className="a11y-hidden">읽은 책 등록</span>
           </Link>
-          <Button
-            href={`/shelf/${user?.userId}`}
-            variant="outline"
-            color="grayLv4"
+
+          <button
+            style={{
+              width: '4rem',
+              height: '4rem',
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
-            나의 책장
-          </Button>
-          <button type="button" onClick={logOut}>
-            <Icon name="logout" color="grayLv3" />
-            <span className="a11y-hidden">로그아웃</span>
+            <Icon name="bell" color="grayLv4" />
+            <span className="a11y-hidden">알림</span>
+            <span
+              style={{
+                position: 'absolute',
+                top: '0',
+                right: '0',
+                border: '2px solid #fff',
+                display: 'inline-block',
+                padding: '0 0.5em',
+                borderRadius: '4rem',
+                backgroundColor: '#29D063',
+                color: '#fff',
+                fontSize: '1.2rem',
+                fontWeight: 'bold',
+              }}
+            >
+              1
+            </span>
           </button>
+
+          <ProfileButton />
         </>
       );
     } else {
@@ -49,13 +115,14 @@ export default function Header() {
         </>
       );
     }
-  }, [logOut, user, pathname]);
+  }, [logOut, user, pathname, isOpenMenu]);
 
   return (
     <header className={styles.header}>
       <Link href="/" className={styles.header__h1}>
         <h1 className={cormorant.className}>page 0127.</h1>
       </Link>
+
       {!isLoading && (
         <div className={styles.header__right}>{renderButton()}</div>
       )}
