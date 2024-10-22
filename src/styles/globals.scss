@@ -21,8 +21,10 @@ svg {
 }
 
 .section01 {
-  position: relative;
   margin: fcSize(32, 64) 0;
+  & > div {
+    position: relative;
+  }
   .title {
     font-size: 1.2em;
     font-weight: bold;

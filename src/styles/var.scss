@@ -26,6 +26,12 @@ $boxShadowSmall: 3px 3px 1rem 0 rgba(0, 0, 0, 0.15);
   font-weight: 200;
   margin: fcSize(60, 80) 0 1em 0;
 }
+.title2 {
+  font-size: 2.2rem;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+  margin-bottom: 0.5em;
+}
 
 @mixin ellipse($num: 1, $lineHeight: 1.6) {
   overflow: hidden;

@@ -15,7 +15,6 @@ export default function Club() {
   }
 
   // READY | DONE
-
   const CLUB_STATUS = 'READY';
 
   if (CLUB_STATUS === 'READY') {

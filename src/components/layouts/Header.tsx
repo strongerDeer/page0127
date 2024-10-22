@@ -120,7 +120,9 @@ export default function Header() {
   return (
     <header className={styles.header}>
       <Link href="/" className={styles.header__h1}>
-        <h1 className={cormorant.className}>page 0127.</h1>
+        <h1 className={cormorant.className}>
+          page 0127<span>.</span>
+        </h1>
       </Link>
 
       {!isLoading && (

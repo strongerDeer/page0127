@@ -1,0 +1,14 @@
+@import '@/styles/var.scss';
+.section {
+  margin: 5rem auto;
+
+  .wrap {
+    @include grid(32rem);
+
+    iframe {
+      width: 100%;
+      aspect-ratio: 560/315;
+      border-radius: 1rem;
+    }
+  }
+}

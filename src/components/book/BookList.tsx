@@ -23,7 +23,7 @@ export default function BookList({ data }: { data: Book[] }) {
   }
   return (
     <>
-      {data && <>{data.length}권</>}
+      {/* {data && <>{data.length}권</>} */}
 
       <ul className="grid grid-cols-4 gap-16">
         {data?.map((item, index) => (

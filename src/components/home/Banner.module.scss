@@ -1,9 +1,112 @@
+$size: 3.2rem;
+$bottom: 1rem;
 .section {
-  transform: translateY(-50%);
+  border-radius: 1.6rem;
+  overflow: hidden;
+  margin-top: -8rem;
+  div[class^='swiper-pagination'] {
+    right: 6rem;
+    left: auto;
+    width: 7rem;
+    height: $size;
+    bottom: $bottom;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  [class^='swiper-pagination-current'] {
+    font-weight: 600;
+    color: #fff;
+  }
+  [class^='swiper-button-prev'],
+  [class^='swiper-button-next'] {
+    position: absolute;
+    top: auto;
+    bottom: $bottom;
+    width: $size;
+    height: $size;
+    margin-top: 0;
+    z-index: 100;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--background);
+
+    &::after {
+      font-size: 2rem;
+    }
+  }
+  [class^='swiper-button-prev'] {
+    left: auto;
+    right: 11rem;
+  }
+  [class^='swiper-button-next'] {
+    left: auto;
+    right: 5rem;
+  }
 }
 
 .slideItem {
+  height: 16rem;
   box-sizing: border-box;
-  padding: 4rem;
   border-radius: 1.6rem;
+
+  display: flex;
+  align-items: center;
+
+  padding: 4rem;
+  p {
+    opacity: 0.85;
+  }
+}
+
+.autoplayLine {
+  width: calc(100% - 18rem);
+  height: $size;
+  display: flex;
+  align-items: center;
+  z-index: 100;
+  position: absolute;
+  left: 4rem;
+  bottom: $bottom;
+
+  .line {
+    display: block;
+    width: 100%;
+    height: 4px;
+    border-radius: 1rem;
+    overflow: hidden;
+    background-color: rgba(255, 255, 255, 0.5);
+    .line2 {
+      display: block;
+      width: 100%;
+      height: 100%;
+      transform-origin: left center;
+      transform: scaleX(var(--progress, 0));
+      transition: transform 0.1s linear;
+      background-color: #fff;
+    }
+  }
+}
+
+.playButton {
+  position: absolute;
+  z-index: 100;
+  right: 2rem;
+  bottom: $bottom;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  width: $size;
+  height: $size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 1rem;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
 }
