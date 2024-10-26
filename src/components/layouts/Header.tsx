@@ -21,7 +21,7 @@ export default function Header() {
 
   const ProfileButton = () => {
     return (
-      <>
+      <div className={styles.container}>
         <button
           onClick={() => {
             setIsOpenMenu((prev) => !prev);
@@ -31,7 +31,7 @@ export default function Header() {
           <ProfileImage width={40} photoURL={user?.photoURL as string} />
         </button>
         {isOpenMenu && (
-          <div>
+          <div className={styles.menu}>
             <Link href={`/shelf/${user?.userId}`}>
               <Icon name="alert" color="grayLv3" />
               나의 책장
@@ -56,7 +56,7 @@ export default function Header() {
             </button>
           </div>
         )}
-      </>
+      </div>
     );
   };
 
@@ -68,21 +68,12 @@ export default function Header() {
             <Button href={`/admin`}>관리자</Button>
           )}
 
-          <Link href="/book/create">
+          <Link href="/book/create" className={styles.iconBtn}>
             <Icon name="addBook" color="#29D063" />
             <span className="a11y-hidden">읽은 책 등록</span>
           </Link>
 
-          <button
-            style={{
-              width: '4rem',
-              height: '4rem',
-              position: 'relative',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+          <button className={styles.iconBtn}>
             <Icon name="bell" color="grayLv4" />
             <span className="a11y-hidden">알림</span>
             <span
