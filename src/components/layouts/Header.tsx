@@ -3,62 +3,17 @@ import { usePathname } from 'next/navigation';
 import styles from './Header.module.scss';
 
 import Button from '@components/shared/Button';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import Icon from '@components/icon/Icon';
 
 import { cormorant } from '@font';
-import ProfileImage from '@components/shared/ProfileImage';
 import useUser, { useUserLoading } from '@connect/user/useUser';
-import useLogin from '@connect/sign/useLogin';
+import ProfileMenu from './ProfileMenu';
 
 export default function Header() {
   const pathname = usePathname();
   const user = useUser();
   const isLoading = useUserLoading();
-  const { logOut } = useLogin();
-
-  const [isOpenMenu, setIsOpenMenu] = useState<boolean>(false);
-
-  const ProfileButton = () => {
-    return (
-      <div className={styles.container}>
-        <button
-          onClick={() => {
-            setIsOpenMenu((prev) => !prev);
-            console.log('ddd');
-          }}
-        >
-          <ProfileImage width={40} photoURL={user?.photoURL as string} />
-        </button>
-        {isOpenMenu && (
-          <div className={styles.menu}>
-            <Link href={`/shelf/${user?.userId}`}>
-              <Icon name="alert" color="grayLv3" />
-              나의 책장
-            </Link>
-            <Link href="/my">
-              <Icon name="person" color="grayLv3" />
-              마이페이지
-            </Link>
-            <Link href="/my/edit-profile">
-              <Icon name="edit" color="grayLv3" />
-              프로필 수정
-            </Link>
-
-            <Link href="/my/goal">
-              <Icon name="flag" color="grayLv3" />
-              목표 권수 수정
-            </Link>
-
-            <button onClick={logOut}>
-              <Icon name="logout" color="grayLv3" />
-              로그아웃
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  };
 
   const renderButton = useCallback(() => {
     if (user !== null) {
@@ -95,7 +50,7 @@ export default function Header() {
             </span>
           </button>
 
-          <ProfileButton />
+          <ProfileMenu user={user} />
         </>
       );
     } else {
@@ -106,7 +61,7 @@ export default function Header() {
         </>
       );
     }
-  }, [logOut, user, pathname, isOpenMenu]);
+  }, [user, pathname]);
 
   return (
     <header className={styles.header}>
