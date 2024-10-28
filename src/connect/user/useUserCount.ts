@@ -1,5 +1,4 @@
 import { useQuery, useQueryClient } from 'react-query';
-import useUser from './useUser';
 import { useEffect } from 'react';
 import { collection, doc, onSnapshot, query } from 'firebase/firestore';
 import { store } from '@firebase/firebaseApp';
@@ -13,7 +12,8 @@ export default function useUserCount(userId: string, year: string) {
     if (!userId) return;
 
     const unsubscribe = onSnapshot(
-      doc(collection(store, `${COLLECTIONS.USER}/${userId}/total`), year),
+      doc(collection(store, `${COLLECTIONS.USER}/${userId}/counter`), 'total'),
+
       (snapshot) => {
         const newData = snapshot.data();
         client.setQueryData(['total'], newData);

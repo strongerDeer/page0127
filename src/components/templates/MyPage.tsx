@@ -15,11 +15,6 @@ import useFilteredBook from '@connect/book/useFilteredBook';
 import useLogin from '@connect/sign/useLogin';
 import useFollowing from '@connect/follow/useFollowing';
 import useFilteredUser from '@connect/follow/useFilteredUser';
-import {
-  AlertContextValue,
-  AlertProps,
-  useAlertContext,
-} from '@contexts/AlertContext';
 import useFollower from '@connect/follow/useFollower';
 import { useRouter } from 'next/navigation';
 import FollowButton from '@components/follow/FollowButton';
@@ -39,8 +34,6 @@ export default function MyPage() {
 
   const { data: followingUsers } = useFilteredUser({ array: following || [] });
   const { data: followerUsers } = useFilteredUser({ array: follower || [] });
-
-  console.log(followerUsers);
 
   return (
     <div className={styles.myPage}>
@@ -131,9 +124,9 @@ export default function MyPage() {
 
       <section className={styles.contents}>
         {activeTab === 'read' && readBook ? (
-          <BookList data={readBook} />
+          <BookList myList data={readBook} />
         ) : activeTab === 'like' ? (
-          <BookList data={likes || []} />
+          <BookList myList data={likes || []} />
         ) : activeTab === 'club' ? (
           <>참여중인 모임</>
         ) : activeTab === 'follower' ? (

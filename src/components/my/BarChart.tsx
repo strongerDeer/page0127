@@ -44,6 +44,23 @@ const options: ChartOptions<'bar'> = {
   },
 };
 
+const year = new Date().getFullYear();
+
+const labelTexts = [
+  '01',
+  '02',
+  '03',
+  '04',
+  '05',
+  '06',
+  '07',
+  '08',
+  '09',
+  '10',
+  '11',
+  '12',
+];
+
 export default function BarChart({
   title,
   userData,
@@ -51,20 +68,7 @@ export default function BarChart({
   title: string;
   userData: any;
 }) {
-  const labelTexts = [
-    '01',
-    '02',
-    '03',
-    '04',
-    '05',
-    '06',
-    '07',
-    '08',
-    '09',
-    '10',
-    '11',
-    '12',
-  ];
+  console.log('ddd', userData, `${year}-${labelTexts[0]}`);
 
   const data = {
     labels: labelTexts.map((label) => `${Number(label)}`),
@@ -72,7 +76,9 @@ export default function BarChart({
       {
         label: title,
         data: labelTexts.map((label) =>
-          userData && userData[label] ? userData[label]?.length || 0 : 0,
+          userData && userData[`${year}-${label}`]
+            ? userData[`${year}-${label}`]?.length || 0
+            : 0,
         ),
         backgroundColor: labelTexts.map((label) => {
           if (Number(label) === new Date().getMonth() + 1) {

@@ -10,6 +10,7 @@ import LikeButton from './LikeButton';
 interface bookItemProps extends Book {
   isLike: boolean;
   index: number;
+  myList?: boolean;
 }
 export default function BookListItem(props: bookItemProps) {
   const user = useUser();
@@ -30,6 +31,7 @@ export default function BookListItem(props: bookItemProps) {
 
     memo,
     readDate,
+    myList,
   } = props;
 
   return (
@@ -65,8 +67,10 @@ export default function BookListItem(props: bookItemProps) {
             </div>
 
             <div className={styles.addCon}>
-              <p className={styles.description}>{memo || description}</p>
-              {!memo && (
+              <p className={styles.description}>
+                {myList ? memo : description}
+              </p>
+              {!myList && (
                 <>
                   {publisher && <p className={styles.publisher}>{publisher}</p>}
                   {category && <p className={styles.category}>{category}</p>}

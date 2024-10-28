@@ -51,13 +51,13 @@ export default function ShelfPage({ userId }: { userId: string }) {
 
           <div>
             <ProgressBar
-              value={Number(counterData?.books.length) || 0}
+              value={Number(userData?.currentBook) || 0}
               total={Number(userData?.currentGoal) || DEFAULT_GOAL}
             />
 
             <BarChart
               title={`${userData?.displayName}의 ${year}년` || ''}
-              userData={counterData?.month}
+              userData={counterData?.date}
             />
             {counterData?.category && (
               <Chart

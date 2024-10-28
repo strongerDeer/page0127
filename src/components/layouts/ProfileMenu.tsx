@@ -48,7 +48,7 @@ export default function ProfileMenu({ user }: { user: User }) {
           <button
             onClick={() => {
               setIsOpenMenu((prev) => !prev);
-              router.push('my');
+              router.push('/my');
             }}
           >
             <Icon name="person" color="grayLv3" />

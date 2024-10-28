@@ -48,7 +48,17 @@ export default function MyBooks({
           book.readDate < `${year + 1}-01-01`,
       ) as Book[];
     }
-    if (category !== 'All') {
+    if (category === '기타') {
+      filteredBook = book?.filter(
+        (book) =>
+          book.category !== '컴퓨터/모바일' &&
+          book.category !== '소설/시/희곡' &&
+          book.category !== '에세이' &&
+          book.category !== '경제경영' &&
+          book.category !== '인문학' &&
+          book.category !== '자기계발',
+      ) as Book[];
+    } else if (category !== 'All') {
       filteredBook = book?.filter(
         (book) => book.category === category,
       ) as Book[];
@@ -62,6 +72,8 @@ export default function MyBooks({
       <h2>{year}</h2>
       <YearTab value={year} setValue={setYear} />
       <CategoryTab value={category} setValue={setCategory} />
+
+      {bookData && <p>{bookData?.length}권</p>}
 
       {bookData && bookData.length > 0 ? (
         <div className={styles.books}>

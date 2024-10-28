@@ -8,7 +8,13 @@ import BookListItem from './BookListItem';
 import useLikeBook from '@connect/like/useLikeBook';
 import Button from '@components/shared/Button';
 
-export default function BookList({ data }: { data: Book[] }) {
+export default function BookList({
+  data,
+  myList,
+}: {
+  data: Book[];
+  myList?: boolean;
+}) {
   const { data: likeBooks } = useLikeBook();
 
   if (data.length === 0) {
@@ -34,6 +40,7 @@ export default function BookList({ data }: { data: Book[] }) {
             transition={{ duration: 0.3, delay: index * 0.05 }}
           >
             <BookListItem
+              myList={myList}
               index={index}
               isLike={likeBooks?.includes(item.id as string) || false}
               {...item}
