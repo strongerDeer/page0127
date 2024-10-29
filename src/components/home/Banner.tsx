@@ -90,7 +90,7 @@ function Banner() {
           </SwiperSlide>
         ))}
 
-        <div className={styles.autoplayLine} slot="container-end">
+        <div className={styles.autoPlayLine} slot="container-end">
           <span className={styles.line}>
             <span className={styles.line2} ref={progressCircle}></span>
           </span>
@@ -129,7 +129,7 @@ const Item = ({
 }) => {
   return (
     <>
-      <h3 className="font-bold text-3xl mb-2">{title}</h3>
+      <h3 className={styles.title}>{title}</h3>
       <p>{description}</p>
     </>
   );

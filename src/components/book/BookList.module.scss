@@ -1,0 +1,13 @@
+@import '@/styles/var.scss';
+
+.grid {
+  @include grid(24rem, 4rem, fcSize(80, 20));
+
+  @media screen and (max-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4rem 2rem;
+  }
+  @media screen and (max-width: 360px) {
+    grid-template-columns: 1fr;
+  }
+}

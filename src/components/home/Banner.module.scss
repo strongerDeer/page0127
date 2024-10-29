@@ -1,9 +1,11 @@
+@import '@/styles/var.scss';
+
 $size: 3.2rem;
 $bottom: 1rem;
 .section {
   border-radius: 1.6rem;
   overflow: hidden;
-  margin-top: -8rem;
+  margin-top: fcSize(-70, -80);
   div[class^='swiper-pagination'] {
     right: 6rem;
     left: auto;
@@ -49,27 +51,27 @@ $bottom: 1rem;
 }
 
 .slideItem {
-  height: 16rem;
+  height: fcSize(140, 160);
   box-sizing: border-box;
   border-radius: 1.6rem;
 
   display: flex;
   align-items: center;
 
-  padding: 4rem;
+  padding: fcSize(20, 40) fcSize(20, 40) fcSize(35, 60) fcSize(20, 40);
   p {
     opacity: 0.85;
   }
 }
 
-.autoplayLine {
+.autoPlayLine {
   width: calc(100% - 18rem);
   height: $size;
   display: flex;
   align-items: center;
   z-index: 100;
   position: absolute;
-  left: 4rem;
+  left: fcSize(20, 40);
   bottom: $bottom;
 
   .line {
@@ -109,4 +111,10 @@ $bottom: 1rem;
   &:hover {
     background: rgba(255, 255, 255, 0.5);
   }
+}
+
+.title {
+  font-weight: 700;
+  font-size: fcSize(18, 22);
+  margin-bottom: 0.2em;
 }

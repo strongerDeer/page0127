@@ -14,7 +14,6 @@
   font-size: 0.85em;
   text-align: left;
   padding: 1rem;
-  // background-color: skyblue;
 
   .description {
     overflow: hidden;
@@ -44,8 +43,8 @@
   perspective: 800px;
   margin-bottom: 2.4rem;
   .cover {
-    width: fcSize(80, 200);
-    height: fcSize(80, 200);
+    width: fcSize(140, 200);
+    height: fcSize(140, 200);
     position: relative;
     transform-style: preserve-3d;
     transform-origin: 0% 50%;

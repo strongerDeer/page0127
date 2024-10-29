@@ -56,8 +56,18 @@ export default function Header() {
     } else {
       return (
         <>
-          {!pathname.includes('login') && <Link href="/login">로그인</Link>}
-          {!pathname.includes('join') && <Link href="/join">회원가입</Link>}
+          {!pathname.includes('login') && (
+            <Link href="/login" className={styles.loginBtn}>
+              <Icon name="login" />
+              <span>로그인</span>
+            </Link>
+          )}
+          {!pathname.includes('join') && (
+            <Link href="/join" className={styles.joinBtn}>
+              <Icon name="join" />
+              <span>회원가입</span>
+            </Link>
+          )}
         </>
       );
     }

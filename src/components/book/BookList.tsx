@@ -7,7 +7,7 @@ import { Book } from '@connect/book';
 import BookListItem from './BookListItem';
 import useLikeBook from '@connect/like/useLikeBook';
 import Button from '@components/shared/Button';
-
+import styles from './BookList.module.scss';
 export default function BookList({
   data,
   myList,
@@ -31,7 +31,7 @@ export default function BookList({
     <>
       {/* {data && <>{data.length}권</>} */}
 
-      <ul className="grid grid-cols-4 gap-16">
+      <ul className={styles.grid}>
         {data?.map((item, index) => (
           <motion.li
             key={index}

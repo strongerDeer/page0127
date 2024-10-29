@@ -1,16 +1,51 @@
 $maxW: 1200;
 $maxWidth: 120rem;
-$pad: 4rem;
+
 $borderRadius: 0.4em;
 $boxShadow: 5px 5px 2rem 0 rgba(0, 0, 0, 0.05);
 $boxShadowSmall: 3px 3px 1rem 0 rgba(0, 0, 0, 0.15);
+
+@mixin ellipse($num: 1, $lineHeight: 1.6) {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: $num;
+  height: 1em * $num * $lineHeight;
+}
+
+@mixin grid($width, $gap1: 2.4rem, $gap2: 2.5rem) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax($width, 1fr));
+  gap: $gap1 $gap2;
+  @media screen and (max-width: 360px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+@function fcSize($min, $max) {
+  @return clamp($min * 0.1rem, (100vw / $maxW) * $max, $max * 0.1rem);
+}
+
+$pad: fcSize(24, 40);
 
 .max-width {
   margin: auto;
   width: $maxWidth;
   max-width: calc(100% - $pad * 2);
 }
+
 .a11y-hidden {
+  clip: rect(1px, 1px, 1px, 1px);
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+}
+
+@mixin a11y-hidden {
   clip: rect(1px, 1px, 1px, 1px);
   clip-path: inset(50%);
   width: 1px;
@@ -31,25 +66,4 @@ $boxShadowSmall: 3px 3px 1rem 0 rgba(0, 0, 0, 0.15);
   font-weight: 600;
   letter-spacing: -0.1px;
   margin-bottom: 0.5em;
-}
-
-@mixin ellipse($num: 1, $lineHeight: 1.6) {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: $num;
-  height: 1em * $num * $lineHeight;
-}
-
-@mixin grid($width, $gap1: 2.4rem, $gap2: 2.5rem) {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax($width, 1fr));
-  gap: $gap1 $gap2;
-  @media screen and (max-width: 480px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-@function fcSize($min, $max) {
-  @return clamp($min * 0.1rem, (100vw / $maxW) * $max, $max * 0.1rem);
 }
