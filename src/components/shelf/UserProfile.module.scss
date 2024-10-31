@@ -1,0 +1,61 @@
+.profileContainer {
+  background-color: var(--background);
+
+  width: 40rem;
+  height: 40rem;
+  border-radius: 50%;
+
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  justify-content: center;
+  margin: -20rem auto 0;
+  position: relative;
+
+  .info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.6rem;
+
+    .displayName {
+      font-weight: 600;
+    }
+    .intro {
+      background-color: var(--grayLv1);
+      padding: 1em;
+      border-radius: 0.4rem;
+      width: 80%;
+      margin: 0 auto;
+      text-align: center;
+      font-size: 1.4rem;
+    }
+  }
+
+  .follow {
+    position: absolute;
+    top: 32%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6rem;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    margin: 0 auto;
+
+    p {
+      min-width: 8rem;
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+      font-size: 1.4rem;
+      color: var(--grayLv3);
+      strong {
+        font-size: 1.6em;
+        color: var(--surface);
+      }
+    }
+  }
+}

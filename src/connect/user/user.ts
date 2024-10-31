@@ -34,5 +34,5 @@ export async function getUserByUserId(userId: string) {
     ),
   );
 
-  return snapshot.docs[0].data();
+  return snapshot.docs[0].data() as User;
 }

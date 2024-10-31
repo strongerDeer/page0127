@@ -16,6 +16,7 @@ import { store } from '@firebase/firebaseApp';
 
 import { COLLECTIONS } from '@constants';
 import { Book } from '@connect/book';
+import { includes } from 'lodash';
 
 export async function getMyBooks(uid: string) {
   const snapshot = await getDocs(
@@ -63,10 +64,9 @@ export async function removeMyBook(
     await getDoc(doc(collection(store, COLLECTIONS.BOOKS), bookId))
   ).data();
 
-  const { readUser, category, publisher } = book as Book;
+  const { readUser, category, publisher, page } = book as Book;
   const [year, month] = readDate.split('-');
 
-  console.log(year, month);
   // 전체 책 데이터에서 삭제
   if (readUser?.length === 1 && readUser.includes(uid)) {
     const bookRef = doc(store, `${COLLECTIONS.BOOKS}/${bookId}`);
@@ -80,8 +80,8 @@ export async function removeMyBook(
   }
   // 나의 정보
   await updateDoc(doc(collection(store, COLLECTIONS.USER), uid), {
-    currentBook: increment(-1),
     totalBook: increment(-1),
+    totalPage: increment(-page),
   });
 
   // 나의 책 데이터 삭제
@@ -89,7 +89,7 @@ export async function removeMyBook(
 
   const totalQuery = doc(
     collection(store, `${COLLECTIONS.USER}/${uid}/counter`),
-    'total',
+    year,
   );
 
   await setDoc(
@@ -97,13 +97,14 @@ export async function removeMyBook(
     {
       totalBook: arrayRemove(bookId),
       date: {
-        [`${year}-${month}`]: arrayRemove(bookId),
+        [`${month}`]: arrayRemove(bookId),
       },
       category: { [category.replaceAll('/', '')]: arrayRemove(bookId) },
       grade: {
         [`${grade}`]: arrayRemove(bookId),
       },
       publisher: { [publisher]: arrayRemove(bookId) },
+      page: increment(-page),
     },
     { merge: true },
   );

@@ -57,8 +57,8 @@ export default function TemplateBookCreate({ bookId }: { bookId?: string }) {
     description: '',
     categoryName: '',
     category: '',
-    page: null,
-    price: null,
+    page: 0,
+    price: 0,
     readDate: '',
   });
 

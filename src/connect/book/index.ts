@@ -10,8 +10,8 @@ export interface Book {
   description: string;
   categoryName: string;
   category: string;
-  page: number | null;
-  price: number | null;
+  page: number;
+  price: number;
 
   readDate: string;
   memo?: string;

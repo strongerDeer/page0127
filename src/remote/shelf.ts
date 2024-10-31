@@ -39,6 +39,7 @@ export async function addBookInShelf(uid: string, bookId: string, data: Book) {
         category: data.category,
         lastUpdatedTime: new Date(),
         createdTime: new Date(),
+        page: data.page,
       },
       { merge: true },
     );
@@ -54,7 +55,7 @@ export async function addCountData(
   bookData: Book,
   myData: MyData,
 ) {
-  const { category, publisher, id: bookId } = bookData;
+  const { category, publisher, id: bookId, page } = bookData;
   const { readDate, grade } = myData;
 
   const [year, month] = readDate.split('-');
@@ -62,13 +63,15 @@ export async function addCountData(
   try {
     const totalQuery = doc(
       collection(store, `${COLLECTIONS.USER}/${uid}/counter`),
-      'total',
+      year,
     );
 
     await setDoc(
       totalQuery,
       {
         totalBook: arrayUnion(bookId),
+        totalBookCount: increment(1),
+        totalPage: increment(page || 0),
         date: {
           [`${year}-${month}`]: arrayUnion(bookId),
         },
@@ -83,7 +86,10 @@ export async function addCountData(
 
     await setDoc(
       doc(store, `${COLLECTIONS.USER}/${uid}`),
-      { currentBook: increment(1), totalBook: increment(1) },
+      {
+        totalBook: increment(1),
+        totalPage: increment(page),
+      },
       {
         merge: true,
       },
@@ -100,8 +106,6 @@ export async function updateCountData(
   bookData: Book,
   myData: MyData,
 ) {
-  console.log('Updating count data:', { uid, bookData, myData });
-
   const { readDate: prevReadDate, grade: prevGrade } = bookData;
   const { readDate, grade } = myData;
   const [year, month] = readDate.split('-');
