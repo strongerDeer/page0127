@@ -28,18 +28,24 @@ export async function addBookInShelf(uid: string, bookId: string, data: Book) {
     await setDoc(
       doc(store, `users/${uid}/book/${bookId}`),
       {
-        flipCover: data.flipCover,
-        frontCover: data.frontCover,
         title: data.title,
         subTitle: data.subTitle,
+        frontCover: data.frontCover,
+        flipCover: data.flipCover,
         author: data.author,
+        publisher: data.publisher,
+        pubDate: data.pubDate,
+        description: data.description,
+        categoryName: data.categoryName,
+        category: data.category,
+        page: data.page,
+        price: data.price,
+
+        readDate: data.readDate,
         memo: data.memo,
         grade: data.grade,
-        readDate: data.readDate,
-        category: data.category,
         lastUpdatedTime: new Date(),
         createdTime: new Date(),
-        page: data.page,
       },
       { merge: true },
     );
@@ -55,7 +61,7 @@ export async function addCountData(
   bookData: Book,
   myData: MyData,
 ) {
-  const { category, publisher, id: bookId, page } = bookData;
+  const { category, publisher, page } = bookData;
   const { readDate, grade } = myData;
 
   const [year, month] = readDate.split('-');
@@ -69,17 +75,16 @@ export async function addCountData(
     await setDoc(
       totalQuery,
       {
-        totalBook: arrayUnion(bookId),
-        totalBookCount: increment(1),
-        totalPage: increment(page || 0),
+        totalBook: increment(1),
+        totalPage: increment(page),
         date: {
-          [`${year}-${month}`]: arrayUnion(bookId),
+          [`${year}-${month}`]: increment(1),
         },
-        category: { [category.replaceAll('/', '')]: arrayUnion(bookId) },
+        category: { [category.replaceAll('/', '')]: increment(1) },
         grade: {
-          [`${grade}`]: arrayUnion(bookId),
+          [`${grade}`]: increment(1),
         },
-        publisher: { [publisher]: arrayUnion(bookId) },
+        publisher: { [publisher]: increment(1) },
       },
       { merge: true },
     );
@@ -89,6 +94,8 @@ export async function addCountData(
       {
         totalBook: increment(1),
         totalPage: increment(page),
+        totalCategory: { [category.replaceAll('/', '')]: increment(1) },
+        totalPublisher: { [publisher]: increment(1) },
       },
       {
         merge: true,
@@ -106,35 +113,72 @@ export async function updateCountData(
   bookData: Book,
   myData: MyData,
 ) {
-  const { readDate: prevReadDate, grade: prevGrade } = bookData;
+  const {
+    readDate: prevReadDate,
+    grade: prevGrade,
+    page,
+    category,
+    publisher,
+  } = bookData;
+
   const { readDate, grade } = myData;
   const [year, month] = readDate.split('-');
   const [prevYear, prevMonth] = prevReadDate.split('-');
 
   try {
-    const totalQuery = doc(
+    const yearQuery = doc(
       collection(store, `${COLLECTIONS.USER}/${uid}/counter`),
-      'total',
+      year,
+    );
+
+    const prevQuery = doc(
+      collection(store, `${COLLECTIONS.USER}/${uid}/counter`),
+      prevYear,
     );
 
     const updateData: Record<string, any> = {};
 
-    if (prevGrade !== grade) {
-      updateData.grade = {
-        [`${prevGrade}`]: arrayRemove(bookId),
-        [`${grade}`]: arrayUnion(bookId),
-      };
-    }
-
-    if (prevYear !== year || prevMonth !== month) {
-      updateData.date = {
-        [`${prevYear}-${prevMonth}`]: arrayRemove(bookId),
-        [`${year}-${month}`]: arrayUnion(bookId),
-      };
-    }
-
-    if (Object.keys(updateData).length > 0) {
-      await setDoc(totalQuery, updateData, { merge: true });
+    if (prevYear === year) {
+      if (prevGrade !== grade) {
+        updateData.grade = {
+          [`${prevGrade}`]: increment(-1),
+          [`${grade}`]: increment(1),
+        };
+      }
+      if (prevMonth !== month) {
+        updateData.date = {
+          [`${prevYear}-${prevMonth}`]: increment(-1),
+          [`${year}-${month}`]: increment(1),
+        };
+      }
+      if (Object.keys(updateData).length > 0) {
+        await setDoc(yearQuery, updateData, { merge: true });
+      }
+    } else {
+      await updateDoc(prevQuery, {
+        totalBook: increment(-1),
+        totalPage: increment(-page),
+        [`date.${prevYear}-${prevMonth}`]: increment(-1),
+        [`category.${category.replaceAll('/', '')}`]: increment(-1),
+        [`grade.${prevGrade}`]: increment(-1),
+        [`publisher.${publisher}`]: increment(-1),
+      });
+      await setDoc(
+        yearQuery,
+        {
+          totalBook: increment(1),
+          totalPage: increment(page),
+          date: {
+            [`${year}-${month}`]: increment(1),
+          },
+          category: { [category.replaceAll('/', '')]: increment(1) },
+          grade: {
+            [`${grade}`]: increment(1),
+          },
+          publisher: { [publisher]: increment(1) },
+        },
+        { merge: true },
+      );
     }
   } catch (error) {
     console.error('유저 데이터 업데이트 에러:', error);

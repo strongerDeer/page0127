@@ -68,8 +68,6 @@ export default function BarChart({
   title: string;
   userData: any;
 }) {
-  console.log('ddd', userData, `${year}-${labelTexts[0]}`);
-
   const data = {
     labels: labelTexts.map((label) => `${Number(label)}`),
     datasets: [
@@ -77,7 +75,7 @@ export default function BarChart({
         label: title,
         data: labelTexts.map((label) =>
           userData && userData[`${year}-${label}`]
-            ? userData[`${year}-${label}`]?.length || 0
+            ? userData[`${year}-${label}`] || 0
             : 0,
         ),
         backgroundColor: labelTexts.map((label) => {

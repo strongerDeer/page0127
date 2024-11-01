@@ -19,7 +19,7 @@ export async function getUser(id: string) {
 
 export default async function getUserCount(userId: string, year: string) {
   const snapshot = await getDoc(
-    doc(collection(store, `${COLLECTIONS.USER}/${userId}/counter`), 'total'),
+    doc(collection(store, `${COLLECTIONS.USER}/${userId}/counter`), year),
   );
   const data = snapshot.data();
 

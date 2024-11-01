@@ -67,12 +67,12 @@ export default function MyBooks({
     setBookData(filteredBook);
   }, [year, book, category]);
 
+  console.log(bookData);
   return (
     <div>
       <h2>{year}</h2>
       <YearTab value={year} setValue={setYear} />
       <CategoryTab value={category} setValue={setCategory} />
-
       {bookData && <p>{bookData?.length}권</p>}
 
       {bookData && bookData.length > 0 ? (
@@ -82,7 +82,7 @@ export default function MyBooks({
               className={book.grade === '10' ? styles.best : ''}
               key={book.id}
             >
-              <p>{book.page}...</p>
+              <p>{book.readDate}</p>
               <Link href={`/shelf/${userId}/${book.id}`}>
                 {book.id && (
                   <Image

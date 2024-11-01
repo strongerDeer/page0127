@@ -82,6 +82,8 @@ export async function removeMyBook(
   await updateDoc(doc(collection(store, COLLECTIONS.USER), uid), {
     totalBook: increment(-1),
     totalPage: increment(-page),
+    [`totalCategory.${category.replaceAll('/', '')}`]: increment(-1),
+    [`totalPublisher.${publisher}`]: increment(-1),
   });
 
   // 나의 책 데이터 삭제
@@ -95,16 +97,16 @@ export async function removeMyBook(
   await setDoc(
     totalQuery,
     {
-      totalBook: arrayRemove(bookId),
+      totalBook: increment(-1),
+      totalPage: increment(-page),
       date: {
-        [`${month}`]: arrayRemove(bookId),
+        [`${year}-${month}`]: increment(-1),
       },
-      category: { [category.replaceAll('/', '')]: arrayRemove(bookId) },
+      category: { [category.replaceAll('/', '')]: increment(-1) },
       grade: {
-        [`${grade}`]: arrayRemove(bookId),
+        [`${grade}`]: increment(-1),
       },
-      publisher: { [publisher]: arrayRemove(bookId) },
-      page: increment(-page),
+      publisher: { [publisher]: increment(-1) },
     },
     { merge: true },
   );

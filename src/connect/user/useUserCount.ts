@@ -12,11 +12,11 @@ export default function useUserCount(userId: string, year: string) {
     if (!userId) return;
 
     const unsubscribe = onSnapshot(
-      doc(collection(store, `${COLLECTIONS.USER}/${userId}/counter`), 'total'),
+      doc(collection(store, `${COLLECTIONS.USER}/${userId}/counter`), year),
 
       (snapshot) => {
         const newData = snapshot.data();
-        client.setQueryData(['total'], newData);
+        client.setQueryData([`total-${year}`], newData);
       },
     );
     return () => {
@@ -24,7 +24,7 @@ export default function useUserCount(userId: string, year: string) {
     };
   }, [client, userId, year]);
 
-  return useQuery(['total', userId], () => getUserCount(userId, year), {
+  return useQuery([`total-${year}`, userId], () => getUserCount(userId, year), {
     enabled: !!userId,
   });
 }

@@ -90,13 +90,11 @@ export default function Chart({
   ];
 
   const data = {
-    labels: labelTexts.map(
-      (label) => `${label} (${userData[label]?.length || 0})`,
-    ),
+    labels: labelTexts.map((label) => `${label} (${userData[label] || 0})`),
     datasets: [
       {
         label: title,
-        data: labelTexts.map((label) => userData[label]?.length || 0),
+        data: labelTexts.map((label) => userData[label] || 0),
       },
     ],
   };

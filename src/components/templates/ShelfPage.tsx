@@ -28,7 +28,7 @@ export default function ShelfPage({ userId }: { userId: string }) {
       <div className={styles.wrap}>
         <div>
           <ProgressBar
-            value={Number(userData?.totalBook) || 0}
+            value={Number(counterData?.totalBook) || 0}
             total={Number(userData?.currentGoal) || DEFAULT_GOAL}
           />
 
