@@ -1,0 +1,962 @@
+[
+  {
+    "id": "K302838418",
+    "lastUpdatedTime": {
+      "seconds": 1730116214,
+      "nanoseconds": 816000000
+    },
+    "createdTime": {
+      "seconds": 1730116214,
+      "nanoseconds": 816000000
+    },
+    "grade": "3",
+    "category": "경제경영",
+    "title": "만약 고교야구 여자 매니저가 피터 드러커를 읽는다면 : 매니지먼트 편",
+    "flipCover": "https://image.aladin.co.kr/product/29825/25/spineflip/k302838418_d.jpg",
+    "memo": "피터드러커의 매니지먼트를 읽어봐야 될것 같다. 나의 성장을 위해 적용해보면 좋을 것 같다.",
+    "author": "이와사키 나쓰미",
+    "subTitle": "",
+    "readDate": "2024-10-28",
+    "frontCover": "https://image.aladin.co.kr/product/29825/25/cover500/k302838418_2.jpg"
+  },
+  {
+    "id": "8931003528",
+    "memo": "어른이 된다는 것은 무엇일까? 세상의 모순에 그저 휘둘리며 살아가는 것이 인생인가.",
+    "flipCover": "https://image.aladin.co.kr/product/17/21/spineflip/s322638739_d.jpg",
+    "readDate": "2024-10-18",
+    "title": "호밀밭의 파수꾼",
+    "author": "제롬 데이비드 샐린저",
+    "category": "소설/시/희곡",
+    "subTitle": "",
+    "createdTime": {
+      "seconds": 1730122328,
+      "nanoseconds": 927000000
+    },
+    "lastUpdatedTime": {
+      "seconds": 1730122328,
+      "nanoseconds": 927000000
+    },
+    "frontCover": "https://image.aladin.co.kr/product/17/21/cover500/s322638739_1.jpg",
+    "grade": "3"
+  },
+  {
+    "id": "8998441012",
+    "category": "소설/시/희곡",
+    "lastUpdatedTime": {
+      "seconds": 1730116477,
+      "nanoseconds": 76000000
+    },
+    "subTitle": "개정판",
+    "frontCover": "https://image.aladin.co.kr/product/2584/37/cover500/8998441012_3.jpg",
+    "memo": "인생은 모든것이 모순이다.",
+    "title": "모순",
+    "flipCover": "https://image.aladin.co.kr/product/2584/37/spineflip/8998441012_d.jpg",
+    "createdTime": {
+      "seconds": 1730116477,
+      "nanoseconds": 76000000
+    },
+    "grade": "5",
+    "author": "양귀자",
+    "readDate": "2024-10-12"
+  },
+  {
+    "id": "K712938216",
+    "frontCover": "https://image.aladin.co.kr/product/33371/82/cover500/k712938216_1.jpg",
+    "subTitle": "만들면서 배우는 친절한 프로그래밍 자습서",
+    "title": "코딩 자율학습 제로초의 자바스크립트 입문",
+    "createdTime": {
+      "seconds": 1730124654,
+      "nanoseconds": 60000000
+    },
+    "author": "조현영",
+    "category": "컴퓨터/모바일",
+    "lastUpdatedTime": {
+      "seconds": 1730124654,
+      "nanoseconds": 60000000
+    },
+    "memo": "",
+    "grade": "5",
+    "readDate": "2024-10-03",
+    "flipCover": "https://image.aladin.co.kr/product/33371/82/spineflip/k712938216_d.jpg"
+  },
+  {
+    "id": "K862932761",
+    "frontCover": "https://image.aladin.co.kr/product/34253/70/cover500/k862932761_1.jpg",
+    "flipCover": "https://image.aladin.co.kr/product/34253/70/spineflip/k862932761_d.jpg",
+    "grade": "3",
+    "lastUpdatedTime": {
+      "seconds": 1730116412,
+      "nanoseconds": 775000000
+    },
+    "subTitle": "당신이라는 이야기 속으로",
+    "author": "장은교",
+    "memo": "모든 대화는 인터뷰와 같다. 상대방에 대한 더한 애정을 가져보자",
+    "title": "인터뷰하는 법",
+    "createdTime": {
+      "seconds": 1730116412,
+      "nanoseconds": 775000000
+    },
+    "readDate": "2024-10-02",
+    "category": "예술/대중문화"
+  },
+  {
+    "id": "K622932853",
+    "category": "자기계발",
+    "subTitle": "",
+    "title": "고전이 답했다 마땅히 살아야 할 삶에 대하여",
+    "author": "고명환",
+    "lastUpdatedTime": {
+      "seconds": 1730116333,
+      "nanoseconds": 444000000
+    },
+    "memo": "고전 도서를 한달에 한권정도는 꼭 읽도록 하자",
+    "grade": "3",
+    "flipCover": "https://image.aladin.co.kr/product/34526/60/spineflip/k622932853_d.jpg",
+    "readDate": "2024-09-25",
+    "createdTime": {
+      "seconds": 1730116333,
+      "nanoseconds": 444000000
+    },
+    "frontCover": "https://image.aladin.co.kr/product/34526/60/cover500/k622932853_2.jpg"
+  },
+  {
+    "id": "K162931194",
+    "createdTime": {
+      "seconds": 1730118712,
+      "nanoseconds": 698000000
+    },
+    "readDate": "2024-09-20",
+    "flipCover": "https://image.aladin.co.kr/product/34127/36/spineflip/k162931194_d.jpg",
+    "title": "나는 주말마다 10억 버는 비즈니스를 한다",
+    "subTitle": "따라 하면 누구나 사업 천재가 되는 연쇄 창업가의 주말 사용법",
+    "grade": "4",
+    "memo": "어떤 비즈니스를 할 것인가",
+    "author": "노아 케이건",
+    "category": "경제경영",
+    "lastUpdatedTime": {
+      "seconds": 1730118712,
+      "nanoseconds": 698000000
+    },
+    "frontCover": "https://image.aladin.co.kr/product/34127/36/cover500/k162931194_1.jpg"
+  },
+  {
+    "id": "K392931518",
+    "frontCover": "https://image.aladin.co.kr/product/34198/83/cover500/k392931518_1.jpg",
+    "createdTime": {
+      "seconds": 1730118246,
+      "nanoseconds": 74000000
+    },
+    "category": "경제경영",
+    "title": "초필사력",
+    "lastUpdatedTime": {
+      "seconds": 1730118246,
+      "nanoseconds": 74000000
+    },
+    "flipCover": "https://image.aladin.co.kr/product/34198/83/spineflip/k392931518_d.jpg",
+    "readDate": "2024-09-05",
+    "memo": "손의 감각을 동원해서 책읽기. 문장엔 힘이 있고, 적어야 기억할 수 있다.",
+    "grade": "3",
+    "subTitle": "연봉을 2배로 만드는",
+    "author": "이광호"
+  },
+  {
+    "id": "K852932279",
+    "memo": "나의 취향은 어떻게 만들어 진 것일까, 온전한 나의 취향은 있을 수 있을까?",
+    "readDate": "2024-09-02",
+    "category": "인문학",
+    "subTitle": "주어진 삶에서 벗어나 나만의 방향을 찾아주는 안내서",
+    "author": "나영웅",
+    "grade": "3",
+    "title": "취향은 어떻게 계급이 되는가",
+    "flipCover": "https://image.aladin.co.kr/product/34293/2/spineflip/k852932279_d.jpg",
+    "createdTime": {
+      "seconds": 1730118299,
+      "nanoseconds": 954000000
+    },
+    "frontCover": "https://image.aladin.co.kr/product/34293/2/cover500/k852932279_1.jpg",
+    "lastUpdatedTime": {
+      "seconds": 1730118299,
+      "nanoseconds": 954000000
+    }
+  },
+  {
+    "id": "K472930993",
+    "category": "경제경영",
+    "lastUpdatedTime": {
+      "seconds": 1730118348,
+      "nanoseconds": 753000000
+    },
+    "subTitle": "다 주고 더 받는",
+    "createdTime": {
+      "seconds": 1730118348,
+      "nanoseconds": 753000000
+    },
+    "readDate": "2024-08-30",
+    "frontCover": "https://image.aladin.co.kr/product/33839/2/cover500/k472930993_1.jpg",
+    "title": "룰 메이커",
+    "flipCover": "https://image.aladin.co.kr/product/33839/2/spineflip/k472930993_d.jpg",
+    "author": "임춘성",
+    "memo": "마케팅이란...",
+    "grade": "2"
+  },
+  {
+    "id": "K962931994",
+    "grade": "2",
+    "subTitle": "",
+    "flipCover": "https://image.aladin.co.kr/product/34117/59/spineflip/k962931994_d.jpg",
+    "category": "소설/시/희곡",
+    "author": "알렉스 안도릴",
+    "createdTime": {
+      "seconds": 1730118395,
+      "nanoseconds": 263000000
+    },
+    "lastUpdatedTime": {
+      "seconds": 1730118395,
+      "nanoseconds": 263000000
+    },
+    "readDate": "2024-08-27",
+    "memo": "주인공이 너무 매력이 없다... 추리소설인데 진짜 하나도 전개가 궁금하지 않았다...ㅎㅎ",
+    "frontCover": "https://image.aladin.co.kr/product/34117/59/cover500/k962931994_1.jpg",
+    "title": "아이가 없는 집"
+  },
+  {
+    "id": "K512933746",
+    "category": "경제경영",
+    "author": "정희선",
+    "frontCover": "https://image.aladin.co.kr/product/34850/55/cover500/k512933746_2.jpg",
+    "subTitle": "일본에서 찾은 소비 비즈니스 트렌드 5",
+    "flipCover": "https://image.aladin.co.kr/product/34850/55/spineflip/k512933746_d.jpg",
+    "title": "도쿄 트렌드 인사이트 2025",
+    "createdTime": {
+      "seconds": 1730118450,
+      "nanoseconds": 746000000
+    },
+    "grade": "3",
+    "readDate": "2024-08-21",
+    "lastUpdatedTime": {
+      "seconds": 1730118450,
+      "nanoseconds": 746000000
+    },
+    "memo": "흥미로운 일본 이야기, 우리 나라는 어떻게 변화할까"
+  },
+  {
+    "id": "890128510X",
+    "category": "자기계발",
+    "frontCover": "https://image.aladin.co.kr/product/34173/51/cover500/890128510x_1.jpg",
+    "grade": "3",
+    "title": "대화의 힘",
+    "subTitle": "원하는 모든 것을 얻어내는 최고의 기술",
+    "author": "찰스 두히그",
+    "lastUpdatedTime": {
+      "seconds": 1730118482,
+      "nanoseconds": 194000000
+    },
+    "createdTime": {
+      "seconds": 1730118482,
+      "nanoseconds": 194000000
+    },
+    "readDate": "2024-08-02",
+    "flipCover": "https://image.aladin.co.kr/product/34173/51/spineflip/890128510x_d.jpg",
+    "memo": ""
+  },
+  {
+    "id": "8969525815",
+    "subTitle": "챗GPT 시대 생성형 AI 활용법을 배우다",
+    "category": "경제경영",
+    "memo": "",
+    "createdTime": {
+      "seconds": 1730118500,
+      "nanoseconds": 322000000
+    },
+    "grade": "3",
+    "flipCover": "https://image.aladin.co.kr/product/33847/71/spineflip/8969525815_d.jpg",
+    "readDate": "2024-07-24",
+    "author": "김동석",
+    "lastUpdatedTime": {
+      "seconds": 1730118500,
+      "nanoseconds": 322000000
+    },
+    "frontCover": "https://image.aladin.co.kr/product/33847/71/cover500/8969525815_1.jpg",
+    "title": "AI 수익화 전략"
+  },
+  {
+    "id": "K142534552",
+    "author": "은유",
+    "frontCover": "https://image.aladin.co.kr/product/17915/74/cover500/k142534552_1.jpg",
+    "createdTime": {
+      "seconds": 1730118775,
+      "nanoseconds": 404000000
+    },
+    "category": "인문학",
+    "subTitle": "나와 당신을 연결하는 이해와 공감의 말들",
+    "title": "다가오는 말들",
+    "grade": "3",
+    "memo": "",
+    "readDate": "2024-07-18",
+    "lastUpdatedTime": {
+      "seconds": 1730118775,
+      "nanoseconds": 404000000
+    },
+    "flipCover": "https://image.aladin.co.kr/product/17915/74/spineflip/k142534552_d.jpg"
+  },
+  {
+    "id": "8970417842",
+    "subTitle": "‘소속감’을 디자인하라",
+    "lastUpdatedTime": {
+      "seconds": 1730118939,
+      "nanoseconds": 656000000
+    },
+    "readDate": "2024-07-13",
+    "flipCover": "https://image.aladin.co.kr/product/33161/43/spineflip/8970417842_d.jpg",
+    "category": "경제경영",
+    "grade": "3",
+    "frontCover": "https://image.aladin.co.kr/product/33161/43/cover500/8970417842_1.jpg",
+    "title": "커뮤니티 마케팅",
+    "author": "마크 W. 셰퍼",
+    "memo": "",
+    "createdTime": {
+      "seconds": 1730118939,
+      "nanoseconds": 656000000
+    }
+  },
+  {
+    "id": "K732939411",
+    "subTitle": "18년 차 카카오 면접관의 빅테크 기업 취업/이직 가이드",
+    "grade": "5",
+    "createdTime": {
+      "seconds": 1730119786,
+      "nanoseconds": 409000000
+    },
+    "frontCover": "https://image.aladin.co.kr/product/33647/8/cover500/k732939411_1.jpg",
+    "memo": "",
+    "category": "컴퓨터/모바일",
+    "author": "이남희",
+    "readDate": "2024-07-08",
+    "title": "개발자 기술 면접 노트",
+    "flipCover": "https://image.aladin.co.kr/product/33647/8/spineflip/k732939411_d.jpg",
+    "lastUpdatedTime": {
+      "seconds": 1730119786,
+      "nanoseconds": 409000000
+    }
+  },
+  {
+    "id": "K262637017",
+    "createdTime": {
+      "seconds": 1730120043,
+      "nanoseconds": 445000000
+    },
+    "lastUpdatedTime": {
+      "seconds": 1730120043,
+      "nanoseconds": 445000000
+    },
+    "title": "습관의 말들",
+    "subTitle": "단단한 일상을 만드는 소소한 반복을 위하여",
+    "grade": "3",
+    "readDate": "2024-07-07",
+    "flipCover": "https://image.aladin.co.kr/product/23362/61/spineflip/k262637017_d.jpg",
+    "category": "에세이",
+    "memo": "",
+    "author": "김은경",
+    "frontCover": "https://image.aladin.co.kr/product/23362/61/cover500/k262637017_1.jpg"
+  },
+  {
+    "id": "K942935205",
+    "subTitle": "",
+    "readDate": "2024-07-01",
+    "author": "송길영",
+    "grade": "10",
+    "flipCover": "https://image.aladin.co.kr/product/32462/56/spineflip/k942935205_d.jpg",
+    "memo": "재미있다!",
+    "title": "시대예보: 핵개인의 시대",
+    "createdTime": {
+      "seconds": 1730119835,
+      "nanoseconds": 288000000
+    },
+    "lastUpdatedTime": {
+      "seconds": 1730119835,
+      "nanoseconds": 288000000
+    },
+    "frontCover": "https://image.aladin.co.kr/product/32462/56/cover500/k942935205_3.jpg",
+    "category": "경제경영"
+  },
+  {
+    "id": "K472930474",
+    "grade": "4",
+    "category": "컴퓨터/모바일",
+    "frontCover": "https://image.aladin.co.kr/product/33785/72/cover500/k472930474_1.jpg",
+    "readDate": "2024-06-26",
+    "author": "이시가와 무네토시",
+    "flipCover": "https://image.aladin.co.kr/product/33785/72/spineflip/k472930474_d.jpg",
+    "lastUpdatedTime": {
+      "seconds": 1730120795,
+      "nanoseconds": 241000000
+    },
+    "createdTime": {
+      "seconds": 1730120795,
+      "nanoseconds": 241000000
+    },
+    "title": "코드 작성 가이드",
+    "memo": "",
+    "subTitle": "현직 LINE 개발자가 알려주는 읽기 쉽고 코드 리뷰하기 좋은"
+  },
+  {
+    "id": "K602939112",
+    "author": "버핏타로",
+    "createdTime": {
+      "seconds": 1730119906,
+      "nanoseconds": 286000000
+    },
+    "lastUpdatedTime": {
+      "seconds": 1730119906,
+      "nanoseconds": 286000000
+    },
+    "category": "경제경영",
+    "memo": "",
+    "subTitle": "커피 한 잔 가격으로 시작하는",
+    "readDate": "2024-06-24",
+    "grade": "3",
+    "frontCover": "https://image.aladin.co.kr/product/33620/86/cover500/k602939112_1.jpg",
+    "title": "미국 배당주 투자",
+    "flipCover": "https://image.aladin.co.kr/product/33620/86/spineflip/k602939112_d.jpg"
+  },
+  {
+    "id": "K662736333",
+    "subTitle": "최신 뇌과학이 밝혀낸 성공의 비밀",
+    "createdTime": {
+      "seconds": 1730119699,
+      "nanoseconds": 316000000
+    },
+    "readDate": "2024-06-05",
+    "memo": "",
+    "lastUpdatedTime": {
+      "seconds": 1730119699,
+      "nanoseconds": 316000000
+    },
+    "category": "자기계발",
+    "grade": "3",
+    "title": "결국 해내는 사람들의 원칙 (리커버 에디션)",
+    "flipCover": "https://image.aladin.co.kr/product/25810/88/spineflip/k662736333_d.jpg",
+    "frontCover": "https://image.aladin.co.kr/product/25810/88/cover500/k662736333_1.jpg",
+    "author": "앨런 피즈, 바바라 피즈"
+  },
+  {
+    "id": "K612633101",
+    "lastUpdatedTime": {
+      "seconds": 1730118968,
+      "nanoseconds": 230000000
+    },
+    "createdTime": {
+      "seconds": 1730118968,
+      "nanoseconds": 230000000
+    },
+    "grade": "3",
+    "frontCover": "https://image.aladin.co.kr/product/25259/82/cover500/k612633101_1.jpg",
+    "author": "김재성",
+    "flipCover": "https://image.aladin.co.kr/product/25259/82/spineflip/k612633101_d.jpg",
+    "readDate": "2024-06-05",
+    "memo": "",
+    "title": "슈퍼 업무력 ARTS",
+    "category": "경제경영",
+    "subTitle": "슈퍼 인재가 공개 하는 일 잘하는 법의 완결판!"
+  },
+  {
+    "id": "8901280485",
+    "memo": "",
+    "category": "인문학",
+    "frontCover": "https://image.aladin.co.kr/product/33516/57/cover500/8901280485_1.jpg",
+    "lastUpdatedTime": {
+      "seconds": 1730118982,
+      "nanoseconds": 75000000
+    },
+    "title": "생각 중독",
+    "readDate": "2024-05-13",
+    "flipCover": "https://image.aladin.co.kr/product/33516/57/spineflip/8901280485_d.jpg",
+    "grade": "3",
+    "subTitle": "불안과 후회를 끊어내고 오늘을 사는 법",
+    "author": "닉 트렌턴",
+    "createdTime": {
+      "seconds": 1730118982,
+      "nanoseconds": 75000000
+    }
+  },
+  {
+    "id": "8966262996",
+    "grade": "3",
+    "readDate": "2024-05-04",
+    "memo": "",
+    "category": "컴퓨터/모바일",
+    "createdTime": {
+      "seconds": 1730118999,
+      "nanoseconds": 492000000
+    },
+    "flipCover": "https://image.aladin.co.kr/product/27105/61/spineflip/8966262996_d.jpg",
+    "author": "제니퍼 티드웰, 찰스 브루어, 아인 발렌시아",
+    "title": "사용자를 끌어들이는 UX/UI의 비밀",
+    "subTitle": "MAU는 높이고 이탈률은 낮추는 UX/UI 실무 패턴 80",
+    "frontCover": "https://image.aladin.co.kr/product/27105/61/cover500/8966262996_1.jpg",
+    "lastUpdatedTime": {
+      "seconds": 1730118999,
+      "nanoseconds": 492000000
+    }
+  },
+  {
+    "id": "8956608555",
+    "subTitle": "",
+    "category": "소설/시/희곡",
+    "grade": "4",
+    "createdTime": {
+      "seconds": 1730119045,
+      "nanoseconds": 645000000
+    },
+    "author": "최진영",
+    "frontCover": "https://image.aladin.co.kr/product/5527/50/cover500/8956608555_1.jpg",
+    "flipCover": "https://image.aladin.co.kr/product/5527/50/spineflip/8956608555_d.jpg",
+    "lastUpdatedTime": {
+      "seconds": 1730119045,
+      "nanoseconds": 645000000
+    },
+    "title": "구의 증명",
+    "memo": "잔인하긴 하지만, 몰입도는 최고였다..!",
+    "readDate": "2024-05-04"
+  },
+  {
+    "id": "K022838632",
+    "flipCover": "https://image.aladin.co.kr/product/29941/0/spineflip/k022838632_d.jpg",
+    "category": "인문학",
+    "memo": "",
+    "lastUpdatedTime": {
+      "seconds": 1730119064,
+      "nanoseconds": 576000000
+    },
+    "title": "게으른 완벽주의자를 위한 심리학",
+    "frontCover": "https://image.aladin.co.kr/product/29941/0/cover500/k022838632_1.jpg",
+    "grade": "3",
+    "readDate": "2024-05-03",
+    "author": "헤이든 핀치",
+    "subTitle": "미루기의 악순환에서 벗어나고 싶은 당신을 위한 심리 처방",
+    "createdTime": {
+      "seconds": 1730119064,
+      "nanoseconds": 576000000
+    }
+  },
+  {
+    "id": "K182732192",
+    "grade": "3",
+    "frontCover": "https://image.aladin.co.kr/product/27196/94/cover500/k182732192_1.jpg",
+    "createdTime": {
+      "seconds": 1730119195,
+      "nanoseconds": 421000000
+    },
+    "lastUpdatedTime": {
+      "seconds": 1730119195,
+      "nanoseconds": 421000000
+    },
+    "title": "취향",
+    "author": "심귀연",
+    "flipCover": "https://image.aladin.co.kr/product/27196/94/spineflip/k182732192_d.jpg",
+    "subTitle": "만들어진 끌림",
+    "memo": "취향이란..",
+    "category": "인문학",
+    "readDate": "2024-04-30"
+  },
+  {
+    "id": "8927812395",
+    "category": "경제경영",
+    "lastUpdatedTime": {
+      "seconds": 1730119218,
+      "nanoseconds": 596000000
+    },
+    "subTitle": "MZ 세대도 믿고 따르는 뉴타입 리더의 일잘 노하우",
+    "title": "요즘 팀장은 이렇게 일합니다",
+    "grade": "3",
+    "readDate": "2024-04-30",
+    "createdTime": {
+      "seconds": 1730119218,
+      "nanoseconds": 596000000
+    },
+    "frontCover": "https://image.aladin.co.kr/product/27436/41/cover500/8927812395_1.jpg",
+    "author": "백종화",
+    "flipCover": "https://image.aladin.co.kr/product/27436/41/spineflip/8927812395_d.jpg",
+    "memo": ""
+  },
+  {
+    "id": "K282633473",
+    "author": "이웅모",
+    "title": "모던 자바스크립트 Deep Dive",
+    "subTitle": "자바스크립트의 기본 개념과 동작 원리",
+    "flipCover": "https://image.aladin.co.kr/product/25155/25/spineflip/k282633473_d.jpg",
+    "category": "컴퓨터/모바일",
+    "lastUpdatedTime": {
+      "seconds": 1730125283,
+      "nanoseconds": 337000000
+    },
+    "readDate": "2024-04-24",
+    "createdTime": {
+      "seconds": 1730125283,
+      "nanoseconds": 337000000
+    },
+    "frontCover": "https://image.aladin.co.kr/product/25155/25/cover500/k282633473_1.jpg",
+    "memo": "",
+    "grade": "10"
+  },
+  {
+    "id": "K852737423",
+    "grade": "4",
+    "author": "개리 비숍",
+    "frontCover": "https://image.aladin.co.kr/product/18936/5/cover500/8901230658_1.jpg",
+    "title": "시작의 기술",
+    "flipCover": "https://image.aladin.co.kr/product/18936/5/spineflip/8901230658_d.jpg",
+    "memo": "시작하자",
+    "subTitle": "침대에 누워 걱정만 하는 게으른 완벽주의자를 위한 7가지 무기",
+    "category": "자기계발",
+    "lastUpdatedTime": {
+      "seconds": 1730122120,
+      "nanoseconds": 152000000
+    },
+    "readDate": "2024-04-12",
+    "createdTime": {
+      "seconds": 1730122120,
+      "nanoseconds": 152000000
+    }
+  },
+  {
+    "id": "K122938312",
+    "lastUpdatedTime": {
+      "seconds": 1730120704,
+      "nanoseconds": 368000000
+    },
+    "flipCover": "https://image.aladin.co.kr/product/33373/84/spineflip/k122938312_d.jpg",
+    "grade": "5",
+    "frontCover": "https://image.aladin.co.kr/product/33373/84/cover500/k122938312_1.jpg",
+    "subTitle": "개발자를 위한 실전 IT 영어!",
+    "category": "컴퓨터/모바일",
+    "memo": "",
+    "createdTime": {
+      "seconds": 1730120704,
+      "nanoseconds": 368000000
+    },
+    "title": "개발자가 영어도 잘해야 하나요?",
+    "readDate": "2024-04-11",
+    "author": "최희철"
+  },
+  {
+    "id": "8901276534",
+    "author": "패트릭 브링리",
+    "memo": "...재미 없었어요...",
+    "frontCover": "https://image.aladin.co.kr/product/32892/38/cover500/s402930162_1.jpg",
+    "title": "나는 메트로폴리탄 미술관의 경비원입니다",
+    "flipCover": "https://image.aladin.co.kr/product/32892/38/spineflip/s402930162_d.jpg",
+    "category": "에세이",
+    "grade": "2",
+    "subTitle": "경이로운 세계 속으로 숨어버린 한 남자의 이야기",
+    "createdTime": {
+      "seconds": 1730121957,
+      "nanoseconds": 350000000
+    },
+    "lastUpdatedTime": {
+      "seconds": 1730121957,
+      "nanoseconds": 350000000
+    },
+    "readDate": "2024-03-23"
+  },
+  {
+    "id": "8925575434",
+    "category": "경제경영",
+    "memo": "",
+    "frontCover": "https://image.aladin.co.kr/product/33279/31/cover500/8925575434_1.jpg",
+    "lastUpdatedTime": {
+      "seconds": 1730121733,
+      "nanoseconds": 622000000
+    },
+    "title": "컨셉 수업",
+    "readDate": "2024-03-17",
+    "flipCover": "https://image.aladin.co.kr/product/33279/31/spineflip/8925575434_d.jpg",
+    "author": "호소다 다카히로",
+    "createdTime": {
+      "seconds": 1730121733,
+      "nanoseconds": 622000000
+    },
+    "grade": "3",
+    "subTitle": "번뜩이는 아이디어를 잘 팔리는 비즈니스로 이끄는"
+  },
+  {
+    "id": "K472937929",
+    "title": "웹/모바일 접근성, 모두를 위한 비즈니스 확장",
+    "flipCover": "https://image.aladin.co.kr/product/33113/22/spineflip/k472937929_d.jpg",
+    "frontCover": "https://image.aladin.co.kr/product/33113/22/cover500/k472937929_1.jpg",
+    "lastUpdatedTime": {
+      "seconds": 1730121712,
+      "nanoseconds": 314000000
+    },
+    "createdTime": {
+      "seconds": 1730121712,
+      "nanoseconds": 314000000
+    },
+    "author": "수크리티 차다",
+    "memo": "",
+    "category": "컴퓨터/모바일",
+    "subTitle": "",
+    "readDate": "2024-03-04",
+    "grade": "3"
+  },
+  {
+    "id": "8932918406",
+    "flipCover": "https://image.aladin.co.kr/product/11233/36/spineflip/8932918406_d.jpg",
+    "readDate": "2024-03-01",
+    "lastUpdatedTime": {
+      "seconds": 1730121545,
+      "nanoseconds": 854000000
+    },
+    "category": "에세이",
+    "author": "장자크 상페",
+    "memo": "",
+    "subTitle": "",
+    "createdTime": {
+      "seconds": 1730121545,
+      "nanoseconds": 854000000
+    },
+    "grade": "3",
+    "frontCover": "https://image.aladin.co.kr/product/11233/36/cover500/8932918406_1.jpg",
+    "title": "진정한 우정"
+  },
+  {
+    "id": "897277362X",
+    "title": "이웃집 백만장자 (골드 리커버 에디션)",
+    "createdTime": {
+      "seconds": 1730119416,
+      "nanoseconds": 210000000
+    },
+    "frontCover": "https://image.aladin.co.kr/product/29455/73/cover500/897277362x_1.jpg",
+    "readDate": "2024-02-29",
+    "flipCover": "https://image.aladin.co.kr/product/29455/73/spineflip/897277362x_d.jpg",
+    "grade": "5",
+    "memo": "",
+    "category": "경제경영",
+    "subTitle": "푼돈이 모여 어마어마한 재산이 되는 생생한 비법",
+    "lastUpdatedTime": {
+      "seconds": 1730119416,
+      "nanoseconds": 210000000
+    },
+    "author": "토머스 J. 스탠리, 윌리엄 D. 댄코"
+  },
+  {
+    "id": "K152832802",
+    "author": "데이비드 포스터 월리스",
+    "readDate": "2024-02-28",
+    "title": "이것은 물이다",
+    "category": "에세이",
+    "memo": "이런 어른..",
+    "createdTime": {
+      "seconds": 1730120312,
+      "nanoseconds": 811000000
+    },
+    "frontCover": "https://image.aladin.co.kr/product/31368/1/cover500/k152832802_3.jpg",
+    "grade": "10",
+    "flipCover": "https://image.aladin.co.kr/product/31368/1/spineflip/k152832802_d.jpg",
+    "subTitle": "어느 뜻깊은 행사에서 전한 깨어 있는 삶을 사는 방법에 대한 생각들, 개정판",
+    "lastUpdatedTime": {
+      "seconds": 1730120312,
+      "nanoseconds": 811000000
+    }
+  },
+  {
+    "id": "K792535993",
+    "frontCover": "https://image.aladin.co.kr/product/8819/63/cover500/k792535993_1.jpg",
+    "category": "인문학",
+    "lastUpdatedTime": {
+      "seconds": 1730121591,
+      "nanoseconds": 795000000
+    },
+    "author": "에리히 프롬",
+    "memo": "어려운데",
+    "subTitle": "에리히 프롬 진짜 삶을 말하다",
+    "createdTime": {
+      "seconds": 1730121591,
+      "nanoseconds": 795000000
+    },
+    "flipCover": "https://image.aladin.co.kr/product/8819/63/spineflip/k792535993_d.jpg",
+    "readDate": "2024-02-27",
+    "grade": "3",
+    "title": "나는 왜 무기력을 되풀이하는가"
+  },
+  {
+    "id": "K372638623",
+    "category": "에세이",
+    "grade": "4",
+    "title": "해장 음식 : 나라 잃은 백성처럼 마신 다음 날에는",
+    "memo": "해장,,,,",
+    "readDate": "2024-02-26",
+    "author": "미깡",
+    "subTitle": "",
+    "lastUpdatedTime": {
+      "seconds": 1730121584,
+      "nanoseconds": 2000000
+    },
+    "flipCover": "https://image.aladin.co.kr/product/23178/93/spineflip/k372638623_d.jpg",
+    "frontCover": "https://image.aladin.co.kr/product/23178/93/cover500/k372638623_1.jpg",
+    "createdTime": {
+      "seconds": 1730121584,
+      "nanoseconds": 2000000
+    }
+  },
+  {
+    "id": "8931005148",
+    "readDate": "2024-02-21",
+    "author": "알베르 카뮈",
+    "lastUpdatedTime": {
+      "seconds": 1730121660,
+      "nanoseconds": 765000000
+    },
+    "subTitle": "",
+    "memo": "어떤것이 정상인걸까...",
+    "createdTime": {
+      "seconds": 1730121660,
+      "nanoseconds": 765000000
+    },
+    "category": "소설/시/희곡",
+    "grade": "5",
+    "title": "이방인",
+    "flipCover": "https://image.aladin.co.kr/product/28/47/spineflip/8931005148_d.jpg",
+    "frontCover": "https://image.aladin.co.kr/product/28/47/cover500/8931005148_2.jpg"
+  },
+  {
+    "id": "K542936989",
+    "memo": "",
+    "flipCover": "https://image.aladin.co.kr/product/32749/91/spineflip/k542936989_d.jpg",
+    "subTitle": "리액트의 핵심 개념과 동작 원리부터 Next.js까지, 리액트의 모든 것",
+    "title": "모던 리액트 Deep Dive",
+    "createdTime": {
+      "seconds": 1730124484,
+      "nanoseconds": 951000000
+    },
+    "frontCover": "https://image.aladin.co.kr/product/32749/91/cover500/k542936989_1.jpg",
+    "readDate": "2024-02-06",
+    "lastUpdatedTime": {
+      "seconds": 1730124484,
+      "nanoseconds": 951000000
+    },
+    "author": "김용찬",
+    "category": "컴퓨터/모바일",
+    "grade": "10"
+  },
+  {
+    "id": "K472832200",
+    "frontCover": "https://image.aladin.co.kr/product/31397/83/cover500/k472832200_1.jpg",
+    "author": "앙투안 드 생텍쥐페리",
+    "createdTime": {
+      "seconds": 1730121363,
+      "nanoseconds": 211000000
+    },
+    "flipCover": "https://image.aladin.co.kr/product/31397/83/spineflip/k472832200_d.jpg",
+    "grade": "3",
+    "lastUpdatedTime": {
+      "seconds": 1730121363,
+      "nanoseconds": 211000000
+    },
+    "category": "인문학",
+    "readDate": "2024-02-01",
+    "subTitle": "인간에 대한 희망으로 창조한 생텍쥐페리의 세계",
+    "memo": "어린왕자...",
+    "title": "어린 왕자, 영원이 된 순간"
+  },
+  {
+    "id": "8931466595",
+    "lastUpdatedTime": {
+      "seconds": 1730120127,
+      "nanoseconds": 106000000
+    },
+    "subTitle": "",
+    "createdTime": {
+      "seconds": 1730120127,
+      "nanoseconds": 106000000
+    },
+    "author": "니시무라 야스히로",
+    "flipCover": "https://image.aladin.co.kr/product/29861/97/spineflip/8931466595_d.jpg",
+    "category": "컴퓨터/모바일",
+    "grade": "1",
+    "frontCover": "https://image.aladin.co.kr/product/29861/97/cover500/8931466595_1.jpg",
+    "title": "그림으로 배우는 웹 구조",
+    "memo": "ㅎㅎㅎ",
+    "readDate": "2024-01-31"
+  },
+  {
+    "id": "K222931412",
+    "frontCover": "https://image.aladin.co.kr/product/34196/48/cover500/k222931412_2.jpg",
+    "subTitle": "마음의 위기를 다스리는 철학 수업",
+    "createdTime": {
+      "seconds": 1730121278,
+      "nanoseconds": 913000000
+    },
+    "category": "인문학",
+    "readDate": "2024-01-29",
+    "title": "마흔에 읽는 쇼펜하우어 (리커버, 200쇄 기념 확장판)",
+    "lastUpdatedTime": {
+      "seconds": 1730121278,
+      "nanoseconds": 913000000
+    },
+    "author": "강용수",
+    "memo": "아포리즘 때보다 못한 감동..ㅠ",
+    "grade": "3",
+    "flipCover": "https://image.aladin.co.kr/product/34196/48/spineflip/k222931412_d.jpg"
+  },
+  {
+    "id": "K662936837",
+    "author": "황석희",
+    "subTitle": "번역가의 영화적 일상 에세이",
+    "frontCover": "https://image.aladin.co.kr/product/32920/49/cover500/k662936837_1.jpg",
+    "grade": "4",
+    "lastUpdatedTime": {
+      "seconds": 1730121455,
+      "nanoseconds": 946000000
+    },
+    "flipCover": "https://image.aladin.co.kr/product/32920/49/spineflip/k662936837_d.jpg",
+    "category": "에세이",
+    "title": "번역: 황석희",
+    "readDate": "2024-01-18",
+    "createdTime": {
+      "seconds": 1730121455,
+      "nanoseconds": 946000000
+    },
+    "memo": "번역가의 매력.."
+  },
+  {
+    "id": "K732831392",
+    "flipCover": "https://image.aladin.co.kr/product/30929/51/spineflip/s662930344_d.jpg",
+    "author": "세이노(SayNo)",
+    "readDate": "2024-01-16",
+    "title": "세이노의 가르침 (화이트 에디션)",
+    "category": "자기계발",
+    "createdTime": {
+      "seconds": 1730120199,
+      "nanoseconds": 455000000
+    },
+    "grade": "10",
+    "frontCover": "https://image.aladin.co.kr/product/30929/51/cover500/s662930344_1.jpg",
+    "subTitle": "피보다 진하게 살아라",
+    "memo": "\b팩트폭격기...ㅎㅎ 속이 다 시원하다. 쉽지않은 부자의 길",
+    "lastUpdatedTime": {
+      "seconds": 1730120199,
+      "nanoseconds": 455000000
+    }
+  },
+  {
+    "id": "K422735211",
+    "frontCover": "https://image.aladin.co.kr/product/25629/18/cover500/k422735211_1.jpg",
+    "memo": "다시 읽어도 좋다",
+    "subTitle": "UX 디자이너의 글쓰기",
+    "flipCover": "https://image.aladin.co.kr/product/25629/18/spineflip/k422735211_d.jpg",
+    "createdTime": {
+      "seconds": 1730120166,
+      "nanoseconds": 650000000
+    },
+    "lastUpdatedTime": {
+      "seconds": 1730120166,
+      "nanoseconds": 650000000
+    },
+    "readDate": "2024-01-12",
+    "category": "컴퓨터/모바일",
+    "title": "마이크로카피 2/e",
+    "author": "킨너렛 이프라",
+    "grade": "10"
+  }
+]
