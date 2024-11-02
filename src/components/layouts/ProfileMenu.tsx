@@ -52,7 +52,16 @@ export default function ProfileMenu({ user }: { user: User }) {
             }}
           >
             <Icon name="person" color="grayLv3" />
-            마이페이지
+            나의 책
+          </button>
+          <button
+            onClick={() => {
+              setIsOpenMenu((prev) => !prev);
+              router.push('/my/follow');
+            }}
+          >
+            <Icon name="people" color="grayLv3" />
+            팔로우
           </button>
           <button
             onClick={() => {
