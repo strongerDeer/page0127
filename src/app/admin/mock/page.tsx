@@ -7,7 +7,7 @@ import { YEAR_2024 } from '@mock/2024';
 import { collection, doc, writeBatch } from 'firebase/firestore';
 import { toast } from 'react-toastify';
 
-export default function page() {
+export default function Page() {
   const user = useUser();
   const handleButtonClick = async () => {
     const batch = writeBatch(store);

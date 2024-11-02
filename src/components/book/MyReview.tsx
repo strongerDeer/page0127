@@ -49,7 +49,7 @@ export default function MyReview({
     isLoading,
     write,
     remove,
-  } = useShelfReview({ shelfUid: targetUser?.uid, bookId: bookId });
+  } = useShelfReview({ shelfUid: targetUser?.uid as string, bookId: bookId });
   const { open: modalOpen, close: modalClose } =
     useModalContext() as ModalContextValue;
 
@@ -97,7 +97,7 @@ export default function MyReview({
                     closeButtonLabel: '취소',
                     onButtonClick: () => {
                       remove({
-                        uid: targetUser?.uid,
+                        uid: targetUser?.uid as string,
                         reviewId: review.id,
                         bookId: review.bookId,
                       });
