@@ -8,11 +8,12 @@ interface SelectProps
   placeholder?: string;
   options: Option[];
   value: string;
+  hiddenLabel?: boolean;
   onChange: (value: string) => void;
 }
 
 const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
-  { label, placeholder, options, onChange, ...props },
+  { label, placeholder, options, onChange, hiddenLabel, ...props },
   ref,
 ) {
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -21,7 +22,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
 
   return (
     <div className={styles.wrap}>
-      <label>{label}</label>
+      {!hiddenLabel && <label>{label}</label>}
       <select
         ref={ref}
         className={styles.select}

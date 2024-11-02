@@ -46,6 +46,7 @@ export default function ApplyClub({
         step: 0,
       };
     }
+
     return JSON.parse(applied);
   });
 

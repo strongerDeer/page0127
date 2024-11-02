@@ -67,11 +67,10 @@ export default function MyBooks({
     setBookData(filteredBook);
   }, [year, book, category]);
 
-  console.log(bookData);
   return (
     <div>
-      <h2>{year}</h2>
-      <YearTab value={year} setValue={setYear} />
+      {/* <h2>{year}</h2>
+      <YearTab value={year} setValue={setYear} /> */}
       <CategoryTab value={category} setValue={setCategory} />
       {bookData && <p>{bookData?.length}권</p>}
 

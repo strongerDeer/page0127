@@ -27,8 +27,6 @@ export default function UserProfile({
           <p className={styles.intro}>{userData?.introduce}</p>
         )}
 
-        <FollowButton isFollowing={false} uid={'ddd'} userId={userId} />
-
         {user?.uid !== uid && (
           <FollowButton
             isFollowing={following?.includes(uid) || false}

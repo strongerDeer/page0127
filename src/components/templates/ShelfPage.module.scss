@@ -1,15 +1,47 @@
 @import '@/styles/var.scss';
 
-.wrap {
-  @extend .max-width;
+.title {
+  font-weight: 600;
+  font-size: 1.4em;
+  margin-bottom: 0.5em;
 
-  position: relative;
-  padding: 4rem;
+  @media screen and (max-width: 640px) {
+    margin-bottom: 1.4em;
+  }
+}
+
+.flexContainer {
+  width: 100%;
   display: flex;
-  align-items: flex-start;
-  gap: 8rem;
-  .left {
-    width: 32rem;
+  flex-wrap: wrap;
+  gap: fcSize(40, 80);
+  margin-top: 4rem;
+
+  section {
+    flex-basis: 0;
+    flex-grow: 1;
+    h3 {
+      font-weight: 600;
+      font-size: 1.2em;
+    }
+
+    & > div {
+      max-height: 30rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    &:first-child > div {
+      padding: 5rem 0;
+    }
+  }
+  @media screen and (max-width: 640px) {
+    section:first-child > div {
+      padding: 0;
+    }
+    section:nth-child(2) > div {
+      max-height: 25rem;
+    }
   }
 }
 .info {

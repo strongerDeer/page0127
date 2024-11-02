@@ -1,3 +1,4 @@
+import { PRIMARY_RGB } from '@constants';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -21,6 +22,7 @@ ChartJS.register(
 
 const options: ChartOptions<'bar'> = {
   responsive: true,
+  maintainAspectRatio: true,
   plugins: {
     title: {
       display: false,
@@ -80,9 +82,9 @@ export default function BarChart({
         ),
         backgroundColor: labelTexts.map((label) => {
           if (Number(label) === new Date().getMonth() + 1) {
-            return 'rgba(46, 111, 242, 1)';
+            return `rgba(${PRIMARY_RGB}, 1)`;
           } else {
-            return 'rgba(46, 111, 242, 0.4)';
+            return `rgba(${PRIMARY_RGB}, 0.4)`;
           }
         }),
         borderRadius: 4,

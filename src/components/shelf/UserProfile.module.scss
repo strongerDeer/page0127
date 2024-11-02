@@ -1,15 +1,17 @@
+@import '@/styles/var.scss';
 .profileContainer {
   background-color: var(--background);
 
-  width: 40rem;
-  height: 40rem;
+  width: fcSize(300, 400);
+  height: fcSize(300, 400);
   border-radius: 50%;
 
   display: flex;
   flex-direction: column;
   align-content: center;
   justify-content: center;
-  margin: -20rem auto 0;
+  margin: 0 auto fcSize(-150, -200);
+  transform: translateY(-50%);
   position: relative;
 
   .info {

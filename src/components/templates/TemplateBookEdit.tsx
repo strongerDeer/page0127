@@ -91,7 +91,6 @@ export default function TemplateBookEdit({
 
       // 내 책장에 저장하기
       addBookInShelf(uid, bookId, { ...data, ...myData });
-      console.log('3333');
       toast.success('수정 되었습니다!');
       router.push(`/shelf/${user?.userId}`);
     } catch (error) {

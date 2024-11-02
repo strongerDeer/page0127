@@ -13,6 +13,7 @@ export const COLLECTIONS = {
   FAQ: 'faq',
 };
 
+export const PRIMARY_RGB = '41, 208, 99';
 export const DEFAULT_GOAL = 12;
 export const NO_PROFILE = '/images/no-profile.png';
 

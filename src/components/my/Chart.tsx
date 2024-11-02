@@ -1,5 +1,6 @@
 // https://kosis.kr/statHtml/statHtml.do?orgId=101&tblId=DT_1SSCL020R&vw_cd=MT_ZTITLE&list_id=D21B_2009&seqNo=&lang_mode=ko&language=kor&obj_var_id=&itm_id=&conn_path=MT_ZTITLE
 
+import { PRIMARY_RGB } from '@constants';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -27,6 +28,7 @@ ChartJS.register(
 
 const options: ChartOptions<'radar'> = {
   responsive: true,
+  maintainAspectRatio: true,
   plugins: {
     legend: {
       display: false,
@@ -37,14 +39,14 @@ const options: ChartOptions<'radar'> = {
   },
   elements: {
     line: {
-      backgroundColor: 'rgba(46, 111, 242, 0.2)',
-      borderColor: '#2e6ff2',
+      backgroundColor: `rgba(${PRIMARY_RGB}, 0.2)`,
+      borderColor: `rgba(${PRIMARY_RGB}, 1)`,
       borderWidth: 2,
       tension: 0.1,
     },
     point: {
-      backgroundColor: '#2e6ff2',
-      borderColor: '#2e6ff2',
+      backgroundColor: `rgba(${PRIMARY_RGB}, 1)`,
+      borderColor: `rgba(${PRIMARY_RGB}, 1)`,
       radius: 2,
       borderWidth: 2,
     },

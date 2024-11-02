@@ -47,7 +47,6 @@ export default function CopyButton({
         document.execCommand('copy');
         // 흐름 6.
         document.body.removeChild(textarea);
-        alert('복사되었습니다.');
 
         setIsClicked(true);
         setTimeout(() => {
