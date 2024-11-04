@@ -18,7 +18,8 @@ export default function ShelfPage({ userId }: { userId: string }) {
   const { data: counterData } = useUserCount(userData?.uid || '', year);
 
   const rest =
-    (userData?.currentGoal || DEFAULT_GOAL) - parseInt(counterData?.totalBook);
+    (userData?.currentGoal || DEFAULT_GOAL) -
+    parseInt(counterData?.totalBook || 0);
 
   const Title = () => {
     let text = '';
