@@ -9,6 +9,7 @@ import Icon from '@components/icon/Icon';
 import { cormorant } from '@font';
 import useUser, { useUserLoading } from '@connect/user/useUser';
 import ProfileMenu from './ProfileMenu';
+import AlarmBtn from './AlarmBtn';
 
 export default function Header() {
   const pathname = usePathname();
@@ -27,29 +28,7 @@ export default function Header() {
             <Icon name="addBook" color="#29D063" />
             <span className="a11y-hidden">읽은 책 등록</span>
           </Link>
-
-          <button className={styles.iconBtn}>
-            <Icon name="bell" color="grayLv4" />
-            <span className="a11y-hidden">알림</span>
-            <span
-              style={{
-                position: 'absolute',
-                top: '0',
-                right: '0',
-                border: '2px solid #fff',
-                display: 'inline-block',
-                padding: '0 0.5em',
-                borderRadius: '4rem',
-                backgroundColor: '#29D063',
-                color: '#fff',
-                fontSize: '1.2rem',
-                fontWeight: 'bold',
-              }}
-            >
-              1
-            </span>
-          </button>
-
+          {/* <AlarmBtn /> */}
           <ProfileMenu user={user} />
         </>
       );
