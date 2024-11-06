@@ -7,4 +7,12 @@
   & + a {
     margin-top: 4rem;
   }
+
+  .labelTitle {
+    color: var(--grayLv4);
+    transition: all 0.3s;
+    font-size: 0.9em;
+    user-select: none;
+    margin-bottom: 0.4rem;
+  }
 }

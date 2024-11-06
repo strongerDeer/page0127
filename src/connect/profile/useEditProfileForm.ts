@@ -23,7 +23,7 @@ export const useEditProfileForm = () => {
   const { formValues, inputDirty, handleFormValues, handleBlur } =
     useForm<EditFormValues>({
       displayName: user?.displayName || '',
-      intro: user?.introduce || '',
+      introduce: user?.introduce || '',
     });
 
   const isProfileChanged = useMemo(() => {

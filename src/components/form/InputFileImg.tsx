@@ -13,6 +13,8 @@ interface InputFileLabelProps
   label?: string;
   className?: string;
   value: string;
+  noImg?: boolean;
+  variant?: string;
   setValue: React.Dispatch<React.SetStateAction<string>>;
 }
 
@@ -23,6 +25,8 @@ export default function InputFileImg(props: InputFileLabelProps) {
     className,
     value,
     setValue,
+    noImg,
+    variant = 'circle',
     ...rest
   } = props;
 
@@ -53,7 +57,7 @@ export default function InputFileImg(props: InputFileLabelProps) {
   };
 
   return (
-    <div className={styles.wrap}>
+    <div className={clsx(styles.wrap, styles[variant])}>
       <div className={styles.input_btn}>
         <input
           className={clsx([styles.input, className])}
@@ -71,13 +75,17 @@ export default function InputFileImg(props: InputFileLabelProps) {
         </label>
       </div>
 
-      <Image
-        className={styles.preview}
-        src={value ? value : NO_PROFILE}
-        width={120}
-        height={120}
-        alt=""
-      />
+      {noImg ? (
+        <div className={styles.preview}>이미지 없음</div>
+      ) : (
+        <Image
+          className={styles.preview}
+          src={value ? value : NO_PROFILE}
+          width={120}
+          height={120}
+          alt=""
+        />
+      )}
 
       {value && (
         <button

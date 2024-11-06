@@ -39,6 +39,7 @@ export default function EditProfileForm({
         setValue={setProfileImg}
       />
       <Input label="이메일" value={user?.email} disabled />
+
       {inputArr.map(({ id, type, label, placeholder }) => (
         <Input
           key={id}
@@ -57,11 +58,16 @@ export default function EditProfileForm({
         />
       ))}
 
-      <InputFileImg
-        id="background"
-        value={backgroundImage}
-        setValue={setBackgroundImg}
-      />
+      <div>
+        <h3 className={styles.labelTitle}>배경 이미지</h3>
+        <InputFileImg
+          id="background"
+          value={backgroundImage}
+          setValue={setBackgroundImg}
+          variant="square"
+          noImg
+        />
+      </div>
 
       {isMobile ? (
         <ButtonFixedBottom
