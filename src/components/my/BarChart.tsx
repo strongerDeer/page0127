@@ -46,8 +46,6 @@ const options: ChartOptions<'bar'> = {
   },
 };
 
-const year = new Date().getFullYear();
-
 const labelTexts = [
   '01',
   '02',
@@ -66,9 +64,11 @@ const labelTexts = [
 export default function BarChart({
   title,
   userData,
+  year,
 }: {
   title: string;
   userData: any;
+  year: string;
 }) {
   const data = {
     labels: labelTexts.map((label) => `${Number(label)}`),

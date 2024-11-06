@@ -7,9 +7,13 @@ import Select from '@components/form/Select';
 export default function Background({
   userId,
   userData,
+  year,
+  setYear,
 }: {
   userId: string;
   userData: User;
+  year: string;
+  setYear: React.Dispatch<React.SetStateAction<string>>;
 }) {
   return (
     <div className={styles.background}>
@@ -23,13 +27,17 @@ export default function Background({
 
       <div className={styles.text}>
         <div>
-          <Select
-            options={[{ value: 2024, label: '2024' }]}
-            label="년도"
-            value="2024"
-            hiddenLabel
-            onChange={() => {}}
-          />
+          <select
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+              setYear(e.target.value);
+            }}
+          >
+            <option>2024</option>
+            <option>2023</option>
+            <option>2022</option>
+            <option>2021</option>
+            <option>2020</option>
+          </select>
           <h2 className={styles.title}>
             <strong>{userData.displayName}</strong>님의 책장
           </h2>

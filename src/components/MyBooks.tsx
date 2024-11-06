@@ -9,26 +9,19 @@ import { useEffect, useState } from 'react';
 import styles from './MyBooks.module.scss';
 import { Book } from '@connect/book';
 import CategoryTab from './my/CategoryTab';
-import YearTab from './my/YearTab';
 
 export default function MyBooks({
   uid,
   userId,
+  year,
 }: {
   uid: string;
   userId: string;
+  year: string;
 }) {
-  const nowYear = String(new Date().getFullYear());
   const { data: book } = useMyBooks({ userId: uid });
-  const latestBook = book?.filter(
-    (book) => book.readDate && book.readDate > `${nowYear}-01-01`,
-  ) as Book[];
-
-  // 카테고리 , 연도별
   const [category, setCategory] = useState<string>('All');
-  const [year, setYear] = useState<string>(nowYear);
-  const [bookData, setBookData] = useState<Book[]>(latestBook);
-
+  const [bookData, setBookData] = useState<Book[]>([]);
   const [imgSrc, setImgSrc] = useState<{ [key: string]: string }>({});
 
   const onError = (bookId: string) => {
@@ -39,17 +32,19 @@ export default function MyBooks({
   };
 
   useEffect(() => {
-    let filteredBook = book as Book[];
-    if (year !== 'All') {
-      filteredBook = book?.filter(
-        (book) =>
-          book.readDate &&
-          book.readDate > `${year}-01-01` &&
-          book.readDate < `${year + 1}-01-01`,
-      ) as Book[];
-    }
+    if (!book) return;
+
+    const yearFilteredBooks = book.filter(
+      (book) =>
+        book.readDate &&
+        book.readDate > `${year}-01-01` &&
+        book.readDate < `${year + 1}-01-01`,
+    );
+
+    let categoryFilteredBooks = yearFilteredBooks;
+
     if (category === '기타') {
-      filteredBook = book?.filter(
+      categoryFilteredBooks = yearFilteredBooks?.filter(
         (book) =>
           book.category !== '컴퓨터/모바일' &&
           book.category !== '소설/시/희곡' &&
@@ -59,18 +54,16 @@ export default function MyBooks({
           book.category !== '자기계발',
       ) as Book[];
     } else if (category !== 'All') {
-      filteredBook = book?.filter(
+      categoryFilteredBooks = yearFilteredBooks?.filter(
         (book) => book.category === category,
       ) as Book[];
     }
 
-    setBookData(filteredBook);
+    setBookData(categoryFilteredBooks);
   }, [year, book, category]);
 
   return (
     <div>
-      {/* <h2>{year}</h2>
-      <YearTab value={year} setValue={setYear} /> */}
       <CategoryTab value={category} setValue={setCategory} />
       {bookData && <p>{bookData?.length}권</p>}
 

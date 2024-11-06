@@ -11,10 +11,13 @@ import useUserCount from '@connect/user/useUserCount';
 import BarChart from '@components/my/BarChart';
 import useGetUser from '@connect/user/useGetUser';
 import UserProfile from '@components/shelf/UserProfile';
+import { useState } from 'react';
+
+const nowYear = String(new Date().getFullYear());
 
 export default function ShelfPage({ userId }: { userId: string }) {
+  const [year, setYear] = useState(nowYear);
   const { data: userData } = useGetUser(userId);
-  const year = String(new Date().getFullYear());
   const { data: counterData } = useUserCount(userData?.uid || '', year);
 
   const rest =
@@ -40,7 +43,14 @@ export default function ShelfPage({ userId }: { userId: string }) {
   };
   return (
     <div>
-      {userData && <Background userId={userId} userData={userData} />}
+      {userData && (
+        <Background
+          userId={userId}
+          userData={userData}
+          year={year}
+          setYear={setYear}
+        />
+      )}
 
       <div className="max-width">
         {userData && (
@@ -60,25 +70,24 @@ export default function ShelfPage({ userId }: { userId: string }) {
               <BarChart
                 title={`${userData?.displayName}의 ${year}년` || ''}
                 userData={counterData?.date}
+                year={year}
               />
             </div>
           </section>
 
-          {counterData?.category && (
-            <section>
-              <h3>카테고리별</h3>
-              <div>
-                <Chart
-                  title={`${userData?.displayName}의 ${year}년` || ''}
-                  userData={counterData?.category}
-                />
-              </div>
-            </section>
-          )}
+          <section>
+            <h3>카테고리별</h3>
+            <div>
+              <Chart
+                title={`${userData?.displayName}의 ${year}년` || ''}
+                userData={counterData?.category || []}
+              />
+            </div>
+          </section>
         </div>
 
         {userData && userData.uid && (
-          <MyBooks uid={userData?.uid} userId={userId} />
+          <MyBooks uid={userData?.uid} userId={userId} year={year} />
         )}
       </div>
     </div>
