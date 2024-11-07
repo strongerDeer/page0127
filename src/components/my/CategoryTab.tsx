@@ -1,6 +1,8 @@
 import Button from '@components/shared/Button';
 import React from 'react';
 
+import styles from './CategoryTab.module.scss';
+import clsx from 'clsx';
 export default function CategoryTab({
   value,
   setValue,
@@ -19,18 +21,17 @@ export default function CategoryTab({
     '기타',
   ];
   return (
-    <div>
-      {categories.map((category) => (
-        <Button
-          key={category}
-          variant={value === category ? 'solid' : 'outline'}
-          size="sm"
+    <div className={styles.tabWrap}>
+      {categories.map((category, index) => (
+        <button
+          key={index}
+          className={clsx(styles.tabBtn, value === category && styles.active)}
           onClick={() => {
             setValue(category);
           }}
         >
           {category}
-        </Button>
+        </button>
       ))}
     </div>
   );

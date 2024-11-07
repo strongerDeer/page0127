@@ -1,0 +1,27 @@
+@import '@/styles/var.scss';
+
+.tabWrap {
+  display: flex;
+  gap: 0.5rem;
+}
+.tabBtn {
+  height: 3.2rem;
+  padding: 0 1.2em;
+  border-radius: 1.5rem;
+  font-size: fcSize(13, 15);
+  border: 1px solid var(--grayLv2);
+  color: var(--grayLv3);
+  transition: all 0.3s;
+
+  &:not(.active):hover {
+    background-color: rgba(var(--primary-rgb), 0.05);
+    color: var(--primary);
+    border-color: rgba(var(--primary-rgb), 0.5);
+  }
+  &.active {
+    background-color: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+    font-weight: 600;
+  }
+}
