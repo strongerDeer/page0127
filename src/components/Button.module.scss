@@ -6,16 +6,16 @@
   &_unClicked,
   &_clicked {
     border: 1px solid var(--grayLv2);
-    width: 3.4rem;
     height: 3.4rem;
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 0.4rem;
     padding: 0.6rem;
     border-radius: 0.8rem;
     transition: all 0.3s;
     font-size: 0.8em;
-    color: var(--primary);
+    color: var(--background);
   }
 
   &_clicked {

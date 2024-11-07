@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import styles from './CopyButton.module.scss';
+import styles from './Button.module.scss';
 import clsx from 'clsx';
 import Icon from '@components/icon/Icon';
 import { toast } from 'react-toastify';
@@ -73,15 +73,11 @@ export default function CopyButton({
       ])}
     >
       {isClicked ? (
-        <Icon name="check" color="primary" />
+        <Icon name="circleCheck" color="#fff" size="2rem" />
       ) : (
-        <Icon name="link" color="grayLv3" />
+        <Icon name="link" color="#fff" size="2rem" />
       )}
-      {isClicked ? (
-        <span>복사 완료!</span>
-      ) : (
-        <span className="a11y-hidden">코드 복사</span>
-      )}
+      {isClicked ? <span>복사 완료!</span> : <span>{buttonLabel}</span>}
     </button>
   );
 }

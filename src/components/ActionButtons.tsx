@@ -14,7 +14,6 @@ export default function ActionButtons({
   return (
     <div className={styles.buttons}>
       <KakaoShareButton displayName={displayName} photoURL={photoURL} />
-
       <CopyButton buttonLabel="링크 복사" copy={window.window.location.href} />
     </div>
   );

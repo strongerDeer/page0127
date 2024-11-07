@@ -31,8 +31,8 @@ export default function KakaoShareButton({
           });
         }}
       >
-        <Icon name="share" color="grayLv3" />
-        <span className="a11y-hidden">카카오톡 공유하기</span>
+        <Icon name="share" color="#fff" size="2rem" />
+        <span>카톡 공유</span>
       </button>
       <Script
         src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.1/kakao.min.js"

@@ -13,6 +13,7 @@
   margin: 0 auto fcSize(-150, -200);
   transform: translateY(-50%);
   position: relative;
+  z-index: 20;
 
   .info {
     display: flex;
