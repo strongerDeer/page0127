@@ -10,7 +10,7 @@ import { Book } from '@connect/book';
 import { debounce } from 'lodash';
 import { AladinBook } from '@connect/aladin';
 import Loading from '@components/Loading';
-
+import styles from './SearchBook.module.scss';
 export default function SearchBook({
   setBookData,
 }: {
@@ -111,27 +111,31 @@ export default function SearchBook({
         placeholder="어떤 책을 읽었나요?"
         maxLength={50}
       />
-      {isLoading && <Loading />}
-      {isError && <div>오류: {getErrorMessage(error)}</div>}
-      {books && books.length > 0 && (
-        <ul>
-          {books.map((book: AladinBook) => (
-            <li key={book.isbn}>
-              <button type="button" onClick={() => inputImgData(book)}>
-                <Image
-                  src={book.cover}
-                  width={80}
-                  height={80}
-                  style={{ width: 'auto', height: 'auto' }}
-                  alt=""
-                />
-                {book.title} | {book.author} | {book.publisher}
-              </button>
-            </li>
-          ))}
-        </ul>
+      {(isLoading || isLoading || books) && (
+        <div className={styles.result}>
+          {isLoading && <Loading />}
+          {isError && <div>오류: {getErrorMessage(error)}</div>}
+          {books && books.length > 0 && (
+            <ul>
+              {books.map((book: AladinBook) => (
+                <li key={book.isbn}>
+                  <button type="button" onClick={() => inputImgData(book)}>
+                    <Image src={book.cover} width={80} height={80} alt="" />
+                    <span className={styles.content}>
+                      <span className={styles.title}>{book.title}</span>
+                      <span className={styles.info}>
+                        <span>{book.author}</span>
+                        <span>{book.publisher}</span>
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          {books && books.length === 0 && <>검색결과가 없습니다.</>}
+        </div>
       )}
-      {books && books.length === 0 && <>검색결과가 없습니다.</>}
     </>
   );
 }
