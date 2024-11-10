@@ -3,6 +3,7 @@
 .wrap {
   @extend .max-width;
   margin: fcSize(40, 80) auto;
+  width: 48rem;
 
   .info {
     display: flex;
@@ -56,4 +57,32 @@
   .contents {
     padding: 4rem 0;
   }
+}
+
+.lists {
+  li {
+    display: flex;
+    gap: 1em;
+    align-items: center;
+    justify-content: space-between;
+
+    .text {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      .userId {
+        font-weight: bold;
+      }
+      .displayName {
+        color: var(--grayLv3);
+        font-size: 0.9em;
+      }
+    }
+  }
+}
+
+.nodata {
+  text-align: center;
+  color: var(--grayLv3);
+  font-size: 0.95em;
 }

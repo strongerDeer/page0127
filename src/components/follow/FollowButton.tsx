@@ -28,6 +28,7 @@ export default function FollowButton({
           myId: myData.userId,
         })
       }
+      size="sm"
       variant={isFollowing ? 'outline' : 'solid'}
       color={isFollowing ? 'error' : 'primary'}
     >

@@ -9,6 +9,11 @@ import { useRouter } from 'next/navigation';
 import FollowButton from '@components/follow/FollowButton';
 
 import styles from './Page.module.scss';
+import { User } from '@connect/user';
+
+interface ExtendedUser extends User {
+  id: string;
+}
 
 export default function Page() {
   const router = useRouter();
@@ -18,9 +23,12 @@ export default function Page() {
 
   const { data: following } = useFollowing();
   const { data: follower } = useFollower();
-
   const { data: followingUsers } = useFilteredUser({ array: following || [] });
   const { data: followerUsers } = useFilteredUser({ array: follower || [] });
+
+  const handleUserClick = (userId: string) => {
+    router.push(`/shelf/${userId}`);
+  };
   return (
     <div className={styles.wrap}>
       <div className={styles.tab}>
@@ -41,65 +49,71 @@ export default function Page() {
         </button>
       </div>
       <section className={styles.contents}>
-        {activeTab === 'follower' ? (
-          <>
-            {followerUsers && followerUsers.length > 0 ? (
-              <ul>
-                {followerUsers?.map((user) => (
-                  <li key={user.id} className="flex gap-4 align-center">
-                    <button
-                      onClick={() => {
-                        router.push(`/shelf/${user.userId}`);
-                      }}
-                    >
-                      <ProfileImage photoURL={user.photoURL || ''} width={40} />
-                    </button>
-                    <p>
-                      {user.userId}| {user.displayName}{' '}
-                    </p>
-
-                    <FollowButton
-                      isFollowing={following?.includes(user.uid) || false}
-                      uid={user.uid}
-                      userId={user.userId}
-                    />
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <>아직 팔로워하는 유저가 없어요</>
-            )}
-          </>
-        ) : (
-          <>
-            {followingUsers && followingUsers.length > 0 ? (
-              <ul>
-                {followingUsers?.map((user) => (
-                  <li key={user.id} className="flex gap-4 align-center">
-                    <button
-                      onClick={() => {
-                        router.push(`/shelf/${user.userId}`);
-                      }}
-                    >
-                      <ProfileImage photoURL={user.photoURL || ''} width={40} />
-                    </button>
-                    <p>
-                      {user.userId}| {user.displayName}{' '}
-                    </p>
-                    <FollowButton
-                      isFollowing={following?.includes(user.uid) || false}
-                      uid={user.uid}
-                      userId={user.userId}
-                    />
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <>아직 팔로우하는 유저가 없어요</>
-            )}
-          </>
-        )}
+        <UserList
+          users={activeTab === 'following' ? followingUsers : followerUsers}
+          following={following || []}
+          onClick={handleUserClick}
+          activeTab={activeTab}
+        />
       </section>
     </div>
   );
 }
+
+const UserList = ({
+  users,
+  following,
+  onClick,
+  activeTab,
+}: {
+  users: ExtendedUser[] | null | undefined;
+  following: string[];
+  onClick: (userId: string) => void;
+  activeTab: 'following' | 'follower';
+}) => {
+  if (!users || users.length === 0)
+    return (
+      <p className={styles.nodata}>
+        {activeTab === 'following' ? '팔로우' : '팔로워'}하는 유저가 없어요
+      </p>
+    );
+  return (
+    <ul className={styles.lists}>
+      {users?.map((user: User & { id: string }) => (
+        <UserListItem
+          key={user.id}
+          user={user}
+          isFollowing={following?.includes(user.uid) || false}
+          onClick={onClick}
+        />
+      ))}
+    </ul>
+  );
+};
+const UserListItem = ({
+  user,
+  isFollowing,
+  onClick,
+}: {
+  user: ExtendedUser;
+  isFollowing: boolean;
+  onClick: (userId: string) => void;
+}) => {
+  return (
+    <li>
+      <button onClick={() => onClick(user.userId)}>
+        <ProfileImage photoURL={user.photoURL || ''} width={40} />
+      </button>
+      <p className={styles.text}>
+        <span className={styles.userId}>{user.userId}</span>
+        <span className={styles.displayName}>{user.displayName}</span>
+      </p>
+
+      <FollowButton
+        isFollowing={isFollowing}
+        uid={user.uid}
+        userId={user.userId}
+      />
+    </li>
+  );
+};
