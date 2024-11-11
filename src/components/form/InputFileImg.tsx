@@ -75,7 +75,7 @@ export default function InputFileImg(props: InputFileLabelProps) {
         </label>
       </div>
 
-      {noImg ? (
+      {noImg && !value ? (
         <div className={styles.preview}>이미지 없음</div>
       ) : (
         <Image
