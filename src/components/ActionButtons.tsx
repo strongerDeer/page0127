@@ -4,16 +4,20 @@ import KakaoShareButton from './KakaoShareButton';
 import styles from './ActionButtons.module.scss';
 export default function ActionButtons({
   displayName,
-  photoURL,
+  image,
+  introduce,
 }: {
-  userId: string;
-  uid: string;
   displayName: string;
-  photoURL: string;
+  image: string;
+  introduce: string;
 }) {
   return (
     <div className={styles.buttons}>
-      <KakaoShareButton displayName={displayName} photoURL={photoURL} />
+      <KakaoShareButton
+        displayName={displayName}
+        image={image}
+        introduce={introduce}
+      />
       <CopyButton buttonLabel="링크 복사" copy={window.window.location.href} />
     </div>
   );

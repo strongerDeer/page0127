@@ -11,10 +11,12 @@ declare global {
 }
 export default function KakaoShareButton({
   displayName,
-  photoURL,
+  image,
+  introduce,
 }: {
   displayName: string;
-  photoURL: string;
+  image: string;
+  introduce: string;
 }) {
   const share = useShare();
   return (
@@ -24,10 +26,10 @@ export default function KakaoShareButton({
         title="카카오톡 공유하기"
         onClick={() => {
           share({
-            title: displayName,
-            description: displayName,
-            imageUrl: photoURL || '',
-            buttonLabel: `${displayName} 책장 구경하기`,
+            title: `'${displayName}'님의 책장`,
+            description: introduce,
+            imageUrl: image,
+            buttonLabel: `'${displayName}'님의 책장 구경하기`,
           });
         }}
       >

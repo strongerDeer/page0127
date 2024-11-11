@@ -4,21 +4,21 @@ import ActionButtons from '@components/ActionButtons';
 import { User } from '@connect/user';
 import clsx from 'clsx';
 import { pretendard } from '@font';
+import { DEFAULT_BG } from '@constants';
 
 const currentYear = new Date().getFullYear();
 
 export default function Background({
   userId,
   userData,
-  year,
+
   setYear,
 }: {
   userId: string;
   userData: User;
-  year: string;
+
   setYear: React.Dispatch<React.SetStateAction<string>>;
 }) {
-  console.log(year);
   return (
     <div className={styles.background}>
       <Image
@@ -49,10 +49,9 @@ export default function Background({
             </h2>
           </div>
           <ActionButtons
-            userId={userId}
-            uid={userData.uid}
             displayName={userData.displayName || ''}
-            photoURL={userData.displayName || ''}
+            introduce={userData.introduce || ''}
+            image={userData.backgroundURL || DEFAULT_BG}
           />
         </div>
         <div className={styles.count}>
