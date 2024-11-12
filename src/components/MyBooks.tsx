@@ -74,7 +74,6 @@ export default function MyBooks({
               className={book.grade === '10' ? styles.best : ''}
               key={book.id}
             >
-              <p>{book.readDate}</p>
               <Link href={`/shelf/${userId}/${book.id}`}>
                 {book.id && (
                   <Image
