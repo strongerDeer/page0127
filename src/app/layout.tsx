@@ -9,7 +9,10 @@ import Layout from '@components/layouts/Layout';
 export const dynamicParams = false;
 
 export const metadata: Metadata = {
-  // metadataBase: new URL('https://'),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_BASE_URL || 'https://page0127.vercel.app',
+  ),
+
   title: 'page 0127.',
   description: '나만의 온라인 서재',
   openGraph: {

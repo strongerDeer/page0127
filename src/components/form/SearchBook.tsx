@@ -1,16 +1,16 @@
-//
-
 'use client';
 import { ChangeEvent, useCallback, useMemo, useState } from 'react';
-import Input from './Input';
 import { useQuery } from 'react-query';
 import { getBookInfo, getSearchBook } from '@connect/aladin/aladin';
 import Image from 'next/image';
 import { Book } from '@connect/book';
-import { debounce } from 'lodash';
 import { AladinBook } from '@connect/aladin';
+import { debounce } from 'lodash';
+import Input from './Input';
 import Loading from '@components/Loading';
+import { validateSpineflipUrl } from '@utils/validateImageUrl';
 import styles from './SearchBook.module.scss';
+
 export default function SearchBook({
   setBookData,
 }: {
@@ -46,7 +46,6 @@ export default function SearchBook({
     },
   );
 
-  // 에러 메시지를 안전하게 추출하는 함수
   const getErrorMessage = (error: unknown): string => {
     if (error instanceof Error) return error.message;
     return String(error);
@@ -67,6 +66,7 @@ export default function SearchBook({
       } = book;
 
       const imgArr = cover.split('cover200');
+      const finalSpineflipUrl = await validateSpineflipUrl(cover, isbn);
 
       const data = await getBookInfo(isbn);
       const subTitle = data?.[0]?.subInfo?.subTitle ?? null;
@@ -78,20 +78,17 @@ export default function SearchBook({
         title: title.split('-')[0].trim(),
         subTitle: subTitle,
         frontCover: `${imgArr[0]}cover500${imgArr[1]}`,
-        flipCover: `${imgArr[0]}spineflip${imgArr[1].split('_')[0]}_d.jpg`,
-
+        flipCover: finalSpineflipUrl,
         author: author.split('(지은이)')[0].trim(),
         publisher: publisher,
         pubDate: pubDate,
         description: description,
-
         categoryName: categoryName,
-
         category: categoryName.split('>')[1],
-
         page: itemPage,
         price: priceStandard ?? null,
       }));
+
       setKeyword('');
       setDebounceKeyword('');
     } catch (error) {
