@@ -44,12 +44,7 @@ export default function ShelfPage({ userId }: { userId: string }) {
   return (
     <div>
       {userData && (
-        <Background
-          userId={userId}
-          userData={userData}
-          year={year}
-          setYear={setYear}
-        />
+        <Background userId={userId} userData={userData} setYear={setYear} />
       )}
 
       <div className="max-width">
