@@ -45,7 +45,7 @@ export default function Background({
               <option value={currentYear - 4}>{currentYear - 4}년</option>
             </select>
             <h2 className={styles.title}>
-              &apos;<strong>{userData.displayName}</strong>&apos;님의 책장
+              <strong>{userData.displayName}</strong>님의 책장
             </h2>
           </div>
           <ActionButtons

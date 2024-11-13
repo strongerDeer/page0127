@@ -1,16 +1,14 @@
 @import '@/styles/var.scss';
 .profileContainer {
   background-color: var(--background);
-
-  width: fcSize(300, 400);
-  height: fcSize(300, 400);
+  width: min(80%, 40rem);
+  aspect-ratio: 1/1;
   border-radius: 50%;
-
   display: flex;
   flex-direction: column;
   align-content: center;
   justify-content: center;
-  margin: 0 auto fcSize(-150, -200);
+  margin: 0 auto calc(min(40%, 20rem) * -1);
   transform: translateY(-50%);
   position: relative;
   z-index: 20;

@@ -77,7 +77,8 @@
   }
 
   .title {
-    font-size: fcSize(32, 40);
+    font-size: fcSize(24, 36);
+    letter-spacing: -0.02em;
     font-weight: 300;
     strong {
       font-weight: 700;
