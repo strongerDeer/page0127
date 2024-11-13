@@ -57,13 +57,12 @@ export default function Review({ bookId }: { bookId: string }) {
           <li key={review.id}>
             <div className={styles.profileLink}>
               <Link href={`/shelf/${review.userId}`}>
-                <ProfileImage
-                  photoURL={review.user?.photoURL || ''}
-                  width={40}
-                />
+                <ProfileImage photoURL={review.photoURL || ''} width={40} />
               </Link>
               <Link href={`/shelf/${review.userId}`}>
-                <p className={styles.displayName}>{review.user?.displayName}</p>
+                <p className={styles.displayName}>
+                  {review.displayName} <span>{review.userId}</span>
+                </p>
               </Link>
 
               <p className={styles.time}>

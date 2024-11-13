@@ -1,14 +1,37 @@
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import useUser from '@connect/user/useUser';
 import { getReviews, removeReview, writeReview } from './review';
+import { getUser } from '@connect/user/user';
 
 export function useReview({ bookId }: { bookId: string }) {
   const user = useUser();
   const client = useQueryClient();
 
-  const { data, isLoading } = useQuery(['reviews', bookId], () =>
-    getReviews({ bookId }),
-  );
+  // 리뷰데이터 가져오기
+  const { data, isLoading } = useQuery(['reviews', bookId], async () => {
+    const reviewsData = await getReviews({ bookId });
+
+    const reviewsWithUsers = await Promise.all(
+      reviewsData.map(async (review) => {
+        try {
+          const userData = await getUser(review.uid);
+          return {
+            ...review,
+            displayName: userData.displayName,
+            photoURL: userData.photoURL,
+          };
+        } catch (error) {
+          return {
+            ...review,
+            displayName: '',
+            photoURL: '',
+          };
+        }
+      }),
+    );
+
+    return reviewsWithUsers;
+  });
 
   const { mutateAsync: write } = useMutation(
     async (text: string) => {
@@ -21,7 +44,6 @@ export function useReview({ bookId }: { bookId: string }) {
       };
 
       await writeReview(newReview);
-
       return true;
     },
     {
