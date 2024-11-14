@@ -64,36 +64,42 @@ export default function MyBooks({
 
   return (
     <div>
-      <CategoryTab value={category} setValue={setCategory} />
-      {bookData && <p>{bookData?.length}권</p>}
+      <h3 className={styles.title}>읽은 책 ({book?.length})</h3>
+      <CategoryTab
+        value={category}
+        setValue={setCategory}
+        count={bookData?.length}
+      />
 
-      {bookData && bookData.length > 0 ? (
-        <div className={styles.books}>
-          {bookData?.map((book) => (
-            <div
-              className={book.grade === '10' ? styles.best : ''}
-              key={book.id}
-            >
-              <Link href={`/shelf/${userId}/${book.id}`}>
-                {book.id && (
-                  <Image
-                    src={
-                      imgSrc[book.id] ||
-                      (book.grade === '10' ? book.frontCover : book.flipCover)
-                    }
-                    alt=""
-                    width={240}
-                    height={240}
-                    onError={() => onError(book.id as string)}
-                  />
-                )}
-              </Link>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div>등록된 책이 없어요</div>
-      )}
+      <div className={styles.shelf}>
+        {bookData && bookData.length > 0 ? (
+          <ul className={styles.books}>
+            {bookData?.map((book) => (
+              <li
+                className={book.grade === '10' ? styles.best : ''}
+                key={book.id}
+              >
+                <Link href={`/shelf/${userId}/${book.id}`}>
+                  {book.id && (
+                    <Image
+                      src={
+                        imgSrc[book.id] ||
+                        (book.grade === '10' ? book.frontCover : book.flipCover)
+                      }
+                      alt=""
+                      width={240}
+                      height={240}
+                      onError={() => onError(book.id as string)}
+                    />
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div>등록된 책이 없어요</div>
+        )}
+      </div>
     </div>
   );
 }
