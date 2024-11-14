@@ -41,14 +41,13 @@ const options: ChartOptions<'radar'> = {
     line: {
       backgroundColor: `rgba(${PRIMARY_RGB}, 0.2)`,
       borderColor: `rgba(${PRIMARY_RGB}, 1)`,
-      borderWidth: 2,
-      tension: 0.1,
+      borderWidth: 1,
     },
     point: {
       backgroundColor: `rgba(${PRIMARY_RGB}, 1)`,
       borderColor: `rgba(${PRIMARY_RGB}, 1)`,
       radius: 2,
-      borderWidth: 2,
+      borderWidth: 0,
     },
   },
 
