@@ -14,6 +14,9 @@
   color: var(--grayLv3);
   transition: all 0.3s;
 
+  span {
+    font-weight: normal;
+  }
   &:not(.active):hover {
     background-color: rgba(var(--primary-rgb), 0.05);
     color: var(--primary);

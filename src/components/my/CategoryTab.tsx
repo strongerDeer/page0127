@@ -4,9 +4,11 @@ import React from 'react';
 import styles from './CategoryTab.module.scss';
 import clsx from 'clsx';
 export default function CategoryTab({
+  count,
   value,
   setValue,
 }: {
+  count: number;
   value: string;
   setValue: React.Dispatch<React.SetStateAction<string>>;
 }) {
@@ -31,6 +33,7 @@ export default function CategoryTab({
           }}
         >
           {category}
+          {value === category && value !== 'All' && <span>({count}권)</span>}
         </button>
       ))}
     </div>
