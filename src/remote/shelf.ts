@@ -199,7 +199,43 @@ export async function addBook(
         createdTime: new Date(),
         lastUpdatedTime: new Date(),
         readUser: arrayUnion(uid),
+        readUserCount: increment(1),
         grade: { [`${myData.grade}`]: arrayUnion(uid) },
+        grade10Count: myData.grade === '10' ? increment(1) : increment(0),
+      },
+      { merge: true },
+    );
+  } catch (error) {
+    console.error('Error creating book:', error);
+    throw error;
+  }
+}
+
+export async function editBook(
+  uid: string,
+  bookId: string,
+  data: Book,
+  myData: MyData,
+) {
+  try {
+    await setDoc(
+      doc(store, 'books', bookId),
+      {
+        ...data,
+        createdTime: new Date(),
+        lastUpdatedTime: new Date(),
+        readUser: arrayUnion(uid),
+        readUserCount: increment(1),
+        grade: {
+          [`${data.grade}`]: arrayRemove(uid),
+          [`${myData.grade}`]: arrayUnion(uid),
+        },
+        grade10Count:
+          myData.grade === '10' && data.grade !== '10'
+            ? increment(1)
+            : myData.grade !== '10' && data.grade === '10'
+              ? increment(-1)
+              : increment(0),
       },
       { merge: true },
     );

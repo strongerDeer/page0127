@@ -16,7 +16,9 @@ export interface Book {
   readDate: string;
   memo?: string;
   grade?: Grade | string;
+  grade10Count: number;
   readUser?: string[];
+  readUserCount: number;
   likeUsers?: string[];
 }
 

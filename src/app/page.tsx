@@ -11,10 +11,16 @@ import { orderBy } from 'firebase/firestore';
 import Video from '@components/home/Video';
 
 export default async function HomePage() {
-  const books = await getFireBaseData<Book>(COLLECTIONS.BOOKS, [
+  const topLifeBook = await getFireBaseData<Book>(COLLECTIONS.BOOKS, [
+    orderBy('grade10Count', 'desc'),
+    orderBy('readUserCount', 'desc'),
     orderBy('createdTime', 'desc'),
   ]);
 
+  const mostReadBook = await getFireBaseData<Book>(COLLECTIONS.BOOKS, [
+    orderBy('readUserCount', 'desc'),
+    orderBy('createdTime', 'desc'),
+  ]);
   return (
     <div>
       <Visual />
@@ -25,8 +31,18 @@ export default async function HomePage() {
       <main>
         <section className="section01">
           <div className="max-width">
-            <h2 className="title2">인기 도서</h2>
-            <BookList data={books.slice(0, 8)} />
+            <h2 className="title2">독자들이 선택한 인생책</h2>
+            <BookList data={topLifeBook.slice(0, 4)} />
+            <Link href="/book" className="more">
+              도서 더보기
+            </Link>
+          </div>
+        </section>
+
+        <section className="section01">
+          <div className="max-width">
+            <h2 className="title2">가장 많이 읽힌 도서</h2>
+            <BookList data={mostReadBook.slice(0, 8)} />
             <Link href="/book" className="more">
               도서 더보기
             </Link>

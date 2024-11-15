@@ -7,7 +7,7 @@ import Button from '@components/shared/Button';
 
 import { Book } from '@connect/book';
 import useUser from '@connect/user/useUser';
-import { addBook, addBookInShelf, updateCountData } from '@remote/shelf';
+import { addBookInShelf, editBook, updateCountData } from '@remote/shelf';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 
@@ -82,7 +82,8 @@ export default function TemplateBookEdit({
     setIsLoading(true);
     try {
       // 전체 책 추가
-      addBook(uid, bookId, data, myData);
+
+      editBook(uid, bookId, data, myData);
 
       // count 데이터 저장하기
       if (data.readDate !== myData.readDate || data.grade !== myData.grade) {

@@ -75,7 +75,9 @@ export async function removeMyBook(
     // 책 데이터에서 점수 및 읽은 유저 삭제
     await updateDoc(doc(collection(store, COLLECTIONS.BOOKS), bookId), {
       readUser: arrayRemove(uid),
+      readUserCount: increment(-1),
       [`grade.${grade}`]: arrayRemove(uid),
+      grade10Count: grade === '10' ? increment(-1) : increment(0),
     });
   }
   // 나의 정보
