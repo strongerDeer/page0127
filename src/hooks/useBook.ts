@@ -17,7 +17,7 @@ export default function useBook({ id }: { id: string }) {
         doc(store, COLLECTIONS.BOOKS, id),
         (snapshot) => {
           const newBook = snapshot.data();
-          client.setQueryData(['book', id], newBook);
+          client.setQueryData([`book-${id}`, id], newBook);
         },
       );
       return () => {
@@ -26,7 +26,7 @@ export default function useBook({ id }: { id: string }) {
     }
   }, [id, client]);
 
-  return useQuery(['book', id], () => getBook(id), {
+  return useQuery([`book-${id}`, id], () => getBook(id), {
     enabled: !!id,
   });
 }

@@ -65,10 +65,10 @@ export default function TemplateBookCreate({ bookId }: { bookId?: string }) {
   });
 
   useEffect(() => {
-    if (bookId && data) {
+    if (data) {
       setBookData(data);
     }
-  }, [data, bookId]);
+  }, [data]);
 
   const [myData, setMyData] = useState<MyData>({
     readDate: today,
