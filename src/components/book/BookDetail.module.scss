@@ -117,19 +117,37 @@
 }
 
 .myContents {
-  border-radius: 1rem;
-  .myWrap {
+  border: 1rem solid var(--grayLv1);
+  padding: 3rem;
+
+  .memoTop {
     display: flex;
     align-items: center;
     gap: 1rem;
-  }
-  p {
+
+    h3 {
+      font-weight: 600;
+      font-size: 2rem;
+      flex-grow: 1;
+    }
+    div {
+      display: flex;
+    }
+    .readDate {
+      color: var(--grayLv3);
+    }
   }
   .memo {
-    padding: 1rem 2rem;
+    padding: 2rem 2.4rem;
     margin-top: 1rem;
     background-color: var(--grayLv1);
     border-radius: 1rem;
+  }
+  .btns {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 1rem;
+    justify-content: flex-end;
   }
 }
 
