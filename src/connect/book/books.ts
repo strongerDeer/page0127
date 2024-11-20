@@ -12,6 +12,7 @@ import {
   query,
   where,
 } from 'firebase/firestore';
+import getFireBaseData from '@utils/getFirebaseData';
 
 export async function getBooks() {
   let bookQuery = query(
@@ -104,4 +105,19 @@ export async function getSearchBooks(keyword: string) {
   const snapshot = await getDocs(searchQuery);
 
   return snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Book) }));
+}
+
+export async function getTopLifeBooks() {
+  return await getFireBaseData<Book>(COLLECTIONS.BOOKS, [
+    orderBy('grade10Count', 'desc'),
+    orderBy('readUserCount', 'desc'),
+    orderBy('createdTime', 'desc'),
+  ]);
+}
+
+export async function getMostReadBooks() {
+  return await getFireBaseData<Book>(COLLECTIONS.BOOKS, [
+    orderBy('readUserCount', 'desc'),
+    orderBy('createdTime', 'desc'),
+  ]);
 }

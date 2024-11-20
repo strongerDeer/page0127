@@ -26,32 +26,39 @@ import styles from './Banner.module.scss';
 import { useRef, useState } from 'react';
 import Icon from '@components/icon/Icon';
 
+interface BannerItem {
+  id: string;
+  title: string;
+  subTitle: string;
+  link?: string;
+  backgroundColor: string;
+  color: string;
+}
+
 function Banner() {
   const { data, isLoading } = useBanner('default');
-
   const swiperRef = useRef<SwiperType>();
   const progressCircle = useRef<HTMLSpanElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(true);
 
-  const onAutoplayTimeLeft = (s: any, time: number, progress: number) => {
+  const onAutoplayTimeLeft = (_: any, __: number, progress: number) => {
     if (progressCircle.current) {
       progressCircle.current.style.setProperty('--progress', `${1 - progress}`);
     }
   };
   const handleToggleAutoplay = () => {
-    if (swiperRef.current?.autoplay) {
-      if (isPlaying) {
-        swiperRef.current.autoplay.stop();
-      } else {
-        swiperRef.current.autoplay.start();
-      }
-      setIsPlaying(!isPlaying);
+    if (!swiperRef.current?.autoplay) return;
+
+    if (isPlaying) {
+      swiperRef.current.autoplay.stop();
+    } else {
+      swiperRef.current.autoplay.start();
     }
+    setIsPlaying(!isPlaying);
   };
 
-  if (isLoading || data === null || data?.length === 0) {
-    return null;
-  }
+  if (isLoading || !data?.length) return null;
+
   return (
     <section className={styles.section}>
       <h2 className="a11y-hidden">배너</h2>
@@ -61,7 +68,7 @@ function Banner() {
         }}
         modules={[EffectFade, Autoplay, Navigation, Pagination, A11y]}
         effect={'fade'}
-        loop={true}
+        loop
         autoplay={{
           delay: 5000,
           disableOnInteraction: false,
@@ -72,7 +79,7 @@ function Banner() {
           type: 'fraction',
         }}
       >
-        {data?.map((item) => (
+        {data?.map((item: BannerItem) => (
           <SwiperSlide
             key={item.id}
             className={styles.slideItem}
@@ -96,24 +103,16 @@ function Banner() {
           </span>
         </div>
 
-        <button onClick={handleToggleAutoplay} className={styles.playButton}>
-          {isPlaying ? (
-            <>
-              <Icon
-                name="pause"
-                color="#fff"
-                style={{ width: '100%', height: '100%' }}
-              />
-            </>
-          ) : (
-            <>
-              <Icon
-                name="play"
-                color="#fff"
-                style={{ width: '100%', height: '100%' }}
-              />
-            </>
-          )}
+        <button
+          onClick={handleToggleAutoplay}
+          className={styles.playButton}
+          aria-label={isPlaying ? '일시정지' : '재생'}
+        >
+          <Icon
+            name={isPlaying ? 'pause' : 'play'}
+            color="#fff"
+            style={{ width: '100%', height: '100%' }}
+          />
         </button>
       </Swiper>
     </section>
@@ -138,7 +137,19 @@ const Item = ({
 export function BannerSkeleton() {
   return (
     <section className={styles.section}>
-      <Skeleton className="bg-blue-100 px-8 py-6 rounded-xl flex items-center h-32" />
+      <div className={styles.autoPlayLine} slot="container-end">
+        <span className={styles.line}></span>
+      </div>
+      <div className="swiper-pagination">/</div>
+      <div className="swiper-button-prev"></div>
+      <div className="swiper-button-next"></div>
+      <button className={styles.playButton}>
+        <Icon
+          name="pause"
+          color="#fff"
+          style={{ width: '100%', height: '100%' }}
+        />
+      </button>
     </section>
   );
 }
