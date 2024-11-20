@@ -13,9 +13,10 @@ type Props = {
 export async function generateStaticParams() {
   let q = query(collection(store, COLLECTIONS.BOOKS));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((doc) => ({
+  const data = snapshot.docs.map((doc) => ({
     id: doc.id,
   }));
+  return data;
 }
 
 export async function generateMetadata(
