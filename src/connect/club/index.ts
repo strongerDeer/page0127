@@ -15,7 +15,7 @@ export const APPLY_STATUS = {
 } as const;
 
 export interface ApplyClubValues {
-  userId: User['uid'];
+  userId: User['userId'];
   terms: Term['id'][];
   appliedAt: Date;
   clubId: string;

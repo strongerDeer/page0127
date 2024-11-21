@@ -16,65 +16,61 @@ import {
 
 export default function useFollow() {
   const toggleFollow = async ({
-    myUid,
-    myId,
-    targetUid,
-    targetId,
+    myUserId,
+    targetUserId,
   }: {
-    myUid: string;
-    myId: string;
-    targetUid: string;
-    targetId: string;
+    myUserId: string;
+    targetUserId: string;
   }) => {
     const q = query(
-      collection(store, `${COLLECTIONS.USER}/${myUid}/following`),
+      collection(store, `${COLLECTIONS.USER}/${myUserId}/following`),
     );
     const snapshot = await getDocs(q);
     const data = snapshot.docs.map((doc) => doc.id);
 
-    if (data.includes(targetUid)) {
+    if (data.includes(targetUserId)) {
       // 나의 팔로잉 삭제
       deleteDoc(
-        doc(store, `${COLLECTIONS.USER}/${myUid}/following/${targetUid}`),
+        doc(store, `${COLLECTIONS.USER}/${myUserId}/following/${targetUserId}`),
       );
       // 나의 팔로잉 카운터 감소
-      updateDoc(doc(store, `${COLLECTIONS.USER}/${myUid}`), {
+      updateDoc(doc(store, `${COLLECTIONS.USER}/${myUserId}`), {
         followingCount: increment(-1),
       });
       // 상대방 팔로워 삭제
       deleteDoc(
-        doc(store, `${COLLECTIONS.USER}/${targetUid}/follower/${myUid}`),
+        doc(store, `${COLLECTIONS.USER}/${targetUserId}/follower/${myUserId}`),
       );
       // 상대방 팔로워 카운터 감소
-      updateDoc(doc(store, `${COLLECTIONS.USER}/${targetUid}`), {
+      updateDoc(doc(store, `${COLLECTIONS.USER}/${targetUserId}`), {
         followersCount: increment(-1),
       });
     } else {
       // 나의 팔로잉 카운터 추가
-      updateDoc(doc(store, `${COLLECTIONS.USER}/${myUid}`), {
+      updateDoc(doc(store, `${COLLECTIONS.USER}/${myUserId}`), {
         followingCount: increment(1),
       });
       // 나의 팔로잉 추가
       setDoc(
         doc(
-          collection(store, `${COLLECTIONS.USER}/${myUid}/following`),
-          targetUid,
+          collection(store, `${COLLECTIONS.USER}/${myUserId}/following`),
+          targetUserId,
         ),
-        { userId: targetId, createdTime: new Date() },
+        { userId: targetUserId, createdTime: new Date() },
         { merge: true },
       );
 
       // 상대방 팔로워 카운터 추가
-      updateDoc(doc(store, `${COLLECTIONS.USER}/${targetUid}`), {
+      updateDoc(doc(store, `${COLLECTIONS.USER}/${targetUserId}`), {
         followersCount: increment(1),
       });
       // 상대방 팔로워 추가
       setDoc(
         doc(
-          collection(store, `${COLLECTIONS.USER}/${targetUid}/follower`),
-          myUid,
+          collection(store, `${COLLECTIONS.USER}/${targetUserId}/follower`),
+          myUserId,
         ),
-        { userId: myId, createdTime: new Date() },
+        { userId: myUserId, createdTime: new Date() },
         { merge: true },
       );
     }

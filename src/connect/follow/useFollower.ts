@@ -8,31 +8,31 @@ import useUser from '@connect/user/useUser';
 import { getFollower } from './follow';
 
 export default function useFollower() {
-  const uid = useUser()?.uid;
+  const userId = useUser()?.userId;
   const client = useQueryClient();
 
   useEffect(() => {
-    if (!uid) return;
+    if (!userId) return;
     const unsubscribe = onSnapshot(
       query(
-        collection(store, `${COLLECTIONS.USER}/${uid}/follower`),
+        collection(store, `${COLLECTIONS.USER}/${userId}/follower`),
         orderBy('userId', 'desc'),
       ),
       (snapshot) => {
         const newData = snapshot.docs.map((doc) => doc.id);
-        client.setQueryData(['follower', uid], newData);
+        client.setQueryData(['follower', userId], newData);
       },
     );
     return () => {
       unsubscribe();
     };
-  }, [client, uid]);
+  }, [client, userId]);
 
   const { data } = useQuery(
-    ['follower', uid],
-    () => getFollower({ uid: uid as string }),
+    ['follower', userId],
+    () => getFollower({ userId: userId as string }),
     {
-      enabled: !!uid,
+      enabled: !!userId,
     },
   );
 

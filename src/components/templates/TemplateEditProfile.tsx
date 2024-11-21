@@ -23,7 +23,7 @@ export default function TemplateEditProfile({
         <Button
           onClick={() =>
             deleteProviderAccount({
-              uid: user?.uid,
+              userId: user?.userId,
               provider: user.provider || '',
             })
           }

@@ -83,7 +83,7 @@ const UserList = ({
         <UserListItem
           key={user.id}
           user={user}
-          isFollowing={following?.includes(user.uid) || false}
+          isFollowing={following?.includes(user.userId) || false}
           onClick={onClick}
         />
       ))}
@@ -109,11 +109,7 @@ const UserListItem = ({
         <span className={styles.displayName}>{user.displayName}</span>
       </p>
 
-      <FollowButton
-        isFollowing={isFollowing}
-        uid={user.uid}
-        userId={user.userId}
-      />
+      <FollowButton isFollowing={isFollowing} userId={user.userId} />
     </li>
   );
 };

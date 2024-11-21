@@ -78,7 +78,7 @@ export default function EditProfile() {
 
       // users 정보 업데이트
       await setDoc(
-        doc(collection(store, COLLECTIONS.USER), auth.currentUser.uid),
+        doc(collection(store, COLLECTIONS.USER), user?.userId),
         {
           displayName: formValues.displayName,
           introduce: formValues.introduce || '',

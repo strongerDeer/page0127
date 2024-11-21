@@ -1,6 +1,6 @@
 'use client';
 import useUser, { useUserLoading } from '@connect/user/useUser';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect, useCallback } from 'react';
 
 export default function AdminRoute({
@@ -8,7 +8,6 @@ export default function AdminRoute({
 }: {
   children: React.ReactNode;
 }) {
-  const path = usePathname();
   const user = useUser();
   const isLoading = useUserLoading();
   const router = useRouter();

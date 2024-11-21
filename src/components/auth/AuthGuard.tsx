@@ -5,6 +5,7 @@ import { auth } from '@firebase/firebaseApp';
 import { useSetRecoilState } from 'recoil';
 import { userAtom, userLoadingAtom } from '@atoms/user';
 import { getUser } from '@connect/user/user';
+import { getUserDataByUid } from '@connect/sign/useLogin';
 
 // 인증처리
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -13,10 +14,16 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const setIsLoading = useSetRecoilState(userLoadingAtom);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userData = await getUser(user.uid);
-        setUser(userData);
+    const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
+      if (authUser) {
+        try {
+          const userData = await getUserDataByUid(authUser.uid);
+          if (userData) {
+            setUser(userData);
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
       } else {
         setUser(null);
       }

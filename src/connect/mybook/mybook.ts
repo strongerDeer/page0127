@@ -18,10 +18,10 @@ import { COLLECTIONS } from '@constants';
 import { Book } from '@connect/book';
 import { includes } from 'lodash';
 
-export async function getMyBooks(uid: string) {
+export async function getMyBooks(userId: string) {
   const snapshot = await getDocs(
     query(
-      collection(store, `${COLLECTIONS.USER}/${uid}/book`),
+      collection(store, `${COLLECTIONS.USER}/${userId}/book`),
       orderBy('readDate', 'desc'),
     ),
   );
@@ -38,15 +38,8 @@ export async function getMyBooks(uid: string) {
 }
 
 export async function getMyBook(userId: string, bookId: string) {
-  const uid = await getDocs(
-    query(
-      collection(store, `${COLLECTIONS.USER}`),
-      where('userId', '==', userId),
-    ),
-  );
-
   const snapshot = await getDoc(
-    doc(store, `${COLLECTIONS.USER}/${uid.docs[0].data().uid}/book/${bookId}`),
+    doc(store, `${COLLECTIONS.USER}/${userId}/book/${bookId}`),
   );
 
   return {
@@ -55,7 +48,7 @@ export async function getMyBook(userId: string, bookId: string) {
 }
 
 export async function removeMyBook(
-  uid: string,
+  userId: string,
   bookId: string,
   grade: string,
   readDate: string,
@@ -68,20 +61,20 @@ export async function removeMyBook(
   const [year, month] = readDate.split('-');
 
   // 전체 책 데이터에서 삭제
-  if (readUser?.length === 1 && readUser.includes(uid)) {
+  if (readUser?.length === 1 && readUser.includes(userId)) {
     const bookRef = doc(store, `${COLLECTIONS.BOOKS}/${bookId}`);
     await deleteDoc(bookRef);
   } else {
     // 책 데이터에서 점수 및 읽은 유저 삭제
     await updateDoc(doc(collection(store, COLLECTIONS.BOOKS), bookId), {
-      readUser: arrayRemove(uid),
+      readUser: arrayRemove(userId),
       readUserCount: increment(-1),
-      [`grade.${grade}`]: arrayRemove(uid),
+      [`grade.${grade}`]: arrayRemove(userId),
       grade10Count: grade === '10' ? increment(-1) : increment(0),
     });
   }
   // 나의 정보
-  await updateDoc(doc(collection(store, COLLECTIONS.USER), uid), {
+  await updateDoc(doc(collection(store, COLLECTIONS.USER), userId), {
     totalBook: increment(-1),
     totalPage: increment(-page),
     [`totalCategory.${category.replaceAll('/', '')}`]: increment(-1),
@@ -89,10 +82,10 @@ export async function removeMyBook(
   });
 
   // 나의 책 데이터 삭제
-  const myBookRef = doc(store, `${COLLECTIONS.USER}/${uid}/book/${bookId}`);
+  const myBookRef = doc(store, `${COLLECTIONS.USER}/${userId}/book/${bookId}`);
 
   const totalQuery = doc(
-    collection(store, `${COLLECTIONS.USER}/${uid}/counter`),
+    collection(store, `${COLLECTIONS.USER}/${userId}/counter`),
     year,
   );
 

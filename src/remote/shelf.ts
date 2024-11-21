@@ -13,20 +13,14 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 
-async function checkBookExistsInMyShelf(uid: string, bookId: string) {
-  try {
-    const bookDoc = await getDoc(doc(store, `users/${uid}/book/${bookId}`));
-    return bookDoc.exists();
-  } catch (error) {
-    console.error('Error checking book existence:', error);
-    throw error;
-  }
-}
-
-export async function addBookInShelf(uid: string, bookId: string, data: Book) {
+export async function addBookInShelf(
+  userId: string,
+  bookId: string,
+  data: Book,
+) {
   try {
     await setDoc(
-      doc(store, `users/${uid}/book/${bookId}`),
+      doc(store, `users/${userId}/book/${bookId}`),
       {
         title: data.title,
         subTitle: data.subTitle,
@@ -57,7 +51,7 @@ export async function addBookInShelf(uid: string, bookId: string, data: Book) {
 // 년도별, 카테고리별, 점수별, 출판사 데이터 추가
 
 export async function addCountData(
-  uid: string,
+  userId: string,
   bookData: Book,
   myData: MyData,
 ) {
@@ -68,7 +62,7 @@ export async function addCountData(
 
   try {
     const totalQuery = doc(
-      collection(store, `${COLLECTIONS.USER}/${uid}/counter`),
+      collection(store, `${COLLECTIONS.USER}/${userId}/counter`),
       year,
     );
 
@@ -90,7 +84,7 @@ export async function addCountData(
     );
 
     await setDoc(
-      doc(store, `${COLLECTIONS.USER}/${uid}`),
+      doc(store, `${COLLECTIONS.USER}/${userId}`),
       {
         totalBook: increment(1),
         totalPage: increment(page),
@@ -109,7 +103,7 @@ export async function addCountData(
 
 export async function updateCountData(
   bookId: string,
-  uid: string,
+  userId: string,
   bookData: Book,
   myData: MyData,
 ) {
@@ -127,12 +121,12 @@ export async function updateCountData(
 
   try {
     const yearQuery = doc(
-      collection(store, `${COLLECTIONS.USER}/${uid}/counter`),
+      collection(store, `${COLLECTIONS.USER}/${userId}/counter`),
       year,
     );
 
     const prevQuery = doc(
-      collection(store, `${COLLECTIONS.USER}/${uid}/counter`),
+      collection(store, `${COLLECTIONS.USER}/${userId}/counter`),
       prevYear,
     );
 
@@ -186,7 +180,7 @@ export async function updateCountData(
   }
 }
 export async function addBook(
-  uid: string,
+  userId: string,
   bookId: string,
   data: Book,
   myData: MyData,
@@ -198,9 +192,9 @@ export async function addBook(
         ...data,
         createdTime: new Date(),
         lastUpdatedTime: new Date(),
-        readUser: arrayUnion(uid),
+        readUser: arrayUnion(userId),
         readUserCount: increment(1),
-        grade: { [`${myData.grade}`]: arrayUnion(uid) },
+        grade: { [`${myData.grade}`]: arrayUnion(userId) },
         grade10Count: myData.grade === '10' ? increment(1) : increment(0),
       },
       { merge: true },
@@ -212,7 +206,7 @@ export async function addBook(
 }
 
 export async function editBook(
-  uid: string,
+  userId: string,
   bookId: string,
   data: Book,
   myData: MyData,
@@ -224,11 +218,11 @@ export async function editBook(
         ...data,
         createdTime: new Date(),
         lastUpdatedTime: new Date(),
-        readUser: arrayUnion(uid),
+        readUser: arrayUnion(userId),
         readUserCount: increment(1),
         grade: {
-          [`${data.grade}`]: arrayRemove(uid),
-          [`${myData.grade}`]: arrayUnion(uid),
+          [`${data.grade}`]: arrayRemove(userId),
+          [`${myData.grade}`]: arrayUnion(userId),
         },
         grade10Count:
           myData.grade === '10' && data.grade !== '10'

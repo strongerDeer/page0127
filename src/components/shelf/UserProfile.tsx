@@ -7,11 +7,9 @@ import FollowButton from '@components/follow/FollowButton';
 
 export default function UserProfile({
   userId,
-  uid,
   userData,
 }: {
   userId: string;
-  uid: string;
   userData: User;
 }) {
   const user = useUser();
@@ -27,10 +25,9 @@ export default function UserProfile({
           <p className={styles.intro}>{userData?.introduce}</p>
         )}
 
-        {user?.uid !== uid && (
+        {user?.userId !== userId && (
           <FollowButton
-            isFollowing={following?.includes(uid) || false}
-            uid={uid}
+            isFollowing={following?.includes(userId) || false}
             userId={userId}
           />
         )}

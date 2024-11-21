@@ -70,10 +70,10 @@ export default function MyBookDetail({
                 <Image src={frontCover} width={320} height={320} alt="" />
               </motion.div>
               <div className={styles.buttons}>
-                {user?.uid && (
+                {user?.userId && (
                   <LikeButton
-                    bookId={user?.uid}
-                    isLike={likeBooks?.includes(user.uid) || false}
+                    bookId={user?.userId}
+                    isLike={likeBooks?.includes(user.userId) || false}
                     showText
                   />
                 )}
@@ -139,7 +139,7 @@ export default function MyBookDetail({
                   closeButtonLabel: '취소',
                   onButtonClick: () => {
                     removeMyBook(
-                      user?.uid as string,
+                      user?.userId as string,
                       bookId as string,
                       grade as string,
                       readDate as string,
@@ -160,7 +160,7 @@ export default function MyBookDetail({
           </section>
 
           {readUser && <LifeUsers userIds={readUser} />}
-          {user && user.uid && grade && (
+          {user && user.userId && grade && (
             <button
               type="button"
               onClick={() => {
@@ -171,7 +171,7 @@ export default function MyBookDetail({
                   closeButtonLabel: '취소',
                   onButtonClick: () => {
                     removeMyBook(
-                      user.uid,
+                      user.userId,
                       bookId,
                       grade as string,
                       readDate as string,

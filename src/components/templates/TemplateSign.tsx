@@ -9,6 +9,7 @@ import Link from 'next/link';
 import styles from './TemplateSign.module.scss';
 import SignUpForm from '@components/sign/SignUpForm';
 import { InputArr } from '@connect/sign';
+import { useEffect } from 'react';
 
 export default function TemplateSign({
   title,
@@ -20,10 +21,11 @@ export default function TemplateSign({
   const router = useRouter();
   const user = useUser();
 
-  console.log('✅', user);
-  if (user) {
-    router.replace('/');
-  }
+  useEffect(() => {
+    if (user) {
+      router.replace('/');
+    }
+  }, [user, router]);
   return (
     <div className={styles.signContainer}>
       <h2>{title}</h2>

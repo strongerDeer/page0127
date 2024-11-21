@@ -8,14 +8,14 @@ import useUser from '@connect/user/useUser';
 import getBookLike from './likeBook';
 
 export default function useLikeBook() {
-  const uid = useUser()?.uid;
+  const userId = useUser()?.userId;
   const client = useQueryClient();
 
   useEffect(() => {
-    if (!uid) return;
+    if (!userId) return;
     const unsubscribe = onSnapshot(
       query(
-        collection(store, `${COLLECTIONS.USER}/${uid}/like`),
+        collection(store, `${COLLECTIONS.USER}/${userId}/like`),
         orderBy('createdTime', 'desc'),
       ),
       (snapshot) => {
@@ -26,13 +26,13 @@ export default function useLikeBook() {
     return () => {
       unsubscribe();
     };
-  }, [client, uid]);
+  }, [client, userId]);
 
   const { data } = useQuery(
     ['likeBooks'],
-    () => getBookLike({ userId: uid as string }),
+    () => getBookLike({ userId: userId as string }),
     {
-      enabled: !!uid,
+      enabled: !!userId,
     },
   );
 

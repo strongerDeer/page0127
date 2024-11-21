@@ -10,9 +10,9 @@ import {
   query,
 } from 'firebase/firestore';
 
-export default async function getFollowing({ uid }: { uid: string }) {
+export default async function getFollowing({ userId }: { userId: string }) {
   const q = query(
-    collection(store, `${COLLECTIONS.USER}/${uid}/following`),
+    collection(store, `${COLLECTIONS.USER}/${userId}/following`),
     orderBy('userId', 'desc'),
   );
   const snapshot = await getDocs(q);
@@ -21,9 +21,9 @@ export default async function getFollowing({ uid }: { uid: string }) {
   return data;
 }
 
-export async function getFollower({ uid }: { uid: string }) {
+export async function getFollower({ userId }: { userId: string }) {
   const q = query(
-    collection(store, `${COLLECTIONS.USER}/${uid}/follower`),
+    collection(store, `${COLLECTIONS.USER}/${userId}/follower`),
     orderBy('userId', 'desc'),
   );
   const snapshot = await getDocs(q);
@@ -35,8 +35,8 @@ export async function getFollower({ uid }: { uid: string }) {
 export async function getFilteredUser(array: string[]) {
   const lists = array.filter((item) => !!item);
 
-  const promises = lists.map((uid) =>
-    getDoc(doc(collection(store, COLLECTIONS.USER), uid)),
+  const promises = lists.map((userId) =>
+    getDoc(doc(collection(store, COLLECTIONS.USER), userId)),
   );
 
   const userSnapshot = await Promise.all(promises);

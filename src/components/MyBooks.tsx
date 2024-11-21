@@ -11,15 +11,13 @@ import { Book } from '@connect/book';
 import CategoryTab from './my/CategoryTab';
 
 export default function MyBooks({
-  uid,
   userId,
   year,
 }: {
-  uid: string;
   userId: string;
   year: string;
 }) {
-  const { data: book } = useMyBooks({ userId: uid });
+  const { data: book } = useMyBooks({ userId: userId });
   const [category, setCategory] = useState<string>('All');
   const [bookData, setBookData] = useState<Book[]>([]);
   const [imgSrc, setImgSrc] = useState<{ [key: string]: string }>({});

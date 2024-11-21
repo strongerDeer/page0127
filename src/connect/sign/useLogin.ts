@@ -39,7 +39,7 @@ import { useCallback } from 'react';
 import { useModalContext } from '@contexts/ModalContext';
 import useUser from '@connect/user/useUser';
 
-const getUserDataByUid = async (uid: string) => {
+export const getUserDataByUid = async (uid: string) => {
   try {
     if (!uid) throw new Error('사용자 UID가 필요합니다.');
 
@@ -330,11 +330,11 @@ export default function useLogin() {
   const deleteAccount = useCallback(
     ({
       password,
-      uid,
+      userId,
       email,
     }: {
       password: string;
-      uid: string;
+      userId: string;
       email: string;
     }) => {
       if (!authUser || !user) return;
@@ -347,7 +347,7 @@ export default function useLogin() {
             const credential = EmailAuthProvider.credential(email, password);
             await reauthenticateWithCredential(authUser, credential);
 
-            await deleteDoc(doc(store, COLLECTIONS.USER, uid));
+            await deleteDoc(doc(store, COLLECTIONS.USER, userId));
             await deleteUser(authUser);
             setUser(null);
 
@@ -389,12 +389,12 @@ export default function useLogin() {
   );
 
   const deleteProviderAccount = useCallback(
-    ({ uid, provider }: { provider: string; uid: string }) => {
+    ({ userId, provider }: { provider: string; userId: string }) => {
       if (!authUser || !user) {
         toast.error('로그인이 필요한 작업입니다.');
         return;
       }
-      if (uid !== user.uid) {
+      if (userId !== user.userId) {
         toast.error('잘못된 접근입니다.');
         return;
       }
@@ -406,7 +406,7 @@ export default function useLogin() {
           try {
             await reauthenticateUser(provider);
 
-            await deleteDoc(doc(store, COLLECTIONS.USER, uid));
+            await deleteDoc(doc(store, COLLECTIONS.USER, userId));
             await deleteUser(authUser);
             setUser(null);
 

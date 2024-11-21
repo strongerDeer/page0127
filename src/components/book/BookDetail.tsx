@@ -100,7 +100,7 @@ export default function BookDetail({ data }: { data: Book }) {
                   showText
                 />
               )}
-              {user && readUser?.includes(user.uid) ? (
+              {user && readUser?.includes(user.userId) ? (
                 <p>읽었어요!</p>
               ) : (
                 <Link
@@ -144,7 +144,7 @@ export default function BookDetail({ data }: { data: Book }) {
           </div>
         </div>
 
-        {user && readUser?.includes(user.uid) && (
+        {user && readUser?.includes(user.userId) && (
           <section className={clsx('section', styles.myContents)}>
             <div className={styles.memoTop}>
               <h3>나의 메모</h3>
@@ -175,7 +175,7 @@ export default function BookDetail({ data }: { data: Book }) {
                     closeButtonLabel: '취소',
                     onButtonClick: () => {
                       removeMyBook(
-                        user.uid,
+                        user.userId,
                         id as string,
                         myBook?.grade as string,
                         myBook?.readDate as string,

@@ -51,7 +51,10 @@ export default function MyReview({
     isLoading,
     write,
     remove,
-  } = useShelfReview({ shelfUid: targetUser?.uid as string, bookId: bookId });
+  } = useShelfReview({
+    shelfUserId: targetUser?.userId as string,
+    bookId: bookId,
+  });
   const { open: modalOpen, close: modalClose } =
     useModalContext() as ModalContextValue;
 
@@ -89,7 +92,7 @@ export default function MyReview({
             </div>
 
             <CommentLikeButton commentId={review.id} />
-            {review.uid === user?.uid && (
+            {review.userId === user?.userId && (
               <button
                 onClick={() => {
                   modalOpen({
@@ -99,7 +102,7 @@ export default function MyReview({
                     closeButtonLabel: '취소',
                     onButtonClick: () => {
                       remove({
-                        uid: targetUser?.uid as string,
+                        userId: targetUser?.userId as string,
                         reviewId: review.id,
                         bookId: review.bookId,
                       });
@@ -120,7 +123,14 @@ export default function MyReview({
         ))}
       </ul>
     );
-  }, [reviews, user?.uid, modalOpen, modalClose, remove, targetUser?.uid]);
+  }, [
+    reviews,
+    user?.userId,
+    modalOpen,
+    modalClose,
+    remove,
+    targetUser?.userId,
+  ]);
 
   return (
     <div className={styles.review}>

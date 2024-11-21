@@ -4,17 +4,16 @@ import useFollow from '@connect/follow/useFollow';
 
 export default function FollowButton({
   isFollowing,
-  uid,
   userId,
 }: {
   isFollowing: boolean;
-  uid: string;
+
   userId: string;
 }) {
   const myData = useUser();
   const { toggleFollow } = useFollow();
 
-  if (uid === myData?.uid || !myData?.uid) {
+  if (userId === myData?.userId || !myData?.userId) {
     return null;
   }
 
@@ -22,10 +21,8 @@ export default function FollowButton({
     <Button
       onClick={() =>
         toggleFollow({
-          targetUid: uid,
-          targetId: userId,
-          myUid: myData.uid,
-          myId: myData.userId,
+          myUserId: myData?.userId,
+          targetUserId: userId,
         })
       }
       size="sm"

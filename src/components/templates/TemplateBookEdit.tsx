@@ -53,11 +53,11 @@ export interface MyData {
   grade: string;
 }
 export default function TemplateBookEdit({
-  uid,
+  userId,
   bookId,
   data,
 }: {
-  uid: string;
+  userId: string;
   bookId: string;
   data: Book;
 }) {
@@ -83,15 +83,15 @@ export default function TemplateBookEdit({
     try {
       // 전체 책 추가
 
-      editBook(uid, bookId, data, myData);
+      editBook(userId, bookId, data, myData);
 
       // count 데이터 저장하기
       if (data.readDate !== myData.readDate || data.grade !== myData.grade) {
-        updateCountData(bookId, uid, data, myData);
+        updateCountData(bookId, userId, data, myData);
       }
 
       // 내 책장에 저장하기
-      addBookInShelf(uid, bookId, { ...data, ...myData });
+      addBookInShelf(userId, bookId, { ...data, ...myData });
       toast.success('수정 되었습니다!');
       router.push(`/${user?.userId}`);
     } catch (error) {

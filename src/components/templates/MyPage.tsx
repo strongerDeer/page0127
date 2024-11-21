@@ -15,7 +15,7 @@ export default function MyPage() {
   const user = useUser();
 
   const { data: likeData } = useLikeBook();
-  const { data: readBook } = useReadBooks({ userId: user?.uid as string });
+  const { data: readBook } = useReadBooks({ userId: user?.userId as string });
   const { data: likes } = useFilteredBook({ like: likeData || [] });
 
   return (

@@ -9,13 +9,13 @@ import { useQuery, useQueryClient } from 'react-query';
 import getGoal from './goal';
 
 export default function useGoal() {
-  const uid = useUser()?.uid;
+  const userId = useUser()?.userId;
   const client = useQueryClient();
 
   useEffect(() => {
-    if (!uid) return;
+    if (!userId) return;
     const unsubscribe = onSnapshot(
-      doc(collection(store, `${COLLECTIONS.USER}/${uid}/goal`), 'goal'),
+      doc(collection(store, `${COLLECTIONS.USER}/${userId}/goal`), 'goal'),
       (snapshot) => {
         const newData = snapshot.data();
         client.setQueryData(['goal'], newData);
@@ -24,11 +24,15 @@ export default function useGoal() {
     return () => {
       unsubscribe();
     };
-  }, [client, uid]);
+  }, [client, userId]);
 
-  const { data } = useQuery(['goal'], () => getGoal({ uid: uid as string }), {
-    enabled: !!uid,
-  });
+  const { data } = useQuery(
+    ['goal'],
+    () => getGoal({ userId: userId as string }),
+    {
+      enabled: !!userId,
+    },
+  );
 
   return { data };
 }

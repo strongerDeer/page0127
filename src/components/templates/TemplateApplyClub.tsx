@@ -26,7 +26,7 @@ export default function TemplateApplyClub({ id }: { id: string }) {
 
   const { open } = useAlertContext();
   const { data } = useAppliedClub({
-    userId: user?.uid as string,
+    userId: user?.userId as string,
     clubId: id,
     options: {
       onSuccess: (applied) => {
@@ -56,7 +56,7 @@ export default function TemplateApplyClub({ id }: { id: string }) {
     onSuccess: async () => {
       await updateApplyClub({
         clubId: id,
-        userId: user?.uid as string,
+        userId: user?.userId as string,
         applyClubValues: {
           status: APPLY_STATUS.COMPLETE,
         },
@@ -66,7 +66,7 @@ export default function TemplateApplyClub({ id }: { id: string }) {
     onError: async () => {
       await updateApplyClub({
         clubId: id,
-        userId: user?.uid as string,
+        userId: user?.userId as string,
         applyClubValues: {
           status: APPLY_STATUS.REJECT,
         },

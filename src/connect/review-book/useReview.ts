@@ -14,7 +14,7 @@ export function useReview({ bookId }: { bookId: string }) {
     const reviewsWithUsers = await Promise.all(
       reviewsData.map(async (review) => {
         try {
-          const userData = await getUser(review.uid);
+          const userData = await getUser(review.userId);
           return {
             ...review,
             displayName: userData.displayName,

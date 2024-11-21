@@ -74,7 +74,7 @@ export default function Review({ bookId }: { bookId: string }) {
             </div>
 
             <CommentLikeButton commentId={review.id} />
-            {review.uid === user?.uid && (
+            {review.userId === user?.userId && (
               <button
                 onClick={() => {
                   modalOpen({
@@ -101,7 +101,7 @@ export default function Review({ bookId }: { bookId: string }) {
         ))}
       </ul>
     );
-  }, [reviews, user?.uid, modalOpen, modalClose, remove]);
+  }, [reviews, user?.userId, modalOpen, modalClose, remove]);
 
   return (
     <div className={styles.review}>

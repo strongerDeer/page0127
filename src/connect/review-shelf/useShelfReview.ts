@@ -7,18 +7,18 @@ import {
 } from './shelfReview';
 
 export function useShelfReview({
-  shelfUid,
+  shelfUserId,
   bookId,
 }: {
-  shelfUid: string;
+  shelfUserId: string;
   bookId: string;
 }) {
   const user = useUser();
   const client = useQueryClient();
 
   const { data, isLoading } = useQuery(
-    ['shelf-reviews', shelfUid, bookId],
-    () => getShelfReviews({ shelfUid, bookId }),
+    ['shelf-reviews', shelfUserId, bookId],
+    () => getShelfReviews({ shelfUserId, bookId }),
   );
 
   const { mutateAsync: write } = useMutation(
@@ -26,7 +26,6 @@ export function useShelfReview({
       const newReview = {
         createdAt: new Date(),
         bookId,
-        uid: user?.uid as string,
         userId: user?.userId as string,
         text,
       };
@@ -37,26 +36,26 @@ export function useShelfReview({
     },
     {
       onSuccess: () => {
-        client.invalidateQueries(['shelf-reviews', shelfUid, bookId]);
+        client.invalidateQueries(['shelf-reviews', shelfUserId, bookId]);
       },
     },
   );
 
   const { mutate: remove } = useMutation(
     ({
-      uid,
+      userId,
       reviewId,
       bookId,
     }: {
-      uid: string;
+      userId: string;
       reviewId: string;
       bookId: string;
     }) => {
-      return removeShelfReview({ uid, reviewId, bookId });
+      return removeShelfReview({ userId, reviewId, bookId });
     },
     {
       onSuccess: () => {
-        client.invalidateQueries(['shelf-reviews', shelfUid, bookId]);
+        client.invalidateQueries(['shelf-reviews', shelfUserId, bookId]);
       },
     },
   );

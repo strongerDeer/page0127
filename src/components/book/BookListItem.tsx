@@ -58,7 +58,7 @@ export default function BookListItem(props: bookItemProps) {
                   priority={index < 4 ? true : false}
                 />
 
-                {user && (readDate || readUser?.includes(user.uid)) && (
+                {user && (readDate || readUser?.includes(user.userId)) && (
                   <div className={styles.read}>
                     <span className="a11y-hidden">읽음</span>
                   </div>

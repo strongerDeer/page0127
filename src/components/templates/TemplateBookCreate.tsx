@@ -83,13 +83,13 @@ export default function TemplateBookCreate({ bookId }: { bookId?: string }) {
       setIsLoading(true);
       try {
         // 전체 책 추가
-        addBook(user.uid, bookData.id, bookData, myData);
+        addBook(user.userId, bookData.id, bookData, myData);
 
         // count 데이터 저장하기
-        addCountData(user.uid, bookData, myData);
+        addCountData(user.userId, bookData, myData);
 
         // 내 책장에 저장하기
-        addBookInShelf(user.uid, bookData.id, { ...bookData, ...myData });
+        addBookInShelf(user.userId, bookData.id, { ...bookData, ...myData });
 
         toast.success('책장에 등록되었습니다!');
         router.push(`/${user.userId}`);

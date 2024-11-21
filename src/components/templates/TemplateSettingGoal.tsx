@@ -37,10 +37,10 @@ export default function TemplateSettingGoal() {
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (user?.uid) {
-      updateGoal({ uid: user?.uid, data: goal });
+    if (user?.userId) {
+      updateGoal({ userId: user?.userId, data: goal });
       if (goal[currentYear] !== 0) {
-        updateUserGoal(user?.uid, goal[currentYear]);
+        updateUserGoal(user?.userId, goal[currentYear]);
       }
       router.push(`/${user?.userId}`);
     }

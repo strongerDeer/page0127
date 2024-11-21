@@ -13,13 +13,16 @@ import {
 } from 'firebase/firestore';
 
 export async function getShelfReviews({
-  shelfUid,
+  shelfUserId,
   bookId,
 }: {
-  shelfUid: string;
+  shelfUserId: string;
   bookId: string;
 }) {
-  const bookRef = doc(store, `${COLLECTIONS.USER}/${shelfUid}/book/${bookId}`);
+  const bookRef = doc(
+    store,
+    `${COLLECTIONS.USER}/${shelfUserId}/book/${bookId}`,
+  );
   const reviewQuery = query(
     collection(bookRef, COLLECTIONS.REVIEW),
     orderBy('createdAt', 'desc'),
@@ -70,7 +73,7 @@ export async function getShelfReviews({
 export function writeShelfReview(review: Omit<Review, 'id'>) {
   const bookRef = doc(
     store,
-    `${COLLECTIONS.USER}/${review.uid}/book/${review.bookId}`,
+    `${COLLECTIONS.USER}/${review.userId}/book/${review.bookId}`,
   );
   const reviewRef = doc(collection(bookRef, COLLECTIONS.REVIEW));
 
@@ -78,15 +81,15 @@ export function writeShelfReview(review: Omit<Review, 'id'>) {
 }
 
 export function removeShelfReview({
-  uid,
+  userId,
   reviewId,
   bookId,
 }: {
-  uid: string;
+  userId: string;
   reviewId: string;
   bookId: string;
 }) {
-  const bookRef = doc(store, `${COLLECTIONS.USER}/${uid}/book/${bookId}`);
+  const bookRef = doc(store, `${COLLECTIONS.USER}/${userId}/book/${bookId}`);
   const reviewRef = doc(collection(bookRef, COLLECTIONS.REVIEW), reviewId);
 
   return deleteDoc(reviewRef);

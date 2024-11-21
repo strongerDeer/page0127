@@ -18,7 +18,7 @@ const nowYear = String(new Date().getFullYear());
 export default function ShelfPage({ userId }: { userId: string }) {
   const [year, setYear] = useState(nowYear);
   const { data: userData } = useGetUser(userId);
-  const { data: counterData } = useUserCount(userData?.uid || '', year);
+  const { data: counterData } = useUserCount(userData?.userId || '', year);
 
   const rest =
     (userData?.currentGoal || DEFAULT_GOAL) -
@@ -48,9 +48,7 @@ export default function ShelfPage({ userId }: { userId: string }) {
       )}
 
       <div className="max-width">
-        {userData && (
-          <UserProfile userId={userId} uid={userData.uid} userData={userData} />
-        )}
+        {userData && <UserProfile userId={userId} userData={userData} />}
 
         <Title />
         <ProgressBar
@@ -81,9 +79,7 @@ export default function ShelfPage({ userId }: { userId: string }) {
           </section>
         </div>
 
-        {userData && userData.uid && (
-          <MyBooks uid={userData?.uid} userId={userId} year={year} />
-        )}
+        <MyBooks userId={userId} year={year} />
       </div>
     </div>
   );

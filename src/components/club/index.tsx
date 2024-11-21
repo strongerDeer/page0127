@@ -22,7 +22,7 @@ export default function ApplyClub({
   onSubmit: (applyClubValues: ApplyClubValues) => void;
 }) {
   const user = useUser();
-  const storageKey = `applied-${user?.uid}-${id}`;
+  const storageKey = `applied-${user?.userId}-${id}`;
 
   /*
     초기 상태를 함수로 설정
@@ -41,7 +41,7 @@ export default function ApplyClub({
 
     if (applied === null) {
       return {
-        userId: user?.uid,
+        userId: user?.userId,
         clubId: id,
         step: 0,
       };

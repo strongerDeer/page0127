@@ -17,7 +17,7 @@ export default function Page({ params }: { params: { bookId: string } }) {
     <div>
       {data && (
         <TemplateBookEdit
-          uid={user?.uid as string}
+          userId={user?.userId as string}
           data={data}
           bookId={bookId}
         />

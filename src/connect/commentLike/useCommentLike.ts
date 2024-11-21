@@ -8,7 +8,7 @@ import useUser from '@connect/user/useUser';
 import getCommentLike from './commentLike';
 
 export default function useCommentLike() {
-  const userId = useUser()?.uid;
+  const userId = useUser()?.userId;
   const client = useQueryClient();
 
   useEffect(() => {

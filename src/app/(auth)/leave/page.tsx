@@ -13,7 +13,11 @@ export default function Page() {
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user) return;
-    deleteAccount({ password: password, uid: user.uid, email: user.email });
+    deleteAccount({
+      password: password,
+      userId: user.userId,
+      email: user.email,
+    });
   };
   return (
     <>

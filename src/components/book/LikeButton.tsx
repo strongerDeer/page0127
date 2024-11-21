@@ -22,7 +22,7 @@ export default function LikeButton({
   isLike: boolean;
   showText?: boolean;
 }) {
-  const userId = useUser()?.uid;
+  const userId = useUser()?.userId;
   const [hearts, setHearts] = useState<
     Array<{ id: number; x: number; y: number }>
   >([]);
