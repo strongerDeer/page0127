@@ -19,6 +19,8 @@ export default function TemplateSign({
 }) {
   const router = useRouter();
   const user = useUser();
+
+  console.log('✅', user);
   if (user) {
     router.replace('/');
   }

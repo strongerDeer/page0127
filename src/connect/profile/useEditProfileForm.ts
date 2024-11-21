@@ -44,7 +44,7 @@ export const useEditProfileForm = () => {
     try {
       await edit(formValues, profileImage, backgroundImage);
       toast.success('수정되었습니다.');
-      router.push('/my');
+      router.replace(`/${user?.userId}`);
     } catch (error) {
       if (error instanceof FirebaseError) {
         console.log(error);

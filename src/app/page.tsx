@@ -6,6 +6,7 @@ import BookSection from '@components/home/BookSection';
 import Search from '@components/home/Search';
 import Video from '@components/home/Video';
 
+export const dynamicParams = false;
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {

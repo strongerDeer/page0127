@@ -32,7 +32,7 @@ export const useEditPasswordForm = () => {
     try {
       await editPassword(formValues);
       toast.success('수정되었습니다.');
-      router.push('/my');
+      router.replace(`/${user?.userId}`);
     } catch (error) {
       if (error instanceof FirebaseError) {
         if (error.code === 'auth/invalid-credential') {

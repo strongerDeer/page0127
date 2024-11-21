@@ -39,7 +39,7 @@ export default function ProfileMenu({ user }: { user: User }) {
           <button
             onClick={() => {
               setIsOpenMenu((prev) => !prev);
-              router.push(`/shelf/${user?.userId}`);
+              router.push(`/${user?.userId}`);
             }}
           >
             <Icon name="alert" color="grayLv3" />
@@ -48,7 +48,7 @@ export default function ProfileMenu({ user }: { user: User }) {
           <button
             onClick={() => {
               setIsOpenMenu((prev) => !prev);
-              router.push('/my');
+              router.push('/my-books');
             }}
           >
             <Icon name="person" color="grayLv3" />
@@ -57,7 +57,7 @@ export default function ProfileMenu({ user }: { user: User }) {
           <button
             onClick={() => {
               setIsOpenMenu((prev) => !prev);
-              router.push('/my/follow');
+              router.push('/follow');
             }}
           >
             <Icon name="people" color="grayLv3" />
@@ -66,7 +66,7 @@ export default function ProfileMenu({ user }: { user: User }) {
           <button
             onClick={() => {
               setIsOpenMenu((prev) => !prev);
-              router.push('/my/edit-profile');
+              router.push('/edit-profile');
             }}
           >
             <Icon name="edit" color="grayLv3" />
@@ -75,7 +75,7 @@ export default function ProfileMenu({ user }: { user: User }) {
           <button
             onClick={() => {
               setIsOpenMenu((prev) => !prev);
-              router.push('/my/goal');
+              router.push('/edit-goal');
             }}
           >
             <Icon name="flag" color="grayLv3" />

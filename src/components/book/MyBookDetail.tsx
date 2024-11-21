@@ -1,3 +1,4 @@
+'use client';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import styles from './BookDetail.module.scss';
@@ -126,7 +127,7 @@ export default function MyBookDetail({
               <p>완독일: {readDate}</p>
             </div>
             {memo && <p className={styles.memo}>{memo}</p>}
-            <Button href={`/my/${bookId}/edit`}>수정하기</Button>
+            <Button href={`/my-books/${bookId}/edit`}>수정하기</Button>
             <Button
               variant="outline"
               color="error"
@@ -144,7 +145,7 @@ export default function MyBookDetail({
                       readDate as string,
                     );
                     modalClose();
-                    router.replace(`/shelf/${user?.userId}`);
+                    router.replace(`/${user?.userId}`);
                     toast.success('책이 삭제되었습니다');
                   },
                   closeModal: () => {
@@ -176,7 +177,7 @@ export default function MyBookDetail({
                       readDate as string,
                     );
                     modalClose();
-                    router.replace(`/shelf/${user.userId}`);
+                    router.replace(`/${user.userId}`);
                     toast.success('책이 삭제되었습니다');
                   },
                   closeModal: () => {

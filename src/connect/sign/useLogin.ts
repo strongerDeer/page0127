@@ -24,6 +24,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  limit,
   query,
   setDoc,
   where,
@@ -38,6 +39,26 @@ import { useCallback } from 'react';
 import { useModalContext } from '@contexts/ModalContext';
 import useUser from '@connect/user/useUser';
 
+const getUserDataByUid = async (uid: string) => {
+  try {
+    if (!uid) throw new Error('사용자 UID가 필요합니다.');
+
+    const userDoc = await getDocs(
+      query(
+        collection(store, `${COLLECTIONS.USER}`),
+        where('uid', '==', uid),
+        limit(1),
+      ),
+    );
+    if (!userDoc.empty) {
+      return userDoc.docs[0].data() as User;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    throw new Error('사용자 정보를 가져오는 중 오류가 발생했습니다.');
+  }
+};
 export default function useLogin() {
   const user = useUser();
   const router = useRouter();
@@ -46,12 +67,13 @@ export default function useLogin() {
   const authUser = auth.currentUser;
 
   const createUser = async (user: UserCredential['user']) => {
-    const { uid, displayName, email, photoURL } = user;
-
-    let baseId = email?.split('@')[0] || uid;
-    const userId = await getUserId(baseId);
-
     try {
+      const { uid, displayName, email, photoURL } = user;
+      if (!email) throw new Error('이메일이 필요합니다.');
+
+      let baseId = email.split('@')[0] || uid;
+      const userId = await getUserId(baseId);
+
       const userData: User = {
         uid,
         userId,
@@ -69,12 +91,14 @@ export default function useLogin() {
         provider: user.providerData[0].providerId as SocialLoginType,
       };
 
-      await setDoc(doc(store, `${COLLECTIONS.USER}/${uid}`), userData, {
+      await setDoc(doc(store, `${COLLECTIONS.USER}/${userId}`), userData, {
         merge: true,
       });
       setUser(userData);
     } catch (error) {
       console.error('Error creating user documents:', error);
+      toast.error('사용자 정보 생성 중 오류가 발생했습니다.');
+      throw error;
     }
   };
 
@@ -89,11 +113,13 @@ export default function useLogin() {
       const { user } = await signInWithPopup(auth, providerType);
       const { uid, email } = user;
 
-      const counterDoc = await getDoc(doc(store, `${COLLECTIONS.USER}/${uid}`));
+      const userData = await getUserDataByUid(uid);
 
       // 1. 저장된 유저
-      if (counterDoc.exists()) {
+      if (userData) {
+        setUser(userData);
         toast.success('로그인 되었습니다.');
+        router.push('/');
       } else {
         const isEmailAvailable = await checkEmailAvailable(
           email as string,
@@ -105,10 +131,11 @@ export default function useLogin() {
             '이미 사용중인 이메일이에요. 아이디/비밀번호를 입력해 로그인해주세요!',
           );
         }
+
         // 3. 새로운 유저
-        createUser(user);
-        router.push('/');
+        await createUser(user);
         toast.success('가입되었습니다!');
+        router.push('/');
       }
     } catch (error) {
       socialLoginError(error);
@@ -125,12 +152,19 @@ export default function useLogin() {
         email,
         password,
       );
+      const existingUser = await getUserDataByUid(user.uid);
+      if (existingUser) {
+        toast.error('이미 존재하는 계정입니다.');
+        return;
+      }
+
       await updateProfile(user, { displayName });
       let photoURL =
         (await uploadProfileImage(user.uid, profileImage)) || user.photoURL;
       const userData = { ...user, displayName, photoURL };
-      createUser(userData);
+      await createUser(userData);
       toast.success('가입되었습니다!');
+      router.push('/');
     } catch (error) {
       console.error('Sign up error:', error);
       if (error instanceof FirebaseError) {
@@ -157,49 +191,68 @@ export default function useLogin() {
   const emailLogin = async (formValues: SignInFormValues) => {
     const { email, password } = formValues;
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      toast.success('로그인되었습니다!');
+      const { user } = await signInWithEmailAndPassword(auth, email, password);
+      const userData = await getUserDataByUid(user.uid);
+      if (userData) {
+        setUser(userData);
+        toast.success('로그인 되었습니다.');
+        router.push('/');
+      }
     } catch (error) {
       emailLoginError(error);
     }
   };
 
   const getUserId = async (baseId: string) => {
-    const counterDoc = await getDoc(
-      doc(store, `${COLLECTIONS.COUNTERS}/userIdCounter`),
-    );
-    let counter = 1;
+    try {
+      if (!baseId) throw new Error('기본 ID가 필요합니다.');
 
-    if (counterDoc.exists()) {
-      const data = counterDoc.data();
-      counter = (data[baseId] || 0) + 1;
+      const counterDoc = await getDoc(
+        doc(store, `${COLLECTIONS.COUNTERS}/userIdCounter`),
+      );
+      let counter = 1;
+
+      if (counterDoc.exists()) {
+        const data = counterDoc.data();
+        counter = (data[baseId] || 0) + 1;
+      }
+
+      let userId = counter === 1 ? baseId : `${baseId}${counter - 1}`;
+
+      await setDoc(
+        doc(store, `${COLLECTIONS.COUNTERS}/userIdCounter`),
+        { [baseId]: counter },
+        {
+          merge: true,
+        },
+      );
+
+      return userId;
+    } catch (error) {
+      console.error('Error generating user ID:', error);
+      throw new Error('사용자 ID 생성 중 오류가 발생했습니다.');
     }
-
-    let userId = counter === 1 ? baseId : `${baseId}${counter - 1}`;
-
-    await setDoc(
-      doc(store, `${COLLECTIONS.COUNTERS}/userIdCounter`),
-      { [baseId]: counter },
-      {
-        merge: true,
-      },
-    );
-
-    return userId;
   };
 
   const checkEmailAvailable = async (email: string, uid: string) => {
-    if (!email) return;
-    const snapshot = await getDocs(
-      query(collection(store, COLLECTIONS.USER), where('email', '==', email)),
-    );
+    try {
+      if (!email) throw new Error('이메일이 필요합니다.');
+      if (!uid) throw new Error('사용자 UID가 필요합니다.');
 
-    if (!snapshot.empty && uid !== snapshot.docs[0].id) {
-      return 'unavailable';
-    } else if (!snapshot.empty && uid === snapshot.docs[0].id) {
-      return 'myEmail';
-    } else {
-      return 'available';
+      const snapshot = await getDocs(
+        query(collection(store, COLLECTIONS.USER), where('email', '==', email)),
+      );
+
+      if (!snapshot.empty && uid !== snapshot.docs[0].id) {
+        return 'unavailable';
+      } else if (!snapshot.empty && uid === snapshot.docs[0].id) {
+        return 'myEmail';
+      } else {
+        return 'available';
+      }
+    } catch (error) {
+      console.error('Error checking email availability:', error);
+      throw new Error('이메일 확인 중 오류가 발생했습니다.');
     }
   };
   // 프로필 이미지 업데이트
@@ -213,13 +266,25 @@ export default function useLogin() {
   };
 
   const emailLoginError = (error: unknown) => {
+    console.error('로그인 에러:', error);
     if (error instanceof FirebaseError) {
-      if (['auth/invalid-credential'].includes(error.code)) {
-        toast.error('이메일과 비밀번호를 다시 확인해 주세요');
-      } else {
-        console.log(error.message);
-        toast.error('회원가입 중 오류가 발생했습니다.');
+      switch (error.code) {
+        case 'auth/invalid-credential':
+          toast.error('이메일과 비밀번호를 다시 확인해 주세요');
+          break;
+        case 'auth/too-many-requests':
+          toast.error(
+            '너무 많은 시도가 있었습니다. 잠시 후 다시 시도해주세요.',
+          );
+          break;
+        case 'auth/network-request-failed':
+          toast.error('네트워크 연결을 확인해주세요.');
+          break;
+        default:
+          toast.error('로그인 중 오류가 발생했습니다.');
       }
+    } else {
+      toast.error('로그인 중 오류가 발생했습니다.');
     }
   };
 
@@ -243,22 +308,24 @@ export default function useLogin() {
       buttonLabel: '로그아웃',
       onButtonClick: async () => {
         try {
+          await signOut(auth);
+          setUser(null);
+
           close();
           router.push('/');
-          setTimeout(() => {
-            signOut(auth);
-          }, 300);
           toast.success('로그아웃 되었습니다!');
         } catch (error) {
-          console.log(error);
+          console.error('로그아웃 에러:', error);
+          toast.error('로그아웃 중 오류가 발생했습니다.');
         }
+        close();
       },
       closeButtonLabel: '취소',
       closeModal: () => {
         close();
       },
     });
-  }, [open, close, router]);
+  }, [open, close, router, setUser]);
 
   const deleteAccount = useCallback(
     ({
@@ -277,14 +344,15 @@ export default function useLogin() {
         buttonLabel: '회원 탈퇴',
         onButtonClick: async () => {
           try {
-            close();
-            router.push('/');
-
             const credential = EmailAuthProvider.credential(email, password);
             await reauthenticateWithCredential(authUser, credential);
 
             await deleteDoc(doc(store, COLLECTIONS.USER, uid));
             await deleteUser(authUser);
+            setUser(null);
+
+            close();
+            router.push('/');
             toast.success('탈퇴 되었습니다!');
           } catch (error) {
             if (error instanceof FirebaseError) {
@@ -300,7 +368,7 @@ export default function useLogin() {
         },
       });
     },
-    [open, close, router, user, authUser],
+    [open, close, router, user, authUser, setUser],
   );
 
   const reauthenticateUser = useCallback(
@@ -322,23 +390,38 @@ export default function useLogin() {
 
   const deleteProviderAccount = useCallback(
     ({ uid, provider }: { provider: string; uid: string }) => {
-      if (!authUser) return;
+      if (!authUser || !user) {
+        toast.error('로그인이 필요한 작업입니다.');
+        return;
+      }
+      if (uid !== user.uid) {
+        toast.error('잘못된 접근입니다.');
+        return;
+      }
       open({
         title: '정말 회원 탈퇴 하시겠습니까?',
         body: '모든 데이터가 삭제되며 복구되지 않습니다',
         buttonLabel: '회원 탈퇴',
         onButtonClick: async () => {
           try {
-            close();
-            router.push('/');
             await reauthenticateUser(provider);
 
             await deleteDoc(doc(store, COLLECTIONS.USER, uid));
             await deleteUser(authUser);
+            setUser(null);
 
+            close();
+            router.push('/');
             toast.success('탈퇴 되었습니다!');
           } catch (error) {
-            console.log(error);
+            console.error('회원 탈퇴 에러:', error);
+            if (error instanceof FirebaseError) {
+              if (error.code === 'auth/requires-recent-login') {
+                toast.error('다시 로그인 후 시도해주세요.');
+              } else {
+                toast.error('회원 탈퇴 중 오류가 발생했습니다.');
+              }
+            }
           }
         },
         closeButtonLabel: '취소',
@@ -347,7 +430,7 @@ export default function useLogin() {
         },
       });
     },
-    [open, close, router, authUser, reauthenticateUser],
+    [open, close, router, authUser, reauthenticateUser, user, setUser],
   );
 
   return {

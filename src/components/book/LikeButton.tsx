@@ -1,3 +1,4 @@
+'use client';
 import Icon from '@components/icon/Icon';
 
 import { useCallback, useState } from 'react';

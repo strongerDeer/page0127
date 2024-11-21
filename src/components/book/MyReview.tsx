@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useState } from 'react';
 import Input from '@components/form/Input';
 import Button from '@components/shared/Button';
@@ -68,13 +70,13 @@ export default function MyReview({
         {reviews?.map((review) => (
           <li key={review.id}>
             <div className={styles.profileLink}>
-              <Link href={`/shelf/${review.userId}`}>
+              <Link href={`/${review.userId}`}>
                 <ProfileImage
                   photoURL={review.user?.photoURL || ''}
                   width={40}
                 />
               </Link>
-              <Link href={`/shelf/${review.userId}`}>
+              <Link href={`/${review.userId}`}>
                 <p className={styles.displayName}>{review.user?.displayName}</p>
               </Link>
 

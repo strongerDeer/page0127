@@ -1,4 +1,5 @@
-import { Stick } from 'next/font/google';
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
 
 export default function ScrollProgressBar() {

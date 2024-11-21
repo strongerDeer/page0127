@@ -27,7 +27,7 @@ export default function Page() {
   const { data: followerUsers } = useFilteredUser({ array: follower || [] });
 
   const handleUserClick = (userId: string) => {
-    router.push(`/shelf/${userId}`);
+    router.push(`/${userId}`);
   };
   return (
     <div className={styles.wrap}>

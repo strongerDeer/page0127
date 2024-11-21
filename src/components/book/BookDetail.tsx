@@ -163,7 +163,7 @@ export default function BookDetail({ data }: { data: Book }) {
 
             {myBook?.memo && <p className={styles.memo}>{myBook?.memo}</p>}
             <div className={styles.btns}>
-              <Button href={`/my/${id}/edit`}>수정하기</Button>
+              <Button href={`/my-books/${id}/edit`}>수정하기</Button>
               <Button
                 variant="outline"
                 color="error"
@@ -181,7 +181,7 @@ export default function BookDetail({ data }: { data: Book }) {
                         myBook?.readDate as string,
                       );
                       modalClose();
-                      router.replace(`/shelf/${user.userId}`);
+                      router.replace(`/${user.userId}`);
                       toast.success('책이 삭제되었습니다');
                     },
                     closeModal: () => {
