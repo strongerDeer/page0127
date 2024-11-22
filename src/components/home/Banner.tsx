@@ -17,8 +17,6 @@ import 'swiper/css/effect-fade';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 
-import { Skeleton } from '@components/shared/Skeleton';
-
 import withSuspense from '@components/shared/hocs/withSuspense';
 import useBanner from '@connect/banner/useBanner';
 
@@ -35,9 +33,11 @@ interface BannerItem {
   color: string;
 }
 
+const AUTOPLAY_DELAY = 5000;
+
 function Banner() {
   const { data, isLoading } = useBanner('default');
-  const swiperRef = useRef<SwiperType>();
+  const swiperRef = useRef<SwiperType | null>(null);
   const progressCircle = useRef<HTMLSpanElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(true);
 
@@ -70,7 +70,7 @@ function Banner() {
         effect={'fade'}
         loop
         autoplay={{
-          delay: 5000,
+          delay: AUTOPLAY_DELAY,
           disableOnInteraction: false,
         }}
         onAutoplayTimeLeft={onAutoplayTimeLeft}
@@ -106,12 +106,16 @@ function Banner() {
         <button
           onClick={handleToggleAutoplay}
           className={styles.playButton}
-          aria-label={isPlaying ? '일시정지' : '재생'}
+          aria-label={
+            isPlaying ? '배너 슬라이드 일시정지' : '배너 슬라이드 재생'
+          }
+          aria-pressed={!isPlaying}
         >
           <Icon
             name={isPlaying ? 'pause' : 'play'}
             color="#fff"
             style={{ width: '100%', height: '100%' }}
+            aria-hidden="true"
           />
         </button>
       </Swiper>
@@ -136,7 +140,7 @@ const Item = ({
 
 export function BannerSkeleton() {
   return (
-    <section className={styles.section}>
+    <section className={styles.section} aria-busy="true">
       <div className={styles.autoPlayLine} slot="container-end">
         <span className={styles.line}></span>
       </div>

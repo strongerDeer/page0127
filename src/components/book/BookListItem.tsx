@@ -37,7 +37,7 @@ export default function BookListItem(props: bookItemProps) {
   return (
     <>
       <article className={styles.article}>
-        <Link href={`/book/${id}`}>
+        <Link href={`/book/${id}`} title={`${title} 상세 내용 보기`}>
           <div className={styles.perspective}>
             <div className={styles.cover}>
               <div className={styles.bookImg}>
@@ -45,16 +45,16 @@ export default function BookListItem(props: bookItemProps) {
                   <Image
                     src={flipCover}
                     alt=""
-                    width={200}
-                    height={400}
+                    width={30}
+                    height={200}
                     priority={index < 4 ? true : false}
                   />
                 </div>
                 <Image
                   src={frontCover}
                   alt=""
-                  width={200}
-                  height={400}
+                  width={140}
+                  height={200}
                   priority={index < 4 ? true : false}
                 />
 

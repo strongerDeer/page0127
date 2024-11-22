@@ -36,7 +36,9 @@ export const buttonStyle = recipe({
         fontSize: '1em',
       },
       lg: {
-        fontSize: '1.125em',
+        padding: '0 1.2em',
+        height: '2.8em',
+        fontSize: '1em',
       },
     },
     variant: {

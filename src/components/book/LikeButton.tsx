@@ -67,6 +67,7 @@ export default function LikeButton({
       type="button"
       onClick={handleLike}
       className={clsx(showText && styles.showText, styles.likeButton)}
+      aria-label="좋아요"
     >
       {isLike ? <Icon name="heartFill" color="error" /> : <Icon name="heart" />}
       {hearts.map((heart) => (
@@ -81,7 +82,15 @@ export default function LikeButton({
           }}
         />
       ))}
-      {showText && <span className={isLike ? styles.liked : ''}>좋아요</span>}
+
+      <span
+        className={clsx(
+          isLike ? styles.liked : '',
+          showText ? '' : 'a11y-hidden',
+        )}
+      >
+        좋아요
+      </span>
     </button>
   );
 }

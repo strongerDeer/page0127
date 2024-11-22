@@ -1,32 +1,29 @@
 import Script from 'next/script';
 import type { Metadata } from 'next';
 import { pretendard } from '@font';
+import { SITE } from '@constants';
+import Layout from '@components/layouts/Layout';
+
 import '@styles/theme.scss';
 import '@styles/globals.scss';
 
-import Layout from '@components/layouts/Layout';
-
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_BASE_URL || 'https://page0127.vercel.app',
-  ),
-
-  title: 'page 0127.',
-  description: '나만의 온라인 서재',
+  metadataBase: new URL(SITE.baseUrl),
+  title: SITE.title,
+  description: SITE.description,
   openGraph: {
     type: 'website',
-    title: 'page 0127.',
-    description: '나만의 온라인 서재',
+    title: SITE.title,
+    description: SITE.description,
     locale: 'ko_KR',
-    siteName: 'page 0127.',
-    images: ['/images/og-image.jpg'],
-    // url: 'https://',
+    siteName: SITE.title,
+    images: [SITE.ogImage],
   },
   twitter: {
     card: 'summary',
-    title: 'page 0127.',
-    description: '나만의 온라인 서재',
-    images: ['/images/og-image.jpg'],
+    title: SITE.title,
+    description: SITE.description,
+    images: [SITE.ogImage],
   },
 };
 

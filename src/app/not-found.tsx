@@ -1,13 +1,19 @@
 'use client';
-import Button from '@components/shared/Button';
-import { useRouter } from 'next/navigation';
 
-import styles from './not-found.module.scss';
-import clsx from 'clsx';
+import { useRouter } from 'next/navigation';
 import { cormorant } from '@font';
+import Button from '@components/shared/Button';
 import Icon from '@components/icon/Icon';
+import styles from './not-found.module.scss';
+
 export default function NotFound() {
   const router = useRouter();
+
+  const nav = {
+    back: () => router.back(),
+    home: () => router.push('/'),
+  };
+
   return (
     <div className={styles.notFound}>
       <h2 className={cormorant.className}>
@@ -18,10 +24,10 @@ export default function NotFound() {
         정확한지 다시 한번 확인해 주세요!
       </p>
       <div className={styles.btnGroup}>
-        <Button onClick={() => router.back()} size="lg" variant="outline">
+        <Button onClick={nav.back} size="lg" variant="outline">
           이전 페이지
         </Button>
-        <Button onClick={() => router.push('/')} size="lg">
+        <Button onClick={nav.home} size="lg">
           <Icon name="home" color="#fff" />
           메인 페이지
         </Button>

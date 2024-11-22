@@ -33,6 +33,10 @@ export default function ProfileMenu({ user }: { user: User }) {
         }}
       >
         <ProfileImage width={40} photoURL={user?.photoURL as string} />
+        <span className="a11y-hidden">
+          사용자 메뉴
+          {isOpenMenu ? '닫기' : '열기'}
+        </span>
       </button>
       {isOpenMenu && (
         <div className={styles.menu}>
