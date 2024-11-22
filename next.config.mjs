@@ -18,6 +18,16 @@ const nextConfig = {
       { protocol: 'https', hostname: 'avatars.githubusercontent.com' },
     ],
   },
+
+  // console.log 구문 자동 제거
+  compiler: {
+    removeConsole:
+      process.env.NODE_ENV === 'production'
+        ? {
+            exclude: ['error', 'warn'], // error와 warn 로그는 유지
+          }
+        : false,
+  },
 };
 
 const withVanillaExtract = createVanillaExtractPlugin();

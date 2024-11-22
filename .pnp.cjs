@@ -3181,7 +3181,7 @@ const RAW_RUNTIME_STATE =
           ["autoprefixer", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:10.4.19"],\
           ["@types/postcss", null],\
           ["browserslist", "npm:4.23.0"],\
-          ["caniuse-lite", "npm:1.0.30001615"],\
+          ["caniuse-lite", "npm:1.0.30001683"],\
           ["fraction.js", "npm:4.3.7"],\
           ["normalize-range", "npm:0.1.2"],\
           ["picocolors", "npm:1.0.0"],\
@@ -3311,7 +3311,7 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "../../../../.yarn/berry/cache/browserslist-npm-4.23.0-8126a959d4-10c0.zip/node_modules/browserslist/",\
         "packageDependencies": [\
           ["browserslist", "npm:4.23.0"],\
-          ["caniuse-lite", "npm:1.0.30001615"],\
+          ["caniuse-lite", "npm:1.0.30001683"],\
           ["electron-to-chromium", "npm:1.4.756"],\
           ["node-releases", "npm:2.0.14"],\
           ["update-browserslist-db", "virtual:8126a959d46e6def6d7f2497c47970a23a94adac85f5be1df9be290c674503b9bcbe0dc057e2741ee222cc2a8a3b9f584b20c3a9eb5ce085704d99fc5d94514c#npm:1.0.15"]\
@@ -3392,10 +3392,10 @@ const RAW_RUNTIME_STATE =
       }]\
     ]],\
     ["caniuse-lite", [\
-      ["npm:1.0.30001615", {\
-        "packageLocation": "../../../../.yarn/berry/cache/caniuse-lite-npm-1.0.30001615-17c14dcee6-10c0.zip/node_modules/caniuse-lite/",\
+      ["npm:1.0.30001683", {\
+        "packageLocation": "../../../../.yarn/berry/cache/caniuse-lite-npm-1.0.30001683-07fd70553b-10c0.zip/node_modules/caniuse-lite/",\
         "packageDependencies": [\
-          ["caniuse-lite", "npm:1.0.30001615"]\
+          ["caniuse-lite", "npm:1.0.30001683"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -6374,7 +6374,7 @@ const RAW_RUNTIME_STATE =
           ["@types/react-dom", "npm:18.3.0"],\
           ["@types/sass", null],\
           ["busboy", "npm:1.6.0"],\
-          ["caniuse-lite", "npm:1.0.30001615"],\
+          ["caniuse-lite", "npm:1.0.30001683"],\
           ["graceful-fs", "npm:4.2.11"],\
           ["postcss", "npm:8.4.31"],\
           ["react", "npm:18.3.1"],\
