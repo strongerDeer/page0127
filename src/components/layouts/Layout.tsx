@@ -1,58 +1,43 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useReportWebVitals } from 'next/web-vitals';
-import { QueryClient, QueryClientProvider } from 'react-query';
-import { RecoilRoot } from 'recoil';
-
-// toast
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
-// context
-import { AlertContextProvider } from '@contexts/AlertContext';
-import { ModalContextProvider } from '@contexts/ModalContext';
-import { ThemeProvider } from '@contexts/ThemeContext';
-
-// components
-import Header from './Header';
-import Footer from './Footer';
-import AuthGuard from '@components/auth/AuthGuard';
 
 import styles from './Layout.module.scss';
+import 'react-toastify/dist/ReactToastify.css';
 
-const client = new QueryClient({
-  defaultOptions: {
-    //쿼리 실패 시 재시도 횟수를 0으로 설정. 기본값 3
-    queries: {
-      retry: 0,
-    },
-  },
+import Providers from './Provider';
+import AuthGuard from '@components/auth/AuthGuard';
+import { HeaderSkeleton } from './Header';
+
+const Header = dynamic(() => import('./Header'), {
+  loading: () => <HeaderSkeleton />,
 });
+const Footer = dynamic(() => import('./Footer'));
+// toast
+const ToastContainer = dynamic(
+  () => import('react-toastify').then((mod) => mod.ToastContainer),
+  { ssr: false }, // 클라이언트만 사용
+);
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  useReportWebVitals((metric) => {
-    console.log(metric);
+  useReportWebVitals((metric: any) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(metric);
+    }
   });
 
   return (
-    <RecoilRoot>
+    <Providers>
       <AuthGuard>
         <ToastContainer />
-        <ThemeProvider>
-          <AlertContextProvider>
-            <ModalContextProvider>
-              <QueryClientProvider client={client}>
-                <div id="root-portal"></div>
-                <div className={styles.layout}>
-                  <Header />
-                  <div className={styles.layout__contents}>{children}</div>
-                  <Footer />
-                </div>
-              </QueryClientProvider>
-            </ModalContextProvider>
-          </AlertContextProvider>
-        </ThemeProvider>
+        <div id="root-portal"></div>
+        <div className={styles.layout}>
+          <Header />
+          <div className={styles.layout__contents}>{children}</div>
+          <Footer />
+        </div>
       </AuthGuard>
-    </RecoilRoot>
+    </Providers>
   );
 }

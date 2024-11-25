@@ -1,0 +1,21 @@
+@import '@/styles/var.scss';
+
+.loginBtn,
+.joinBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 4rem;
+  gap: 0.2rem;
+  padding: 0 1rem;
+  box-sizing: border-box;
+  @media screen and (max-width: 640px) {
+    width: 4rem;
+
+    span {
+      @include a11y-hidden;
+    }
+    background: rgba(var(--primary-rgb), 0.1);
+    border-radius: 50%;
+  }
+}
