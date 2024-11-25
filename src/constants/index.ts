@@ -5,6 +5,28 @@ export const SITE = {
   ogImage: '/images/og-image.jpg',
 };
 
+export const ROUTES = {
+  HOME: '/',
+  NOT_FOUND: '/404',
+
+  LOGIN: '/login',
+  JOIN: '/join',
+
+  BOOK_SEARCH: '/book/search',
+  MY_BOOK: '/my-books',
+  FOLLOW: '/follow',
+
+  // my
+  BOOK_CREATE: '/book/create',
+
+  EDIT_PROFILE: '/edit-profile',
+  EDIT_GOAL: '/edit-goal',
+
+  // admin
+  ADMIN: '/admin',
+  ADMIN_BANNER: '/admin/banner',
+} as const;
+
 export const COLLECTIONS = {
   USER: 'users',
   PROFILE: 'user_profiles',

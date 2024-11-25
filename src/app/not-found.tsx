@@ -5,13 +5,14 @@ import { cormorant } from '@font';
 import Button from '@components/shared/Button';
 import Icon from '@components/icon/Icon';
 import styles from './not-found.module.scss';
+import { ROUTES } from '@constants';
 
 export default function NotFound() {
   const router = useRouter();
 
   const nav = {
     back: () => router.back(),
-    home: () => router.push('/'),
+    home: () => router.push(ROUTES.HOME),
   };
 
   return (

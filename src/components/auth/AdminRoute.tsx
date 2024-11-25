@@ -1,5 +1,6 @@
 'use client';
 import useUser, { useUserLoading } from '@connect/user/useUser';
+import { ROUTES } from '@constants';
 import { useRouter } from 'next/navigation';
 import { useEffect, useCallback } from 'react';
 
@@ -15,7 +16,7 @@ export default function AdminRoute({
   const checkAuth = useCallback(() => {
     if (isLoading) return;
     if (!user || user?.uid !== process.env.NEXT_PUBLIC_ADMIN_ID) {
-      router.replace('/404');
+      router.replace(ROUTES.NOT_FOUND);
     }
   }, [user, isLoading, router]);
 

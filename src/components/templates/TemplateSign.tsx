@@ -10,6 +10,7 @@ import styles from './TemplateSign.module.scss';
 import SignUpForm from '@components/sign/SignUpForm';
 import { InputArr } from '@connect/sign';
 import { useEffect } from 'react';
+import { ROUTES } from '@constants';
 
 export default function TemplateSign({
   title,
@@ -23,7 +24,7 @@ export default function TemplateSign({
 
   useEffect(() => {
     if (user) {
-      router.replace('/');
+      router.replace(ROUTES.HOME);
     }
   }, [user, router]);
   return (
@@ -37,9 +38,9 @@ export default function TemplateSign({
       <SocialLoginButtons signUp={title === '로그인' ? false : true} />
 
       {title === '로그인' ? (
-        <Link href="/join">아직 계정이 없다면, 회원가입하세요!</Link>
+        <Link href={ROUTES.JOIN}>아직 계정이 없다면, 회원가입하세요!</Link>
       ) : (
-        <Link href="/login">이미 계정이 있다면, 로그인</Link>
+        <Link href={ROUTES.LOGIN}>이미 계정이 있다면, 로그인</Link>
       )}
     </div>
   );

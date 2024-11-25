@@ -12,6 +12,7 @@ import {
 } from '@contexts/ModalContext';
 import { useRouter } from 'next/navigation';
 import useCommentLike from '@connect/commentLike/useCommentLike';
+import { ROUTES } from '@constants';
 
 export default function CommentLikeButton({
   commentId,
@@ -56,7 +57,7 @@ export default function CommentLikeButton({
         body: '로그인 페이지로 이동합니다',
 
         onButtonClick: () => {
-          router.push('/login');
+          router.push(ROUTES.LOGIN);
           modalClose();
         },
         closeModal: () => {

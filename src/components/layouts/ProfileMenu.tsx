@@ -7,6 +7,7 @@ import useLogin from '@connect/sign/useLogin';
 import ProfileImage from '@components/shared/ProfileImage';
 import { User } from '@connect/user';
 import { useRouter } from 'next/navigation';
+import { ROUTES } from '@constants';
 
 export default function ProfileMenu({ user }: { user: User }) {
   const router = useRouter();
@@ -52,7 +53,7 @@ export default function ProfileMenu({ user }: { user: User }) {
           <button
             onClick={() => {
               setIsOpenMenu((prev) => !prev);
-              router.push('/my-books');
+              router.push(ROUTES.MY_BOOK);
             }}
           >
             <Icon name="person" color="grayLv3" />
@@ -61,7 +62,7 @@ export default function ProfileMenu({ user }: { user: User }) {
           <button
             onClick={() => {
               setIsOpenMenu((prev) => !prev);
-              router.push('/follow');
+              router.push(ROUTES.FOLLOW);
             }}
           >
             <Icon name="people" color="grayLv3" />
@@ -70,7 +71,7 @@ export default function ProfileMenu({ user }: { user: User }) {
           <button
             onClick={() => {
               setIsOpenMenu((prev) => !prev);
-              router.push('/edit-profile');
+              router.push(ROUTES.EDIT_PROFILE);
             }}
           >
             <Icon name="edit" color="grayLv3" />
@@ -79,7 +80,7 @@ export default function ProfileMenu({ user }: { user: User }) {
           <button
             onClick={() => {
               setIsOpenMenu((prev) => !prev);
-              router.push('/edit-goal');
+              router.push(ROUTES.EDIT_GOAL);
             }}
           >
             <Icon name="flag" color="grayLv3" />

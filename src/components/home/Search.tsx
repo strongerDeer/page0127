@@ -3,6 +3,7 @@ import Input from '@components/form/Input';
 import { useRouter } from 'next/navigation';
 
 import styles from './Search.module.scss';
+import { ROUTES } from '@constants';
 export default function Search() {
   const router = useRouter();
 
@@ -14,7 +15,7 @@ export default function Search() {
           label="책 검색"
           hiddenLabel
           placeholder="도서를 검색해보세요"
-          onFocus={() => router.push('/book/search')}
+          onFocus={() => router.push(ROUTES.BOOK_SEARCH)}
         />
       </div>
     </section>

@@ -5,7 +5,7 @@ import InputRadio from '@components/form/InputRadio';
 import BannerItem from '@components/home/BannerItem';
 import Button from '@components/shared/Button';
 import { I_Banner } from '@connect/banner';
-import { COLLECTIONS } from '@constants';
+import { COLLECTIONS, ROUTES } from '@constants';
 import { store } from '@firebase/firebaseApp';
 
 import { collection, doc, setDoc } from 'firebase/firestore';
@@ -45,7 +45,7 @@ export default function CreateBanner() {
         { merge: true },
       );
       toast.success('배너가 등록되었습니다');
-      router.push('/admin/banner');
+      router.push(ROUTES.ADMIN_BANNER);
     } catch (error) {
       console.error('Error creating book:', error);
       throw error;

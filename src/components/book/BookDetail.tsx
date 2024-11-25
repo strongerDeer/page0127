@@ -23,6 +23,7 @@ import {
 } from '@contexts/ModalContext';
 import { useRouter } from 'next/navigation';
 import { removeMyBook } from '@connect/mybook/mybook';
+import { ROUTES } from '@constants';
 
 export default function BookDetail({ data }: { data: Book }) {
   const router = useRouter();
@@ -104,7 +105,7 @@ export default function BookDetail({ data }: { data: Book }) {
                 <p>읽었어요!</p>
               ) : (
                 <Link
-                  href={{ pathname: '/book/create', query: { bookId: id } }}
+                  href={{ pathname: ROUTES.BOOK_CREATE, query: { bookId: id } }}
                   className={styles.createMyBook}
                 >
                   읽은 책 등록

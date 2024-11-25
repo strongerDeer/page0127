@@ -1,7 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { userAtom } from '@atoms/user';
-import { COLLECTIONS } from '@constants';
+import { COLLECTIONS, ROUTES } from '@constants';
 import { auth, storage, store } from '@firebase/firebaseApp';
 import { FirebaseError } from 'firebase/app';
 import {
@@ -119,7 +119,7 @@ export default function useLogin() {
       if (userData) {
         setUser(userData);
         toast.success('로그인 되었습니다.');
-        router.push('/');
+        router.push(ROUTES.HOME);
       } else {
         const isEmailAvailable = await checkEmailAvailable(
           email as string,
@@ -135,7 +135,7 @@ export default function useLogin() {
         // 3. 새로운 유저
         await createUser(user);
         toast.success('가입되었습니다!');
-        router.push('/');
+        router.push(ROUTES.HOME);
       }
     } catch (error) {
       socialLoginError(error);
@@ -164,7 +164,7 @@ export default function useLogin() {
       const userData = { ...user, displayName, photoURL };
       await createUser(userData);
       toast.success('가입되었습니다!');
-      router.push('/');
+      router.push(ROUTES.HOME);
     } catch (error) {
       console.error('Sign up error:', error);
       if (error instanceof FirebaseError) {
@@ -196,7 +196,7 @@ export default function useLogin() {
       if (userData) {
         setUser(userData);
         toast.success('로그인 되었습니다.');
-        router.push('/');
+        router.push(ROUTES.HOME);
       }
     } catch (error) {
       emailLoginError(error);
@@ -312,7 +312,7 @@ export default function useLogin() {
           setUser(null);
 
           close();
-          router.push('/');
+          router.push(ROUTES.HOME);
           toast.success('로그아웃 되었습니다!');
         } catch (error) {
           console.error('로그아웃 에러:', error);
@@ -352,7 +352,7 @@ export default function useLogin() {
             setUser(null);
 
             close();
-            router.push('/');
+            router.push(ROUTES.HOME);
             toast.success('탈퇴 되었습니다!');
           } catch (error) {
             if (error instanceof FirebaseError) {
@@ -411,7 +411,7 @@ export default function useLogin() {
             setUser(null);
 
             close();
-            router.push('/');
+            router.push(ROUTES.HOME);
             toast.success('탈퇴 되었습니다!');
           } catch (error) {
             console.error('회원 탈퇴 에러:', error);

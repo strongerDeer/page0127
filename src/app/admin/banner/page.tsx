@@ -2,6 +2,7 @@
 import Button from '@components/shared/Button';
 import { deleteBanner } from '@connect/banner/banner';
 import useBanner from '@connect/banner/useBanner';
+import { ROUTES } from '@constants';
 
 import {
   ModalContextValue,
@@ -53,7 +54,7 @@ export default function BannerPage() {
               >
                 삭제
               </Button>
-              <Button href={`/admin/banner/edit/${activeBanner.id}`}>
+              <Button href={`${ROUTES.ADMIN_BANNER}/edit/${activeBanner.id}`}>
                 배너 수정
               </Button>
             </li>
@@ -78,7 +79,7 @@ export default function BannerPage() {
           ))}
         </>
       )}
-      <Button href="/admin/banner/create">배너 생성</Button>
+      <Button href={`${ROUTES.ADMIN_BANNER}/create`}>배너 생성</Button>
     </div>
   );
 }
