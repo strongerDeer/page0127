@@ -16,7 +16,6 @@ import { store } from '@firebase/firebaseApp';
 
 import { COLLECTIONS } from '@constants';
 import { Book } from '@connect/book';
-import { includes } from 'lodash';
 
 export async function getMyBooks(userId: string) {
   const snapshot = await getDocs(

@@ -32,10 +32,9 @@
     border: 2px solid var(--background);
     transform: translate(-50%, -50%);
 
-    &::after {
-      content: '';
+    .flag {
       background: url(/images/icon/flag.svg) no-repeat right 50% / 80%;
-      display: block;
+
       width: 3.2rem;
       height: 3.2rem;
 

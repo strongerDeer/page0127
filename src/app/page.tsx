@@ -1,18 +1,30 @@
-import { getMostReadBooks, getTopLifeBooks } from '@connect/book/books';
-
-import Visual from '@components/home/Visual';
-
-import BookSection from '@components/home/BookSection';
-import Search from '@components/home/Search';
-import { BannerSkeleton } from '@components/home/Banner';
 import dynamic from 'next/dynamic';
-import Video from '@components/home/Video';
+import { getMostReadBooks, getTopLifeBooks } from '@connect/book/books';
+import { BannerSkeleton } from '@components/home/Banner';
 
 export const dynamicParams = false;
-
+const Visual = dynamic(() => import('@components/home/Visual'), {
+  loading: () => <BannerSkeleton />,
+  ssr: true,
+});
 const Banner = dynamic(() => import('@components/home/Banner'), {
   loading: () => <BannerSkeleton />,
   ssr: true,
+});
+
+const BookSection = dynamic(() => import('@components/home/BookSection'), {
+  loading: () => <></>,
+  ssr: true,
+});
+
+const Search = dynamic(() => import('@components/home/Search'), {
+  loading: () => <></>,
+  ssr: true,
+});
+
+const Video = dynamic(() => import('@components/home/Video'), {
+  loading: () => <></>,
+  ssr: false,
 });
 
 export default async function HomePage() {

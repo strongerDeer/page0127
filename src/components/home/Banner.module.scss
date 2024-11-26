@@ -4,6 +4,7 @@ $size: 3.2rem;
 $bottom: 1rem;
 
 .section {
+  --swiper-navigation-size: 2rem;
   position: relative;
   z-index: 1;
   height: fcSize(140, 160);
@@ -42,10 +43,6 @@ $bottom: 1rem;
     align-items: center;
     justify-content: center;
     color: var(--background);
-
-    &::after {
-      font-size: 2rem;
-    }
   }
   [class^='swiper-button-prev'] {
     left: auto;

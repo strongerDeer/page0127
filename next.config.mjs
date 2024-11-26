@@ -20,6 +20,7 @@ const nextConfig = {
       { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
       { protocol: 'https', hostname: 'firebasestorage.googleapis.com' },
       { protocol: 'https', hostname: 'avatars.githubusercontent.com' },
+      { protocol: 'https', hostname: 'img.youtube.com' },
     ],
   },
 
@@ -32,6 +33,11 @@ const nextConfig = {
             exclude: ['error', 'warn'], // error와 warn 로그는 유지
           }
         : false,
+  },
+
+  optimizeFonts: true,
+  experimental: {
+    optimizePackageImports: ['date-fns'], // date-fns 패키지 임포트 최적화
   },
 };
 

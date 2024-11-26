@@ -64,6 +64,7 @@ export default function Background({
           </p>
         </div>
       </div>
+      <div className={styles.dim}></div>
     </div>
   );
 }

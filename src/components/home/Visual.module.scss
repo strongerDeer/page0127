@@ -8,9 +8,7 @@
   position: relative;
   overflow: hidden;
 
-  &::after {
-    content: '';
-    display: block;
+  .circle {
     width: fcSize(360, 500);
     height: fcSize(360, 500);
     background-color: var(--primary);

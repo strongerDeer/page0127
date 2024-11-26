@@ -27,7 +27,9 @@ export default function ProgressBar({
           style={{
             left: `${(total / Math.max(total, value)) * 100}%`,
           }}
-        ></div>
+        >
+          <div className={styles.flag}></div>
+        </div>
       </div>
 
       {!hiddenText && (

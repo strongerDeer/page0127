@@ -47,7 +47,12 @@ export default function BookListItem(props: bookItemProps) {
                     alt=""
                     width={30}
                     height={200}
-                    priority={index < 4 ? true : false}
+                    sizes="(max-width: 768px) 30px, 30px"
+                    style={{
+                      width: 'auto',
+                      height: '100%',
+                    }}
+                    priority={false}
                   />
                 </div>
                 <Image
@@ -55,7 +60,12 @@ export default function BookListItem(props: bookItemProps) {
                   alt=""
                   width={140}
                   height={200}
-                  priority={index < 4 ? true : false}
+                  sizes="(max-width: 768px) 140px, 140px"
+                  style={{
+                    width: 'auto',
+                    height: '100%',
+                  }}
+                  priority={index < 4}
                 />
 
                 {user && (readDate || readUser?.includes(user.userId)) && (

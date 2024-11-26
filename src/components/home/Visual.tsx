@@ -8,13 +8,15 @@ import mainVisual from '/public/images/main-visual.webp';
 
 export default function Visual() {
   return (
-    <div className={styles.visual}>
+    <section className={styles.visual}>
       <Image
         src={mainVisual}
         alt=""
-        quality={75}
+        quality={50}
         priority
         fill
+        loading="eager"
+        fetchPriority="high"
         sizes="100vw"
         placeholder="blur"
       />
@@ -26,6 +28,7 @@ export default function Visual() {
           <p>My Personal Online Library</p>
         </div>
       </div>
-    </div>
+      <div className={styles.circle}></div>
+    </section>
   );
 }

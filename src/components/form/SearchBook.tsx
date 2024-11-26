@@ -5,7 +5,7 @@ import { getBookInfo, getSearchBook } from '@connect/aladin/aladin';
 import Image from 'next/image';
 import { Book } from '@connect/book';
 import { AladinBook } from '@connect/aladin';
-import { debounce } from 'lodash';
+import debounce from 'lodash.debounce';
 import Input from './Input';
 import Loading from '@components/Loading';
 import { validateSpineflipUrl } from '@utils/validateImageUrl';
