@@ -9,13 +9,13 @@
   "prettier.prettierPath": ".yarn/sdks/prettier/index.cjs",
   "cSpell.words": [
     "appspot",
+    "chartjs",
     "firestore",
     "hocs",
     "Hplpu",
     "mybook",
     "pretendard",
     "Toastify",
-    "uuidv",
-    "yfxfbwa"
+    "uuidv"
   ]
 }
