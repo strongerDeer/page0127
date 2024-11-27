@@ -8,14 +8,21 @@
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "prettier.prettierPath": ".yarn/sdks/prettier/index.cjs",
   "cSpell.words": [
+    "aladin",
     "appspot",
     "chartjs",
+    "firebasestorage",
     "firestore",
+    "Gmdk",
+    "googleusercontent",
     "hocs",
     "Hplpu",
+    "Knhc",
     "mybook",
     "pretendard",
     "Toastify",
-    "uuidv"
+    "uuidv",
+    "yfxfbwa",
+    "ytimg"
   ]
 }
