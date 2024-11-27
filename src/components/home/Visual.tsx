@@ -5,8 +5,9 @@ import { cormorant } from '@font';
 import styles from './Visual.module.scss';
 
 import mainVisual from '/public/images/main-visual.webp';
+import withSuspense from '@components/shared/hocs/withSuspense';
 
-export default function Visual() {
+function Visual() {
   return (
     <section className={styles.visual}>
       <Image
@@ -32,3 +33,11 @@ export default function Visual() {
     </section>
   );
 }
+export function VisualSkeleton() {
+  return (
+    <section className={styles.visual}>
+      <div className={styles.circle}></div>
+    </section>
+  );
+}
+export default withSuspense(Visual, { fallback: <VisualSkeleton /> });

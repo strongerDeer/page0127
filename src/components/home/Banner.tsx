@@ -12,17 +12,18 @@ import {
   Autoplay,
 } from 'swiper/modules';
 
-import 'swiper/css';
-import 'swiper/css/effect-fade';
-import 'swiper/css/pagination';
-import 'swiper/css/navigation';
+import 'swiper/css/bundle';
 
 import withSuspense from '@components/shared/hocs/withSuspense';
 import useBanner from '@connect/banner/useBanner';
 
 import styles from './Banner.module.scss';
 import { useRef, useState } from 'react';
-import Icon from '@components/icon/Icon';
+import dynamic from 'next/dynamic';
+
+const Icon = dynamic(() => import('@components/icon/Icon'), {
+  ssr: false,
+});
 
 interface BannerItem {
   id: string;
@@ -34,6 +35,7 @@ interface BannerItem {
 }
 
 const AUTOPLAY_DELAY = 5000;
+const swiperModules = [EffectFade, Autoplay, Navigation, Pagination, A11y];
 
 function Banner() {
   const { data, isLoading } = useBanner('default');
@@ -66,12 +68,13 @@ function Banner() {
         onSwiper={(swiper) => {
           swiperRef.current = swiper;
         }}
-        modules={[EffectFade, Autoplay, Navigation, Pagination, A11y]}
+        modules={swiperModules}
         effect={'fade'}
         loop
         autoplay={{
           delay: AUTOPLAY_DELAY,
           disableOnInteraction: false,
+          pauseOnMouseEnter: true,
         }}
         onAutoplayTimeLeft={onAutoplayTimeLeft}
         navigation

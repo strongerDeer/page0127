@@ -1,9 +1,13 @@
 'use client';
 import clsx from 'clsx';
 import styles from './Video.module.scss';
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import Image from 'next/image';
-import Icon from '@components/icon/Icon';
+import dynamic from 'next/dynamic';
+
+const Icon = dynamic(() => import('@components/icon/Icon'), {
+  ssr: false,
+});
 
 interface Video {
   readonly id: number;
@@ -32,7 +36,11 @@ const VIDEOS: readonly Video[] = [
 
 function VideoPlayer({ video }: { video: Video }) {
   const [isPlayerLoaded, setIsPlayerLoaded] = useState(false);
-  const thumbnailUrl = `https://i.ytimg.com/vi_webp/${video.src}/maxresdefault.webp`;
+  const thumbnailUrl = `https://i.ytimg.com/vi_webp/${video.src}/mqdefault.webp`;
+
+  const handleLoadPlayer = useCallback(() => {
+    setIsPlayerLoaded(true);
+  }, []);
 
   if (!isPlayerLoaded) {
     return (
@@ -42,14 +50,16 @@ function VideoPlayer({ video }: { video: Video }) {
           alt={`${video.title} 썸네일`}
           className={styles.thumbnail}
           loading="lazy"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           fill
         />
         <button
-          onClick={() => setIsPlayerLoaded(true)}
+          onClick={handleLoadPlayer}
           className={styles.playButton}
           aria-label={`${video.title} 재생하기`}
+          type="button"
         >
-          <Icon name="play" color="#fff" />
+          <Icon name="play" color="#fff" aria-hidden="true" />
         </button>
       </div>
     );
@@ -57,7 +67,7 @@ function VideoPlayer({ video }: { video: Video }) {
 
   return (
     <iframe
-      src={`https://www.youtube.com/embed/${video.src}?autoplay=1&enablejsapi=1`}
+      src={`https://www.youtube.com/embed/${video.src}?autoplay=1&enablejsapi=1&rel=0&modestbranding=1`}
       title={video.title}
       loading="lazy"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -65,7 +75,8 @@ function VideoPlayer({ video }: { video: Video }) {
     />
   );
 }
-export default function Video() {
+
+function Video() {
   return (
     <section className={clsx('max-width', styles.section)}>
       <h3 className="title2">독서 관련 추천 영상</h3>
@@ -77,3 +88,18 @@ export default function Video() {
     </section>
   );
 }
+
+export function VideoSkeleton() {
+  return (
+    <section className={clsx('max-width', styles.section)}>
+      <h3 className="title2">독서 관련 추천 영상</h3>
+      <div className={styles.wrap}>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </section>
+  );
+}
+
+export default memo(Video);

@@ -39,6 +39,31 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['date-fns'], // date-fns 패키지 임포트 최적화
   },
+  webpack: (config) => {
+    config.optimization.splitChunks = {
+      maxInitialRequests: 25,
+      maxSize: 50000,
+      minSize: 20000,
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name(module) {
+            const packageName = module.context.match(
+              /[\\/]node_modules[\\/](.*?)([\\/]|$)/,
+            )[1];
+            return `vendor.${packageName.replace('@', '')}`;
+          },
+          priority: 20,
+        },
+        common: {
+          minChunks: 2,
+          priority: 10,
+          reuseExistingChunk: true,
+        },
+      },
+    };
+    return config;
+  },
 };
 
 const withVanillaExtract = createVanillaExtractPlugin();

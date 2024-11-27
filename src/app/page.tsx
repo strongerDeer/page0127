@@ -1,10 +1,12 @@
 import dynamic from 'next/dynamic';
 import { getMostReadBooks, getTopLifeBooks } from '@connect/book/books';
 import { BannerSkeleton } from '@components/home/Banner';
+import { VisualSkeleton } from '@components/home/Visual';
+import { VideoSkeleton } from '@components/home/Video';
 
 export const dynamicParams = false;
 const Visual = dynamic(() => import('@components/home/Visual'), {
-  loading: () => <BannerSkeleton />,
+  loading: () => <VisualSkeleton />,
   ssr: true,
 });
 const Banner = dynamic(() => import('@components/home/Banner'), {
@@ -13,17 +15,15 @@ const Banner = dynamic(() => import('@components/home/Banner'), {
 });
 
 const BookSection = dynamic(() => import('@components/home/BookSection'), {
-  loading: () => <></>,
   ssr: true,
 });
 
 const Search = dynamic(() => import('@components/home/Search'), {
-  loading: () => <></>,
   ssr: true,
 });
 
 const Video = dynamic(() => import('@components/home/Video'), {
-  loading: () => <></>,
+  loading: () => <VideoSkeleton />,
   ssr: false,
 });
 
@@ -36,6 +36,7 @@ export default async function HomePage() {
   return (
     <div>
       <Visual />
+
       <div className="max-width">
         <Banner />
       </div>
