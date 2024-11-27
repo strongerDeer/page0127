@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { RecoilRoot } from 'recoil';
 import { QueryClient, QueryClientProvider } from 'react-query';
 

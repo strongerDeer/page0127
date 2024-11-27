@@ -1,6 +1,3 @@
-import Button from '@components/shared/Button';
-import React from 'react';
-
 import styles from './CategoryTab.module.scss';
 import clsx from 'clsx';
 export default function CategoryTab({
