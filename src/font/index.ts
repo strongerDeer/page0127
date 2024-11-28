@@ -2,9 +2,22 @@ import localFont from 'next/font/local';
 import { Cormorant_Garamond } from 'next/font/google';
 
 export const pretendard = localFont({
-  src: '../font/PretendardVariable.woff2',
+  src: './PretendardVariable.woff2',
   display: 'swap',
+  preload: true,
   weight: '100 900',
+  fallback: [
+    '-apple-system',
+    'BlinkMacSystemFont',
+    'system-ui',
+    'Roboto',
+    'Helvetica Neue',
+    'Segoe UI',
+    'Arial',
+    'sans-serif',
+  ],
+  adjustFontFallback: 'Arial',
+  variable: '--font-pretendard',
 });
 
 export const cormorant = Cormorant_Garamond({
@@ -12,4 +25,5 @@ export const cormorant = Cormorant_Garamond({
   style: 'italic',
   display: 'swap',
   subsets: ['latin'],
+  preload: true,
 });

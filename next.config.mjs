@@ -37,25 +37,37 @@ const nextConfig = {
 
   optimizeFonts: true,
   experimental: {
+    optimizeCss: true,
     optimizePackageImports: ['date-fns'], // date-fns 패키지 임포트 최적화
   },
   webpack: (config) => {
+    config.optimization.runtimeChunk = 'single';
     config.optimization.splitChunks = {
+      chunks: 'all',
       maxInitialRequests: 25,
-      maxSize: 50000,
       minSize: 20000,
+      maxSize: 50000,
       cacheGroups: {
         vendor: {
           test: /[\\/]node_modules[\\/]/,
           name(module) {
+            if (!module.context) return 'vendor';
+
+            // 안전한 패키지 이름 추출
             const packageName = module.context.match(
               /[\\/]node_modules[\\/](.*?)([\\/]|$)/,
-            )[1];
-            return `vendor.${packageName.replace('@', '')}`;
+            );
+
+            // 매치가 실패한 경우 기본값 반환
+            if (!packageName || !packageName[1]) return 'vendor';
+
+            return `vendor.${packageName[1].replace('@', '')}`;
           },
           priority: 20,
         },
         common: {
+          name: 'commons',
+          chunks: 'initial',
           minChunks: 2,
           priority: 10,
           reuseExistingChunk: true,

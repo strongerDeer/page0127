@@ -1,14 +1,12 @@
 import dynamic from 'next/dynamic';
-import { getMostReadBooks, getTopLifeBooks } from '@connect/book/books';
 import { BannerSkeleton } from '@components/home/Banner';
-import { VisualSkeleton } from '@components/home/Visual';
 import { VideoSkeleton } from '@components/home/Video';
+import { Visual } from '@components/home/Visual';
+import { Suspense } from 'react';
+import { getMostReadBooks, getTopLifeBooks } from '@connect/book/books';
 
 export const dynamicParams = false;
-const Visual = dynamic(() => import('@components/home/Visual'), {
-  loading: () => <VisualSkeleton />,
-  ssr: true,
-});
+
 const Banner = dynamic(() => import('@components/home/Banner'), {
   loading: () => <BannerSkeleton />,
   ssr: true,
@@ -28,33 +26,43 @@ const Video = dynamic(() => import('@components/home/Video'), {
 });
 
 export default async function HomePage() {
-  const [topLifeBooks, mostReadBooks] = await Promise.all([
-    getTopLifeBooks(),
-    getMostReadBooks(),
-  ]);
-
   return (
     <div>
       <Visual />
 
       <div className="max-width">
-        <Banner />
+        <Suspense fallback={<BannerSkeleton />}>
+          <Banner />
+        </Suspense>
       </div>
       <main>
-        <BookSection
-          title="독자들이 선택한 인생책"
-          books={topLifeBooks}
-          count={4}
-        />
-        <BookSection
-          title="가장 많이 읽힌 도서"
-          books={mostReadBooks}
-          count={8}
-        />
+        {/* @ts-expect-error Async Component */}
+        <BookSections />
       </main>
 
       <Search />
       <Video />
     </div>
+  );
+}
+
+async function BookSections() {
+  const [topLifeBooks, mostReadBooks] = await Promise.all([
+    getTopLifeBooks(),
+    getMostReadBooks(),
+  ]);
+  return (
+    <>
+      <BookSection
+        title="독자들이 선택한 인생책"
+        books={topLifeBooks}
+        count={4}
+      />
+      <BookSection
+        title="가장 많이 읽힌 도서"
+        books={mostReadBooks}
+        count={8}
+      />
+    </>
   );
 }

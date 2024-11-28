@@ -42,15 +42,9 @@ export default function RootLayout({
           as="image"
           href="/images/main-visual.webp"
           type="image/webp"
+          fetchPriority="high"
         />
 
-        <link
-          rel="preload"
-          href="/fonts/pretendard.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
         {/* 
         필수 원본 미리 연결하기 절감
         preconnect 또는 dns-prefetch 리소스 힌트를 추가하여 중요한 서드 파티 원본에 대한 조기 연결을 수립
