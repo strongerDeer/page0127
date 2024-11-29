@@ -109,7 +109,15 @@ export default function TemplateBookEdit({
       <div className={styles.bookCreate}>
         <div className={styles.coverWrap}>
           <div className={styles.coverBox}>
-            <Image src={data.frontCover} alt="" width={400} height={400} />
+            <Image
+              src={data.frontCover}
+              alt=""
+              width={240}
+              height={400}
+              priority
+              loading="eager"
+              fetchPriority="high"
+            />
           </div>
         </div>
         <form className={styles.form} onSubmit={onSubmit}>
