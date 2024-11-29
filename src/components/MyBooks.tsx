@@ -84,7 +84,7 @@ export default function MyBooks({
                         imgSrc[book.id] ||
                         (book.grade === '10' ? book.frontCover : book.flipCover)
                       }
-                      alt=""
+                      alt={book.title}
                       width={240}
                       height={240}
                       onError={() => onError(book.id as string)}
