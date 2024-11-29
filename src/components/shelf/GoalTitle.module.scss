@@ -1,0 +1,9 @@
+.title {
+  font-weight: 600;
+  font-size: 1.4em;
+  margin-bottom: 0.5em;
+
+  @media screen and (max-width: 640px) {
+    margin-bottom: 1.4em;
+  }
+}

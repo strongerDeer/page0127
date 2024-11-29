@@ -1,15 +1,5 @@
 @import '@/styles/var.scss';
 
-.title {
-  font-weight: 600;
-  font-size: 1.4em;
-  margin-bottom: 0.5em;
-
-  @media screen and (max-width: 640px) {
-    margin-bottom: 1.4em;
-  }
-}
-
 .flexContainer {
   width: 100%;
   display: flex;
@@ -25,12 +15,6 @@
       font-size: 1.2em;
     }
 
-    & > div {
-      max-height: 30rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
     &:first-child > div {
       padding: 5rem 0;
     }

@@ -9,14 +9,10 @@ import { DEFAULT_BG } from '@constants';
 const currentYear = new Date().getFullYear();
 
 export default function Background({
-  userId,
   userData,
-
   setYear,
 }: {
-  userId: string;
   userData: User;
-
   setYear: React.Dispatch<React.SetStateAction<string>>;
 }) {
   return (
