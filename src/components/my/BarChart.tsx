@@ -1,3 +1,4 @@
+import styles from './Chart.module.scss';
 import { PRIMARY_RGB } from '@constants';
 import {
   Chart as ChartJS,
@@ -9,6 +10,7 @@ import {
   Legend,
   ChartOptions,
 } from 'chart.js';
+import { useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 
 ChartJS.register(
@@ -30,36 +32,37 @@ const options: ChartOptions<'bar'> = {
     legend: {
       display: false,
     },
+    tooltip: {
+      callbacks: {
+        title: () => '',
+        label: (context) => `${context.label}월: ${context.formattedValue}권`,
+      },
+    },
   },
-  // backgroundColor: 'rgba(46, 111, 242, 1)',
 
   scales: {
     x: {
       grid: {
         display: false,
-        // color: '#eee',
+      },
+      ticks: {
+        font: { size: 12 },
       },
     },
     y: {
       display: false,
+      beginAtZero: true,
     },
   },
 };
 
-const labelTexts = [
-  '01',
-  '02',
-  '03',
-  '04',
-  '05',
-  '06',
-  '07',
-  '08',
-  '09',
-  '10',
-  '11',
-  '12',
-];
+const MONTHS = Array.from({ length: 12 }, (_, i) =>
+  String(i + 1).padStart(2, '0'),
+);
+
+interface UserData {
+  [key: `${string}-${string}`]: number;
+}
 
 export default function BarChart({
   title,
@@ -67,30 +70,31 @@ export default function BarChart({
   year,
 }: {
   title: string;
-  userData: any;
+  userData: UserData;
   year: string;
 }) {
-  const data = {
-    labels: labelTexts.map((label) => `${Number(label)}`),
-    datasets: [
-      {
-        label: title,
-        data: labelTexts.map((label) =>
-          userData && userData[`${year}-${label}`]
-            ? userData[`${year}-${label}`] || 0
-            : 0,
-        ),
-        backgroundColor: labelTexts.map((label) => {
-          if (Number(label) === new Date().getMonth() + 1) {
-            return `rgba(${PRIMARY_RGB}, 1)`;
-          } else {
-            return `rgba(${PRIMARY_RGB}, 0.4)`;
-          }
-        }),
-        borderRadius: 4,
-      },
-    ],
-  };
+  const data = useMemo(() => {
+    const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
+    return {
+      labels: MONTHS.map((month) => `${Number(month)}`),
+      datasets: [
+        {
+          label: title,
+          data: MONTHS.map((month) => userData?.[`${year}-${month}`] ?? 0),
+          backgroundColor: MONTHS.map((month) =>
+            month === currentMonth
+              ? `rgba(${PRIMARY_RGB}, 1)`
+              : `rgba(${PRIMARY_RGB}, 0.4)`,
+          ),
+          borderRadius: 4,
+        },
+      ],
+    };
+  }, [userData, year, title]);
 
-  return <Bar options={options} data={data} />;
+  return (
+    <div className={styles.wrap}>
+      <Bar options={options} data={data} />
+    </div>
+  );
 }

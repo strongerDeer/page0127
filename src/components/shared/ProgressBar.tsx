@@ -11,14 +11,24 @@ export default function ProgressBar({
   height?: string;
   hiddenText?: boolean;
 }) {
+  const maxValue = Math.max(total, value);
+  const progressWidth = (value / maxValue) * 100;
+  const flagPosition = (total / maxValue) * 100;
   return (
-    <div className={styles.progressBar}>
+    <div
+      className={styles.progressBar}
+      role="progressbar"
+      aria-valuenow={value}
+      aria-valuemin={0}
+      aria-valuemax={total}
+      aria-label={`진행률 ${progressWidth.toFixed(1)}`}
+    >
       <div className={styles.progress} style={{ height: height }}>
         {/* 읽은 책 */}
         <div
           className={styles.bar}
           style={{
-            width: `${(value / Math.max(total, value)) * 100}%`,
+            width: `${progressWidth}%`,
           }}
         ></div>
 
@@ -26,7 +36,7 @@ export default function ProgressBar({
         <div
           className={styles.total}
           style={{
-            left: `${(total / Math.max(total, value)) * 100}%`,
+            left: `${flagPosition}%`,
           }}
         >
           <Icon name="flag" size="2.8rem" />

@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import styles from './Background.module.scss';
+import styles from './ShelfHeader.module.scss';
 import ActionButtons from '@components/ActionButtons';
 import { User } from '@connect/user';
 import clsx from 'clsx';
@@ -8,7 +8,7 @@ import { DEFAULT_BG } from '@constants';
 
 const currentYear = new Date().getFullYear();
 
-export default function Background({
+export default function ShelfHeader({
   userData,
   setYear,
 }: {

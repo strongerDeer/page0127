@@ -18,10 +18,9 @@ export default function GoalTitle({
     if (rest > 0) return `🏃 ${year}년 목표까지 ${rest}권 남았어요!`;
     if (rest === 0) return `👏 ${year}년의 목표 권수를 달성했어요!`;
 
-    const percentage = (
-      (totalBook / (currentGoal || DEFAULT_GOAL)) *
-      100
-    ).toFixed(0);
+    const percentage = Math.round(
+      (totalBook / (currentGoal || DEFAULT_GOAL)) * 100,
+    );
 
     return `💪 ${year}년의 목표를 ${percentage}% 달성했어요!!`;
   }, [rest, totalBook, currentGoal, year]);
