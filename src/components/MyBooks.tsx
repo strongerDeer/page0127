@@ -85,8 +85,13 @@ export default function MyBooks({
                         (book.grade === '10' ? book.frontCover : book.flipCover)
                       }
                       alt={book.title}
-                      width={240}
+                      width={170}
                       height={240}
+                      sizes="(max-width: 768px) 170, 170"
+                      style={{
+                        width: 'auto',
+                        height: '100%',
+                      }}
                       onError={() => onError(book.id as string)}
                     />
                   )}
