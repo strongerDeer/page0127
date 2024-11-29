@@ -32,16 +32,11 @@
     border: 2px solid var(--background);
     transform: translate(-50%, -50%);
 
-    .flag {
-      background: url(/images/icon/flag.svg) no-repeat right 50% / 80%;
-
-      width: 3.2rem;
-      height: 3.2rem;
-
+    svg {
       position: absolute;
       left: 50%;
       top: 0;
-      transform: translate(-31%, -110%);
+      transform: translate(-17%, -110%);
     }
   }
   .text {

@@ -28,7 +28,11 @@ export default function Background({
       <div className={styles.text}>
         <div className={styles.left}>
           <div>
+            <label htmlFor="year-select" className="a11y-hidden">
+              년도 선택
+            </label>
             <select
+              id="year-select"
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                 setYear(e.target.value);
               }}

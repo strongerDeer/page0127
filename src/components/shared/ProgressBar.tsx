@@ -1,3 +1,4 @@
+import Icon from '@components/icon/Icon';
 import styles from './ProgressBar.module.scss';
 export default function ProgressBar({
   value,
@@ -28,7 +29,7 @@ export default function ProgressBar({
             left: `${(total / Math.max(total, value)) * 100}%`,
           }}
         >
-          <div className={styles.flag}></div>
+          <Icon name="flag" size="2.8rem" />
         </div>
       </div>
 
