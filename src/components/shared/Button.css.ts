@@ -60,6 +60,11 @@ export const buttonStyle = recipe({
         },
       },
     },
+    full: {
+      true: {
+        width: '100%',
+      },
+    },
   },
 });
 
@@ -69,8 +74,4 @@ export const buttonStyle = recipe({
 // &.outline {
 //   border: 1px solid var(--primary);
 //   color: var(--primary);
-// }
-
-// &.full {
-//   width: 100%;
 // }

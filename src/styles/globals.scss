@@ -80,3 +80,17 @@ body {
 .br {
   display: block;
 }
+
+.width-48 {
+  width: 48rem;
+  margin: fcSize(20, 80) auto;
+  p {
+    color: var(--grayLv4);
+    margin-bottom: 2.4rem;
+  }
+}
+.form-flex {
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+}

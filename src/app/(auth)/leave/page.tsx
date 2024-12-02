@@ -20,12 +20,15 @@ export default function Page() {
     });
   };
   return (
-    <>
+    <section className="width-48">
       <h2 className="title1">회원탈퇴</h2>
-      <p> 회원탈퇴 시 데이터는 바로 삭제되며 복구 할 수 없습니다.</p>
+      <p>
+        회원탈퇴 시 데이터는 바로 삭제되며 복구 할 수 없습니다.
+        <br />
+        회원 탈퇴를 원하면 비밀번호를 입력해주세요
+      </p>
 
-      <p>회원 탈퇴를 원하면 비밀번호를 입력해주세요</p>
-      <form onSubmit={onSubmit}>
+      <form onSubmit={onSubmit} className="form-flex">
         <Input
           label="비밀번호"
           id="password"
@@ -33,8 +36,10 @@ export default function Page() {
           setValue={setPassword}
           value={password}
         />
-        <Button type="submit">확인</Button>
+        <Button type="submit" full>
+          확인
+        </Button>
       </form>
-    </>
+    </section>
   );
 }

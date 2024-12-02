@@ -19,12 +19,12 @@ export default function TemplateEditProfile({
       <h2>프로필 수정</h2>
       <EditProfileForm inputArr={inputArr} />
 
-      {user?.provider ? (
+      {user?.provider !== 'password' ? (
         <Button
           onClick={() => {
             deleteProviderAccount({
-              userId: user?.userId,
-              provider: user.provider || '',
+              userId: user?.userId || '',
+              provider: user?.provider || '',
             });
           }}
           color="grayLv4"

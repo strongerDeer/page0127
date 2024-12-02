@@ -18,7 +18,11 @@ export default function Button(props: ButtonProps) {
     ...rest
   } = props;
 
-  const classStyle = clsx([buttonStyle({ variant, size })], className);
+  const classStyle = clsx(
+    [buttonStyle({ variant, size, full })],
+
+    className,
+  );
 
   if (href) {
     return (

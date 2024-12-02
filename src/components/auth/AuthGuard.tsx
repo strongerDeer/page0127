@@ -4,7 +4,6 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@firebase/firebaseApp';
 import { useSetRecoilState } from 'recoil';
 import { userAtom, userLoadingAtom } from '@atoms/user';
-import { getUser } from '@connect/user/user';
 import { getUserDataByUid } from '@connect/sign/useLogin';
 
 // 인증처리

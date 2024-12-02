@@ -315,11 +315,11 @@ export default function useLogin() {
       buttonLabel: '로그아웃',
       onButtonClick: async () => {
         try {
-          await signOut(auth);
-          setUser(null);
-
           close();
           router.push(ROUTES.HOME);
+
+          await signOut(auth);
+          setUser(null);
           toast.success('로그아웃 되었습니다!');
         } catch (error) {
           console.error('로그아웃 에러:', error);
@@ -353,13 +353,12 @@ export default function useLogin() {
           try {
             const credential = EmailAuthProvider.credential(email, password);
             await reauthenticateWithCredential(authUser, credential);
-
             await deleteDoc(doc(store, COLLECTIONS.USER, userId));
             await deleteUser(authUser);
-            setUser(null);
-
             close();
             router.push(ROUTES.HOME);
+
+            setUser(null);
             toast.success('탈퇴 되었습니다!');
           } catch (error) {
             if (error instanceof FirebaseError) {
@@ -412,13 +411,12 @@ export default function useLogin() {
         onButtonClick: async () => {
           try {
             await reauthenticateUser(provider);
-
             await deleteDoc(doc(store, COLLECTIONS.USER, userId));
             await deleteUser(authUser);
-            setUser(null);
 
             close();
             router.push(ROUTES.HOME);
+            setUser(null);
             toast.success('탈퇴 되었습니다!');
           } catch (error) {
             console.error('회원 탈퇴 에러:', error);
