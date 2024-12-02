@@ -8,17 +8,17 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { createPortal } from 'react-dom';
+import Portal from '@components/shared/Portal';
 import WindowAlert from '@components/shared/WindowAlert';
 
 export type AlertProps = ComponentProps<typeof WindowAlert>;
 type AlertOptions = Omit<AlertProps, 'open'>;
 
-export interface AlertContextValue {
+interface AlertContextValue {
   open: (option: AlertOptions) => void;
 }
 
-const Context = createContext<AlertContextValue | undefined>(undefined);
+const AlertContext = createContext<AlertContextValue | undefined>(undefined);
 
 const defaultValues: AlertProps = {
   open: false,
@@ -27,12 +27,12 @@ const defaultValues: AlertProps = {
   onButtonClick: () => {},
 };
 
-export const AlertContextProvider = ({
+export function AlertContextProvider({
   children,
 }: {
   children: React.ReactNode;
-}) => {
-  let [portalElement, setPortalElement] = useState<Element | null>(null);
+}) {
+  const [mounted, setMounted] = useState(false);
   const [alertState, setAlertState] = useState<AlertProps>(defaultValues);
 
   const close = useCallback(() => {
@@ -53,32 +53,30 @@ export const AlertContextProvider = ({
     [close],
   );
 
-  const values = useMemo(
-    () => ({
-      open,
-    }),
-    [open],
-  );
+  const value = useMemo(() => ({ open }), [open]);
 
   useEffect(() => {
-    setPortalElement(document.getElementById('root-portal'));
+    setMounted(true);
+    return () => setMounted(false);
   }, []);
 
   return (
-    <Context.Provider value={values}>
+    <AlertContext.Provider value={value}>
       {children}
-      {portalElement
-        ? createPortal(<WindowAlert {...alertState} />, portalElement)
-        : null}
-    </Context.Provider>
+      {mounted && alertState.open && (
+        <Portal>
+          <WindowAlert {...alertState} />
+        </Portal>
+      )}
+    </AlertContext.Provider>
   );
-};
+}
 
 export const useAlertContext = (): AlertContextValue => {
-  const values = useContext(Context);
+  const context = useContext(AlertContext);
 
-  if (!values) {
+  if (!context) {
     throw new Error('AlertContext 안에서 사용해주세요!');
   }
-  return values;
+  return context;
 };

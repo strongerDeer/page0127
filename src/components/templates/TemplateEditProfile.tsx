@@ -21,12 +21,12 @@ export default function TemplateEditProfile({
 
       {user?.provider ? (
         <Button
-          onClick={() =>
+          onClick={() => {
             deleteProviderAccount({
               userId: user?.userId,
               provider: user.provider || '',
-            })
-          }
+            });
+          }}
           color="grayLv4"
           variant="outline"
         >

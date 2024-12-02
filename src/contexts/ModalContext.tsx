@@ -8,18 +8,18 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { createPortal } from 'react-dom';
+import Portal from '@components/shared/Portal';
 import WindowModal from '@components/shared/WindowModal';
 
 export type ModalProps = ComponentProps<typeof WindowModal>;
 type ModalOptions = Omit<ModalProps, 'open'>;
 
-export interface ModalContextValue {
+interface ModalContextValue {
   open: (option: ModalOptions) => void;
   close: () => void;
 }
 
-const Context = createContext<ModalContextValue | undefined>(undefined);
+const ModalContext = createContext<ModalContextValue | undefined>(undefined);
 
 const defaultValues: ModalProps = {
   open: false,
@@ -29,12 +29,12 @@ const defaultValues: ModalProps = {
   closeModal: () => {},
 };
 
-export const ModalContextProvider = ({
+export function ModalContextProvider({
   children,
 }: {
   children: React.ReactNode;
-}) => {
-  let [portalElement, setPortalElement] = useState<Element | null>(null);
+}) {
+  const [mounted, setMounted] = useState(false);
   const [modalState, setModalState] = useState<ModalProps>(defaultValues);
 
   // useCallback: 리렌더링시에 함수를 새롭게 만들지 않겠다.
@@ -42,38 +42,42 @@ export const ModalContextProvider = ({
     setModalState(defaultValues);
   }, []);
 
-  const open = useCallback((options: ModalOptions) => {
-    setModalState({ ...options, open: true });
-  }, []);
-
-  // useMemo: 리렌더링 사이에 계산 결과를 캐싱
-  const values = useMemo(
-    () => ({
-      open,
-      close,
-    }),
-    [open, close],
+  const open = useCallback(
+    (options: ModalOptions) => {
+      setModalState({
+        ...options,
+        open: true,
+        closeModal: close,
+      });
+    },
+    [close],
   );
 
+  // useMemo: 리렌더링 사이에 계산 결과를 캐싱
+  const value = useMemo(() => ({ open, close }), [open, close]);
+
   useEffect(() => {
-    setPortalElement(document.getElementById('root-portal'));
+    setMounted(true);
+    return () => setMounted(false);
   }, []);
 
   return (
-    <Context.Provider value={values}>
+    <ModalContext.Provider value={value}>
       {children}
-      {portalElement
-        ? createPortal(<WindowModal {...modalState} />, portalElement)
-        : null}
-    </Context.Provider>
+      {mounted && modalState.open && (
+        <Portal>
+          <WindowModal {...modalState} />
+        </Portal>
+      )}
+    </ModalContext.Provider>
   );
-};
+}
 
 export const useModalContext = (): ModalContextValue => {
-  const values = useContext(Context);
+  const context = useContext(ModalContext);
 
-  if (!values) {
+  if (!context) {
     throw new Error('ModalContext 안에서 사용해주세요!');
   }
-  return values;
+  return context;
 };

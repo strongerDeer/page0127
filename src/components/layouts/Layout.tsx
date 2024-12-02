@@ -31,7 +31,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <Providers>
       <AuthGuard>
         <ToastContainer />
-        <div id="root-portal"></div>
         <div className={styles.layout}>
           <Header />
           <div className={styles.layout__contents}>{children}</div>
