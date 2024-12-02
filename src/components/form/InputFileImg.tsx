@@ -87,7 +87,6 @@ export default function InputFileImg(props: InputFileLabelProps) {
           priority
           loading="eager"
           fetchPriority="high"
-          placeholder="blur"
         />
       )}
 
