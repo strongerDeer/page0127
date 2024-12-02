@@ -192,9 +192,16 @@ export default function useLogin() {
     const { email, password } = formValues;
     try {
       const { user } = await signInWithEmailAndPassword(auth, email, password);
-      const userData = await getUserDataByUid(user.uid);
-      if (userData) {
-        setUser(userData);
+      const userDoc = await getDocs(
+        query(
+          collection(store, COLLECTIONS.USER),
+          where('uid', '==', user.uid),
+          limit(1),
+        ),
+      );
+
+      if (!userDoc.empty) {
+        setUser(userDoc.docs[0].data() as User);
         toast.success('로그인 되었습니다.');
         router.push(ROUTES.HOME);
       }
