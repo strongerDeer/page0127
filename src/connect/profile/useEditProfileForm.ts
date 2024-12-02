@@ -10,8 +10,11 @@ import editProfileValidate from '@components/sign/editProfileValidate';
 import useUser from '@connect/user/useUser';
 import { useForm } from '@connect/sign/useForm';
 import { EditFormValues } from '@connect/sign';
+import { useSetRecoilState } from 'recoil';
+import { userAtom } from '@atoms/user';
 
 export const useEditProfileForm = () => {
+  const setUser = useSetRecoilState(userAtom);
   const user = useUser();
   const router = useRouter();
   const [profileImage, setProfileImg] = useState<string>(user?.photoURL || '');
@@ -43,6 +46,14 @@ export const useEditProfileForm = () => {
     e.preventDefault();
     try {
       await edit(formValues, profileImage, backgroundImage);
+
+      setUser((prev) => ({
+        ...prev!,
+        ...formValues,
+        photoURL: profileImage,
+        backgroundURL: backgroundImage,
+      }));
+
       toast.success('수정되었습니다.');
       router.replace(`/${user?.userId}`);
     } catch (error) {
