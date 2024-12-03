@@ -16,11 +16,7 @@ import Button from '@components/shared/Button';
 import Icon from '@components/icon/Icon';
 
 import { toast } from 'react-toastify';
-import {
-  ModalContextValue,
-  ModalProps,
-  useModalContext,
-} from '@contexts/ModalContext';
+import { ModalProps, useModalContext } from '@contexts/ModalContext';
 import { useRouter } from 'next/navigation';
 import { removeMyBook } from '@connect/mybook/mybook';
 import { ROUTES } from '@constants';
@@ -28,8 +24,7 @@ import { ROUTES } from '@constants';
 export default function BookDetail({ data }: { data: Book }) {
   const router = useRouter();
 
-  const { open: modalOpen, close: modalClose } =
-    useModalContext() as ModalContextValue;
+  const { open: modalOpen, close: modalClose } = useModalContext();
   const { data: likeBooks } = useLikeBook();
   const {
     title,

@@ -6,11 +6,7 @@ import styles from './LikeButton.module.scss';
 import clsx from 'clsx';
 import useUser from '@connect/user/useUser';
 import { toggleLike } from '@connect/like/likeBook';
-import {
-  ModalContextValue,
-  ModalProps,
-  useModalContext,
-} from '@contexts/ModalContext';
+import { ModalProps, useModalContext } from '@contexts/ModalContext';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@constants';
 
@@ -29,8 +25,7 @@ export default function LikeButton({
   >([]);
 
   const router = useRouter();
-  const { open: modalOpen, close: modalClose } =
-    useModalContext() as ModalContextValue;
+  const { open: modalOpen, close: modalClose } = useModalContext();
 
   const createHeart = useCallback((e: React.MouseEvent) => {
     const heart = {

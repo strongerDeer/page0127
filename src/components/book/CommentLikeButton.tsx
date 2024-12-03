@@ -5,11 +5,7 @@ import styles from './LikeButton.module.scss';
 import clsx from 'clsx';
 import useUser from '@connect/user/useUser';
 import { toggleCommentLike } from '@connect/commentLike/commentLike';
-import {
-  ModalContextValue,
-  ModalProps,
-  useModalContext,
-} from '@contexts/ModalContext';
+import { ModalProps, useModalContext } from '@contexts/ModalContext';
 import { useRouter } from 'next/navigation';
 import useCommentLike from '@connect/commentLike/useCommentLike';
 import { ROUTES } from '@constants';
@@ -32,8 +28,7 @@ export default function CommentLikeButton({
   const isLike = likeComments?.includes(commentId) || false;
 
   const router = useRouter();
-  const { open: modalOpen, close: modalClose } =
-    useModalContext() as ModalContextValue;
+  const { open: modalOpen, close: modalClose } = useModalContext();
 
   const createHeart = useCallback((e: React.MouseEvent) => {
     const heart = {

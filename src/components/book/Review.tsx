@@ -10,11 +10,7 @@ import { ko } from 'date-fns/locale';
 
 import styles from './Review.module.scss';
 import Link from 'next/link';
-import {
-  ModalContextValue,
-  ModalProps,
-  useModalContext,
-} from '@contexts/ModalContext';
+import { ModalProps, useModalContext } from '@contexts/ModalContext';
 import { toast } from 'react-toastify';
 import CommentLikeButton from './CommentLikeButton';
 import { useReview } from '@connect/review-book/useReview';
@@ -38,8 +34,7 @@ function formatRelativeTime(date: Date) {
 export default function Review({ bookId }: { bookId: string }) {
   const user = useUser();
   const { data: reviews, isLoading, write, remove } = useReview({ bookId });
-  const { open: modalOpen, close: modalClose } =
-    useModalContext() as ModalContextValue;
+  const { open: modalOpen, close: modalClose } = useModalContext();
 
   const [text, setText] = useState<string>('');
 

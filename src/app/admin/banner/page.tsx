@@ -4,11 +4,7 @@ import { deleteBanner } from '@connect/banner/banner';
 import useBanner from '@connect/banner/useBanner';
 import { ROUTES } from '@constants';
 
-import {
-  ModalContextValue,
-  ModalProps,
-  useModalContext,
-} from '@contexts/ModalContext';
+import { ModalProps, useModalContext } from '@contexts/ModalContext';
 import { toast } from 'react-toastify';
 
 export default function BannerPage() {
@@ -16,8 +12,7 @@ export default function BannerPage() {
   const { data: scheduledBanners } = useBanner('scheduled');
   const { data: expiredBanners } = useBanner('expired');
 
-  const { open: modalOpen, close: modalClose } =
-    useModalContext() as ModalContextValue;
+  const { open: modalOpen, close: modalClose } = useModalContext();
 
   return (
     <div className="max-width">

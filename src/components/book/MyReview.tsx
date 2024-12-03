@@ -11,11 +11,7 @@ import { ko } from 'date-fns/locale';
 
 import styles from './Review.module.scss';
 import Link from 'next/link';
-import {
-  ModalContextValue,
-  ModalProps,
-  useModalContext,
-} from '@contexts/ModalContext';
+import { ModalProps, useModalContext } from '@contexts/ModalContext';
 import { toast } from 'react-toastify';
 import CommentLikeButton from './CommentLikeButton';
 import useGetUid from '@connect/user/useGetUid';
@@ -55,8 +51,7 @@ export default function MyReview({
     shelfUserId: targetUser?.userId as string,
     bookId: bookId,
   });
-  const { open: modalOpen, close: modalClose } =
-    useModalContext() as ModalContextValue;
+  const { open: modalOpen, close: modalClose } = useModalContext();
 
   const [text, setText] = useState<string>('');
 

@@ -4,11 +4,7 @@ import Image from 'next/image';
 import styles from './BookDetail.module.scss';
 import { Book } from '@connect/book';
 import LifeUsers from './LifeUsers';
-import {
-  ModalContextValue,
-  ModalProps,
-  useModalContext,
-} from '@contexts/ModalContext';
+import { ModalProps, useModalContext } from '@contexts/ModalContext';
 import { toast } from 'react-toastify';
 import useUser from '@connect/user/useUser';
 import { useRouter } from 'next/navigation';
@@ -33,8 +29,7 @@ export default function MyBookDetail({
 }) {
   const router = useRouter();
   const user = useUser();
-  const { open: modalOpen, close: modalClose } =
-    useModalContext() as ModalContextValue;
+  const { open: modalOpen, close: modalClose } = useModalContext();
   const { data: likeBooks } = useLikeBook();
   const {
     frontCover,
