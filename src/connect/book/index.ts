@@ -52,3 +52,13 @@ export interface MyBook {
   createdTime: Date;
   lastUpdatedTime: Date;
 }
+
+export const SORT_OPTIONS = {
+  LIFE: '인생책순',
+  POPULAR: '인기순',
+  RECENT: '등록순',
+  NAME: '이름순',
+  PUBLISH: '출시일순',
+} as const;
+
+export type SortOption = (typeof SORT_OPTIONS)[keyof typeof SORT_OPTIONS];

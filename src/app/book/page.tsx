@@ -1,11 +1,23 @@
 'use client';
 import Loading from '@components/Loading';
 import BookList from '@components/book/BookList';
-import useBooks from '@hooks/useBooks';
+import { SORT_OPTIONS, SortOption } from '@connect/book';
+import useBooks from '@connect/book/useBooks';
+import { ROUTES } from '@constants';
+
 import { useInView } from 'framer-motion';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-export default function Home() {
+const sortOptions = Object.values(SORT_OPTIONS);
+
+export default function BookPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const initialSort =
+    (searchParams.get('sort') as SortOption) || SORT_OPTIONS.POPULAR;
+
   const {
     data,
     fetchNextPage,
@@ -13,7 +25,7 @@ export default function Home() {
     isFetchingNextPage,
     sortBy,
     setSortBy,
-  } = useBooks();
+  } = useBooks(initialSort);
 
   const ref = useRef(null);
   const isInView = useInView(ref);
@@ -29,20 +41,29 @@ export default function Home() {
       }, 1000);
     }
   }, [isInView, hasNextPage, isFetchingNextPage, isLoadingMore, fetchNextPage]);
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSort = e.target.value as SortOption;
+    setSortBy(newSort);
+
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('sort', newSort);
+    router.replace(`${ROUTES.BOOK}?${newSearchParams.toString()}`);
+  };
   return (
     <main className="max-width">
       <div className="flex items-center justify-between">
         <h2 className="title2">도서</h2>
         <select
           value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as any)}
+          onChange={handleSortChange}
           className="w-[180px] p-2 border rounded-md"
         >
-          <option value="인기순">인기순</option>
-          <option value="인생책순">인생책순</option>
-          <option value="등록순">등록순</option>
-          <option value="이름순">이름순</option>
-          <option value="출시일순">출시일순</option>
+          {sortOptions.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
         </select>
       </div>
 

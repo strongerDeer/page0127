@@ -14,44 +14,6 @@ import {
 } from 'firebase/firestore';
 import getFireBaseData from '@utils/getFirebaseData';
 
-export async function getBooks() {
-  let bookQuery = query(
-    collection(store, COLLECTIONS.BOOKS),
-    orderBy('createdTime', 'desc'),
-    limit(12),
-  );
-  const snapshot = await getDocs(bookQuery);
-
-  const data = snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...(doc.data() as Book),
-  }));
-
-  return data;
-}
-
-// export async function getBooks(pageParam?: QuerySnapshot<Book>) {
-
-//   if (pageParam) {
-//     bookQuery = query(
-//       collection(store, COLLECTIONS.BOOKS),
-//       orderBy('createdTime', 'desc'),
-//       startAfter(pageParam),
-//       limit(12),
-//     );
-//   }
-
-//   const snapshot = await getDocs(bookQuery);
-//   const lastVisible = snapshot.docs[snapshot.docs.length - 1];
-
-//   const items = snapshot.docs.map((doc) => ({
-//     id: doc.id,
-//     ...(doc.data() as Book),
-//   }));
-
-//   return { items, lastVisible };
-// }
-
 export async function getBook(id: string) {
   const snapshot = await getDoc(doc(store, COLLECTIONS.BOOKS, id));
 

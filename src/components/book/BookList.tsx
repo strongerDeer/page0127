@@ -8,6 +8,7 @@ import BookListItem from './BookListItem';
 import useLikeBook from '@connect/like/useLikeBook';
 import Button from '@components/shared/Button';
 import styles from './BookList.module.scss';
+import { ROUTES } from '@constants';
 export default function BookList({
   data,
   myList,
@@ -21,7 +22,7 @@ export default function BookList({
     return (
       <div>
         <p>책이 없어요. 더 많은 책을 살펴보세요!</p>
-        <Button href="/book" variant="outline">
+        <Button href={ROUTES.BOOK} variant="outline">
           더 많은 책 보러가기
         </Button>
       </div>

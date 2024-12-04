@@ -12,6 +12,8 @@ export const ROUTES = {
   LOGIN: '/login',
   JOIN: '/join',
 
+  //book
+  BOOK: '/book',
   BOOK_SEARCH: '/book/search',
   MY_BOOK: '/my-books',
   FOLLOW: '/follow',
