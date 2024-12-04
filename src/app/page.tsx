@@ -12,8 +12,9 @@ const Banner = dynamic(() => import('@components/home/Banner'), {
   ssr: true,
 });
 
-const BookSection = dynamic(() => import('@components/home/BookSection'), {
+const BookSections = dynamic(() => import('@components/home/BookSections'), {
   ssr: true,
+  suspense: true,
 });
 
 const Search = dynamic(() => import('@components/home/Search'), {
@@ -26,6 +27,10 @@ const Video = dynamic(() => import('@components/home/Video'), {
 });
 
 export default async function HomePage() {
+  const [topLifeBooks, mostReadBooks] = await Promise.all([
+    getTopLifeBooks(),
+    getMostReadBooks(),
+  ]);
   return (
     <div>
       <Visual />
@@ -36,33 +41,14 @@ export default async function HomePage() {
         </Suspense>
       </div>
       <main>
-        {/* @ts-expect-error Async Component */}
-        <BookSections />
+        <BookSections
+          topLifeBooks={topLifeBooks}
+          mostReadBooks={mostReadBooks}
+        />
       </main>
 
       <Search />
       <Video />
     </div>
-  );
-}
-
-async function BookSections() {
-  const [topLifeBooks, mostReadBooks] = await Promise.all([
-    getTopLifeBooks(),
-    getMostReadBooks(),
-  ]);
-  return (
-    <>
-      <BookSection
-        title="독자들이 선택한 인생책"
-        books={topLifeBooks}
-        count={4}
-      />
-      <BookSection
-        title="가장 많이 읽힌 도서"
-        books={mostReadBooks}
-        count={8}
-      />
-    </>
   );
 }

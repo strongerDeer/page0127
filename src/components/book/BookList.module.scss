@@ -1,13 +1,17 @@
 @import '@/styles/var.scss';
 
 .grid {
-  @include grid(24rem, 4rem, fcSize(80, 20));
-
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4rem 2rem;
   margin-top: 4rem;
 
-  @media screen and (max-width: 600px) {
+  @media screen and (max-width: 1200px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media screen and (max-width: 640px) {
     grid-template-columns: repeat(2, 1fr);
-    gap: 4rem 2rem;
   }
   @media screen and (max-width: 360px) {
     grid-template-columns: 1fr;
