@@ -16,6 +16,7 @@ import { store } from '@firebase/firebaseApp';
 import { Book, SortOption } from '@connect/book';
 
 const ITEMS_PER_PAGE = 12;
+
 export default function useBooks(initialSort: SortOption = '인생책순') {
   const [sortBy, setSortBy] = useState<SortOption>(initialSort);
   const client = useQueryClient();
@@ -32,16 +33,14 @@ export default function useBooks(initialSort: SortOption = '인생책순') {
         return 'title';
       case '출시일순':
         return 'pubDate';
-      default:
-        return 'createdTime';
     }
   }, []);
 
   const getSortDirection = useCallback((sort: SortOption) => {
-    if (['등록순', '인생책순', '인기순'].includes(sort)) {
-      return 'desc';
+    if (['이름순'].includes(sort)) {
+      return 'asc';
     }
-    return 'asc';
+    return 'desc';
   }, []);
   const createBookQuery = useCallback(
     (sortBy: SortOption, pageParam: any = null) => {

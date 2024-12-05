@@ -20,6 +20,8 @@ export interface Book {
   readUser?: string[];
   readUserCount: number;
   likeUsers?: string[];
+
+  lastUpdatedTime: string;
 }
 
 export interface Grade {
