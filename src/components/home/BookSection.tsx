@@ -14,8 +14,6 @@ export default function BookSection({
   books: Book[];
   count: number;
 }) {
-  const sliceBooks = useMemo(() => books.slice(0, count), [books, count]);
-
   return (
     <section className="section01">
       <div className="max-width">
