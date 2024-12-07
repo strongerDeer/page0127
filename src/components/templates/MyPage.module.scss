@@ -56,4 +56,18 @@
   .contents {
     padding: 4rem 0;
   }
+
+  .top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    h2 {
+      font-size: 2rem;
+      font-weight: 600;
+      span {
+        color: var(--primary);
+      }
+    }
+  }
 }

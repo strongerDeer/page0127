@@ -10,6 +10,7 @@ import useLikeBook from '@connect/like/useLikeBook';
 import useFilteredBook from '@connect/book/useFilteredBook';
 import useReadBooks from '@connect/book/useReadBooks';
 import Loading from '@components/Loading';
+import Pagination from '@components/shared/Pagination';
 
 const BOOKS_PER_PAGE = 12;
 
@@ -62,35 +63,41 @@ export default function MyPage() {
         <button
           type="button"
           className={activeTab === 'read' ? styles.active : ''}
-          onClick={() => setActiveTab('read')}
+          onClick={() => handleTabChange('read')}
         >
           읽은 책
         </button>
         <button
           type="button"
           className={activeTab === 'like' ? styles.active : ''}
-          onClick={() => setActiveTab('like')}
+          onClick={() => handleTabChange('like')}
         >
           좋아요
         </button>
       </div>
 
       <section className={styles.contents}>
-        <h2>
-          {activeTab === 'read'
-            ? `지금까지 읽은 책 ${readBooksData?.total || 0}`
-            : `좋아요한 책 ${likedBooksData?.total || 0}`}
-        </h2>
+        <div className={styles.top}>
+          <h2>
+            {activeTab === 'read' ? `읽은 책 ` : `좋아요한 책 `}
+            <span>
+              {activeTab === 'read'
+                ? `${readBooksData?.total || 0}`
+                : `${likedBooksData?.total || 0}`}
+            </span>
+            권
+          </h2>
 
-        <select
-          value={sortBy}
-          onChange={handleSortChange}
-          className={styles.sort}
-        >
-          <option value="등록순">등록순</option>
-          <option value="이름순">이름순</option>
-          <option value="출시일순">출시일순</option>
-        </select>
+          <select
+            value={sortBy}
+            onChange={handleSortChange}
+            className={styles.sort}
+          >
+            <option value="등록순">등록순</option>
+            <option value="이름순">이름순</option>
+            <option value="출시일순">출시일순</option>
+          </select>
+        </div>
         {isReadLoading || isLikeLoading ? (
           <Loading />
         ) : (
@@ -104,19 +111,11 @@ export default function MyPage() {
               }
             />
             {totalPages > 1 && (
-              <div className={styles.pagination}>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (page) => (
-                    <button
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      className={page === currentPage ? styles.active : ''}
-                    >
-                      {page}
-                    </button>
-                  ),
-                )}
-              </div>
+              <Pagination
+                totalPages={totalPages}
+                currentPage={currentPage}
+                handlePageChange={handlePageChange}
+              />
             )}
           </>
         )}

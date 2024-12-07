@@ -1,0 +1,43 @@
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 6rem;
+
+  button {
+    min-width: 3.2rem;
+    height: 3.2rem;
+    padding: 0 1rem;
+
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    font-size: 0.9em;
+
+    &,
+    svg {
+      transition: all 0.3s;
+    }
+
+    &.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    &.control {
+      background-color: var(--grayLv1);
+      padding: 0;
+    }
+
+    &:not(.active):hover {
+      background: rgba(var(--primary-rgb), 0.1);
+      border-color: rgba(var(--primary-rgb), 0.5);
+
+      svg {
+        fill: var(--primary);
+      }
+    }
+  }
+}
