@@ -48,20 +48,20 @@ export default function ShelfPage({ userData }: { userData: User }) {
             <section>
               <h3>월별</h3>
 
-              <BarChart
+              {/* <BarChart
                 title={`${displayName}의 ${year}년` || ''}
                 userData={counterData.date}
                 year={year}
-              />
+              /> */}
             </section>
 
             <section>
               <h3>카테고리별</h3>
-              {/* 
+
               <RadarChart
                 title={`${displayName}의 ${year}년` || ''}
                 userData={counterData.category || {}}
-              /> */}
+              />
             </section>
           </div>
         )}
