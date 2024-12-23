@@ -1,3 +1,4 @@
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import Script from 'next/script';
 import type { Metadata } from 'next';
 import { pretendard } from '@font';
@@ -66,6 +67,7 @@ export default function RootLayout({
       </head>
       <body>
         <Layout>{children}</Layout>
+        <SpeedInsights />
       </body>
     </html>
   );

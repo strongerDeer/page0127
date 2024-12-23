@@ -38,6 +38,7 @@ const RAW_RUNTIME_STATE =
           ["@vanilla-extract/dynamic", "npm:2.1.1"],\
           ["@vanilla-extract/next-plugin", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:2.4.1"],\
           ["@vanilla-extract/recipes", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:0.5.3"],\
+          ["@vercel/speed-insights", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:1.1.0"],\
           ["autoprefixer", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:10.4.19"],\
           ["chart.js", "npm:4.4.2"],\
           ["clsx", "npm:2.1.1"],\
@@ -3022,6 +3023,48 @@ const RAW_RUNTIME_STATE =
         "packagePeers": [\
           "@types/webpack",\
           "webpack"\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@vercel/speed-insights", [\
+      ["npm:1.1.0", {\
+        "packageLocation": "./.yarn/unplugged/@vercel-speed-insights-virtual-ddf2664dc8/node_modules/@vercel/speed-insights/",\
+        "packageDependencies": [\
+          ["@vercel/speed-insights", "npm:1.1.0"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:1.1.0", {\
+        "packageLocation": "./.yarn/unplugged/@vercel-speed-insights-virtual-ddf2664dc8/node_modules/@vercel/speed-insights/",\
+        "packageDependencies": [\
+          ["@vercel/speed-insights", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:1.1.0"],\
+          ["@sveltejs/kit", null],\
+          ["@types/next", null],\
+          ["@types/react", "npm:18.3.1"],\
+          ["@types/svelte", null],\
+          ["@types/sveltejs__kit", null],\
+          ["@types/vue", null],\
+          ["@types/vue-router", null],\
+          ["next", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:14.1.4"],\
+          ["react", "npm:18.3.1"],\
+          ["svelte", null],\
+          ["vue", null],\
+          ["vue-router", null]\
+        ],\
+        "packagePeers": [\
+          "@sveltejs/kit",\
+          "@types/next",\
+          "@types/react",\
+          "@types/svelte",\
+          "@types/sveltejs__kit",\
+          "@types/vue-router",\
+          "@types/vue",\
+          "next",\
+          "react",\
+          "svelte",\
+          "vue-router",\
+          "vue"\
         ],\
         "linkType": "HARD"\
       }]\
@@ -7059,6 +7102,7 @@ const RAW_RUNTIME_STATE =
           ["@vanilla-extract/dynamic", "npm:2.1.1"],\
           ["@vanilla-extract/next-plugin", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:2.4.1"],\
           ["@vanilla-extract/recipes", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:0.5.3"],\
+          ["@vercel/speed-insights", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:1.1.0"],\
           ["autoprefixer", "virtual:ac3f11aa23bb7568d70a7490d21bac358c69b19712b9e98bd4cac1d8ff002e2f95fdf61d99c8f61601384701f3efae03d7ae4518fcda59cf6a4733fdc17cc93c#npm:10.4.19"],\
           ["chart.js", "npm:4.4.2"],\
           ["clsx", "npm:2.1.1"],\
