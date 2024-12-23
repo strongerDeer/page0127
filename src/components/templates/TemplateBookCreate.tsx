@@ -62,6 +62,7 @@ export default function TemplateBookCreate({ bookId }: { bookId?: string }) {
     readDate: '',
     readUserCount: 0,
     grade10Count: 0,
+    lastUpdatedTime: '',
   });
 
   useEffect(() => {

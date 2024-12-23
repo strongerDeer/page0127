@@ -18,9 +18,14 @@ export default function SearchBook({
 }) {
   const [keyword, setKeyword] = useState<string>('');
   const [debouncedKeyword, setDebounceKeyword] = useState('');
+  const [showResults, setShowResults] = useState(false);
 
   const debouncedSearch = useMemo(
-    () => debounce((keyword) => setDebounceKeyword(keyword), 300),
+    () =>
+      debounce((keyword) => {
+        setDebounceKeyword(keyword);
+        setShowResults(!!keyword);
+      }, 300),
     [],
   );
 
@@ -91,6 +96,7 @@ export default function SearchBook({
 
       setKeyword('');
       setDebounceKeyword('');
+      setShowResults(false);
     } catch (error) {
       console.error('Error updating book data:', error);
     }
@@ -105,10 +111,11 @@ export default function SearchBook({
         type="search"
         value={keyword}
         onChange={handleSearchChange}
+        onFocus={() => setShowResults(!!debouncedKeyword)}
         placeholder="어떤 책을 읽었나요?"
         maxLength={50}
       />
-      {(isLoading || isLoading || books) && (
+      {showResults && (isLoading || books) && (
         <div className={styles.result}>
           {isLoading && <Loading />}
           {isError && <div>오류: {getErrorMessage(error)}</div>}
