@@ -43,27 +43,28 @@ export default function ShelfPage({ userData }: { userData: User }) {
           value={Number(counterData?.totalBook) || 0}
           total={Number(currentGoal) || DEFAULT_GOAL}
         />
+        {counterData && (
+          <div className={styles.flexContainer}>
+            <section>
+              <h3>월별</h3>
 
-        <div className={styles.flexContainer}>
-          <section>
-            <h3>월별</h3>
+              <BarChart
+                title={`${displayName}의 ${year}년` || ''}
+                userData={counterData.date}
+                year={year}
+              />
+            </section>
 
-            <BarChart
-              title={`${displayName}의 ${year}년` || ''}
-              userData={counterData?.date}
-              year={year}
-            />
-          </section>
+            <section>
+              <h3>카테고리별</h3>
 
-          <section>
-            <h3>카테고리별</h3>
-            <RadarChart
-              title={`${displayName}의 ${year}년` || ''}
-              userData={counterData?.category || []}
-            />
-          </section>
-        </div>
-
+              <RadarChart
+                title={`${displayName}의 ${year}년` || ''}
+                userData={counterData.category || []}
+              />
+            </section>
+          </div>
+        )}
         <MyBooks userId={userId} year={year} />
       </div>
     </div>

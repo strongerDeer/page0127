@@ -1,3 +1,4 @@
+'use client';
 import ProfileImage from '@components/shared/ProfileImage';
 import styles from './UserProfile.module.scss';
 import { User } from '@connect/user';
