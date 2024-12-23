@@ -43,7 +43,7 @@ export default function ShelfPage({ userData }: { userData: User }) {
           value={Number(counterData?.totalBook) || 0}
           total={Number(currentGoal) || DEFAULT_GOAL}
         />
-        {counterData && (
+        {/* {counterData && (
           <div className={styles.flexContainer}>
             <section>
               <h3>월별</h3>
@@ -64,7 +64,7 @@ export default function ShelfPage({ userData }: { userData: User }) {
               />
             </section>
           </div>
-        )}
+        )} */}
         <MyBooks userId={userId} year={year} />
       </div>
     </div>
