@@ -126,7 +126,8 @@ export default function RadarChart({
 
   return (
     <div className={styles.wrap} role="img" aria-label={`${title} 레이더 차트`}>
-      <Radar options={chartOptions} data={data} />
+      {/* <Radar options={chartOptions} data={data} /> */}
+      <Radar data={data} />
     </div>
   );
 }
