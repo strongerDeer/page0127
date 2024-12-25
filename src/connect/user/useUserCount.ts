@@ -1,6 +1,7 @@
+'use client';
 import { useQuery, useQueryClient } from 'react-query';
 import { useEffect } from 'react';
-import { collection, doc, onSnapshot, query } from 'firebase/firestore';
+import { collection, doc, onSnapshot } from 'firebase/firestore';
 import { store } from '@firebase/firebaseApp';
 import getUserCount from './user';
 import { COLLECTIONS } from '@constants';

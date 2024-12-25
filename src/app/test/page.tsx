@@ -4,6 +4,7 @@ import useUserCount from '@connect/user/useUserCount';
 
 export default function Page() {
   const { data: counterData } = useUserCount('dreamfulbud', '2024');
+
   return (
     <div>
       {counterData && (
