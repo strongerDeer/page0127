@@ -23,40 +23,6 @@ ChartJS.register(
   Legend,
 );
 
-const options: ChartOptions<'bar'> = {
-  responsive: true,
-  maintainAspectRatio: true,
-  plugins: {
-    title: {
-      display: false,
-    },
-    legend: {
-      display: false,
-    },
-    tooltip: {
-      callbacks: {
-        title: () => '',
-        label: (context) => `${context.label}월: ${context.formattedValue}권`,
-      },
-    },
-  },
-
-  scales: {
-    x: {
-      grid: {
-        display: false,
-      },
-      ticks: {
-        font: { size: 12 },
-      },
-    },
-    y: {
-      display: false,
-      beginAtZero: true,
-    },
-  },
-};
-
 const MONTHS = Array.from({ length: 12 }, (_, i) =>
   String(i + 1).padStart(2, '0'),
 );
@@ -74,6 +40,39 @@ export default function BarChart({
   userData: UserData;
   year: string;
 }) {
+  const options: ChartOptions<'bar'> = {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: {
+      title: {
+        display: false,
+      },
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          title: () => '',
+          label: (context) => `${context.label}월: ${context.formattedValue}권`,
+        },
+      },
+    },
+
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          font: { size: 12 },
+        },
+      },
+      y: {
+        display: false,
+        beginAtZero: true,
+      },
+    },
+  };
   const data = useMemo(() => {
     const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
     return {

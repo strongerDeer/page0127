@@ -39,42 +39,7 @@ const LABEL_TEXTS = {
   인문학: '인문학',
   자기계발: '자기계발',
 } as const;
-const options: ChartOptions<'radar'> = {
-  responsive: true,
-  maintainAspectRatio: true,
-  plugins: {
-    legend: {
-      display: false,
-    },
-    title: {
-      display: false,
-    },
-    tooltip: {
-      callbacks: {
-        title: () => '',
-        label: (context) => `${context.label}: ${context.formattedValue}권`,
-      },
-    },
-  },
-  elements: {
-    line: {
-      backgroundColor: `rgba(${PRIMARY_RGB}, 0.2)`,
-      borderColor: `rgba(${PRIMARY_RGB}, 1)`,
-      borderWidth: 1,
-    },
-    point: {
-      backgroundColor: `rgba(${PRIMARY_RGB}, 1)`,
-      borderColor: `rgba(${PRIMARY_RGB}, 1)`,
-      radius: 2,
-      borderWidth: 0,
-    },
-  },
-  scales: {
-    r: {
-      suggestedMin: 0,
-    },
-  },
-};
+
 export default function RadarChart({
   title,
   userData,
@@ -84,9 +49,38 @@ export default function RadarChart({
 }) {
   const chartOptions: ChartOptions<'radar'> = useMemo(
     () => ({
-      ...options,
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        title: {
+          display: false,
+        },
+        tooltip: {
+          callbacks: {
+            title: () => '',
+            label: (context) => `${context.label}: ${context.formattedValue}권`,
+          },
+        },
+      },
+      elements: {
+        line: {
+          backgroundColor: `rgba(${PRIMARY_RGB}, 0.2)`,
+          borderColor: `rgba(${PRIMARY_RGB}, 1)`,
+          borderWidth: 1,
+        },
+        point: {
+          backgroundColor: `rgba(${PRIMARY_RGB}, 1)`,
+          borderColor: `rgba(${PRIMARY_RGB}, 1)`,
+          radius: 2,
+          borderWidth: 0,
+        },
+      },
       scales: {
         r: {
+          suggestedMin: 0,
           beginAtZero: true,
           angleLines: {
             color: '#f5f5f5',
@@ -126,8 +120,7 @@ export default function RadarChart({
 
   return (
     <div className={styles.wrap} role="img" aria-label={`${title} 레이더 차트`}>
-      {/* <Radar options={chartOptions} data={data} /> */}
-      <Radar data={data} />
+      <Radar options={chartOptions} data={data} />
     </div>
   );
 }
