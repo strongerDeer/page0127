@@ -6,13 +6,21 @@ import ProgressBar from '@components/shared/ProgressBar';
 import styles from './ShelfPage.module.scss';
 import { DEFAULT_GOAL } from '@constants';
 import useUserCount from '@connect/user/useUserCount';
-import BarChart from '@components/my/BarChart';
+
 import UserProfile from '@components/shelf/UserProfile';
 import { useState } from 'react';
 import { User } from '@connect/user';
 import GoalTitle from '@components/shelf/GoalTitle';
-import RadarChart from '@components/my/RadarChart';
 import ShelfHeader from '@components/shelf/ShelfHeader';
+import dynamic from 'next/dynamic';
+
+const BarChart = dynamic(() => import('@components/my/BarChart'), {
+  ssr: false,
+});
+
+const RadarChart = dynamic(() => import('@components/my/RadarChart'), {
+  ssr: false,
+});
 
 const nowYear = String(new Date().getFullYear());
 
