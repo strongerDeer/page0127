@@ -52,7 +52,7 @@ export default function BookPage() {
   };
   return (
     <main className="max-width">
-      <div className="flex items-center justify-between">
+      <div className="mt-16 flex items-center justify-between">
         <h2 className="title2">도서</h2>
         <select
           value={sortBy}

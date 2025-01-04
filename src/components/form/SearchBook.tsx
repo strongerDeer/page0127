@@ -1,5 +1,5 @@
 'use client';
-import { ChangeEvent, useCallback, useMemo, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery } from 'react-query';
 import { getBookInfo, getSearchBook } from '@connect/aladin/aladin';
 import Image from 'next/image';
@@ -28,6 +28,12 @@ export default function SearchBook({
       }, 300),
     [],
   );
+
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
 
   const handleSearchChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -124,7 +130,13 @@ export default function SearchBook({
               {books.map((book: AladinBook) => (
                 <li key={book.isbn}>
                   <button type="button" onClick={() => inputImgData(book)}>
-                    <Image src={book.cover} width={80} height={80} alt="" />
+                    <Image
+                      src={book.cover}
+                      width={80}
+                      height={80}
+                      alt=""
+                      loading="lazy"
+                    />
                     <span className={styles.content}>
                       <span className={styles.title}>{book.title}</span>
                       <span className={styles.info}>

@@ -1,5 +1,5 @@
 'use client';
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import Input from '@components/form/Input';
 import { useQuery } from 'react-query';
