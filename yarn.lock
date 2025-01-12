@@ -3878,7 +3878,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@storybook/react@npm:8.4.7":
+"@storybook/react@npm:*, @storybook/react@npm:8.4.7, @storybook/react@npm:^8.4.7":
   version: 8.4.7
   resolution: "@storybook/react@npm:8.4.7"
   dependencies:
@@ -3927,6 +3927,15 @@ __metadata:
   peerDependencies:
     storybook: ^8.2.0 || ^8.3.0-0 || ^8.4.0-0 || ^8.5.0-0 || ^8.6.0-0
   checksum: 10c0/20a4975478063cea616ce6ab6b1e9ec181af1424280678ed74dc5afc15b828c043e843696a1643601331c4fd266169ec4bcc5bb43fd2f1f3c01c0e21443a658a
+  languageName: node
+  linkType: hard
+
+"@storybook/types@npm:^8.4.7":
+  version: 8.4.7
+  resolution: "@storybook/types@npm:8.4.7"
+  peerDependencies:
+    storybook: ^8.2.0 || ^8.3.0-0 || ^8.4.0-0 || ^8.5.0-0 || ^8.6.0-0
+  checksum: 10c0/c7cb2622a32a94accaf3859ee54e54b1755c1c052406b6ff5980773ff1cee786aca0ee084bf338593a6fcbcadd9dc6f512aa5403cc7e60933bc9b3162d56022b
   languageName: node
   linkType: hard
 
@@ -4183,6 +4192,15 @@ __metadata:
   version: 7.5.8
   resolution: "@types/semver@npm:7.5.8"
   checksum: 10c0/8663ff927234d1c5fcc04b33062cb2b9fcfbe0f5f351ed26c4d1e1581657deebd506b41ff7fdf89e787e3d33ce05854bc01686379b89e9c49b564c4cfa988efa
+  languageName: node
+  linkType: hard
+
+"@types/storybook__react@npm:^5.2.1":
+  version: 5.2.1
+  resolution: "@types/storybook__react@npm:5.2.1"
+  dependencies:
+    "@storybook/react": "npm:*"
+  checksum: 10c0/1d55729f7d02a00ee89fa822833fbda9f8d890aa930de81939b979d7d47790e9788f52174c7b4075f40b5f2f5bc80f2fface5e5f2ee2a717cb0da863f20a8f39
   languageName: node
   linkType: hard
 
@@ -10352,11 +10370,14 @@ __metadata:
     "@storybook/addon-onboarding": "npm:^8.4.7"
     "@storybook/blocks": "npm:^8.4.7"
     "@storybook/nextjs": "npm:^8.4.7"
+    "@storybook/react": "npm:^8.4.7"
     "@storybook/test": "npm:^8.4.7"
+    "@storybook/types": "npm:^8.4.7"
     "@types/lodash.debounce": "npm:^4"
     "@types/node": "npm:^20"
     "@types/react": "npm:^18"
     "@types/react-dom": "npm:^18"
+    "@types/storybook__react": "npm:^5.2.1"
     "@types/uuid": "npm:^9.0.8"
     "@types/validator": "npm:^13.11.10"
     "@vanilla-extract/css": "npm:^1.15.2"

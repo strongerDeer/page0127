@@ -6,7 +6,7 @@ const configureWebpack = (config) => {
     chunks: 'all',
     maxInitialRequests: 25,
     minSize: 20000,
-    maxSize: 50000,
+    maxSize: 244000,
     cacheGroups: {
       vendor: {
         test: /[\\/]node_modules[\\/]/,
@@ -49,7 +49,7 @@ const configureWebpack = (config) => {
   return config;
 };
 const envConfig = {
-  STORYBOOK_MODE: process.env.ANALYZE === 'true',
+  STORYBOOK_MODE: 'false',
 };
 
 const nextConfig = {
