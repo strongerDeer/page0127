@@ -18,7 +18,7 @@
 
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS + shadcn/ui
+- **Styling**: Tailwind CSS + Sass + shadcn/ui
 - **State**: React Query + Zustand
 
 ### Backend
