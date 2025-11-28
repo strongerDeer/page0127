@@ -1,17 +1,19 @@
 {
-  "name": "project",
+  "name": "monorepo",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "devDependencies": {
-    "@playwright/test": "^1.57.0",
     "@types/node": "^24.10.1",
+    "turbo": "^2.6.1",
     "typescript": "^5.9.3"
   }
 }

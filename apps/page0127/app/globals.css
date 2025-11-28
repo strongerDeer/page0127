@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+/* ============================================
+   page0127 디자인 시스템(임시)
+   ============================================ */
+
+:root {
+  /* 컬러 시스템 (PRD 기반) */
+  --color-primary: #ffd700; /* Gold - 주요 액센트, CTA 버튼 */
+  --color-secondary: #2d3748; /* Dark - 텍스트, 배경 */
+  --color-accent: #9f7aea; /* Purple - 보조 액센트 */
+
+  /* 배경 & 텍스트 */
+  --background: #ffffff; /* 기본 배경 */
+  --foreground: #2d3748; /* 기본 텍스트 (secondary와 동일) */
+
+  /* 타이포그래피 */
+  --font-h1-desktop: 50px; /* 데스크톱 H1 */
+  --font-h1-mobile: 36px; /* 모바일 H1 */
+  --font-h2-desktop: 36px; /* 데스크톱 H2 */
+  --font-h2-mobile: 28px; /* 모바일 H2 */
+
+  /* 스페이싱 */
+  --spacing-section-desktop: 80px; /* 섹션 간 간격 (데스크톱) */
+  --spacing-section-mobile: 40px; /* 섹션 간 간격 (모바일) */
+}
+
+/* Tailwind 테마 확장 */
+@theme inline {
+  /* 배경 & 전경 */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* 컬러 (Tailwind에서 사용 가능하도록) */
+  --color-primary: #ffd700;
+  --color-secondary: #2d3748;
+  --color-accent: #9f7aea;
+
+  /* 폰트 */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* 다크 모드 (추후 구현) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+/* 기본 스타일 */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* ============================================
+   유틸리티 클래스 (학습용)
+   ============================================ */
+
+/* 섹션 간격 (반응형) */
+.section-spacing {
+  padding-top: var(--spacing-section-mobile);
+  padding-bottom: var(--spacing-section-mobile);
+}
+
+@media (min-width: 768px) {
+  .section-spacing {
+    padding-top: var(--spacing-section-desktop);
+    padding-bottom: var(--spacing-section-desktop);
+  }
+}
+
+/* H1 타이포그래피 (반응형) */
+.heading-1 {
+  font-size: var(--font-h1-mobile);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+  .heading-1 {
+    font-size: var(--font-h1-desktop);
+  }
+}
+
+/* H2 타이포그래피 (반응형) */
+.heading-2 {
+  font-size: var(--font-h2-mobile);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+@media (min-width: 768px) {
+  .heading-2 {
+    font-size: var(--font-h2-desktop);
+  }
+}
