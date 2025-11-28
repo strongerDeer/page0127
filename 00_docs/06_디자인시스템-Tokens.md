@@ -365,18 +365,44 @@ export default function Page() {
    - `light.json`
    - `dark.json`
 
-### 9-2. 토큰 재빌드
+### 9-2. 토큰 재빌드 (Turbo 활용 ⭐)
+
+**프로젝트 루트에서 한 번에 실행:**
+
+```bash
+# 모든 패키지의 rebuild 실행 (design-tokens 포함)
+npm run rebuild
+```
+
+**장점:**
+- ✅ 모든 패키지에 동일하게 적용
+- ✅ 새 패키지 추가 시 자동으로 포함
+- ✅ 패키지별로 스크립트 추가할 필요 없음
+- ✅ Turbo가 병렬 실행 및 캐싱 처리
+
+**기존 방법 (경로 이동):**
 
 ```bash
 cd packages/design-tokens
 npm run rebuild
+cd ../..
 ```
+
+**사용 가능한 명령어:**
+- `npm run build` - 모든 패키지 빌드 (Turbo 병렬 실행)
+- `npm run clean` - 모든 패키지 클린
+- `npm run rebuild` - 모든 패키지 재빌드
 
 ### 9-3. 개발 서버 재시작
 
 ```bash
 # Ctrl+C로 서버 중지 후
 npm run dev
+```
+
+**또는 한 줄로:**
+```bash
+npm run rebuild && npm run dev
 ```
 
 ---
