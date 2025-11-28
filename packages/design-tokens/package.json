@@ -1,0 +1,31 @@
+{
+  "name": "@repo/design-tokens",
+  "version": "0.0.1",
+  "description": "Design tokens for the monorepo",
+  "main": "./src/js/light.js",
+  "types": "./src/js/light.d.ts",
+  "exports": {
+    "./light": {
+      "import": "./src/js/light.js",
+      "types": "./src/js/light.d.ts"
+    },
+    "./dark": {
+      "import": "./src/js/dark.js",
+      "types": "./src/js/dark.d.ts"
+    },
+    "./css/light.css": "./src/css/light.css",
+    "./css/dark.css": "./src/css/dark.css"
+  },
+  "scripts": {
+    "build": "node style-dictionary.config.js",
+    "clean": "rm -rf src",
+    "rebuild": "npm run clean && npm run build"
+  },
+  "devDependencies": {
+    "style-dictionary": "^3.9.2"
+  },
+  "files": [
+    "src",
+    "tokens"
+  ]
+}
