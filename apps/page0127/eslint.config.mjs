@@ -34,6 +34,7 @@ const eslintConfig = defineConfig([
     'next-env.d.ts',
     'node_modules/**',
     '.turbo/**',
+    'src/shared/ui/**', // shadcn/ui 컴포넌트 제외 (외부 라이브러리 코드)
   ]),
 
   // 커스텀 규칙
@@ -176,7 +177,8 @@ const eslintConfig = defineConfig([
   // Next.js 특수 파일 및 설정 파일은 Default Export 허용
   {
     files: [
-      // Next.js App Router 특수 파일
+      // Next.js App Router 특수 파일 (src/app과 app 둘 다 지원)
+      // src
       'src/app/**/page.tsx',
       'src/app/**/layout.tsx',
       'src/app/**/error.tsx',
@@ -184,6 +186,18 @@ const eslintConfig = defineConfig([
       'src/app/**/not-found.tsx',
       'src/app/**/template.tsx',
       'src/app/**/default.tsx',
+      'src/app/**/route.ts',
+
+      //app
+      'app/**/page.tsx',
+      'app/**/layout.tsx',
+      'app/**/error.tsx',
+      'app/**/loading.tsx',
+      'app/**/not-found.tsx',
+      'app/**/template.tsx',
+      'app/**/default.tsx',
+      'app/**/route.ts',
+
       // Pages Router 파일
       'src/pages/**/*.tsx',
       'src/pages/api/**/*.ts',
