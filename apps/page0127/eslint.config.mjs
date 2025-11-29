@@ -1,6 +1,7 @@
 import { defineConfig, globalIgnores } from 'eslint/config';
 import nextVitals from 'eslint-config-next/core-web-vitals';
 import nextTs from 'eslint-config-next/typescript';
+import importPlugin from 'eslint-plugin-import';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 
 /**
@@ -11,6 +12,7 @@ import simpleImportSort from 'eslint-plugin-simple-import-sort';
  * - import 순서 자동 정렬: React → Next.js → 외부 라이브러리 → 내부 모듈 (FSD 순서)
  * - React 함수 컴포넌트는 화살표 함수 사용 (실무 표준)
  * - TypeScript type 일관성 강제
+ * - Named Export 사용 (Default Export 금지)
  */
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -20,6 +22,7 @@ const eslintConfig = defineConfig([
   {
     plugins: {
       'simple-import-sort': simpleImportSort,
+      import: importPlugin,
     },
   },
 
@@ -54,6 +57,10 @@ const eslintConfig = defineConfig([
       // 리스트 렌더링 시 key 필수
       'react/jsx-key': 'error',
       // Hooks 규칙 (react-hooks 플러그인에서 자동 적용)
+
+      // Named Export 사용 (Default Export 금지)
+      // 단, Next.js 특수 파일(page.tsx, layout.tsx 등)은 예외
+      'import/no-default-export': 'error', // 기본 error, Next.js 특수 파일만 예외
 
       // ========================================
       // Import 규칙
@@ -111,7 +118,6 @@ const eslintConfig = defineConfig([
       // ========================================
       // 일반 규칙
       // ========================================
-      // console.log 경고 (개발 중에는 허용)
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       // debugger 금지
       'no-debugger': 'error',
@@ -119,6 +125,74 @@ const eslintConfig = defineConfig([
       'no-var': 'error',
       // const 우선
       'prefer-const': 'warn',
+
+      // ========================================
+      // FSD 아키텍처 규칙
+      // ========================================
+      // FSD 레이어 간 import 경계 강제
+      'import/no-restricted-paths': [
+        'error',
+        {
+          zones: [
+            // shared는 다른 레이어에서 import 불가
+            {
+              target: './src/shared/**/*',
+              from: './src/entities/**/*',
+              message: 'shared 레이어는 entities를 import할 수 없습니다.',
+            },
+            {
+              target: './src/shared/**/*',
+              from: './src/features/**/*',
+              message: 'shared 레이어는 features를 import할 수 없습니다.',
+            },
+            {
+              target: './src/shared/**/*',
+              from: './src/widgets/**/*',
+              message: 'shared 레이어는 widgets를 import할 수 없습니다.',
+            },
+            // entities는 features 이상 레이어 import 불가
+            {
+              target: './src/entities/**/*',
+              from: './src/features/**/*',
+              message: 'entities 레이어는 features를 import할 수 없습니다.',
+            },
+            {
+              target: './src/entities/**/*',
+              from: './src/widgets/**/*',
+              message: 'entities 레이어는 widgets를 import할 수 없습니다.',
+            },
+            // features는 widgets 이상 레이어 import 불가
+            {
+              target: './src/features/**/*',
+              from: './src/widgets/**/*',
+              message: 'features 레이어는 widgets를 import할 수 없습니다.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  // Next.js 특수 파일 및 설정 파일은 Default Export 허용
+  {
+    files: [
+      // Next.js App Router 특수 파일
+      'src/app/**/page.tsx',
+      'src/app/**/layout.tsx',
+      'src/app/**/error.tsx',
+      'src/app/**/loading.tsx',
+      'src/app/**/not-found.tsx',
+      'src/app/**/template.tsx',
+      'src/app/**/default.tsx',
+      // Pages Router 파일
+      'src/pages/**/*.tsx',
+      'src/pages/api/**/*.ts',
+      // 설정 파일 (Default Export 필수)
+      '*.config.{js,ts,mjs,cjs}',
+      'tailwind.config.{js,ts}',
+    ],
+    rules: {
+      'import/no-default-export': 'off',
     },
   },
 ]);
