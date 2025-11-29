@@ -1,15 +1,17 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import { Geist, Geist_Mono } from 'next/font/google';
+
+import type { Metadata } from 'next';
+
+import './globals.css';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 /*
@@ -18,16 +20,16 @@ const geistMono = Geist_Mono({
   - 검색 엔진, SNS 공유 시 표시됨
 */
 export const metadata: Metadata = {
-  title: "page0127 - 당신의 독서 DNA를 발견하세요",
+  title: 'page0127 - 당신의 독서 DNA를 발견하세요',
   description:
-    "AI 기반 독서 성향 분석, 비슷한 취향의 독서가 매칭, 개인 맞춤 책 추천. 모든 독서 기록을 한곳에서 관리하고 분석하세요.",
+    'AI 기반 독서 성향 분석, 비슷한 취향의 독서가 매칭, 개인 맞춤 책 추천. 모든 독서 기록을 한곳에서 관리하고 분석하세요.',
   keywords: [
-    "독서",
-    "독서 기록",
-    "독서 앱",
-    "AI 추천",
-    "책 추천",
-    "독서 성향 분석",
+    '독서',
+    '독서 기록',
+    '독서 앱',
+    'AI 추천',
+    '책 추천',
+    '독서 성향 분석',
   ],
 };
 
@@ -41,11 +43,11 @@ export const metadata: Metadata = {
   - 기본적으로 Server Component (별도 지시어 없음)
   - 'use client' 없으면 서버에서만 실행
 */
-export default function RootLayout({
+export const RootLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>) => {
   return (
     <html lang="ko">
       {/* lang="ko": 한국어 설정 (SEO, 접근성) */}
@@ -60,4 +62,4 @@ export default function RootLayout({
       </body>
     </html>
   );
-}
+};

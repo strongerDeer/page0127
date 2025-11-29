@@ -11,7 +11,7 @@
   - SEO 최적화 (HTML이 서버에서 완성되어 전달됨)
   - useState, useEffect 사용 불가 (클라이언트 전용 기능)
 */
-export default function Home() {
+export const Home = () => {
   return (
     <div className="min-h-screen bg-background">
       {/*
@@ -80,4 +80,4 @@ export default function Home() {
       </section>
     </div>
   );
-}
+};

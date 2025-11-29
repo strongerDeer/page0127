@@ -8,9 +8,9 @@
 */
 
 // Design Tokens CSS import
-import "@repo/design-tokens/css/light.css";
+import '@repo/design-tokens/css/light.css';
 
-export default function TestTokensPage() {
+export const TestTokensPage = () => {
   return (
     <div data-theme="light" className="min-h-screen p-8">
       <div className="container mx-auto max-w-4xl">
@@ -23,7 +23,7 @@ export default function TestTokensPage() {
             <div
               className="rounded-lg p-6"
               style={{
-                backgroundColor: "var(--light-color-background-primary)",
+                backgroundColor: 'var(--light-color-background-primary)',
               }}
             >
               <p className="font-medium">Primary</p>
@@ -32,7 +32,7 @@ export default function TestTokensPage() {
             <div
               className="rounded-lg p-6"
               style={{
-                backgroundColor: "var(--light-color-background-secondary)",
+                backgroundColor: 'var(--light-color-background-secondary)',
               }}
             >
               <p className="font-medium">Secondary</p>
@@ -41,7 +41,7 @@ export default function TestTokensPage() {
             <div
               className="rounded-lg p-6"
               style={{
-                backgroundColor: "var(--light-color-background-tertiary)",
+                backgroundColor: 'var(--light-color-background-tertiary)',
               }}
             >
               <p className="font-medium">Tertiary</p>
@@ -56,19 +56,19 @@ export default function TestTokensPage() {
           <div className="rounded-lg bg-white p-6">
             <p
               className="mb-2 text-lg"
-              style={{ color: "var(--light-color-text-primary)" }}
+              style={{ color: 'var(--light-color-text-primary)' }}
             >
               Primary Text - 주요 텍스트
             </p>
             <p
               className="mb-2"
-              style={{ color: "var(--light-color-text-secondary)" }}
+              style={{ color: 'var(--light-color-text-secondary)' }}
             >
               Secondary Text - 부가 설명
             </p>
             <p
               className="text-sm"
-              style={{ color: "var(--light-color-text-tertiary)" }}
+              style={{ color: 'var(--light-color-text-tertiary)' }}
             >
               Tertiary Text - 보조 정보
             </p>
@@ -85,8 +85,8 @@ export default function TestTokensPage() {
             <button
               className="rounded-lg px-6 py-3 font-semibold transition-colors"
               style={{
-                backgroundColor: "var(--light-color-action-primary-default)",
-                color: "var(--light-color-text-inverse)",
+                backgroundColor: 'var(--light-color-action-primary-default)',
+                color: 'var(--light-color-text-inverse)',
               }}
             >
               Primary Button
@@ -96,8 +96,8 @@ export default function TestTokensPage() {
             <button
               className="rounded-lg px-6 py-3 font-semibold transition-colors"
               style={{
-                backgroundColor: "var(--light-color-action-secondary-default)",
-                color: "var(--light-color-text-primary)",
+                backgroundColor: 'var(--light-color-action-secondary-default)',
+                color: 'var(--light-color-text-primary)',
               }}
             >
               Secondary Button
@@ -111,19 +111,19 @@ export default function TestTokensPage() {
           <div className="flex gap-4">
             <div
               className="rounded-lg px-4 py-2 font-medium text-white"
-              style={{ backgroundColor: "var(--light-color-status-success)" }}
+              style={{ backgroundColor: 'var(--light-color-status-success)' }}
             >
               Success
             </div>
             <div
               className="rounded-lg px-4 py-2 font-medium text-white"
-              style={{ backgroundColor: "var(--light-color-status-error)" }}
+              style={{ backgroundColor: 'var(--light-color-status-error)' }}
             >
               Error
             </div>
             <div
               className="rounded-lg px-4 py-2 font-medium text-white"
-              style={{ backgroundColor: "var(--light-color-status-warning)" }}
+              style={{ backgroundColor: 'var(--light-color-status-warning)' }}
             >
               Warning
             </div>
@@ -140,8 +140,8 @@ export default function TestTokensPage() {
                 <div
                   className="bg-blue-500"
                   style={{
-                    width: "var(--core-spacing-xs)",
-                    height: "var(--core-spacing-xs)",
+                    width: 'var(--core-spacing-xs)',
+                    height: 'var(--core-spacing-xs)',
                   }}
                 />
                 <span>xs (4px)</span>
@@ -150,8 +150,8 @@ export default function TestTokensPage() {
                 <div
                   className="bg-blue-500"
                   style={{
-                    width: "var(--core-spacing-md)",
-                    height: "var(--core-spacing-md)",
+                    width: 'var(--core-spacing-md)',
+                    height: 'var(--core-spacing-md)',
                   }}
                 />
                 <span>md (16px)</span>
@@ -163,19 +163,19 @@ export default function TestTokensPage() {
               <div className="flex gap-4">
                 <div
                   className="bg-gray-200 p-4"
-                  style={{ borderRadius: "var(--core-borderRadius-sm)" }}
+                  style={{ borderRadius: 'var(--core-borderRadius-sm)' }}
                 >
                   sm
                 </div>
                 <div
                   className="bg-gray-200 p-4"
-                  style={{ borderRadius: "var(--core-borderRadius-md)" }}
+                  style={{ borderRadius: 'var(--core-borderRadius-md)' }}
                 >
                   md
                 </div>
                 <div
                   className="bg-gray-200 p-4"
-                  style={{ borderRadius: "var(--core-borderRadius-lg)" }}
+                  style={{ borderRadius: 'var(--core-borderRadius-lg)' }}
                 >
                   lg
                 </div>
@@ -186,4 +186,4 @@ export default function TestTokensPage() {
       </div>
     </div>
   );
-}
+};

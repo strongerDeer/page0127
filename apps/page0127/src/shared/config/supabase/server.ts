@@ -1,5 +1,6 @@
-import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+
+import { createServerClient } from '@supabase/ssr'
 
 /**
  * Server Component용 Supabase 클라이언트

@@ -1,5 +1,5 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 /**
  * Tailwind CSS 클래스 병합 유틸리티
@@ -10,5 +10,5 @@ import { twMerge } from "tailwind-merge"
  * - shadcn/ui에서 기본 제공하는 유틸리티
  */
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }

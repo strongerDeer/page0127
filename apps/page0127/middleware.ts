@@ -1,5 +1,6 @@
-import { type NextRequest } from 'next/server'
-import { updateSession } from '@/shared/config/supabase/middleware'
+import { type NextRequest } from 'next/server';
+
+import { updateSession } from '@/shared/config/supabase/middleware';
 
 /**
  * Next.js Middleware
@@ -10,7 +11,7 @@ import { updateSession } from '@/shared/config/supabase/middleware'
  * - matcher로 실행할 경로 지정 (성능 최적화)
  */
 export async function middleware(request: NextRequest) {
-  return await updateSession(request)
+  return await updateSession(request);
 }
 
 export const config = {
@@ -24,4 +25,4 @@ export const config = {
      */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
-}
+};
