@@ -1,33 +1,30 @@
+/**
+ * Prettier 설정
+ *
+ * 학습 포인트:
+ * - Prettier는 코드 포매팅만 담당 (들여쓰기, 세미콜론, 따옴표 등)
+ * - Import 정렬은 ESLint의 simple-import-sort가 담당
+ * - .prettierrc.js를 사용하는 이유: CommonJS 모듈 시스템으로 설정 관리
+ */
 module.exports = {
-  plugins: [require.resolve('@trivago/prettier-plugin-sort-imports')],
-  semi: true,
-  singleQuote: true,
-  jsxSingleQuote: true,
-  tabWidth: 2,
-  trailingComma: 'es5',
-  printWidth: 80,
-  arrowParens: 'always',
-  endOfLine: 'lf',
-  bracketSpacing: true,
-  useTabs: false,
-  bracketSameLine: false,
+  // ========================================
+  // 기본 포매팅 규칙
+  // ========================================
+  semi: true, // 세미콜론 사용
+  singleQuote: true, // 작은따옴표 사용 (문자열)
+  jsxSingleQuote: true, // 작은따옴표 사용 (JSX)
+  tabWidth: 2, // 들여쓰기 2칸
+  trailingComma: 'es5', // ES5에서 허용되는 곳에만 trailing comma
+  printWidth: 80, // 한 줄 최대 80자
+  arrowParens: 'always', // 화살표 함수 매개변수 괄호 항상 사용
+  endOfLine: 'lf', // 줄바꿈 문자 (Unix 스타일)
+  bracketSpacing: true, // 객체 리터럴 괄호 공백 { foo: bar }
+  useTabs: false, // 탭 대신 스페이스 사용
+  bracketSameLine: false, // JSX 닫는 괄호 다음 줄
 
-  importOrder: [
-    '^react$',
-    '^next',
-    '^@?\\w',
-    '<THIRD_PARTY_MODULES>',
-    '^@/shared/(.*)$',
-    '^@/entities/(.*)$',
-    '^@/features/(.*)$',
-    '^@/widgets/(.*)$',
-    '^@/app/(.*)$',
-    '^[./]',
-  ],
-
-  importOrderSeparation: true,
-  importOrderSortSpecifiers: true,
-
+  // ========================================
+  // 파일별 포매팅 오버라이드
+  // ========================================
   overrides: [
     {
       files: '*.json',
@@ -46,7 +43,7 @@ module.exports = {
     {
       files: '*.{css,scss}',
       options: {
-        singleQuote: false,
+        singleQuote: false, // CSS는 큰따옴표 사용
         tabWidth: 2,
       },
     },
