@@ -10,14 +10,12 @@
 # 🎯 Claude 행동 규칙
 
 1. 학습 중심 접근
-
    - 앞서 나가지 말 것: 사용자가 요청하지 않은 기능 구현 금지
    - 터미널 명령어: 사용자가 직접 입력할 수 있도록 제시 (복사 붙여넣기용)
    - 코드 주석: 학습이 필요한 부분에 한국어 주석으로 설명
    - 기본 개념 설명: 3년차 개발자 수준에 맞춰 설명 (너무 기초적이거나 너무 고급이지 않게)
 
 2. 코드 작성 원칙
-
    - Next.js
      - Server Component 우선: 기본적으로 Server Component로 구현
      - Client Component: 'use client' 필요 시에만 사용 (useState, useEffect, 이벤트 핸들러)
@@ -28,14 +26,22 @@
    - 단계별 진행: 한 번에 하나씩 완성하며 진행
    - 확인 후 진행: 각 단계 완료 후 사용자 확인 대기
 
+4. 사전 확인 문서
+   ```
+   00_docs/01_프로젝트_개요.md
+   00_docs/02_핵심_기능.md
+   00_docs/03_기술_스택.md
+   00_docs/04_코드컨벤션.md
+   ```
+5. package 형태 작업할수 있는것은 packages 화 하는걸 우선적으로 고려할것.
+
 # ✅ 완료된 작업
 
-1. Turborepo 모노레포 구조
-
-   - npm install turbo --save-dev
-   - package.json workspaces 설정
-   - turbo.json 파이프라인 설정
-
-2. Next.js 16 프로젝트 초기화
-   - npx create-next-app@latest 실행
-   - TypeScript + Tailwind CSS + App Router
+- Turborepo 모노레포 구조
+- Next.js 16 프로젝트 초기화
+- 디자인 토큰 packages 설정
+- Supabase 인증 기반 구조 설정
+- FSD 구조 설정
+- Shadcn 설치
+- 코드 컨벤션 작성
+- lint, prettier 설정

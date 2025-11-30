@@ -1,6 +1,6 @@
-import { type NextRequest,NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from 'next/server';
 
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient } from '@supabase/ssr';
 
 /**
  * Middleware용 Supabase 클라이언트
@@ -42,11 +42,11 @@ export async function updateSession(request: NextRequest) {
   // 인증되지 않은 사용자가 보호된 페이지에 접근하면 로그인 페이지로 리디렉션
   if (
     !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
+    !request.nextUrl.pathname.startsWith('/login') &&
+    !request.nextUrl.pathname.startsWith('/auth')
   ) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = '/login';
     return NextResponse.redirect(url);
   }
 

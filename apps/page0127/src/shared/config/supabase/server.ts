@@ -1,6 +1,6 @@
-import { cookies } from 'next/headers'
+import { cookies } from 'next/headers';
 
-import { createServerClient } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr';
 
 /**
  * Server Component용 Supabase 클라이언트
@@ -11,7 +11,7 @@ import { createServerClient } from '@supabase/ssr'
  * - 매 요청마다 새로운 인스턴스 생성
  */
 export async function createClient() {
-  const cookieStore = await cookies()
+  const cookieStore = await cookies();
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,13 +19,13 @@ export async function createClient() {
     {
       cookies: {
         getAll() {
-          return cookieStore.getAll()
+          return cookieStore.getAll();
         },
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
-            )
+            );
           } catch {
             // Server Component에서는 쿠키 설정이 무시될 수 있음
             // Middleware나 Server Action에서만 쿠키 변경 가능
@@ -33,5 +33,5 @@ export async function createClient() {
         },
       },
     }
-  )
+  );
 }
