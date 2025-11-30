@@ -1,0 +1,60 @@
+import { redirect } from 'next/navigation';
+
+import { createClient } from '@/shared/config/supabase/server';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+
+import { LogoutButton } from '@/features/auth/logout-button';
+
+/**
+ * 대시보드 페이지
+ *
+ * 학습 포인트:
+ * - Server Component로 구현 (async 함수 가능)
+ * - 서버에서 사용자 정보 조회
+ * - 인증되지 않은 경우 로그인 페이지로 리디렉션
+ */
+const DashboardPage = async () => {
+  const supabase = await createClient();
+
+  // 현재 로그인한 사용자 정보 조회
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // 로그인하지 않은 경우 로그인 페이지로 리디렉션
+  if (!user) {
+    redirect('/login');
+  }
+
+  return (
+    <div className='min-h-screen bg-gray-50 p-8'>
+      <div className='mx-auto max-w-4xl'>
+        <div className='mb-6 flex items-center justify-between'>
+          <h1 className='text-3xl font-bold'>대시보드</h1>
+          <LogoutButton />
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>환영합니다!</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className='mb-2 text-gray-600'>
+              <strong>이메일:</strong> {user.email}
+            </p>
+            <p className='text-gray-600'>
+              <strong>사용자 ID:</strong> {user.id}
+            </p>
+            <div className='mt-6 rounded-lg bg-blue-50 p-4'>
+              <p className='text-sm text-blue-800'>
+                📚 곧 도서 검색 및 독서 기록 기능이 추가될 예정입니다!
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default DashboardPage;
