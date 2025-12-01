@@ -1,7 +1,8 @@
 'use client';
 
-import { Button } from '@/shared/ui/button';
 import { Icons } from '@repo/icons';
+
+import { Button } from '@/shared/ui/button';
 
 import { useGoogleLogin } from '../api/useGoogleLogin';
 

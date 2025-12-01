@@ -15,8 +15,8 @@
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-slot": "^1.2.4",
-    "@repo/design-tokens": "workspace:*",
-    "@repo/icons": "workspace:*",
+    "@repo/design-tokens": "*",
+    "@repo/icons": "*",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.86.0",
     "class-variance-authority": "^0.7.1",
@@ -40,6 +40,7 @@
     "eslint-plugin-boundaries": "^5.3.0",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-server-components": "^1.2.0",
     "prettier": "^3.7.2",
