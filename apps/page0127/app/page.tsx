@@ -1,17 +1,4 @@
-/*
-  홈페이지 (Server Component)
-
-  App Router 파일 구조:
-  - app/page.tsx → / 경로
-  - app/about/page.tsx → /about 경로
-
-  Server Component 특징:
-  - 기본값 (별도 'use client' 지시어 없음)
-  - 서버에서만 실행 → DB 접근, API 키 사용 가능
-  - SEO 최적화 (HTML이 서버에서 완성되어 전달됨)
-  - useState, useEffect 사용 불가 (클라이언트 전용 기능)
-*/
-export const Home = () => {
+const Home = () => {
   return (
     <div className='min-h-screen bg-background'>
       {/*
@@ -81,3 +68,5 @@ export const Home = () => {
     </div>
   );
 };
+
+export default Home;

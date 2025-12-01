@@ -6,13 +6,10 @@ import {
   CardTitle,
 } from '@/shared/ui/card';
 
-import { LoginWithGoogle } from '@/features/auth/login-with-google';
+import { LoginWithGoogleButton } from '@/features/auth/ui/LoginWithGoogleButton';
 
-/**
- * 로그인 페이지
- *
- * - FSD 구조: features/auth의 LoginWithGoogle 컴포넌트 사용
- */
+// 로그인 페이지
+
 const LoginPage = () => {
   return (
     <div className='flex min-h-screen items-center justify-center bg-gray-50'>
@@ -22,7 +19,7 @@ const LoginPage = () => {
           <CardDescription>당신의 독서 DNA를 발견하세요</CardDescription>
         </CardHeader>
         <CardContent>
-          <LoginWithGoogle />
+          <LoginWithGoogleButton />
           <p className='mt-4 text-center text-sm text-gray-500'>
             로그인하면{' '}
             <a href='#' className='underline'>

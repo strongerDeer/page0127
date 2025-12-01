@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/shared/config/supabase/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 
-import { LogoutButton } from '@/features/auth/logout-button';
+import { LogoutButton } from '@/features/auth/ui/LogoutButton';
 
 /**
  * 대시보드 페이지

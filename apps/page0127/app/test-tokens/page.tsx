@@ -9,7 +9,7 @@
 // Design Tokens CSS import
 import '@repo/design-tokens/css/light.css';
 
-export const TestTokensPage = () => {
+const TestTokensPage = () => {
   return (
     <div data-theme='light' className='min-h-screen p-8'>
       <div className='container mx-auto max-w-4xl'>
@@ -186,3 +186,5 @@ export const TestTokensPage = () => {
     </div>
   );
 };
+
+export default TestTokensPage;
