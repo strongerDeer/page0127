@@ -1,6 +1,8 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 
 import { LogoutButton } from '@/features/auth/ui/LogoutButton';
@@ -46,9 +48,17 @@ const DashboardPage = async () => {
               <strong>사용자 ID:</strong> {user.id}
             </p>
             <div className='mt-6 rounded-lg bg-blue-50 p-4'>
-              <p className='text-sm text-blue-800'>
-                📚 곧 도서 검색 및 독서 기록 기능이 추가될 예정입니다!
+              <p className='mb-4 text-sm text-blue-800'>
+                📚 도서 검색 및 독서 기록 기능을 사용해보세요!
               </p>
+              <div className='flex gap-3'>
+                <Link href='/books'>
+                  <Button variant='outline'>내 서재</Button>
+                </Link>
+                <Link href='/books/add'>
+                  <Button>도서 추가</Button>
+                </Link>
+              </div>
             </div>
           </CardContent>
         </Card>
