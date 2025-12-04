@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { createClient } from '@/shared/config/supabase/client';
+import { bookApi } from '@/entities/book/api/bookApi';
 
 import type { Book, BookInput } from '@/entities/book/types';
 
@@ -10,14 +10,14 @@ import type { Book, BookInput } from '@/entities/book/types';
  * 도서 CRUD Custom Hook
  *
  * 학습 포인트:
- * - Supabase Client로 CRUD 작업
+ * - axios + API Route로 CRUD 작업
  * - TypeScript 타입 안전성
  * - 에러 핸들링
+ * - 로딩 상태 관리
  */
 export const useBookCRUD = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const supabase = createClient();
 
   /**
    * 도서 추가
@@ -27,25 +27,7 @@ export const useBookCRUD = () => {
     setError(null);
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        throw new Error('로그인이 필요합니다.');
-      }
-
-      const { data, error: insertError } = await supabase
-        .from('books')
-        .insert({
-          ...bookData,
-          user_id: user.id,
-        })
-        .select()
-        .single();
-
-      if (insertError) throw insertError;
-
+      const data = await bookApi.createBook(bookData);
       return data;
     } catch (err) {
       const message =
@@ -68,20 +50,8 @@ export const useBookCRUD = () => {
     setError(null);
 
     try {
-      let query = supabase.from('books').select('*').order('created_at', {
-        ascending: false,
-      });
-
-      // 상태별 필터링
-      if (status) {
-        query = query.eq('status', status);
-      }
-
-      const { data, error: fetchError } = await query;
-
-      if (fetchError) throw fetchError;
-
-      return data || [];
+      const data = await bookApi.getBooks(status);
+      return data;
     } catch (err) {
       const message =
         err instanceof Error
@@ -103,14 +73,7 @@ export const useBookCRUD = () => {
     setError(null);
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from('books')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (fetchError) throw fetchError;
-
+      const data = await bookApi.getBookById(id);
       return data;
     } catch (err) {
       const message =
@@ -136,18 +99,7 @@ export const useBookCRUD = () => {
     setError(null);
 
     try {
-      const { data, error: updateError } = await supabase
-        .from('books')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (updateError) throw updateError;
-
+      const data = await bookApi.updateBook(id, updates);
       return data;
     } catch (err) {
       const message =
@@ -170,13 +122,7 @@ export const useBookCRUD = () => {
     setError(null);
 
     try {
-      const { error: deleteError } = await supabase
-        .from('books')
-        .delete()
-        .eq('id', id);
-
-      if (deleteError) throw deleteError;
-
+      await bookApi.deleteBook(id);
       return true;
     } catch (err) {
       const message =

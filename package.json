@@ -18,5 +18,8 @@
     "@types/node": "^24.10.1",
     "turbo": "^2.6.1",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "axios": "^1.13.2"
   }
 }
