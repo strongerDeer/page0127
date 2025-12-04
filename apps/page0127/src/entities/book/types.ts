@@ -1,29 +1,12 @@
 /**
- * 알라딘 API 응답 타입
+ * 알라딘 API 타입 re-export
+ *
+ * 학습 포인트:
+ * - FSD에서 entities는 shared를 import 가능
+ * - 외부 API 타입은 shared에 정의하고, entities에서 re-export
+ * - 타입 중복 방지
  */
-export type AladinBook = {
-  title: string;
-  author: string;
-  pubDate: string;
-  description: string;
-  isbn13: string;
-  cover: string;
-  publisher: string;
-  categoryName: string;
-  priceStandard: number;
-  link: string;
-};
-
-export type AladinSearchResponse = {
-  version: string;
-  title: string;
-  link: string;
-  pubDate: string;
-  totalResults: number;
-  startIndex: number;
-  itemsPerPage: number;
-  item: AladinBook[];
-};
+export type { AladinBook, AladinSearchResponse } from '@/shared/types/aladin';
 
 /**
  * 도서 독서 상태
