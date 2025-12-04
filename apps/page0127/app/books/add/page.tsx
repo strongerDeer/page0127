@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 import {
   Pagination,
   PaginationContent,
@@ -31,6 +32,7 @@ import type { AladinBook } from '@/entities/book/types';
  * - 여러 Custom Hook 조합하여 사용
  * - 단계별 UI 전환 (검색 → 등록 폼)
  * - 성공 시 페이지 이동
+ * - Error Boundary로 에러 처리
  */
 const AddBookPage = () => {
   const router = useRouter();
@@ -80,129 +82,132 @@ const AddBookPage = () => {
   };
 
   return (
-    <div className='min-h-screen bg-gray-50 p-8'>
-      <div className='mx-auto max-w-4xl'>
-        <h1 className='mb-6 text-3xl font-bold'>도서 추가</h1>
+    <ErrorBoundary>
+      <div className='min-h-screen bg-gray-50 p-8'>
+        <div className='mx-auto max-w-4xl'>
+          <h1 className='mb-6 text-3xl font-bold'>도서 추가</h1>
 
-        {/* 등록 폼이 열려있지 않을 때만 검색 UI 표시 */}
-        {!selectedBook ? (
-          <div className='space-y-6'>
-            {/* 검색 입력 */}
-            <BookSearchInput onSearch={search} isLoading={isSearching} />
+          {/* 등록 폼이 열려있지 않을 때만 검색 UI 표시 */}
+          {!selectedBook ? (
+            <div className='space-y-6'>
+              {/* 검색 입력 */}
+              <BookSearchInput onSearch={search} isLoading={isSearching} />
 
-            {/* 로딩 상태 */}
-            {isSearching && (
-              <p className='text-center text-gray-500'>검색 중...</p>
-            )}
+              {/* 로딩 상태 */}
+              {isSearching && (
+                <p className='text-center text-gray-500'>검색 중...</p>
+              )}
 
-            {/* 검색 결과 */}
-            {!isSearching && books.length > 0 && (
-              <div className='space-y-4'>
-                <p className='text-sm text-gray-600'>
-                  총 {totalResults}개 중 {books.length}개 표시
+              {/* 검색 결과 */}
+              {!isSearching && books.length > 0 && (
+                <div className='space-y-4'>
+                  <p className='text-sm text-gray-600'>
+                    총 {totalResults}개 중 {books.length}개 표시
+                  </p>
+                  {books.map((book) => (
+                    <BookSearchResultCard
+                      key={book.isbn13}
+                      book={book}
+                      onSelect={handleSelectBook}
+                    />
+                  ))}
+
+                  {/* Pagination */}
+                  {totalResults > itemsPerPage && (
+                    <div className='flex justify-center pt-6'>
+                      <Pagination>
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious
+                              onClick={() => goToPage(currentPage - 1)}
+                              className={
+                                currentPage === 1
+                                  ? 'pointer-events-none opacity-50'
+                                  : 'cursor-pointer'
+                              }
+                            />
+                          </PaginationItem>
+
+                          {/* 페이지 번호 */}
+                          {Array.from(
+                            {
+                              length: Math.ceil(totalResults / itemsPerPage),
+                            },
+                            (_, i) => i + 1
+                          )
+                            .filter((page) => {
+                              // 현재 페이지 기준 앞뒤 2개씩만 표시
+                              return (
+                                page === 1 ||
+                                page ===
+                                  Math.ceil(totalResults / itemsPerPage) ||
+                                (page >= currentPage - 2 &&
+                                  page <= currentPage + 2)
+                              );
+                            })
+                            .map((page, index, array) => {
+                              // ... 표시를 위한 로직
+                              const prevPage = array[index - 1];
+                              const showEllipsis =
+                                prevPage && page - prevPage > 1;
+
+                              return (
+                                <div key={page} className='flex items-center'>
+                                  {showEllipsis && (
+                                    <span className='px-2 text-gray-500'>
+                                      ...
+                                    </span>
+                                  )}
+                                  <PaginationItem>
+                                    <PaginationLink
+                                      onClick={() => goToPage(page)}
+                                      isActive={currentPage === page}
+                                      className='cursor-pointer'
+                                    >
+                                      {page}
+                                    </PaginationLink>
+                                  </PaginationItem>
+                                </div>
+                              );
+                            })}
+
+                          <PaginationItem>
+                            <PaginationNext
+                              onClick={() => goToPage(currentPage + 1)}
+                              className={
+                                currentPage ===
+                                Math.ceil(totalResults / itemsPerPage)
+                                  ? 'pointer-events-none opacity-50'
+                                  : 'cursor-pointer'
+                              }
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 검색 결과 없음 */}
+              {!isSearching && books.length === 0 && (
+                <p className='text-center text-gray-500'>
+                  도서 제목을 검색해주세요
                 </p>
-                {books.map((book) => (
-                  <BookSearchResultCard
-                    key={book.isbn13}
-                    book={book}
-                    onSelect={handleSelectBook}
-                  />
-                ))}
-
-                {/* Pagination */}
-                {totalResults > itemsPerPage && (
-                  <div className='flex justify-center pt-6'>
-                    <Pagination>
-                      <PaginationContent>
-                        <PaginationItem>
-                          <PaginationPrevious
-                            onClick={() => goToPage(currentPage - 1)}
-                            className={
-                              currentPage === 1
-                                ? 'pointer-events-none opacity-50'
-                                : 'cursor-pointer'
-                            }
-                          />
-                        </PaginationItem>
-
-                        {/* 페이지 번호 */}
-                        {Array.from(
-                          {
-                            length: Math.ceil(totalResults / itemsPerPage),
-                          },
-                          (_, i) => i + 1
-                        )
-                          .filter((page) => {
-                            // 현재 페이지 기준 앞뒤 2개씩만 표시
-                            return (
-                              page === 1 ||
-                              page ===
-                                Math.ceil(totalResults / itemsPerPage) ||
-                              (page >= currentPage - 2 &&
-                                page <= currentPage + 2)
-                            );
-                          })
-                          .map((page, index, array) => {
-                            // ... 표시를 위한 로직
-                            const prevPage = array[index - 1];
-                            const showEllipsis = prevPage && page - prevPage > 1;
-
-                            return (
-                              <div key={page} className='flex items-center'>
-                                {showEllipsis && (
-                                  <span className='px-2 text-gray-500'>
-                                    ...
-                                  </span>
-                                )}
-                                <PaginationItem>
-                                  <PaginationLink
-                                    onClick={() => goToPage(page)}
-                                    isActive={currentPage === page}
-                                    className='cursor-pointer'
-                                  >
-                                    {page}
-                                  </PaginationLink>
-                                </PaginationItem>
-                              </div>
-                            );
-                          })}
-
-                        <PaginationItem>
-                          <PaginationNext
-                            onClick={() => goToPage(currentPage + 1)}
-                            className={
-                              currentPage ===
-                              Math.ceil(totalResults / itemsPerPage)
-                                ? 'pointer-events-none opacity-50'
-                                : 'cursor-pointer'
-                            }
-                          />
-                        </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* 검색 결과 없음 */}
-            {!isSearching && books.length === 0 && (
-              <p className='text-center text-gray-500'>
-                도서 제목을 검색해주세요
-              </p>
-            )}
-          </div>
-        ) : (
-          /* 등록 폼 */
-          <BookRegistrationForm
-            book={selectedBook}
-            onSubmit={handleSubmit}
-            onCancel={handleCancel}
-            isLoading={isCreating}
-          />
-        )}
+              )}
+            </div>
+          ) : (
+            /* 등록 폼 */
+            <BookRegistrationForm
+              book={selectedBook}
+              onSubmit={handleSubmit}
+              onCancel={handleCancel}
+              isLoading={isCreating}
+            />
+          )}
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 };
 
