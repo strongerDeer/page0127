@@ -207,6 +207,8 @@ const eslintConfig = defineConfig([
     ],
     rules: {
       'import/no-default-export': 'off',
+      // Next.js 특수 파일(error.tsx, not-found.tsx 등)은 function 선언 허용
+      'react/function-component-definition': 'off',
     },
   },
 ]);
