@@ -1,68 +1,52 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
+import { createClient } from '@/shared/config/supabase/server';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 
-import { useBookCRUD } from '@/features/book/api/useBookCRUD';
+import { DeleteBookButton } from '@/features/book/ui/DeleteBookButton';
 
 import type { Book } from '@/entities/book/types';
 
 /**
- * 도서 상세 페이지
+ * 도서 상세 페이지 (Server Component)
  *
  * 학습 포인트:
- * - Next.js Dynamic Route ([id])
- * - useParams로 URL 파라미터 접근
- * - 상세 정보 표시
+ * - Server Component: async/await로 직접 데이터 페칭
+ * - notFound() 함수: 데이터 없을 시 not-found.tsx 렌더링
+ * - Dynamic Route: [id] 파라미터로 동적 라우팅
+ * - Client Component 분리: 삭제 버튼만 Client Component로
  */
-const BookDetailPage = () => {
-  const params = useParams();
-  const router = useRouter();
-  const { getBookById, deleteBook, isLoading } = useBookCRUD();
-  const [book, setBook] = useState<Book | null>(null);
+async function getBook(id: string): Promise<Book | null> {
+  const supabase = await createClient();
 
-  useEffect(() => {
-    const loadBook = async (id: string) => {
-      const data = await getBookById(id);
-      setBook(data);
-    };
+  const { data, error } = await supabase
+    .from('books')
+    .select('*')
+    .eq('id', id)
+    .single();
 
-    if (params.id) {
-      loadBook(params.id as string);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
-
-  const handleDelete = async () => {
-    if (!book) return;
-    if (!confirm('정말 삭제하시겠습니까?')) return;
-
-    const success = await deleteBook(book.id);
-    if (success) {
-      router.push('/books');
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className='flex min-h-screen items-center justify-center'>
-        <p className='text-gray-500'>로딩 중...</p>
-      </div>
-    );
+  if (error) {
+    console.error('책 조회 실패:', error);
+    return null;
   }
 
+  return data;
+}
+
+type PageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function BookDetailPage({ params }: PageProps) {
+  const { id } = await params;
+  const book = await getBook(id);
+
+  // 책이 없으면 not-found.tsx 렌더링
   if (!book) {
-    return (
-      <div className='flex min-h-screen items-center justify-center'>
-        <p className='text-gray-500'>도서를 찾을 수 없습니다.</p>
-      </div>
-    );
+    notFound();
   }
 
   const statusText = {
@@ -79,9 +63,7 @@ const BookDetailPage = () => {
           <Link href='/books'>
             <Button variant='outline'>← 목록으로</Button>
           </Link>
-          <Button variant='destructive' onClick={handleDelete}>
-            삭제
-          </Button>
+          <DeleteBookButton bookId={book.id} />
         </div>
 
         {/* 도서 정보 */}
@@ -201,6 +183,4 @@ const BookDetailPage = () => {
       </div>
     </div>
   );
-};
-
-export default BookDetailPage;
+}
