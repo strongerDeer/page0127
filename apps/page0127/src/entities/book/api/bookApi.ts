@@ -1,4 +1,5 @@
 import { apiClient } from '@/shared/api/client';
+import { API_ENDPOINTS } from '@/shared/config/endpoints';
 
 import type { Book, BookInput } from '../types';
 
@@ -16,7 +17,10 @@ export const bookApi = {
    * POST /api/books
    */
   createBook: async (bookData: BookInput): Promise<Book> => {
-    const response = await apiClient.post<Book>('/books', bookData);
+    const response = await apiClient.post<Book>(
+      API_ENDPOINTS.books.create,
+      bookData
+    );
     return response.data;
   },
 
@@ -34,7 +38,9 @@ export const bookApi = {
     if (sortBy) params.sortBy = sortBy;
     if (order) params.order = order;
 
-    const response = await apiClient.get<Book[]>('/books', { params });
+    const response = await apiClient.get<Book[]>(API_ENDPOINTS.books.list, {
+      params,
+    });
     return response.data;
   },
 
@@ -43,7 +49,7 @@ export const bookApi = {
    * GET /api/books/:id
    */
   getBookById: async (id: string): Promise<Book> => {
-    const response = await apiClient.get<Book>(`/books/${id}`);
+    const response = await apiClient.get<Book>(API_ENDPOINTS.books.detail(id));
     return response.data;
   },
 
@@ -55,7 +61,10 @@ export const bookApi = {
     id: string,
     updates: Partial<BookInput>
   ): Promise<Book> => {
-    const response = await apiClient.patch<Book>(`/books/${id}`, updates);
+    const response = await apiClient.patch<Book>(
+      API_ENDPOINTS.books.update(id),
+      updates
+    );
     return response.data;
   },
 
@@ -64,6 +73,6 @@ export const bookApi = {
    * DELETE /api/books/:id
    */
   deleteBook: async (id: string): Promise<void> => {
-    await apiClient.delete(`/books/${id}`);
+    await apiClient.delete(API_ENDPOINTS.books.delete(id));
   },
 };
