@@ -12,7 +12,16 @@ import type { Book, BookInput } from '../types';
  */
 export const bookApi = {
   /**
-   * 목록 조회
+   * C: 생성
+   * POST /api/books
+   */
+  createBook: async (bookData: BookInput): Promise<Book> => {
+    const response = await apiClient.post<Book>('/books', bookData);
+    return response.data;
+  },
+
+  /**
+   * R: 목록 조회
    * GET /api/books?status=reading&sortBy=created_at&order=desc
    */
   getBooks: async (
@@ -30,7 +39,7 @@ export const bookApi = {
   },
 
   /**
-   * 상세 조회
+   * R: 상세 조회
    * GET /api/books/:id
    */
   getBookById: async (id: string): Promise<Book> => {
@@ -39,16 +48,7 @@ export const bookApi = {
   },
 
   /**
-   * 생성
-   * POST /api/books
-   */
-  createBook: async (bookData: BookInput): Promise<Book> => {
-    const response = await apiClient.post<Book>('/books', bookData);
-    return response.data;
-  },
-
-  /**
-   * 수정
+   * U: 수정
    * PATCH /api/books/:id
    */
   updateBook: async (
@@ -60,7 +60,7 @@ export const bookApi = {
   },
 
   /**
-   * 삭제
+   * D: 삭제
    * DELETE /api/books/:id
    */
   deleteBook: async (id: string): Promise<void> => {

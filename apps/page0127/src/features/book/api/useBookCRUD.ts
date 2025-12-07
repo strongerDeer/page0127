@@ -20,7 +20,7 @@ export const useBookCRUD = () => {
   const [error, setError] = useState<string | null>(null);
 
   /**
-   * 도서 추가
+   * C: 도서 추가
    */
   const createBook = async (bookData: BookInput): Promise<Book | null> => {
     setIsLoading(true);
@@ -43,7 +43,7 @@ export const useBookCRUD = () => {
   };
 
   /**
-   * 내 도서 목록 조회
+   * R: 내 도서 목록 조회
    */
   const getMyBooks = async (
     status?: string,
@@ -70,7 +70,7 @@ export const useBookCRUD = () => {
   };
 
   /**
-   * 도서 상세 조회
+   * R: 도서 상세 조회
    */
   const getBookById = async (id: string): Promise<Book | null> => {
     setIsLoading(true);
@@ -93,7 +93,7 @@ export const useBookCRUD = () => {
   };
 
   /**
-   * 도서 정보 수정
+   * U: 도서 정보 수정
    */
   const updateBook = async (
     id: string,
@@ -119,7 +119,7 @@ export const useBookCRUD = () => {
   };
 
   /**
-   * 도서 삭제
+   * D: 도서 삭제
    */
   const deleteBook = async (id: string): Promise<boolean> => {
     setIsLoading(true);
