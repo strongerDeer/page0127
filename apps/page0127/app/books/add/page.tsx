@@ -3,16 +3,9 @@
 import { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/shared/ui/pagination';
 
 import { useBookCRUD } from '@/features/book/api/useBookCRUD';
 import { useBookSearch } from '@/features/book/api/useBookSearch';
@@ -21,6 +14,7 @@ import {
   BookRegistrationForm,
 } from '@/features/book/ui/BookRegistrationForm';
 import { BookSearchInput } from '@/features/book/ui/BookSearchInput';
+import { BookSearchPagination } from '@/features/book/ui/BookSearchPagination';
 import { BookSearchResultCard } from '@/features/book/ui/BookSearchResultCard';
 
 import type { AladinBook } from '@/entities/book/types';
@@ -72,8 +66,10 @@ const AddBookPage = () => {
     const result = await createBook(bookData);
 
     if (result) {
-      alert('도서가 등록되었습니다!');
+      toast.success('도서가 등록되었습니다!');
       router.push('/books'); // 도서 목록 페이지로 이동
+    } else {
+      toast.error('도서 등록에 실패했습니다.');
     }
   };
 
@@ -114,77 +110,12 @@ const AddBookPage = () => {
 
                   {/* Pagination */}
                   {totalResults > itemsPerPage && (
-                    <div className='flex justify-center pt-6'>
-                      <Pagination>
-                        <PaginationContent>
-                          <PaginationItem>
-                            <PaginationPrevious
-                              onClick={() => goToPage(currentPage - 1)}
-                              className={
-                                currentPage === 1
-                                  ? 'pointer-events-none opacity-50'
-                                  : 'cursor-pointer'
-                              }
-                            />
-                          </PaginationItem>
-
-                          {/* 페이지 번호 */}
-                          {Array.from(
-                            {
-                              length: Math.ceil(totalResults / itemsPerPage),
-                            },
-                            (_, i) => i + 1
-                          )
-                            .filter((page) => {
-                              // 현재 페이지 기준 앞뒤 2개씩만 표시
-                              return (
-                                page === 1 ||
-                                page ===
-                                  Math.ceil(totalResults / itemsPerPage) ||
-                                (page >= currentPage - 2 &&
-                                  page <= currentPage + 2)
-                              );
-                            })
-                            .map((page, index, array) => {
-                              // ... 표시를 위한 로직
-                              const prevPage = array[index - 1];
-                              const showEllipsis =
-                                prevPage && page - prevPage > 1;
-
-                              return (
-                                <div key={page} className='flex items-center'>
-                                  {showEllipsis && (
-                                    <span className='px-2 text-gray-500'>
-                                      ...
-                                    </span>
-                                  )}
-                                  <PaginationItem>
-                                    <PaginationLink
-                                      onClick={() => goToPage(page)}
-                                      isActive={currentPage === page}
-                                      className='cursor-pointer'
-                                    >
-                                      {page}
-                                    </PaginationLink>
-                                  </PaginationItem>
-                                </div>
-                              );
-                            })}
-
-                          <PaginationItem>
-                            <PaginationNext
-                              onClick={() => goToPage(currentPage + 1)}
-                              className={
-                                currentPage ===
-                                Math.ceil(totalResults / itemsPerPage)
-                                  ? 'pointer-events-none opacity-50'
-                                  : 'cursor-pointer'
-                              }
-                            />
-                          </PaginationItem>
-                        </PaginationContent>
-                      </Pagination>
-                    </div>
+                    <BookSearchPagination
+                      currentPage={currentPage}
+                      totalResults={totalResults}
+                      itemsPerPage={itemsPerPage}
+                      onPageChange={goToPage}
+                    />
                   )}
                 </div>
               )}
