@@ -2,6 +2,8 @@ import { Geist, Geist_Mono } from 'next/font/google';
 
 import type { Metadata } from 'next';
 
+import { Toaster } from '@/shared/ui/sonner';
+
 import './globals.css';
 
 const geistSans = Geist({
@@ -51,6 +53,7 @@ const RootLayout = ({
           ${geistSans.variable}: CSS 변수로 폰트 주입
         */}
         {children}
+        <Toaster />
       </body>
     </html>
   );
