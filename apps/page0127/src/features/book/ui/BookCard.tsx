@@ -19,6 +19,7 @@ type BookCardProps = {
  * 학습 포인트:
  * - Next.js Link 컴포넌트 사용
  * - 조건부 렌더링 (rating, tags 등)
+ * - 수정/삭제 버튼
  */
 export const BookCard = ({ book, onDelete }: BookCardProps) => {
   const statusText = {
@@ -113,17 +114,28 @@ export const BookCard = ({ book, onDelete }: BookCardProps) => {
             )}
           </div>
 
-          {/* 삭제 버튼 */}
-          {onDelete && (
-            <Button
-              variant='outline'
-              size='sm'
-              onClick={() => onDelete(book.id)}
-              className='mt-4 text-red-600 hover:bg-red-50 hover:text-red-700'
-            >
-              삭제
-            </Button>
-          )}
+          {/* 수정/삭제 버튼 */}
+          <div className='mt-4 flex gap-2'>
+            <Link href={`/books/${book.id}/edit`}>
+              <Button
+                variant='outline'
+                size='sm'
+                className='hover:bg-blue-50 hover:text-blue-700'
+              >
+                수정
+              </Button>
+            </Link>
+            {onDelete && (
+              <Button
+                variant='outline'
+                size='sm'
+                onClick={() => onDelete(book.id)}
+                className='text-red-600 hover:bg-red-50 hover:text-red-700'
+              >
+                삭제
+              </Button>
+            )}
+          </div>
         </CardContent>
       </div>
     </Card>

@@ -17,6 +17,7 @@ type BookRegistrationFormProps = {
   onSubmit: (formData: BookFormData) => void;
   onCancel: () => void;
   isLoading?: boolean;
+  initialData?: Partial<BookFormData>;
 };
 
 export type BookFormData = {
@@ -47,17 +48,30 @@ export const BookRegistrationForm = ({
   onSubmit,
   onCancel,
   isLoading = false,
+  initialData,
 }: BookRegistrationFormProps) => {
-  const [status, setStatus] = useState<BookStatus>('completed');
-  const [completedDate, setCompletedDate] = useState(
-    new Date().toISOString().split('T')[0]
+  const [status, setStatus] = useState<BookStatus>(
+    initialData?.status || 'completed'
   );
-  const [startDate, setStartDate] = useState('');
-  const [showStartDate, setShowStartDate] = useState(false);
-  const [rating, setRating] = useState<BookRating | undefined>(undefined);
-  const [oneLineReview, setOneLineReview] = useState('');
-  const [personalMemo, setPersonalMemo] = useState('');
-  const [tagsInput, setTagsInput] = useState('');
+  const [completedDate, setCompletedDate] = useState(
+    initialData?.completed_date || new Date().toISOString().split('T')[0]
+  );
+  const [startDate, setStartDate] = useState(initialData?.start_date || '');
+  const [showStartDate, setShowStartDate] = useState(
+    !!initialData?.start_date
+  );
+  const [rating, setRating] = useState<BookRating | undefined>(
+    initialData?.rating
+  );
+  const [oneLineReview, setOneLineReview] = useState(
+    initialData?.one_line_review || ''
+  );
+  const [personalMemo, setPersonalMemo] = useState(
+    initialData?.personal_memo || ''
+  );
+  const [tagsInput, setTagsInput] = useState(
+    initialData?.tags ? initialData.tags.join(', ') : ''
+  );
   const [tagError, setTagError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -110,7 +124,7 @@ export const BookRegistrationForm = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>도서 등록</CardTitle>
+        <CardTitle>{initialData ? '도서 수정' : '도서 등록'}</CardTitle>
       </CardHeader>
 
       <CardContent>
@@ -274,7 +288,13 @@ export const BookRegistrationForm = ({
           {/* 버튼 */}
           <div className='flex gap-3'>
             <Button type='submit' disabled={isLoading} className='flex-1'>
-              {isLoading ? '등록 중...' : '등록하기'}
+              {isLoading
+                ? initialData
+                  ? '수정 중...'
+                  : '등록 중...'
+                : initialData
+                  ? '수정하기'
+                  : '등록하기'}
             </Button>
             <Button
               type='button'
