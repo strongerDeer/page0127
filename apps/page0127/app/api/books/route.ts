@@ -15,16 +15,22 @@ export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const searchParams = request.nextUrl.searchParams;
   const status = searchParams.get('status');
+  const sortBy = searchParams.get('sortBy') || 'created_at'; // 정렬 기준
+  const order = searchParams.get('order') || 'desc'; // 정렬 순서
 
   // Supabase 쿼리 빌더
-  let query = supabase.from('books').select('*').order('created_at', {
-    ascending: false,
-  });
+  let query = supabase.from('books').select('*');
 
   // 상태별 필터링 (선택적)
   if (status) {
     query = query.eq('status', status);
   }
+
+  // 정렬 적용
+  // sortBy: 'created_at' | 'title' | 'rating' | 'completed_date'
+  query = query.order(sortBy, {
+    ascending: order === 'asc',
+  });
 
   const { data, error } = await query;
 

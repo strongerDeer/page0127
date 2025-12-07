@@ -13,10 +13,18 @@ import type { Book, BookInput } from '../types';
 export const bookApi = {
   /**
    * 목록 조회
-   * GET /api/books?status=reading
+   * GET /api/books?status=reading&sortBy=created_at&order=desc
    */
-  getBooks: async (status?: string): Promise<Book[]> => {
-    const params = status ? { status } : {};
+  getBooks: async (
+    status?: string,
+    sortBy?: string,
+    order?: 'asc' | 'desc'
+  ): Promise<Book[]> => {
+    const params: Record<string, string> = {};
+    if (status) params.status = status;
+    if (sortBy) params.sortBy = sortBy;
+    if (order) params.order = order;
+
     const response = await apiClient.get<Book[]>('/books', { params });
     return response.data;
   },

@@ -45,12 +45,16 @@ export const useBookCRUD = () => {
   /**
    * 내 도서 목록 조회
    */
-  const getMyBooks = async (status?: string): Promise<Book[]> => {
+  const getMyBooks = async (
+    status?: string,
+    sortBy?: string,
+    order?: 'asc' | 'desc'
+  ): Promise<Book[]> => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const data = await bookApi.getBooks(status);
+      const data = await bookApi.getBooks(status, sortBy, order);
       return data;
     } catch (err) {
       const message =
