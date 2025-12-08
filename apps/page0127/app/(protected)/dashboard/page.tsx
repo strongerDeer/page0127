@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { Button } from '@/shared/ui/button';
@@ -17,22 +16,19 @@ import { LogoutButton } from '@/features/auth/ui/LogoutButton';
  * - Server Component로 구현 (async 함수 가능)
  * - 서버에서 사용자 정보 및 통계 데이터 조회
  * - 병렬 데이터 페칭으로 성능 최적화 가능 (향후 개선)
+ * - (protected) layout.tsx에서 인증 체크하므로 여기서는 불필요
  */
 const DashboardPage = async () => {
   const supabase = await createClient();
 
   // 현재 로그인한 사용자 정보 조회
+  // layout.tsx에서 이미 인증 체크했으므로 user는 항상 존재
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 로그인하지 않은 경우 로그인 페이지로 리디렉션
-  if (!user) {
-    redirect('/login');
-  }
-
   // 통계 데이터 조회
-  const stats = await getBookStats(user.id);
+  const stats = await getBookStats(user!.id);
 
   return (
     <div className='min-h-screen bg-gray-50 p-8'>
@@ -77,10 +73,10 @@ const DashboardPage = async () => {
           </CardHeader>
           <CardContent>
             <p className='mb-2 text-gray-600'>
-              <strong>이메일:</strong> {user.email}
+              <strong>이메일:</strong> {user!.email}
             </p>
             <p className='text-gray-600'>
-              <strong>사용자 ID:</strong> {user.id}
+              <strong>사용자 ID:</strong> {user!.id}
             </p>
             <div className='mt-6 rounded-lg bg-blue-50 p-4'>
               <p className='mb-4 text-sm text-blue-800'>
