@@ -7,8 +7,6 @@ import { StatCard } from '@/shared/ui/StatCard';
 
 import { getBookStats } from '@/entities/book/api/getBookStats';
 
-import { LogoutButton } from '@/features/auth/ui/LogoutButton';
-
 /**
  * 대시보드 페이지
  *
@@ -17,6 +15,7 @@ import { LogoutButton } from '@/features/auth/ui/LogoutButton';
  * - 서버에서 사용자 정보 및 통계 데이터 조회
  * - 병렬 데이터 페칭으로 성능 최적화 가능 (향후 개선)
  * - (protected) layout.tsx에서 인증 체크하므로 여기서는 불필요
+ * - 헤더는 layout.tsx에서 공통으로 처리 (로그아웃 버튼 포함)
  */
 const DashboardPage = async () => {
   const supabase = await createClient();
@@ -33,9 +32,8 @@ const DashboardPage = async () => {
   return (
     <div className='min-h-screen bg-gray-50 p-8'>
       <div className='mx-auto max-w-6xl'>
-        <div className='mb-6 flex items-center justify-between'>
+        <div className='mb-6'>
           <h1 className='text-3xl font-bold'>대시보드</h1>
-          <LogoutButton />
         </div>
 
         {/* 통계 카드 그리드 */}

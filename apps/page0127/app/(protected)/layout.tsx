@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
 
+import { Header } from '@/widgets/Header';
+
 /**
  * 보호된 페이지 레이아웃 (로그인 필수)
  *
@@ -10,6 +12,7 @@ import { createClient } from '@/shared/config/supabase/server';
  * - 로그인하지 않은 사용자는 로그인 페이지로 리디렉션
  * - 하위 모든 페이지에 자동 적용 (dashboard, books 등)
  * - 각 페이지에서 중복 인증 체크 불필요
+ * - 공통 헤더 포함
  */
 const ProtectedLayout = async ({ children }: { children: React.ReactNode }) => {
   const supabase = await createClient();
@@ -22,7 +25,12 @@ const ProtectedLayout = async ({ children }: { children: React.ReactNode }) => {
     redirect('/login');
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <Header />
+      {children}
+    </>
+  );
 };
 
 export default ProtectedLayout;
