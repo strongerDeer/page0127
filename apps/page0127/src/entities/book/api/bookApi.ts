@@ -1,7 +1,7 @@
 import { apiClient } from '@/shared/api/client';
 import { API_ENDPOINTS } from '@/shared/config/endpoints';
 
-import type { Book, BookInput } from '../types';
+import type { Book, BookInput, BookStats } from '../types';
 
 /**
  * 책 관련 API 함수 모음
@@ -74,5 +74,14 @@ export const bookApi = {
    */
   deleteBook: async (id: string): Promise<void> => {
     await apiClient.delete(API_ENDPOINTS.books.delete(id));
+  },
+
+  /**
+   * 통계 조회
+   * GET /api/books/stats
+   */
+  getBookStats: async (): Promise<BookStats> => {
+    const response = await apiClient.get<BookStats>(API_ENDPOINTS.books.stats);
+    return response.data;
   },
 };

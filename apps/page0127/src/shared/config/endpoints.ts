@@ -13,6 +13,7 @@ export const API_ENDPOINTS = {
     detail: (id: string) => `/books/${id}`,
     update: (id: string) => `/books/${id}`,
     delete: (id: string) => `/books/${id}`,
+    stats: '/books/stats', // 통계 조회
   },
   // 향후 추가될 엔티티들 (예시)
   // users: {

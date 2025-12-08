@@ -1,44 +1,44 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
-import { createClient } from '@/shared/config/supabase/server';
+import { getCurrentUser, getSupabaseClient } from '../_helpers/auth';
+import { errorResponse, successResponse } from '../_helpers/response';
 
 /**
  * GET /api/books
  * 책 목록 조회 (쿼리 파라미터로 필터링 가능)
  *
  * 학습 포인트:
- * - Next.js API Route: GET 메서드
+ * - 공통 헬퍼로 깔끔한 코드
  * - Query Parameter 처리
  * - Supabase 조건부 쿼리
  */
 export async function GET(request: NextRequest) {
-  const supabase = await createClient();
-  const searchParams = request.nextUrl.searchParams;
-  const status = searchParams.get('status');
-  const sortBy = searchParams.get('sortBy') || 'created_at'; // 정렬 기준
-  const order = searchParams.get('order') || 'desc'; // 정렬 순서
+  try {
+    const supabase = await getSupabaseClient();
+    const searchParams = request.nextUrl.searchParams;
+    const status = searchParams.get('status');
+    const sortBy = searchParams.get('sortBy') || 'created_at';
+    const order = searchParams.get('order') || 'desc';
 
-  // Supabase 쿼리 빌더
-  let query = supabase.from('books').select('*');
+    // Supabase 쿼리 빌더
+    let query = supabase.from('books').select('*');
 
-  // 상태별 필터링 (선택적)
-  if (status) {
-    query = query.eq('status', status);
+    // 상태별 필터링 (선택적)
+    if (status) {
+      query = query.eq('status', status);
+    }
+
+    // 정렬 적용
+    query = query.order(sortBy, { ascending: order === 'asc' });
+
+    const { data, error } = await query;
+
+    if (error) return errorResponse(error.message);
+
+    return successResponse(data);
+  } catch (error) {
+    return errorResponse('책 목록 조회에 실패했습니다.');
   }
-
-  // 정렬 적용
-  // sortBy: 'created_at' | 'title' | 'rating' | 'completed_date'
-  query = query.order(sortBy, {
-    ascending: order === 'asc',
-  });
-
-  const { data, error } = await query;
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json(data);
 }
 
 /**
@@ -46,39 +46,32 @@ export async function GET(request: NextRequest) {
  * 새 책 추가
  *
  * 학습 포인트:
- * - Next.js API Route: POST 메서드
- * - Request Body 파싱
- * - 인증 확인 (user_id 자동 추가)
+ * - 공통 헬퍼로 중복 제거
+ * - 인증 확인 간소화
  */
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  const body = await request.json();
+  try {
+    const supabase = await getSupabaseClient();
+    const body = await request.json();
 
-  // 현재 로그인한 사용자 확인
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    // 인증 확인 (헬퍼 사용)
+    const { user, error: authError } = await getCurrentUser();
+    if (authError) return authError;
 
-  if (!user) {
-    return NextResponse.json(
-      { error: '로그인이 필요합니다.' },
-      { status: 401 }
-    );
+    // 책 추가 (user_id 자동 포함)
+    const { data, error } = await supabase
+      .from('books')
+      .insert({
+        ...body,
+        user_id: user!.id,
+      })
+      .select()
+      .single();
+
+    if (error) return errorResponse(error.message);
+
+    return successResponse(data, 201);
+  } catch (error) {
+    return errorResponse('책 추가에 실패했습니다.');
   }
-
-  // 책 추가 (user_id 자동 포함)
-  const { data, error } = await supabase
-    .from('books')
-    .insert({
-      ...body,
-      user_id: user.id,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json(data, { status: 201 });
 }

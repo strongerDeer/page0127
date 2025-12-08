@@ -1,6 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
-import { createClient } from '@/shared/config/supabase/server';
+import { getSupabaseClient } from '../../_helpers/auth';
+import {
+  errorResponse,
+  notFoundResponse,
+  successResponse,
+} from '../../_helpers/response';
 
 type Params = {
   params: Promise<{ id: string }>;
@@ -11,24 +16,26 @@ type Params = {
  * 특정 책 상세 조회
  *
  * 학습 포인트:
+ * - 공통 헬퍼로 깔끔한 에러 처리
  * - Dynamic Route Parameter 처리
- * - 404 에러 처리
  */
 export async function GET(request: NextRequest, { params }: Params) {
-  const supabase = await createClient();
-  const { id } = await params;
+  try {
+    const supabase = await getSupabaseClient();
+    const { id } = await params;
 
-  const { data, error } = await supabase
-    .from('books')
-    .select('*')
-    .eq('id', id)
-    .single();
+    const { data, error } = await supabase
+      .from('books')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 404 });
+    if (error) return notFoundResponse('책');
+
+    return successResponse(data);
+  } catch (error) {
+    return errorResponse('책 조회에 실패했습니다.');
   }
-
-  return NextResponse.json(data);
 }
 
 /**
@@ -40,25 +47,27 @@ export async function GET(request: NextRequest, { params }: Params) {
  * - updated_at 자동 업데이트
  */
 export async function PATCH(request: NextRequest, { params }: Params) {
-  const supabase = await createClient();
-  const { id } = await params;
-  const body = await request.json();
+  try {
+    const supabase = await getSupabaseClient();
+    const { id } = await params;
+    const body = await request.json();
 
-  const { data, error } = await supabase
-    .from('books')
-    .update({
-      ...body,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', id)
-    .select()
-    .single();
+    const { data, error } = await supabase
+      .from('books')
+      .update({
+        ...body,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return errorResponse(error.message);
+
+    return successResponse(data);
+  } catch (error) {
+    return errorResponse('책 수정에 실패했습니다.');
   }
-
-  return NextResponse.json(data);
 }
 
 /**
@@ -70,14 +79,16 @@ export async function PATCH(request: NextRequest, { params }: Params) {
  * - 204 vs 200 응답 (여기서는 200 + 메시지)
  */
 export async function DELETE(request: NextRequest, { params }: Params) {
-  const supabase = await createClient();
-  const { id } = await params;
+  try {
+    const supabase = await getSupabaseClient();
+    const { id } = await params;
 
-  const { error } = await supabase.from('books').delete().eq('id', id);
+    const { error } = await supabase.from('books').delete().eq('id', id);
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return errorResponse(error.message);
+
+    return successResponse({ message: '삭제되었습니다.' });
+  } catch (error) {
+    return errorResponse('책 삭제에 실패했습니다.');
   }
-
-  return NextResponse.json({ message: '삭제되었습니다.' });
 }
