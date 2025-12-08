@@ -116,8 +116,9 @@ export default async function BookDetailPage({ params }: PageProps) {
                   )}
                 </div>
 
-                {/* 날짜 정보 */}
+                {/* 날짜 및 쪽수 정보 */}
                 <div className='space-y-1 text-sm text-gray-600'>
+                  {book.page_count && <p>📖 쪽수: {book.page_count}쪽</p>}
                   {book.start_date && <p>시작일: {book.start_date}</p>}
                   {book.completed_date && <p>완독일: {book.completed_date}</p>}
                   {book.pub_date && <p>출간일: {book.pub_date}</p>}

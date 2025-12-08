@@ -34,7 +34,21 @@ export const getBookStats = async (userId: string): Promise<BookStats> => {
 
     if (completedError) throw completedError;
 
-    // 3. 완독률 계산 (0-100)
+    // 3. 완독한 책들의 총 쪽수 계산
+    const { data: completedBooksData, error: pagesError } = await supabase
+      .from('books')
+      .select('page_count')
+      .eq('user_id', userId)
+      .eq('status', 'completed');
+
+    if (pagesError) throw pagesError;
+
+    // page_count가 있는 책들의 쪽수만 합산
+    const totalPages = completedBooksData?.reduce((sum, book) => {
+      return sum + (book.page_count || 0);
+    }, 0) ?? 0;
+
+    // 4. 완독률 계산 (0-100)
     const completionRate =
       totalBooks && totalBooks > 0
         ? Math.round((completedBooks! / totalBooks) * 100)
@@ -42,7 +56,7 @@ export const getBookStats = async (userId: string): Promise<BookStats> => {
 
     return {
       totalCompletedBooks: completedBooks ?? 0,
-      totalPages: 0, // MVP에서는 0 (향후 구현)
+      totalPages,
       yearlyGoal: 50, // MVP에서는 기본값 50 (향후 user 프로필에서 가져오기)
       completionRate,
     };

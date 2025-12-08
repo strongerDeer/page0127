@@ -34,6 +34,7 @@ export type Book = {
   description: string | null;
   pub_date: string | null;
   category: string | null;
+  page_count: number | null;
 
   // 독서 상태
   status: BookStatus;
@@ -68,6 +69,7 @@ export type BookInput = {
   description?: string;
   pub_date?: string;
   category?: string;
+  page_count?: number;
 
   // 독서 상태
   status: BookStatus;

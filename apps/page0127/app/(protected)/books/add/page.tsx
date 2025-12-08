@@ -42,9 +42,42 @@ const AddBookPage = () => {
   const { createBook, isLoading: isCreating } = useBookCRUD();
 
   const [selectedBook, setSelectedBook] = useState<AladinBook | null>(null);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
 
-  const handleSelectBook = (book: AladinBook) => {
-    setSelectedBook(book);
+  // 책 선택 시 상세 정보 조회하여 쪽수 정보 가져오기
+  const handleSelectBook = async (book: AladinBook) => {
+    setIsLoadingDetail(true);
+
+    try {
+      // 알라딘 상세 조회 API로 쪽수 정보 가져오기
+      const response = await fetch(
+        `/api/books/detail?isbn=${book.isbn13}`
+      );
+
+      if (!response.ok) {
+        throw new Error('상세 정보 조회 실패');
+      }
+
+      const data = await response.json();
+      const detailedBook = data.item?.[0];
+
+      // 상세 정보가 있으면 병합, 없으면 기본 정보만 사용
+      if (detailedBook) {
+        setSelectedBook({
+          ...book,
+          subInfo: detailedBook.subInfo,
+        });
+      } else {
+        setSelectedBook(book);
+      }
+    } catch (error) {
+      console.error('상세 정보 조회 실패:', error);
+      // 실패해도 기본 정보로 진행
+      setSelectedBook(book);
+      toast.error('상세 정보 조회에 실패했습니다. 기본 정보로 진행합니다.');
+    } finally {
+      setIsLoadingDetail(false);
+    }
   };
 
   const handleSubmit = async (formData: BookFormData) => {
@@ -60,6 +93,7 @@ const AddBookPage = () => {
       description: selectedBook.description,
       pub_date: selectedBook.pubDate,
       category: selectedBook.categoryName,
+      page_count: selectedBook.subInfo?.itemPage, // 쪽수 정보 저장
       ...formData,
     };
 
@@ -129,12 +163,20 @@ const AddBookPage = () => {
             </div>
           ) : (
             /* 등록 폼 */
-            <BookRegistrationForm
-              book={selectedBook}
-              onSubmit={handleSubmit}
-              onCancel={handleCancel}
-              isLoading={isCreating}
-            />
+            <>
+              {isLoadingDetail ? (
+                <p className='text-center text-gray-500'>
+                  도서 상세 정보를 불러오는 중...
+                </p>
+              ) : (
+                <BookRegistrationForm
+                  book={selectedBook}
+                  onSubmit={handleSubmit}
+                  onCancel={handleCancel}
+                  isLoading={isCreating}
+                />
+              )}
+            </>
           )}
         </div>
       </div>

@@ -17,6 +17,10 @@ export type AladinBook = {
   categoryName: string;
   priceStandard: number;
   link: string;
+  // 알라딘 API의 subInfo 객체 (쪽수 정보 포함)
+  subInfo?: {
+    itemPage?: number; // 책 쪽수
+  };
 };
 
 export type AladinSearchResponse = {

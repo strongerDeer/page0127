@@ -51,7 +51,6 @@ const DashboardPage = async () => {
             title='총 읽은 쪽수'
             value={stats.totalPages}
             unit='쪽'
-            description='향후 구현 예정'
           />
           <StatCard
             icon='🎯'

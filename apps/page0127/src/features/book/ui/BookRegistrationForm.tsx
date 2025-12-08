@@ -148,6 +148,11 @@ export const BookRegistrationForm = ({
               <h4 className='font-semibold'>{book.title}</h4>
               <p className='text-sm text-gray-600'>{book.author}</p>
               <p className='text-sm text-gray-500'>{book.publisher}</p>
+              {book.subInfo?.itemPage && (
+                <p className='text-sm text-gray-500'>
+                  📖 {book.subInfo.itemPage}쪽
+                </p>
+              )}
             </div>
           </div>
 
