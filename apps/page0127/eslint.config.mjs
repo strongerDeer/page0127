@@ -57,6 +57,13 @@ const eslintConfig = defineConfig([
       'react/jsx-props-no-spreading': 'off',
       // 리스트 렌더링 시 key 필수
       'react/jsx-key': 'error',
+      // target="_blank" 보안 규칙 (rel="noopener noreferrer" 자동 강제)
+      'react/jsx-no-target-blank': [
+        'error',
+        {
+          enforceDynamicLinks: 'always',
+        },
+      ],
       // Hooks 규칙 (react-hooks 플러그인에서 자동 적용)
 
       // Named Export 사용 (Default Export 금지)
