@@ -24,9 +24,10 @@
 
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS + shadcn/ui
-- **State**: React Query (TanStack Query) + Zustand
-- **Charts**: Recharts
+- **Styling**: Tailwind CSS v4 + shadcn/ui
+- **HTTP Client**: axios
+- **State**: React Query (서버 상태, 예정) + Zustand (클라이언트 상태)
+- **Charts**: Recharts (Phase 1 통계 차트)
 
 ### Backend
 
@@ -50,13 +51,17 @@
 
 - [x] 사용자 인증 (Google OAuth)
 - [x] 책 검색 및 등록 (알라딘 API)
-- [x] 독서 기록 CRUD
+- [x] 독서 기록 CRUD (RESTful API 구조)
+- [x] 개인 책장 (상태별 탭, 정렬)
+- [x] 공통 Header 컴포넌트
 - [ ] 독서 통계 대시보드 ⭐
-  - [ ] 총 권수/쪽수 통계
+  - [x] 총 권수/쪽수 통계 카드
   - [ ] 월별 독서량 차트
   - [ ] 카테고리별 레이더 차트
   - [ ] 독서 진행률 (연간 목표)
-- [ ] 개인 책장 (필터링, 정렬)
+- [ ] 개인 책장 고급 기능
+  - [ ] 필터링 (장르별, 별점별, 연도별)
+  - [ ] 검색 (내 책장 내)
 - [ ] 기본 프로필
 
 ### Phase 2: AI 취향 분석 (Week 7-10) 🤖
@@ -134,4 +139,4 @@ pnpm dev
 
 ---
 
-**Last Updated**: 2025-12-07
+**Last Updated**: 2025-12-08
