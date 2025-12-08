@@ -4,6 +4,9 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/shared/config/supabase/server';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { StatCard } from '@/shared/ui/StatCard';
+
+import { getBookStats } from '@/entities/book/api/getBookStats';
 
 import { LogoutButton } from '@/features/auth/ui/LogoutButton';
 
@@ -12,8 +15,8 @@ import { LogoutButton } from '@/features/auth/ui/LogoutButton';
  *
  * 학습 포인트:
  * - Server Component로 구현 (async 함수 가능)
- * - 서버에서 사용자 정보 조회
- * - 인증되지 않은 경우 로그인 페이지로 리디렉션
+ * - 서버에서 사용자 정보 및 통계 데이터 조회
+ * - 병렬 데이터 페칭으로 성능 최적화 가능 (향후 개선)
  */
 const DashboardPage = async () => {
   const supabase = await createClient();
@@ -28,12 +31,44 @@ const DashboardPage = async () => {
     redirect('/login');
   }
 
+  // 통계 데이터 조회
+  const stats = await getBookStats(user.id);
+
   return (
     <div className='min-h-screen bg-gray-50 p-8'>
-      <div className='mx-auto max-w-4xl'>
+      <div className='mx-auto max-w-6xl'>
         <div className='mb-6 flex items-center justify-between'>
           <h1 className='text-3xl font-bold'>대시보드</h1>
           <LogoutButton />
+        </div>
+
+        {/* 통계 카드 그리드 */}
+        <div className='mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'>
+          <StatCard
+            icon='📚'
+            title='총 읽은 책'
+            value={stats.totalCompletedBooks}
+            unit='권'
+          />
+          <StatCard
+            icon='📖'
+            title='총 읽은 쪽수'
+            value={stats.totalPages}
+            unit='쪽'
+            description='향후 구현 예정'
+          />
+          <StatCard
+            icon='🎯'
+            title='연간 목표'
+            value={stats.yearlyGoal}
+            unit='권'
+          />
+          <StatCard
+            icon='✅'
+            title='완독률'
+            value={stats.completionRate}
+            unit='%'
+          />
         </div>
 
         <Card>
