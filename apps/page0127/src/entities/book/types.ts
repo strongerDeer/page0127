@@ -84,3 +84,8 @@ export type BookInput = {
   personal_memo?: string;
   tags?: string[];
 };
+
+/**
+ * 통계 타입 re-export
+ */
+export type { BookStats } from './types/stats';
