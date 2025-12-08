@@ -18,9 +18,7 @@ export default function BookNotFound() {
     <div className='flex min-h-screen items-center justify-center bg-gray-50 p-4'>
       <Card className='w-full max-w-md'>
         <CardHeader>
-          <CardTitle className='text-gray-900'>
-            책을 찾을 수 없습니다
-          </CardTitle>
+          <CardTitle className='text-gray-900'>책을 찾을 수 없습니다</CardTitle>
         </CardHeader>
         <CardContent className='space-y-4'>
           <p className='text-gray-600'>

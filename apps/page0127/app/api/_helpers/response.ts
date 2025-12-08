@@ -41,6 +41,7 @@ export function unauthorizedResponse() {
  * 500 Internal Server Error 응답
  */
 export function internalErrorResponse(error?: unknown) {
-  const message = error instanceof Error ? error.message : '서버 오류가 발생했습니다.';
+  const message =
+    error instanceof Error ? error.message : '서버 오류가 발생했습니다.';
   return errorResponse(message, 500);
 }

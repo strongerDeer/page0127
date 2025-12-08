@@ -1,7 +1,10 @@
 import { getBookStats } from '@/entities/book/api/getBookStats';
 
 import { getCurrentUser } from '../../_helpers/auth';
-import { internalErrorResponse, successResponse } from '../../_helpers/response';
+import {
+  internalErrorResponse,
+  successResponse,
+} from '../../_helpers/response';
 
 /**
  * 독서 통계 조회 API

@@ -11,11 +11,7 @@ import { createClient } from '@/shared/config/supabase/server';
  * - 하위 모든 페이지에 자동 적용 (dashboard, books 등)
  * - 각 페이지에서 중복 인증 체크 불필요
  */
-const ProtectedLayout = async ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
+const ProtectedLayout = async ({ children }: { children: React.ReactNode }) => {
   const supabase = await createClient();
   const {
     data: { user },

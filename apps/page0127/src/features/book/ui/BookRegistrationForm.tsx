@@ -57,9 +57,7 @@ export const BookRegistrationForm = ({
     initialData?.completed_date || new Date().toISOString().split('T')[0]
   );
   const [startDate, setStartDate] = useState(initialData?.start_date || '');
-  const [showStartDate, setShowStartDate] = useState(
-    !!initialData?.start_date
-  );
+  const [showStartDate, setShowStartDate] = useState(!!initialData?.start_date);
   const [rating, setRating] = useState<BookRating | undefined>(
     initialData?.rating
   );
