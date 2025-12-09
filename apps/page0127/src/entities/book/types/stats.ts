@@ -17,4 +17,65 @@ export type BookStats = {
 
   /** 완독률 (0-100) */
   completionRate: number;
+
+  /** 월별 독서량 (1-12월) */
+  monthlyReading: MonthlyReadingData[];
+
+  /** 카테고리별 독서량 */
+  categoryReading: CategoryReadingData[];
+
+  /** 평점별 독서량 */
+  ratingReading: RatingReadingData[];
+
+  /** 평균 평점 */
+  averageRating: number;
+};
+
+/**
+ * 월별 독서량 데이터
+ *
+ * 학습 포인트:
+ * - Recharts에서 사용할 수 있는 형태로 타입 정의
+ * - month는 1-12 숫자로 표현 (1월=1, 12월=12)
+ */
+export type MonthlyReadingData = {
+  /** 월 (1-12) */
+  month: number;
+
+  /** 해당 월에 완독한 책 권수 */
+  count: number;
+};
+
+/**
+ * 카테고리별 독서량 데이터
+ *
+ * 학습 포인트:
+ * - Recharts RadarChart에서 사용할 수 있는 형태
+ * - category는 한글 카테고리명 (예: "컴퓨터/모바일")
+ */
+export type CategoryReadingData = {
+  /** 카테고리명 */
+  category: string;
+
+  /** 해당 카테고리의 책 권수 */
+  count: number;
+};
+
+/**
+ * 평점별 독서량 데이터
+ *
+ * 학습 포인트:
+ * - Recharts PieChart(Doughnut)에서 사용할 수 있는 형태
+ * - rating은 0, 1, 2, 3, 4, 5, 10점 (7가지 평점)
+ * - fill은 차트 색상 (10점: 진한 초록 → 0점: 회색)
+ */
+export type RatingReadingData = {
+  /** 평점 (0, 1, 2, 3, 4, 5, 10) */
+  rating: number;
+
+  /** 해당 평점의 책 권수 */
+  count: number;
+
+  /** 차트 색상 (색상 그라데이션) */
+  fill: string;
 };
