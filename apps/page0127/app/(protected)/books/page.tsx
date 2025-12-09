@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 import { toast } from 'sonner';
 
@@ -32,13 +33,19 @@ import type { Book, BookStatus } from '@/entities/book/types';
  * - Select로 정렬 기능
  * - 삭제 기능 구현
  * - Error Boundary로 에러 처리
+ * - URL 쿼리 파라미터로 필터링 (차트 클릭 시)
  */
 const BooksPage = () => {
+  const searchParams = useSearchParams();
   const { getMyBooks, deleteBook, isLoading } = useBookCRUD();
   const [books, setBooks] = useState<Book[]>([]);
   const [activeTab, setActiveTab] = useState<'all' | BookStatus>('all');
   const [sortOption, setSortOption] = useState<string>('created_at-desc');
   const [deletingBookId, setDeletingBookId] = useState<string | null>(null);
+
+  // URL 쿼리 파라미터에서 필터 값 가져오기
+  const monthFilter = searchParams.get('month');
+  const categoryFilter = searchParams.get('category');
 
   // 도서 목록 로딩 함수
   const loadBooks = async () => {
@@ -47,6 +54,24 @@ const BooksPage = () => {
     const data = await getMyBooks(status, sortBy, order as 'asc' | 'desc');
     setBooks(data);
   };
+
+  // 필터링된 책 목록 계산
+  const filteredBooks = books.filter((book) => {
+    // 월별 필터 적용 (완독일 기준)
+    if (monthFilter && book.completed_date) {
+      const completedMonth = new Date(book.completed_date).getMonth() + 1;
+      if (completedMonth !== Number(monthFilter)) {
+        return false;
+      }
+    }
+
+    // 카테고리 필터 적용
+    if (categoryFilter && book.category !== categoryFilter) {
+      return false;
+    }
+
+    return true;
+  });
 
   // 페이지 로드 시 도서 목록 가져오기
   useEffect(() => {
@@ -117,9 +142,58 @@ const BooksPage = () => {
             ))}
           </div>
 
+          {/* 활성 필터 표시 */}
+          {(monthFilter || categoryFilter) && (
+            <div className='mb-4 flex items-center gap-2'>
+              <span className='text-sm text-gray-600'>활성 필터:</span>
+              {monthFilter && (
+                <div className='flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800'>
+                  {monthFilter}월
+                  <button
+                    onClick={() => {
+                      const params = new URLSearchParams(searchParams.toString());
+                      params.delete('month');
+                      window.location.href = `/books?${params.toString()}`;
+                    }}
+                    className='ml-1 text-blue-600 hover:text-blue-900'
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+              {categoryFilter && (
+                <div className='flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-sm text-green-800'>
+                  {categoryFilter}
+                  <button
+                    onClick={() => {
+                      const params = new URLSearchParams(searchParams.toString());
+                      params.delete('category');
+                      window.location.href = `/books?${params.toString()}`;
+                    }}
+                    className='ml-1 text-green-600 hover:text-green-900'
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+              <button
+                onClick={() => {
+                  window.location.href = '/books';
+                }}
+                className='ml-2 text-sm text-gray-500 hover:text-gray-700'
+              >
+                전체 초기화
+              </button>
+            </div>
+          )}
+
           {/* 정렬 선택 */}
           <div className='mb-4 flex items-center justify-between'>
-            <p className='text-sm text-gray-600'>총 {books.length}권의 도서</p>
+            <p className='text-sm text-gray-600'>
+              총 {filteredBooks.length}권의 도서
+              {filteredBooks.length !== books.length &&
+                ` (전체 ${books.length}권)`}
+            </p>
             <Select value={sortOption} onValueChange={setSortOption}>
               <SelectTrigger className='w-[180px]'>
                 <SelectValue placeholder='정렬 기준' />
@@ -144,9 +218,9 @@ const BooksPage = () => {
           )}
 
           {/* 도서 목록 */}
-          {!isLoading && books.length > 0 && (
+          {!isLoading && filteredBooks.length > 0 && (
             <div className='space-y-4'>
-              {books.map((book) => (
+              {filteredBooks.map((book) => (
                 <BookCard key={book.id} book={book} onDelete={handleDelete} />
               ))}
             </div>
@@ -162,6 +236,27 @@ const BooksPage = () => {
           />
 
           {/* 도서 없음 */}
+          {!isLoading && filteredBooks.length === 0 && books.length > 0 && (
+            <div className='rounded-lg border-2 border-dashed border-gray-300 bg-white p-12 text-center'>
+              <div className='mx-auto mb-4 text-6xl'>🔍</div>
+              <h3 className='mb-2 text-lg font-semibold text-gray-900'>
+                필터 조건에 맞는 도서가 없습니다
+              </h3>
+              <p className='mb-6 text-sm text-gray-500'>
+                다른 필터를 선택하거나 전체 목록을 확인해보세요.
+              </p>
+              <Button
+                onClick={() => {
+                  window.location.href = '/books';
+                }}
+                variant='outline'
+              >
+                전체 도서 보기
+              </Button>
+            </div>
+          )}
+
+          {/* 등록된 도서 없음 */}
           {!isLoading && books.length === 0 && (
             <div className='rounded-lg border-2 border-dashed border-gray-300 bg-white p-12 text-center'>
               <div className='mx-auto mb-4 text-6xl'>📚</div>
