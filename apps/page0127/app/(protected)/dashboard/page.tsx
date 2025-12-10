@@ -1,7 +1,9 @@
 import { createClient } from '@/shared/config/supabase/server';
 
 import { getBookStats } from '@/entities/book/api/getBookStats';
-import { getAvailableYears, getMyBooks } from '@/entities/book/api/getMyBooks';
+import { getAvailableYears } from '@/entities/book/api/getMyBooks';
+import { getOverallStats } from '@/entities/book/api/getOverallStats';
+import { getProfile, upsertProfile } from '@/entities/profile/api/getProfile';
 
 import { DashboardContent } from '@/features/stats/ui/DashboardContent';
 
@@ -38,20 +40,39 @@ const DashboardPage = async (props: {
       ? currentYear
       : (availableYears[0] ?? currentYear); // 현재 연도에 데이터가 없으면 최신 연도, 데이터가 없으면 현재 연도
 
+  // 프로필 조회 (프로필이 없으면 자동 생성)
+  let profile = await getProfile(user!.id);
+  if (!profile) {
+    await upsertProfile(user!.id, user!.email!);
+    profile = await getProfile(user!.id);
+  }
+
+  // 전체 독서 통계 조회 (연도 무관)
+  const overallStats = await getOverallStats(user!.id);
+
   // 통계 데이터 조회 (연도 필터 적용)
   const stats = await getBookStats(user!.id, selectedYear);
 
-  // 완독한 책 목록 조회 (연도 필터 적용)
-  const books = await getMyBooks(user!.id, selectedYear);
+  // 모든 책 목록 조회 (탭용 - 연도 필터 없음)
+  const { data: allBooks } = await supabase
+    .from('books')
+    .select('*')
+    .eq('user_id', user!.id)
+    .order('created_at', { ascending: false });
+
+  const books = allBooks ?? [];
 
   return (
     <DashboardContent
+      overallStats={overallStats}
       stats={stats}
       books={books}
       userEmail={user!.email!}
       userId={user!.id}
       availableYears={availableYears}
       selectedYear={selectedYear}
+      profile={profile}
+      currentYear={currentYear}
     />
   );
 };

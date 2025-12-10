@@ -18,11 +18,23 @@ import { StatCard } from '@/shared/ui/StatCard';
 
 import { DashboardBookList } from './DashboardBookList';
 import { DashboardCharts } from './DashboardCharts';
+import { ReadingGoalProgress } from './ReadingGoalProgress';
+
+import { ReadingGoalDialog } from '@/features/profile/ui/ReadingGoalDialog';
+
+import { CategoryPieChart } from '@/widgets/dashboard/CategoryPieChart';
+import { RatingDistributionChart } from '@/widgets/dashboard/RatingDistributionChart';
+import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
+import { YearlyTrendChart } from '@/widgets/dashboard/YearlyTrendChart';
 
 import type { Book } from '@/entities/book/types';
-import type { BookStats } from '@/entities/book/types/stats';
+import type { BookStats, OverallStats } from '@/entities/book/types/stats';
+import type { Profile } from '@/entities/profile/types';
 
 type DashboardContentProps = {
+  /** 전체 독서 통계 (연도 무관) */
+  overallStats: OverallStats;
+
   /** 통계 데이터 */
   stats: BookStats;
 
@@ -40,6 +52,12 @@ type DashboardContentProps = {
 
   /** 현재 선택된 연도 */
   selectedYear: number;
+
+  /** 사용자 프로필 */
+  profile: Profile | null;
+
+  /** 현재 연도 */
+  currentYear: number;
 };
 
 /**
@@ -60,12 +78,15 @@ type DashboardContentProps = {
  * />
  */
 export const DashboardContent = ({
+  overallStats,
   stats,
   books,
   userEmail,
   userId,
   availableYears,
   selectedYear,
+  profile,
+  currentYear,
 }: DashboardContentProps) => {
   const router = useRouter();
 
@@ -73,6 +94,21 @@ export const DashboardContent = ({
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
+
+  // 독서 목표 다이얼로그 상태
+  const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
+
+  // 독서 목표 데이터
+  const readingGoal = profile?.reading_goal;
+  const isCurrentYearGoal = readingGoal?.year === selectedYear;
+
+  // 선택된 연도의 완독 권수 계산
+  const completedBooksInYear = books.filter(
+    (book) =>
+      book.status === 'completed' &&
+      book.completed_date &&
+      new Date(book.completed_date).getFullYear() === selectedYear
+  ).length;
 
   // 월 필터 클릭 핸들러 (토글 방식: 같은 월 클릭 시 필터 해제)
   const handleMonthClick = (month: number) => {
@@ -102,12 +138,51 @@ export const DashboardContent = ({
   return (
     <div className='min-h-screen bg-gray-50 p-8'>
       <div className='mx-auto max-w-6xl'>
+        <div className='mb-6'>
+          <h1 className='text-3xl font-bold'>내 서재</h1>
+          <p className='text-gray-600'>당신의 독서 여정을 확인하세요</p>
+        </div>
+
+        {/* ============ 전체 독서 통계 (All Time Stats) ============ */}
+        <Card className='mb-8 border-2 border-emerald-100'>
+          <CardHeader>
+            <CardTitle className='text-xl'>📖 전체 독서 통계</CardTitle>
+            <p className='text-sm text-gray-600'>전체 기간의 독서 히스토리</p>
+          </CardHeader>
+          <CardContent className='space-y-8'>
+            {/* 1. 독서 여정 카드 */}
+            <div>
+              <h3 className='mb-4 text-lg font-semibold'>🏆 독서 여정</h3>
+              <ReadingJourneyCard data={overallStats.journey} />
+            </div>
+
+            {/* 2. 카테고리 + 5년 트렌드 */}
+            <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
+              <div>
+                <h3 className='mb-4 text-lg font-semibold'>📊 카테고리별 분포</h3>
+                <CategoryPieChart data={overallStats.categoryDistribution} />
+              </div>
+              <div>
+                <h3 className='mb-4 text-lg font-semibold'>📈 최근 5년 독서량</h3>
+                <YearlyTrendChart data={overallStats.yearlyTrend} />
+              </div>
+            </div>
+
+            {/* 3. 평점 분포 */}
+            <div>
+              <h3 className='mb-4 text-lg font-semibold'>⭐ 평점 분포 & 선호도</h3>
+              <RatingDistributionChart data={overallStats.ratingDistribution} />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* ============ 연도별 통계 (선택된 연도) ============ */}
         <div className='mb-6 flex items-center justify-between'>
-          <h1 className='text-3xl font-bold'>대시보드</h1>
+          <h2 className='text-2xl font-bold'>📅 {selectedYear}년 통계</h2>
 
           {/* 연도 선택 */}
           <div className='flex items-center gap-2'>
-            <span className='text-sm text-gray-600'>통계 기간:</span>
+            <span className='text-sm text-gray-600'>연도 선택:</span>
             <Select
               value={selectedYear.toString()}
               onValueChange={handleYearChange}
@@ -124,6 +199,16 @@ export const DashboardContent = ({
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        {/* 독서 목표 진행률 */}
+        <div className='mb-8'>
+          <ReadingGoalProgress
+            year={selectedYear}
+            target={isCurrentYearGoal && readingGoal ? readingGoal.target : 0}
+            current={completedBooksInYear}
+            onSetGoal={() => setIsGoalDialogOpen(true)}
+          />
         </div>
 
         {/* 통계 카드 그리드 */}
@@ -207,6 +292,19 @@ export const DashboardContent = ({
           </CardContent>
         </Card>
       </div>
+
+      {/* 독서 목표 설정 다이얼로그 */}
+      <ReadingGoalDialog
+        isOpen={isGoalDialogOpen}
+        onClose={() => setIsGoalDialogOpen(false)}
+        userId={userId}
+        currentYear={currentYear}
+        currentGoal={readingGoal ?? null}
+        onSuccess={() => {
+          // 페이지 새로고침하여 업데이트된 프로필 반영
+          router.refresh();
+        }}
+      />
     </div>
   );
 };
