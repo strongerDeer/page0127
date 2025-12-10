@@ -6,10 +6,17 @@ import Link from 'next/link';
 
 import { mapToMainCategory } from '@/shared/lib/categoryMapper';
 import { Button } from '@/shared/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select';
 
 import { CategoryFilter } from './CategoryFilter';
 
-import type { Book } from '@/entities/book/types';
+import type { Book, BookStatus } from '@/entities/book/types';
 import type { CategoryReadingData } from '@/entities/book/types/stats';
 
 type DashboardBookListProps = {
@@ -60,28 +67,64 @@ export const DashboardBookList = ({
   const BOOKS_PER_PAGE = 12;
   const [currentPage, setCurrentPage] = useState(1);
 
-  // 월별 + 카테고리 + 평점 복합 필터 적용
-  const filteredBooks = books.filter((book) => {
-    // 1. 월 필터 확인
-    if (selectedMonth !== null && book.completed_date) {
-      const completedDate = new Date(book.completed_date);
-      const bookMonth = completedDate.getMonth() + 1; // 0-11 → 1-12
-      if (bookMonth !== selectedMonth) return false;
-    }
+  // 상태 필터 (전체/완독/읽는 중/읽고 싶은)
+  const [statusFilter, setStatusFilter] = useState<BookStatus | 'all'>('all');
 
-    // 2. 카테고리 필터 확인
-    if (selectedCategory !== null) {
-      const mainCategory = mapToMainCategory(book.category);
-      if (mainCategory !== selectedCategory) return false;
-    }
+  // 정렬 (최신순/오래된순/별점높은순/별점낮은순/제목순)
+  const [sortOption, setSortOption] = useState<string>('created_at-desc');
 
-    // 3. 평점 필터 확인
-    if (selectedRating !== null) {
-      if (book.rating !== selectedRating) return false;
-    }
+  // 월별 + 카테고리 + 평점 + 상태 복합 필터 적용
+  const filteredBooks = books
+    .filter((book) => {
+      // 1. 상태 필터 확인
+      if (statusFilter !== 'all' && book.status !== statusFilter) {
+        return false;
+      }
 
-    return true;
-  });
+      // 2. 월 필터 확인 (완독한 책만)
+      if (selectedMonth !== null && book.completed_date) {
+        const completedDate = new Date(book.completed_date);
+        const bookMonth = completedDate.getMonth() + 1; // 0-11 → 1-12
+        if (bookMonth !== selectedMonth) return false;
+      }
+
+      // 3. 카테고리 필터 확인
+      if (selectedCategory !== null) {
+        const mainCategory = mapToMainCategory(book.category);
+        if (mainCategory !== selectedCategory) return false;
+      }
+
+      // 4. 평점 필터 확인
+      if (selectedRating !== null) {
+        if (book.rating !== selectedRating) return false;
+      }
+
+      return true;
+    })
+    .sort((a, b) => {
+      // 정렬 로직
+      const [field, order] = sortOption.split('-');
+
+      if (field === 'created_at') {
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
+        return order === 'desc' ? dateB - dateA : dateA - dateB;
+      }
+
+      if (field === 'rating') {
+        const ratingA = a.rating ?? 0;
+        const ratingB = b.rating ?? 0;
+        return order === 'desc' ? ratingB - ratingA : ratingA - ratingB;
+      }
+
+      if (field === 'title') {
+        return order === 'asc'
+          ? a.title.localeCompare(b.title)
+          : b.title.localeCompare(a.title);
+      }
+
+      return 0;
+    });
 
   // 페이지네이션 계산
   const totalPages = Math.ceil(filteredBooks.length / BOOKS_PER_PAGE);
@@ -100,8 +143,79 @@ export const DashboardBookList = ({
     onRemoveMonthFilter();
   };
 
+  const handleStatusChange = (status: BookStatus | 'all') => {
+    setCurrentPage(1);
+    setStatusFilter(status);
+  };
+
+  const handleSortChange = (option: string) => {
+    setCurrentPage(1);
+    setSortOption(option);
+  };
+
   return (
     <div>
+      {/* 상태별 탭 */}
+      <div className='mb-6 flex flex-wrap gap-2'>
+        <button
+          onClick={() => handleStatusChange('all')}
+          className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            statusFilter === 'all'
+              ? 'bg-emerald-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          전체
+        </button>
+        <button
+          onClick={() => handleStatusChange('completed')}
+          className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            statusFilter === 'completed'
+              ? 'bg-emerald-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          완독
+        </button>
+        <button
+          onClick={() => handleStatusChange('reading')}
+          className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            statusFilter === 'reading'
+              ? 'bg-emerald-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          읽는 중
+        </button>
+        <button
+          onClick={() => handleStatusChange('want_to_read')}
+          className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            statusFilter === 'want_to_read'
+              ? 'bg-emerald-600 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          읽고 싶은
+        </button>
+
+        {/* 정렬 옵션 */}
+        <div className='ml-auto'>
+          <Select value={sortOption} onValueChange={handleSortChange}>
+            <SelectTrigger className='w-[160px]'>
+              <SelectValue placeholder='정렬 선택' />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='created_at-desc'>최신순</SelectItem>
+              <SelectItem value='created_at-asc'>오래된순</SelectItem>
+              <SelectItem value='rating-desc'>별점 높은순</SelectItem>
+              <SelectItem value='rating-asc'>별점 낮은순</SelectItem>
+              <SelectItem value='title-asc'>제목순 (ㄱ-ㅎ)</SelectItem>
+              <SelectItem value='title-desc'>제목순 (ㅎ-ㄱ)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {/* 활성 필터 뱃지 */}
       {(selectedMonth !== null ||
         selectedCategory !== null ||
