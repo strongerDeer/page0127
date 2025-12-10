@@ -33,9 +33,6 @@ export const Header = async () => {
             // 로그인된 사용자 메뉴
             <>
               <Link href='/dashboard' className='hover:text-primary'>
-                대시보드
-              </Link>
-              <Link href='/books' className='hover:text-primary'>
                 내 서재
               </Link>
               <Link href='/books/add' className='hover:text-primary'>
