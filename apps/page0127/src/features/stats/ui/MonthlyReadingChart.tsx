@@ -40,8 +40,8 @@ export const MonthlyReadingChart = ({
   onMonthClick,
 }: MonthlyReadingChartProps) => {
   // Bar 클릭 핸들러
-  const handleBarClick = (data: MonthlyReadingData) => {
-    if (onMonthClick) {
+  const handleBarClick = (data: any) => {
+    if (onMonthClick && data) {
       onMonthClick(data.month);
     }
   };
