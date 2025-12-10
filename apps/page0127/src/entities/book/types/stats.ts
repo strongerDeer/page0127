@@ -79,3 +79,111 @@ export type RatingReadingData = {
   /** 차트 색상 (색상 그라데이션) */
   fill: string;
 };
+
+/**
+ * 전체 독서 통계 (All Time Stats)
+ *
+ * 학습 포인트:
+ * - 대시보드 상단 "전체 독서 통계" 섹션에 사용
+ * - 연도 무관, 전체 기간의 독서 히스토리
+ */
+export type OverallStats = {
+  /** 독서 여정 */
+  journey: ReadingJourney;
+
+  /** 카테고리별 분포 (Pie Chart용) */
+  categoryDistribution: CategoryDistribution[];
+
+  /** 최근 5년 독서량 (Bar Chart용) */
+  yearlyTrend: YearlyTrend[];
+
+  /** 평점 분포 (Horizontal Bar용) */
+  ratingDistribution: RatingDistribution[];
+};
+
+/**
+ * 독서 여정 데이터
+ *
+ * 학습 포인트:
+ * - 사용자의 전체 독서 히스토리 요약
+ * - 동기 부여 요소 (성취감, 습관 인식)
+ */
+export type ReadingJourney = {
+  /** 총 읽은 책 (전체) */
+  totalBooks: number;
+
+  /** 10점 만점 책 권수 */
+  perfectScoreBooks: number;
+
+  /** 10점 만점 비율 (%) */
+  perfectScoreRate: number;
+
+  /** 총 읽은 쪽수 */
+  totalPages: number;
+
+  /** 하루 평균 쪽수 */
+  averagePagesPerDay: number;
+
+  /** 독서 시작일 (첫 완독일) */
+  readingSince: string;
+
+  /** 독서 년수 */
+  readingYears: number;
+
+  /** 예상 독서 시간 (시간) */
+  estimatedHours: number;
+
+  /** 예상 독서 시간 (일) */
+  estimatedDays: number;
+};
+
+/**
+ * 카테고리별 분포 데이터 (Pie Chart용)
+ *
+ * 학습 포인트:
+ * - Top 5 카테고리 + 나머지는 "기타"
+ * - 비율과 권수를 함께 표시
+ */
+export type CategoryDistribution = {
+  /** 카테고리명 */
+  category: string;
+
+  /** 권수 */
+  count: number;
+
+  /** 비율 (%) */
+  percentage: number;
+};
+
+/**
+ * 연도별 독서량 데이터 (Bar Chart용)
+ *
+ * 학습 포인트:
+ * - 최근 5년 독서량 트렌드
+ * - 전년 대비 증가율 계산에 사용
+ */
+export type YearlyTrend = {
+  /** 연도 (YYYY) */
+  year: number;
+
+  /** 해당 연도 완독 권수 */
+  count: number;
+};
+
+/**
+ * 평점 분포 데이터 (Horizontal Bar용)
+ *
+ * 학습 포인트:
+ * - 0~10점 평점 분포
+ * - 권수와 비율을 함께 표시
+ */
+export type RatingDistribution = {
+  /** 평점 (0, 1, 2, 3, 4, 5, 10) */
+  rating: number;
+
+  /** 해당 평점의 책 권수 */
+  count: number;
+
+  /** 비율 (%) */
+  percentage: number;
+};
