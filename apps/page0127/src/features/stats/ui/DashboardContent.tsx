@@ -135,12 +135,46 @@ export const DashboardContent = ({
     router.push(`/dashboard?year=${value}`);
   };
 
+  // 공개 서재 URL 복사
+  const handleCopyPublicUrl = () => {
+    if (!profile?.username) return;
+
+    const publicUrl = `${window.location.origin}/${profile.username}`;
+    navigator.clipboard.writeText(publicUrl);
+    alert('공개 서재 URL이 복사되었습니다!');
+  };
+
   return (
     <div className='min-h-screen bg-gray-50 p-8'>
       <div className='mx-auto max-w-6xl'>
-        <div className='mb-6'>
-          <h1 className='text-3xl font-bold'>내 서재</h1>
-          <p className='text-gray-600'>당신의 독서 여정을 확인하세요</p>
+        <div className='mb-6 flex items-start justify-between'>
+          <div>
+            <h1 className='text-3xl font-bold'>내 서재</h1>
+            <p className='text-gray-600'>당신의 독서 여정을 확인하세요</p>
+          </div>
+
+          {/* 공개 서재 URL */}
+          {profile?.username && (
+            <div className='flex flex-col items-end gap-2'>
+              <p className='text-sm text-gray-500'>공개 서재 주소</p>
+              <div className='flex gap-2'>
+                <Link
+                  href={`/${profile.username}`}
+                  target='_blank'
+                  className='rounded-md border bg-white px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50'
+                >
+                  /{profile.username}
+                </Link>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={handleCopyPublicUrl}
+                >
+                  URL 복사
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ============ 전체 독서 통계 (All Time Stats) ============ */}
