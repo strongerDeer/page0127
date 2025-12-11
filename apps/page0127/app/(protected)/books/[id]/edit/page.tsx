@@ -142,6 +142,7 @@ const BookEditPage = ({ params }: PageProps) => {
               one_line_review: book.one_line_review || undefined,
               personal_memo: book.personal_memo || undefined,
               tags: book.tags || undefined,
+              is_public: book.is_public,
             }}
           />
         </div>

@@ -8,6 +8,7 @@ import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
+import { Switch } from '@/shared/ui/switch';
 import { Textarea } from '@/shared/ui/textarea';
 
 import type { AladinBook, BookRating, BookStatus } from '@/entities/book/types';
@@ -28,6 +29,7 @@ export type BookFormData = {
   one_line_review?: string;
   personal_memo?: string;
   tags?: string[];
+  is_public?: boolean;
 };
 
 /**
@@ -38,10 +40,10 @@ export type BookFormData = {
  * - 상태별 조건부 필드 표시 (UX 개선)
  * - 배열 데이터 처리 (tags)
  *
- * UX 개선:
- * - 완독: 완독일(기본값: 오늘) + 시작일(옵션)
- * - 읽는중: 시작일(옵션), 완독일 숨김
- * - 읽고싶은책: 날짜 필드 모두 숨김
+ * UX 개선 (상태별 표시 필드):
+ * - 완독: 완독일(필수) + 시작일(옵션) + 평점 + 한줄평 + 메모 + 태그 + 공개설정
+ * - 읽는중: 시작일(옵션) + 메모 + 태그 + 공개설정
+ * - 읽고싶은책: 메모 + 태그 + 공개설정만 표시
  */
 export const BookRegistrationForm = ({
   book,
@@ -71,6 +73,9 @@ export const BookRegistrationForm = ({
     initialData?.tags ? initialData.tags.join(', ') : ''
   );
   const [tagError, setTagError] = useState('');
+  const [isPublic, setIsPublic] = useState(
+    initialData?.is_public !== undefined ? initialData.is_public : true
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,6 +86,7 @@ export const BookRegistrationForm = ({
       rating,
       one_line_review: oneLineReview || undefined,
       personal_memo: personalMemo || undefined,
+      is_public: isPublic,
     };
 
     // 완독: 완독일 필수
@@ -218,39 +224,43 @@ export const BookRegistrationForm = ({
             </div>
           )}
 
-          {/* 평가 점수 */}
-          <div className='space-y-2'>
-            <Label>평가 점수</Label>
-            <div className='flex flex-wrap gap-2'>
-              {[0, 1, 2, 3, 4, 5, 10].map((score) => (
-                <button
-                  key={score}
-                  type='button'
-                  onClick={() => setRating(score as BookRating)}
-                  className={`rounded-md border px-4 py-2 transition-colors ${
-                    rating === score
-                      ? 'border-blue-500 bg-blue-500 text-white'
-                      : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  {score}
-                </button>
-              ))}
+          {/* 평가 점수 - 완독일 때만 표시 */}
+          {status === 'completed' && (
+            <div className='space-y-2'>
+              <Label>평가 점수</Label>
+              <div className='flex flex-wrap gap-2'>
+                {[0, 1, 2, 3, 4, 5, 10].map((score) => (
+                  <button
+                    key={score}
+                    type='button'
+                    onClick={() => setRating(score as BookRating)}
+                    className={`rounded-md border px-4 py-2 transition-colors ${
+                      rating === score
+                        ? 'border-blue-500 bg-blue-500 text-white'
+                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {score}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* 한줄평 */}
-          <div className='space-y-2'>
-            <Label htmlFor='one_line_review'>한줄평</Label>
-            <Input
-              id='one_line_review'
-              type='text'
-              value={oneLineReview}
-              onChange={(e) => setOneLineReview(e.target.value)}
-              placeholder='이 책에 대한 한줄평을 남겨주세요'
-              maxLength={100}
-            />
-          </div>
+          {/* 한줄평 - 완독일 때만 표시 */}
+          {status === 'completed' && (
+            <div className='space-y-2'>
+              <Label htmlFor='one_line_review'>한줄평</Label>
+              <Input
+                id='one_line_review'
+                type='text'
+                value={oneLineReview}
+                onChange={(e) => setOneLineReview(e.target.value)}
+                placeholder='이 책에 대한 한줄평을 남겨주세요'
+                maxLength={100}
+              />
+            </div>
+          )}
 
           {/* 나만의 메모 */}
           <div className='space-y-2'>
@@ -286,6 +296,27 @@ export const BookRegistrationForm = ({
                 태그는 자동으로 제거됩니다.
               </p>
             )}
+          </div>
+
+          {/* 공개/비공개 설정 */}
+          <div className='space-y-2'>
+            <div className='flex items-center justify-between rounded-lg border p-4'>
+              <div className='space-y-0.5'>
+                <Label htmlFor='is_public' className='text-base'>
+                  공개 설정
+                </Label>
+                <p className='text-sm text-gray-500'>
+                  {isPublic
+                    ? '다른 사람들이 이 책을 볼 수 있습니다.'
+                    : '나만 볼 수 있습니다. (비공개)'}
+                </p>
+              </div>
+              <Switch
+                id='is_public'
+                checked={isPublic}
+                onCheckedChange={setIsPublic}
+              />
+            </div>
           </div>
 
           {/* 버튼 */}
