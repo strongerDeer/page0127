@@ -27,6 +27,9 @@ export type Profile = {
   /** 이메일 */
   email: string | null;
 
+  /** 사용자 고유 ID (공개 서재 URL용, 예: abc, abc1, abc2) */
+  username: string | null;
+
   /** 닉네임 */
   nickname: string | null;
 
@@ -50,6 +53,7 @@ export type Profile = {
  * 프로필 업데이트 DTO
  */
 export type UpdateProfileDto = {
+  username?: string;
   nickname?: string;
   bio?: string;
   photo_url?: string;

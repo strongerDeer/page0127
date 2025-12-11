@@ -51,6 +51,9 @@ export type Book = {
   personal_memo: string | null;
   tags: string[] | null;
 
+  // 공개 설정
+  is_public: boolean;
+
   // 메타 정보
   created_at: string;
   updated_at: string;
@@ -85,6 +88,9 @@ export type BookInput = {
   one_line_review?: string;
   personal_memo?: string;
   tags?: string[];
+
+  // 공개 설정
+  is_public?: boolean;
 };
 
 /**
