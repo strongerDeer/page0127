@@ -63,7 +63,12 @@ export default async function BookDetailPage({ params }: PageProps) {
           <Link href='/books'>
             <Button variant='outline'>← 목록으로</Button>
           </Link>
-          <DeleteBookButton bookId={book.id} />
+          <div className='flex gap-2'>
+            <Link href={`/books/${book.id}/edit`}>
+              <Button variant='outline'>수정</Button>
+            </Link>
+            <DeleteBookButton bookId={book.id} />
+          </div>
         </div>
 
         {/* 도서 정보 */}
@@ -114,6 +119,17 @@ export default async function BookDetailPage({ params }: PageProps) {
                       ⭐ {book.rating}점
                     </span>
                   )}
+
+                  {/* 공개/비공개 표시 */}
+                  <span
+                    className={`inline-block rounded-full px-4 py-2 text-sm font-medium ${
+                      book.is_public
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-gray-100 text-gray-600'
+                    }`}
+                  >
+                    {book.is_public ? '🌐 공개' : '🔒 비공개'}
+                  </span>
                 </div>
 
                 {/* 날짜 및 쪽수 정보 */}
