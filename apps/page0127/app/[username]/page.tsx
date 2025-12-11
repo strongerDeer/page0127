@@ -1,38 +1,14 @@
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
 
 import type { Book } from '@/entities/book/types';
-import type { Profile } from '@/entities/profile/types';
+
+import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 
 type PageProps = {
   params: Promise<{ username: string }>;
-};
-
-/**
- * username으로 프로필 조회
- *
- * 학습 포인트:
- * - username은 unique 컬럼이므로 단일 조회 가능
- * - 없으면 404 페이지 표시
- */
-const getProfileByUsername = async (
-  username: string
-): Promise<Profile | null> => {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('username', username)
-    .maybeSingle();
-
-  if (error) {
-    console.error('프로필 조회 실패:', error.message);
-    return null;
-  }
-
-  return data;
 };
 
 /**
@@ -88,11 +64,16 @@ const PublicLibraryPage = async ({ params }: PageProps) => {
       <div className='mb-8 rounded-lg border bg-white p-6 shadow-sm'>
         <div className='flex items-start gap-4'>
           {profile.photo_url ? (
-            <img
-              src={profile.photo_url}
-              alt={profile.nickname || username}
-              className='h-20 w-20 rounded-full object-cover'
-            />
+            <div className='relative h-20 w-20 overflow-hidden rounded-full'>
+              <Image
+                src={profile.photo_url}
+                alt={profile.nickname || username}
+                fill
+                sizes='80px'
+                className='object-cover'
+                priority
+              />
+            </div>
           ) : (
             <div className='flex h-20 w-20 items-center justify-center rounded-full bg-gray-200 text-2xl font-bold text-gray-600'>
               {(profile.nickname || username).charAt(0).toUpperCase()}
@@ -147,11 +128,15 @@ const PublicLibraryPage = async ({ params }: PageProps) => {
                 className='overflow-hidden rounded-lg border bg-white shadow-sm transition-shadow hover:shadow-md'
               >
                 {book.cover_image ? (
-                  <img
-                    src={book.cover_image}
-                    alt={book.title}
-                    className='h-64 w-full object-cover'
-                  />
+                  <div className='relative h-64 w-full'>
+                    <Image
+                      src={book.cover_image}
+                      alt={book.title}
+                      fill
+                      sizes='(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw'
+                      className='object-cover'
+                    />
+                  </div>
                 ) : (
                   <div className='flex h-64 w-full items-center justify-center bg-gray-200 text-gray-400'>
                     No Image
