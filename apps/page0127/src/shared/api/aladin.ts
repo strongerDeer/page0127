@@ -1,4 +1,7 @@
-import type { AladinSearchResponse } from '@/shared/types/aladin';
+import type {
+  AladinSearchResponse,
+  AladinLookUpResponse,
+} from '@/shared/types/aladin';
 
 /**
  * 알라딘 API 도서 검색
@@ -37,6 +40,32 @@ export const searchBooks = async (
     return data;
   } catch (error) {
     console.error('도서 검색 실패:', error);
+    throw error;
+  }
+};
+
+/**
+ * 알라딘 API 도서 상세 정보 조회 (ItemLookUp)
+ *
+ * 학습 포인트:
+ * - AI 분석을 위한 목차(toc), 전체 소개(fullDescription) 조회
+ * - ISBN으로 상세 정보 조회
+ */
+export const getBookDetail = async (isbn: string): Promise<AladinLookUpResponse> => {
+  // Next.js API Route 호출
+  const url = `/api/books/detail?isbn=${isbn}`;
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`API 오류: ${response.status}`);
+    }
+
+    const data: AladinLookUpResponse = await response.json();
+    return data;
+  } catch (error) {
+    console.error('도서 상세 정보 조회 실패:', error);
     throw error;
   }
 };

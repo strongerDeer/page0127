@@ -36,6 +36,9 @@ export type Book = {
   category: string | null;
   page_count: number | null;
 
+  // AI 분석용 추가 데이터
+  toc: string | null; // 목차 (Table of Contents)
+
   // 독서 상태
   status: BookStatus;
 
@@ -73,6 +76,9 @@ export type BookInput = {
   pub_date?: string;
   category?: string;
   page_count?: number;
+
+  // AI 분석용 추가 데이터
+  toc?: string;
 
   // 독서 상태
   status: BookStatus;

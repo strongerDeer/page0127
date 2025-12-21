@@ -7,7 +7,8 @@ const ALADIN_API_BASE_URL = 'http://www.aladin.co.kr/ttb/api/ItemLookUp.aspx';
  * 알라딘 도서 상세 조회 API Route
  *
  * 학습 포인트:
- * - ItemLookUp API: ISBN으로 상세 정보 조회 (쪽수 포함)
+ * - ItemLookUp API: ISBN으로 상세 정보 조회 (쪽수, 목차 포함)
+ * - OptResult: packing, toc, fulldescription - AI 분석용 추가 정보
  * - ItemSearch API와 다른 엔드포인트
  */
 export async function GET(request: NextRequest) {
@@ -28,7 +29,9 @@ export async function GET(request: NextRequest) {
     ItemIdType: 'ISBN13',
     output: 'js',
     Version: '20131101',
-    OptResult: 'packing', // subInfo(쪽수 등) 정보 포함
+    // AI 분석을 위한 추가 정보 요청
+    // packing: subInfo(쪽수 등), toc: 목차, fulldescription: 전체 소개, authors: 저자 소개
+    OptResult: 'packing,toc,fulldescription,authors',
   });
 
   const url = `${ALADIN_API_BASE_URL}?${params.toString()}`;

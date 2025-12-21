@@ -33,3 +33,27 @@ export type AladinSearchResponse = {
   itemsPerPage: number;
   item: AladinBook[];
 };
+
+/**
+ * 알라딘 ItemLookUp API 응답 타입
+ * (상세 정보 조회용 - AI 분석을 위해 사용)
+ */
+export type AladinBookDetail = AladinBook & {
+  /** 목차 (Table of Contents) */
+  toc?: string;
+  /** 전체 책 소개 (description보다 더 상세함) */
+  fullDescription?: string;
+  /** 저자 소개 */
+  authorInfo?: string;
+};
+
+/**
+ * 알라딘 ItemLookUp API 응답
+ */
+export type AladinLookUpResponse = {
+  version: string;
+  title: string;
+  link: string;
+  pubDate: string;
+  item: AladinBookDetail[];
+};
