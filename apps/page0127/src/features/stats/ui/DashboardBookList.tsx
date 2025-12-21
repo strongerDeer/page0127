@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import Link from 'next/link';
 
@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/shared/ui/select';
 
+import { BookSearchInput } from './BookSearchInput';
 import { CategoryFilter } from './CategoryFilter';
 
 import type { Book, BookStatus } from '@/entities/book/types';
@@ -35,6 +36,9 @@ type DashboardBookListProps = {
   /** 선택된 평점 (1-5, null = 전체) */
   selectedRating: number | null;
 
+  /** 검색어 */
+  searchQuery: string;
+
   /** 카테고리 선택 핸들러 */
   onCategoryChange: (category: string | null) => void;
 
@@ -43,16 +47,20 @@ type DashboardBookListProps = {
 
   /** 평점 필터 제거 핸들러 */
   onRemoveRatingFilter: () => void;
+
+  /** 검색어 변경 핸들러 */
+  onSearchChange: (query: string) => void;
 };
 
 /**
  * 대시보드 책 목록 섹션 (Client Component)
  *
  * 학습 포인트:
- * - 월별 + 카테고리 + 평점 복합 필터링
+ * - 월별 + 카테고리 + 평점 + 검색어 복합 필터링
  * - 부모 컴포넌트에서 상태 관리 (lift state up)
  * - 필터 뱃지로 현재 필터 표시
  * - 책 표지 그리드 레이아웃
+ * - 제목/저자 검색 (대소문자 무시)
  */
 export const DashboardBookList = ({
   books,
@@ -60,9 +68,11 @@ export const DashboardBookList = ({
   selectedMonth,
   selectedCategory,
   selectedRating,
+  searchQuery,
   onCategoryChange,
   onRemoveMonthFilter,
   onRemoveRatingFilter,
+  onSearchChange,
 }: DashboardBookListProps) => {
   const BOOKS_PER_PAGE = 12;
   const [currentPage, setCurrentPage] = useState(1);
@@ -73,7 +83,7 @@ export const DashboardBookList = ({
   // 정렬 (최신순/오래된순/별점높은순/별점낮은순/제목순)
   const [sortOption, setSortOption] = useState<string>('created_at-desc');
 
-  // 월별 + 카테고리 + 평점 + 상태 복합 필터 적용
+  // 월별 + 카테고리 + 평점 + 상태 + 검색어 복합 필터 적용
   const filteredBooks = books
     .filter((book) => {
       // 1. 상태 필터 확인
@@ -97,6 +107,17 @@ export const DashboardBookList = ({
       // 4. 평점 필터 확인
       if (selectedRating !== null) {
         if (book.rating !== selectedRating) return false;
+      }
+
+      // 5. 검색어 필터 확인 (제목 + 저자)
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        const titleMatch = book.title.toLowerCase().includes(query);
+        const authorMatch = book.author?.toLowerCase().includes(query) ?? false;
+
+        if (!titleMatch && !authorMatch) {
+          return false;
+        }
       }
 
       return true;
@@ -153,8 +174,28 @@ export const DashboardBookList = ({
     setSortOption(option);
   };
 
+  // 검색어 변경 시 첫 페이지로 이동
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  // 필터 변경 후 현재 페이지가 총 페이지 수를 초과하면 첫 페이지로 이동
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [currentPage, totalPages]);
+
   return (
     <div>
+      {/* 검색창 */}
+      <div className='mb-4'>
+        <BookSearchInput
+          onSearchChange={onSearchChange}
+          placeholder='제목이나 저자로 검색하세요'
+        />
+      </div>
+
       {/* 상태별 탭 */}
       <div className='mb-6 flex flex-wrap gap-2'>
         <button

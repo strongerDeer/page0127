@@ -95,6 +95,9 @@ export const DashboardContent = ({
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
 
+  // 검색 상태 관리
+  const [searchQuery, setSearchQuery] = useState('');
+
   // 독서 목표 다이얼로그 상태
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
 
@@ -283,7 +286,7 @@ export const DashboardContent = ({
           onRatingClick={handleRatingClick}
         />
 
-        {/* 읽은 책 목록 (카테고리 + 월 + 평점 복합 필터) */}
+        {/* 읽은 책 목록 (카테고리 + 월 + 평점 + 검색어 복합 필터) */}
         <Card className='mb-8'>
           <CardContent className='pt-6'>
             <DashboardBookList
@@ -292,9 +295,11 @@ export const DashboardContent = ({
               selectedMonth={selectedMonth}
               selectedCategory={selectedCategory}
               selectedRating={selectedRating}
+              searchQuery={searchQuery}
               onCategoryChange={setSelectedCategory}
               onRemoveMonthFilter={handleRemoveMonthFilter}
               onRemoveRatingFilter={handleRemoveRatingFilter}
+              onSearchChange={setSearchQuery}
             />
           </CardContent>
         </Card>
