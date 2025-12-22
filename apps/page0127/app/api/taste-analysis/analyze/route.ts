@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from '@/shared/lib/supabase/server';
+import { createClient } from '@/shared/config/supabase/server';
 import { openai, AI_MODEL, MAX_TOKENS, TEMPERATURE } from '@/shared/lib/openai';
 import { createTasteAnalysisPrompt } from '@/shared/lib/openai/prompts/taste-analysis';
 import type { Book } from '@/entities/book/types';
@@ -77,6 +77,14 @@ export async function POST(request: NextRequest) {
     // 4. AI 응답 파싱
     const aiResponse = JSON.parse(responseText);
 
+    // AI 응답 검증 및 로깅
+    console.log('AI 응답 구조:', {
+      personality_type: aiResponse.personality_type,
+      has_preference_profile: !!aiResponse.preference_profile,
+      recommendations_count: aiResponse.recommendations?.length || 0,
+    });
+    console.log('AI 전체 응답:', JSON.stringify(aiResponse, null, 2));
+
     // 5. 분석 결과 저장
     const { data: analysis, error: analysisError } = await supabase
       .from('taste_analyses')
@@ -98,29 +106,47 @@ export async function POST(request: NextRequest) {
     }
 
     // 6. 추천 도서 저장
-    const recommendations = aiResponse.recommendations.map((rec: any) => ({
-      taste_analysis_id: analysis.id,
-      recommendation_type: rec.type,
-      isbn: rec.isbn,
-      title: rec.title,
-      author: rec.author || null,
-      publisher: null,
-      cover_image: null,
-      category: null,
-      reason: rec.reason,
-      display_order: rec.display_order,
-    }));
+    if (aiResponse.recommendations && aiResponse.recommendations.length > 0) {
+      const recommendations = aiResponse.recommendations.map((rec: any) => ({
+        taste_analysis_id: analysis.id,
+        recommendation_type: rec.type,
+        isbn: null, // AI는 제목/저자만 제공 (ISBN 없음)
+        title: rec.title,
+        author: rec.author || null,
+        publisher: null,
+        cover_image: null,
+        category: null,
+        reason: rec.reason,
+        display_order: rec.display_order,
+      }));
 
-    const { error: recError } = await supabase
-      .from('book_recommendations')
-      .insert(recommendations);
+      const { error: recError } = await supabase
+        .from('book_recommendations')
+        .insert(recommendations);
 
-    if (recError) {
-      console.error('추천 도서 저장 실패:', recError);
-      // 추천 도서 저장 실패는 치명적이지 않으므로 경고만 출력
+      if (recError) {
+        console.error('추천 도서 저장 실패:', recError);
+        console.error('추천 도서 데이터:', recommendations);
+      } else {
+        console.log(`추천 도서 ${recommendations.length}건 저장 완료`);
+
+        // 7. 알라딘 API로 표지 이미지 업데이트 (동기적으로 처리)
+        try {
+          await enrichRecommendationsWithAladinData(
+            supabase,
+            aiResponse.recommendations,
+            analysis.id
+          );
+          console.log('알라딘 API 업데이트 완료');
+        } catch (err: unknown) {
+          console.error('알라딘 API 업데이트 실패:', err);
+        }
+      }
+    } else {
+      console.warn('AI 응답에 추천 도서가 없습니다.');
     }
 
-    // 7. 성공 응답
+    // 8. 성공 응답
     return NextResponse.json({
       success: true,
       analysis_id: analysis.id,
@@ -143,4 +169,94 @@ function calculateCost(totalTokens: number): number {
   // 간단하게 평균 $0.30 / 1M tokens로 계산
   const costPerToken = 0.30 / 1_000_000;
   return Math.ceil(totalTokens * costPerToken * 100); // 센트 단위
+}
+
+/**
+ * 알라딘 API로 추천 도서 정보 보강 (표지, ISBN, 출판사)
+ *
+ * 학습 포인트:
+ * - 제목+저자로 알라딘 API 검색
+ * - 검색 결과에서 책 정보 추출
+ * - DB 업데이트 (표지, ISBN, 출판사)
+ */
+async function enrichRecommendationsWithAladinData(
+  supabase: any,
+  recommendations: any[],
+  tasteAnalysisId: string
+): Promise<void> {
+  const ALADIN_API_KEY = process.env.NEXT_PUBLIC_ALADIN_API_KEY;
+  const ALADIN_API_BASE_URL = 'http://www.aladin.co.kr/ttb/api/ItemSearch.aspx';
+
+  for (const rec of recommendations) {
+    try {
+      // 제목으로 알라딘 API 검색
+      const params = new URLSearchParams({
+        ttbkey: ALADIN_API_KEY!,
+        Query: rec.title,
+        QueryType: 'Title',
+        MaxResults: '3',
+        start: '1',
+        SearchTarget: 'Book',
+        output: 'js',
+        Version: '20131101',
+      });
+
+      const url = `${ALADIN_API_BASE_URL}?${params.toString()}`;
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        console.error(`알라딘 API 실패 (${rec.title}):`, response.status);
+        continue;
+      }
+
+      const data = await response.json();
+
+      // 검색 결과에서 첫 번째 책 사용 (제목이 가장 유사)
+      const matchedBook = data.item?.[0];
+
+      if (matchedBook) {
+        // DB 업데이트 (알라딘 정보로 덮어쓰기)
+        const { error: updateError } = await supabase
+          .from('book_recommendations')
+          .update({
+            isbn: matchedBook.isbn13 || matchedBook.isbn,
+            title: matchedBook.title, // 알라딘 제목으로 덮어쓰기
+            author: matchedBook.author, // 알라딘 저자로 덮어쓰기
+            cover_image: matchedBook.cover,
+            publisher: matchedBook.publisher,
+            category: matchedBook.categoryName,
+          })
+          .eq('taste_analysis_id', tasteAnalysisId)
+          .eq('title', rec.title)
+          .eq('recommendation_type', rec.type)
+          .eq('display_order', rec.display_order);
+
+        if (updateError) {
+          console.error(`DB 업데이트 실패 (${rec.title}):`, updateError);
+        } else {
+          console.log(`✅ ${matchedBook.title} (${matchedBook.author}) - 알라딘 정보 업데이트 완료`);
+        }
+      } else {
+        // 알라딘에서 찾을 수 없는 책은 삭제
+        const { error: deleteError } = await supabase
+          .from('book_recommendations')
+          .delete()
+          .eq('taste_analysis_id', tasteAnalysisId)
+          .eq('title', rec.title)
+          .eq('recommendation_type', rec.type)
+          .eq('display_order', rec.display_order);
+
+        if (deleteError) {
+          console.error(`삭제 실패 (${rec.title}):`, deleteError);
+        } else {
+          console.warn(`❌ ${rec.title} - 알라딘에서 찾을 수 없어 삭제`);
+        }
+      }
+
+      // API 요청 간 간격 (Rate Limiting 방지)
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    } catch (error) {
+      console.error(`알라딘 API 오류 (${rec.title}):`, error);
+    }
+  }
 }

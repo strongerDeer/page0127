@@ -101,6 +101,9 @@ export const DashboardContent = ({
   // 독서 목표 다이얼로그 상태
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
 
+  // AI 취향 분석 상태
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
   // 독서 목표 데이터
   const readingGoal = profile?.reading_goal;
   const isCurrentYearGoal = readingGoal?.year === selectedYear;
@@ -147,6 +150,45 @@ export const DashboardContent = ({
     alert('공개 서재 URL이 복사되었습니다!');
   };
 
+  // AI 취향 분석 실행
+  const handleAnalyzeTaste = async () => {
+    // 완독한 책 권수 확인 (최소 5권 필요)
+    const completedBooks = books.filter((book) => book.status === 'completed' && book.rating !== null);
+
+    if (completedBooks.length < 5) {
+      alert('취향 분석을 위해 최소 5권의 완독한 책(별점 포함)이 필요합니다.');
+      return;
+    }
+
+    if (!confirm('AI 독서 취향 분석을 시작하시겠습니까?\n(분석에 약 30초 정도 소요됩니다)')) {
+      return;
+    }
+
+    setIsAnalyzing(true);
+
+    try {
+      const response = await fetch('/api/taste-analysis/analyze', {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || '분석에 실패했습니다.');
+      }
+
+      const result = await response.json();
+
+      // 성공: 분석 결과 페이지로 이동
+      alert('✨ 취향 분석이 완료되었습니다!');
+      router.push('/dashboard/taste-analysis');
+    } catch (error) {
+      console.error('취향 분석 실패:', error);
+      alert(error instanceof Error ? error.message : '취향 분석 중 오류가 발생했습니다.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   return (
     <div className='min-h-screen bg-gray-50 p-8'>
       <div className='mx-auto max-w-6xl'>
@@ -183,8 +225,21 @@ export const DashboardContent = ({
         {/* ============ 전체 독서 통계 (All Time Stats) ============ */}
         <Card className='mb-8 border-2 border-emerald-100'>
           <CardHeader>
-            <CardTitle className='text-xl'>📖 전체 독서 통계</CardTitle>
-            <p className='text-sm text-gray-600'>전체 기간의 독서 히스토리</p>
+            <div className='flex items-start justify-between'>
+              <div>
+                <CardTitle className='text-xl'>📖 전체 독서 통계</CardTitle>
+                <p className='text-sm text-gray-600'>전체 기간의 독서 히스토리</p>
+              </div>
+              <Button
+                variant='default'
+                size='sm'
+                className='bg-purple-600 hover:bg-purple-700'
+                onClick={handleAnalyzeTaste}
+                disabled={isAnalyzing}
+              >
+                {isAnalyzing ? '분석 중...' : '🤖 내 취향 분석하기'}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className='space-y-8'>
             {/* 1. 독서 여정 카드 */}

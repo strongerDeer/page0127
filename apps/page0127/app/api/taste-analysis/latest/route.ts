@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from '@/shared/lib/supabase/server';
+import { createClient } from '@/shared/config/supabase/server';
 
 /**
  * 최신 독서 취향 분석 결과 조회 API
