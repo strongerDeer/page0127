@@ -26,4 +26,7 @@ export const API_ENDPOINTS = {
   users: {
     search: '/users/search', // GET: 사용자 검색
   },
+  feed: {
+    list: '/feed', // GET: 활동 피드 조회
+  },
 } as const;

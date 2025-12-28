@@ -32,6 +32,9 @@ export const Header = async () => {
           {user ? (
             // 로그인된 사용자 메뉴
             <>
+              <Link href='/feed' className='hover:text-primary'>
+                피드
+              </Link>
               <Link href='/dashboard' className='hover:text-primary'>
                 내 서재
               </Link>

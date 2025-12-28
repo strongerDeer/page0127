@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 
+import { createActivity } from '../_helpers/activity';
 import { getCurrentUser, getSupabaseClient } from '../_helpers/auth';
 import { errorResponse, successResponse } from '../_helpers/response';
 
@@ -48,6 +49,7 @@ export async function GET(request: NextRequest) {
  * 학습 포인트:
  * - 공통 헬퍼로 중복 제거
  * - 인증 확인 간소화
+ * - 책 추가 시 활동 자동 생성
  */
 export async function POST(request: NextRequest) {
   try {
@@ -69,6 +71,14 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) return errorResponse(error.message);
+
+    // 활동 생성 (book_added)
+    await createActivity({
+      supabase,
+      userId: user!.id,
+      bookId: data.id,
+      activityType: 'book_added',
+    });
 
     return successResponse(data, 201);
   } catch (error) {

@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 
-import { getSupabaseClient } from '../../_helpers/auth';
+import { createActivity } from '../../_helpers/activity';
+import { getCurrentUser, getSupabaseClient } from '../../_helpers/auth';
 import {
   errorResponse,
   notFoundResponse,
@@ -45,12 +46,23 @@ export async function GET(request: NextRequest, { params }: Params) {
  * 학습 포인트:
  * - PATCH vs PUT: 부분 수정
  * - updated_at 자동 업데이트
+ * - status가 completed로 변경 시 활동 생성
  */
 export async function PATCH(request: NextRequest, { params }: Params) {
   try {
     const supabase = await getSupabaseClient();
     const { id } = await params;
     const body = await request.json();
+
+    // 현재 사용자 정보 가져오기
+    const { user } = await getCurrentUser();
+
+    // 기존 책 정보 조회 (status 변경 확인용)
+    const { data: oldBook } = await supabase
+      .from('books')
+      .select('status')
+      .eq('id', id)
+      .single();
 
     const { data, error } = await supabase
       .from('books')
@@ -63,6 +75,20 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       .single();
 
     if (error) return errorResponse(error.message);
+
+    // status가 completed로 변경된 경우 활동 생성
+    if (
+      user &&
+      oldBook?.status !== 'completed' &&
+      body.status === 'completed'
+    ) {
+      await createActivity({
+        supabase,
+        userId: user.id,
+        bookId: id,
+        activityType: 'book_completed',
+      });
+    }
 
     return successResponse(data);
   } catch (error) {
