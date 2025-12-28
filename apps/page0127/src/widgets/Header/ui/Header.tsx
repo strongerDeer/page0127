@@ -38,6 +38,9 @@ export const Header = async () => {
               <Link href='/books/add' className='hover:text-primary'>
                 도서 추가
               </Link>
+              <Link href='/search' className='hover:text-primary'>
+                사용자 검색
+              </Link>
               <LogoutButton />
             </>
           ) : (

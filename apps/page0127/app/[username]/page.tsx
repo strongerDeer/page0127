@@ -7,6 +7,8 @@ import type { Book } from '@/entities/book/types';
 
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 
+import { PublicLibraryHeader } from '@/widgets/public-library/PublicLibraryHeader';
+
 type PageProps = {
   params: Promise<{ username: string }>;
 };
@@ -43,10 +45,12 @@ const getPublicBooks = async (userId: string): Promise<Book[]> => {
  * - 동적 라우팅: /[username]
  * - username으로 사용자 조회
  * - 공개된 책만 표시 (is_public = true)
- * - 로그인 불필요 (퍼블릭 페이지)
+ * - 팔로우 기능 추가 (PublicLibraryHeader)
+ * - Server Component에서 현재 사용자 확인
  */
 const PublicLibraryPage = async ({ params }: PageProps) => {
   const { username } = await params;
+  const supabase = await createClient();
 
   // 1. username으로 프로필 조회
   const profile = await getProfileByUsername(username);
@@ -55,42 +59,24 @@ const PublicLibraryPage = async ({ params }: PageProps) => {
     notFound(); // 404 페이지 표시
   }
 
-  // 2. 공개된 책 목록 조회
+  // 2. 현재 로그인한 사용자 확인
+  const {
+    data: { user: currentUser },
+  } = await supabase.auth.getUser();
+  const isOwnProfile = currentUser?.id === profile.id;
+
+  // 3. 공개된 책 목록 조회
   const books = await getPublicBooks(profile.id);
 
   return (
     <div className='container mx-auto max-w-6xl px-4 py-8'>
-      {/* 프로필 헤더 */}
-      <div className='mb-8 rounded-lg border bg-white p-6 shadow-sm'>
-        <div className='flex items-start gap-4'>
-          {profile.photo_url ? (
-            <div className='relative h-20 w-20 overflow-hidden rounded-full'>
-              <Image
-                src={profile.photo_url}
-                alt={profile.nickname || username}
-                fill
-                sizes='80px'
-                className='object-cover'
-                priority
-              />
-            </div>
-          ) : (
-            <div className='flex h-20 w-20 items-center justify-center rounded-full bg-gray-200 text-2xl font-bold text-gray-600'>
-              {(profile.nickname || username).charAt(0).toUpperCase()}
-            </div>
-          )}
-
-          <div className='flex-1'>
-            <h1 className='text-2xl font-bold'>
-              {profile.nickname || username}의 서재
-            </h1>
-            {profile.bio && (
-              <p className='mt-2 text-gray-600'>{profile.bio}</p>
-            )}
-            <p className='mt-1 text-sm text-gray-500'>@{username}</p>
-          </div>
-        </div>
-      </div>
+      {/* 프로필 헤더 (팔로우 기능 포함) */}
+      <PublicLibraryHeader
+        profile={profile}
+        username={username}
+        isOwnProfile={isOwnProfile}
+        currentUserId={currentUser?.id}
+      />
 
       {/* 통계 요약 */}
       <div className='mb-6 grid grid-cols-3 gap-4'>

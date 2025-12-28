@@ -62,6 +62,60 @@ const DashboardPage = async (props: {
 
   const books = allBooks ?? [];
 
+  // 현재 월의 캘린더 데이터 조회 (Server Component에서 직접 조회)
+  const now = new Date();
+  const currentMonthYear = now.getFullYear();
+  const currentMonthMonth = now.getMonth() + 1;
+
+  // 날짜 범위 계산
+  const startDate = `${currentMonthYear}-${String(currentMonthMonth).padStart(2, '0')}-01`;
+  const endDate = new Date(currentMonthYear, currentMonthMonth, 0)
+    .toISOString()
+    .split('T')[0];
+
+  // 완독한 책 조회 (completed_date 기준)
+  const { data: calendarBooks } = await supabase
+    .from('books')
+    .select('id, title, author, cover_image, rating, completed_date, page_count')
+    .eq('user_id', user!.id)
+    .eq('status', 'completed')
+    .not('completed_date', 'is', null) // completed_date가 null이 아닌 것만
+    .gte('completed_date', startDate)
+    .lte('completed_date', endDate)
+    .order('completed_date', { ascending: true });
+
+  // 날짜별로 책 그룹핑
+  const booksByDate = new Map<string, any[]>();
+  let totalPages = 0;
+
+  calendarBooks?.forEach((book) => {
+    const date = book.completed_date;
+    if (!booksByDate.has(date)) {
+      booksByDate.set(date, []);
+    }
+    booksByDate.get(date)!.push({
+      id: book.id,
+      title: book.title,
+      author: book.author,
+      cover: book.cover_image,
+      rating: book.rating,
+    });
+
+    if (book.page_count) {
+      totalPages += book.page_count;
+    }
+  });
+
+  const calendarData = Array.from(booksByDate.entries()).map(([date, books]) => ({
+    date,
+    books,
+  }));
+
+  const calendarSummary = {
+    totalBooks: calendarBooks?.length || 0,
+    totalPages,
+  };
+
   return (
     <DashboardContent
       overallStats={overallStats}
@@ -73,6 +127,10 @@ const DashboardPage = async (props: {
       selectedYear={selectedYear}
       profile={profile}
       currentYear={currentYear}
+      calendarData={calendarData}
+      calendarSummary={calendarSummary}
+      initialCalendarYear={currentMonthYear}
+      initialCalendarMonth={currentMonthMonth}
     />
   );
 };

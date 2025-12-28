@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -26,10 +26,22 @@ import { CategoryPieChart } from '@/widgets/dashboard/CategoryPieChart';
 import { RatingDistributionChart } from '@/widgets/dashboard/RatingDistributionChart';
 import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
 import { YearlyTrendChart } from '@/widgets/dashboard/YearlyTrendChart';
+import { ReadingCalendar } from '@/widgets/dashboard/ReadingCalendar';
 
 import type { Book } from '@/entities/book/types';
 import type { BookStats, OverallStats } from '@/entities/book/types/stats';
 import type { Profile } from '@/entities/profile/types';
+
+type CalendarData = {
+  date: string;
+  books: {
+    id: string;
+    title: string;
+    author: string;
+    cover: string;
+    rating: number;
+  }[];
+};
 
 type DashboardContentProps = {
   /** 전체 독서 통계 (연도 무관) */
@@ -58,6 +70,21 @@ type DashboardContentProps = {
 
   /** 현재 연도 */
   currentYear: number;
+
+  /** 독서 캘린더 데이터 */
+  calendarData: CalendarData[];
+
+  /** 캘린더 요약 정보 */
+  calendarSummary: {
+    totalBooks: number;
+    totalPages: number;
+  };
+
+  /** 캘린더 초기 연도 */
+  initialCalendarYear: number;
+
+  /** 캘린더 초기 월 */
+  initialCalendarMonth: number;
 };
 
 /**
@@ -87,6 +114,10 @@ export const DashboardContent = ({
   selectedYear,
   profile,
   currentYear,
+  calendarData,
+  calendarSummary,
+  initialCalendarYear,
+  initialCalendarMonth,
 }: DashboardContentProps) => {
   const router = useRouter();
 
@@ -103,6 +134,66 @@ export const DashboardContent = ({
 
   // AI 취향 분석 상태
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // 독서 캘린더 상태 관리
+  const [calendarYear, setCalendarYear] = useState(initialCalendarYear);
+  const [calendarMonth, setCalendarMonth] = useState(initialCalendarMonth);
+  const [calendarLoading, setCalendarLoading] = useState(false);
+  const [currentCalendarData, setCurrentCalendarData] = useState(calendarData);
+  const [currentCalendarSummary, setCurrentCalendarSummary] =
+    useState(calendarSummary);
+
+  // 캘린더 월 변경 시 데이터 가져오기
+  useEffect(() => {
+    const fetchCalendarData = async () => {
+      setCalendarLoading(true);
+      try {
+        const response = await fetch(
+          `/api/books/calendar?year=${calendarYear}&month=${calendarMonth}`
+        );
+        const result = await response.json();
+
+        if (result.success) {
+          setCurrentCalendarData(result.data || []);
+          setCurrentCalendarSummary(
+            result.summary || { totalBooks: 0, totalPages: 0 }
+          );
+        }
+      } catch (error) {
+        console.error('캘린더 데이터 조회 실패:', error);
+      } finally {
+        setCalendarLoading(false);
+      }
+    };
+
+    // 초기 렌더링이 아닐 때만 fetch (초기 데이터는 서버에서 받음)
+    if (
+      calendarYear !== initialCalendarYear ||
+      calendarMonth !== initialCalendarMonth
+    ) {
+      fetchCalendarData();
+    }
+  }, [calendarYear, calendarMonth, initialCalendarYear, initialCalendarMonth]);
+
+  // 캘린더 이전 달 이동
+  const handlePreviousMonth = () => {
+    if (calendarMonth === 1) {
+      setCalendarMonth(12);
+      setCalendarYear(calendarYear - 1);
+    } else {
+      setCalendarMonth(calendarMonth - 1);
+    }
+  };
+
+  // 캘린더 다음 달 이동
+  const handleNextMonth = () => {
+    if (calendarMonth === 12) {
+      setCalendarMonth(1);
+      setCalendarYear(calendarYear + 1);
+    } else {
+      setCalendarMonth(calendarMonth + 1);
+    }
+  };
 
   // 독서 목표 데이터
   const readingGoal = profile?.reading_goal;
@@ -176,7 +267,7 @@ export const DashboardContent = ({
         throw new Error(error.error || '분석에 실패했습니다.');
       }
 
-      const result = await response.json();
+      await response.json();
 
       // 성공: 분석 결과 페이지로 이동
       alert('✨ 취향 분석이 완료되었습니다!');
@@ -340,6 +431,19 @@ export const DashboardContent = ({
           onMonthClick={handleMonthClick}
           onRatingClick={handleRatingClick}
         />
+
+        {/* 독서 캘린더 */}
+        <div className='mb-8'>
+          <ReadingCalendar
+            data={currentCalendarData}
+            summary={currentCalendarSummary}
+            currentYear={calendarYear}
+            currentMonth={calendarMonth}
+            isLoading={calendarLoading}
+            onPreviousMonth={handlePreviousMonth}
+            onNextMonth={handleNextMonth}
+          />
+        </div>
 
         {/* 읽은 책 목록 (카테고리 + 월 + 평점 + 검색어 복합 필터) */}
         <Card className='mb-8'>
