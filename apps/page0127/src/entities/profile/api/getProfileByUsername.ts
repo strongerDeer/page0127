@@ -18,7 +18,7 @@ export const getProfileByUsername = async (
     .from('profiles')
     .select('*')
     .eq('username', username)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error('프로필 조회 실패:', error.message);
