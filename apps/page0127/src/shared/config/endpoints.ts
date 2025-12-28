@@ -15,9 +15,15 @@ export const API_ENDPOINTS = {
     delete: (id: string) => `/books/${id}`,
     stats: '/books/stats', // 통계 조회
   },
-  // 향후 추가될 엔티티들 (예시)
-  // users: {
-  //   profile: '/users/profile',
-  //   settings: '/users/settings',
-  // },
+  follows: {
+    follow: '/follows', // POST: 팔로우하기
+    unfollow: (userId: string) => `/follows/${userId}`, // DELETE: 언팔로우하기
+    followers: (userId: string) => `/follows/${userId}/followers`, // GET: 팔로워 목록
+    following: (userId: string) => `/follows/${userId}/following`, // GET: 팔로잉 목록
+    stats: (userId: string) => `/follows/${userId}/stats`, // GET: 팔로우 통계
+    isFollowing: (userId: string) => `/follows/${userId}/is-following`, // GET: 팔로우 여부 확인
+  },
+  users: {
+    search: '/users/search', // GET: 사용자 검색
+  },
 } as const;

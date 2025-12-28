@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 
 import type { Metadata } from 'next';
 
+import { QueryProvider } from '@/shared/providers/QueryProvider';
 import { Toaster } from '@/shared/ui/sonner';
 
 import './globals.css';
@@ -33,6 +34,7 @@ export const metadata: Metadata = {
   - 모든 페이지에 공통으로 적용되는 레이아웃
   - <html>, <body> 태그 포함
   - 전역 폰트 설정
+  - React Query Provider 추가
 
   참고:
   - 기본적으로 Server Component (별도 지시어 없음)
@@ -52,8 +54,10 @@ const RootLayout = ({
           antialiased: 폰트 렌더링 최적화
           ${geistSans.variable}: CSS 변수로 폰트 주입
         */}
-        {children}
-        <Toaster />
+        <QueryProvider>
+          {children}
+          <Toaster />
+        </QueryProvider>
       </body>
     </html>
   );
