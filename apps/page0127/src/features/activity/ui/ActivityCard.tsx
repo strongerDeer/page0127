@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { BookOpen, BookCheck, MessageSquare } from 'lucide-react';
 
 import { Activity } from '@/entities/activity';
+import { useCurrentUser } from '@/entities/user';
+import { CommentSection } from '@/features/comment';
 import { LikeButton } from '@/features/like';
 
 /**
@@ -57,6 +59,10 @@ const getRelativeTime = (dateString: string) => {
 };
 
 export const ActivityCard = ({ activity }: ActivityCardProps) => {
+  const { data: currentUser } = useCurrentUser();
+
+  console.log('ActivityCard - currentUser:', currentUser);
+
   if (!activity.book) return null;
 
   return (
@@ -146,12 +152,18 @@ export const ActivityCard = ({ activity }: ActivityCardProps) => {
         </div>
       </div>
 
-      {/* 좋아요 버튼 */}
-      <div className='mt-3 border-t pt-3'>
+      {/* 좋아요 및 댓글 */}
+      <div className='mt-3 space-y-3 border-t pt-3'>
         <LikeButton
           activityId={activity.id}
           initialCount={activity.likes.count}
           initialIsLiked={activity.likes.isLiked}
+        />
+
+        {/* 댓글 섹션 */}
+        <CommentSection
+          activityId={activity.id}
+          currentUserId={currentUser?.id || null}
         />
       </div>
     </div>
