@@ -68,22 +68,37 @@ export async function GET(request: NextRequest) {
 
     // 활동과 관련된 책 정보 조회
     const bookIds = [...new Set(activities.map((a) => a.book_id))];
-    console.log('조회할 책 IDs:', bookIds);
-
-    const { data: books, error: booksError } = await supabase
+    const { data: books } = await supabase
       .from('books')
       .select('id, title, author, cover_image, status, rating')
       .in('id', bookIds);
 
-    console.log('책 조회 결과:', books);
-    console.log('책 조회 에러:', booksError);
-
     const bookMap = new Map(books?.map((b) => [b.id, b]) || []);
+
+    // 활동들의 좋아요 정보 조회 (배치)
+    const activityIds = activities.map((a) => a.id);
+    const { data: allLikes } = await supabase
+      .from('activity_likes')
+      .select('activity_id, user_id')
+      .in('activity_id', activityIds);
+
+    // 활동별 좋아요 정보 맵 생성
+    const likesMap = new Map<string, { count: number; isLiked: boolean }>();
+    activityIds.forEach((activityId) => {
+      const activityLikes = allLikes?.filter(
+        (like) => like.activity_id === activityId
+      );
+      likesMap.set(activityId, {
+        count: activityLikes?.length || 0,
+        isLiked: activityLikes?.some((like) => like.user_id === user!.id) || false,
+      });
+    });
 
     // 결과 조합
     const feed = activities.map((activity) => {
       const profile = profileMap.get(activity.user_id);
       const book = bookMap.get(activity.book_id);
+      const likeInfo = likesMap.get(activity.id) || { count: 0, isLiked: false };
 
       return {
         id: activity.id,
@@ -105,6 +120,7 @@ export async function GET(request: NextRequest) {
               rating: book.rating,
             }
           : null,
+        likes: likeInfo,
       };
     });
 

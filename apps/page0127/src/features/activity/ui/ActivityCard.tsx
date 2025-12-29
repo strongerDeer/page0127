@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { BookOpen, BookCheck, MessageSquare } from 'lucide-react';
 
 import { Activity } from '@/entities/activity';
+import { LikeButton } from '@/features/like';
 
 /**
  * 활동 카드 컴포넌트
@@ -143,6 +144,15 @@ export const ActivityCard = ({ activity }: ActivityCardProps) => {
             </p>
           )}
         </div>
+      </div>
+
+      {/* 좋아요 버튼 */}
+      <div className='mt-3 border-t pt-3'>
+        <LikeButton
+          activityId={activity.id}
+          initialCount={activity.likes.count}
+          initialIsLiked={activity.likes.isLiked}
+        />
       </div>
     </div>
   );

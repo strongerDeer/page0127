@@ -26,6 +26,10 @@ export type Activity = {
     status: string;
     rating: number | null;
   } | null;
+  likes: {
+    count: number;
+    isLiked: boolean;
+  };
 };
 
 export type FeedParams = {

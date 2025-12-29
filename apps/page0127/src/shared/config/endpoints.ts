@@ -29,4 +29,7 @@ export const API_ENDPOINTS = {
   feed: {
     list: '/feed', // GET: 활동 피드 조회
   },
+  activities: {
+    likes: (activityId: string) => `/activities/${activityId}/likes`, // GET/POST/DELETE: 좋아요
+  },
 } as const;
