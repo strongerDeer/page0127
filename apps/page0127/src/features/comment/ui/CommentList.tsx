@@ -28,12 +28,9 @@ export const CommentList = ({
     queryKey: ['comments', activityId],
     queryFn: async () => {
       const result = await commentApi.getComments(activityId);
-      console.log('댓글 목록 조회:', result);
       return result;
     },
   });
-
-  console.log('CommentList - comments:', comments, 'length:', comments.length);
 
   if (isLoading) {
     return (

@@ -2,10 +2,12 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { BookOpen, BookCheck, MessageSquare } from 'lucide-react';
+
+import { BookCheck, BookOpen, MessageSquare } from 'lucide-react';
 
 import { Activity } from '@/entities/activity';
 import { useCurrentUser } from '@/entities/user';
+
 import { CommentSection } from '@/features/comment';
 import { LikeButton } from '@/features/like';
 
@@ -19,6 +21,7 @@ import { LikeButton } from '@/features/like';
  */
 type ActivityCardProps = {
   activity: Activity;
+  initialCommentsOpen?: boolean; // 댓글 섹션 초기 펼침 상태
 };
 
 const getActivityIcon = (type: Activity['activity_type']) => {
@@ -58,10 +61,11 @@ const getRelativeTime = (dateString: string) => {
   return date.toLocaleDateString('ko-KR');
 };
 
-export const ActivityCard = ({ activity }: ActivityCardProps) => {
+export const ActivityCard = ({
+  activity,
+  initialCommentsOpen = false,
+}: ActivityCardProps) => {
   const { data: currentUser } = useCurrentUser();
-
-  console.log('ActivityCard - currentUser:', currentUser);
 
   if (!activity.book) return null;
 
@@ -164,6 +168,7 @@ export const ActivityCard = ({ activity }: ActivityCardProps) => {
         <CommentSection
           activityId={activity.id}
           currentUserId={currentUser?.id || null}
+          initialOpen={initialCommentsOpen}
         />
       </div>
     </div>

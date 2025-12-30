@@ -135,6 +135,49 @@ export async function POST(request: NextRequest, { params }: Params) {
       .eq('id', user!.id)
       .single();
 
+    // 알림 생성 (댓글 알림)
+    // 활동 작성자에게 알림 보내기
+    const { data: activity } = await supabase
+      .from('activities')
+      .select('user_id')
+      .eq('id', id)
+      .single();
+
+    if (activity && activity.user_id !== user!.id) {
+      // 자기 자신의 활동에 댓글 단 경우 제외
+      await supabase.from('notifications').insert({
+        user_id: activity.user_id,
+        type: 'comment',
+        actor_id: user!.id,
+        target_id: id,
+        target_type: 'activity',
+      });
+    }
+
+    // 대댓글인 경우, 부모 댓글 작성자에게도 알림
+    if (parentCommentId) {
+      const { data: parentComment } = await supabase
+        .from('activity_comments')
+        .select('user_id')
+        .eq('id', parentCommentId)
+        .single();
+
+      if (
+        parentComment &&
+        parentComment.user_id !== user!.id &&
+        parentComment.user_id !== activity?.user_id
+      ) {
+        // 자기 자신의 댓글에 답글 단 경우 제외, 중복 알림 방지
+        await supabase.from('notifications').insert({
+          user_id: parentComment.user_id,
+          type: 'comment',
+          actor_id: user!.id,
+          target_id: id,
+          target_type: 'activity',
+        });
+      }
+    }
+
     return successResponse(
       {
         id: comment.id,

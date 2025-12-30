@@ -15,6 +15,7 @@ import { CommentList } from './CommentList';
 type CommentSectionProps = {
   activityId: string;
   currentUserId: string | null;
+  initialOpen?: boolean; // 초기 펼침 상태
 };
 
 /**
@@ -29,8 +30,9 @@ type CommentSectionProps = {
 export const CommentSection = ({
   activityId,
   currentUserId,
+  initialOpen = false,
 }: CommentSectionProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(initialOpen);
 
   // 댓글 개수 조회
   const { data: comments = [] } = useQuery({

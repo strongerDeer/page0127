@@ -28,13 +28,11 @@ export async function GET(request: NextRequest) {
       .select('following_id')
       .eq('follower_id', user!.id);
 
-    if (!followingList || followingList.length === 0) {
-      return successResponse([]);
-    }
+    // 팔로잉한 사용자 ID + 본인 ID 포함
+    const followingIds = followingList?.map((f) => f.following_id) || [];
+    const userIdsToShow = [...followingIds, user!.id]; // 본인 활동도 포함
 
-    const followingIds = followingList.map((f) => f.following_id);
-
-    // 팔로잉한 사용자들의 활동 조회
+    // 팔로잉한 사용자들 + 본인의 활동 조회
     const { data: activities, error } = await supabase
       .from('activities')
       .select(
@@ -47,7 +45,7 @@ export async function GET(request: NextRequest) {
         created_at
       `
       )
-      .in('user_id', followingIds)
+      .in('user_id', userIdsToShow)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
