@@ -21,15 +21,11 @@ async function getCurrentUser(): Promise<CurrentUser | null> {
       credentials: 'include',
     });
 
-    console.log('getCurrentUser - response status:', response.status);
-
     if (!response.ok) {
-      console.log('getCurrentUser - not ok, returning null');
       return null;
     }
 
     const result = await response.json();
-    console.log('getCurrentUser - result:', result);
     // successResponse 형태: { success: true, data: {...} }
     const data = result.data || result;
     return data;
