@@ -10,6 +10,7 @@ import { errorResponse, successResponse } from '../../_helpers/response';
  * 학습 포인트:
  * - Dynamic Route: [userId]로 URL 파라미터 처리
  * - params는 Promise로 래핑되어 있음 (Next.js 15+)
+ * - 언팔로우 시 읽지 않은 팔로우 알림 삭제
  */
 export async function DELETE(
   request: NextRequest,
@@ -31,6 +32,15 @@ export async function DELETE(
       .eq('following_id', userId);
 
     if (error) return errorResponse(error.message);
+
+    // 읽지 않은 팔로우 알림 삭제
+    await supabase
+      .from('notifications')
+      .delete()
+      .eq('type', 'follow')
+      .eq('actor_id', user!.id)
+      .eq('user_id', userId)
+      .eq('is_read', false);
 
     return successResponse({ message: '언팔로우했습니다.' });
   } catch (error) {

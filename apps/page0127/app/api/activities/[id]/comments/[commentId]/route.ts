@@ -86,6 +86,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
  * 학습 포인트:
  * - RLS 정책으로 본인의 댓글만 삭제 가능
  * - CASCADE 설정으로 댓글 삭제 시 대댓글도 자동 삭제
+ * - 댓글 삭제 시 읽지 않은 알림도 삭제
  */
 export async function DELETE(_request: NextRequest, { params }: Params) {
   try {
@@ -105,6 +106,15 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
     if (error) {
       return errorResponse(error.message);
     }
+
+    // 읽지 않은 댓글 알림 삭제
+    await supabase
+      .from('notifications')
+      .delete()
+      .eq('type', 'comment')
+      .eq('actor_id', user!.id)
+      .eq('target_id', id)
+      .eq('is_read', false);
 
     return successResponse({ message: '댓글이 삭제되었습니다.' });
   } catch (error) {

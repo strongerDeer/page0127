@@ -97,6 +97,25 @@ export async function POST(_request: NextRequest, { params }: Params) {
       return errorResponse(error.message);
     }
 
+    // 알림 생성 (좋아요 알림)
+    // 활동 작성자에게 알림 보내기
+    const { data: activity } = await supabase
+      .from('activities')
+      .select('user_id')
+      .eq('id', id)
+      .single();
+
+    if (activity && activity.user_id !== user.id) {
+      // 자기 자신의 활동에 좋아요 한 경우 제외
+      await supabase.from('notifications').insert({
+        user_id: activity.user_id,
+        type: 'like',
+        actor_id: user.id,
+        target_id: id,
+        target_type: 'activity',
+      });
+    }
+
     return successResponse({ message: '좋아요를 추가했습니다.' }, 201);
   } catch (error) {
     console.error('좋아요 추가 예외:', error);
@@ -110,6 +129,7 @@ export async function POST(_request: NextRequest, { params }: Params) {
  *
  * 학습 포인트:
  * - RLS 정책으로 본인의 좋아요만 삭제 가능
+ * - 좋아요 취소 시 읽지 않은 알림 삭제
  */
 export async function DELETE(_request: NextRequest, { params }: Params) {
   try {
@@ -131,6 +151,15 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
     if (error) {
       return errorResponse(error.message);
     }
+
+    // 읽지 않은 좋아요 알림 삭제
+    await supabase
+      .from('notifications')
+      .delete()
+      .eq('type', 'like')
+      .eq('actor_id', user.id)
+      .eq('target_id', id)
+      .eq('is_read', false);
 
     return successResponse({ message: '좋아요를 취소했습니다.' });
   } catch (error) {
