@@ -43,6 +43,13 @@ export async function POST(request: NextRequest) {
       return errorResponse(error.message);
     }
 
+    // 알림 생성 (팔로우 알림)
+    await supabase.from('notifications').insert({
+      user_id: following_id, // 팔로우 당한 사람
+      type: 'follow',
+      actor_id: user!.id, // 팔로우한 사람
+    });
+
     return successResponse(data, 201);
   } catch (error) {
     return errorResponse('팔로우에 실패했습니다.');
