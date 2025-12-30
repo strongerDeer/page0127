@@ -4,6 +4,7 @@ import { createClient } from '@/shared/config/supabase/server';
 import { Button } from '@/shared/ui/button';
 
 import { LogoutButton } from '@/features/auth/ui/LogoutButton';
+import { HeaderClient } from './HeaderClient';
 
 /**
  * 공통 헤더 컴포넌트 (Server Component)
@@ -28,7 +29,7 @@ export const Header = async () => {
         </Link>
 
         {/* 네비게이션 */}
-        <nav className='flex items-center gap-6'>
+        <nav className='flex items-center gap-4'>
           {user ? (
             // 로그인된 사용자 메뉴
             <>
@@ -44,6 +45,8 @@ export const Header = async () => {
               <Link href='/search' className='hover:text-primary'>
                 사용자 검색
               </Link>
+              {/* 알림 드롭다운 */}
+              <HeaderClient userId={user.id} />
               <LogoutButton />
             </>
           ) : (

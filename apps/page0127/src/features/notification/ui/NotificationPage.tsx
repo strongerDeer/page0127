@@ -1,0 +1,195 @@
+'use client';
+
+/**
+ * NotificationPage 컴포넌트
+ * 알림 전체 목록 페이지
+ *
+ * 학습 포인트:
+ * - 무한 스크롤
+ * - 읽음/읽지 않음 필터
+ * - 전체 읽음 처리
+ */
+
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+
+import { useCurrentUser } from '@/entities/user';
+import {
+  useNotifications,
+  useMarkAsRead,
+  useMarkAllAsRead,
+  useDeleteNotification,
+  type NotificationWithActor,
+} from '@/entities/notification';
+
+import { Button } from '@/shared/ui/button';
+import { apiClient } from '@/shared/api/client';
+
+import { NotificationItem } from './NotificationItem';
+
+export function NotificationPage() {
+  const router = useRouter();
+  const { data: currentUser } = useCurrentUser();
+  const observerRef = useRef<HTMLDivElement>(null);
+  const [filter, setFilter] = useState<'all' | 'unread'>('all');
+
+  const markAsReadMutation = useMarkAsRead();
+  const markAllAsReadMutation = useMarkAllAsRead();
+  const deleteNotificationMutation = useDeleteNotification();
+
+  // 무한 스크롤 쿼리
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQuery({
+    queryKey: ['notifications', 'infinite', filter],
+    queryFn: async ({ pageParam = 0 }) => {
+      const params = new URLSearchParams({
+        limit: '20',
+        offset: String(pageParam),
+      });
+
+      if (filter === 'unread') {
+        params.append('is_read', 'false');
+      }
+
+      const { data } = await apiClient.get<NotificationWithActor[]>(
+        `/notifications?${params.toString()}`
+      );
+      return data;
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length < 20) return undefined;
+      return allPages.flat().length;
+    },
+    initialPageParam: 0,
+    enabled: !!currentUser,
+  });
+
+  // Intersection Observer로 무한 스크롤 구현
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  const handleNotificationClick = async (
+    notification: NotificationWithActor
+  ) => {
+    // 읽지 않은 알림이면 읽음 처리
+    if (!notification.is_read) {
+      await markAsReadMutation.mutateAsync(notification.id);
+    }
+
+    // 알림 타입별 페이지 이동
+    if (notification.type === 'follow') {
+      router.push(`/${notification.actor.username || notification.actor_id}`);
+    } else if (notification.target_id) {
+      router.push(`/feed/${notification.target_id}`);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    await markAllAsReadMutation.mutateAsync();
+  };
+
+  const handleDelete = async (notificationId: string) => {
+    await deleteNotificationMutation.mutateAsync(notificationId);
+  };
+
+  const handleMarkAsReadSingle = async (notificationId: string) => {
+    await markAsReadMutation.mutateAsync(notificationId);
+  };
+
+  if (isLoading) {
+    return (
+      <div className='flex items-center justify-center py-12'>
+        <Loader2 className='h-8 w-8 animate-spin text-gray-400' />
+      </div>
+    );
+  }
+
+  const notifications = data?.pages.flat() || [];
+  const hasUnread = notifications.some((n) => !n.is_read);
+
+  return (
+    <div className='space-y-4'>
+      {/* 필터 및 액션 */}
+      <div className='flex items-center justify-between rounded-lg border bg-white p-4'>
+        <div className='flex gap-2'>
+          <Button
+            variant={filter === 'all' ? 'default' : 'ghost'}
+            size='sm'
+            onClick={() => setFilter('all')}
+          >
+            전체
+          </Button>
+          <Button
+            variant={filter === 'unread' ? 'default' : 'ghost'}
+            size='sm'
+            onClick={() => setFilter('unread')}
+          >
+            읽지 않음
+          </Button>
+        </div>
+
+        {hasUnread && (
+          <Button
+            variant='ghost'
+            size='sm'
+            onClick={handleMarkAllAsRead}
+            disabled={markAllAsReadMutation.isPending}
+          >
+            모두 읽음
+          </Button>
+        )}
+      </div>
+
+      {/* 알림 목록 */}
+      {notifications.length === 0 ? (
+        <div className='rounded-lg border border-gray-200 bg-gray-50 py-12 text-center'>
+          <p className='text-gray-600'>
+            {filter === 'unread' ? '읽지 않은 알림이 없습니다' : '알림이 없습니다'}
+          </p>
+        </div>
+      ) : (
+        <div className='rounded-lg border bg-white'>
+          {notifications.map((notification) => (
+            <NotificationItem
+              key={notification.id}
+              notification={notification}
+              onClick={() => handleNotificationClick(notification)}
+              onDelete={handleDelete}
+              onMarkAsRead={handleMarkAsReadSingle}
+            />
+          ))}
+
+          {/* 무한 스크롤 트리거 */}
+          {hasNextPage && (
+            <div ref={observerRef} className='flex justify-center py-4'>
+              {isFetchingNextPage && (
+                <Loader2 className='h-6 w-6 animate-spin text-gray-400' />
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
