@@ -17,11 +17,12 @@ export const getProfile = async (userId: string): Promise<Profile | null> => {
   const supabase = await createClient();
 
   // 1. 프로필 조회
+  // 학습 포인트: maybeSingle()은 0개 또는 1개의 결과를 허용 (탈퇴한 사용자 대응)
   const { data: profile, error } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', userId)
-    .single();
+    .maybeSingle();
 
   if (error) {
     // 프로필이 없으면 null 반환 (에러 로그만 출력)

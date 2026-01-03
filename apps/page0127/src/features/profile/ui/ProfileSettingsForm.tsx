@@ -14,6 +14,8 @@ import { Textarea } from '@/shared/ui/textarea';
 
 import { updateProfile } from '@/entities/profile/api/updateProfile';
 
+import { DeleteAccountDialog } from '@/features/auth/ui/DeleteAccountDialog';
+
 import { AvatarUpload } from './AvatarUpload';
 
 import type { Profile } from '@/entities/profile/types';
@@ -76,15 +78,13 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
     setIsSubmitting(true);
 
     try {
-      let photoUrl: string | undefined;
+      let photoUrl: string | undefined | null;
       const { createClient } = await import('@/shared/config/supabase/client');
       const supabase = createClient();
 
       // 2. 이미지 제거가 요청된 경우
       if (isImageRemoved && currentPhotoUrl) {
         try {
-          console.log('현재 DB의 photo_url:', currentPhotoUrl);
-
           // URL에서 파일 경로 추출
           // Supabase Storage URL 형식:
           // https://[project].supabase.co/storage/v1/object/public/[bucket]/[path]
@@ -92,7 +92,9 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
 
           // 방법 1: /storage/v1/object/public/profiles/ 이후 경로
           if (currentPhotoUrl.includes('/storage/v1/object/public/profiles/')) {
-            const urlParts = currentPhotoUrl.split('/storage/v1/object/public/profiles/');
+            const urlParts = currentPhotoUrl.split(
+              '/storage/v1/object/public/profiles/'
+            );
             oldFilePath = urlParts.length > 1 ? urlParts[1] : null;
           }
           // 방법 2: /object/public/profiles/ 이후 경로 (짧은 형식)
@@ -107,23 +109,22 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
           }
 
           if (oldFilePath) {
-            console.log('삭제할 파일 경로:', oldFilePath);
-            const { data: removeData, error: removeError } = await supabase.storage
-              .from('profiles')
-              .remove([oldFilePath]);
+            console.warn('삭제할 파일 경로:', oldFilePath);
+            const { data: removeData, error: removeError } =
+              await supabase.storage.from('profiles').remove([oldFilePath]);
 
-            console.log('삭제 결과 data:', removeData);
-            console.log('삭제 결과 error:', removeError);
+            console.warn('삭제 결과 data:', removeData);
+            console.warn('삭제 결과 error:', removeError);
 
             if (removeError) {
               console.error('Storage 삭제 에러:', removeError);
               toast.error(`이미지 삭제 실패: ${removeError.message}`);
             } else {
-              console.log('Storage 파일 삭제 성공');
+              console.warn('Storage 파일 삭제 성공');
             }
           }
           // DB에서 photo_url을 null로 설정하기 위해 빈 문자열 대신 null 사용
-          photoUrl = null as any; // 타입 우회
+          photoUrl = null;
         } catch (error) {
           console.error('이미지 삭제 실패:', error);
           toast.error('이미지 삭제에 실패했습니다.');
@@ -145,18 +146,17 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
             const oldFilePath = urlParts.length > 1 ? urlParts[1] : null;
 
             if (oldFilePath) {
-              console.log('기존 파일 삭제:', oldFilePath);
-              const { data: removeData, error: removeError } = await supabase.storage
-                .from('profiles')
-                .remove([oldFilePath]);
+              console.warn('기존 파일 삭제:', oldFilePath);
+              const { data: removeData, error: removeError } =
+                await supabase.storage.from('profiles').remove([oldFilePath]);
 
-              console.log('기존 파일 삭제 결과 data:', removeData);
-              console.log('기존 파일 삭제 결과 error:', removeError);
+              console.warn('기존 파일 삭제 결과 data:', removeData);
+              console.warn('기존 파일 삭제 결과 error:', removeError);
 
               if (removeError) {
                 console.error('Storage 삭제 에러:', removeError);
               } else {
-                console.log('기존 파일 삭제 성공');
+                console.warn('기존 파일 삭제 성공');
               }
             }
           } catch (error) {
@@ -194,7 +194,11 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
       }
 
       // 4. 프로필 업데이트
-      const updateData: any = {
+      const updateData: {
+        nickname?: string;
+        bio?: string;
+        photo_url?: string | null;
+      } = {
         nickname: nickname.trim() || undefined,
         bio: bio.trim() || undefined,
       };
@@ -327,6 +331,20 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
               {isSubmitting ? '저장 중...' : '저장'}
             </Button>
           </div>
+        </div>
+      </Card>
+
+      {/* 위험 영역: 계정 삭제 */}
+      <Card className='p-6 mt-6 border-red-200 bg-red-50'>
+        <div className='space-y-4'>
+          <div>
+            <h3 className='text-lg font-semibold text-red-900'>위험 영역</h3>
+            <p className='mt-1 text-sm text-red-700'>
+              계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수
+              없습니다.
+            </p>
+          </div>
+          <DeleteAccountDialog userEmail={profile.email || ''} />
         </div>
       </Card>
     </form>
