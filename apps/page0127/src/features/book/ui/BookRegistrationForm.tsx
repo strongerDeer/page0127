@@ -12,6 +12,7 @@ import { Switch } from '@/shared/ui/switch';
 import { Textarea } from '@/shared/ui/textarea';
 
 import type { AladinBook, BookRating, BookStatus } from '@/entities/book/types';
+import { upgradeImageResolution } from '@/shared/lib/imageUtils';
 
 type BookRegistrationFormProps = {
   book: AladinBook;
@@ -52,6 +53,11 @@ export const BookRegistrationForm = ({
   isLoading = false,
   initialData,
 }: BookRegistrationFormProps) => {
+  // 고해상도 이미지 URL로 변환
+  const highResCover = book.cover
+    ? upgradeImageResolution(book.cover)
+    : book.cover;
+
   const [status, setStatus] = useState<BookStatus>(
     initialData?.status || 'completed'
   );
@@ -136,9 +142,9 @@ export const BookRegistrationForm = ({
           {/* 책 정보 미리보기 */}
           <div className='flex gap-4 rounded-lg bg-gray-50 p-4'>
             <div className='relative h-32 w-24 shrink-0'>
-              {book.cover ? (
+              {highResCover ? (
                 <Image
-                  src={book.cover}
+                  src={highResCover}
                   alt={book.title}
                   fill
                   className='object-cover'

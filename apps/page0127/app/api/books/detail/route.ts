@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
     ItemIdType: 'ISBN13',
     output: 'js',
     Version: '20131101',
+    Cover: 'Big', // 큰 표지 이미지 요청
     // AI 분석을 위한 추가 정보 요청
     // packing: subInfo(쪽수 등), toc: 목차, fulldescription: 전체 소개, authors: 저자 소개
     OptResult: 'packing,toc,fulldescription,authors',

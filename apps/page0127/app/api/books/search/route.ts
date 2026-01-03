@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
     SearchTarget: 'Book',
     output: 'js',
     Version: '20131101',
+    Cover: 'Big', // 큰 표지 이미지 요청
     OptResult: 'packing', // subInfo(쪽수 등) 정보 포함
   });
 

@@ -6,6 +6,7 @@ import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/ui/card';
 
 import type { AladinBook } from '@/entities/book/types';
+import { upgradeImageResolution } from '@/shared/lib/imageUtils';
 
 type BookSearchResultCardProps = {
   book: AladinBook;
@@ -24,13 +25,18 @@ export const BookSearchResultCard = ({
   book,
   onSelect,
 }: BookSearchResultCardProps) => {
+  // 고해상도 이미지 URL로 변환
+  const highResCover = book.cover
+    ? upgradeImageResolution(book.cover)
+    : book.cover;
+
   return (
     <Card className='flex overflow-hidden'>
       {/* 책 표지 이미지 */}
       <div className='relative h-40 w-28 flex-shrink-0'>
-        {book.cover ? (
+        {highResCover ? (
           <Image
-            src={book.cover}
+            src={highResCover}
             alt={book.title}
             fill
             className='object-cover'

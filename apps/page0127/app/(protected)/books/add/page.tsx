@@ -19,6 +19,10 @@ import { BookSearchPagination } from '@/features/book/ui/BookSearchPagination';
 import { BookSearchResultCard } from '@/features/book/ui/BookSearchResultCard';
 
 import type { AladinBook } from '@/entities/book/types';
+import {
+  upgradeImageResolution,
+  validateSpineImageUrl,
+} from '@/shared/lib/imageUtils';
 
 /**
  * 도서 추가 페이지
@@ -84,13 +88,21 @@ const AddBookPage = () => {
   const handleSubmit = async (formData: BookFormData) => {
     if (!selectedBook) return;
 
+    // 이미지 URL 변환 및 검증
+    const highResCoverImage = upgradeImageResolution(selectedBook.cover);
+    const spineImage = await validateSpineImageUrl(
+      selectedBook.cover,
+      selectedBook.isbn13
+    );
+
     // 알라딘 도서 정보 + 사용자 입력 데이터 결합
     const bookData = {
       isbn: selectedBook.isbn13,
       title: selectedBook.title,
       author: selectedBook.author,
       publisher: selectedBook.publisher,
-      cover_image: selectedBook.cover,
+      cover_image: highResCoverImage, // 고해상도 표지 이미지
+      spine_image: spineImage, // 책등 이미지
       description: selectedBook.description,
       pub_date: selectedBook.pubDate,
       category: selectedBook.categoryName,
@@ -135,9 +147,9 @@ const AddBookPage = () => {
                   <p className='text-sm text-gray-600'>
                     총 {totalResults}개 중 {books.length}개 표시
                   </p>
-                  {books.map((book) => (
+                  {books.map((book, index) => (
                     <BookSearchResultCard
-                      key={book.isbn13}
+                      key={`${book.isbn13}-${index}`}
                       book={book}
                       onSelect={handleSelectBook}
                     />

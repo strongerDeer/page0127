@@ -31,6 +31,7 @@ export type Book = {
   author: string | null;
   publisher: string | null;
   cover_image: string | null;
+  spine_image: string | null; // 책등 이미지 (책장 UI용)
   description: string | null;
   pub_date: string | null;
   category: string | null;
@@ -72,6 +73,7 @@ export type BookInput = {
   author?: string;
   publisher?: string;
   cover_image?: string;
+  spine_image?: string; // 책등 이미지 (책장 UI용)
   description?: string;
   pub_date?: string;
   category?: string;
