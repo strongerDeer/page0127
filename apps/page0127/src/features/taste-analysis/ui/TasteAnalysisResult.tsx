@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { Button } from '@/shared/ui/button';
@@ -188,7 +189,14 @@ export const TasteAnalysisResult = ({ analysis }: TasteAnalysisResultProps) => {
 type RecommendationSectionProps = {
   title: string;
   description: string;
-  books: any[];
+  books: Array<{
+    id?: string;
+    title: string;
+    author: string | null;
+    cover_image: string | null;
+    isbn: string | null;
+    reason: string;
+  }>;
   color: 'blue' | 'indigo' | 'purple';
 };
 
@@ -217,11 +225,15 @@ const RecommendationSection = ({
               <div key={book.id} className='rounded-lg border bg-white p-4'>
                 <div className='flex gap-4'>
                   {book.cover_image && (
-                    <img
-                      src={book.cover_image}
-                      alt={book.title}
-                      className='h-32 w-24 object-cover rounded'
-                    />
+                    <div className='relative h-32 w-24 shrink-0 overflow-hidden rounded'>
+                      <Image
+                        src={book.cover_image}
+                        alt={book.title}
+                        fill
+                        sizes='96px'
+                        className='object-cover'
+                      />
+                    </div>
                   )}
                   <div className='flex-1'>
                     <h4 className='font-semibold text-gray-900'>{book.title}</h4>

@@ -5,7 +5,7 @@ import { getAvailableYears } from '@/entities/book/api/getMyBooks';
 import { getOverallStats } from '@/entities/book/api/getOverallStats';
 import { getProfile, upsertProfile } from '@/entities/profile/api/getProfile';
 
-import { DashboardContent } from '@/features/stats/ui/DashboardContent';
+import { DashboardContent } from '@/widgets/dashboard/DashboardContent';
 
 /**
  * 대시보드 페이지 (Server Component)
@@ -85,7 +85,16 @@ const DashboardPage = async (props: {
     .order('completed_date', { ascending: true });
 
   // 날짜별로 책 그룹핑
-  const booksByDate = new Map<string, any[]>();
+  const booksByDate = new Map<
+    string,
+    Array<{
+      id: string;
+      title: string;
+      author: string;
+      cover_image: string | null;
+      rating: number | null;
+    }>
+  >();
   let totalPages = 0;
 
   calendarBooks?.forEach((book) => {
@@ -97,7 +106,7 @@ const DashboardPage = async (props: {
       id: book.id,
       title: book.title,
       author: book.author,
-      cover: book.cover_image,
+      cover_image: book.cover_image,
       rating: book.rating,
     });
 
@@ -108,7 +117,13 @@ const DashboardPage = async (props: {
 
   const calendarData = Array.from(booksByDate.entries()).map(([date, books]) => ({
     date,
-    books,
+    books: books as unknown as Array<{
+      id: string;
+      title: string;
+      author: string;
+      cover: string;
+      rating: number;
+    }>,
   }));
 
   const calendarSummary = {

@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+
+import Image from 'next/image';
+
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { Button } from '@/shared/ui/button';
@@ -34,7 +37,7 @@ type Book = {
   rating: number;
 };
 
-type CalendarData = {
+export type CalendarData = {
   date: string;
   books: Book[];
 };
@@ -68,7 +71,7 @@ export const ReadingCalendar = ({
 
   // props로 받은 데이터 사용
   const calendarData = data;
-  const calendarSummary = summary;
+  // const calendarSummary = summary;
 
   // 해당 월의 첫날과 마지막날 계산
   const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1);
@@ -81,7 +84,6 @@ export const ReadingCalendar = ({
   calendarData.forEach((item) => {
     booksByDateMap.set(item.date, item.books);
   });
-
 
   // 날짜 클릭 핸들러
   const handleDateClick = (day: number) => {
@@ -105,117 +107,130 @@ export const ReadingCalendar = ({
     <>
       <Card key={`calendar-${currentYear}-${currentMonth}`}>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className='flex items-center justify-between'>
             <span>📅 독서 캘린더</span>
-            <div className="flex items-center gap-2">
+            <div className='flex items-center gap-2'>
               <Button
-                variant="outline"
-                size="icon"
+                variant='outline'
+                size='icon'
                 onClick={onPreviousMonth}
-                aria-label="이전 달"
+                aria-label='이전 달'
               >
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className='h-4 w-4' />
               </Button>
-              <span className="text-base font-normal">
+              <span className='text-base font-normal'>
                 {currentYear}년 {currentMonth}월
               </span>
               <Button
-                variant="outline"
-                size="icon"
+                variant='outline'
+                size='icon'
                 onClick={onNextMonth}
-                aria-label="다음 달"
+                aria-label='다음 달'
               >
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className='h-4 w-4' />
               </Button>
             </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="text-center">
-                <div className="mb-2 text-2xl">📚</div>
-                <div className="text-sm text-muted-foreground">데이터 불러오는 중...</div>
+            <div className='flex items-center justify-center py-20'>
+              <div className='text-center'>
+                <div className='mb-2 text-2xl'>📚</div>
+                <div className='text-sm text-muted-foreground'>
+                  데이터 불러오는 중...
+                </div>
               </div>
             </div>
           ) : (
             <>
               {/* 요일 헤더 */}
-              <div className="mb-2 grid grid-cols-7 gap-1 text-center text-sm font-semibold">
-            {weekDays.map((day, index) => (
-              <div
-                key={day}
-                className={
-                  index === 0 ? 'text-red-500' : index === 6 ? 'text-blue-500' : ''
-                }
-              >
-                {day}
+              <div className='mb-2 grid grid-cols-7 gap-1 text-center text-sm font-semibold'>
+                {weekDays.map((day, index) => (
+                  <div
+                    key={day}
+                    className={
+                      index === 0
+                        ? 'text-red-500'
+                        : index === 6
+                          ? 'text-blue-500'
+                          : ''
+                    }
+                  >
+                    {day}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          {/* 날짜 그리드 */}
-          <div className="grid grid-cols-7 gap-1">
-            {calendarDays.map((day, index) => {
-              if (day === null) {
-                return <div key={`empty-${index}`} className="aspect-square" />;
-              }
+              {/* 날짜 그리드 */}
+              <div className='grid grid-cols-7 gap-1'>
+                {calendarDays.map((day, index) => {
+                  if (day === null) {
+                    return (
+                      <div key={`empty-${index}`} className='aspect-square' />
+                    );
+                  }
 
-              const dateString = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-              const books = booksByDateMap.get(dateString);
-              const bookCount = books?.length || 0;
+                  const dateString = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                  const books = booksByDateMap.get(dateString);
+                  const bookCount = books?.length || 0;
 
-              return (
-                <button
-                  key={day}
-                  onClick={() => handleDateClick(day)}
-                  disabled={bookCount === 0}
-                  className={`
+                  return (
+                    <button
+                      key={day}
+                      onClick={() => handleDateClick(day)}
+                      disabled={bookCount === 0}
+                      className={`
                     relative aspect-square rounded-md border p-1 text-sm
                     transition-colors
                     ${bookCount > 0 ? 'cursor-pointer hover:bg-accent' : 'cursor-default text-muted-foreground'}
                   `}
-                >
-                  <span>{day}</span>
-                  {/* 완독 책이 있으면 점 표시 */}
-                  {bookCount > 0 && (
-                    <div className="absolute bottom-1 left-1/2 flex -translate-x-1/2 gap-0.5">
-                      <div
-                        className={`h-1.5 w-1.5 rounded-full ${
-                          bookCount === 1
-                            ? 'bg-blue-500'
-                            : bookCount === 2
-                              ? 'bg-green-500'
-                              : 'bg-red-500'
-                        }`}
-                      />
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                    >
+                      <span>{day}</span>
+                      {/* 완독 책이 있으면 점 표시 */}
+                      {bookCount > 0 && (
+                        <div className='absolute bottom-1 left-1/2 flex -translate-x-1/2 gap-0.5'>
+                          <div
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              bookCount === 1
+                                ? 'bg-blue-500'
+                                : bookCount === 2
+                                  ? 'bg-green-500'
+                                  : 'bg-red-500'
+                            }`}
+                          />
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </>
           )}
 
           {/* 통계 요약 - 로딩 중이든 아니든 항상 표시 */}
-          <div className="mt-4 space-y-2 text-center text-sm">
-            <div className="text-muted-foreground">
-              이번 달 <span className="font-semibold text-foreground">{summary.totalBooks}권</span>{' '}
+          <div className='mt-4 space-y-2 text-center text-sm'>
+            <div className='text-muted-foreground'>
+              이번 달{' '}
+              <span className='font-semibold text-foreground'>
+                {summary.totalBooks}권
+              </span>{' '}
               완독 📚
               {summary.totalPages > 0 && (
                 <>
                   {' '}
                   ·{' '}
-                  <span className="font-semibold text-foreground">
+                  <span className='font-semibold text-foreground'>
                     {summary.totalPages.toLocaleString()}쪽
                   </span>
                 </>
               )}
             </div>
             {/* 디버그 정보 */}
-            <div className="text-xs text-red-500">
-              DEBUG: books={summary.totalBooks}권 | pages={summary.totalPages}쪽 | year={currentYear} | month={currentMonth} | dataLen={data.length}
+            <div className='text-xs text-red-500'>
+              DEBUG: books={summary.totalBooks}권 | pages={summary.totalPages}쪽
+              | year={currentYear} | month={currentMonth} | dataLen=
+              {data.length}
             </div>
           </div>
         </CardContent>
@@ -235,23 +250,21 @@ export const ReadingCalendar = ({
               완독한 책
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-3">
+          <div className='space-y-3'>
             {selectedDate?.books.map((book) => (
-              <div key={book.id} className="flex gap-3 rounded-lg border p-3">
+              <div key={book.id} className='flex gap-3 rounded-lg border p-3'>
                 {book.cover && (
-                  <img
+                  <Image
                     src={book.cover}
                     alt={book.title}
-                    className="h-20 w-14 rounded object-cover"
+                    className='h-20 w-14 rounded object-cover'
                   />
                 )}
-                <div className="flex-1">
-                  <h4 className="font-semibold">{book.title}</h4>
-                  <p className="text-sm text-muted-foreground">{book.author}</p>
+                <div className='flex-1'>
+                  <h4 className='font-semibold'>{book.title}</h4>
+                  <p className='text-sm text-muted-foreground'>{book.author}</p>
                   {book.rating > 0 && (
-                    <div className="mt-1 text-sm">
-                      ⭐ {book.rating}점
-                    </div>
+                    <div className='mt-1 text-sm'>⭐ {book.rating}점</div>
                   )}
                 </div>
               </div>

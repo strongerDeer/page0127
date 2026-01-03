@@ -27,7 +27,7 @@ export async function GET(_request: NextRequest) {
       id: user.id,
       email: user.email,
     });
-  } catch (error) {
+  } catch {
     return errorResponse('사용자 정보 조회에 실패했습니다.');
   }
 }

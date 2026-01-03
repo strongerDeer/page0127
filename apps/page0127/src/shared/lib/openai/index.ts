@@ -1,1 +1,1 @@
-export { openai, AI_MODEL, MAX_TOKENS, TEMPERATURE } from './client';
+export { AI_MODEL, MAX_TOKENS, openai, TEMPERATURE } from './client';

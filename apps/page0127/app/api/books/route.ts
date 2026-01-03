@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     if (error) return errorResponse(error.message);
 
     return successResponse(data);
-  } catch (error) {
+  } catch {
     return errorResponse('책 목록 조회에 실패했습니다.');
   }
 }
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     });
 
     return successResponse(data, 201);
-  } catch (error) {
+  } catch {
     return errorResponse('책 추가에 실패했습니다.');
   }
 }

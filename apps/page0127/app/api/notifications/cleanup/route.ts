@@ -1,5 +1,6 @@
-import { createClient } from '@/shared/lib/supabase/server';
-import { errorResponse, successResponse } from '@/shared/lib/api-response';
+import { createClient } from '@/shared/config/supabase/server';
+
+import { errorResponse, successResponse } from '../../_helpers/response';
 
 /**
  * POST /api/notifications/cleanup

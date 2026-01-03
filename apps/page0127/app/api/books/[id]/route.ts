@@ -34,7 +34,7 @@ export async function GET(request: NextRequest, { params }: Params) {
     if (error) return notFoundResponse('책');
 
     return successResponse(data);
-  } catch (error) {
+  } catch {
     return errorResponse('책 조회에 실패했습니다.');
   }
 }
@@ -91,7 +91,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     }
 
     return successResponse(data);
-  } catch (error) {
+  } catch {
     return errorResponse('책 수정에 실패했습니다.');
   }
 }
@@ -114,7 +114,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     if (error) return errorResponse(error.message);
 
     return successResponse({ message: '삭제되었습니다.' });
-  } catch (error) {
+  } catch {
     return errorResponse('책 삭제에 실패했습니다.');
   }
 }

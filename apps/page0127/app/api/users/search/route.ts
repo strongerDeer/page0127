@@ -33,8 +33,10 @@ export async function GET(request: NextRequest) {
       .or(`nickname.ilike.%${query}%,username.ilike.%${query}%`)
       .limit(20);
 
-    console.log('검색 쿼리:', query);
-    console.log('검색 결과:', profiles);
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('검색 쿼리:', query);
+      console.warn('검색 결과:', profiles);
+    }
     if (error) {
       console.error('검색 에러:', error);
       return errorResponse(error.message);
@@ -100,7 +102,7 @@ export async function GET(request: NextRequest) {
     }));
 
     return successResponse(results);
-  } catch (error) {
+  } catch {
     return errorResponse('사용자 검색에 실패했습니다.');
   }
 }

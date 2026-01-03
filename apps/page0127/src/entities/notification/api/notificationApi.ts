@@ -4,12 +4,13 @@
  */
 
 import { apiClient } from '@/shared/api/client';
+
 import type {
+  CreateNotificationDto,
+  GetNotificationsOptions,
   Notification,
   NotificationWithActor,
-  GetNotificationsOptions,
   UnreadCountResponse,
-  CreateNotificationDto,
 } from '../model/types';
 
 /**
@@ -20,7 +21,7 @@ import type {
 export async function getNotifications(
   options: GetNotificationsOptions
 ): Promise<NotificationWithActor[]> {
-  const { userId, limit = 20, offset = 0, is_read } = options;
+  const { limit = 20, offset = 0, is_read } = options;
 
   const params = new URLSearchParams({
     limit: String(limit),
@@ -40,11 +41,11 @@ export async function getNotifications(
 
 /**
  * 읽지 않은 알림 개수 조회
- * @param userId - 사용자 ID
+ * @param _userId - 사용자 ID (사용하지 않음, API에서 세션으로 확인)
  * @returns 읽지 않은 알림 개수
  */
 export async function getUnreadCount(
-  userId: string
+  _userId: string
 ): Promise<UnreadCountResponse> {
   const { data } = await apiClient.get<UnreadCountResponse>(
     '/notifications/unread-count'

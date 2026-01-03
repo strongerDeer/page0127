@@ -41,7 +41,7 @@ export async function PATCH(
     }
 
     return successResponse(data);
-  } catch (error) {
+  } catch {
     return errorResponse('알림 읽음 처리에 실패했습니다.');
   }
 }

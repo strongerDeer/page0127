@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { mapToMainCategory } from '@/shared/lib/categoryMapper';
@@ -153,6 +154,9 @@ export const DashboardBookList = ({
   const endIndex = startIndex + BOOKS_PER_PAGE;
   const paginatedBooks = filteredBooks.slice(startIndex, endIndex);
 
+  // 학습 포인트: useEffect에서 setState를 직접 호출하는 대신
+  // 이벤트 핸들러에서 처리
+
   // 필터 변경 시 첫 페이지로 이동
   const handleCategoryChange = (category: string | null) => {
     setCurrentPage(1);
@@ -174,24 +178,17 @@ export const DashboardBookList = ({
     setSortOption(option);
   };
 
-  // 검색어 변경 시 첫 페이지로 이동
-  useEffect(() => {
+  const handleSearchChange = (query: string) => {
     setCurrentPage(1);
-  }, [searchQuery]);
-
-  // 필터 변경 후 현재 페이지가 총 페이지 수를 초과하면 첫 페이지로 이동
-  useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(1);
-    }
-  }, [currentPage, totalPages]);
+    onSearchChange(query);
+  };
 
   return (
     <div>
       {/* 검색창 */}
       <div className='mb-4'>
         <BookSearchInput
-          onSearchChange={onSearchChange}
+          onSearchChange={handleSearchChange}
           placeholder='제목이나 저자로 검색하세요'
         />
       </div>
@@ -321,12 +318,14 @@ export const DashboardBookList = ({
                   href={`/books/${book.id}`}
                   className='group transition-transform hover:scale-105'
                 >
-                  <div className='aspect-2/3 overflow-hidden rounded-lg bg-gray-100 shadow-md'>
+                  <div className='aspect-2/3 relative overflow-hidden rounded-lg bg-gray-100 shadow-md'>
                     {book.cover_image ? (
-                      <img
+                      <Image
                         src={book.cover_image}
                         alt={book.title}
-                        className='h-full w-full object-cover'
+                        fill
+                        sizes='(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw'
+                        className='object-cover'
                       />
                     ) : (
                       <div className='flex h-full w-full items-center justify-center text-4xl'>

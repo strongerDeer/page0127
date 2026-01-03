@@ -3,11 +3,11 @@ import { notFound } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
 
-import type { Book } from '@/entities/book/types';
-
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 
 import { PublicLibraryHeader } from '@/widgets/public-library/PublicLibraryHeader';
+
+import type { Book } from '@/entities/book/types';
 
 type PageProps = {
   params: Promise<{ username: string }>;

@@ -7,12 +7,22 @@
  * - 책 데이터를 구조화하여 전달
  */
 
-import type { Book } from '@/entities/book/types';
+/**
+ * 독서 취향 분석에 필요한 책 정보 타입
+ */
+type BookForAnalysis = {
+  title: string;
+  author: string | null;
+  category: string | null;
+  rating: number | null;
+  description: string | null;
+  toc: string | null;
+};
 
 /**
  * 독서 취향 분석 프롬프트 생성
  */
-export function createTasteAnalysisPrompt(books: Book[]): string {
+export function createTasteAnalysisPrompt(books: BookForAnalysis[]): string {
   // 별점별로 책 분류
   const highRatedBooks = books.filter((book) => (book.rating ?? 0) >= 4);
   const lowRatedBooks = books.filter(
@@ -20,7 +30,7 @@ export function createTasteAnalysisPrompt(books: Book[]): string {
   );
 
   // 책 정보를 텍스트로 변환
-  const formatBooks = (bookList: Book[]) =>
+  const formatBooks = (bookList: BookForAnalysis[]) =>
     bookList
       .map(
         (book, idx) =>

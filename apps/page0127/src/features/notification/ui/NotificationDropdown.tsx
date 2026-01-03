@@ -10,10 +10,9 @@
  * - 실시간 알림 업데이트 (30초마다 refetch)
  */
 
-import { Bell } from 'lucide-react';
 import { useState } from 'react';
 
-import { useUnreadCount } from '@/entities/notification';
+import { Bell } from 'lucide-react';
 
 import { Button } from '@/shared/ui/button';
 import {
@@ -22,13 +21,15 @@ import {
   PopoverTrigger,
 } from '@/shared/ui/popover';
 
+import { useUnreadCount } from '@/entities/notification';
+
 import { NotificationList } from './NotificationList';
 
-interface NotificationDropdownProps {
+type NotificationDropdownProps = {
   userId: string;
 }
 
-export function NotificationDropdown({ userId }: NotificationDropdownProps) {
+export const NotificationDropdown = ({ userId }: NotificationDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { data: unreadCount } = useUnreadCount(userId);
 

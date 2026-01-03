@@ -67,7 +67,16 @@ export async function GET(request: NextRequest) {
     if (error) return errorResponse(error.message);
 
     // 날짜별로 책 그룹핑
-    const booksByDate = new Map<string, any[]>();
+    const booksByDate = new Map<
+      string,
+      Array<{
+        id: string;
+        title: string;
+        author: string;
+        cover: string | null;
+        rating: number | null;
+      }>
+    >();
     let totalPages = 0;
 
     books?.forEach((book) => {
@@ -102,7 +111,7 @@ export async function GET(request: NextRequest) {
         totalPages,
       },
     });
-  } catch (error) {
+  } catch {
     return errorResponse('캘린더 데이터 조회에 실패했습니다.');
   }
 }

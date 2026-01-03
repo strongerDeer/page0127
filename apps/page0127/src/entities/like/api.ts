@@ -24,7 +24,6 @@ export const likeApi = {
     if (!response.ok) {
       // 409는 중복 좋아요이므로 무시 (이미 좋아요 상태)
       if (response.status === 409) {
-        console.log('이미 좋아요 상태입니다.');
         return;
       }
       const error = await response.json();

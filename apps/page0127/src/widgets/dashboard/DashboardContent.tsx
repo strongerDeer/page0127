@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -16,32 +16,20 @@ import {
 } from '@/shared/ui/select';
 import { StatCard } from '@/shared/ui/StatCard';
 
-import { DashboardBookList } from './DashboardBookList';
-import { DashboardCharts } from './DashboardCharts';
-import { ReadingGoalProgress } from './ReadingGoalProgress';
-
 import { ReadingGoalDialog } from '@/features/profile/ui/ReadingGoalDialog';
+import { DashboardBookList } from '@/features/stats/ui/DashboardBookList';
+import { DashboardCharts } from '@/features/stats/ui/DashboardCharts';
+import { ReadingGoalProgress } from '@/features/stats/ui/ReadingGoalProgress';
 
 import { CategoryPieChart } from '@/widgets/dashboard/CategoryPieChart';
 import { RatingDistributionChart } from '@/widgets/dashboard/RatingDistributionChart';
+import { type CalendarData as ReadingCalendarData,ReadingCalendar } from '@/widgets/dashboard/ReadingCalendar';
 import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
 import { YearlyTrendChart } from '@/widgets/dashboard/YearlyTrendChart';
-import { ReadingCalendar } from '@/widgets/dashboard/ReadingCalendar';
 
 import type { Book } from '@/entities/book/types';
 import type { BookStats, OverallStats } from '@/entities/book/types/stats';
 import type { Profile } from '@/entities/profile/types';
-
-type CalendarData = {
-  date: string;
-  books: {
-    id: string;
-    title: string;
-    author: string;
-    cover: string;
-    rating: number;
-  }[];
-};
 
 type DashboardContentProps = {
   /** 전체 독서 통계 (연도 무관) */
@@ -72,7 +60,7 @@ type DashboardContentProps = {
   currentYear: number;
 
   /** 독서 캘린더 데이터 */
-  calendarData: CalendarData[];
+  calendarData: ReadingCalendarData[];
 
   /** 캘린더 요약 정보 */
   calendarSummary: {
@@ -244,14 +232,20 @@ export const DashboardContent = ({
   // AI 취향 분석 실행
   const handleAnalyzeTaste = async () => {
     // 완독한 책 권수 확인 (최소 5권 필요)
-    const completedBooks = books.filter((book) => book.status === 'completed' && book.rating !== null);
+    const completedBooks = books.filter(
+      (book) => book.status === 'completed' && book.rating !== null
+    );
 
     if (completedBooks.length < 5) {
       alert('취향 분석을 위해 최소 5권의 완독한 책(별점 포함)이 필요합니다.');
       return;
     }
 
-    if (!confirm('AI 독서 취향 분석을 시작하시겠습니까?\n(분석에 약 30초 정도 소요됩니다)')) {
+    if (
+      !confirm(
+        'AI 독서 취향 분석을 시작하시겠습니까?\n(분석에 약 30초 정도 소요됩니다)'
+      )
+    ) {
       return;
     }
 
@@ -274,7 +268,11 @@ export const DashboardContent = ({
       router.push('/dashboard/taste-analysis');
     } catch (error) {
       console.error('취향 분석 실패:', error);
-      alert(error instanceof Error ? error.message : '취향 분석 중 오류가 발생했습니다.');
+      alert(
+        error instanceof Error
+          ? error.message
+          : '취향 분석 중 오류가 발생했습니다.'
+      );
     } finally {
       setIsAnalyzing(false);
     }
@@ -319,7 +317,9 @@ export const DashboardContent = ({
             <div className='flex items-start justify-between'>
               <div>
                 <CardTitle className='text-xl'>📖 전체 독서 통계</CardTitle>
-                <p className='text-sm text-gray-600'>전체 기간의 독서 히스토리</p>
+                <p className='text-sm text-gray-600'>
+                  전체 기간의 독서 히스토리
+                </p>
               </div>
               <Button
                 variant='default'
@@ -342,18 +342,24 @@ export const DashboardContent = ({
             {/* 2. 카테고리 + 5년 트렌드 */}
             <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
               <div>
-                <h3 className='mb-4 text-lg font-semibold'>📊 카테고리별 분포</h3>
+                <h3 className='mb-4 text-lg font-semibold'>
+                  📊 카테고리별 분포
+                </h3>
                 <CategoryPieChart data={overallStats.categoryDistribution} />
               </div>
               <div>
-                <h3 className='mb-4 text-lg font-semibold'>📈 최근 5년 독서량</h3>
+                <h3 className='mb-4 text-lg font-semibold'>
+                  📈 최근 5년 독서량
+                </h3>
                 <YearlyTrendChart data={overallStats.yearlyTrend} />
               </div>
             </div>
 
             {/* 3. 평점 분포 */}
             <div>
-              <h3 className='mb-4 text-lg font-semibold'>⭐ 평점 분포 & 선호도</h3>
+              <h3 className='mb-4 text-lg font-semibold'>
+                ⭐ 평점 분포 & 선호도
+              </h3>
               <RatingDistributionChart data={overallStats.ratingDistribution} />
             </div>
           </CardContent>

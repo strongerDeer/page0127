@@ -56,6 +56,6 @@ export type UpdateProfileDto = {
   username?: string;
   nickname?: string;
   bio?: string;
-  photo_url?: string;
+  photo_url?: string | null;
   reading_goal?: ReadingGoal;
 };

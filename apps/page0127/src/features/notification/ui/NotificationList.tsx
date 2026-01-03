@@ -13,26 +13,25 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import {
-  useNotifications,
-  useMarkAsRead,
-  useMarkAllAsRead,
-  useDeleteNotification,
-  type NotificationWithActor,
-} from '@/entities/notification';
-
 import { Button } from '@/shared/ui/button';
 import { ScrollArea } from '@/shared/ui/scroll-area';
-import { formatDistanceToNow } from '@/shared/lib/date';
+
+import {
+  type NotificationWithActor,
+  useDeleteNotification,
+  useMarkAllAsRead,
+  useMarkAsRead,
+  useNotifications,
+} from '@/entities/notification';
 
 import { NotificationItem } from './NotificationItem';
 
-interface NotificationListProps {
+type NotificationListProps = {
   userId: string;
   onClose?: () => void;
 }
 
-export function NotificationList({ userId, onClose }: NotificationListProps) {
+export const NotificationList = ({ userId, onClose }: NotificationListProps) => {
   const router = useRouter();
   const { data: notifications, isLoading } = useNotifications({
     userId,

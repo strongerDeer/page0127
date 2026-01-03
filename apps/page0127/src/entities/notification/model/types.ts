@@ -21,7 +21,7 @@ export type NotificationTargetType = 'activity' | 'comment';
 /**
  * 알림 엔티티 (DB 테이블 구조)
  */
-export interface Notification {
+export type Notification = {
   id: string;
   user_id: string; // 알림을 받는 사용자
   type: NotificationType;
@@ -37,7 +37,7 @@ export interface Notification {
 /**
  * 알림 생성 요청 DTO
  */
-export interface CreateNotificationDto {
+export type CreateNotificationDto = {
   user_id: string;
   type: NotificationType;
   actor_id: string;
@@ -49,19 +49,19 @@ export interface CreateNotificationDto {
 /**
  * 알림 조회 응답 (프로필 정보 포함)
  */
-export interface NotificationWithActor extends Notification {
+export type NotificationWithActor = {
   actor: {
     id: string;
     nickname: string;
     photo_url: string | null;
     username: string | null;
   };
-}
+} & Notification
 
 /**
  * 알림 목록 조회 옵션
  */
-export interface GetNotificationsOptions {
+export type GetNotificationsOptions = {
   userId: string;
   limit?: number;
   offset?: number;
@@ -71,7 +71,7 @@ export interface GetNotificationsOptions {
 /**
  * 알림 읽음 처리 요청
  */
-export interface MarkAsReadDto {
+export type MarkAsReadDto = {
   notification_id: string;
   user_id: string;
 }
@@ -79,13 +79,13 @@ export interface MarkAsReadDto {
 /**
  * 전체 읽음 처리 요청
  */
-export interface MarkAllAsReadDto {
+export type MarkAllAsReadDto = {
   user_id: string;
 }
 
 /**
  * 읽지 않은 알림 개수 응답
  */
-export interface UnreadCountResponse {
+export type UnreadCountResponse = {
   count: number;
 }

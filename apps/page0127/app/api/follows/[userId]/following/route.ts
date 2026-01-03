@@ -21,7 +21,7 @@ export async function GET(
 
     // 현재 로그인한 사용자
     const { user } = await getCurrentUser();
-    const currentUserId = user?.id;
+    const _currentUserId = user?.id;
 
     // 팔로잉 목록 조회 (간단한 버전 - 프로필만)
     const { data: following, error } = await supabase
@@ -62,7 +62,7 @@ export async function GET(
     });
 
     return successResponse(followingWithInfo);
-  } catch (error) {
+  } catch {
     return errorResponse('팔로잉 목록 조회에 실패했습니다.');
   }
 }

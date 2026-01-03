@@ -35,7 +35,7 @@ export async function GET(
     }
 
     return successResponse(data);
-  } catch (error) {
+  } catch {
     return errorResponse('통계 조회에 실패했습니다.');
   }
 }

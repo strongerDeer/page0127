@@ -43,7 +43,7 @@ export async function DELETE(
       .eq('is_read', false);
 
     return successResponse({ message: '언팔로우했습니다.' });
-  } catch (error) {
+  } catch {
     return errorResponse('언팔로우에 실패했습니다.');
   }
 }

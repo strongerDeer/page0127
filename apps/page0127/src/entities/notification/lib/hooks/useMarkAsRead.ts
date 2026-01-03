@@ -4,7 +4,8 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { markAsRead, markAllAsRead } from '../../api/notificationApi';
+
+import { markAllAsRead,markAsRead } from '../../api/notificationApi';
 import { notificationKeys } from '../../model/queryKeys';
 
 /**

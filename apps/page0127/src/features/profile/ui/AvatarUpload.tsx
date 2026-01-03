@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import Image from 'next/image';
 
@@ -26,15 +26,11 @@ export const AvatarUpload = ({
   onFileSelect,
 }: AvatarUploadProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(currentPhotoUrl);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  // currentPhotoUrl이 변경되면 미리보기 업데이트
-  useEffect(() => {
-    if (!selectedFile) {
-      setPreviewUrl(currentPhotoUrl);
-    }
-  }, [currentPhotoUrl, selectedFile]);
+  // 학습 포인트: 미사용 변수는 언더스코어(_)로 시작해서 lint 경고 방지
+  // 또는 필요없다면 완전히 제거
+  const [_selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(currentPhotoUrl);
 
   // 파일 선택 버튼 클릭
   const handleButtonClick = () => {

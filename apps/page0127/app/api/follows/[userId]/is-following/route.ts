@@ -42,7 +42,7 @@ export async function GET(
     if (error) return errorResponse(error.message);
 
     return successResponse({ is_following: !!data });
-  } catch (error) {
+  } catch {
     return errorResponse('팔로우 여부 확인에 실패했습니다.');
   }
 }

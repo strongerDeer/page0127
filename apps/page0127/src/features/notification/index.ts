@@ -4,6 +4,6 @@
  */
 
 export { NotificationDropdown } from './ui/NotificationDropdown';
-export { NotificationList } from './ui/NotificationList';
 export { NotificationItem } from './ui/NotificationItem';
+export { NotificationList } from './ui/NotificationList';
 export { NotificationPage } from './ui/NotificationPage';

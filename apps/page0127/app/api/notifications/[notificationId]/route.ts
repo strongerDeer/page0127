@@ -34,7 +34,7 @@ export async function DELETE(
     }
 
     return successResponse({ success: true });
-  } catch (error) {
+  } catch {
     return errorResponse('알림 삭제에 실패했습니다.');
   }
 }

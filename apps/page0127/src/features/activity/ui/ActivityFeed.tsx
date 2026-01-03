@@ -1,8 +1,9 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
+
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
-import { useEffect, useRef } from 'react';
 
 import { activityApi } from '@/entities/activity';
 

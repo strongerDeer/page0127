@@ -11,7 +11,7 @@ import { createClient } from '@/shared/config/supabase/server';
  *
  * GET /api/taste-analysis/latest
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // 1. 인증 확인
     const supabase = await createClient();

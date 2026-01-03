@@ -1,9 +1,9 @@
 import { Geist, Geist_Mono } from 'next/font/google';
 
-import type { Metadata } from 'next';
-
 import { QueryProvider } from '@/shared/providers/QueryProvider';
 import { Toaster } from '@/shared/ui/sonner';
+
+import type { Metadata } from 'next';
 
 import './globals.css';
 

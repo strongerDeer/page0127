@@ -65,6 +65,8 @@ const eslintConfig = defineConfig([
         },
       ],
       // Hooks 규칙 (react-hooks 플러그인에서 자동 적용)
+      // setState in effect를 경고로 낮춤 (특정 케이스에서 필요할 수 있음)
+      'react-hooks/set-state-in-effect': 'warn',
 
       // Named Export 사용 (Default Export 금지)
       // 단, Next.js 특수 파일(page.tsx, layout.tsx 등)은 예외

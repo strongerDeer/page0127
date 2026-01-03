@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     });
 
     return successResponse(data, 201);
-  } catch (error) {
+  } catch {
     return errorResponse('팔로우에 실패했습니다.');
   }
 }

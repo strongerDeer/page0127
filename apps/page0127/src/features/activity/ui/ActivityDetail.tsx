@@ -10,20 +10,21 @@
  * - 댓글 섹션 항상 펼친 상태
  */
 
+import { useRouter } from 'next/navigation';
+
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 
 import { apiClient } from '@/shared/api/client';
 import { Button } from '@/shared/ui/button';
 
 import { ActivityCard } from './ActivityCard';
 
-interface ActivityDetailProps {
+type ActivityDetailProps = {
   activityId: string;
 }
 
-export function ActivityDetail({ activityId }: ActivityDetailProps) {
+export const ActivityDetail = ({ activityId }: ActivityDetailProps) => {
   const router = useRouter();
 
   const { data: activity, isLoading } = useQuery({

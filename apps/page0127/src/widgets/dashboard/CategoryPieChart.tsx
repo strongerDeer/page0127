@@ -51,8 +51,14 @@ export const CategoryPieChart = ({ data, onCategoryClick }: Props) => {
           cx="50%"
           cy="50%"
           outerRadius={80}
-          label={(entry: any) => `${entry.category} ${entry.percentage}%`}
-          onClick={(entry: any) => onCategoryClick?.(entry.category)}
+          label={(entry: unknown) => {
+            const e = entry as { category: string; percentage: number };
+            return `${e.category} ${e.percentage}%`;
+          }}
+          onClick={(entry: unknown) => {
+            const e = entry as { category: string };
+            return onCategoryClick?.(e.category);
+          }}
           style={{ cursor: onCategoryClick ? 'pointer' : 'default' }}
         >
           {data.map((entry, index) => (
@@ -60,10 +66,13 @@ export const CategoryPieChart = ({ data, onCategoryClick }: Props) => {
           ))}
         </Pie>
         <Tooltip
-          formatter={(value: any, name: any, props: any) => [
-            `${value}권 (${props.payload.percentage}%)`,
-            name,
-          ]}
+          formatter={(value: number, name: string, props: unknown) => {
+            const p = props as { payload?: { percentage: number } };
+            return [
+              `${value}권 (${p.payload?.percentage ?? 0}%)`,
+              name,
+            ];
+          }}
         />
         <Legend />
       </PieChart>

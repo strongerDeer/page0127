@@ -29,7 +29,7 @@ export async function GET() {
     }
 
     return successResponse({ count: count || 0 });
-  } catch (error) {
+  } catch {
     return errorResponse('읽지 않은 알림 개수 조회에 실패했습니다.');
   }
 }

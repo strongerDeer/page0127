@@ -65,7 +65,6 @@ export async function GET(_request: NextRequest, { params }: Params) {
     });
 
     // 댓글과 대댓글 분리 및 계층 구조 생성
-    const commentMap = new Map(commentsWithProfiles.map((c) => [c.id, c]));
     const rootComments = commentsWithProfiles.filter(
       (c) => !c.parentCommentId
     );

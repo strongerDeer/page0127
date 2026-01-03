@@ -4,6 +4,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
+
 import { getUnreadCount } from '../../api/notificationApi';
 import { notificationKeys } from '../../model/queryKeys';
 

@@ -4,6 +4,7 @@ import { createClient } from '@/shared/config/supabase/server';
 import { Button } from '@/shared/ui/button';
 
 import { LogoutButton } from '@/features/auth/ui/LogoutButton';
+
 import { HeaderClient } from './HeaderClient';
 
 /**

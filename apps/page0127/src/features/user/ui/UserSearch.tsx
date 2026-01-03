@@ -1,12 +1,12 @@
 'use client';
 
+import { useState } from 'react';
+
 import { useQuery } from '@tanstack/react-query';
 import { Loader2, Search, X } from 'lucide-react';
-import { useState } from 'react';
 
 import { Input } from '@/shared/ui/input';
 
-import { UserWithFollowInfo } from '@/entities/follow';
 import { userApi } from '@/entities/user';
 
 import { UserCard } from '@/features/follow/ui/UserCard';
@@ -93,7 +93,7 @@ export const UserSearch = ({ currentUserId }: UserSearchProps) => {
       {!isLoading && activeQuery && (
         <div className='space-y-2'>
           <p className='text-sm text-gray-600'>
-            "{activeQuery}" 검색 결과 ({users.length}명)
+            &quot;{activeQuery}&quot; 검색 결과 ({users.length}명)
           </p>
 
           {users.length === 0 ? (

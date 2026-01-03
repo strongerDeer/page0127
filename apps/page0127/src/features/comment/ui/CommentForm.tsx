@@ -46,11 +46,15 @@ export const CommentForm = ({
         content,
         parentCommentId,
       });
-      console.log('댓글 작성 성공:', result);
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('댓글 작성 성공:', result);
+      }
       return result;
     },
     onSuccess: () => {
-      console.log('댓글 작성 onSuccess - 쿼리 무효화');
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('댓글 작성 onSuccess - 쿼리 무효화');
+      }
       // 댓글 목록 쿼리 무효화
       queryClient.invalidateQueries({
         queryKey: ['comments', activityId],

@@ -1,6 +1,6 @@
 import type {
-  AladinSearchResponse,
   AladinLookUpResponse,
+  AladinSearchResponse,
 } from '@/shared/types/aladin';
 
 /**

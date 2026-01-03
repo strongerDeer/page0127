@@ -5,12 +5,13 @@
  * - 계층 구조 (댓글 + 대댓글)
  * - parentCommentId로 댓글/대댓글 구분
  * - replies 배열로 대댓글 표현
+ * - 탈퇴한 사용자 처리: userId와 user가 null일 수 있음
  */
 
 export type Comment = {
   id: string;
   activityId: string;
-  userId: string;
+  userId: string | null; // 탈퇴한 사용자의 경우 null
   parentCommentId: string | null;
   content: string;
   createdAt: string;
@@ -19,7 +20,7 @@ export type Comment = {
     id: string;
     nickname: string | null;
     photoUrl: string | null;
-  };
+  } | null; // 탈퇴한 사용자의 경우 null (UI에서 "탈퇴한 사용자"로 표시)
   replies?: Comment[]; // 대댓글 목록 (1depth만)
 };
 

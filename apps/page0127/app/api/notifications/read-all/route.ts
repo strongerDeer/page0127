@@ -29,7 +29,7 @@ export async function PATCH() {
     }
 
     return successResponse({ success: true });
-  } catch (error) {
+  } catch {
     return errorResponse('전체 읽음 처리에 실패했습니다.');
   }
 }

@@ -11,10 +11,10 @@
 
 import { NotificationDropdown } from '@/features/notification';
 
-interface HeaderClientProps {
+type HeaderClientProps = {
   userId: string;
 }
 
-export function HeaderClient({ userId }: HeaderClientProps) {
+export const HeaderClient = ({ userId }: HeaderClientProps) => {
   return <NotificationDropdown userId={userId} />;
 }

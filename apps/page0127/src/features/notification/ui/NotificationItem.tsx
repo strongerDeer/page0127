@@ -10,28 +10,27 @@
  * - 상대 시간 표시 (예: "3분 전")
  */
 
-import { Heart, MessageCircle, UserPlus, X, Check } from 'lucide-react';
-import Image from 'next/image';
-
-import type { NotificationWithActor } from '@/entities/notification';
+import { Check, Heart, MessageCircle, UserPlus, X } from 'lucide-react';
 
 import { formatDistanceToNow } from '@/shared/lib/date';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 import { Button } from '@/shared/ui/button';
 
-interface NotificationItemProps {
+import type { NotificationWithActor } from '@/entities/notification';
+
+type NotificationItemProps = {
   notification: NotificationWithActor;
   onClick: () => void;
   onDelete?: (id: string) => void;
   onMarkAsRead?: (id: string) => void;
 }
 
-export function NotificationItem({
+export const NotificationItem = ({
   notification,
   onClick,
   onDelete,
   onMarkAsRead,
-}: NotificationItemProps) {
+}: NotificationItemProps) => {
   const { type, actor, is_read, created_at } = notification;
 
   // 알림 타입별 메시지 및 아이콘

@@ -4,9 +4,11 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
+
 import { getNotifications } from '../../api/notificationApi';
-import type { GetNotificationsOptions } from '../../model/types';
 import { notificationKeys } from '../../model/queryKeys';
+
+import type { GetNotificationsOptions } from '../../model/types';
 
 /**
  * 알림 목록 조회 훅

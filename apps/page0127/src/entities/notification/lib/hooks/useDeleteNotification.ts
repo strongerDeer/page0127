@@ -9,6 +9,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+
 import { deleteNotification } from '../../api/notificationApi';
 import { notificationKeys } from '../../model/queryKeys';
 

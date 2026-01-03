@@ -1,8 +1,9 @@
 'use client';
 
+import { useEffect } from 'react';
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Users } from 'lucide-react';
-import { useEffect } from 'react';
 
 import { followBroadcast } from '@/shared/lib/broadcastChannel';
 

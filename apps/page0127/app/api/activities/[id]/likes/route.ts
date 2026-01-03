@@ -60,7 +60,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
       count: likes?.length || 0,
       isLiked,
     });
-  } catch (error) {
+  } catch {
     return errorResponse('좋아요 목록 조회에 실패했습니다.');
   }
 }

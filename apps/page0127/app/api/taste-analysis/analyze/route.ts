@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { createClient } from '@/shared/config/supabase/server';
-import { openai, AI_MODEL, MAX_TOKENS, TEMPERATURE } from '@/shared/lib/openai';
+import { AI_MODEL, MAX_TOKENS, openai, TEMPERATURE } from '@/shared/lib/openai';
 import { createTasteAnalysisPrompt } from '@/shared/lib/openai/prompts/taste-analysis';
+
 import type { Book } from '@/entities/book/types';
-import type { CreateTasteAnalysisDto } from '@/entities/taste-analysis/types';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * 독서 취향 분석 API
@@ -16,7 +17,7 @@ import type { CreateTasteAnalysisDto } from '@/entities/taste-analysis/types';
  *
  * POST /api/taste-analysis/analyze
  */
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     // 1. 인증 확인
     const supabase = await createClient();
@@ -77,13 +78,15 @@ export async function POST(request: NextRequest) {
     // 4. AI 응답 파싱
     const aiResponse = JSON.parse(responseText);
 
-    // AI 응답 검증 및 로깅
-    console.log('AI 응답 구조:', {
-      personality_type: aiResponse.personality_type,
-      has_preference_profile: !!aiResponse.preference_profile,
-      recommendations_count: aiResponse.recommendations?.length || 0,
-    });
-    console.log('AI 전체 응답:', JSON.stringify(aiResponse, null, 2));
+    // AI 응답 검증 및 로깅 (개발 환경에서만)
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('AI 응답 구조:', {
+        personality_type: aiResponse.personality_type,
+        has_preference_profile: !!aiResponse.preference_profile,
+        recommendations_count: aiResponse.recommendations?.length || 0,
+      });
+      console.warn('AI 전체 응답:', JSON.stringify(aiResponse, null, 2));
+    }
 
     // 5. 분석 결과 저장
     const { data: analysis, error: analysisError } = await supabase
@@ -107,7 +110,14 @@ export async function POST(request: NextRequest) {
 
     // 6. 추천 도서 저장
     if (aiResponse.recommendations && aiResponse.recommendations.length > 0) {
-      const recommendations = aiResponse.recommendations.map((rec: any) => ({
+      const recommendations = aiResponse.recommendations.map(
+        (rec: {
+          type: string;
+          title: string;
+          author?: string;
+          reason: string;
+          display_order: number;
+        }) => ({
         taste_analysis_id: analysis.id,
         recommendation_type: rec.type,
         isbn: null, // AI는 제목/저자만 제공 (ISBN 없음)
@@ -116,9 +126,10 @@ export async function POST(request: NextRequest) {
         publisher: null,
         cover_image: null,
         category: null,
-        reason: rec.reason,
-        display_order: rec.display_order,
-      }));
+          reason: rec.reason,
+          display_order: rec.display_order,
+        })
+      );
 
       const { error: recError } = await supabase
         .from('book_recommendations')
@@ -127,8 +138,8 @@ export async function POST(request: NextRequest) {
       if (recError) {
         console.error('추천 도서 저장 실패:', recError);
         console.error('추천 도서 데이터:', recommendations);
-      } else {
-        console.log(`추천 도서 ${recommendations.length}건 저장 완료`);
+      } else if (process.env.NODE_ENV === 'development') {
+        console.warn(`추천 도서 ${recommendations.length}건 저장 완료`);
 
         // 7. 알라딘 API로 표지 이미지 업데이트 (동기적으로 처리)
         try {
@@ -137,7 +148,9 @@ export async function POST(request: NextRequest) {
             aiResponse.recommendations,
             analysis.id
           );
-          console.log('알라딘 API 업데이트 완료');
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('알라딘 API 업데이트 완료');
+          }
         } catch (err: unknown) {
           console.error('알라딘 API 업데이트 실패:', err);
         }
@@ -180,8 +193,14 @@ function calculateCost(totalTokens: number): number {
  * - DB 업데이트 (표지, ISBN, 출판사)
  */
 async function enrichRecommendationsWithAladinData(
-  supabase: any,
-  recommendations: any[],
+  supabase: SupabaseClient,
+  recommendations: Array<{
+    type: string;
+    title: string;
+    author?: string;
+    reason: string;
+    display_order: number;
+  }>,
   tasteAnalysisId: string
 ): Promise<void> {
   const ALADIN_API_KEY = process.env.NEXT_PUBLIC_ALADIN_API_KEY;
@@ -233,8 +252,8 @@ async function enrichRecommendationsWithAladinData(
 
         if (updateError) {
           console.error(`DB 업데이트 실패 (${rec.title}):`, updateError);
-        } else {
-          console.log(`✅ ${matchedBook.title} (${matchedBook.author}) - 알라딘 정보 업데이트 완료`);
+        } else if (process.env.NODE_ENV === 'development') {
+          console.warn(`✅ ${matchedBook.title} (${matchedBook.author}) - 알라딘 정보 업데이트 완료`);
         }
       } else {
         // 알라딘에서 찾을 수 없는 책은 삭제

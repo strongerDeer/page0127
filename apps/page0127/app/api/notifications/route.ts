@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
     }));
 
     return successResponse(notificationsWithActor);
-  } catch (error) {
+  } catch {
     return errorResponse('알림 조회에 실패했습니다.');
   }
 }
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
     }
 
     return successResponse(data, 201);
-  } catch (error) {
+  } catch {
     return errorResponse('알림 생성에 실패했습니다.');
   }
 }

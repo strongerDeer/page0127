@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { MoreVertical, Pencil, Trash2, Reply } from 'lucide-react';
+import { MoreVertical, Pencil, Reply,Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
@@ -112,9 +112,9 @@ export const CommentItem = ({
     <div className={`flex gap-3 ${isReply ? 'ml-12' : ''}`}>
       {/* 프로필 사진 */}
       <Avatar className='h-8 w-8'>
-        <AvatarImage src={comment.user.photoUrl || undefined} />
+        <AvatarImage src={comment.user?.photoUrl || undefined} />
         <AvatarFallback>
-          {comment.user.nickname?.[0] || '익'}
+          {comment.user?.nickname?.[0] || '익'}
         </AvatarFallback>
       </Avatar>
 
@@ -123,7 +123,7 @@ export const CommentItem = ({
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-2'>
             <span className='text-sm font-medium'>
-              {comment.user.nickname || '익명'}
+              {comment.user?.nickname || '익명'}
             </span>
             <span className='text-xs text-muted-foreground'>
               {formatTime(comment.createdAt)}

@@ -10,26 +10,27 @@
  * - 전체 읽음 처리
  */
 
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-import { useCurrentUser } from '@/entities/user';
-import {
-  useNotifications,
-  useMarkAsRead,
-  useMarkAllAsRead,
-  useDeleteNotification,
-  type NotificationWithActor,
-} from '@/entities/notification';
+import { useRouter } from 'next/navigation';
 
-import { Button } from '@/shared/ui/button';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+
 import { apiClient } from '@/shared/api/client';
+import { Button } from '@/shared/ui/button';
+
+import {
+  type NotificationWithActor,
+  useDeleteNotification,
+  useMarkAllAsRead,
+  useMarkAsRead,
+} from '@/entities/notification';
+import { useCurrentUser } from '@/entities/user';
 
 import { NotificationItem } from './NotificationItem';
 
-export function NotificationPage() {
+export const NotificationPage = () => {
   const router = useRouter();
   const { data: currentUser } = useCurrentUser();
   const observerRef = useRef<HTMLDivElement>(null);

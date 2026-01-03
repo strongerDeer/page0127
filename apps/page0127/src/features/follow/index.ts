@@ -3,6 +3,6 @@
  */
 
 export { FollowButton } from './ui/FollowButton';
-export { FollowStats } from './ui/FollowStats';
 export { FollowListModal } from './ui/FollowListModal';
+export { FollowStats } from './ui/FollowStats';
 export { UserCard } from './ui/UserCard';
