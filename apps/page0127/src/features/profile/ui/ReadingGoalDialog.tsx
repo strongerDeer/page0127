@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { toast } from 'sonner';
 
@@ -55,17 +55,19 @@ export const ReadingGoalDialog = ({
   currentGoal,
   onSuccess,
 }: Props) => {
+  // 학습 포인트: props를 state 초기값으로만 사용 (derived state 패턴)
+  // isOpen이 변경될 때마다 리셋하려면 부모에서 key prop으로 제어하거나
+  // 여기서는 초기값만 사용하고 onClose에서 리셋
   const [year, setYear] = useState(currentGoal?.year ?? currentYear);
   const [target, setTarget] = useState(currentGoal?.target ?? 50);
   const [isLoading, setIsLoading] = useState(false);
 
-  // 다이얼로그가 열릴 때마다 현재 목표로 state 초기화
-  useEffect(() => {
-    if (isOpen) {
-      setYear(currentGoal?.year ?? currentYear);
-      setTarget(currentGoal?.target ?? 50);
-    }
-  }, [isOpen, currentGoal, currentYear]);
+  // 다이얼로그 닫기 시 state 초기화
+  const handleClose = () => {
+    setYear(currentGoal?.year ?? currentYear);
+    setTarget(currentGoal?.target ?? 50);
+    onClose();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,7 +98,7 @@ export const ReadingGoalDialog = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>📚 연간 독서 목표 설정</DialogTitle>
@@ -139,7 +141,7 @@ export const ReadingGoalDialog = ({
           </div>
 
           <DialogFooter>
-            <Button type='button' variant='outline' onClick={onClose}>
+            <Button type='button' variant='outline' onClick={handleClose}>
               취소
             </Button>
             <Button type='submit' disabled={isLoading}>

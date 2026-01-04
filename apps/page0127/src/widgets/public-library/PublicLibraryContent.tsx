@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+
 import { useRouter } from 'next/navigation';
 
 import {
@@ -15,8 +16,8 @@ import { StatCard } from '@/shared/ui/StatCard';
 import { DashboardCharts } from '@/features/stats/ui/DashboardCharts';
 import { ReadingGoalProgress } from '@/features/stats/ui/ReadingGoalProgress';
 
-import { PublicLibraryHeader } from './PublicLibraryHeader';
 import { PublicBookShelf } from './PublicBookShelf';
+import { PublicLibraryHeader } from './PublicLibraryHeader';
 
 import type { Book } from '@/entities/book/types';
 import type { BookStats } from '@/entities/book/types/stats';
@@ -53,9 +54,9 @@ export const PublicLibraryContent = ({
 }: PublicLibraryContentProps) => {
   const router = useRouter();
 
-  // 필터 상태 관리 (차트 클릭용)
-  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
-  const [selectedRating, setSelectedRating] = useState<number | null>(null);
+  // 필터 상태 관리 (차트 클릭용) - 향후 구현 예정
+  const [_selectedMonth, _setSelectedMonth] = useState<number | null>(null);
+  const [_selectedRating, _setSelectedRating] = useState<number | null>(null);
 
   // 독서 목표 데이터
   const readingGoal = profile.reading_goal;

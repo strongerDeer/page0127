@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import Image from 'next/image';
 
+import { upgradeImageResolution } from '@/shared/lib/imageUtils';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Input } from '@/shared/ui/input';
@@ -12,7 +13,6 @@ import { Switch } from '@/shared/ui/switch';
 import { Textarea } from '@/shared/ui/textarea';
 
 import type { AladinBook, BookRating, BookStatus } from '@/entities/book/types';
-import { upgradeImageResolution } from '@/shared/lib/imageUtils';
 
 type BookRegistrationFormProps = {
   book: AladinBook;

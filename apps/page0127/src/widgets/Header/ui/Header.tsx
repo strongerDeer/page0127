@@ -2,7 +2,9 @@ import Link from 'next/link';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { Button } from '@/shared/ui/button';
+
 import { getProfile } from '@/entities/profile/api/getProfile';
+
 import { ProfileDropdown } from '@/features/profile';
 
 import { HeaderClient } from './HeaderClient';

@@ -2,11 +2,11 @@
 
 import Image from 'next/image';
 
+import { upgradeImageResolution } from '@/shared/lib/imageUtils';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/ui/card';
 
 import type { AladinBook } from '@/entities/book/types';
-import { upgradeImageResolution } from '@/shared/lib/imageUtils';
 
 type BookSearchResultCardProps = {
   book: AladinBook;

@@ -1,15 +1,16 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo,useState } from 'react';
+
 import Image from 'next/image';
 import Link from 'next/link';
 
-import type { Book } from '@/entities/book/types';
+import { mapToMainCategory } from '@/shared/lib/categoryMapper';
 
 import { PublicLibraryFilter } from '@/features/public-library/ui/PublicLibraryFilter';
 import { CategoryFilter } from '@/features/stats/ui/CategoryFilter';
 
-import { mapToMainCategory } from '@/shared/lib/categoryMapper';
+import type { Book } from '@/entities/book/types';
 
 import styles from './PublicBookShelf.module.css';
 

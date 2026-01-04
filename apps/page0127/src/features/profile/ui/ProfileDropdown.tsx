@@ -11,8 +11,10 @@
  */
 
 import Link from 'next/link';
-import { LogOut, BookOpen, User, Home } from 'lucide-react';
 
+import { BookOpen, Home,LogOut, User } from 'lucide-react';
+
+import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
+
 import { useLogout } from '@/features/auth/api/useLogout';
 
 type ProfileDropdownProps = {
