@@ -37,38 +37,42 @@ export const PublicLibraryHeader = ({
 
   return (
     <>
-      <div className='mb-8 rounded-lg border bg-white p-6 shadow-sm'>
-        <div className='flex items-start gap-4'>
+      <div className='relative mb-12 overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-50 via-white to-blue-50 p-8 shadow-lg backdrop-blur-sm'>
+        {/* 배경 장식 */}
+        <div className='absolute right-0 top-0 h-64 w-64 bg-gradient-to-br from-emerald-100/20 to-transparent blur-3xl' />
+        <div className='absolute bottom-0 left-0 h-48 w-48 bg-gradient-to-tr from-blue-100/20 to-transparent blur-3xl' />
+
+        <div className='relative flex items-start gap-6'>
           {/* 프로필 이미지 */}
           {profile.photo_url ? (
-            <div className='relative h-20 w-20 overflow-hidden rounded-full'>
+            <div className='relative h-24 w-24 overflow-hidden rounded-2xl shadow-md ring-4 ring-white'>
               <Image
                 src={profile.photo_url}
                 alt={profile.nickname || username}
                 fill
-                sizes='80px'
+                sizes='96px'
                 className='object-cover'
                 priority
               />
             </div>
           ) : (
-            <div className='flex h-20 w-20 items-center justify-center rounded-full bg-gray-200 text-2xl font-bold text-gray-600'>
+            <div className='flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-3xl font-bold text-white shadow-md ring-4 ring-white'>
               {(profile.nickname || username).charAt(0).toUpperCase()}
             </div>
           )}
 
           {/* 프로필 정보 */}
           <div className='flex-1'>
-            <h1 className='text-2xl font-bold'>
-              {profile.nickname || username}의 서재
+            <h1 className='text-3xl font-bold tracking-tight text-gray-900'>
+              {profile.nickname || username}
             </h1>
             {profile.bio && (
-              <p className='mt-2 text-gray-600'>{profile.bio}</p>
+              <p className='mt-2 text-base text-gray-600'>{profile.bio}</p>
             )}
-            <p className='mt-1 text-sm text-gray-500'>@{username}</p>
+            <p className='mt-1 text-sm font-medium text-gray-500'>@{username}</p>
 
             {/* 팔로우 통계 */}
-            <div className='mt-3'>
+            <div className='mt-4'>
               <FollowStats
                 userId={profile.id}
                 onFollowersClick={() => setFollowersModalOpen(true)}
