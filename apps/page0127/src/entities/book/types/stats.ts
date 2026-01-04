@@ -29,6 +29,9 @@ export type BookStats = {
 
   /** 평균 평점 */
   averageRating: number;
+
+  /** 5점 만점 책 권수 (최고 평점) */
+  fiveStarBooks: number;
 };
 
 /**

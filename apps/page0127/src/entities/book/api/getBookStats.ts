@@ -124,6 +124,11 @@ export const getBookStats = async (
       completedBooksData as Book[]
     );
 
+    // 10. 5점 만점 책 권수 계산
+    const fiveStarBooks = calculateFiveStarBooks(
+      completedBooksData as Book[]
+    );
+
     return {
       totalCompletedBooks: completedBooks ?? 0,
       totalPages,
@@ -133,6 +138,7 @@ export const getBookStats = async (
       categoryReading,
       ratingReading,
       averageRating,
+      fiveStarBooks,
     };
   } catch (error) {
     console.error('통계 조회 실패:', error);
@@ -147,6 +153,7 @@ export const getBookStats = async (
       categoryReading: [],
       ratingReading: [],
       averageRating: 0,
+      fiveStarBooks: 0,
     };
   }
 };
@@ -350,4 +357,15 @@ const calculateAverageRating = (books: Book[]): number => {
   // 평균 계산 (소수점 한 자리)
   const sum = ratedBooks.reduce((acc, book) => acc + (book.rating || 0), 0);
   return Math.round((sum / ratedBooks.length) * 10) / 10;
+};
+
+/**
+ * 5점 만점 책 권수 계산
+ *
+ * 학습 포인트:
+ * - rating이 5인 책들의 개수 집계
+ * - 최고 평점 통계에 사용
+ */
+const calculateFiveStarBooks = (books: Book[]): number => {
+  return books.filter((book) => book.rating === 5).length;
 };
