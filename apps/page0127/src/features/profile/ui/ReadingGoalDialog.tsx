@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { toast } from 'sonner';
 
@@ -59,6 +59,14 @@ export const ReadingGoalDialog = ({
   const [target, setTarget] = useState(currentGoal?.target ?? 50);
   const [isLoading, setIsLoading] = useState(false);
 
+  // 다이얼로그가 열릴 때마다 현재 목표로 state 초기화
+  useEffect(() => {
+    if (isOpen) {
+      setYear(currentGoal?.year ?? currentYear);
+      setTarget(currentGoal?.target ?? 50);
+    }
+  }, [isOpen, currentGoal, currentYear]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -88,7 +96,7 @@ export const ReadingGoalDialog = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>📚 연간 독서 목표 설정</DialogTitle>

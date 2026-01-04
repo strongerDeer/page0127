@@ -14,8 +14,8 @@ type Props = {
   /** 현재 읽은 권수 (해당 연도) */
   current: number;
 
-  /** 목표 설정 버튼 클릭 핸들러 */
-  onSetGoal: () => void;
+  /** 목표 설정 버튼 클릭 핸들러 (공개 서재는 undefined) */
+  onSetGoal?: () => void;
 };
 
 /**
@@ -43,9 +43,9 @@ export const ReadingGoalProgress = ({
         <CardContent>
           <div className='text-center py-6'>
             <p className='mb-4 text-sm text-gray-600'>
-              올해의 독서 목표를 설정해보세요!
+              {onSetGoal ? '올해의 독서 목표를 설정해보세요!' : '아직 독서 목표가 설정되지 않았습니다.'}
             </p>
-            <Button onClick={onSetGoal}>목표 설정하기</Button>
+            {onSetGoal && <Button onClick={onSetGoal}>목표 설정하기</Button>}
           </div>
         </CardContent>
       </Card>
@@ -62,9 +62,11 @@ export const ReadingGoalProgress = ({
       <CardHeader>
         <div className='flex items-center justify-between'>
           <CardTitle className='text-lg'>🎯 {year}년 독서 목표</CardTitle>
-          <Button variant='outline' size='sm' onClick={onSetGoal}>
-            수정
-          </Button>
+          {onSetGoal && (
+            <Button variant='outline' size='sm' onClick={onSetGoal}>
+              수정
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent className='space-y-4'>
