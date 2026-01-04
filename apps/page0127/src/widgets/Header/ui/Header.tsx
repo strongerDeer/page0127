@@ -2,8 +2,8 @@ import Link from 'next/link';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { Button } from '@/shared/ui/button';
-
-import { LogoutButton } from '@/features/auth/ui/LogoutButton';
+import { getProfile } from '@/entities/profile/api/getProfile';
+import { ProfileDropdown } from '@/features/profile';
 
 import { HeaderClient } from './HeaderClient';
 
@@ -21,6 +21,9 @@ export const Header = async () => {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // 로그인한 경우 프로필 정보 가져오기
+  const profile = user ? await getProfile(user.id) : null;
+
   return (
     <header className='border-b bg-white'>
       <div className='container mx-auto flex h-16 max-w-6xl items-center justify-between px-4'>
@@ -30,25 +33,31 @@ export const Header = async () => {
         </Link>
 
         {/* 네비게이션 */}
-        <nav className='flex items-center gap-4'>
-          {user ? (
+        <nav className='flex items-center gap-6'>
+          {user && profile ? (
             // 로그인된 사용자 메뉴
             <>
-              <Link href='/feed' className='hover:text-primary'>
+              <Link href='/feed' className='text-sm hover:text-primary'>
                 피드
               </Link>
-              <Link href='/dashboard' className='hover:text-primary'>
-                내 서재
-              </Link>
-              <Link href='/books/add' className='hover:text-primary'>
+              <Link href='/books/add' className='text-sm hover:text-primary'>
                 도서 추가
               </Link>
-              <Link href='/search' className='hover:text-primary'>
+              <Link href='/search' className='text-sm hover:text-primary'>
                 사용자 검색
               </Link>
-              {/* 알림 드롭다운 */}
-              <HeaderClient userId={user.id} />
-              <LogoutButton />
+
+              <div className='flex items-center gap-2'>
+                {/* 알림 드롭다운 */}
+                <HeaderClient userId={user.id} />
+
+                {/* 프로필 드롭다운 */}
+                <ProfileDropdown
+                  photoUrl={profile.photo_url}
+                  displayName={profile.nickname || profile.email || '사용자'}
+                  username={profile.username}
+                />
+              </div>
             </>
           ) : (
             // 비로그인 사용자 메뉴
