@@ -141,12 +141,36 @@ export const useBookCRUD = () => {
     }
   };
 
+  /**
+   * R: ISBN으로 책 검색 (중복 등록 체크용)
+   */
+  const getBookByISBN = async (isbn: string): Promise<Book[]> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const data = await bookApi.getBookByISBN(isbn);
+      return data;
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'ISBN 검색 중 오류가 발생했습니다.';
+      setError(message);
+      console.error(err);
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     isLoading,
     error,
     createBook,
     getMyBooks,
     getBookById,
+    getBookByISBN,
     updateBook,
     deleteBook,
   };

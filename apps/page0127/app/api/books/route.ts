@@ -16,13 +16,25 @@ import { errorResponse, successResponse } from '../_helpers/response';
 export async function GET(request: NextRequest) {
   try {
     const supabase = await getSupabaseClient();
+    const user = await getCurrentUser();
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get('status');
+    const isbn = searchParams.get('isbn');
     const sortBy = searchParams.get('sortBy') || 'created_at';
     const order = searchParams.get('order') || 'desc';
 
     // Supabase 쿼리 빌더
     let query = supabase.from('books').select('*');
+
+    // 로그인한 사용자의 책만 조회
+    if (user.user) {
+      query = query.eq('user_id', user.user.id);
+    }
+
+    // ISBN 필터링 (중복 등록 체크용)
+    if (isbn) {
+      query = query.eq('isbn', isbn);
+    }
 
     // 상태별 필터링 (선택적)
     if (status) {

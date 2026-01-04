@@ -7,6 +7,7 @@ import Link from 'next/link';
 
 import { mapToMainCategory } from '@/shared/lib/categoryMapper';
 import { Button } from '@/shared/ui/button';
+import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
 import {
   Select,
   SelectContent,
@@ -330,6 +331,12 @@ export const DashboardBookList = ({
                     ) : (
                       <div className='flex h-full w-full items-center justify-center text-4xl'>
                         📚
+                      </div>
+                    )}
+                    {/* 재독 횟수 뱃지 (책 표지 위 오버레이) */}
+                    {book.read_count > 1 && (
+                      <div className='absolute right-2 top-2'>
+                        <ReadCountBadge readCount={book.read_count} size='sm' />
                       </div>
                     )}
                   </div>

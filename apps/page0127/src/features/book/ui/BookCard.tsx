@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/ui/card';
+import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
 
 import type { Book } from '@/entities/book/types';
 
@@ -76,6 +77,9 @@ export const BookCard = ({ book, onDelete }: BookCardProps) => {
               >
                 {statusText[book.status]}
               </span>
+
+              {/* 재독 횟수 뱃지 */}
+              <ReadCountBadge readCount={book.read_count} size='sm' />
 
               {/* 평가 점수 */}
               {book.rating !== null && book.rating !== undefined && (

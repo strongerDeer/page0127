@@ -42,6 +42,7 @@ export type Book = {
 
   // 독서 상태
   status: BookStatus;
+  read_count: number; // 재독 횟수 (1: 첫 독서, 2: 2회독...)
 
   // 날짜 정보
   start_date: string | null;
@@ -84,6 +85,7 @@ export type BookInput = {
 
   // 독서 상태
   status: BookStatus;
+  read_count?: number; // 재독 횟수 (기본값 1)
 
   // 날짜 정보
   start_date?: string;

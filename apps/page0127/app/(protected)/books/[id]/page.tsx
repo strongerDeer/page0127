@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/shared/config/supabase/server';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
 
 import { DeleteBookButton } from '@/features/book/ui/DeleteBookButton';
 
@@ -113,6 +114,9 @@ export default async function BookDetailPage({ params }: PageProps) {
                   >
                     {statusText[book.status]}
                   </span>
+
+                  {/* 재독 횟수 뱃지 */}
+                  <ReadCountBadge readCount={book.read_count} />
 
                   {book.rating !== null && book.rating !== undefined && (
                     <span className='text-lg font-medium text-yellow-600'>

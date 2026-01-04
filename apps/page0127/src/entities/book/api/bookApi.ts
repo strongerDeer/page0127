@@ -45,6 +45,17 @@ export const bookApi = {
   },
 
   /**
+   * R: ISBN으로 책 검색 (중복 등록 체크용)
+   * GET /api/books?isbn=9788...
+   */
+  getBookByISBN: async (isbn: string): Promise<Book[]> => {
+    const response = await apiClient.get<Book[]>(API_ENDPOINTS.books.list, {
+      params: { isbn },
+    });
+    return response.data;
+  },
+
+  /**
    * R: 상세 조회
    * GET /api/books/:id
    */
