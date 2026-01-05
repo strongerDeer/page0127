@@ -197,14 +197,24 @@ export async function DELETE() {
       );
     }
 
-    // book_recommendations 삭제 (도서 추천, author 컬럼 사용)
-    const { error: deleteBookRecommendationsError } = await supabase
-      .from('book_recommendations')
-      .delete()
-      .eq('author', user.id);
+    // book_recommendations 삭제
+    // 학습 포인트: book_recommendations는 taste_analyses를 참조하므로
+    // 먼저 사용자의 taste_analyses ID를 조회한 후 해당 추천들을 삭제
+    const { data: tasteAnalyses } = await supabase
+      .from('taste_analyses')
+      .select('id')
+      .eq('user_id', user.id);
 
-    if (deleteBookRecommendationsError) {
-      console.error('❌ 도서 추천 삭제 실패:', deleteBookRecommendationsError);
+    if (tasteAnalyses && tasteAnalyses.length > 0) {
+      const tasteAnalysisIds = tasteAnalyses.map((t) => t.id);
+      const { error: deleteBookRecommendationsError } = await supabase
+        .from('book_recommendations')
+        .delete()
+        .in('taste_analysis_id', tasteAnalysisIds);
+
+      if (deleteBookRecommendationsError) {
+        console.error('❌ 도서 추천 삭제 실패:', deleteBookRecommendationsError);
+      }
     }
 
     // 중요: comments는 삭제하지 않음 (커뮤니티 보호)
