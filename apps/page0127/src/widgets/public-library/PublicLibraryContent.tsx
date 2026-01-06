@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import { BookOpen, FileText, Star, Trophy, Calendar } from 'lucide-react';
+
 import { useRouter } from 'next/navigation';
 
 import {
@@ -85,91 +87,106 @@ export const PublicLibraryContent = ({
   };
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 py-8">
-      {/* 프로필 헤더 */}
-      <PublicLibraryHeader
-        profile={profile}
-        username={username}
-        isOwnProfile={isOwnProfile}
-        currentUserId={currentUserId}
-      />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-6 md:p-10">
+      <div className="mx-auto max-w-6xl space-y-8">
+        {/* 프로필 헤더 */}
+        <PublicLibraryHeader
+          profile={profile}
+          username={username}
+          isOwnProfile={isOwnProfile}
+          currentUserId={currentUserId}
+        />
 
-      {/* 연도별 통계 */}
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold">📅 {selectedYear}년 통계</h2>
+        {/* 연도별 통계 */}
+        <div className="flex items-center justify-between rounded-2xl border-2 border-white/60 bg-white/40 p-6 shadow-sm backdrop-blur-2xl">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-6 w-6 text-slate-700" />
+            <h2 className="text-2xl font-bold text-slate-800">{selectedYear}년 독서 기록</h2>
+          </div>
 
-        {/* 연도 선택 */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">연도 선택:</span>
-          <Select
-            value={selectedYear.toString()}
-            onValueChange={handleYearChange}
-          >
-            <SelectTrigger className="w-[150px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {availableYears.map((year) => (
-                <SelectItem key={year} value={year.toString()}>
-                  {year}년
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* 연도 선택 */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-slate-600">연도 선택:</span>
+            <Select
+              value={selectedYear.toString()}
+              onValueChange={handleYearChange}
+            >
+              <SelectTrigger className="w-[140px] border-white/60 bg-white/50 backdrop-blur-md shadow-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {availableYears.map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}년
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-      </div>
 
-      {/* 독서 목표 진행률 (공개 서재는 표시만, 수정 불가) */}
-      <div className="mb-8">
-        <ReadingGoalProgress
-          year={selectedYear}
-          target={isCurrentYearGoal && readingGoal ? readingGoal.target : 0}
-          current={completedBooksInYear}
-          // onSetGoal을 전달하지 않음 → 공개 서재는 목표 설정/수정 불가
-        />
-      </div>
+        {/* 독서 목표 진행률 (공개 서재 - 읽기 전용) */}
+        {isCurrentYearGoal && readingGoal && (
+          <div className="rounded-3xl border-2 border-white/60 bg-white/40 p-6 shadow-sm backdrop-blur-2xl">
+             <h3 className="mb-4 text-lg font-bold text-slate-800">목표 달성 현황</h3>
+             <ReadingGoalProgress
+              year={selectedYear}
+              target={readingGoal.target}
+              current={completedBooksInYear}
+            />
+          </div>
+        )}
 
-      {/* 통계 카드 그리드 */}
-      <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard
-          icon="📚"
-          title="읽은 책"
-          value={stats.totalCompletedBooks}
-          unit="권"
-        />
-        <StatCard
-          icon="📖"
-          title="읽은 페이지"
-          value={stats.totalPages}
-          unit="쪽"
-        />
-        <StatCard
-          icon="⭐"
-          title="평균 평점"
-          value={stats.averageRating.toFixed(1)}
-          unit="점"
-        />
-        <StatCard
-          icon="❤️"
-          title="최고 평점"
-          value={stats.fiveStarBooks}
-          unit="권"
-        />
-      </div>
+        {/* 통계 요약 카드 (Glass Pills) */}
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <StatCard
+            icon={<BookOpen className="h-5 w-5" />}
+            title="읽은 책"
+            value={stats.totalCompletedBooks}
+            unit="권"
+            variant="blue"
+          />
+          <StatCard
+            icon={<FileText className="h-5 w-5" />}
+            title="읽은 페이지"
+            value={stats.totalPages}
+            unit="쪽"
+            variant="sky"
+          />
+          <StatCard
+            icon={<Star className="h-5 w-5" />}
+            title="평균 평점"
+            value={stats.averageRating.toFixed(1)}
+            unit="점"
+            variant="indigo"
+          />
+          <StatCard
+            icon={<Trophy className="h-5 w-5" />}
+            title="인생 책"
+            value={stats.fiveStarBooks}
+            unit="권"
+            description="5점 만점 도서"
+            variant="cyan"
+          />
+        </div>
 
-      {/* 차트 섹션 */}
-      <DashboardCharts
-        monthlyReading={stats.monthlyReading}
-        categoryReading={stats.categoryReading}
-        ratingReading={stats.ratingReading}
-        averageRating={stats.averageRating}
-        onMonthClick={handleMonthClick}
-        onRatingClick={handleRatingClick}
-      />
+        {/* 차트 섹션 */}
+        <div className="rounded-3xl border-2 border-white/60 bg-white/40 p-6 shadow-sm backdrop-blur-2xl">
+           <h3 className="mb-6 text-xl font-bold text-slate-800">독서 분석</h3>
+           <DashboardCharts
+            monthlyReading={stats.monthlyReading}
+            categoryReading={stats.categoryReading}
+            ratingReading={stats.ratingReading}
+            averageRating={stats.averageRating}
+            onMonthClick={handleMonthClick}
+            onRatingClick={handleRatingClick}
+          />
+        </div>
 
-      {/* 읽은 책 목록 (카드 그리드) */}
-      <div className="mt-8">
-        <PublicBookShelf books={books} username={username} />
+        {/* 읽은 책 목록 & 책장 */}
+        <div className="mt-8 rounded-3xl border-2 border-white/60 bg-white/40 p-8 shadow-sm backdrop-blur-2xl">
+           <PublicBookShelf books={books} username={username} />
+        </div>
       </div>
     </div>
   );

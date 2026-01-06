@@ -113,8 +113,8 @@ export const PublicBookShelf = ({ books, username }: PublicBookShelfProps) => {
 
   return (
     <div>
-      <h2 className="mb-4 text-xl font-bold">
-        공개된 책 목록 ({filteredBooks.length})
+      <h2 className="mb-4 text-xl font-bold text-slate-800">
+        공개 도서 목록 ({filteredBooks.length})
       </h2>
 
       {books.length === 0 ? (

@@ -105,7 +105,7 @@ export const ReadingCalendar = ({
 
   return (
     <>
-      <Card key={`calendar-${currentYear}-${currentMonth}`}>
+      <Card key={`calendar-${currentYear}-${currentMonth}`} className="border-0 bg-transparent shadow-none">
         <CardHeader>
           <CardTitle className='flex items-center justify-between'>
             <span>📅 독서 캘린더</span>

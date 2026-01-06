@@ -50,22 +50,27 @@ export const CategoryPieChart = ({ data, onCategoryClick }: Props) => {
           nameKey="category"
           cx="50%"
           cy="50%"
-          outerRadius={80}
+          innerRadius={60}
+          outerRadius={100}
+          paddingAngle={4}
+          cornerRadius={6}
           label={(entry: unknown) => {
             const e = entry as { category: string; percentage: number };
-            return `${e.category} ${e.percentage}%`;
+            // Simplify label for cleaner look
+            return e.percentage > 5 ? `${e.category}` : '';
           }}
           onClick={(entry: unknown) => {
             const e = entry as { category: string };
             return onCategoryClick?.(e.category);
           }}
-          style={{ cursor: onCategoryClick ? 'pointer' : 'default' }}
+          style={{ cursor: onCategoryClick ? 'pointer' : 'default', stroke: 'none' }}
         >
           {data.map((entry, index) => (
             <Cell key={entry.category} fill={COLORS[index % COLORS.length]} />
           ))}
         </Pie>
         <Tooltip
+          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
           formatter={(value: number, name: string, props: unknown) => {
             const p = props as { payload?: { percentage: number } };
             return [
@@ -74,7 +79,11 @@ export const CategoryPieChart = ({ data, onCategoryClick }: Props) => {
             ];
           }}
         />
-        <Legend />
+        <Legend
+            verticalAlign="bottom"
+            height={36}
+            iconType="circle"
+        />
       </PieChart>
     </ResponsiveContainer>
   );

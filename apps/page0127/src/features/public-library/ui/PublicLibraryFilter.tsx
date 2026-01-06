@@ -67,8 +67,8 @@ export const PublicLibraryFilter = ({
             onClick={() => handleStatusChange('all')}
             className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               status === 'all'
-                ? 'bg-emerald-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
             }`}
           >
             전체
@@ -77,8 +77,8 @@ export const PublicLibraryFilter = ({
             onClick={() => handleStatusChange('completed')}
             className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               status === 'completed'
-                ? 'bg-emerald-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
             }`}
           >
             완독
@@ -87,8 +87,8 @@ export const PublicLibraryFilter = ({
             onClick={() => handleStatusChange('reading')}
             className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               status === 'reading'
-                ? 'bg-emerald-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
             }`}
           >
             읽는 중
@@ -97,8 +97,8 @@ export const PublicLibraryFilter = ({
             onClick={() => handleStatusChange('wish')}
             className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               status === 'wish'
-                ? 'bg-emerald-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
             }`}
           >
             읽고 싶은

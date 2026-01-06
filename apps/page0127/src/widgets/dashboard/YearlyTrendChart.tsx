@@ -57,20 +57,41 @@ export const YearlyTrendChart = ({ data }: Props) => {
     <div className='flex flex-col gap-2'>
       <ResponsiveContainer width='100%' height={300}>
         <BarChart data={data}>
-          <CartesianGrid strokeDasharray='3 3' />
-          <XAxis dataKey='year' />
-          <YAxis />
+          <defs>
+            <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.8}/>
+              <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.8}/>
+            </linearGradient>
+            <linearGradient id="colorCountPeak" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#F472B6" stopOpacity={1}/>
+              <stop offset="95%" stopColor="#DB2777" stopOpacity={1}/>
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray='3 3' vertical={false} stroke="rgba(0,0,0,0.1)" />
+          <XAxis
+            dataKey='year'
+            axisLine={false}
+            tickLine={false}
+            tick={{fill: '#64748b', fontSize: 12}}
+            dy={10}
+          />
+          <YAxis
+            axisLine={false}
+            tickLine={false}
+            tick={{fill: '#64748b', fontSize: 12}}
+          />
           <Tooltip
+            cursor={{fill: 'rgba(0,0,0,0.05)'}}
+            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
             formatter={(value: number) => [`${value}권`, '독서량']}
             labelFormatter={(label) => `${label}년`}
           />
-          <Legend />
           <Bar
             dataKey='count'
-            fill='#10B981'
+            fill='url(#colorCount)'
             name='독서량'
-            radius={[8, 8, 0, 0]}
-            // 최고 기록 연도는 진한 색상으로 표시
+            radius={[6, 6, 6, 6]}
+            barSize={40}
             shape={(props: unknown) => {
               const p = props as { x?: number; y?: number; width?: number; height?: number; payload?: { year: number } };
               const isPeak = p.payload?.year === peakYear.year;
@@ -80,9 +101,9 @@ export const YearlyTrendChart = ({ data }: Props) => {
                   y={p.y ?? 0}
                   width={p.width ?? 0}
                   height={p.height ?? 0}
-                  fill={isPeak ? '#059669' : '#10B981'}
-                  rx={8}
-                  ry={8}
+                  fill={isPeak ? 'url(#colorCountPeak)' : 'url(#colorCount)'}
+                  rx={6}
+                  ry={6}
                 />
               );
             }}

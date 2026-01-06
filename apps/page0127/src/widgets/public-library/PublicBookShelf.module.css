@@ -1,15 +1,15 @@
 .shelf {
   margin-top: 2rem;
-  background-color: #ffffff;
+  background-color: transparent;
   background-image: linear-gradient(
     to bottom,
-    #ffffff 240px,
+    transparent 240px,
     #f3f4f6 250px,
     #ffffff 250px,
     #e5e7eb 260px,
     #d1d5db 262px,
     rgba(0, 0, 0, 0.2) 262px,
-    #ffffff 263px
+    transparent 263px
   );
 
   background-size: 100% 280px;

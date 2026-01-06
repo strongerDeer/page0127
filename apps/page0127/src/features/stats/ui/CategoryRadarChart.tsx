@@ -69,8 +69,8 @@ export const CategoryRadarChart = ({ data }: CategoryRadarChartProps) => {
           {/* 레이더 */}
           <Radar
             dataKey='count'
-            stroke='#10B981'
-            fill='#10B981'
+            stroke='#6366f1'
+            fill='#6366f1'
             fillOpacity={0.6}
           />
         </RadarChart>

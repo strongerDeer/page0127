@@ -300,15 +300,15 @@ const calculateCategoryReading = (books: Book[]): CategoryReadingData[] => {
  * - 유효한 평점만 집계 (0, 1, 2, 3, 4, 5, 10)
  */
 const calculateRatingDistribution = (books: Book[]): RatingReadingData[] => {
-  // 평점 색상 매핑 (10점 → 0점: 초록 → 회색)
+  // 평점 색상 매핑 (10점 → 0점: 블루 → 회색)
   const RATING_COLORS: Record<number, string> = {
-    10: '#059669', // emerald-600 (진한 초록)
-    5: '#10b981', // emerald-500
-    4: '#34d399', // emerald-400
-    3: '#fbbf24', // amber-400 (노랑)
-    2: '#f97316', // orange-500
-    1: '#ef4444', // red-500 (빨강)
-    0: '#9ca3af', // gray-400 (회색)
+    10: '#4338ca', // indigo-700
+    5: '#3b82f6', // blue-500
+    4: '#60a5fa', // blue-400
+    3: '#a78bfa', // violet-400
+    2: '#818cf8', // indigo-400
+    1: '#c084fc', // purple-400
+    0: '#9ca3af', // gray-400
   };
 
   // 유효한 평점 목록 (내림차순)

@@ -1,3 +1,4 @@
+import { BookOpen, FileText, Calendar, Clock } from 'lucide-react';
 import { StatCard } from '@/shared/ui/StatCard';
 
 import type { ReadingJourney } from '@/entities/book/types/stats';
@@ -27,37 +28,41 @@ export const ReadingJourneyCard = ({ data }: Props) => {
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
       {/* 1. 읽은 책 */}
       <StatCard
-        icon="📚"
+        icon={<BookOpen className="h-5 w-5" />}
         title="읽은 책"
         value={data.totalBooks}
         unit="권"
         description={`⭐ 10점: ${data.perfectScoreBooks}권 (${data.perfectScoreRate}%)`}
+        variant="blue"
       />
 
       {/* 2. 읽은 쪽수 */}
       <StatCard
-        icon="📖"
+        icon={<FileText className="h-5 w-5" />}
         title="읽은 쪽수"
         value={data.totalPages}
         unit="쪽"
         description={`📅 하루 평균: ${data.averagePagesPerDay}쪽`}
+        variant="purple"
       />
 
       {/* 3. 독서 기간 */}
       <StatCard
-        icon="📆"
+        icon={<Calendar className="h-5 w-5" />}
         title="독서 기간"
         value={`${data.readingYears}년`}
         description={`${formatDate(data.readingSince)} ~ 현재`}
+        variant="amber"
       />
 
       {/* 4. 예상 독서 시간 */}
       <StatCard
-        icon="⏱️"
+        icon={<Clock className="h-5 w-5" />}
         title="예상 독서 시간"
         value={data.estimatedHours}
         unit="시간"
         description={`약 ${data.estimatedDays}일`}
+        variant="indigo"
       />
     </div>
   );

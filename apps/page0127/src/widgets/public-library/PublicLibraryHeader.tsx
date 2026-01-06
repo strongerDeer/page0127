@@ -37,15 +37,15 @@ export const PublicLibraryHeader = ({
 
   return (
     <>
-      <div className='relative mb-12 overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-50 via-white to-blue-50 p-8 shadow-lg backdrop-blur-sm'>
+      <div className='relative mb-12 overflow-hidden rounded-3xl border-2 border-white/60 bg-white/40 p-8 shadow-xl backdrop-blur-2xl'>
         {/* 배경 장식 */}
-        <div className='absolute right-0 top-0 h-64 w-64 bg-gradient-to-br from-emerald-100/20 to-transparent blur-3xl' />
-        <div className='absolute bottom-0 left-0 h-48 w-48 bg-gradient-to-tr from-blue-100/20 to-transparent blur-3xl' />
+        <div className='absolute right-0 top-0 h-64 w-64 bg-gradient-to-br from-blue-100/30 to-transparent blur-3xl' />
+        <div className='absolute bottom-0 left-0 h-48 w-48 bg-gradient-to-tr from-sky-100/30 to-transparent blur-3xl' />
 
         <div className='relative flex items-start gap-6'>
           {/* 프로필 이미지 */}
           {profile.photo_url ? (
-            <div className='relative h-24 w-24 overflow-hidden rounded-2xl shadow-md ring-4 ring-white'>
+            <div className='relative h-24 w-24 overflow-hidden rounded-2xl shadow-md ring-4 ring-white/50'>
               <Image
                 src={profile.photo_url}
                 alt={profile.nickname || username}
@@ -56,7 +56,7 @@ export const PublicLibraryHeader = ({
               />
             </div>
           ) : (
-            <div className='flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-3xl font-bold text-white shadow-md ring-4 ring-white'>
+            <div className='flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-400 to-sky-500 text-3xl font-bold text-white shadow-md ring-4 ring-white/50'>
               {(profile.nickname || username).charAt(0).toUpperCase()}
             </div>
           )}

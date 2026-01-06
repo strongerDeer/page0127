@@ -1,6 +1,7 @@
 'use client';
 
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
+import { Star } from 'lucide-react';
 
 import type { RatingReadingData } from '@/entities/book/types/stats';
 
@@ -75,11 +76,13 @@ export const RatingDoughnutChart = ({
 
       {/* 중앙에 평균 평점 표시 */}
       <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center'>
-        <div className='text-3xl font-bold text-gray-700'>
+        <div className='text-3xl font-bold text-slate-800'>
           {averageRating.toFixed(1)}
         </div>
-        <div className='text-sm text-gray-500'>평균 평점</div>
-        <div className='text-xl'>⭐</div>
+        <div className='text-sm text-slate-500'>평균 평점</div>
+        <div className='flex justify-center mt-1'>
+           <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+        </div>
       </div>
 
       {/* 범례 */}

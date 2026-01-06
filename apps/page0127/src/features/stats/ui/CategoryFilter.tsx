@@ -44,8 +44,8 @@ export const CategoryFilter = ({
           onClick={() => onSelectCategory(null)}
           className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
             selectedCategory === null
-              ? 'bg-emerald-500 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ? 'bg-indigo-500 text-white'
+              : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
           }`}
         >
           All
@@ -60,8 +60,8 @@ export const CategoryFilter = ({
               onClick={() => onSelectCategory(cat.category)}
               className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                 selectedCategory === cat.category
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-indigo-500 text-white'
+                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
               }`}
             >
               {cat.category}{' '}

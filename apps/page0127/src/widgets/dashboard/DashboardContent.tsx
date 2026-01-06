@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { BookOpen, FileText, Target, CheckCircle } from 'lucide-react';
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -279,104 +280,22 @@ export const DashboardContent = ({
   };
 
   return (
-    <div className='min-h-screen bg-gray-50 p-8'>
-      <div className='mx-auto max-w-6xl'>
-        <div className='mb-6 flex items-start justify-between'>
+    <div className='min-h-screen p-6 md:p-10'>
+      <div className='mx-auto max-w-7xl space-y-8'>
+        {/* Header */}
+        <header className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
           <div>
-            <h1 className='text-3xl font-bold'>내 서재</h1>
-            <p className='text-gray-600'>당신의 독서 여정을 확인하세요</p>
+            <h1 className='text-4xl font-bold tracking-tight text-slate-900'>Dashboard</h1>
+            <p className='text-lg text-slate-500'>Overview of your reading journey</p>
           </div>
 
-          {/* 공개 서재 URL */}
-          {profile?.username && (
-            <div className='flex flex-col items-end gap-2'>
-              <p className='text-sm text-gray-500'>공개 서재 주소</p>
-              <div className='flex gap-2'>
-                <Link
-                  href={`/${profile.username}`}
-                  target='_blank'
-                  className='rounded-md border bg-white px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50'
-                >
-                  /{profile.username}
-                </Link>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  onClick={handleCopyPublicUrl}
-                >
-                  URL 복사
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ============ 전체 독서 통계 (All Time Stats) ============ */}
-        <Card className='mb-8 border-2 border-emerald-100'>
-          <CardHeader>
-            <div className='flex items-start justify-between'>
-              <div>
-                <CardTitle className='text-xl'>📖 전체 독서 통계</CardTitle>
-                <p className='text-sm text-gray-600'>
-                  전체 기간의 독서 히스토리
-                </p>
-              </div>
-              <Button
-                variant='default'
-                size='sm'
-                className='bg-purple-600 hover:bg-purple-700'
-                onClick={handleAnalyzeTaste}
-                disabled={isAnalyzing}
-              >
-                {isAnalyzing ? '분석 중...' : '🤖 내 취향 분석하기'}
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className='space-y-8'>
-            {/* 1. 독서 여정 카드 */}
-            <div>
-              <h3 className='mb-4 text-lg font-semibold'>🏆 독서 여정</h3>
-              <ReadingJourneyCard data={overallStats.journey} />
-            </div>
-
-            {/* 2. 카테고리 + 5년 트렌드 */}
-            <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
-              <div>
-                <h3 className='mb-4 text-lg font-semibold'>
-                  📊 카테고리별 분포
-                </h3>
-                <CategoryPieChart data={overallStats.categoryDistribution} />
-              </div>
-              <div>
-                <h3 className='mb-4 text-lg font-semibold'>
-                  📈 최근 5년 독서량
-                </h3>
-                <YearlyTrendChart data={overallStats.yearlyTrend} />
-              </div>
-            </div>
-
-            {/* 3. 평점 분포 */}
-            <div>
-              <h3 className='mb-4 text-lg font-semibold'>
-                ⭐ 평점 분포 & 선호도
-              </h3>
-              <RatingDistributionChart data={overallStats.ratingDistribution} />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* ============ 연도별 통계 (선택된 연도) ============ */}
-        <div className='mb-6 flex items-center justify-between'>
-          <h2 className='text-2xl font-bold'>📅 {selectedYear}년 통계</h2>
-
-          {/* 연도 선택 */}
-          <div className='flex items-center gap-2'>
-            <span className='text-sm text-gray-600'>연도 선택:</span>
+          <div className='flex items-center gap-4'>
+            {/* Year Select */}
             <Select
               value={selectedYear.toString()}
               onValueChange={handleYearChange}
             >
-              <SelectTrigger className='w-[150px]'>
+              <SelectTrigger className='w-[140px] border-white/40 bg-white/50 backdrop-blur-md'>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -387,117 +306,147 @@ export const DashboardContent = ({
                 ))}
               </SelectContent>
             </Select>
+
+            <Button
+                className='bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30'
+                onClick={handleAnalyzeTaste}
+                disabled={isAnalyzing}
+              >
+                {isAnalyzing ? 'Analyzing...' : 'AI Analysis'}
+            </Button>
+
+            {profile?.username && (
+               <Button
+                  variant='outline'
+                  size='icon'
+                  onClick={handleCopyPublicUrl}
+                  className="bg-white/50 backdrop-blur-md border-white/40"
+                  title="Copy Public URL"
+                >
+                  <span className="sr-only">Copy URL</span>
+                  🔗
+                </Button>
+            )}
+          </div>
+        </header>
+
+        {/* Top Info Cards (Glass Pills) */}
+        <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
+           <StatCard icon={<BookOpen className="h-5 w-5" />} title='Books Read' value={stats.totalCompletedBooks} unit='Books' variant="blue" />
+           <StatCard icon={<FileText className="h-5 w-5" />} title='Pages Read' value={stats.totalPages} unit='Pages' variant="purple" />
+           <StatCard icon={<Target className="h-5 w-5" />} title='Yearly Goal' value={stats.yearlyGoal} unit='Books' variant="emerald" />
+           <StatCard icon={<CheckCircle className="h-5 w-5" />} title='Completion' value={stats.completionRate} unit='%' variant="rose" />
+        </div>
+
+        {/* Main Grid Section */}
+        <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
+
+          {/* Left Column (Hero / Charts) - Spans 2 cols */}
+          <div className='space-y-6 lg:col-span-2'>
+            {/* Yearly Trend Chart (Glass Card) */}
+            <Card className='border border-white/40 bg-white/60 shadow-xl backdrop-blur-xl'>
+              <CardHeader>
+                 <CardTitle>Yearly Reading Trend</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <YearlyTrendChart data={overallStats.yearlyTrend} />
+              </CardContent>
+            </Card>
+
+            {/* Monthly & Category Charts */}
+            <DashboardCharts
+              monthlyReading={stats.monthlyReading}
+              categoryReading={stats.categoryReading}
+              ratingReading={stats.ratingReading}
+              averageRating={stats.averageRating}
+              onMonthClick={handleMonthClick}
+              onRatingClick={handleRatingClick}
+            />
+          </div>
+
+          {/* Right Column (Side Widgets) */}
+          <div className='space-y-6'>
+            {/* Reading Journey (All Time) */}
+            <Card className='border border-white/40 bg-gradient-to-br from-white/60 to-white/30 shadow-xl backdrop-blur-xl'>
+              <CardHeader>
+                <CardTitle>Total Journey</CardTitle>
+              </CardHeader>
+              <CardContent className='space-y-4'>
+                 <ReadingJourneyCard data={overallStats.journey} />
+              </CardContent>
+            </Card>
+
+            {/* Reading Goal Progress */}
+            <div className="rounded-3xl border border-white/40 bg-white/50 p-6 shadow-xl backdrop-blur-xl">
+               <h3 className="mb-4 text-lg font-bold text-slate-800">Goal Progress</h3>
+               <ReadingGoalProgress
+                year={selectedYear}
+                target={isCurrentYearGoal && readingGoal ? readingGoal.target : 0}
+                current={completedBooksInYear}
+                onSetGoal={() => setIsGoalDialogOpen(true)}
+              />
+            </div>
+
+            {/* Taste Analysis Promo */}
+             <div className='relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white shadow-xl'>
+                <div className="relative z-10">
+                  <h3 className="text-xl font-bold">Discover Your Taste</h3>
+                  <p className="mt-2 text-indigo-100 text-sm">Let AI analyze your reading patterns.</p>
+                  <Button
+                    variant="secondary"
+                    className="mt-4 w-full border-0 bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm"
+                    onClick={handleAnalyzeTaste}
+                  >
+                    Start Analysis
+                  </Button>
+                </div>
+                {/* Decorative circles */}
+                 <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/10 blur-2xl"></div>
+                 <div className="absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-purple-400/20 blur-2xl"></div>
+             </div>
           </div>
         </div>
 
-        {/* 독서 목표 진행률 */}
-        <div className='mb-8'>
-          <ReadingGoalProgress
-            year={selectedYear}
-            target={isCurrentYearGoal && readingGoal ? readingGoal.target : 0}
-            current={completedBooksInYear}
-            onSetGoal={() => setIsGoalDialogOpen(true)}
-          />
-        </div>
-
-        {/* 통계 카드 그리드 */}
-        <div className='mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'>
-          <StatCard
-            icon='📚'
-            title='총 읽은 책'
-            value={stats.totalCompletedBooks}
-            unit='권'
-          />
-          <StatCard
-            icon='📖'
-            title='총 읽은 쪽수'
-            value={stats.totalPages}
-            unit='쪽'
-          />
-          <StatCard
-            icon='🎯'
-            title='연간 목표'
-            value={stats.yearlyGoal}
-            unit='권'
-          />
-          <StatCard
-            icon='✅'
-            title='완독률'
-            value={stats.completionRate}
-            unit='%'
-          />
-        </div>
-
-        {/* 차트 섹션 (클릭 시 아래 책 목록 필터링) */}
-        <DashboardCharts
-          monthlyReading={stats.monthlyReading}
-          categoryReading={stats.categoryReading}
-          ratingReading={stats.ratingReading}
-          averageRating={stats.averageRating}
-          onMonthClick={handleMonthClick}
-          onRatingClick={handleRatingClick}
-        />
-
-        {/* 독서 캘린더 */}
-        <div className='mb-8'>
-          <ReadingCalendar
-            data={currentCalendarData}
-            summary={currentCalendarSummary}
-            currentYear={calendarYear}
-            currentMonth={calendarMonth}
-            isLoading={calendarLoading}
-            onPreviousMonth={handlePreviousMonth}
-            onNextMonth={handleNextMonth}
-          />
-        </div>
-
-        {/* 읽은 책 목록 (카테고리 + 월 + 평점 + 검색어 복합 필터) */}
-        <Card className='mb-8'>
-          <CardContent className='pt-6'>
-            <DashboardBookList
-              books={books}
-              categories={stats.categoryReading}
-              selectedMonth={selectedMonth}
-              selectedCategory={selectedCategory}
-              selectedRating={selectedRating}
-              searchQuery={searchQuery}
-              onCategoryChange={setSelectedCategory}
-              onRemoveMonthFilter={handleRemoveMonthFilter}
-              onRemoveRatingFilter={handleRemoveRatingFilter}
-              onSearchChange={setSearchQuery}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>환영합니다!</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className='mb-2 text-gray-600'>
-              <strong>이메일:</strong> {userEmail}
-            </p>
-            <p className='text-gray-600'>
-              <strong>사용자 ID:</strong> {userId}
-            </p>
-            <div className='mt-6 rounded-lg bg-blue-50 p-4'>
-              <p className='mb-4 text-sm text-blue-800'>
-                📚 도서 검색 및 독서 기록 기능을 사용해보세요!
-              </p>
-              <div className='flex gap-3'>
-                <Link href='/books'>
-                  <Button variant='outline'>내 서재</Button>
-                </Link>
-                <Link href='/books/add'>
-                  <Button>도서 추가</Button>
-                </Link>
-              </div>
+        {/* Bottom Section: Calendar & Detail List */}
+        <div className='space-y-6'>
+            {/* Calendar */}
+            <div className="rounded-3xl border border-white/40 bg-white/60 shadow-xl backdrop-blur-xl overflow-hidden">
+               <ReadingCalendar
+                data={currentCalendarData}
+                summary={currentCalendarSummary}
+                currentYear={calendarYear}
+                currentMonth={calendarMonth}
+                isLoading={calendarLoading}
+                onPreviousMonth={handlePreviousMonth}
+                onNextMonth={handleNextMonth}
+              />
             </div>
-          </CardContent>
-        </Card>
+
+            {/* Book List */}
+            <div className="rounded-3xl border border-white/40 bg-white/60 p-1 shadow-xl backdrop-blur-xl">
+                <Card className="border-0 bg-transparent shadow-none">
+                  <CardHeader>
+                    <CardTitle>Recent Books</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <DashboardBookList
+                      books={books}
+                      categories={stats.categoryReading}
+                      selectedMonth={selectedMonth}
+                      selectedCategory={selectedCategory}
+                      selectedRating={selectedRating}
+                      searchQuery={searchQuery}
+                      onCategoryChange={setSelectedCategory}
+                      onRemoveMonthFilter={handleRemoveMonthFilter}
+                      onRemoveRatingFilter={handleRemoveRatingFilter}
+                      onSearchChange={setSearchQuery}
+                    />
+                  </CardContent>
+                </Card>
+            </div>
+        </div>
       </div>
 
-      {/* 독서 목표 설정 다이얼로그 */}
       <ReadingGoalDialog
         isOpen={isGoalDialogOpen}
         onClose={() => setIsGoalDialogOpen(false)}
@@ -505,7 +454,6 @@ export const DashboardContent = ({
         currentYear={currentYear}
         currentGoal={readingGoal ?? null}
         onSuccess={() => {
-          // 페이지 새로고침하여 업데이트된 프로필 반영
           router.refresh();
         }}
       />

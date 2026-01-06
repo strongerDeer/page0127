@@ -72,7 +72,7 @@ export const MonthlyReadingChart = ({
 
           {/* 툴팁 */}
           <Tooltip
-            cursor={{ fill: 'rgba(16, 185, 129, 0.1)' }}
+            cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
             contentStyle={{
               backgroundColor: 'white',
               border: '1px solid #e5e7eb',
@@ -86,7 +86,7 @@ export const MonthlyReadingChart = ({
           {/* Bar */}
           <Bar
             dataKey='count'
-            fill='#10B981'
+            fill='#3B82F6'
             radius={[8, 8, 0, 0]}
             cursor={onMonthClick ? 'pointer' : 'default'}
             onClick={handleBarClick}

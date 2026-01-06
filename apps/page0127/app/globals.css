@@ -9,13 +9,15 @@
 
 :root {
   /* 컬러 시스템 (PRD 기반) */
-  --color-primary: #ffd700; /* Gold - 주요 액센트, CTA 버튼 */
-  --color-secondary: #2d3748; /* Dark - 텍스트, 배경 */
-  --color-accent: #9f7aea; /* Purple - 보조 액센트 */
+  --color-primary: #3B82F6; /* Blue - Reference 'Home' button color */
+  --color-secondary: #1E293B; /* Slate - Text */
+  --color-accent: #8B5CF6; /* Purple */
 
   /* 배경 & 텍스트 */
-  --background: oklch(1 0 0); /* 기본 배경 */
-  --foreground: oklch(0.145 0 0); /* 기본 텍스트 (secondary와 동일) */
+  /* Soft gradient mesh background */
+  --background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+  --background: #eff6ff; /* Fallback light blue */
+  --foreground: #0f172a;
 
   /* 타이포그래피 */
   --font-h1-desktop: 50px; /* 데스크톱 H1 */
@@ -63,6 +65,11 @@
   /* 배경 & 전경 */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  /* Glassmorphism Utilities */
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 
   /* 컬러 (Tailwind에서 사용 가능하도록) */
   --color-primary: #ffd700;
@@ -114,7 +121,13 @@
 
 /* 기본 스타일 */
 body {
-  background: var(--background);
+  background: #f0f4ff; /* Light bluish gray base */
+  background-image:
+    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(59, 130, 246, 0.1) 0px, transparent 50%);
+  background-attachment: fixed; /* Keep background fixed */
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
