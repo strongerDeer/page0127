@@ -1,0 +1,223 @@
+/* BookListItem.module.css */
+
+/* Define the variables used in the original SCSS */
+.article {
+  --grayLv1: #e5e7eb; /* tailwind gray-200 */
+  --grayLv2: #d1d5db; /* tailwind gray-300 */
+  --grayLv3: #9ca3af; /* tailwind gray-400 */
+  --grayLv4: #6b7280; /* tailwind gray-500 */
+  --background: #ffffff;
+
+  /* fcSize simulation:
+     $maxW: 1200
+     fcSize($min, $max) => clamp($min * 0.1rem, (100vw / 1200) * $max, $max * 0.1rem)
+
+     Assuming 1rem = 10px (common in such designs) or adapting to standard 16px.
+     If the user's design assumes 1rem=10px, 140 => 14rem.
+     If standard 16px, 140 (140px) => 8.75rem.
+
+     Let's try to stick to the 'rem' values if they meant 140px.
+     If 140 = 14rem (1rem=10px), then 14rem = 140px.
+     If they use standard browser font size (16px), 14rem = 224px.
+
+     Given 'fcSize(140, 200)', 140px to 200px seems reasonable for a book cover.
+     So we will assume the output should be in pixels or standard rem.
+
+     Clamp formula approximation:
+     Min: 14rem (assuming 1rem=10px context) -> 140px
+     Val: (100vw / 1200) * 200 -> 16.666vw
+     Max: 20rem -> 200px
+  */
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1rem;
+}
+
+.addCon {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 15%;
+  font-size: 0.85em;
+  text-align: left;
+  padding: 1rem;
+  background-color: rgba(255,255,255,0.95); /* ensuring readability */
+  border-radius: 4px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  z-index: 20;
+  width: 140%; /* Derived from context */
+}
+
+.description {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  color: #374151;
+}
+
+.perspective:hover .addCon {
+  display: flex;
+  gap: 1rem;
+  flex-direction: column;
+  animation: opacity 0.4s 0.2s both;
+}
+
+@keyframes opacity {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.perspective {
+  position: relative;
+  perspective: 800px;
+  margin-bottom: 2.4rem;
+  cursor: pointer;
+}
+
+.cover {
+  /* fcSize(140, 200) */
+  /* Assuming base 10px for rem conversion to match probable intent of '140' being 14rem */
+  /* If project uses standard 16px, we use px directly for safety */
+  width: clamp(140px, 16.66vw, 200px);
+  height: clamp(140px, 16.66vw, 200px); /* Though usually height > width for books. SCSS said 140, 200 for both? */
+  /* SCSS said: width: fcSize(140, 200); height: fcSize(140, 200);
+     Wait, books are rectangles. Maybe the image inside handles aspect ratio?
+     The container is square in SCSS?
+     Let's check image styles. styles seem to force sizes.
+     We will follow SCSS exactly: Square container? */
+
+  position: relative;
+  transform-style: preserve-3d;
+  transform-origin: 0% 50%;
+  transition: transform 0.5s, opacity 0.3s 0.3s;
+  margin: 0 auto;
+}
+
+.bookImg {
+  position: relative;
+  transform-style: preserve-3d;
+  width: fit-content;
+  margin: 0 auto;
+  height: 100%;
+}
+
+.bookImg > img {
+  width: auto;
+  height: 100%;
+  border: 1px solid var(--grayLv1);
+  box-shadow: 0 3.5rem 6rem -1.5rem rgba(0, 0, 0, 0.3);
+  background-color: #fff;
+}
+
+.flipCover {
+  position: absolute;
+  height: 100%;
+  top: 0;
+  left: 0;
+  transform-style: preserve-3d;
+  transform: translateX(-100%) rotateY(-90deg);
+  transform-origin: 100% 50%;
+  /* Width needs to be defined for it to be visible?
+     In SCSS it just says position absolute.
+     The content inside (img) likely gives it width.
+     We'll ensure the image inside has width. */
+}
+
+.flipCover img {
+  box-shadow: none;
+  height: 100%;
+  width: auto; /* Let natural width or prop determine spine width */
+}
+
+/* Hover Effects */
+.perspective:hover .cover {
+  transform: rotateY(90deg); /* SCSS: rotateY(90deg) */
+  transition: transform 0.3s;
+}
+
+.perspective:hover .bookImg img {
+  transition: all 0.3s;
+}
+
+.perspective:hover .bookImg > img {
+  box-shadow: none; /* SCSS: box-shadow: none */
+}
+
+.content {
+  gap: 0.8rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  /* $fontSize: fcSize(14, 16) -> clamp(14px, 1.33vw, 16px) */
+  font-size: clamp(14px, 1.33vw, 16px);
+  font-weight: bold;
+  word-break: keep-all;
+  line-height: 1.4;
+
+  /* height: calc($fontSize * 2 * 1.4); */
+  height: calc(clamp(14px, 1.33vw, 16px) * 2.8);
+
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: #111827;
+}
+
+.title span {
+  display: block;
+  font-weight: normal;
+  font-size: 0.9em;
+  margin: 0.05em 0;
+}
+
+.author {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.95em;
+  color: var(--grayLv4);
+  margin-top: 1rem;
+}
+
+.author::before {
+  content: '';
+  display: inline-block;
+  width: 4em;
+  height: 1px;
+  background-color: var(--grayLv2);
+}
+
+.publisher {
+  color: var(--grayLv4);
+  font-size: 0.9em;
+}
+
+.read {
+  /* $size: 2rem */
+  --size: 2rem;
+  width: var(--size);
+  height: var(--size);
+  box-shadow: -2px 2px 2px 0 rgba(0, 0, 0, 0.2);
+
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+
+  /* border-left: $size solid var(--grayLv3) */
+  border-left: var(--size) solid var(--grayLv3);
+  /* border-top: $size solid var(--background) */
+  border-top: var(--size) solid var(--background);
+}

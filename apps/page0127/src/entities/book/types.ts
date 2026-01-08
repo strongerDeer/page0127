@@ -65,6 +65,33 @@ export type Book = {
 };
 
 /**
+ * Global Book (공용 도서 데이터)
+ */
+export type GlobalBook = {
+  id: string;
+  isbn: string;
+  title: string;
+  author: string | null;
+  publisher: string | null;
+  cover_image: string | null;
+  description: string | null;
+  pub_date: string | null;
+  category: string | null;
+  spine_image: string | null;
+  created_at: string;
+};
+
+/**
+ * 도서 랭킹 데이터
+ */
+export type BookRanking = {
+  isbn: string;
+  count: number;
+  book_info: GlobalBook;
+};
+
+
+/**
  * 도서 등록/수정 시 사용하는 타입
  */
 export type BookInput = {

@@ -1,35 +1,76 @@
 import Link from 'next/link';
 
+import { getSupabaseClient } from '@/app/api/_helpers/auth';
 import { Button } from '@/shared/ui/button';
+import { BookRankingList } from '@/widgets/book/ui/BookRankingList';
+import type { BookRanking, GlobalBook } from '@/entities/book/types';
 
 /**
  * 메인 랜딩 페이지
  *
  * 학습 포인트:
- * - Server Component (기본값)
- * - 반응형 디자인 (모바일 → 태블릿 → 데스크톱)
- * - Tailwind CSS 유틸리티 클래스 활용
+ * - Server Component Data Fetching
+ * - Suspense & Streaming (추후 적용 가능)
+ * - Supabase RPC 호출
  */
-const Home = () => {
+const Home = async () => {
+  const supabase = await getSupabaseClient();
+
+  // 1. 인생책 (평점 10점) 조회
+  const { data: booksOfLifeData } = await supabase.rpc('get_books_of_life', {
+    limit_count: 5,
+  });
+
+  // 2. 완독왕 (가장 많이 읽은 책) 조회
+  const { data: mostReadBooksData } = await supabase.rpc('get_most_read_books', {
+    limit_count: 5,
+  });
+
+  // User Data Fetching for UI states
+  const { data: { user } } = await supabase.auth.getUser();
+  const myReadIsbns = new Set<string>();
+  const myLikedIds = new Set<string>();
+
+  if (user) {
+    const { data: myBooks } = await supabase.from('books').select('isbn').eq('user_id', user.id).eq('status', 'completed');
+    if (myBooks) myBooks.forEach((b: any) => myReadIsbns.add(b.isbn));
+
+    const { data: myLikes } = await supabase.from('book_likes').select('book_id').eq('user_id', user.id);
+    if (myLikes) myLikes.forEach((l: any) => myLikedIds.add(l.book_id));
+  }
+
+  // 타입 캐스팅 (JSONB -> GlobalBook)
+  const booksOfLife: BookRanking[] = (booksOfLifeData || []).map((item: any) => ({
+    isbn: item.isbn,
+    count: item.count,
+    book_info: item.book_info as GlobalBook,
+  }));
+
+  const mostReadBooks: BookRanking[] = (mostReadBooksData || []).map((item: any) => ({
+    isbn: item.isbn,
+    count: item.count,
+    book_info: item.book_info as GlobalBook,
+  }));
+
   return (
     <div className='min-h-screen bg-background'>
       {/* Hero Section */}
-      <section className='section-spacing'>
+      <section className='section-spacing pb-12 pt-20'>
         <div className='container mx-auto max-w-5xl px-4'>
           <div className='text-center'>
-            {/* 메인 헤딩 */}
             <h1 className='heading-1 mb-6'>당신의 독서 DNA를 발견하세요</h1>
-
-            {/* 서브 헤딩 */}
-            <p className='heading-2 mb-12 text-gray-600'>
+            <p className='heading-2 mb-8 text-gray-600'>
               AI 기반 독서 성향 분석 플랫폼
             </p>
-
-            {/* CTA 버튼 */}
             <div className='flex justify-center gap-4'>
               <Link href='/login'>
                 <Button size='lg' className='px-8'>
                   무료로 시작하기
+                </Button>
+              </Link>
+              <Link href='/books/all'>
+                <Button size='lg' variant='outline' className='px-8'>
+                  전체 도서 둘러보기
                 </Button>
               </Link>
             </div>
@@ -37,14 +78,42 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Rankings Section */}
+      <div className='container mx-auto max-w-6xl px-4'>
+        {/* 인생책 랭킹 */}
+        {booksOfLife.length > 0 && (
+          <BookRankingList
+             title="🏆 독자들이 선택한 인생책"
+             subTitle="가장 많은 10점 평점을 받은 명작들입니다."
+             books={booksOfLife}
+             type="best"
+             myReadIsbns={Array.from(myReadIsbns)}
+             myLikedIds={Array.from(myLikedIds)}
+          />
+        )}
+
+        <div className="h-8" />
+
+        {/* 완독왕 랭킹 */}
+        {mostReadBooks.length > 0 && (
+          <BookRankingList
+             title="🔥 가장 많이 완독한 책"
+             subTitle="유저들이 끝까지 읽어낸 인기 도서입니다."
+             books={mostReadBooks}
+             type="most"
+             myReadIsbns={Array.from(myReadIsbns)}
+             myLikedIds={Array.from(myLikedIds)}
+          />
+        )}
+      </div>
+
+      <div className="h-20" />
+
       {/* Features Section */}
       <section className='section-spacing bg-gray-50'>
         <div className='container mx-auto max-w-5xl px-4'>
           <h2 className='heading-2 mb-12 text-center'>주요 기능</h2>
-
-          {/* 기능 카드 그리드 */}
           <div className='grid grid-cols-1 gap-8 md:grid-cols-3'>
-            {/* 독서 기록 */}
             <div className='rounded-lg bg-white p-6 shadow-sm'>
               <div className='mb-4 text-4xl'>📚</div>
               <h3 className='mb-2 text-xl font-bold'>독서 기록</h3>
@@ -52,8 +121,6 @@ const Home = () => {
                 읽은 책을 기록하고 통계를 확인하세요
               </p>
             </div>
-
-            {/* AI 분석 */}
             <div className='rounded-lg bg-white p-6 shadow-sm'>
               <div className='mb-4 text-4xl'>🤖</div>
               <h3 className='mb-2 text-xl font-bold'>AI 분석</h3>
@@ -61,8 +128,6 @@ const Home = () => {
                 독서 성향을 분석하고 맞춤 추천을 받으세요
               </p>
             </div>
-
-            {/* 목표 관리 */}
             <div className='rounded-lg bg-white p-6 shadow-sm'>
               <div className='mb-4 text-4xl'>🎯</div>
               <h3 className='mb-2 text-xl font-bold'>목표 관리</h3>
