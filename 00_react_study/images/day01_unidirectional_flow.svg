@@ -1,0 +1,94 @@
+<svg width="560" height="600" viewBox="0 0 560 600" xmlns="http://www.w3.org/2000/svg" font-family="'Apple SD Gothic Neo', 'Pretendard', sans-serif">
+
+  <defs>
+    <marker id="arr-indigo" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#6366f1"/>
+    </marker>
+    <marker id="arr-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#ef4444"/>
+    </marker>
+    <marker id="arr-pink" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#fca5a5"/>
+    </marker>
+    <marker id="arr-gray" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="560" height="600" fill="#f8fafc" rx="16"/>
+
+  <!-- Title -->
+  <text x="280" y="36" text-anchor="middle" font-size="17" font-weight="700" fill="#1e293b">단방향 데이터 흐름</text>
+  <text x="280" y="56" text-anchor="middle" font-size="12" fill="#64748b">데이터는 내려가고, 이벤트는 올라간다</text>
+
+  <!-- ── STEP 1: DB ── -->
+  <rect x="160" y="76" width="240" height="52" rx="10" fill="#e0f2fe" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="280" y="97" text-anchor="middle" font-size="12" font-weight="700" fill="#0369a1">Supabase DB</text>
+  <text x="280" y="117" text-anchor="middle" font-size="11" fill="#0369a1">books 테이블</text>
+
+  <!-- Arrow: DB → DashboardPage -->
+  <line x1="280" y1="128" x2="280" y2="158" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-gray)"/>
+  <rect x="288" y="134" width="124" height="18" rx="4" fill="#f1f5f9"/>
+  <text x="350" y="147" text-anchor="middle" font-size="10" fill="#64748b">getMyBooks(userId)</text>
+
+  <!-- ── STEP 2: DashboardPage ── -->
+  <rect x="100" y="158" width="360" height="68" rx="10" fill="#f0fdf4" stroke="#4ade80" stroke-width="2"/>
+  <text x="280" y="181" text-anchor="middle" font-size="11" fill="#15803d" font-weight="600">Server Component</text>
+  <text x="280" y="200" text-anchor="middle" font-size="15" font-weight="700" fill="#166534">DashboardPage</text>
+  <text x="280" y="218" text-anchor="middle" font-size="11" fill="#15803d">books: Book[]  (배열로 보관)</text>
+
+  <!-- Arrow: DashboardPage → BookCard (props down) -->
+  <line x1="280" y1="226" x2="280" y2="268" stroke="#6366f1" stroke-width="2" marker-end="url(#arr-indigo)"/>
+
+  <!-- Props label -->
+  <rect x="288" y="234" width="176" height="30" rx="6" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1"/>
+  <text x="376" y="247" text-anchor="middle" font-size="10" font-weight="600" fill="#4338ca">book={books[i]}</text>
+  <text x="376" y="259" text-anchor="middle" font-size="10" fill="#6366f1">onDelete={handleDelete}</text>
+
+  <!-- ── STEP 3: BookCard ── -->
+  <rect x="100" y="268" width="360" height="68" rx="10" fill="#fff7ed" stroke="#fb923c" stroke-width="2"/>
+  <text x="280" y="291" text-anchor="middle" font-size="11" fill="#9a3412" font-weight="600">Client Component</text>
+  <text x="280" y="310" text-anchor="middle" font-size="15" font-weight="700" fill="#7c2d12">BookCard</text>
+  <text x="280" y="328" text-anchor="middle" font-size="11" fill="#9a3412">props만 받아서 렌더링</text>
+
+  <!-- Callback arrow (left side, going up) -->
+  <path d="M 115 304 C 60 304, 60 206, 115 206" stroke="#ef4444" stroke-width="1.8" fill="none" stroke-dasharray="5,3" marker-end="url(#arr-red)"/>
+
+  <!-- Callback label -->
+  <rect x="16" y="234" width="90" height="30" rx="6" fill="#fef2f2" stroke="#fca5a5" stroke-width="1"/>
+  <text x="61" y="247" text-anchor="middle" font-size="10" font-weight="600" fill="#dc2626">onDelete</text>
+  <text x="61" y="260" text-anchor="middle" font-size="10" fill="#ef4444">("id-123")</text>
+
+  <!-- Delete trigger -->
+  <line x1="280" y1="336" x2="280" y2="352" stroke="#fca5a5" stroke-width="1.5" marker-end="url(#arr-pink)"/>
+  <rect x="100" y="352" width="360" height="40" rx="8" fill="#fff1f2" stroke="#fecdd3" stroke-width="1"/>
+  <text x="280" y="369" text-anchor="middle" font-size="11" font-weight="600" fill="#be123c">삭제 버튼 클릭</text>
+  <text x="280" y="384" text-anchor="middle" font-size="10" fill="#e11d48">onDelete(book.id) 호출 → 부모의 handleDelete 실행</text>
+
+  <!-- Divider -->
+  <line x1="40" y1="412" x2="520" y2="412" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <!-- Optional props section -->
+  <text x="280" y="434" text-anchor="middle" font-size="13" font-weight="700" fill="#475569">onDelete가 optional인 이유</text>
+
+  <!-- List page box -->
+  <rect x="40" y="448" width="210" height="70" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="145" y="468" text-anchor="middle" font-size="11" font-weight="700" fill="#166534">목록 페이지</text>
+  <text x="145" y="485" text-anchor="middle" font-size="10" fill="#15803d">onDelete 전달함</text>
+  <text x="145" y="500" text-anchor="middle" font-size="10" fill="#15803d">→ 삭제 버튼 표시됨</text>
+  <text x="145" y="514" text-anchor="middle" font-size="13" fill="#16a34a">✓</text>
+
+  <!-- Detail page box -->
+  <rect x="310" y="448" width="210" height="70" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="415" y="468" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">상세 페이지</text>
+  <text x="415" y="485" text-anchor="middle" font-size="10" fill="#64748b">onDelete 전달 안 함</text>
+  <text x="415" y="500" text-anchor="middle" font-size="10" fill="#64748b">→ 삭제 버튼 없음</text>
+  <text x="415" y="514" text-anchor="middle" font-size="13" fill="#94a3b8">—</text>
+
+  <!-- Code block -->
+  <rect x="40" y="532" width="480" height="50" rx="8" fill="#1e293b"/>
+  <text x="60" y="553" font-size="11" fill="#64748b" font-family="monospace">// BookCard.tsx</text>
+  <text x="60" y="572" font-size="11" fill="#f8fafc" font-family="monospace">{onDelete &amp;&amp; &lt;Button onClick={...}&gt;삭제&lt;/Button&gt;}</text>
+
+</svg>
