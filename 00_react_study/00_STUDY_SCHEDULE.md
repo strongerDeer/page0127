@@ -5,7 +5,7 @@
 - **프로젝트**: page0127 독서 기록 앱 (기존 코드베이스 활용)
 - **스택**: React 19 / Next.js App Router / TypeScript / TanStack Query v5 / Supabase / shadcn/ui
 - **일일 학습**: 30분 (기존 코드 읽기 10분 + 실험·개선 15분 + 정리 5분)
-- **기간**: 약 14주 (2026-03-23 ~ 2026-06-26)
+- **기간**: 약 14주 (2026-03-19 ~ 2026-06-20)
 - **주 5일 기준** (유연하게 조정 가능)
 
 ---
@@ -40,16 +40,15 @@ Week 12-14 → 성능 최적화 + React Compiler
 
 | Day | 날짜 | 주제 | 30분 할 일 | page0127 연결 포인트 |
 |-----|------|------|-----------|---------------------|
-| 1 | 03/23 | 단방향 데이터 흐름 | `features/book/` 컴포넌트에서 props 흐름 추적 | BookCard ← BookList ← BookShelf 흐름 그려보기 |
-| 2 | 03/24 | 단방향 데이터 흐름 실습 | props로 내려오는 데이터와 콜백 직접 도식화 | 부모→자식 데이터 / 자식→부모 이벤트 구분 |
-| 3 | 03/25 | 상태 끌어올리기 | 책장 탭 선택 상태가 어디에 있는지 파악 | 탭 상태를 올려야 하는 상황 직접 찾기 |
-| 4 | 03/26 | 파생 상태 vs 독립 상태 | `filteredBooks`를 state vs 계산값으로 비교 | TanStack Query 캐시 데이터에서 파생 상태 확인 |
-| 5 | 03/27 | 파생 상태 실습 | 장르/읽기상태별 필터 계산 로직 인라인 계산으로 작성 | `entities/book/` model 레이어 활용 |
-| 6 | 03/30 | 컴포넌트 분리 기준 | `widgets/book/` 하위 컴포넌트 분리 기준 분석 | 재사용 vs 한번만 쓰이는 컴포넌트 구분 |
-| 7 | 03/31 | Key — 리스트 그 이상 | BookList의 `key` prop 점검, index 사용 여부 확인 | Supabase id를 key로 쓰는 이유 이해 |
-| 8 | 04/01 | 렌더링이 언제 일어나는가 | React DevTools로 BookCard 렌더링 추적 | 알림 드롭다운 열릴 때 불필요한 렌더 파악 |
-| 9 | 04/02 | 렌더링 심화 | props/state 변경 시 렌더링 범위 실험 | Header 리렌더링이 BookList에 영향 주는지 확인 |
-| 10 | 04/03 | Strict Mode | `layout.tsx`에서 StrictMode 확인, 이중 실행 확인 | Supabase 구독이 두 번 등록되는 문제 발견 |
+| 1 | 03/19 ✅ | 단방향 데이터 흐름 | `features/book/` 컴포넌트에서 props 흐름 추적 + 실습 | BookCard ← BookList ← BookShelf 흐름 + 콜백 패턴 |
+| 2 | 03/20 ✅ | 상태 끌어올리기 | 책장 탭 선택 상태가 어디에 있는지 파악 | 탭 상태를 올려야 하는 상황 직접 찾기 |
+| 3 | 03/21 | 파생 상태 vs 독립 상태 | `filteredBooks`를 state vs 계산값으로 비교 | TanStack Query 캐시 데이터에서 파생 상태 확인 |
+| 4 | 03/24 | 파생 상태 실습 | 장르/읽기상태별 필터 계산 로직 인라인 계산으로 작성 | `entities/book/` model 레이어 활용 |
+| 5 | 03/25 | 컴포넌트 분리 기준 | `widgets/book/` 하위 컴포넌트 분리 기준 분석 | 재사용 vs 한번만 쓰이는 컴포넌트 구분 |
+| 6 | 03/26 | Key — 리스트 그 이상 | BookList의 `key` prop 점검, index 사용 여부 확인 | Supabase id를 key로 쓰는 이유 이해 |
+| 7 | 03/27 | 렌더링이 언제 일어나는가 | React DevTools로 BookCard 렌더링 추적 | 알림 드롭다운 열릴 때 불필요한 렌더 파악 |
+| 8 | 03/28 | 렌더링 심화 | props/state 변경 시 렌더링 범위 실험 | Header 리렌더링이 BookList에 영향 주는지 확인 |
+| 9 | 03/31 | Strict Mode | `layout.tsx`에서 StrictMode 확인, 이중 실행 확인 | Supabase 구독이 두 번 등록되는 문제 발견 |
 
 ---
 
@@ -59,24 +58,24 @@ Week 12-14 → 성능 최적화 + React Compiler
 
 | Day | 날짜 | 주제 | 30분 할 일 | page0127 연결 포인트 |
 |-----|------|------|-----------|---------------------|
-| 11 | 04/06 | useState — 함수형 업데이트 | 책장 탭 토글 상태를 `prev =>` 패턴으로 개선 | 여러 필터가 동시 업데이트될 때 stale state 문제 |
-| 12 | 04/07 | useState — lazy initialization | 마지막 선택 탭을 localStorage에서 복원 | `useState(() => localStorage.getItem('tab'))` |
-| 13 | 04/08 | useState — 불변성 | 독서 상태 배열 업데이트 시 불변성 점검 | 직접 push vs spread 차이 실험 |
-| 14 | 04/09 | useEffect — 기본 패턴 | 탭 변경 시 localStorage 저장 effect 작성 | `useEffect(() => save, [activeTab])` |
-| 15 | 04/10 | useEffect — 남용 패턴 | 필터 계산을 effect에서 하는 안티패턴 찾아 제거 | TanStack Query 데이터를 effect로 동기화하는 패턴 확인 |
-| 16 | 04/13 | useEffect — 의존성 배열 | `exhaustive-deps` ESLint 경고 전부 수정 | `features/notification/` hook 의존성 누락 확인 |
-| 17 | 04/14 | useEffect — 클린업 | 책 검색 debounce 타이머 클린업 구현 | `features/book/` 검색창에 debounce 적용 |
-| 18 | 04/15 | useRef — 렌더링과 무관한 값 | 이전 탭 값을 ref에 저장 (리렌더 없이) | 탭 전환 애니메이션 방향 결정에 활용 |
-| 19 | 04/16 | useRef — forwardRef | 책 검색 input에 외부에서 focus 제어 | `forwardRef`로 SearchInput 감싸기 |
-| 20 | 04/17 | useImperativeHandle ✨ | 검색창에 `.focus()`, `.clear()` 커스텀 명령 노출 | Header에서 단축키로 검색창 제어 |
-| 21 | 04/20 | useReducer — 교체 기준 | 복잡한 책장 필터 상태를 `useReducer`로 리팩토링 | `SET_TAB / SET_SORT / SET_GENRE / RESET` 액션 |
-| 22 | 04/21 | useReducer 심화 | 필터 초기화 버튼 + URL 쿼리 파라미터 동기화 | `useSearchParams`와 reducer 연동 |
-| 23 | 04/22 | useMemo / useCallback | `filteredBooks` memoization, 핸들러 memoization | Profiler로 개선 전/후 비교 |
-| 24 | 04/23 | useMemo/useCallback — 언제 필요한가 | React 19 Compiler 시대 필요/불필요 케이스 정리 | 과도한 memoization 제거 |
-| 25 | 04/24 | useDeferredValue | 책 목록 렌더링에 `useDeferredValue` 적용 | 검색 입력 타이핑이 막히지 않는 UX 확인 |
-| 26 | 04/27 | useTransition | 탭 전환 시 `useTransition`으로 처리 | `isPending`으로 탭 전환 중 로딩 표시 |
-| 27 | 04/28 | useId | 필터 체크박스 `label-for` 접근성 개선 | `useId`로 고유 id 생성, shadcn/ui와 함께 사용 |
-| 28 | 04/29 | useLayoutEffect | 알림 패널 열릴 때 스크롤 위치 조정 | `useLayoutEffect`로 DOM 측정 후 위치 계산 |
+| 10 | 04/01 | useState — 함수형 업데이트 | 책장 탭 토글 상태를 `prev =>` 패턴으로 개선 | 여러 필터가 동시 업데이트될 때 stale state 문제 |
+| 11 | 04/02 | useState — lazy initialization | 마지막 선택 탭을 localStorage에서 복원 | `useState(() => localStorage.getItem('tab'))` |
+| 12 | 04/03 | useState — 불변성 | 독서 상태 배열 업데이트 시 불변성 점검 | 직접 push vs spread 차이 실험 |
+| 13 | 04/04 | useEffect — 기본 패턴 | 탭 변경 시 localStorage 저장 effect 작성 | `useEffect(() => save, [activeTab])` |
+| 14 | 04/07 | useEffect — 남용 패턴 | 필터 계산을 effect에서 하는 안티패턴 찾아 제거 | TanStack Query 데이터를 effect로 동기화하는 패턴 확인 |
+| 15 | 04/08 | useEffect — 의존성 배열 | `exhaustive-deps` ESLint 경고 전부 수정 | `features/notification/` hook 의존성 누락 확인 |
+| 16 | 04/09 | useEffect — 클린업 | 책 검색 debounce 타이머 클린업 구현 | `features/book/` 검색창에 debounce 적용 |
+| 17 | 04/10 | useRef — 렌더링과 무관한 값 | 이전 탭 값을 ref에 저장 (리렌더 없이) | 탭 전환 애니메이션 방향 결정에 활용 |
+| 18 | 04/11 | useRef — forwardRef | 책 검색 input에 외부에서 focus 제어 | `forwardRef`로 SearchInput 감싸기 |
+| 19 | 04/14 | useImperativeHandle ✨ | 검색창에 `.focus()`, `.clear()` 커스텀 명령 노출 | Header에서 단축키로 검색창 제어 |
+| 20 | 04/15 | useReducer — 교체 기준 | 복잡한 책장 필터 상태를 `useReducer`로 리팩토링 | `SET_TAB / SET_SORT / SET_GENRE / RESET` 액션 |
+| 21 | 04/16 | useReducer 심화 | 필터 초기화 버튼 + URL 쿼리 파라미터 동기화 | `useSearchParams`와 reducer 연동 |
+| 22 | 04/17 | useMemo / useCallback | `filteredBooks` memoization, 핸들러 memoization | Profiler로 개선 전/후 비교 |
+| 23 | 04/18 | useMemo/useCallback — 언제 필요한가 | React 19 Compiler 시대 필요/불필요 케이스 정리 | 과도한 memoization 제거 |
+| 24 | 04/21 | useDeferredValue | 책 목록 렌더링에 `useDeferredValue` 적용 | 검색 입력 타이핑이 막히지 않는 UX 확인 |
+| 25 | 04/22 | useTransition | 탭 전환 시 `useTransition`으로 처리 | `isPending`으로 탭 전환 중 로딩 표시 |
+| 26 | 04/23 | useId | 필터 체크박스 `label-for` 접근성 개선 | `useId`로 고유 id 생성, shadcn/ui와 함께 사용 |
+| 27 | 04/24 | useLayoutEffect | 알림 패널 열릴 때 스크롤 위치 조정 | `useLayoutEffect`로 DOM 측정 후 위치 계산 |
 
 ---
 
@@ -86,19 +85,19 @@ Week 12-14 → 성능 최적화 + React Compiler
 
 | Day | 날짜 | 주제 | 30분 할 일 | page0127 연결 포인트 |
 |-----|------|------|-----------|---------------------|
-| 29 | 04/30 | children / 컴포넌트 합성 | `BookCard`를 children 합성 방식으로 리팩토링 | `<BookCard><BookCard.Cover /><BookCard.Info />` |
-| 30 | 05/04 | 합성 실습 | `widgets/dashboard/` Layout을 children으로 감싸기 | 대시보드 레이아웃 재사용 구조 개선 |
-| 31 | 05/05 | Portal ✨ | `createPortal`로 알림 드롭다운을 `body`에 렌더링 | z-index 충돌 문제 해결 |
-| 32 | 05/06 | Portal 심화 ✨ | 책 상세 모달을 Portal로 구현 | 모달 + 스크롤 잠금 + ESC 닫기 |
-| 33 | 05/07 | Compound Component 패턴 | 책장 탭 시스템을 Compound Component로 설계 | `<BookShelf><BookShelf.Tab><BookShelf.Panel>` |
-| 34 | 05/08 | Compound Component 심화 | 내부 선택 상태를 Context로 공유 | 외부에서 controlled/uncontrolled 모드 지원 |
-| 35 | 05/11 | Context | AuthContext / ThemeContext 실제 구조 분석 | `shared/providers/` 레이어 이해 |
-| 36 | 05/12 | Context — 성능 고려 | Context 분리로 불필요한 리렌더링 방지 | `AuthContext` vs `UIContext` 분리 실험 |
-| 37 | 05/13 | Custom Hook | `useBookFilter`, `useBookSearch` 커스텀 훅 추출 | `features/book/` 로직을 컴포넌트에서 분리 |
-| 38 | 05/14 | Custom Hook 심화 | `useLocalStorage`, `useDebounce` 추출 | `shared/` 레이어에 재사용 훅 구성 |
-| 39 | 05/15 | Error Boundary ✨ | Supabase API 실패 시 에러 UI 구현 | `react-error-boundary` 적용, fallback UI 작성 |
-| 40 | 05/18 | 상태 구조 설계 | 클라이언트 상태 flat vs nested 분석 | Zustand 도입 여부 결정 (vs TanStack Query로 통일) |
-| 41 | 05/19 | Phase 3 복습 | FSD 레이어 다이어그램 그리기 | entities → features → widgets 의존 방향 검증 |
+| 28 | 04/25 | children / 컴포넌트 합성 | `BookCard`를 children 합성 방식으로 리팩토링 | `<BookCard><BookCard.Cover /><BookCard.Info />` |
+| 29 | 04/28 | 합성 실습 | `widgets/dashboard/` Layout을 children으로 감싸기 | 대시보드 레이아웃 재사용 구조 개선 |
+| 30 | 04/29 | Portal ✨ | `createPortal`로 알림 드롭다운을 `body`에 렌더링 | z-index 충돌 문제 해결 |
+| 31 | 04/30 | Portal 심화 ✨ | 책 상세 모달을 Portal로 구현 | 모달 + 스크롤 잠금 + ESC 닫기 |
+| 32 | 05/02 | Compound Component 패턴 | 책장 탭 시스템을 Compound Component로 설계 | `<BookShelf><BookShelf.Tab><BookShelf.Panel>` |
+| 33 | 05/07 | Compound Component 심화 | 내부 선택 상태를 Context로 공유 | 외부에서 controlled/uncontrolled 모드 지원 |
+| 34 | 05/08 | Context | AuthContext / ThemeContext 실제 구조 분석 | `shared/providers/` 레이어 이해 |
+| 35 | 05/09 | Context — 성능 고려 | Context 분리로 불필요한 리렌더링 방지 | `AuthContext` vs `UIContext` 분리 실험 |
+| 36 | 05/12 | Custom Hook | `useBookFilter`, `useBookSearch` 커스텀 훅 추출 | `features/book/` 로직을 컴포넌트에서 분리 |
+| 37 | 05/13 | Custom Hook 심화 | `useLocalStorage`, `useDebounce` 추출 | `shared/` 레이어에 재사용 훅 구성 |
+| 38 | 05/14 | Error Boundary ✨ | Supabase API 실패 시 에러 UI 구현 | `react-error-boundary` 적용, fallback UI 작성 |
+| 39 | 05/15 | 상태 구조 설계 | 클라이언트 상태 flat vs nested 분석 | Zustand 도입 여부 결정 (vs TanStack Query로 통일) |
+| 40 | 05/16 | Phase 3 복습 | FSD 레이어 다이어그램 그리기 | entities → features → widgets 의존 방향 검증 |
 
 ---
 
@@ -108,16 +107,16 @@ Week 12-14 → 성능 최적화 + React Compiler
 
 | Day | 날짜 | 주제 | 30분 할 일 | page0127 연결 포인트 |
 |-----|------|------|-----------|---------------------|
-| 42 | 05/20 | App Router 라우트 구조 재파악 | `app/` 디렉토리 전체 흐름 도식화 | `(auth)` / `(public)` / `(protected)` 그룹 이해 |
-| 43 | 05/21 | Server Component 최적화 | 현재 SC에서 데이터 패칭 로직 점검 | 불필요하게 `'use client'`인 컴포넌트 찾기 |
-| 44 | 05/22 | Client Component 경계 | CC 범위 최소화 리팩토링 | 인터랙션 없는 컴포넌트를 SC로 전환 |
-| 45 | 05/25 | lazy + Suspense ✨ | 통계 차트(Recharts)를 `lazy`로 코드 스플리팅 | 초기 번들 크기 감소 확인 |
-| 46 | 05/26 | 데이터 패칭 패턴 | `fetch` + `cache`, `revalidate` 옵션 실습 | 책 목록 캐싱 전략 적용 |
-| 47 | 05/27 | loading.tsx / Suspense | `loading.tsx`로 스켈레톤 UI 구현 | 책장 로딩 스켈레톤 카드 |
-| 48 | 05/28 | TanStack Query — queryKey 설계 | 현재 `useQuery` 패턴 전수 조사 | queryKey 네이밍 컨벤션 통일 |
-| 49 | 05/29 | TanStack Query — mutation | `useMutation` + optimistic update 구현 | 좋아요 클릭 즉시 반영 (TanStack Query 방식) |
-| 50 | 06/01 | TanStack Query — 무한 스크롤 | `useInfiniteQuery`로 책 목록 페이지네이션 | 다음 페이지 자동 로드 |
-| 51 | 06/02 | Phase 4 복습 | SC/CC 분리 + TanStack Query 설계 최종 점검 | 변경 내역 PR 설명처럼 정리 |
+| 41 | 05/19 | App Router 라우트 구조 재파악 | `app/` 디렉토리 전체 흐름 도식화 | `(auth)` / `(public)` / `(protected)` 그룹 이해 |
+| 42 | 05/20 | Server Component 최적화 | 현재 SC에서 데이터 패칭 로직 점검 | 불필요하게 `'use client'`인 컴포넌트 찾기 |
+| 43 | 05/21 | Client Component 경계 | CC 범위 최소화 리팩토링 | 인터랙션 없는 컴포넌트를 SC로 전환 |
+| 44 | 05/22 | lazy + Suspense ✨ | 통계 차트(Recharts)를 `lazy`로 코드 스플리팅 | 초기 번들 크기 감소 확인 |
+| 45 | 05/23 | 데이터 패칭 패턴 | `fetch` + `cache`, `revalidate` 옵션 실습 | 책 목록 캐싱 전략 적용 |
+| 46 | 05/26 | loading.tsx / Suspense | `loading.tsx`로 스켈레톤 UI 구현 | 책장 로딩 스켈레톤 카드 |
+| 47 | 05/27 | TanStack Query — queryKey 설계 | 현재 `useQuery` 패턴 전수 조사 | queryKey 네이밍 컨벤션 통일 |
+| 48 | 05/28 | TanStack Query — mutation | `useMutation` + optimistic update 구현 | 좋아요 클릭 즉시 반영 (TanStack Query 방식) |
+| 49 | 05/29 | TanStack Query — 무한 스크롤 | `useInfiniteQuery`로 책 목록 페이지네이션 | 다음 페이지 자동 로드 |
+| 50 | 05/30 | Phase 4 복습 | SC/CC 분리 + TanStack Query 설계 최종 점검 | 변경 내역 PR 설명처럼 정리 |
 
 ---
 
@@ -127,13 +126,13 @@ Week 12-14 → 성능 최적화 + React Compiler
 
 | Day | 날짜 | 주제 | 30분 할 일 | page0127 연결 포인트 |
 |-----|------|------|-----------|---------------------|
-| 52 | 06/03 | useActionState 개요 | 독서 상태 변경 폼을 Server Action으로 처리 | `useActionState` 기본 패턴 이해 |
-| 53 | 06/04 | useActionState 실습 | 에러/pending 상태 + 유효성 검사 | form action + 에러 메시지 표시 |
-| 54 | 06/08 | useOptimistic | 좋아요 버튼 낙관적 업데이트 구현 | 서버 응답 전 즉시 하트 UI 반영 |
-| 55 | 06/09 | useOptimistic 심화 | 실패 시 롤백 처리 | 네트워크 오류 → 원래 값 복원 |
-| 56 | 06/10 | use() | Supabase Promise를 `use()`로 처리 | Suspense와 함께 데이터 로딩 선언적으로 |
-| 57 | 06/11 | Server Actions | 팔로우/언팔로우를 Server Action으로 구현 | `'use server'` 함수 + `revalidatePath` |
-| 58 | 06/12 | Phase 5 복습 | React 19 기능 적용 전/후 코드 diff 비교 | 어떤 코드가 얼마나 단순해졌는지 정리 |
+| 51 | 06/02 | useActionState 개요 | 독서 상태 변경 폼을 Server Action으로 처리 | `useActionState` 기본 패턴 이해 |
+| 52 | 06/03 | useActionState 실습 | 에러/pending 상태 + 유효성 검사 | form action + 에러 메시지 표시 |
+| 53 | 06/04 | useOptimistic | 좋아요 버튼 낙관적 업데이트 구현 | 서버 응답 전 즉시 하트 UI 반영 |
+| 54 | 06/05 | useOptimistic 심화 | 실패 시 롤백 처리 | 네트워크 오류 → 원래 값 복원 |
+| 55 | 06/09 | use() | Supabase Promise를 `use()`로 처리 | Suspense와 함께 데이터 로딩 선언적으로 |
+| 56 | 06/10 | Server Actions | 팔로우/언팔로우를 Server Action으로 구현 | `'use server'` 함수 + `revalidatePath` |
+| 57 | 06/11 | Phase 5 복습 | React 19 기능 적용 전/후 코드 diff 비교 | 어떤 코드가 얼마나 단순해졌는지 정리 |
 
 ---
 
@@ -143,16 +142,16 @@ Week 12-14 → 성능 최적화 + React Compiler
 
 | Day | 날짜 | 주제 | 30분 할 일 | page0127 연결 포인트 |
 |-----|------|------|-----------|---------------------|
-| 59 | 06/15 | useTransition 심화 | 대량 책 렌더링을 Transition으로 처리 | 완독 목록 전체 렌더링 부드럽게 |
-| 60 | 06/16 | useTransition + Suspense | Transition 중 Suspense fallback 조합 | 탭 전환 중 이전 내용 유지 UX |
-| 61 | 06/17 | Suspense 중첩 패턴 | 책장 / 통계 / 알림 각각 독립 Suspense 경계 | 일부 실패해도 나머지 보여주는 구조 |
-| 62 | 06/18 | Error Boundary 심화 | 중첩 Error Boundary + reset 버튼 | API별 에러 복구 UX |
-| 63 | 06/19 | React.memo ✨ | `BookCard`에 `React.memo` 적용 + 비교 함수 | Profiler로 리렌더 횟수 비교 |
-| 64 | 06/22 | React Compiler 이해 | Compiler가 자동 메모이제이션하는 범위 파악 | 기존 `useMemo`/`useCallback` 제거 실험 |
-| 65 | 06/23 | React Compiler 실습 | `babel-plugin-react-compiler` 적용 | Compiler 적용 전/후 Profiler 수치 비교 |
-| 66 | 06/24 | 번들 최적화 | `next/bundle-analyzer`로 번들 분석 | 불필요하게 큰 패키지 교체 or lazy 처리 |
-| 67 | 06/25 | 최종 성능 점검 | React DevTools Profiler 전체 앱 분석 | 병목 지점 2개 이상 개선 |
-| 68 | 06/26 | 전체 복습 & 회고 | Phase 1-6 개념 마인드맵 + 개선 내역 정리 | 학습 일지 완성 |
+| 58 | 06/12 | useTransition 심화 | 대량 책 렌더링을 Transition으로 처리 | 완독 목록 전체 렌더링 부드럽게 |
+| 59 | 06/13 | useTransition + Suspense | Transition 중 Suspense fallback 조합 | 탭 전환 중 이전 내용 유지 UX |
+| 60 | 06/16 | Suspense 중첩 패턴 | 책장 / 통계 / 알림 각각 독립 Suspense 경계 | 일부 실패해도 나머지 보여주는 구조 |
+| 61 | 06/17 | Error Boundary 심화 | 중첩 Error Boundary + reset 버튼 | API별 에러 복구 UX |
+| 62 | 06/18 | React.memo ✨ | `BookCard`에 `React.memo` 적용 + 비교 함수 | Profiler로 리렌더 횟수 비교 |
+| 63 | 06/19 | React Compiler 이해 | Compiler가 자동 메모이제이션하는 범위 파악 | 기존 `useMemo`/`useCallback` 제거 실험 |
+| 64 | 06/20 | React Compiler 실습 | `babel-plugin-react-compiler` 적용 | Compiler 적용 전/후 Profiler 수치 비교 |
+| 65 | 06/23 | 번들 최적화 | `next/bundle-analyzer`로 번들 분석 | 불필요하게 큰 패키지 교체 or lazy 처리 |
+| 66 | 06/24 | 최종 성능 점검 | React DevTools Profiler 전체 앱 분석 | 병목 지점 2개 이상 개선 |
+| 67 | 06/25 | 전체 복습 & 회고 | Phase 1-6 개념 마인드맵 + 개선 내역 정리 | 학습 일지 완성 |
 
 ---
 

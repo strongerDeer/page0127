@@ -143,8 +143,41 @@ books.map(book => (
 
 ---
 
+## 실습 — 코드에서 직접 찾아보기
+
+### 1. props 내려주기
+
+```tsx
+// app/(protected)/books/all/page.tsx
+{books.map((book) => (
+  <BookListItem
+    key={book.id}
+    book={book}                              // ← 책 데이터 내려줌
+    isReadProp={myReadIsbns.has(book.isbn)}  // ← 읽었는지 여부 내려줌
+    isLikedProp={myLikedIds.has(book.id)}    // ← 좋아요 여부 내려줌
+  />
+))}
+```
+
+### 2. 콜백 올리기
+
+```tsx
+// 부모 (DashboardContent)
+const handleDelete = async (id: string) => {
+  await deleteBook(id);  // 실제 삭제는 부모가 한다
+};
+
+<BookCard book={book} onDelete={handleDelete} />
+
+// 자식 (BookCard) → 삭제 버튼 클릭 시
+<Button onClick={() => onDelete(book.id)}>삭제</Button>
+//                      ↑ 부모의 handleDelete가 실행됨
+```
+
+---
+
 ## 내일 예고
 
-**Day 02 — 단방향 데이터 흐름 실습**
-`AddBookPage`에서 부모가 여러 자식에게 props를 어떻게 뿌리는지 직접 도식화한다.
-`BookSearchInput` → `BookSearchResultCard` → `BookRegistrationForm`까지의 전체 흐름.
+**Day 02 — 상태 끌어올리기**
+책장 탭 선택 상태가 어디에 있어야 하는지 파악하고,
+두 컴포넌트가 같은 상태를 공유해야 할 때 올려야 하는 이유를 배운다.
