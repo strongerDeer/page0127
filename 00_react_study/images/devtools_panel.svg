@@ -1,0 +1,124 @@
+<svg width="520" height="560" viewBox="0 0 520 560" xmlns="http://www.w3.org/2000/svg" font-family="'Menlo', 'Monaco', 'Consolas', monospace">
+
+  <!-- 배경 -->
+  <rect width="520" height="560" fill="#1e1e1e" rx="8"/>
+
+  <!-- 헤더 -->
+  <rect width="520" height="38" fill="#2d2d2d" rx="8"/>
+  <rect y="30" width="520" height="8" fill="#2d2d2d"/>
+  <text x="16" y="24" font-size="13" font-weight="600" fill="#e8c77a">LikeButton</text>
+
+  <!-- 아이콘들 (우상단) -->
+  <text x="460" y="24" font-size="11" fill="#888">⟳ ⓘ 👁 ⚙</text>
+
+  <!-- ── props ── -->
+  <text x="16" y="60" font-size="11" font-weight="700" fill="#9cdcfe">props</text>
+
+  <!-- 편집 아이콘 -->
+  <text x="488" y="60" font-size="10" fill="#555">✎ ≡</text>
+
+  <text x="28" y="80" font-size="11" fill="#f97583">bookId</text>
+  <text x="86" y="80" font-size="11" fill="#ccc">: </text>
+  <text x="96" y="80" font-size="11" fill="#ce9178">"b3d2bf3b-4d5a-4ab1-8e6b-f192…"</text>
+
+  <text x="28" y="98" font-size="11" fill="#f97583">initialLiked</text>
+  <text x="108" y="98" font-size="11" fill="#ccc">: </text>
+  <text x="118" y="98" font-size="11" fill="#569cd6">false</text>
+
+  <!-- props 설명 말풍선 -->
+  <rect x="288" y="70" width="216" height="36" rx="4" fill="#2a3a2a" stroke="#4a7a4a" stroke-width="1"/>
+  <text x="296" y="84" font-size="10" fill="#6aaf6a">← 부모(BookListItem)가 내려준 값</text>
+  <text x="296" y="98" font-size="10" fill="#6aaf6a">  읽기 전용, 여기서 바꿀 수 없음</text>
+
+  <!-- 구분선 -->
+  <line x1="0" y1="112" x2="520" y2="112" stroke="#333" stroke-width="1"/>
+
+  <!-- ── hooks ── -->
+  <text x="16" y="132" font-size="11" font-weight="700" fill="#9cdcfe">hooks</text>
+  <text x="488" y="132" font-size="10" fill="#555">✎ ≡</text>
+
+  <text x="28" y="152" font-size="11" fill="#888">1</text>
+  <text x="42" y="152" font-size="11" fill="#9cdcfe">State</text>
+  <text x="82" y="152" font-size="11" fill="#ccc">: </text>
+  <text x="92" y="152" font-size="11" fill="#569cd6">false</text>
+
+  <!-- hooks 설명 말풍선 1 -->
+  <rect x="150" y="141" width="208" height="20" rx="4" fill="#2a2a3a" stroke="#4a4a7a" stroke-width="1"/>
+  <text x="158" y="155" font-size="10" fill="#6a6aaf">← liked 상태 (useState 첫 번째)</text>
+
+  <text x="28" y="172" font-size="11" fill="#888">2</text>
+  <text x="42" y="172" font-size="11" fill="#9cdcfe">State</text>
+  <text x="82" y="172" font-size="11" fill="#ccc">: </text>
+  <text x="92" y="172" font-size="11" fill="#569cd6">false</text>
+
+  <!-- hooks 설명 말풍선 2 -->
+  <rect x="150" y="161" width="208" height="20" rx="4" fill="#2a2a3a" stroke="#4a4a7a" stroke-width="1"/>
+  <text x="158" y="175" font-size="10" fill="#6a6aaf">← loading 상태 (useState 두 번째)</text>
+
+  <text x="22" y="192" font-size="11" fill="#888">▶</text>
+  <text x="34" y="192" font-size="11" fill="#9cdcfe">Router</text>
+  <text x="80" y="192" font-size="11" fill="#555">: …</text>
+
+  <!-- hooks 설명 말풍선 3 -->
+  <rect x="150" y="181" width="208" height="20" rx="4" fill="#2a2a3a" stroke="#4a4a7a" stroke-width="1"/>
+  <text x="158" y="195" font-size="10" fill="#6a6aaf">← useRouter() (펼치면 내부 값 보임)</text>
+
+  <!-- hooks 전체 설명 -->
+  <rect x="16" y="204" width="364" height="18" rx="4" fill="#1a2a1a"/>
+  <text x="24" y="217" font-size="10" fill="#5a9a5a">State 번호는 코드에서 useState 순서. 커스텀 훅은 이름 그대로 표시됨.</text>
+
+  <!-- 구분선 -->
+  <line x1="0" y1="228" x2="520" y2="228" stroke="#333" stroke-width="1"/>
+
+  <!-- ── rendered by ── -->
+  <text x="16" y="248" font-size="11" font-weight="700" fill="#9cdcfe">rendered by</text>
+
+  <text x="28" y="268" font-size="11" fill="#4ec9b0">BookListItem</text>
+  <text x="116" y="268" font-size="11" fill="#888"> @ </text>
+  <text x="132" y="268" font-size="11" fill="#4e94ce" text-decoration="underline">BookListItem.tsx:100</text>
+
+  <text x="28" y="286" font-size="11" fill="#ce9178">&lt;BookListItem&gt;</text>
+  <text x="122" y="286" font-size="11" fill="#888"> @ </text>
+  <text x="138" y="286" font-size="11" fill="#4e94ce" text-decoration="underline">BookRankingList.tsx:44</text>
+
+  <text x="28" y="304" font-size="11" fill="#888">Array.map</text>
+
+  <text x="28" y="322" font-size="11" fill="#4ec9b0">BookRankingList</text>
+  <text x="128" y="322" font-size="11" fill="#888"> @ </text>
+  <text x="144" y="322" font-size="11" fill="#4e94ce" text-decoration="underline">BookRankingList.tsx:37</text>
+
+  <!-- rendered by 설명 -->
+  <rect x="16" y="334" width="488" height="32" rx="4" fill="#2a1a1a" stroke="#6a3a3a" stroke-width="1"/>
+  <text x="24" y="348" font-size="10" fill="#af6a6a">← "이 컴포넌트가 어디서 렌더링됐는지" 역방향 추적</text>
+  <text x="24" y="361" font-size="10" fill="#af6a6a">   파란 링크 클릭 → 해당 파일 소스코드로 바로 이동</text>
+
+  <!-- 구분선 -->
+  <line x1="0" y1="374" x2="520" y2="374" stroke="#333" stroke-width="1"/>
+
+  <!-- ── source ── -->
+  <text x="16" y="394" font-size="11" font-weight="700" fill="#9cdcfe">source</text>
+
+  <text x="28" y="414" font-size="11" fill="#4e94ce" text-decoration="underline">LikeButton.tsx:15</text>
+
+  <!-- source 설명 -->
+  <rect x="16" y="426" width="488" height="18" rx="4" fill="#1a1a2a"/>
+  <text x="24" y="439" font-size="10" fill="#6a6aaf">← 이 컴포넌트가 정의된 파일과 줄 번호. 클릭하면 Sources 탭에서 열림.</text>
+
+  <!-- ── 총정리 ── -->
+  <rect x="0" y="456" width="520" height="104" fill="#252525" rx="0"/>
+  <rect x="0" y="456" width="520" height="4" fill="#444"/>
+  <text x="16" y="476" font-size="11" font-weight="700" fill="#e8c77a">정리</text>
+
+  <text x="16" y="496" font-size="10" fill="#9cdcfe">props</text>
+  <text x="50" y="496" font-size="10" fill="#888">      부모가 내려준 값 (읽기 전용)</text>
+
+  <text x="16" y="512" font-size="10" fill="#9cdcfe">hooks</text>
+  <text x="50" y="512" font-size="10" fill="#888">      State = useState 값 / 번호는 코드 순서</text>
+
+  <text x="16" y="528" font-size="10" fill="#9cdcfe">rendered by</text>
+  <text x="90" y="528" font-size="10" fill="#888">  어디서 렌더링됐는지 역추적 (링크 클릭 가능)</text>
+
+  <text x="16" y="544" font-size="10" fill="#9cdcfe">source</text>
+  <text x="52" y="544" font-size="10" fill="#888">     컴포넌트 정의 위치 (파일:줄번호)</text>
+
+</svg>

@@ -45,9 +45,9 @@ Week 12-14 → 성능 최적화 + React Compiler
 | 3   | 03/23 ✅ | 파생 상태 vs 독립 상태   | `filteredBooks`를 state vs 계산값으로 비교           | TanStack Query 캐시 데이터에서 파생 상태 확인    |
 | 4   | 03/23 ✅ | 파생 상태 실습           | 장르/읽기상태별 필터 계산 로직 인라인 계산으로 작성  | `entities/book/` model 레이어 활용               |
 | 5   | 03/23 ✅ | 컴포넌트 분리 기준       | `widgets/book/` 하위 컴포넌트 분리 기준 분석         | 재사용 vs 한번만 쓰이는 컴포넌트 구분            |
-| 6   | 03/24    | Key — 리스트 그 이상     | BookList의 `key` prop 점검, index 사용 여부 확인     | Supabase id를 key로 쓰는 이유 이해               |
-| 7   | 03/25    | 렌더링이 언제 일어나는가 | React DevTools로 BookCard 렌더링 추적                | 알림 드롭다운 열릴 때 불필요한 렌더 파악         |
-| 8   | 03/26    | 렌더링 심화              | props/state 변경 시 렌더링 범위 실험                 | Header 리렌더링이 BookList에 영향 주는지 확인    |
+| 6   | 03/24 ✅ | Key — 리스트 그 이상     | BookList의 `key` prop 점검, index 사용 여부 확인     | Supabase id를 key로 쓰는 이유 이해               |
+| 7   | 03/25 ✅ | 렌더링이 언제 일어나는가 | React DevTools로 BookCard 렌더링 추적                | 알림 드롭다운 열릴 때 불필요한 렌더 파악         |
+| 8   | 03/25 ✅ | 렌더링 심화              | props/state 변경 시 렌더링 범위 실험                 | Header 리렌더링이 BookList에 영향 주는지 확인    |
 | 9   | 03/27    | Strict Mode              | `layout.tsx`에서 StrictMode 확인, 이중 실행 확인     | Supabase 구독이 두 번 등록되는 문제 발견         |
 
 ---
