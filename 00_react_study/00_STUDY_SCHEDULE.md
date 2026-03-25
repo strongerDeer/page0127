@@ -48,7 +48,7 @@ Week 12-14 → 성능 최적화 + React Compiler
 | 6   | 03/24 ✅ | Key — 리스트 그 이상     | BookList의 `key` prop 점검, index 사용 여부 확인     | Supabase id를 key로 쓰는 이유 이해               |
 | 7   | 03/25 ✅ | 렌더링이 언제 일어나는가 | React DevTools로 BookCard 렌더링 추적                | 알림 드롭다운 열릴 때 불필요한 렌더 파악         |
 | 8   | 03/25 ✅ | 렌더링 심화              | props/state 변경 시 렌더링 범위 실험                 | Header 리렌더링이 BookList에 영향 주는지 확인    |
-| 9   | 03/27    | Strict Mode              | `layout.tsx`에서 StrictMode 확인, 이중 실행 확인     | Supabase 구독이 두 번 등록되는 문제 발견         |
+| 9   | 03/25 ✅ | Strict Mode              | `layout.tsx`에서 StrictMode 확인, 이중 실행 확인     | Supabase 구독이 두 번 등록되는 문제 발견         |
 
 ---
 
