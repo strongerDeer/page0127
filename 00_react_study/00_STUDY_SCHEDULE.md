@@ -56,26 +56,26 @@ Week 12-14 → 성능 최적화 + React Compiler
 
 > 목표: 기존 훅 코드를 읽고 → 더 나은 패턴으로 개선한다
 
-| Day | 날짜  | 주제                                | 30분 할 일                                       | page0127 연결 포인트                                  |
-| --- | ----- | ----------------------------------- | ------------------------------------------------ | ----------------------------------------------------- |
-| 10  | 04/01 | useState — 함수형 업데이트          | 책장 탭 토글 상태를 `prev =>` 패턴으로 개선      | 여러 필터가 동시 업데이트될 때 stale state 문제       |
-| 11  | 04/02 | useState — lazy initialization      | 마지막 선택 탭을 localStorage에서 복원           | `useState(() => localStorage.getItem('tab'))`         |
-| 12  | 04/03 | useState — 불변성                   | 독서 상태 배열 업데이트 시 불변성 점검           | 직접 push vs spread 차이 실험                         |
-| 13  | 04/04 | useEffect — 기본 패턴               | 탭 변경 시 localStorage 저장 effect 작성         | `useEffect(() => save, [activeTab])`                  |
-| 14  | 04/07 | useEffect — 남용 패턴               | 필터 계산을 effect에서 하는 안티패턴 찾아 제거   | TanStack Query 데이터를 effect로 동기화하는 패턴 확인 |
-| 15  | 04/08 | useEffect — 의존성 배열             | `exhaustive-deps` ESLint 경고 전부 수정          | `features/notification/` hook 의존성 누락 확인        |
-| 16  | 04/09 | useEffect — 클린업                  | 책 검색 debounce 타이머 클린업 구현              | `features/book/` 검색창에 debounce 적용               |
-| 17  | 04/10 | useRef — 렌더링과 무관한 값         | 이전 탭 값을 ref에 저장 (리렌더 없이)            | 탭 전환 애니메이션 방향 결정에 활용                   |
-| 18  | 04/11 | useRef — forwardRef                 | 책 검색 input에 외부에서 focus 제어              | `forwardRef`로 SearchInput 감싸기                     |
-| 19  | 04/14 | useImperativeHandle ✨              | 검색창에 `.focus()`, `.clear()` 커스텀 명령 노출 | Header에서 단축키로 검색창 제어                       |
-| 20  | 04/15 | useReducer — 교체 기준              | 복잡한 책장 필터 상태를 `useReducer`로 리팩토링  | `SET_TAB / SET_SORT / SET_GENRE / RESET` 액션         |
-| 21  | 04/16 | useReducer 심화                     | 필터 초기화 버튼 + URL 쿼리 파라미터 동기화      | `useSearchParams`와 reducer 연동                      |
-| 22  | 04/17 | useMemo / useCallback               | `filteredBooks` memoization, 핸들러 memoization  | Profiler로 개선 전/후 비교                            |
-| 23  | 04/18 | useMemo/useCallback — 언제 필요한가 | React 19 Compiler 시대 필요/불필요 케이스 정리   | 과도한 memoization 제거                               |
-| 24  | 04/21 | useDeferredValue                    | 책 목록 렌더링에 `useDeferredValue` 적용         | 검색 입력 타이핑이 막히지 않는 UX 확인                |
-| 25  | 04/22 | useTransition                       | 탭 전환 시 `useTransition`으로 처리              | `isPending`으로 탭 전환 중 로딩 표시                  |
-| 26  | 04/23 | useId                               | 필터 체크박스 `label-for` 접근성 개선            | `useId`로 고유 id 생성, shadcn/ui와 함께 사용         |
-| 27  | 04/24 | useLayoutEffect                     | 알림 패널 열릴 때 스크롤 위치 조정               | `useLayoutEffect`로 DOM 측정 후 위치 계산             |
+| Day | 날짜     | 주제                                | 30분 할 일                                       | page0127 연결 포인트                                  |
+| --- | -------- | ----------------------------------- | ------------------------------------------------ | ----------------------------------------------------- |
+| 10  | 03/26 ✅ | useState — 함수형 업데이트          | 책장 탭 토글 상태를 `prev =>` 패턴으로 개선      | 여러 필터가 동시 업데이트될 때 stale state 문제       |
+| 11  | 03/26 ✅ | useState — lazy initialization      | 마지막 선택 탭을 localStorage에서 복원           | `useState(() => localStorage.getItem('tab'))`         |
+| 12  | 03/27    | useState — 불변성                   | 독서 상태 배열 업데이트 시 불변성 점검           | 직접 push vs spread 차이 실험                         |
+| 13  | 03/27    | useEffect — 기본 패턴               | 탭 변경 시 localStorage 저장 effect 작성         | `useEffect(() => save, [activeTab])`                  |
+| 14  | 03/30    | useEffect — 남용 패턴               | 필터 계산을 effect에서 하는 안티패턴 찾아 제거   | TanStack Query 데이터를 effect로 동기화하는 패턴 확인 |
+| 15  | 03/30    | useEffect — 의존성 배열             | `exhaustive-deps` ESLint 경고 전부 수정          | `features/notification/` hook 의존성 누락 확인        |
+| 16  | 03/31    | useEffect — 클린업                  | 책 검색 debounce 타이머 클린업 구현              | `features/book/` 검색창에 debounce 적용               |
+| 17  | 03/31    | useRef — 렌더링과 무관한 값         | 이전 탭 값을 ref에 저장 (리렌더 없이)            | 탭 전환 애니메이션 방향 결정에 활용                   |
+| 18  | 04/01    | useRef — forwardRef                 | 책 검색 input에 외부에서 focus 제어              | `forwardRef`로 SearchInput 감싸기                     |
+| 19  | 04/01    | useImperativeHandle ✨              | 검색창에 `.focus()`, `.clear()` 커스텀 명령 노출 | Header에서 단축키로 검색창 제어                       |
+| 20  | 04/02    | useReducer — 교체 기준              | 복잡한 책장 필터 상태를 `useReducer`로 리팩토링  | `SET_TAB / SET_SORT / SET_GENRE / RESET` 액션         |
+| 21  | 04/02    | useReducer 심화                     | 필터 초기화 버튼 + URL 쿼리 파라미터 동기화      | `useSearchParams`와 reducer 연동                      |
+| 22  | 04/03    | useMemo / useCallback               | `filteredBooks` memoization, 핸들러 memoization  | Profiler로 개선 전/후 비교                            |
+| 23  | 04/03    | useMemo/useCallback — 언제 필요한가 | React 19 Compiler 시대 필요/불필요 케이스 정리   | 과도한 memoization 제거                               |
+| 24  | 04/21    | useDeferredValue                    | 책 목록 렌더링에 `useDeferredValue` 적용         | 검색 입력 타이핑이 막히지 않는 UX 확인                |
+| 25  | 04/22    | useTransition                       | 탭 전환 시 `useTransition`으로 처리              | `isPending`으로 탭 전환 중 로딩 표시                  |
+| 26  | 04/23    | useId                               | 필터 체크박스 `label-for` 접근성 개선            | `useId`로 고유 id 생성, shadcn/ui와 함께 사용         |
+| 27  | 04/24    | useLayoutEffect                     | 알림 패널 열릴 때 스크롤 위치 조정               | `useLayoutEffect`로 DOM 측정 후 위치 계산             |
 
 ---
 
@@ -152,32 +152,6 @@ Week 12-14 → 성능 최적화 + React Compiler
 | 65  | 06/23 | 번들 최적화              | `next/bundle-analyzer`로 번들 분석         | 불필요하게 큰 패키지 교체 or lazy 처리 |
 | 66  | 06/24 | 최종 성능 점검           | React DevTools Profiler 전체 앱 분석       | 병목 지점 2개 이상 개선                |
 | 67  | 06/25 | 전체 복습 & 회고         | Phase 1-6 개념 마인드맵 + 개선 내역 정리   | 학습 일지 완성                         |
-
----
-
-## 추가된 개념 요약
-
-| 개념                | 위치                | page0127 활용               |
-| ------------------- | ------------------- | --------------------------- |
-| useImperativeHandle | Day 20 (Phase 2)    | 검색창 커스텀 명령          |
-| Portal              | Day 31-32 (Phase 3) | 알림 드롭다운, 책 상세 모달 |
-| Error Boundary      | Day 39 (Phase 3)    | Supabase API 실패 처리      |
-| lazy + Suspense     | Day 45 (Phase 4)    | 대시보드 차트 코드 스플리팅 |
-| React.memo          | Day 63 (Phase 6)    | BookCard 리렌더 최적화      |
-
----
-
-## 주간 체크리스트 템플릿
-
-```markdown
-## Week N 체크리스트
-
-- [ ] 기존 코드에서 해당 개념 찾기
-- [ ] 개념 이해 (공식 문서 or 레퍼런스)
-- [ ] 실험/개선 코드 작성
-- [ ] 이전 버전과 비교 (Profiler or 코드 diff)
-- [ ] 모르는 것 질문 목록 작성
-```
 
 ---
 
