@@ -17,7 +17,7 @@ export function useUnreadCount(userId: string | undefined) {
     queryKey: notificationKeys.unreadCount(),
     queryFn: () => getUnreadCount(userId!),
     enabled: !!userId,
-    staleTime: 1000 * 30, // 30초 동안 fresh
-    refetchInterval: 1000 * 30, // 30초마다 자동 refetch
+    staleTime: 1000 * 60 * 5, // 5분 (Realtime으로 받으니 폴링 불필요)
+    // refetchInterval 제거 — useNotificationRealtime이 WebSocket으로 대체
   });
 }

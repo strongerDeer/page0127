@@ -7,7 +7,7 @@
  * 학습 포인트:
  * - Popover로 드롭다운 UI 구현
  * - 읽지 않은 알림 개수 뱃지 표시
- * - 실시간 알림 업데이트 (30초마다 refetch)
+ * - Supabase Realtime WebSocket으로 즉시 업데이트 (폴링 제거)
  */
 
 import { useState } from 'react';
@@ -21,7 +21,7 @@ import {
   PopoverTrigger,
 } from '@/shared/ui/popover';
 
-import { useUnreadCount } from '@/entities/notification';
+import { useUnreadCount, useNotificationRealtime } from '@/entities/notification';
 
 import { NotificationList } from './NotificationList';
 
@@ -32,6 +32,9 @@ type NotificationDropdownProps = {
 export const NotificationDropdown = ({ userId }: NotificationDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { data: unreadCount } = useUnreadCount(userId);
+
+  // Supabase Realtime 구독 — notifications 테이블 변경 시 자동으로 캐시 무효화
+  useNotificationRealtime(userId);
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
