@@ -26,9 +26,20 @@ type PublicLibraryFilterProps = {
 export const PublicLibraryFilter = ({
   onFilterChange,
 }: PublicLibraryFilterProps) => {
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState<FilterStatus>('all');
-  const [sort, setSort] = useState<SortOption>('latest');
+  const [search, setSearch] = useState(''); // 검색어는 임시 입력값 — 저장 안 함
+  // lazy initialization: 마지막 선택한 탭/정렬 복원
+  const [status, setStatus] = useState<FilterStatus>(
+    () =>
+      (typeof window !== 'undefined'
+        ? (localStorage.getItem('public-library-status') as FilterStatus)
+        : null) || 'all'
+  );
+  const [sort, setSort] = useState<SortOption>(
+    () =>
+      (typeof window !== 'undefined'
+        ? (localStorage.getItem('public-library-sort') as SortOption)
+        : null) || 'latest'
+  );
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -37,32 +48,34 @@ export const PublicLibraryFilter = ({
 
   const handleStatusChange = (value: FilterStatus) => {
     setStatus(value);
+    localStorage.setItem('public-library-status', value);
     onFilterChange({ search, status: value, sort });
   };
 
   const handleSortChange = (value: SortOption) => {
     setSort(value);
+    localStorage.setItem('public-library-sort', value);
     onFilterChange({ search, status, sort: value });
   };
 
   return (
-    <div className="mb-6 space-y-4">
+    <div className='mb-6 space-y-4'>
       {/* 검색창 */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+      <div className='relative'>
+        <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400' />
         <input
-          type="text"
-          placeholder="제목이나 저자로 검색하세요"
+          type='text'
+          placeholder='제목이나 저자로 검색하세요'
           value={search}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className='w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500'
         />
       </div>
 
       {/* 상태 필터 & 정렬 */}
-      <div className="flex items-center justify-between">
+      <div className='flex items-center justify-between'>
         {/* 상태 탭 */}
-        <div className="flex gap-2">
+        <div className='flex gap-2'>
           <button
             onClick={() => handleStatusChange('all')}
             className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
@@ -109,11 +122,11 @@ export const PublicLibraryFilter = ({
         <select
           value={sort}
           onChange={(e) => handleSortChange(e.target.value as SortOption)}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className='rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500'
         >
-          <option value="latest">최신순</option>
-          <option value="oldest">오래된순</option>
-          <option value="rating">평점순</option>
+          <option value='latest'>최신순</option>
+          <option value='oldest'>오래된순</option>
+          <option value='rating'>평점순</option>
         </select>
       </div>
     </div>

@@ -34,7 +34,13 @@ export const NotificationPage = () => {
   const router = useRouter();
   const { data: currentUser } = useCurrentUser();
   const observerRef = useRef<HTMLDivElement>(null);
-  const [filter, setFilter] = useState<'all' | 'unread'>('all');
+  // lazy initialization: 마지막 선택 필터 복원
+  const [filter, setFilter] = useState<'all' | 'unread'>(
+    () =>
+      (typeof window !== 'undefined'
+        ? (localStorage.getItem('notification-filter') as 'all' | 'unread')
+        : null) || 'all'
+  );
 
   const markAsReadMutation = useMarkAsRead();
   const markAllAsReadMutation = useMarkAllAsRead();
@@ -137,14 +143,14 @@ export const NotificationPage = () => {
           <Button
             variant={filter === 'all' ? 'default' : 'ghost'}
             size='sm'
-            onClick={() => setFilter('all')}
+            onClick={() => { setFilter('all'); localStorage.setItem('notification-filter', 'all'); }}
           >
             전체
           </Button>
           <Button
             variant={filter === 'unread' ? 'default' : 'ghost'}
             size='sm'
-            onClick={() => setFilter('unread')}
+            onClick={() => { setFilter('unread'); localStorage.setItem('notification-filter', 'unread'); }}
           >
             읽지 않음
           </Button>

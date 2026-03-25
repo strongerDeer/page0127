@@ -80,10 +80,22 @@ export const DashboardBookList = ({
   const [currentPage, setCurrentPage] = useState(1);
 
   // 상태 필터 (전체/완독/읽는 중/읽고 싶은)
-  const [statusFilter, setStatusFilter] = useState<BookStatus | 'all'>('all');
+  // lazy initialization: 첫 마운트 때만 localStorage 읽음
+  // typeof window 체크: Next.js SSR 환경에서 localStorage 접근 방지
+  const [statusFilter, setStatusFilter] = useState<BookStatus | 'all'>(
+    () =>
+      (typeof window !== 'undefined'
+        ? (localStorage.getItem('dashboard-status-filter') as BookStatus | 'all')
+        : null) || 'all'
+  );
 
   // 정렬 (최신순/오래된순/별점높은순/별점낮은순/제목순)
-  const [sortOption, setSortOption] = useState<string>('created_at-desc');
+  const [sortOption, setSortOption] = useState<string>(
+    () =>
+      (typeof window !== 'undefined'
+        ? localStorage.getItem('dashboard-sort-option')
+        : null) || 'created_at-desc'
+  );
 
   // 월별 + 카테고리 + 평점 + 상태 + 검색어 복합 필터 적용
   const filteredBooks = books
@@ -172,11 +184,13 @@ export const DashboardBookList = ({
   const handleStatusChange = (status: BookStatus | 'all') => {
     setCurrentPage(1);
     setStatusFilter(status);
+    localStorage.setItem('dashboard-status-filter', status);
   };
 
   const handleSortChange = (option: string) => {
     setCurrentPage(1);
     setSortOption(option);
+    localStorage.setItem('dashboard-sort-option', option);
   };
 
   const handleSearchChange = (query: string) => {
