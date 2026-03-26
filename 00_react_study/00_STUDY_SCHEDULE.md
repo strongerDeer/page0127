@@ -60,7 +60,7 @@ Week 12-14 → 성능 최적화 + React Compiler
 | --- | -------- | ----------------------------------- | ------------------------------------------------ | ----------------------------------------------------- |
 | 10  | 03/26 ✅ | useState — 함수형 업데이트          | 책장 탭 토글 상태를 `prev =>` 패턴으로 개선      | 여러 필터가 동시 업데이트될 때 stale state 문제       |
 | 11  | 03/26 ✅ | useState — lazy initialization      | 마지막 선택 탭을 localStorage에서 복원           | `useState(() => localStorage.getItem('tab'))`         |
-| 12  | 03/27    | useState — 불변성                   | 독서 상태 배열 업데이트 시 불변성 점검           | 직접 push vs spread 차이 실험                         |
+| 12  | 03/26 ✅ | useState — 불변성                   | 독서 상태 배열 업데이트 시 불변성 점검           | 직접 push vs spread 차이 실험                         |
 | 13  | 03/27    | useEffect — 기본 패턴               | 탭 변경 시 localStorage 저장 effect 작성         | `useEffect(() => save, [activeTab])`                  |
 | 14  | 03/30    | useEffect — 남용 패턴               | 필터 계산을 effect에서 하는 안티패턴 찾아 제거   | TanStack Query 데이터를 effect로 동기화하는 패턴 확인 |
 | 15  | 03/30    | useEffect — 의존성 배열             | `exhaustive-deps` ESLint 경고 전부 수정          | `features/notification/` hook 의존성 누락 확인        |
