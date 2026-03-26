@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { BookOpen, FileText, Target, CheckCircle } from 'lucide-react';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+
+import { BookOpen, CheckCircle, FileText, Target } from 'lucide-react';
 
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
@@ -22,9 +22,10 @@ import { DashboardBookList } from '@/features/stats/ui/DashboardBookList';
 import { DashboardCharts } from '@/features/stats/ui/DashboardCharts';
 import { ReadingGoalProgress } from '@/features/stats/ui/ReadingGoalProgress';
 
-import { CategoryPieChart } from '@/widgets/dashboard/CategoryPieChart';
-import { RatingDistributionChart } from '@/widgets/dashboard/RatingDistributionChart';
-import { type CalendarData as ReadingCalendarData,ReadingCalendar } from '@/widgets/dashboard/ReadingCalendar';
+import {
+  type CalendarData as ReadingCalendarData,
+  ReadingCalendar,
+} from '@/widgets/dashboard/ReadingCalendar';
 import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
 import { YearlyTrendChart } from '@/widgets/dashboard/YearlyTrendChart';
 
@@ -285,8 +286,12 @@ export const DashboardContent = ({
         {/* Header */}
         <header className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
           <div>
-            <h1 className='text-4xl font-bold tracking-tight text-slate-900'>Dashboard</h1>
-            <p className='text-lg text-slate-500'>Overview of your reading journey</p>
+            <h1 className='text-4xl font-bold tracking-tight text-slate-900'>
+              Dashboard
+            </h1>
+            <p className='text-lg text-slate-500'>
+              Overview of your reading journey
+            </p>
           </div>
 
           <div className='flex items-center gap-4'>
@@ -308,45 +313,68 @@ export const DashboardContent = ({
             </Select>
 
             <Button
-                className='bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30'
-                onClick={handleAnalyzeTaste}
-                disabled={isAnalyzing}
-              >
-                {isAnalyzing ? 'Analyzing...' : 'AI Analysis'}
+              className='bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30'
+              onClick={handleAnalyzeTaste}
+              disabled={isAnalyzing}
+            >
+              {isAnalyzing ? 'Analyzing...' : 'AI Analysis'}
             </Button>
 
             {profile?.username && (
-               <Button
-                  variant='outline'
-                  size='icon'
-                  onClick={handleCopyPublicUrl}
-                  className="bg-white/50 backdrop-blur-md border-white/40"
-                  title="Copy Public URL"
-                >
-                  <span className="sr-only">Copy URL</span>
-                  🔗
-                </Button>
+              <Button
+                variant='outline'
+                size='icon'
+                onClick={handleCopyPublicUrl}
+                className='bg-white/50 backdrop-blur-md border-white/40'
+                title='Copy Public URL'
+              >
+                <span className='sr-only'>Copy URL</span>
+                🔗
+              </Button>
             )}
           </div>
         </header>
 
         {/* Top Info Cards (Glass Pills) */}
         <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
-           <StatCard icon={<BookOpen className="h-5 w-5" />} title='Books Read' value={stats.totalCompletedBooks} unit='Books' variant="blue" />
-           <StatCard icon={<FileText className="h-5 w-5" />} title='Pages Read' value={stats.totalPages} unit='Pages' variant="purple" />
-           <StatCard icon={<Target className="h-5 w-5" />} title='Yearly Goal' value={stats.yearlyGoal} unit='Books' variant="emerald" />
-           <StatCard icon={<CheckCircle className="h-5 w-5" />} title='Completion' value={stats.completionRate} unit='%' variant="rose" />
+          <StatCard
+            icon={<BookOpen className='h-5 w-5' />}
+            title='Books Read'
+            value={stats.totalCompletedBooks}
+            unit='Books'
+            variant='blue'
+          />
+          <StatCard
+            icon={<FileText className='h-5 w-5' />}
+            title='Pages Read'
+            value={stats.totalPages}
+            unit='Pages'
+            variant='purple'
+          />
+          <StatCard
+            icon={<Target className='h-5 w-5' />}
+            title='Yearly Goal'
+            value={stats.yearlyGoal}
+            unit='Books'
+            variant='emerald'
+          />
+          <StatCard
+            icon={<CheckCircle className='h-5 w-5' />}
+            title='Completion'
+            value={stats.completionRate}
+            unit='%'
+            variant='rose'
+          />
         </div>
 
         {/* Main Grid Section */}
         <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
-
           {/* Left Column (Hero / Charts) - Spans 2 cols */}
           <div className='space-y-6 lg:col-span-2'>
             {/* Yearly Trend Chart (Glass Card) */}
             <Card className='border border-white/40 bg-white/60 shadow-xl backdrop-blur-xl'>
               <CardHeader>
-                 <CardTitle>Yearly Reading Trend</CardTitle>
+                <CardTitle>Yearly Reading Trend</CardTitle>
               </CardHeader>
               <CardContent>
                 <YearlyTrendChart data={overallStats.yearlyTrend} />
@@ -372,78 +400,84 @@ export const DashboardContent = ({
                 <CardTitle>Total Journey</CardTitle>
               </CardHeader>
               <CardContent className='space-y-4'>
-                 <ReadingJourneyCard data={overallStats.journey} />
+                <ReadingJourneyCard data={overallStats.journey} />
               </CardContent>
             </Card>
 
             {/* Reading Goal Progress */}
-            <div className="rounded-3xl border border-white/40 bg-white/50 p-6 shadow-xl backdrop-blur-xl">
-               <h3 className="mb-4 text-lg font-bold text-slate-800">Goal Progress</h3>
-               <ReadingGoalProgress
+            <div className='rounded-3xl border border-white/40 bg-white/50 p-6 shadow-xl backdrop-blur-xl'>
+              <h3 className='mb-4 text-lg font-bold text-slate-800'>
+                Goal Progress
+              </h3>
+              <ReadingGoalProgress
                 year={selectedYear}
-                target={isCurrentYearGoal && readingGoal ? readingGoal.target : 0}
+                target={
+                  isCurrentYearGoal && readingGoal ? readingGoal.target : 0
+                }
                 current={completedBooksInYear}
                 onSetGoal={() => setIsGoalDialogOpen(true)}
               />
             </div>
 
             {/* Taste Analysis Promo */}
-             <div className='relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white shadow-xl'>
-                <div className="relative z-10">
-                  <h3 className="text-xl font-bold">Discover Your Taste</h3>
-                  <p className="mt-2 text-indigo-100 text-sm">Let AI analyze your reading patterns.</p>
-                  <Button
-                    variant="secondary"
-                    className="mt-4 w-full border-0 bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm"
-                    onClick={handleAnalyzeTaste}
-                  >
-                    Start Analysis
-                  </Button>
-                </div>
-                {/* Decorative circles */}
-                 <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/10 blur-2xl"></div>
-                 <div className="absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-purple-400/20 blur-2xl"></div>
-             </div>
+            <div className='relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white shadow-xl'>
+              <div className='relative z-10'>
+                <h3 className='text-xl font-bold'>Discover Your Taste</h3>
+                <p className='mt-2 text-indigo-100 text-sm'>
+                  Let AI analyze your reading patterns.
+                </p>
+                <Button
+                  variant='secondary'
+                  className='mt-4 w-full border-0 bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm'
+                  onClick={handleAnalyzeTaste}
+                >
+                  Start Analysis
+                </Button>
+              </div>
+              {/* Decorative circles */}
+              <div className='absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/10 blur-2xl'></div>
+              <div className='absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-purple-400/20 blur-2xl'></div>
+            </div>
           </div>
         </div>
 
         {/* Bottom Section: Calendar & Detail List */}
         <div className='space-y-6'>
-            {/* Calendar */}
-            <div className="rounded-3xl border border-white/40 bg-white/60 shadow-xl backdrop-blur-xl overflow-hidden">
-               <ReadingCalendar
-                data={currentCalendarData}
-                summary={currentCalendarSummary}
-                currentYear={calendarYear}
-                currentMonth={calendarMonth}
-                isLoading={calendarLoading}
-                onPreviousMonth={handlePreviousMonth}
-                onNextMonth={handleNextMonth}
-              />
-            </div>
+          {/* Calendar */}
+          <div className='rounded-3xl border border-white/40 bg-white/60 shadow-xl backdrop-blur-xl overflow-hidden'>
+            <ReadingCalendar
+              data={currentCalendarData}
+              summary={currentCalendarSummary}
+              currentYear={calendarYear}
+              currentMonth={calendarMonth}
+              isLoading={calendarLoading}
+              onPreviousMonth={handlePreviousMonth}
+              onNextMonth={handleNextMonth}
+            />
+          </div>
 
-            {/* Book List */}
-            <div className="rounded-3xl border border-white/40 bg-white/60 p-1 shadow-xl backdrop-blur-xl">
-                <Card className="border-0 bg-transparent shadow-none">
-                  <CardHeader>
-                    <CardTitle>Recent Books</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <DashboardBookList
-                      books={books}
-                      categories={stats.categoryReading}
-                      selectedMonth={selectedMonth}
-                      selectedCategory={selectedCategory}
-                      selectedRating={selectedRating}
-                      searchQuery={searchQuery}
-                      onCategoryChange={setSelectedCategory}
-                      onRemoveMonthFilter={handleRemoveMonthFilter}
-                      onRemoveRatingFilter={handleRemoveRatingFilter}
-                      onSearchChange={setSearchQuery}
-                    />
-                  </CardContent>
-                </Card>
-            </div>
+          {/* Book List */}
+          <div className='rounded-3xl border border-white/40 bg-white/60 p-1 shadow-xl backdrop-blur-xl'>
+            <Card className='border-0 bg-transparent shadow-none'>
+              <CardHeader>
+                <CardTitle>Recent Books</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DashboardBookList
+                  books={books}
+                  categories={stats.categoryReading}
+                  selectedMonth={selectedMonth}
+                  selectedCategory={selectedCategory}
+                  selectedRating={selectedRating}
+                  searchQuery={searchQuery}
+                  onCategoryChange={setSelectedCategory}
+                  onRemoveMonthFilter={handleRemoveMonthFilter}
+                  onRemoveRatingFilter={handleRemoveRatingFilter}
+                  onSearchChange={setSearchQuery}
+                />
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
 
