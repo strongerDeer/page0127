@@ -91,21 +91,21 @@ export const PublicBookShelf = ({ books, username }: PublicBookShelfProps) => {
       );
     }
 
-    // 정렬
+    // 정렬 — toSorted()는 원본을 수정하지 않고 새 배열을 반환 (ES2023)
     if (filters.sort === 'latest') {
-      result.sort(
+      result = result.toSorted(
         (a, b) =>
           new Date(b.created_at || 0).getTime() -
           new Date(a.created_at || 0).getTime(),
       );
     } else if (filters.sort === 'oldest') {
-      result.sort(
+      result = result.toSorted(
         (a, b) =>
           new Date(a.created_at || 0).getTime() -
           new Date(b.created_at || 0).getTime(),
       );
     } else if (filters.sort === 'rating') {
-      result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      result = result.toSorted((a, b) => (b.rating || 0) - (a.rating || 0));
     }
 
     return result;
