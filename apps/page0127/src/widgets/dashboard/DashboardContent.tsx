@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { useQuery } from '@tanstack/react-query';
 import { BookOpen, CheckCircle, FileText, Target } from 'lucide-react';
 
 import { Button } from '@/shared/ui/button';
@@ -125,45 +126,50 @@ export const DashboardContent = ({
   // AI 취향 분석 상태
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  // 독서 캘린더 상태 관리
+  // 독서 캘린더 연도/월 상태 (이전/다음 달 이동용)
   const [calendarYear, setCalendarYear] = useState(initialCalendarYear);
   const [calendarMonth, setCalendarMonth] = useState(initialCalendarMonth);
-  const [calendarLoading, setCalendarLoading] = useState(false);
-  const [currentCalendarData, setCurrentCalendarData] = useState(calendarData);
-  const [currentCalendarSummary, setCurrentCalendarSummary] =
-    useState(calendarSummary);
 
-  // 캘린더 월 변경 시 데이터 가져오기
-  useEffect(() => {
-    const fetchCalendarData = async () => {
-      setCalendarLoading(true);
-      try {
-        const response = await fetch(
-          `/api/books/calendar?year=${calendarYear}&month=${calendarMonth}`
-        );
-        const result = await response.json();
+  // 남용 패턴 제거: useEffect + fetch + useState 3개 → useQuery 1개로 교체
+  //
+  // 기존 문제점:
+  //   1. useState(loading) + useState(data) + useState(summary) — 3개 직접 관리
+  //   2. useEffect 안에서 fetch — 값 변화가 원인인데 TanStack Query가 처리할 수 있는 패턴
+  //   3. 에러를 console.error만으로 처리 — 사용자에게 에러 표시 없음
+  //   4. 캐싱 없음 — 같은 달 다시 이동해도 매번 fetch
+  //   5. "초기 렌더링이 아닐 때만" 분기 — 복잡한 조건 필요
+  //
+  // 개선 결과:
+  //   - queryKey가 바뀌면 자동 fetch (calendarYear/calendarMonth)
+  //   - isLoading / isError 자동 관리
+  //   - 같은 달 다시 이동 시 캐시에서 즉시 반환
+  //   - initialData로 서버 데이터 활용 → 첫 렌더링 추가 fetch 없음
+  const { data: calendarResult, isLoading: calendarLoading } = useQuery({
+    queryKey: ['calendar', calendarYear, calendarMonth],
+    queryFn: async () => {
+      const response = await fetch(
+        `/api/books/calendar?year=${calendarYear}&month=${calendarMonth}`
+      );
+      const result = await response.json();
+      if (!result.success) throw new Error('캘린더 데이터 조회 실패');
+      return result as {
+        data: ReadingCalendarData[];
+        summary: { totalBooks: number; totalPages: number };
+      };
+    },
+    // 서버에서 받은 초기 데이터 활용 — 초기 연도/월과 일치하면 추가 fetch 없음
+    initialData:
+      calendarYear === initialCalendarYear &&
+      calendarMonth === initialCalendarMonth
+        ? { data: calendarData, summary: calendarSummary }
+        : undefined,
+  });
 
-        if (result.success) {
-          setCurrentCalendarData(result.data || []);
-          setCurrentCalendarSummary(
-            result.summary || { totalBooks: 0, totalPages: 0 }
-          );
-        }
-      } catch (error) {
-        console.error('캘린더 데이터 조회 실패:', error);
-      } finally {
-        setCalendarLoading(false);
-      }
-    };
-
-    // 초기 렌더링이 아닐 때만 fetch (초기 데이터는 서버에서 받음)
-    if (
-      calendarYear !== initialCalendarYear ||
-      calendarMonth !== initialCalendarMonth
-    ) {
-      fetchCalendarData();
-    }
-  }, [calendarYear, calendarMonth, initialCalendarYear, initialCalendarMonth]);
+  const currentCalendarData = calendarResult?.data ?? [];
+  const currentCalendarSummary = calendarResult?.summary ?? {
+    totalBooks: 0,
+    totalPages: 0,
+  };
 
   // 캘린더 이전 달 이동
   const handlePreviousMonth = () => {
