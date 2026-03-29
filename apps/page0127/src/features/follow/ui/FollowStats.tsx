@@ -43,7 +43,8 @@ export const FollowStats = ({
     });
 
     return unsubscribe;
-  }, [queryClient]);
+  // queryClient는 useQueryClient()가 반환하는 안정적인 싱글톤 객체 → 의존성 불필요
+  }, []);
 
   if (isLoading) {
     return (
