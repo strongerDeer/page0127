@@ -40,14 +40,21 @@ const BookEditPage = ({ params }: PageProps) => {
 
   // 책 데이터 불러오기
   useEffect(() => {
+    // AbortController: 컴포넌트 언마운트 시 진행 중인 fetch를 취소
+    const controller = new AbortController();
+
     const loadBook = async () => {
       const data = await getBookById(id);
-      setBook(data);
+      // abort된 경우 setBook 호출하지 않음 (언마운트된 컴포넌트에 상태 변경 방지)
+      if (!controller.signal.aborted) {
+        setBook(data);
+      }
     };
 
     loadBook();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+
+    return () => controller.abort();
+  }, [id, getBookById]);
 
   const handleSubmit = async (formData: BookFormData) => {
     setIsUpdating(true);
