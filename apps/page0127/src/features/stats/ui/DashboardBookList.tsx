@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from '@/shared/ui/select';
 
-import { BookSearchInput } from './BookSearchInput';
+import { BookSearchInput, type BookSearchInputHandle } from './BookSearchInput';
 import { CategoryFilter } from './CategoryFilter';
 
 import type { Book, BookStatus } from '@/entities/book/types';
@@ -78,6 +78,9 @@ export const DashboardBookList = ({
 }: DashboardBookListProps) => {
   const BOOKS_PER_PAGE = 12;
   const [currentPage, setCurrentPage] = useState(1);
+
+  // 실험 2: useImperativeHandle — 부모에서 검색창 clear() 호출
+  const searchRef = useRef<BookSearchInputHandle>(null);
 
   // 상태 필터 (전체/완독/읽는 중/읽고 싶은)
   // lazy initialization: 첫 마운트 때만 localStorage 읽음
@@ -200,12 +203,23 @@ export const DashboardBookList = ({
 
   return (
     <div>
-      {/* 검색창 */}
-      <div className='mb-4'>
-        <BookSearchInput
-          onSearchChange={handleSearchChange}
-          placeholder='제목이나 저자로 검색하세요'
-        />
+      {/* 검색창 + 외부 초기화 버튼 */}
+      <div className='mb-4 flex items-center gap-2'>
+        <div className='flex-1'>
+          <BookSearchInput
+            ref={searchRef}
+            onSearchChange={handleSearchChange}
+            placeholder='제목이나 저자로 검색하세요'
+          />
+        </div>
+        {/* 실험 2: 부모에서 ref.current.clear() 직접 호출 */}
+        <Button
+          variant='outline'
+          size='sm'
+          onClick={() => searchRef.current?.clear()}
+        >
+          초기화
+        </Button>
       </div>
 
       {/* 상태별 탭 */}

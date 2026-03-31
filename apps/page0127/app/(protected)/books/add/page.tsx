@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -49,6 +49,12 @@ const AddBookPage = () => {
 
   const [selectedBook, setSelectedBook] = useState<AladinBook | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+
+  // 실험 1: forwardRef — 페이지 진입 시 검색창에 자동 포커스
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    searchInputRef.current?.focus();
+  }, []);
 
   // 중복 체크 모달 상태
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
@@ -211,7 +217,11 @@ const AddBookPage = () => {
           {!selectedBook ? (
             <div className='space-y-6'>
               {/* 검색 입력 */}
-              <BookSearchInput onSearch={search} isLoading={isSearching} />
+              <BookSearchInput
+                ref={searchInputRef}
+                onSearch={search}
+                isLoading={isSearching}
+              />
 
               {/* 로딩 상태 */}
               {isSearching && (
