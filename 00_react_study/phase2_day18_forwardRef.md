@@ -9,45 +9,7 @@
 
 ## 도식: ref가 어떻게 흘러가는가
 
-```
-일반 컴포넌트 (forwardRef 없음)
-─────────────────────────────────────────────────────
-부모                          BookSearchInput
-┌─────────────────────┐       ┌─────────────────────┐
-│ const ref = useRef()│       │                     │
-│                     │  ref  │  ← ref 받는 곳 없음  │
-│ <BookSearchInput    │ ────▶ │                     │
-│   ref={ref}         │  ❌   │  <Input />          │
-│ />                  │       │   (ref 전달 불가)    │
-└─────────────────────┘       └─────────────────────┘
-
-
-forwardRef 적용 후
-─────────────────────────────────────────────────────
-부모                          BookSearchInput              실제 DOM
-┌─────────────────────┐       ┌─────────────────────┐    ┌─────────┐
-│ const ref = useRef()│       │ forwardRef(          │    │         │
-│                     │  ref  │  (props, ref) => {   │ref │ <input> │
-│ <BookSearchInput    │ ────▶ │    return (          │───▶│  .focus │
-│   ref={ref}         │  ✅   │      <Input ref={ref}│    │  .value │
-│ />                  │       │    )                 │    │         │
-│                     │       │  }                   │    └─────────┘
-│ ref.current.focus() │◀──────│ )                    │
-│ // 실제 input DOM   │       └─────────────────────┘
-└─────────────────────┘
-
-
-useImperativeHandle 추가 시
-─────────────────────────────────────────────────────
-부모                          BookSearchInput              실제 DOM
-┌─────────────────────┐       ┌─────────────────────┐    ┌─────────┐
-│ ref.current.focus() │       │ useImperativeHandle( │    │ <input> │
-│ ref.current.clear() │◀──────│   ref, () => ({      │───▶│         │
-│                     │       │     focus: () => ..  │    └─────────┘
-│ // DOM 직접 노출 X  │       │     clear: () => ..  │
-│ // 메서드만 노출    │       │   })                 │
-└─────────────────────┘       └─────────────────────┘
-```
+![forwardRef 흐름 도식](./images/day18_forwardRef.svg)
 
 ---
 
