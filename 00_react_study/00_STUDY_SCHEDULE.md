@@ -65,7 +65,7 @@ Week 12-14 → 성능 최적화 + React Compiler
 | 14  | 03/27 ✅ | useEffect — 남용 패턴               | 필터 계산을 effect에서 하는 안티패턴 찾아 제거   | TanStack Query 데이터를 effect로 동기화하는 패턴 확인 |
 | 15  | 03/30 ✅ | useEffect — 의존성 배열             | `exhaustive-deps` ESLint 경고 전부 수정          | `features/notification/` hook 의존성 누락 확인        |
 | 16  | 03/30 ✅ | useEffect — 클린업                  | 책 검색 debounce 타이머 클린업 구현              | `features/book/` 검색창에 debounce 적용               |
-| 17  | 03/31    | useRef — 렌더링과 무관한 값         | 이전 탭 값을 ref에 저장 (리렌더 없이)            | 탭 전환 애니메이션 방향 결정에 활용                   |
+| 17  | 04/01 ✅ | useRef — 렌더링과 무관한 값         | 이전 탭 값을 ref에 저장 (리렌더 없이)            | 탭 전환 애니메이션 방향 결정에 활용                   |
 | 18  | 04/01    | useRef — forwardRef                 | 책 검색 input에 외부에서 focus 제어              | `forwardRef`로 SearchInput 감싸기                     |
 | 19  | 04/01    | useImperativeHandle ✨              | 검색창에 `.focus()`, `.clear()` 커스텀 명령 노출 | Header에서 단축키로 검색창 제어                       |
 | 20  | 04/02    | useReducer — 교체 기준              | 복잡한 책장 필터 상태를 `useReducer`로 리팩토링  | `SET_TAB / SET_SORT / SET_GENRE / RESET` 액션         |
