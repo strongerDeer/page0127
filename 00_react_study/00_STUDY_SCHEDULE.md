@@ -67,7 +67,7 @@ Week 12-14 → 성능 최적화 + React Compiler
 | 16  | 03/30 ✅ | useEffect — 클린업                  | 책 검색 debounce 타이머 클린업 구현              | `features/book/` 검색창에 debounce 적용               |
 | 17  | 04/01 ✅ | useRef — 렌더링과 무관한 값         | 이전 탭 값을 ref에 저장 (리렌더 없이)            | 탭 전환 애니메이션 방향 결정에 활용                   |
 | 18  | 04/01 ✅ | useRef — forwardRef                 | 책 검색 input에 외부에서 focus 제어              | `forwardRef`로 SearchInput 감싸기                     |
-| 19  | 04/01    | useImperativeHandle ✨              | 검색창에 `.focus()`, `.clear()` 커스텀 명령 노출 | Header에서 단축키로 검색창 제어                       |
+| 19  | 04/01 ✅ | useImperativeHandle ✨              | 검색창에 `.focus()`, `.clear()` 커스텀 명령 노출 | Header에서 단축키로 검색창 제어                       |
 | 20  | 04/02    | useReducer — 교체 기준              | 복잡한 책장 필터 상태를 `useReducer`로 리팩토링  | `SET_TAB / SET_SORT / SET_GENRE / RESET` 액션         |
 | 21  | 04/02    | useReducer 심화                     | 필터 초기화 버튼 + URL 쿼리 파라미터 동기화      | `useSearchParams`와 reducer 연동                      |
 | 22  | 04/03    | useMemo / useCallback               | `filteredBooks` memoization, 핸들러 memoization  | Profiler로 개선 전/후 비교                            |

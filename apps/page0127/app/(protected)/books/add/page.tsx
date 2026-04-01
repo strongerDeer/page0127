@@ -50,10 +50,23 @@ const AddBookPage = () => {
   const [selectedBook, setSelectedBook] = useState<AladinBook | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
 
-  // 실험 1: forwardRef — 페이지 진입 시 검색창에 자동 포커스
+  // 실험 1: forwardRef → React 19 ref as prop — 페이지 진입 시 자동 포커스
   const searchInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     searchInputRef.current?.focus();
+  }, []);
+
+  // 실험 1 심화: '/' 단축키로 언제든 검색창 포커스
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement) return; // 입력 중에는 무시
+      if (e.key === '/') {
+        e.preventDefault();
+        searchInputRef.current?.focus(); // useImperativeHandle 없이 DOM ref 직접 호출
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   // 중복 체크 모달 상태
