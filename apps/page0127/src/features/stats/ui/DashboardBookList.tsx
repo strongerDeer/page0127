@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -79,8 +79,17 @@ export const DashboardBookList = ({
   const BOOKS_PER_PAGE = 12;
   const [currentPage, setCurrentPage] = useState(1);
 
-  // 실험 2: useImperativeHandle — 부모에서 검색창 clear() 호출
+  // 실험 2: useImperativeHandle — 부모에서 검색창 메서드 호출
   const searchRef = useRef<BookSearchInputHandle>(null);
+
+  // Escape 단축키: useImperativeHandle이 노출한 clear()를 외부에서 호출
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') searchRef.current?.clear();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // 상태 필터 (전체/완독/읽는 중/읽고 싶은)
   // lazy initialization: 첫 마운트 때만 localStorage 읽음
