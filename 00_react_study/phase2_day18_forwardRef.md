@@ -43,11 +43,14 @@ export const BookSearchInput = ({ onSearch, ref }: BookSearchInputProps) => {
 ```
 
 **사용하는 쪽은 동일:**
+
 ```tsx
 const searchRef = useRef<HTMLInputElement>(null);
-useEffect(() => { searchRef.current?.focus(); }, []);
+useEffect(() => {
+  searchRef.current?.focus();
+}, []);
 
-<BookSearchInput ref={searchRef} onSearch={handleSearch} />
+<BookSearchInput ref={searchRef} onSearch={handleSearch} />;
 ```
 
 ---
@@ -80,12 +83,12 @@ export const BookSearchInput = ({ onSearchChange, ref }: BookSearchInputProps) =
 
 ## 정리 표
 
-| | React ≤ 18 | React 19 (현재 프로젝트) |
-|--|-----------|------------------------|
-| DOM ref 전달 | `forwardRef` 필수 | ref를 prop으로 바로 받음 |
-| 메서드 노출 | `forwardRef` + `useImperativeHandle` | `useImperativeHandle`만 (forwardRef 제거) |
-| 내부에서만 DOM 접근 | `useRef` | `useRef` (변화 없음) |
-| `forwardRef` 상태 | 정상 | deprecated (하위호환 유지) |
+|                     | React ≤ 18                           | React 19 (현재 프로젝트)                  |
+| ------------------- | ------------------------------------ | ----------------------------------------- |
+| DOM ref 전달        | `forwardRef` 필수                    | ref를 prop으로 바로 받음                  |
+| 메서드 노출         | `forwardRef` + `useImperativeHandle` | `useImperativeHandle`만 (forwardRef 제거) |
+| 내부에서만 DOM 접근 | `useRef`                             | `useRef` (변화 없음)                      |
+| `forwardRef` 상태   | 정상                                 | deprecated (하위호환 유지)                |
 
 **규칙:** React 19에서 ref는 그냥 prop이다. `forwardRef`는 이제 쓰지 않는다.
 
@@ -101,5 +104,6 @@ export const BookSearchInput = ({ onSearchChange, ref }: BookSearchInputProps) =
 ## 다음 Day 예고
 
 **Day 19 — useMemo: 비싼 계산 캐싱**
+
 - 렌더마다 반복되는 필터/정렬 연산을 `useMemo`로 최적화
 - page0127의 도서 목록 필터링에 적용
