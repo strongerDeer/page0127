@@ -1,4 +1,4 @@
-# Day 18 — useRef + forwardRef: 외부에서 input focus 제어
+# Day 18 — ref 전달: forwardRef (React ≤18) → ref as prop (React 19)
 
 ## 오늘 읽을 코드
 
@@ -15,144 +15,86 @@
 
 ## 핵심 개념
 
-### 문제: 부모가 자식 input을 focus 시키고 싶다
+### React 18 이하 — forwardRef 필수
 
 ```tsx
-// 부모에서 이렇게 하고 싶다
-const inputRef = useRef<HTMLInputElement>(null);
-
-useEffect(() => {
-  inputRef.current?.focus(); // 페이지 진입 시 자동 포커스
-}, []);
-
-return <BookSearchInput ref={inputRef} />;
-//                       ^^^ 이게 안 된다! 일반 컴포넌트는 ref를 받지 못함
-```
-
-일반 함수 컴포넌트는 `ref` prop을 받을 수 없다.
-`forwardRef`로 감싸야 내부 DOM 요소까지 ref를 전달할 수 있다.
-
----
-
-### forwardRef 패턴
-
-```tsx
-import { forwardRef } from 'react';
-
-// forwardRef로 감싸면 두 번째 인자로 ref를 받는다
+// ref는 예약어 → 일반 prop으로 못 받음 → HOC로 감싸야 했음
 const BookSearchInput = forwardRef<HTMLInputElement, BookSearchInputProps>(
-  ({ onSearch, isLoading = false }, ref) => {
-    //                               ^^^ 부모가 넘긴 ref
-    const [query, setQuery] = useState('');
-
-    return (
-      <form onSubmit={...}>
-        <Input
-          ref={ref}  // 실제 <input> DOM 노드에 연결
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-      </form>
-    );
+  ({ onSearch }, ref) => {           // 두 번째 인자로 ref 수신
+    return <Input ref={ref} ... />;
   }
 );
-
-BookSearchInput.displayName = 'BookSearchInput'; // DevTools 표시용
+BookSearchInput.displayName = 'BookSearchInput'; // DevTools용
 ```
 
----
+### React 19 — ref를 일반 prop으로
 
-### page0127 실제 코드 → forwardRef 적용 전/후
-
-**현재 (features/book/BookSearchInput.tsx):**
 ```tsx
-export const BookSearchInput = ({
-  onSearch,
-  isLoading = false,
-}: BookSearchInputProps) => {
-  // ref를 받는 방법이 없음
-  return (
-    <form onSubmit={handleSubmit}>
-      <Input ... />  {/* 외부에서 focus 불가 */}
-    </form>
-  );
+// ref가 children처럼 기본 prop으로 승격됨
+type BookSearchInputProps = {
+  onSearch: (query: string) => void;
+  ref?: React.Ref<HTMLInputElement>; // props 타입에 그냥 추가
 };
+
+export const BookSearchInput = ({ onSearch, ref }: BookSearchInputProps) => {
+  return <Input ref={ref} ... />;  // 그대로 넘기면 됨
+};
+// forwardRef, displayName 불필요
 ```
 
-**forwardRef 적용 후:**
-```tsx
-export const BookSearchInput = forwardRef<HTMLInputElement, BookSearchInputProps>(
-  ({ onSearch, isLoading = false }, ref) => {
-    const [query, setQuery] = useState('');
-
-    return (
-      <form onSubmit={handleSubmit}>
-        <Input
-          ref={ref}  // 부모의 ref가 이 <input>에 연결된다
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          disabled={isLoading}
-        />
-      </form>
-    );
-  }
-);
-BookSearchInput.displayName = 'BookSearchInput';
-```
-
-**부모에서 사용:**
+**사용하는 쪽은 동일:**
 ```tsx
 const searchRef = useRef<HTMLInputElement>(null);
+useEffect(() => { searchRef.current?.focus(); }, []);
 
-// /search 페이지 진입 시 자동 포커스
-useEffect(() => {
-  searchRef.current?.focus();
-}, []);
-
-return <BookSearchInput ref={searchRef} onSearch={handleSearch} />;
+<BookSearchInput ref={searchRef} onSearch={handleSearch} />
 ```
 
 ---
 
-### useImperativeHandle — ref로 메서드 노출하기 (심화)
+### useImperativeHandle — React 19에서도 그대로
 
-DOM 노드 전체를 노출하는 대신, 특정 메서드만 노출하고 싶을 때:
+메서드만 선택 노출이 필요할 때. forwardRef만 사라졌고 패턴은 동일하다.
 
 ```tsx
-export const BookSearchInput = forwardRef<
-  { focus: () => void; clear: () => void },  // 노출할 메서드 타입
-  BookSearchInputProps
->(({ onSearch }, ref) => {
-  const inputRef = useRef<HTMLInputElement>(null);
+export type BookSearchInputHandle = { focus: () => void; clear: () => void };
 
-  // 부모에게 이 메서드들만 보여준다 (DOM 전체 X)
+type BookSearchInputProps = {
+  onSearchChange: (query: string) => void;
+  ref?: React.Ref<BookSearchInputHandle>; // DOM 타입 대신 핸들 타입
+};
+
+export const BookSearchInput = ({ onSearchChange, ref }: BookSearchInputProps) => {
+  const inputRef = useRef<HTMLInputElement>(null); // 내부 전용 DOM ref
+
   useImperativeHandle(ref, () => ({
     focus: () => inputRef.current?.focus(),
-    clear: () => { inputRef.current!.value = ''; },
+    clear: () => { setInputValue(''); onSearchChange(''); },
   }));
 
   return <Input ref={inputRef} ... />;
-});
+};
 ```
 
 ---
 
 ## 정리 표
 
-| 상황 | 패턴 |
-|------|------|
-| 부모가 자식 DOM에 직접 접근 | `forwardRef` + `ref={ref}` |
-| DOM 전체 대신 특정 동작만 노출 | `forwardRef` + `useImperativeHandle` |
-| 내부에서만 DOM 접근 | 그냥 `useRef` (forwardRef 불필요) |
+| | React ≤ 18 | React 19 (현재 프로젝트) |
+|--|-----------|------------------------|
+| DOM ref 전달 | `forwardRef` 필수 | ref를 prop으로 바로 받음 |
+| 메서드 노출 | `forwardRef` + `useImperativeHandle` | `useImperativeHandle`만 (forwardRef 제거) |
+| 내부에서만 DOM 접근 | `useRef` | `useRef` (변화 없음) |
+| `forwardRef` 상태 | 정상 | deprecated (하위호환 유지) |
 
-**규칙:** `ref`를 prop으로 넘기고 싶으면 항상 `forwardRef`로 감싸야 한다.
+**규칙:** React 19에서 ref는 그냥 prop이다. `forwardRef`는 이제 쓰지 않는다.
 
 ---
 
-## 오늘 실험
+## 오늘 실험 (React 19 방식으로 구현)
 
-1. **자동 포커스 구현**: `/search` 페이지에서 `forwardRef`로 감싼 `BookSearchInput`에 `useEffect`로 자동 포커스 걸기
-2. **clear 메서드 노출**: `useImperativeHandle`로 `clear()` 메서드를 부모에 노출하고, 외부 버튼 클릭 시 검색어 초기화
+1. **자동 포커스**: `books/add` 페이지 진입 시 `ref` prop으로 받은 `BookSearchInput` 자동 포커스
+2. **clear 메서드**: `useImperativeHandle`로 `clear()` 노출 → 대시보드 "초기화" 버튼 연결
 
 ---
 

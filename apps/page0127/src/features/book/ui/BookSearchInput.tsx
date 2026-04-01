@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, useState } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -8,20 +8,22 @@ import { Input } from '@/shared/ui/input';
 type BookSearchInputProps = {
   onSearch: (query: string) => void;
   isLoading?: boolean;
+  // React 19: ref가 일반 prop으로 승격 — forwardRef 래핑 불필요
+  ref?: React.Ref<HTMLInputElement>;
 };
 
 /**
  * 도서 검색 입력 컴포넌트
  *
  * 학습 포인트:
- * - forwardRef: 부모가 이 컴포넌트 내부의 <input> DOM에 접근할 수 있게 해줌
- * - 제네릭 타입: forwardRef<전달할 DOM 타입, Props 타입>
- * - displayName: React DevTools에서 컴포넌트 이름이 보이도록 설정
+ * - React 19부터 ref를 일반 prop처럼 받을 수 있다
+ * - forwardRef / displayName 보일러플레이트 제거됨
  */
-export const BookSearchInput = forwardRef<
-  HTMLInputElement,
-  BookSearchInputProps
->(({ onSearch, isLoading = false }, ref) => {
+export const BookSearchInput = ({
+  onSearch,
+  isLoading = false,
+  ref,
+}: BookSearchInputProps) => {
   const [query, setQuery] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -45,6 +47,4 @@ export const BookSearchInput = forwardRef<
       </Button>
     </form>
   );
-});
-
-BookSearchInput.displayName = 'BookSearchInput';
+};
