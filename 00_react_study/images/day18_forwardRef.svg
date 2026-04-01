@@ -1,0 +1,167 @@
+<svg width="760" height="580" viewBox="0 0 760 580" xmlns="http://www.w3.org/2000/svg" font-family="'Apple SD Gothic Neo', 'Pretendard', 'Malgun Gothic', sans-serif">
+  <defs>
+    <marker id="arr-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#ef4444"/>
+    </marker>
+    <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#3b82f6"/>
+    </marker>
+    <marker id="arr-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#10b981"/>
+    </marker>
+    <marker id="arr-purple" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#8b5cf6"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="760" height="580" fill="#f8fafc" rx="16"/>
+
+  <!-- Title -->
+  <text x="380" y="34" text-anchor="middle" font-size="17" font-weight="700" fill="#1e293b">ref 전달 방식 비교</text>
+  <text x="380" y="54" text-anchor="middle" font-size="12" fill="#64748b">React ≤18 (forwardRef 필수)  vs  React 19 (ref as prop)</text>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- ROW 1: React 18 forwardRef  vs  React 19 ref as prop  -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+
+  <!-- --- LEFT: React 18 --- -->
+  <rect x="16" y="68" width="354" height="190" fill="#fff" stroke="#e2e8f0" stroke-width="1.5" rx="12"/>
+
+  <!-- badge -->
+  <rect x="24" y="76" width="90" height="20" fill="#fee2e2" rx="10"/>
+  <text x="69" y="90" text-anchor="middle" font-size="11" font-weight="700" fill="#b91c1c">React ≤ 18</text>
+
+  <!-- 부모 -->
+  <rect x="24" y="102" width="140" height="140" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1" rx="8"/>
+  <text x="94" y="118" text-anchor="middle" font-size="11" font-weight="600" fill="#475569">부모</text>
+  <rect x="34" y="124" width="120" height="30" fill="#fff" stroke="#e2e8f0" stroke-width="1" rx="4"/>
+  <text x="94" y="136" text-anchor="middle" font-size="10" fill="#334155">const ref =</text>
+  <text x="94" y="148" text-anchor="middle" font-size="10" fill="#334155">useRef&lt;HTMLInputElement&gt;()</text>
+  <rect x="34" y="162" width="120" height="20" fill="#fee2e2" rx="4"/>
+  <text x="94" y="175" text-anchor="middle" font-size="10" fill="#b91c1c">&lt;Input ref={ref} /&gt; ← 안됨</text>
+  <rect x="34" y="188" width="120" height="42" fill="#dbeafe" rx="4"/>
+  <text x="94" y="202" text-anchor="middle" font-size="10" fill="#1e40af">&lt;BookSearchInput</text>
+  <text x="94" y="215" text-anchor="middle" font-size="10" fill="#1e40af">  ref={ref} /&gt;</text>
+  <text x="94" y="228" text-anchor="middle" font-size="10" fill="#1e40af">← forwardRef로만 가능</text>
+
+  <!-- 화살표 -->
+  <line x1="164" y1="200" x2="194" y2="200" stroke="#ef4444" stroke-width="1.5" marker-end="url(#arr-red)"/>
+
+  <!-- 자식 (forwardRef) -->
+  <rect x="196" y="102" width="160" height="140" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1" rx="8"/>
+  <text x="276" y="118" text-anchor="middle" font-size="11" font-weight="600" fill="#475569">BookSearchInput</text>
+  <rect x="206" y="124" width="140" height="72" fill="#fff" stroke="#e2e8f0" stroke-width="1" rx="4"/>
+  <text x="276" y="139" text-anchor="middle" font-size="10" fill="#6b7280">forwardRef&lt;</text>
+  <text x="276" y="152" text-anchor="middle" font-size="10" fill="#6b7280">  HTMLInputElement, Props</text>
+  <text x="276" y="165" text-anchor="middle" font-size="10" fill="#6b7280">&gt;((props, ref) =&gt; {"{"}</text>
+  <text x="276" y="178" text-anchor="middle" font-size="10" fill="#6b7280">  &lt;Input ref={"{ref}"}/&gt;</text>
+  <text x="276" y="191" text-anchor="middle" font-size="10" fill="#6b7280">{"})"}</text>
+  <rect x="206" y="202" width="140" height="32" fill="#fef3c7" rx="4"/>
+  <text x="276" y="215" text-anchor="middle" font-size="10" fill="#92400e">+ displayName 설정 필요</text>
+  <text x="276" y="228" text-anchor="middle" font-size="10" fill="#92400e">→ 보일러플레이트 ↑</text>
+
+  <!-- --- RIGHT: React 19 --- -->
+  <rect x="390" y="68" width="354" height="190" fill="#fff" stroke="#bbf7d0" stroke-width="1.5" rx="12"/>
+
+  <!-- badge -->
+  <rect x="398" y="76" width="90" height="20" fill="#dcfce7" rx="10"/>
+  <text x="443" y="90" text-anchor="middle" font-size="11" font-weight="700" fill="#166534">React 19 ✓</text>
+
+  <!-- 부모 -->
+  <rect x="398" y="102" width="140" height="140" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1" rx="8"/>
+  <text x="468" y="118" text-anchor="middle" font-size="11" font-weight="600" fill="#475569">부모</text>
+  <rect x="408" y="124" width="120" height="30" fill="#fff" stroke="#e2e8f0" stroke-width="1" rx="4"/>
+  <text x="468" y="136" text-anchor="middle" font-size="10" fill="#334155">const ref =</text>
+  <text x="468" y="148" text-anchor="middle" font-size="10" fill="#334155">useRef&lt;HTMLInputElement&gt;()</text>
+  <rect x="408" y="162" width="120" height="42" fill="#dcfce7" rx="4"/>
+  <text x="468" y="176" text-anchor="middle" font-size="10" fill="#166534">&lt;BookSearchInput</text>
+  <text x="468" y="190" text-anchor="middle" font-size="10" fill="#166534">  ref={ref} /&gt;</text>
+  <text x="468" y="204" text-anchor="middle" font-size="10" fill="#166534">← 그냥 됨!</text>
+  <rect x="408" y="212" width="120" height="20" fill="#bbf7d0" rx="4"/>
+  <text x="468" y="225" text-anchor="middle" font-size="10" fill="#166534">ref.current.focus() ✓</text>
+
+  <!-- 화살표 -->
+  <line x1="538" y1="200" x2="568" y2="200" stroke="#10b981" stroke-width="1.5" marker-end="url(#arr-green)"/>
+
+  <!-- 자식 (일반 함수) -->
+  <rect x="570" y="102" width="160" height="140" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1" rx="8"/>
+  <text x="650" y="118" text-anchor="middle" font-size="11" font-weight="600" fill="#475569">BookSearchInput</text>
+  <rect x="580" y="124" width="140" height="88" fill="#fff" stroke="#e2e8f0" stroke-width="1" rx="4"/>
+  <text x="650" y="139" text-anchor="middle" font-size="10" fill="#166534">type Props = {"{"}</text>
+  <text x="650" y="152" text-anchor="middle" font-size="10" fill="#166534">  onSearch: ...,</text>
+  <text x="650" y="165" text-anchor="middle" font-size="10" fill="#166534">  ref?: React.Ref&lt;Input&gt;</text>
+  <text x="650" y="178" text-anchor="middle" font-size="10" fill="#166534">{"}"}</text>
+  <text x="650" y="194" text-anchor="middle" font-size="10" fill="#166534">{`const Cmp = ({ ref }) =>`}</text>
+  <text x="650" y="207" text-anchor="middle" font-size="10" fill="#166534">  &lt;Input ref={"{ref}"}/&gt;</text>
+  <rect x="580" y="218" width="140" height="18" fill="#dcfce7" rx="4"/>
+  <text x="650" y="230" text-anchor="middle" font-size="10" fill="#166534">forwardRef / displayName 없음</text>
+
+  <!-- ═══════════════════════════════════ -->
+  <!-- ROW 2: useImperativeHandle (공통) -->
+  <!-- ═══════════════════════════════════ -->
+
+  <rect x="16" y="278" width="728" height="214" fill="#fff" stroke="#ddd6fe" stroke-width="1.5" rx="12"/>
+
+  <!-- badge -->
+  <rect x="24" y="286" width="198" height="20" fill="#ede9fe" rx="10"/>
+  <text x="123" y="300" text-anchor="middle" font-size="11" font-weight="700" fill="#5b21b6">useImperativeHandle — React 18·19 공통 패턴</text>
+  <text x="560" y="296" text-anchor="middle" font-size="11" fill="#6d28d9">DOM 대신 메서드만 선택 노출 (캡슐화)</text>
+
+  <!-- 부모 박스 -->
+  <rect x="24" y="308" width="180" height="170" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1" rx="8"/>
+  <text x="114" y="325" text-anchor="middle" font-size="11" font-weight="600" fill="#5b21b6">부모</text>
+  <rect x="34" y="332" width="160" height="56" fill="#fff" stroke="#ddd6fe" stroke-width="1" rx="4"/>
+  <text x="114" y="346" text-anchor="middle" font-size="10" fill="#5b21b6">const ref =</text>
+  <text x="114" y="360" text-anchor="middle" font-size="10" fill="#5b21b6">useRef&lt;BookSearchInputHandle&gt;()</text>
+  <text x="114" y="374" text-anchor="middle" font-size="10" fill="#5b21b6">// ← HTMLInputElement 아님!</text>
+  <rect x="34" y="396" width="160" height="22" fill="#ede9fe" rx="4"/>
+  <text x="114" y="411" text-anchor="middle" font-size="10" fill="#5b21b6">ref.current.focus()   ✓</text>
+  <rect x="34" y="424" width="160" height="22" fill="#ede9fe" rx="4"/>
+  <text x="114" y="439" text-anchor="middle" font-size="10" fill="#5b21b6">ref.current.clear()   ✓</text>
+  <rect x="34" y="452" width="160" height="20" fill="#fef3c7" rx="4"/>
+  <text x="114" y="465" text-anchor="middle" font-size="10" fill="#92400e">ref.current.value   ✗ (숨김)</text>
+
+  <!-- 화살표 ref 전달 -->
+  <line x1="204" y1="393" x2="250" y2="393" stroke="#8b5cf6" stroke-width="1.5" marker-end="url(#arr-purple)"/>
+  <text x="228" y="386" text-anchor="middle" font-size="10" fill="#8b5cf6">ref</text>
+
+  <!-- 컴포넌트 박스 -->
+  <rect x="252" y="308" width="270" height="170" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1" rx="8"/>
+  <text x="387" y="325" text-anchor="middle" font-size="11" font-weight="600" fill="#5b21b6">BookSearchInput (stats)</text>
+  <rect x="262" y="332" width="250" height="134" fill="#fff" stroke="#ddd6fe" stroke-width="1" rx="4"/>
+  <text x="387" y="347" text-anchor="middle" font-size="10" fill="#5b21b6">const inputRef = useRef()  ← 내부 DOM 전용</text>
+  <line x1="262" y1="354" x2="512" y2="354" stroke="#e8e4f8" stroke-width="1"/>
+  <text x="387" y="368" text-anchor="middle" font-size="10" fill="#5b21b6">useImperativeHandle(ref, () =&gt; ({"{"}</text>
+  <text x="387" y="382" text-anchor="middle" font-size="10" fill="#5b21b6">  focus: () =&gt; inputRef.current?.focus(),</text>
+  <text x="387" y="396" text-anchor="middle" font-size="10" fill="#5b21b6">  clear: () =&gt; {"{"} setInputValue('') {"}"}</text>
+  <text x="387" y="410" text-anchor="middle" font-size="10" fill="#5b21b6">{"})"}</text>
+  <line x1="262" y1="418" x2="512" y2="418" stroke="#e8e4f8" stroke-width="1"/>
+  <text x="387" y="432" text-anchor="middle" font-size="10" fill="#5b21b6">return &lt;Input ref={"{inputRef}"} ... /&gt;</text>
+  <text x="387" y="446" text-anchor="middle" font-size="10" fill="#94a3b8">// inputRef = 내부 전용, 외부에 미노출</text>
+  <text x="387" y="460" text-anchor="middle" font-size="10" fill="#5b21b6">{`// React 19: ref를 prop으로 받는다 (forwardRef 불필요)`}</text>
+
+  <!-- 점선 벽 (캡슐화) -->
+  <line x1="524" y1="308" x2="524" y2="478" stroke="#c4b5fd" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="528" y="392" font-size="10" fill="#7c3aed">DOM</text>
+  <text x="528" y="405" font-size="10" fill="#7c3aed">숨김</text>
+
+  <!-- 내부 화살표 -->
+  <line x1="524" y1="430" x2="555" y2="430" stroke="#c4b5fd" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-purple)"/>
+
+  <!-- DOM 박스 -->
+  <rect x="558" y="340" width="168" height="100" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1" rx="8"/>
+  <text x="642" y="358" text-anchor="middle" font-size="11" font-weight="600" fill="#5b21b6">실제 DOM</text>
+  <rect x="568" y="366" width="148" height="62" fill="#ede9fe" rx="4"/>
+  <text x="642" y="382" text-anchor="middle" font-size="13" fill="#5b21b6">&lt;input&gt;</text>
+  <text x="642" y="400" text-anchor="middle" font-size="10" fill="#7c3aed">.value  .focus()  등</text>
+  <text x="642" y="414" text-anchor="middle" font-size="10" fill="#a78bfa">컴포넌트 내부에서만 접근</text>
+  <text x="642" y="428" text-anchor="middle" font-size="10" fill="#a78bfa">부모에게는 숨겨진 상태</text>
+
+  <!-- ═════════════ 하단 요약 ═════════════ -->
+  <rect x="16" y="504" width="728" height="58" fill="#f1f5f9" rx="10"/>
+  <text x="380" y="521" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">한 줄 요약</text>
+  <text x="190" y="541" text-anchor="middle" font-size="11" fill="#ef4444">React ≤18: forwardRef 없으면 ref 전달 불가</text>
+  <line x1="375" y1="508" x2="375" y2="558" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="560" y="541" text-anchor="middle" font-size="11" fill="#10b981">React 19: ref는 그냥 prop — forwardRef deprecated</text>
+</svg>

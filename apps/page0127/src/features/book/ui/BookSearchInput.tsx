@@ -8,30 +8,33 @@ import { Input } from '@/shared/ui/input';
 type BookSearchInputProps = {
   onSearch: (query: string) => void;
   isLoading?: boolean;
+  // React 19: ref가 일반 prop으로 승격 — forwardRef 래핑 불필요
+  ref?: React.Ref<HTMLInputElement>;
 };
 
 /**
  * 도서 검색 입력 컴포넌트
  *
  * 학습 포인트:
- * - 제어 컴포넌트 (Controlled Component) 패턴
- * - onSubmit 이벤트 처리
- * - Props를 통한 부모-자식 간 통신
+ * - React 19부터 ref를 일반 prop처럼 받을 수 있다
+ * - forwardRef / displayName 보일러플레이트 제거됨
  */
 export const BookSearchInput = ({
   onSearch,
   isLoading = false,
+  ref,
 }: BookSearchInputProps) => {
   const [query, setQuery] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault(); // 페이지 새로고침 방지
+    e.preventDefault();
     onSearch(query);
   };
 
   return (
     <form onSubmit={handleSubmit} className='flex gap-2'>
       <Input
+        ref={ref}
         type='text'
         placeholder='도서 제목으로 검색...'
         value={query}
