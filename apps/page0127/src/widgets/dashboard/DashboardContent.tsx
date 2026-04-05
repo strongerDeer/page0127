@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useReducer, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -78,6 +78,76 @@ type DashboardContentProps = {
   initialCalendarMonth: number;
 };
 
+// ─── 필터 상태 ─────────────────────────────────────────────────────
+// 컴포넌트 외부에 정의: 렌더링마다 재생성되지 않음
+type FilterState = {
+  selectedMonth: number | null;
+  selectedCategory: string | null;
+  selectedRating: number | null;
+  searchQuery: string;
+};
+
+type FilterAction =
+  | { type: 'TOGGLE_MONTH'; month: number }
+  | { type: 'CLEAR_MONTH' }
+  | { type: 'TOGGLE_RATING'; rating: number }
+  | { type: 'CLEAR_RATING' }
+  | { type: 'SET_CATEGORY'; category: string | null }
+  | { type: 'SET_SEARCH'; query: string };
+
+const filterReducer = (state: FilterState, action: FilterAction): FilterState => {
+  switch (action.type) {
+    case 'TOGGLE_MONTH':
+      return {
+        ...state,
+        selectedMonth: state.selectedMonth === action.month ? null : action.month,
+      };
+    case 'CLEAR_MONTH':
+      return { ...state, selectedMonth: null };
+    case 'TOGGLE_RATING':
+      return {
+        ...state,
+        selectedRating: state.selectedRating === action.rating ? null : action.rating,
+      };
+    case 'CLEAR_RATING':
+      return { ...state, selectedRating: null };
+    case 'SET_CATEGORY':
+      return { ...state, selectedCategory: action.category };
+    case 'SET_SEARCH':
+      return { ...state, searchQuery: action.query };
+    default:
+      return state;
+  }
+};
+
+// ─── 캘린더 상태 ──────────────────────────────────────────────────
+// useReducer를 쓰는 이유:
+//   PREV_MONTH 액션 하나로 year+month 동시 갱신 (원자적)
+//   useState 2개라면 month=1일 때 setMonth(12) + setYear(y-1) 두 번 호출 필요
+type CalendarState = {
+  calendarYear: number;
+  calendarMonth: number;
+};
+
+type CalendarAction = { type: 'PREV_MONTH' } | { type: 'NEXT_MONTH' };
+
+const calendarReducer = (state: CalendarState, action: CalendarAction): CalendarState => {
+  switch (action.type) {
+    case 'PREV_MONTH':
+      if (state.calendarMonth === 1) {
+        return { calendarYear: state.calendarYear - 1, calendarMonth: 12 };
+      }
+      return { ...state, calendarMonth: state.calendarMonth - 1 };
+    case 'NEXT_MONTH':
+      if (state.calendarMonth === 12) {
+        return { calendarYear: state.calendarYear + 1, calendarMonth: 1 };
+      }
+      return { ...state, calendarMonth: state.calendarMonth + 1 };
+    default:
+      return state;
+  }
+};
+
 /**
  * 대시보드 컨텐츠 (Client Component)
  *
@@ -112,23 +182,33 @@ export const DashboardContent = ({
 }: DashboardContentProps) => {
   const router = useRouter();
 
-  // 필터 상태 관리
-  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedRating, setSelectedRating] = useState<number | null>(null);
+  // ─── 필터 상태 (month/category/rating/search) ─────────────────────
+  // useReducer를 쓰는 이유:
+  //   - 4개의 필터가 논리적으로 하나의 그룹 → 한 객체로 관리
+  //   - RESET_FILTERS 같은 액션으로 한 번에 전체 초기화 가능
+  const [filterState, filterDispatch] = useReducer(filterReducer, {
+    selectedMonth: null,
+    selectedCategory: null,
+    selectedRating: null,
+    searchQuery: '',
+  });
 
-  // 검색 상태 관리
-  const [searchQuery, setSearchQuery] = useState('');
+  const { selectedMonth, selectedCategory, selectedRating, searchQuery } = filterState;
 
-  // 독서 목표 다이얼로그 상태
+  // ─── 캘린더 상태 (year/month) ──────────────────────────────────────
+  // useReducer를 쓰는 이유:
+  //   - PREV_MONTH 액션 하나로 year+month 동시 갱신 (원자적)
+  //   - useState 2개라면 calendarMonth=1일 때 setMonth(12) + setYear(y-1) 두 번 필요
+  const [calendarState, calendarDispatch] = useReducer(calendarReducer, {
+    calendarYear: initialCalendarYear,
+    calendarMonth: initialCalendarMonth,
+  });
+
+  const { calendarYear, calendarMonth } = calendarState;
+
+  // 단순 boolean은 useState가 적합 — useReducer는 복합 상태에 써야 의미 있음
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
-
-  // AI 취향 분석 상태
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-
-  // 독서 캘린더 연도/월 상태 (이전/다음 달 이동용)
-  const [calendarYear, setCalendarYear] = useState(initialCalendarYear);
-  const [calendarMonth, setCalendarMonth] = useState(initialCalendarMonth);
 
   // 남용 패턴 제거: useEffect + fetch + useState 3개 → useQuery 1개로 교체
   //
@@ -171,25 +251,9 @@ export const DashboardContent = ({
     totalPages: 0,
   };
 
-  // 캘린더 이전 달 이동
-  const handlePreviousMonth = () => {
-    if (calendarMonth === 1) {
-      setCalendarMonth(12);
-      setCalendarYear(calendarYear - 1);
-    } else {
-      setCalendarMonth(calendarMonth - 1);
-    }
-  };
-
-  // 캘린더 다음 달 이동
-  const handleNextMonth = () => {
-    if (calendarMonth === 12) {
-      setCalendarMonth(1);
-      setCalendarYear(calendarYear + 1);
-    } else {
-      setCalendarMonth(calendarMonth + 1);
-    }
-  };
+  // 캘린더 이전/다음 달 이동 → dispatch 한 번으로 year+month 원자적 갱신
+  const handlePreviousMonth = () => calendarDispatch({ type: 'PREV_MONTH' });
+  const handleNextMonth = () => calendarDispatch({ type: 'NEXT_MONTH' });
 
   // 독서 목표 데이터
   const readingGoal = profile?.reading_goal;
@@ -204,24 +268,20 @@ export const DashboardContent = ({
   ).length;
 
   // 월 필터 클릭 핸들러 (토글 방식: 같은 월 클릭 시 필터 해제)
-  const handleMonthClick = (month: number) => {
-    setSelectedMonth((prev) => (prev === month ? null : month));
-  };
+  const handleMonthClick = (month: number) =>
+    filterDispatch({ type: 'TOGGLE_MONTH', month });
 
   // 월 필터 제거 핸들러
-  const handleRemoveMonthFilter = () => {
-    setSelectedMonth(null);
-  };
+  const handleRemoveMonthFilter = () =>
+    filterDispatch({ type: 'CLEAR_MONTH' });
 
   // 평점 필터 클릭 핸들러 (토글 방식)
-  const handleRatingClick = (rating: number) => {
-    setSelectedRating((prev) => (prev === rating ? null : rating));
-  };
+  const handleRatingClick = (rating: number) =>
+    filterDispatch({ type: 'TOGGLE_RATING', rating });
 
   // 평점 필터 제거 핸들러
-  const handleRemoveRatingFilter = () => {
-    setSelectedRating(null);
-  };
+  const handleRemoveRatingFilter = () =>
+    filterDispatch({ type: 'CLEAR_RATING' });
 
   // 연도 변경 핸들러
   const handleYearChange = (value: string) => {
@@ -476,10 +536,14 @@ export const DashboardContent = ({
                   selectedCategory={selectedCategory}
                   selectedRating={selectedRating}
                   searchQuery={searchQuery}
-                  onCategoryChange={setSelectedCategory}
+                  onCategoryChange={(category) =>
+                    filterDispatch({ type: 'SET_CATEGORY', category })
+                  }
                   onRemoveMonthFilter={handleRemoveMonthFilter}
                   onRemoveRatingFilter={handleRemoveRatingFilter}
-                  onSearchChange={setSearchQuery}
+                  onSearchChange={(query) =>
+                    filterDispatch({ type: 'SET_SEARCH', query })
+                  }
                 />
               </CardContent>
             </Card>

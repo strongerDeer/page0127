@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useReducer } from 'react';
 
 import Image from 'next/image';
 
@@ -33,13 +33,79 @@ export type BookFormData = {
   is_public?: boolean;
 };
 
+// ─── State 타입 정의 ───────────────────────────────────────────────
+// 폼의 모든 입력 상태를 하나의 객체로 관리
+type FormState = {
+  status: BookStatus;
+  completedDate: string;
+  startDate: string;
+  showStartDate: boolean;
+  rating: BookRating | undefined;
+  oneLineReview: string;
+  personalMemo: string;
+  tagsInput: string;
+  tagError: string;
+  isPublic: boolean;
+};
+
+// ─── Action 타입 정의 ──────────────────────────────────────────────
+// useReducer를 쓰는 핵심 이유:
+//   SET_STATUS 액션 하나로 status 변경 + showStartDate/startDate 초기화를
+//   원자적으로 처리 → useState였다면 set 3번 필요
+type FormAction =
+  | { type: 'SET_STATUS'; status: BookStatus }
+  | { type: 'SET_COMPLETED_DATE'; date: string }
+  | { type: 'SET_START_DATE'; date: string }
+  | { type: 'TOGGLE_START_DATE'; checked: boolean }
+  | { type: 'SET_RATING'; rating: BookRating | undefined }
+  | { type: 'SET_ONE_LINE_REVIEW'; value: string }
+  | { type: 'SET_PERSONAL_MEMO'; value: string }
+  | { type: 'SET_TAGS_INPUT'; value: string }
+  | { type: 'SET_TAG_ERROR'; error: string }
+  | { type: 'SET_IS_PUBLIC'; isPublic: boolean };
+
+function formReducer(state: FormState, action: FormAction): FormState {
+  switch (action.type) {
+    case 'SET_STATUS':
+      return {
+        ...state,
+        status: action.status,
+        // 상태 변경 시 시작일 관련 필드 동시 초기화
+        // → useState 3번 호출 없이 한 번의 dispatch로 처리
+        showStartDate: false,
+        startDate: '',
+      };
+    case 'SET_COMPLETED_DATE':
+      return { ...state, completedDate: action.date };
+    case 'SET_START_DATE':
+      return { ...state, startDate: action.date };
+    case 'TOGGLE_START_DATE':
+      return { ...state, showStartDate: action.checked };
+    case 'SET_RATING':
+      return { ...state, rating: action.rating };
+    case 'SET_ONE_LINE_REVIEW':
+      return { ...state, oneLineReview: action.value };
+    case 'SET_PERSONAL_MEMO':
+      return { ...state, personalMemo: action.value };
+    case 'SET_TAGS_INPUT':
+      // 태그 입력 시 에러 자동 초기화
+      return { ...state, tagsInput: action.value, tagError: '' };
+    case 'SET_TAG_ERROR':
+      return { ...state, tagError: action.error };
+    case 'SET_IS_PUBLIC':
+      return { ...state, isPublic: action.isPublic };
+    default:
+      return state;
+  }
+}
+
 /**
  * 도서 등록 폼 컴포넌트
  *
  * 학습 포인트:
- * - 복잡한 폼 상태 관리
+ * - useReducer로 복잡한 폼 상태 관리
+ * - SET_STATUS 액션이 연쇄 초기화를 한 번에 처리 (원자적 상태 전환)
  * - 상태별 조건부 필드 표시 (UX 개선)
- * - 배열 데이터 처리 (tags)
  *
  * UX 개선 (상태별 표시 필드):
  * - 완독: 완독일(필수) + 시작일(옵션) + 평점 + 한줄평 + 메모 + 태그 + 공개설정
@@ -58,34 +124,37 @@ export const BookRegistrationForm = ({
     ? upgradeImageResolution(book.cover)
     : book.cover;
 
-  const [status, setStatus] = useState<BookStatus>(
-    initialData?.status || 'completed'
-  );
-  const [completedDate, setCompletedDate] = useState(
-    initialData?.completed_date || new Date().toISOString().split('T')[0]
-  );
-  const [startDate, setStartDate] = useState(initialData?.start_date || '');
-  const [showStartDate, setShowStartDate] = useState(!!initialData?.start_date);
-  const [rating, setRating] = useState<BookRating | undefined>(
-    initialData?.rating
-  );
-  const [oneLineReview, setOneLineReview] = useState(
-    initialData?.one_line_review || ''
-  );
-  const [personalMemo, setPersonalMemo] = useState(
-    initialData?.personal_memo || ''
-  );
-  const [tagsInput, setTagsInput] = useState(
-    initialData?.tags ? initialData.tags.join(', ') : ''
-  );
-  const [tagError, setTagError] = useState('');
-  const [isPublic, setIsPublic] = useState(
-    initialData?.is_public !== undefined ? initialData.is_public : true
-  );
+  const [state, dispatch] = useReducer(formReducer, {
+    status: initialData?.status || 'completed',
+    completedDate:
+      initialData?.completed_date || new Date().toISOString().split('T')[0],
+    startDate: initialData?.start_date || '',
+    showStartDate: !!initialData?.start_date,
+    rating: initialData?.rating,
+    oneLineReview: initialData?.one_line_review || '',
+    personalMemo: initialData?.personal_memo || '',
+    tagsInput: initialData?.tags ? initialData.tags.join(', ') : '',
+    tagError: '',
+    isPublic:
+      initialData?.is_public !== undefined ? initialData.is_public : true,
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const {
+    status,
+    completedDate,
+    startDate,
+    showStartDate,
+    rating,
+    oneLineReview,
+    personalMemo,
+    tagsInput,
+    tagError,
+    isPublic,
+  } = state;
+
+  const handleSubmit = (e: { preventDefault: () => void }) => {
     e.preventDefault();
-    setTagError('');
+    dispatch({ type: 'SET_TAG_ERROR', error: '' });
 
     const formData: BookFormData = {
       status,
@@ -121,7 +190,10 @@ export const BookRegistrationForm = ({
 
       // 10개 초과 검증
       if (uniqueTags.length > 10) {
-        setTagError('태그는 최대 10개까지 입력할 수 있습니다.');
+        dispatch({
+          type: 'SET_TAG_ERROR',
+          error: '태그는 최대 10개까지 입력할 수 있습니다.',
+        });
         return;
       }
 
@@ -174,12 +246,12 @@ export const BookRegistrationForm = ({
             <select
               id='status'
               value={status}
-              onChange={(e) => {
-                setStatus(e.target.value as BookStatus);
-                // 상태 변경 시 시작일 체크 초기화
-                setShowStartDate(false);
-                setStartDate('');
-              }}
+              onChange={(e) =>
+                dispatch({
+                  type: 'SET_STATUS',
+                  status: e.target.value as BookStatus,
+                })
+              }
               className='w-full rounded-md border border-gray-300 p-2'
               required
             >
@@ -197,7 +269,9 @@ export const BookRegistrationForm = ({
                 id='completed_date'
                 type='date'
                 value={completedDate}
-                onChange={(e) => setCompletedDate(e.target.value)}
+                onChange={(e) =>
+                  dispatch({ type: 'SET_COMPLETED_DATE', date: e.target.value })
+                }
                 required
               />
             </div>
@@ -211,7 +285,12 @@ export const BookRegistrationForm = ({
                   type='checkbox'
                   id='show_start_date'
                   checked={showStartDate}
-                  onChange={(e) => setShowStartDate(e.target.checked)}
+                  onChange={(e) =>
+                    dispatch({
+                      type: 'TOGGLE_START_DATE',
+                      checked: e.target.checked,
+                    })
+                  }
                   className='h-4 w-4'
                 />
                 <Label htmlFor='show_start_date' className='cursor-pointer'>
@@ -223,7 +302,9 @@ export const BookRegistrationForm = ({
                 <Input
                   type='date'
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  onChange={(e) =>
+                    dispatch({ type: 'SET_START_DATE', date: e.target.value })
+                  }
                   placeholder='시작일'
                 />
               )}
@@ -239,7 +320,9 @@ export const BookRegistrationForm = ({
                   <button
                     key={score}
                     type='button'
-                    onClick={() => setRating(score as BookRating)}
+                    onClick={() =>
+                      dispatch({ type: 'SET_RATING', rating: score as BookRating })
+                    }
                     className={`rounded-md border px-4 py-2 transition-colors ${
                       rating === score
                         ? 'border-blue-500 bg-blue-500 text-white'
@@ -261,7 +344,9 @@ export const BookRegistrationForm = ({
                 id='one_line_review'
                 type='text'
                 value={oneLineReview}
-                onChange={(e) => setOneLineReview(e.target.value)}
+                onChange={(e) =>
+                  dispatch({ type: 'SET_ONE_LINE_REVIEW', value: e.target.value })
+                }
                 placeholder='이 책에 대한 한줄평을 남겨주세요'
                 maxLength={100}
               />
@@ -274,7 +359,9 @@ export const BookRegistrationForm = ({
             <Textarea
               id='personal_memo'
               value={personalMemo}
-              onChange={(e) => setPersonalMemo(e.target.value)}
+              onChange={(e) =>
+                dispatch({ type: 'SET_PERSONAL_MEMO', value: e.target.value })
+              }
               placeholder='개인적인 생각이나 메모를 자유롭게 작성하세요'
               rows={4}
             />
@@ -287,10 +374,9 @@ export const BookRegistrationForm = ({
               id='tags'
               type='text'
               value={tagsInput}
-              onChange={(e) => {
-                setTagsInput(e.target.value);
-                setTagError('');
-              }}
+              onChange={(e) =>
+                dispatch({ type: 'SET_TAGS_INPUT', value: e.target.value })
+              }
               placeholder='예: 자기계발, 경영, 추천도서'
               className={tagError ? 'border-red-500' : ''}
             />
@@ -320,7 +406,9 @@ export const BookRegistrationForm = ({
               <Switch
                 id='is_public'
                 checked={isPublic}
-                onCheckedChange={setIsPublic}
+                onCheckedChange={(checked) =>
+                  dispatch({ type: 'SET_IS_PUBLIC', isPublic: checked })
+                }
               />
             </div>
           </div>
