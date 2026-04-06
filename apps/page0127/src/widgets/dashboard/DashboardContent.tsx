@@ -29,8 +29,9 @@ import {
 } from '@/widgets/dashboard/ReadingCalendar';
 import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
 import { YearlyTrendChart } from '@/widgets/dashboard/YearlyTrendChart';
+import { PublicBookShelf } from '@/widgets/public-library/PublicBookShelf';
 
-import type { Book } from '@/entities/book/types';
+import type { Book, BookStatus } from '@/entities/book/types';
 import type { BookStats, OverallStats } from '@/entities/book/types/stats';
 import type { Profile } from '@/entities/profile/types';
 
@@ -85,6 +86,10 @@ type FilterState = {
   selectedCategory: string | null;
   selectedRating: number | null;
   searchQuery: string;
+  // statusFilter를 여기서 관리하는 이유:
+  //   DashboardBookList 내부 useState로 두면 RESET_ALL이 닿지 않음
+  //   부모 reducer로 올려야(lift state up) 전체 초기화 가능
+  statusFilter: BookStatus | 'all';
 };
 
 type FilterAction =
@@ -93,21 +98,39 @@ type FilterAction =
   | { type: 'TOGGLE_RATING'; rating: number }
   | { type: 'CLEAR_RATING' }
   | { type: 'SET_CATEGORY'; category: string | null }
-  | { type: 'SET_SEARCH'; query: string };
+  | { type: 'SET_SEARCH'; query: string }
+  | { type: 'SET_STATUS'; status: BookStatus | 'all' }
+  | { type: 'RESET_ALL' };
 
-const filterReducer = (state: FilterState, action: FilterAction): FilterState => {
+// 초기값을 상수로 분리:
+//   1. useReducer 두 번째 인자로 재사용
+//   2. RESET_ALL 케이스에서 같은 값 참조 → "진짜 초기 상태"로 돌아감
+const INITIAL_FILTER_STATE: FilterState = {
+  selectedMonth: null,
+  selectedCategory: null,
+  selectedRating: null,
+  searchQuery: '',
+  statusFilter: 'all',
+};
+
+const filterReducer = (
+  state: FilterState,
+  action: FilterAction
+): FilterState => {
   switch (action.type) {
     case 'TOGGLE_MONTH':
       return {
         ...state,
-        selectedMonth: state.selectedMonth === action.month ? null : action.month,
+        selectedMonth:
+          state.selectedMonth === action.month ? null : action.month,
       };
     case 'CLEAR_MONTH':
       return { ...state, selectedMonth: null };
     case 'TOGGLE_RATING':
       return {
         ...state,
-        selectedRating: state.selectedRating === action.rating ? null : action.rating,
+        selectedRating:
+          state.selectedRating === action.rating ? null : action.rating,
       };
     case 'CLEAR_RATING':
       return { ...state, selectedRating: null };
@@ -115,6 +138,11 @@ const filterReducer = (state: FilterState, action: FilterAction): FilterState =>
       return { ...state, selectedCategory: action.category };
     case 'SET_SEARCH':
       return { ...state, searchQuery: action.query };
+    case 'SET_STATUS':
+      return { ...state, statusFilter: action.status };
+    case 'RESET_ALL':
+      // 한 번의 dispatch로 5개 필터 동시 초기화 (statusFilter 포함)
+      return INITIAL_FILTER_STATE;
     default:
       return state;
   }
@@ -131,7 +159,10 @@ type CalendarState = {
 
 type CalendarAction = { type: 'PREV_MONTH' } | { type: 'NEXT_MONTH' };
 
-const calendarReducer = (state: CalendarState, action: CalendarAction): CalendarState => {
+const calendarReducer = (
+  state: CalendarState,
+  action: CalendarAction
+): CalendarState => {
   switch (action.type) {
     case 'PREV_MONTH':
       if (state.calendarMonth === 1) {
@@ -186,14 +217,18 @@ export const DashboardContent = ({
   // useReducer를 쓰는 이유:
   //   - 4개의 필터가 논리적으로 하나의 그룹 → 한 객체로 관리
   //   - RESET_FILTERS 같은 액션으로 한 번에 전체 초기화 가능
-  const [filterState, filterDispatch] = useReducer(filterReducer, {
-    selectedMonth: null,
-    selectedCategory: null,
-    selectedRating: null,
-    searchQuery: '',
-  });
+  const [filterState, filterDispatch] = useReducer(
+    filterReducer,
+    INITIAL_FILTER_STATE
+  );
 
-  const { selectedMonth, selectedCategory, selectedRating, searchQuery } = filterState;
+  const {
+    selectedMonth,
+    selectedCategory,
+    selectedRating,
+    searchQuery,
+    statusFilter,
+  } = filterState;
 
   // ─── 캘린더 상태 (year/month) ──────────────────────────────────────
   // useReducer를 쓰는 이유:
@@ -272,8 +307,7 @@ export const DashboardContent = ({
     filterDispatch({ type: 'TOGGLE_MONTH', month });
 
   // 월 필터 제거 핸들러
-  const handleRemoveMonthFilter = () =>
-    filterDispatch({ type: 'CLEAR_MONTH' });
+  const handleRemoveMonthFilter = () => filterDispatch({ type: 'CLEAR_MONTH' });
 
   // 평점 필터 클릭 핸들러 (토글 방식)
   const handleRatingClick = (rating: number) =>
@@ -536,6 +570,7 @@ export const DashboardContent = ({
                   selectedCategory={selectedCategory}
                   selectedRating={selectedRating}
                   searchQuery={searchQuery}
+                  statusFilter={statusFilter}
                   onCategoryChange={(category) =>
                     filterDispatch({ type: 'SET_CATEGORY', category })
                   }
@@ -544,6 +579,14 @@ export const DashboardContent = ({
                   onSearchChange={(query) =>
                     filterDispatch({ type: 'SET_SEARCH', query })
                   }
+                  onStatusChange={(status) =>
+                    filterDispatch({ type: 'SET_STATUS', status })
+                  }
+                  onResetAll={() => filterDispatch({ type: 'RESET_ALL' })}
+                  showViewAll
+                  renderBooks={(filteredBooks) => (
+                    <PublicBookShelf books={filteredBooks} />
+                  )}
                 />
               </CardContent>
             </Card>

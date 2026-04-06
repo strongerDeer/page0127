@@ -29,29 +29,53 @@ type DashboardBookListProps = {
   /** 카테고리별 독서량 */
   categories: CategoryReadingData[];
 
-  /** 선택된 월 (1-12, null = 전체) */
-  selectedMonth: number | null;
+  /** 섹션 제목 (기본값: "Recent Books") */
+  title?: string;
+
+  /** 책 클릭 시 이동할 URL 생성 함수 (기본값: /books/${id}) */
+  bookHref?: (book: Book) => string;
+
+  /** 선택된 월 (1-12, null = 전체) — 차트 연동 없는 경우 생략 가능 */
+  selectedMonth?: number | null;
 
   /** 선택된 카테고리 */
   selectedCategory: string | null;
 
-  /** 선택된 평점 (1-5, null = 전체) */
-  selectedRating: number | null;
+  /** 선택된 평점 (1-5, null = 전체) — 차트 연동 없는 경우 생략 가능 */
+  selectedRating?: number | null;
 
   /** 검색어 */
   searchQuery: string;
 
+  /** 상태 필터 (전체/완독/읽는 중/읽고 싶은)
+   *  부모 reducer에서 관리 → RESET_ALL 한 번으로 전체 초기화 가능 */
+  statusFilter: BookStatus | 'all';
+
   /** 카테고리 선택 핸들러 */
   onCategoryChange: (category: string | null) => void;
 
-  /** 월 필터 제거 핸들러 */
-  onRemoveMonthFilter: () => void;
+  /** 월 필터 제거 핸들러 — selectedMonth 사용 시 필수 */
+  onRemoveMonthFilter?: () => void;
 
-  /** 평점 필터 제거 핸들러 */
-  onRemoveRatingFilter: () => void;
+  /** 평점 필터 제거 핸들러 — selectedRating 사용 시 필수 */
+  onRemoveRatingFilter?: () => void;
 
   /** 검색어 변경 핸들러 */
   onSearchChange: (query: string) => void;
+
+  /** 상태 필터 변경 핸들러 */
+  onStatusChange: (status: BookStatus | 'all') => void;
+
+  /** 책 목록 커스텀 렌더러 — 제공 시 기본 그리드 대신 사용
+   *  filteredBooks(필터 적용된 전체 목록)를 받아 ReactNode 반환
+   *  예: 선반(shelf) 레이아웃, 테이블 뷰 등 */
+  renderBooks?: (filteredBooks: Book[]) => React.ReactNode;
+
+  /** 전체 필터 초기화 핸들러 — 제공 시 필터 활성화 상태에서 초기화 버튼 표시 */
+  onResetAll?: () => void;
+
+  /** "전체 보기 →" 링크 표시 여부 (기본값: false) */
+  showViewAll?: boolean;
 };
 
 /**
@@ -67,14 +91,21 @@ type DashboardBookListProps = {
 export const DashboardBookList = ({
   books,
   categories,
-  selectedMonth,
+  title = 'Recent Books',
+  bookHref = (book) => `/books/${book.id}`,
+  selectedMonth = null,
   selectedCategory,
-  selectedRating,
+  selectedRating = null,
   searchQuery,
+  statusFilter,
   onCategoryChange,
   onRemoveMonthFilter,
   onRemoveRatingFilter,
   onSearchChange,
+  onStatusChange,
+  renderBooks,
+  onResetAll,
+  showViewAll = false,
 }: DashboardBookListProps) => {
   const BOOKS_PER_PAGE = 12;
   const [currentPage, setCurrentPage] = useState(1);
@@ -91,15 +122,11 @@ export const DashboardBookList = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // 상태 필터 (전체/완독/읽는 중/읽고 싶은)
-  // lazy initialization: 첫 마운트 때만 localStorage 읽음
-  // typeof window 체크: Next.js SSR 환경에서 localStorage 접근 방지
-  const [statusFilter, setStatusFilter] = useState<BookStatus | 'all'>(
-    () =>
-      (typeof window !== 'undefined'
-        ? (localStorage.getItem('dashboard-status-filter') as BookStatus | 'all')
-        : null) || 'all'
-  );
+  // searchQuery가 ''으로 초기화되면 검색 input 표시값도 같이 초기화
+  // (BookSearchInput은 자체 inputValue state를 가지므로 ref로 직접 호출)
+  useEffect(() => {
+    if (searchQuery === '') searchRef.current?.clear();
+  }, [searchQuery]);
 
   // 정렬 (최신순/오래된순/별점높은순/별점낮은순/제목순)
   const [sortOption, setSortOption] = useState<string>(
@@ -190,13 +217,12 @@ export const DashboardBookList = ({
 
   const handleRemoveMonthFilter = () => {
     setCurrentPage(1);
-    onRemoveMonthFilter();
+    onRemoveMonthFilter?.();
   };
 
   const handleStatusChange = (status: BookStatus | 'all') => {
     setCurrentPage(1);
-    setStatusFilter(status);
-    localStorage.setItem('dashboard-status-filter', status);
+    onStatusChange(status);
   };
 
   const handleSortChange = (option: string) => {
@@ -212,23 +238,13 @@ export const DashboardBookList = ({
 
   return (
     <div>
-      {/* 검색창 + 외부 초기화 버튼 */}
-      <div className='mb-4 flex items-center gap-2'>
-        <div className='flex-1'>
-          <BookSearchInput
-            ref={searchRef}
-            onSearchChange={handleSearchChange}
-            placeholder='제목이나 저자로 검색하세요'
-          />
-        </div>
-        {/* 실험 2: 부모에서 ref.current.clear() 직접 호출 */}
-        <Button
-          variant='outline'
-          size='sm'
-          onClick={() => searchRef.current?.clear()}
-        >
-          초기화
-        </Button>
+      {/* 검색창 */}
+      <div className='mb-4'>
+        <BookSearchInput
+          ref={searchRef}
+          onSearchChange={handleSearchChange}
+          placeholder='제목이나 저자로 검색하세요'
+        />
       </div>
 
       {/* 상태별 탭 */}
@@ -336,56 +352,83 @@ export const DashboardBookList = ({
       <div>
         <div className='mb-4 flex items-center justify-between'>
           <h3 className='text-lg font-semibold'>
-            읽은 책 ({filteredBooks.length})
+            {title} ({filteredBooks.length})
           </h3>
-          <Link
-            href='/books?status=completed'
-            className='text-sm text-emerald-600 hover:text-emerald-700'
-          >
-            전체 보기 →
-          </Link>
+          <div className='flex items-center gap-3'>
+            {/* 필터가 하나라도 활성화됐을 때만 초기화 버튼 표시 */}
+            {onResetAll &&
+              (selectedMonth !== null ||
+                selectedCategory !== null ||
+                selectedRating !== null ||
+                searchQuery !== '' ||
+                statusFilter !== 'all') && (
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  onClick={onResetAll}
+                  className='text-slate-500 hover:text-slate-800'
+                >
+                  필터 초기화
+                </Button>
+              )}
+            {showViewAll && (
+              <Link
+                href='/books?status=completed'
+                className='text-sm text-emerald-600 hover:text-emerald-700'
+              >
+                전체 보기 →
+              </Link>
+            )}
+          </div>
         </div>
 
-        {/* 책 표지 그리드 */}
+        {/* 책 목록 — renderBooks가 있으면 커스텀 렌더링, 없으면 기본 그리드 */}
         {filteredBooks.length > 0 ? (
           <>
-            <div className='grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6'>
-              {paginatedBooks.map((book) => (
-                <Link
-                  key={book.id}
-                  href={`/books/${book.id}`}
-                  className='group transition-transform hover:scale-105'
-                >
-                  <div className='aspect-2/3 relative overflow-hidden rounded-lg bg-gray-100 shadow-md'>
-                    {book.cover_image ? (
-                      <Image
-                        src={book.cover_image}
-                        alt={book.title}
-                        fill
-                        sizes='(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw'
-                        className='object-cover'
-                      />
-                    ) : (
-                      <div className='flex h-full w-full items-center justify-center text-4xl'>
-                        📚
-                      </div>
-                    )}
-                    {/* 재독 횟수 뱃지 (책 표지 위 오버레이) */}
-                    {book.read_count > 1 && (
-                      <div className='absolute right-2 top-2'>
-                        <ReadCountBadge readCount={book.read_count} size='sm' />
-                      </div>
-                    )}
-                  </div>
-                  <p className='mt-2 line-clamp-2 text-xs text-gray-700 group-hover:text-emerald-600'>
-                    {book.title}
-                  </p>
-                </Link>
-              ))}
-            </div>
+            {renderBooks ? (
+              // 커스텀 렌더러: 선반 레이아웃 등 외부에서 주입
+              renderBooks(filteredBooks)
+            ) : (
+              <div className='grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6'>
+                {paginatedBooks.map((book) => (
+                  <Link
+                    key={book.id}
+                    href={bookHref(book)}
+                    className='group transition-transform hover:scale-105'
+                  >
+                    <div className='aspect-2/3 relative overflow-hidden rounded-lg bg-gray-100 shadow-md'>
+                      {book.cover_image ? (
+                        <Image
+                          src={book.cover_image}
+                          alt={book.title}
+                          fill
+                          sizes='(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw'
+                          className='object-cover'
+                        />
+                      ) : (
+                        <div className='flex h-full w-full items-center justify-center text-4xl'>
+                          📚
+                        </div>
+                      )}
+                      {book.read_count > 1 && (
+                        <div className='absolute right-2 top-2'>
+                          <ReadCountBadge
+                            readCount={book.read_count}
+                            size='sm'
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <p className='mt-2 line-clamp-2 text-xs text-gray-700 group-hover:text-emerald-600'>
+                      {book.title}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            )}
 
-            {/* 페이지네이션 */}
-            {totalPages > 1 && (
+            {/* 페이지네이션 — 커스텀 렌더러 사용 시 숨김 */}
+            {!renderBooks && totalPages > 1 && (
               <div className='mt-6 flex items-center justify-center gap-2'>
                 <Button
                   variant='outline'
