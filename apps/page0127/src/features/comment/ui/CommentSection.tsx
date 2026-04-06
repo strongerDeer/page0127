@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 import { MessageSquare } from 'lucide-react';
@@ -40,10 +40,15 @@ export const CommentSection = ({
     queryFn: () => commentApi.getComments(activityId),
   });
 
-  // 전체 댓글 개수 계산 (댓글 + 대댓글)
-  const totalCount = comments.reduce((count, comment) => {
-    return count + 1 + (comment.replies?.length || 0);
-  }, 0);
+  // useMemo: isExpanded 토글 시 comments가 바뀌지 않으면 재계산 없이 캐시 반환
+  const totalCount = useMemo(
+    () =>
+      comments.reduce(
+        (count, comment) => count + 1 + (comment.replies?.length || 0),
+        0
+      ),
+    [comments]
+  );
 
   return (
     <div className='space-y-3'>

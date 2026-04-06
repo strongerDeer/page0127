@@ -1,6 +1,6 @@
 'use client';
 
-import { useReducer, useState } from 'react';
+import { useMemo, useReducer, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -294,13 +294,17 @@ export const DashboardContent = ({
   const readingGoal = profile?.reading_goal;
   const isCurrentYearGoal = readingGoal?.year === selectedYear;
 
-  // 선택된 연도의 완독 권수 계산
-  const completedBooksInYear = books.filter(
-    (book) =>
-      book.status === 'completed' &&
-      book.completed_date &&
-      new Date(book.completed_date).getFullYear() === selectedYear
-  ).length;
+  // useMemo: 캘린더 이동 등 무관한 상태 변경 시 재계산 방지
+  const completedBooksInYear = useMemo(
+    () =>
+      books.filter(
+        (book) =>
+          book.status === 'completed' &&
+          book.completed_date &&
+          new Date(book.completed_date).getFullYear() === selectedYear
+      ).length,
+    [books, selectedYear]
+  );
 
   // 월 필터 클릭 핸들러 (토글 방식: 같은 월 클릭 시 필터 해제)
   const handleMonthClick = (month: number) =>

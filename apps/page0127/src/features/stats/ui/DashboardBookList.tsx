@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -136,69 +136,82 @@ export const DashboardBookList = ({
         : null) || 'created_at-desc'
   );
 
-  // 월별 + 카테고리 + 평점 + 상태 + 검색어 복합 필터 적용
-  const filteredBooks = books
-    .filter((book) => {
-      // 1. 상태 필터 확인
-      if (statusFilter !== 'all' && book.status !== statusFilter) {
-        return false;
-      }
+  // useMemo: books/필터 조건이 바뀔 때만 재계산 — 무관한 상태 변경(페이지 이동 등)에서 캐시 반환
+  const filteredBooks = useMemo(
+    () =>
+      books
+        .filter((book) => {
+          // 1. 상태 필터 확인
+          if (statusFilter !== 'all' && book.status !== statusFilter) {
+            return false;
+          }
 
-      // 2. 월 필터 확인 (완독한 책만)
-      if (selectedMonth !== null && book.completed_date) {
-        const completedDate = new Date(book.completed_date);
-        const bookMonth = completedDate.getMonth() + 1; // 0-11 → 1-12
-        if (bookMonth !== selectedMonth) return false;
-      }
+          // 2. 월 필터 확인 (완독한 책만)
+          if (selectedMonth !== null && book.completed_date) {
+            const completedDate = new Date(book.completed_date);
+            const bookMonth = completedDate.getMonth() + 1; // 0-11 → 1-12
+            if (bookMonth !== selectedMonth) return false;
+          }
 
-      // 3. 카테고리 필터 확인
-      if (selectedCategory !== null) {
-        const mainCategory = mapToMainCategory(book.category);
-        if (mainCategory !== selectedCategory) return false;
-      }
+          // 3. 카테고리 필터 확인
+          if (selectedCategory !== null) {
+            const mainCategory = mapToMainCategory(book.category);
+            if (mainCategory !== selectedCategory) return false;
+          }
 
-      // 4. 평점 필터 확인
-      if (selectedRating !== null) {
-        if (book.rating !== selectedRating) return false;
-      }
+          // 4. 평점 필터 확인
+          if (selectedRating !== null) {
+            if (book.rating !== selectedRating) return false;
+          }
 
-      // 5. 검색어 필터 확인 (제목 + 저자)
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        const titleMatch = book.title.toLowerCase().includes(query);
-        const authorMatch = book.author?.toLowerCase().includes(query) ?? false;
+          // 5. 검색어 필터 확인 (제목 + 저자)
+          if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            const titleMatch = book.title.toLowerCase().includes(query);
+            const authorMatch =
+              book.author?.toLowerCase().includes(query) ?? false;
 
-        if (!titleMatch && !authorMatch) {
-          return false;
-        }
-      }
+            if (!titleMatch && !authorMatch) {
+              return false;
+            }
+          }
 
-      return true;
-    })
-    .sort((a, b) => {
-      // 정렬 로직
-      const [field, order] = sortOption.split('-');
+          return true;
+        })
+        .sort((a, b) => {
+          // 정렬 로직
+          const [field, order] = sortOption.split('-');
 
-      if (field === 'created_at') {
-        const dateA = new Date(a.created_at).getTime();
-        const dateB = new Date(b.created_at).getTime();
-        return order === 'desc' ? dateB - dateA : dateA - dateB;
-      }
+          if (field === 'created_at') {
+            const dateA = new Date(a.created_at).getTime();
+            const dateB = new Date(b.created_at).getTime();
+            return order === 'desc' ? dateB - dateA : dateA - dateB;
+          }
 
-      if (field === 'rating') {
-        const ratingA = a.rating ?? 0;
-        const ratingB = b.rating ?? 0;
-        return order === 'desc' ? ratingB - ratingA : ratingA - ratingB;
-      }
+          if (field === 'rating') {
+            const ratingA = a.rating ?? 0;
+            const ratingB = b.rating ?? 0;
+            return order === 'desc' ? ratingB - ratingA : ratingA - ratingB;
+          }
 
-      if (field === 'title') {
-        return order === 'asc'
-          ? a.title.localeCompare(b.title)
-          : b.title.localeCompare(a.title);
-      }
+          if (field === 'title') {
+            return order === 'asc'
+              ? a.title.localeCompare(b.title)
+              : b.title.localeCompare(a.title);
+          }
 
-      return 0;
-    });
+          return 0;
+        }),
+    [
+      books,
+      selectedMonth,
+      selectedCategory,
+      selectedRating,
+      searchQuery,
+      sortOption,
+      statusFilter,
+    ]
+  );
 
   // 페이지네이션 계산
   const totalPages = Math.ceil(filteredBooks.length / BOOKS_PER_PAGE);
