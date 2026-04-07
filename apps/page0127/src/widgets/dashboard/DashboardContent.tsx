@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useReducer, useState } from 'react';
+import { useReducer, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -294,17 +294,14 @@ export const DashboardContent = ({
   const readingGoal = profile?.reading_goal;
   const isCurrentYearGoal = readingGoal?.year === selectedYear;
 
-  // useMemo: 캘린더 이동 등 무관한 상태 변경 시 재계산 방지
-  const completedBooksInYear = useMemo(
-    () =>
-      books.filter(
-        (book) =>
-          book.status === 'completed' &&
-          book.completed_date &&
-          new Date(book.completed_date).getFullYear() === selectedYear
-      ).length,
-    [books, selectedYear]
-  );
+  // useMemo 불필요: 조건 하나짜리 filter라 계산이 매우 빠르고,
+  // 개인 독서 데이터는 수십 권 수준이라 캐싱 이득이 없다
+  const completedBooksInYear = books.filter(
+    (book) =>
+      book.status === 'completed' &&
+      book.completed_date &&
+      new Date(book.completed_date).getFullYear() === selectedYear
+  ).length;
 
   // 월 필터 클릭 핸들러 (토글 방식: 같은 월 클릭 시 필터 해제)
   const handleMonthClick = (month: number) =>

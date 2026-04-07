@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 
 import { bookApi } from '@/entities/book/api/bookApi';
 
@@ -71,10 +71,11 @@ export const useBookCRUD = () => {
 
   /**
    * R: 도서 상세 조회
-   * useCallback: 함수 참조를 안정화 → useEffect deps에 넣어도 무한루프 방지
-   * setIsLoading/setError는 React가 안정적 참조를 보장하므로 deps는 []
+   * useCallback 불필요: 이 함수를 useEffect 의존성 배열에 넣는 곳이 없다.
+   * useCallback이 필요한 경우는 "이 함수가 useEffect deps에 들어가거나,
+   * React.memo로 감싼 자식 컴포넌트에 props로 전달될 때"뿐이다.
    */
-  const getBookById = useCallback(async (id: string): Promise<Book | null> => {
+  const getBookById = async (id: string): Promise<Book | null> => {
     setIsLoading(true);
     setError(null);
 
@@ -92,7 +93,7 @@ export const useBookCRUD = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
   /**
    * U: 도서 정보 수정

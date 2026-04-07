@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 import { MessageSquare } from 'lucide-react';
@@ -40,14 +40,11 @@ export const CommentSection = ({
     queryFn: () => commentApi.getComments(activityId),
   });
 
-  // useMemo: isExpanded 토글 시 comments가 바뀌지 않으면 재계산 없이 캐시 반환
-  const totalCount = useMemo(
-    () =>
-      comments.reduce(
-        (count, comment) => count + 1 + (comment.replies?.length || 0),
-        0
-      ),
-    [comments]
+  // useMemo 불필요: comments가 바뀌면 어차피 다시 계산해야 하고,
+  // 댓글 수십 개를 더하는 연산은 매우 빠르다 → 캐싱 비용이 이득보다 크다
+  const totalCount = comments.reduce(
+    (count, comment) => count + 1 + (comment.replies?.length || 0),
+    0
   );
 
   return (
