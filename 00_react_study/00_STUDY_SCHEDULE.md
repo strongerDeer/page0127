@@ -71,7 +71,7 @@ Week 12-14 → 성능 최적화 + React Compiler
 | 20  | 04/02 ✅ | useReducer — 교체 기준              | 복잡한 책장 필터 상태를 `useReducer`로 리팩토링  | `SET_TAB / SET_SORT / SET_GENRE / RESET` 액션         |
 | 21  | 04/07 ✅ | useReducer 심화                     | 필터 초기화 버튼 + URL 쿼리 파라미터 동기화      | `useSearchParams`와 reducer 연동                      |
 | 22  | 04/07 ✅ | useMemo / useCallback               | `filteredBooks` memoization, 핸들러 memoization  | Profiler로 개선 전/후 비교                            |
-| 23  | 04/07    | useMemo/useCallback — 언제 필요한가 | React 19 Compiler 시대 필요/불필요 케이스 정리   | 과도한 memoization 제거                               |
+| 23  | 04/08 ✅ | useMemo/useCallback — 언제 필요한가 | React 19 Compiler 시대 필요/불필요 케이스 정리   | 과도한 memoization 제거                               |
 | 24  | 04/08    | useDeferredValue                    | 책 목록 렌더링에 `useDeferredValue` 적용         | 검색 입력 타이핑이 막히지 않는 UX 확인                |
 | 25  | 04/09    | useTransition                       | 탭 전환 시 `useTransition`으로 처리              | `isPending`으로 탭 전환 중 로딩 표시                  |
 | 26  | 04/10    | useId                               | 필터 체크박스 `label-for` 접근성 개선            | `useId`로 고유 id 생성, shadcn/ui와 함께 사용         |
