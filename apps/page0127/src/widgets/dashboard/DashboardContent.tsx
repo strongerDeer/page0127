@@ -1,6 +1,6 @@
 'use client';
 
-import { useReducer, useState } from 'react';
+import { useReducer, useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -245,6 +245,10 @@ export const DashboardContent = ({
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
+  // 차트 클릭 시 필터 dispatch를 직접 호출 → useTransition 적합
+  // 월/평점 필터 변경은 급하지 않음 — 입력 응답성을 해치지 않도록 우선순위 낮춤
+  const [isFilterPending, startFilterTransition] = useTransition();
+
   // 남용 패턴 제거: useEffect + fetch + useState 3개 → useQuery 1개로 교체
   //
   // 기존 문제점:
@@ -304,15 +308,16 @@ export const DashboardContent = ({
   ).length;
 
   // 월 필터 클릭 핸들러 (토글 방식: 같은 월 클릭 시 필터 해제)
+  // startFilterTransition: 차트 클릭 → 목록 필터링은 급하지 않음 → 우선순위 낮춤
   const handleMonthClick = (month: number) =>
-    filterDispatch({ type: 'TOGGLE_MONTH', month });
+    startFilterTransition(() => filterDispatch({ type: 'TOGGLE_MONTH', month }));
 
   // 월 필터 제거 핸들러
   const handleRemoveMonthFilter = () => filterDispatch({ type: 'CLEAR_MONTH' });
 
   // 평점 필터 클릭 핸들러 (토글 방식)
   const handleRatingClick = (rating: number) =>
-    filterDispatch({ type: 'TOGGLE_RATING', rating });
+    startFilterTransition(() => filterDispatch({ type: 'TOGGLE_RATING', rating }));
 
   // 평점 필터 제거 핸들러
   const handleRemoveRatingFilter = () =>
@@ -561,7 +566,10 @@ export const DashboardContent = ({
           <div className='rounded-3xl border border-white/40 bg-white/60 p-1 shadow-xl backdrop-blur-xl'>
             <Card className='border-0 bg-transparent shadow-none'>
               <CardHeader>
-                <CardTitle>Recent Books</CardTitle>
+                {/* isFilterPending: 차트 클릭 후 목록 갱신 중임을 표시 */}
+                <CardTitle style={{ opacity: isFilterPending ? 0.5 : 1, transition: 'opacity 0.2s' }}>
+                  Recent Books
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <DashboardBookList
