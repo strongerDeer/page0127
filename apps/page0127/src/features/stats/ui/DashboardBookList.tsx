@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -110,6 +110,12 @@ export const DashboardBookList = ({
   const BOOKS_PER_PAGE = 12;
   const [currentPage, setCurrentPage] = useState(1);
 
+  // searchQuery는 부모 props로 받으므로 직접 setState 불가 → useDeferredValue
+  // 타이핑 즉시 input에 반영되고, 목록 필터링은 한 박자 늦게 처리
+  const deferredSearchQuery = useDeferredValue(searchQuery);
+  // 아직 deferredSearchQuery가 searchQuery를 따라잡지 못한 상태
+  const isSearchStale = searchQuery !== deferredSearchQuery;
+
   // 실험 2: useImperativeHandle — 부모에서 검색창 메서드 호출
   const searchRef = useRef<BookSearchInputHandle>(null);
 
@@ -165,8 +171,9 @@ export const DashboardBookList = ({
           }
 
           // 5. 검색어 필터 확인 (제목 + 저자)
-          if (searchQuery.trim()) {
-            const query = searchQuery.toLowerCase();
+          // deferredSearchQuery: 타이핑 중에는 이전 값 유지 → 목록 필터링이 input을 막지 않음
+          if (deferredSearchQuery.trim()) {
+            const query = deferredSearchQuery.toLowerCase();
             const titleMatch = book.title.toLowerCase().includes(query);
             const authorMatch =
               book.author?.toLowerCase().includes(query) ?? false;
@@ -207,7 +214,7 @@ export const DashboardBookList = ({
       selectedMonth,
       selectedCategory,
       selectedRating,
-      searchQuery,
+      deferredSearchQuery, // searchQuery 대신 deferredSearchQuery 사용
       sortOption,
       statusFilter,
     ]
@@ -396,8 +403,9 @@ export const DashboardBookList = ({
         </div>
 
         {/* 책 목록 — renderBooks가 있으면 커스텀 렌더링, 없으면 기본 그리드 */}
+        {/* isSearchStale: 타이핑 중 아직 반영 안 된 상태 → 흐리게 표시 */}
         {filteredBooks.length > 0 ? (
-          <>
+          <div style={{ opacity: isSearchStale ? 0.6 : 1, transition: 'opacity 0.15s' }}>
             {renderBooks ? (
               // 커스텀 렌더러: 선반 레이아웃 등 외부에서 주입
               renderBooks(filteredBooks)
@@ -480,7 +488,7 @@ export const DashboardBookList = ({
                 </Button>
               </div>
             )}
-          </>
+          </div>
         ) : (
           <div className='rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-12 text-center'>
             <div className='mx-auto mb-2 text-4xl'>🔍</div>
