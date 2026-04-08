@@ -75,7 +75,7 @@ Week 12-14 → 성능 최적화 + React Compiler
 | 24  | 04/08 ✅ | useDeferredValue                    | 책 목록 렌더링에 `useDeferredValue` 적용         | 검색 입력 타이핑이 막히지 않는 UX 확인                |
 | 25  | 04/08 ✅ | useTransition                       | 탭 전환 시 `useTransition`으로 처리              | `isPending`으로 탭 전환 중 로딩 표시                  |
 | 26  | 04/09 ✅ | useId                               | 필터 체크박스 `label-for` 접근성 개선            | `useId`로 고유 id 생성, shadcn/ui와 함께 사용         |
-| 27  | 04/09    | useLayoutEffect                     | 알림 패널 열릴 때 스크롤 위치 조정               | `useLayoutEffect`로 DOM 측정 후 위치 계산             |
+| 27  | 04/09 ✅ | useLayoutEffect                     | 알림 패널 열릴 때 스크롤 위치 조정               | `useLayoutEffect`로 DOM 측정 후 위치 계산             |
 
 ---
 
