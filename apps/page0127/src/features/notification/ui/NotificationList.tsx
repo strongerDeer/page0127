@@ -35,7 +35,8 @@ export const NotificationList = ({ userId, onClose }: NotificationListProps) => 
   const router = useRouter();
   const { data: notifications, isLoading } = useNotifications({
     userId,
-    limit: 5, // 드롭다운에서는 최근 5개만 표시
+    limit: 5,
+    is_read: false, // 드롭다운에서는 읽지 않은 알림만 표시
   });
   const markAsReadMutation = useMarkAsRead();
   const markAllAsReadMutation = useMarkAllAsRead();
@@ -83,7 +84,7 @@ export const NotificationList = ({ userId, onClose }: NotificationListProps) => 
   if (!notifications || notifications.length === 0) {
     return (
       <div className='flex h-64 flex-col items-center justify-center gap-2'>
-        <p className='text-sm text-muted-foreground'>알림이 없습니다</p>
+        <p className='text-sm text-muted-foreground'>읽지 않은 알림이 없습니다</p>
       </div>
     );
   }
