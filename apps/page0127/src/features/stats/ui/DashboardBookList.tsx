@@ -1,6 +1,6 @@
 'use client';
 
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -116,6 +116,10 @@ export const DashboardBookList = ({
   // 아직 deferredSearchQuery가 searchQuery를 따라잡지 못한 상태
   const isSearchStale = searchQuery !== deferredSearchQuery;
 
+  // 탭/카테고리/정렬 변경은 목록 재계산을 유발하지만 급하지 않음 → useTransition
+  // isPending: 전환 중임을 탭 버튼에 표시할 수 있음
+  const [isTabPending, startTabTransition] = useTransition();
+
   // 실험 2: useImperativeHandle — 부모에서 검색창 메서드 호출
   const searchRef = useRef<BookSearchInputHandle>(null);
 
@@ -230,9 +234,11 @@ export const DashboardBookList = ({
   // 이벤트 핸들러에서 처리
 
   // 필터 변경 시 첫 페이지로 이동
+  // setCurrentPage(1)은 즉시 — 탭 UI 반응은 빠르게
+  // onCategoryChange/onStatusChange/setSortOption은 transition 안 — 목록 재계산은 급하지 않음
   const handleCategoryChange = (category: string | null) => {
     setCurrentPage(1);
-    onCategoryChange(category);
+    startTabTransition(() => onCategoryChange(category));
   };
 
   const handleRemoveMonthFilter = () => {
@@ -242,13 +248,13 @@ export const DashboardBookList = ({
 
   const handleStatusChange = (status: BookStatus | 'all') => {
     setCurrentPage(1);
-    onStatusChange(status);
+    startTabTransition(() => onStatusChange(status));
   };
 
   const handleSortChange = (option: string) => {
     setCurrentPage(1);
-    setSortOption(option);
     localStorage.setItem('dashboard-sort-option', option);
+    startTabTransition(() => setSortOption(option));
   };
 
   const handleSearchChange = (query: string) => {
@@ -267,8 +273,8 @@ export const DashboardBookList = ({
         />
       </div>
 
-      {/* 상태별 탭 */}
-      <div className='mb-6 flex flex-wrap gap-2'>
+      {/* 상태별 탭 — isTabPending: transition 처리 중 탭 전체를 살짝 흐리게 */}
+      <div className='mb-6 flex flex-wrap gap-2' style={{ opacity: isTabPending ? 0.6 : 1, transition: 'opacity 0.15s' }}>
         <button
           onClick={() => handleStatusChange('all')}
           className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
