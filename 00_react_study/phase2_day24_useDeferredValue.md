@@ -126,6 +126,51 @@ export const BookFilter = ({ books }: Props) => {
 
 ---
 
+## 언제 체감하나?
+
+지금 page0127은 책이 수십 권, 컴포넌트도 단순해서 차이가 없다.  
+아래 조건이 겹칠수록 useTransition / useDeferredValue의 효과가 눈에 보인다.
+
+- 목록 아이템이 수백 개 이상
+- 필터 조건이 복잡해질수록 (카테고리 + 월 + 평점 + 검색어 복합)
+- 아이템 하나가 무거운 컴포넌트일 때 (이미지, 차트 등)
+
+**지금 쓰는 이유**: 나중에 느낄 때 "아 여기 쓰면 되겠다"를 바로 꺼낼 수 있도록.  
+버벅임을 느끼는 순간 꺼내는 도구. 지금 당장 모든 곳에 쓸 필요는 없다.
+
+### 사고 흐름
+
+```
+"클릭/타이핑했는데 화면이 버벅인다"
+         ↓
+"어떤 렌더링이 무거운가?"
+         ↓
+"이 렌더링이 지금 당장 필요한가?"
+  급하다  → 그냥 둔다
+  안급하다 → 뒤로 미룬다
+         ↓
+"내가 setState를 직접 호출하는가?"
+  YES → useTransition
+  NO  → useDeferredValue
+```
+
+### 직접 체감하는 방법 (실험용)
+
+```tsx
+// useMemo 안에 임시로 추가 → 인위적으로 300ms 블로킹
+const filteredBooks = useMemo(() => {
+  const start = performance.now();
+  while (performance.now() - start < 300) {} // 지우는 거 잊지 말 것
+
+  return books.filter(...).sort(...);
+}, [...]);
+```
+
+추가 후 타이핑하면 멈추는 걸 느낄 수 있고,  
+`useDeferredValue` 적용하면 타이핑은 매끄러워지는 차이가 바로 보인다.
+
+---
+
 ## 오늘 실험
 
 ### 실험 1 — 지연 확인하기
