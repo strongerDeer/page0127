@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import { toast } from 'sonner';
 
@@ -58,6 +58,12 @@ export const ReadingGoalDialog = ({
   // 학습 포인트: props를 state 초기값으로만 사용 (derived state 패턴)
   // isOpen이 변경될 때마다 리셋하려면 부모에서 key prop으로 제어하거나
   // 여기서는 초기값만 사용하고 onClose에서 리셋
+  const formId = useId();
+  const ids = {
+    year: `${formId}-year`,
+    target: `${formId}-target`,
+  };
+
   const [year, setYear] = useState(currentGoal?.year ?? currentYear);
   const [target, setTarget] = useState(currentGoal?.target ?? 50);
   const [isLoading, setIsLoading] = useState(false);
@@ -111,9 +117,9 @@ export const ReadingGoalDialog = ({
           <div className='space-y-4 py-4'>
             {/* 연도 선택 */}
             <div className='space-y-2'>
-              <Label htmlFor='year'>목표 연도</Label>
+              <Label htmlFor={ids.year}>목표 연도</Label>
               <Input
-                id='year'
+                id={ids.year}
                 type='number'
                 value={year}
                 onChange={(e) => setYear(Number(e.target.value))}
@@ -124,9 +130,9 @@ export const ReadingGoalDialog = ({
 
             {/* 목표 권수 */}
             <div className='space-y-2'>
-              <Label htmlFor='target'>목표 권수</Label>
+              <Label htmlFor={ids.target}>목표 권수</Label>
               <Input
-                id='target'
+                id={ids.target}
                 type='number'
                 value={target}
                 onChange={(e) => setTarget(Number(e.target.value))}

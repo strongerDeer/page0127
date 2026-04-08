@@ -1,6 +1,6 @@
 'use client';
 
-import { useReducer } from 'react';
+import { useId, useReducer } from 'react';
 
 import Image from 'next/image';
 
@@ -124,6 +124,17 @@ export const BookRegistrationForm = ({
     ? upgradeImageResolution(book.cover)
     : book.cover;
 
+  const formId = useId();
+  const ids = {
+    status: `${formId}-status`,
+    completedDate: `${formId}-completed-date`,
+    showStartDate: `${formId}-show-start-date`,
+    oneLineReview: `${formId}-one-line-review`,
+    personalMemo: `${formId}-personal-memo`,
+    tags: `${formId}-tags`,
+    isPublic: `${formId}-is-public`,
+  };
+
   const [state, dispatch] = useReducer(formReducer, {
     status: initialData?.status || 'completed',
     completedDate:
@@ -242,9 +253,9 @@ export const BookRegistrationForm = ({
 
           {/* 독서 상태 */}
           <div className='space-y-2'>
-            <Label htmlFor='status'>독서 상태 *</Label>
+            <Label htmlFor={ids.status}>독서 상태 *</Label>
             <select
-              id='status'
+              id={ids.status}
               value={status}
               onChange={(e) =>
                 dispatch({
@@ -264,9 +275,9 @@ export const BookRegistrationForm = ({
           {/* 완독일 - 완독 상태일 때만 표시 */}
           {status === 'completed' && (
             <div className='space-y-2'>
-              <Label htmlFor='completed_date'>완독일 *</Label>
+              <Label htmlFor={ids.completedDate}>완독일 *</Label>
               <Input
-                id='completed_date'
+                id={ids.completedDate}
                 type='date'
                 value={completedDate}
                 onChange={(e) =>
@@ -283,7 +294,7 @@ export const BookRegistrationForm = ({
               <div className='flex items-center gap-2'>
                 <input
                   type='checkbox'
-                  id='show_start_date'
+                  id={ids.showStartDate}
                   checked={showStartDate}
                   onChange={(e) =>
                     dispatch({
@@ -293,7 +304,7 @@ export const BookRegistrationForm = ({
                   }
                   className='h-4 w-4'
                 />
-                <Label htmlFor='show_start_date' className='cursor-pointer'>
+                <Label htmlFor={ids.showStartDate} className='cursor-pointer'>
                   시작일 추가 (옵션)
                 </Label>
               </div>
@@ -339,9 +350,9 @@ export const BookRegistrationForm = ({
           {/* 한줄평 - 완독일 때만 표시 */}
           {status === 'completed' && (
             <div className='space-y-2'>
-              <Label htmlFor='one_line_review'>한줄평</Label>
+              <Label htmlFor={ids.oneLineReview}>한줄평</Label>
               <Input
-                id='one_line_review'
+                id={ids.oneLineReview}
                 type='text'
                 value={oneLineReview}
                 onChange={(e) =>
@@ -355,9 +366,9 @@ export const BookRegistrationForm = ({
 
           {/* 나만의 메모 */}
           <div className='space-y-2'>
-            <Label htmlFor='personal_memo'>나만의 메모</Label>
+            <Label htmlFor={ids.personalMemo}>나만의 메모</Label>
             <Textarea
-              id='personal_memo'
+              id={ids.personalMemo}
               value={personalMemo}
               onChange={(e) =>
                 dispatch({ type: 'SET_PERSONAL_MEMO', value: e.target.value })
@@ -369,9 +380,9 @@ export const BookRegistrationForm = ({
 
           {/* 태그 */}
           <div className='space-y-2'>
-            <Label htmlFor='tags'>태그 (쉼표로 구분)</Label>
+            <Label htmlFor={ids.tags}>태그 (쉼표로 구분)</Label>
             <Input
-              id='tags'
+              id={ids.tags}
               type='text'
               value={tagsInput}
               onChange={(e) =>
@@ -394,7 +405,7 @@ export const BookRegistrationForm = ({
           <div className='space-y-2'>
             <div className='flex items-center justify-between rounded-lg border p-4'>
               <div className='space-y-0.5'>
-                <Label htmlFor='is_public' className='text-base'>
+                <Label htmlFor={ids.isPublic} className='text-base'>
                   공개 설정
                 </Label>
                 <p className='text-sm text-gray-500'>
@@ -404,7 +415,7 @@ export const BookRegistrationForm = ({
                 </p>
               </div>
               <Switch
-                id='is_public'
+                id={ids.isPublic}
                 checked={isPublic}
                 onCheckedChange={(checked) =>
                   dispatch({ type: 'SET_IS_PUBLIC', isPublic: checked })

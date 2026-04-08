@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -38,6 +38,14 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
   const router = useRouter();
 
   // 폼 상태 관리
+  const formId = useId();
+  const ids = {
+    email: `${formId}-email`,
+    username: `${formId}-username`,
+    nickname: `${formId}-nickname`,
+    bio: `${formId}-bio`,
+  };
+
   const [nickname, setNickname] = useState(profile.nickname || '');
   const [bio, setBio] = useState(profile.bio || '');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -259,9 +267,9 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
 
           {/* 이메일 (읽기 전용) */}
           <div className='space-y-2'>
-            <Label htmlFor='email'>이메일</Label>
+            <Label htmlFor={ids.email}>이메일</Label>
             <Input
-              id='email'
+              id={ids.email}
               type='email'
               value={profile.email || ''}
               disabled
@@ -274,9 +282,9 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
 
           {/* Username (읽기 전용) */}
           <div className='space-y-2'>
-            <Label htmlFor='username'>Username</Label>
+            <Label htmlFor={ids.username}>Username</Label>
             <Input
-              id='username'
+              id={ids.username}
               type='text'
               value={profile.username || ''}
               disabled
@@ -289,9 +297,9 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
 
           {/* 닉네임 */}
           <div className='space-y-2'>
-            <Label htmlFor='nickname'>닉네임</Label>
+            <Label htmlFor={ids.nickname}>닉네임</Label>
             <Input
-              id='nickname'
+              id={ids.nickname}
               type='text'
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
@@ -305,9 +313,9 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
 
           {/* 한줄 소개 */}
           <div className='space-y-2'>
-            <Label htmlFor='bio'>한줄 소개</Label>
+            <Label htmlFor={ids.bio}>한줄 소개</Label>
             <Textarea
-              id='bio'
+              id={ids.bio}
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder='자신을 소개하는 한줄을 작성해보세요.'
