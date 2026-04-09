@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from '@/shared/ui/select';
 import { StatCard } from '@/shared/ui/StatCard';
+import { StatsPageLayout } from '@/shared/ui/StatsPageLayout';
 
 import { ReadingGoalDialog } from '@/features/profile/ui/ReadingGoalDialog';
 import { DashboardBookList } from '@/features/stats/ui/DashboardBookList';
@@ -310,14 +311,18 @@ export const DashboardContent = ({
   // 월 필터 클릭 핸들러 (토글 방식: 같은 월 클릭 시 필터 해제)
   // startFilterTransition: 차트 클릭 → 목록 필터링은 급하지 않음 → 우선순위 낮춤
   const handleMonthClick = (month: number) =>
-    startFilterTransition(() => filterDispatch({ type: 'TOGGLE_MONTH', month }));
+    startFilterTransition(() =>
+      filterDispatch({ type: 'TOGGLE_MONTH', month })
+    );
 
   // 월 필터 제거 핸들러
   const handleRemoveMonthFilter = () => filterDispatch({ type: 'CLEAR_MONTH' });
 
   // 평점 필터 클릭 핸들러 (토글 방식)
   const handleRatingClick = (rating: number) =>
-    startFilterTransition(() => filterDispatch({ type: 'TOGGLE_RATING', rating }));
+    startFilterTransition(() =>
+      filterDispatch({ type: 'TOGGLE_RATING', rating })
+    );
 
   // 평점 필터 제거 핸들러
   const handleRemoveRatingFilter = () =>
@@ -387,219 +392,221 @@ export const DashboardContent = ({
   };
 
   return (
-    <div className='min-h-screen p-6 md:p-10'>
-      <div className='mx-auto max-w-7xl space-y-8'>
-        {/* Header */}
-        <header className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
-          <div>
-            <h1 className='text-4xl font-bold tracking-tight text-slate-900'>
-              Dashboard
-            </h1>
-            <p className='text-lg text-slate-500'>
-              Overview of your reading journey
-            </p>
-          </div>
+    // StatsPageLayout: 레이아웃 껍데기를 분리해 PublicLibraryContent와 공유
+    <StatsPageLayout>
+      {/* Header */}
+      <header className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
+        <div>
+          <h1 className='text-4xl font-bold tracking-tight text-slate-900'>
+            Dashboard
+          </h1>
+          <p className='text-lg text-slate-500'>
+            Overview of your reading journey
+          </p>
+        </div>
 
-          <div className='flex items-center gap-4'>
-            {/* Year Select */}
-            <Select
-              value={selectedYear.toString()}
-              onValueChange={handleYearChange}
-            >
-              <SelectTrigger className='w-[140px] border-white/40 bg-white/50 backdrop-blur-md'>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {availableYears.map((year) => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year}년
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <div className='flex items-center gap-4'>
+          {/* Year Select */}
+          <Select
+            value={selectedYear.toString()}
+            onValueChange={handleYearChange}
+          >
+            <SelectTrigger className='w-[140px] border-white/40 bg-white/50 backdrop-blur-md'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {availableYears.map((year) => (
+                <SelectItem key={year} value={year.toString()}>
+                  {year}년
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
+          <Button
+            className='bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30'
+            onClick={handleAnalyzeTaste}
+            disabled={isAnalyzing}
+          >
+            {isAnalyzing ? 'Analyzing...' : 'AI Analysis'}
+          </Button>
+
+          {profile?.username && (
             <Button
-              className='bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30'
-              onClick={handleAnalyzeTaste}
-              disabled={isAnalyzing}
+              variant='outline'
+              size='icon'
+              onClick={handleCopyPublicUrl}
+              className='bg-white/50 backdrop-blur-md border-white/40'
+              title='Copy Public URL'
             >
-              {isAnalyzing ? 'Analyzing...' : 'AI Analysis'}
+              <span className='sr-only'>Copy URL</span>
+              🔗
             </Button>
+          )}
+        </div>
+      </header>
 
-            {profile?.username && (
-              <Button
-                variant='outline'
-                size='icon'
-                onClick={handleCopyPublicUrl}
-                className='bg-white/50 backdrop-blur-md border-white/40'
-                title='Copy Public URL'
-              >
-                <span className='sr-only'>Copy URL</span>
-                🔗
-              </Button>
-            )}
-          </div>
-        </header>
+      {/* Top Info Cards (Glass Pills) */}
+      <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
+        <StatCard
+          icon={<BookOpen className='h-5 w-5' />}
+          title='Books Read'
+          value={stats.totalCompletedBooks}
+          unit='Books'
+          variant='blue'
+        />
+        <StatCard
+          icon={<FileText className='h-5 w-5' />}
+          title='Pages Read'
+          value={stats.totalPages}
+          unit='Pages'
+          variant='purple'
+        />
+        <StatCard
+          icon={<Target className='h-5 w-5' />}
+          title='Yearly Goal'
+          value={stats.yearlyGoal}
+          unit='Books'
+          variant='emerald'
+        />
+        <StatCard
+          icon={<CheckCircle className='h-5 w-5' />}
+          title='Completion'
+          value={stats.completionRate}
+          unit='%'
+          variant='rose'
+        />
+      </div>
 
-        {/* Top Info Cards (Glass Pills) */}
-        <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
-          <StatCard
-            icon={<BookOpen className='h-5 w-5' />}
-            title='Books Read'
-            value={stats.totalCompletedBooks}
-            unit='Books'
-            variant='blue'
-          />
-          <StatCard
-            icon={<FileText className='h-5 w-5' />}
-            title='Pages Read'
-            value={stats.totalPages}
-            unit='Pages'
-            variant='purple'
-          />
-          <StatCard
-            icon={<Target className='h-5 w-5' />}
-            title='Yearly Goal'
-            value={stats.yearlyGoal}
-            unit='Books'
-            variant='emerald'
-          />
-          <StatCard
-            icon={<CheckCircle className='h-5 w-5' />}
-            title='Completion'
-            value={stats.completionRate}
-            unit='%'
-            variant='rose'
+      {/* Main Grid Section */}
+      <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
+        {/* Left Column (Hero / Charts) - Spans 2 cols */}
+        <div className='space-y-6 lg:col-span-2'>
+          {/* Yearly Trend Chart (Glass Card) */}
+          <Card className='border border-white/40 bg-white/60 shadow-xl backdrop-blur-xl'>
+            <CardHeader>
+              <CardTitle>Yearly Reading Trend</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <YearlyTrendChart data={overallStats.yearlyTrend} />
+            </CardContent>
+          </Card>
+
+          {/* Monthly & Category Charts */}
+          <DashboardCharts
+            monthlyReading={stats.monthlyReading}
+            categoryReading={stats.categoryReading}
+            ratingReading={stats.ratingReading}
+            averageRating={stats.averageRating}
+            onMonthClick={handleMonthClick}
+            onRatingClick={handleRatingClick}
           />
         </div>
 
-        {/* Main Grid Section */}
-        <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
-          {/* Left Column (Hero / Charts) - Spans 2 cols */}
-          <div className='space-y-6 lg:col-span-2'>
-            {/* Yearly Trend Chart (Glass Card) */}
-            <Card className='border border-white/40 bg-white/60 shadow-xl backdrop-blur-xl'>
-              <CardHeader>
-                <CardTitle>Yearly Reading Trend</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <YearlyTrendChart data={overallStats.yearlyTrend} />
-              </CardContent>
-            </Card>
-
-            {/* Monthly & Category Charts */}
-            <DashboardCharts
-              monthlyReading={stats.monthlyReading}
-              categoryReading={stats.categoryReading}
-              ratingReading={stats.ratingReading}
-              averageRating={stats.averageRating}
-              onMonthClick={handleMonthClick}
-              onRatingClick={handleRatingClick}
-            />
-          </div>
-
-          {/* Right Column (Side Widgets) */}
-          <div className='space-y-6'>
-            {/* Reading Journey (All Time) */}
-            <Card className='border border-white/40 bg-gradient-to-br from-white/60 to-white/30 shadow-xl backdrop-blur-xl'>
-              <CardHeader>
-                <CardTitle>Total Journey</CardTitle>
-              </CardHeader>
-              <CardContent className='space-y-4'>
-                <ReadingJourneyCard data={overallStats.journey} />
-              </CardContent>
-            </Card>
-
-            {/* Reading Goal Progress */}
-            <div className='rounded-3xl border border-white/40 bg-white/50 p-6 shadow-xl backdrop-blur-xl'>
-              <h3 className='mb-4 text-lg font-bold text-slate-800'>
-                Goal Progress
-              </h3>
-              <ReadingGoalProgress
-                year={selectedYear}
-                target={
-                  isCurrentYearGoal && readingGoal ? readingGoal.target : 0
-                }
-                current={completedBooksInYear}
-                onSetGoal={() => setIsGoalDialogOpen(true)}
-              />
-            </div>
-
-            {/* Taste Analysis Promo */}
-            <div className='relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white shadow-xl'>
-              <div className='relative z-10'>
-                <h3 className='text-xl font-bold'>Discover Your Taste</h3>
-                <p className='mt-2 text-indigo-100 text-sm'>
-                  Let AI analyze your reading patterns.
-                </p>
-                <Button
-                  variant='secondary'
-                  className='mt-4 w-full border-0 bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm'
-                  onClick={handleAnalyzeTaste}
-                >
-                  Start Analysis
-                </Button>
-              </div>
-              {/* Decorative circles */}
-              <div className='absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/10 blur-2xl'></div>
-              <div className='absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-purple-400/20 blur-2xl'></div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Section: Calendar & Detail List */}
+        {/* Right Column (Side Widgets) */}
         <div className='space-y-6'>
-          {/* Calendar */}
-          <div className='rounded-3xl border border-white/40 bg-white/60 shadow-xl backdrop-blur-xl overflow-hidden'>
-            <ReadingCalendar
-              data={currentCalendarData}
-              summary={currentCalendarSummary}
-              currentYear={calendarYear}
-              currentMonth={calendarMonth}
-              isLoading={calendarLoading}
-              onPreviousMonth={handlePreviousMonth}
-              onNextMonth={handleNextMonth}
+          {/* Reading Journey (All Time) */}
+          <Card className='border border-white/40 bg-gradient-to-br from-white/60 to-white/30 shadow-xl backdrop-blur-xl'>
+            <CardHeader>
+              <CardTitle>Total Journey</CardTitle>
+            </CardHeader>
+            <CardContent className='space-y-4'>
+              <ReadingJourneyCard data={overallStats.journey} />
+            </CardContent>
+          </Card>
+
+          {/* Reading Goal Progress */}
+          <div className='rounded-3xl border border-white/40 bg-white/50 p-6 shadow-xl backdrop-blur-xl'>
+            <h3 className='mb-4 text-lg font-bold text-slate-800'>
+              Goal Progress
+            </h3>
+            <ReadingGoalProgress
+              year={selectedYear}
+              target={isCurrentYearGoal && readingGoal ? readingGoal.target : 0}
+              current={completedBooksInYear}
+              onSetGoal={() => setIsGoalDialogOpen(true)}
             />
           </div>
 
-          {/* Book List */}
-          <div className='rounded-3xl border border-white/40 bg-white/60 p-1 shadow-xl backdrop-blur-xl'>
-            <Card className='border-0 bg-transparent shadow-none'>
-              <CardHeader>
-                {/* isFilterPending: 차트 클릭 후 목록 갱신 중임을 표시 */}
-                <CardTitle style={{ opacity: isFilterPending ? 0.5 : 1, transition: 'opacity 0.2s' }}>
-                  Recent Books
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <DashboardBookList
-                  books={books}
-                  categories={stats.categoryReading}
-                  selectedMonth={selectedMonth}
-                  selectedCategory={selectedCategory}
-                  selectedRating={selectedRating}
-                  searchQuery={searchQuery}
-                  statusFilter={statusFilter}
-                  onCategoryChange={(category) =>
-                    filterDispatch({ type: 'SET_CATEGORY', category })
-                  }
-                  onRemoveMonthFilter={handleRemoveMonthFilter}
-                  onRemoveRatingFilter={handleRemoveRatingFilter}
-                  onSearchChange={(query) =>
-                    filterDispatch({ type: 'SET_SEARCH', query })
-                  }
-                  onStatusChange={(status) =>
-                    filterDispatch({ type: 'SET_STATUS', status })
-                  }
-                  onResetAll={() => filterDispatch({ type: 'RESET_ALL' })}
-                  showViewAll
-                  renderBooks={(filteredBooks) => (
-                    <PublicBookShelf books={filteredBooks} />
-                  )}
-                />
-              </CardContent>
-            </Card>
+          {/* Taste Analysis Promo */}
+          <div className='relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white shadow-xl'>
+            <div className='relative z-10'>
+              <h3 className='text-xl font-bold'>Discover Your Taste</h3>
+              <p className='mt-2 text-indigo-100 text-sm'>
+                Let AI analyze your reading patterns.
+              </p>
+              <Button
+                variant='secondary'
+                className='mt-4 w-full border-0 bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm'
+                onClick={handleAnalyzeTaste}
+              >
+                Start Analysis
+              </Button>
+            </div>
+            {/* Decorative circles */}
+            <div className='absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/10 blur-2xl'></div>
+            <div className='absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-purple-400/20 blur-2xl'></div>
           </div>
+        </div>
+      </div>
+
+      {/* Bottom Section: Calendar & Detail List */}
+      <div className='space-y-6'>
+        {/* Calendar */}
+        <div className='rounded-3xl border border-white/40 bg-white/60 shadow-xl backdrop-blur-xl overflow-hidden'>
+          <ReadingCalendar
+            data={currentCalendarData}
+            summary={currentCalendarSummary}
+            currentYear={calendarYear}
+            currentMonth={calendarMonth}
+            isLoading={calendarLoading}
+            onPreviousMonth={handlePreviousMonth}
+            onNextMonth={handleNextMonth}
+          />
+        </div>
+
+        {/* Book List */}
+        <div className='rounded-3xl border border-white/40 bg-white/60 p-1 shadow-xl backdrop-blur-xl'>
+          <Card className='border-0 bg-transparent shadow-none'>
+            <CardHeader>
+              {/* isFilterPending: 차트 클릭 후 목록 갱신 중임을 표시 */}
+              <CardTitle
+                style={{
+                  opacity: isFilterPending ? 0.5 : 1,
+                  transition: 'opacity 0.2s',
+                }}
+              >
+                Recent Books
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DashboardBookList
+                books={books}
+                categories={stats.categoryReading}
+                selectedMonth={selectedMonth}
+                selectedCategory={selectedCategory}
+                selectedRating={selectedRating}
+                searchQuery={searchQuery}
+                statusFilter={statusFilter}
+                onCategoryChange={(category) =>
+                  filterDispatch({ type: 'SET_CATEGORY', category })
+                }
+                onRemoveMonthFilter={handleRemoveMonthFilter}
+                onRemoveRatingFilter={handleRemoveRatingFilter}
+                onSearchChange={(query) =>
+                  filterDispatch({ type: 'SET_SEARCH', query })
+                }
+                onStatusChange={(status) =>
+                  filterDispatch({ type: 'SET_STATUS', status })
+                }
+                onResetAll={() => filterDispatch({ type: 'RESET_ALL' })}
+                showViewAll
+                renderBooks={(filteredBooks) => (
+                  <PublicBookShelf books={filteredBooks} />
+                )}
+              />
+            </CardContent>
+          </Card>
         </div>
       </div>
 
@@ -613,6 +620,6 @@ export const DashboardContent = ({
           router.refresh();
         }}
       />
-    </div>
+    </StatsPageLayout>
   );
 };

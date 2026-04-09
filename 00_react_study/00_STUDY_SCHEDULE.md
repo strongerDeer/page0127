@@ -83,21 +83,21 @@ Week 12-14 → 성능 최적화 + React Compiler
 
 > 목표: 기존 코드를 더 좋은 패턴으로 리팩토링한다
 
-| Day | 날짜  | 주제                     | 30분 할 일                                        | page0127 연결 포인트                              |
-| --- | ----- | ------------------------ | ------------------------------------------------- | ------------------------------------------------- |
-| 28  | 04/09 ✅ | children / 컴포넌트 합성 | `BookCard`를 children 합성 방식으로 리팩토링      | `<BookCard><BookCard.Cover /><BookCard.Info />`   |
-| 29  | 04/15 | 합성 실습                | `widgets/dashboard/` Layout을 children으로 감싸기 | 대시보드 레이아웃 재사용 구조 개선                |
-| 30  | 04/16 | Portal ✨                | `createPortal`로 알림 드롭다운을 `body`에 렌더링  | z-index 충돌 문제 해결                            |
-| 31  | 04/17 | Portal 심화 ✨           | 책 상세 모달을 Portal로 구현                      | 모달 + 스크롤 잠금 + ESC 닫기                     |
-| 32  | 04/20 | Compound Component 패턴  | 책장 탭 시스템을 Compound Component로 설계        | `<BookShelf><BookShelf.Tab><BookShelf.Panel>`     |
-| 33  | 04/21 | Compound Component 심화  | 내부 선택 상태를 Context로 공유                   | 외부에서 controlled/uncontrolled 모드 지원        |
-| 34  | 04/22 | Context                  | AuthContext / ThemeContext 실제 구조 분석         | `shared/providers/` 레이어 이해                   |
-| 35  | 04/23 | Context — 성능 고려      | Context 분리로 불필요한 리렌더링 방지             | `AuthContext` vs `UIContext` 분리 실험            |
-| 36  | 04/24 | Custom Hook              | `useBookFilter`, `useBookSearch` 커스텀 훅 추출   | `features/book/` 로직을 컴포넌트에서 분리         |
-| 37  | 04/27 | Custom Hook 심화         | `useLocalStorage`, `useDebounce` 추출             | `shared/` 레이어에 재사용 훅 구성                 |
-| 38  | 04/28 | Error Boundary ✨        | Supabase API 실패 시 에러 UI 구현                 | `react-error-boundary` 적용, fallback UI 작성     |
-| 39  | 04/29 | 상태 구조 설계           | 클라이언트 상태 flat vs nested 분석               | Zustand 도입 여부 결정 (vs TanStack Query로 통일) |
-| 40  | 04/30 | Phase 3 복습             | FSD 레이어 다이어그램 그리기                      | entities → features → widgets 의존 방향 검증      |
+| Day | 날짜     | 주제                    | 30분 할 일                                        | page0127 연결 포인트                              |
+| --- | -------- | ----------------------- | ------------------------------------------------- | ------------------------------------------------- |
+| 28  | 04/09 ✅ | children / 컴포넌트 성  | `BookCard`를 children 합성 방식으로 리팩토링      | `<BookCard><BookCard.Cover /><BookCard.Info />`   |
+| 29  | 04/10 ✅ | 합성 실습               | `widgets/dashboard/` Layout을 children으로 감싸기 | 대시보드 레이아웃 재사용 구조 개선                |
+| 30  | 04/16    | Portal ✨               | `createPortal`로 알림 드롭다운을 `body`에 렌더링  | z-index 충돌 문제 해결                            |
+| 31  | 04/17    | Portal 심화 ✨          | 책 상세 모달을 Portal로 구현                      | 모달 + 스크롤 잠금 + ESC 닫기                     |
+| 32  | 04/20    | Compound Component 패턴 | 책장 탭 시스템을 Compound Component로 설계        | `<BookShelf><BookShelf.Tab><BookShelf.Panel>`     |
+| 33  | 04/21    | Compound Component 심화 | 내부 선택 상태를 Context로 공유                   | 외부에서 controlled/uncontrolled 모드 지원        |
+| 34  | 04/22    | Context                 | AuthContext / ThemeContext 실제 구조 분석         | `shared/providers/` 레이어 이해                   |
+| 35  | 04/23    | Context — 성능 고려     | Context 분리로 불필요한 리렌더링 방지             | `AuthContext` vs `UIContext` 분리 실험            |
+| 36  | 04/24    | Custom Hook             | `useBookFilter`, `useBookSearch` 커스텀 훅 추출   | `features/book/` 로직을 컴포넌트에서 분리         |
+| 37  | 04/27    | Custom Hook 심화        | `useLocalStorage`, `useDebounce` 추출             | `shared/` 레이어에 재사용 훅 구성                 |
+| 38  | 04/28    | Error Boundary ✨       | Supabase API 실패 시 에러 UI 구현                 | `react-error-boundary` 적용, fallback UI 작성     |
+| 39  | 04/29    | 상태 구조 설계          | 클라이언트 상태 flat vs nested 분석               | Zustand 도입 여부 결정 (vs TanStack Query로 통일) |
+| 40  | 04/30    | Phase 3 복습            | FSD 레이어 다이어그램 그리기                      | entities → features → widgets 의존 방향 검증      |
 
 ---
 
