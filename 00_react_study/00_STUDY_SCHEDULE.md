@@ -87,7 +87,7 @@ Week 12-14 → 성능 최적화 + React Compiler
 | --- | -------- | ----------------------- | ------------------------------------------------- | ------------------------------------------------- |
 | 28  | 04/09 ✅ | children / 컴포넌트 성  | `BookCard`를 children 합성 방식으로 리팩토링      | `<BookCard><BookCard.Cover /><BookCard.Info />`   |
 | 29  | 04/10 ✅ | 합성 실습               | `widgets/dashboard/` Layout을 children으로 감싸기 | 대시보드 레이아웃 재사용 구조 개선                |
-| 30  | 04/16    | Portal ✨               | `createPortal`로 알림 드롭다운을 `body`에 렌더링  | z-index 충돌 문제 해결                            |
+| 30  | 04/10 ✅ | Portal ✨               | `createPortal`로 알림 드롭다운을 `body`에 렌더링  | z-index 충돌 문제 해결                            |
 | 31  | 04/17    | Portal 심화 ✨          | 책 상세 모달을 Portal로 구현                      | 모달 + 스크롤 잠금 + ESC 닫기                     |
 | 32  | 04/20    | Compound Component 패턴 | 책장 탭 시스템을 Compound Component로 설계        | `<BookShelf><BookShelf.Tab><BookShelf.Panel>`     |
 | 33  | 04/21    | Compound Component 심화 | 내부 선택 상태를 Context로 공유                   | 외부에서 controlled/uncontrolled 모드 지원        |
