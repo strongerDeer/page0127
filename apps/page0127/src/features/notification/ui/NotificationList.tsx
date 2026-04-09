@@ -29,9 +29,80 @@ import { NotificationItem } from './NotificationItem';
 type NotificationListProps = {
   userId: string;
   onClose?: () => void;
-}
+};
 
-export const NotificationList = ({ userId, onClose }: NotificationListProps) => {
+type NotificationListHeaderProps = {
+  hasUnread: boolean;
+  isPending: boolean;
+  onMarkAllAsRead: () => void;
+};
+
+type NotificationListBodyProps = {
+  notifications: NotificationWithActor[];
+  onNotificationClick: (notification: NotificationWithActor) => void;
+  onDelete: (id: string) => void;
+  onMarkAsRead: (id: string) => void;
+};
+
+type NotificationListFooterProps = {
+  onClose?: () => void;
+};
+
+const NotificationListHeader = ({
+  hasUnread,
+  isPending,
+  onMarkAllAsRead,
+}: NotificationListHeaderProps) => (
+  <div className='flex items-center justify-between border-b p-4'>
+    <h3 className='font-semibold'>알림</h3>
+    {hasUnread && (
+      <Button
+        variant='ghost'
+        size='sm'
+        onClick={onMarkAllAsRead}
+        disabled={isPending}
+      >
+        모두 읽음
+      </Button>
+    )}
+  </div>
+);
+
+const NotificationListBody = ({
+  notifications,
+  onNotificationClick,
+  onDelete,
+  onMarkAsRead,
+}: NotificationListBodyProps) => (
+  <ScrollArea className='h-96'>
+    <div className='flex flex-col'>
+      {notifications.map((notification) => (
+        <NotificationItem
+          key={notification.id}
+          notification={notification}
+          onClick={() => onNotificationClick(notification)}
+          onDelete={onDelete}
+          onMarkAsRead={onMarkAsRead}
+        />
+      ))}
+    </div>
+  </ScrollArea>
+);
+
+const NotificationListFooter = ({ onClose }: NotificationListFooterProps) => (
+  <div className='border-t p-2'>
+    <Link href='/notifications' onClick={onClose}>
+      <Button variant='ghost' className='w-full' size='sm'>
+        모든 알림 보기
+      </Button>
+    </Link>
+  </div>
+);
+
+export const NotificationList = ({
+  userId,
+  onClose,
+}: NotificationListProps) => {
   const router = useRouter();
   const { data: notifications, isLoading } = useNotifications({
     userId,
@@ -45,16 +116,13 @@ export const NotificationList = ({ userId, onClose }: NotificationListProps) => 
   const handleNotificationClick = async (
     notification: NotificationWithActor
   ) => {
-    // 읽지 않은 알림이면 읽음 처리
     if (!notification.is_read) {
       await markAsReadMutation.mutateAsync(notification.id);
     }
 
-    // 알림 타입별 페이지 이동
     if (notification.type === 'follow') {
       router.push(`/${notification.actor.username || notification.actor_id}`);
     } else if (notification.target_id) {
-      // 댓글, 좋아요 알림 → 활동 상세 페이지로 이동
       router.push(`/feed/${notification.target_id}`);
     }
 
@@ -84,7 +152,9 @@ export const NotificationList = ({ userId, onClose }: NotificationListProps) => 
   if (!notifications || notifications.length === 0) {
     return (
       <div className='flex h-64 flex-col items-center justify-center gap-2'>
-        <p className='text-sm text-muted-foreground'>읽지 않은 알림이 없습니다</p>
+        <p className='text-sm text-muted-foreground'>
+          읽지 않은 알림이 없습니다
+        </p>
       </div>
     );
   }
@@ -93,44 +163,24 @@ export const NotificationList = ({ userId, onClose }: NotificationListProps) => 
 
   return (
     <div className='flex flex-col'>
-      {/* 헤더 */}
-      <div className='flex items-center justify-between border-b p-4'>
-        <h3 className='font-semibold'>알림</h3>
-        {hasUnread && (
-          <Button
-            variant='ghost'
-            size='sm'
-            onClick={handleMarkAllAsRead}
-            disabled={markAllAsReadMutation.isPending}
-          >
-            모두 읽음
-          </Button>
-        )}
-      </div>
+      <NotificationList.Header
+        hasUnread={hasUnread}
+        isPending={markAllAsReadMutation.isPending}
+        onMarkAllAsRead={handleMarkAllAsRead}
+      />
 
-      {/* 알림 목록 */}
-      <ScrollArea className='h-96'>
-        <div className='flex flex-col'>
-          {notifications.map((notification) => (
-            <NotificationItem
-              key={notification.id}
-              notification={notification}
-              onClick={() => handleNotificationClick(notification)}
-              onDelete={handleDelete}
-              onMarkAsRead={handleMarkAsReadSingle}
-            />
-          ))}
-        </div>
-      </ScrollArea>
+      <NotificationList.Body
+        notifications={notifications}
+        onNotificationClick={handleNotificationClick}
+        onDelete={handleDelete}
+        onMarkAsRead={handleMarkAsReadSingle}
+      />
 
-      {/* 푸터 */}
-      <div className='border-t p-2'>
-        <Link href='/notifications' onClick={onClose}>
-          <Button variant='ghost' className='w-full' size='sm'>
-            모든 알림 보기
-          </Button>
-        </Link>
-      </div>
+      <NotificationList.Footer onClose={onClose} />
     </div>
   );
-}
+};
+
+NotificationList.Header = NotificationListHeader;
+NotificationList.Body = NotificationListBody;
+NotificationList.Footer = NotificationListFooter;

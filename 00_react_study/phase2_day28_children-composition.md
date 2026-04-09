@@ -183,18 +183,31 @@ type C = { children: JSX.Element };        // ReactElement와 거의 동일
 
 ---
 
-## 이 프로젝트에서 분리하면 좋은 컴포넌트 목록
+## 이 프로젝트 적용 결과 (✅ 완료)
 
-| 컴포넌트 | 현재 문제 | 분리 방향 |
+### 파일 분리 기준
+
+> **독립 재사용 가능** → 별도 파일 / **부모 전용 조각** → 같은 파일 안 서브컴포넌트
+
+| 컴포넌트 | 방식 | 이유 |
 |---|---|---|
-| [BookCard.tsx](../apps/page0127/src/features/book/ui/BookCard.tsx) | Cover + Info 혼재 | `<BookCard.Cover />` + `<BookCard.Info />` |
-| [BookListItem.tsx](../apps/page0127/src/widgets/book/ui/BookListItem.tsx) | 3D 표지 + 뱃지 + 정보가 한 파일 | `<BookListItem.Cover />` + `<BookListItem.Badge />` |
-| [NotificationList.tsx](../apps/page0127/src/features/notification/ui/NotificationList.tsx) | 헤더 + 목록 + 푸터 혼재 | `<NotificationList.Header />` + `<NotificationList.Footer />` |
-| [PublicLibraryHeader.tsx](../apps/page0127/src/widgets/public-library/PublicLibraryHeader.tsx) | 배경 장식 + 프로필 이미지 + 통계가 한 덩어리 | `<PublicLibraryHeader.Profile />` + `<PublicLibraryHeader.Stats />` |
-| [ProfileSettingsForm.tsx](../apps/page0127/src/features/profile/ui/ProfileSettingsForm.tsx) | 사진 + 필드 + 저장 버튼이 한 컴포넌트 | `<ProfileSettingsForm.Photo />` + `<ProfileSettingsForm.Fields />` |
+| BookCard | **별도 파일** | Cover/Info를 다른 뷰에서 단독 사용 가능 |
+| NotificationList | **같은 파일** | Header/Body/Footer는 부모 없이 단독 사용 불가 |
+| BookListItem | **같은 파일** | Cover/Content는 항상 BookListItem 안에서만 씀 |
+| PublicLibraryHeader | **같은 파일** | Avatar/Info는 이 컴포넌트 전용 |
+| ProfileSettingsForm | **같은 파일** | Photo/DangerZone은 이 폼 전용 |
 
-**우선순위**: `BookCard` → `NotificationList` → 나머지 순으로 접근하면 된다.  
-`NotificationList`는 이미 Header/Body/Footer 구조가 명확해서 분리하기 쉽다.
+### 적용된 서브컴포넌트 목록
+
+| 파일 | 서브컴포넌트 |
+|---|---|
+| [BookCard.tsx](../apps/page0127/src/features/book/ui/BookCard.tsx) | shell only — Cover/Info는 별도 파일 |
+| [BookCardCover.tsx](../apps/page0127/src/features/book/ui/BookCardCover.tsx) | `BookCard.Cover` |
+| [BookCardInfo.tsx](../apps/page0127/src/features/book/ui/BookCardInfo.tsx) | `BookCard.Info` |
+| [NotificationList.tsx](../apps/page0127/src/features/notification/ui/NotificationList.tsx) | `.Header` / `.Body` / `.Footer` |
+| [BookListItem.tsx](../apps/page0127/src/widgets/book/ui/BookListItem.tsx) | `.Cover` / `.Content` |
+| [PublicLibraryHeader.tsx](../apps/page0127/src/widgets/public-library/PublicLibraryHeader.tsx) | `.Avatar` / `.Info` |
+| [ProfileSettingsForm.tsx](../apps/page0127/src/features/profile/ui/ProfileSettingsForm.tsx) | `.Photo` / `.DangerZone` |
 
 ---
 

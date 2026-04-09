@@ -24,6 +24,44 @@ type ProfileSettingsFormProps = {
   profile: Profile;
 };
 
+type ProfileSettingsFormPhotoProps = {
+  currentPhotoUrl: string | null;
+  onFileSelect: (file: File | null) => void;
+};
+
+type ProfileSettingsFormDangerZoneProps = {
+  userEmail: string;
+};
+
+const ProfileSettingsFormPhoto = ({
+  currentPhotoUrl,
+  onFileSelect,
+}: ProfileSettingsFormPhotoProps) => (
+  <div className='space-y-2'>
+    <Label>프로필 이미지</Label>
+    <AvatarUpload
+      currentPhotoUrl={currentPhotoUrl}
+      onFileSelect={onFileSelect}
+    />
+  </div>
+);
+
+const ProfileSettingsFormDangerZone = ({
+  userEmail,
+}: ProfileSettingsFormDangerZoneProps) => (
+  <Card className='mt-6 border-red-200 bg-red-50 p-6'>
+    <div className='space-y-4'>
+      <div>
+        <h3 className='text-lg font-semibold text-red-900'>위험 영역</h3>
+        <p className='mt-1 text-sm text-red-700'>
+          계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.
+        </p>
+      </div>
+      <DeleteAccountDialog userEmail={userEmail} />
+    </div>
+  </Card>
+);
+
 /**
  * 프로필 설정 폼 컴포넌트
  *
@@ -257,13 +295,10 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
           </div>
 
           {/* 프로필 이미지 */}
-          <div className='space-y-2'>
-            <Label>프로필 이미지</Label>
-            <AvatarUpload
-              currentPhotoUrl={currentPhotoUrl}
-              onFileSelect={handleFileSelect}
-            />
-          </div>
+          <ProfileSettingsForm.Photo
+            currentPhotoUrl={currentPhotoUrl}
+            onFileSelect={handleFileSelect}
+          />
 
           {/* 이메일 (읽기 전용) */}
           <div className='space-y-2'>
@@ -342,19 +377,10 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
         </div>
       </Card>
 
-      {/* 위험 영역: 계정 삭제 */}
-      <Card className='p-6 mt-6 border-red-200 bg-red-50'>
-        <div className='space-y-4'>
-          <div>
-            <h3 className='text-lg font-semibold text-red-900'>위험 영역</h3>
-            <p className='mt-1 text-sm text-red-700'>
-              계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수
-              없습니다.
-            </p>
-          </div>
-          <DeleteAccountDialog userEmail={profile.email || ''} />
-        </div>
-      </Card>
+      <ProfileSettingsForm.DangerZone userEmail={profile.email || ''} />
     </form>
   );
 };
+
+ProfileSettingsForm.Photo = ProfileSettingsFormPhoto;
+ProfileSettingsForm.DangerZone = ProfileSettingsFormDangerZone;
