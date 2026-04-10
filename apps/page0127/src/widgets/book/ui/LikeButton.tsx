@@ -1,22 +1,25 @@
 'use client';
 
 import { useState } from 'react';
-import { Heart } from 'lucide-react';
+
 import { useRouter } from 'next/navigation';
+
+import { Heart } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Button } from '@/shared/ui/button';
 
-interface LikeButtonProps {
+type LikeButtonProps = {
   bookId: string;
   initialLiked: boolean;
   className?: string;
-}
+};
 
-export default function LikeButton({
+export const LikeButton = ({
   bookId,
   initialLiked,
   className,
-}: LikeButtonProps) {
+}: LikeButtonProps) => {
   const [liked, setLiked] = useState(initialLiked);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -37,18 +40,18 @@ export default function LikeButton({
 
       if (!response.ok) {
         if (response.status === 401) {
-           alert('로그인이 필요합니다.');
-           return;
+          toast.error('로그인이 필요합니다.');
+          return;
         }
         throw new Error('Failed to like');
       }
 
       const data = await response.json();
       setLiked(data.liked);
-      router.refresh(); // Refresh to update any counts if shown elsewhere
+      router.refresh();
     } catch (error) {
       console.error(error);
-      alert('좋아요 처리 중 오류가 발생했습니다.');
+      toast.error('좋아요 처리 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -56,8 +59,8 @@ export default function LikeButton({
 
   return (
     <Button
-      variant="ghost"
-      size="icon"
+      variant='ghost'
+      size='icon'
       className={`relative z-30 h-8 w-8 rounded-full bg-white/80 shadow-sm backdrop-blur-sm transition-transform hover:scale-110 ${className}`}
       onClick={toggleLike}
     >
@@ -68,4 +71,4 @@ export default function LikeButton({
       />
     </Button>
   );
-}
+};

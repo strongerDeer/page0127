@@ -1,22 +1,27 @@
 'use client';
 
 import { useState } from 'react';
+
 import { useRouter } from 'next/navigation';
-import { Plus, Check } from 'lucide-react';
+
+import { Check, Plus } from 'lucide-react';
+import { toast } from 'sonner';
+
 import { Button } from '@/shared/ui/button';
+
 import { GlobalBook } from '@/entities/book/types';
 
-interface AddToLibraryButtonProps {
+type AddToLibraryButtonProps = {
   book: GlobalBook;
   isInLibrary: boolean;
   className?: string;
-}
+};
 
-export default function AddToLibraryButton({
+export const AddToLibraryButton = ({
   book,
   isInLibrary,
   className,
-}: AddToLibraryButtonProps) {
+}: AddToLibraryButtonProps) => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -43,20 +48,19 @@ export default function AddToLibraryButton({
       });
 
       if (!response.ok) {
-         if (response.status === 401) {
-             alert('로그인이 필요합니다.');
-             return;
-         }
-         const errorText = await response.text();
-         throw new Error(errorText || 'Failed to add book');
+        if (response.status === 401) {
+          toast.error('로그인이 필요합니다.');
+          return;
+        }
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to add book');
       }
 
-      // Success
-      router.refresh(); // Refresh page to show updated status (e.g. My Memo section appearing)
-      alert('내 서재에 추가되었습니다.');
+      router.refresh();
+      toast.success('내 서재에 추가되었습니다.');
     } catch (error) {
       console.error(error);
-      alert('책 담기 중 오류가 발생했습니다.');
+      toast.error('책 담기 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -64,7 +68,7 @@ export default function AddToLibraryButton({
 
   if (isInLibrary) {
     return (
-      <Button variant="outline" className={`gap-2 ${className}`} disabled>
+      <Button variant='outline' className={`gap-2 ${className}`} disabled>
         <Check size={16} />
         이미 서재에 있음
       </Button>
@@ -73,9 +77,9 @@ export default function AddToLibraryButton({
 
   return (
     <Button
-        className={`gap-2 ${className}`}
-        onClick={handleAddToLibrary}
-        disabled={loading}
+      className={`gap-2 ${className}`}
+      onClick={handleAddToLibrary}
+      disabled={loading}
     >
       <Plus size={16} />
       {loading ? '담는 중...' : '내 서재에 담기'}

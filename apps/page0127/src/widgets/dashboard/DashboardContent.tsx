@@ -6,7 +6,18 @@ import { useRouter } from 'next/navigation';
 
 import { useQuery } from '@tanstack/react-query';
 import { BookOpen, CheckCircle, FileText, Target } from 'lucide-react';
+import { toast } from 'sonner';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/shared/ui/alert-dialog';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import {
@@ -245,6 +256,7 @@ export const DashboardContent = ({
   // 단순 boolean은 useState가 적합 — useReducer는 복합 상태에 써야 의미 있음
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isAnalyzeDialogOpen, setIsAnalyzeDialogOpen] = useState(false);
 
   // 차트 클릭 시 필터 dispatch를 직접 호출 → useTransition 적합
   // 월/평점 필터 변경은 급하지 않음 — 입력 응답성을 해치지 않도록 우선순위 낮춤
@@ -339,29 +351,27 @@ export const DashboardContent = ({
 
     const publicUrl = `${window.location.origin}/${profile.username}`;
     navigator.clipboard.writeText(publicUrl);
-    alert('공개 서재 URL이 복사되었습니다!');
+    toast.success('공개 서재 URL이 복사되었습니다!');
   };
 
-  // AI 취향 분석 실행
-  const handleAnalyzeTaste = async () => {
-    // 완독한 책 권수 확인 (최소 5권 필요)
+  // AI 취향 분석 — 최소 조건 확인 후 확인 다이얼로그 오픈
+  const handleAnalyzeTaste = () => {
     const completedBooks = books.filter(
       (book) => book.status === 'completed' && book.rating !== null
     );
 
     if (completedBooks.length < 5) {
-      alert('취향 분석을 위해 최소 5권의 완독한 책(별점 포함)이 필요합니다.');
+      toast.error(
+        '취향 분석을 위해 최소 5권의 완독한 책(별점 포함)이 필요합니다.'
+      );
       return;
     }
 
-    if (
-      !confirm(
-        'AI 독서 취향 분석을 시작하시겠습니까?\n(분석에 약 30초 정도 소요됩니다)'
-      )
-    ) {
-      return;
-    }
+    setIsAnalyzeDialogOpen(true);
+  };
 
+  // 다이얼로그 확인 후 실제 분석 실행
+  const doAnalyzeTaste = async () => {
     setIsAnalyzing(true);
 
     try {
@@ -376,12 +386,11 @@ export const DashboardContent = ({
 
       await response.json();
 
-      // 성공: 분석 결과 페이지로 이동
-      alert('✨ 취향 분석이 완료되었습니다!');
+      toast.success('취향 분석이 완료되었습니다!');
       router.push('/dashboard/taste-analysis');
     } catch (error) {
       console.error('취향 분석 실패:', error);
-      alert(
+      toast.error(
         error instanceof Error
           ? error.message
           : '취향 분석 중 오류가 발생했습니다.'
@@ -620,6 +629,24 @@ export const DashboardContent = ({
           router.refresh();
         }}
       />
+
+      <AlertDialog
+        open={isAnalyzeDialogOpen}
+        onOpenChange={setIsAnalyzeDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>AI 독서 취향 분석</AlertDialogTitle>
+            <AlertDialogDescription>
+              분석에 약 30초 정도 소요됩니다. 시작하시겠습니까?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction onClick={doAnalyzeTaste}>시작</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </StatsPageLayout>
   );
 };

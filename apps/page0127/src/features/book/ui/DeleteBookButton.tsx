@@ -1,7 +1,19 @@
 'use client';
 
+import { useState } from 'react';
+
 import { useRouter } from 'next/navigation';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/shared/ui/alert-dialog';
 import { Button } from '@/shared/ui/button';
 
 import { useBookCRUD } from '../api/useBookCRUD';
@@ -14,18 +26,15 @@ type DeleteBookButtonProps = {
  * 도서 삭제 버튼 컴포넌트 (Client Component)
  *
  * 학습 포인트:
- * - Server Component와 Client Component 분리
- * - Server Component(상세 페이지)는 데이터 페칭만
- * - Client Component(이 버튼)는 사용자 인터랙션 담당
- * - onClick, confirm 등은 클라이언트에서만 가능
+ * - confirm() 대신 AlertDialog — 브라우저 기본 UI 탈피
+ * - AlertDialog는 내부적으로 Portal 사용 → z-index 문제 없음
  */
 export const DeleteBookButton = ({ bookId }: DeleteBookButtonProps) => {
   const router = useRouter();
   const { deleteBook } = useBookCRUD();
+  const [open, setOpen] = useState(false);
 
-  const handleDelete = async () => {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
-
+  const handleConfirm = async () => {
     const success = await deleteBook(bookId);
     if (success) {
       router.push('/books');
@@ -33,8 +42,30 @@ export const DeleteBookButton = ({ bookId }: DeleteBookButtonProps) => {
   };
 
   return (
-    <Button variant='destructive' onClick={handleDelete}>
-      삭제
-    </Button>
+    <>
+      <Button variant='destructive' onClick={() => setOpen(true)}>
+        삭제
+      </Button>
+
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>책을 삭제하시겠습니까?</AlertDialogTitle>
+            <AlertDialogDescription>
+              삭제한 책은 복구할 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirm}
+              className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+            >
+              삭제
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };

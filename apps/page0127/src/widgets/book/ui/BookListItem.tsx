@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 
-import LikeButton from './LikeButton';
+import { LikeButton } from './LikeButton';
 
 import type { Book, GlobalBook } from '@/entities/book/types';
 

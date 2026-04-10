@@ -5,9 +5,19 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { MoreVertical, Pencil, Reply,Trash2 } from 'lucide-react';
+import { MoreVertical, Pencil, Reply, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/shared/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 import { Button } from '@/shared/ui/button';
 import {
@@ -47,6 +57,7 @@ export const CommentItem = ({
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
 
   const isAuthor = currentUserId === comment.userId;
@@ -95,11 +106,7 @@ export const CommentItem = ({
     updateMutation.mutate(editContent.trim());
   };
 
-  const handleDelete = () => {
-    if (window.confirm('댓글을 삭제하시겠습니까?')) {
-      deleteMutation.mutate();
-    }
-  };
+  const handleDelete = () => setIsDeleteDialogOpen(true);
 
   const formatTime = (dateString: string) => {
     return formatDistanceToNow(new Date(dateString), {
@@ -109,6 +116,7 @@ export const CommentItem = ({
   };
 
   return (
+    <>
     <div className={`flex gap-3 ${isReply ? 'ml-12' : ''}`}>
       {/* 프로필 사진 */}
       <Avatar className='h-8 w-8'>
@@ -225,5 +233,26 @@ export const CommentItem = ({
         )}
       </div>
     </div>
+
+    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>댓글을 삭제하시겠습니까?</AlertDialogTitle>
+          <AlertDialogDescription>
+            삭제한 댓글은 복구할 수 없습니다.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>취소</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => deleteMutation.mutate()}
+            className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+          >
+            삭제
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 };
