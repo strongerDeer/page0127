@@ -88,16 +88,15 @@ Week 12-14 → 성능 최적화 + React Compiler
 | 28  | 04/09 ✅ | children / 컴포넌트 성  | `BookCard`를 children 합성 방식으로 리팩토링      | `<BookCard><BookCard.Cover /><BookCard.Info />`   |
 | 29  | 04/10 ✅ | 합성 실습               | `widgets/dashboard/` Layout을 children으로 감싸기 | 대시보드 레이아웃 재사용 구조 개선                |
 | 30  | 04/10 ✅ | Portal ✨               | `createPortal`로 알림 드롭다운을 `body`에 렌더링  | z-index 충돌 문제 해결                            |
-| 31  | 04/17    | Portal 심화 ✨          | 책 상세 모달을 Portal로 구현                      | 모달 + 스크롤 잠금 + ESC 닫기                     |
-| 32  | 04/20    | Compound Component 패턴 | 책장 탭 시스템을 Compound Component로 설계        | `<BookShelf><BookShelf.Tab><BookShelf.Panel>`     |
-| 33  | 04/21    | Compound Component 심화 | 내부 선택 상태를 Context로 공유                   | 외부에서 controlled/uncontrolled 모드 지원        |
-| 34  | 04/22    | Context                 | AuthContext / ThemeContext 실제 구조 분석         | `shared/providers/` 레이어 이해                   |
-| 35  | 04/23    | Context — 성능 고려     | Context 분리로 불필요한 리렌더링 방지             | `AuthContext` vs `UIContext` 분리 실험            |
-| 36  | 04/24    | Custom Hook             | `useBookFilter`, `useBookSearch` 커스텀 훅 추출   | `features/book/` 로직을 컴포넌트에서 분리         |
-| 37  | 04/27    | Custom Hook 심화        | `useLocalStorage`, `useDebounce` 추출             | `shared/` 레이어에 재사용 훅 구성                 |
-| 38  | 04/28    | Error Boundary ✨       | Supabase API 실패 시 에러 UI 구현                 | `react-error-boundary` 적용, fallback UI 작성     |
-| 39  | 04/29    | 상태 구조 설계          | 클라이언트 상태 flat vs nested 분석               | Zustand 도입 여부 결정 (vs TanStack Query로 통일) |
-| 40  | 04/30    | Phase 3 복습            | FSD 레이어 다이어그램 그리기                      | entities → features → widgets 의존 방향 검증      |
+| 31  | 04/13    | Compound Component 패턴 | 책장 탭 시스템을 Compound Component로 설계        | `<BookShelf><BookShelf.Tab><BookShelf.Panel>`     |
+| 32  | 04/13    | Compound Component 심화 | 내부 선택 상태를 Context로 공유                   | 외부에서 controlled/uncontrolled 모드 지원        |
+| 33  | 04/14    | Context                 | AuthContext / ThemeContext 실제 구조 분석         | `shared/providers/` 레이어 이해                   |
+| 34  | 04/14    | Context — 성능 고려     | Context 분리로 불필요한 리렌더링 방지             | `AuthContext` vs `UIContext` 분리 실험            |
+| 35  | 04/15    | Custom Hook             | `useBookFilter`, `useBookSearch` 커스텀 훅 추출   | `features/book/` 로직을 컴포넌트에서 분리         |
+| 36  | 04/15    | Custom Hook 심화        | `useLocalStorage`, `useDebounce` 추출             | `shared/` 레이어에 재사용 훅 구성                 |
+| 37  | 04/16    | Error Boundary ✨       | Supabase API 실패 시 에러 UI 구현                 | `react-error-boundary` 적용, fallback UI 작성     |
+| 38  | 04/16    | 상태 구조 설계          | 클라이언트 상태 flat vs nested 분석               | Zustand 도입 여부 결정 (vs TanStack Query로 통일) |
+| 39  | 04/17    | Phase 3 복습            | FSD 레이어 다이어그램 그리기                      | entities → features → widgets 의존 방향 검증      |
 
 ---
 
@@ -107,16 +106,16 @@ Week 12-14 → 성능 최적화 + React Compiler
 
 | Day | 날짜  | 주제                           | 30분 할 일                                   | page0127 연결 포인트                            |
 | --- | ----- | ------------------------------ | -------------------------------------------- | ----------------------------------------------- |
-| 41  | 05/01 | App Router 라우트 구조 재파악  | `app/` 디렉토리 전체 흐름 도식화             | `(auth)` / `(public)` / `(protected)` 그룹 이해 |
-| 42  | 05/04 | Server Component 최적화        | 현재 SC에서 데이터 패칭 로직 점검            | 불필요하게 `'use client'`인 컴포넌트 찾기       |
-| 43  | 05/05 | Client Component 경계          | CC 범위 최소화 리팩토링                      | 인터랙션 없는 컴포넌트를 SC로 전환              |
-| 44  | 05/06 | lazy + Suspense ✨             | 통계 차트(Recharts)를 `lazy`로 코드 스플리팅 | 초기 번들 크기 감소 확인                        |
-| 45  | 05/07 | 데이터 패칭 패턴               | `fetch` + `cache`, `revalidate` 옵션 실습    | 책 목록 캐싱 전략 적용                          |
-| 46  | 05/08 | loading.tsx / Suspense         | `loading.tsx`로 스켈레톤 UI 구현             | 책장 로딩 스켈레톤 카드                         |
-| 47  | 05/11 | TanStack Query — queryKey 설계 | 현재 `useQuery` 패턴 전수 조사               | queryKey 네이밍 컨벤션 통일                     |
-| 48  | 05/12 | TanStack Query — mutation      | `useMutation` + optimistic update 구현       | 좋아요 클릭 즉시 반영 (TanStack Query 방식)     |
-| 49  | 05/13 | TanStack Query — 무한 스크롤   | `useInfiniteQuery`로 책 목록 페이지네이션    | 다음 페이지 자동 로드                           |
-| 50  | 05/14 | Phase 4 복습                   | SC/CC 분리 + TanStack Query 설계 최종 점검   | 변경 내역 PR 설명처럼 정리                      |
+| 40  | 04/20 | App Router 라우트 구조 재파악  | `app/` 디렉토리 전체 흐름 도식화             | `(auth)` / `(public)` / `(protected)` 그룹 이해 |
+| 41  | 04/20 | Server Component 최적화        | 현재 SC에서 데이터 패칭 로직 점검            | 불필요하게 `'use client'`인 컴포넌트 찾기       |
+| 42  | 04/21 | Client Component 경계          | CC 범위 최소화 리팩토링                      | 인터랙션 없는 컴포넌트를 SC로 전환              |
+| 43  | 04/21 | lazy + Suspense ✨             | 통계 차트(Recharts)를 `lazy`로 코드 스플리팅 | 초기 번들 크기 감소 확인                        |
+| 44  | 04/22 | 데이터 패칭 패턴               | `fetch` + `cache`, `revalidate` 옵션 실습    | 책 목록 캐싱 전략 적용                          |
+| 45  | 04/22 | loading.tsx / Suspense         | `loading.tsx`로 스켈레톤 UI 구현             | 책장 로딩 스켈레톤 카드                         |
+| 46  | 04/23 | TanStack Query — queryKey 설계 | 현재 `useQuery` 패턴 전수 조사               | queryKey 네이밍 컨벤션 통일                     |
+| 47  | 04/23 | TanStack Query — mutation      | `useMutation` + optimistic update 구현       | 좋아요 클릭 즉시 반영 (TanStack Query 방식)     |
+| 48  | 04/24 | TanStack Query — 무한 스크롤   | `useInfiniteQuery`로 책 목록 페이지네이션    | 다음 페이지 자동 로드                           |
+| 49  | 04/24 | Phase 4 복습                   | SC/CC 분리 + TanStack Query 설계 최종 점검   | 변경 내역 PR 설명처럼 정리                      |
 
 ---
 
@@ -126,13 +125,13 @@ Week 12-14 → 성능 최적화 + React Compiler
 
 | Day | 날짜  | 주제                | 30분 할 일                                 | page0127 연결 포인트                   |
 | --- | ----- | ------------------- | ------------------------------------------ | -------------------------------------- |
-| 51  | 05/15 | useActionState 개요 | 독서 상태 변경 폼을 Server Action으로 처리 | `useActionState` 기본 패턴 이해        |
-| 52  | 05/18 | useActionState 실습 | 에러/pending 상태 + 유효성 검사            | form action + 에러 메시지 표시         |
-| 53  | 05/19 | useOptimistic       | 좋아요 버튼 낙관적 업데이트 구현           | 서버 응답 전 즉시 하트 UI 반영         |
-| 54  | 05/20 | useOptimistic 심화  | 실패 시 롤백 처리                          | 네트워크 오류 → 원래 값 복원           |
-| 55  | 05/21 | use()               | Supabase Promise를 `use()`로 처리          | Suspense와 함께 데이터 로딩 선언적으로 |
-| 56  | 05/22 | Server Actions      | 팔로우/언팔로우를 Server Action으로 구현   | `'use server'` 함수 + `revalidatePath` |
-| 57  | 05/25 | Phase 5 복습        | React 19 기능 적용 전/후 코드 diff 비교    | 어떤 코드가 얼마나 단순해졌는지 정리   |
+| 50  | 04/27 | useActionState 개요 | 독서 상태 변경 폼을 Server Action으로 처리 | `useActionState` 기본 패턴 이해        |
+| 51  | 04/27 | useActionState 실습 | 에러/pending 상태 + 유효성 검사            | form action + 에러 메시지 표시         |
+| 52  | 04/28 | useOptimistic       | 좋아요 버튼 낙관적 업데이트 구현           | 서버 응답 전 즉시 하트 UI 반영         |
+| 53  | 04/28 | useOptimistic 심화  | 실패 시 롤백 처리                          | 네트워크 오류 → 원래 값 복원           |
+| 54  | 04/29 | use()               | Supabase Promise를 `use()`로 처리          | Suspense와 함께 데이터 로딩 선언적으로 |
+| 55  | 04/29 | Server Actions      | 팔로우/언팔로우를 Server Action으로 구현   | `'use server'` 함수 + `revalidatePath` |
+| 56  | 04/30 | Phase 5 복습        | React 19 기능 적용 전/후 코드 diff 비교    | 어떤 코드가 얼마나 단순해졌는지 정리   |
 
 ---
 
@@ -142,16 +141,16 @@ Week 12-14 → 성능 최적화 + React Compiler
 
 | Day | 날짜  | 주제                     | 30분 할 일                                 | page0127 연결 포인트                   |
 | --- | ----- | ------------------------ | ------------------------------------------ | -------------------------------------- |
-| 58  | 05/26 | useTransition 심화       | 대량 책 렌더링을 Transition으로 처리       | 완독 목록 전체 렌더링 부드럽게         |
-| 59  | 05/27 | useTransition + Suspense | Transition 중 Suspense fallback 조합       | 탭 전환 중 이전 내용 유지 UX           |
-| 60  | 05/28 | Suspense 중첩 패턴       | 책장 / 통계 / 알림 각각 독립 Suspense 경계 | 일부 실패해도 나머지 보여주는 구조     |
-| 61  | 05/29 | Error Boundary 심화      | 중첩 Error Boundary + reset 버튼           | API별 에러 복구 UX                     |
-| 62  | 06/01 | React.memo ✨            | `BookCard`에 `React.memo` 적용 + 비교 함수 | Profiler로 리렌더 횟수 비교            |
-| 63  | 06/02 | React Compiler 이해      | Compiler가 자동 메모이제이션하는 범위 파악 | 기존 `useMemo`/`useCallback` 제거 실험 |
-| 64  | 06/03 | React Compiler 실습      | `babel-plugin-react-compiler` 적용         | Compiler 적용 전/후 Profiler 수치 비교 |
-| 65  | 06/04 | 번들 최적화              | `next/bundle-analyzer`로 번들 분석         | 불필요하게 큰 패키지 교체 or lazy 처리 |
-| 66  | 06/05 | 최종 성능 점검           | React DevTools Profiler 전체 앱 분석       | 병목 지점 2개 이상 개선                |
-| 67  | 06/08 | 전체 복습 & 회고         | Phase 1-6 개념 마인드맵 + 개선 내역 정리   | 학습 일지 완성                         |
+| 57  | 05/01 | useTransition 심화       | 대량 책 렌더링을 Transition으로 처리       | 완독 목록 전체 렌더링 부드럽게         |
+| 58  | 05/04 | useTransition + Suspense | Transition 중 Suspense fallback 조합       | 탭 전환 중 이전 내용 유지 UX           |
+| 59  | 05/05 | Suspense 중첩 패턴       | 책장 / 통계 / 알림 각각 독립 Suspense 경계 | 일부 실패해도 나머지 보여주는 구조     |
+| 60  | 05/06 | Error Boundary 심화      | 중첩 Error Boundary + reset 버튼           | API별 에러 복구 UX                     |
+| 61  | 05/07 | React.memo ✨            | `BookCard`에 `React.memo` 적용 + 비교 함수 | Profiler로 리렌더 횟수 비교            |
+| 62  | 05/08 | React Compiler 이해      | Compiler가 자동 메모이제이션하는 범위 파악 | 기존 `useMemo`/`useCallback` 제거 실험 |
+| 63  | 05/11 | React Compiler 실습      | `babel-plugin-react-compiler` 적용         | Compiler 적용 전/후 Profiler 수치 비교 |
+| 64  | 05/12 | 번들 최적화              | `next/bundle-analyzer`로 번들 분석         | 불필요하게 큰 패키지 교체 or lazy 처리 |
+| 65  | 05/13 | 최종 성능 점검           | React DevTools Profiler 전체 앱 분석       | 병목 지점 2개 이상 개선                |
+| 66  | 05/14 | 전체 복습 & 회고         | Phase 1-6 개념 마인드맵 + 개선 내역 정리   | 학습 일지 완성                         |
 
 ---
 
