@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select';
+import { StatusTabFilter } from '@/shared/ui/StatusTabFilter';
 
 import { BookSearchInput, type BookSearchInputHandle } from './BookSearchInput';
 import { CategoryFilter } from './CategoryFilter';
@@ -273,65 +274,33 @@ export const DashboardBookList = ({
         />
       </div>
 
-      {/* 상태별 탭 — isTabPending: transition 처리 중 탭 전체를 살짝 흐리게 */}
-      <div className='mb-6 flex flex-wrap gap-2' style={{ opacity: isTabPending ? 0.6 : 1, transition: 'opacity 0.15s' }}>
-        <button
-          onClick={() => handleStatusChange('all')}
-          className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-            statusFilter === 'all'
-              ? 'bg-emerald-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          전체
-        </button>
-        <button
-          onClick={() => handleStatusChange('completed')}
-          className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-            statusFilter === 'completed'
-              ? 'bg-emerald-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          완독
-        </button>
-        <button
-          onClick={() => handleStatusChange('reading')}
-          className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-            statusFilter === 'reading'
-              ? 'bg-emerald-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          읽는 중
-        </button>
-        <button
-          onClick={() => handleStatusChange('want_to_read')}
-          className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-            statusFilter === 'want_to_read'
-              ? 'bg-emerald-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          읽고 싶은
-        </button>
+      {/* 상태별 탭 — Compound Component: value/onChange를 Context로 공유 */}
+      <StatusTabFilter
+        value={statusFilter}
+        onChange={handleStatusChange}
+        isPending={isTabPending}
+      >
+        <StatusTabFilter.Tab value='all'>전체</StatusTabFilter.Tab>
+        <StatusTabFilter.Tab value='completed'>완독</StatusTabFilter.Tab>
+        <StatusTabFilter.Tab value='reading'>읽는 중</StatusTabFilter.Tab>
+        <StatusTabFilter.Tab value='want_to_read'>읽고 싶은</StatusTabFilter.Tab>
+      </StatusTabFilter>
 
-        {/* 정렬 옵션 */}
-        <div className='ml-auto'>
-          <Select value={sortOption} onValueChange={handleSortChange}>
-            <SelectTrigger className='w-[160px]'>
-              <SelectValue placeholder='정렬 선택' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='created_at-desc'>최신순</SelectItem>
-              <SelectItem value='created_at-asc'>오래된순</SelectItem>
-              <SelectItem value='rating-desc'>별점 높은순</SelectItem>
-              <SelectItem value='rating-asc'>별점 낮은순</SelectItem>
-              <SelectItem value='title-asc'>제목순 (ㄱ-ㅎ)</SelectItem>
-              <SelectItem value='title-desc'>제목순 (ㅎ-ㄱ)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      {/* 정렬 옵션 */}
+      <div className='mb-6 flex justify-end'>
+        <Select value={sortOption} onValueChange={handleSortChange}>
+          <SelectTrigger className='w-[160px]'>
+            <SelectValue placeholder='정렬 선택' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='created_at-desc'>최신순</SelectItem>
+            <SelectItem value='created_at-asc'>오래된순</SelectItem>
+            <SelectItem value='rating-desc'>별점 높은순</SelectItem>
+            <SelectItem value='rating-asc'>별점 낮은순</SelectItem>
+            <SelectItem value='title-asc'>제목순 (ㄱ-ㅎ)</SelectItem>
+            <SelectItem value='title-desc'>제목순 (ㅎ-ㄱ)</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* 활성 필터 뱃지 */}
