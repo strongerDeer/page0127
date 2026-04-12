@@ -1,0 +1,62 @@
+<svg width="520" height="460" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs>
+    <marker id="arr-down" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-up" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="520" height="460" rx="12" fill="#f8fafc"/>
+
+  <!-- Title -->
+  <text x="260" y="36" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">Controlled</text>
+  <text x="260" y="58" text-anchor="middle" font-size="13" fill="#64748b">상태가 바깥(부모)에 있다</text>
+
+  <!-- Parent box -->
+  <rect x="50" y="74" width="420" height="136" rx="10" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+  <text x="260" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#1d4ed8">부모 컴포넌트</text>
+  <text x="260" y="116" text-anchor="middle" font-size="11" fill="#6b7280">(DashboardContent — reducer)</text>
+
+  <!-- State pill -->
+  <rect x="90" y="126" width="340" height="38" rx="6" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5"/>
+  <text x="260" y="145" text-anchor="middle" font-size="12" font-weight="600" fill="#1e40af" font-family="'SF Mono', Consolas, monospace">statusFilter = 'all'</text>
+  <text x="260" y="160" text-anchor="middle" font-size="10" fill="#3b82f6">← 상태가 여기 존재</text>
+
+  <!-- Reset note -->
+  <text x="260" y="196" text-anchor="middle" font-size="11" fill="#475569">✅  dispatch(RESET_ALL) → 탭 포함 전부 초기화 가능</text>
+
+  <!-- Down arrow -->
+  <line x1="260" y1="210" x2="260" y2="264" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arr-down)"/>
+  <rect x="158" y="220" width="204" height="26" rx="5" fill="white" stroke="#bfdbfe" stroke-width="1.5"/>
+  <text x="260" y="237" text-anchor="middle" font-size="11" font-family="'SF Mono', Consolas, monospace" fill="#1d4ed8">value={statusFilter}</text>
+
+  <!-- Component box -->
+  <rect x="90" y="264" width="340" height="96" rx="10" fill="#f0fdf4" stroke="#22c55e" stroke-width="2"/>
+  <text x="260" y="288" text-anchor="middle" font-size="13" font-weight="700" fill="#15803d">StatusTabFilter</text>
+
+  <!-- Tab buttons -->
+  <rect x="108" y="298" width="52" height="26" rx="5" fill="#16a34a"/>
+  <text x="134" y="315" text-anchor="middle" font-size="11" fill="white" font-weight="600">전체</text>
+
+  <rect x="168" y="298" width="52" height="26" rx="5" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
+  <text x="194" y="315" text-anchor="middle" font-size="11" fill="#15803d">완독</text>
+
+  <rect x="228" y="298" width="66" height="26" rx="5" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
+  <text x="261" y="315" text-anchor="middle" font-size="11" fill="#15803d">읽는 중</text>
+
+  <rect x="302" y="298" width="78" height="26" rx="5" fill="#dcfce7" stroke="#86efac" stroke-width="1.5"/>
+  <text x="341" y="315" text-anchor="middle" font-size="11" fill="#15803d">읽고 싶은</text>
+
+  <text x="260" y="350" text-anchor="middle" font-size="10" fill="#94a3b8">표시만 할 뿐 — 자체 상태 없음</text>
+
+  <!-- Up arrow -->
+  <line x1="260" y1="360" x2="260" y2="414" stroke="#d97706" stroke-width="2.5" marker-end="url(#arr-up)"/>
+  <rect x="130" y="370" width="260" height="26" rx="5" fill="white" stroke="#fde68a" stroke-width="1.5"/>
+  <text x="260" y="387" text-anchor="middle" font-size="11" font-family="'SF Mono', Consolas, monospace" fill="#92400e">onChange → dispatch(SET_STATUS)</text>
+
+  <!-- Footer note -->
+  <text x="260" y="440" text-anchor="middle" font-size="11" fill="#94a3b8">클릭 → 부모 상태 변경 → 리렌더링 → 탭 업데이트</text>
+</svg>

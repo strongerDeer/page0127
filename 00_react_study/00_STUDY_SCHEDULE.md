@@ -89,7 +89,7 @@ Week 12-14 → 성능 최적화 + React Compiler
 | 29  | 04/10 ✅ | 합성 실습                | `widgets/dashboard/` Layout을 children으로 감싸기 | 대시보드 레이아웃 재사용 구조 개선                |
 | 30  | 04/10 ✅ | Portal ✨                | `createPortal`로 알림 드롭다운을 `body`에 렌더링  | z-index 충돌 문제 해결                            |
 | 31  | 04/13 ✅ | Compound Component 패턴  | 책장 탭 시스템을 Compound Component로 설계        | `<BookShelf><BookShelf.Tab><BookShelf.Panel>`     |
-| 32  | 04/13    | Compound Component 심화  | 내부 선택 상태를 Context로 공유                   | 외부에서 controlled/uncontrolled 모드 지원        |
+| 32  | 04/13 ✅ | Compound Component 심화  | 내부 선택 상태를 Context로 공유                   | 외부에서 controlled/uncontrolled 모드 지원        |
 | 33  | 04/14    | Context                  | AuthContext / ThemeContext 실제 구조 분석         | `shared/providers/` 레이어 이해                   |
 | 34  | 04/14    | Context — 성능 고려      | Context 분리로 불필요한 리렌더링 방지             | `AuthContext` vs `UIContext` 분리 실험            |
 | 35  | 04/15    | Custom Hook              | `useBookFilter`, `useBookSearch` 커스텀 훅 추출   | `features/book/` 로직을 컴포넌트에서 분리         |
