@@ -9,7 +9,6 @@ import { CommentItem } from './CommentItem';
 
 type CommentListProps = {
   activityId: string;
-  currentUserId: string | null;
 };
 
 /**
@@ -20,10 +19,7 @@ type CommentListProps = {
  * - 계층 구조 렌더링 (댓글 + 대댓글)
  * - 로딩/에러 상태 처리
  */
-export const CommentList = ({
-  activityId,
-  currentUserId,
-}: CommentListProps) => {
+export const CommentList = ({ activityId }: CommentListProps) => {
   const { data: comments = [], isLoading } = useQuery({
     queryKey: ['comments', activityId],
     queryFn: async () => {
@@ -57,7 +53,6 @@ export const CommentList = ({
           <CommentItem
             comment={comment}
             activityId={activityId}
-            currentUserId={currentUserId}
           />
 
           {/* 대댓글들 */}
@@ -68,7 +63,6 @@ export const CommentList = ({
                   key={reply.id}
                   comment={reply}
                   activityId={activityId}
-                  currentUserId={currentUserId}
                   isReply
                 />
               ))}

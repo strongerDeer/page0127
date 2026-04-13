@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { BookCheck, BookOpen, MessageSquare } from 'lucide-react';
 
 import { Activity } from '@/entities/activity';
-import { useCurrentUser } from '@/entities/user';
 
 import { CommentSection } from '@/features/comment';
 import { LikeButton } from '@/features/like';
@@ -65,8 +64,6 @@ export const ActivityCard = ({
   activity,
   initialCommentsOpen = false,
 }: ActivityCardProps) => {
-  const { data: currentUser } = useCurrentUser();
-
   if (!activity.book) return null;
 
   return (
@@ -167,7 +164,6 @@ export const ActivityCard = ({
         {/* 댓글 섹션 */}
         <CommentSection
           activityId={activity.id}
-          currentUserId={currentUser?.id || null}
           initialOpen={initialCommentsOpen}
         />
       </div>

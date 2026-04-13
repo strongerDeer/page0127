@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { QueryProvider } from '@/shared/providers/QueryProvider';
 import { Toaster } from '@/shared/ui/sonner';
 
+import { CurrentUserProvider } from '@/features/auth/providers/CurrentUserProvider';
+
 import type { Metadata } from 'next';
 
 import './globals.css';
@@ -55,8 +57,11 @@ const RootLayout = ({
           ${geistSans.variable}: CSS 변수로 폰트 주입
         */}
         <QueryProvider>
-          {children}
-          <Toaster />
+          {/* QueryProvider 안에 있어야 useCurrentUser(React Query)를 쓸 수 있다 */}
+          <CurrentUserProvider>
+            {children}
+            <Toaster />
+          </CurrentUserProvider>
         </QueryProvider>
       </body>
     </html>

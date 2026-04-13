@@ -9,12 +9,13 @@ import { Button } from '@/shared/ui/button';
 
 import { commentApi } from '@/entities/comment';
 
+import { useCurrentUserContext } from '@/features/auth/providers/CurrentUserProvider';
+
 import { CommentForm } from './CommentForm';
 import { CommentList } from './CommentList';
 
 type CommentSectionProps = {
   activityId: string;
-  currentUserId: string | null;
   initialOpen?: boolean; // 초기 펼침 상태
 };
 
@@ -29,9 +30,10 @@ type CommentSectionProps = {
  */
 export const CommentSection = ({
   activityId,
-  currentUserId,
   initialOpen = false,
 }: CommentSectionProps) => {
+  const { currentUser } = useCurrentUserContext();
+  const currentUserId = currentUser?.id ?? null;
   const [isExpanded, setIsExpanded] = useState(initialOpen);
 
   // 댓글 개수 조회
@@ -73,7 +75,7 @@ export const CommentSection = ({
           )}
 
           {/* 댓글 목록 */}
-          <CommentList activityId={activityId} currentUserId={currentUserId} />
+          <CommentList activityId={activityId} />
         </div>
       )}
     </div>

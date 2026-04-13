@@ -30,12 +30,13 @@ import { Textarea } from '@/shared/ui/textarea';
 
 import { Comment, commentApi } from '@/entities/comment';
 
+import { useCurrentUserContext } from '@/features/auth/providers/CurrentUserProvider';
+
 import { CommentForm } from './CommentForm';
 
 type CommentItemProps = {
   comment: Comment;
   activityId: string;
-  currentUserId: string | null;
   isReply?: boolean;
 };
 
@@ -51,10 +52,11 @@ type CommentItemProps = {
 export const CommentItem = ({
   comment,
   activityId,
-  currentUserId,
   isReply = false,
 }: CommentItemProps) => {
   const queryClient = useQueryClient();
+  const { currentUser } = useCurrentUserContext();
+  const currentUserId = currentUser?.id ?? null;
   const [isEditing, setIsEditing] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -117,142 +119,143 @@ export const CommentItem = ({
 
   return (
     <>
-    <div className={`flex gap-3 ${isReply ? 'ml-12' : ''}`}>
-      {/* 프로필 사진 */}
-      <Avatar className='h-8 w-8'>
-        <AvatarImage src={comment.user?.photoUrl || undefined} />
-        <AvatarFallback>
-          {comment.user?.nickname?.[0] || '익'}
-        </AvatarFallback>
-      </Avatar>
+      <div className={`flex gap-3 ${isReply ? 'ml-12' : ''}`}>
+        {/* 프로필 사진 */}
+        <Avatar className='h-8 w-8'>
+          <AvatarImage src={comment.user?.photoUrl || undefined} />
+          <AvatarFallback>{comment.user?.nickname?.[0] || '익'}</AvatarFallback>
+        </Avatar>
 
-      <div className='flex-1 space-y-2'>
-        {/* 댓글 헤더 */}
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center gap-2'>
-            <span className='text-sm font-medium'>
-              {comment.user?.nickname || '익명'}
-            </span>
-            <span className='text-xs text-muted-foreground'>
-              {formatTime(comment.createdAt)}
-            </span>
-            {comment.updatedAt !== comment.createdAt && (
-              <span className='text-xs text-muted-foreground'>(수정됨)</span>
-            )}
-          </div>
+        <div className='flex-1 space-y-2'>
+          {/* 댓글 헤더 */}
+          <div className='flex items-center justify-between'>
+            <div className='flex items-center gap-2'>
+              <span className='text-sm font-medium'>
+                {comment.user?.nickname || '익명'}
+              </span>
+              <span className='text-xs text-muted-foreground'>
+                {formatTime(comment.createdAt)}
+              </span>
+              {comment.updatedAt !== comment.createdAt && (
+                <span className='text-xs text-muted-foreground'>(수정됨)</span>
+              )}
+            </div>
 
-          <div className='flex items-center gap-1'>
-            {/* 대댓글 버튼 (일반 댓글에만 표시) */}
-            {!isReply && currentUserId && (
-              <Button
-                variant='ghost'
-                size='sm'
-                onClick={() => setIsReplying(!isReplying)}
-                className='h-8 px-2 text-xs'
-              >
-                <Reply className='mr-1 h-3 w-3' />
-                답글
-              </Button>
-            )}
+            <div className='flex items-center gap-1'>
+              {/* 대댓글 버튼 (일반 댓글에만 표시) */}
+              {!isReply && currentUserId && (
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  onClick={() => setIsReplying(!isReplying)}
+                  className='h-8 px-2 text-xs'
+                >
+                  <Reply className='mr-1 h-3 w-3' />
+                  답글
+                </Button>
+              )}
 
-            {/* 수정/삭제 메뉴 (본인 댓글만) */}
-            {isAuthor && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant='ghost' size='sm' className='h-8 w-8 p-0'>
-                    <MoreVertical className='h-4 w-4' />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align='end'>
-                  <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                    <Pencil className='mr-2 h-4 w-4' />
-                    수정
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={handleDelete}
-                    className='text-destructive'
-                  >
-                    <Trash2 className='mr-2 h-4 w-4' />
-                    삭제
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
-        </div>
-
-        {/* 댓글 내용 (수정 모드) */}
-        {isEditing ? (
-          <div className='space-y-2'>
-            <Textarea
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
-              rows={3}
-              disabled={updateMutation.isPending}
-              className='resize-none'
-            />
-            <div className='flex justify-end gap-2'>
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => {
-                  setIsEditing(false);
-                  setEditContent(comment.content);
-                }}
-                disabled={updateMutation.isPending}
-              >
-                취소
-              </Button>
-              <Button
-                size='sm'
-                onClick={handleUpdate}
-                disabled={updateMutation.isPending || !editContent.trim()}
-              >
-                수정
-              </Button>
+              {/* 수정/삭제 메뉴 (본인 댓글만) */}
+              {isAuthor && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant='ghost' size='sm' className='h-8 w-8 p-0'>
+                      <MoreVertical className='h-4 w-4' />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align='end'>
+                    <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                      <Pencil className='mr-2 h-4 w-4' />
+                      수정
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleDelete}
+                      className='text-destructive'
+                    >
+                      <Trash2 className='mr-2 h-4 w-4' />
+                      삭제
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           </div>
-        ) : (
-          <p className='text-sm text-gray-700 whitespace-pre-wrap'>
-            {comment.content}
-          </p>
-        )}
 
-        {/* 대댓글 작성 폼 */}
-        {isReplying && (
-          <div className='pt-2'>
-            <CommentForm
-              activityId={activityId}
-              parentCommentId={comment.id}
-              onSuccess={() => setIsReplying(false)}
-              onCancel={() => setIsReplying(false)}
-              placeholder='답글을 입력하세요...'
-              submitText='답글 작성'
-            />
-          </div>
-        )}
+          {/* 댓글 내용 (수정 모드) */}
+          {isEditing ? (
+            <div className='space-y-2'>
+              <Textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                rows={3}
+                disabled={updateMutation.isPending}
+                className='resize-none'
+              />
+              <div className='flex justify-end gap-2'>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditContent(comment.content);
+                  }}
+                  disabled={updateMutation.isPending}
+                >
+                  취소
+                </Button>
+                <Button
+                  size='sm'
+                  onClick={handleUpdate}
+                  disabled={updateMutation.isPending || !editContent.trim()}
+                >
+                  수정
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className='text-sm text-gray-700 whitespace-pre-wrap'>
+              {comment.content}
+            </p>
+          )}
+
+          {/* 대댓글 작성 폼 */}
+          {isReplying && (
+            <div className='pt-2'>
+              <CommentForm
+                activityId={activityId}
+                parentCommentId={comment.id}
+                onSuccess={() => setIsReplying(false)}
+                onCancel={() => setIsReplying(false)}
+                placeholder='답글을 입력하세요...'
+                submitText='답글 작성'
+              />
+            </div>
+          )}
+        </div>
       </div>
-    </div>
 
-    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>댓글을 삭제하시겠습니까?</AlertDialogTitle>
-          <AlertDialogDescription>
-            삭제한 댓글은 복구할 수 없습니다.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>취소</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={() => deleteMutation.mutate()}
-            className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
-          >
-            삭제
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>댓글을 삭제하시겠습니까?</AlertDialogTitle>
+            <AlertDialogDescription>
+              삭제한 댓글은 복구할 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteMutation.mutate()}
+              className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+            >
+              삭제
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
