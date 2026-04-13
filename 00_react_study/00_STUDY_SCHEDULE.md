@@ -91,7 +91,7 @@ Week 12-14 → 성능 최적화 + React Compiler
 | 31  | 04/13 ✅ | Compound Component 패턴  | 책장 탭 시스템을 Compound Component로 설계        | `<BookShelf><BookShelf.Tab><BookShelf.Panel>`     |
 | 32  | 04/13 ✅ | Compound Component 심화  | 내부 선택 상태를 Context로 공유                   | 외부에서 controlled/uncontrolled 모드 지원        |
 | 33  | 04/13 ✅ | Context                  | AuthContext / ThemeContext 실제 구조 분석         | `shared/providers/` 레이어 이해                   |
-| 34  | 04/14    | Context — 성능 고려      | Context 분리로 불필요한 리렌더링 방지             | `AuthContext` vs `UIContext` 분리 실험            |
+| 34  | 04/14 ✅ | Context — 성능 고려      | Context 분리로 불필요한 리렌더링 방지             | `AuthContext` vs `UIContext` 분리 실험            |
 | 35  | 04/15    | Custom Hook              | `useBookFilter`, `useBookSearch` 커스텀 훅 추출   | `features/book/` 로직을 컴포넌트에서 분리         |
 | 36  | 04/15    | Custom Hook 심화         | `useLocalStorage`, `useDebounce` 추출             | `shared/` 레이어에 재사용 훅 구성                 |
 | 37  | 04/16    | Error Boundary ✨        | Supabase API 실패 시 에러 UI 구현                 | `react-error-boundary` 적용, fallback UI 작성     |
