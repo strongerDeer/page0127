@@ -54,9 +54,9 @@ shared/
 
 ```typescript
 // apps/page0127/src/shared/lib/hooks/useLocalStorage.ts
-'use client'; // localStorage는 브라우저 전용 → Client Component에서만 동작
+"use client"; // localStorage는 브라우저 전용 → Client Component에서만 동작
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
 
 export const useLocalStorage = <T>(key: string, initialValue: T) => {
   // 1. 초기값: localStorage에 있으면 그 값, 없으면 initialValue
@@ -82,7 +82,7 @@ export const useLocalStorage = <T>(key: string, initialValue: T) => {
         console.warn(`useLocalStorage: key "${key}" 저장 실패`, error);
       }
     },
-    [key, storedValue]
+    [key, storedValue],
   );
 
   return [storedValue, setValue] as const; // as const → [T, Dispatch] 튜플 타입
@@ -95,7 +95,7 @@ export const useLocalStorage = <T>(key: string, initialValue: T) => {
 
 ```typescript
 // apps/page0127/src/shared/lib/hooks/useDebounce.ts
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 // 검색 입력처럼 "연속 변경 중 마지막 값만" 사용할 때
 export const useDebounce = <T>(value: T, delay = 300): T => {
@@ -124,10 +124,10 @@ export const useDebounce = <T>(value: T, delay = 300): T => {
 // useBookSearch.ts:93
 const search = async (query: string, page = 1) => {
   if (!query.trim()) {
-    dispatch({ type: 'SEARCH_CLEAR' });
+    dispatch({ type: "SEARCH_CLEAR" });
     return;
   }
-  dispatch({ type: 'SEARCH_START', query, page });
+  dispatch({ type: "SEARCH_START", query, page });
   // ...aladin API 호출
 };
 ```
@@ -137,7 +137,7 @@ const search = async (query: string, page = 1) => {
 컴포넌트(BookSearchInput)에서:
 
 ```typescript
-const [inputValue, setInputValue] = useState('');
+const [inputValue, setInputValue] = useState("");
 const debouncedQuery = useDebounce(inputValue, 400); // 400ms 대기
 
 useEffect(() => {
@@ -151,8 +151,8 @@ useEffect(() => {
 
 ```typescript
 const [recentSearches, setRecentSearches] = useLocalStorage<string[]>(
-  'book-recent-searches',
-  []
+  "book-recent-searches",
+  [],
 );
 ```
 
@@ -160,12 +160,12 @@ const [recentSearches, setRecentSearches] = useLocalStorage<string[]>(
 
 ## 정리
 
-| 훅 | 위치 | 핵심 패턴 | 언제 쓰나 |
-|---|---|---|---|
-| `useDebounce` | `shared/lib/hooks/` | useEffect + clearTimeout | 검색, resize, scroll |
-| `useLocalStorage` | `shared/lib/hooks/` | useState + JSON.parse/stringify | 설정, 최근 항목 |
-| `useBookSearch` | `features/book/api/` | useReducer + 도메인 로직 | 특정 도메인 API |
-| `useCurrentUser` | `entities/user/hooks/` | useQuery + 인증 상태 | 사용자 엔티티 |
+| 훅                | 위치                   | 핵심 패턴                       | 언제 쓰나            |
+| ----------------- | ---------------------- | ------------------------------- | -------------------- |
+| `useDebounce`     | `shared/lib/hooks/`    | useEffect + clearTimeout        | 검색, resize, scroll |
+| `useLocalStorage` | `shared/lib/hooks/`    | useState + JSON.parse/stringify | 설정, 최근 항목      |
+| `useBookSearch`   | `features/book/api/`   | useReducer + 도메인 로직        | 특정 도메인 API      |
+| `useCurrentUser`  | `entities/user/hooks/` | useQuery + 인증 상태            | 사용자 엔티티        |
 
 **규칙**: 도메인 없는 로직 → `shared/`, 도메인 있는 로직 → `entities/` 또는 `features/`
 
@@ -192,9 +192,70 @@ touch apps/page0127/src/shared/lib/hooks/useLocalStorage.ts
 
 ---
 
+## lodash debounce vs 커스텀 useDebounce
+
+### lodash가 실무에서 많이 쓰이는 이유
+
+실무에서 lodash를 쓰게 되는 건 **"함수 실행"을 디바운스**하는 상황입니다:
+
+```typescript
+// 이벤트 핸들러 디바운스
+const handleResize = debounce(() => recalculateLayout(), 300);
+window.addEventListener("resize", handleResize);
+
+// 버튼 중복 클릭 방지 — leading 옵션으로 첫 클릭만 실행
+const handleSubmit = debounce(submitForm, 500, {
+  leading: true,
+  trailing: false,
+});
+```
+
+`leading`, `trailing`, `.cancel()`, `.flush()` 같은 세밀한 옵션이 필요할 때 lodash가 유용합니다.
+
+### 커스텀 useDebounce가 맞는 경우
+
+**"값"을 디바운스**하는 React state 기반 패턴:
+
+```typescript
+const debouncedQuery = useDebounce(inputValue, 400);
+
+useEffect(() => {
+  search(debouncedQuery); // 값이 안정화된 후 검색
+}, [debouncedQuery]);
+```
+
+### lodash로 React state 디바운스 하려면
+
+```typescript
+// 보일러플레이트가 늘어남
+const debouncedSearch = useRef(
+  debounce((query: string) => onSearch(query), 400),
+).current;
+
+useEffect(() => {
+  return () => debouncedSearch.cancel(); // 클린업도 수동
+}, [debouncedSearch]);
+```
+
+`useDebounce` 훅은 이 보일러플레이트를 없애기 위해 만들어진 패턴입니다.
+
+### 정리
+
+| 상황                                      | 추천            |
+| ----------------------------------------- | --------------- |
+| `window` 이벤트, 외부 콜백 디바운스       | lodash          |
+| 버튼 중복 클릭 방지 (`leading` 옵션 필요) | lodash          |
+| React state 값 디바운스 (검색어 등)       | 커스텀 훅       |
+| 팀에 lodash 이미 쓰고 있음                | lodash (일관성) |
+
+**결론**: lodash가 잘못된 선택이 아니라 용도가 달랐던 것. React state 디바운스에는 커스텀 훅이 더 자연스럽다.
+
+---
+
 ## 다음 Day 예고
 
 **Day 37 — useMemo / useCallback 최적화**
+
 - 렌더링 비용이 큰 연산을 메모이제이션
 - 함수 참조 안정화로 불필요한 자식 리렌더 방지
 - page0127에서 실제 최적화 포인트 찾기
