@@ -10,7 +10,7 @@
  * - 전체 읽음 처리
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -18,6 +18,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 
 import { apiClient } from '@/shared/api/client';
+import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
 import { Button } from '@/shared/ui/button';
 
 import {
@@ -34,12 +35,10 @@ export const NotificationPage = () => {
   const router = useRouter();
   const { data: currentUser } = useCurrentUser();
   const observerRef = useRef<HTMLDivElement>(null);
-  // lazy initialization: 마지막 선택 필터 복원
-  const [filter, setFilter] = useState<'all' | 'unread'>(
-    () =>
-      (typeof window !== 'undefined'
-        ? (localStorage.getItem('notification-filter') as 'all' | 'unread')
-        : null) || 'all'
+  // 마지막 선택 필터 복원 — useLocalStorage로 SSR 안전하게 처리
+  const [filter, setFilter] = useLocalStorage<'all' | 'unread'>(
+    'notification-filter',
+    'all'
   );
 
   const markAsReadMutation = useMarkAsRead();
@@ -47,36 +46,31 @@ export const NotificationPage = () => {
   const deleteNotificationMutation = useDeleteNotification();
 
   // 무한 스크롤 쿼리
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-  } = useInfiniteQuery({
-    queryKey: ['notifications', 'infinite', filter],
-    queryFn: async ({ pageParam = 0 }) => {
-      const params = new URLSearchParams({
-        limit: '20',
-        offset: String(pageParam),
-      });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useInfiniteQuery({
+      queryKey: ['notifications', 'infinite', filter],
+      queryFn: async ({ pageParam = 0 }) => {
+        const params = new URLSearchParams({
+          limit: '20',
+          offset: String(pageParam),
+        });
 
-      if (filter === 'unread') {
-        params.append('is_read', 'false');
-      }
+        if (filter === 'unread') {
+          params.append('is_read', 'false');
+        }
 
-      const { data } = await apiClient.get<NotificationWithActor[]>(
-        `/notifications?${params.toString()}`
-      );
-      return data;
-    },
-    getNextPageParam: (lastPage, allPages) => {
-      if (lastPage.length < 20) return undefined;
-      return allPages.flat().length;
-    },
-    initialPageParam: 0,
-    enabled: !!currentUser,
-  });
+        const { data } = await apiClient.get<NotificationWithActor[]>(
+          `/notifications?${params.toString()}`
+        );
+        return data;
+      },
+      getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.length < 20) return undefined;
+        return allPages.flat().length;
+      },
+      initialPageParam: 0,
+      enabled: !!currentUser,
+    });
 
   // Intersection Observer로 무한 스크롤 구현
   useEffect(() => {
@@ -143,14 +137,14 @@ export const NotificationPage = () => {
           <Button
             variant={filter === 'all' ? 'default' : 'ghost'}
             size='sm'
-            onClick={() => { setFilter('all'); localStorage.setItem('notification-filter', 'all'); }}
+            onClick={() => setFilter('all')}
           >
             전체
           </Button>
           <Button
             variant={filter === 'unread' ? 'default' : 'ghost'}
             size='sm'
-            onClick={() => { setFilter('unread'); localStorage.setItem('notification-filter', 'unread'); }}
+            onClick={() => setFilter('unread')}
           >
             읽지 않음
           </Button>
@@ -172,7 +166,9 @@ export const NotificationPage = () => {
       {notifications.length === 0 ? (
         <div className='rounded-lg border border-gray-200 bg-gray-50 py-12 text-center'>
           <p className='text-gray-600'>
-            {filter === 'unread' ? '읽지 않은 알림이 없습니다' : '알림이 없습니다'}
+            {filter === 'unread'
+              ? '읽지 않은 알림이 없습니다'
+              : '알림이 없습니다'}
           </p>
         </div>
       ) : (
@@ -199,4 +195,4 @@ export const NotificationPage = () => {
       )}
     </div>
   );
-}
+};

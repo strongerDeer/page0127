@@ -2,6 +2,8 @@
 
 import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 
+import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
+
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -140,11 +142,9 @@ export const DashboardBookList = ({
   }, [searchQuery]);
 
   // 정렬 (최신순/오래된순/별점높은순/별점낮은순/제목순)
-  const [sortOption, setSortOption] = useState<string>(
-    () =>
-      (typeof window !== 'undefined'
-        ? localStorage.getItem('dashboard-sort-option')
-        : null) || 'created_at-desc'
+  const [sortOption, setSortOption] = useLocalStorage<string>(
+    'dashboard-sort-option',
+    'created_at-desc'
   );
 
   // useMemo: books/필터 조건이 바뀔 때만 재계산 — 무관한 상태 변경(페이지 이동 등)에서 캐시 반환
@@ -254,7 +254,6 @@ export const DashboardBookList = ({
 
   const handleSortChange = (option: string) => {
     setCurrentPage(1);
-    localStorage.setItem('dashboard-sort-option', option);
     startTabTransition(() => setSortOption(option));
   };
 
