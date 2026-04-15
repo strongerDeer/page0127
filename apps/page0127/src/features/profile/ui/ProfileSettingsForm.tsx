@@ -15,6 +15,7 @@ import { Textarea } from '@/shared/ui/textarea';
 import { updateProfile } from '@/entities/profile/api/updateProfile';
 
 import { DeleteAccountDialog } from '@/features/auth/ui/DeleteAccountDialog';
+import { useAvatarStorage } from '@/features/profile/api/useAvatarStorage';
 
 import { AvatarUpload } from './AvatarUpload';
 
@@ -74,6 +75,7 @@ const ProfileSettingsFormDangerZone = ({
  */
 export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
   const router = useRouter();
+  const { uploadAvatar, removeAvatar } = useAvatarStorage();
 
   // 폼 상태 관리
   const formId = useId();
@@ -106,10 +108,8 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
   // 파일 선택 핸들러 (이미지 제거 포함)
   const handleFileSelect = (file: File | null) => {
     if (file === null && currentPhotoUrl) {
-      // 이미지 제거 (파일이 null이고 기존 이미지가 있는 경우)
       setIsImageRemoved(true);
-      // UI에서 즉시 제거 (깜박임 없음)
-      setCurrentPhotoUrl(null);
+      setCurrentPhotoUrl(null); // 낙관적으로 즉시 제거
     } else {
       setIsImageRemoved(false);
     }
@@ -119,127 +119,18 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
   // 폼 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // 1. 로딩 상태 활성화
     setIsSubmitting(true);
 
     try {
       let photoUrl: string | undefined | null;
-      const { createClient } = await import('@/shared/config/supabase/client');
-      const supabase = createClient();
 
-      // 2. 이미지 제거가 요청된 경우
-      if (isImageRemoved && currentPhotoUrl) {
-        try {
-          // URL에서 파일 경로 추출
-          // Supabase Storage URL 형식:
-          // https://[project].supabase.co/storage/v1/object/public/[bucket]/[path]
-          let oldFilePath: string | null = null;
-
-          // 방법 1: /storage/v1/object/public/profiles/ 이후 경로
-          if (currentPhotoUrl.includes('/storage/v1/object/public/profiles/')) {
-            const urlParts = currentPhotoUrl.split(
-              '/storage/v1/object/public/profiles/'
-            );
-            oldFilePath = urlParts.length > 1 ? urlParts[1] : null;
-          }
-          // 방법 2: /object/public/profiles/ 이후 경로 (짧은 형식)
-          else if (currentPhotoUrl.includes('/object/public/profiles/')) {
-            const urlParts = currentPhotoUrl.split('/object/public/profiles/');
-            oldFilePath = urlParts.length > 1 ? urlParts[1] : null;
-          }
-          // 방법 3: 단순히 /profiles/ 이후 경로
-          else if (currentPhotoUrl.includes('/profiles/')) {
-            const urlParts = currentPhotoUrl.split('/profiles/');
-            oldFilePath = urlParts.length > 1 ? urlParts[1] : null;
-          }
-
-          if (oldFilePath) {
-            console.warn('삭제할 파일 경로:', oldFilePath);
-            const { data: removeData, error: removeError } =
-              await supabase.storage.from('profiles').remove([oldFilePath]);
-
-            console.warn('삭제 결과 data:', removeData);
-            console.warn('삭제 결과 error:', removeError);
-
-            if (removeError) {
-              console.error('Storage 삭제 에러:', removeError);
-              toast.error(`이미지 삭제 실패: ${removeError.message}`);
-            } else {
-              console.warn('Storage 파일 삭제 성공');
-            }
-          }
-          // DB에서 photo_url을 null로 설정하기 위해 빈 문자열 대신 null 사용
-          photoUrl = null;
-        } catch (error) {
-          console.error('이미지 삭제 실패:', error);
-          toast.error('이미지 삭제에 실패했습니다.');
-          setIsSubmitting(false);
-          return;
-        }
-      }
-      // 3. 새 이미지 파일이 선택되었으면 업로드
-      else if (selectedFile) {
-        // 3-1. 기존 이미지가 있으면 삭제
-        if (profile.photo_url) {
-          try {
-            // URL에서 파일 경로 추출
-            // 예: https://xxx.supabase.co/storage/v1/object/public/profiles/avatars/file.png
-            // -> avatars/file.png
-            const urlParts = profile.photo_url.split(
-              '/storage/v1/object/public/profiles/'
-            );
-            const oldFilePath = urlParts.length > 1 ? urlParts[1] : null;
-
-            if (oldFilePath) {
-              console.warn('기존 파일 삭제:', oldFilePath);
-              const { data: removeData, error: removeError } =
-                await supabase.storage.from('profiles').remove([oldFilePath]);
-
-              console.warn('기존 파일 삭제 결과 data:', removeData);
-              console.warn('기존 파일 삭제 결과 error:', removeError);
-
-              if (removeError) {
-                console.error('Storage 삭제 에러:', removeError);
-              } else {
-                console.warn('기존 파일 삭제 성공');
-              }
-            }
-          } catch (error) {
-            console.error('기존 이미지 삭제 실패:', error);
-            // 삭제 실패해도 업로드는 계속 진행
-          }
-        }
-
-        // 2-2. 파일명 생성 (userId + timestamp + 확장자)
-        const fileExt = selectedFile.name.split('.').pop();
-        const fileName = `${profile.id}_${Date.now()}.${fileExt}`;
-        const filePath = `avatars/${fileName}`;
-
-        // 2-3. Supabase Storage에 업로드
-        const { error: uploadError } = await supabase.storage
-          .from('profiles')
-          .upload(filePath, selectedFile, {
-            cacheControl: '3600',
-            upsert: false,
-          });
-
-        if (uploadError) {
-          console.error('업로드 에러:', uploadError);
-          toast.error('이미지 업로드에 실패했습니다.');
-          setIsSubmitting(false);
-          return;
-        }
-
-        // 2-4. Public URL 생성
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from('profiles').getPublicUrl(filePath);
-
-        photoUrl = publicUrl;
+      if (isImageRemoved) {
+        await removeAvatar(profile.photo_url);
+        photoUrl = null;
+      } else if (selectedFile) {
+        photoUrl = await uploadAvatar(selectedFile, profile.id, profile.photo_url);
       }
 
-      // 4. 프로필 업데이트
       const updateData: {
         nickname?: string;
         bio?: string;
@@ -249,7 +140,6 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
         bio: bio.trim() || undefined,
       };
 
-      // 이미지가 제거되었거나 새로 업로드된 경우에만 photo_url 업데이트
       if (isImageRemoved) {
         updateData.photo_url = null;
       } else if (photoUrl) {
@@ -260,16 +150,10 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
 
       if (success) {
         toast.success('프로필이 저장되었습니다.');
-        // 5. 낙관적 업데이트: UI 먼저 업데이트 (깜박임 없음)
-        if (photoUrl !== undefined) {
-          setCurrentPhotoUrl(photoUrl);
-        }
+        if (photoUrl !== undefined) setCurrentPhotoUrl(photoUrl);
         setSelectedFile(null);
         setIsImageRemoved(false);
-        // 6. 백그라운드에서 서버 데이터 동기화
-        setTimeout(() => {
-          router.refresh();
-        }, 100);
+        setTimeout(() => router.refresh(), 100);
       } else {
         toast.error('프로필 저장에 실패했습니다.');
       }
@@ -277,7 +161,6 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
       console.error('프로필 업데이트 오류:', error);
       toast.error('예상치 못한 오류가 발생했습니다.');
     } finally {
-      // 5. 로딩 상태 해제
       setIsSubmitting(false);
     }
   };

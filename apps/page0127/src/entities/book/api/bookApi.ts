@@ -95,4 +95,16 @@ export const bookApi = {
     const response = await apiClient.get<BookStats>(API_ENDPOINTS.books.stats);
     return response.data;
   },
+
+  /**
+   * 책 좋아요 토글
+   * POST /api/books/like
+   */
+  toggleLike: async (bookId: string): Promise<{ liked: boolean }> => {
+    const response = await apiClient.post<{ liked: boolean }>(
+      API_ENDPOINTS.books.like,
+      { bookId }
+    );
+    return response.data;
+  },
 };
