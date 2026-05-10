@@ -1,4 +1,4 @@
-import { ActivityFeed } from '@/features/activity';
+import { ActivityFeed } from '@/widgets/activity';
 
 /**
  * 활동 피드 페이지

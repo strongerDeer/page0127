@@ -1,4 +1,4 @@
-import { ActivityDetail } from '@/features/activity/ui/ActivityDetail';
+import { ActivityDetail } from '@/widgets/activity';
 
 /**
  * 활동 상세 페이지
