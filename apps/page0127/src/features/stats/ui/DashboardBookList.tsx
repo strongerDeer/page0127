@@ -1,13 +1,19 @@
 'use client';
 
-import { useDeferredValue, useEffect, useMemo, useRef, useState, useTransition } from 'react';
-
-import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
+import {
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { mapToMainCategory } from '@/shared/lib/categoryMapper';
+import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
 import { Button } from '@/shared/ui/button';
 import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
 import {
@@ -274,15 +280,18 @@ export const DashboardBookList = ({
       </div>
 
       {/* 상태별 탭 — Compound Component: value/onChange를 Context로 공유 */}
+      {/* shared/ui는 도메인을 모르므로 value는 string. 여기서 BookStatus로 좁힌다 */}
       <StatusTabFilter
         value={statusFilter}
-        onChange={handleStatusChange}
+        onChange={(value) => handleStatusChange(value as BookStatus | 'all')}
         isPending={isTabPending}
       >
         <StatusTabFilter.Tab value='all'>전체</StatusTabFilter.Tab>
         <StatusTabFilter.Tab value='completed'>완독</StatusTabFilter.Tab>
         <StatusTabFilter.Tab value='reading'>읽는 중</StatusTabFilter.Tab>
-        <StatusTabFilter.Tab value='want_to_read'>읽고 싶은</StatusTabFilter.Tab>
+        <StatusTabFilter.Tab value='want_to_read'>
+          읽고 싶은
+        </StatusTabFilter.Tab>
       </StatusTabFilter>
 
       {/* 정렬 옵션 */}
@@ -379,7 +388,12 @@ export const DashboardBookList = ({
         {/* 책 목록 — renderBooks가 있으면 커스텀 렌더링, 없으면 기본 그리드 */}
         {/* isSearchStale: 타이핑 중 아직 반영 안 된 상태 → 흐리게 표시 */}
         {filteredBooks.length > 0 ? (
-          <div style={{ opacity: isSearchStale ? 0.6 : 1, transition: 'opacity 0.15s' }}>
+          <div
+            style={{
+              opacity: isSearchStale ? 0.6 : 1,
+              transition: 'opacity 0.15s',
+            }}
+          >
             {renderBooks ? (
               // 커스텀 렌더러: 선반 레이아웃 등 외부에서 주입
               renderBooks(filteredBooks)

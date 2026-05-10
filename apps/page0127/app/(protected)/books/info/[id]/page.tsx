@@ -8,8 +8,8 @@ import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 
 import { AddToLibraryButton } from '@/widgets/book/ui/AddToLibraryButton';
-import MyBookMemo from '@/widgets/book/ui/MyBookMemo';
-import ReaderProfiles from '@/widgets/book/ui/ReaderProfiles';
+import { MyBookMemo } from '@/widgets/book/ui/MyBookMemo';
+import { ReaderProfiles } from '@/widgets/book/ui/ReaderProfiles';
 
 import { getSupabaseClient } from '@/app/api/_helpers/auth';
 

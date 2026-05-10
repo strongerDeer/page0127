@@ -2,15 +2,12 @@
 
 import { createContext, useContext } from 'react';
 
-import type { BookStatus } from '@/entities/book/types';
-
-// 탭이 가질 수 있는 값 타입
-type StatusValue = BookStatus | 'all';
-
-// Context 타입: 현재 활성 탭 값 + 변경 핸들러
+// FSD: shared 레이어는 도메인을 몰라야 한다
+// → BookStatus(=entities/book) import를 제거하고 string으로 일반화
+// 사용처(features/stats)가 value에 의미를 부여한다
 type StatusTabFilterContextType = {
-  activeValue: StatusValue;
-  onChange: (value: StatusValue) => void;
+  activeValue: string;
+  onChange: (value: string) => void;
   isPending?: boolean;
 };
 
@@ -29,9 +26,9 @@ const useStatusTabFilter = () => {
 
 type StatusTabFilterProps = {
   /** 현재 선택된 탭 값 (controlled: 부모가 상태를 가짐) */
-  value: StatusValue;
+  value: string;
   /** 탭 변경 핸들러 */
-  onChange: (value: StatusValue) => void;
+  onChange: (value: string) => void;
   /** transition 중 탭 전체를 흐리게 (useTransition 연동) */
   isPending?: boolean;
   children: React.ReactNode;
@@ -59,7 +56,7 @@ export const StatusTabFilter = ({
 // ─── 서브 컴포넌트 ────────────────────────────────────────────────
 
 type TabProps = {
-  value: StatusValue;
+  value: string;
   children: React.ReactNode;
 };
 
