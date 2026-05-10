@@ -43,8 +43,8 @@ import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
 import { YearlyTrendChart } from '@/widgets/dashboard/YearlyTrendChart';
 import { PublicBookShelf } from '@/widgets/public-library/PublicBookShelf';
 
-import type { Book, BookStatus } from '@/entities/book/types';
-import type { BookStats, OverallStats } from '@/entities/book/types/stats';
+import type { Book, BookStatus } from '@/entities/book';
+import type { BookStats, OverallStats } from '@/entities/book';
 import type { Profile } from '@/entities/profile/types';
 
 type DashboardContentProps = {

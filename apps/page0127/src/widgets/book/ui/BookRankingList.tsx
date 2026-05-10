@@ -4,7 +4,7 @@ import { Heart } from 'lucide-react';
 
 import { BookListItem } from '@/widgets/book/ui/BookListItem';
 
-import type { BookRanking } from '@/entities/book/types';
+import type { BookRanking } from '@/entities/book';
 
 type BookRankingListProps = {
   title: string;

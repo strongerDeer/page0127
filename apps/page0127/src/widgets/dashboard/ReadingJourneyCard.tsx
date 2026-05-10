@@ -1,7 +1,8 @@
-import { BookOpen, FileText, Calendar, Clock } from 'lucide-react';
+import { BookOpen, Calendar, Clock,FileText } from 'lucide-react';
+
 import { StatCard } from '@/shared/ui/StatCard';
 
-import type { ReadingJourney } from '@/entities/book/types/stats';
+import type { ReadingJourney } from '@/entities/book';
 
 type Props = {
   data: ReadingJourney;

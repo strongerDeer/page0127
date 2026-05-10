@@ -2,12 +2,12 @@ import { notFound } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
 
-import { getBookStats } from '@/entities/book/api/getBookStats';
+import { getBookStats } from '@/entities/book';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 
 import { PublicLibraryContent } from '@/widgets/public-library/PublicLibraryContent';
 
-import type { Book } from '@/entities/book/types';
+import type { Book } from '@/entities/book';
 
 type PageProps = {
   params: Promise<{ username: string }>;

@@ -9,7 +9,7 @@ import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
 
 import { DeleteBookButton } from '@/features/book/ui/DeleteBookButton';
 
-import type { Book } from '@/entities/book/types';
+import type { Book } from '@/entities/book';
 
 /**
  * 도서 상세 페이지 (Server Component)

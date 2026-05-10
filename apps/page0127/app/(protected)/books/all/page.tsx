@@ -14,7 +14,7 @@ import { BookListItem } from '@/widgets/book/ui/BookListItem';
 
 import { getSupabaseClient } from '@/app/api/_helpers/auth';
 
-import type { GlobalBook } from '@/entities/book/types';
+import type { GlobalBook } from '@/entities/book';
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 

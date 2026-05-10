@@ -6,7 +6,7 @@ import { upgradeImageResolution } from '@/shared/lib/imageUtils';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/ui/card';
 
-import type { AladinBook } from '@/entities/book/types';
+import type { AladinBook } from '@/entities/book';
 
 type BookSearchResultCardProps = {
   book: AladinBook;

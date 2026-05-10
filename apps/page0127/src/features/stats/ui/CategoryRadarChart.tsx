@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from 'recharts';
 
-import type { CategoryReadingData } from '@/entities/book/types/stats';
+import type { CategoryReadingData } from '@/entities/book';
 
 type CategoryRadarChartProps = {
   /** 카테고리별 독서량 데이터 */

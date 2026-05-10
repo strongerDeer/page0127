@@ -12,7 +12,7 @@ import { Label } from '@/shared/ui/label';
 import { Switch } from '@/shared/ui/switch';
 import { Textarea } from '@/shared/ui/textarea';
 
-import type { AladinBook, BookRating, BookStatus } from '@/entities/book/types';
+import type { AladinBook, BookRating, BookStatus } from '@/entities/book';
 
 type BookRegistrationFormProps = {
   book: AladinBook;

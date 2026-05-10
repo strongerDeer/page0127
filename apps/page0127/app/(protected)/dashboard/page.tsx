@@ -1,8 +1,8 @@
 import { createClient } from '@/shared/config/supabase/server';
 
-import { getBookStats } from '@/entities/book/api/getBookStats';
-import { getAvailableYears } from '@/entities/book/api/getMyBooks';
-import { getOverallStats } from '@/entities/book/api/getOverallStats';
+import { getBookStats } from '@/entities/book';
+import { getAvailableYears } from '@/entities/book';
+import { getOverallStats } from '@/entities/book';
 import { getProfile, upsertProfile } from '@/entities/profile/api/getProfile';
 
 import { DashboardContent } from '@/widgets/dashboard/DashboardContent';

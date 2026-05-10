@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 import { LikeButton } from './LikeButton';
 
-import type { Book, GlobalBook } from '@/entities/book/types';
+import type { Book, GlobalBook } from '@/entities/book';
 
 import styles from './BookListItem.module.css';
 

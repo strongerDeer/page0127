@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 
 import { Button } from '@/shared/ui/button';
 
-import { bookApi } from '@/entities/book/api/bookApi';
+import { bookApi } from '@/entities/book';
 
 type LikeButtonProps = {
   bookId: string;

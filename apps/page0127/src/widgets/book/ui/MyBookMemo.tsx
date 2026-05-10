@@ -6,7 +6,7 @@ import { Star } from 'lucide-react';
 import { createClient } from '@/shared/config/supabase/server';
 import { Card, CardContent } from '@/shared/ui/card';
 
-import { Book } from '@/entities/book/types';
+import { Book } from '@/entities/book';
 
 type MyBookMemoProps = {
   isbn: string;

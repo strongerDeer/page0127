@@ -10,7 +10,7 @@ import {
   YAxis,
 } from 'recharts';
 
-import type { MonthlyReadingData } from '@/entities/book/types/stats';
+import type { MonthlyReadingData } from '@/entities/book';
 
 type MonthlyReadingChartProps = {
   /** 월별 독서량 데이터 (1-12월) */

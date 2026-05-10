@@ -2,7 +2,7 @@
 
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
-import type { CategoryDistribution } from '@/entities/book/types/stats';
+import type { CategoryDistribution } from '@/entities/book';
 
 type Props = {
   data: CategoryDistribution[];

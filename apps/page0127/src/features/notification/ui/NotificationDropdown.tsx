@@ -21,7 +21,7 @@ import {
   PopoverTrigger,
 } from '@/shared/ui/popover';
 
-import { useUnreadCount, useNotificationRealtime } from '@/entities/notification';
+import { useNotificationRealtime,useUnreadCount } from '@/entities/notification';
 
 import { NotificationList } from './NotificationList';
 

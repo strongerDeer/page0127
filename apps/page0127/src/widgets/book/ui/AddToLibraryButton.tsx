@@ -8,8 +8,8 @@ import { toast } from 'sonner';
 
 import { Button } from '@/shared/ui/button';
 
-import { bookApi } from '@/entities/book/api/bookApi';
-import { GlobalBook } from '@/entities/book/types';
+import { bookApi } from '@/entities/book';
+import { GlobalBook } from '@/entities/book';
 
 type AddToLibraryButtonProps = {
   book: GlobalBook;

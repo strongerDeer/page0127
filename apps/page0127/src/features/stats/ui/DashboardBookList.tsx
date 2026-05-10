@@ -28,8 +28,8 @@ import { StatusTabFilter } from '@/shared/ui/StatusTabFilter';
 import { BookSearchInput, type BookSearchInputHandle } from './BookSearchInput';
 import { CategoryFilter } from './CategoryFilter';
 
-import type { Book, BookStatus } from '@/entities/book/types';
-import type { CategoryReadingData } from '@/entities/book/types/stats';
+import type { Book, BookStatus } from '@/entities/book';
+import type { CategoryReadingData } from '@/entities/book';
 
 type DashboardBookListProps = {
   /** 완독한 책 목록 */

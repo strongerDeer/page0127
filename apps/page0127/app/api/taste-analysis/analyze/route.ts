@@ -4,7 +4,7 @@ import { createClient } from '@/shared/config/supabase/server';
 import { AI_MODEL, MAX_TOKENS, openai, TEMPERATURE } from '@/shared/lib/openai';
 import { createTasteAnalysisPrompt } from '@/shared/lib/openai/prompts/taste-analysis';
 
-import type { Book } from '@/entities/book/types';
+import type { Book } from '@/entities/book';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**

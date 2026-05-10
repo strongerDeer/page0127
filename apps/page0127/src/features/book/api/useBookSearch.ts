@@ -4,7 +4,7 @@ import { useReducer } from 'react';
 
 import { searchBooks } from '@/shared/api/aladin';
 
-import type { AladinBook } from '@/entities/book/types';
+import type { AladinBook } from '@/entities/book';
 
 // ─── State 타입 정의 ───────────────────────────────────────────────
 // 검색과 관련된 모든 상태를 하나의 객체로 관리

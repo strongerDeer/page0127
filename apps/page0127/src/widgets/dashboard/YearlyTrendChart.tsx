@@ -11,7 +11,7 @@ import {
   YAxis,
 } from 'recharts';
 
-import type { YearlyTrend } from '@/entities/book/types/stats';
+import type { YearlyTrend } from '@/entities/book';
 
 type Props = {
   data: YearlyTrend[];

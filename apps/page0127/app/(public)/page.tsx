@@ -1,9 +1,12 @@
 import Link from 'next/link';
 
-import { getSupabaseClient } from '@/app/api/_helpers/auth';
 import { Button } from '@/shared/ui/button';
+
 import { BookRankingList } from '@/widgets/book/ui/BookRankingList';
-import type { BookRanking, GlobalBook } from '@/entities/book/types';
+
+import { getSupabaseClient } from '@/app/api/_helpers/auth';
+
+import type { BookRanking, GlobalBook } from '@/entities/book';
 
 /**
  * 메인 랜딩 페이지

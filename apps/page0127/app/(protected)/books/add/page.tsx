@@ -23,7 +23,7 @@ import { BookSearchPagination } from '@/features/book/ui/BookSearchPagination';
 import { BookSearchResultCard } from '@/features/book/ui/BookSearchResultCard';
 import { DuplicateBookDialog } from '@/features/book/ui/DuplicateBookDialog';
 
-import type { AladinBook, Book } from '@/entities/book/types';
+import type { AladinBook, Book } from '@/entities/book';
 
 /**
  * 도서 추가 페이지

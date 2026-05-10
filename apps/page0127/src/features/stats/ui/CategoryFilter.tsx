@@ -1,6 +1,6 @@
 'use client';
 
-import type { CategoryReadingData } from '@/entities/book/types/stats';
+import type { CategoryReadingData } from '@/entities/book';
 
 type CategoryFilterProps = {
   /** 카테고리별 독서량 데이터 */

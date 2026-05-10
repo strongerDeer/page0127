@@ -6,7 +6,7 @@ import { Button } from '@/shared/ui/button';
 import { CardContent, CardHeader } from '@/shared/ui/card';
 import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
 
-import type { Book } from '@/entities/book/types';
+import type { Book } from '@/entities/book';
 
 type BookCardInfoProps = {
   book: Book;

@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import type { Book } from '@/entities/book/types';
+import type { Book } from '@/entities/book';
 
 type BookCardCoverProps = {
   book: Pick<Book, 'id' | 'title' | 'cover_image'>;

@@ -1,9 +1,9 @@
 'use client';
 
-import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
 import { Star } from 'lucide-react';
+import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
 
-import type { RatingReadingData } from '@/entities/book/types/stats';
+import type { RatingReadingData } from '@/entities/book';
 
 type RatingDoughnutChartProps = {
   /** 평점별 독서량 데이터 */

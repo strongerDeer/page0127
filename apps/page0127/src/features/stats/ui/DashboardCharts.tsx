@@ -10,7 +10,7 @@ import type {
   CategoryReadingData,
   MonthlyReadingData,
   RatingReadingData,
-} from '@/entities/book/types/stats';
+} from '@/entities/book';
 
 type DashboardChartsProps = {
   monthlyReading: MonthlyReadingData[];

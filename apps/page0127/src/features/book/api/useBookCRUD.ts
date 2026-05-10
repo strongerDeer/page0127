@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 
-import { bookApi } from '@/entities/book/api/bookApi';
+import { bookApi } from '@/entities/book';
 
-import type { Book, BookInput } from '@/entities/book/types';
+import type { Book, BookInput } from '@/entities/book';
 
 /**
  * 도서 CRUD Custom Hook

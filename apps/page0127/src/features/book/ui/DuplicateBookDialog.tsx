@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from '@/shared/ui/dialog';
 
-import type { Book } from '@/entities/book/types';
+import type { Book } from '@/entities/book';
 
 type DuplicateBookDialogProps = {
   open: boolean;

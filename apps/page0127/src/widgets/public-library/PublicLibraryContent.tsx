@@ -23,8 +23,8 @@ import { ReadingGoalProgress } from '@/features/stats/ui/ReadingGoalProgress';
 import { PublicBookShelf } from './PublicBookShelf';
 import { PublicLibraryHeader } from './PublicLibraryHeader';
 
-import type { Book, BookStatus } from '@/entities/book/types';
-import type { BookStats } from '@/entities/book/types/stats';
+import type { Book, BookStatus } from '@/entities/book';
+import type { BookStats } from '@/entities/book';
 import type { Profile } from '@/entities/profile/types';
 
 type PublicLibraryContentProps = {

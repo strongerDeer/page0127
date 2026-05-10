@@ -16,7 +16,7 @@ import {
   BookRegistrationForm,
 } from '@/features/book/ui/BookRegistrationForm';
 
-import type { AladinBook, Book } from '@/entities/book/types';
+import type { AladinBook, Book } from '@/entities/book';
 
 type PageProps = {
   params: Promise<{ id: string }>;
