@@ -95,7 +95,7 @@ Week 12-14 → 성능 최적화 + React Compiler
 | 35  | 04/16 ✅ | Custom Hook              | `useBookFilter`, `useBookSearch` 커스텀 훅 추출   | `features/book/` 로직을 컴포넌트에서 분리         |
 | 36  | 04/16 ✅ | Custom Hook 심화         | `useLocalStorage`, `useDebounce` 추출             | `shared/` 레이어에 재사용 훅 구성                 |
 | 37  | 04/16 ✅ | Error Boundary ✨        | Supabase API 실패 시 에러 UI 구현                 | `react-error-boundary` 적용, fallback UI 작성     |
-| 38  | 04/16    | 상태 구조 설계           | 클라이언트 상태 flat vs nested 분석               | Zustand 도입 여부 결정 (vs TanStack Query로 통일) |
+| 38  | 05/11 ✅ | 상태 구조 설계           | 클라이언트 상태 flat vs nested 분석               | Zustand 도입 여부 결정 (vs TanStack Query로 통일) |
 | 39  | 04/17    | Phase 3 복습             | FSD 레이어 다이어그램 그리기                      | entities → features → widgets 의존 방향 검증      |
 
 ---
