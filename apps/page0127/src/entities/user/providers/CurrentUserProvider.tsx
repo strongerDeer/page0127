@@ -2,7 +2,7 @@
 
 import { createContext, useContext } from 'react';
 
-import { useCurrentUser } from '@/entities/user';
+import { useCurrentUser } from '../hooks/useCurrentUser';
 
 // useCurrentUser 훅의 반환 타입에서 data 부분만 추출
 type CurrentUser = { id: string; email: string } | null | undefined;
@@ -28,6 +28,7 @@ type CurrentUserProviderProps = {
 
 // React Query의 useCurrentUser를 한 번만 호출해 트리 전체에 공급
 // → 각 컴포넌트가 개별로 호출할 필요 없음, prop drilling 제거
+// FSD: 사용자 도메인의 컨텍스트이므로 entities/user에 위치
 export const CurrentUserProvider = ({ children }: CurrentUserProviderProps) => {
   const { data: currentUser, isLoading } = useCurrentUser();
 

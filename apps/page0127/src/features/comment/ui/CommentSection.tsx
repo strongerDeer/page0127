@@ -8,8 +8,7 @@ import { MessageSquare } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 
 import { commentApi } from '@/entities/comment';
-
-import { useCurrentUserContext } from '@/features/auth/providers/CurrentUserProvider';
+import { useCurrentUserContext } from '@/entities/user';
 
 import { CommentForm } from './CommentForm';
 import { CommentList } from './CommentList';

@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { QueryProvider } from '@/shared/providers/QueryProvider';
 import { Toaster } from '@/shared/ui/sonner';
 
-import { CurrentUserProvider } from '@/features/auth/providers/CurrentUserProvider';
+import { CurrentUserProvider } from '@/entities/user';
 
 import type { Metadata } from 'next';
 

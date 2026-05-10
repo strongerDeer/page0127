@@ -29,8 +29,7 @@ import {
 import { Textarea } from '@/shared/ui/textarea';
 
 import { Comment, commentApi } from '@/entities/comment';
-
-import { useCurrentUserContext } from '@/features/auth/providers/CurrentUserProvider';
+import { useCurrentUserContext } from '@/entities/user';
 
 import { CommentForm } from './CommentForm';
 
