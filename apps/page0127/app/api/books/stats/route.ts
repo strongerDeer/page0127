@@ -1,4 +1,4 @@
-import { getBookStats } from '@/entities/book';
+import { getBookStats } from '@/entities/book/server';
 
 import { getCurrentUser } from '../../_helpers/auth';
 import {

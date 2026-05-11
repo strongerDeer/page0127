@@ -39,12 +39,24 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 인증되지 않은 사용자가 보호된 페이지에 접근하면 로그인 페이지로 리디렉션
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth')
-  ) {
+  // 보호된 경로 prefix 목록 — app/(protected) 그룹과 동기화한다.
+  // 여기에 누락되더라도 (protected)/layout.tsx 의 가드가 안전망으로 동작한다.
+  const PROTECTED_PREFIXES = [
+    '/dashboard',
+    '/books',
+    '/feed',
+    '/search',
+    '/settings',
+    '/notifications',
+  ];
+
+  const { pathname } = request.nextUrl;
+  const isProtected = PROTECTED_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+
+  // 비로그인 사용자가 보호된 경로에 접근하면 로그인 페이지로 리디렉션
+  if (!user && isProtected) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);

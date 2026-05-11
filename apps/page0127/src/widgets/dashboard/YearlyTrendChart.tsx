@@ -4,7 +4,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -83,7 +82,7 @@ export const YearlyTrendChart = ({ data }: Props) => {
           <Tooltip
             cursor={{fill: 'rgba(0,0,0,0.05)'}}
             contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-            formatter={(value: number) => [`${value}권`, '독서량']}
+            formatter={(value) => [`${value}권`, '독서량']}
             labelFormatter={(label) => `${label}년`}
           />
           <Bar

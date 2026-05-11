@@ -42,8 +42,7 @@ export function useNotificationRealtime(userId: string | undefined) {
           table: 'notifications',
           filter: `user_id=eq.${userId}`, // 내 알림만
         },
-        (payload) => {
-          console.log('[Realtime] 알림 변경 감지:', payload);
+        () => {
           // DB 변경 감지 → 캐시 무효화 → TanStack Query가 자동으로 재요청
           queryClient.invalidateQueries({
             queryKey: notificationKeys.unreadCount(),
@@ -53,12 +52,9 @@ export function useNotificationRealtime(userId: string | undefined) {
           });
         }
       )
-      .subscribe((status) => {
-        console.log('[Realtime] 구독 상태:', status);
-        // SUBSCRIBED  → 정상 연결
-        // TIMED_OUT   → 연결 실패
-        // CHANNEL_ERROR → 에러 (RLS 또는 Realtime 미활성화)
-      });
+      .subscribe();
+    // 구독 상태(SUBSCRIBED / TIMED_OUT / CHANNEL_ERROR)는 필요 시 콜백에서
+    // console.warn 으로 출력해 디버깅한다. (no-console: log 금지)
 
     // 클린업: 컴포넌트 언마운트 시 WebSocket 구독 해제
     // 이게 없으면 페이지를 벗어나도 연결이 계속 살아있다

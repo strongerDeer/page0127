@@ -4,14 +4,13 @@ import { notFound } from 'next/navigation';
 
 import { BookOpen, Star, User } from 'lucide-react';
 
+import { createClient } from '@/shared/config/supabase/server';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 
 import { AddToLibraryButton } from '@/widgets/book/ui/AddToLibraryButton';
 import { MyBookMemo } from '@/widgets/book/ui/MyBookMemo';
 import { ReaderProfiles } from '@/widgets/book/ui/ReaderProfiles';
-
-import { getSupabaseClient } from '@/app/api/_helpers/auth';
 
 import type { GlobalBook } from '@/entities/book';
 
@@ -20,7 +19,7 @@ type PageProps = {
 };
 
 async function getGlobalBook(id: string): Promise<GlobalBook | null> {
-  const supabase = await getSupabaseClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from('global_books')
     .select('*')
@@ -32,7 +31,7 @@ async function getGlobalBook(id: string): Promise<GlobalBook | null> {
 }
 
 async function getBookStats(isbn: string) {
-  const supabase = await getSupabaseClient();
+  const supabase = await createClient();
 
   // 완독 수
   const { count: completedCount } = await supabase
@@ -72,7 +71,7 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
   const stats = await getBookStats(book.isbn);
 
   // Check if in library
-  const supabase = await getSupabaseClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

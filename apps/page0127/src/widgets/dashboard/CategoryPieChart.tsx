@@ -71,11 +71,12 @@ export const CategoryPieChart = ({ data, onCategoryClick }: Props) => {
         </Pie>
         <Tooltip
           contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-          formatter={(value: number, name: string, props: unknown) => {
-            const p = props as { payload?: { percentage: number } };
+          formatter={(value, name, props) => {
+            // recharts Tooltip Formatter: props 에 현재 segment 의 원본 데이터(payload)가 들어 있다.
+            const p = props as unknown as { payload?: { percentage: number } };
             return [
               `${value}권 (${p.payload?.percentage ?? 0}%)`,
-              name,
+              String(name),
             ];
           }}
         />

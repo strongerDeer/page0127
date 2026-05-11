@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { LikeButton } from './LikeButton';
@@ -52,7 +53,7 @@ const BookListItemCover = ({
           {/* 책등 이미지 */}
           <div className={styles.flipCover}>
             {spine ? (
-              <img src={spine} alt='' />
+              <Image src={spine} alt='' width='400' height='400' />
             ) : (
               <div
                 style={{
@@ -66,7 +67,12 @@ const BookListItemCover = ({
           </div>
 
           {/* 앞 표지 */}
-          <img src={cover || '/images/placeholder-cover.png'} alt={title} />
+          <Image
+            src={cover || '/images/placeholder-cover.png'}
+            alt={title}
+            width='400'
+            height='400'
+          />
 
           {/* 읽음 뱃지 */}
           {isRead && (

@@ -79,8 +79,8 @@ export const MonthlyReadingChart = ({
               borderRadius: '8px',
               padding: '8px 12px',
             }}
-            formatter={(value: number) => [`${value}권`, '독서량']}
-            labelFormatter={(label: number) => `${label}월`}
+            formatter={(value) => [`${value}권`, '독서량']}
+            labelFormatter={(label) => `${label}월`}
           />
 
           {/* Bar */}

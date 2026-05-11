@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
 
-import { getBookStats } from '@/entities/book';
+import { getBookStats } from '@/entities/book/server';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 
 import { PublicLibraryContent } from '@/widgets/public-library/PublicLibraryContent';

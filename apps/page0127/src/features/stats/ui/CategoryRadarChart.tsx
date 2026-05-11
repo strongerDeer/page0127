@@ -63,7 +63,7 @@ export const CategoryRadarChart = ({ data }: CategoryRadarChartProps) => {
               borderRadius: '8px',
               padding: '8px 12px',
             }}
-            formatter={(value: number) => [`${value}권`, '독서량']}
+            formatter={(value) => [`${value}권`, '독서량']}
           />
 
           {/* 레이더 */}

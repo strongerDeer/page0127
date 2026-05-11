@@ -43,7 +43,8 @@ export const FollowStats = ({
     });
 
     return unsubscribe;
-  // queryClient는 useQueryClient()가 반환하는 안정적인 싱글톤 객체 → 의존성 불필요
+    // queryClient 는 useQueryClient() 가 반환하는 안정적 싱글톤이라 의존성 배열에서 제외.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (isLoading) {

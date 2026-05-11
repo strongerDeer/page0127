@@ -27,11 +27,10 @@ export type {
   YearlyTrend,
 } from './types/stats';
 
-// 데이터 페칭 API
+// 데이터 페칭 API (클라이언트 안전)
+// 주의: next/headers 에 의존하는 서버 전용 함수는 './server' 에서 별도로 export 한다.
+//       (클라이언트 컴포넌트가 이 배럴을 import 할 때 서버 모듈이 끌려가지 않도록 분리)
 export { bookApi } from './api/bookApi';
-export { getBookStats } from './api/getBookStats';
-export { getAvailableYears, getMyBooks } from './api/getMyBooks';
-export { getOverallStats } from './api/getOverallStats';
 
 // TanStack Query 키
 export { bookKeys } from './model/queryKeys';

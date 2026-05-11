@@ -212,7 +212,7 @@ export const DashboardContent = ({
   overallStats,
   stats,
   books,
-  userEmail,
+  userEmail: _userEmail,
   userId,
   availableYears,
   selectedYear,

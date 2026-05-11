@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { createClient } from '@/shared/config/supabase/server';
 import { Button } from '@/shared/ui/button';
 import {
   Pagination,
@@ -11,8 +12,6 @@ import {
 } from '@/shared/ui/pagination';
 
 import { BookListItem } from '@/widgets/book/ui/BookListItem';
-
-import { getSupabaseClient } from '@/app/api/_helpers/auth';
 
 import type { GlobalBook } from '@/entities/book';
 
@@ -27,7 +26,7 @@ export default async function GlobalBooksPage(props: {
   const sort = (searchParams.sort as string) || 'created_at';
   const order = (searchParams.order as string) || 'desc';
 
-  const supabase = await getSupabaseClient();
+  const supabase = await createClient();
   const from = (page - 1) * limit;
   const to = from + limit - 1;
 
