@@ -1,5 +1,3 @@
-'use client';
-
 import { UserAvatar } from '@/shared/ui/user-avatar';
 import { UserLink } from '@/shared/ui/user-link';
 

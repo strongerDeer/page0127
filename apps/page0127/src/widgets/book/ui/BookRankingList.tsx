@@ -1,5 +1,3 @@
-'use client';
-
 import { Heart } from 'lucide-react';
 
 import { BookListItem } from '@/widgets/book/ui/BookListItem';

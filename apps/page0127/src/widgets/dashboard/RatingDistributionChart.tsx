@@ -1,5 +1,3 @@
-'use client';
-
 import type { RatingDistribution } from '@/entities/book';
 
 type Props = {
