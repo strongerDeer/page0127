@@ -109,7 +109,7 @@ Week 12-14 → 성능 최적화 + React Compiler
 | 40  | 05/12 ✅ | App Router 라우트 구조 재파악  | `app/` 디렉토리 전체 흐름 도식화             | `(auth)` / `(public)` / `(protected)` 그룹 이해 |
 | 41  | 05/18 ✅ | Server Component 최적화        | 현재 SC에서 데이터 패칭 로직 점검            | 불필요하게 `'use client'`인 컴포넌트 찾기       |
 | 42  | 05/18 ✅ | Client Component 경계          | CC 범위 최소화 리팩토링                      | 인터랙션 없는 컴포넌트를 SC로 전환              |
-| 43  | 04/21 | lazy + Suspense ✨             | 통계 차트(Recharts)를 `lazy`로 코드 스플리팅 | 초기 번들 크기 감소 확인                        |
+| 43  | 05/18 ✅ | lazy + Suspense ✨             | 통계 차트(Recharts)를 `lazy`로 코드 스플리팅 | 초기 번들 크기 감소 확인                        |
 | 44  | 04/22 | 데이터 패칭 패턴               | `fetch` + `cache`, `revalidate` 옵션 실습    | 책 목록 캐싱 전략 적용                          |
 | 45  | 04/22 | loading.tsx / Suspense         | `loading.tsx`로 스켈레톤 UI 구현             | 책장 로딩 스켈레톤 카드                         |
 | 46  | 04/23 | TanStack Query — queryKey 설계 | 현재 `useQuery` 패턴 전수 조사               | queryKey 네이밍 컨벤션 통일                     |
