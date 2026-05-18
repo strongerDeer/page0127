@@ -2,6 +2,7 @@
 
 import { useReducer, useState, useTransition } from 'react';
 
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 
 import { useQuery } from '@tanstack/react-query';
@@ -32,7 +33,6 @@ import { StatsPageLayout } from '@/shared/ui/StatsPageLayout';
 
 import { ReadingGoalDialog } from '@/features/profile/ui/ReadingGoalDialog';
 import { DashboardBookList } from '@/features/stats/ui/DashboardBookList';
-import { DashboardCharts } from '@/features/stats/ui/DashboardCharts';
 import { ReadingGoalProgress } from '@/features/stats/ui/ReadingGoalProgress';
 
 import {
@@ -40,8 +40,35 @@ import {
   ReadingCalendar,
 } from '@/widgets/dashboard/ReadingCalendar';
 import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
-import { YearlyTrendChart } from '@/widgets/dashboard/YearlyTrendChart';
 import { PublicBookShelf } from '@/widgets/public-library/PublicBookShelf';
+
+// Recharts는 브라우저 measure가 필요한 클라이언트 전용 라이브러리
+// → next/dynamic + ssr:false 로 분리해서 초기 번들에서 제외
+const DashboardCharts = dynamic(
+  () =>
+    import('@/features/stats/ui/DashboardCharts').then(
+      (m) => m.DashboardCharts
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className='h-[700px] animate-pulse rounded-3xl bg-white/40' />
+    ),
+  }
+);
+
+const YearlyTrendChart = dynamic(
+  () =>
+    import('@/widgets/dashboard/YearlyTrendChart').then(
+      (m) => m.YearlyTrendChart
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className='h-[300px] animate-pulse rounded-lg bg-white/40' />
+    ),
+  }
+);
 
 import type { Book, BookStatus } from '@/entities/book';
 import type { BookStats, OverallStats } from '@/entities/book';

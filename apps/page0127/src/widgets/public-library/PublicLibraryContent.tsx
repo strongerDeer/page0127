@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 
 import { BookOpen, Calendar, FileText, Star, Trophy } from 'lucide-react';
@@ -17,8 +18,21 @@ import { StatCard } from '@/shared/ui/StatCard';
 import { StatsPageLayout } from '@/shared/ui/StatsPageLayout';
 
 import { DashboardBookList } from '@/features/stats/ui/DashboardBookList';
-import { DashboardCharts } from '@/features/stats/ui/DashboardCharts';
 import { ReadingGoalProgress } from '@/features/stats/ui/ReadingGoalProgress';
+
+// Recharts 차트 묶음 → 초기 번들에서 제외
+const DashboardCharts = dynamic(
+  () =>
+    import('@/features/stats/ui/DashboardCharts').then(
+      (m) => m.DashboardCharts
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className='h-[700px] animate-pulse rounded-3xl bg-white/40' />
+    ),
+  }
+);
 
 import { PublicBookShelf } from './PublicBookShelf';
 import { PublicLibraryHeader } from './PublicLibraryHeader';
