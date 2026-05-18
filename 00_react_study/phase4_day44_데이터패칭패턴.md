@@ -46,43 +46,64 @@ revalidateTag('books'); // 'books' 태그 붙은 모든 fetch 캐시 무효화
 
 ---
 
-## 3. page0127 실제 코드 사례
+## 3. page0127 전수 조사 결과
 
-### 현재 코드 — 캐시 옵션 없음
+프로젝트 전체에서 데이터 패칭 패턴을 4가지로 분류했다.
 
-[app/api/books/search/route.ts:44](../apps/page0127/app/api/books/search/route.ts#L44)
+| 분류 | 위치 | Next 캐시 적용 가능? |
+|------|------|---------------------|
+| ① 외부 API fetch (알라딘) | `app/api/books/search`, `detail`, `taste-analysis/analyze` | ✅ 효과 큼 |
+| ② Server Component → Supabase | `app/(protected)/**/page.tsx` | △ `unstable_cache` 필요, 위험 |
+| ③ Mutation route (POST/PATCH/DELETE) | 17개 라우트 | `revalidateTag` 호출 지점 |
+| ④ Client fetch | `books/add/page.tsx` 등 | ❌ TanStack Query 영역 |
+
+### 캐싱이 효과 큰 영역 = 공용 + 거의 안 변함
+
+| 데이터 특성 | 캐싱 효과 | page0127 사례 |
+|------------|---------|--------------|
+| 공용 + 거의 안 변함 | 매우 큼 ⭐ | **알라딘 메타데이터** |
+| 공용 + 자주 변함 | 중간 | 책 인기 랭킹 |
+| 유저별 + 거의 안 변함 | 작음 | 유저 프로필 |
+| 유저별 + 자주 변함 | 거의 없거나 손해 ❌ | 내 책 목록, 대시보드 |
+
+→ **이번엔 ①만 적용. ②는 유저별 데이터라 캐시 키에 userId 박아야 하고, 무효화 누락 시 stale 버그 + 보안 위험.**
+
+---
+
+## 4. 이번에 적용한 변경
+
+### ① [app/api/books/search/route.ts:43-46](../apps/page0127/app/api/books/search/route.ts#L43)
 
 ```typescript
-const response = await fetch(url);
-// → 기본값: dynamic route(searchParams 사용)이므로 자동으로 no-store처럼 동작
-```
-
-이 라우트는 `request.nextUrl.searchParams`를 쓰기 때문에 Next가 **dynamic route**로 인식해서 매 요청마다 알라딘 API를 호출한다. **검색은 매번 다른 쿼리가 들어오니 맞는 동작**이지만, **인기 쿼리는 캐싱하면 알라딘 API 호출량을 줄일 수 있다**.
-
-### 개선안 — 검색 결과 짧게 캐싱
-
-```typescript
-// 동일한 query+page 조합은 1시간 캐시
+// 같은 검색어+페이지 조합은 1시간 캐시 (알라딘 API 호출량 절감)
 const response = await fetch(url, {
   next: { revalidate: 3600 },
 });
 ```
 
-### 개선안 — 도서 상세는 길게 캐싱
-
-[app/api/books/detail/route.ts:41](../apps/page0127/app/api/books/detail/route.ts#L41)
+### ② [app/api/books/detail/route.ts:40-43](../apps/page0127/app/api/books/detail/route.ts#L40)
 
 ```typescript
-// 도서 상세 정보는 거의 안 바뀌므로 하루 캐시
+// 도서 상세 정보(제목, 저자, 목차)는 거의 변하지 않음 → 24시간 캐시
 const response = await fetch(url, {
-  next: {
-    revalidate: 86400, // 24시간
-    tags: [`book-${isbn}`], // 특정 도서만 무효화 가능
-  },
+  next: { revalidate: 86400 },
 });
 ```
 
-도서 정보(제목, 저자, 목차)는 한 번 발행되면 거의 변하지 않는다. 캐싱 효과가 가장 큰 영역.
+### ③ [app/api/taste-analysis/analyze/route.ts:223-227](../apps/page0127/app/api/taste-analysis/analyze/route.ts#L223)
+
+```typescript
+// 같은 추천 키워드로 알라딘 검색 시 24시간 동안 캐시 재사용
+const response = await fetch(url, {
+  next: { revalidate: 86400 },
+});
+```
+
+### `tags`를 안 붙인 이유
+
+알라딘 데이터는 **우리가 못 바꾸는 외부 데이터**라 `revalidateTag`를 호출할 비즈니스 이벤트가 없다. 태그만 붙이고 무효화 호출이 없으면 의미 없는 코드. 시간 기반 `revalidate`만으로 충분.
+
+→ 추후 **"책 정보 새로고침"** 버튼처럼 무효화 트리거가 생기면 그때 태그 추가.
 
 ### Client → Server Route → 외부 API 흐름
 
@@ -100,24 +121,35 @@ const response = await fetch(url); // /api/books/search
 
 ---
 
-## 4. 규칙
+## 5. 규칙
 
-> **fetch에 캐시 의도를 명시하라.** 기본값에 의존하면 라우트가 dynamic이냐 static이냐에 따라 동작이 달라져 디버깅이 어렵다.
-
----
-
-## 5. 오늘 실험
-
-### 실험 1 — 도서 상세 캐싱 적용
-
-[app/api/books/detail/route.ts:41](../apps/page0127/app/api/books/detail/route.ts#L41)에 `next: { revalidate: 86400, tags: ['book-detail'] }`을 추가하고, 같은 ISBN을 두 번 요청해 네트워크 탭에서 두 번째 요청이 빠른지 확인한다.
-
-### 실험 2 — 검색 캐시 vs 신선도 비교
-
-검색 API에 `revalidate: 60`을 적용 후, 같은 검색어를 1분 이내 / 1분 후에 호출해서 응답 시간을 비교한다. 알라딘 API 호출 로그(`console.log('알라딘 fetch')`)를 route.ts에 임시로 심어 캐시 적중 여부 확인.
+> **캐싱은 데이터 특성에 맞게.** "유저별 + 자주 변함" 데이터에 캐시 추가는 손해. 캐싱 win은 "공용 + 거의 안 변함" 영역(외부 API 메타데이터)에 있다.
 
 ---
 
-## 6. 다음 Day 예고
+## 6. 다른 안을 안 택한 이유
+
+### B안 (revalidate + tags + revalidateTag 호출)을 안 택한 이유
+
+알라딘 데이터는 우리가 못 바꾸는 외부 데이터 → `revalidateTag` 호출할 비즈니스 이벤트가 없음. 태그만 박아두면 무용한 코드.
+
+### C안 (Supabase까지 unstable_cache)을 안 택한 이유
+
+1. **유저별 데이터** → 캐시 키에 userId 박아야 함 → 적중률 ↓
+2. **mutation 17곳에 `revalidateTag` 박아야 함** → 한 곳이라도 누락하면 "내 책 안 보임" stale 버그
+3. **보안 위험** → 캐시 키 설계 실수 시 다른 유저 데이터 노출 (RLS 우회)
+4. **TanStack Query와 이중 캐싱** → 동기화 부담 ↑
+
+---
+
+## 7. 동작 검증 방법
+
+1. `dev server` 띄우고 `/books/search?query=토지` 두 번 호출 → 두 번째는 즉시 응답
+2. 책 상세 페이지 두 번 진입 → 두 번째는 네트워크 탭에서 캐시 적중
+3. 임시로 `console.log('알라딘 호출')`을 fetch 직전에 박으면 두 번째 요청에서 안 찍힘
+
+---
+
+## 8. 다음 Day 예고
 
 **Day 45 — loading.tsx / Suspense**: 데이터 패칭 중 스켈레톤 UI 표시. 책장 로딩 스켈레톤 카드 구현.
