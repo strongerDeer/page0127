@@ -31,9 +31,10 @@ grep -n "✅" 00_react_study/00_STUDY_SCHEDULE.md | tail -1
 
 ### Step 4 — MD 작성
 
-파일 경로: `00_react_study/phase2_dayNN_주제.md`
+파일 경로: `00_react_study/phaseN_dayNN_주제.md`
 
 MD 구성 (간결하게):
+
 1. 오늘 읽을 코드 (파일 링크)
 2. 핵심 개념 (짧게, 코드 예시 포함)
 3. page0127 실제 코드 사례 (읽은 파일 기준)
@@ -44,22 +45,6 @@ MD 구성 (간결하게):
 ### Step 5 — 스케줄 업데이트
 
 해당 Day 날짜 옆에 ✅ 추가. 날짜는 `오늘 날짜(CLAUDE.md의 currentDate)`로.
-
-### Step 6 — 커밋 메시지 제공
-
-```bash
-git add 00_react_study/phase2_dayNN_주제.md 00_react_study/00_STUDY_SCHEDULE.md
-git commit -m "$(cat <<'EOF'
-✏️ Study: Day NN — 주제
-
-한 줄 요약
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
-EOF
-)"
-```
-
----
 
 ## 토큰 절약 규칙
 
