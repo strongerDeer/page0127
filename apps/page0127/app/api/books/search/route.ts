@@ -41,7 +41,10 @@ export async function GET(request: NextRequest) {
   const url = `${ALADIN_API_BASE_URL}?${params.toString()}`;
 
   try {
-    const response = await fetch(url);
+    // 같은 검색어+페이지 조합은 1시간 캐시 (알라딘 API 호출량 절감)
+    const response = await fetch(url, {
+      next: { revalidate: 3600 },
+    });
 
     if (!response.ok) {
       throw new Error(`알라딘 API 오류: ${response.status}`);

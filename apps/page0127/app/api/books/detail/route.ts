@@ -38,7 +38,10 @@ export async function GET(request: NextRequest) {
   const url = `${ALADIN_API_BASE_URL}?${params.toString()}`;
 
   try {
-    const response = await fetch(url);
+    // 도서 상세 정보(제목, 저자, 목차)는 거의 변하지 않음 → 24시간 캐시
+    const response = await fetch(url, {
+      next: { revalidate: 86400 },
+    });
 
     if (!response.ok) {
       throw new Error(`알라딘 API 오류: ${response.status}`);

@@ -221,7 +221,10 @@ async function enrichRecommendationsWithAladinData(
       });
 
       const url = `${ALADIN_API_BASE_URL}?${params.toString()}`;
-      const response = await fetch(url);
+      // 같은 추천 키워드로 알라딘 검색 시 24시간 동안 캐시 재사용
+      const response = await fetch(url, {
+        next: { revalidate: 86400 },
+      });
 
       if (!response.ok) {
         console.error(`알라딘 API 실패 (${rec.title}):`, response.status);
