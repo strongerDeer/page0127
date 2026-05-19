@@ -5,7 +5,6 @@ import { useReducer, useState, useTransition } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 
-import { useQuery } from '@tanstack/react-query';
 import { BookOpen, CheckCircle, FileText, Target } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -35,10 +34,6 @@ import { ReadingGoalDialog } from '@/features/profile/ui/ReadingGoalDialog';
 import { DashboardBookList } from '@/features/stats/ui/DashboardBookList';
 import { ReadingGoalProgress } from '@/features/stats/ui/ReadingGoalProgress';
 
-import {
-  type CalendarData as ReadingCalendarData,
-  ReadingCalendar,
-} from '@/widgets/dashboard/ReadingCalendar';
 import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
 import { PublicBookShelf } from '@/widgets/public-library/PublicBookShelf';
 
@@ -102,20 +97,8 @@ type DashboardContentProps = {
   /** 현재 연도 */
   currentYear: number;
 
-  /** 독서 캘린더 데이터 */
-  calendarData: ReadingCalendarData[];
-
-  /** 캘린더 요약 정보 */
-  calendarSummary: {
-    totalBooks: number;
-    totalPages: number;
-  };
-
-  /** 캘린더 초기 연도 */
-  initialCalendarYear: number;
-
-  /** 캘린더 초기 월 */
-  initialCalendarMonth: number;
+  /** Calendar 영역 슬롯 — page.tsx에서 <Suspense>로 감싸 주입 */
+  calendarSlot: React.ReactNode;
 };
 
 // ─── 필터 상태 ─────────────────────────────────────────────────────
@@ -187,37 +170,6 @@ const filterReducer = (
   }
 };
 
-// ─── 캘린더 상태 ──────────────────────────────────────────────────
-// useReducer를 쓰는 이유:
-//   PREV_MONTH 액션 하나로 year+month 동시 갱신 (원자적)
-//   useState 2개라면 month=1일 때 setMonth(12) + setYear(y-1) 두 번 호출 필요
-type CalendarState = {
-  calendarYear: number;
-  calendarMonth: number;
-};
-
-type CalendarAction = { type: 'PREV_MONTH' } | { type: 'NEXT_MONTH' };
-
-const calendarReducer = (
-  state: CalendarState,
-  action: CalendarAction
-): CalendarState => {
-  switch (action.type) {
-    case 'PREV_MONTH':
-      if (state.calendarMonth === 1) {
-        return { calendarYear: state.calendarYear - 1, calendarMonth: 12 };
-      }
-      return { ...state, calendarMonth: state.calendarMonth - 1 };
-    case 'NEXT_MONTH':
-      if (state.calendarMonth === 12) {
-        return { calendarYear: state.calendarYear + 1, calendarMonth: 1 };
-      }
-      return { ...state, calendarMonth: state.calendarMonth + 1 };
-    default:
-      return state;
-  }
-};
-
 /**
  * 대시보드 컨텐츠 (Client Component)
  *
@@ -245,10 +197,7 @@ export const DashboardContent = ({
   selectedYear,
   profile,
   currentYear,
-  calendarData,
-  calendarSummary,
-  initialCalendarYear,
-  initialCalendarMonth,
+  calendarSlot,
 }: DashboardContentProps) => {
   const router = useRouter();
 
@@ -269,17 +218,6 @@ export const DashboardContent = ({
     statusFilter,
   } = filterState;
 
-  // ─── 캘린더 상태 (year/month) ──────────────────────────────────────
-  // useReducer를 쓰는 이유:
-  //   - PREV_MONTH 액션 하나로 year+month 동시 갱신 (원자적)
-  //   - useState 2개라면 calendarMonth=1일 때 setMonth(12) + setYear(y-1) 두 번 필요
-  const [calendarState, calendarDispatch] = useReducer(calendarReducer, {
-    calendarYear: initialCalendarYear,
-    calendarMonth: initialCalendarMonth,
-  });
-
-  const { calendarYear, calendarMonth } = calendarState;
-
   // 단순 boolean은 useState가 적합 — useReducer는 복합 상태에 써야 의미 있음
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -288,51 +226,6 @@ export const DashboardContent = ({
   // 차트 클릭 시 필터 dispatch를 직접 호출 → useTransition 적합
   // 월/평점 필터 변경은 급하지 않음 — 입력 응답성을 해치지 않도록 우선순위 낮춤
   const [isFilterPending, startFilterTransition] = useTransition();
-
-  // 남용 패턴 제거: useEffect + fetch + useState 3개 → useQuery 1개로 교체
-  //
-  // 기존 문제점:
-  //   1. useState(loading) + useState(data) + useState(summary) — 3개 직접 관리
-  //   2. useEffect 안에서 fetch — 값 변화가 원인인데 TanStack Query가 처리할 수 있는 패턴
-  //   3. 에러를 console.error만으로 처리 — 사용자에게 에러 표시 없음
-  //   4. 캐싱 없음 — 같은 달 다시 이동해도 매번 fetch
-  //   5. "초기 렌더링이 아닐 때만" 분기 — 복잡한 조건 필요
-  //
-  // 개선 결과:
-  //   - queryKey가 바뀌면 자동 fetch (calendarYear/calendarMonth)
-  //   - isLoading / isError 자동 관리
-  //   - 같은 달 다시 이동 시 캐시에서 즉시 반환
-  //   - initialData로 서버 데이터 활용 → 첫 렌더링 추가 fetch 없음
-  const { data: calendarResult, isLoading: calendarLoading } = useQuery({
-    queryKey: ['calendar', calendarYear, calendarMonth],
-    queryFn: async () => {
-      const response = await fetch(
-        `/api/books/calendar?year=${calendarYear}&month=${calendarMonth}`
-      );
-      const result = await response.json();
-      if (!result.success) throw new Error('캘린더 데이터 조회 실패');
-      return result as {
-        data: ReadingCalendarData[];
-        summary: { totalBooks: number; totalPages: number };
-      };
-    },
-    // 서버에서 받은 초기 데이터 활용 — 초기 연도/월과 일치하면 추가 fetch 없음
-    initialData:
-      calendarYear === initialCalendarYear &&
-      calendarMonth === initialCalendarMonth
-        ? { data: calendarData, summary: calendarSummary }
-        : undefined,
-  });
-
-  const currentCalendarData = calendarResult?.data ?? [];
-  const currentCalendarSummary = calendarResult?.summary ?? {
-    totalBooks: 0,
-    totalPages: 0,
-  };
-
-  // 캘린더 이전/다음 달 이동 → dispatch 한 번으로 year+month 원자적 갱신
-  const handlePreviousMonth = () => calendarDispatch({ type: 'PREV_MONTH' });
-  const handleNextMonth = () => calendarDispatch({ type: 'NEXT_MONTH' });
 
   // 독서 목표 데이터
   const readingGoal = profile?.reading_goal;
@@ -588,18 +481,8 @@ export const DashboardContent = ({
 
       {/* Bottom Section: Calendar & Detail List */}
       <div className='space-y-6'>
-        {/* Calendar */}
-        <div className='rounded-3xl border border-white/40 bg-white/60 shadow-xl backdrop-blur-xl overflow-hidden'>
-          <ReadingCalendar
-            data={currentCalendarData}
-            summary={currentCalendarSummary}
-            currentYear={calendarYear}
-            currentMonth={calendarMonth}
-            isLoading={calendarLoading}
-            onPreviousMonth={handlePreviousMonth}
-            onNextMonth={handleNextMonth}
-          />
-        </div>
+        {/* Calendar — Suspense로 감싸 별도 스트리밍 (page.tsx에서 주입) */}
+        {calendarSlot}
 
         {/* Book List */}
         <div className='rounded-3xl border border-white/40 bg-white/60 p-1 shadow-xl backdrop-blur-xl'>

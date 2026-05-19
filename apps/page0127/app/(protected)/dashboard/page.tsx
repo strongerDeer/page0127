@@ -1,3 +1,5 @@
+import { Suspense } from 'react';
+
 import { createClient } from '@/shared/config/supabase/server';
 
 import {
@@ -7,6 +9,8 @@ import {
 } from '@/entities/book/server';
 import { getProfile, upsertProfile } from '@/entities/profile/api/getProfile';
 
+import { CalendarBlockSkeleton } from '@/widgets/dashboard/CalendarBlockSkeleton';
+import { CalendarSection } from '@/widgets/dashboard/CalendarSection';
 import { DashboardContent } from '@/widgets/dashboard/DashboardContent';
 
 /**
@@ -14,9 +18,8 @@ import { DashboardContent } from '@/widgets/dashboard/DashboardContent';
  *
  * 학습 포인트:
  * - Server Component에서 데이터 페칭
- * - 데이터를 Client Component로 전달
- * - Server/Client Component 분리 패턴
  * - URL 쿼리 파라미터로 연도 필터링
+ * - Calendar 영역은 <Suspense>로 분리 → 페이지 본체보다 늦게 도착해도 됨
  * - (protected) layout.tsx에서 인증 체크하므로 여기서는 불필요
  */
 const DashboardPage = async (props: {
@@ -25,37 +28,28 @@ const DashboardPage = async (props: {
   const supabase = await createClient();
   const searchParams = await props.searchParams;
 
-  // 현재 로그인한 사용자 정보 조회
-  // layout.tsx에서 이미 인증 체크했으므로 user는 항상 존재
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 사용 가능한 연도 목록 조회
   const availableYears = await getAvailableYears(user!.id);
 
-  // URL에서 연도 파라미터 추출 (기본값: 현재 연도)
   const currentYear = new Date().getFullYear();
   const selectedYear = searchParams.year
     ? parseInt(searchParams.year, 10)
     : availableYears.includes(currentYear)
       ? currentYear
-      : (availableYears[0] ?? currentYear); // 현재 연도에 데이터가 없으면 최신 연도, 데이터가 없으면 현재 연도
+      : (availableYears[0] ?? currentYear);
 
-  // 프로필 조회 (프로필이 없으면 자동 생성)
   let profile = await getProfile(user!.id);
   if (!profile) {
     await upsertProfile(user!.id, user!.email!);
     profile = await getProfile(user!.id);
   }
 
-  // 전체 독서 통계 조회 (연도 무관)
   const overallStats = await getOverallStats(user!.id);
-
-  // 통계 데이터 조회 (연도 필터 적용)
   const stats = await getBookStats(user!.id, selectedYear);
 
-  // 모든 책 목록 조회 (탭용 - 연도 필터 없음)
   const { data: allBooks } = await supabase
     .from('books')
     .select('*')
@@ -63,75 +57,6 @@ const DashboardPage = async (props: {
     .order('created_at', { ascending: false });
 
   const books = allBooks ?? [];
-
-  // 현재 월의 캘린더 데이터 조회 (Server Component에서 직접 조회)
-  const now = new Date();
-  const currentMonthYear = now.getFullYear();
-  const currentMonthMonth = now.getMonth() + 1;
-
-  // 날짜 범위 계산
-  const startDate = `${currentMonthYear}-${String(currentMonthMonth).padStart(2, '0')}-01`;
-  const endDate = new Date(currentMonthYear, currentMonthMonth, 0)
-    .toISOString()
-    .split('T')[0];
-
-  // 완독한 책 조회 (completed_date 기준)
-  const { data: calendarBooks } = await supabase
-    .from('books')
-    .select('id, title, author, cover_image, rating, completed_date, page_count')
-    .eq('user_id', user!.id)
-    .eq('status', 'completed')
-    .not('completed_date', 'is', null) // completed_date가 null이 아닌 것만
-    .gte('completed_date', startDate)
-    .lte('completed_date', endDate)
-    .order('completed_date', { ascending: true });
-
-  // 날짜별로 책 그룹핑
-  const booksByDate = new Map<
-    string,
-    Array<{
-      id: string;
-      title: string;
-      author: string;
-      cover_image: string | null;
-      rating: number | null;
-    }>
-  >();
-  let totalPages = 0;
-
-  calendarBooks?.forEach((book) => {
-    const date = book.completed_date;
-    if (!booksByDate.has(date)) {
-      booksByDate.set(date, []);
-    }
-    booksByDate.get(date)!.push({
-      id: book.id,
-      title: book.title,
-      author: book.author,
-      cover_image: book.cover_image,
-      rating: book.rating,
-    });
-
-    if (book.page_count) {
-      totalPages += book.page_count;
-    }
-  });
-
-  const calendarData = Array.from(booksByDate.entries()).map(([date, books]) => ({
-    date,
-    books: books as unknown as Array<{
-      id: string;
-      title: string;
-      author: string;
-      cover: string;
-      rating: number;
-    }>,
-  }));
-
-  const calendarSummary = {
-    totalBooks: calendarBooks?.length || 0,
-    totalPages,
-  };
 
   return (
     <DashboardContent
@@ -144,10 +69,12 @@ const DashboardPage = async (props: {
       selectedYear={selectedYear}
       profile={profile}
       currentYear={currentYear}
-      calendarData={calendarData}
-      calendarSummary={calendarSummary}
-      initialCalendarYear={currentMonthYear}
-      initialCalendarMonth={currentMonthMonth}
+      // Calendar 영역은 외부에서 주입 (Suspense로 감싸 별도 스트리밍)
+      calendarSlot={
+        <Suspense fallback={<CalendarBlockSkeleton />}>
+          <CalendarSection userId={user!.id} />
+        </Suspense>
+      }
     />
   );
 };
