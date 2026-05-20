@@ -1,42 +1,32 @@
+import { Suspense } from 'react';
+
 import Link from 'next/link';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { Button } from '@/shared/ui/button';
 
-import { BookRankingList } from '@/widgets/book/ui/BookRankingList';
-
-import type { BookRanking, GlobalBook } from '@/entities/book';
+import { BookRankingListSkeleton } from '@/widgets/book/ui/BookRankingListSkeleton';
+import { BookRankingSection } from '@/widgets/book/ui/BookRankingSection';
 
 /**
  * 메인 랜딩 페이지
  *
  * 학습 포인트:
  * - Server Component Data Fetching
- * - Suspense & Streaming (추후 적용 가능)
- * - Supabase RPC 호출
+ * - Suspense & Streaming — 두 랭킹을 각각 별도 Suspense로 감싸
+ *   직렬 await가 아닌 병렬 스트리밍으로 도착
+ * - user-specific 데이터(읽음/좋아요)는 가벼우므로 페이지에서 한 번만 fetch
  */
 const Home = async () => {
   const supabase = await createClient();
 
-  // 1. 인생책 (평점 10점) 조회
-  const { data: booksOfLifeData } = await supabase.rpc('get_books_of_life', {
-    limit_count: 5,
-  });
-
-  // 2. 완독왕 (가장 많이 읽은 책) 조회
-  const { data: mostReadBooksData } = await supabase.rpc(
-    'get_most_read_books',
-    {
-      limit_count: 5,
-    }
-  );
-
-  // User Data Fetching for UI states
+  // User-specific UI 상태만 페이지에서 직접 fetch (랭킹 RPC와 무관)
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const myReadIsbns = new Set<string>();
-  const myLikedIds = new Set<string>();
+
+  const myReadIsbns: string[] = [];
+  const myLikedIds: string[] = [];
 
   if (user) {
     const { data: myBooks } = await supabase
@@ -44,37 +34,16 @@ const Home = async () => {
       .select('isbn')
       .eq('user_id', user.id)
       .eq('status', 'completed');
-    if (myBooks)
-      myBooks.forEach((b: { isbn: string | null }) => {
-        if (b.isbn) myReadIsbns.add(b.isbn);
-      });
+    myBooks?.forEach((b: { isbn: string | null }) => {
+      if (b.isbn) myReadIsbns.push(b.isbn);
+    });
 
     const { data: myLikes } = await supabase
       .from('book_likes')
       .select('book_id')
       .eq('user_id', user.id);
-    if (myLikes)
-      myLikes.forEach((l: { book_id: string }) => myLikedIds.add(l.book_id));
+    myLikes?.forEach((l: { book_id: string }) => myLikedIds.push(l.book_id));
   }
-
-  // RPC 결과는 JSONB → 런타임 모양만 타입으로 좁힌다.
-  type RankingRow = { isbn: string; count: number; book_info: unknown };
-
-  const booksOfLife: BookRanking[] = (booksOfLifeData || []).map(
-    (item: RankingRow) => ({
-      isbn: item.isbn,
-      count: item.count,
-      book_info: item.book_info as GlobalBook,
-    })
-  );
-
-  const mostReadBooks: BookRanking[] = (mostReadBooksData || []).map(
-    (item: RankingRow) => ({
-      isbn: item.isbn,
-      count: item.count,
-      book_info: item.book_info as GlobalBook,
-    })
-  );
 
   return (
     <div className='min-h-screen bg-background'>
@@ -102,33 +71,29 @@ const Home = async () => {
         </div>
       </section>
 
-      {/* Rankings Section */}
+      {/* Rankings Section — 각 랭킹은 독립적으로 스트리밍 */}
       <div className='container mx-auto max-w-6xl px-4'>
-        {/* 인생책 랭킹 */}
-        {booksOfLife.length > 0 && (
-          <BookRankingList
+        <Suspense fallback={<BookRankingListSkeleton />}>
+          <BookRankingSection
+            type='best'
             title='🏆 독자들이 선택한 인생책'
             subTitle='가장 많은 10점 평점을 받은 명작들입니다.'
-            books={booksOfLife}
-            type='best'
-            myReadIsbns={Array.from(myReadIsbns)}
-            myLikedIds={Array.from(myLikedIds)}
+            myReadIsbns={myReadIsbns}
+            myLikedIds={myLikedIds}
           />
-        )}
+        </Suspense>
 
         <div className='h-8' />
 
-        {/* 완독왕 랭킹 */}
-        {mostReadBooks.length > 0 && (
-          <BookRankingList
+        <Suspense fallback={<BookRankingListSkeleton />}>
+          <BookRankingSection
+            type='most'
             title='🔥 가장 많이 완독한 책'
             subTitle='유저들이 끝까지 읽어낸 인기 도서입니다.'
-            books={mostReadBooks}
-            type='most'
-            myReadIsbns={Array.from(myReadIsbns)}
-            myLikedIds={Array.from(myLikedIds)}
+            myReadIsbns={myReadIsbns}
+            myLikedIds={myLikedIds}
           />
-        )}
+        </Suspense>
       </div>
 
       <div className='h-20' />
