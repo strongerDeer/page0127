@@ -7,7 +7,7 @@ import { Loader2, Search, X } from 'lucide-react';
 
 import { Input } from '@/shared/ui/input';
 
-import { userApi } from '@/entities/user';
+import { userApi, userKeys } from '@/entities/user';
 
 import { UserCard } from '@/features/follow/ui/UserCard';
 
@@ -28,7 +28,7 @@ export const UserSearch = ({ currentUserId }: UserSearchProps) => {
   const [activeQuery, setActiveQuery] = useState('');
 
   const { data: users = [], isLoading } = useQuery({
-    queryKey: ['users', 'search', activeQuery],
+    queryKey: userKeys.search(activeQuery),
     queryFn: () => userApi.searchUsers(activeQuery),
     enabled: activeQuery.trim().length > 0,
   });

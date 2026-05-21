@@ -22,6 +22,7 @@ import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
 import { Button } from '@/shared/ui/button';
 
 import {
+  notificationKeys,
   type NotificationWithActor,
   useDeleteNotification,
   useMarkAllAsRead,
@@ -48,7 +49,7 @@ export const NotificationPage = () => {
   // 무한 스크롤 쿼리
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
-      queryKey: ['notifications', 'infinite', filter],
+      queryKey: notificationKeys.infinite(filter),
       queryFn: async ({ pageParam = 0 }) => {
         const params = new URLSearchParams({
           limit: '20',

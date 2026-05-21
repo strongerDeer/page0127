@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { Button } from '@/shared/ui/button';
 import { Textarea } from '@/shared/ui/textarea';
 
-import { commentApi } from '@/entities/comment';
+import { commentApi, commentKeys } from '@/entities/comment';
 
 type CommentFormProps = {
   activityId: string;
@@ -57,7 +57,7 @@ export const CommentForm = ({
       }
       // 댓글 목록 쿼리 무효화
       queryClient.invalidateQueries({
-        queryKey: ['comments', activityId],
+        queryKey: commentKeys.byActivity(activityId),
       });
       setContent('');
       onSuccess?.();

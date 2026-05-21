@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { followBroadcast } from '@/shared/lib/broadcastChannel';
 import { Button } from '@/shared/ui/button';
 
-import { followApi } from '@/entities/follow';
+import { followApi, followKeys } from '@/entities/follow';
 
 /**
  * 팔로우/언팔로우 버튼
@@ -32,7 +32,7 @@ export const FollowButton = ({
 
   // 팔로우 여부 조회
   const { data: isFollowing = false, isLoading } = useQuery({
-    queryKey: ['follow', 'isFollowing', userId],
+    queryKey: followKeys.isFollowing(userId),
     queryFn: () => followApi.isFollowing(userId),
   });
 
@@ -41,7 +41,7 @@ export const FollowButton = ({
     mutationFn: () => followApi.followUser({ following_id: userId }),
     onSuccess: () => {
       // 모든 팔로우 관련 쿼리 무효화 (최신 상태 반영)
-      queryClient.invalidateQueries({ queryKey: ['follow'] });
+      queryClient.invalidateQueries({ queryKey: followKeys.all });
       // 다른 탭에 팔로우 이벤트 전송
       followBroadcast.sendFollowEvent('follow', userId);
       toast.success('팔로우했습니다.');
@@ -56,7 +56,7 @@ export const FollowButton = ({
     mutationFn: () => followApi.unfollowUser(userId),
     onSuccess: () => {
       // 모든 팔로우 관련 쿼리 무효화 (최신 상태 반영)
-      queryClient.invalidateQueries({ queryKey: ['follow'] });
+      queryClient.invalidateQueries({ queryKey: followKeys.all });
       // 다른 탭에 언팔로우 이벤트 전송
       followBroadcast.sendFollowEvent('unfollow', userId);
       toast.success('언팔로우했습니다.');

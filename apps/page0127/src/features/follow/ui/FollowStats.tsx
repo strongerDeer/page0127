@@ -7,7 +7,7 @@ import { Loader2, Users } from 'lucide-react';
 
 import { followBroadcast } from '@/shared/lib/broadcastChannel';
 
-import { followApi } from '@/entities/follow';
+import { followApi, followKeys } from '@/entities/follow';
 
 /**
  * 팔로우 통계 표시 컴포넌트
@@ -31,7 +31,7 @@ export const FollowStats = ({
   const queryClient = useQueryClient();
 
   const { data: stats, isLoading } = useQuery({
-    queryKey: ['follow', 'stats', userId],
+    queryKey: followKeys.stats(userId),
     queryFn: () => followApi.getFollowStats(userId),
   });
 
@@ -39,7 +39,7 @@ export const FollowStats = ({
   useEffect(() => {
     const unsubscribe = followBroadcast.onFollowEvent(() => {
       // 모든 팔로우 관련 쿼리 무효화 (최신 데이터 가져오기)
-      queryClient.invalidateQueries({ queryKey: ['follow'] });
+      queryClient.invalidateQueries({ queryKey: followKeys.all });
     });
 
     return unsubscribe;

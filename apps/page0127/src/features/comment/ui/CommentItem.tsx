@@ -28,7 +28,7 @@ import {
 } from '@/shared/ui/dropdown-menu';
 import { Textarea } from '@/shared/ui/textarea';
 
-import { Comment, commentApi } from '@/entities/comment';
+import { Comment, commentApi, commentKeys } from '@/entities/comment';
 import { useCurrentUserContext } from '@/entities/user';
 
 import { CommentForm } from './CommentForm';
@@ -72,7 +72,7 @@ export const CommentItem = ({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['comments', activityId],
+        queryKey: commentKeys.byActivity(activityId),
       });
       setIsEditing(false);
       toast.success('댓글이 수정되었습니다.');
@@ -89,7 +89,7 @@ export const CommentItem = ({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['comments', activityId],
+        queryKey: commentKeys.byActivity(activityId),
       });
       toast.success('댓글이 삭제되었습니다.');
     },

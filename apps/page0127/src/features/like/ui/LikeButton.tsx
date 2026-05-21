@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 
 import { Button } from '@/shared/ui/button';
 
+import { activityKeys } from '@/entities/activity';
 import { likeApi } from '@/entities/like';
 
 type LikeButtonProps = {
@@ -50,7 +51,7 @@ export const LikeButton = ({
     // 성공 시 피드 데이터 갱신
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['feed', 'activities'],
+        queryKey: activityKeys.feeds(),
       });
     },
     // 에러 발생 시 원래 상태로 되돌리기

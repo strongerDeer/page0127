@@ -2,6 +2,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 
+import { userKeys } from '../model/queryKeys';
+
 /**
  * 현재 로그인한 사용자 정보 조회 훅
  *
@@ -37,7 +39,7 @@ async function getCurrentUser(): Promise<CurrentUser | null> {
 
 export const useCurrentUser = () => {
   return useQuery({
-    queryKey: ['currentUser'],
+    queryKey: userKeys.me(),
     queryFn: getCurrentUser,
     staleTime: 1000 * 60 * 5, // 5분
     retry: false,

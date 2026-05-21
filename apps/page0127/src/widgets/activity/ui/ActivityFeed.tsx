@@ -5,7 +5,7 @@ import { useEffect, useRef } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 
-import { activityApi } from '@/entities/activity';
+import { activityApi, activityKeys } from '@/entities/activity';
 
 import { ActivityCard } from './ActivityCard';
 
@@ -27,7 +27,7 @@ export const ActivityFeed = () => {
     isFetchingNextPage,
     isLoading,
   } = useInfiniteQuery({
-    queryKey: ['feed', 'activities'],
+    queryKey: activityKeys.feeds(),
     queryFn: ({ pageParam = 0 }) =>
       activityApi.getFeed({ limit: 20, offset: pageParam }),
     getNextPageParam: (lastPage, allPages) => {

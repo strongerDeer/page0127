@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from '@/shared/ui/dialog';
 
-import { followApi } from '@/entities/follow';
+import { followApi, followKeys } from '@/entities/follow';
 
 import { UserCard } from './UserCard';
 
@@ -38,7 +38,10 @@ export const FollowListModal = ({
 }: FollowListModalProps) => {
   // 팔로워 또는 팔로잉 목록 조회
   const { data: users = [], isLoading } = useQuery({
-    queryKey: ['follow', type, userId],
+    queryKey:
+      type === 'followers'
+        ? followKeys.followers(userId)
+        : followKeys.following(userId),
     queryFn: () =>
       type === 'followers'
         ? followApi.getFollowers(userId)

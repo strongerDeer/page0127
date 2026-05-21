@@ -18,6 +18,8 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { apiClient } from '@/shared/api/client';
 import { Button } from '@/shared/ui/button';
 
+import { activityKeys } from '@/entities/activity';
+
 import { ActivityCard } from './ActivityCard';
 
 type ActivityDetailProps = {
@@ -28,7 +30,7 @@ export const ActivityDetail = ({ activityId }: ActivityDetailProps) => {
   const router = useRouter();
 
   const { data: activity, isLoading } = useQuery({
-    queryKey: ['activity', activityId],
+    queryKey: activityKeys.detail(activityId),
     queryFn: async () => {
       const { data } = await apiClient.get(`/activities/${activityId}`);
       return data;

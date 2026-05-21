@@ -16,3 +16,6 @@ export type {
 
 // API
 export { followApi } from './api/followApi';
+
+// Query Keys
+export { followKeys } from './model/queryKeys';

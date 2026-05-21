@@ -14,6 +14,10 @@ export const notificationKeys = {
   list: (options: GetNotificationsOptions) =>
     [...notificationKeys.lists(), options] as const,
 
+  // 무한 스크롤 목록 (필터별)
+  infinite: (filter: 'all' | 'unread') =>
+    [...notificationKeys.all, 'infinite', filter] as const,
+
   // 읽지 않은 알림 개수
   unreadCount: () => [...notificationKeys.all, 'unread-count'] as const,
 } as const;

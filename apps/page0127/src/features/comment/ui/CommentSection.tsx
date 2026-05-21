@@ -7,7 +7,7 @@ import { MessageSquare } from 'lucide-react';
 
 import { Button } from '@/shared/ui/button';
 
-import { commentApi } from '@/entities/comment';
+import { commentApi, commentKeys } from '@/entities/comment';
 import { useCurrentUserContext } from '@/entities/user';
 
 import { CommentForm } from './CommentForm';
@@ -37,7 +37,7 @@ export const CommentSection = ({
 
   // 댓글 개수 조회
   const { data: comments = [] } = useQuery({
-    queryKey: ['comments', activityId],
+    queryKey: commentKeys.byActivity(activityId),
     queryFn: () => commentApi.getComments(activityId),
   });
 

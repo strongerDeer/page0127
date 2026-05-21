@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Loader2, MessageSquare } from 'lucide-react';
 
-import { commentApi } from '@/entities/comment';
+import { commentApi, commentKeys } from '@/entities/comment';
 
 import { CommentItem } from './CommentItem';
 
@@ -21,7 +21,7 @@ type CommentListProps = {
  */
 export const CommentList = ({ activityId }: CommentListProps) => {
   const { data: comments = [], isLoading } = useQuery({
-    queryKey: ['comments', activityId],
+    queryKey: commentKeys.byActivity(activityId),
     queryFn: async () => {
       const result = await commentApi.getComments(activityId);
       return result;
