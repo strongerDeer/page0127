@@ -112,7 +112,7 @@ Week 12-14 → 성능 최적화 + React Compiler
 | 43  | 05/18 ✅ | lazy + Suspense ✨             | 통계 차트(Recharts)를 `lazy`로 코드 스플리팅 | 초기 번들 크기 감소 확인                        |
 | 44  | 05/19 ✅ | 데이터 패칭 패턴               | `fetch` + `cache`, `revalidate` 옵션 실습    | 책 목록 캐싱 전략 적용                          |
 | 45  | 05/19 ✅ | loading.tsx / Suspense         | `loading.tsx`로 스켈레톤 UI 구현             | 책장 로딩 스켈레톤 카드                         |
-| 46  | 04/23 | TanStack Query — queryKey 설계 | 현재 `useQuery` 패턴 전수 조사               | queryKey 네이밍 컨벤션 통일                     |
+| 46  | 05/22 ✅ | TanStack Query — queryKey 설계 | 현재 `useQuery` 패턴 전수 조사               | queryKey 네이밍 컨벤션 통일                     |
 | 47  | 04/23 | TanStack Query — mutation      | `useMutation` + optimistic update 구현       | 좋아요 클릭 즉시 반영 (TanStack Query 방식)     |
 | 48  | 04/24 | TanStack Query — 무한 스크롤   | `useInfiniteQuery`로 책 목록 페이지네이션    | 다음 페이지 자동 로드                           |
 | 49  | 04/24 | Phase 4 복습                   | SC/CC 분리 + TanStack Query 설계 최종 점검   | 변경 내역 PR 설명처럼 정리                      |
