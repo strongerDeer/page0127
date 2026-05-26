@@ -41,20 +41,12 @@ export const CommentForm = ({
   const [content, setContent] = useState('');
 
   const createMutation = useMutation({
-    mutationFn: async (content: string) => {
-      const result = await commentApi.createComment(activityId, {
+    mutationFn: (content: string) =>
+      commentApi.createComment(activityId, {
         content,
         parentCommentId,
-      });
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('댓글 작성 성공:', result);
-      }
-      return result;
-    },
+      }),
     onSuccess: () => {
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('댓글 작성 onSuccess - 쿼리 무효화');
-      }
       // 댓글 목록 쿼리 무효화
       queryClient.invalidateQueries({
         queryKey: commentKeys.byActivity(activityId),
@@ -64,7 +56,6 @@ export const CommentForm = ({
       toast.success('댓글이 작성되었습니다.');
     },
     onError: (error: Error) => {
-      console.error('댓글 작성 실패:', error);
       toast.error(error.message);
     },
   });

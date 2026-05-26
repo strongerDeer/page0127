@@ -12,17 +12,17 @@ import { Button } from '@/shared/ui/button';
 
 import { bookApi } from '@/entities/book';
 
-type LikeButtonProps = {
+type BookLikeButtonProps = {
   bookId: string;
   initialLiked: boolean;
   className?: string;
 };
 
-export const LikeButton = ({
+export const BookLikeButton = ({
   bookId,
   initialLiked,
   className,
-}: LikeButtonProps) => {
+}: BookLikeButtonProps) => {
   const [liked, setLiked] = useState(initialLiked);
   const router = useRouter();
 

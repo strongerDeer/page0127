@@ -155,8 +155,8 @@ export const ActivityCard = ({
       <div className='mt-3 space-y-3 border-t pt-3'>
         <LikeButton
           activityId={activity.id}
-          initialCount={activity.likes.count}
-          initialIsLiked={activity.likes.isLiked}
+          count={activity.likes.count}
+          isLiked={activity.likes.isLiked}
         />
 
         {/* 댓글 섹션 */}

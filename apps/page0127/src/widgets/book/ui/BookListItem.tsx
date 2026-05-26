@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { LikeButton } from './LikeButton';
+import { BookLikeButton } from './BookLikeButton';
 
 import type { Book, GlobalBook } from '@/entities/book';
 
@@ -111,7 +111,7 @@ const BookListItemContent = ({
     </h3>
     <p className={styles.author}>{author}</p>
     <div className='mt-2 text-center'>
-      <LikeButton bookId={id} initialLiked={isLiked} />
+      <BookLikeButton bookId={id} initialLiked={isLiked} />
     </div>
   </div>
 );

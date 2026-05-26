@@ -37,3 +37,6 @@ npm-debug.log*
 *.tmp
 .cache/
 .turbo/
+
+# Superpowers brainstorm sessions
+.superpowers/

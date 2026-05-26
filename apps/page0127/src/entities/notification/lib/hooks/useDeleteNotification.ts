@@ -9,6 +9,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import { deleteNotification } from '../../api/notificationApi';
 import { notificationKeys } from '../../model/queryKeys';
@@ -28,6 +29,10 @@ export function useDeleteNotification() {
       queryClient.invalidateQueries({
         queryKey: notificationKeys.unreadCount(),
       });
+    },
+    // 실패 시 사용자에게 피드백
+    onError: () => {
+      toast.error('알림 삭제에 실패했습니다.');
     },
   });
 }
