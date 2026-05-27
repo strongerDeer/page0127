@@ -121,8 +121,7 @@
 
 /* 기본 스타일 */
 body {
-  background: #fafafa; /* 단색 — 그라데이션/글래스 제거 */
-  color: var(--foreground);
+  /* 배경(bg-background)·색(text-foreground)은 @layer base에서 토큰으로 적용 — 여기선 폰트만 */
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
