@@ -2,6 +2,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 
+import { apiClient } from '@/shared/api/client';
+
 import { userKeys } from '../model/queryKeys';
 
 /**
@@ -19,20 +21,13 @@ type CurrentUser = {
 
 async function getCurrentUser(): Promise<CurrentUser | null> {
   try {
-    const response = await fetch('/api/auth/me', {
-      credentials: 'include',
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const result = await response.json();
-    // successResponse 형태: { success: true, data: {...} }
-    const data = result.data || result;
-    return data;
-  } catch (error) {
-    console.error('getCurrentUser - error:', error);
+    const { data } = await apiClient.get<
+      { data?: CurrentUser } & Partial<CurrentUser>
+    >('/auth/me');
+    // successResponse 형태({ data }) 우선, 아니면 본문 자체를 사용
+    return (data.data ?? data) as CurrentUser;
+  } catch {
+    // 401(비로그인) 등은 정상 흐름 → 조용히 null 반환 (인터셉터에서 로깅)
     return null;
   }
 }

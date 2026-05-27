@@ -4,6 +4,8 @@ import { useReducer } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 
+import { apiClient } from '@/shared/api/client';
+
 import {
   type CalendarData as ReadingCalendarData,
   ReadingCalendar,
@@ -76,15 +78,17 @@ export const CalendarBlock = ({
   const { data: result, isLoading } = useQuery({
     queryKey: ['calendar', calendarYear, calendarMonth],
     queryFn: async () => {
-      const response = await fetch(
-        `/api/books/calendar?year=${calendarYear}&month=${calendarMonth}`
-      );
-      const json = await response.json();
-      if (!json.success) throw new Error('캘린더 데이터 조회 실패');
-      return json as {
+      // 쿼리스트링은 axios params 옵션으로 전달
+      const { data: json } = await apiClient.get<{
+        success: boolean;
         data: ReadingCalendarData[];
         summary: CalendarSummary;
-      };
+      }>('/books/calendar', {
+        params: { year: calendarYear, month: calendarMonth },
+      });
+      if (!json.success) throw new Error('캘린더 데이터 조회 실패');
+      // success 플래그는 제외하고 데이터만 반환 (initialData 타입과 일치)
+      return { data: json.data, summary: json.summary };
     },
     initialData:
       calendarYear === initialYear && calendarMonth === initialMonth

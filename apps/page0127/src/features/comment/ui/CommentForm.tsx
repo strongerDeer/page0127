@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { isAxiosError } from 'axios';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -55,8 +56,12 @@ export const CommentForm = ({
       onSuccess?.();
       toast.success('댓글이 작성되었습니다.');
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
+    onError: (error) => {
+      // axios 에러에서 서버가 내려준 메시지(error.response.data.error) 추출
+      const message = isAxiosError(error)
+        ? error.response?.data?.error
+        : undefined;
+      toast.error(message ?? '댓글 작성에 실패했습니다.');
     },
   });
 

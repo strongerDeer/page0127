@@ -12,6 +12,8 @@ import axios from 'axios';
 export const apiClient = axios.create({
   baseURL: '/api',
   timeout: 10000,
+  // 쿠키 기반 인증: 모든 요청에 자격 증명(쿠키) 포함 (fetch의 credentials: 'include' 대체)
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
