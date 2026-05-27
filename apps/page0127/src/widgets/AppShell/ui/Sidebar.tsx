@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import { Globe } from 'lucide-react';
+
 import { cn } from '@/shared/lib/utils';
 
 import { NotificationDropdown } from '@/features/notification';
@@ -57,6 +59,22 @@ export const Sidebar = ({
             </Link>
           );
         })}
+
+        {/* 공개 서재 — username이 있을 때만, 주소가 사용자마다 다르므로 별도 렌더 */}
+        {username && (
+          <Link
+            href={`/${username}`}
+            className={cn(
+              'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+              isNavItemActive(pathname, `/${username}`)
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                : 'text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground'
+            )}
+          >
+            <Globe className='size-4' />
+            공개 서재
+          </Link>
+        )}
       </nav>
 
       {/* 하단: 알림 + 프로필 */}
