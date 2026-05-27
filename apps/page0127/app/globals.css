@@ -8,56 +8,61 @@
    ============================================ */
 
 :root {
-  /* 컬러 시스템 (PRD 기반) */
-  --color-primary: #3B82F6; /* Blue - Reference 'Home' button color */
-  --color-secondary: #1E293B; /* Slate - Text */
-  --color-accent: #8B5CF6; /* Purple */
+  /* 모서리 — 카드 12px 기준 (md/sm/xl은 @theme에서 계산) */
+  --radius: 0.75rem;
 
-  /* 배경 & 텍스트 */
-  /* Soft gradient mesh background */
-  --background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
-  --background: #eff6ff; /* Fallback light blue */
-  --foreground: #0f172a;
+  /* 배경: 옅은 회색 단색 / 텍스트: 슬레이트 */
+  --background: #fafafa;
+  --foreground: #1e293b;
 
-  /* 타이포그래피 */
-  --font-h1-desktop: 50px; /* 데스크톱 H1 */
-  --font-h1-mobile: 36px; /* 모바일 H1 */
-  --font-h2-desktop: 36px; /* 데스크톱 H2 */
-  --font-h2-mobile: 28px; /* 모바일 H2 */
+  /* 표면 (카드·팝오버는 순수 흰색 + 테두리로 구분) */
+  --card: #ffffff;
+  --card-foreground: #1e293b;
+  --popover: #ffffff;
+  --popover-foreground: #1e293b;
 
-  /* 스페이싱 */
-  --spacing-section-desktop: 80px; /* 섹션 간 간격 (데스크톱) */
-  --spacing-section-mobile: 40px; /* 섹션 간 간격 (모바일) */
-  --radius: 0.625rem;
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* 강조색 — 인디고 단일화 */
+  --primary: #6366f1; /* indigo-500 */
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9; /* slate-100 */
+  --secondary-foreground: #1e293b;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b; /* slate-500 */
+  --accent: #eef2ff; /* indigo-50 — 활성 메뉴/호버 배경 */
+  --accent-foreground: #4338ca; /* indigo-700 */
+
+  /* 상태색 (강조색과 독립) */
+  --destructive: #ef4444;
+
+  /* 경계선·입력·포커스 링 */
+  --border: #e5e7eb; /* gray-200 */
+  --input: #e5e7eb;
+  --ring: #6366f1;
+
+  /* 차트 — 인디고 메인 + 보조 파스텔 */
+  --chart-1: #6366f1; /* indigo */
+  --chart-2: #818cf8; /* indigo-400 */
+  --chart-3: #34d399; /* mint */
+  --chart-4: #fbbf24; /* amber */
+  --chart-5: #fb7185; /* rose */
+
+  /* 사이드바 토큰 */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1e293b;
+  --sidebar-primary: #6366f1;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eef2ff;
+  --sidebar-accent-foreground: #4338ca;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #6366f1;
+
+  /* 랜딩 페이지 타이포/섹션 간격 (heading-1/2, section-spacing 유틸이 사용) */
+  --font-h1-desktop: 50px;
+  --font-h1-mobile: 36px;
+  --font-h2-desktop: 36px;
+  --font-h2-mobile: 28px;
+  --spacing-section-desktop: 80px;
+  --spacing-section-mobile: 40px;
 }
 
 /* Tailwind 테마 확장 */
@@ -66,15 +71,13 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  /* Glassmorphism Utilities */
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-
-  /* 컬러 (Tailwind에서 사용 가능하도록) */
-  --color-primary: #ffd700;
-  --color-secondary: #2d3748;
-  --color-accent: #9f7aea;
+  /* shadcn 색 매핑 — Tailwind 유틸(bg-primary 등)이 CSS 변수를 따라가도록 */
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
 
   /* 폰트 */
   --font-sans: var(--font-geist-sans);
@@ -96,11 +99,8 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-primary-foreground: var(--primary-foreground);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -121,13 +121,7 @@
 
 /* 기본 스타일 */
 body {
-  background: #f0f4ff; /* Light bluish gray base */
-  background-image:
-    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.1) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.1) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.1) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(59, 130, 246, 0.1) 0px, transparent 50%);
-  background-attachment: fixed; /* Keep background fixed */
+  background: #fafafa; /* 단색 — 그라데이션/글래스 제거 */
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
