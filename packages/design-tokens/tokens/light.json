@@ -18,9 +18,9 @@
       },
       "action": {
         "primary": {
-          "default": { "value": "{core.color.primary.600}", "type": "color" },
-          "hover": { "value": "{core.color.primary.700}", "type": "color" },
-          "active": { "value": "{core.color.primary.800}", "type": "color" },
+          "default": { "value": "{core.color.indigo.500}", "type": "color" },
+          "hover": { "value": "{core.color.indigo.600}", "type": "color" },
+          "active": { "value": "{core.color.indigo.700}", "type": "color" },
           "disabled": { "value": "{core.color.gray.300}", "type": "color" }
         },
         "secondary": {
