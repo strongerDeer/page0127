@@ -5,11 +5,11 @@ import { useReducer, useState, useTransition } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 
-import { isAxiosError } from 'axios';
 import { BookOpen, CheckCircle, FileText, Target } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/client';
+import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -302,11 +302,7 @@ export const DashboardContent = ({
       toast.success('취향 분석이 완료되었습니다!');
       router.push('/dashboard/taste-analysis');
     } catch (error) {
-      // axios 에러에서 서버 메시지(error.response.data.error) 추출
-      const message = isAxiosError(error)
-        ? error.response?.data?.error
-        : undefined;
-      toast.error(message ?? '취향 분석 중 오류가 발생했습니다.');
+      toast.error(getApiErrorMessage(error, '취향 분석 중 오류가 발생했습니다.'));
     } finally {
       setIsAnalyzing(false);
     }

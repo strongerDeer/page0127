@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, UserMinus, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
 import { followBroadcast } from '@/shared/lib/broadcastChannel';
 import { Button } from '@/shared/ui/button';
 
@@ -46,8 +47,8 @@ export const FollowButton = ({
       followBroadcast.sendFollowEvent('follow', userId);
       toast.success('팔로우했습니다.');
     },
-    onError: (error: { response?: { data?: { error?: string } } }) => {
-      toast.error(error.response?.data?.error || '팔로우에 실패했습니다.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, '팔로우에 실패했습니다.'));
     },
   });
 
@@ -61,8 +62,8 @@ export const FollowButton = ({
       followBroadcast.sendFollowEvent('unfollow', userId);
       toast.success('언팔로우했습니다.');
     },
-    onError: (error: { response?: { data?: { error?: string } } }) => {
-      toast.error(error.response?.data?.error || '언팔로우에 실패했습니다.');
+    onError: (error) => {
+      toast.error(getApiErrorMessage(error, '언팔로우에 실패했습니다.'));
     },
   });
 
