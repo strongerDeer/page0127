@@ -2,40 +2,7 @@
 
 import { createClient } from '@/shared/config/supabase/client';
 
-import type { ReadingGoal, UpdateProfileDto } from '../types';
-
-/**
- * 연간 독서 목표 업데이트 (Client Component용)
- *
- * 학습 포인트:
- * - Client Component에서 Supabase 호출
- * - JSONB 컬럼 업데이트
- * - 낙관적 업데이트 패턴 (선택 사항)
- *
- * @param userId - 사용자 ID
- * @param goal - 독서 목표 { year, target }
- */
-export const updateReadingGoal = async (
-  userId: string,
-  goal: ReadingGoal
-): Promise<boolean> => {
-  const supabase = createClient();
-
-  const { error } = await supabase
-    .from('profiles')
-    .update({
-      reading_goal: goal,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', userId);
-
-  if (error) {
-    console.error('독서 목표 업데이트 실패:', error.message);
-    return false;
-  }
-
-  return true;
-};
+import type { UpdateProfileDto } from '../types';
 
 /**
  * 프로필 정보 업데이트 (닉네임, 소개, 프로필 이미지)

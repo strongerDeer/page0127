@@ -64,7 +64,6 @@ const DashboardPage = async (props: {
       stats={stats}
       books={books}
       userEmail={user!.email!}
-      userId={user!.id}
       availableYears={availableYears}
       selectedYear={selectedYear}
       profile={profile}

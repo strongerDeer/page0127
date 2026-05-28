@@ -1,6 +1,6 @@
 'use client';
 
-import { useReducer, useState, useTransition } from 'react';
+import { useCallback, useReducer, useState, useTransition } from 'react';
 
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
@@ -83,9 +83,6 @@ type DashboardContentProps = {
 
   /** 사용자 이메일 */
   userEmail: string;
-
-  /** 사용자 ID */
-  userId: string;
 
   /** 사용 가능한 연도 목록 */
   availableYears: number[];
@@ -194,7 +191,6 @@ export const DashboardContent = ({
   stats,
   books,
   userEmail: _userEmail,
-  userId,
   availableYears,
   selectedYear,
   profile,
@@ -222,6 +218,10 @@ export const DashboardContent = ({
 
   // 단순 boolean은 useState가 적합 — useReducer는 복합 상태에 써야 의미 있음
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
+
+  // ReadingGoalDialog의 useEffect deps에 들어가므로 참조를 안정화 (useCallback)
+  const handleGoalClose = useCallback(() => setIsGoalDialogOpen(false), []);
+  const handleGoalSuccess = useCallback(() => router.refresh(), [router]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isAnalyzeDialogOpen, setIsAnalyzeDialogOpen] = useState(false);
 
@@ -519,13 +519,10 @@ export const DashboardContent = ({
 
       <ReadingGoalDialog
         isOpen={isGoalDialogOpen}
-        onClose={() => setIsGoalDialogOpen(false)}
-        userId={userId}
+        onClose={handleGoalClose}
         currentYear={currentYear}
         currentGoal={readingGoal ?? null}
-        onSuccess={() => {
-          router.refresh();
-        }}
+        onSuccess={handleGoalSuccess}
       />
 
       <AlertDialog

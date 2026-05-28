@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useActionState, useEffect, useId } from 'react';
 
 import { toast } from 'sonner';
 
@@ -16,7 +16,10 @@ import {
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 
-import { updateReadingGoal } from '@/entities/profile/api/updateProfile';
+import {
+  type ReadingGoalActionState,
+  updateReadingGoalAction,
+} from '@/features/profile/api/updateReadingGoalAction';
 
 type Props = {
   /** 다이얼로그 열림 상태 */
@@ -24,9 +27,6 @@ type Props = {
 
   /** 다이얼로그 닫기 핸들러 */
   onClose: () => void;
-
-  /** 사용자 ID */
-  userId: string;
 
   /** 현재 연도 */
   currentYear: number;
@@ -38,73 +38,51 @@ type Props = {
   onSuccess: () => void;
 };
 
+// useActionState의 초기 상태 (아직 제출 전)
+const initialState: ReadingGoalActionState = { status: 'idle', message: '' };
+
 /**
  * 연간 독서 목표 설정 다이얼로그
  *
- * 학습 포인트:
- * - Dialog 컴포넌트 사용
- * - 폼 상태 관리
- * - Supabase 업데이트 호출
- * - 낙관적 업데이트 (선택 사항)
+ * 학습 포인트 (useActionState 전환):
+ * - useState 3개(year, target, isLoading) → useActionState 하나로 통합
+ * - 입력값은 value/onChange 대신 name + defaultValue (FormData가 자동 수집)
+ * - 제출은 onSubmit/preventDefault 대신 <form action={formAction}>
+ * - 성공/실패 후처리(toast·콜백)는 state 변화를 useEffect로 감지
  */
 export const ReadingGoalDialog = ({
   isOpen,
   onClose,
-  userId,
   currentYear,
   currentGoal,
   onSuccess,
 }: Props) => {
-  // 학습 포인트: props를 state 초기값으로만 사용 (derived state 패턴)
-  // isOpen이 변경될 때마다 리셋하려면 부모에서 key prop으로 제어하거나
-  // 여기서는 초기값만 사용하고 onClose에서 리셋
   const formId = useId();
   const ids = {
     year: `${formId}-year`,
     target: `${formId}-target`,
   };
 
-  const [year, setYear] = useState(currentGoal?.year ?? currentYear);
-  const [target, setTarget] = useState(currentGoal?.target ?? 50);
-  const [isLoading, setIsLoading] = useState(false);
+  // [state, formAction, isPending] — Server Action을 연결
+  const [state, formAction, isPending] = useActionState(
+    updateReadingGoalAction,
+    initialState
+  );
 
-  // 다이얼로그 닫기 시 state 초기화
-  const handleClose = () => {
-    setYear(currentGoal?.year ?? currentYear);
-    setTarget(currentGoal?.target ?? 50);
-    onClose();
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (target < 1) {
-      toast.error('목표는 최소 1권 이상이어야 합니다.');
-      return;
-    }
-
-    if (target > 1000) {
-      toast.error('목표는 최대 1,000권까지 설정할 수 있습니다.');
-      return;
-    }
-
-    setIsLoading(true);
-
-    const success = await updateReadingGoal(userId, { year, target });
-
-    if (success) {
-      toast.success('독서 목표가 설정되었습니다! 🎯');
+  // action이 반환한 state가 바뀌면 후처리 (toast + 성공 시 부모 콜백)
+  // 콜백은 부모에서 useCallback으로 안정화돼 있어 deps에 넣어도 재실행 안전
+  useEffect(() => {
+    if (state.status === 'success') {
+      toast.success(state.message);
       onSuccess();
       onClose();
-    } else {
-      toast.error('독서 목표 설정에 실패했습니다.');
+    } else if (state.status === 'error') {
+      toast.error(state.message);
     }
-
-    setIsLoading(false);
-  };
+  }, [state, onSuccess, onClose]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>📚 연간 독서 목표 설정</DialogTitle>
@@ -113,16 +91,17 @@ export const ReadingGoalDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
+        {/* onSubmit 대신 action에 Server Action을 연결 */}
+        <form action={formAction}>
           <div className='space-y-4 py-4'>
-            {/* 연도 선택 */}
+            {/* 연도 선택 — name으로 FormData에 수집됨 */}
             <div className='space-y-2'>
               <Label htmlFor={ids.year}>목표 연도</Label>
               <Input
                 id={ids.year}
+                name='year'
                 type='number'
-                value={year}
-                onChange={(e) => setYear(Number(e.target.value))}
+                defaultValue={currentGoal?.year ?? currentYear}
                 min={2020}
                 max={2030}
               />
@@ -133,25 +112,26 @@ export const ReadingGoalDialog = ({
               <Label htmlFor={ids.target}>목표 권수</Label>
               <Input
                 id={ids.target}
+                name='target'
                 type='number'
-                value={target}
-                onChange={(e) => setTarget(Number(e.target.value))}
+                defaultValue={currentGoal?.target ?? 50}
                 min={1}
                 max={1000}
                 placeholder='예: 50'
               />
               <p className='text-xs text-gray-500'>
-                {year}년에 읽고 싶은 책의 권수를 입력하세요 (1~1,000권)
+                읽고 싶은 책의 권수를 입력하세요 (1~1,000권)
               </p>
             </div>
           </div>
 
           <DialogFooter>
-            <Button type='button' variant='outline' onClick={handleClose}>
+            <Button type='button' variant='outline' onClick={onClose}>
               취소
             </Button>
-            <Button type='submit' disabled={isLoading}>
-              {isLoading ? '저장 중...' : '저장'}
+            {/* isLoading 수동 관리 → isPending 자동 */}
+            <Button type='submit' disabled={isPending}>
+              {isPending ? '저장 중...' : '저장'}
             </Button>
           </DialogFooter>
         </form>
