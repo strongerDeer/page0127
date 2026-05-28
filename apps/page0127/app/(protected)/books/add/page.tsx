@@ -222,7 +222,7 @@ const AddBookPage = () => {
 
   return (
     <ErrorBoundary>
-      <div className='min-h-screen bg-gray-50 p-8'>
+      <div className='min-h-screen p-8'>
         <div className='mx-auto max-w-4xl'>
           <h1 className='mb-6 text-3xl font-bold'>도서 추가</h1>
 
@@ -238,13 +238,13 @@ const AddBookPage = () => {
 
               {/* 로딩 상태 */}
               {isSearching && (
-                <p className='text-center text-gray-500'>검색 중...</p>
+                <p className='text-center text-muted-foreground'>검색 중...</p>
               )}
 
               {/* 검색 결과 */}
               {!isSearching && books.length > 0 && (
                 <div className='space-y-4'>
-                  <p className='text-sm text-gray-600'>
+                  <p className='text-sm text-muted-foreground'>
                     총 {totalResults}개 중 {books.length}개 표시
                   </p>
                   {books.map((book, index) => (
@@ -269,7 +269,7 @@ const AddBookPage = () => {
 
               {/* 검색 결과 없음 */}
               {!isSearching && books.length === 0 && (
-                <p className='text-center text-gray-500'>
+                <p className='text-center text-muted-foreground'>
                   도서 제목을 검색해주세요
                 </p>
               )}
@@ -278,7 +278,7 @@ const AddBookPage = () => {
             /* 등록 폼 */
             <>
               {isLoadingDetail ? (
-                <p className='text-center text-gray-500'>
+                <p className='text-center text-muted-foreground'>
                   도서 상세 정보를 불러오는 중...
                 </p>
               ) : (

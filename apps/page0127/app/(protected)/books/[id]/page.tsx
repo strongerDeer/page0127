@@ -57,7 +57,7 @@ export default async function BookDetailPage({ params }: PageProps) {
   };
 
   return (
-    <div className='min-h-screen bg-gray-50 p-8'>
+    <div className='min-h-screen p-8'>
       <div className='mx-auto max-w-4xl'>
         {/* 헤더 */}
         <div className='mb-6 flex items-center justify-between'>
@@ -87,7 +87,7 @@ export default async function BookDetailPage({ params }: PageProps) {
                     sizes='224px'
                   />
                 ) : (
-                  <div className='flex h-full w-full items-center justify-center bg-gray-200 text-gray-400'>
+                  <div className='flex h-full w-full items-center justify-center bg-muted text-muted-foreground'>
                     No Image
                   </div>
                 )}
@@ -97,8 +97,8 @@ export default async function BookDetailPage({ params }: PageProps) {
               <div className='flex-1 space-y-4'>
                 <div>
                   <h1 className='mb-2 text-2xl font-bold'>{book.title}</h1>
-                  <p className='text-lg text-gray-700'>{book.author}</p>
-                  <p className='text-gray-600'>{book.publisher}</p>
+                  <p className='text-lg text-foreground'>{book.author}</p>
+                  <p className='text-muted-foreground'>{book.publisher}</p>
                 </div>
 
                 {/* 상태 */}
@@ -106,10 +106,10 @@ export default async function BookDetailPage({ params }: PageProps) {
                   <span
                     className={`inline-block rounded-full px-4 py-2 text-sm font-medium ${
                       book.status === 'completed'
-                        ? 'bg-green-100 text-green-800'
+                        ? 'bg-chart-3/15 text-chart-3'
                         : book.status === 'reading'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-gray-100 text-gray-800'
+                          ? 'bg-primary/15 text-primary'
+                          : 'bg-muted text-muted-foreground'
                     }`}
                   >
                     {statusText[book.status]}
@@ -128,8 +128,8 @@ export default async function BookDetailPage({ params }: PageProps) {
                   <span
                     className={`inline-block rounded-full px-4 py-2 text-sm font-medium ${
                       book.is_public
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : 'bg-gray-100 text-gray-600'
+                        ? 'bg-chart-3/15 text-chart-3'
+                        : 'bg-muted text-muted-foreground'
                     }`}
                   >
                     {book.is_public ? '🌐 공개' : '🔒 비공개'}
@@ -137,7 +137,7 @@ export default async function BookDetailPage({ params }: PageProps) {
                 </div>
 
                 {/* 날짜 및 쪽수 정보 */}
-                <div className='space-y-1 text-sm text-gray-600'>
+                <div className='space-y-1 text-sm text-muted-foreground'>
                   {book.page_count && <p>📖 쪽수: {book.page_count}쪽</p>}
                   {book.start_date && <p>시작일: {book.start_date}</p>}
                   {book.completed_date && <p>완독일: {book.completed_date}</p>}
@@ -150,7 +150,7 @@ export default async function BookDetailPage({ params }: PageProps) {
                     {book.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className='rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700'
+                        className='rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground'
                       >
                         #{tag}
                       </span>
@@ -169,7 +169,7 @@ export default async function BookDetailPage({ params }: PageProps) {
               <CardTitle>한줄평</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className='text-gray-700'>{book.one_line_review}</p>
+              <p className='text-foreground'>{book.one_line_review}</p>
             </CardContent>
           </Card>
         )}
@@ -181,7 +181,7 @@ export default async function BookDetailPage({ params }: PageProps) {
               <CardTitle>나만의 메모</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className='whitespace-pre-wrap text-gray-700'>
+              <p className='whitespace-pre-wrap text-foreground'>
                 {book.personal_memo}
               </p>
             </CardContent>
@@ -195,7 +195,7 @@ export default async function BookDetailPage({ params }: PageProps) {
               <CardTitle>책 소개</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className='whitespace-pre-wrap text-gray-700'>
+              <p className='whitespace-pre-wrap text-foreground'>
                 {book.description}
               </p>
             </CardContent>
