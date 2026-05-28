@@ -40,3 +40,5 @@ npm-debug.log*
 
 # Superpowers brainstorm sessions
 .superpowers/
+.agents/skills/study/SKILL.md
+AGENTS.md
