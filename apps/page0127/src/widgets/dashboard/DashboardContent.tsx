@@ -49,7 +49,7 @@ const DashboardCharts = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className='h-[700px] animate-pulse rounded-3xl bg-white/40' />
+      <div className='h-[700px] animate-pulse rounded-lg bg-muted' />
     ),
   }
 );
@@ -62,7 +62,7 @@ const YearlyTrendChart = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className='h-[300px] animate-pulse rounded-lg bg-white/40' />
+      <div className='h-[300px] animate-pulse rounded-lg bg-muted' />
     ),
   }
 );
@@ -314,10 +314,10 @@ export const DashboardContent = ({
       {/* Header */}
       <header className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
         <div>
-          <h1 className='text-4xl font-bold tracking-tight text-slate-900'>
+          <h1 className='text-4xl font-bold tracking-tight text-foreground'>
             Dashboard
           </h1>
-          <p className='text-lg text-slate-500'>
+          <p className='text-lg text-muted-foreground'>
             Overview of your reading journey
           </p>
         </div>
@@ -328,7 +328,7 @@ export const DashboardContent = ({
             value={selectedYear.toString()}
             onValueChange={handleYearChange}
           >
-            <SelectTrigger className='w-[140px] border-white/40 bg-white/50 backdrop-blur-md'>
+            <SelectTrigger className='w-[140px]'>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -341,7 +341,6 @@ export const DashboardContent = ({
           </Select>
 
           <Button
-            className='bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30'
             onClick={handleAnalyzeTaste}
             disabled={isAnalyzing}
           >
@@ -353,7 +352,6 @@ export const DashboardContent = ({
               variant='outline'
               size='icon'
               onClick={handleCopyPublicUrl}
-              className='bg-white/50 backdrop-blur-md border-white/40'
               title='Copy Public URL'
             >
               <span className='sr-only'>Copy URL</span>
@@ -399,8 +397,8 @@ export const DashboardContent = ({
       <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
         {/* Left Column (Hero / Charts) - Spans 2 cols */}
         <div className='space-y-6 lg:col-span-2'>
-          {/* Yearly Trend Chart (Glass Card) */}
-          <Card className='border border-white/40 bg-white/60 shadow-xl backdrop-blur-xl'>
+          {/* Yearly Trend Chart */}
+          <Card className='shadow-none'>
             <CardHeader>
               <CardTitle>Yearly Reading Trend</CardTitle>
             </CardHeader>
@@ -423,7 +421,7 @@ export const DashboardContent = ({
         {/* Right Column (Side Widgets) */}
         <div className='space-y-6'>
           {/* Reading Journey (All Time) */}
-          <Card className='border border-white/40 bg-gradient-to-br from-white/60 to-white/30 shadow-xl backdrop-blur-xl'>
+          <Card className='shadow-none'>
             <CardHeader>
               <CardTitle>Total Journey</CardTitle>
             </CardHeader>
@@ -433,8 +431,8 @@ export const DashboardContent = ({
           </Card>
 
           {/* Reading Goal Progress */}
-          <div className='rounded-3xl border border-white/40 bg-white/50 p-6 shadow-xl backdrop-blur-xl'>
-            <h3 className='mb-4 text-lg font-bold text-slate-800'>
+          <div className='rounded-lg border border-border bg-card p-6'>
+            <h3 className='mb-4 text-lg font-bold text-foreground'>
               Goal Progress
             </h3>
             <ReadingGoalProgress
@@ -445,24 +443,19 @@ export const DashboardContent = ({
             />
           </div>
 
-          {/* Taste Analysis Promo */}
-          <div className='relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white shadow-xl'>
-            <div className='relative z-10'>
-              <h3 className='text-xl font-bold'>Discover Your Taste</h3>
-              <p className='mt-2 text-indigo-100 text-sm'>
-                Let AI analyze your reading patterns.
-              </p>
-              <Button
-                variant='secondary'
-                className='mt-4 w-full border-0 bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm'
-                onClick={handleAnalyzeTaste}
-              >
-                Start Analysis
-              </Button>
-            </div>
-            {/* Decorative circles */}
-            <div className='absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/10 blur-2xl'></div>
-            <div className='absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-purple-400/20 blur-2xl'></div>
+          {/* Taste Analysis Promo — 솔리드 인디고 CTA (그라데이션·장식 제거) */}
+          <div className='rounded-lg bg-primary p-6 text-primary-foreground'>
+            <h3 className='text-xl font-bold'>Discover Your Taste</h3>
+            <p className='mt-2 text-sm text-primary-foreground/80'>
+              Let AI analyze your reading patterns.
+            </p>
+            <Button
+              variant='secondary'
+              className='mt-4 w-full'
+              onClick={handleAnalyzeTaste}
+            >
+              Start Analysis
+            </Button>
           </div>
         </div>
       </div>
@@ -473,7 +466,7 @@ export const DashboardContent = ({
         {calendarSlot}
 
         {/* Book List */}
-        <div className='rounded-3xl border border-white/40 bg-white/60 p-1 shadow-xl backdrop-blur-xl'>
+        <div className='rounded-lg border border-border bg-card p-1'>
           <Card className='border-0 bg-transparent shadow-none'>
             <CardHeader>
               {/* isFilterPending: 차트 클릭 후 목록 갱신 중임을 표시 */}
