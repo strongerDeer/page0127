@@ -20,7 +20,7 @@ export default async function SearchPage() {
     <div className='mx-auto max-w-3xl space-y-6 p-6'>
       <div>
         <h1 className='text-2xl font-bold'>사용자 검색</h1>
-        <p className='mt-2 text-gray-600'>
+        <p className='mt-2 text-muted-foreground'>
           닉네임이나 사용자명으로 다른 사용자를 찾아보세요
         </p>
       </div>

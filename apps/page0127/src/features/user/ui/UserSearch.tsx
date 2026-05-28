@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2, Search, X } from 'lucide-react';
 
+import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 
 import { userApi, userKeys } from '@/entities/user';
@@ -55,7 +56,7 @@ export const UserSearch = ({ currentUserId }: UserSearchProps) => {
       {/* 검색 입력 */}
       <div className='flex gap-2'>
         <div className='relative flex-1'>
-          <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400' />
+          <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
           <Input
             type='text'
             placeholder='사용자 검색 (닉네임 또는 사용자명)'
@@ -67,38 +68,37 @@ export const UserSearch = ({ currentUserId }: UserSearchProps) => {
           {searchQuery && (
             <button
               onClick={handleClear}
-              className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600'
+              className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
             >
               <X className='h-4 w-4' />
             </button>
           )}
         </div>
-        <button
+        <Button
           onClick={handleSearch}
           disabled={searchQuery.trim().length === 0 || isLoading}
-          className='rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50'
         >
           검색
-        </button>
+        </Button>
       </div>
 
       {/* 로딩 상태 */}
       {isLoading && (
         <div className='flex items-center justify-center py-8'>
-          <Loader2 className='h-6 w-6 animate-spin text-gray-400' />
+          <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
         </div>
       )}
 
       {/* 검색 결과 */}
       {!isLoading && activeQuery && (
         <div className='space-y-2'>
-          <p className='text-sm text-gray-600'>
+          <p className='text-sm text-muted-foreground'>
             &quot;{activeQuery}&quot; 검색 결과 ({users.length}명)
           </p>
 
           {users.length === 0 ? (
-            <div className='rounded-lg border border-gray-200 bg-gray-50 py-12 text-center'>
-              <p className='text-gray-500'>검색 결과가 없습니다.</p>
+            <div className='rounded-lg border border-border bg-muted/50 py-12 text-center'>
+              <p className='text-muted-foreground'>검색 결과가 없습니다.</p>
             </div>
           ) : (
             <div className='space-y-2'>
@@ -116,9 +116,9 @@ export const UserSearch = ({ currentUserId }: UserSearchProps) => {
 
       {/* 초기 상태 */}
       {!activeQuery && !isLoading && (
-        <div className='rounded-lg border border-gray-200 bg-gray-50 py-12 text-center'>
-          <Search className='mx-auto h-12 w-12 text-gray-400' />
-          <p className='mt-4 text-gray-500'>
+        <div className='rounded-lg border border-border bg-muted/50 py-12 text-center'>
+          <Search className='mx-auto h-12 w-12 text-muted-foreground' />
+          <p className='mt-4 text-muted-foreground'>
             닉네임 또는 사용자명으로 검색해보세요
           </p>
         </div>
