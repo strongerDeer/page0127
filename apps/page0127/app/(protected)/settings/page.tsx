@@ -31,9 +31,9 @@ export default async function SettingsPage() {
 
   if (!profile) {
     return (
-      <div className='min-h-screen bg-gray-50'>
+      <div className='min-h-screen'>
         <div className='container mx-auto max-w-2xl px-4 py-8'>
-          <p className='text-center text-gray-600'>
+          <p className='text-center text-muted-foreground'>
             프로필 정보를 불러올 수 없습니다.
           </p>
         </div>
@@ -42,7 +42,7 @@ export default async function SettingsPage() {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50'>
+    <div className='min-h-screen'>
       <div className='container mx-auto max-w-2xl px-4 py-8'>
         <ProfileSettingsForm profile={profile} />
       </div>

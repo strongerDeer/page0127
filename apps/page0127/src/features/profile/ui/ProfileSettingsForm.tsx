@@ -50,11 +50,11 @@ const ProfileSettingsFormPhoto = ({
 const ProfileSettingsFormDangerZone = ({
   userEmail,
 }: ProfileSettingsFormDangerZoneProps) => (
-  <Card className='mt-6 border-red-200 bg-red-50 p-6'>
+  <Card className='mt-6 border-destructive/20 bg-destructive/5 p-6'>
     <div className='space-y-4'>
       <div>
-        <h3 className='text-lg font-semibold text-red-900'>위험 영역</h3>
-        <p className='mt-1 text-sm text-red-700'>
+        <h3 className='text-lg font-semibold text-destructive'>위험 영역</h3>
+        <p className='mt-1 text-sm text-destructive/80'>
           계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.
         </p>
       </div>
@@ -172,7 +172,7 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
           {/* 제목 */}
           <div>
             <h2 className='text-2xl font-bold'>프로필 설정</h2>
-            <p className='mt-1 text-sm text-gray-600'>
+            <p className='mt-1 text-sm text-muted-foreground'>
               공개 서재에 표시될 정보를 수정할 수 있습니다.
             </p>
           </div>
@@ -191,9 +191,9 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
               type='email'
               value={profile.email || ''}
               disabled
-              className='bg-gray-100'
+              className='bg-muted'
             />
-            <p className='text-xs text-gray-500'>
+            <p className='text-xs text-muted-foreground'>
               이메일은 변경할 수 없습니다.
             </p>
           </div>
@@ -206,9 +206,9 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
               type='text'
               value={profile.username || ''}
               disabled
-              className='bg-gray-100'
+              className='bg-muted'
             />
-            <p className='text-xs text-gray-500'>
+            <p className='text-xs text-muted-foreground'>
               공개 서재 URL: {profileUrl || `/${profile.username}`}
             </p>
           </div>
@@ -224,7 +224,7 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
               placeholder='닉네임을 입력하세요'
               maxLength={50}
             />
-            <p className='text-xs text-gray-500'>
+            <p className='text-xs text-muted-foreground'>
               공개 서재에 표시될 이름입니다. (최대 50자)
             </p>
           </div>
@@ -241,7 +241,7 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
               maxLength={200}
               className='resize-none'
             />
-            <p className='text-xs text-gray-500'>{bio.length}/200자</p>
+            <p className='text-xs text-muted-foreground'>{bio.length}/200자</p>
           </div>
 
           {/* 저장 버튼 */}
