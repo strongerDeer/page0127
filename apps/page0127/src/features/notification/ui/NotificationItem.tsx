@@ -35,20 +35,21 @@ export const NotificationItem = ({
 
   // 알림 타입별 메시지 및 아이콘
   const getNotificationContent = () => {
+    // 알림 타입별 의미 색은 차트 팔레트로 (인디고 베이스 + 보조 파스텔)
     switch (type) {
       case 'follow':
         return {
-          icon: <UserPlus className='h-4 w-4 text-blue-500' />,
+          icon: <UserPlus className='h-4 w-4 text-chart-1' />,
           message: '님이 팔로우했습니다',
         };
       case 'comment':
         return {
-          icon: <MessageCircle className='h-4 w-4 text-green-500' />,
+          icon: <MessageCircle className='h-4 w-4 text-chart-3' />,
           message: '님이 댓글을 남겼습니다',
         };
       case 'like':
         return {
-          icon: <Heart className='h-4 w-4 text-red-500' />,
+          icon: <Heart className='h-4 w-4 text-chart-5' />,
           message: '님이 좋아요를 눌렀습니다',
         };
       default:
@@ -64,7 +65,7 @@ export const NotificationItem = ({
   return (
     <div
       className={`flex w-full items-start gap-3 border-b p-4 transition-colors ${
-        !is_read ? 'bg-blue-50' : ''
+        !is_read ? 'bg-accent' : ''
       }`}
     >
       {/* 프로필 이미지 */}
@@ -92,7 +93,7 @@ export const NotificationItem = ({
         {/* 읽지 않은 알림 표시 및 읽음 처리 버튼 */}
         {!is_read ? (
           <>
-            <div className='h-2 w-2 rounded-full bg-blue-500'></div>
+            <div className='h-2 w-2 rounded-full bg-primary'></div>
             {onMarkAsRead && (
               <Button
                 variant='ghost'

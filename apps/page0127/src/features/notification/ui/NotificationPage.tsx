@@ -122,7 +122,7 @@ export const NotificationPage = () => {
   if (isLoading) {
     return (
       <div className='flex items-center justify-center py-12'>
-        <Loader2 className='h-8 w-8 animate-spin text-gray-400' />
+        <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
       </div>
     );
   }
@@ -133,7 +133,7 @@ export const NotificationPage = () => {
   return (
     <div className='space-y-4'>
       {/* 필터 및 액션 */}
-      <div className='flex items-center justify-between rounded-lg border bg-white p-4'>
+      <div className='flex items-center justify-between rounded-lg border border-border bg-card p-4'>
         <div className='flex gap-2'>
           <Button
             variant={filter === 'all' ? 'default' : 'ghost'}
@@ -165,15 +165,15 @@ export const NotificationPage = () => {
 
       {/* 알림 목록 */}
       {notifications.length === 0 ? (
-        <div className='rounded-lg border border-gray-200 bg-gray-50 py-12 text-center'>
-          <p className='text-gray-600'>
+        <div className='rounded-lg border border-border bg-muted/50 py-12 text-center'>
+          <p className='text-muted-foreground'>
             {filter === 'unread'
               ? '읽지 않은 알림이 없습니다'
               : '알림이 없습니다'}
           </p>
         </div>
       ) : (
-        <div className='rounded-lg border bg-white'>
+        <div className='rounded-lg border border-border bg-card'>
           {notifications.map((notification) => (
             <NotificationItem
               key={notification.id}
@@ -188,7 +188,7 @@ export const NotificationPage = () => {
           {hasNextPage && (
             <div ref={observerRef} className='flex justify-center py-4'>
               {isFetchingNextPage && (
-                <Loader2 className='h-6 w-6 animate-spin text-gray-400' />
+                <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
               )}
             </div>
           )}
