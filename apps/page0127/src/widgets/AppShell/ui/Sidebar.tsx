@@ -33,7 +33,7 @@ export const Sidebar = ({
     <aside className='hidden w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar md:flex'>
       {/* 로고 */}
       <div className='flex h-16 items-center px-5'>
-        <Link href='/dashboard' className='text-lg font-bold text-primary'>
+        <Link href='/' className='text-lg font-bold text-primary'>
           page0127
         </Link>
       </div>
