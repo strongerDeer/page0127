@@ -29,7 +29,7 @@ const DashboardCharts = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className='h-[700px] animate-pulse rounded-3xl bg-white/40' />
+      <div className='h-[700px] animate-pulse rounded-lg bg-muted' />
     ),
   }
 );
@@ -102,9 +102,9 @@ export const PublicLibraryContent = ({
 
   return (
     // StatsPageLayout: DashboardContent와 동일한 레이아웃 껍데기 재사용
-    // bg="gradient": 공개 서재는 자체 그라디언트 배경 적용
+    // bg="default": 공개 서재도 앱 전체 배경(토큰)을 그대로 사용 — 미니멀 통일
     // maxWidth="6xl": 대시보드(7xl)보다 좁게
-    <StatsPageLayout bg='gradient' maxWidth='6xl'>
+    <StatsPageLayout maxWidth='6xl'>
       {/* 프로필 헤더 */}
       <PublicLibraryHeader
         profile={profile}
@@ -114,22 +114,22 @@ export const PublicLibraryContent = ({
       />
 
       {/* 연도별 통계 */}
-      <div className='flex items-center justify-between rounded-2xl border-2 border-white/60 bg-white/40 p-6 shadow-sm backdrop-blur-2xl'>
+      <div className='flex items-center justify-between rounded-lg border border-border bg-card p-6'>
         <div className='flex items-center gap-2'>
-          <Calendar className='h-6 w-6 text-slate-700' />
-          <h2 className='text-2xl font-bold text-slate-800'>
+          <Calendar className='h-6 w-6 text-primary' />
+          <h2 className='text-2xl font-bold text-foreground'>
             {selectedYear}년 독서 기록
           </h2>
         </div>
 
         {/* 연도 선택 */}
         <div className='flex items-center gap-2'>
-          <span className='text-sm font-medium text-slate-600'>연도 선택:</span>
+          <span className='text-sm font-medium text-muted-foreground'>연도 선택:</span>
           <Select
             value={selectedYear.toString()}
             onValueChange={handleYearChange}
           >
-            <SelectTrigger className='w-[140px] border-white/60 bg-white/50 backdrop-blur-md shadow-sm'>
+            <SelectTrigger className='w-[140px]'>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -145,8 +145,8 @@ export const PublicLibraryContent = ({
 
       {/* 독서 목표 진행률 (공개 서재 - 읽기 전용) */}
       {isCurrentYearGoal && readingGoal && (
-        <div className='rounded-3xl border-2 border-white/60 bg-white/40 p-6 shadow-sm backdrop-blur-2xl'>
-          <h3 className='mb-4 text-lg font-bold text-slate-800'>
+        <div className='rounded-lg border border-border bg-card p-6'>
+          <h3 className='mb-4 text-lg font-bold text-foreground'>
             목표 달성 현황
           </h3>
           <ReadingGoalProgress
@@ -191,8 +191,8 @@ export const PublicLibraryContent = ({
       </div>
 
       {/* 차트 섹션 */}
-      <div className='rounded-3xl border-2 border-white/60 bg-white/40 p-6 shadow-sm backdrop-blur-2xl'>
-        <h3 className='mb-6 text-xl font-bold text-slate-800'>독서 분석</h3>
+      <div className='rounded-lg border border-border bg-card p-6'>
+        <h3 className='mb-6 text-xl font-bold text-foreground'>독서 분석</h3>
         <DashboardCharts
           monthlyReading={stats.monthlyReading}
           categoryReading={stats.categoryReading}
@@ -204,7 +204,7 @@ export const PublicLibraryContent = ({
       </div>
 
       {/* 읽은 책 목록 */}
-      <div className='mt-8 rounded-3xl border-2 border-white/60 bg-white/40 p-8 shadow-sm backdrop-blur-2xl'>
+      <div className='mt-8 rounded-lg border border-border bg-card p-8'>
         <DashboardBookList
           books={books}
           categories={stats.categoryReading}
