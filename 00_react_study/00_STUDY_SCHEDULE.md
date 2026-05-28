@@ -114,8 +114,8 @@ Week 12-14 → 성능 최적화 + React Compiler
 | 45  | 05/19 ✅ | loading.tsx / Suspense         | `loading.tsx`로 스켈레톤 UI 구현             | 책장 로딩 스켈레톤 카드                         |
 | 46  | 05/22 ✅ | TanStack Query — queryKey 설계 | 현재 `useQuery` 패턴 전수 조사               | queryKey 네이밍 컨벤션 통일                     |
 | 47  | 05/27 ✅ | TanStack Query — mutation      | `useMutation` + optimistic update 구현       | 좋아요 클릭 즉시 반영 (TanStack Query 방식)     |
-| 48  | 04/24 | TanStack Query — 무한 스크롤   | `useInfiniteQuery`로 책 목록 페이지네이션    | 다음 페이지 자동 로드                           |
-| 49  | 04/24 | Phase 4 복습                   | SC/CC 분리 + TanStack Query 설계 최종 점검   | 변경 내역 PR 설명처럼 정리                      |
+| 48  | 05/28 ✅ | TanStack Query — 무한 스크롤   | `useInfiniteQuery`로 책 목록 페이지네이션    | 다음 페이지 자동 로드                           |
+| 49  | 05/28 ✅ | Phase 4 복습                   | SC/CC 분리 + TanStack Query 설계 최종 점검   | 변경 내역 PR 설명처럼 정리                      |
 
 ---
 
@@ -125,7 +125,7 @@ Week 12-14 → 성능 최적화 + React Compiler
 
 | Day | 날짜  | 주제                | 30분 할 일                                 | page0127 연결 포인트                   |
 | --- | ----- | ------------------- | ------------------------------------------ | -------------------------------------- |
-| 50  | 04/27 | useActionState 개요 | 독서 상태 변경 폼을 Server Action으로 처리 | `useActionState` 기본 패턴 이해        |
+| 50  | 05/28 ✅ | useActionState 개요 | 독서 상태 변경 폼을 Server Action으로 처리 | `useActionState` 기본 패턴 이해        |
 | 51  | 04/27 | useActionState 실습 | 에러/pending 상태 + 유효성 검사            | form action + 에러 메시지 표시         |
 | 52  | 04/28 | useOptimistic       | 좋아요 버튼 낙관적 업데이트 구현           | 서버 응답 전 즉시 하트 UI 반영         |
 | 53  | 04/28 | useOptimistic 심화  | 실패 시 롤백 처리                          | 네트워크 오류 → 원래 값 복원           |
