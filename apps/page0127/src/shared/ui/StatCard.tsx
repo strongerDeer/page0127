@@ -1,5 +1,19 @@
 import { ReactNode } from 'react';
+
+import { cn } from '@/shared/lib/utils';
+
 import { Card, CardContent } from './card';
+
+type StatCardVariant =
+  | 'blue'
+  | 'purple'
+  | 'emerald'
+  | 'amber'
+  | 'rose'
+  | 'indigo'
+  | 'sky'
+  | 'cyan'
+  | 'slate';
 
 type StatCardProps = {
   icon: ReactNode;
@@ -7,19 +21,21 @@ type StatCardProps = {
   value: string | number;
   unit?: string;
   description?: string;
-  variant?: 'blue' | 'purple' | 'emerald' | 'amber' | 'rose' | 'indigo' | 'sky' | 'cyan' | 'slate';
+  variant?: StatCardVariant;
 };
 
-const VARIANTS = {
-  blue: 'from-blue-500 to-blue-600',
-  purple: 'from-purple-500 to-purple-600',
-  emerald: 'from-emerald-500 to-emerald-600',
-  amber: 'from-amber-500 to-amber-600',
-  rose: 'from-rose-500 to-rose-600',
-  indigo: 'from-indigo-500 to-indigo-600',
-  sky: 'from-sky-400 to-sky-500',
-  cyan: 'from-cyan-400 to-cyan-500',
-  slate: 'from-slate-500 to-slate-600',
+// 아이콘 컨테이너 색은 우리 팔레트(primary + chart-2~5 + muted)로 매핑
+// — API 호환을 위해 기존 9개 variant 이름 유지, blue/sky/cyan/indigo는 primary로 통합
+const ICON_VARIANT_STYLES: Record<StatCardVariant, string> = {
+  blue: 'bg-primary/10 text-primary',
+  sky: 'bg-primary/10 text-primary',
+  cyan: 'bg-primary/10 text-primary',
+  indigo: 'bg-primary/10 text-primary',
+  purple: 'bg-chart-2/15 text-chart-2',
+  emerald: 'bg-chart-3/15 text-chart-3',
+  amber: 'bg-chart-4/15 text-chart-4',
+  rose: 'bg-chart-5/15 text-chart-5',
+  slate: 'bg-muted text-muted-foreground',
 };
 
 export const StatCard = ({
@@ -30,29 +46,36 @@ export const StatCard = ({
   description,
   variant = 'blue',
 }: StatCardProps) => {
-  // Variant safe check
-  const gradient = VARIANTS[variant as keyof typeof VARIANTS] || VARIANTS.blue;
+  const iconStyle = ICON_VARIANT_STYLES[variant] ?? ICON_VARIANT_STYLES.blue;
 
   return (
-    <Card className='group relative overflow-hidden border-2 border-white/60 bg-gradient-to-br from-white/80 to-white/40 shadow-xl backdrop-blur-2xl transition-all hover:scale-[1.02] hover:shadow-2xl hover:border-white/80'>
+    // shadcn Card 기본 shadow-sm 제거 — 정책: 기본 카드는 테두리만
+    <Card className='shadow-none'>
       <CardContent className='flex items-center justify-between p-6'>
-        <div className='relative z-10 space-y-1'>
-          <p className='text-sm font-medium text-slate-500'>{title}</p>
+        <div className='space-y-1'>
+          <p className='text-sm font-medium text-muted-foreground'>{title}</p>
           <div className='flex items-baseline gap-1'>
-            <p className='text-3xl font-bold tracking-tight text-slate-800'>
+            <p className='text-3xl font-bold tracking-tight text-foreground'>
               {typeof value === 'number' ? value.toLocaleString() : value}
             </p>
             {unit && (
-              <span className='text-sm font-semibold text-slate-500'>{unit}</span>
+              <span className='text-sm font-semibold text-muted-foreground'>
+                {unit}
+              </span>
             )}
           </div>
           {description && (
-            <p className='text-xs text-slate-400'>{description}</p>
+            <p className='text-xs text-muted-foreground'>{description}</p>
           )}
         </div>
 
-        {/* Icon Circle */}
-        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${gradient} text-white text-xl shadow-lg opacity-90`}>
+        {/* 아이콘 컨테이너 — variant별 tinted 색 (인디고 베이스 + 보조 파스텔) */}
+        <div
+          className={cn(
+            'flex h-12 w-12 items-center justify-center rounded-md',
+            iconStyle
+          )}
+        >
           {icon}
         </div>
       </CardContent>
