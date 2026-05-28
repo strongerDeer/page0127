@@ -61,7 +61,7 @@ export const ActivityFeed = () => {
   if (isLoading) {
     return (
       <div className='flex items-center justify-center py-12'>
-        <Loader2 className='h-8 w-8 animate-spin text-gray-400' />
+        <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
       </div>
     );
   }
@@ -71,9 +71,9 @@ export const ActivityFeed = () => {
   // 활동 없음
   if (activities.length === 0) {
     return (
-      <div className='rounded-lg border border-gray-200 bg-gray-50 py-12 text-center'>
-        <p className='text-gray-600'>아직 활동이 없습니다</p>
-        <p className='mt-2 text-sm text-gray-500'>
+      <div className='rounded-lg border border-border bg-muted/50 py-12 text-center'>
+        <p className='text-muted-foreground'>아직 활동이 없습니다</p>
+        <p className='mt-2 text-sm text-muted-foreground'>
           친구를 팔로우하고 그들의 독서 활동을 확인해보세요
         </p>
       </div>
@@ -91,14 +91,14 @@ export const ActivityFeed = () => {
       <div ref={observerRef} className='py-4'>
         {isFetchingNextPage && (
           <div className='flex items-center justify-center'>
-            <Loader2 className='h-6 w-6 animate-spin text-gray-400' />
+            <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
           </div>
         )}
       </div>
 
       {/* 더 이상 로드할 활동 없음 */}
       {!hasNextPage && activities.length > 0 && (
-        <p className='py-4 text-center text-sm text-gray-500'>
+        <p className='py-4 text-center text-sm text-muted-foreground'>
           모든 활동을 불러왔습니다
         </p>
       )}

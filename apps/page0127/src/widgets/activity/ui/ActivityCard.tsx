@@ -21,14 +21,15 @@ type ActivityCardProps = {
   initialCommentsOpen?: boolean; // 댓글 섹션 초기 펼침 상태
 };
 
+// 활동 타입별 의미 색은 차트 팔레트로 통일 (인디고 베이스 + 보조 파스텔)
 const getActivityIcon = (type: Activity['activity_type']) => {
   switch (type) {
     case 'book_added':
-      return <BookOpen className='h-5 w-5 text-blue-600' />;
+      return <BookOpen className='h-5 w-5 text-chart-1' />;
     case 'book_completed':
-      return <BookCheck className='h-5 w-5 text-green-600' />;
+      return <BookCheck className='h-5 w-5 text-chart-3' />;
     case 'review_added':
-      return <MessageSquare className='h-5 w-5 text-purple-600' />;
+      return <MessageSquare className='h-5 w-5 text-chart-2' />;
   }
 };
 
@@ -65,7 +66,7 @@ export const ActivityCard = ({
   if (!activity.book) return null;
 
   return (
-    <div className='rounded-lg border bg-white p-4 shadow-sm'>
+    <div className='rounded-lg border border-border bg-card p-4'>
       {/* 사용자 정보 및 활동 타입 */}
       <div className='mb-3 flex items-center gap-3'>
         {/* 프로필 이미지 */}
@@ -80,7 +81,7 @@ export const ActivityCard = ({
             />
           </div>
         ) : (
-          <div className='flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-sm font-bold text-gray-600'>
+          <div className='flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-bold text-muted-foreground'>
             {(activity.user.nickname || 'U').charAt(0).toUpperCase()}
           </div>
         )}
@@ -90,19 +91,19 @@ export const ActivityCard = ({
           <div className='flex items-center gap-2'>
             <Link
               href={`/${activity.user.nickname || activity.user.id}`}
-              className='font-semibold text-gray-900 hover:text-blue-600'
+              className='font-semibold text-foreground hover:text-primary'
             >
               {activity.user.nickname || '익명'}
             </Link>
             {getActivityIcon(activity.activity_type)}
           </div>
-          <p className='text-sm text-gray-600'>
+          <p className='text-sm text-muted-foreground'>
             {getActivityText(activity.activity_type)}
           </p>
         </div>
 
         {/* 시간 */}
-        <span className='text-sm text-gray-500'>
+        <span className='text-sm text-muted-foreground'>
           {getRelativeTime(activity.created_at)}
         </span>
       </div>
@@ -121,15 +122,15 @@ export const ActivityCard = ({
             />
           </div>
         ) : (
-          <div className='flex h-32 w-24 flex-shrink-0 items-center justify-center rounded bg-gray-100 text-gray-400'>
+          <div className='flex h-32 w-24 flex-shrink-0 items-center justify-center rounded bg-muted text-muted-foreground'>
             <BookOpen className='h-8 w-8' />
           </div>
         )}
 
         {/* 책 상세 */}
         <div className='flex-1'>
-          <h3 className='font-semibold text-gray-900'>{activity.book.title}</h3>
-          <p className='text-sm text-gray-600'>{activity.book.author}</p>
+          <h3 className='font-semibold text-foreground'>{activity.book.title}</h3>
+          <p className='text-sm text-muted-foreground'>{activity.book.author}</p>
 
           {/* 평점 (완독 시) */}
           {activity.activity_type === 'book_completed' &&
@@ -144,7 +145,7 @@ export const ActivityCard = ({
 
           {/* 리뷰 내용 */}
           {activity.activity_type === 'review_added' && activity.content && (
-            <p className='mt-2 line-clamp-3 text-sm text-gray-700'>
+            <p className='mt-2 line-clamp-3 text-sm text-muted-foreground'>
               {activity.content}
             </p>
           )}
