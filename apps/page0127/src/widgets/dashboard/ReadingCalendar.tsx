@@ -193,10 +193,10 @@ export const ReadingCalendar = ({
                           <div
                             className={`h-1.5 w-1.5 rounded-full ${
                               bookCount === 1
-                                ? 'bg-blue-500'
+                                ? 'bg-primary'
                                 : bookCount === 2
-                                  ? 'bg-green-500'
-                                  : 'bg-red-500'
+                                  ? 'bg-chart-3'
+                                  : 'bg-chart-5'
                             }`}
                           />
                         </div>

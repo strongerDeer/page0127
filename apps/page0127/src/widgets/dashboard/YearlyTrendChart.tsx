@@ -111,27 +111,27 @@ export const YearlyTrendChart = ({ data }: Props) => {
       </ResponsiveContainer>
 
       {/* 인사이트 메시지 */}
-      <div className='text-center text-sm text-gray-600'>
+      <div className='text-center text-sm text-muted-foreground'>
         {currentYear.year === peakYear.year ? (
           <p>
-            <span className='font-semibold text-emerald-600'>
+            <span className='font-semibold text-chart-3'>
               {currentYear.year}년
             </span>
             이 역대 최고 기록이에요! 🎉
           </p>
         ) : (
           <p>
-            <span className='font-semibold text-emerald-600'>
+            <span className='font-semibold text-chart-3'>
               {peakYear.year}년
             </span>
             이 최고 기록이에요. ({peakYear.count}권)
           </p>
         )}
         {previousYear && growthRate !== 0 && (
-          <p className='text-xs text-gray-500'>
+          <p className='text-xs text-muted-foreground'>
             전년 대비{' '}
             <span
-              className={growthRate > 0 ? 'text-emerald-600' : 'text-red-600'}
+              className={growthRate > 0 ? 'text-chart-3' : 'text-destructive'}
             >
               {growthRate > 0 ? '+' : ''}
               {growthRate}%

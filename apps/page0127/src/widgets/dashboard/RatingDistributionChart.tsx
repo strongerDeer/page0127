@@ -78,9 +78,9 @@ export const RatingDistributionChart = ({ data }: Props) => {
     <div className="flex flex-col gap-4">
       {/* 평균 평점 */}
       <div className="text-center">
-        <p className="text-sm text-gray-600">평균 평점</p>
-        <p className="text-3xl font-bold text-emerald-600">{averageRating} / 5.0</p>
-        <p className="text-xs text-gray-500">전체 {totalBooks}권 기준</p>
+        <p className="text-sm text-muted-foreground">평균 평점</p>
+        <p className="text-3xl font-bold text-chart-3">{averageRating} / 5.0</p>
+        <p className="text-xs text-muted-foreground">전체 {totalBooks}권 기준</p>
       </div>
 
       {/* 평점 분포 막대 */}
@@ -88,12 +88,12 @@ export const RatingDistributionChart = ({ data }: Props) => {
         {data.map((item) => (
           <div key={item.rating} className="flex items-center gap-3">
             {/* 평점 라벨 */}
-            <div className="w-12 text-right text-sm font-medium text-gray-700">
+            <div className="w-12 text-right text-sm font-medium text-foreground">
               {item.rating}점
             </div>
 
             {/* 막대 그래프 */}
-            <div className="relative h-6 flex-1 overflow-hidden rounded-full bg-gray-100">
+            <div className="relative h-6 flex-1 overflow-hidden rounded-full bg-muted">
               <div
                 className="h-full transition-all duration-300"
                 style={{
@@ -104,27 +104,27 @@ export const RatingDistributionChart = ({ data }: Props) => {
             </div>
 
             {/* 권수 & 비율 */}
-            <div className="w-28 text-left text-sm text-gray-600">
+            <div className="w-28 text-left text-sm text-muted-foreground">
               {item.count}권 ({item.percentage}%)
             </div>
 
             {/* 특수 라벨 */}
             {item.rating === 10 && item.count > 0 && (
-              <span className="text-xs text-emerald-600">← 인생책!</span>
+              <span className="text-xs text-chart-3">← 인생책!</span>
             )}
             {item.rating === 0 && item.count > 0 && (
-              <span className="text-xs text-gray-400">← 평가 안 함</span>
+              <span className="text-xs text-muted-foreground">← 평가 안 함</span>
             )}
           </div>
         ))}
       </div>
 
       {/* AI 인사이트 */}
-      <div className="rounded-lg bg-emerald-50 p-4 text-center">
-        <p className="text-sm text-gray-700">
-          💡 <span className="font-semibold text-emerald-600">{insight.personality}</span>
+      <div className="rounded-lg bg-chart-3/10 p-4 text-center">
+        <p className="text-sm text-foreground">
+          💡 <span className="font-semibold text-chart-3">{insight.personality}</span>
         </p>
-        <p className="mt-1 text-xs text-gray-600">{insight.message}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{insight.message}</p>
       </div>
     </div>
   );

@@ -29,16 +29,13 @@ export const DashboardSkeleton = () => {
       {/* ② Top Stat Cards 4개 */}
       <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
         {Array.from({ length: 4 }).map((_, i) => (
-          <Card
-            key={i}
-            className='border-2 border-white/60 bg-gradient-to-br from-white/80 to-white/40 shadow-xl backdrop-blur-2xl'
-          >
+          <Card key={i} className='shadow-none'>
             <CardContent className='flex items-center justify-between p-6'>
               <div className='space-y-2'>
                 <Skeleton className='h-4 w-20' />
                 <Skeleton className='h-8 w-16' />
               </div>
-              <Skeleton className='h-12 w-12 rounded-2xl' />
+              <Skeleton className='h-12 w-12 rounded-md' />
             </CardContent>
           </Card>
         ))}
@@ -49,7 +46,7 @@ export const DashboardSkeleton = () => {
         {/* Left: Charts (col-span-2) */}
         <div className='space-y-6 lg:col-span-2'>
           {/* Yearly Trend Chart */}
-          <Card className='border border-white/40 bg-white/60 shadow-xl backdrop-blur-xl'>
+          <Card className='shadow-none'>
             <CardHeader>
               <Skeleton className='h-6 w-48' />
             </CardHeader>
@@ -58,13 +55,13 @@ export const DashboardSkeleton = () => {
             </CardContent>
           </Card>
           {/* Monthly & Category Charts */}
-          <Skeleton className='h-[700px] w-full rounded-3xl' />
+          <Skeleton className='h-[700px] w-full rounded-lg' />
         </div>
 
         {/* Right: Side Widgets */}
         <div className='space-y-6'>
           {/* Reading Journey */}
-          <Card className='border border-white/40 bg-gradient-to-br from-white/60 to-white/30 shadow-xl backdrop-blur-xl'>
+          <Card className='shadow-none'>
             <CardHeader>
               <Skeleton className='h-6 w-32' />
             </CardHeader>
@@ -76,7 +73,7 @@ export const DashboardSkeleton = () => {
           </Card>
 
           {/* Goal Progress */}
-          <div className='rounded-3xl border border-white/40 bg-white/50 p-6 shadow-xl backdrop-blur-xl'>
+          <div className='rounded-lg border border-border bg-card p-6'>
             <Skeleton className='mb-4 h-6 w-32' />
             <Skeleton className='h-3 w-full rounded-full' />
             <div className='mt-3 flex justify-between'>
@@ -86,7 +83,7 @@ export const DashboardSkeleton = () => {
           </div>
 
           {/* Taste Analysis Promo — 로딩 단계에선 다른 카드와 동일한 회색 톤 유지 */}
-          <div className='rounded-3xl border border-white/40 bg-white/50 p-6 shadow-xl backdrop-blur-xl'>
+          <div className='rounded-lg border border-border bg-card p-6'>
             <Skeleton className='h-6 w-40' />
             <Skeleton className='mt-3 h-4 w-full' />
             <Skeleton className='mt-4 h-10 w-full' />
@@ -95,7 +92,7 @@ export const DashboardSkeleton = () => {
       </div>
 
       {/* ⑤ Calendar */}
-      <div className='rounded-3xl border border-white/40 bg-white/60 p-6 shadow-xl backdrop-blur-xl'>
+      <div className='rounded-lg border border-border bg-card p-6'>
         <div className='mb-6 flex items-center justify-between'>
           <Skeleton className='h-7 w-40' />
           <div className='flex gap-2'>
@@ -112,7 +109,7 @@ export const DashboardSkeleton = () => {
       </div>
 
       {/* ⑥ Book List */}
-      <div className='rounded-3xl border border-white/40 bg-white/60 p-1 shadow-xl backdrop-blur-xl'>
+      <div className='rounded-lg border border-border bg-card p-1'>
         <Card className='border-0 bg-transparent shadow-none'>
           <CardHeader>
             <Skeleton className='h-7 w-40' />

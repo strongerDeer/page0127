@@ -97,7 +97,7 @@ export const CalendarBlock = ({
   });
 
   return (
-    <div className='rounded-3xl border border-white/40 bg-white/60 shadow-xl backdrop-blur-xl overflow-hidden'>
+    <div className='rounded-lg border border-border bg-card overflow-hidden'>
       <ReadingCalendar
         data={result?.data ?? []}
         summary={result?.summary ?? { totalBooks: 0, totalPages: 0 }}

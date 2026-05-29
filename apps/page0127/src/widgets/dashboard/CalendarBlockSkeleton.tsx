@@ -10,7 +10,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
  */
 export const CalendarBlockSkeleton = () => {
   return (
-    <div className='rounded-3xl border border-white/40 bg-white/60 p-6 shadow-xl backdrop-blur-xl'>
+    <div className='rounded-lg border border-border bg-card p-6'>
       <div className='mb-6 flex items-center justify-between'>
         <Skeleton className='h-7 w-40' />
         <div className='flex gap-2'>
