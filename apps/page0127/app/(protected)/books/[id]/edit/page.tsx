@@ -79,7 +79,7 @@ const BookEditPage = ({ params }: PageProps) => {
   if (isLoading || !book) {
     return (
       <ErrorBoundary>
-        <div className='min-h-screen bg-gray-50 p-8'>
+        <div className='min-h-screen p-8'>
           <div className='mx-auto max-w-3xl'>
             <Card>
               <CardHeader>
@@ -87,7 +87,7 @@ const BookEditPage = ({ params }: PageProps) => {
               </CardHeader>
               <CardContent className='space-y-6'>
                 {/* 책 정보 미리보기 */}
-                <div className='flex gap-4 rounded-lg bg-gray-50 p-4'>
+                <div className='flex gap-4 rounded-lg bg-muted/50 p-4'>
                   <Skeleton className='h-32 w-24 shrink-0' />
                   <div className='flex-1 space-y-2'>
                     <Skeleton className='h-6 w-3/4' />
@@ -134,7 +134,7 @@ const BookEditPage = ({ params }: PageProps) => {
 
   return (
     <ErrorBoundary>
-      <div className='min-h-screen bg-gray-50 p-8'>
+      <div className='min-h-screen p-8'>
         <div className='mx-auto max-w-3xl'>
           <BookRegistrationForm
             book={aladinBookFormat}

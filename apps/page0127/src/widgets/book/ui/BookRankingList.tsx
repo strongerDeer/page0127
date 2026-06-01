@@ -28,7 +28,7 @@ export const BookRankingList = ({
       <div className='mb-6 flex items-end justify-between'>
         <div>
           <h2 className='text-2xl font-bold'>{title}</h2>
-          {subTitle && <p className='mt-1 text-gray-500'>{subTitle}</p>}
+          {subTitle && <p className='mt-1 text-muted-foreground'>{subTitle}</p>}
         </div>
       </div>
 
@@ -48,10 +48,10 @@ export const BookRankingList = ({
               />
 
               {/* Ranking specific stats below the item */}
-              <div className='flex items-center justify-center gap-1 text-xs font-medium text-gray-500'>
+              <div className='flex items-center justify-center gap-1 text-xs font-medium text-muted-foreground'>
                 {type === 'best' ? (
                   <>
-                    <Heart className='h-3 w-3 fill-red-500 text-red-500' />
+                    <Heart className='h-3 w-3 fill-chart-5 text-chart-5' />
                     <span>{item.count}명</span>
                   </>
                 ) : (

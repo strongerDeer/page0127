@@ -92,7 +92,7 @@ export const DeleteAccountDialog = ({
           <AlertDialogTitle>정말로 계정을 삭제하시겠습니까?</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className='space-y-4'>
-              <p className='text-red-600 font-semibold'>
+              <p className='text-destructive font-semibold'>
                 ⚠️ 이 작업은 되돌릴 수 없습니다.
               </p>
               <p>계정을 삭제하면 다음 데이터가 영구적으로 삭제됩니다:</p>
@@ -105,7 +105,7 @@ export const DeleteAccountDialog = ({
                 <li>팔로우/팔로워 정보</li>
                 <li>프로필 정보 및 이미지</li>
               </ul>
-              <p className='text-sm mt-3 text-gray-600'>
+              <p className='text-sm mt-3 text-muted-foreground'>
                 ℹ️ 다른 사람 글에 작성한 댓글은 &quot;탈퇴한 사용자&quot;로
                 표시되며 삭제되지 않습니다.
               </p>
@@ -131,7 +131,7 @@ export const DeleteAccountDialog = ({
           <AlertDialogAction
             onClick={handleDeleteAccount}
             disabled={!isEmailMatched || isDeleting}
-            className='bg-red-600 hover:bg-red-700 focus:ring-red-600'
+            className='bg-destructive hover:bg-destructive/90 focus:ring-destructive'
           >
             {isDeleting ? '삭제 중...' : '계정 삭제'}
           </AlertDialogAction>

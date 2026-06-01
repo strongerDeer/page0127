@@ -15,13 +15,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
  */
 export default function BookNotFound() {
   return (
-    <div className='flex min-h-screen items-center justify-center bg-gray-50 p-4'>
+    <div className='flex min-h-screen items-center justify-center p-4'>
       <Card className='w-full max-w-md'>
         <CardHeader>
-          <CardTitle className='text-gray-900'>책을 찾을 수 없습니다</CardTitle>
+          <CardTitle className='text-foreground'>책을 찾을 수 없습니다</CardTitle>
         </CardHeader>
         <CardContent className='space-y-4'>
-          <p className='text-gray-600'>
+          <p className='text-muted-foreground'>
             요청하신 책이 존재하지 않거나 삭제되었습니다.
           </p>
 

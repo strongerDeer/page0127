@@ -86,7 +86,7 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50 p-8'>
+    <div className='min-h-screen p-8'>
       <div className='mx-auto max-w-4xl'>
         {/* 헤더 */}
         <div className='mb-6 flex items-center justify-between'>
@@ -101,7 +101,7 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
         <div className='grid gap-6 md:grid-cols-[240px_1fr]'>
           {/* 책 표지 & 독자 프로필 */}
           <div className='space-y-6'>
-            <div className='relative aspect-[1/1.4] w-full overflow-hidden rounded-lg shadow-lg'>
+            <div className='relative aspect-[1/1.4] w-full overflow-hidden rounded-lg border border-border'>
               {book.cover_image ? (
                 <Image
                   src={book.cover_image}
@@ -111,7 +111,7 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
                   sizes='(max-width: 768px) 100vw, 240px'
                 />
               ) : (
-                <div className='flex h-full w-full items-center justify-center bg-gray-200 text-gray-400'>
+                <div className='flex h-full w-full items-center justify-center bg-muted text-muted-foreground'>
                   <BookOpen size={48} />
                 </div>
               )}
@@ -125,8 +125,8 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
           <div className='space-y-6'>
             <div>
               <h1 className='text-3xl font-bold'>{book.title}</h1>
-              <p className='mt-2 text-xl text-gray-600'>{book.author}</p>
-              <p className='text-gray-500'>
+              <p className='mt-2 text-xl text-foreground'>{book.author}</p>
+              <p className='text-muted-foreground'>
                 {book.publisher} · {book.pub_date}
               </p>
             </div>
@@ -135,22 +135,22 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
             <div className='grid grid-cols-2 gap-4'>
               <Card>
                 <CardContent className='flex flex-col items-center justify-center p-6'>
-                  <div className='mb-2 rounded-full bg-blue-100 p-3 text-blue-600'>
+                  <div className='mb-2 rounded-full bg-primary/15 p-3 text-primary'>
                     <User size={24} />
                   </div>
-                  <p className='text-sm text-gray-500'>완독한 리더</p>
+                  <p className='text-sm text-muted-foreground'>완독한 리더</p>
                   <p className='text-2xl font-bold'>{stats.completedCount}명</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className='flex flex-col items-center justify-center p-6'>
-                  <div className='mb-2 rounded-full bg-yellow-100 p-3 text-yellow-600'>
+                  <div className='mb-2 rounded-full bg-chart-4/15 p-3 text-chart-4'>
                     <Star size={24} />
                   </div>
-                  <p className='text-sm text-gray-500'>평균 평점</p>
+                  <p className='text-sm text-muted-foreground'>평균 평점</p>
                   <p className='text-2xl font-bold'>
                     {stats.avgRating}{' '}
-                    <span className='text-sm text-gray-400'>
+                    <span className='text-sm text-muted-foreground'>
                       ({stats.ratingCount})
                     </span>
                   </p>
@@ -168,7 +168,7 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
                   <CardTitle>책 소개</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className='whitespace-pre-line text-gray-700 leading-relaxed'>
+                  <p className='whitespace-pre-line text-foreground leading-relaxed'>
                     {book.description}
                   </p>
                 </CardContent>

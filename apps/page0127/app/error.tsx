@@ -30,23 +30,23 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className='flex min-h-screen items-center justify-center bg-gray-50 p-4'>
+    <div className='flex min-h-screen items-center justify-center p-4'>
       <Card className='w-full max-w-md'>
         <CardHeader>
-          <CardTitle className='text-red-600'>오류가 발생했습니다</CardTitle>
+          <CardTitle className='text-destructive'>오류가 발생했습니다</CardTitle>
         </CardHeader>
         <CardContent className='space-y-4'>
-          <p className='text-gray-600'>
+          <p className='text-muted-foreground'>
             예상치 못한 오류가 발생했습니다. 다시 시도해주세요.
           </p>
 
           {/* 개발 환경에서만 에러 메시지 표시 */}
           {process.env.NODE_ENV === 'development' && (
-            <div className='rounded-md bg-red-50 p-3'>
-              <p className='text-sm font-medium text-red-800'>에러 메시지:</p>
-              <p className='mt-1 text-sm text-red-700'>{error.message}</p>
+            <div className='rounded-md bg-destructive/10 p-3'>
+              <p className='text-sm font-medium text-destructive'>에러 메시지:</p>
+              <p className='mt-1 text-sm text-destructive/90'>{error.message}</p>
               {error.digest && (
-                <p className='mt-1 text-xs text-red-600'>
+                <p className='mt-1 text-xs text-destructive/80'>
                   Digest: {error.digest}
                 </p>
               )}
