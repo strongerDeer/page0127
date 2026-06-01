@@ -24,11 +24,11 @@ export const BookCardInfo = ({ book, onDelete }: BookCardInfoProps) => {
     <div className='flex flex-1 flex-col'>
       <CardHeader className='pb-3'>
         <Link href={`/books/${book.id}`}>
-          <h3 className='line-clamp-2 text-base font-semibold hover:text-blue-600'>
+          <h3 className='line-clamp-2 text-base font-semibold hover:text-primary'>
             {book.title}
           </h3>
         </Link>
-        <p className='text-sm text-gray-600'>{book.author}</p>
+        <p className='text-sm text-muted-foreground'>{book.author}</p>
       </CardHeader>
 
       <CardContent className='flex-1 pt-0'>
@@ -38,10 +38,10 @@ export const BookCardInfo = ({ book, onDelete }: BookCardInfoProps) => {
             <span
               className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${
                 book.status === 'completed'
-                  ? 'bg-green-100 text-green-800'
+                  ? 'bg-chart-3/15 text-chart-3'
                   : book.status === 'reading'
-                    ? 'bg-blue-100 text-blue-800'
-                    : 'bg-gray-100 text-gray-800'
+                    ? 'bg-primary/15 text-primary'
+                    : 'bg-muted text-muted-foreground'
               }`}
             >
               {statusText[book.status]}
@@ -57,13 +57,13 @@ export const BookCardInfo = ({ book, onDelete }: BookCardInfoProps) => {
           </div>
 
           {book.completed_date && (
-            <p className='text-sm text-gray-500'>
+            <p className='text-sm text-muted-foreground'>
               완독일: {book.completed_date}
             </p>
           )}
 
           {book.one_line_review && (
-            <p className='line-clamp-2 text-sm text-gray-700'>
+            <p className='line-clamp-2 text-sm text-foreground'>
               &quot;{book.one_line_review}&quot;
             </p>
           )}
@@ -73,7 +73,7 @@ export const BookCardInfo = ({ book, onDelete }: BookCardInfoProps) => {
               {book.tags.map((tag) => (
                 <span
                   key={tag}
-                  className='rounded bg-gray-100 px-2 py-1 text-xs text-gray-600'
+                  className='rounded bg-muted px-2 py-1 text-xs text-muted-foreground'
                 >
                   #{tag}
                 </span>
@@ -87,7 +87,7 @@ export const BookCardInfo = ({ book, onDelete }: BookCardInfoProps) => {
             <Button
               variant='outline'
               size='sm'
-              className='hover:bg-blue-50 hover:text-blue-700'
+              className='hover:bg-accent hover:text-primary'
             >
               수정
             </Button>

@@ -223,7 +223,7 @@ export const BookRegistrationForm = ({
       <CardContent>
         <form onSubmit={handleSubmit} className='space-y-6'>
           {/* 책 정보 미리보기 */}
-          <div className='flex gap-4 rounded-lg bg-gray-50 p-4'>
+          <div className='flex gap-4 rounded-lg bg-muted/50 p-4'>
             <div className='relative h-32 w-24 shrink-0'>
               {highResCover ? (
                 <Image
@@ -234,17 +234,17 @@ export const BookRegistrationForm = ({
                   sizes='96px'
                 />
               ) : (
-                <div className='flex h-full w-full items-center justify-center bg-gray-200 text-gray-400'>
+                <div className='flex h-full w-full items-center justify-center bg-muted text-muted-foreground'>
                   No Image
                 </div>
               )}
             </div>
             <div>
               <h4 className='font-semibold'>{book.title}</h4>
-              <p className='text-sm text-gray-600'>{book.author}</p>
-              <p className='text-sm text-gray-500'>{book.publisher}</p>
+              <p className='text-sm text-foreground'>{book.author}</p>
+              <p className='text-sm text-muted-foreground'>{book.publisher}</p>
               {book.subInfo?.itemPage && (
-                <p className='text-sm text-gray-500'>
+                <p className='text-sm text-muted-foreground'>
                   📖 {book.subInfo.itemPage}쪽
                 </p>
               )}
@@ -336,8 +336,8 @@ export const BookRegistrationForm = ({
                     }
                     className={`rounded-md border px-4 py-2 transition-colors ${
                       rating === score
-                        ? 'border-blue-500 bg-blue-500 text-white'
-                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-border bg-card text-foreground hover:bg-accent'
                     }`}
                   >
                     {score}
@@ -389,12 +389,12 @@ export const BookRegistrationForm = ({
                 dispatch({ type: 'SET_TAGS_INPUT', value: e.target.value })
               }
               placeholder='예: 자기계발, 경영, 추천도서'
-              className={tagError ? 'border-red-500' : ''}
+              className={tagError ? 'border-destructive' : ''}
             />
             {tagError ? (
-              <p className='text-sm text-red-600'>{tagError}</p>
+              <p className='text-sm text-destructive'>{tagError}</p>
             ) : (
-              <p className='text-sm text-gray-500'>
+              <p className='text-sm text-muted-foreground'>
                 쉼표(,)로 구분하여 최대 10개까지 입력할 수 있습니다. 중복된
                 태그는 자동으로 제거됩니다.
               </p>
@@ -408,7 +408,7 @@ export const BookRegistrationForm = ({
                 <Label htmlFor={ids.isPublic} className='text-base'>
                   공개 설정
                 </Label>
-                <p className='text-sm text-gray-500'>
+                <p className='text-sm text-muted-foreground'>
                   {isPublic
                     ? '다른 사람들이 이 책을 볼 수 있습니다.'
                     : '나만 볼 수 있습니다. (비공개)'}

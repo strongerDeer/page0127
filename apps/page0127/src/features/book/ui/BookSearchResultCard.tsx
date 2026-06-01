@@ -43,7 +43,7 @@ export const BookSearchResultCard = ({
             sizes='112px'
           />
         ) : (
-          <div className='flex h-full w-full items-center justify-center bg-gray-200 text-gray-400'>
+          <div className='flex h-full w-full items-center justify-center bg-muted text-muted-foreground'>
             No Image
           </div>
         )}
@@ -53,11 +53,11 @@ export const BookSearchResultCard = ({
       <div className='flex flex-1 flex-col'>
         <CardHeader className='pb-3'>
           <h3 className='line-clamp-2 text-base font-semibold'>{book.title}</h3>
-          <p className='text-sm text-gray-600'>{book.author}</p>
+          <p className='text-sm text-muted-foreground'>{book.author}</p>
         </CardHeader>
 
         <CardContent className='flex-1 pt-0'>
-          <div className='space-y-1 text-sm text-gray-500'>
+          <div className='space-y-1 text-sm text-muted-foreground'>
             <p>출판사: {book.publisher}</p>
             <p>출간일: {book.pubDate}</p>
             {book.categoryName && (

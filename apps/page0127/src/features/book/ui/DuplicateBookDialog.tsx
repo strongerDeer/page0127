@@ -45,13 +45,13 @@ export const DuplicateBookDialog = ({
         <DialogHeader>
           <DialogTitle>이미 등록된 책입니다</DialogTitle>
           <DialogDescription>
-            <span className='font-medium text-gray-900'>&quot;{bookTitle}&quot;</span>
+            <span className='font-medium text-foreground'>&quot;{bookTitle}&quot;</span>
             <br />
             <br />
             이 책은 이미 등록되어 있습니다.
             <br />
             {existingBook.read_count > 1 && (
-              <span className='text-blue-600'>
+              <span className='text-primary'>
                 (현재 {existingBook.read_count}회독)
               </span>
             )}
@@ -59,13 +59,13 @@ export const DuplicateBookDialog = ({
         </DialogHeader>
 
         <div className='space-y-4 py-4'>
-          <div className='rounded-lg bg-gray-50 p-4'>
-            <h4 className='mb-2 text-sm font-semibold text-gray-700'>
+          <div className='rounded-lg bg-muted/50 p-4'>
+            <h4 className='mb-2 text-sm font-semibold text-foreground'>
               기존 등록 정보
             </h4>
             <dl className='space-y-1 text-sm'>
               <div className='flex justify-between'>
-                <dt className='text-gray-600'>상태:</dt>
+                <dt className='text-muted-foreground'>상태:</dt>
                 <dd className='font-medium'>
                   {existingBook.status === 'completed' && '완독'}
                   {existingBook.status === 'reading' && '읽는 중'}
@@ -74,13 +74,13 @@ export const DuplicateBookDialog = ({
               </div>
               {existingBook.completed_date && (
                 <div className='flex justify-between'>
-                  <dt className='text-gray-600'>완독일:</dt>
+                  <dt className='text-muted-foreground'>완독일:</dt>
                   <dd className='font-medium'>{existingBook.completed_date}</dd>
                 </div>
               )}
               {existingBook.rating && (
                 <div className='flex justify-between'>
-                  <dt className='text-gray-600'>평점:</dt>
+                  <dt className='text-muted-foreground'>평점:</dt>
                   <dd className='font-medium'>⭐ {existingBook.rating}점</dd>
                 </div>
               )}

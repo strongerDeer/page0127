@@ -35,17 +35,17 @@ export const MyBookMemo = async ({ isbn }: MyBookMemoProps) => {
   return (
     <div className='space-y-6'>
       <h2 className='text-xl font-bold'>나의 기록</h2>
-      <Card className='bg-white/50 backdrop-blur-sm'>
+      <Card className='shadow-none'>
         <CardContent className='p-6 space-y-4'>
           {/* Status & Rating */}
           <div className='flex items-center gap-4'>
             <span
               className={`px-3 py-1 rounded-full text-xs font-medium ${
                 myBook.status === 'completed'
-                  ? 'bg-blue-100 text-blue-700'
+                  ? 'bg-chart-3/15 text-chart-3'
                   : myBook.status === 'reading'
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-gray-100 text-gray-700'
+                    ? 'bg-primary/15 text-primary'
+                    : 'bg-muted text-muted-foreground'
               }`}
             >
               {myBook.status === 'completed'
@@ -65,8 +65,8 @@ export const MyBookMemo = async ({ isbn }: MyBookMemoProps) => {
 
           {/* One Line Review */}
           {myBook.one_line_review && (
-            <div className='p-4 bg-gray-50 rounded-lg border-l-4 border-blue-500'>
-              <p className='font-medium text-gray-700'>
+            <div className='p-4 bg-accent rounded-lg border-l-4 border-primary'>
+              <p className='font-medium text-foreground'>
                 &ldquo;{myBook.one_line_review}&rdquo;
               </p>
             </div>
@@ -74,8 +74,8 @@ export const MyBookMemo = async ({ isbn }: MyBookMemoProps) => {
 
           {/* Memo */}
           {myBook.personal_memo && (
-            <div className='text-sm text-gray-600 space-y-1'>
-              <p className='font-semibold text-gray-800'>메모</p>
+            <div className='text-sm text-muted-foreground space-y-1'>
+              <p className='font-semibold text-foreground'>메모</p>
               <p className='whitespace-pre-wrap'>{myBook.personal_memo}</p>
             </div>
           )}
@@ -86,7 +86,7 @@ export const MyBookMemo = async ({ isbn }: MyBookMemoProps) => {
               {myBook.tags.map((tag) => (
                 <span
                   key={tag}
-                  className='text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded'
+                  className='text-xs px-2 py-1 bg-muted text-muted-foreground rounded'
                 >
                   #{tag}
                 </span>
@@ -96,7 +96,7 @@ export const MyBookMemo = async ({ isbn }: MyBookMemoProps) => {
 
           {/* Empty State message if nothing recorded */}
           {!myBook.one_line_review && !myBook.personal_memo && (
-            <p className='text-sm text-gray-400 italic'>
+            <p className='text-sm text-muted-foreground italic'>
               아직 기록된 내용이 없습니다.
             </p>
           )}
