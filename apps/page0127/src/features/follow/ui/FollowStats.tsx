@@ -49,7 +49,7 @@ export const FollowStats = ({
 
   if (isLoading) {
     return (
-      <div className='flex items-center gap-4 text-sm text-gray-600'>
+      <div className='flex items-center gap-4 text-sm text-muted-foreground'>
         <Loader2 className='h-4 w-4 animate-spin' />
       </div>
     );
@@ -59,19 +59,19 @@ export const FollowStats = ({
     <div className='flex items-center gap-4 text-sm'>
       <button
         onClick={onFollowersClick}
-        className='flex items-center gap-1 transition-colors hover:text-blue-600'
+        className='flex items-center gap-1 transition-colors hover:text-primary'
       >
         <Users className='h-4 w-4' />
         <span className='font-semibold'>{stats?.followers_count || 0}</span>
-        <span className='text-gray-600'>팔로워</span>
+        <span className='text-muted-foreground'>팔로워</span>
       </button>
 
       <button
         onClick={onFollowingClick}
-        className='flex items-center gap-1 transition-colors hover:text-blue-600'
+        className='flex items-center gap-1 transition-colors hover:text-primary'
       >
         <span className='font-semibold'>{stats?.following_count || 0}</span>
-        <span className='text-gray-600'>팔로잉</span>
+        <span className='text-muted-foreground'>팔로잉</span>
       </button>
     </div>
   );

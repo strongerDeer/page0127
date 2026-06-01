@@ -81,7 +81,7 @@ export const AvatarUpload = ({
     <div className='space-y-4'>
       {/* 이미지 미리보기 */}
       <div className='flex items-center gap-4'>
-        <div className='relative h-24 w-24 overflow-hidden rounded-full bg-gray-200'>
+        <div className='relative h-24 w-24 overflow-hidden rounded-full bg-muted'>
           {previewUrl ? (
             <Image
               src={previewUrl}
@@ -92,7 +92,7 @@ export const AvatarUpload = ({
               priority
             />
           ) : (
-            <div className='flex h-full items-center justify-center text-gray-400'>
+            <div className='flex h-full items-center justify-center text-muted-foreground'>
               <svg
                 className='h-12 w-12'
                 fill='currentColor'
@@ -115,7 +115,7 @@ export const AvatarUpload = ({
               variant='ghost'
               size='sm'
               onClick={handleRemoveImage}
-              className='text-red-600 hover:text-red-700'
+              className='text-destructive hover:text-destructive/80'
             >
               이미지 제거
             </Button>
@@ -123,17 +123,18 @@ export const AvatarUpload = ({
         </div>
       </div>
 
-      {/* 파일 입력 (숨김) */}
+      {/* 파일 입력 (숨김) — name='avatar'로 <form action>이 File을 자동 수집 */}
       <input
         ref={fileInputRef}
         type='file'
+        name='avatar'
         accept='image/jpeg,image/png,image/webp,image/gif'
         onChange={handleFileChange}
         className='hidden'
       />
 
       {/* 안내 문구 */}
-      <p className='text-xs text-gray-500'>
+      <p className='text-xs text-muted-foreground'>
         JPG, PNG, WEBP, GIF (최대 5MB) · 저장 버튼을 눌러야 업로드됩니다
       </p>
     </div>

@@ -40,15 +40,15 @@ export const ActivityDetail = ({ activityId }: ActivityDetailProps) => {
   if (isLoading) {
     return (
       <div className='flex items-center justify-center py-12'>
-        <Loader2 className='h-8 w-8 animate-spin text-gray-400' />
+        <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
       </div>
     );
   }
 
   if (!activity) {
     return (
-      <div className='rounded-lg border border-gray-200 bg-gray-50 py-12 text-center'>
-        <p className='text-gray-600'>활동을 찾을 수 없습니다</p>
+      <div className='rounded-lg border border-border bg-muted/50 py-12 text-center'>
+        <p className='text-muted-foreground'>활동을 찾을 수 없습니다</p>
         <Button
           variant='ghost'
           onClick={() => router.push('/feed')}

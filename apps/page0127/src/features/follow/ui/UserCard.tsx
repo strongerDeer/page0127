@@ -21,7 +21,7 @@ export const UserCard = ({ user, currentUserId }: UserCardProps) => {
   const isCurrentUser = currentUserId === user.id;
 
   return (
-    <div className='flex items-center justify-between rounded-lg border bg-white p-4 shadow-sm transition-shadow hover:shadow-md'>
+    <div className='flex items-center justify-between rounded-lg border border-border bg-card p-4 transition-colors hover:bg-accent/50'>
       <Link
         href={`/${user.nickname || user.id}`}
         className='flex flex-1 items-center gap-3'
@@ -38,25 +38,25 @@ export const UserCard = ({ user, currentUserId }: UserCardProps) => {
             />
           </div>
         ) : (
-          <div className='flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 text-lg font-bold text-gray-600'>
+          <div className='flex h-12 w-12 items-center justify-center rounded-full bg-muted text-lg font-bold text-muted-foreground'>
             {(user.nickname || 'U').charAt(0).toUpperCase()}
           </div>
         )}
 
         {/* 사용자 정보 */}
         <div className='flex-1'>
-          <h3 className='font-semibold text-gray-900'>
+          <h3 className='font-semibold text-foreground'>
             {user.nickname || '익명'}
             {isCurrentUser && (
-              <span className='ml-2 text-sm font-normal text-blue-600'>
+              <span className='ml-2 text-sm font-normal text-primary'>
                 (나)
               </span>
             )}
           </h3>
           {user.bio && (
-            <p className='line-clamp-1 text-sm text-gray-600'>{user.bio}</p>
+            <p className='line-clamp-1 text-sm text-muted-foreground'>{user.bio}</p>
           )}
-          <div className='mt-1 flex items-center gap-3 text-xs text-gray-500'>
+          <div className='mt-1 flex items-center gap-3 text-xs text-muted-foreground'>
             <span>팔로워 {user.followers_count}</span>
             <span>팔로잉 {user.following_count}</span>
           </div>
