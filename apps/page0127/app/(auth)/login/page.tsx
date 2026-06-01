@@ -12,7 +12,7 @@ import { LoginWithGoogleButton } from '@/features/auth/ui/LoginWithGoogleButton'
 
 const LoginPage = () => {
   return (
-    <div className='flex min-h-screen items-center justify-center bg-gray-50'>
+    <div className='flex min-h-screen items-center justify-center'>
       <Card className='w-full max-w-md'>
         <CardHeader className='text-center'>
           <CardTitle className='text-2xl font-bold'>page0127.</CardTitle>
@@ -20,7 +20,7 @@ const LoginPage = () => {
         </CardHeader>
         <CardContent>
           <LoginWithGoogleButton />
-          <p className='mt-4 text-center text-sm text-gray-500'>
+          <p className='mt-4 text-center text-sm text-muted-foreground'>
             로그인하면{' '}
             <a href='#' className='underline'>
               서비스 약관

@@ -11,12 +11,12 @@ const AuthCodeErrorPage = () => {
     <div className='flex min-h-screen items-center justify-center'>
       <div className='text-center'>
         <h1 className='mb-4 text-2xl font-bold'>인증 오류</h1>
-        <p className='mb-6 text-gray-600'>
+        <p className='mb-6 text-muted-foreground'>
           로그인 중 문제가 발생했습니다. 다시 시도해주세요.
         </p>
         <Link
           href='/login'
-          className='rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600'
+          className='rounded-md bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90'
         >
           로그인 페이지로 돌아가기
         </Link>

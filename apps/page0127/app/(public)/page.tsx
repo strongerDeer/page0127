@@ -52,7 +52,7 @@ const Home = async () => {
         <div className='container mx-auto max-w-5xl px-4'>
           <div className='text-center'>
             <h1 className='heading-1 mb-6'>당신의 독서 DNA를 발견하세요</h1>
-            <p className='heading-2 mb-8 text-gray-600'>
+            <p className='heading-2 mb-8 text-muted-foreground'>
               AI 기반 독서 성향 분석 플랫폼
             </p>
             <div className='flex justify-center gap-4'>
@@ -99,28 +99,28 @@ const Home = async () => {
       <div className='h-20' />
 
       {/* Features Section */}
-      <section className='section-spacing bg-gray-50'>
+      <section className='section-spacing bg-muted/50'>
         <div className='container mx-auto max-w-5xl px-4'>
           <h2 className='heading-2 mb-12 text-center'>주요 기능</h2>
           <div className='grid grid-cols-1 gap-8 md:grid-cols-3'>
-            <div className='rounded-lg bg-white p-6 shadow-sm'>
+            <div className='rounded-lg border border-border bg-card p-6'>
               <div className='mb-4 text-4xl'>📚</div>
               <h3 className='mb-2 text-xl font-bold'>독서 기록</h3>
-              <p className='text-gray-600'>
+              <p className='text-muted-foreground'>
                 읽은 책을 기록하고 통계를 확인하세요
               </p>
             </div>
-            <div className='rounded-lg bg-white p-6 shadow-sm'>
+            <div className='rounded-lg border border-border bg-card p-6'>
               <div className='mb-4 text-4xl'>🤖</div>
               <h3 className='mb-2 text-xl font-bold'>AI 분석</h3>
-              <p className='text-gray-600'>
+              <p className='text-muted-foreground'>
                 독서 성향을 분석하고 맞춤 추천을 받으세요
               </p>
             </div>
-            <div className='rounded-lg bg-white p-6 shadow-sm'>
+            <div className='rounded-lg border border-border bg-card p-6'>
               <div className='mb-4 text-4xl'>🎯</div>
               <h3 className='mb-2 text-xl font-bold'>목표 관리</h3>
-              <p className='text-gray-600'>
+              <p className='text-muted-foreground'>
                 연간 독서 목표를 설정하고 달성하세요
               </p>
             </div>
@@ -129,8 +129,8 @@ const Home = async () => {
       </section>
 
       {/* Footer */}
-      <footer className='border-t bg-white py-8'>
-        <div className='container mx-auto max-w-5xl px-4 text-center text-sm text-gray-600'>
+      <footer className='border-t border-border bg-card py-8'>
+        <div className='container mx-auto max-w-5xl px-4 text-center text-sm text-muted-foreground'>
           <p>© 2024 page0127. All rights reserved.</p>
         </div>
       </footer>
