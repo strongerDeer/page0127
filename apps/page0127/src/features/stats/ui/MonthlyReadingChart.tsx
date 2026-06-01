@@ -55,24 +55,24 @@ export const MonthlyReadingChart = ({
           margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
         >
           {/* 그리드 라인 */}
-          <CartesianGrid strokeDasharray='3 3' className='stroke-gray-200' />
+          <CartesianGrid strokeDasharray='3 3' className='stroke-border' />
 
           {/* X축: 월 (1-12) */}
           <XAxis
             dataKey='month'
             label={{ value: '월', position: 'insideBottom', offset: -5 }}
-            className='text-sm text-gray-600'
+            className='text-sm text-muted-foreground'
           />
 
           {/* Y축: 권수 */}
           <YAxis
             label={{ value: '권수', angle: -90, position: 'insideLeft' }}
-            className='text-sm text-gray-600'
+            className='text-sm text-muted-foreground'
           />
 
           {/* 툴팁 */}
           <Tooltip
-            cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }}
+            cursor={{ fill: 'rgba(99, 102, 241, 0.1)' }}
             contentStyle={{
               backgroundColor: 'white',
               border: '1px solid #e5e7eb',
@@ -86,7 +86,7 @@ export const MonthlyReadingChart = ({
           {/* Bar */}
           <Bar
             dataKey='count'
-            fill='#3B82F6'
+            fill='#6366f1'
             radius={[8, 8, 0, 0]}
             cursor={onMonthClick ? 'pointer' : 'default'}
             onClick={handleBarClick}

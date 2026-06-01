@@ -45,7 +45,7 @@ export const RatingDoughnutChart = ({
   // 평점이 없는 경우
   if (filteredData.length === 0) {
     return (
-      <div className='flex h-[300px] items-center justify-center text-gray-400'>
+      <div className='flex h-[300px] items-center justify-center text-muted-foreground'>
         평점 데이터가 없습니다
       </div>
     );
@@ -82,10 +82,10 @@ export const RatingDoughnutChart = ({
 
       {/* 중앙에 평균 평점 표시 */}
       <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center'>
-        <div className='text-3xl font-bold text-slate-800'>
+        <div className='text-3xl font-bold text-foreground'>
           {averageRating.toFixed(1)}
         </div>
-        <div className='text-sm text-slate-500'>평균 평점</div>
+        <div className='text-sm text-muted-foreground'>평균 평점</div>
         <div className='flex justify-center mt-1'>
            <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
         </div>
@@ -97,7 +97,7 @@ export const RatingDoughnutChart = ({
           <button
             key={item.rating}
             onClick={() => onRatingClick(item.rating)}
-            className='flex items-center gap-1 rounded-lg px-3 py-1 text-sm transition-colors hover:bg-gray-100'
+            className='flex items-center gap-1 rounded-lg px-3 py-1 text-sm transition-colors hover:bg-accent'
           >
             <div
               className='h-3 w-3 rounded-full'

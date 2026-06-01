@@ -38,19 +38,19 @@ export const ReadingGoalProgress = ({
   // 목표가 설정되지 않은 경우
   if (!target || target === 0) {
     return (
-      <Card>
+      <Card className='shadow-none'>
         <CardHeader>
-          <CardTitle className='flex items-center gap-2 text-lg text-slate-800'>
-             <Target className="h-5 w-5 text-indigo-500" />
-             {year}년 독서 목표
+          <CardTitle className='flex items-center gap-2 text-lg text-foreground'>
+            <Target className='h-5 w-5 text-primary' />
+            {year}년 독서 목표
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className='text-center py-6'>
-            <p className='mb-4 text-sm text-slate-600'>
+            <p className='mb-4 text-sm text-muted-foreground'>
               {onSetGoal ? '올해의 독서 목표를 설정해보세요!' : '아직 독서 목표가 설정되지 않았습니다.'}
             </p>
-            {onSetGoal && <Button onClick={onSetGoal} className="bg-indigo-600 hover:bg-indigo-700">목표 설정하기</Button>}
+            {onSetGoal && <Button onClick={onSetGoal}>목표 설정하기</Button>}
           </div>
         </CardContent>
       </Card>
@@ -66,9 +66,9 @@ export const ReadingGoalProgress = ({
     <Card className="border-0 shadow-none bg-transparent">
       <CardHeader className="px-0 pt-0">
         <div className='flex items-center justify-between'>
-          <CardTitle className='flex items-center gap-2 text-lg text-slate-800'>
-             <Target className="h-5 w-5 text-indigo-500" />
-             {year}년 독서 목표
+          <CardTitle className='flex items-center gap-2 text-lg text-foreground'>
+            <Target className='h-5 w-5 text-primary' />
+            {year}년 독서 목표
           </CardTitle>
           {onSetGoal && (
             <Button variant='outline' size='sm' onClick={onSetGoal}>
@@ -81,24 +81,23 @@ export const ReadingGoalProgress = ({
         {/* 진행률 표시 */}
         <div className='space-y-2'>
           <div className='flex items-center justify-between text-sm'>
-            <span className='font-medium text-slate-700'>
+            <span className='font-medium text-foreground'>
               {current} / {target}권
             </span>
-            <span className='text-slate-500'>{Math.round(progress)}%</span>
-            {/* Custom Progress Bar Color if needed, passing className */}
+            <span className='text-muted-foreground'>{Math.round(progress)}%</span>
           </div>
-          <Progress value={progress} className='h-3 bg-slate-100 [&>div]:bg-indigo-500' />
+          <Progress value={progress} className='h-3' />
         </div>
 
         {/* 메시지 */}
         <div className='text-center'>
           {isAchieved ? (
-            <p className='flex items-center justify-center gap-2 text-sm font-medium text-indigo-600'>
-              <Trophy className="h-4 w-4" /> 목표를 달성했어요! 축하합니다!
+            <p className='flex items-center justify-center gap-2 text-sm font-medium text-primary'>
+              <Trophy className='h-4 w-4' /> 목표를 달성했어요! 축하합니다!
             </p>
           ) : (
-            <p className='text-sm text-slate-600'>
-              목표까지 <span className='font-semibold text-indigo-600'>{remaining}권</span> 남았어요!
+            <p className='text-sm text-muted-foreground'>
+              목표까지 <span className='font-semibold text-primary'>{remaining}권</span> 남았어요!
             </p>
           )}
         </div>

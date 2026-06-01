@@ -35,7 +35,7 @@ export const CategoryFilter = ({
 }: CategoryFilterProps) => {
   return (
     <div className='mb-6'>
-      <h3 className='mb-3 text-sm font-semibold text-gray-700'>
+      <h3 className='mb-3 text-sm font-semibold text-foreground'>
         카테고리별 독서량
       </h3>
       <div className='flex flex-wrap gap-2'>
@@ -44,8 +44,8 @@ export const CategoryFilter = ({
           onClick={() => onSelectCategory(null)}
           className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
             selectedCategory === null
-              ? 'bg-indigo-500 text-white'
-              : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-card text-foreground border border-border hover:bg-accent'
           }`}
         >
           All
@@ -60,8 +60,8 @@ export const CategoryFilter = ({
               onClick={() => onSelectCategory(cat.category)}
               className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                 selectedCategory === cat.category
-                  ? 'bg-indigo-500 text-white'
-                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-card text-foreground border border-border hover:bg-accent'
               }`}
             >
               {cat.category}{' '}

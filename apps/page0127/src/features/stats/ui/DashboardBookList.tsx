@@ -316,11 +316,11 @@ export const DashboardBookList = ({
         selectedCategory !== null ||
         selectedRating !== null) && (
         <div className='mb-4 flex flex-wrap items-center gap-2'>
-          <span className='text-sm font-medium text-gray-600'>활성 필터:</span>
+          <span className='text-sm font-medium text-muted-foreground'>활성 필터:</span>
           {selectedMonth !== null && (
             <button
               onClick={handleRemoveMonthFilter}
-              className='flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-700 hover:bg-blue-200'
+              className='flex items-center gap-1 rounded-full bg-primary/15 px-3 py-1 text-sm text-primary hover:bg-primary/25'
             >
               {selectedMonth}월 <span className='font-bold'>✕</span>
             </button>
@@ -328,7 +328,7 @@ export const DashboardBookList = ({
           {selectedCategory !== null && (
             <button
               onClick={() => handleCategoryChange(null)}
-              className='flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-sm text-emerald-700 hover:bg-emerald-200'
+              className='flex items-center gap-1 rounded-full bg-chart-3/15 px-3 py-1 text-sm text-chart-3 hover:bg-chart-3/25'
             >
               {selectedCategory} <span className='font-bold'>✕</span>
             </button>
@@ -336,7 +336,7 @@ export const DashboardBookList = ({
           {selectedRating !== null && (
             <button
               onClick={onRemoveRatingFilter}
-              className='flex items-center gap-1 rounded-full bg-amber-100 px-3 py-1 text-sm text-amber-700 hover:bg-amber-200'
+              className='flex items-center gap-1 rounded-full bg-chart-4/15 px-3 py-1 text-sm text-chart-4 hover:bg-chart-4/25'
             >
               {selectedRating}점 ⭐ <span className='font-bold'>✕</span>
             </button>
@@ -369,7 +369,7 @@ export const DashboardBookList = ({
                   variant='ghost'
                   size='sm'
                   onClick={onResetAll}
-                  className='text-slate-500 hover:text-slate-800'
+                  className='text-muted-foreground hover:text-foreground'
                 >
                   필터 초기화
                 </Button>
@@ -377,7 +377,7 @@ export const DashboardBookList = ({
             {showViewAll && (
               <Link
                 href='/books?status=completed'
-                className='text-sm text-emerald-600 hover:text-emerald-700'
+                className='text-sm text-primary hover:text-primary/80'
               >
                 전체 보기 →
               </Link>
@@ -405,7 +405,7 @@ export const DashboardBookList = ({
                     href={bookHref(book)}
                     className='group transition-transform hover:scale-105'
                   >
-                    <div className='aspect-2/3 relative overflow-hidden rounded-lg bg-gray-100 shadow-md'>
+                    <div className='aspect-2/3 relative overflow-hidden rounded-lg bg-muted'>
                       {book.cover_image ? (
                         <Image
                           src={book.cover_image}
@@ -428,7 +428,7 @@ export const DashboardBookList = ({
                         </div>
                       )}
                     </div>
-                    <p className='mt-2 line-clamp-2 text-xs text-gray-700 group-hover:text-emerald-600'>
+                    <p className='mt-2 line-clamp-2 text-xs text-foreground group-hover:text-primary'>
                       {book.title}
                     </p>
                   </Link>
@@ -478,9 +478,9 @@ export const DashboardBookList = ({
             )}
           </div>
         ) : (
-          <div className='rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-12 text-center'>
+          <div className='rounded-lg border-2 border-dashed border-border bg-muted/50 p-12 text-center'>
             <div className='mx-auto mb-2 text-4xl'>🔍</div>
-            <p className='text-sm text-gray-500'>
+            <p className='text-sm text-muted-foreground'>
               {selectedCategory
                 ? `${selectedCategory} 카테고리의 책이 없습니다`
                 : '완독한 책이 없습니다'}

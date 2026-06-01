@@ -33,7 +33,7 @@ export const CategoryRadarChart = ({ data }: CategoryRadarChartProps) => {
   // 데이터가 없는 경우 처리
   if (data.length === 0) {
     return (
-      <div className='flex h-[300px] w-full items-center justify-center text-gray-400'>
+      <div className='flex h-[300px] w-full items-center justify-center text-muted-foreground'>
         카테고리 데이터가 없습니다
       </div>
     );
