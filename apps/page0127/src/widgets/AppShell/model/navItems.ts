@@ -27,7 +27,7 @@ export const navItems: NavItem[] = [
   { href: '/books/add', label: '도서 추가', icon: PlusCircle },
   { href: '/search', label: '검색', icon: Search, primary: true },
   { href: '/notifications', label: '알림', icon: Bell, primary: true },
-  { href: '/settings', label: '설정', icon: Settings },
+  { href: '/settings', label: '설정', icon: Settings, primary: true },
 ];
 
 // 활성 메뉴 판정

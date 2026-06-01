@@ -2,8 +2,10 @@
 
 import { useEffect, useId, useState } from 'react';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { Globe, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/shared/ui/button';
@@ -14,6 +16,7 @@ import { Textarea } from '@/shared/ui/textarea';
 
 import { updateProfile } from '@/entities/profile/api/updateProfile';
 
+import { useLogout } from '@/features/auth/api/useLogout';
 import { DeleteAccountDialog } from '@/features/auth/ui/DeleteAccountDialog';
 import { useAvatarStorage } from '@/features/profile/api/useAvatarStorage';
 
@@ -34,6 +37,11 @@ type ProfileSettingsFormDangerZoneProps = {
   userEmail: string;
 };
 
+type ProfileSettingsFormMyAccountProps = {
+  username: string | null;
+  onLogout: () => void;
+};
+
 const ProfileSettingsFormPhoto = ({
   currentPhotoUrl,
   onFileSelect,
@@ -45,6 +53,37 @@ const ProfileSettingsFormPhoto = ({
       onFileSelect={onFileSelect}
     />
   </div>
+);
+
+// 내 계정 진입점 — 모바일에서 사이드바 ProfileDropdown이 가려지므로 여기서 같은 액션 제공
+const ProfileSettingsFormMyAccount = ({
+  username,
+  onLogout,
+}: ProfileSettingsFormMyAccountProps) => (
+  <Card className='mt-6 p-6 shadow-none'>
+    <div className='space-y-4'>
+      <h3 className='text-lg font-semibold text-foreground'>내 계정</h3>
+      <div className='space-y-1'>
+        {username && (
+          <Link
+            href={`/${username}`}
+            className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent'
+          >
+            <Globe className='size-4' />
+            공개 서재 보기
+          </Link>
+        )}
+        <button
+          type='button'
+          onClick={onLogout}
+          className='flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-accent'
+        >
+          <LogOut className='size-4' />
+          로그아웃
+        </button>
+      </div>
+    </div>
+  </Card>
 );
 
 const ProfileSettingsFormDangerZone = ({
@@ -76,6 +115,7 @@ const ProfileSettingsFormDangerZone = ({
 export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
   const router = useRouter();
   const { uploadAvatar, removeAvatar } = useAvatarStorage();
+  const { logout } = useLogout();
 
   // 폼 상태 관리
   const formId = useId();
@@ -260,10 +300,16 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
         </div>
       </Card>
 
+      <ProfileSettingsForm.MyAccount
+        username={profile.username}
+        onLogout={logout}
+      />
+
       <ProfileSettingsForm.DangerZone userEmail={profile.email || ''} />
     </form>
   );
 };
 
 ProfileSettingsForm.Photo = ProfileSettingsFormPhoto;
+ProfileSettingsForm.MyAccount = ProfileSettingsFormMyAccount;
 ProfileSettingsForm.DangerZone = ProfileSettingsFormDangerZone;
