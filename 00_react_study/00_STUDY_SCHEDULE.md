@@ -127,7 +127,7 @@ Week 12-14 → 성능 최적화 + React Compiler
 | --- | ----- | ------------------- | ------------------------------------------ | -------------------------------------- |
 | 50  | 05/28 ✅ | useActionState 개요 | 독서 상태 변경 폼을 Server Action으로 처리 | `useActionState` 기본 패턴 이해        |
 | 51  | 06/02 ✅ | useActionState 실습 | 에러/pending 상태 + 유효성 검사            | form action + 에러 메시지 표시         |
-| 52  | 04/28 | useOptimistic       | 좋아요 버튼 낙관적 업데이트 구현           | 서버 응답 전 즉시 하트 UI 반영         |
+| 52  | 06/02 ✅ | useOptimistic       | 좋아요 버튼 낙관적 업데이트 구현           | 서버 응답 전 즉시 하트 UI 반영         |
 | 53  | 04/28 | useOptimistic 심화  | 실패 시 롤백 처리                          | 네트워크 오류 → 원래 값 복원           |
 | 54  | 04/29 | use()               | Supabase Promise를 `use()`로 처리          | Suspense와 함께 데이터 로딩 선언적으로 |
 | 55  | 04/29 | Server Actions      | 팔로우/언팔로우를 Server Action으로 구현   | `'use server'` 함수 + `revalidatePath` |
