@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useState } from 'react';
+import { useActionState, useEffect, useId, useState } from 'react';
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -14,11 +14,12 @@ import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Textarea } from '@/shared/ui/textarea';
 
-import { updateProfile } from '@/entities/profile/api/updateProfile';
-
 import { useLogout } from '@/features/auth/api/useLogout';
 import { DeleteAccountDialog } from '@/features/auth/ui/DeleteAccountDialog';
-import { useAvatarStorage } from '@/features/profile/api/useAvatarStorage';
+import {
+  type ProfileActionState,
+  updateProfileAction,
+} from '@/features/profile/api/updateProfileAction';
 
 import { AvatarUpload } from './AvatarUpload';
 
@@ -102,22 +103,24 @@ const ProfileSettingsFormDangerZone = ({
   </Card>
 );
 
+// useActionState 초기 상태 (아직 제출 전)
+const initialState: ProfileActionState = { status: 'idle', message: '' };
+
 /**
  * 프로필 설정 폼 컴포넌트
  *
- * 학습 포인트:
- * - Client Component: 폼 상태 관리
- * - useState로 입력값 관리
- * - 낙관적 업데이트 (UI 먼저 업데이트 후 서버 동기화)
- * - Toast 알림으로 사용자 피드백
- * - useEffect로 클라이언트 전용 상태 관리 (Hydration 에러 방지)
+ * 학습 포인트 (useActionState 전환):
+ * - useState 5개(nickname/bio/selectedFile/isSubmitting/isImageRemoved) → useActionState 통합
+ * - 제출은 onSubmit/preventDefault 대신 <form action={formAction}>
+ * - 텍스트(nickname/bio)·파일(avatar)을 FormData가 자동 수집 → updateProfileAction에서 처리
+ * - 성공/실패 후처리(toast·새로고침)는 state 변화를 useEffect로 감지
+ * - 단, 글자수 카운터(bio)는 제어 상태로, 이미지 미리보기(displayPhotoUrl)는 파생값으로 둔다
+ *   → "폼 제출만 Action으로, UX 표시는 state/파생값으로"
  */
 export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
   const router = useRouter();
-  const { uploadAvatar, removeAvatar } = useAvatarStorage();
   const { logout } = useLogout();
 
-  // 폼 상태 관리
   const formId = useId();
   const ids = {
     email: `${formId}-email`,
@@ -126,87 +129,53 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
     bio: `${formId}-bio`,
   };
 
-  const [nickname, setNickname] = useState(profile.nickname || '');
+  // 글자수 카운터 때문에 bio만 제어 컴포넌트로 유지 (name이 있으면 FormData엔 그대로 수집됨)
   const [bio, setBio] = useState(profile.bio || '');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 현재 표시 중인 프로필 이미지 (낙관적 업데이트용)
-  const [currentPhotoUrl, setCurrentPhotoUrl] = useState(profile.photo_url);
+  // 이미지 제거 의도 추적 (사용자가 '이미지 제거'를 눌렀는지)
+  const [isImageRemoved, setIsImageRemoved] = useState(false);
 
-  // 클라이언트 전용 상태 (Hydration 에러 방지)
+  // 공개 서재 URL (Hydration 에러 방지 — 클라이언트에서만 계산)
   const [profileUrl, setProfileUrl] = useState('');
-
   useEffect(() => {
-    // 클라이언트에서만 실행
     setProfileUrl(`${window.location.origin}/${profile.username}`);
   }, [profile.username]);
 
-  // 이미지 제거 여부 추적
-  const [isImageRemoved, setIsImageRemoved] = useState(false);
+  // [state, formAction, isPending] — Server Action을 연결
+  const [state, formAction, isPending] = useActionState(
+    updateProfileAction,
+    initialState
+  );
 
-  // 파일 선택 핸들러 (이미지 제거 포함)
+  // 표시할 프로필 이미지 = 파생값 (useEffect로 setState 복사하지 않고 렌더 중 계산)
+  // - 제거 의도면 null / 제출 성공 후엔 서버가 돌려준 URL / 그 외엔 원본
+  // → "effect에서 state 동기화" 안티패턴 제거 (you-might-not-need-an-effect)
+  const displayPhotoUrl = isImageRemoved
+    ? null
+    : state.status === 'success' && state.photoUrl !== undefined
+      ? state.photoUrl
+      : profile.photo_url;
+
+  // action이 반환한 state가 바뀌면 후처리 (toast + 새로고침)
+  // 제거 의도(isImageRemoved)는 여기서 리셋하지 않는다 — displayPhotoUrl이 이미
+  // 올바르게 반영하고, 새 파일을 고르면 handleFileSelect에서 자연히 해제된다.
+  useEffect(() => {
+    if (state.status === 'success') {
+      toast.success(state.message);
+      setTimeout(() => router.refresh(), 100);
+    } else if (state.status === 'error') {
+      toast.error(state.message);
+    }
+  }, [state, router]);
+
+  // 파일 선택/제거 → 제거 의도만 추적 (실제 File은 form이 name='avatar'로 수집)
   const handleFileSelect = (file: File | null) => {
-    if (file === null && currentPhotoUrl) {
-      setIsImageRemoved(true);
-      setCurrentPhotoUrl(null); // 낙관적으로 즉시 제거
-    } else {
-      setIsImageRemoved(false);
-    }
-    setSelectedFile(file);
-  };
-
-  // 폼 제출 핸들러
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      let photoUrl: string | undefined | null;
-
-      if (isImageRemoved) {
-        await removeAvatar(profile.photo_url);
-        photoUrl = null;
-      } else if (selectedFile) {
-        photoUrl = await uploadAvatar(selectedFile, profile.id, profile.photo_url);
-      }
-
-      const updateData: {
-        nickname?: string;
-        bio?: string;
-        photo_url?: string | null;
-      } = {
-        nickname: nickname.trim() || undefined,
-        bio: bio.trim() || undefined,
-      };
-
-      if (isImageRemoved) {
-        updateData.photo_url = null;
-      } else if (photoUrl) {
-        updateData.photo_url = photoUrl;
-      }
-
-      const success = await updateProfile(profile.id, updateData);
-
-      if (success) {
-        toast.success('프로필이 저장되었습니다.');
-        if (photoUrl !== undefined) setCurrentPhotoUrl(photoUrl);
-        setSelectedFile(null);
-        setIsImageRemoved(false);
-        setTimeout(() => router.refresh(), 100);
-      } else {
-        toast.error('프로필 저장에 실패했습니다.');
-      }
-    } catch (error) {
-      console.error('프로필 업데이트 오류:', error);
-      toast.error('예상치 못한 오류가 발생했습니다.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    setIsImageRemoved(file === null && !!displayPhotoUrl);
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    // onSubmit 대신 action에 Server Action을 연결
+    <form action={formAction}>
       <Card className='p-6'>
         <div className='space-y-6'>
           {/* 제목 */}
@@ -219,11 +188,23 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
 
           {/* 프로필 이미지 */}
           <ProfileSettingsForm.Photo
-            currentPhotoUrl={currentPhotoUrl}
+            currentPhotoUrl={displayPhotoUrl}
             onFileSelect={handleFileSelect}
           />
 
-          {/* 이메일 (읽기 전용) */}
+          {/* 아바타 메타데이터를 Action에 전달 (File 자체는 AvatarUpload의 name='avatar'가 수집) */}
+          <input
+            type='hidden'
+            name='removeAvatar'
+            value={String(isImageRemoved)}
+          />
+          <input
+            type='hidden'
+            name='currentPhotoUrl'
+            value={profile.photo_url ?? ''}
+          />
+
+          {/* 이메일 (읽기 전용 — name 없음 → 전송 안 함) */}
           <div className='space-y-2'>
             <Label htmlFor={ids.email}>이메일</Label>
             <Input
@@ -253,14 +234,14 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
             </p>
           </div>
 
-          {/* 닉네임 */}
+          {/* 닉네임 — 비제어(defaultValue) + name 으로 FormData 자동 수집 */}
           <div className='space-y-2'>
             <Label htmlFor={ids.nickname}>닉네임</Label>
             <Input
               id={ids.nickname}
+              name='nickname'
               type='text'
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
+              defaultValue={profile.nickname || ''}
               placeholder='닉네임을 입력하세요'
               maxLength={50}
             />
@@ -269,11 +250,12 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
             </p>
           </div>
 
-          {/* 한줄 소개 */}
+          {/* 한줄 소개 — 글자수 카운터 때문에 제어 유지 (name 있으면 수집됨) */}
           <div className='space-y-2'>
             <Label htmlFor={ids.bio}>한줄 소개</Label>
             <Textarea
               id={ids.bio}
+              name='bio'
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder='자신을 소개하는 한줄을 작성해보세요.'
@@ -293,8 +275,9 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
             >
               취소
             </Button>
-            <Button type='submit' disabled={isSubmitting}>
-              {isSubmitting ? '저장 중...' : '저장'}
+            {/* isSubmitting 수동 관리 → isPending 자동 */}
+            <Button type='submit' disabled={isPending}>
+              {isPending ? '저장 중...' : '저장'}
             </Button>
           </div>
         </div>
