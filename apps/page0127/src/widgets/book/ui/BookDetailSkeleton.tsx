@@ -11,7 +11,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
  */
 export const BookDetailSkeleton = () => {
   return (
-    <div className='min-h-screen bg-gray-50 p-8'>
+    <div className='min-h-screen p-8'>
       <div className='mx-auto max-w-4xl'>
         {/* Header — 뒤로가기 + 액션 버튼 */}
         <div className='mb-6 flex items-center justify-between'>

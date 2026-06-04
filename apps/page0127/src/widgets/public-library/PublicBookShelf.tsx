@@ -46,8 +46,8 @@ export const PublicBookShelf = ({
 
   if (books.length === 0) {
     return (
-      <div className='rounded-lg border bg-gray-50 p-12 text-center'>
-        <p className='text-gray-500'>조건에 맞는 책이 없습니다.</p>
+      <div className='rounded-lg border border-border bg-muted/50 p-12 text-center'>
+        <p className='text-muted-foreground'>조건에 맞는 책이 없습니다.</p>
       </div>
     );
   }

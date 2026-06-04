@@ -94,13 +94,13 @@ export const BookSearchInput = ({
 
       {/* 최근 검색어 드롭다운 */}
       {showRecent && (
-        <ul className='absolute left-0 right-0 top-full z-10 mt-1 overflow-hidden rounded-md border bg-white shadow-md'>
+        <ul className='absolute left-0 right-0 top-full z-10 mt-1 overflow-hidden rounded-md border border-border bg-card shadow-sm'>
           {recentSearches.map((item) => (
             <li key={item}>
               <button
                 type='button'
                 onClick={() => handleRecentClick(item)}
-                className='w-full px-4 py-2 text-left text-sm hover:bg-gray-50'
+                className='w-full px-4 py-2 text-left text-sm hover:bg-accent'
               >
                 {item}
               </button>

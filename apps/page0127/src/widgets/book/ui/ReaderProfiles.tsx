@@ -48,9 +48,9 @@ export const ReaderProfiles = async ({ isbn }: ReaderProfilesProps) => {
 
           return (
             <div key={reader.user_id} className='relative group' title={name}>
-              <Avatar className='w-10 h-10 border-2 border-white cursor-pointer hover:z-10 hover:scale-110 transition-transform'>
+              <Avatar className='w-10 h-10 border-2 border-card cursor-pointer hover:z-10 hover:scale-110 transition-transform'>
                 <AvatarImage src={avatar} />
-                <AvatarFallback className='bg-blue-100 text-blue-600 text-xs'>
+                <AvatarFallback className='bg-primary/15 text-primary text-xs'>
                   {name.slice(0, 2)}
                 </AvatarFallback>
               </Avatar>
@@ -58,7 +58,7 @@ export const ReaderProfiles = async ({ isbn }: ReaderProfilesProps) => {
           );
         })}
         {readers.length >= 10 && (
-          <div className='flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-gray-100 text-xs font-medium text-gray-500 hover:bg-gray-200'>
+          <div className='flex h-10 w-10 items-center justify-center rounded-full border-2 border-card bg-muted text-xs font-medium text-muted-foreground hover:bg-accent'>
             +
           </div>
         )}

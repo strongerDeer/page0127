@@ -31,7 +31,7 @@ export const ReadCountBadge = ({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full bg-blue-100 font-semibold text-blue-700',
+        'inline-flex items-center gap-1 rounded-full bg-primary/15 font-semibold text-primary',
         sizeClasses[size],
         className
       )}

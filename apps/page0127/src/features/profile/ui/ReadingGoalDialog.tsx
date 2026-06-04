@@ -119,7 +119,7 @@ export const ReadingGoalDialog = ({
                 max={1000}
                 placeholder='예: 50'
               />
-              <p className='text-xs text-gray-500'>
+              <p className='text-xs text-muted-foreground'>
                 읽고 싶은 책의 권수를 입력하세요 (1~1,000권)
               </p>
             </div>

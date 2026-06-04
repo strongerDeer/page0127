@@ -71,7 +71,7 @@ export const BookSearchPagination = ({
             return (
               <div key={page} className='flex items-center'>
                 {showEllipsis && (
-                  <span className='px-2 text-gray-500'>...</span>
+                  <span className='px-2 text-muted-foreground'>...</span>
                 )}
                 <PaginationItem>
                   <PaginationLink

@@ -227,7 +227,7 @@ export const ReadingCalendar = ({
               )}
             </div>
             {/* 디버그 정보 */}
-            <div className='text-xs text-red-500'>
+            <div className='text-xs text-destructive'>
               DEBUG: books={summary.totalBooks}권 | pages={summary.totalPages}쪽
               | year={currentYear} | month={currentMonth} | dataLen=
               {data.length}

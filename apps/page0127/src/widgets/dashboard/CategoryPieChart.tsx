@@ -35,7 +35,7 @@ export const CategoryPieChart = ({ data, onCategoryClick }: Props) => {
   // 데이터가 없으면 빈 상태 표시
   if (data.length === 0) {
     return (
-      <div className="flex h-[300px] items-center justify-center text-gray-500">
+      <div className="flex h-[300px] items-center justify-center text-muted-foreground">
         <p>데이터가 없습니다</p>
       </div>
     );

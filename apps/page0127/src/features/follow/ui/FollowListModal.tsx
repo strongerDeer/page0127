@@ -61,10 +61,10 @@ export const FollowListModal = ({
         <div className='mt-4 space-y-3'>
           {isLoading ? (
             <div className='flex items-center justify-center py-8'>
-              <Loader2 className='h-6 w-6 animate-spin text-gray-400' />
+              <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
             </div>
           ) : users.length === 0 ? (
-            <div className='py-8 text-center text-sm text-gray-500'>
+            <div className='py-8 text-center text-sm text-muted-foreground'>
               {type === 'followers'
                 ? '아직 팔로워가 없습니다.'
                 : '아직 팔로잉한 사용자가 없습니다.'}

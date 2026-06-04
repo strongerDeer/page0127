@@ -81,7 +81,7 @@ const BookListItemCover = ({
 
           {/* 순위 뱃지 (3위 이내) */}
           {rank && rank <= 3 && (
-            <div className='absolute -left-2 -top-2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-yellow-400 font-bold text-white shadow-md'>
+            <div className='absolute -left-2 -top-2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-chart-4 font-bold text-white shadow-sm'>
               {rank}
             </div>
           )}

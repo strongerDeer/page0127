@@ -19,7 +19,7 @@ export const BookCardCover = ({ book }: BookCardCoverProps) => {
           sizes='144px'
         />
       ) : (
-        <div className='flex h-full w-full items-center justify-center bg-gray-200 text-gray-400'>
+        <div className='flex h-full w-full items-center justify-center bg-muted text-muted-foreground'>
           No Image
         </div>
       )}

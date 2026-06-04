@@ -47,13 +47,13 @@ export const BookLikeButton = ({
     <Button
       variant='ghost'
       size='icon'
-      className={`relative z-30 h-8 w-8 rounded-full bg-white/80 shadow-sm backdrop-blur-sm transition-transform hover:scale-110 ${className}`}
+      className={`relative z-30 h-8 w-8 rounded-full bg-card shadow-sm transition-transform hover:scale-110 ${className}`}
       onClick={() => mutate()}
       disabled={isPending}
     >
       <Heart
         className={`h-5 w-5 transition-colors ${
-          liked ? 'fill-red-500 text-red-500' : 'text-gray-500'
+          liked ? 'fill-chart-5 text-chart-5' : 'text-muted-foreground'
         }`}
       />
     </Button>

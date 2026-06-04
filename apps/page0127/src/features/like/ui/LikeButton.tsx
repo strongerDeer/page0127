@@ -123,8 +123,8 @@ export const LikeButton = ({ activityId, count, isLiked }: LikeButtonProps) => {
       <Heart
         className={`h-4 w-4 transition-all ${
           isLiked
-            ? 'fill-red-500 text-red-500'
-            : 'text-muted-foreground hover:text-red-500'
+            ? 'fill-chart-5 text-chart-5'
+            : 'text-muted-foreground hover:text-chart-5'
         }`}
       />
       <span className='text-sm text-muted-foreground'>{count}</span>

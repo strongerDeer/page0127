@@ -213,7 +213,7 @@ export const CommentItem = ({
               </div>
             </div>
           ) : (
-            <p className='text-sm text-gray-700 whitespace-pre-wrap'>
+            <p className='text-sm text-foreground whitespace-pre-wrap'>
               {comment.content}
             </p>
           )}
