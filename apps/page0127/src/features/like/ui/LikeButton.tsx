@@ -32,6 +32,13 @@ type LikeContext = {
  * - 같은 활동이 피드(useInfiniteQuery)와 상세(useQuery) 두 캐시에 들어있어
  *   둘 다 수정해야 어느 화면에서 눌러도 일관되게 반영된다
  * - controlled 컴포넌트: count/isLiked를 props로만 받아 캐시가 곧 단일 출처(SSOT)
+ *
+ * ⚠️ 왜 여기는 useOptimistic(React 19)을 안 쓰나? — Day 53 핵심
+ * - useOptimistic은 "그 컴포넌트 안에서만" 임시값을 덧칠한다 → 다른 화면 캐시는 못 건드림
+ * - 이 좋아요는 피드 + 상세 "두 화면이 공유"하는 서버 상태라, 한 버튼의 오버레이로는
+ *   화면 간 일관성을 못 맞춘다 → 캐시를 통째로 수정하는 React Query가 정답
+ * - 반대로, 한 카드 안에서만 쓰는 책 좋아요(BookLikeButton)는 useOptimistic이 맞다
+ *   → 즉각 피드백(로컬) = useOptimistic / 여러 화면 공유(서버) = React Query (역할 분담)
  */
 export const LikeButton = ({ activityId, count, isLiked }: LikeButtonProps) => {
   const queryClient = useQueryClient();
