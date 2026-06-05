@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { PageContainer } from '@/shared/ui/PageContainer';
 
 import { getProfile } from '@/entities/profile/api/getProfile';
 
@@ -31,21 +32,17 @@ export default async function SettingsPage() {
 
   if (!profile) {
     return (
-      <div className='min-h-screen'>
-        <div className='container mx-auto max-w-2xl px-4 py-8'>
-          <p className='text-center text-muted-foreground'>
-            프로필 정보를 불러올 수 없습니다.
-          </p>
-        </div>
-      </div>
+      <PageContainer width='narrow'>
+        <p className='text-center text-muted-foreground'>
+          프로필 정보를 불러올 수 없습니다.
+        </p>
+      </PageContainer>
     );
   }
 
   return (
-    <div className='min-h-screen'>
-      <div className='container mx-auto max-w-2xl px-4 py-8'>
-        <ProfileSettingsForm profile={profile} />
-      </div>
-    </div>
+    <PageContainer width='narrow'>
+      <ProfileSettingsForm profile={profile} />
+    </PageContainer>
   );
 }

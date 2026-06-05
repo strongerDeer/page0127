@@ -22,6 +22,7 @@ import {
 } from '@/shared/ui/alert-dialog';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { PageContainer } from '@/shared/ui/PageContainer';
 import {
   Select,
   SelectContent,
@@ -30,7 +31,6 @@ import {
   SelectValue,
 } from '@/shared/ui/select';
 import { StatCard } from '@/shared/ui/StatCard';
-import { StatsPageLayout } from '@/shared/ui/StatsPageLayout';
 
 import { ReadingGoalDialog } from '@/features/profile/ui/ReadingGoalDialog';
 import { DashboardBookList } from '@/features/stats/ui/DashboardBookList';
@@ -302,15 +302,17 @@ export const DashboardContent = ({
       toast.success('취향 분석이 완료되었습니다!');
       router.push('/dashboard/taste-analysis');
     } catch (error) {
-      toast.error(getApiErrorMessage(error, '취향 분석 중 오류가 발생했습니다.'));
+      toast.error(
+        getApiErrorMessage(error, '취향 분석 중 오류가 발생했습니다.')
+      );
     } finally {
       setIsAnalyzing(false);
     }
   };
 
   return (
-    // StatsPageLayout: 레이아웃 껍데기를 분리해 PublicLibraryContent와 공유
-    <StatsPageLayout>
+    // PageContainer: 레이아웃 껍데기를 분리해 PublicLibraryContent와 공유
+    <PageContainer width='wide' className='space-y-8'>
       {/* Header */}
       <header className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
         <div>
@@ -340,10 +342,7 @@ export const DashboardContent = ({
             </SelectContent>
           </Select>
 
-          <Button
-            onClick={handleAnalyzeTaste}
-            disabled={isAnalyzing}
-          >
+          <Button onClick={handleAnalyzeTaste} disabled={isAnalyzing}>
             {isAnalyzing ? 'Analyzing...' : 'AI Analysis'}
           </Button>
 
@@ -535,6 +534,6 @@ export const DashboardContent = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </StatsPageLayout>
+    </PageContainer>
   );
 };

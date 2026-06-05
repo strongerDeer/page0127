@@ -1,18 +1,18 @@
 import { Card, CardContent, CardHeader } from '@/shared/ui/card';
+import { PageContainer } from '@/shared/ui/PageContainer';
 import { Skeleton } from '@/shared/ui/skeleton';
-import { StatsPageLayout } from '@/shared/ui/StatsPageLayout';
 
 /**
  * Dashboard 로딩 상태 Skeleton
  *
  * 학습 포인트:
  * - 실제 DashboardContent와 동일한 6블록 레이아웃을 흉내
- * - StatsPageLayout을 그대로 써서 페이지 외곽이 흔들리지 않음 (CLS 방지)
+ * - PageContainer를 그대로 써서 페이지 외곽이 흔들리지 않음 (CLS 방지)
  * - 차트 영역은 next/dynamic의 loading과 동일 높이로 맞춤 (700px / 300px)
  */
 export const DashboardSkeleton = () => {
   return (
-    <StatsPageLayout>
+    <PageContainer width='wide' className='space-y-8'>
       {/* ① Header */}
       <header className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
         <div className='space-y-2'>
@@ -127,6 +127,6 @@ export const DashboardSkeleton = () => {
           </CardContent>
         </Card>
       </div>
-    </StatsPageLayout>
+    </PageContainer>
   );
 };

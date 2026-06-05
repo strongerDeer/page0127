@@ -1,3 +1,4 @@
+import { PageContainer } from '@/shared/ui/PageContainer';
 import { Skeleton } from '@/shared/ui/skeleton';
 
 import { BookListItemSkeleton } from '@/widgets/book/ui/BookListItemSkeleton';
@@ -12,7 +13,7 @@ import { BookListItemSkeleton } from '@/widgets/book/ui/BookListItemSkeleton';
  */
 export default function Loading() {
   return (
-    <div className='container mx-auto max-w-7xl px-4 py-8'>
+    <PageContainer width='wide'>
       {/* Header */}
       <div className='mb-8 flex items-center justify-between'>
         <div className='space-y-2'>
@@ -38,6 +39,6 @@ export default function Loading() {
           <Skeleton key={i} className='h-9 w-9' />
         ))}
       </div>
-    </div>
+    </PageContainer>
   );
 }

@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/shared/ui/card';
+import { PageContainer } from '@/shared/ui/PageContainer';
 import { Skeleton } from '@/shared/ui/skeleton';
-import { StatsPageLayout } from '@/shared/ui/StatsPageLayout';
 
 import { BookListItemSkeleton } from '@/widgets/book/ui/BookListItemSkeleton';
 
@@ -8,12 +8,12 @@ import { BookListItemSkeleton } from '@/widgets/book/ui/BookListItemSkeleton';
  * 공개 서재 페이지 fallback
  *
  * 학습 포인트:
- * - PublicLibraryContent와 동일한 StatsPageLayout 사용 (CLS 방지)
+ * - PublicLibraryContent와 동일한 PageContainer 사용 (CLS 방지)
  * - 헤더 / 연도 select / Stat 4개 / 차트 / 책 목록 구조를 그대로 흉내
  */
 export const PublicLibrarySkeleton = () => {
   return (
-    <StatsPageLayout maxWidth='6xl'>
+    <PageContainer width='library' className='space-y-8'>
       {/* 프로필 헤더 */}
       <div className='flex items-center gap-6 rounded-lg border border-border bg-card p-8'>
         <Skeleton className='h-24 w-24 rounded-lg' />
@@ -60,6 +60,6 @@ export const PublicLibrarySkeleton = () => {
           ))}
         </div>
       </div>
-    </StatsPageLayout>
+    </PageContainer>
   );
 };

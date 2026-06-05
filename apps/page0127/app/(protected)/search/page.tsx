@@ -1,4 +1,5 @@
 import { createClient } from '@/shared/config/supabase/server';
+import { PageContainer } from '@/shared/ui/PageContainer';
 
 import { UserSearch } from '@/features/user';
 
@@ -17,7 +18,7 @@ export default async function SearchPage() {
   } = await supabase.auth.getUser();
 
   return (
-    <div className='mx-auto max-w-3xl space-y-6 p-6'>
+    <PageContainer width='narrow' className='space-y-6'>
       <div>
         <h1 className='text-2xl font-bold'>사용자 검색</h1>
         <p className='mt-2 text-muted-foreground'>
@@ -26,6 +27,6 @@ export default async function SearchPage() {
       </div>
 
       <UserSearch currentUserId={user?.id} />
-    </div>
+    </PageContainer>
   );
 }

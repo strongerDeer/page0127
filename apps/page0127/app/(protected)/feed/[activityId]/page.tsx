@@ -1,3 +1,5 @@
+import { PageContainer } from '@/shared/ui/PageContainer';
+
 import { ActivityDetail } from '@/widgets/activity';
 
 /**
@@ -17,8 +19,8 @@ export default async function ActivityDetailPage({
   const { activityId } = await params;
 
   return (
-    <div className='mx-auto max-w-3xl space-y-6 p-6'>
+    <PageContainer width='narrow' className='space-y-6'>
       <ActivityDetail activityId={activityId} />
-    </div>
+    </PageContainer>
   );
 }

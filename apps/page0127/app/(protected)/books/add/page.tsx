@@ -11,6 +11,7 @@ import {
   validateSpineImageUrl,
 } from '@/shared/lib/imageUtils';
 import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
+import { PageContainer } from '@/shared/ui/PageContainer';
 
 import { useBookCRUD } from '@/features/book/api/useBookCRUD';
 import { useBookSearch } from '@/features/book/api/useBookSearch';
@@ -222,77 +223,75 @@ const AddBookPage = () => {
 
   return (
     <ErrorBoundary>
-      <div className='min-h-screen p-8'>
-        <div className='mx-auto max-w-4xl'>
-          <h1 className='mb-6 text-3xl font-bold'>도서 추가</h1>
+      <PageContainer width='content'>
+        <h1 className='mb-6 text-3xl font-bold'>도서 추가</h1>
 
-          {/* 등록 폼이 열려있지 않을 때만 검색 UI 표시 */}
-          {!selectedBook ? (
-            <div className='space-y-6'>
-              {/* 검색 입력 */}
-              <BookSearchInput
-                ref={searchInputRef}
-                onSearch={search}
-                isLoading={isSearching}
+        {/* 등록 폼이 열려있지 않을 때만 검색 UI 표시 */}
+        {!selectedBook ? (
+          <div className='space-y-6'>
+            {/* 검색 입력 */}
+            <BookSearchInput
+              ref={searchInputRef}
+              onSearch={search}
+              isLoading={isSearching}
+            />
+
+            {/* 로딩 상태 */}
+            {isSearching && (
+              <p className='text-center text-muted-foreground'>검색 중...</p>
+            )}
+
+            {/* 검색 결과 */}
+            {!isSearching && books.length > 0 && (
+              <div className='space-y-4'>
+                <p className='text-sm text-muted-foreground'>
+                  총 {totalResults}개 중 {books.length}개 표시
+                </p>
+                {books.map((book, index) => (
+                  <BookSearchResultCard
+                    key={`${book.isbn13}-${index}`}
+                    book={book}
+                    onSelect={handleSelectBook}
+                  />
+                ))}
+
+                {/* Pagination */}
+                {totalResults > itemsPerPage && (
+                  <BookSearchPagination
+                    currentPage={currentPage}
+                    totalResults={totalResults}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={goToPage}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* 검색 결과 없음 */}
+            {!isSearching && books.length === 0 && (
+              <p className='text-center text-muted-foreground'>
+                도서 제목을 검색해주세요
+              </p>
+            )}
+          </div>
+        ) : (
+          /* 등록 폼 */
+          <>
+            {isLoadingDetail ? (
+              <p className='text-center text-muted-foreground'>
+                도서 상세 정보를 불러오는 중...
+              </p>
+            ) : (
+              <BookRegistrationForm
+                book={selectedBook}
+                onSubmit={handleSubmit}
+                onCancel={handleCancel}
+                isLoading={isCreating}
               />
-
-              {/* 로딩 상태 */}
-              {isSearching && (
-                <p className='text-center text-muted-foreground'>검색 중...</p>
-              )}
-
-              {/* 검색 결과 */}
-              {!isSearching && books.length > 0 && (
-                <div className='space-y-4'>
-                  <p className='text-sm text-muted-foreground'>
-                    총 {totalResults}개 중 {books.length}개 표시
-                  </p>
-                  {books.map((book, index) => (
-                    <BookSearchResultCard
-                      key={`${book.isbn13}-${index}`}
-                      book={book}
-                      onSelect={handleSelectBook}
-                    />
-                  ))}
-
-                  {/* Pagination */}
-                  {totalResults > itemsPerPage && (
-                    <BookSearchPagination
-                      currentPage={currentPage}
-                      totalResults={totalResults}
-                      itemsPerPage={itemsPerPage}
-                      onPageChange={goToPage}
-                    />
-                  )}
-                </div>
-              )}
-
-              {/* 검색 결과 없음 */}
-              {!isSearching && books.length === 0 && (
-                <p className='text-center text-muted-foreground'>
-                  도서 제목을 검색해주세요
-                </p>
-              )}
-            </div>
-          ) : (
-            /* 등록 폼 */
-            <>
-              {isLoadingDetail ? (
-                <p className='text-center text-muted-foreground'>
-                  도서 상세 정보를 불러오는 중...
-                </p>
-              ) : (
-                <BookRegistrationForm
-                  book={selectedBook}
-                  onSubmit={handleSubmit}
-                  onCancel={handleCancel}
-                  isLoading={isCreating}
-                />
-              )}
-            </>
-          )}
-        </div>
-      </div>
+            )}
+          </>
+        )}
+      </PageContainer>
 
       {/* 중복 책 발견 모달 */}
       {existingBook && pendingBook && (

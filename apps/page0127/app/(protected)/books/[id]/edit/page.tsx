@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 
 import { Card, CardContent, CardHeader } from '@/shared/ui/card';
 import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
+import { PageContainer } from '@/shared/ui/PageContainer';
 import { Skeleton } from '@/shared/ui/skeleton';
 
 import { useBookCRUD } from '@/features/book/api/useBookCRUD';
@@ -79,41 +80,39 @@ const BookEditPage = ({ params }: PageProps) => {
   if (isLoading || !book) {
     return (
       <ErrorBoundary>
-        <div className='min-h-screen p-8'>
-          <div className='mx-auto max-w-3xl'>
-            <Card>
-              <CardHeader>
-                <Skeleton className='h-8 w-32' />
-              </CardHeader>
-              <CardContent className='space-y-6'>
-                {/* 책 정보 미리보기 */}
-                <div className='flex gap-4 rounded-lg bg-muted/50 p-4'>
-                  <Skeleton className='h-32 w-24 shrink-0' />
-                  <div className='flex-1 space-y-2'>
-                    <Skeleton className='h-6 w-3/4' />
-                    <Skeleton className='h-4 w-1/2' />
-                    <Skeleton className='h-4 w-1/3' />
-                  </div>
+        <PageContainer width='content'>
+          <Card>
+            <CardHeader>
+              <Skeleton className='h-8 w-32' />
+            </CardHeader>
+            <CardContent className='space-y-6'>
+              {/* 책 정보 미리보기 */}
+              <div className='flex gap-4 rounded-lg bg-muted/50 p-4'>
+                <Skeleton className='h-32 w-24 shrink-0' />
+                <div className='flex-1 space-y-2'>
+                  <Skeleton className='h-6 w-3/4' />
+                  <Skeleton className='h-4 w-1/2' />
+                  <Skeleton className='h-4 w-1/3' />
                 </div>
+              </div>
 
-                {/* 폼 필드들 */}
-                <div className='space-y-4'>
-                  <Skeleton className='h-10 w-full' />
-                  <Skeleton className='h-10 w-full' />
-                  <Skeleton className='h-10 w-full' />
-                  <Skeleton className='h-20 w-full' />
-                  <Skeleton className='h-10 w-full' />
-                </div>
+              {/* 폼 필드들 */}
+              <div className='space-y-4'>
+                <Skeleton className='h-10 w-full' />
+                <Skeleton className='h-10 w-full' />
+                <Skeleton className='h-10 w-full' />
+                <Skeleton className='h-20 w-full' />
+                <Skeleton className='h-10 w-full' />
+              </div>
 
-                {/* 버튼 */}
-                <div className='flex gap-3'>
-                  <Skeleton className='h-10 flex-1' />
-                  <Skeleton className='h-10 flex-1' />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              {/* 버튼 */}
+              <div className='flex gap-3'>
+                <Skeleton className='h-10 flex-1' />
+                <Skeleton className='h-10 flex-1' />
+              </div>
+            </CardContent>
+          </Card>
+        </PageContainer>
       </ErrorBoundary>
     );
   }
@@ -134,26 +133,24 @@ const BookEditPage = ({ params }: PageProps) => {
 
   return (
     <ErrorBoundary>
-      <div className='min-h-screen p-8'>
-        <div className='mx-auto max-w-3xl'>
-          <BookRegistrationForm
-            book={aladinBookFormat}
-            onSubmit={handleSubmit}
-            onCancel={handleCancel}
-            isLoading={isUpdating}
-            initialData={{
-              status: book.status,
-              completed_date: book.completed_date || undefined,
-              start_date: book.start_date || undefined,
-              rating: book.rating || undefined,
-              one_line_review: book.one_line_review || undefined,
-              personal_memo: book.personal_memo || undefined,
-              tags: book.tags || undefined,
-              is_public: book.is_public,
-            }}
-          />
-        </div>
-      </div>
+      <PageContainer width='content'>
+        <BookRegistrationForm
+          book={aladinBookFormat}
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+          isLoading={isUpdating}
+          initialData={{
+            status: book.status,
+            completed_date: book.completed_date || undefined,
+            start_date: book.start_date || undefined,
+            rating: book.rating || undefined,
+            one_line_review: book.one_line_review || undefined,
+            personal_memo: book.personal_memo || undefined,
+            tags: book.tags || undefined,
+            is_public: book.is_public,
+          }}
+        />
+      </PageContainer>
     </ErrorBoundary>
   );
 };

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { BookOpen, Calendar, FileText, Star, Trophy } from 'lucide-react';
 
+import { PageContainer } from '@/shared/ui/PageContainer';
 import {
   Select,
   SelectContent,
@@ -15,7 +16,6 @@ import {
   SelectValue,
 } from '@/shared/ui/select';
 import { StatCard } from '@/shared/ui/StatCard';
-import { StatsPageLayout } from '@/shared/ui/StatsPageLayout';
 
 import { DashboardBookList } from '@/features/stats/ui/DashboardBookList';
 import { ReadingGoalProgress } from '@/features/stats/ui/ReadingGoalProgress';
@@ -101,10 +101,10 @@ export const PublicLibraryContent = ({
   };
 
   return (
-    // StatsPageLayout: DashboardContent와 동일한 레이아웃 껍데기 재사용
-    // bg="default": 공개 서재도 앱 전체 배경(토큰)을 그대로 사용 — 미니멀 통일
-    // maxWidth="6xl": 대시보드(7xl)보다 좁게
-    <StatsPageLayout maxWidth='6xl'>
+    // PageContainer: DashboardContent와 동일한 레이아웃 껍데기 재사용
+    // bg 기본값: 공개 서재도 앱 전체 배경(토큰)을 그대로 사용 — 미니멀 통일
+    // width="library"(6xl): 대시보드(wide 7xl)보다 좁게
+    <PageContainer width='library' className='space-y-8'>
       {/* 프로필 헤더 */}
       <PublicLibraryHeader
         profile={profile}
@@ -124,7 +124,9 @@ export const PublicLibraryContent = ({
 
         {/* 연도 선택 */}
         <div className='flex items-center gap-2'>
-          <span className='text-sm font-medium text-muted-foreground'>연도 선택:</span>
+          <span className='text-sm font-medium text-muted-foreground'>
+            연도 선택:
+          </span>
           <Select
             value={selectedYear.toString()}
             onValueChange={handleYearChange}
@@ -221,6 +223,6 @@ export const PublicLibraryContent = ({
           )}
         />
       </div>
-    </StatsPageLayout>
+    </PageContainer>
   );
 };

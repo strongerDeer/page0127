@@ -1,3 +1,5 @@
+import { PageContainer } from '@/shared/ui/PageContainer';
+
 import { NotificationPage } from '@/features/notification/ui/NotificationPage';
 
 /**
@@ -11,13 +13,13 @@ import { NotificationPage } from '@/features/notification/ui/NotificationPage';
  */
 export default function Notifications() {
   return (
-    <div className='mx-auto max-w-3xl space-y-6 p-6'>
+    <PageContainer width='narrow' className='space-y-6'>
       <div>
         <h1 className='text-2xl font-bold'>알림</h1>
         <p className='mt-2 text-muted-foreground'>모든 알림을 확인하세요</p>
       </div>
 
       <NotificationPage />
-    </div>
+    </PageContainer>
   );
 }

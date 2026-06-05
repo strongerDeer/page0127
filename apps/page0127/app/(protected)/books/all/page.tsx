@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { Button } from '@/shared/ui/button';
+import { PageContainer } from '@/shared/ui/PageContainer';
 import {
   Pagination,
   PaginationContent,
@@ -73,7 +74,7 @@ export default async function GlobalBooksPage(props: {
   const totalPages = count ? Math.ceil(count / limit) : 0;
 
   return (
-    <div className='container mx-auto max-w-7xl px-4 py-8'>
+    <PageContainer width='wide'>
       <div className='mb-8 flex items-center justify-between'>
         <div>
           <h1 className='text-3xl font-bold'>전체 도서 리스트</h1>
@@ -150,6 +151,6 @@ export default async function GlobalBooksPage(props: {
           </Pagination>
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

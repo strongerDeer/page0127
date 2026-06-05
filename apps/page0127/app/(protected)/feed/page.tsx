@@ -1,3 +1,5 @@
+import { PageContainer } from '@/shared/ui/PageContainer';
+
 import { ActivityFeed } from '@/widgets/activity';
 
 /**
@@ -10,7 +12,7 @@ import { ActivityFeed } from '@/widgets/activity';
  */
 export default function FeedPage() {
   return (
-    <div className='mx-auto max-w-3xl space-y-6 p-6'>
+    <PageContainer width='narrow' className='space-y-6'>
       <div>
         <h1 className='text-2xl font-bold'>활동 피드</h1>
         <p className='mt-2 text-muted-foreground'>
@@ -19,6 +21,6 @@ export default function FeedPage() {
       </div>
 
       <ActivityFeed />
-    </div>
+    </PageContainer>
   );
 }
