@@ -11,6 +11,7 @@ type BookRankingListProps = {
   type: 'best' | 'most'; // best: 인생책 (Heart icon), most: 완독왕 (Book icon or simple count)
   myReadIsbns?: string[];
   myLikedIds?: string[];
+  isLoggedIn?: boolean;
 };
 
 export const BookRankingList = ({
@@ -20,6 +21,7 @@ export const BookRankingList = ({
   type,
   myReadIsbns = [],
   myLikedIds = [],
+  isLoggedIn = true,
 }: BookRankingListProps) => {
   if (!books || books.length === 0) return null;
 
@@ -45,6 +47,7 @@ export const BookRankingList = ({
                 rank={index + 1}
                 isReadProp={isRead}
                 isLikedProp={isLiked}
+                isLoggedIn={isLoggedIn}
               />
 
               {/* Ranking specific stats below the item */}

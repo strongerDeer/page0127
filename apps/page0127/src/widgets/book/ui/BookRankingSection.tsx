@@ -19,6 +19,7 @@ type BookRankingSectionProps = {
   subTitle?: string;
   myReadIsbns?: string[];
   myLikedIds?: string[];
+  isLoggedIn?: boolean;
 };
 
 const RPC_BY_TYPE = {
@@ -35,6 +36,7 @@ export const BookRankingSection = async ({
   subTitle,
   myReadIsbns,
   myLikedIds,
+  isLoggedIn,
 }: BookRankingSectionProps) => {
   const supabase = await createClient();
 
@@ -58,6 +60,7 @@ export const BookRankingSection = async ({
       type={type}
       myReadIsbns={myReadIsbns}
       myLikedIds={myLikedIds}
+      isLoggedIn={isLoggedIn}
     />
   );
 };

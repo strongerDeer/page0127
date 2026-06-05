@@ -7,7 +7,7 @@ import { Globe } from 'lucide-react';
 
 import { cn } from '@/shared/lib/utils';
 
-import { NotificationDropdown } from '@/features/notification';
+import { NotificationBadge } from '@/features/notification';
 import { ProfileDropdown } from '@/features/profile';
 
 import { isNavItemActive, navItems } from '../model/navItems';
@@ -56,6 +56,10 @@ export const Sidebar = ({
             >
               <Icon className='size-4' />
               {item.label}
+              {/* 알림 메뉴에만 안 읽은 개수 뱃지 표시 */}
+              {item.href === '/notifications' && (
+                <NotificationBadge userId={userId} />
+              )}
             </Link>
           );
         })}
@@ -77,14 +81,13 @@ export const Sidebar = ({
         )}
       </nav>
 
-      {/* 하단: 알림 + 프로필 */}
-      <div className='flex items-center justify-between border-t border-sidebar-border px-4 py-3'>
+      {/* 하단: 프로필 */}
+      <div className='flex items-center border-t border-sidebar-border px-4 py-3'>
         <ProfileDropdown
           photoUrl={photoUrl}
           displayName={displayName}
           username={username}
         />
-        <NotificationDropdown userId={userId} />
       </div>
     </aside>
   );

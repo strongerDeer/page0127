@@ -61,11 +61,14 @@ const Home = async () => {
                   무료로 시작하기
                 </Button>
               </Link>
-              <Link href='/books/all'>
-                <Button size='lg' variant='outline' className='px-8'>
-                  전체 도서 둘러보기
-                </Button>
-              </Link>
+              {/* 전체 도서 목록은 로그인 필요 — 비로그인 방문자에게는 숨긴다 */}
+              {user && (
+                <Link href='/books/all'>
+                  <Button size='lg' variant='outline' className='px-8'>
+                    전체 도서 둘러보기
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -80,6 +83,7 @@ const Home = async () => {
             subTitle='가장 많은 10점 평점을 받은 명작들입니다.'
             myReadIsbns={myReadIsbns}
             myLikedIds={myLikedIds}
+            isLoggedIn={!!user}
           />
         </Suspense>
 
@@ -92,6 +96,7 @@ const Home = async () => {
             subTitle='유저들이 끝까지 읽어낸 인기 도서입니다.'
             myReadIsbns={myReadIsbns}
             myLikedIds={myLikedIds}
+            isLoggedIn={!!user}
           />
         </Suspense>
       </div>

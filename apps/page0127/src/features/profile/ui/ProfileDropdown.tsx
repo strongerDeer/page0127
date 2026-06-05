@@ -12,7 +12,7 @@
 
 import Link from 'next/link';
 
-import { BookOpen, Home,LogOut, User } from 'lucide-react';
+import { BookOpen, Home, LogOut, Settings } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 import {
@@ -82,11 +82,11 @@ export const ProfileDropdown = ({
           </Link>
         </DropdownMenuItem>
 
-        {/* 프로필 수정 */}
+        {/* 설정 */}
         <DropdownMenuItem asChild>
           <Link href='/settings' className='flex cursor-pointer items-center'>
-            <User className='mr-2 h-4 w-4' />
-            <span>프로필 수정</span>
+            <Settings className='mr-2 h-4 w-4' />
+            <span>설정</span>
           </Link>
         </DropdownMenuItem>
 

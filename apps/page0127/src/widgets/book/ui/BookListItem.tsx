@@ -12,6 +12,8 @@ type BookItemProps = {
   rank?: number;
   isReadProp?: boolean;
   isLikedProp?: boolean;
+  // 기본 true — 비로그인 노출 화면(랜딩 랭킹)에서만 false로 내려 상세 링크를 끈다
+  isLoggedIn?: boolean;
 };
 
 type BookListItemCoverProps = {
@@ -24,6 +26,7 @@ type BookListItemCoverProps = {
   category: string | null;
   isRead: boolean;
   rank?: number;
+  disableLink?: boolean;
 };
 
 type BookListItemContentProps = {
@@ -31,6 +34,7 @@ type BookListItemContentProps = {
   title: string;
   author: string | null;
   isLiked: boolean;
+  disableLink?: boolean;
 };
 
 const BookListItemCover = ({
@@ -43,8 +47,10 @@ const BookListItemCover = ({
   category,
   isRead,
   rank,
-}: BookListItemCoverProps) => (
-  <Link href={`/books/info/${id}`} title={`${title} 상세 내용 보기`}>
+  disableLink,
+}: BookListItemCoverProps) => {
+  // 표지 + 부가정보 묶음 — 링크 활성/비활성 양쪽에서 공통으로 쓴다
+  const inner = (
     <div className={styles.perspective}>
       <div className={styles.cover}>
         <div className={styles.bookImg}>
@@ -96,18 +102,30 @@ const BookListItemCover = ({
         {category && <p className={styles.publisher}>{category}</p>}
       </div>
     </div>
-  </Link>
-);
+  );
+
+  // 비로그인 등 링크 비활성 시 Link 없이 내용만 (클릭해도 상세로 이동하지 않음)
+  if (disableLink) {
+    return inner;
+  }
+
+  return (
+    <Link href={`/books/info/${id}`} title={`${title} 상세 내용 보기`}>
+      {inner}
+    </Link>
+  );
+};
 
 const BookListItemContent = ({
   id,
   title,
   author,
   isLiked,
+  disableLink,
 }: BookListItemContentProps) => (
   <div className={styles.content}>
     <h3 className={styles.title}>
-      <Link href={`/books/info/${id}`}>{title}</Link>
+      {disableLink ? title : <Link href={`/books/info/${id}`}>{title}</Link>}
     </h3>
     <p className={styles.author}>{author}</p>
     <div className='mt-2 text-center'>
@@ -121,9 +139,13 @@ export const BookListItem = ({
   rank,
   isReadProp,
   isLikedProp,
+  isLoggedIn = true,
 }: BookItemProps) => {
   const isRead =
     isReadProp ?? ('status' in book && book.status === 'completed');
+
+  // 로그인하지 않은 방문자에게는 상세(/books/info) 링크를 비활성화한다
+  const disableLink = !isLoggedIn;
 
   return (
     <article className={styles.article}>
@@ -137,12 +159,14 @@ export const BookListItem = ({
         category={book.category}
         isRead={isRead}
         rank={rank}
+        disableLink={disableLink}
       />
       <BookListItem.Content
         id={book.id}
         title={book.title}
         author={book.author}
         isLiked={isLikedProp ?? false}
+        disableLink={disableLink}
       />
     </article>
   );

@@ -3,6 +3,7 @@
  * 알림 기능 관련 UI 컴포넌트
  */
 
+export { NotificationBadge } from './ui/NotificationBadge';
 export { NotificationDropdown } from './ui/NotificationDropdown';
 export { NotificationItem } from './ui/NotificationItem';
 export { NotificationList } from './ui/NotificationList';
