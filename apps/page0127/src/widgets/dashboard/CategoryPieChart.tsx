@@ -2,6 +2,8 @@
 
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
+import { chartTooltipStyle } from '@/shared/lib/chartStyles';
+
 import type { CategoryDistribution } from '@/entities/book';
 
 type Props = {
@@ -70,7 +72,7 @@ export const CategoryPieChart = ({ data, onCategoryClick }: Props) => {
           ))}
         </Pie>
         <Tooltip
-          contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+          contentStyle={chartTooltipStyle}
           formatter={(value, name, props) => {
             // recharts Tooltip Formatter: props 에 현재 segment 의 원본 데이터(payload)가 들어 있다.
             const p = props as unknown as { payload?: { percentage: number } };

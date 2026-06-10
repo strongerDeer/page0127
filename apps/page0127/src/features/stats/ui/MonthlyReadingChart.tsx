@@ -10,6 +10,8 @@ import {
   YAxis,
 } from 'recharts';
 
+import { chartTooltipStyle } from '@/shared/lib/chartStyles';
+
 import type { MonthlyReadingData } from '@/entities/book';
 
 type MonthlyReadingChartProps = {
@@ -73,12 +75,7 @@ export const MonthlyReadingChart = ({
           {/* 툴팁 */}
           <Tooltip
             cursor={{ fill: 'rgba(99, 102, 241, 0.1)' }}
-            contentStyle={{
-              backgroundColor: 'white',
-              border: '1px solid #e5e7eb',
-              borderRadius: '8px',
-              padding: '8px 12px',
-            }}
+            contentStyle={chartTooltipStyle}
             formatter={(value) => [`${value}권`, '독서량']}
             labelFormatter={(label) => `${label}월`}
           />

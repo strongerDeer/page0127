@@ -49,7 +49,7 @@ const Home = async () => {
     <div className='min-h-screen bg-background'>
       {/* Hero Section */}
       <section className='section-spacing pb-12 pt-20'>
-        <div className='container mx-auto max-w-5xl px-4'>
+        <div className='container mx-auto max-w-6xl px-4'>
           <div className='text-center'>
             <h1 className='heading-1 mb-6'>당신의 독서 DNA를 발견하세요</h1>
             <p className='heading-2 mb-8 text-muted-foreground'>
@@ -75,7 +75,7 @@ const Home = async () => {
       </section>
 
       {/* Rankings Section — 각 랭킹은 독립적으로 스트리밍 */}
-      <div className='container mx-auto max-w-6xl px-4'>
+      <div className='container mx-auto max-w-6xl space-y-8 px-4'>
         <Suspense fallback={<BookRankingListSkeleton />}>
           <BookRankingSection
             type='best'
@@ -86,8 +86,6 @@ const Home = async () => {
             isLoggedIn={!!user}
           />
         </Suspense>
-
-        <div className='h-8' />
 
         <Suspense fallback={<BookRankingListSkeleton />}>
           <BookRankingSection
@@ -101,11 +99,9 @@ const Home = async () => {
         </Suspense>
       </div>
 
-      <div className='h-20' />
-
       {/* Features Section */}
       <section className='section-spacing bg-muted/50'>
-        <div className='container mx-auto max-w-5xl px-4'>
+        <div className='container mx-auto max-w-6xl px-4'>
           <h2 className='heading-2 mb-12 text-center'>주요 기능</h2>
           <div className='grid grid-cols-1 gap-8 md:grid-cols-3'>
             <div className='rounded-lg border border-border bg-card p-6'>
@@ -135,8 +131,8 @@ const Home = async () => {
 
       {/* Footer */}
       <footer className='border-t border-border bg-card py-8'>
-        <div className='container mx-auto max-w-5xl px-4 text-center text-sm text-muted-foreground'>
-          <p>© 2024 page0127. All rights reserved.</p>
+        <div className='container mx-auto max-w-6xl px-4 text-center text-sm text-muted-foreground'>
+          <p>© 2026 page0127. All rights reserved.</p>
         </div>
       </footer>
     </div>

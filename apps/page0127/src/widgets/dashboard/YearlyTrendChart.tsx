@@ -10,6 +10,8 @@ import {
   YAxis,
 } from 'recharts';
 
+import { chartTooltipStyle } from '@/shared/lib/chartStyles';
+
 import type { YearlyTrend } from '@/entities/book';
 
 type Props = {
@@ -81,7 +83,7 @@ export const YearlyTrendChart = ({ data }: Props) => {
           />
           <Tooltip
             cursor={{fill: 'rgba(0,0,0,0.05)'}}
-            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+            contentStyle={chartTooltipStyle}
             formatter={(value) => [`${value}권`, '독서량']}
             labelFormatter={(label) => `${label}년`}
           />

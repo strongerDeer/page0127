@@ -9,6 +9,8 @@ import {
   Tooltip,
 } from 'recharts';
 
+import { chartTooltipStyle } from '@/shared/lib/chartStyles';
+
 import type { CategoryReadingData } from '@/entities/book';
 
 type CategoryRadarChartProps = {
@@ -57,12 +59,7 @@ export const CategoryRadarChart = ({ data }: CategoryRadarChartProps) => {
 
           {/* 툴팁 */}
           <Tooltip
-            contentStyle={{
-              backgroundColor: 'white',
-              border: '1px solid #e5e7eb',
-              borderRadius: '8px',
-              padding: '8px 12px',
-            }}
+            contentStyle={chartTooltipStyle}
             formatter={(value) => [`${value}권`, '독서량']}
           />
 
