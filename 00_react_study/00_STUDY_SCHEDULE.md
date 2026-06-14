@@ -141,7 +141,7 @@ Week 12-14 → 성능 최적화 + React Compiler
 
 | Day | 날짜  | 주제                     | 30분 할 일                                 | page0127 연결 포인트                   |
 | --- | ----- | ------------------------ | ------------------------------------------ | -------------------------------------- |
-| 57  | 05/01 | useFormStatus + 19 문법 개선 | 제출 버튼을 `useFormStatus`로 분리 + ref/`<Context>`/metadata 정리 | `ReadingGoalDialog` 제출 버튼 상태 분리 실험 |
+| 57  | 06/11 ✅ | useFormStatus + 19 문법 개선 | 제출 버튼을 `useFormStatus`로 분리 + ref/`<Context>`/metadata 정리 | `ReadingGoalDialog` 제출 버튼 상태 분리 실험 |
 | 58  | 05/04 | React 19.2 신규 API      | `<Activity>` 탭 프리렌더 + `useEffectEvent`로 deps 문제 해결 | 대시보드 탭/Effect 적용 가능성 검토   |
 | 59  | 05/05 | useTransition 심화       | 대량 책 렌더링을 Transition으로 처리       | 완독 목록 전체 렌더링 부드럽게         |
 | 60  | 05/06 | useTransition + Suspense | Transition 중 Suspense fallback 조합       | 탭 전환 중 이전 내용 유지 UX           |
