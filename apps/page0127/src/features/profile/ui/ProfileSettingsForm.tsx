@@ -12,6 +12,7 @@ import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
+import { SubmitButton } from '@/shared/ui/SubmitButton';
 import { Textarea } from '@/shared/ui/textarea';
 
 import { useLogout } from '@/features/auth/api/useLogout';
@@ -141,11 +142,9 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
     setProfileUrl(`${window.location.origin}/${profile.username}`);
   }, [profile.username]);
 
-  // [state, formAction, isPending] — Server Action을 연결
-  const [state, formAction, isPending] = useActionState(
-    updateProfileAction,
-    initialState
-  );
+  // [state, formAction] — Server Action을 연결
+  // isPending은 제출 버튼(SubmitButton)이 useFormStatus로 직접 읽으므로 구조분해하지 않음
+  const [state, formAction] = useActionState(updateProfileAction, initialState);
 
   // 표시할 프로필 이미지 = 파생값 (useEffect로 setState 복사하지 않고 렌더 중 계산)
   // - 제거 의도면 null / 제출 성공 후엔 서버가 돌려준 URL / 그 외엔 원본
@@ -275,10 +274,8 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
             >
               취소
             </Button>
-            {/* isSubmitting 수동 관리 → isPending 자동 */}
-            <Button type='submit' disabled={isPending}>
-              {isPending ? '저장 중...' : '저장'}
-            </Button>
+            {/* useFormStatus가 부모 <form>의 pending을 직접 읽음 → isPending prop 불필요 */}
+            <SubmitButton />
           </div>
         </div>
       </Card>

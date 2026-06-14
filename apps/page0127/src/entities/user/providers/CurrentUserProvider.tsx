@@ -33,8 +33,9 @@ export const CurrentUserProvider = ({ children }: CurrentUserProviderProps) => {
   const { data: currentUser, isLoading } = useCurrentUser();
 
   return (
-    <CurrentUserContext.Provider value={{ currentUser, isLoading }}>
+    // React 19: <Context>를 그대로 Provider로 사용 (.Provider 생략)
+    <CurrentUserContext value={{ currentUser, isLoading }}>
       {children}
-    </CurrentUserContext.Provider>
+    </CurrentUserContext>
   );
 };

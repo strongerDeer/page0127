@@ -41,15 +41,15 @@ export const StatusTabFilter = ({
   children,
 }: StatusTabFilterProps) => {
   return (
-    // Context.Provider로 value/onChange를 자식 전체에 공급
-    <StatusTabFilterContext.Provider value={{ activeValue: value, onChange, isPending }}>
+    // React 19: <Context>를 그대로 Provider로 사용 (.Provider 생략)
+    <StatusTabFilterContext value={{ activeValue: value, onChange, isPending }}>
       <div
         className='mb-6 flex flex-wrap gap-2'
         style={{ opacity: isPending ? 0.6 : 1, transition: 'opacity 0.15s' }}
       >
         {children}
       </div>
-    </StatusTabFilterContext.Provider>
+    </StatusTabFilterContext>
   );
 };
 

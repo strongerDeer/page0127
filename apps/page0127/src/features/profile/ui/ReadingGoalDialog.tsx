@@ -15,6 +15,7 @@ import {
 } from '@/shared/ui/dialog';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
+import { SubmitButton } from '@/shared/ui/SubmitButton';
 
 import {
   type ReadingGoalActionState,
@@ -63,8 +64,9 @@ export const ReadingGoalDialog = ({
     target: `${formId}-target`,
   };
 
-  // [state, formAction, isPending] — Server Action을 연결
-  const [state, formAction, isPending] = useActionState(
+  // [state, formAction] — Server Action을 연결
+  // isPending은 제출 버튼(SubmitButton)이 useFormStatus로 직접 읽으므로 구조분해하지 않음
+  const [state, formAction] = useActionState(
     updateReadingGoalAction,
     initialState
   );
@@ -129,10 +131,8 @@ export const ReadingGoalDialog = ({
             <Button type='button' variant='outline' onClick={onClose}>
               취소
             </Button>
-            {/* isLoading 수동 관리 → isPending 자동 */}
-            <Button type='submit' disabled={isPending}>
-              {isPending ? '저장 중...' : '저장'}
-            </Button>
+            {/* useFormStatus가 부모 <form>의 pending을 직접 읽음 → isPending prop 불필요 */}
+            <SubmitButton />
           </DialogFooter>
         </form>
       </DialogContent>
