@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useEffectEvent, useRef } from 'react';
 
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
@@ -39,13 +39,23 @@ export const ActivityFeed = () => {
     initialPageParam: 0,
   });
 
+  // useEffectEvent: 교차 시점에 실행할 콜백을 분리한다.
+  // fetchNextPage·isFetchingNextPage는 자주 바뀌는데, 이걸 deps에 두면 값이
+  // 바뀔 때마다 observer가 disconnect→재생성됐다. effect event로 빼면 항상
+  // 최신 값을 읽으면서도 재생성을 막는다.
+  const onIntersect = useEffectEvent(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  });
+
   // Intersection Observer로 무한 스크롤 구현
+  // deps에 hasNextPage만 남긴 이유: 초기 로딩이 끝나 목록(과 트리거 엘리먼트)이
+  // 마운트되는 시점에 observer를 연결해야 하기 때문이다.
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
+        if (entries[0].isIntersecting) onIntersect();
       },
       { threshold: 0.1 }
     );
@@ -55,7 +65,7 @@ export const ActivityFeed = () => {
     }
 
     return () => observer.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+  }, [hasNextPage]);
 
   // 로딩 상태
   if (isLoading) {

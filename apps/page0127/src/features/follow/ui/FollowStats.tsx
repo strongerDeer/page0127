@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useEffectEvent } from 'react';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Users } from 'lucide-react';
@@ -35,16 +35,18 @@ export const FollowStats = ({
     queryFn: () => followApi.getFollowStats(userId),
   });
 
+  // useEffectEvent: 구독 콜백을 effect 밖으로 분리한다.
+  // 콜백은 항상 최신 queryClient를 보지만 deps에는 포함되지 않으므로,
+  // eslint-disable 주석 없이도 빈 deps([])가 정당해진다 (마운트 시 1회만 구독).
+  const handleFollowEvent = useEffectEvent(() => {
+    // 모든 팔로우 관련 쿼리 무효화 (최신 데이터 가져오기)
+    queryClient.invalidateQueries({ queryKey: followKeys.all });
+  });
+
   // BroadcastChannel 이벤트 구독 (다른 탭에서 팔로우/언팔로우 시 자동 업데이트)
   useEffect(() => {
-    const unsubscribe = followBroadcast.onFollowEvent(() => {
-      // 모든 팔로우 관련 쿼리 무효화 (최신 데이터 가져오기)
-      queryClient.invalidateQueries({ queryKey: followKeys.all });
-    });
-
+    const unsubscribe = followBroadcast.onFollowEvent(handleFollowEvent);
     return unsubscribe;
-    // queryClient 는 useQueryClient() 가 반환하는 안정적 싱글톤이라 의존성 배열에서 제외.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (isLoading) {

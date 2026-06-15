@@ -10,7 +10,7 @@
  * - 전체 읽음 처리
  */
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useEffectEvent, useRef } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -73,13 +73,22 @@ export const NotificationPage = () => {
       enabled: !!currentUser,
     });
 
+  // useEffectEvent: 교차 시점 콜백을 분리한다.
+  // fetchNextPage·isFetchingNextPage를 deps에 두면 값이 바뀔 때마다 observer가
+  // 재생성된다. effect event로 빼면 최신 값을 읽으면서도 재생성을 막는다.
+  const onIntersect = useEffectEvent(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  });
+
   // Intersection Observer로 무한 스크롤 구현
+  // deps에 hasNextPage만 남긴 이유: 트리거 엘리먼트가 {hasNextPage && ...}로
+  // 조건부 렌더되므로, 등장/사라짐에 맞춰 observer를 다시 연결해야 한다.
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
+        if (entries[0].isIntersecting) onIntersect();
       },
       { threshold: 0.1 }
     );
@@ -89,7 +98,7 @@ export const NotificationPage = () => {
     }
 
     return () => observer.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+  }, [hasNextPage]);
 
   const handleNotificationClick = async (
     notification: NotificationWithActor
