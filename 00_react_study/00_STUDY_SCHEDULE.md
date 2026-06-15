@@ -142,17 +142,17 @@ Week 12-14 → 성능 최적화 + React Compiler
 | Day | 날짜  | 주제                     | 30분 할 일                                 | page0127 연결 포인트                   |
 | --- | ----- | ------------------------ | ------------------------------------------ | -------------------------------------- |
 | 57  | 06/11 ✅ | useFormStatus + 19 문법 개선 | 제출 버튼을 `useFormStatus`로 분리 + ref/`<Context>`/metadata 정리 | `ReadingGoalDialog` 제출 버튼 상태 분리 실험 |
-| 58  | 05/04 | React 19.2 신규 API      | `<Activity>` 탭 프리렌더 + `useEffectEvent`로 deps 문제 해결 | 대시보드 탭/Effect 적용 가능성 검토   |
-| 59  | 05/05 | useTransition 심화       | 대량 책 렌더링을 Transition으로 처리       | 완독 목록 전체 렌더링 부드럽게         |
-| 60  | 05/06 | useTransition + Suspense | Transition 중 Suspense fallback 조합       | 탭 전환 중 이전 내용 유지 UX           |
-| 61  | 05/07 | Suspense 중첩 패턴       | 책장 / 통계 / 알림 각각 독립 Suspense 경계 | 일부 실패해도 나머지 보여주는 구조     |
-| 62  | 05/08 | Error Boundary 심화      | 중첩 Error Boundary + reset 버튼           | API별 에러 복구 UX                     |
-| 63  | 05/11 | React.memo ✨            | `BookCard`에 `React.memo` 적용 + 비교 함수 | Profiler로 리렌더 횟수 비교            |
-| 64  | 05/12 | React Compiler 이해      | Compiler가 자동 메모이제이션하는 범위 파악 | 기존 `useMemo`/`useCallback` 제거 실험 |
-| 65  | 05/13 | React Compiler 실습      | `babel-plugin-react-compiler` 적용         | Compiler 적용 전/후 Profiler 수치 비교 |
-| 66  | 05/14 | 번들 최적화              | `next/bundle-analyzer`로 번들 분석         | 불필요하게 큰 패키지 교체 or lazy 처리 |
-| 67  | 05/15 | 최종 성능 점검           | React DevTools Profiler 전체 앱 분석       | 병목 지점 2개 이상 개선                |
-| 68  | 05/18 | 전체 복습 & 회고         | Phase 1-6 개념 마인드맵 + 개선 내역 정리   | 학습 일지 완성                         |
+| 58  | 06/16 ✅ | React 19.2 신규 API      | `<Activity>` 탭 프리렌더 + `useEffectEvent`로 deps 문제 해결 | 대시보드 탭/Effect 적용 가능성 검토   |
+| 59  | 06/17 | useTransition 심화       | 대량 책 렌더링을 Transition으로 처리       | 완독 목록 전체 렌더링 부드럽게         |
+| 60  | 06/18 | useTransition + Suspense | Transition 중 Suspense fallback 조합       | 탭 전환 중 이전 내용 유지 UX           |
+| 61  | 06/19 | Suspense 중첩 패턴       | 책장 / 통계 / 알림 각각 독립 Suspense 경계 | 일부 실패해도 나머지 보여주는 구조     |
+| 62  | 06/22 | Error Boundary 심화      | 중첩 Error Boundary + reset 버튼           | API별 에러 복구 UX                     |
+| 63  | 06/23 | React.memo ✨            | `BookCard`에 `React.memo` 적용 + 비교 함수 | Profiler로 리렌더 횟수 비교            |
+| 64  | 06/24 | React Compiler 이해      | Compiler가 자동 메모이제이션하는 범위 파악 | 기존 `useMemo`/`useCallback` 제거 실험 |
+| 65  | 06/25 | React Compiler 실습      | `babel-plugin-react-compiler` 적용         | Compiler 적용 전/후 Profiler 수치 비교 |
+| 66  | 06/26 | 번들 최적화              | `next/bundle-analyzer`로 번들 분석         | 불필요하게 큰 패키지 교체 or lazy 처리 |
+| 67  | 06/29 | 최종 성능 점검           | React DevTools Profiler 전체 앱 분석       | 병목 지점 2개 이상 개선                |
+| 68  | 06/30 | 전체 복습 & 회고         | Phase 1-6 개념 마인드맵 + 개선 내역 정리   | 학습 일지 완성                         |
 
 ---
 
