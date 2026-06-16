@@ -88,7 +88,7 @@ useEffect(() => {
 
 ### 사례 A — `useEffectEvent`가 풀 수 있는 "참조 안정화" 부담
 
-[DashboardContent.tsx:222-223](../apps/page0127/src/widgets/dashboard/DashboardContent.tsx#L222-L223):
+[DashboardContent.tsx:223-224](../apps/page0127/src/widgets/dashboard/DashboardContent.tsx#L223-L224):
 
 ```tsx
 // ReadingGoalDialog의 useEffect deps에 들어가므로 참조를 안정화 (useCallback)
@@ -205,7 +205,61 @@ page0127 대입:
 
 ---
 
-## 6. 다음 Day 예고
+## 6. page0127 전수 검사 결과 (Activity / useEffectEvent)
+
+> 요청으로 page0127 전체를 전수 조사 (서브에이전트 2개 병렬). 조사 단계에선 후보만 추렸고,
+> `useEffectEvent` 권장 3건은 이후 실제 반영했다 (아래 **✅ 실제 적용 완료** 표 참조).
+
+### `useEffectEvent` — 진단 (높음) → 아래 ✅ 모두 반영 완료
+
+구독/옵저버 setup이 **상태 변화마다 끊겼다 다시 붙던** 전형적 케이스.
+(아래 라인 번호는 **진단 시점(적용 전)** 기준 — 반영 후 현재 위치는 **✅ 실제 적용 완료** 표를 보라.)
+
+| 위치 | 진단 (적용 전) | 처방 |
+| --- | --- | --- |
+| [ActivityFeed.tsx:43](../apps/page0127/src/widgets/activity/ui/ActivityFeed.tsx#L43) | 무한스크롤 `IntersectionObserver`, deps `[fetchNextPage, hasNextPage, isFetchingNextPage]` → 페칭 상태 바뀔 때마다 observer 재생성 | 콜백을 `onIntersect = useEffectEvent(...)`로 빼고 effect deps `[]` |
+| [NotificationPage.tsx:77](../apps/page0127/src/features/notification/ui/NotificationPage.tsx#L77) | 위와 동일한 무한스크롤 옵저버 | 동일 |
+| [FollowStats.tsx:39](../apps/page0127/src/features/follow/ui/FollowStats.tsx#L39) | `BroadcastChannel` 구독, `queryClient` 읽으려고 `// eslint-disable exhaustive-deps`로 우회 | 콜백을 effect event로 → **disable 주석 제거 + deps `[]` 정당화** |
+
+### `useEffectEvent` — 검토 가치 (중간, "정리" 성격)
+
+- [ReadingGoalDialog.tsx:76](../apps/page0127/src/features/profile/ui/ReadingGoalDialog.tsx#L76) ↔ [DashboardContent.tsx:223](../apps/page0127/src/widgets/dashboard/DashboardContent.tsx#L223) — **사례 A**에서 본 `useCallback` 짝. 자식에 적용하면 부모 `useCallback` 2개 제거 (버그는 아님).
+- [stats/BookSearchInput.tsx:52](../apps/page0127/src/features/stats/ui/BookSearchInput.tsx#L52) · [book/BookSearchInput.tsx:45](../apps/page0127/src/features/book/ui/BookSearchInput.tsx#L45) — 디바운스 검색, `onSearchChange`(props)가 deps에 걸려 타이머 setup 재생성.
+
+### `<Activity>` — 재검토 결과: 부적합 ⚠️ (정적 분석은 "높음"이었으나 코드 확인 후 철회)
+
+| 위치 | 정적 분석 기대 | 실제 코드 확인 결과 |
+| --- | --- | --- |
+| `app/(protected)/books/add/page.tsx:230-293` | 검색↔폼 왕복 시 등록폼 입력 보존 | **부적합** — ① `BookRegistrationForm`은 non-null `book` prop 필수라 `selectedBook=null`일 때 `hidden`으로 둘 수 없음 ② 폼 state는 `useReducer` 초기값으로 마운트 시 1회만 설정 → Activity로 보존하면 **다른 책을 골라도 이전 입력이 잔존**(혼란) ③ "취소 = 입력 폐기"가 자연스러운 UX |
+
+> 💡 교훈: **정적 분석(서브에이전트)은 컴포넌트의 prop 제약·`useReducer` 초기화 동작까지는 못 본다.**
+> 적용 전 대상 컴포넌트를 직접 읽어 검증해야 한다. (입력 복원이 정말 필요하면 Activity가 아니라
+> state를 부모로 끌어올리거나 임시 저장하는 방식이 적합 — 매번-새로-시작이 맞는 화면엔 조건부 렌더링.)
+
+### `<Activity>` — 검토 가치 (중간/낮음)
+
+- [CommentItem.tsx:222-233](../apps/page0127/src/features/comment/ui/CommentItem.tsx#L222-L233) — 대댓글 폼 토글, 닫으면 작성 중 내용 소실 (짧은 텍스트라 비용 작음).
+- [CommentSection.tsx:67-79](../apps/page0127/src/features/comment/ui/CommentSection.tsx#L67-L79) — 댓글 영역 접기/펼치기 안에 작성 폼 포함.
+
+### 결론
+
+- **이 코드베이스는 탭/필터를 "컴포넌트 교체"가 아니라 "동일 컴포넌트 내 필터링 + lift-state up"으로 일관되게 짰다** → `<Activity>` 적용처는 **사실상 없음** (유일 후보였던 books/add도 검증 결과 부적합). 확인 다이얼로그 6종·라우팅 탭바(`BottomTabBar`)도 불필요. → **사례 C**에서 추측한 그대로 확인됨.
+- 반면 `useEffectEvent`는 **구독·옵저버 setup 패턴**에서 명확한 적용처 3건 — 모두 반영 완료(아래 ✅). 그중 [FollowStats.tsx:38](../apps/page0127/src/features/follow/ui/FollowStats.tsx#L38)의 `eslint-disable` 우회 제거가 가장 교과서적인 사례.
+
+### ✅ 실제 적용 완료 (코드 수정 + lint/tsc 통과)
+
+| 파일 | 변경 | 검증 |
+| --- | --- | --- |
+| [FollowStats.tsx](../apps/page0127/src/features/follow/ui/FollowStats.tsx#L38) | 구독 콜백 → `useEffectEvent`, `eslint-disable` 제거 | ESLint 0, tsc 0 |
+| [ActivityFeed.tsx](../apps/page0127/src/widgets/activity/ui/ActivityFeed.tsx#L42) | 옵저버 콜백 분리, deps `[hasNextPage]`만 유지 | ESLint 0, tsc 0 |
+| [NotificationPage.tsx](../apps/page0127/src/features/notification/ui/NotificationPage.tsx#L76) | 동일 | ESLint 0, tsc 0 |
+
+> ⚠️ deps를 `[]`로 완전히 비우지 **않은** 이유: 무한스크롤 트리거 `<div ref>`가 로딩 후/조건부로
+> 마운트되므로, `hasNextPage`를 빼면 옵저버가 그 엘리먼트를 못 잡아 스크롤이 깨진다.
+
+---
+
+## 7. 다음 Day 예고
 
 **Day 59 — useTransition 심화**: 대량 책 렌더링을 Transition으로 끊김 없이 처리.
 오늘 본 `DashboardBookList`의 `startTabTransition`(130줄)을 더 깊게 파고든다.
