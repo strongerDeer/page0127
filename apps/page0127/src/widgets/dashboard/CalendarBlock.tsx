@@ -2,7 +2,7 @@
 
 import { useReducer } from 'react';
 
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import { apiClient } from '@/shared/api/client';
 
@@ -75,7 +75,7 @@ export const CalendarBlock = ({
   const { calendarYear, calendarMonth } = state;
 
   // 초기 연/월과 일치할 때만 initialData를 시드로 사용 → 그 외엔 fetch 발생
-  const { data: result, isLoading } = useQuery({
+  const { data: result, isLoading, isPlaceholderData } = useQuery({
     queryKey: ['calendar', calendarYear, calendarMonth],
     queryFn: async () => {
       // 쿼리스트링은 axios params 옵션으로 전달
@@ -94,10 +94,19 @@ export const CalendarBlock = ({
       calendarYear === initialYear && calendarMonth === initialMonth
         ? { data: initialData, summary: initialSummary }
         : undefined,
+    // 월 이동(queryKey 변경) 시 새 달이 로딩되는 동안 이전 달 데이터를 유지
+    // → 캘린더가 빈 화면으로 깜빡이지 않음. isPlaceholderData로 "로딩 중" 흐림 표시.
+    placeholderData: keepPreviousData,
   });
 
   return (
-    <div className='rounded-lg border border-border bg-card overflow-hidden'>
+    <div
+      className='rounded-lg border border-border bg-card overflow-hidden'
+      style={{
+        opacity: isPlaceholderData ? 0.6 : 1, // 새 달 로딩 중 이전 달을 흐리게 유지
+        transition: 'opacity 0.15s',
+      }}
+    >
       <ReadingCalendar
         data={result?.data ?? []}
         summary={result?.summary ?? { totalBooks: 0, totalPages: 0 }}
