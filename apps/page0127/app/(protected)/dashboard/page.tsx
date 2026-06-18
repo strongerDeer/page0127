@@ -41,22 +41,30 @@ const DashboardPage = async (props: {
       ? currentYear
       : (availableYears[0] ?? currentYear);
 
-  let profile = await getProfile(user!.id);
-  if (!profile) {
-    await upsertProfile(user!.id, user!.email!);
-    profile = await getProfile(user!.id);
-  }
+  // profile은 없으면 생성 후 재조회해야 하므로 헬퍼로 감싼다 (Promise.all에 넣기 위함)
+  const ensureProfile = async () => {
+    let p = await getProfile(user!.id);
+    if (!p) {
+      await upsertProfile(user!.id, user!.email!);
+      p = await getProfile(user!.id);
+    }
+    return p;
+  };
 
-  const overallStats = await getOverallStats(user!.id);
-  const stats = await getBookStats(user!.id, selectedYear);
+  // 서로 독립적인 4개 데이터를 병렬로 페치 → 직렬 await(waterfall) 제거
+  // (selectedYear는 위 getAvailableYears 결과에만 의존하므로 여기서 안전)
+  const [profile, overallStats, stats, allBooksResult] = await Promise.all([
+    ensureProfile(),
+    getOverallStats(user!.id),
+    getBookStats(user!.id, selectedYear),
+    supabase
+      .from('books')
+      .select('*')
+      .eq('user_id', user!.id)
+      .order('created_at', { ascending: false }),
+  ]);
 
-  const { data: allBooks } = await supabase
-    .from('books')
-    .select('*')
-    .eq('user_id', user!.id)
-    .order('created_at', { ascending: false });
-
-  const books = allBooks ?? [];
+  const books = allBooksResult.data ?? [];
 
   return (
     <DashboardContent

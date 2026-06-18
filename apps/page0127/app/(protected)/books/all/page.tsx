@@ -36,42 +36,39 @@ export default async function GlobalBooksPage(props: {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const myReadIsbns = new Set<string>();
-  const myLikedIds = new Set<string>();
-
-  if (user) {
-    // 1. Fetch my completed books (ISBNs)
-    const { data: myBooks } = await supabase
-      .from('books')
-      .select('isbn')
-      .eq('user_id', user.id)
-      .eq('status', 'completed');
-
-    if (myBooks) {
-      myBooks.forEach((b: { isbn: string }) => myReadIsbns.add(b.isbn));
-    }
-
-    // 2. Fetch my likes
-    const { data: myLikes } = await supabase
-      .from('book_likes')
-      .select('book_id')
-      .eq('user_id', user.id);
-
-    if (myLikes) {
-      myLikes.forEach((l: { book_id: string }) => myLikedIds.add(l.book_id));
-    }
-  }
-
-  // Fetch Logic
-  const query = supabase
+  // global_books 목록은 user와 무관 → user별 쿼리(로그인 시에만)와 함께 병렬 페치
+  const booksQuery = supabase
     .from('global_books')
     .select('*', { count: 'exact' })
     .order(sort, { ascending: order === 'asc' })
     .range(from, to);
+  const myBooksQuery = user
+    ? supabase
+        .from('books')
+        .select('isbn')
+        .eq('user_id', user.id)
+        .eq('status', 'completed')
+    : null;
+  const myLikesQuery = user
+    ? supabase.from('book_likes').select('book_id').eq('user_id', user.id)
+    : null;
 
-  const { data, count } = await query;
-  const books = (data as GlobalBook[]) || [];
-  const totalPages = count ? Math.ceil(count / limit) : 0;
+  // Promise.all은 null을 그대로 통과시키므로 비로그인 시에도 안전
+  const [booksRes, myBooksRes, myLikesRes] = await Promise.all([
+    booksQuery,
+    myBooksQuery,
+    myLikesQuery,
+  ]);
+
+  const myReadIsbns = new Set<string>();
+  const myLikedIds = new Set<string>();
+  myBooksRes?.data?.forEach((b: { isbn: string }) => myReadIsbns.add(b.isbn));
+  myLikesRes?.data?.forEach((l: { book_id: string }) =>
+    myLikedIds.add(l.book_id)
+  );
+
+  const books = (booksRes.data as GlobalBook[]) || [];
+  const totalPages = booksRes.count ? Math.ceil(booksRes.count / limit) : 0;
 
   return (
     <PageContainer width='wide'>

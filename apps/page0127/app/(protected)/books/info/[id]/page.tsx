@@ -69,13 +69,14 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
 
   if (!book) notFound();
 
-  const stats = await getBookStats(book.isbn);
-
-  // Check if in library
+  // stats(book.isbn 의존)와 현재 사용자 조회는 서로 독립 → 병렬
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [stats, { data: { user } }] = await Promise.all([
+    getBookStats(book.isbn),
+    supabase.auth.getUser(),
+  ]);
+
+  // 라이브러리 포함 여부는 user + book.isbn 둘 다 필요 → user 확정 후 조회
   let isInLibrary = false;
   if (user) {
     const { count } = await supabase

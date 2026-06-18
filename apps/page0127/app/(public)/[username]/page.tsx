@@ -48,25 +48,29 @@ const PublicLibraryPage = async ({ params, searchParams }: PageProps) => {
   const { year } = await searchParams;
 
   const supabase = await createClient();
+  const currentYear = new Date().getFullYear();
+  // selectedYear는 searchParams와 currentYear에만 의존 → 미리 계산 (stats 병렬화에 필요)
+  const selectedYear = year ? parseInt(year, 10) : currentYear;
 
-  // 1. username으로 프로필 조회
-  const profile = await getProfileByUsername(username);
+  // 1. 프로필 조회와 현재 사용자 확인은 서로 독립 → 병렬
+  const [profile, { data: { user: currentUser } }] = await Promise.all([
+    getProfileByUsername(username),
+    supabase.auth.getUser(),
+  ]);
 
   if (!profile) {
     notFound();
   }
 
-  // 2. 현재 로그인한 사용자 확인
-  const {
-    data: { user: currentUser },
-  } = await supabase.auth.getUser();
   const isOwnProfile = currentUser?.id === profile.id;
 
-  // 3. 공개된 책 목록 조회
-  const allBooks = await getPublicBooks(profile.id);
+  // 2. 공개된 책 목록과 연도별 통계는 profile.id에만 의존 → 병렬
+  const [allBooks, stats] = await Promise.all([
+    getPublicBooks(profile.id),
+    getBookStats(profile.id, selectedYear),
+  ]);
 
-  // 4. 사용 가능한 연도 목록 생성
-  const currentYear = new Date().getFullYear();
+  // 3. 사용 가능한 연도 목록 생성
   const bookYears = allBooks
     .map((book) =>
       book.created_at ? new Date(book.created_at).getFullYear() : null,
@@ -77,17 +81,11 @@ const PublicLibraryPage = async ({ params, searchParams }: PageProps) => {
     (a, b) => b - a,
   );
 
-  // 5. 선택된 연도 (기본값: 현재 연도)
-  const selectedYear = year ? parseInt(year, 10) : currentYear;
-
-  // 6. 선택된 연도의 책만 필터링
+  // 4. 선택된 연도의 책만 필터링
   const booksInYear = allBooks.filter((book) => {
     if (!book.created_at) return false;
     return new Date(book.created_at).getFullYear() === selectedYear;
   });
-
-  // 7. 통계 계산
-  const stats = await getBookStats(profile.id, selectedYear);
 
   return (
     <PublicLibraryContent
