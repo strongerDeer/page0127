@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 
 import {
   getAvailableYears,
@@ -9,6 +10,7 @@ import {
 } from '@/entities/book/server';
 import { getProfile, upsertProfile } from '@/entities/profile/api/getProfile';
 
+import { CalendarBlockError } from '@/widgets/dashboard/CalendarBlockError';
 import { CalendarBlockSkeleton } from '@/widgets/dashboard/CalendarBlockSkeleton';
 import { CalendarSection } from '@/widgets/dashboard/CalendarSection';
 import { DashboardContent } from '@/widgets/dashboard/DashboardContent';
@@ -76,11 +78,14 @@ const DashboardPage = async (props: {
       selectedYear={selectedYear}
       profile={profile}
       currentYear={currentYear}
-      // Calendar 영역은 외부에서 주입 (Suspense로 감싸 별도 스트리밍)
+      // Calendar 영역은 외부에서 주입 (ErrorBoundary > Suspense로 감싸 별도 스트리밍)
+      // 캘린더만 실패해도 대시보드 본체(통계·차트)는 그대로 유지된다
       calendarSlot={
-        <Suspense fallback={<CalendarBlockSkeleton />}>
-          <CalendarSection userId={user!.id} />
-        </Suspense>
+        <ErrorBoundary fallback={<CalendarBlockError />}>
+          <Suspense fallback={<CalendarBlockSkeleton />}>
+            <CalendarSection userId={user!.id} />
+          </Suspense>
+        </ErrorBoundary>
       }
     />
   );

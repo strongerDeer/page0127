@@ -4,7 +4,9 @@ import Link from 'next/link';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { Button } from '@/shared/ui/button';
+import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 
+import { BookRankingError } from '@/widgets/book/ui/BookRankingError';
 import { BookRankingListSkeleton } from '@/widgets/book/ui/BookRankingListSkeleton';
 import { BookRankingSection } from '@/widgets/book/ui/BookRankingSection';
 
@@ -74,29 +76,39 @@ const Home = async () => {
         </div>
       </section>
 
-      {/* Rankings Section — 각 랭킹은 독립적으로 스트리밍 */}
+      {/* Rankings Section — 각 랭킹은 독립적으로 스트리밍 + 독립적으로 실패 */}
+      {/* ErrorBoundary(바깥) > Suspense(안): 로딩은 Suspense, 에러는 ErrorBoundary가 잡는다 */}
+      {/* 한 랭킹이 실패해도 다른 랭킹·Hero·Features는 그대로 살아있다 */}
       <div className='container mx-auto max-w-6xl space-y-8 px-4'>
-        <Suspense fallback={<BookRankingListSkeleton />}>
-          <BookRankingSection
-            type='best'
-            title='🏆 독자들이 선택한 인생책'
-            subTitle='가장 많은 10점 평점을 받은 명작들입니다.'
-            myReadIsbns={myReadIsbns}
-            myLikedIds={myLikedIds}
-            isLoggedIn={!!user}
-          />
-        </Suspense>
+        <ErrorBoundary
+          fallback={<BookRankingError title='🏆 독자들이 선택한 인생책' />}
+        >
+          <Suspense fallback={<BookRankingListSkeleton />}>
+            <BookRankingSection
+              type='best'
+              title='🏆 독자들이 선택한 인생책'
+              subTitle='가장 많은 10점 평점을 받은 명작들입니다.'
+              myReadIsbns={myReadIsbns}
+              myLikedIds={myLikedIds}
+              isLoggedIn={!!user}
+            />
+          </Suspense>
+        </ErrorBoundary>
 
-        <Suspense fallback={<BookRankingListSkeleton />}>
-          <BookRankingSection
-            type='most'
-            title='🔥 가장 많이 완독한 책'
-            subTitle='유저들이 끝까지 읽어낸 인기 도서입니다.'
-            myReadIsbns={myReadIsbns}
-            myLikedIds={myLikedIds}
-            isLoggedIn={!!user}
-          />
-        </Suspense>
+        <ErrorBoundary
+          fallback={<BookRankingError title='🔥 가장 많이 완독한 책' />}
+        >
+          <Suspense fallback={<BookRankingListSkeleton />}>
+            <BookRankingSection
+              type='most'
+              title='🔥 가장 많이 완독한 책'
+              subTitle='유저들이 끝까지 읽어낸 인기 도서입니다.'
+              myReadIsbns={myReadIsbns}
+              myLikedIds={myLikedIds}
+              isLoggedIn={!!user}
+            />
+          </Suspense>
+        </ErrorBoundary>
       </div>
 
       {/* Features Section */}

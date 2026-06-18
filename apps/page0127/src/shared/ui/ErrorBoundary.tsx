@@ -2,8 +2,7 @@
 
 import { Component, type ReactNode } from 'react';
 
-import { Button } from './button';
-import { Card, CardContent, CardHeader, CardTitle } from './card';
+import { ErrorFallback } from './ErrorFallback';
 
 type ErrorBoundaryProps = {
   children: ReactNode;
@@ -60,48 +59,14 @@ export class ErrorBoundary extends Component<
         return this.props.fallback;
       }
 
-      // 기본 에러 UI
+      // 기본 에러 UI (공통 ErrorFallback 사용 — 2차 동선만 새로고침으로 분기)
       return (
-        <div className='flex min-h-screen items-center justify-center p-4'>
-          <Card className='w-full max-w-md'>
-            <CardHeader>
-              <CardTitle className='text-destructive'>
-                오류가 발생했습니다
-              </CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-4'>
-              <p className='text-muted-foreground'>
-                예상치 못한 오류가 발생했습니다. 다시 시도해주세요.
-              </p>
-
-              {/* 개발 환경에서만 에러 메시지 표시 */}
-              {process.env.NODE_ENV === 'development' &&
-                this.state.error && (
-                  <div className='rounded-md bg-destructive/10 p-3'>
-                    <p className='text-sm font-medium text-destructive'>
-                      에러 메시지:
-                    </p>
-                    <p className='mt-1 text-sm text-destructive/90'>
-                      {this.state.error.message}
-                    </p>
-                  </div>
-                )}
-
-              <div className='flex gap-2'>
-                <Button onClick={this.handleReset} className='flex-1'>
-                  다시 시도
-                </Button>
-                <Button
-                  variant='outline'
-                  onClick={() => window.location.reload()}
-                  className='flex-1'
-                >
-                  페이지 새로고침
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <ErrorFallback
+          error={this.state.error}
+          onRetry={this.handleReset}
+          secondaryLabel='페이지 새로고침'
+          onSecondary={() => window.location.reload()}
+        />
       );
     }
 
