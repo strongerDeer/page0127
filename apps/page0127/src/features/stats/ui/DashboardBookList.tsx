@@ -9,13 +9,11 @@ import {
   useTransition,
 } from 'react';
 
-import Image from 'next/image';
 import Link from 'next/link';
 
 import { mapToMainCategory } from '@/shared/lib/categoryMapper';
 import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
 import { Button } from '@/shared/ui/button';
-import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
 import {
   Select,
   SelectContent,
@@ -25,6 +23,7 @@ import {
 } from '@/shared/ui/select';
 import { StatusTabFilter } from '@/shared/ui/StatusTabFilter';
 
+import { BookGridItem } from './BookGridItem';
 import { BookSearchInput, type BookSearchInputHandle } from './BookSearchInput';
 import { CategoryFilter } from './CategoryFilter';
 
@@ -400,38 +399,12 @@ export const DashboardBookList = ({
             ) : (
               <div className='grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6'>
                 {paginatedBooks.map((book) => (
-                  <Link
+                  // key는 사용처에서 부여 (memo로 감싼 컴포넌트도 동일)
+                  <BookGridItem
                     key={book.id}
+                    book={book}
                     href={bookHref(book)}
-                    className='group transition-transform hover:scale-105'
-                  >
-                    <div className='aspect-2/3 relative overflow-hidden rounded-lg bg-muted'>
-                      {book.cover_image ? (
-                        <Image
-                          src={book.cover_image}
-                          alt={book.title}
-                          fill
-                          sizes='(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw'
-                          className='object-cover'
-                        />
-                      ) : (
-                        <div className='flex h-full w-full items-center justify-center text-4xl'>
-                          📚
-                        </div>
-                      )}
-                      {book.read_count > 1 && (
-                        <div className='absolute right-2 top-2'>
-                          <ReadCountBadge
-                            readCount={book.read_count}
-                            size='sm'
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <p className='mt-2 line-clamp-2 text-xs text-foreground group-hover:text-primary'>
-                      {book.title}
-                    </p>
-                  </Link>
+                  />
                 ))}
               </div>
             )}
