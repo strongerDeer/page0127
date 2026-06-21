@@ -147,7 +147,7 @@ Week 12-14 → 성능 최적화 + React Compiler
 | 60  | 06/17 ✅ | useTransition + Suspense | Transition 중 Suspense fallback 조합       | 탭 전환 중 이전 내용 유지 UX           |
 | 61  | 06/18 ✅ | Suspense 중첩 패턴       | 책장 / 통계 / 알림 각각 독립 Suspense 경계 | 일부 실패해도 나머지 보여주는 구조     |
 | 62  | 06/19 ✅ | Error Boundary 심화      | 중첩 Error Boundary + reset 버튼           | API별 에러 복구 UX                     |
-| 63  | 06/23 | React.memo ✨            | `BookCard`에 `React.memo` 적용 + 비교 함수 | Profiler로 리렌더 횟수 비교            |
+| 63  | 06/23 ✅ | React.memo ✨            | `BookCard`에 `React.memo` 적용 + 비교 함수 | Profiler로 리렌더 횟수 비교            |
 | 64  | 06/24 | React Compiler 이해      | Compiler가 자동 메모이제이션하는 범위 파악 | 기존 `useMemo`/`useCallback` 제거 실험 |
 | 65  | 06/25 | React Compiler 실습      | `babel-plugin-react-compiler` 적용         | Compiler 적용 전/후 Profiler 수치 비교 |
 | 66  | 06/26 | 번들 최적화              | `next/bundle-analyzer`로 번들 분석         | 불필요하게 큰 패키지 교체 or lazy 처리 |
