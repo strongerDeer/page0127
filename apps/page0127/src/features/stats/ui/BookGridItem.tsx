@@ -1,7 +1,5 @@
 'use client';
 
-import { memo } from 'react';
-
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -18,21 +16,19 @@ type BookGridItemProps = {
 };
 
 /**
- * 학습 포인트 — React.memo
+ * 학습 포인트 — React Compiler (Day 65)
  *
- * 부모(DashboardBookList)는 검색어 입력·페이지 전환·필터 변경 등으로 자주 리렌더된다.
- * 그때마다 paginatedBooks.map이 다시 돌아 모든 그리드 아이템이 리렌더되는데,
- * 화면에 보이는 책 대부분은 사실 그대로다.
+ * 원래 이 컴포넌트는 React.memo로 감싸 부모(DashboardBookList)의 잦은 리렌더
+ * (검색·필터·정렬)에서 같은 책의 리렌더를 건너뛰게 했다.
  *
- * memo로 감싸면 React가 이전 props와 현재 props를 얕은 비교한다:
- *  - book : filter()/sort()는 원본 객체 참조를 유지 → 같은 책이면 prev.book === next.book
- *  - href : string(원시값)이라 값 비교 → 같으면 통과
- * 둘 다 같으면 이 아이템은 리렌더를 "건너뛴다".
+ * 이제 next.config.ts의 reactCompiler: true가 켜져 있어, Compiler가 빌드 타임에
+ * 자동으로 메모이제이션을 삽입한다 → 손으로 쓴 memo()·displayName이 불필요해져 제거.
+ * 컴포넌트를 별도로 "추출한 구조"는 그대로 자산으로 남는다.
  *
- * ⚠️ 만약 부모가 href를 인라인 함수로 매번 새로 만들거나 book을 spread({...book})로
- *    복사했다면 참조가 매번 달라져 memo가 무효화된다. 지금은 둘 다 안정적이라 효과가 있다.
+ * ⚠️ Compiler가 동작하려면 props가 순수·불변이어야 한다. 부모가 book을
+ *    spread({...book})로 복사하거나 렌더 중 변형하면 Compiler가 bail out한다.
  */
-export const BookGridItem = memo(({ book, href }: BookGridItemProps) => {
+export const BookGridItem = ({ book, href }: BookGridItemProps) => {
   return (
     <Link href={href} className='group transition-transform hover:scale-105'>
       <div className='aspect-2/3 relative overflow-hidden rounded-lg bg-muted'>
@@ -60,7 +56,4 @@ export const BookGridItem = memo(({ book, href }: BookGridItemProps) => {
       </p>
     </Link>
   );
-});
-
-// memo()로 감싸면 DevTools에 'Anonymous'로 잡혀 Profiler에서 식별이 어렵다 → 이름 명시
-BookGridItem.displayName = 'BookGridItem';
+};
