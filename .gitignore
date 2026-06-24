@@ -42,3 +42,4 @@ npm-debug.log*
 .superpowers/
 .agents/skills/study/SKILL.md
 AGENTS.md
+.gstack/
