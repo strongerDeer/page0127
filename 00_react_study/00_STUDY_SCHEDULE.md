@@ -151,7 +151,7 @@ Week 12-14 → 성능 최적화 + React Compiler
 | 64  | 06/24 ✅ | React Compiler 이해      | Compiler가 자동 메모이제이션하는 범위 파악 | 기존 `useMemo`/`useCallback` 제거 실험 |
 | 65  | 06/25 ✅ | React Compiler 실습      | `babel-plugin-react-compiler` 적용         | Compiler 적용 전/후 Profiler 수치 비교 |
 | 66  | 06/26 | 번들 최적화              | `next/bundle-analyzer`로 번들 분석         | 불필요하게 큰 패키지 교체 or lazy 처리 |
-| 67  | 06/29 | 최종 성능 점검           | React DevTools Profiler 전체 앱 분석       | 병목 지점 2개 이상 개선                |
+| 67  | 06/24 ✅ | 최종 성능 점검           | React DevTools Profiler 전체 앱 분석       | 병목 지점 2개 이상 개선                |
 | 68  | 06/30 | 전체 복습 & 회고         | Phase 1-6 개념 마인드맵 + 개선 내역 정리   | 학습 일지 완성                         |
 
 ---
