@@ -3,7 +3,6 @@ import { mapToMainCategory } from '@/shared/lib/categoryMapper';
 
 import type { Book } from '../types';
 import type {
-  CategoryDistribution,
   OverallStats,
   RatingDistribution,
   ReadingJourney,
@@ -45,22 +44,16 @@ export const getOverallStats = async (
     // 1. 독서 여정 계산
     const journey = calculateReadingJourney(completedBooks as Book[]);
 
-    // 2. 카테고리별 분포 계산 (Top 5 + 기타)
-    const categoryDistribution = calculateCategoryDistribution(
-      completedBooks as Book[]
-    );
-
-    // 3. 최근 5년 독서량 계산
+    // 2. 최근 5년 독서량 계산
     const yearlyTrend = calculateYearlyTrend(completedBooks as Book[]);
 
-    // 4. 평점 분포 계산
+    // 3. 평점 분포 계산
     const ratingDistribution = calculateRatingDistribution(
       completedBooks as Book[]
     );
 
     return {
       journey,
-      categoryDistribution,
       yearlyTrend,
       ratingDistribution,
     };
@@ -124,70 +117,6 @@ const calculateReadingJourney = (books: Book[]): ReadingJourney => {
     estimatedHours,
     estimatedDays,
   };
-};
-
-/**
- * 카테고리별 분포 계산 (Pie Chart용)
- *
- * 학습 포인트:
- * - Top 5 카테고리 + 나머지는 "기타"로 묶음
- * - 비율 계산 (%)
- * - 권수 많은 순으로 정렬
- */
-const calculateCategoryDistribution = (
-  books: Book[]
-): CategoryDistribution[] => {
-  const MAX_CATEGORIES = 5; // Top 5만 표시
-
-  // 카테고리별 카운트 맵 생성
-  const categoryMap = new Map<string, number>();
-
-  books.forEach((book) => {
-    const mainCategory = mapToMainCategory(book.category);
-    categoryMap.set(mainCategory, (categoryMap.get(mainCategory) || 0) + 1);
-  });
-
-  // 권수 많은 순으로 정렬
-  const sortedCategories = Array.from(categoryMap.entries())
-    .map(([category, count]) => ({
-      category,
-      count,
-      percentage: 0, // 나중에 계산
-    }))
-    .sort((a, b) => b.count - a.count);
-
-  // "기타"를 제외한 카테고리들
-  const nonEtcCategories = sortedCategories.filter(
-    (cat) => cat.category !== '기타'
-  );
-  const etcCategory = sortedCategories.find((cat) => cat.category === '기타');
-
-  // Top 5개만 유지
-  const topCategories = nonEtcCategories.slice(0, MAX_CATEGORIES);
-  const restCategories = nonEtcCategories.slice(MAX_CATEGORIES);
-
-  // 나머지 + 원래 "기타" 합산
-  const etcCount =
-    restCategories.reduce((sum, cat) => sum + cat.count, 0) +
-    (etcCategory?.count || 0);
-
-  // 최종 결과
-  const result: CategoryDistribution[] = [...topCategories];
-  if (etcCount > 0) {
-    result.push({
-      category: '기타',
-      count: etcCount,
-      percentage: 0,
-    });
-  }
-
-  // 비율 계산
-  const totalBooks = books.length;
-  result.forEach((item) => {
-    item.percentage = Math.round((item.count / totalBooks) * 100);
-  });
-
-  return result;
 };
 
 /**
@@ -284,7 +213,6 @@ const getEmptyStats = (): OverallStats => {
       estimatedHours: 0,
       estimatedDays: 0,
     },
-    categoryDistribution: [],
     yearlyTrend: [],
     ratingDistribution: [],
   };

@@ -94,9 +94,6 @@ export type OverallStats = {
   /** 독서 여정 */
   journey: ReadingJourney;
 
-  /** 카테고리별 분포 (Pie Chart용) */
-  categoryDistribution: CategoryDistribution[];
-
   /** 최근 5년 독서량 (Bar Chart용) */
   yearlyTrend: YearlyTrend[];
 
@@ -138,24 +135,6 @@ export type ReadingJourney = {
 
   /** 예상 독서 시간 (일) */
   estimatedDays: number;
-};
-
-/**
- * 카테고리별 분포 데이터 (Pie Chart용)
- *
- * 학습 포인트:
- * - Top 5 카테고리 + 나머지는 "기타"
- * - 비율과 권수를 함께 표시
- */
-export type CategoryDistribution = {
-  /** 카테고리명 */
-  category: string;
-
-  /** 권수 */
-  count: number;
-
-  /** 비율 (%) */
-  percentage: number;
 };
 
 /**

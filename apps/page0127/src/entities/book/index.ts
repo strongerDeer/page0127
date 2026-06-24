@@ -17,7 +17,6 @@ export type {
 
 // 통계 도메인 타입
 export type {
-  CategoryDistribution,
   CategoryReadingData,
   MonthlyReadingData,
   OverallStats,
