@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   // 모노레포 패키지의 CSS/JS 파일을 트랜스파일하도록 설정
   transpilePackages: ['@repo/design-tokens', '@repo/icons'],
+  experimental: {
+    // barrel(index) import를 개별 모듈 import로 변환해 tree-shaking 강화
+    optimizePackageImports: ['lucide-react'],
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'image.aladin.co.kr' },
