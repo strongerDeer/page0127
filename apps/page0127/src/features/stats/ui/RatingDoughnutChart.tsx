@@ -64,6 +64,8 @@ export const RatingDoughnutChart = ({
             innerRadius={60}
             outerRadius={100}
             paddingAngle={2}
+            // Recharts 애니메이션이 React 19에서 리렌더 burst를 유발 → 비활성화
+            isAnimationActive={false}
             onClick={(entry) => {
               // recharts Pie onClick 은 PieSectorDataItem 을 넘긴다.
               // 원본 데이터는 payload 에 들어 있으므로 거기서 rating 을 꺼낸다.

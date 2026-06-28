@@ -93,6 +93,9 @@ export const YearlyTrendChart = ({ data }: Props) => {
             name='독서량'
             radius={[6, 6, 6, 6]}
             barSize={40}
+            // Recharts 애니메이션(react-smooth)이 React 19에서 완료되지 못하고
+            // 리렌더를 과도하게 발생시킨다(Day 67 측정으로 확인) → 비활성화
+            isAnimationActive={false}
             shape={(props: unknown) => {
               const p = props as { x?: number; y?: number; width?: number; height?: number; payload?: { year: number } };
               const isPeak = p.payload?.year === peakYear.year;

@@ -69,6 +69,8 @@ export const CategoryRadarChart = ({ data }: CategoryRadarChartProps) => {
             stroke='#6366f1'
             fill='#6366f1'
             fillOpacity={0.6}
+            // Recharts 애니메이션이 React 19에서 리렌더 burst를 유발 → 비활성화
+            isAnimationActive={false}
           />
         </RadarChart>
       </ResponsiveContainer>

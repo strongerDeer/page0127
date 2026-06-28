@@ -113,6 +113,58 @@ const DashboardCharts = dynamic(() => import('.../DashboardCharts'), {
 
 ---
 
+## 🎯 원인 확정 & 개선 (2026-06-25 후속 측정)
+
+### 측정 방법 — 인증 없이 자동 격리
+
+DevTools Profiler 패널은 헤드리스로 못 잡고, `/dashboard`는 Google 로그인이 필요해 자동화가 어렵다. 그래서 **인증이 필요 없는 임시 라우트**(`/perf-measure` — middleware 보호 목록 밖)에 4개 차트를 mock 데이터로 띄우고, 각 차트를 **서로 다른 `<Profiler id>`로 감싸** 차트별 리렌더 수를 분리 집계했다.
+
+- `onRender`에서 `setState` 대신 **`window.__perf`에만 누적** → 측정 자체가 리렌더를 만들어 결과를 오염시키지 않음
+- Playwright(headless)로 접속해 **시점별 카운트 delta**를 읽어 "가만히 둬도 늘어나는지" 관찰
+
+### 관찰된 사실
+
+| 사실 | 의미 |
+| --- | --- |
+| 콘솔에 `The width(-1) and height(-1)...` 경고가 **차트당 1회씩** | ResponsiveContainer 초기 measure 실패 — 단 **일회성**(measure _루프_ 아님) |
+| 로드 직후 4개 차트 update 합산이 **250~510회** 쌓이다 멈춤 | 마운트 직후 burst |
+| 그동안 Bar·Radar·Pie **그래픽이 0 크기로 안 보임** | 애니메이션이 시작값(begin)에 갇힘 |
+
+### 통제 실험 — 단일 변수로 범인 격리
+
+`RatingDoughnutChart`의 `<Pie>`에만 `isAnimationActive={false}`를 주고, 나머지 3개는 그대로 둔 채 **같은 조건(로드 후 4초)**으로 측정:
+
+| 차트 | 애니메이션 | update |
+| --- | --- | --- |
+| Yearly | ON | 30 |
+| Monthly | ON | 30 |
+| Category | ON | 96 |
+| **Rating** | **OFF** | **4** |
+
+→ Rating만 **98% 감소**, 통제군은 그대로. 범인은 의심하던 ResponsiveContainer measure 루프가 **아니라 Recharts 애니메이션(react-smooth)**.
+
+> **왜?** Recharts `3.5.1`의 애니메이션이 React `19.2`에서 정상 완료되지 못하고 매 프레임 리렌더를 쏟아낸다(begin 상태에 갇혀 그래픽도 0 크기로 표시). 실제 대시보드는 여기에 `dynamic`(skeleton→실제) 재마운트·전체 트리가 겹쳐 **수만 회까지 증폭**된 것.
+
+### 개선 — 4개 차트 모두 `isAnimationActive={false}`
+
+같은 프로토콜(로드 후 4초)로 전체 OFF 측정 [전 → 후]:
+
+| 차트 | update 전(ON) | update 후(OFF) |
+| --- | --- | --- |
+| Yearly | 30 | **4** |
+| Monthly | 30 | **4** |
+| Category | 96 | **3** |
+| Rating | 96~194 | **4** |
+| **합계** | **250~510** | **15** (≈96%↓) |
+
+- 누적 렌더 시간(totalMs) 합계: **약 640ms → 100ms (84%↓)**
+- 애니메이션 OFF로 begin 갇힘이 풀려 **막대·레이더·도넛 그래픽도 즉시 정상 표시**(부수 효과)
+- 남은 ~1회/초 리렌더는 **모든 차트에 균일** → 차트 자가발진이 아닌 페이지/ResizeObserver 레벨의 정상 범위(이전 burst의 1% 미만)
+
+> **최종 교훈:** burst의 범인은 가장 그럴듯하던 `ResponsiveContainer` measure 루프가 **아니라** 차트 애니메이션이었다. "유력한 가설"도 **통제 실험(한 변수만 바꿔 비교)** 없이 단정하면 틀린다. memo·Compiler가 비용을 숨겨준 덕에 앱이 멈추진 않았을 뿐, 원인(애니메이션 burst)은 따로 잡아야 했다.
+
+---
+
 ## 4. 정리 — 한 줄 규칙
 
 > **회색이 많을수록 좋은 화면이다.** Profiler 녹화 후 "이건 왜 노란색이지?"를 2개 찾아 회색으로 바꾸면 그게 곧 개선이다.

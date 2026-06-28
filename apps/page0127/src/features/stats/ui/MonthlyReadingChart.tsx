@@ -87,6 +87,8 @@ export const MonthlyReadingChart = ({
             radius={[8, 8, 0, 0]}
             cursor={onMonthClick ? 'pointer' : 'default'}
             onClick={handleBarClick}
+            // Recharts 애니메이션이 React 19에서 리렌더 burst를 유발 → 비활성화
+            isAnimationActive={false}
           />
         </BarChart>
       </ResponsiveContainer>
