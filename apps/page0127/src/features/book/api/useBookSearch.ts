@@ -1,6 +1,6 @@
 'use client';
 
-import { useReducer } from 'react';
+import { useCallback, useReducer } from 'react';
 
 import { searchBooks } from '@/shared/api/aladin';
 
@@ -90,7 +90,10 @@ export const useBookSearch = () => {
 
   const ITEMS_PER_PAGE = 10;
 
-  const search = async (query: string, page = 1) => {
+  // useCallback으로 함수를 메모이제이션 → 매 렌더마다 새 함수가 생기는 것을 방지
+  // (BookSearchInput의 useEffect가 onSearch를 의존성으로 참조하는데,
+  //  참조가 매번 바뀌면 effect가 계속 재실행 → 무한 루프로 이어짐)
+  const search = useCallback(async (query: string, page = 1) => {
     if (!query.trim()) {
       dispatch({ type: 'SEARCH_CLEAR' });
       return;
@@ -117,13 +120,16 @@ export const useBookSearch = () => {
       dispatch({ type: 'SEARCH_ERROR' });
       console.error(err);
     }
-  };
+  }, []);
 
-  const goToPage = (page: number) => {
-    if (state.currentQuery) {
-      search(state.currentQuery, page);
-    }
-  };
+  const goToPage = useCallback(
+    (page: number) => {
+      if (state.currentQuery) {
+        search(state.currentQuery, page);
+      }
+    },
+    [state.currentQuery, search]
+  );
 
   // state를 풀어서 반환 → 기존 사용처(BookSearchInput 등) 변경 없음
   return {
