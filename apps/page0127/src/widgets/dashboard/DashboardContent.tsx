@@ -262,6 +262,13 @@ export const DashboardContent = ({
   const handleRemoveRatingFilter = () =>
     filterDispatch({ type: 'CLEAR_RATING' });
 
+  // DashboardBookList → BookSearchInput의 useEffect deps에 들어가므로 참조를 안정화
+  // (인라인 함수를 그대로 넘기면 매 렌더마다 새 참조가 생겨 effect가 불필요하게 재실행됨)
+  const handleSearchChange = useCallback(
+    (query: string) => filterDispatch({ type: 'SET_SEARCH', query }),
+    []
+  );
+
   // 연도 변경 핸들러
   const handleYearChange = (value: string) => {
     router.push(`/dashboard?year=${value}`);
@@ -492,9 +499,7 @@ export const DashboardContent = ({
                 }
                 onRemoveMonthFilter={handleRemoveMonthFilter}
                 onRemoveRatingFilter={handleRemoveRatingFilter}
-                onSearchChange={(query) =>
-                  filterDispatch({ type: 'SET_SEARCH', query })
-                }
+                onSearchChange={handleSearchChange}
                 onStatusChange={(status) =>
                   filterDispatch({ type: 'SET_STATUS', status })
                 }

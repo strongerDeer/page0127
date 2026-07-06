@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  useCallback,
   useDeferredValue,
   useEffect,
   useRef,
@@ -249,10 +250,14 @@ export const DashboardBookList = ({
     startTabTransition(() => setSortOption(option));
   };
 
-  const handleSearchChange = (query: string) => {
-    setCurrentPage(1);
-    onSearchChange(query);
-  };
+  // BookSearchInput의 useEffect deps에 들어가므로 참조를 안정화 (useCallback)
+  const handleSearchChange = useCallback(
+    (query: string) => {
+      setCurrentPage(1);
+      onSearchChange(query);
+    },
+    [onSearchChange]
+  );
 
   return (
     <div>
