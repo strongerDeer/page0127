@@ -52,8 +52,11 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    // '/auth/me'는 로그인 여부를 확인하는 용도라 401이 정상 흐름 → 로깅 제외
+    const isAuthCheck = error.config?.url === '/auth/me';
+
     // 인증 에러 처리
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !isAuthCheck) {
       console.error('인증이 필요합니다.');
       // 향후: 로그인 페이지로 리다이렉트
       // window.location.href = '/login';
