@@ -25,9 +25,9 @@ const geistMono = Geist_Mono({
   - 검색 엔진, SNS 공유 시 표시됨
 */
 export const metadata: Metadata = {
-  title: 'page0127 - 당신의 독서 DNA를 발견하세요',
+  title: 'page0127 - 책장을 보면, 그 사람이 보인다',
   description:
-    'AI 기반 독서 성향 분석, 비슷한 취향의 독서가 매칭, 개인 맞춤 책 추천. 모든 독서 기록을 한곳에서 관리하고 분석하세요.',
+    '읽은 책을 한 권씩 기록해 보세요. 책장이 쌓이면 AI가 나도 몰랐던 독서 취향을 들려주고, 다음에 읽을 책까지 건네드립니다.',
   keywords: '독서, 독서 기록, 독서 앱, AI 추천, 책 추천, 독서 성향 분석',
 };
 

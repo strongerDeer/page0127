@@ -16,7 +16,9 @@ const LoginPage = () => {
       <Card className='w-full max-w-md'>
         <CardHeader className='text-center'>
           <CardTitle className='text-2xl font-bold'>page0127.</CardTitle>
-          <CardDescription>당신의 독서 DNA를 발견하세요</CardDescription>
+          <CardDescription>
+            어서 오세요. 당신의 책장이 기다리고 있어요.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <LoginWithGoogleButton />
