@@ -20,9 +20,20 @@ type BookForAnalysis = {
 };
 
 /**
+ * 성향 타입 선택지 (shared는 entities를 모르므로 호출부에서 주입받는다)
+ */
+type PersonalityTypeOption = {
+  name: string;
+  criteria: string;
+};
+
+/**
  * 독서 취향 분석 프롬프트 생성
  */
-export function createTasteAnalysisPrompt(books: BookForAnalysis[]): string {
+export function createTasteAnalysisPrompt(
+  books: BookForAnalysis[],
+  personalityTypes: PersonalityTypeOption[]
+): string {
   // 별점별로 책 분류
   const highRatedBooks = books.filter((book) => (book.rating ?? 0) >= 4);
   const lowRatedBooks = books.filter(
@@ -37,6 +48,11 @@ export function createTasteAnalysisPrompt(books: BookForAnalysis[]): string {
           `${idx + 1}. "${book.title}" - ${book.author}\n   카테고리: ${book.category}\n   별점: ${book.rating}/10\n   소개: ${book.description?.substring(0, 200)}...\n   목차: ${book.toc?.substring(0, 300) || '정보 없음'}...`
       )
       .join('\n\n');
+
+  // 타입 카탈로그를 "이름: 판단 기준" 목록으로 변환
+  const personalityTypeList = personalityTypes
+    .map((t) => `- "${t.name}": ${t.criteria}`)
+    .join('\n');
 
   return `당신은 독서 취향 분석 전문가입니다. 사용자의 독서 기록을 분석하여 깊이 있는 인사이트를 제공해주세요.
 
@@ -53,7 +69,7 @@ ${formatBooks(lowRatedBooks)}
 다음 형식의 JSON으로 응답해주세요:
 
 {
-  "personality_type": "성향 타입 (20자 이내, 예: 내면 탐구형 독서가)",
+  "personality_type": "아래 [성향 타입 목록]에서 가장 잘 맞는 것 하나를 이름 그대로 사용",
   "personality_description": "성향에 대한 깊이 있는 설명 (300-500자)",
   "preference_profile": {
     "liked": {
@@ -94,8 +110,17 @@ ${formatBooks(lowRatedBooks)}
 - display_order는 각 타입 내에서 1부터 5까지
 - reason은 구체적이고 개인화된 추천 이유 (100-150자)
 
+## 성향 타입 목록 ⚠️ 매우 중요
+personality_type은 반드시 아래 목록 중 하나를 **이름 그대로(글자 하나 바꾸지 말 것)** 선택하세요:
+${personalityTypeList}
+
 ## 분석 지침
 - 책 소개와 목차의 **의미**를 깊이 분석하여 숨겨진 패턴을 찾아주세요
 - 단순 통계가 아닌, 사용자가 모르는 자신의 취향을 발견하게 해주세요
-- 추천 이유는 사용자의 독서 패턴과 연결하여 설명하세요`;
+- 추천 이유는 사용자의 독서 패턴과 연결하여 설명하세요
+
+## 문체 지침
+- personality_description과 reason은 **부드러운 해요체**로, 사용자를 "당신"으로 부르며 따뜻하게 말해주세요
+- 예시 톤: "당신의 책장에는 사람의 마음을 들여다보는 책이 많아요. 빠르게 많이 읽기보다, 좋았던 한 권을 오래 곱씹는 분이네요."
+- 평가하거나 단정하는 말투(~입니다, ~해야 합니다)보다 발견을 건네는 말투를 사용하세요`;
 }

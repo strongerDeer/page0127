@@ -4,6 +4,8 @@ import { createClient } from '@/shared/config/supabase/server';
 import { AI_MODEL, MAX_TOKENS, openai, TEMPERATURE } from '@/shared/lib/openai';
 import { createTasteAnalysisPrompt } from '@/shared/lib/openai/prompts/taste-analysis';
 
+import { READING_PERSONALITY_TYPES } from '@/entities/taste-analysis/model/personalityTypes';
+
 import type { Book } from '@/entities/book';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
@@ -50,8 +52,11 @@ export async function POST(_request: NextRequest) {
       );
     }
 
-    // 3. AI 분석 실행
-    const prompt = createTasteAnalysisPrompt(books as Book[]);
+    // 3. AI 분석 실행 — 성향 타입은 고정 카탈로그에서 고르게 한다
+    const prompt = createTasteAnalysisPrompt(
+      books as Book[],
+      READING_PERSONALITY_TYPES
+    );
 
     const completion = await openai.chat.completions.create({
       model: AI_MODEL,
@@ -77,6 +82,16 @@ export async function POST(_request: NextRequest) {
 
     // 4. AI 응답 파싱
     const aiResponse = JSON.parse(responseText);
+
+    // 성향 타입 검증 — 카탈로그에 없는 타입이 와도 저장은 하되, 프롬프트 개선 신호로 남긴다
+    const isKnownType = READING_PERSONALITY_TYPES.some(
+      (t) => t.name === aiResponse.personality_type
+    );
+    if (!isKnownType) {
+      console.warn(
+        `카탈로그에 없는 성향 타입 응답: "${aiResponse.personality_type}"`
+      );
+    }
 
     // AI 응답 검증 및 로깅 (개발 환경에서만)
     if (process.env.NODE_ENV === 'development') {
