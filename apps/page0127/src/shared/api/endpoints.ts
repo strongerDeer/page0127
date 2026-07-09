@@ -106,6 +106,14 @@ export const tasteAnalysisEndpoints = {
 } as const;
 
 /**
+ * 독서 궁합 관련 엔드포인트
+ */
+export const compatibilityEndpoints = {
+  // 궁합 분석 실행
+  analyze: `${API_BASE}/compatibility/analyze`,
+} as const;
+
+/**
  * 전체 엔드포인트 통합 export
  */
 export const endpoints = {
@@ -116,4 +124,5 @@ export const endpoints = {
   notification: notificationEndpoints,
   user: userEndpoints,
   tasteAnalysis: tasteAnalysisEndpoints,
+  compatibility: compatibilityEndpoints,
 } as const;

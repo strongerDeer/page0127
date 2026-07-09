@@ -3,6 +3,9 @@
 import { useState } from 'react';
 
 import Image from 'next/image';
+import Link from 'next/link';
+
+import { Button } from '@/shared/ui/button';
 
 import { FollowButton, FollowListModal, FollowStats } from '@/features/follow';
 
@@ -94,8 +97,14 @@ const PublicLibraryHeaderInfo = ({
     </div>
 
     {!isOwnProfile && (
-      <div>
+      <div className='flex flex-col items-end gap-2'>
         <FollowButton userId={profile.id} />
+        {/* 독서 궁합 — 두 책장을 비교하는 소셜 진입점 */}
+        <Link href={`/${username}/compatibility`}>
+          <Button variant='outline' size='sm'>
+            📖 독서 궁합 보기
+          </Button>
+        </Link>
       </div>
     )}
   </div>
