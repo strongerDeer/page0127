@@ -19,6 +19,16 @@ export const AppShellLayout = ({
 }: AppShellLayoutProps) => {
   return (
     <div className='flex min-h-screen'>
+      {/*
+        스킵 링크: 키보드 사용자가 반복되는 사이드바를 건너뛰고 본문으로 바로 이동.
+        sr-only로 평소엔 숨기고, 포커스되면(focus:) 좌상단에 드러난다.
+      */}
+      <a
+        href='#main-content'
+        className='sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground'
+      >
+        본문 바로가기
+      </a>
       <Sidebar
         userId={userId}
         photoUrl={photoUrl}
@@ -26,7 +36,9 @@ export const AppShellLayout = ({
         username={username}
       />
       {/* 모바일 하단 탭바 높이만큼 pb 확보 */}
-      <main className='flex-1 pb-16 md:pb-0'>{children}</main>
+      <main id='main-content' className='flex-1 pb-16 md:pb-0'>
+        {children}
+      </main>
       <BottomTabBar />
     </div>
   );

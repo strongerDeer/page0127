@@ -125,9 +125,14 @@ export const LikeButton = ({ activityId, count, isLiked }: LikeButtonProps) => {
       size='sm'
       onClick={() => likeMutation.mutate(isLiked)}
       disabled={likeMutation.isPending}
+      // aria-pressed: 토글 버튼의 눌림 상태를 스크린 리더에 전달
+      aria-pressed={isLiked}
+      // aria-label: 하트 아이콘만으론 용도를 알 수 없으므로 동작을 명시
+      aria-label={isLiked ? '좋아요 취소' : '좋아요'}
       className='gap-2'
     >
       <Heart
+        aria-hidden='true'
         className={`h-4 w-4 transition-all ${
           isLiked
             ? 'fill-chart-5 text-chart-5'

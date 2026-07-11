@@ -128,6 +128,7 @@ export const BookRegistrationForm = ({
   const ids = {
     status: `${formId}-status`,
     completedDate: `${formId}-completed-date`,
+    rating: `${formId}-rating`,
     showStartDate: `${formId}-show-start-date`,
     oneLineReview: `${formId}-one-line-review`,
     personalMemo: `${formId}-personal-memo`,
@@ -325,12 +326,20 @@ export const BookRegistrationForm = ({
           {/* 평가 점수 - 완독일 때만 표시 */}
           {status === 'completed' && (
             <div className='space-y-2'>
-              <Label>평가 점수</Label>
-              <div className='flex flex-wrap gap-2'>
+              <Label id={ids.rating}>평가 점수</Label>
+              {/* role='group' + aria-labelledby: 흩어진 점수 버튼들을 "평가 점수" 그룹으로 묶어 읽히게 함 */}
+              <div
+                role='group'
+                aria-labelledby={ids.rating}
+                className='flex flex-wrap gap-2'
+              >
                 {[0, 1, 2, 3, 4, 5, 10].map((score) => (
                   <button
                     key={score}
                     type='button'
+                    // aria-pressed: 어떤 점수가 선택됐는지 스크린 리더에 전달
+                    aria-pressed={rating === score}
+                    aria-label={`${score}점`}
                     onClick={() =>
                       dispatch({ type: 'SET_RATING', rating: score as BookRating })
                     }
