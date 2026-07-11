@@ -43,3 +43,8 @@ npm-debug.log*
 .agents/skills/study/SKILL.md
 AGENTS.md
 .gstack/
+
+# AI 도구 로컬 파일
+CLAUDE.md
+.claude/
+.playwright-mcp/

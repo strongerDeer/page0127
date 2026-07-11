@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const ALADIN_API_KEY = process.env.NEXT_PUBLIC_ALADIN_API_KEY;
+const ALADIN_API_KEY = process.env.ALADIN_API_KEY ?? process.env.NEXT_PUBLIC_ALADIN_API_KEY;
 const ALADIN_API_BASE_URL = 'http://www.aladin.co.kr/ttb/api/ItemSearch.aspx';
 
 /**

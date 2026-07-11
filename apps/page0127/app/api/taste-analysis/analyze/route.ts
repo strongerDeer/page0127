@@ -218,7 +218,7 @@ async function enrichRecommendationsWithAladinData(
   }>,
   tasteAnalysisId: string
 ): Promise<void> {
-  const ALADIN_API_KEY = process.env.NEXT_PUBLIC_ALADIN_API_KEY;
+  const ALADIN_API_KEY = process.env.ALADIN_API_KEY ?? process.env.NEXT_PUBLIC_ALADIN_API_KEY;
   const ALADIN_API_BASE_URL = 'http://www.aladin.co.kr/ttb/api/ItemSearch.aspx';
 
   for (const rec of recommendations) {
