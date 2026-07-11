@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from 'next/font/google';
 
+import { GoogleAnalytics } from '@/shared/lib/analytics/GoogleAnalytics';
 import { QueryProvider } from '@/shared/providers/QueryProvider';
 import { Toaster } from '@/shared/ui/sonner';
 
@@ -19,16 +20,41 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
+// 사이트 절대 URL — sitemap/robots/OG 이미지가 절대 경로를 만들 때 공통으로 참조
+// (환경변수 미설정 시 로컬 기본값으로 폴백)
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+
+const siteTitle = 'page0127 - 책장을 보면, 그 사람이 보인다';
+const siteDescription =
+  '읽은 책을 한 권씩 기록해 보세요. 책장이 쌓이면 AI가 나도 몰랐던 독서 취향을 들려주고, 다음에 읽을 책까지 건네드립니다.';
+
 /*
   메타데이터 (Metadata)
   - SEO를 위한 정보 설정
   - 검색 엔진, SNS 공유 시 표시됨
+
+  metadataBase:
+  - Open Graph/트위터 이미지의 상대 경로를 절대 URL로 변환하는 기준
+  - opengraph-image.tsx가 생성한 /opengraph-image 도 이 기준으로 절대화됨
 */
 export const metadata: Metadata = {
-  title: 'page0127 - 책장을 보면, 그 사람이 보인다',
-  description:
-    '읽은 책을 한 권씩 기록해 보세요. 책장이 쌓이면 AI가 나도 몰랐던 독서 취향을 들려주고, 다음에 읽을 책까지 건네드립니다.',
+  metadataBase: new URL(siteUrl),
+  title: siteTitle,
+  description: siteDescription,
   keywords: '독서, 독서 기록, 독서 앱, AI 추천, 책 추천, 독서 성향 분석',
+  openGraph: {
+    type: 'website',
+    locale: 'ko_KR',
+    url: siteUrl,
+    siteName: 'page0127',
+    title: siteTitle,
+    description: siteDescription,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: siteTitle,
+    description: siteDescription,
+  },
 };
 
 /*
@@ -63,6 +89,8 @@ const RootLayout = ({
             <Toaster />
           </CurrentUserProvider>
         </QueryProvider>
+        {/* GA4 — 측정 ID(NEXT_PUBLIC_GA_ID) 설정 시에만 로드 */}
+        <GoogleAnalytics />
       </body>
     </html>
   );

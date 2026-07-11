@@ -197,6 +197,12 @@ const eslintConfig = defineConfig([
       'src/app/**/template.tsx',
       'src/app/**/default.tsx',
       'src/app/**/route.ts',
+      // 메타데이터 파일 규칙 (Default Export 필수)
+      'src/app/**/robots.ts',
+      'src/app/**/sitemap.ts',
+      'src/app/**/manifest.ts',
+      'src/app/**/{opengraph,twitter}-image.tsx',
+      'src/app/**/icon.tsx',
 
       //app
       'app/**/page.tsx',
@@ -208,6 +214,12 @@ const eslintConfig = defineConfig([
       'app/**/template.tsx',
       'app/**/default.tsx',
       'app/**/route.ts',
+      // 메타데이터 파일 규칙 (Default Export 필수)
+      'app/**/robots.ts',
+      'app/**/sitemap.ts',
+      'app/**/manifest.ts',
+      'app/**/{opengraph,twitter}-image.tsx',
+      'app/**/icon.tsx',
 
       // Pages Router 파일
       'src/pages/**/*.tsx',

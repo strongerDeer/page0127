@@ -9,6 +9,8 @@ import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 import { BookRankingError } from '@/widgets/book/ui/BookRankingError';
 import { BookRankingListSkeleton } from '@/widgets/book/ui/BookRankingListSkeleton';
 import { BookRankingSection } from '@/widgets/book/ui/BookRankingSection';
+import { SiteFooter } from '@/widgets/landing/ui/SiteFooter';
+import { StartCtaButton } from '@/widgets/landing/ui/StartCtaButton';
 import { TasteExampleCard } from '@/widgets/landing/ui/TasteExampleCard';
 
 /**
@@ -61,11 +63,8 @@ const Home = async () => {
               몰랐던 취향이 보이기 시작해요.
             </p>
             <div className='flex justify-center gap-4'>
-              <Link href='/login'>
-                <Button size='lg' className='px-8'>
-                  내 책장 만들기
-                </Button>
-              </Link>
+              {/* GA4 이벤트 추적을 위해 Client 컴포넌트로 분리된 CTA */}
+              <StartCtaButton location='hero' />
               {/* 전체 도서 목록은 로그인 필요 — 비로그인 방문자에게는 숨긴다 */}
               {user && (
                 <Link href='/books/all'>
@@ -161,12 +160,7 @@ const Home = async () => {
       </section>
 
       {/* Footer */}
-      <footer className='border-t border-border bg-card py-8'>
-        <div className='container mx-auto max-w-6xl px-4 text-center text-sm text-muted-foreground'>
-          <p className='mb-2'>당신이 읽은 책들이 모여, 당신을 말해줍니다.</p>
-          <p>© 2026 page0127. All rights reserved.</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 };
