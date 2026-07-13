@@ -50,10 +50,21 @@ export async function updateSession(request: NextRequest) {
     '/notifications',
   ];
 
+  // /books 하위지만 로그인 없이 열어두는 경로 — app/(public)/books 와 동기화한다.
+  // 카탈로그와 책 정보는 서비스의 얼굴이자 SEO 자산이다.
+  // 로그인은 "담아둘 때" 필요하지 "구경할 때" 필요한 게 아니다.
+  const PUBLIC_EXCEPTIONS = ['/books/all', '/books/info'];
+
   const { pathname } = request.nextUrl;
-  const isProtected = PROTECTED_PREFIXES.some(
+
+  const isPublicException = PUBLIC_EXCEPTIONS.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
   );
+  const isProtected =
+    !isPublicException &&
+    PROTECTED_PREFIXES.some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+    );
 
   // 비로그인 사용자가 보호된 경로에 접근하면 로그인 페이지로 리디렉션
   if (!user && isProtected) {

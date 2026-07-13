@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { useMutation } from '@tanstack/react-query';
@@ -14,12 +15,15 @@ import { GlobalBook } from '@/entities/book';
 type AddToLibraryButtonProps = {
   book: GlobalBook;
   isInLibrary: boolean;
+  /** 비로그인 방문자에게는 담기 대신 로그인을 유도한다 (책 정보 페이지는 공개다) */
+  isLoggedIn?: boolean;
   className?: string;
 };
 
 export const AddToLibraryButton = ({
   book,
   isInLibrary,
+  isLoggedIn = true,
   className,
 }: AddToLibraryButtonProps) => {
   const router = useRouter();
@@ -46,6 +50,18 @@ export const AddToLibraryButton = ({
       toast.error('책 담기 중 오류가 발생했습니다.');
     },
   });
+
+  // 비로그인 방문자 — API를 호출하면 401로 실패한다. 로그인으로 보낸다.
+  if (!isLoggedIn) {
+    return (
+      <Link href='/login'>
+        <Button className={`gap-2 ${className}`}>
+          <Plus size={16} />
+          내 책장에 담기
+        </Button>
+      </Link>
+    );
+  }
 
   if (isInLibrary) {
     return (

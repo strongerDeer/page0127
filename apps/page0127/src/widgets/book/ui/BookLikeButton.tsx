@@ -14,6 +14,8 @@ import { bookApi } from '@/entities/book';
 type BookLikeButtonProps = {
   bookId: string;
   initialLiked: boolean;
+  /** 비로그인 방문자는 좋아요를 누를 수 없다 — API가 401을 낸다. 로그인으로 보낸다. */
+  isLoggedIn?: boolean;
   className?: string;
 };
 
@@ -29,6 +31,7 @@ type BookLikeButtonProps = {
 export const BookLikeButton = ({
   bookId,
   initialLiked,
+  isLoggedIn = true,
   className,
 }: BookLikeButtonProps) => {
   // 기준(실제) 상태 — 서버 응답으로만 갱신된다. 낙관적 값의 "돌아올 자리"
@@ -40,6 +43,12 @@ export const BookLikeButton = ({
   const router = useRouter();
 
   const handleToggle = () => {
+    // 비로그인 방문자 — 낙관적 토글을 그렸다가 401로 되돌리면 깜빡인다. 바로 로그인으로.
+    if (!isLoggedIn) {
+      router.push('/login');
+      return;
+    }
+
     // ⚠️ setOptimisticLiked는 반드시 transition(또는 form action) 안에서 호출해야 한다
     startTransition(async () => {
       setOptimisticLiked(!liked); // ① 즉시 하트 토글 (서버 응답 전)

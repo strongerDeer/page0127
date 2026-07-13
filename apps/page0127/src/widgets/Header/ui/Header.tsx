@@ -62,8 +62,16 @@ export const Header = async () => {
               </div>
             </>
           ) : (
-            // 비로그인 사용자 메뉴
+            // 비로그인 방문자 메뉴
+            // 로그인 버튼만 두면 "문 앞에 벽을 세우고 들어오라"는 셈이다.
+            // 전체 도서는 공개이므로 구경할 진입로를 먼저 준다.
             <>
+              <Link
+                href='/books/all'
+                className='text-sm text-text-body transition-colors hover:text-text-strong'
+              >
+                전체 도서
+              </Link>
               <Link href='/login'>
                 <Button variant='ghost'>로그인</Button>
               </Link>

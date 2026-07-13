@@ -33,16 +33,15 @@ export const BookRankingList = ({
       {/* 제목 + 기준일. 부제로 제목을 되풀이하지 않는다 */}
       <div className='mb-6 flex items-baseline justify-between gap-4'>
         <h2 className='heading-2 text-text-strong'>{title}</h2>
+        {/* 전체 도서는 이제 공개다 — 비로그인 방문자에게도 진입로를 연다 */}
         <div className='flex shrink-0 items-baseline gap-3'>
           {meta && <span className='text-xs text-text-faint'>{meta}</span>}
-          {isLoggedIn && (
-            <Link
-              href='/books/all'
-              className='text-sm text-text-subtle transition-colors hover:text-text-strong'
-            >
-              전체보기
-            </Link>
-          )}
+          <Link
+            href='/books/all'
+            className='text-sm text-text-subtle transition-colors hover:text-text-strong'
+          >
+            전체보기
+          </Link>
         </div>
       </div>
 

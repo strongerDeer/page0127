@@ -74,9 +74,11 @@ export default async function GlobalBooksPage(props: {
     <PageContainer width='wide'>
       <div className='mb-8 flex items-center justify-between'>
         <div>
-          <h1 className='text-3xl font-bold'>전체 도서 리스트</h1>
-          <p className='mt-2 text-muted-foreground'>
-            유저들이 등록한 모든 책을 모아볼 수 있는 공간입니다.
+          <h1 className='heading-1 text-text-strong'>전체 도서</h1>
+          <p className='mt-1 text-sm text-text-subtle'>
+            {booksRes.count
+              ? `${booksRes.count.toLocaleString()}권이 등록돼 있어요.`
+              : '아직 등록된 책이 없어요.'}
           </p>
         </div>
 
