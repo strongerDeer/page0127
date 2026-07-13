@@ -102,7 +102,7 @@ const PublicLibraryHeaderInfo = ({
         {/* 독서 궁합 — 두 책장을 비교하는 소셜 진입점 */}
         <Link href={`/${username}/compatibility`}>
           <Button variant='outline' size='sm'>
-            📖 독서 궁합 보기
+            독서 궁합 보기
           </Button>
         </Link>
       </div>

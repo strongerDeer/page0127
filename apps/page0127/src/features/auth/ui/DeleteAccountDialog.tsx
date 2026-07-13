@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/client';
@@ -92,8 +93,9 @@ export const DeleteAccountDialog = ({
           <AlertDialogTitle>정말로 계정을 삭제하시겠습니까?</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className='space-y-4'>
-              <p className='text-destructive font-semibold'>
-                ⚠️ 이 작업은 되돌릴 수 없습니다.
+              <p className='flex items-center gap-1.5 font-semibold text-destructive'>
+                <AlertTriangle className='h-4 w-4 shrink-0' />이 작업은 되돌릴
+                수 없습니다.
               </p>
               <p>계정을 삭제하면 다음 데이터가 영구적으로 삭제됩니다:</p>
               <ul className='list-disc list-inside space-y-1 text-sm'>

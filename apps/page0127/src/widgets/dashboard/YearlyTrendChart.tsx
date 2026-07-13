@@ -122,7 +122,7 @@ export const YearlyTrendChart = ({ data }: Props) => {
             <span className='font-semibold text-chart-3'>
               {currentYear.year}년
             </span>
-            이 역대 최고 기록이에요! 🎉
+            이 역대 최고 기록이에요!
           </p>
         ) : (
           <p>

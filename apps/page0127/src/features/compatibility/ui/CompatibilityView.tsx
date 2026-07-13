@@ -6,6 +6,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import {
+  BookCopy,
+  BookOpen,
+  Check,
+  Gift,
+  Heart,
+  Inbox,
+  Sprout,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/client';
@@ -102,8 +111,8 @@ export const CompatibilityView = ({
             ← {targetName} 님의 서재로
           </Button>
         </Link>
-        <h1 className='text-3xl font-bold'>📖 독서 궁합</h1>
-        <p className='mt-1 text-muted-foreground'>
+        <h1 className='heading-1 text-text-strong'>독서 궁합</h1>
+        <p className='mt-1 text-sm text-text-subtle'>
           {targetName} 님과 나, 얼마나 닮은 독서가일까요?
         </p>
       </div>
@@ -170,30 +179,33 @@ const CompatibilityIntro = ({
   isAnalyzing,
   onAnalyze,
 }: CompatibilityIntroProps) => (
-  <Card className='shadow-none'>
+  <Card>
     <CardContent className='py-12 text-center'>
-      <div className='mb-4 text-5xl'>📚 🤝 📚</div>
-      <h2 className='mb-2 text-xl font-bold'>
+      <BookCopy className='mx-auto mb-4 h-9 w-9 text-text-faint' />
+      <h2 className='mb-2 heading-2 text-text-strong'>
         두 사람의 책장을 나란히 놓아볼까요?
       </h2>
-      <p className='mb-8 text-muted-foreground'>
-        AI가 겹치는 관심사와 서로 다른 결을 찾아, 서로의 책장에서 건네줄 책까지
-        골라드려요.
+      <p className='mb-8 text-sm text-text-body'>
+        겹치는 관심사와 서로 다른 결을 찾아, 서로의 책장에서 건네줄 책까지 골라
+        드려요.
       </p>
 
-      {/* 분석 조건 안내 */}
-      <div className='mx-auto mb-8 max-w-sm rounded-lg bg-muted/50 p-4 text-left text-sm'>
-        <p className='mb-2 font-medium'>
+      {/* 분석 조건 안내 — ✅ 이모지 대신 lucide Check */}
+      <div className='mx-auto mb-8 max-w-sm rounded-lg bg-sunken p-4 text-left text-sm'>
+        <p className='mb-2 font-medium text-text-strong'>
           양쪽 모두 완독한 책(별점 포함)이 {MIN_BOOKS}권 이상이면 분석할 수
           있어요.
         </p>
-        <p className='text-muted-foreground'>
-          나의 책: {myBooksCount}권 {myBooksCount >= MIN_BOOKS ? '✅' : ''}
-        </p>
-        <p className='text-muted-foreground'>
-          {targetName} 님의 공개된 책: {targetBooksCount}권{' '}
-          {targetBooksCount >= MIN_BOOKS ? '✅' : ''}
-        </p>
+        <BookCountRow
+          label='나의 책'
+          count={myBooksCount}
+          isEnough={myBooksCount >= MIN_BOOKS}
+        />
+        <BookCountRow
+          label={`${targetName} 님의 공개된 책`}
+          count={targetBooksCount}
+          isEnough={targetBooksCount >= MIN_BOOKS}
+        />
       </div>
 
       <Button size='lg' disabled={!canAnalyze || isAnalyzing} onClick={onAnalyze}>
@@ -202,12 +214,33 @@ const CompatibilityIntro = ({
           : '궁합 분석하기'}
       </Button>
       {!canAnalyze && (
-        <p className='mt-3 text-sm text-muted-foreground'>
+        <p className='mt-3 text-sm text-text-subtle'>
           아직 책이 조금 부족해요. 책장이 더 쌓이면 다시 만나요.
         </p>
       )}
     </CardContent>
   </Card>
+);
+
+// 분석 조건 한 줄 — 충족 시 체크 아이콘
+type BookCountRowProps = {
+  label: string;
+  count: number;
+  isEnough: boolean;
+};
+
+const BookCountRow = ({ label, count, isEnough }: BookCountRowProps) => (
+  <p className='flex items-center gap-1.5 text-text-subtle'>
+    <span>
+      {label}: {count}권
+    </span>
+    {isEnough && (
+      <>
+        <Check className='h-3.5 w-3.5 text-primary' />
+        <span className='sr-only'>조건 충족</span>
+      </>
+    )}
+  </p>
 );
 
 // ─── 결과 화면 ───
@@ -245,49 +278,54 @@ const CompatibilityResult = ({
   return (
     <div className='space-y-6'>
       {/* 1. 궁합 점수 */}
-      <Card className='shadow-none'>
+      <Card>
         <CardContent className='py-10 text-center'>
-          <p className='text-6xl font-bold text-chart-2'>
+          <p className='text-6xl font-bold text-primary'>
             {analysis.compatibility_score}
-            <span className='text-2xl text-muted-foreground'>/100</span>
+            <span className='text-2xl text-text-faint'>/100</span>
           </p>
-          <p className='mt-4 text-2xl font-bold'>{analysis.compatibility_type}</p>
-          <p className='mt-2 text-muted-foreground'>{typeBand.tagline}</p>
-          <p className='mx-auto mt-6 max-w-xl whitespace-pre-wrap text-left leading-relaxed text-foreground'>
+          <p className='mt-4 text-2xl font-bold text-text-strong'>
+            {analysis.compatibility_type}
+          </p>
+          <p className='mt-2 text-text-subtle'>{typeBand.tagline}</p>
+          <p className='mx-auto mt-6 max-w-xl whitespace-pre-wrap text-left leading-relaxed text-text-body'>
             {analysis.compatibility_description}
           </p>
         </CardContent>
       </Card>
 
       {/* 2. 두 사람의 독서 패턴 */}
-      <Card className='shadow-none'>
+      <Card>
         <CardHeader>
-          <CardTitle className='text-xl'>📖 두 사람의 독서 패턴</CardTitle>
+          <CardTitle className='flex items-center gap-2 text-base'>
+            <BookOpen className='h-4.5 w-4.5 text-text-subtle' />두 사람의 독서
+            패턴
+          </CardTitle>
         </CardHeader>
         <CardContent className='space-y-6'>
           <div className='grid gap-4 md:grid-cols-2'>
-            <div className='rounded-lg bg-chart-2/10 p-4'>
-              <p className='text-sm font-medium text-muted-foreground'>나</p>
-              <p className='mt-1 font-semibold text-chart-2'>{myPattern}</p>
+            <div className='rounded-lg bg-sunken p-4'>
+              <p className='text-sm text-text-subtle'>나</p>
+              <p className='mt-1 font-semibold text-text-strong'>{myPattern}</p>
             </div>
-            <div className='rounded-lg bg-chart-3/10 p-4'>
-              <p className='text-sm font-medium text-muted-foreground'>
-                {targetName} 님
+            <div className='rounded-lg bg-sunken p-4'>
+              <p className='text-sm text-text-subtle'>{targetName} 님</p>
+              <p className='mt-1 font-semibold text-text-strong'>
+                {targetPattern}
               </p>
-              <p className='mt-1 font-semibold text-chart-3'>{targetPattern}</p>
             </div>
           </div>
 
           {similarity.common_interests.length > 0 && (
             <div>
-              <p className='mb-2 text-sm font-medium text-muted-foreground'>
+              <p className='mb-2 text-sm text-text-subtle'>
                 함께 좋아하는 주제
               </p>
               <div className='flex flex-wrap gap-2'>
                 {similarity.common_interests.map((interest) => (
                   <span
                     key={interest}
-                    className='rounded-full bg-chart-3/15 px-3 py-1 text-sm text-chart-3'
+                    className='rounded-full border border-line px-3 py-1 text-sm text-text-body'
                   >
                     {interest}
                   </span>
@@ -298,18 +336,22 @@ const CompatibilityResult = ({
 
           <div className='grid gap-4 md:grid-cols-2'>
             <div>
-              <h3 className='mb-2 font-semibold text-chart-3'>💚 닮은 점</h3>
-              <ul className='space-y-1 text-sm text-foreground'>
+              <h3 className='mb-2 flex items-center gap-1.5 font-semibold text-primary'>
+                <Heart className='h-4 w-4' />
+                닮은 점
+              </h3>
+              <ul className='space-y-1 text-sm text-text-body'>
                 {similarity.commonalities.map((item) => (
                   <li key={item}>• {item}</li>
                 ))}
               </ul>
             </div>
             <div>
-              <h3 className='mb-2 font-semibold text-chart-5'>
-                🌱 서로를 넓혀줄 부분
+              <h3 className='mb-2 flex items-center gap-1.5 font-semibold text-text-strong'>
+                <Sprout className='h-4 w-4 text-text-subtle' />
+                서로를 넓혀줄 부분
               </h3>
-              <ul className='space-y-1 text-sm text-foreground'>
+              <ul className='space-y-1 text-sm text-text-body'>
                 {similarity.differences.map((item) => (
                   <li key={item}>• {item}</li>
                 ))}
@@ -321,12 +363,14 @@ const CompatibilityResult = ({
 
       {/* 3. 상호 추천 도서 */}
       <RecommendationList
-        title={`📬 ${targetName} 님의 책장에서 골라온 책`}
-        description='상대방이 읽은 책 중, 지금의 당신과 이어질 책들이에요.'
+        icon={<Inbox className='h-4.5 w-4.5 text-text-subtle' />}
+        title={`${targetName} 님의 책장에서 골라온 책`}
+        description='상대방이 읽은 책 중, 지금 이어 읽기 좋은 책들이에요.'
         recommendations={recommendationsForMe}
       />
       <RecommendationList
-        title={`🎁 내 책장에서 ${targetName} 님에게 건네는 책`}
+        icon={<Gift className='h-4.5 w-4.5 text-text-subtle' />}
+        title={`내 책장에서 ${targetName} 님에게 건네는 책`}
         description='내가 읽은 책 중, 상대방이 좋아할 만한 책들이에요.'
         recommendations={recommendationsForTarget}
       />
@@ -354,12 +398,14 @@ const CompatibilityResult = ({
 // ─── 추천 도서 목록 ───
 
 type RecommendationListProps = {
+  icon: React.ReactNode;
   title: string;
   description: string;
   recommendations: MutualRecommendation[];
 };
 
 const RecommendationList = ({
+  icon,
   title,
   description,
   recommendations,
@@ -367,37 +413,40 @@ const RecommendationList = ({
   if (recommendations.length === 0) return null;
 
   return (
-    <Card className='border-chart-3/20 bg-chart-3/5 shadow-none'>
+    <Card>
       <CardHeader>
-        <CardTitle className='text-lg'>{title}</CardTitle>
-        <p className='text-sm text-muted-foreground'>{description}</p>
+        <CardTitle className='flex items-center gap-2 text-base'>
+          {icon}
+          {title}
+        </CardTitle>
+        <p className='text-sm text-text-subtle'>{description}</p>
       </CardHeader>
       <CardContent>
         <div className='space-y-4'>
           {recommendations.map((rec) => (
             <div
               key={rec.id}
-              className='rounded-lg border border-border bg-card p-4'
+              className='flex gap-4 border-t border-line-soft pt-4 first:border-0 first:pt-0'
             >
-              <div className='flex gap-4'>
-                {rec.cover_image && (
-                  <div className='relative h-32 w-24 shrink-0 overflow-hidden rounded'>
-                    <Image
-                      src={rec.cover_image}
-                      alt={rec.title}
-                      fill
-                      sizes='96px'
-                      className='object-cover'
-                    />
-                  </div>
+              {rec.cover_image && (
+                // 판형을 크롭하지 않는다 — 높이만 고정하고 너비는 원본 비율대로
+                <Image
+                  src={rec.cover_image}
+                  alt=''
+                  width={200}
+                  height={290}
+                  sizes='88px'
+                  className='book-cover h-32 w-auto shrink-0'
+                />
+              )}
+              <div className='flex-1'>
+                <h4 className='font-medium text-text-strong'>{rec.title}</h4>
+                {rec.author && (
+                  <p className='text-sm text-text-subtle'>{rec.author}</p>
                 )}
-                <div className='flex-1'>
-                  <h4 className='font-semibold text-foreground'>{rec.title}</h4>
-                  {rec.author && (
-                    <p className='text-sm text-muted-foreground'>{rec.author}</p>
-                  )}
-                  <p className='mt-2 text-sm text-foreground'>{rec.reason}</p>
-                </div>
+                <p className='mt-2 text-sm leading-relaxed text-text-body'>
+                  {rec.reason}
+                </p>
               </div>
             </div>
           ))}

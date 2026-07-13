@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { Star } from 'lucide-react';
 import { BookCheck, BookOpen, MessageSquare } from 'lucide-react';
 
 import { Activity } from '@/entities/activity';
@@ -136,8 +137,8 @@ export const ActivityCard = ({
           {activity.activity_type === 'book_completed' &&
             activity.book.rating && (
               <div className='mt-2 flex items-center gap-1'>
-                <span className='text-yellow-500'>⭐</span>
-                <span className='text-sm font-medium'>
+                <Star className='h-3.5 w-3.5 fill-chart-4 text-chart-4' />
+                <span className='text-sm font-medium text-text-body'>
                   {activity.book.rating}/10
                 </span>
               </div>

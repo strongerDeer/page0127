@@ -33,7 +33,7 @@ export const ReadingJourneyCard = ({ data }: Props) => {
         title="읽은 책"
         value={data.totalBooks}
         unit="권"
-        description={`⭐ 10점: ${data.perfectScoreBooks}권 (${data.perfectScoreRate}%)`}
+        description={`10점: ${data.perfectScoreBooks}권 (${data.perfectScoreRate}%)`}
         variant="blue"
       />
 
@@ -43,7 +43,7 @@ export const ReadingJourneyCard = ({ data }: Props) => {
         title="읽은 쪽수"
         value={data.totalPages}
         unit="쪽"
-        description={`📅 하루 평균: ${data.averagePagesPerDay}쪽`}
+        description={`하루 평균: ${data.averagePagesPerDay}쪽`}
         variant="purple"
       />
 

@@ -41,8 +41,16 @@ export const BookGridItem = ({ book, href }: BookGridItemProps) => {
             className='object-cover'
           />
         ) : (
-          <div className='flex h-full w-full items-center justify-center text-4xl'>
-            📚
+          // 표지 이미지가 없는 책 — 제목을 조판해 표지를 만든다
+          <div className='flex h-full w-full flex-col justify-between bg-sunken px-2 py-2.5 text-left'>
+            <p className='line-clamp-4 break-keep text-[11px] font-bold leading-snug text-text-strong'>
+              {book.title}
+            </p>
+            {book.author && (
+              <p className='line-clamp-1 text-[10px] text-text-faint'>
+                {book.author}
+              </p>
+            )}
           </div>
         )}
         {book.read_count > 1 && (

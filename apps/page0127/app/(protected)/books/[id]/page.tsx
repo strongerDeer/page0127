@@ -2,6 +2,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { Globe, Lock, Star } from 'lucide-react';
+
 import { createClient } from '@/shared/config/supabase/server';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
@@ -119,26 +121,30 @@ export default async function BookDetailPage({ params }: PageProps) {
                 <ReadCountBadge readCount={book.read_count} />
 
                 {book.rating !== null && book.rating !== undefined && (
-                  <span className='text-lg font-medium text-yellow-600'>
-                    ⭐ {book.rating}점
+                  <span className='flex items-center gap-1 text-lg font-medium text-text-strong'>
+                    <Star className='h-4 w-4 fill-chart-4 text-chart-4' />
+                    {book.rating}점
                   </span>
                 )}
 
                 {/* 공개/비공개 표시 */}
                 <span
-                  className={`inline-block rounded-full px-4 py-2 text-sm font-medium ${
-                    book.is_public
-                      ? 'bg-chart-3/15 text-chart-3'
-                      : 'bg-muted text-muted-foreground'
+                  className={`inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-sm ${
+                    book.is_public ? 'text-text-body' : 'text-text-faint'
                   }`}
                 >
-                  {book.is_public ? '🌐 공개' : '🔒 비공개'}
+                  {book.is_public ? (
+                    <Globe className='h-3.5 w-3.5' />
+                  ) : (
+                    <Lock className='h-3.5 w-3.5' />
+                  )}
+                  {book.is_public ? '공개' : '비공개'}
                 </span>
               </div>
 
               {/* 날짜 및 쪽수 정보 */}
               <div className='space-y-1 text-sm text-muted-foreground'>
-                {book.page_count && <p>📖 쪽수: {book.page_count}쪽</p>}
+                {book.page_count && <p>쪽수: {book.page_count}쪽</p>}
                 {book.start_date && <p>시작일: {book.start_date}</p>}
                 {book.completed_date && <p>완독일: {book.completed_date}</p>}
                 {book.pub_date && <p>출간일: {book.pub_date}</p>}

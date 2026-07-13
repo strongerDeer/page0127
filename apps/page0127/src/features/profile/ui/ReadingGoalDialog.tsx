@@ -87,7 +87,7 @@ export const ReadingGoalDialog = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>📚 연간 독서 목표 설정</DialogTitle>
+          <DialogTitle>연간 독서 목표 설정</DialogTitle>
           <DialogDescription>
             올해 읽고 싶은 책의 권수를 설정하세요.
           </DialogDescription>

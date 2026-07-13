@@ -11,6 +11,8 @@ import {
 
 import Link from 'next/link';
 
+import { SearchX, X } from 'lucide-react';
+
 import { mapToMainCategory } from '@/shared/lib/categoryMapper';
 import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
 import { Button } from '@/shared/ui/button';
@@ -313,25 +315,25 @@ export const DashboardBookList = ({
           {selectedMonth !== null && (
             <button
               onClick={handleRemoveMonthFilter}
-              className='flex items-center gap-1 rounded-full bg-primary/15 px-3 py-1 text-sm text-primary hover:bg-primary/25'
+              className='flex items-center gap-1 rounded-full border border-line px-3 py-1 text-sm text-text-body hover:bg-sunken'
             >
-              {selectedMonth}월 <span className='font-bold'>✕</span>
+              {selectedMonth}월 <X className='h-3.5 w-3.5' />
             </button>
           )}
           {selectedCategory !== null && (
             <button
               onClick={() => handleCategoryChange(null)}
-              className='flex items-center gap-1 rounded-full bg-chart-3/15 px-3 py-1 text-sm text-chart-3 hover:bg-chart-3/25'
+              className='flex items-center gap-1 rounded-full border border-line px-3 py-1 text-sm text-text-body hover:bg-sunken'
             >
-              {selectedCategory} <span className='font-bold'>✕</span>
+              {selectedCategory} <X className='h-3.5 w-3.5' />
             </button>
           )}
           {selectedRating !== null && (
             <button
               onClick={onRemoveRatingFilter}
-              className='flex items-center gap-1 rounded-full bg-chart-4/15 px-3 py-1 text-sm text-chart-4 hover:bg-chart-4/25'
+              className='flex items-center gap-1 rounded-full border border-line px-3 py-1 text-sm text-text-body hover:bg-sunken'
             >
-              {selectedRating}점 ⭐ <span className='font-bold'>✕</span>
+              {selectedRating}점 <X className='h-3.5 w-3.5' />
             </button>
           )}
         </div>
@@ -446,7 +448,7 @@ export const DashboardBookList = ({
           </div>
         ) : (
           <div className='rounded-lg border-2 border-dashed border-border bg-muted/50 p-12 text-center'>
-            <div className='mx-auto mb-2 text-4xl'>🔍</div>
+            <SearchX className='mx-auto mb-2 h-8 w-8 text-text-faint' />
             <p className='text-sm text-muted-foreground'>
               {selectedCategory
                 ? `${selectedCategory} 카테고리의 책이 없습니다`

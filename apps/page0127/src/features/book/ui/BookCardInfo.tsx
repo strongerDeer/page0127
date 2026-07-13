@@ -51,7 +51,7 @@ export const BookCardInfo = ({ book, onDelete }: BookCardInfoProps) => {
 
             {book.rating !== null && book.rating !== undefined && (
               <span className='text-sm font-medium text-yellow-600'>
-                ⭐ {book.rating}
+                {book.rating}
               </span>
             )}
           </div>

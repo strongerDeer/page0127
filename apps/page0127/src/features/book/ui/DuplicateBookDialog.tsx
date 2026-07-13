@@ -81,7 +81,7 @@ export const DuplicateBookDialog = ({
               {existingBook.rating && (
                 <div className='flex justify-between'>
                   <dt className='text-muted-foreground'>평점:</dt>
-                  <dd className='font-medium'>⭐ {existingBook.rating}점</dd>
+                  <dd className='font-medium'>{existingBook.rating}점</dd>
                 </div>
               )}
             </dl>

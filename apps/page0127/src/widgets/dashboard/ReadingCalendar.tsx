@@ -108,7 +108,7 @@ export const ReadingCalendar = ({
       <Card key={`calendar-${currentYear}-${currentMonth}`} className="border-0 bg-transparent shadow-none">
         <CardHeader>
           <CardTitle className='flex items-center justify-between'>
-            <span>📅 독서 캘린더</span>
+            <span>독서 캘린더</span>
             <div className='flex items-center gap-2'>
               <Button
                 variant='outline'
@@ -136,9 +136,8 @@ export const ReadingCalendar = ({
           {isLoading ? (
             <div className='flex items-center justify-center py-20'>
               <div className='text-center'>
-                <div className='mb-2 text-2xl'>📚</div>
-                <div className='text-sm text-muted-foreground'>
-                  데이터 불러오는 중...
+                <div className='text-sm text-text-subtle'>
+                  달력을 불러오는 중이에요…
                 </div>
               </div>
             </div>
@@ -215,7 +214,7 @@ export const ReadingCalendar = ({
               <span className='font-semibold text-foreground'>
                 {summary.totalBooks}권
               </span>{' '}
-              완독 📚
+              완독
               {summary.totalPages > 0 && (
                 <>
                   {' '}
@@ -264,7 +263,7 @@ export const ReadingCalendar = ({
                   <h4 className='font-semibold'>{book.title}</h4>
                   <p className='text-sm text-muted-foreground'>{book.author}</p>
                   {book.rating > 0 && (
-                    <div className='mt-1 text-sm'>⭐ {book.rating}점</div>
+                    <div className='mt-1 text-sm'>{book.rating}점</div>
                   )}
                 </div>
               </div>

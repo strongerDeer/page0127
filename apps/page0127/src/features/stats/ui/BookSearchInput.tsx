@@ -2,6 +2,8 @@
 
 import { useEffect, useImperativeHandle, useRef, useState } from 'react';
 
+import { Search, X } from 'lucide-react';
+
 import { Input } from '@/shared/ui/input';
 
 type BookSearchInputProps = {
@@ -67,16 +69,15 @@ export const BookSearchInput = ({
         placeholder={placeholder}
         className='pl-10'
       />
-      <div className='pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground'>
-        🔍
-      </div>
+      <Search className='pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-faint' />
       {inputValue && (
         <button
           type='button'
           onClick={() => setInputValue('')}
-          className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
+          aria-label='검색어 지우기'
+          className='absolute right-3 top-1/2 -translate-y-1/2 text-text-faint hover:text-text-strong'
         >
-          ✕
+          <X className='h-4 w-4' />
         </button>
       )}
     </div>

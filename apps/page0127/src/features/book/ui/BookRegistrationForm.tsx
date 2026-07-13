@@ -246,7 +246,7 @@ export const BookRegistrationForm = ({
               <p className='text-sm text-muted-foreground'>{book.publisher}</p>
               {book.subInfo?.itemPage && (
                 <p className='text-sm text-muted-foreground'>
-                  📖 {book.subInfo.itemPage}쪽
+                  {book.subInfo.itemPage}쪽
                 </p>
               )}
             </div>

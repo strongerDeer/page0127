@@ -56,7 +56,7 @@ export const RatingDistributionChart = ({ data }: Props) => {
 
     if (lowRatingRate > 40) {
       personality = '엄격한 평가자';
-      message = '당신은 매우 엄격한 평가자입니다!';
+      message = '별점을 아주 엄격하게 주는 편이네요.';
     } else if (lowRatingRate < 20) {
       personality = '긍정적인 독서가';
       message = '대부분의 책을 즐기시네요!';
@@ -66,7 +66,7 @@ export const RatingDistributionChart = ({ data }: Props) => {
     }
 
     if (perfectRate > 10) {
-      message += ' 인생책도 많으시네요! ⭐';
+      message += ' 인생책도 많으시네요.';
     }
 
     return { personality, message };
@@ -120,11 +120,11 @@ export const RatingDistributionChart = ({ data }: Props) => {
       </div>
 
       {/* AI 인사이트 */}
-      <div className="rounded-lg bg-chart-3/10 p-4 text-center">
-        <p className="text-sm text-foreground">
-          💡 <span className="font-semibold text-chart-3">{insight.personality}</span>
+      <div className="rounded-lg bg-sunken p-4 text-center">
+        <p className="text-sm font-semibold text-text-strong">
+          {insight.personality}
         </p>
-        <p className="mt-1 text-xs text-muted-foreground">{insight.message}</p>
+        <p className="mt-1 text-xs text-text-subtle">{insight.message}</p>
       </div>
     </div>
   );
