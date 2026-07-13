@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" rx="7" fill="#2f5d3a"/>
+  <!-- 책장에 꽂힌 책 세 권 — 왼쪽이 책등이라 각지고 오른쪽만 둥글다 -->
+  <rect x="7"  y="8"  width="4" height="16" rx="0.5" fill="#faf9f7"/>
+  <rect x="12.5" y="6"  width="4" height="18" rx="0.5" fill="#faf9f7" opacity="0.72"/>
+  <rect x="18" y="9.5" width="4" height="14.5" rx="0.5" fill="#faf9f7" opacity="0.46"/>
+  <!-- 선반 -->
+  <rect x="5" y="24" width="22" height="2" rx="1" fill="#faf9f7"/>
+</svg>

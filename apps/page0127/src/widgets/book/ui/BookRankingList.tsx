@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { Heart } from 'lucide-react';
 
 import { BookListItem } from '@/widgets/book/ui/BookListItem';
@@ -6,9 +8,10 @@ import type { BookRanking } from '@/entities/book';
 
 type BookRankingListProps = {
   title: string;
-  subTitle?: string;
+  /** 집계 기준일 등 — 제목 우측에 붙는 메타 정보 */
+  meta?: string;
   books: BookRanking[];
-  type: 'best' | 'most'; // best: 인생책 (Heart icon), most: 완독왕 (Book icon or simple count)
+  type: 'best' | 'most';
   myReadIsbns?: string[];
   myLikedIds?: string[];
   isLoggedIn?: boolean;
@@ -16,7 +19,7 @@ type BookRankingListProps = {
 
 export const BookRankingList = ({
   title,
-  subTitle,
+  meta,
   books,
   type,
   myReadIsbns = [],
@@ -26,15 +29,24 @@ export const BookRankingList = ({
   if (!books || books.length === 0) return null;
 
   return (
-    <section className='py-8'>
-      <div className='mb-6 flex items-end justify-between'>
-        <div>
-          <h2 className='text-2xl font-bold'>{title}</h2>
-          {subTitle && <p className='mt-1 text-muted-foreground'>{subTitle}</p>}
+    <section>
+      {/* 제목 + 기준일. 부제로 제목을 되풀이하지 않는다 */}
+      <div className='mb-6 flex items-baseline justify-between gap-4'>
+        <h2 className='heading-2 text-text-strong'>{title}</h2>
+        <div className='flex shrink-0 items-baseline gap-3'>
+          {meta && <span className='text-xs text-text-faint'>{meta}</span>}
+          {isLoggedIn && (
+            <Link
+              href='/books/all'
+              className='text-sm text-text-subtle transition-colors hover:text-text-strong'
+            >
+              전체보기
+            </Link>
+          )}
         </div>
       </div>
 
-      <div className='grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5'>
+      <div className='grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5'>
         {books.map((item, index) => {
           const book = item.book_info;
           const isRead = myReadIsbns.includes(book.isbn);
@@ -50,15 +62,21 @@ export const BookRankingList = ({
                 isLoggedIn={isLoggedIn}
               />
 
-              {/* Ranking specific stats below the item */}
-              <div className='flex items-center justify-center gap-1 text-xs font-medium text-muted-foreground'>
+              {/* 랭킹 수치 — 이모지(🔥) 대신 숫자를 앞세운다 */}
+              <div className='flex items-center justify-center gap-1 text-xs text-text-subtle'>
                 {type === 'best' ? (
                   <>
-                    <Heart className='h-3 w-3 fill-chart-5 text-chart-5' />
-                    <span>{item.count}명</span>
+                    <Heart className='h-3 w-3 fill-rank-up text-rank-up' />
+                    <span>
+                      <b className='font-medium text-text-body'>{item.count}</b>
+                      명이 10점
+                    </span>
                   </>
                 ) : (
-                  <span>🔥 {item.count}회 완독</span>
+                  <span>
+                    <b className='font-medium text-text-body'>{item.count}</b>
+                    명이 완독
+                  </span>
                 )}
               </div>
             </div>

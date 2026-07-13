@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import {
   Card,
   CardContent,
@@ -13,24 +15,23 @@ import { LoginWithGoogleButton } from '@/features/auth/ui/LoginWithGoogleButton'
 const LoginPage = () => {
   return (
     <div className='flex min-h-screen items-center justify-center'>
-      <Card className='w-full max-w-md'>
+      <Card className='w-full max-w-md shadow-none'>
         <CardHeader className='text-center'>
-          <CardTitle className='text-2xl font-bold'>page0127.</CardTitle>
-          <CardDescription>
-            어서 오세요. 당신의 책장이 기다리고 있어요.
-          </CardDescription>
+          <CardTitle className='heading-1'>page0127.</CardTitle>
+          <CardDescription>어서 오세요. 책장이 기다리고 있어요.</CardDescription>
         </CardHeader>
         <CardContent>
           <LoginWithGoogleButton />
-          <p className='mt-4 text-center text-sm text-muted-foreground'>
+          {/* 약관 링크는 실제 페이지로 연결한다 (기존 href='#' 죽은 링크) */}
+          <p className='mt-4 text-center text-sm text-text-subtle'>
             로그인하면{' '}
-            <a href='#' className='underline'>
+            <Link href='/terms' className='underline'>
               서비스 약관
-            </a>{' '}
+            </Link>{' '}
             및{' '}
-            <a href='#' className='underline'>
+            <Link href='/privacy' className='underline'>
               개인정보 처리방침
-            </a>
+            </Link>
             에 동의하는 것으로 간주됩니다.
           </p>
         </CardContent>

@@ -5,7 +5,7 @@ import { useCallback, useReducer, useState, useTransition } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 
-import { BookOpen, CheckCircle, FileText, Target } from 'lucide-react';
+import { BookOpen, CheckCircle, FileText, Link2, Target } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/client';
@@ -323,12 +323,7 @@ export const DashboardContent = ({
       {/* Header */}
       <header className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
         <div>
-          <h1 className='text-4xl font-bold tracking-tight text-foreground'>
-            Dashboard
-          </h1>
-          <p className='text-lg text-muted-foreground'>
-            Overview of your reading journey
-          </p>
+          <h1 className='heading-1 text-text-strong'>내 서재</h1>
         </div>
 
         <div className='flex items-center gap-4'>
@@ -350,7 +345,7 @@ export const DashboardContent = ({
           </Select>
 
           <Button onClick={handleAnalyzeTaste} disabled={isAnalyzing}>
-            {isAnalyzing ? 'Analyzing...' : 'AI Analysis'}
+            {isAnalyzing ? '분석 중…' : '취향 분석'}
           </Button>
 
           {profile?.username && (
@@ -358,41 +353,41 @@ export const DashboardContent = ({
               variant='outline'
               size='icon'
               onClick={handleCopyPublicUrl}
-              title='Copy Public URL'
+              title='공개 서재 주소 복사'
             >
-              <span className='sr-only'>Copy URL</span>
-              🔗
+              <span className='sr-only'>공개 서재 주소 복사</span>
+              <Link2 className='h-4 w-4' />
             </Button>
           )}
         </div>
       </header>
 
-      {/* Top Info Cards (Glass Pills) */}
+      {/* 요약 지표 */}
       <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
         <StatCard
           icon={<BookOpen className='h-5 w-5' />}
-          title='Books Read'
+          title='완독'
           value={stats.totalCompletedBooks}
-          unit='Books'
+          unit='권'
           variant='blue'
         />
         <StatCard
           icon={<FileText className='h-5 w-5' />}
-          title='Pages Read'
+          title='읽은 쪽수'
           value={stats.totalPages}
-          unit='Pages'
+          unit='쪽'
           variant='purple'
         />
         <StatCard
           icon={<Target className='h-5 w-5' />}
-          title='Yearly Goal'
+          title='올해 목표'
           value={stats.yearlyGoal}
-          unit='Books'
+          unit='권'
           variant='emerald'
         />
         <StatCard
           icon={<CheckCircle className='h-5 w-5' />}
-          title='Completion'
+          title='달성률'
           value={stats.completionRate}
           unit='%'
           variant='rose'
@@ -406,7 +401,7 @@ export const DashboardContent = ({
           {/* Yearly Trend Chart */}
           <Card className='shadow-none'>
             <CardHeader>
-              <CardTitle>Yearly Reading Trend</CardTitle>
+              <CardTitle>연도별 독서 추이</CardTitle>
             </CardHeader>
             <CardContent>
               <YearlyTrendChart data={overallStats.yearlyTrend} />
@@ -429,7 +424,7 @@ export const DashboardContent = ({
           {/* Reading Journey (All Time) */}
           <Card className='shadow-none'>
             <CardHeader>
-              <CardTitle>Total Journey</CardTitle>
+              <CardTitle>지금까지의 기록</CardTitle>
             </CardHeader>
             <CardContent className='space-y-4'>
               <ReadingJourneyCard data={overallStats.journey} />
@@ -438,9 +433,7 @@ export const DashboardContent = ({
 
           {/* Reading Goal Progress */}
           <div className='rounded-lg border border-border bg-card p-6'>
-            <h3 className='mb-4 text-lg font-bold text-foreground'>
-              Goal Progress
-            </h3>
+            <h3 className='mb-4 heading-2 text-text-strong'>목표 달성률</h3>
             <ReadingGoalProgress
               year={selectedYear}
               target={isCurrentYearGoal && readingGoal ? readingGoal.target : 0}
@@ -449,18 +442,19 @@ export const DashboardContent = ({
             />
           </div>
 
-          {/* Taste Analysis Promo — 솔리드 인디고 CTA (그라데이션·장식 제거) */}
+          {/* 취향 분석 유도 — 화면당 채워진 액센트 블록은 여기 하나뿐 */}
           <div className='rounded-lg bg-primary p-6 text-primary-foreground'>
-            <h3 className='text-xl font-bold'>Discover Your Taste</h3>
-            <p className='mt-2 text-sm text-primary-foreground/80'>
-              Let AI analyze your reading patterns.
+            <h3 className='heading-2'>나도 몰랐던 내 취향</h3>
+            <p className='mt-2 text-sm text-primary-foreground/85'>
+              완독한 책 다섯 권이면 충분해요. 책장을 찬찬히 읽고 다음 책까지
+              골라 드립니다.
             </p>
             <Button
               variant='secondary'
               className='mt-4 w-full'
               onClick={handleAnalyzeTaste}
             >
-              Start Analysis
+              분석 시작
             </Button>
           </div>
         </div>
@@ -482,7 +476,7 @@ export const DashboardContent = ({
                   transition: 'opacity 0.2s',
                 }}
               >
-                Recent Books
+                최근 읽은 책
               </CardTitle>
             </CardHeader>
             <CardContent>

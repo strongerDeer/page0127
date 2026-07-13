@@ -29,7 +29,7 @@ export const SiteFooter = () => {
             </Link>
           ))}
         </nav>
-        <p className='mb-2'>당신이 읽은 책들이 모여, 당신을 말해줍니다.</p>
+        <p className='mb-2'>읽은 책이 모여 책장이 됩니다.</p>
         <p>© 2026 page0127. All rights reserved.</p>
       </div>
     </footer>

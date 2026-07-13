@@ -19,6 +19,7 @@ type BookItemProps = {
 type BookListItemCoverProps = {
   id: string;
   title: string;
+  author: string | null;
   cover: string | null;
   spine: string | null;
   description: string | null;
@@ -40,6 +41,7 @@ type BookListItemContentProps = {
 const BookListItemCover = ({
   id,
   title,
+  author,
   cover,
   spine,
   description,
@@ -59,24 +61,20 @@ const BookListItemCover = ({
             {spine ? (
               <Image src={spine} alt='' width='400' height='400' />
             ) : (
-              <div
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  backgroundColor: '#e5e7eb',
-                  borderRight: '1px solid #d1d5db',
-                }}
-              />
+              <div className={styles.spineFallback} />
             )}
           </div>
 
-          {/* 앞 표지 */}
-          <Image
-            src={cover || '/images/placeholder-cover.png'}
-            alt={title}
-            width='400'
-            height='400'
-          />
+          {/* 앞 표지 — 이미지가 없으면 제목·저자를 조판해 표지를 생성한다
+              (기존에는 존재하지 않는 /images/placeholder-cover.png 를 가리켜 깨졌다) */}
+          {cover ? (
+            <Image src={cover} alt={title} width='400' height='400' />
+          ) : (
+            <div className={styles.fallback}>
+              <p className={styles.fallbackTitle}>{title}</p>
+              {author && <p className={styles.fallbackAuthor}>{author}</p>}
+            </div>
+          )}
 
           {/* 읽음 뱃지 */}
           {isRead && (
@@ -87,7 +85,7 @@ const BookListItemCover = ({
 
           {/* 순위 뱃지 (3위 이내) */}
           {rank && rank <= 3 && (
-            <div className='absolute -left-2 -top-2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-chart-4 font-bold text-white shadow-sm'>
+            <div className='absolute -left-2 -top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-text-strong text-xs font-bold text-white'>
               {rank}
             </div>
           )}
@@ -152,6 +150,7 @@ export const BookListItem = ({
       <BookListItem.Cover
         id={book.id}
         title={book.title}
+        author={book.author}
         cover={book.cover_image}
         spine={book.spine_image}
         description={book.description}

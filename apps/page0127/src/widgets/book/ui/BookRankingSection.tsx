@@ -16,7 +16,8 @@ import type { BookRanking, GlobalBook } from '@/entities/book';
 type BookRankingSectionProps = {
   type: 'best' | 'most';
   title: string;
-  subTitle?: string;
+  /** 집계 기준일 등 — 제목 우측 메타 */
+  meta?: string;
   myReadIsbns?: string[];
   myLikedIds?: string[];
   isLoggedIn?: boolean;
@@ -33,7 +34,7 @@ type RankingRow = { isbn: string; count: number; book_info: unknown };
 export const BookRankingSection = async ({
   type,
   title,
-  subTitle,
+  meta,
   myReadIsbns,
   myLikedIds,
   isLoggedIn,
@@ -55,7 +56,7 @@ export const BookRankingSection = async ({
   return (
     <BookRankingList
       title={title}
-      subTitle={subTitle}
+      meta={meta}
       books={books}
       type={type}
       myReadIsbns={myReadIsbns}

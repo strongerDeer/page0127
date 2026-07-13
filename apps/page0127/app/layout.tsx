@@ -1,4 +1,4 @@
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist_Mono } from 'next/font/google';
 
 import { GoogleAnalytics } from '@/shared/lib/analytics/GoogleAnalytics';
 import { QueryProvider } from '@/shared/providers/QueryProvider';
@@ -10,11 +10,13 @@ import type { Metadata } from 'next';
 
 import './globals.css';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
+// 본문 서체는 Pretendard (한글 서비스인데 라틴 전용 Geist를 쓰고 있었다).
+// dynamic subset — 브라우저가 페이지에 실제 등장하는 글자 조각만 내려받는다.
+// (가변폰트 전체는 2.1MB, dynamic subset은 실사용 100KB 안팎)
+const PRETENDARD_CSS =
+  'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css';
 
+// 코드 블록 등 고정폭이 필요한 곳에만 남긴다
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
@@ -75,13 +77,17 @@ const RootLayout = ({
 }>) => {
   return (
     <html lang='ko-KR'>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {/*
-          antialiased: 폰트 렌더링 최적화
-          ${geistSans.variable}: CSS 변수로 폰트 주입
-        */}
+      <head>
+        {/* 폰트 CDN — 미리 연결해 두어야 첫 글자가 늦게 뜨지 않는다 */}
+        <link
+          rel='preconnect'
+          href='https://cdn.jsdelivr.net'
+          crossOrigin='anonymous'
+        />
+        <link rel='stylesheet' href={PRETENDARD_CSS} />
+      </head>
+      <body className={`${geistMono.variable} antialiased`}>
+        {/* antialiased: 폰트 렌더링 최적화 */}
         <QueryProvider>
           {/* QueryProvider 안에 있어야 useCurrentUser(React Query)를 쓸 수 있다 */}
           <CurrentUserProvider>
