@@ -12,9 +12,9 @@
 
 import { Check, Heart, MessageCircle, UserPlus, X } from 'lucide-react';
 
-import { formatDistanceToNow } from '@/shared/lib/date';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 import { Button } from '@/shared/ui/button';
+import { RelativeTime } from '@/shared/ui/RelativeTime';
 
 import type { NotificationWithActor } from '@/entities/notification';
 
@@ -83,9 +83,7 @@ export const NotificationItem = ({
             {message}
           </p>
         </div>
-        <p className='text-xs text-muted-foreground'>
-          {formatDistanceToNow(created_at)}
-        </p>
+        <RelativeTime date={created_at} className='text-xs text-text-faint' />
       </button>
 
       {/* 액션 버튼 영역 */}

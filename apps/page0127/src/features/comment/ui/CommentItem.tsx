@@ -3,8 +3,6 @@
 import { useState } from 'react';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { formatDistanceToNow } from 'date-fns';
-import { ko } from 'date-fns/locale';
 import { MoreVertical, Pencil, Reply, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -27,6 +25,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
+import { RelativeTime } from '@/shared/ui/RelativeTime';
 import { Textarea } from '@/shared/ui/textarea';
 
 import { Comment, commentApi, commentKeys } from '@/entities/comment';
@@ -47,7 +46,7 @@ type CommentItemProps = {
  * - 수정 모드 토글 (useState)
  * - 대댓글 작성 모드 토글
  * - 본인 댓글만 수정/삭제 가능
- * - 상대 시간 표시 (date-fns)
+ * - 상대 시간 표시 (shared/ui/RelativeTime)
  */
 export const CommentItem = ({
   comment,
@@ -110,13 +109,6 @@ export const CommentItem = ({
 
   const handleDelete = () => setIsDeleteDialogOpen(true);
 
-  const formatTime = (dateString: string) => {
-    return formatDistanceToNow(new Date(dateString), {
-      addSuffix: true,
-      locale: ko,
-    });
-  };
-
   return (
     <>
       <div className={`flex gap-3 ${isReply ? 'ml-12' : ''}`}>
@@ -133,9 +125,10 @@ export const CommentItem = ({
               <span className='text-sm font-medium'>
                 {comment.user?.nickname || '익명'}
               </span>
-              <span className='text-xs text-muted-foreground'>
-                {formatTime(comment.createdAt)}
-              </span>
+              <RelativeTime
+                date={comment.createdAt}
+                className='text-xs text-text-faint'
+              />
               {comment.updatedAt !== comment.createdAt && (
                 <span className='text-xs text-muted-foreground'>(수정됨)</span>
               )}

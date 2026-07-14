@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { Star } from 'lucide-react';
 import { BookCheck, BookOpen, MessageSquare } from 'lucide-react';
 
+import { RelativeTime } from '@/shared/ui/RelativeTime';
+
 import { Activity } from '@/entities/activity';
 
 import { CommentSection } from '@/features/comment';
@@ -43,21 +45,6 @@ const getActivityText = (type: Activity['activity_type']) => {
     case 'review_added':
       return '리뷰를 작성했습니다';
   }
-};
-
-const getRelativeTime = (dateString: string) => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMins / 60);
-  const diffDays = Math.floor(diffHours / 24);
-
-  if (diffMins < 1) return '방금 전';
-  if (diffMins < 60) return `${diffMins}분 전`;
-  if (diffHours < 24) return `${diffHours}시간 전`;
-  if (diffDays < 7) return `${diffDays}일 전`;
-  return date.toLocaleDateString('ko-KR');
 };
 
 export const ActivityCard = ({
@@ -103,10 +90,11 @@ export const ActivityCard = ({
           </p>
         </div>
 
-        {/* 시간 */}
-        <span className='text-sm text-muted-foreground'>
-          {getRelativeTime(activity.created_at)}
-        </span>
+        {/* 시간 — 상대 시간은 "지금이 몇 시인지 아는 화면"에서만 나온다 */}
+        <RelativeTime
+          date={activity.created_at}
+          className='shrink-0 text-sm text-text-faint'
+        />
       </div>
 
       {/* 책 정보 */}
