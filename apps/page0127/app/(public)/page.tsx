@@ -11,6 +11,7 @@ import { HeroBannerSkeleton } from '@/widgets/landing/ui/HeroBannerSkeleton';
 import { SiteFooter } from '@/widgets/landing/ui/SiteFooter';
 import { StartCtaButton } from '@/widgets/landing/ui/StartCtaButton';
 import { TasteExampleCard } from '@/widgets/landing/ui/TasteExampleCard';
+import { TodayStrip } from '@/widgets/landing/ui/TodayStrip';
 
 /**
  * 메인 랜딩 페이지
@@ -72,6 +73,14 @@ const Home = async () => {
         <ErrorBoundary fallback={<HeroBannerSkeleton />}>
           <Suspense fallback={<HeroBannerSkeleton />}>
             <HeroBannerSection />
+          </Suspense>
+        </ErrorBoundary>
+
+        {/* 오늘의 기록 — 매일 바뀌는 문자열을 화면에 하나는 둔다.
+            실패하거나 데이터가 없으면 조용히 사라진다(랜딩을 막지 않는다) */}
+        <ErrorBoundary fallback={null}>
+          <Suspense fallback={null}>
+            <TodayStrip />
           </Suspense>
         </ErrorBoundary>
 

@@ -4,8 +4,14 @@ import { useEffect, useState } from 'react';
 
 import { useDebounce } from '@/shared/lib/hooks/useDebounce';
 import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
+import { useRotatingPlaceholder } from '@/shared/lib/hooks/useRotatingPlaceholder';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
+
+import {
+  PLACEHOLDER_ROTATION_MS,
+  SEARCH_PLACEHOLDERS,
+} from '@/features/book/model/searchPlaceholders';
 
 type BookSearchInputProps = {
   onSearch: (query: string) => void;
@@ -73,13 +79,20 @@ export const BookSearchInput = ({
   const showRecent =
     isFocused && !query && recentSearches.length > 0;
 
+  // 검색창 힌트가 회전한다 — 교보문고처럼 실제 책 제목이 돈다.
+  // 사용자가 입력하려고 포커스한 동안에는 멈춘다(방해가 되므로).
+  const placeholder = useRotatingPlaceholder(SEARCH_PLACEHOLDERS, {
+    paused: isFocused || !!query,
+    intervalMs: PLACEHOLDER_ROTATION_MS,
+  });
+
   return (
     <div className='relative'>
       <form onSubmit={handleSubmit} className='flex gap-2'>
         <Input
           ref={ref}
           type='text'
-          placeholder='도서 제목으로 검색...'
+          placeholder={placeholder}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsFocused(true)}
