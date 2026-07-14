@@ -218,14 +218,20 @@ async function enrichRecommendationsWithAladinData(
   }>,
   tasteAnalysisId: string
 ): Promise<void> {
-  const ALADIN_API_KEY = process.env.ALADIN_API_KEY ?? process.env.NEXT_PUBLIC_ALADIN_API_KEY;
+  // 서버 전용 환경변수 — NEXT_PUBLIC_ 접두사를 붙이면 키가 클라이언트 번들에 인라인된다
+  const ALADIN_API_KEY = process.env.ALADIN_API_KEY;
   const ALADIN_API_BASE_URL = 'http://www.aladin.co.kr/ttb/api/ItemSearch.aspx';
+
+  if (!ALADIN_API_KEY) {
+    console.error('ALADIN_API_KEY 환경변수가 설정되지 않아 추천 도서 보강을 건너뜁니다.');
+    return;
+  }
 
   for (const rec of recommendations) {
     try {
       // 제목으로 알라딘 API 검색
       const params = new URLSearchParams({
-        ttbkey: ALADIN_API_KEY!,
+        ttbkey: ALADIN_API_KEY,
         Query: rec.title,
         QueryType: 'Title',
         MaxResults: '3',

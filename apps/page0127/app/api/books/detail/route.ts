@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const ALADIN_API_KEY = process.env.ALADIN_API_KEY ?? process.env.NEXT_PUBLIC_ALADIN_API_KEY;
+// 서버 전용 환경변수 — NEXT_PUBLIC_ 접두사를 붙이면 키가 클라이언트 번들에 인라인된다
+const ALADIN_API_KEY = process.env.ALADIN_API_KEY;
 const ALADIN_API_BASE_URL = 'http://www.aladin.co.kr/ttb/api/ItemLookUp.aspx';
 
 /**
@@ -22,9 +23,17 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  if (!ALADIN_API_KEY) {
+    console.error('ALADIN_API_KEY 환경변수가 설정되지 않았습니다.');
+    return NextResponse.json(
+      { error: '도서 상세 정보 조회 중 오류가 발생했습니다.' },
+      { status: 500 }
+    );
+  }
+
   // 알라딘 API 쿼리 파라미터 생성
   const params = new URLSearchParams({
-    ttbkey: ALADIN_API_KEY!,
+    ttbkey: ALADIN_API_KEY,
     ItemId: isbn,
     ItemIdType: 'ISBN13',
     output: 'js',
