@@ -3,20 +3,27 @@ import { createClient } from '@/shared/config/supabase/server';
 import { errorResponse, successResponse } from '../../_helpers/response';
 
 /**
- * POST /api/notifications/cleanup
- * 30일 이상 읽은 알림 자동 삭제
+ * /api/notifications/cleanup
+ * 30일 이상 지난 '읽은' 알림 자동 삭제
+ *
+ * ⚠️ GET 이 있어야 한다 (2026-07-13 수정)
+ *    Vercel 공식 문서: "Vercel makes an HTTP GET request to your project's
+ *    production deployment URL."
+ *    이 라우트는 POST만 export하고 있어서 매일 새벽 2시 cron이 405로 실패했고,
+ *    알림이 한 번도 정리되지 않고 있었다.
+ *    → GET(cron용) + POST(수동 호출용) 둘 다 같은 핸들러로 연결한다.
  *
  * 학습 포인트:
  * - Vercel Cron Job으로 주기적 실행
- * - 읽은 알림 중 30일 이상 지난 알림만 삭제
- * - Authorization 헤더로 cron 호출 검증 (선택사항)
+ * - Authorization 헤더로 cron 호출 검증
  */
-export async function POST(request: Request) {
+const cleanupNotifications = async (request: Request) => {
   try {
-    // Vercel Cron Secret 검증 (환경변수 설정 필요)
-    const authHeader = request.headers.get('authorization');
-    if (process.env.CRON_SECRET) {
-      if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    // Vercel Cron Secret 검증 (환경변수 미설정 시 건너뜀 — 로컬 개발용)
+    const cronSecret = process.env.CRON_SECRET;
+    if (cronSecret) {
+      const authHeader = request.headers.get('authorization');
+      if (authHeader !== `Bearer ${cronSecret}`) {
         return errorResponse('Unauthorized', 401);
       }
     }
@@ -48,7 +55,13 @@ export async function POST(request: Request) {
       cleanupDate: thirtyDaysAgo.toISOString(),
     });
   } catch (error) {
-    console.error('POST /api/notifications/cleanup error:', error);
+    console.error('/api/notifications/cleanup error:', error);
     return errorResponse('Internal server error', 500);
   }
-}
+};
+
+// Vercel Cron 이 호출하는 메서드
+export const GET = cleanupNotifications;
+
+// 수동 호출용 (기존 동작 유지)
+export const POST = cleanupNotifications;

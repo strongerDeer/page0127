@@ -83,11 +83,23 @@ export type GlobalBook = {
 
 /**
  * 도서 랭킹 데이터
+ *
+ * 순위 변동 필드는 book_ranking_snapshots(전일 스냅샷)와 대조해 서버가 계산한다.
+ * 스냅샷이 아직 하루도 쌓이지 않았다면 has_history=false —
+ * 이때는 UI가 아무 뱃지도 그리지 않는다. (없는 이력을 NEW로 칠하면 거짓말이 된다)
  */
 export type BookRanking = {
   isbn: string;
   count: number;
   book_info: GlobalBook;
+  /** 현재 순위 (1부터) */
+  rank?: number;
+  /** 양수면 상승(▲), 음수면 하락(▼), 0이면 유지(-). 신규·이력없음이면 null */
+  rank_delta?: number | null;
+  /** 직전 스냅샷에 없던 책 */
+  is_new?: boolean;
+  /** 비교할 과거 스냅샷이 존재하는가 */
+  has_history?: boolean;
 };
 
 

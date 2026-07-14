@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/cron/snapshot-rankings",
+      "schedule": "10 15 * * *"
+    },
+    {
       "path": "/api/notifications/cleanup",
       "schedule": "0 2 * * *"
     }

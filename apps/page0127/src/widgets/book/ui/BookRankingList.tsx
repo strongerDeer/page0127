@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Heart } from 'lucide-react';
 
 import { BookListItem } from '@/widgets/book/ui/BookListItem';
+import { RankDeltaBadge } from '@/widgets/book/ui/RankDeltaBadge';
 
 import type { BookRanking } from '@/entities/book';
 
@@ -62,7 +63,7 @@ export const BookRankingList = ({
               />
 
               {/* 랭킹 수치 — 이모지(🔥) 대신 숫자를 앞세운다 */}
-              <div className='flex items-center justify-center gap-1 text-xs text-text-subtle'>
+              <div className='flex items-center justify-center gap-1.5 text-xs text-text-subtle'>
                 {type === 'best' ? (
                   <>
                     <Heart className='h-3 w-3 fill-rank-up text-rank-up' />
@@ -77,6 +78,13 @@ export const BookRankingList = ({
                     명이 완독
                   </span>
                 )}
+
+                {/* 전일 대비 순위 변동 — 스냅샷이 없으면 아무것도 그리지 않는다 */}
+                <RankDeltaBadge
+                  delta={item.rank_delta}
+                  isNew={item.is_new}
+                  hasHistory={item.has_history}
+                />
               </div>
             </div>
           );
