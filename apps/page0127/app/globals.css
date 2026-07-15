@@ -4,10 +4,13 @@
 /* ============================================
    page0127 디자인 시스템
 
-   원칙 (교보문고·밀리의서재 실측에서 도출 — 00_docs/07 참조)
-   1. 무채색이 지배한다. 유채색은 장식이 아니라 "직무"다.
-      - accent(딥그린) = 완독·목표 달성에만
-      - rank-up(테라코타) = 순위 상승에만
+   원칙 (교보·밀리 실측 + 2026-07-15 토스풍 전환)
+   1. UI 캔버스는 무채색이 지배한다(배경·카드·선·텍스트). 큰 숫자도 잉크로 —
+      밝은 그린은 흰 배경 대비가 낮아 안 읽힌다(색은 채워진 면에만).
+      브랜드/포인트 = 프레시 그린 #22c55e (CTA·활성·강조).
+      데이터(차트)는 별개다: 서로 다른 정체성엔 생기 있는 멀티컬러(--chart-1~7,
+      토스풍), 시계열 막대는 그린 그라데이션. 색은 "많이" 쓰되 "의미로" 나눈다.
+      - rank-up(테라코타 --rank-up) = 순위 상승에만
       - destructive = 삭제·탈퇴에만
    2. 입체는 그림자가 아니라 1px 선으로 만든다.
       (교보 홈: 그림자 2개 / 1px 보더 139회. 밀리: 그림자 4개)
@@ -39,10 +42,10 @@
   --muted-foreground: var(--text-subtle);
 
   /* --- 유채색: 각각 직무 하나씩 --- */
-  --primary: #2f5d3a; /* 딥그린 — 완독·주 CTA */
+  --primary: #22c55e; /* 프레시 그린 — 완독·주 CTA (뉴트럴 캔버스 위 원 포인트) */
   --primary-foreground: #ffffff;
-  --accent: #eef2ed; /* 그린 틴트 — 활성 메뉴/호버 배경 */
-  --accent-foreground: #2f5d3a;
+  --accent: #e7f8ee; /* 민트 틴트 — 활성 메뉴/호버 배경 */
+  --accent-foreground: #15803d; /* 틴트 위 텍스트는 진한 그린으로 대비 확보 */
   --rank-up: #c25e3a; /* 테라코타 — 순위 상승 전용 */
   --destructive: #c0392b; /* 삭제·탈퇴 전용 */
 
@@ -55,24 +58,26 @@
   --line-soft: #f0ede8;
   --border: var(--line);
   --input: var(--line);
-  --ring: #2f5d3a;
+  --ring: #22c55e;
 
-  /* --- 차트: 종이·잉크 팔레트 (인디고 파스텔 폐기) --- */
-  --chart-1: #2f5d3a; /* 딥그린 */
-  --chart-2: #c25e3a; /* 테라코타 */
-  --chart-3: #7d8471; /* 세이지 */
-  --chart-4: #b8860b; /* 오커 */
-  --chart-5: #55606e; /* 슬레이트 */
+  /* --- 차트: 그린 메인 + 토스풍 생기 있는 보조 팔레트 (카테고리 구분용) --- */
+  --chart-1: #22c55e; /* 그린 — 주 계열·독서량 */
+  --chart-2: #3b82f6; /* 블루 */
+  --chart-3: #f59e0b; /* 앰버 */
+  --chart-4: #a855f7; /* 퍼플 */
+  --chart-5: #f43f5e; /* 로즈 */
+  --chart-6: #14b8a6; /* 틸 */
+  --chart-7: #eab308; /* 옐로 */
 
   /* --- 사이드바 --- */
   --sidebar: #ffffff;
   --sidebar-foreground: var(--text-strong);
-  --sidebar-primary: #2f5d3a;
+  --sidebar-primary: #22c55e;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #eef2ed;
-  --sidebar-accent-foreground: #2f5d3a;
+  --sidebar-accent: #e7f8ee;
+  --sidebar-accent-foreground: #15803d;
   --sidebar-border: var(--line);
-  --sidebar-ring: #2f5d3a;
+  --sidebar-ring: #22c55e;
 
   /* --- 랜딩 타이포·간격 ---
      h1 50px → 28px. 교보 홈 최대 24px, 밀리 섹션 제목 20px.
@@ -127,6 +132,8 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
 
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);

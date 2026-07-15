@@ -26,44 +26,45 @@ export const ReadingJourneyCard = ({ data }: Props) => {
   };
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+    // 카드 안에 중첩되므로 flat 타일(테두리 없는 sunken 틴트)로 — 이중 테두리 방지
+    <div className="grid grid-cols-2 gap-3">
       {/* 1. 읽은 책 */}
       <StatCard
-        icon={<BookOpen className="h-5 w-5" />}
+        flat
+        icon={<BookOpen className="h-4 w-4" />}
         title="읽은 책"
         value={data.totalBooks}
         unit="권"
-        description={`10점: ${data.perfectScoreBooks}권 (${data.perfectScoreRate}%)`}
-        variant="blue"
+        description={`10점 ${data.perfectScoreBooks}권 (${data.perfectScoreRate}%)`}
       />
 
       {/* 2. 읽은 쪽수 */}
       <StatCard
-        icon={<FileText className="h-5 w-5" />}
+        flat
+        icon={<FileText className="h-4 w-4" />}
         title="읽은 쪽수"
         value={data.totalPages}
         unit="쪽"
-        description={`하루 평균: ${data.averagePagesPerDay}쪽`}
-        variant="purple"
+        description={`하루 평균 ${data.averagePagesPerDay}쪽`}
       />
 
       {/* 3. 독서 기간 */}
       <StatCard
-        icon={<Calendar className="h-5 w-5" />}
+        flat
+        icon={<Calendar className="h-4 w-4" />}
         title="독서 기간"
         value={`${data.readingYears}년`}
         description={`${formatDate(data.readingSince)} ~ 현재`}
-        variant="amber"
       />
 
       {/* 4. 예상 독서 시간 */}
       <StatCard
-        icon={<Clock className="h-5 w-5" />}
+        flat
+        icon={<Clock className="h-4 w-4" />}
         title="예상 독서 시간"
         value={data.estimatedHours}
         unit="시간"
         description={`약 ${data.estimatedDays}일`}
-        variant="indigo"
       />
     </div>
   );

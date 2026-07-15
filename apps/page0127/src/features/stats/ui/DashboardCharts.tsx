@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 
-import { CategoryRadarChart } from './CategoryRadarChart';
+import { CategoryBarChart } from './CategoryBarChart';
 import { MonthlyReadingChart } from './MonthlyReadingChart';
 import { RatingDoughnutChart } from './RatingDoughnutChart';
 
@@ -49,11 +49,11 @@ export const DashboardCharts = ({
   onRatingClick,
 }: DashboardChartsProps) => {
   return (
-    <div className='mb-10 space-y-6'>
+    <div className='space-y-6'>
       {/* 월별 독서량 차트 - 전체 너비 */}
       <Card className='shadow-none'>
         <CardHeader className='pb-4'>
-          <CardTitle className='text-xl font-bold tracking-tight text-foreground'>월별 독서량</CardTitle>
+          <CardTitle className='text-lg font-bold tracking-tight text-text-strong'>월별 독서량</CardTitle>
           <p className='text-sm text-muted-foreground'>
             막대를 클릭하면 해당 월의 책 목록을 볼 수 있습니다
           </p>
@@ -71,20 +71,20 @@ export const DashboardCharts = ({
         {/* 카테고리별 독서량 차트 */}
         <Card className='shadow-none'>
           <CardHeader className='pb-4'>
-            <CardTitle className='text-xl font-bold tracking-tight text-foreground'>카테고리별 독서량</CardTitle>
+            <CardTitle className='text-lg font-bold tracking-tight text-text-strong'>카테고리별 독서량</CardTitle>
             <p className='text-sm text-muted-foreground'>
               카테고리 필터는 아래 읽은 책 섹션에서 사용할 수 있습니다
             </p>
           </CardHeader>
           <CardContent className='pb-6'>
-            <CategoryRadarChart data={categoryReading} />
+            <CategoryBarChart data={categoryReading} />
           </CardContent>
         </Card>
 
         {/* 평점 분포 차트 */}
         <Card className='shadow-none'>
           <CardHeader className='pb-4'>
-            <CardTitle className='text-xl font-bold tracking-tight text-foreground'>평점 분포</CardTitle>
+            <CardTitle className='text-lg font-bold tracking-tight text-text-strong'>평점 분포</CardTitle>
             <p className='text-sm text-muted-foreground'>
               평점을 클릭하면 해당 평점의 책 목록을 볼 수 있습니다
             </p>

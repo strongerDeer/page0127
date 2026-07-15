@@ -113,42 +113,34 @@ export const PublicLibraryContent = ({
         currentUserId={currentUserId}
       />
 
-      {/* 연도별 통계 */}
-      <div className='flex items-center justify-between rounded-lg border border-border bg-card p-6'>
+      {/* 연도별 통계 — 섹션 헤더 + 연도 컨트롤 */}
+      <div className='flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-6 py-4'>
         <div className='flex items-center gap-2'>
-          <Calendar className='h-6 w-6 text-primary' />
-          <h2 className='text-2xl font-bold text-foreground'>
+          <Calendar className='h-5 w-5 text-text-subtle' />
+          <h2 className='text-lg font-bold tracking-tight text-text-strong'>
             {selectedYear}년 독서 기록
           </h2>
         </div>
 
-        {/* 연도 선택 */}
-        <div className='flex items-center gap-2'>
-          <span className='text-sm font-medium text-muted-foreground'>
-            연도 선택:
-          </span>
-          <Select
-            value={selectedYear.toString()}
-            onValueChange={handleYearChange}
-          >
-            <SelectTrigger className='w-[140px]'>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {availableYears.map((year) => (
-                <SelectItem key={year} value={year.toString()}>
-                  {year}년
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {/* 연도 선택 — select 값이 곧 연도라 별도 라벨은 두지 않는다 */}
+        <Select value={selectedYear.toString()} onValueChange={handleYearChange}>
+          <SelectTrigger className='w-30'>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {availableYears.map((year) => (
+              <SelectItem key={year} value={year.toString()}>
+                {year}년
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* 독서 목표 진행률 (공개 서재 - 읽기 전용) */}
       {isCurrentYearGoal && readingGoal && (
-        <div className='rounded-lg border border-border bg-card p-6'>
-          <h3 className='mb-4 text-lg font-bold text-foreground'>
+        <div className='rounded-xl border border-border bg-card p-6'>
+          <h3 className='mb-4 text-lg font-bold tracking-tight text-text-strong'>
             목표 달성 현황
           </h3>
           <ReadingGoalProgress
@@ -159,42 +151,40 @@ export const PublicLibraryContent = ({
         </div>
       )}
 
-      {/* 통계 요약 카드 (Glass Pills) */}
+      {/* 통계 요약 카드 — 숫자는 잉크, 색은 차트가 담당 */}
       <div className='grid grid-cols-2 gap-4 lg:grid-cols-4'>
         <StatCard
-          icon={<BookOpen className='h-5 w-5' />}
+          icon={<BookOpen className='h-4 w-4' />}
           title='읽은 책'
           value={stats.totalCompletedBooks}
           unit='권'
-          variant='blue'
         />
         <StatCard
-          icon={<FileText className='h-5 w-5' />}
+          icon={<FileText className='h-4 w-4' />}
           title='읽은 페이지'
           value={stats.totalPages}
           unit='쪽'
-          variant='sky'
         />
         <StatCard
-          icon={<Star className='h-5 w-5' />}
+          icon={<Star className='h-4 w-4' />}
           title='평균 평점'
           value={stats.averageRating.toFixed(1)}
           unit='점'
-          variant='indigo'
         />
         <StatCard
-          icon={<Trophy className='h-5 w-5' />}
+          icon={<Trophy className='h-4 w-4' />}
           title='인생 책'
           value={stats.fiveStarBooks}
           unit='권'
           description='5점 만점 도서'
-          variant='cyan'
         />
       </div>
 
       {/* 차트 섹션 */}
-      <div className='rounded-lg border border-border bg-card p-6'>
-        <h3 className='mb-6 text-xl font-bold text-foreground'>독서 분석</h3>
+      <div className='rounded-xl border border-border bg-card p-6'>
+        <h3 className='mb-4 text-lg font-bold tracking-tight text-text-strong'>
+          독서 분석
+        </h3>
         <DashboardCharts
           monthlyReading={stats.monthlyReading}
           categoryReading={stats.categoryReading}
@@ -206,7 +196,7 @@ export const PublicLibraryContent = ({
       </div>
 
       {/* 읽은 책 목록 */}
-      <div className='mt-8 rounded-lg border border-border bg-card p-8'>
+      <div className='rounded-xl border border-border bg-card p-6'>
         <DashboardBookList
           books={books}
           categories={stats.categoryReading}

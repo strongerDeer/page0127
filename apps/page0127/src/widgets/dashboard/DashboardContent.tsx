@@ -362,35 +362,31 @@ export const DashboardContent = ({
         </div>
       </header>
 
-      {/* 요약 지표 */}
+      {/* 요약 지표 — 숫자는 잉크, 색은 차트가 담당 */}
       <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
         <StatCard
-          icon={<BookOpen className='h-5 w-5' />}
+          icon={<BookOpen className='h-4 w-4' />}
           title='완독'
           value={stats.totalCompletedBooks}
           unit='권'
-          variant='blue'
         />
         <StatCard
-          icon={<FileText className='h-5 w-5' />}
+          icon={<FileText className='h-4 w-4' />}
           title='읽은 쪽수'
           value={stats.totalPages}
           unit='쪽'
-          variant='purple'
         />
         <StatCard
-          icon={<Target className='h-5 w-5' />}
+          icon={<Target className='h-4 w-4' />}
           title='올해 목표'
           value={stats.yearlyGoal}
           unit='권'
-          variant='emerald'
         />
         <StatCard
-          icon={<CheckCircle className='h-5 w-5' />}
+          icon={<CheckCircle className='h-4 w-4' />}
           title='달성률'
           value={stats.completionRate}
           unit='%'
-          variant='rose'
         />
       </div>
 
@@ -401,7 +397,9 @@ export const DashboardContent = ({
           {/* Yearly Trend Chart */}
           <Card className='shadow-none'>
             <CardHeader>
-              <CardTitle>연도별 독서 추이</CardTitle>
+              <CardTitle className='text-lg font-bold tracking-tight'>
+                연도별 독서 추이
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <YearlyTrendChart data={overallStats.yearlyTrend} />
@@ -424,16 +422,20 @@ export const DashboardContent = ({
           {/* Reading Journey (All Time) */}
           <Card className='shadow-none'>
             <CardHeader>
-              <CardTitle>지금까지의 기록</CardTitle>
+              <CardTitle className='text-lg font-bold tracking-tight'>
+                지금까지의 기록
+              </CardTitle>
             </CardHeader>
-            <CardContent className='space-y-4'>
+            <CardContent>
               <ReadingJourneyCard data={overallStats.journey} />
             </CardContent>
           </Card>
 
           {/* Reading Goal Progress */}
-          <div className='rounded-lg border border-border bg-card p-6'>
-            <h3 className='mb-4 heading-2 text-text-strong'>목표 달성률</h3>
+          <div className='rounded-xl border border-border bg-card p-6'>
+            <h3 className='mb-4 text-lg font-bold tracking-tight text-text-strong'>
+              목표 달성률
+            </h3>
             <ReadingGoalProgress
               year={selectedYear}
               target={isCurrentYearGoal && readingGoal ? readingGoal.target : 0}
@@ -443,7 +445,7 @@ export const DashboardContent = ({
           </div>
 
           {/* 취향 분석 유도 — 화면당 채워진 액센트 블록은 여기 하나뿐 */}
-          <div className='rounded-lg bg-primary p-6 text-primary-foreground'>
+          <div className='rounded-xl bg-primary p-6 text-primary-foreground'>
             <h3 className='heading-2'>나도 몰랐던 내 취향</h3>
             <p className='mt-2 text-sm text-primary-foreground/85'>
               완독한 책 다섯 권이면 충분해요. 책장을 찬찬히 읽고 다음 책까지
@@ -466,46 +468,45 @@ export const DashboardContent = ({
         {calendarSlot}
 
         {/* Book List */}
-        <div className='rounded-lg border border-border bg-card p-1'>
-          <Card className='border-0 bg-transparent shadow-none'>
-            <CardHeader>
-              {/* isFilterPending: 차트 클릭 후 목록 갱신 중임을 표시 */}
-              <CardTitle
-                style={{
-                  opacity: isFilterPending ? 0.5 : 1,
-                  transition: 'opacity 0.2s',
-                }}
-              >
-                최근 읽은 책
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DashboardBookList
-                books={books}
-                categories={stats.categoryReading}
-                selectedMonth={selectedMonth}
-                selectedCategory={selectedCategory}
-                selectedRating={selectedRating}
-                searchQuery={searchQuery}
-                statusFilter={statusFilter}
-                onCategoryChange={(category) =>
-                  filterDispatch({ type: 'SET_CATEGORY', category })
-                }
-                onRemoveMonthFilter={handleRemoveMonthFilter}
-                onRemoveRatingFilter={handleRemoveRatingFilter}
-                onSearchChange={handleSearchChange}
-                onStatusChange={(status) =>
-                  filterDispatch({ type: 'SET_STATUS', status })
-                }
-                onResetAll={() => filterDispatch({ type: 'RESET_ALL' })}
-                showViewAll
-                renderBooks={(filteredBooks) => (
-                  <PublicBookShelf books={filteredBooks} />
-                )}
-              />
-            </CardContent>
-          </Card>
-        </div>
+        <Card className='shadow-none'>
+          <CardHeader>
+            {/* isFilterPending: 차트 클릭 후 목록 갱신 중임을 표시 */}
+            <CardTitle
+              className='text-lg font-bold tracking-tight'
+              style={{
+                opacity: isFilterPending ? 0.5 : 1,
+                transition: 'opacity 0.2s',
+              }}
+            >
+              최근 읽은 책
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DashboardBookList
+              books={books}
+              categories={stats.categoryReading}
+              selectedMonth={selectedMonth}
+              selectedCategory={selectedCategory}
+              selectedRating={selectedRating}
+              searchQuery={searchQuery}
+              statusFilter={statusFilter}
+              onCategoryChange={(category) =>
+                filterDispatch({ type: 'SET_CATEGORY', category })
+              }
+              onRemoveMonthFilter={handleRemoveMonthFilter}
+              onRemoveRatingFilter={handleRemoveRatingFilter}
+              onSearchChange={handleSearchChange}
+              onStatusChange={(status) =>
+                filterDispatch({ type: 'SET_STATUS', status })
+              }
+              onResetAll={() => filterDispatch({ type: 'RESET_ALL' })}
+              showViewAll
+              renderBooks={(filteredBooks) => (
+                <PublicBookShelf books={filteredBooks} />
+              )}
+            />
+          </CardContent>
+        </Card>
       </div>
 
       <ReadingGoalDialog

@@ -52,44 +52,47 @@ export const RatingDoughnutChart = ({
   }
 
   return (
-    <div className='relative'>
-      <ResponsiveContainer width='100%' height={300}>
-        <PieChart>
-          <Pie
-            data={filteredData}
-            dataKey='count'
-            nameKey='rating'
-            cx='50%'
-            cy='50%'
-            innerRadius={60}
-            outerRadius={100}
-            paddingAngle={2}
-            // Recharts 애니메이션이 React 19에서 리렌더 burst를 유발 → 비활성화
-            isAnimationActive={false}
-            onClick={(entry) => {
-              // recharts Pie onClick 은 PieSectorDataItem 을 넘긴다.
-              // 원본 데이터는 payload 에 들어 있으므로 거기서 rating 을 꺼낸다.
-              const payload = (entry as { payload?: { rating: number } })
-                .payload;
-              if (payload) onRatingClick(payload.rating);
-            }}
-            className='cursor-pointer'
-          >
-            {filteredData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.fill} />
-            ))}
-          </Pie>
-        </PieChart>
-      </ResponsiveContainer>
+    <div>
+      {/* 차트만 relative 로 — 중앙 오버레이가 (차트+범례)가 아닌 차트 높이에 정렬되도록 */}
+      <div className='relative'>
+        <ResponsiveContainer width='100%' height={300}>
+          <PieChart>
+            <Pie
+              data={filteredData}
+              dataKey='count'
+              nameKey='rating'
+              cx='50%'
+              cy='50%'
+              innerRadius={66}
+              outerRadius={100}
+              paddingAngle={2}
+              // Recharts 애니메이션이 React 19에서 리렌더 burst를 유발 → 비활성화
+              isAnimationActive={false}
+              onClick={(entry) => {
+                // recharts Pie onClick 은 PieSectorDataItem 을 넘긴다.
+                // 원본 데이터는 payload 에 들어 있으므로 거기서 rating 을 꺼낸다.
+                const payload = (entry as { payload?: { rating: number } })
+                  .payload;
+                if (payload) onRatingClick(payload.rating);
+              }}
+              className='cursor-pointer'
+            >
+              {filteredData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.fill} />
+              ))}
+            </Pie>
+          </PieChart>
+        </ResponsiveContainer>
 
-      {/* 중앙에 평균 평점 표시 */}
-      <div className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center'>
-        <div className='text-3xl font-bold text-foreground'>
-          {averageRating.toFixed(1)}
-        </div>
-        <div className='text-sm text-muted-foreground'>평균 평점</div>
-        <div className='flex justify-center mt-1'>
-           <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+        {/* 중앙에 평균 평점 표시 — 도넛 구멍 안에 2줄로 컴팩트하게 */}
+        <div className='pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center'>
+          <div className='text-3xl font-bold leading-none text-text-strong'>
+            {averageRating.toFixed(1)}
+          </div>
+          <div className='mt-1.5 flex items-center justify-center gap-0.5 text-xs text-text-subtle'>
+            <Star className='h-3 w-3 fill-chart-7 text-chart-7' />
+            평균 평점
+          </div>
         </div>
       </div>
 

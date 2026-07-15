@@ -300,15 +300,16 @@ const calculateCategoryReading = (books: Book[]): CategoryReadingData[] => {
  * - 유효한 평점만 집계 (0, 1, 2, 3, 4, 5, 10)
  */
 const calculateRatingDistribution = (books: Book[]): RatingReadingData[] => {
-  // 평점 색상 매핑 (10점 → 0점: 블루 → 회색)
+  // 토스풍 멀티컬러 도넛 — globals.css 차트 팔레트(--chart-1~7)와 일치.
+  // 평점 버킷을 서로 다른 색으로 구분(0점은 무채색 그레이).
   const RATING_COLORS: Record<number, string> = {
-    10: '#4338ca', // indigo-700
-    5: '#3b82f6', // blue-500
-    4: '#60a5fa', // blue-400
-    3: '#a78bfa', // violet-400
-    2: '#818cf8', // indigo-400
-    1: '#c084fc', // purple-400
-    0: '#9ca3af', // gray-400
+    10: '#22c55e', // 그린
+    5: '#3b82f6', // 블루
+    4: '#a855f7', // 퍼플
+    3: '#f59e0b', // 앰버
+    2: '#14b8a6', // 틸
+    1: '#f43f5e', // 로즈
+    0: '#cbd5e1', // 그레이 — 무평가/0점
   };
 
   // 유효한 평점 목록 (내림차순)

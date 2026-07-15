@@ -10,7 +10,7 @@ import {
   YAxis,
 } from 'recharts';
 
-import { chartTooltipStyle } from '@/shared/lib/chartStyles';
+import { chartInk, chartTooltipStyle } from '@/shared/lib/chartStyles';
 
 import type { MonthlyReadingData } from '@/entities/book';
 
@@ -56,34 +56,49 @@ export const MonthlyReadingChart = ({
           data={data}
           margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
         >
-          {/* 그리드 라인 */}
-          <CartesianGrid strokeDasharray='3 3' className='stroke-border' />
+          <defs>
+            <linearGradient id='monthlyGreen' x1='0' y1='0' x2='0' y2='1'>
+              <stop offset='0%' stopColor={chartInk.primaryGradientTop} />
+              <stop offset='100%' stopColor={chartInk.primaryGradientBottom} />
+            </linearGradient>
+          </defs>
+          {/* 그리드 라인 — 가로선만 (세로 그리드는 막대 차트에서 노이즈) */}
+          <CartesianGrid
+            strokeDasharray='3 3'
+            vertical={false}
+            stroke={chartInk.grid}
+          />
 
           {/* X축: 월 (1-12) */}
           <XAxis
             dataKey='month'
-            label={{ value: '월', position: 'insideBottom', offset: -5 }}
-            className='text-sm text-muted-foreground'
+            axisLine={false}
+            tickLine={false}
+            tickFormatter={(m) => `${m}월`}
+            tick={{ fill: chartInk.axis, fontSize: 12 }}
           />
 
           {/* Y축: 권수 */}
           <YAxis
-            label={{ value: '권수', angle: -90, position: 'insideLeft' }}
-            className='text-sm text-muted-foreground'
+            axisLine={false}
+            tickLine={false}
+            allowDecimals={false}
+            width={32}
+            tick={{ fill: chartInk.axis, fontSize: 12 }}
           />
 
           {/* 툴팁 */}
           <Tooltip
-            cursor={{ fill: 'rgba(99, 102, 241, 0.1)' }}
+            cursor={{ fill: chartInk.cursor }}
             contentStyle={chartTooltipStyle}
             formatter={(value) => [`${value}권`, '독서량']}
             labelFormatter={(label) => `${label}월`}
           />
 
-          {/* Bar */}
+          {/* Bar — 그린 그라데이션 */}
           <Bar
             dataKey='count'
-            fill='#6366f1'
+            fill='url(#monthlyGreen)'
             radius={[8, 8, 0, 0]}
             cursor={onMonthClick ? 'pointer' : 'default'}
             onClick={handleBarClick}

@@ -50,7 +50,7 @@ const PublicLibraryHeaderAvatar = ({
 }: PublicLibraryHeaderAvatarProps) => {
   if (profile.photo_url) {
     return (
-      <div className='relative h-24 w-24 overflow-hidden rounded-lg border border-border'>
+      <div className='relative h-24 w-24 overflow-hidden rounded-xl border border-border'>
         <Image
           src={profile.photo_url}
           alt={profile.nickname || username}
@@ -64,7 +64,7 @@ const PublicLibraryHeaderAvatar = ({
   }
 
   return (
-    <div className='flex h-24 w-24 items-center justify-center rounded-lg bg-primary text-3xl font-bold text-primary-foreground'>
+    <div className='flex h-24 w-24 items-center justify-center rounded-xl bg-primary text-3xl font-bold text-primary-foreground'>
       {(profile.nickname || username).charAt(0).toUpperCase()}
     </div>
   );
@@ -121,8 +121,8 @@ export const PublicLibraryHeader = ({
 
   return (
     <>
-      <div className='mb-12 rounded-lg border border-border bg-card p-8'>
-        <div className='flex items-start gap-6'>
+      <div className='rounded-xl border border-border bg-card p-6 sm:p-8'>
+        <div className='flex items-start gap-5 sm:gap-6'>
           <PublicLibraryHeader.Avatar profile={profile} username={username} />
           <PublicLibraryHeader.Info
             profile={profile}
