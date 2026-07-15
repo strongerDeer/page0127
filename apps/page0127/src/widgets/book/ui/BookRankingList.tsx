@@ -54,12 +54,14 @@ export const BookRankingList = ({
 
           return (
             <div key={item.isbn} className='flex flex-col gap-2'>
+              {/* 랭킹은 '발견'을 파는 면 — 소개·출판사·카테고리 팝오버를 감춘다 */}
               <BookListItem
                 book={book}
                 rank={index + 1}
                 isReadProp={isRead}
                 isLikedProp={isLiked}
                 isLoggedIn={isLoggedIn}
+                variant='compact'
               />
 
               {/* 랭킹 수치 — 이모지(🔥) 대신 숫자를 앞세운다 */}
