@@ -82,3 +82,34 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 }
+
+/* 대시보드 카드 안에서는 책을 작게, 왼쪽부터 배치해 빈 공간을 줄인다. */
+.compact {
+  margin-top: 1rem;
+  background-image: linear-gradient(
+    to bottom,
+    transparent 210px,
+    #f3f4f6 218px,
+    #ffffff 218px,
+    #e5e7eb 226px,
+    #d1d5db 228px,
+    rgba(0, 0, 0, 0.14) 228px,
+    transparent 229px
+  );
+  background-size: 100% 246px;
+  padding: 0 0.5rem 2.5rem;
+}
+
+.compact .books {
+  justify-content: flex-start;
+  gap: 18px 2px;
+}
+
+.compact .books li a img,
+.compact .noImage {
+  height: 210px;
+}
+
+.compact .noImage.cover {
+  width: 149px;
+}

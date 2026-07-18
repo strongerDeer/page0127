@@ -22,13 +22,13 @@ export const BookRankingError = ({ title }: BookRankingErrorProps) => {
   const router = useRouter();
 
   return (
-    <section className='py-8'>
+    <section>
       {title && (
-        <div className='mb-6'>
-          <h2 className='heading-2'>{title}</h2>
+        <div className='mb-3'>
+          <h2 className='heading-2 text-text-strong'>{title}</h2>
         </div>
       )}
-      <div className='flex flex-col items-center justify-center gap-3 rounded-lg border border-border bg-card py-12'>
+      <div className='flex flex-col items-center justify-center gap-3 rounded-2xl bg-sunken py-12'>
         <p className='text-muted-foreground'>
           랭킹을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
         </p>

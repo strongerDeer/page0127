@@ -1,26 +1,24 @@
+import { Gnb } from '@/widgets/Gnb';
+
 import { BottomTabBar } from './BottomTabBar';
-import { Sidebar } from './Sidebar';
 
 import type { ShellUser } from '../api/getShellUser';
 
 // 프레젠테이션 전용 셸 (인증 게이트 없음)
 // - 인증/리디렉션은 호출하는 레이아웃이 책임지고, 여기선 화면 구성만 한다
-// - 덕분에 보호 영역(AppShell)과 공개 영역(로그인 시) 모두 동일한 셸을 공유
-type AppShellLayoutProps = ShellUser & {
+// - 로그인 전/후 모두 같은 상단 GNB를 쓴다 — 로그인했다고 셸이
+//   사이드바로 바뀌는 건 콘텐츠 서비스가 아니라 어드민 도구의 문법이다
+type AppShellLayoutProps = {
+  /** null이면 비로그인 방문자 */
+  user: ShellUser | null;
   children: React.ReactNode;
 };
 
-export const AppShellLayout = ({
-  userId,
-  photoUrl,
-  displayName,
-  username,
-  children,
-}: AppShellLayoutProps) => {
+export const AppShellLayout = ({ user, children }: AppShellLayoutProps) => {
   return (
-    <div className='flex min-h-screen'>
+    <div className='flex min-h-screen flex-col'>
       {/*
-        스킵 링크: 키보드 사용자가 반복되는 사이드바를 건너뛰고 본문으로 바로 이동.
+        스킵 링크: 키보드 사용자가 반복되는 GNB를 건너뛰고 본문으로 바로 이동.
         sr-only로 평소엔 숨기고, 포커스되면(focus:) 좌상단에 드러난다.
       */}
       <a
@@ -29,17 +27,16 @@ export const AppShellLayout = ({
       >
         본문 바로가기
       </a>
-      <Sidebar
-        userId={userId}
-        photoUrl={photoUrl}
-        displayName={displayName}
-        username={username}
-      />
-      {/* 모바일 하단 탭바 높이만큼 pb 확보 */}
-      <main id='main-content' className='flex-1 pb-16 md:pb-0'>
+      <Gnb user={user} />
+      {/* 모바일 하단 탭바 높이만큼 pb 확보 (로그인 시에만 탭바가 있다) */}
+      <main
+        id='main-content'
+        className={user ? 'flex-1 pb-16 md:pb-0' : 'flex-1'}
+      >
         {children}
       </main>
-      <BottomTabBar />
+      {/* 하단 탭 메뉴는 전부 로그인 전용 라우트 → 비로그인에겐 숨긴다 */}
+      {user && <BottomTabBar />}
     </div>
   );
 };

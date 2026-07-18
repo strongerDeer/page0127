@@ -43,8 +43,9 @@ export const StatusTabFilter = ({
   return (
     // React 19: <Context>를 그대로 Provider로 사용 (.Provider 생략)
     <StatusTabFilterContext value={{ activeValue: value, onChange, isPending }}>
+      {/* 바깥 여백은 사용처(레이아웃)의 책임 — 컴포넌트가 mb를 갖지 않는다 */}
       <div
-        className='mb-6 flex flex-wrap gap-2'
+        className='flex flex-wrap gap-1.5'
         style={{ opacity: isPending ? 0.6 : 1, transition: 'opacity 0.15s' }}
       >
         {children}
@@ -66,12 +67,14 @@ const Tab = ({ value, children }: TabProps) => {
   const isActive = activeValue === value;
 
   return (
+    // 색은 토큰만 쓴다 — 하드코딩(bg-emerald-600)은 팔레트 교체에서 누락된다
     <button
       onClick={() => onChange(value)}
-      className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+      aria-pressed={isActive}
+      className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors ${
         isActive
-          ? 'bg-emerald-600 text-white'
-          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          ? 'border-primary bg-primary/5 text-primary'
+          : 'border-line bg-card text-text-body hover:border-text-faint hover:bg-sunken'
       }`}
     >
       {children}

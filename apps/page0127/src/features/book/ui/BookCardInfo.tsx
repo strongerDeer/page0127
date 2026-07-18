@@ -50,7 +50,7 @@ export const BookCardInfo = ({ book, onDelete }: BookCardInfoProps) => {
             <ReadCountBadge readCount={book.read_count} size='sm' />
 
             {book.rating !== null && book.rating !== undefined && (
-              <span className='text-sm font-medium text-yellow-600'>
+              <span className='text-sm font-medium text-chart-4'>
                 {book.rating}
               </span>
             )}

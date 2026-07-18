@@ -2,7 +2,7 @@ import { Bell, BookOpen, Newspaper, PlusCircle, Search } from 'lucide-react';
 
 import type { LucideIcon } from 'lucide-react';
 
-// 메뉴 단일 소스 — 사이드바와 하단 탭바가 공유
+// 모바일 하단 탭바 메뉴 단일 소스 (데스크톱 메뉴는 Gnb의 GnbNav가 담당)
 // 실제 라우팅 기준: /books·taste-analysis는 redirect 대상이라 메뉴에서 제외
 export type NavItem = {
   href: string;

@@ -91,7 +91,7 @@ export const HeroBanner = ({ slides, covers = [] }: HeroBannerProps) => {
       onBlur={() => setIsPaused(false)}
     >
       <div
-        className='relative h-[320px] transition-colors duration-500 md:h-[400px]'
+        className='relative h-75 transition-colors duration-500 md:h-90'
         style={{ backgroundColor: current.bg }}
       >
         {slides.map((slide, i) => {
@@ -171,6 +171,9 @@ export const HeroBanner = ({ slides, covers = [] }: HeroBannerProps) => {
                           sizes='(min-width: 1024px) 220px, 180px'
                           // 첫 슬라이드의 표지는 폴드 위 LCP 요소다 — 지연 로딩하면 안 된다
                           priority={i === 0}
+                          // 나머지 슬라이드도 미리 로드한다 — lazy로 두면
+                          // 슬라이드가 넘어간 순간 표지 없이 책등 줄만 보인다
+                          loading={i === 0 ? undefined : 'eager'}
                           className='h-45 w-auto rounded-r-md lg:h-55'
                         />
                         {/* 좌측 책등 — 종이 두께 */}

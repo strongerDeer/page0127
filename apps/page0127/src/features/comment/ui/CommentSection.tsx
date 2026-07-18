@@ -49,7 +49,9 @@ export const CommentSection = ({
   );
 
   return (
-    <div className='space-y-3'>
+    // display:contents — 토글 버튼과 패널이 부모(액션 바 flex)의 아이템으로 직접
+    // 참여한다. 버튼은 좋아요 옆에 나란히, 패널은 w-full로 다음 줄 전체 폭.
+    <div className='contents'>
       {/* 댓글 토글 버튼 */}
       <Button
         variant='ghost'
@@ -65,7 +67,7 @@ export const CommentSection = ({
 
       {/* 댓글 영역 */}
       {isExpanded && (
-        <div className='space-y-4 border-t pt-4'>
+        <div className='mt-2 w-full space-y-4 border-t border-line-soft pt-4'>
           {/* 댓글 작성 폼 (로그인한 경우만) */}
           {currentUserId && (
             <div className='pb-4 border-b'>

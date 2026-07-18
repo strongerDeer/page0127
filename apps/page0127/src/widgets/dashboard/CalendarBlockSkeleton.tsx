@@ -10,17 +10,18 @@ import { Skeleton } from '@/shared/ui/skeleton';
  */
 export const CalendarBlockSkeleton = () => {
   return (
-    <div className='rounded-lg border border-border bg-card p-6'>
-      <div className='mb-6 flex items-center justify-between'>
-        <Skeleton className='h-7 w-40' />
+    <div className='rounded-2xl border border-line-soft bg-card p-5'>
+      <div className='mb-5 flex items-center justify-between'>
+        <Skeleton className='h-6 w-28' />
         <div className='flex gap-2'>
-          <Skeleton className='h-9 w-9' />
-          <Skeleton className='h-9 w-9' />
+          <Skeleton className='size-8' />
+          <Skeleton className='h-8 w-20' />
+          <Skeleton className='size-8' />
         </div>
       </div>
-      <div className='grid grid-cols-7 gap-2'>
+      <div className='grid grid-cols-7 gap-1'>
         {Array.from({ length: 42 }).map((_, i) => (
-          <Skeleton key={i} className='aspect-square w-full' />
+          <Skeleton key={i} className='h-9 w-full' />
         ))}
       </div>
     </div>

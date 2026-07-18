@@ -7,10 +7,9 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card"
       className={cn(
-        // 그림자 없음 — 입체는 1px 보더로 만든다.
-        // (교보 홈 box-shadow 2개 / 밀리 4개. 그림자 남용이 "떠 있는 목업" 느낌의 주범)
-        // 실제로 떠 있어야 하는 것(dialog·dropdown·popover·toast)에만 그림자를 허용한다.
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6",
+        // 카드 자체는 흰 표면으로 유지하고, 페이지와의 구분은 중립 1px 선만 쓴다.
+        // 브랜드 블루는 카드 면이 아니라 CTA·선택 상태에만 사용한다.
+        "bg-card text-card-foreground flex flex-col gap-5 rounded-xl border border-line-soft py-5",
         className
       )}
       {...props}

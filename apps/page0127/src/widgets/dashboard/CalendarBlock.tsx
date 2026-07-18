@@ -75,7 +75,11 @@ export const CalendarBlock = ({
   const { calendarYear, calendarMonth } = state;
 
   // 초기 연/월과 일치할 때만 initialData를 시드로 사용 → 그 외엔 fetch 발생
-  const { data: result, isLoading, isPlaceholderData } = useQuery({
+  const {
+    data: result,
+    isLoading,
+    isPlaceholderData,
+  } = useQuery({
     queryKey: ['calendar', calendarYear, calendarMonth],
     queryFn: async () => {
       // 쿼리스트링은 axios params 옵션으로 전달
@@ -101,7 +105,7 @@ export const CalendarBlock = ({
 
   return (
     <div
-      className='rounded-lg border border-border bg-card overflow-hidden'
+      className='overflow-hidden'
       style={{
         opacity: isPlaceholderData ? 0.6 : 1, // 새 달 로딩 중 이전 달을 흐리게 유지
         transition: 'opacity 0.15s',

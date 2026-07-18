@@ -1,21 +1,10 @@
-import { BookOpen } from 'lucide-react';
+import Image from 'next/image';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Feather, Quote, Sparkles } from 'lucide-react';
 
-/**
- * 랜딩용 취향 분석 결과 예시 카드
- *
- * 학습 포인트:
- * - 정적 목업 컴포넌트 — 데이터 fetch 없이 실제 결과 UI(TasteAnalysisResult)의
- *   시각 언어(타입 강조 박스·태그 pill)만 빌려와 가치 제안을 보여준다
- * - 랜딩에서 "말로 설명"하는 대신 "결과물을 미리 보여주는" 패턴
- *
- * 카피 원칙 (00_docs/07 §5):
- * - "당신"을 쓰지 않는다. 밀리의서재도 UI 문구에는 2인칭이 0회다.
- * - 이모지 헤딩(📖)을 쓰지 않는다 → lucide 단색 아이콘
- */
+import { createClient } from '@/shared/config/supabase/server';
 
-// 예시 데이터 — 서비스 톤을 보여주는 카피 자산이므로 컴포넌트와 같은 파일에 유지
+/** 랜딩에서 보여주는 독서 취향 분석 결과 예시 */
 const EXAMPLE = {
   personalityType: '마음의 결을 읽는 사람',
   description:
@@ -24,59 +13,103 @@ const EXAMPLE = {
   likedStyles: ['담담한 문체', '긴 호흡의 이야기'],
 } as const;
 
-export const TasteExampleCard = () => {
+const COVER_POSITIONS = [
+  'left-0 top-3 -rotate-6',
+  'left-9 top-0 z-10 rotate-1',
+  'left-[72px] top-4 rotate-6',
+] as const;
+
+type CoverRow = { cover_image: string | null };
+
+export const TasteExampleCard = async () => {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from('global_books')
+    .select('cover_image')
+    .not('cover_image', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(3);
+
+  const covers = ((data as CoverRow[] | null) ?? [])
+    .map((book) => book.cover_image)
+    .filter((cover): cover is string => Boolean(cover));
+
   return (
-    <Card className='relative max-w-2xl text-left'>
-      <span className='absolute right-5 top-5 rounded-full border border-line px-2.5 py-1 text-xs text-text-faint'>
-        분석 결과 예시
-      </span>
-      <CardHeader>
-        <CardTitle className='flex items-center gap-2 text-base'>
-          <BookOpen className='h-4.5 w-4.5 text-text-subtle' />
-          독서 성향
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className='mb-4 rounded-lg bg-accent px-4 py-3'>
-          <p className='text-center text-lg font-bold text-accent-foreground'>
-            {EXAMPLE.personalityType}
+    <article className='relative overflow-hidden rounded-2xl border border-line-soft bg-card p-6 text-left md:p-8'>
+      <Quote
+        aria-hidden='true'
+        className='absolute -right-2 -top-3 size-24 text-primary/[0.06]'
+      />
+
+      <div className='flex items-start justify-between gap-5'>
+        <div className='min-w-0'>
+          <p className='flex items-center gap-1.5 text-xs font-semibold text-primary'>
+            <Sparkles aria-hidden='true' className='size-3.5' />
+            TASTE NOTE 0127
           </p>
-        </div>
-        <p className='leading-relaxed text-text-body'>{EXAMPLE.description}</p>
-
-        <div className='mt-5 space-y-3'>
-          <div>
-            <p className='text-sm text-text-subtle'>눈길이 머무는 주제</p>
-            <div className='mt-1.5 flex flex-wrap gap-2'>
-              {EXAMPLE.likedTopics.map((topic) => (
-                <span
-                  key={topic}
-                  className='rounded-full border border-line px-3 py-1 text-sm text-text-body'
-                >
-                  {topic}
-                </span>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className='text-sm text-text-subtle'>좋아하는 문장의 결</p>
-            <div className='mt-1.5 flex flex-wrap gap-2'>
-              {EXAMPLE.likedStyles.map((style) => (
-                <span
-                  key={style}
-                  className='rounded-full border border-line px-3 py-1 text-sm text-text-body'
-                >
-                  {style}
-                </span>
-              ))}
-            </div>
-          </div>
+          <h3 className='mt-3 text-[26px] font-bold leading-tight text-text-strong md:text-[30px]'>
+            {EXAMPLE.personalityType}
+          </h3>
         </div>
 
-        <p className='mt-6 border-t border-line pt-4 text-sm text-text-subtle'>
-          완독한 책이 열 권쯤 모이면, 이런 이야기를 들려드릴 수 있어요.
-        </p>
-      </CardContent>
-    </Card>
+        {covers.length > 0 && (
+          <div
+            aria-hidden='true'
+            className='relative hidden h-28 w-36 shrink-0 sm:block'
+          >
+            {covers.map((cover, index) => (
+              <Image
+                key={cover}
+                src={cover}
+                alt=''
+                width={64}
+                height={92}
+                className={`book-cover absolute h-24 w-auto border-2 border-white ${COVER_POSITIONS[index]}`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <p className='mt-5 max-w-2xl break-keep text-[15px] leading-[1.8] text-text-body'>
+        {EXAMPLE.description}
+      </p>
+
+      <div className='mt-7 grid gap-5 border-t border-line-soft pt-5 sm:grid-cols-2'>
+        <div>
+          <p className='flex items-center gap-1.5 text-xs font-medium text-text-subtle'>
+            <Sparkles aria-hidden='true' className='size-3.5 text-primary' />
+            눈길이 머무는 주제
+          </p>
+          <div className='mt-2.5 flex flex-wrap gap-1.5'>
+            {EXAMPLE.likedTopics.map((topic) => (
+              <span
+                key={topic}
+                className='rounded-full bg-sunken px-3 py-1.5 text-[13px] font-medium text-text-body'
+              >
+                {topic}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className='flex items-center gap-1.5 text-xs font-medium text-text-subtle'>
+            <Feather aria-hidden='true' className='size-3.5 text-primary' />
+            좋아하는 문장의 결
+          </p>
+          <div className='mt-2.5 flex flex-wrap gap-1.5'>
+            {EXAMPLE.likedStyles.map((style) => (
+              <span
+                key={style}
+                className='rounded-full bg-sunken px-3 py-1.5 text-[13px] font-medium text-text-body'
+              >
+                {style}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </article>
   );
 };

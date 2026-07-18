@@ -20,15 +20,16 @@ export const contentType = 'image/png';
 
 // 책등 — 높이·두께를 조금씩 달리해 실제 책장처럼 들쭉날쭉하게 세운다.
 // 책은 서로 맞닿아 꽂히므로 간격을 거의 주지 않는다(벌리면 막대그래프로 보인다).
+// 색은 브랜드 램프(블루) + 포인트(코랄) + 중성색을 섞는다
 const SPINES = [
-  { h: 300, w: 44, c: '#2f5d3a' },
-  { h: 352, w: 34, c: '#c25e3a' },
-  { h: 272, w: 52, c: '#3f4a58' },
-  { h: 330, w: 38, c: '#b8860b' },
-  { h: 288, w: 30, c: '#7d8471' },
-  { h: 364, w: 46, c: '#8a4a30' },
-  { h: 312, w: 36, c: '#55606e' },
-  { h: 262, w: 42, c: '#4a4a4a' },
+  { h: 300, w: 44, c: '#1e69cb' },
+  { h: 352, w: 34, c: '#d9480f' },
+  { h: 272, w: 52, c: '#31405f' },
+  { h: 330, w: 38, c: '#d9a520' },
+  { h: 288, w: 30, c: '#74b0ff' },
+  { h: 364, w: 46, c: '#0455bf' },
+  { h: 312, w: 36, c: '#5b6b8c' },
+  { h: 262, w: 42, c: '#438ef2' },
 ];
 
 const Image = () => {
@@ -40,8 +41,8 @@ const Image = () => {
           height: '100%',
           display: 'flex',
           alignItems: 'center',
-          background: '#1f2a24',
-          color: '#faf9f7',
+          background: '#14294e',
+          color: '#f4f8fd',
           fontFamily: 'sans-serif',
           padding: '64px 72px',
         }}
@@ -96,7 +97,7 @@ const Image = () => {
             display: 'flex',
             alignItems: 'flex-end',
             gap: 2,
-            borderBottom: '5px solid #faf9f7',
+            borderBottom: '5px solid #f4f8fd',
             paddingBottom: 5,
           }}
         >
@@ -121,7 +122,7 @@ const Image = () => {
                 style={{
                   width: s.w * 0.44,
                   height: 3,
-                  background: '#faf9f7',
+                  background: '#f4f8fd',
                   opacity: 0.42,
                 }}
               />
@@ -129,7 +130,7 @@ const Image = () => {
                 style={{
                   width: s.w * 0.28,
                   height: 3,
-                  background: '#faf9f7',
+                  background: '#f4f8fd',
                   opacity: 0.24,
                 }}
               />

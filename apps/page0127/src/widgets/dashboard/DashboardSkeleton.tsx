@@ -1,131 +1,73 @@
-import { Card, CardContent, CardHeader } from '@/shared/ui/card';
 import { PageContainer } from '@/shared/ui/PageContainer';
 import { Skeleton } from '@/shared/ui/skeleton';
 
-/**
- * Dashboard 로딩 상태 Skeleton
- *
- * 학습 포인트:
- * - 실제 DashboardContent와 동일한 6블록 레이아웃을 흉내
- * - PageContainer를 그대로 써서 페이지 외곽이 흔들리지 않음 (CLS 방지)
- * - 차트 영역은 next/dynamic의 loading과 동일 높이로 맞춤 (700px / 300px)
- */
+/** 대시보드의 실제 콘텐츠 순서를 유지해 화면 이동을 줄이는 로딩 화면 */
 export const DashboardSkeleton = () => {
   return (
-    <PageContainer width='wide' className='space-y-8'>
-      {/* ① Header */}
+    <PageContainer width='wide' className='space-y-10'>
       <header className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
-        <div className='space-y-2'>
-          <Skeleton className='h-10 w-48' />
-          <Skeleton className='h-5 w-64' />
+        <div className='space-y-3'>
+          <Skeleton className='h-10 w-40' />
+          <Skeleton className='h-4 w-64' />
         </div>
-        <div className='flex items-center gap-4'>
-          <Skeleton className='h-10 w-[140px]' />
-          <Skeleton className='h-10 w-32' />
-          <Skeleton className='h-10 w-10' />
+        <div className='flex gap-3'>
+          <Skeleton className='h-9 w-36' />
+          <Skeleton className='h-9 w-24' />
+          <Skeleton className='size-9' />
         </div>
       </header>
 
-      {/* ② Top Stat Cards 4개 */}
-      <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i} className='shadow-none'>
-            <CardContent className='flex items-center justify-between p-6'>
-              <div className='space-y-2'>
-                <Skeleton className='h-4 w-20' />
-                <Skeleton className='h-8 w-16' />
-              </div>
-              <Skeleton className='h-12 w-12 rounded-md' />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* ③④ Main Grid */}
-      <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
-        {/* Left: Charts (col-span-2) */}
-        <div className='space-y-6 lg:col-span-2'>
-          {/* Yearly Trend Chart */}
-          <Card className='shadow-none'>
-            <CardHeader>
-              <Skeleton className='h-6 w-48' />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className='h-[300px] w-full rounded-lg' />
-            </CardContent>
-          </Card>
-          {/* Monthly & Category Charts */}
-          <Skeleton className='h-[700px] w-full rounded-lg' />
+      <section className='py-6'>
+        <div className='mb-5 flex items-center justify-between'>
+          <Skeleton className='h-6 w-36' />
+          <Skeleton className='h-8 w-40' />
         </div>
-
-        {/* Right: Side Widgets */}
-        <div className='space-y-6'>
-          {/* Reading Journey */}
-          <Card className='shadow-none'>
-            <CardHeader>
-              <Skeleton className='h-6 w-32' />
-            </CardHeader>
-            <CardContent className='space-y-3'>
-              <Skeleton className='h-4 w-full' />
-              <Skeleton className='h-4 w-3/4' />
-              <Skeleton className='h-4 w-2/3' />
-            </CardContent>
-          </Card>
-
-          {/* Goal Progress */}
-          <div className='rounded-lg border border-border bg-card p-6'>
-            <Skeleton className='mb-4 h-6 w-32' />
-            <Skeleton className='h-3 w-full rounded-full' />
-            <div className='mt-3 flex justify-between'>
-              <Skeleton className='h-4 w-16' />
-              <Skeleton className='h-4 w-16' />
-            </div>
-          </div>
-
-          {/* Taste Analysis Promo — 로딩 단계에선 다른 카드와 동일한 회색 톤 유지 */}
-          <div className='rounded-lg border border-border bg-card p-6'>
-            <Skeleton className='h-6 w-40' />
-            <Skeleton className='mt-3 h-4 w-full' />
-            <Skeleton className='mt-4 h-10 w-full' />
-          </div>
-        </div>
-      </div>
-
-      {/* ⑤ Calendar */}
-      <div className='rounded-lg border border-border bg-card p-6'>
-        <div className='mb-6 flex items-center justify-between'>
-          <Skeleton className='h-7 w-40' />
-          <div className='flex gap-2'>
-            <Skeleton className='h-9 w-9' />
-            <Skeleton className='h-9 w-9' />
-          </div>
-        </div>
-        {/* 7x6 캘린더 그리드 */}
-        <div className='grid grid-cols-7 gap-2'>
-          {Array.from({ length: 42 }).map((_, i) => (
-            <Skeleton key={i} className='aspect-square w-full' />
+        <div className='flex h-64 items-end gap-3 overflow-hidden px-2'>
+          {[176, 210, 188, 202, 164, 194, 184].map((height, index) => (
+            <Skeleton
+              key={index}
+              className='w-28 shrink-0 rounded-t-sm'
+              style={{ height }}
+            />
           ))}
         </div>
-      </div>
+        <Skeleton className='h-2 w-full rounded-none' />
+      </section>
 
-      {/* ⑥ Book List */}
-      <div className='rounded-lg border border-border bg-card p-1'>
-        <Card className='border-0 bg-transparent shadow-none'>
-          <CardHeader>
-            <Skeleton className='h-7 w-40' />
-          </CardHeader>
-          <CardContent>
-            <div className='grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4'>
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className='space-y-3'>
-                  <Skeleton className='aspect-[2/3] w-full rounded-lg' />
-                  <Skeleton className='h-4 w-3/4' />
-                  <Skeleton className='h-3 w-1/2' />
+      <div className='overflow-hidden rounded-[28px] border border-line-soft'>
+        <div className='grid lg:grid-cols-[minmax(0,1.45fr)_minmax(340px,0.75fr)]'>
+          <div className='space-y-7 p-8 lg:p-10'>
+            <div className='space-y-3'>
+              <Skeleton className='h-4 w-28' />
+              <Skeleton className='h-9 w-72' />
+              <Skeleton className='h-4 w-64' />
+            </div>
+            <div className='space-y-3'>
+              <Skeleton className='h-10 w-24' />
+              <Skeleton className='h-3 w-full rounded-full' />
+            </div>
+            <div className='grid grid-cols-3 gap-6'>
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className='space-y-2'>
+                  <Skeleton className='h-3 w-16' />
+                  <Skeleton className='h-6 w-20' />
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <Skeleton className='min-h-64 rounded-none lg:min-h-full' />
+        </div>
+      </div>
+
+      <div className='grid gap-10 lg:grid-cols-3'>
+        <div className='space-y-8 lg:col-span-2'>
+          <Skeleton className='h-[700px] w-full rounded-xl' />
+        </div>
+        <div className='space-y-4'>
+          <Skeleton className='h-7 w-32' />
+          <Skeleton className='h-48 w-full rounded-xl' />
+          <Skeleton className='h-48 w-full rounded-xl' />
+        </div>
       </div>
     </PageContainer>
   );

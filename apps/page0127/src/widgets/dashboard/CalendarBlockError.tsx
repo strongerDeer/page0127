@@ -16,9 +16,9 @@ export const CalendarBlockError = () => {
   const router = useRouter();
 
   return (
-    <div className='rounded-lg border border-border bg-card p-6'>
-      <div className='flex flex-col items-center justify-center gap-3 py-12'>
-        <p className='text-muted-foreground'>
+    <div className='rounded-2xl border border-line-soft bg-card p-5'>
+      <div className='flex flex-col items-center justify-center gap-3 py-8 text-center'>
+        <p className='text-sm text-muted-foreground'>
           캘린더를 불러오지 못했어요. 잠시 후 다시 시도해주세요.
         </p>
         <Button variant='outline' onClick={() => router.refresh()}>

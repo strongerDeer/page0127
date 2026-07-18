@@ -75,45 +75,22 @@ const AddBookPage = () => {
   const [existingBook, setExistingBook] = useState<Book | null>(null);
   const [pendingBook, setPendingBook] = useState<AladinBook | null>(null);
 
-  // 책 선택 시 중복 체크 + 상세 정보 조회
-  const handleSelectBook = async (book: AladinBook) => {
+  // 알라딘 상세 조회 → 쪽수(subInfo)를 병합해 등록 폼으로 넘긴다.
+  // handleSelectBook·handleReread가 같은 try/catch ~40줄을 복붙하고 있던 것을 추출.
+  // 실패해도 기본 정보로 진행한다 — 상세 조회는 보강이지 필수가 아니다.
+  const loadBookDetail = async (book: AladinBook) => {
     setIsLoadingDetail(true);
-
     try {
-      // 1. ISBN으로 기존 책 확인 (중복 등록 체크)
-      const existingBooks = await getBookByISBN(book.isbn13);
-
-      if (existingBooks.length > 0) {
-        // 기존 책이 있다면 모달 표시
-        setExistingBook(existingBooks[0]);
-        setPendingBook(book);
-        setDuplicateDialogOpen(true);
-        setIsLoadingDetail(false);
-        return;
-      }
-
-      // 2. 알라딘 상세 조회 API로 쪽수 정보 가져오기
       const response = await fetch(`/api/books/detail?isbn=${book.isbn13}`);
-
-      if (!response.ok) {
-        throw new Error('상세 정보 조회 실패');
-      }
+      if (!response.ok) throw new Error('상세 정보 조회 실패');
 
       const data = await response.json();
       const detailedBook = data.item?.[0];
-
-      // 상세 정보가 있으면 병합, 없으면 기본 정보만 사용
-      if (detailedBook) {
-        setSelectedBook({
-          ...book,
-          subInfo: detailedBook.subInfo,
-        });
-      } else {
-        setSelectedBook(book);
-      }
+      setSelectedBook(
+        detailedBook ? { ...book, subInfo: detailedBook.subInfo } : book
+      );
     } catch (error) {
       console.error('상세 정보 조회 실패:', error);
-      // 실패해도 기본 정보로 진행
       setSelectedBook(book);
       toast.error('상세 정보 조회에 실패했습니다. 기본 정보로 진행합니다.');
     } finally {
@@ -121,43 +98,32 @@ const AddBookPage = () => {
     }
   };
 
+  // 책 선택 시 중복 체크 + 상세 정보 조회
+  const handleSelectBook = async (book: AladinBook) => {
+    setIsLoadingDetail(true);
+
+    // ISBN으로 기존 책 확인 (중복 등록 체크)
+    const existingBooks = await getBookByISBN(book.isbn13);
+
+    if (existingBooks.length > 0) {
+      // 기존 책이 있다면 모달 표시
+      setExistingBook(existingBooks[0]);
+      setPendingBook(book);
+      setDuplicateDialogOpen(true);
+      setIsLoadingDetail(false);
+      return;
+    }
+
+    await loadBookDetail(book);
+  };
+
   // 재독 선택 시 - 등록 폼 표시
   const handleReread = async () => {
     if (!pendingBook) return;
 
     setDuplicateDialogOpen(false);
-    setIsLoadingDetail(true);
-
-    try {
-      // 알라딘 상세 조회 API로 쪽수 정보 가져오기
-      const response = await fetch(
-        `/api/books/detail?isbn=${pendingBook.isbn13}`
-      );
-
-      if (!response.ok) {
-        throw new Error('상세 정보 조회 실패');
-      }
-
-      const data = await response.json();
-      const detailedBook = data.item?.[0];
-
-      // 상세 정보가 있으면 병합, 없으면 기본 정보만 사용
-      if (detailedBook) {
-        setSelectedBook({
-          ...pendingBook,
-          subInfo: detailedBook.subInfo,
-        });
-      } else {
-        setSelectedBook(pendingBook);
-      }
-    } catch (error) {
-      console.error('상세 정보 조회 실패:', error);
-      setSelectedBook(pendingBook);
-      toast.error('상세 정보 조회에 실패했습니다. 기본 정보로 진행합니다.');
-    } finally {
-      setIsLoadingDetail(false);
-      setPendingBook(null);
-    }
+    await loadBookDetail(pendingBook);
+    setPendingBook(null);
   };
 
   // 수정 선택 시 - 기존 책 수정 페이지로 이동
@@ -224,7 +190,7 @@ const AddBookPage = () => {
   return (
     <ErrorBoundary>
       <PageContainer width='content'>
-        <h1 className='mb-6 text-3xl font-bold'>도서 추가</h1>
+        <h1 className='heading-1 mb-6 text-text-strong'>도서 추가</h1>
 
         {/* 등록 폼이 열려있지 않을 때만 검색 UI 표시 */}
         {!selectedBook ? (
@@ -241,19 +207,21 @@ const AddBookPage = () => {
               <p className='text-center text-muted-foreground'>검색 중...</p>
             )}
 
-            {/* 검색 결과 */}
+            {/* 검색 결과 — 행 리스트를 카드 하나에 담는다 */}
             {!isSearching && books.length > 0 && (
-              <div className='space-y-4'>
-                <p className='text-sm text-muted-foreground'>
-                  총 {totalResults}개 중 {books.length}개 표시
+              <div className='space-y-3'>
+                <p className='text-sm text-text-subtle'>
+                  총 {totalResults.toLocaleString()}권 중 {books.length}권
                 </p>
-                {books.map((book, index) => (
-                  <BookSearchResultCard
-                    key={`${book.isbn13}-${index}`}
-                    book={book}
-                    onSelect={handleSelectBook}
-                  />
-                ))}
+                <div className='divide-y divide-line-soft border-t border-line'>
+                  {books.map((book, index) => (
+                    <BookSearchResultCard
+                      key={`${book.isbn13}-${index}`}
+                      book={book}
+                      onSelect={handleSelectBook}
+                    />
+                  ))}
+                </div>
 
                 {/* Pagination */}
                 {totalResults > itemsPerPage && (

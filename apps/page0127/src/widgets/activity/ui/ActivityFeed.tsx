@@ -2,6 +2,8 @@
 
 import { useEffect, useEffectEvent, useRef } from 'react';
 
+import Link from 'next/link';
+
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 
@@ -78,24 +80,31 @@ export const ActivityFeed = () => {
 
   const activities = data?.pages.flat() || [];
 
-  // 활동 없음
+  // 활동 없음 — 빈 화면은 다음 행동을 안내한다
   if (activities.length === 0) {
     return (
-      <div className='rounded-lg border border-border bg-muted/50 py-12 text-center'>
-        <p className='text-muted-foreground'>아직 활동이 없습니다</p>
-        <p className='mt-2 text-sm text-muted-foreground'>
-          친구를 팔로우하고 그들의 독서 활동을 확인해보세요
+      <div className='rounded-2xl bg-sunken py-14 text-center'>
+        <p className='text-text-body'>
+          팔로우한 사람이 책을 읽으면 여기에 쌓입니다.
         </p>
+        <Link
+          href='/search'
+          className='mt-3 inline-block text-sm font-medium text-primary hover:underline'
+        >
+          함께 읽는 사람 찾아보기
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className='space-y-4'>
-      {/* 활동 목록 */}
-      {activities.map((activity) => (
-        <ActivityCard key={activity.id} activity={activity} />
-      ))}
+    <div>
+      {/* 활동 목록 — 카드 나열 대신 구분선 리스트 */}
+      <div className='divide-y divide-line-soft border-t border-line'>
+        {activities.map((activity) => (
+          <ActivityCard key={activity.id} activity={activity} />
+        ))}
+      </div>
 
       {/* 무한 스크롤 트리거 */}
       <div ref={observerRef} className='py-4'>

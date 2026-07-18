@@ -26,6 +26,12 @@ export default async function GlobalBooksPage(props: {
   const limit = 20;
   const sort = (searchParams.sort as string) || 'created_at';
   const order = (searchParams.order as string) || 'desc';
+  // GNB 검색폼(GET /books/all?q=...)에서 넘어온 검색어.
+  // PostgREST or() 문법과 충돌하는 문자(콤마·괄호)는 제거한다.
+  const rawQ = typeof searchParams.q === 'string' ? searchParams.q.trim() : '';
+  const q = rawQ.replace(/[,()]/g, '');
+  // 정렬·페이지 링크에 검색어를 유지시키는 쿼리 조각
+  const qParam = q ? `&q=${encodeURIComponent(q)}` : '';
 
   const supabase = await createClient();
   const from = (page - 1) * limit;
@@ -37,9 +43,14 @@ export default async function GlobalBooksPage(props: {
   } = await supabase.auth.getUser();
 
   // global_books 목록은 user와 무관 → user별 쿼리(로그인 시에만)와 함께 병렬 페치
-  const booksQuery = supabase
-    .from('global_books')
-    .select('*', { count: 'exact' })
+  let booksQuery = supabase.from('global_books').select('*', {
+    count: 'exact',
+  });
+  if (q) {
+    // 제목 또는 저자에 검색어가 포함된 책 (대소문자 무시)
+    booksQuery = booksQuery.or(`title.ilike.%${q}%,author.ilike.%${q}%`);
+  }
+  booksQuery = booksQuery
     .order(sort, { ascending: order === 'asc' })
     .range(from, to);
   const myBooksQuery = user
@@ -74,17 +85,21 @@ export default async function GlobalBooksPage(props: {
     <PageContainer width='wide'>
       <div className='mb-8 flex items-center justify-between'>
         <div>
-          <h1 className='heading-1 text-text-strong'>전체 도서</h1>
+          <h1 className='heading-1 text-text-strong'>
+            {q ? `'${q}' 검색 결과` : '전체 도서'}
+          </h1>
           <p className='mt-1 text-sm text-text-subtle'>
-            {booksRes.count
-              ? `${booksRes.count.toLocaleString()}권이 등록돼 있어요.`
-              : '아직 등록된 책이 없어요.'}
+            {q
+              ? `${(booksRes.count ?? 0).toLocaleString()}권을 찾았어요.`
+              : booksRes.count
+                ? `${booksRes.count.toLocaleString()}권이 등록돼 있어요.`
+                : '아직 등록된 책이 없어요.'}
           </p>
         </div>
 
         {/* 정렬 옵션 (간단하게 구현) */}
         <div className='flex gap-2'>
-          <Link href={`?sort=created_at&order=desc`}>
+          <Link href={`?sort=created_at&order=desc${qParam}`}>
             <Button
               variant={sort === 'created_at' ? 'secondary' : 'ghost'}
               size='sm'
@@ -92,7 +107,7 @@ export default async function GlobalBooksPage(props: {
               최신순
             </Button>
           </Link>
-          <Link href={`?sort=title&order=asc`}>
+          <Link href={`?sort=title&order=asc${qParam}`}>
             <Button
               variant={sort === 'title' ? 'secondary' : 'ghost'}
               size='sm'
@@ -102,6 +117,13 @@ export default async function GlobalBooksPage(props: {
           </Link>
         </div>
       </div>
+
+      {/* 검색 결과 없음 — 빈 화면은 다음 행동을 안내한다 */}
+      {q && books.length === 0 && (
+        <p className='rounded-lg border border-line bg-card px-6 py-16 text-center text-sm text-text-subtle'>
+          {`'${q}'와 겹치는 제목이나 저자가 없어요. 다른 검색어로 다시 찾아보세요.`}
+        </p>
+      )}
 
       <div className='grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
         {books.map((book) => (
@@ -121,7 +143,9 @@ export default async function GlobalBooksPage(props: {
             <PaginationContent>
               {page > 1 && (
                 <PaginationItem>
-                  <PaginationPrevious href={`?page=${page - 1}&sort=${sort}`} />
+                  <PaginationPrevious
+                    href={`?page=${page - 1}&sort=${sort}${qParam}`}
+                  />
                 </PaginationItem>
               )}
 
@@ -132,7 +156,7 @@ export default async function GlobalBooksPage(props: {
                 return (
                   <PaginationItem key={p}>
                     <PaginationLink
-                      href={`?page=${p}&sort=${sort}`}
+                      href={`?page=${p}&sort=${sort}${qParam}`}
                       isActive={page === p}
                     >
                       {p}
@@ -143,7 +167,9 @@ export default async function GlobalBooksPage(props: {
 
               {page < totalPages && (
                 <PaginationItem>
-                  <PaginationNext href={`?page=${page + 1}&sort=${sort}`} />
+                  <PaginationNext
+                    href={`?page=${page + 1}&sort=${sort}${qParam}`}
+                  />
                 </PaginationItem>
               )}
             </PaginationContent>

@@ -212,9 +212,18 @@
   font-size: 0.9em;
 }
 
-/* 읽음 표시 — 우상단 접힌 모서리 */
+/* 읽음 표시 — 우상단 접힌 모서리 (도그이어)
+ *
+ * 접힘 착시는 세 가지가 합쳐져야 성립한다:
+ * 1. border-top 을 페이지 배경색으로 — 표지 모서리가 "잘려나간" 것처럼
+ * 2. border-left 가 접혀 넘어온 종이 면
+ * 3. 접힌 면 아래의 작은 그림자 — 그림자 금지 원칙의 예외
+ *    ("실제로 떠 있는 것"에만 허용. 접힌 종이는 실제로 떠 있다)
+ * transparent + 그림자 제거로 바꾸면 그냥 떠 있는 색 삼각형이 된다.
+ */
 .read {
-  --size: 1.5rem;
+  /* 기존 2rem 접힘이 표지를 과하게 가려 70% 크기로 축소 */
+  --size: 1.4rem;
   width: var(--size);
   height: var(--size);
   position: absolute;
@@ -222,5 +231,6 @@
   right: 0;
   z-index: 10;
   border-left: var(--size) solid var(--primary);
-  border-top: var(--size) solid transparent;
+  border-top: var(--size) solid var(--background);
+  box-shadow: -1px 1px 2px 0 rgba(0, 0, 0, 0.16);
 }

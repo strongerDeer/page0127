@@ -11,11 +11,16 @@ import {
 
 import Link from 'next/link';
 
-import { SearchX, X } from 'lucide-react';
+import { Search, SearchX, SlidersHorizontal, X } from 'lucide-react';
 
 import { mapToMainCategory } from '@/shared/lib/categoryMapper';
 import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
 import { Button } from '@/shared/ui/button';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/shared/ui/popover';
 import {
   Select,
   SelectContent,
@@ -23,10 +28,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select';
-import { StatusTabFilter } from '@/shared/ui/StatusTabFilter';
 
 import { BookGridItem } from './BookGridItem';
-import { BookSearchInput, type BookSearchInputHandle } from './BookSearchInput';
+import { BookListFilterInput, type BookListFilterInputHandle } from './BookListFilterInput';
 import { CategoryFilter } from './CategoryFilter';
 
 import type { Book, BookStatus } from '@/entities/book';
@@ -39,7 +43,7 @@ type DashboardBookListProps = {
   /** 카테고리별 독서량 */
   categories: CategoryReadingData[];
 
-  /** 섹션 제목 (기본값: "Recent Books") */
+  /** 섹션 제목 (기본값: "책") */
   title?: string;
 
   /** 책 클릭 시 이동할 URL 생성 함수 (기본값: /books/${id}) */
@@ -48,8 +52,8 @@ type DashboardBookListProps = {
   /** 선택된 월 (1-12, null = 전체) — 차트 연동 없는 경우 생략 가능 */
   selectedMonth?: number | null;
 
-  /** 선택된 카테고리 */
-  selectedCategory: string | null;
+  /** 선택된 카테고리들 */
+  selectedCategories: string[];
 
   /** 선택된 평점 (1-5, null = 전체) — 차트 연동 없는 경우 생략 가능 */
   selectedRating?: number | null;
@@ -61,8 +65,8 @@ type DashboardBookListProps = {
    *  부모 reducer에서 관리 → RESET_ALL 한 번으로 전체 초기화 가능 */
   statusFilter: BookStatus | 'all';
 
-  /** 카테고리 선택 핸들러 */
-  onCategoryChange: (category: string | null) => void;
+  /** 카테고리 다중 선택 핸들러 */
+  onCategoriesChange: (categories: string[]) => void;
 
   /** 월 필터 제거 핸들러 — selectedMonth 사용 시 필수 */
   onRemoveMonthFilter?: () => void;
@@ -101,14 +105,14 @@ type DashboardBookListProps = {
 export const DashboardBookList = ({
   books,
   categories,
-  title = 'Recent Books',
+  title = '책',
   bookHref = (book) => `/books/${book.id}`,
   selectedMonth = null,
-  selectedCategory,
+  selectedCategories,
   selectedRating = null,
   searchQuery,
   statusFilter,
-  onCategoryChange,
+  onCategoriesChange,
   onRemoveMonthFilter,
   onRemoveRatingFilter,
   onSearchChange,
@@ -119,6 +123,8 @@ export const DashboardBookList = ({
 }: DashboardBookListProps) => {
   const BOOKS_PER_PAGE = 12;
   const [currentPage, setCurrentPage] = useState(1);
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   // searchQuery는 부모 props로 받으므로 직접 setState 불가 → useDeferredValue
   // 타이핑 즉시 input에 반영되고, 목록 필터링은 한 박자 늦게 처리
@@ -128,10 +134,10 @@ export const DashboardBookList = ({
 
   // 탭/카테고리/정렬 변경은 목록 재계산을 유발하지만 급하지 않음 → useTransition
   // isPending: 전환 중임을 탭 버튼에 표시할 수 있음
-  const [isTabPending, startTabTransition] = useTransition();
+  const [, startTabTransition] = useTransition();
 
   // 실험 2: useImperativeHandle — 부모에서 검색창 메서드 호출
-  const searchRef = useRef<BookSearchInputHandle>(null);
+  const searchRef = useRef<BookListFilterInputHandle>(null);
 
   // Escape 단축키: useImperativeHandle이 노출한 clear()를 외부에서 호출
   useEffect(() => {
@@ -143,7 +149,7 @@ export const DashboardBookList = ({
   }, []);
 
   // searchQuery가 ''으로 초기화되면 검색 input 표시값도 같이 초기화
-  // (BookSearchInput은 자체 inputValue state를 가지므로 ref로 직접 호출)
+  // (BookListFilterInput은 자체 inputValue state를 가지므로 ref로 직접 호출)
   useEffect(() => {
     if (searchQuery === '') searchRef.current?.clear();
   }, [searchQuery]);
@@ -171,9 +177,9 @@ export const DashboardBookList = ({
       }
 
       // 3. 카테고리 필터 확인
-      if (selectedCategory !== null) {
+      if (selectedCategories.length > 0) {
         const mainCategory = mapToMainCategory(book.category);
-        if (mainCategory !== selectedCategory) return false;
+        if (!selectedCategories.includes(mainCategory)) return false;
       }
 
       // 4. 평점 필터 확인
@@ -231,10 +237,10 @@ export const DashboardBookList = ({
 
   // 필터 변경 시 첫 페이지로 이동
   // setCurrentPage(1)은 즉시 — 탭 UI 반응은 빠르게
-  // onCategoryChange/onStatusChange/setSortOption은 transition 안 — 목록 재계산은 급하지 않음
-  const handleCategoryChange = (category: string | null) => {
+  // onCategoriesChange/onStatusChange/setSortOption은 transition 안 — 목록 재계산은 급하지 않음
+  const handleCategoriesChange = (categories: string[]) => {
     setCurrentPage(1);
-    startTabTransition(() => onCategoryChange(category));
+    startTabTransition(() => onCategoriesChange(categories));
   };
 
   const handleRemoveMonthFilter = () => {
@@ -252,7 +258,12 @@ export const DashboardBookList = ({
     startTabTransition(() => setSortOption(option));
   };
 
-  // BookSearchInput의 useEffect deps에 들어가므로 참조를 안정화 (useCallback)
+  const handleResetAll = () => {
+    setCurrentPage(1);
+    onResetAll?.();
+  };
+
+  // BookListFilterInput의 useEffect deps에 들어가므로 참조를 안정화 (useCallback)
   const handleSearchChange = useCallback(
     (query: string) => {
       setCurrentPage(1);
@@ -261,36 +272,126 @@ export const DashboardBookList = ({
     [onSearchChange]
   );
 
+  const activeFilterCount = [
+    statusFilter !== 'all',
+    selectedMonth !== null,
+    ...selectedCategories.map(() => true),
+    selectedRating !== null,
+  ].filter(Boolean).length;
+
+  const statusLabel: Record<BookStatus | 'all', string> = {
+    all: '전체',
+    completed: '완독',
+    reading: '읽는 중',
+    want_to_read: '읽고 싶은',
+  };
+
   return (
     <div>
-      {/* 검색창 */}
-      <div className='mb-4'>
-        <BookSearchInput
-          ref={searchRef}
-          onSearchChange={handleSearchChange}
-          placeholder='제목이나 저자로 검색하세요'
-        />
-      </div>
+      {/* 책을 먼저 보이게 하는 최소 툴바. 상세 조건은 필요할 때만 펼친다. */}
+      <div className='mb-4 flex flex-wrap items-center gap-2'>
+        <h3 className='mr-auto text-lg font-semibold text-text-strong'>
+          {title}{' '}
+          <span className='font-normal text-text-subtle'>
+            {filteredBooks.length}권
+          </span>
+        </h3>
 
-      {/* 상태별 탭 — Compound Component: value/onChange를 Context로 공유 */}
-      {/* shared/ui는 도메인을 모르므로 value는 string. 여기서 BookStatus로 좁힌다 */}
-      <StatusTabFilter
-        value={statusFilter}
-        onChange={(value) => handleStatusChange(value as BookStatus | 'all')}
-        isPending={isTabPending}
-      >
-        <StatusTabFilter.Tab value='all'>전체</StatusTabFilter.Tab>
-        <StatusTabFilter.Tab value='completed'>완독</StatusTabFilter.Tab>
-        <StatusTabFilter.Tab value='reading'>읽는 중</StatusTabFilter.Tab>
-        <StatusTabFilter.Tab value='want_to_read'>
-          읽고 싶은
-        </StatusTabFilter.Tab>
-      </StatusTabFilter>
+        {showViewAll && (
+          <Link
+            href='/books?status=completed'
+            className='mr-1 text-sm text-primary hover:text-primary/80'
+          >
+            전체 보기
+          </Link>
+        )}
 
-      {/* 정렬 옵션 */}
-      <div className='mb-6 flex justify-end'>
+        <Button
+          variant='ghost'
+          size='sm'
+          onClick={() => setIsSearchOpen((open) => !open)}
+          aria-expanded={isSearchOpen}
+          className={searchQuery ? 'text-primary' : 'text-text-body'}
+        >
+          <Search className='h-4 w-4' />
+          <span className='hidden sm:inline'>검색</span>
+        </Button>
+
+        <Popover open={isFilterPanelOpen} onOpenChange={setIsFilterPanelOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant='ghost'
+              size='sm'
+              className={activeFilterCount ? 'text-primary' : 'text-text-body'}
+            >
+              <SlidersHorizontal className='h-4 w-4' />
+              필터
+              {activeFilterCount > 0 && (
+                <span className='flex size-5 items-center justify-center rounded-full bg-primary text-[11px] text-primary-foreground'>
+                  {activeFilterCount}
+                </span>
+              )}
+            </Button>
+          </PopoverTrigger>
+
+          <PopoverContent
+            align='end'
+            sideOffset={8}
+            className='w-[min(92vw,24rem)] p-4'
+          >
+            <div className='mb-4 flex items-center justify-between'>
+              <div>
+                <h4 className='text-sm font-semibold text-text-strong'>필터</h4>
+                <p className='mt-0.5 text-xs text-text-subtle'>
+                  상태는 하나, 카테고리는 여러 개 선택할 수 있어요.
+                </p>
+              </div>
+              {onResetAll && activeFilterCount > 0 && (
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  onClick={handleResetAll}
+                  className='h-7 px-2 text-xs text-text-subtle hover:text-text-strong'
+                >
+                  초기화
+                </Button>
+              )}
+            </div>
+
+            <div className='space-y-4'>
+              <div className='space-y-2.5'>
+                <p className='text-xs font-medium text-text-strong'>
+                  읽기 상태
+                </p>
+                <Select
+                  value={statusFilter}
+                  onValueChange={(value) =>
+                    handleStatusChange(value as BookStatus | 'all')
+                  }
+                >
+                  <SelectTrigger className='w-full bg-card shadow-none'>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='all'>전체 상태</SelectItem>
+                    <SelectItem value='completed'>완독</SelectItem>
+                    <SelectItem value='reading'>읽는 중</SelectItem>
+                    <SelectItem value='want_to_read'>읽고 싶은</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <CategoryFilter
+                categories={categories}
+                selectedCategories={selectedCategories}
+                onSelectionChange={handleCategoriesChange}
+              />
+            </div>
+          </PopoverContent>
+        </Popover>
+
         <Select value={sortOption} onValueChange={handleSortChange}>
-          <SelectTrigger className='w-[160px]'>
+          <SelectTrigger className='w-[105px] border-0 bg-transparent px-2 shadow-none sm:w-[120px]'>
             <SelectValue placeholder='정렬 선택' />
           </SelectTrigger>
           <SelectContent>
@@ -304,81 +405,69 @@ export const DashboardBookList = ({
         </Select>
       </div>
 
-      {/* 활성 필터 뱃지 */}
-      {(selectedMonth !== null ||
-        selectedCategory !== null ||
-        selectedRating !== null) && (
+      {isSearchOpen && (
+        <div className='mb-4 border-y border-line-soft py-3'>
+          <div className='max-w-sm'>
+            <BookListFilterInput
+              ref={searchRef}
+              onSearchChange={handleSearchChange}
+              placeholder='제목이나 저자로 검색'
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 적용된 조건만 한 줄로 남기고, 필터 목록은 감춘다. */}
+      {(activeFilterCount > 0 || searchQuery !== '') && (
         <div className='mb-4 flex flex-wrap items-center gap-2'>
-          <span className='text-sm font-medium text-muted-foreground'>
-            활성 필터:
-          </span>
+          {statusFilter !== 'all' && (
+            <button
+              onClick={() => handleStatusChange('all')}
+              className='flex items-center gap-1 rounded-full bg-sunken px-3 py-1 text-sm text-text-body hover:text-text-strong'
+            >
+              {statusLabel[statusFilter]} <X className='h-3.5 w-3.5' />
+            </button>
+          )}
           {selectedMonth !== null && (
             <button
               onClick={handleRemoveMonthFilter}
-              className='flex items-center gap-1 rounded-full border border-line px-3 py-1 text-sm text-text-body hover:bg-sunken'
+              className='flex items-center gap-1 rounded-full bg-sunken px-3 py-1 text-sm text-text-body hover:text-text-strong'
             >
               {selectedMonth}월 <X className='h-3.5 w-3.5' />
             </button>
           )}
-          {selectedCategory !== null && (
+          {selectedCategories.length > 0 && (
             <button
-              onClick={() => handleCategoryChange(null)}
-              className='flex items-center gap-1 rounded-full border border-line px-3 py-1 text-sm text-text-body hover:bg-sunken'
+              onClick={() => handleCategoriesChange([])}
+              className='flex items-center gap-1 rounded-full bg-sunken px-3 py-1 text-sm text-text-body hover:text-text-strong'
             >
-              {selectedCategory} <X className='h-3.5 w-3.5' />
+              {selectedCategories[0]}
+              {selectedCategories.length > 1 &&
+                ` 외 ${selectedCategories.length - 1}개`}{' '}
+              <X className='h-3.5 w-3.5' />
             </button>
           )}
           {selectedRating !== null && (
             <button
               onClick={onRemoveRatingFilter}
-              className='flex items-center gap-1 rounded-full border border-line px-3 py-1 text-sm text-text-body hover:bg-sunken'
+              className='flex items-center gap-1 rounded-full bg-sunken px-3 py-1 text-sm text-text-body hover:text-text-strong'
             >
               {selectedRating}점 <X className='h-3.5 w-3.5' />
+            </button>
+          )}
+          {searchQuery !== '' && (
+            <button
+              onClick={() => handleSearchChange('')}
+              className='flex items-center gap-1 rounded-full bg-sunken px-3 py-1 text-sm text-text-body hover:text-text-strong'
+            >
+              “{searchQuery}” <X className='h-3.5 w-3.5' />
             </button>
           )}
         </div>
       )}
 
-      {/* 카테고리 필터 */}
-      <CategoryFilter
-        categories={categories}
-        selectedCategory={selectedCategory}
-        onSelectCategory={handleCategoryChange}
-      />
-
       {/* 읽은 책 목록 */}
       <div>
-        <div className='mb-4 flex items-center justify-between'>
-          <h3 className='text-lg font-semibold'>
-            {title} ({filteredBooks.length})
-          </h3>
-          <div className='flex items-center gap-3'>
-            {/* 필터가 하나라도 활성화됐을 때만 초기화 버튼 표시 */}
-            {onResetAll &&
-              (selectedMonth !== null ||
-                selectedCategory !== null ||
-                selectedRating !== null ||
-                searchQuery !== '' ||
-                statusFilter !== 'all') && (
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  onClick={onResetAll}
-                  className='text-muted-foreground hover:text-foreground'
-                >
-                  필터 초기화
-                </Button>
-              )}
-            {showViewAll && (
-              <Link
-                href='/books?status=completed'
-                className='text-sm text-primary hover:text-primary/80'
-              >
-                전체 보기 →
-              </Link>
-            )}
-          </div>
-        </div>
 
         {/* 책 목록 — renderBooks가 있으면 커스텀 렌더링, 없으면 기본 그리드 */}
         {/* isSearchStale: 타이핑 중 아직 반영 안 된 상태 → 흐리게 표시 */}
@@ -447,12 +536,12 @@ export const DashboardBookList = ({
             )}
           </div>
         ) : (
-          <div className='rounded-lg border-2 border-dashed border-border bg-muted/50 p-12 text-center'>
+          <div className='rounded-xl bg-card p-12 text-center'>
             <SearchX className='mx-auto mb-2 h-8 w-8 text-text-faint' />
-            <p className='text-sm text-muted-foreground'>
-              {selectedCategory
-                ? `${selectedCategory} 카테고리의 책이 없습니다`
-                : '완독한 책이 없습니다'}
+            <p className='text-sm text-text-body'>
+              {selectedCategories.length > 0
+                ? `선택한 카테고리에 해당하는 책이 없어요.`
+                : '조건에 맞는 책이 없어요.'}
             </p>
           </div>
         )}

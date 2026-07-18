@@ -11,9 +11,14 @@ import { Button } from '@/shared/ui/button';
 type StartCtaButtonProps = {
   // CTA 위치 구분용 라벨 (히어로/하단 등)
   location: string;
+  /** inverse: 어두운 배경(네이비 밴드) 위에서 흰 버튼으로 */
+  variant?: 'default' | 'inverse';
 };
 
-export const StartCtaButton = ({ location }: StartCtaButtonProps) => {
+export const StartCtaButton = ({
+  location,
+  variant = 'default',
+}: StartCtaButtonProps) => {
   const handleClick = () => {
     trackEvent('cta_click', { location, label: '내 책장 만들기' });
     trackEvent('signup_start', { location });
@@ -21,7 +26,14 @@ export const StartCtaButton = ({ location }: StartCtaButtonProps) => {
 
   return (
     <Link href='/login' onClick={handleClick}>
-      <Button size='lg' className='px-8'>
+      <Button
+        size='lg'
+        className={
+          variant === 'inverse'
+            ? 'bg-white px-8 text-text-strong hover:bg-white/90'
+            : 'px-8'
+        }
+      >
         내 책장 만들기
       </Button>
     </Link>

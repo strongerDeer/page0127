@@ -84,7 +84,8 @@ export const DeleteAccountDialog = ({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant='destructive' className='w-full'>
+        {/* 파괴적 액션은 화면에서 작게 — 강조는 확인 다이얼로그가 담당한다 */}
+        <Button variant='outline' size='sm' className='shrink-0 text-destructive'>
           계정 삭제
         </Button>
       </AlertDialogTrigger>

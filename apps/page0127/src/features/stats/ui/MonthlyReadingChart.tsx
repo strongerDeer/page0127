@@ -10,7 +10,7 @@ import {
   YAxis,
 } from 'recharts';
 
-import { chartInk, chartTooltipStyle } from '@/shared/lib/chartStyles';
+import { chartTooltipStyle } from '@/shared/lib/chartStyles';
 
 import type { MonthlyReadingData } from '@/entities/book';
 
@@ -54,19 +54,12 @@ export const MonthlyReadingChart = ({
       <ResponsiveContainer width='100%' height='100%'>
         <BarChart
           data={data}
-          margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+          margin={{ top: 16, right: 12, left: -20, bottom: 0 }}
         >
-          <defs>
-            <linearGradient id='monthlyGreen' x1='0' y1='0' x2='0' y2='1'>
-              <stop offset='0%' stopColor={chartInk.primaryGradientTop} />
-              <stop offset='100%' stopColor={chartInk.primaryGradientBottom} />
-            </linearGradient>
-          </defs>
-          {/* 그리드 라인 — 가로선만 (세로 그리드는 막대 차트에서 노이즈) */}
           <CartesianGrid
-            strokeDasharray='3 3'
             vertical={false}
-            stroke={chartInk.grid}
+            stroke='var(--line-soft)'
+            strokeDasharray='3 5'
           />
 
           {/* X축: 월 (1-12) */}
@@ -74,8 +67,8 @@ export const MonthlyReadingChart = ({
             dataKey='month'
             axisLine={false}
             tickLine={false}
-            tickFormatter={(m) => `${m}월`}
-            tick={{ fill: chartInk.axis, fontSize: 12 }}
+            tickFormatter={(month) => `${month}월`}
+            tick={{ fill: 'var(--text-faint)', fontSize: 12 }}
           />
 
           {/* Y축: 권수 */}
@@ -83,23 +76,22 @@ export const MonthlyReadingChart = ({
             axisLine={false}
             tickLine={false}
             allowDecimals={false}
-            width={32}
-            tick={{ fill: chartInk.axis, fontSize: 12 }}
+            tick={{ fill: 'var(--text-faint)', fontSize: 12 }}
           />
 
           {/* 툴팁 */}
           <Tooltip
-            cursor={{ fill: chartInk.cursor }}
+            cursor={{ fill: 'var(--sunken)' }}
             contentStyle={chartTooltipStyle}
             formatter={(value) => [`${value}권`, '독서량']}
             labelFormatter={(label) => `${label}월`}
           />
 
-          {/* Bar — 그린 그라데이션 */}
+          {/* Bar */}
           <Bar
             dataKey='count'
-            fill='url(#monthlyGreen)'
-            radius={[8, 8, 0, 0]}
+            fill='var(--primary)'
+            radius={[6, 6, 6, 6]}
             cursor={onMonthClick ? 'pointer' : 'default'}
             onClick={handleBarClick}
             // Recharts 애니메이션이 React 19에서 리렌더 burst를 유발 → 비활성화

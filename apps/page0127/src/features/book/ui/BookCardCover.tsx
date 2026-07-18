@@ -19,8 +19,8 @@ export const BookCardCover = ({ book }: BookCardCoverProps) => {
           sizes='144px'
         />
       ) : (
-        <div className='flex h-full w-full items-center justify-center bg-muted text-muted-foreground'>
-          No Image
+        <div className='flex h-full w-full items-center justify-center bg-sunken text-sm text-text-faint'>
+          표지 없음
         </div>
       )}
     </Link>

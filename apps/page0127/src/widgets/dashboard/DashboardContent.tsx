@@ -1,11 +1,11 @@
 'use client';
 
-import { useCallback, useReducer, useState, useTransition } from 'react';
+import { useCallback, useState, useTransition } from 'react';
 
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 
-import { BookOpen, CheckCircle, FileText, Link2, Target } from 'lucide-react';
+import { Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/client';
@@ -30,14 +30,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select';
-import { StatCard } from '@/shared/ui/StatCard';
 
 import { ReadingGoalDialog } from '@/features/profile/ui/ReadingGoalDialog';
+import { useLibraryFilters } from '@/features/stats/model/useLibraryFilters';
 import { DashboardBookList } from '@/features/stats/ui/DashboardBookList';
-import { ReadingGoalProgress } from '@/features/stats/ui/ReadingGoalProgress';
+import { ReadingProgressOverview } from '@/features/stats/ui/ReadingProgressOverview';
 
+import { PublicBookShelf } from '@/widgets/book/ui/PublicBookShelf';
 import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
-import { PublicBookShelf } from '@/widgets/public-library/PublicBookShelf';
 
 // Recharts는 브라우저 measure가 필요한 클라이언트 전용 라이브러리
 // → next/dynamic + ssr:false 로 분리해서 초기 번들에서 제외
@@ -54,20 +54,7 @@ const DashboardCharts = dynamic(
   }
 );
 
-const YearlyTrendChart = dynamic(
-  () =>
-    import('@/widgets/dashboard/YearlyTrendChart').then(
-      (m) => m.YearlyTrendChart
-    ),
-  {
-    ssr: false,
-    loading: () => (
-      <div className='h-[300px] animate-pulse rounded-lg bg-muted' />
-    ),
-  }
-);
-
-import type { Book, BookStatus } from '@/entities/book';
+import type { Book } from '@/entities/book';
 import type { BookStats, OverallStats } from '@/entities/book';
 import type { Profile } from '@/entities/profile/types';
 
@@ -100,75 +87,6 @@ type DashboardContentProps = {
   calendarSlot: React.ReactNode;
 };
 
-// ─── 필터 상태 ─────────────────────────────────────────────────────
-// 컴포넌트 외부에 정의: 렌더링마다 재생성되지 않음
-type FilterState = {
-  selectedMonth: number | null;
-  selectedCategory: string | null;
-  selectedRating: number | null;
-  searchQuery: string;
-  // statusFilter를 여기서 관리하는 이유:
-  //   DashboardBookList 내부 useState로 두면 RESET_ALL이 닿지 않음
-  //   부모 reducer로 올려야(lift state up) 전체 초기화 가능
-  statusFilter: BookStatus | 'all';
-};
-
-type FilterAction =
-  | { type: 'TOGGLE_MONTH'; month: number }
-  | { type: 'CLEAR_MONTH' }
-  | { type: 'TOGGLE_RATING'; rating: number }
-  | { type: 'CLEAR_RATING' }
-  | { type: 'SET_CATEGORY'; category: string | null }
-  | { type: 'SET_SEARCH'; query: string }
-  | { type: 'SET_STATUS'; status: BookStatus | 'all' }
-  | { type: 'RESET_ALL' };
-
-// 초기값을 상수로 분리:
-//   1. useReducer 두 번째 인자로 재사용
-//   2. RESET_ALL 케이스에서 같은 값 참조 → "진짜 초기 상태"로 돌아감
-const INITIAL_FILTER_STATE: FilterState = {
-  selectedMonth: null,
-  selectedCategory: null,
-  selectedRating: null,
-  searchQuery: '',
-  statusFilter: 'all',
-};
-
-const filterReducer = (
-  state: FilterState,
-  action: FilterAction
-): FilterState => {
-  switch (action.type) {
-    case 'TOGGLE_MONTH':
-      return {
-        ...state,
-        selectedMonth:
-          state.selectedMonth === action.month ? null : action.month,
-      };
-    case 'CLEAR_MONTH':
-      return { ...state, selectedMonth: null };
-    case 'TOGGLE_RATING':
-      return {
-        ...state,
-        selectedRating:
-          state.selectedRating === action.rating ? null : action.rating,
-      };
-    case 'CLEAR_RATING':
-      return { ...state, selectedRating: null };
-    case 'SET_CATEGORY':
-      return { ...state, selectedCategory: action.category };
-    case 'SET_SEARCH':
-      return { ...state, searchQuery: action.query };
-    case 'SET_STATUS':
-      return { ...state, statusFilter: action.status };
-    case 'RESET_ALL':
-      // 한 번의 dispatch로 5개 필터 동시 초기화 (statusFilter 포함)
-      return INITIAL_FILTER_STATE;
-    default:
-      return state;
-  }
-};
-
 /**
  * 대시보드 컨텐츠 (Client Component)
  *
@@ -199,22 +117,15 @@ export const DashboardContent = ({
 }: DashboardContentProps) => {
   const router = useRouter();
 
-  // ─── 필터 상태 (month/category/rating/search) ─────────────────────
-  // useReducer를 쓰는 이유:
-  //   - 4개의 필터가 논리적으로 하나의 그룹 → 한 객체로 관리
-  //   - RESET_FILTERS 같은 액션으로 한 번에 전체 초기화 가능
-  const [filterState, filterDispatch] = useReducer(
-    filterReducer,
-    INITIAL_FILTER_STATE
-  );
-
+  // ─── 필터 상태 — 공개 서재와 공유하는 훅 (features/stats/model/useLibraryFilters)
+  const filters = useLibraryFilters();
   const {
     selectedMonth,
-    selectedCategory,
+    selectedCategories,
     selectedRating,
     searchQuery,
     statusFilter,
-  } = filterState;
+  } = filters;
 
   // 단순 boolean은 useState가 적합 — useReducer는 복합 상태에 써야 의미 있음
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
@@ -231,43 +142,26 @@ export const DashboardContent = ({
 
   // 독서 목표 데이터
   const readingGoal = profile?.reading_goal;
-  const isCurrentYearGoal = readingGoal?.year === selectedYear;
-
-  // useMemo 불필요: 조건 하나짜리 filter라 계산이 매우 빠르고,
-  // 개인 독서 데이터는 수십 권 수준이라 캐싱 이득이 없다
-  const completedBooksInYear = books.filter(
-    (book) =>
-      book.status === 'completed' &&
-      book.completed_date &&
-      new Date(book.completed_date).getFullYear() === selectedYear
-  ).length;
+  const goalTarget =
+    readingGoal?.year === selectedYear ? readingGoal.target : stats.yearlyGoal;
 
   // 월 필터 클릭 핸들러 (토글 방식: 같은 월 클릭 시 필터 해제)
   // startFilterTransition: 차트 클릭 → 목록 필터링은 급하지 않음 → 우선순위 낮춤
   const handleMonthClick = (month: number) =>
-    startFilterTransition(() =>
-      filterDispatch({ type: 'TOGGLE_MONTH', month })
-    );
+    startFilterTransition(() => filters.toggleMonth(month));
 
   // 월 필터 제거 핸들러
-  const handleRemoveMonthFilter = () => filterDispatch({ type: 'CLEAR_MONTH' });
+  const handleRemoveMonthFilter = filters.clearMonth;
 
   // 평점 필터 클릭 핸들러 (토글 방식)
   const handleRatingClick = (rating: number) =>
-    startFilterTransition(() =>
-      filterDispatch({ type: 'TOGGLE_RATING', rating })
-    );
+    startFilterTransition(() => filters.toggleRating(rating));
 
   // 평점 필터 제거 핸들러
-  const handleRemoveRatingFilter = () =>
-    filterDispatch({ type: 'CLEAR_RATING' });
+  const handleRemoveRatingFilter = filters.clearRating;
 
-  // DashboardBookList → BookSearchInput의 useEffect deps에 들어가므로 참조를 안정화
-  // (인라인 함수를 그대로 넘기면 매 렌더마다 새 참조가 생겨 effect가 불필요하게 재실행됨)
-  const handleSearchChange = useCallback(
-    (query: string) => filterDispatch({ type: 'SET_SEARCH', query }),
-    []
-  );
+  // 참조 안정화는 훅이 보장한다 (useLibraryFilters의 useMemo 액션)
+  const handleSearchChange = filters.setSearch;
 
   // 연도 변경 핸들러
   const handleYearChange = (value: string) => {
@@ -319,20 +213,25 @@ export const DashboardContent = ({
 
   return (
     // PageContainer: 레이아웃 껍데기를 분리해 PublicLibraryContent와 공유
-    <PageContainer width='wide' className='space-y-8'>
+    <PageContainer width='wide' className='space-y-10'>
       {/* Header */}
       <header className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
         <div>
           <h1 className='heading-1 text-text-strong'>내 서재</h1>
+          <p className='mt-2 text-sm text-text-subtle'>
+            {profile?.nickname
+              ? `${profile.nickname}님의 책과 기록을 한곳에 모았어요.`
+              : '책과 기록을 한곳에 모았어요.'}
+          </p>
         </div>
 
-        <div className='flex items-center gap-4'>
+        <div className='flex flex-wrap items-center gap-3'>
           {/* Year Select */}
           <Select
             value={selectedYear.toString()}
             onValueChange={handleYearChange}
           >
-            <SelectTrigger className='w-[140px]'>
+            <SelectTrigger className='w-[140px] bg-card shadow-none'>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -352,6 +251,7 @@ export const DashboardContent = ({
             <Button
               variant='outline'
               size='icon'
+              className='shadow-none'
               onClick={handleCopyPublicUrl}
               title='공개 서재 주소 복사'
             >
@@ -362,53 +262,57 @@ export const DashboardContent = ({
         </div>
       </header>
 
-      {/* 요약 지표 — 숫자는 잉크, 색은 차트가 담당 */}
-      <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
-        <StatCard
-          icon={<BookOpen className='h-4 w-4' />}
-          title='완독'
-          value={stats.totalCompletedBooks}
-          unit='권'
+      {/* 서재의 주인공은 책: 카드 면 없이 가로선 사이에 바로 배치한다. */}
+      <section
+        className='py-6'
+        style={{
+          opacity: isFilterPending ? 0.6 : 1,
+          transition: 'opacity 0.2s',
+        }}
+      >
+        <DashboardBookList
+          title='최근 읽은 책'
+          books={books}
+          categories={stats.categoryReading}
+          selectedMonth={selectedMonth}
+          selectedCategories={selectedCategories}
+          selectedRating={selectedRating}
+          searchQuery={searchQuery}
+          statusFilter={statusFilter}
+          onCategoriesChange={filters.setCategories}
+          onRemoveMonthFilter={handleRemoveMonthFilter}
+          onRemoveRatingFilter={handleRemoveRatingFilter}
+          onSearchChange={handleSearchChange}
+          onStatusChange={filters.setStatus}
+          onResetAll={filters.resetAll}
+          renderBooks={(filteredBooks) => (
+            <PublicBookShelf books={filteredBooks} compact />
+          )}
         />
-        <StatCard
-          icon={<FileText className='h-4 w-4' />}
-          title='읽은 쪽수'
-          value={stats.totalPages}
-          unit='쪽'
-        />
-        <StatCard
-          icon={<Target className='h-4 w-4' />}
-          title='올해 목표'
-          value={stats.yearlyGoal}
-          unit='권'
-        />
-        <StatCard
-          icon={<CheckCircle className='h-4 w-4' />}
-          title='달성률'
-          value={stats.completionRate}
-          unit='%'
-        />
-      </div>
+      </section>
+
+      <ReadingProgressOverview
+        year={selectedYear}
+        completed={stats.totalCompletedBooks}
+        target={goalTarget}
+        totalPages={stats.totalPages}
+        averageRating={stats.averageRating}
+        favoriteBooks={stats.fiveStarBooks}
+        books={books}
+        onSetGoal={
+          selectedYear === currentYear
+            ? () => setIsGoalDialogOpen(true)
+            : undefined
+        }
+      />
 
       {/* Main Grid Section */}
       <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
         {/* Left Column (Hero / Charts) - Spans 2 cols */}
         <div className='space-y-6 lg:col-span-2'>
-          {/* Yearly Trend Chart */}
-          <Card className='shadow-none'>
-            <CardHeader>
-              <CardTitle className='text-lg font-bold tracking-tight'>
-                연도별 독서 추이
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <YearlyTrendChart data={overallStats.yearlyTrend} />
-            </CardContent>
-          </Card>
-
-          {/* Monthly & Category Charts */}
           <DashboardCharts
             monthlyReading={stats.monthlyReading}
+            yearlyReading={overallStats.yearlyTrend}
             categoryReading={stats.categoryReading}
             ratingReading={stats.ratingReading}
             averageRating={stats.averageRating}
@@ -420,93 +324,18 @@ export const DashboardContent = ({
         {/* Right Column (Side Widgets) */}
         <div className='space-y-6'>
           {/* Reading Journey (All Time) */}
-          <Card className='shadow-none'>
+          <Card className='rounded-2xl bg-card py-6 shadow-none'>
             <CardHeader>
-              <CardTitle className='text-lg font-bold tracking-tight'>
-                지금까지의 기록
-              </CardTitle>
+              <CardTitle>지금까지의 기록</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className='space-y-4'>
               <ReadingJourneyCard data={overallStats.journey} />
             </CardContent>
           </Card>
 
-          {/* Reading Goal Progress */}
-          <div className='rounded-xl border border-border bg-card p-6'>
-            <h3 className='mb-4 text-lg font-bold tracking-tight text-text-strong'>
-              목표 달성률
-            </h3>
-            <ReadingGoalProgress
-              year={selectedYear}
-              target={isCurrentYearGoal && readingGoal ? readingGoal.target : 0}
-              current={completedBooksInYear}
-              onSetGoal={() => setIsGoalDialogOpen(true)}
-            />
-          </div>
-
-          {/* 취향 분석 유도 — 화면당 채워진 액센트 블록은 여기 하나뿐 */}
-          <div className='rounded-xl bg-primary p-6 text-primary-foreground'>
-            <h3 className='heading-2'>나도 몰랐던 내 취향</h3>
-            <p className='mt-2 text-sm text-primary-foreground/85'>
-              완독한 책 다섯 권이면 충분해요. 책장을 찬찬히 읽고 다음 책까지
-              골라 드립니다.
-            </p>
-            <Button
-              variant='secondary'
-              className='mt-4 w-full'
-              onClick={handleAnalyzeTaste}
-            >
-              분석 시작
-            </Button>
-          </div>
+          {/* 누적 기록 다음에 월별 독서 흐름을 바로 확인한다. */}
+          {calendarSlot}
         </div>
-      </div>
-
-      {/* Bottom Section: Calendar & Detail List */}
-      <div className='space-y-6'>
-        {/* Calendar — Suspense로 감싸 별도 스트리밍 (page.tsx에서 주입) */}
-        {calendarSlot}
-
-        {/* Book List */}
-        <Card className='shadow-none'>
-          <CardHeader>
-            {/* isFilterPending: 차트 클릭 후 목록 갱신 중임을 표시 */}
-            <CardTitle
-              className='text-lg font-bold tracking-tight'
-              style={{
-                opacity: isFilterPending ? 0.5 : 1,
-                transition: 'opacity 0.2s',
-              }}
-            >
-              최근 읽은 책
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DashboardBookList
-              books={books}
-              categories={stats.categoryReading}
-              selectedMonth={selectedMonth}
-              selectedCategory={selectedCategory}
-              selectedRating={selectedRating}
-              searchQuery={searchQuery}
-              statusFilter={statusFilter}
-              onCategoryChange={(category) =>
-                filterDispatch({ type: 'SET_CATEGORY', category })
-              }
-              onRemoveMonthFilter={handleRemoveMonthFilter}
-              onRemoveRatingFilter={handleRemoveRatingFilter}
-              onSearchChange={handleSearchChange}
-              onStatusChange={(status) =>
-                filterDispatch({ type: 'SET_STATUS', status })
-              }
-              onResetAll={() => filterDispatch({ type: 'RESET_ALL' })}
-              showViewAll
-              renderBooks={(filteredBooks) => (
-                <PublicBookShelf books={filteredBooks} />
-              )}
-            />
-          </CardContent>
-        </Card>
       </div>
 
       <ReadingGoalDialog

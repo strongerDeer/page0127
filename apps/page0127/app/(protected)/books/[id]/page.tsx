@@ -89,8 +89,7 @@ export default async function BookDetailPage({ params }: PageProps) {
                   sizes='224px'
                 />
               ) : (
-                <div className='flex h-full w-full items-center justify-center bg-muted text-muted-foreground'>
-                  No Image
+                <div className='flex h-full w-full items-center justify-center bg-sunken text-sm text-text-faint'>                  표지 없음
                 </div>
               )}
             </div>
@@ -98,7 +97,7 @@ export default async function BookDetailPage({ params }: PageProps) {
             {/* 상세 정보 */}
             <div className='flex-1 space-y-4'>
               <div>
-                <h1 className='mb-2 text-2xl font-bold'>{book.title}</h1>
+                <h1 className='heading-1 mb-2 text-text-strong'>{book.title}</h1>
                 <p className='text-lg text-foreground'>{book.author}</p>
                 <p className='text-muted-foreground'>{book.publisher}</p>
               </div>

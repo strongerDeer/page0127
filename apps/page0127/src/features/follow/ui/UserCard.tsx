@@ -21,7 +21,7 @@ export const UserCard = ({ user, currentUserId }: UserCardProps) => {
   const isCurrentUser = currentUserId === user.id;
 
   return (
-    <div className='flex items-center justify-between rounded-lg border border-border bg-card p-4 transition-colors hover:bg-accent/50'>
+    <div className='flex items-center justify-between rounded-2xl bg-sunken p-4 transition-colors hover:bg-accent/50'>
       <Link
         href={`/${user.nickname || user.id}`}
         className='flex flex-1 items-center gap-3'

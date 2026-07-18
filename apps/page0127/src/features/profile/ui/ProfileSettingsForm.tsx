@@ -57,51 +57,43 @@ const ProfileSettingsFormPhoto = ({
   </div>
 );
 
-// 내 계정 진입점 — 모바일에서 사이드바 ProfileDropdown이 가려지므로 여기서 같은 액션 제공
+// 내 계정 진입점 — 모바일에서 GNB ProfileDropdown 접근성이 낮으므로 여기서 같은 액션 제공
 const ProfileSettingsFormMyAccount = ({
   username,
   onLogout,
 }: ProfileSettingsFormMyAccountProps) => (
-  <Card className='mt-6 p-6 shadow-none'>
-    <div className='space-y-4'>
-      <h3 className='text-lg font-semibold text-foreground'>내 계정</h3>
-      <div className='space-y-1'>
-        {username && (
-          <Link
-            href={`/${username}`}
-            className='flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent'
-          >
-            <Globe className='size-4' />
-            공개 서재 보기
-          </Link>
-        )}
-        <button
-          type='button'
-          onClick={onLogout}
-          className='flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-accent'
-        >
-          <LogOut className='size-4' />
-          로그아웃
-        </button>
-      </div>
-    </div>
-  </Card>
+  <div className='mt-6 divide-y divide-line rounded-2xl bg-sunken px-5'>
+    {username && (
+      <Link
+        href={`/${username}`}
+        className='flex items-center gap-2.5 py-3.5 text-sm font-medium text-text-body transition-colors hover:text-text-strong'
+      >
+        <Globe className='size-4 text-text-faint' />
+        공개 서재 보기
+      </Link>
+    )}
+    <button
+      type='button'
+      onClick={onLogout}
+      className='flex w-full items-center gap-2.5 py-3.5 text-left text-sm font-medium text-text-body transition-colors hover:text-text-strong'
+    >
+      <LogOut className='size-4 text-text-faint' />
+      로그아웃
+    </button>
+  </div>
 );
 
+// 파괴적 액션은 빨간 패널로 소리치지 않는다 — 한 줄로 조용히 두고,
+// 실제 경고는 확인 다이얼로그가 맡는다 (토스 설정 화면 문법)
 const ProfileSettingsFormDangerZone = ({
   userEmail,
 }: ProfileSettingsFormDangerZoneProps) => (
-  <Card className='mt-6 border-destructive/20 bg-destructive/5 p-6'>
-    <div className='space-y-4'>
-      <div>
-        <h3 className='text-lg font-semibold text-destructive'>위험 영역</h3>
-        <p className='mt-1 text-sm text-destructive/80'>
-          계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.
-        </p>
-      </div>
-      <DeleteAccountDialog userEmail={userEmail} />
-    </div>
-  </Card>
+  <div className='mt-6 flex items-center justify-between gap-4 rounded-2xl bg-sunken px-5 py-4'>
+    <p className='text-sm text-text-subtle'>
+      계정을 삭제하면 모든 기록이 영구적으로 사라집니다.
+    </p>
+    <DeleteAccountDialog userEmail={userEmail} />
+  </div>
 );
 
 // useActionState 초기 상태 (아직 제출 전)
@@ -175,16 +167,11 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
   return (
     // onSubmit 대신 action에 Server Action을 연결
     <form action={formAction}>
-      <Card className='p-6'>
-        <div className='space-y-6'>
-          {/* 제목 */}
-          <div>
-            <h2 className='text-2xl font-bold'>프로필 설정</h2>
-            <p className='mt-1 text-sm text-muted-foreground'>
-              공개 서재에 표시될 정보를 수정할 수 있습니다.
-            </p>
-          </div>
+      {/* 제목은 카드 밖으로 — 카드 안 제목은 폼을 패널처럼 무겁게 만든다 */}
+      <h1 className='heading-1 mb-6 text-text-strong'>설정</h1>
 
+      <Card className='p-6'>
+        <div className='space-y-5'>
           {/* 프로필 이미지 */}
           <ProfileSettingsForm.Photo
             currentPhotoUrl={displayPhotoUrl}
@@ -203,7 +190,8 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
             value={profile.photo_url ?? ''}
           />
 
-          {/* 이메일 (읽기 전용 — name 없음 → 전송 안 함) */}
+          {/* 이메일 (읽기 전용 — name 없음 → 전송 안 함)
+              disabled 스타일이 이미 "변경 불가"를 말하므로 헬퍼 문구는 생략 */}
           <div className='space-y-2'>
             <Label htmlFor={ids.email}>이메일</Label>
             <Input
@@ -213,14 +201,11 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
               disabled
               className='bg-muted'
             />
-            <p className='text-xs text-muted-foreground'>
-              이메일은 변경할 수 없습니다.
-            </p>
           </div>
 
-          {/* Username (읽기 전용) */}
+          {/* 아이디 (읽기 전용) — 공개 서재 URL에 쓰인다 */}
           <div className='space-y-2'>
-            <Label htmlFor={ids.username}>Username</Label>
+            <Label htmlFor={ids.username}>아이디</Label>
             <Input
               id={ids.username}
               type='text'
@@ -228,8 +213,8 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
               disabled
               className='bg-muted'
             />
-            <p className='text-xs text-muted-foreground'>
-              공개 서재 URL: {profileUrl || `/${profile.username}`}
+            <p className='text-xs text-text-faint'>
+              공개 서재 주소 {profileUrl || `/${profile.username}`}
             </p>
           </div>
 
@@ -241,12 +226,9 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
               name='nickname'
               type='text'
               defaultValue={profile.nickname || ''}
-              placeholder='닉네임을 입력하세요'
+              placeholder='공개 서재에 표시될 이름'
               maxLength={50}
             />
-            <p className='text-xs text-muted-foreground'>
-              공개 서재에 표시될 이름입니다. (최대 50자)
-            </p>
           </div>
 
           {/* 한줄 소개 — 글자수 카운터 때문에 제어 유지 (name 있으면 수집됨) */}

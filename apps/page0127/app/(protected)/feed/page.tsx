@@ -12,13 +12,13 @@ import { ActivityFeed } from '@/widgets/activity';
  */
 export default function FeedPage() {
   return (
-    <PageContainer width='narrow' className='space-y-6'>
-      <div>
-        <h1 className='text-2xl font-bold'>활동 피드</h1>
-        <p className='mt-2 text-muted-foreground'>
-          팔로잉한 친구들의 독서 활동을 확인해보세요
+    <PageContainer width='content' className='space-y-8'>
+      <header>
+        <h1 className='heading-1 text-text-strong'>피드</h1>
+        <p className='mt-2 text-sm text-text-subtle'>
+          함께 읽는 사람들의 새로운 독서 기록을 만나보세요.
         </p>
-      </div>
+      </header>
 
       <ActivityFeed />
     </PageContainer>

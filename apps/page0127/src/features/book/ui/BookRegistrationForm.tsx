@@ -235,8 +235,8 @@ export const BookRegistrationForm = ({
                   sizes='96px'
                 />
               ) : (
-                <div className='flex h-full w-full items-center justify-center bg-muted text-muted-foreground'>
-                  No Image
+                <div className='flex h-full w-full items-center justify-center bg-sunken text-sm text-text-faint'>
+                  표지 없음
                 </div>
               )}
             </div>
@@ -264,7 +264,7 @@ export const BookRegistrationForm = ({
                   status: e.target.value as BookStatus,
                 })
               }
-              className='w-full rounded-md border border-gray-300 p-2'
+              className='w-full rounded-md border border-line p-2'
               required
             >
               <option value='completed'>완독</option>

@@ -97,7 +97,7 @@ export const UserSearch = ({ currentUserId }: UserSearchProps) => {
           </p>
 
           {users.length === 0 ? (
-            <div className='rounded-lg border border-border bg-muted/50 py-12 text-center'>
+            <div className='rounded-2xl bg-sunken py-12 text-center'>
               <p className='text-muted-foreground'>검색 결과가 없습니다.</p>
             </div>
           ) : (
@@ -116,7 +116,7 @@ export const UserSearch = ({ currentUserId }: UserSearchProps) => {
 
       {/* 초기 상태 */}
       {!activeQuery && !isLoading && (
-        <div className='rounded-lg border border-border bg-muted/50 py-12 text-center'>
+        <div className='rounded-2xl bg-sunken py-12 text-center'>
           <Search className='mx-auto h-12 w-12 text-muted-foreground' />
           <p className='mt-4 text-muted-foreground'>
             닉네임 또는 사용자명으로 검색해보세요

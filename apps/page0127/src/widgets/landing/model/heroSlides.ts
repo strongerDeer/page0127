@@ -33,8 +33,8 @@ export const HERO_SLIDES: HeroSlide[] = [
     sub: '읽은 책을 한 권씩 기록하면, 몰랐던 취향이 보이기 시작합니다.',
     href: '/login',
     cta: '내 책장 만들기',
-    bg: '#1f2a24',
-    fg: '#faf9f7',
+    bg: '#14294e',
+    fg: '#f4f8fd',
   },
   {
     id: 'taste',
@@ -43,8 +43,8 @@ export const HERO_SLIDES: HeroSlide[] = [
     sub: '책장을 찬찬히 읽고, 다음에 읽을 책까지 골라 드립니다.',
     href: '/login',
     cta: '취향 분석 보기',
-    bg: '#2f5d3a',
-    fg: '#faf9f7',
+    bg: '#1e69cb',
+    fg: '#f4f8fd',
   },
   {
     id: 'compatibility',
@@ -53,8 +53,9 @@ export const HERO_SLIDES: HeroSlide[] = [
     sub: '겹치는 관심사와 서로 다른 결을 찾아, 건네줄 책까지 고릅니다.',
     href: '/login',
     cta: '궁합 분석하기',
-    bg: '#8a4a30',
-    fg: '#faf9f7',
+    // 코랄(포인트 컬러)의 딥 톤 — 블루 일색 배너 사이의 리듬
+    bg: '#a63d10',
+    fg: '#f4f8fd',
   },
   {
     id: 'goal',
@@ -63,7 +64,7 @@ export const HERO_SLIDES: HeroSlide[] = [
     sub: '연간 목표를 세우고, 달력에 완독의 흔적을 남겨 보세요.',
     href: '/login',
     cta: '목표 세우기',
-    bg: '#3f4a58',
-    fg: '#faf9f7',
+    bg: '#31405f',
+    fg: '#f4f8fd',
   },
 ];

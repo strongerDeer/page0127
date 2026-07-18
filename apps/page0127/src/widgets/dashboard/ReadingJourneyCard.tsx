@@ -1,6 +1,4 @@
-import { BookOpen, Calendar, Clock,FileText } from 'lucide-react';
-
-import { StatCard } from '@/shared/ui/StatCard';
+import { CalendarDays, Clock3, FileText, Star } from 'lucide-react';
 
 import type { ReadingJourney } from '@/entities/book';
 
@@ -8,64 +6,83 @@ type Props = {
   data: ReadingJourney;
 };
 
-/**
- * 독서 여정 카드 컴포넌트
- *
- * 학습 포인트:
- * - 전체 독서 통계 섹션의 핵심 컴포넌트
- * - 2x2 그리드 레이아웃 (반응형)
- * - 성취감과 동기 부여를 위한 지표
- *
- * @param data - 독서 여정 데이터
- */
+const JourneyRow = ({
+  icon,
+  label,
+  value,
+  description,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  description: string;
+}) => (
+  <div className='flex items-center gap-3 py-4'>
+    <div className='flex size-9 shrink-0 items-center justify-center rounded-full bg-sunken text-text-subtle'>
+      {icon}
+    </div>
+    <div className='min-w-0 flex-1'>
+      <p className='text-sm font-medium text-text-strong'>{label}</p>
+      <p className='mt-0.5 truncate text-xs text-text-faint'>{description}</p>
+    </div>
+    <strong className='shrink-0 text-sm text-text-strong'>{value}</strong>
+  </div>
+);
+
 export const ReadingJourneyCard = ({ data }: Props) => {
-  // 날짜 포맷팅 (YYYY-MM-DD → YYYY.MM)
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}`;
-  };
+  const readingSince = data.readingSince
+    ? new Date(data.readingSince).toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'long',
+      })
+    : '기록 시작 전';
 
   return (
-    // 카드 안에 중첩되므로 flat 타일(테두리 없는 sunken 틴트)로 — 이중 테두리 방지
-    <div className="grid grid-cols-2 gap-3">
-      {/* 1. 읽은 책 */}
-      <StatCard
-        flat
-        icon={<BookOpen className="h-4 w-4" />}
-        title="읽은 책"
-        value={data.totalBooks}
-        unit="권"
-        description={`10점 ${data.perfectScoreBooks}권 (${data.perfectScoreRate}%)`}
-      />
+    <div>
+      <div className='pb-5'>
+        <p className='text-sm font-medium text-text-subtle'>누적 완독</p>
+        <div className='mt-2 flex items-end justify-between gap-4'>
+          <p className='text-4xl font-bold tracking-[-0.04em] text-text-strong'>
+            {data.totalBooks.toLocaleString()}
+            <span className='ml-1 text-base font-semibold text-text-subtle'>
+              권
+            </span>
+          </p>
+          <p className='pb-1 text-xs text-text-faint'>{readingSince}부터</p>
+        </div>
+      </div>
 
-      {/* 2. 읽은 쪽수 */}
-      <StatCard
-        flat
-        icon={<FileText className="h-4 w-4" />}
-        title="읽은 쪽수"
-        value={data.totalPages}
-        unit="쪽"
-        description={`하루 평균 ${data.averagePagesPerDay}쪽`}
-      />
+      <div className='border-y border-line-soft'>
+        <JourneyRow
+          icon={<FileText className='size-4' />}
+          label='읽은 쪽수'
+          value={`${data.totalPages.toLocaleString()}쪽`}
+          description={`하루 평균 ${data.averagePagesPerDay}쪽`}
+        />
+        <div className='border-t border-line-soft'>
+          <JourneyRow
+            icon={<Star className='size-4' />}
+            label='최고 평점 책'
+            value={`${data.perfectScoreBooks}권`}
+            description={`전체 기록의 ${data.perfectScoreRate}%`}
+          />
+        </div>
+        <div className='border-t border-line-soft'>
+          <JourneyRow
+            icon={<Clock3 className='size-4' />}
+            label='예상 독서 시간'
+            value={`${data.estimatedHours.toLocaleString()}시간`}
+            description={`약 ${data.estimatedDays}일의 독서`}
+          />
+        </div>
+      </div>
 
-      {/* 3. 독서 기간 */}
-      <StatCard
-        flat
-        icon={<Calendar className="h-4 w-4" />}
-        title="독서 기간"
-        value={`${data.readingYears}년`}
-        description={`${formatDate(data.readingSince)} ~ 현재`}
-      />
-
-      {/* 4. 예상 독서 시간 */}
-      <StatCard
-        flat
-        icon={<Clock className="h-4 w-4" />}
-        title="예상 독서 시간"
-        value={data.estimatedHours}
-        unit="시간"
-        description={`약 ${data.estimatedDays}일`}
-      />
+      <p className='mt-4 flex items-center gap-2 text-xs text-text-faint'>
+        <CalendarDays className='size-3.5' />
+        {data.readingYears > 0
+          ? `${data.readingYears}년 동안 이어온 기록입니다.`
+          : '첫 완독부터 독서 여정이 시작됩니다.'}
+      </p>
     </div>
   );
 };

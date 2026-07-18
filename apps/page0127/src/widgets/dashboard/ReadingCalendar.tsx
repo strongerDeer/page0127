@@ -105,25 +105,30 @@ export const ReadingCalendar = ({
 
   return (
     <>
-      <Card key={`calendar-${currentYear}-${currentMonth}`} className="border-0 bg-transparent shadow-none">
-        <CardHeader>
+      <Card
+        key={`calendar-${currentYear}-${currentMonth}`}
+        className='rounded-2xl bg-card py-5 shadow-none'
+      >
+        <CardHeader className='px-5'>
           <CardTitle className='flex items-center justify-between'>
             <span>독서 캘린더</span>
-            <div className='flex items-center gap-2'>
+            <div className='flex items-center gap-1'>
               <Button
                 variant='outline'
-                size='icon'
+                size='icon-sm'
+                className='shadow-none'
                 onClick={onPreviousMonth}
                 aria-label='이전 달'
               >
                 <ChevronLeft className='h-4 w-4' />
               </Button>
-              <span className='text-base font-normal'>
+              <span className='min-w-[86px] text-center text-sm font-medium text-text-body'>
                 {currentYear}년 {currentMonth}월
               </span>
               <Button
                 variant='outline'
-                size='icon'
+                size='icon-sm'
+                className='shadow-none'
                 onClick={onNextMonth}
                 aria-label='다음 달'
               >
@@ -132,7 +137,7 @@ export const ReadingCalendar = ({
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className='px-5'>
           {isLoading ? (
             <div className='flex items-center justify-center py-20'>
               <div className='text-center'>
@@ -143,16 +148,16 @@ export const ReadingCalendar = ({
             </div>
           ) : (
             <>
-              {/* 요일 헤더 */}
-              <div className='mb-2 grid grid-cols-7 gap-1 text-center text-sm font-semibold'>
+              {/* 요일 헤더 — 색도 토큰만: 일=포인트(코랄), 토=브랜드 블루 */}
+              <div className='mb-1 grid grid-cols-7 gap-1 text-center text-[13px] font-medium text-text-subtle'>
                 {weekDays.map((day, index) => (
                   <div
                     key={day}
                     className={
                       index === 0
-                        ? 'text-red-500'
+                        ? 'text-rank-up'
                         : index === 6
-                          ? 'text-blue-500'
+                          ? 'text-primary'
                           : ''
                     }
                   >
@@ -161,13 +166,12 @@ export const ReadingCalendar = ({
                 ))}
               </div>
 
-              {/* 날짜 그리드 */}
+              {/* 날짜 그리드 — aspect-square는 넓은 컨테이너에서 셀을
+                  정사각 150px까지 키워 달력이 화면을 다 먹었다 → 높이 고정 */}
               <div className='grid grid-cols-7 gap-1'>
                 {calendarDays.map((day, index) => {
                   if (day === null) {
-                    return (
-                      <div key={`empty-${index}`} className='aspect-square' />
-                    );
+                    return <div key={`empty-${index}`} className='h-9' />;
                   }
 
                   const dateString = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -179,26 +183,25 @@ export const ReadingCalendar = ({
                       key={day}
                       onClick={() => handleDateClick(day)}
                       disabled={bookCount === 0}
-                      className={`
-                    relative aspect-square rounded-md border p-1 text-sm
-                    transition-colors
-                    ${bookCount > 0 ? 'cursor-pointer hover:bg-accent' : 'cursor-default text-muted-foreground'}
-                  `}
+                      className={`relative h-9 rounded-md pt-1 text-xs transition-colors ${
+                        bookCount > 0
+                          ? 'cursor-pointer bg-accent/60 font-medium text-text-strong hover:bg-accent'
+                          : 'cursor-default text-text-faint'
+                      }`}
                     >
                       <span>{day}</span>
-                      {/* 완독 책이 있으면 점 표시 */}
+                      {/* 완독 권수만큼 점 (최대 3개) */}
                       {bookCount > 0 && (
-                        <div className='absolute bottom-1 left-1/2 flex -translate-x-1/2 gap-0.5'>
-                          <div
-                            className={`h-1.5 w-1.5 rounded-full ${
-                              bookCount === 1
-                                ? 'bg-primary'
-                                : bookCount === 2
-                                  ? 'bg-chart-3'
-                                  : 'bg-chart-5'
-                            }`}
-                          />
-                        </div>
+                        <span className='absolute bottom-1 left-1/2 flex -translate-x-1/2 gap-0.5'>
+                          {Array.from({
+                            length: Math.min(bookCount, 3),
+                          }).map((_, i) => (
+                            <span
+                              key={i}
+                              className='size-1 rounded-full bg-primary'
+                            />
+                          ))}
+                        </span>
                       )}
                     </button>
                   );
@@ -208,29 +211,21 @@ export const ReadingCalendar = ({
           )}
 
           {/* 통계 요약 - 로딩 중이든 아니든 항상 표시 */}
-          <div className='mt-4 space-y-2 text-center text-sm'>
-            <div className='text-muted-foreground'>
-              이번 달{' '}
-              <span className='font-semibold text-foreground'>
-                {summary.totalBooks}권
-              </span>{' '}
-              완독
-              {summary.totalPages > 0 && (
-                <>
-                  {' '}
-                  ·{' '}
-                  <span className='font-semibold text-foreground'>
-                    {summary.totalPages.toLocaleString()}쪽
-                  </span>
-                </>
-              )}
-            </div>
-            {/* 디버그 정보 */}
-            <div className='text-xs text-destructive'>
-              DEBUG: books={summary.totalBooks}권 | pages={summary.totalPages}쪽
-              | year={currentYear} | month={currentMonth} | dataLen=
-              {data.length}
-            </div>
+          <div className='mt-4 text-left text-xs text-text-subtle'>
+            이번 달{' '}
+            <span className='font-semibold text-text-strong'>
+              {summary.totalBooks}권
+            </span>{' '}
+            완독
+            {summary.totalPages > 0 && (
+              <>
+                {' '}
+                ·{' '}
+                <span className='font-semibold text-text-strong'>
+                  {summary.totalPages.toLocaleString()}쪽
+                </span>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -249,23 +244,32 @@ export const ReadingCalendar = ({
               완독한 책
             </DialogTitle>
           </DialogHeader>
-          <div className='space-y-3'>
+          <div className='divide-y divide-line-soft'>
             {selectedDate?.books.map((book) => (
-              <div key={book.id} className='flex gap-3 rounded-lg border p-3'>
+              <div key={book.id} className='flex items-center gap-3 py-3'>
+                {/* next/image는 width/height가 필수 — 없으면 런타임 에러가 난다 */}
                 {book.cover && (
                   <Image
                     src={book.cover}
-                    alt={book.title}
-                    className='h-20 w-14 rounded object-cover'
+                    alt=''
+                    width={44}
+                    height={64}
+                    className='book-cover h-16 w-auto shrink-0'
                   />
                 )}
-                <div className='flex-1'>
-                  <h4 className='font-semibold'>{book.title}</h4>
-                  <p className='text-sm text-muted-foreground'>{book.author}</p>
-                  {book.rating > 0 && (
-                    <div className='mt-1 text-sm'>{book.rating}점</div>
-                  )}
+                <div className='min-w-0 flex-1'>
+                  <h4 className='truncate text-sm font-medium text-text-strong'>
+                    {book.title}
+                  </h4>
+                  <p className='truncate text-[13px] text-text-subtle'>
+                    {book.author}
+                  </p>
                 </div>
+                {book.rating > 0 && (
+                  <span className='shrink-0 text-sm font-medium text-text-body'>
+                    {book.rating}점
+                  </span>
+                )}
               </div>
             ))}
           </div>

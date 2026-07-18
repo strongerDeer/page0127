@@ -43,7 +43,7 @@ export const UserAvatar = ({
     return (
       <div
         className={cn(
-          'rounded-full bg-gray-300 flex items-center justify-center text-gray-600',
+          'rounded-full bg-sunken flex items-center justify-center text-text-faint',
           sizeClass,
           isDeleted && 'opacity-50', // 탈퇴한 사용자는 흐리게
           className

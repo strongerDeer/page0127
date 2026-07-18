@@ -34,7 +34,7 @@ export const UserLink = ({
   // 탈퇴한 사용자인 경우 (userId가 null)
   if (!userId) {
     return (
-      <span className={cn('text-gray-500', className)}>
+      <span className={cn('text-text-subtle', className)}>
         {children || '탈퇴한 사용자'}
       </span>
     );

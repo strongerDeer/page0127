@@ -47,7 +47,7 @@ export const ActivityDetail = ({ activityId }: ActivityDetailProps) => {
 
   if (!activity) {
     return (
-      <div className='rounded-lg border border-border bg-muted/50 py-12 text-center'>
+      <div className='rounded-2xl bg-sunken py-12 text-center'>
         <p className='text-muted-foreground'>활동을 찾을 수 없습니다</p>
         <Button
           variant='ghost'

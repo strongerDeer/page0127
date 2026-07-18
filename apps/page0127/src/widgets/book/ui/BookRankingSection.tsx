@@ -25,8 +25,6 @@ type BookRankingSectionProps = {
   /** 집계 기준일 등 — 제목 우측 메타 */
   meta?: string;
   myReadIsbns?: string[];
-  myLikedIds?: string[];
-  isLoggedIn?: boolean;
 };
 
 // RPC 결과 JSONB → 런타임 모양만 타입으로 좁힘
@@ -106,12 +104,12 @@ export const BookRankingSection = async ({
   title,
   meta,
   myReadIsbns,
-  myLikedIds,
-  isLoggedIn,
 }: BookRankingSectionProps) => {
   const supabase = await createClient();
   const books = await fetchRanking(supabase, type);
 
+  // 풀폭 단독 섹션이라 데이터가 없으면 섹션을 아예 내리지 않는다
+  // (빈 박스를 크게 띄우는 것보다 없는 편이 정직하다)
   if (books.length === 0) return null;
 
   return (
@@ -121,8 +119,6 @@ export const BookRankingSection = async ({
       books={books}
       type={type}
       myReadIsbns={myReadIsbns}
-      myLikedIds={myLikedIds}
-      isLoggedIn={isLoggedIn}
     />
   );
 };

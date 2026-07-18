@@ -1,12 +1,25 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
-import { Heart } from 'lucide-react';
+import { Check, Heart } from 'lucide-react';
 
-import { BookListItem } from '@/widgets/book/ui/BookListItem';
-import { RankDeltaBadge } from '@/widgets/book/ui/RankDeltaBadge';
+import { cn } from '@/shared/lib/utils';
+
+import { RankDeltaBadge } from './RankDeltaBadge';
 
 import type { BookRanking } from '@/entities/book';
 
+/**
+ * 랭킹 리스트 (순위 행 형태)
+ *
+ * 왜 표지 그리드가 아니라 행 리스트인가 (00_docs/07 §6-9):
+ * - 발견을 파는 면은 필드를 감춘다 — 교보 베스트 카드는 표지+순위+제목+변동 4필드뿐
+ * - 그리드는 칸이 안 차면 "데이터가 없다"는 걸 광고한다.
+ *   행 리스트는 3권이어도, 10권이어도 같은 밀도로 읽힌다.
+ * - 순위 숫자 아래 변동 뱃지(▲12·NEW) — 어제 스냅샷이 있어야만 뜨는,
+ *   "매일 집계가 돌고 있다"는 증거 (RankDeltaBadge 참조)
+ * - 좋아요 버튼은 여기 두지 않는다 — 비교·행동은 책 정보 페이지의 일이다.
+ */
 type BookRankingListProps = {
   title: string;
   /** 집계 기준일 등 — 제목 우측에 붙는 메타 정보 */
@@ -14,8 +27,6 @@ type BookRankingListProps = {
   books: BookRanking[];
   type: 'best' | 'most';
   myReadIsbns?: string[];
-  myLikedIds?: string[];
-  isLoggedIn?: boolean;
 };
 
 export const BookRankingList = ({
@@ -24,17 +35,13 @@ export const BookRankingList = ({
   books,
   type,
   myReadIsbns = [],
-  myLikedIds = [],
-  isLoggedIn = true,
 }: BookRankingListProps) => {
   if (!books || books.length === 0) return null;
 
   return (
     <section>
-      {/* 제목 + 기준일. 부제로 제목을 되풀이하지 않는다 */}
-      <div className='mb-6 flex items-baseline justify-between gap-4'>
+      <div className='mb-3 flex items-baseline justify-between gap-4'>
         <h2 className='heading-2 text-text-strong'>{title}</h2>
-        {/* 전체 도서는 이제 공개다 — 비로그인 방문자에게도 진입로를 연다 */}
         <div className='flex shrink-0 items-baseline gap-3'>
           {meta && <span className='text-xs text-text-faint'>{meta}</span>}
           <Link
@@ -46,52 +53,94 @@ export const BookRankingList = ({
         </div>
       </div>
 
-      <div className='grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5'>
+      {/* 흰 바탕 위 구분선 리스트 — 박스로 감싸지 않는다 (교보 리스트 문법) */}
+      <ol className='divide-y divide-line-soft border-t border-line'>
         {books.map((item, index) => {
           const book = item.book_info;
+          const rank = item.rank ?? index + 1;
           const isRead = myReadIsbns.includes(book.isbn);
-          const isLiked = myLikedIds.includes(book.id);
 
           return (
-            <div key={item.isbn} className='flex flex-col gap-2'>
-              {/* 랭킹은 '발견'을 파는 면 — 소개·출판사·카테고리 팝오버를 감춘다 */}
-              <BookListItem
-                book={book}
-                rank={index + 1}
-                isReadProp={isRead}
-                isLikedProp={isLiked}
-                isLoggedIn={isLoggedIn}
-                variant='compact'
-              />
+            <li key={item.isbn}>
+              <Link
+                href={`/books/info/${book.id}`}
+                className='group flex items-center gap-4 py-3.5'
+              >
+                {/* 순위 + 변동 — 1~3위만 잉크색으로 세운다 */}
+                <span className='flex w-7 shrink-0 flex-col items-center gap-0.5'>
+                  <span
+                    aria-hidden='true'
+                    className={cn(
+                      'text-base font-bold tabular-nums',
+                      rank <= 3 ? 'text-text-strong' : 'text-text-faint'
+                    )}
+                  >
+                    {rank}
+                  </span>
+                  <span className='sr-only'>{rank}위</span>
+                  <RankDeltaBadge
+                    delta={item.rank_delta}
+                    isNew={item.is_new}
+                    hasHistory={item.has_history}
+                  />
+                </span>
 
-              {/* 랭킹 수치 — 이모지(🔥) 대신 숫자를 앞세운다 */}
-              <div className='flex items-center justify-center gap-1.5 text-xs text-text-subtle'>
-                {type === 'best' ? (
-                  <>
-                    <Heart className='h-3 w-3 fill-rank-up text-rank-up' />
-                    <span>
-                      <b className='font-medium text-text-body'>{item.count}</b>
-                      명이 10점
-                    </span>
-                  </>
+                {/* 표지 — 높이만 고정하고 판형(가로 비율)은 원본대로 둔다 */}
+                {book.cover_image ? (
+                  <Image
+                    src={book.cover_image}
+                    alt=''
+                    width={56}
+                    height={80}
+                    className='book-cover h-20 w-auto shrink-0'
+                  />
                 ) : (
-                  <span>
-                    <b className='font-medium text-text-body'>{item.count}</b>
-                    명이 완독
+                  <span
+                    aria-hidden='true'
+                    className='book-cover flex h-20 w-14 shrink-0 items-center justify-center bg-sunken p-1 text-center text-[10px] leading-tight text-text-faint'
+                  >
+                    {book.title.slice(0, 12)}
                   </span>
                 )}
 
-                {/* 전일 대비 순위 변동 — 스냅샷이 없으면 아무것도 그리지 않는다 */}
-                <RankDeltaBadge
-                  delta={item.rank_delta}
-                  isNew={item.is_new}
-                  hasHistory={item.has_history}
-                />
-              </div>
-            </div>
+                <div className='min-w-0 flex-1'>
+                  <p className='truncate text-[15px] font-medium text-text-strong group-hover:underline'>
+                    {book.title}
+                  </p>
+                  {book.author && (
+                    <p className='mt-0.5 truncate text-[13px] text-text-subtle'>
+                      {book.author}
+                    </p>
+                  )}
+                  {/* 랭킹 근거 수치 — 발견 면의 마지막 필드 */}
+                  <p className='mt-1 flex items-center gap-1 text-xs text-text-subtle'>
+                    {type === 'best' && (
+                      <Heart
+                        aria-hidden='true'
+                        className='size-3 fill-rank-up text-rank-up'
+                      />
+                    )}
+                    <span>
+                      <b className='font-medium text-text-body'>
+                        {item.count}
+                      </b>
+                      {type === 'best' ? '명이 10점' : '명이 완독'}
+                    </span>
+                  </p>
+                </div>
+
+                {/* 내가 완독한 책 — 완독 표시는 브랜드 블루의 직무다 */}
+                {isRead && (
+                  <span className='flex shrink-0 items-center gap-1 rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground'>
+                    <Check aria-hidden='true' className='size-3' />
+                    읽음
+                  </span>
+                )}
+              </Link>
+            </li>
           );
         })}
-      </div>
+      </ol>
     </section>
   );
 };

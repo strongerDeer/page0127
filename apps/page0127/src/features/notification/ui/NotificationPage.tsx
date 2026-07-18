@@ -142,7 +142,7 @@ export const NotificationPage = () => {
   return (
     <div className='space-y-4'>
       {/* 필터 및 액션 */}
-      <div className='flex items-center justify-between rounded-lg border border-border bg-card p-4'>
+      <div className='flex items-center justify-between rounded-2xl bg-sunken p-4'>
         <div className='flex gap-2'>
           <Button
             variant={filter === 'all' ? 'default' : 'ghost'}
@@ -174,7 +174,7 @@ export const NotificationPage = () => {
 
       {/* 알림 목록 */}
       {notifications.length === 0 ? (
-        <div className='rounded-lg border border-border bg-muted/50 py-12 text-center'>
+        <div className='rounded-2xl bg-sunken py-12 text-center'>
           <p className='text-muted-foreground'>
             {filter === 'unread'
               ? '읽지 않은 알림이 없습니다'
@@ -182,7 +182,7 @@ export const NotificationPage = () => {
           </p>
         </div>
       ) : (
-        <div className='rounded-lg border border-border bg-card'>
+        <div className='rounded-2xl bg-sunken'>
           {notifications.map((notification) => (
             <NotificationItem
               key={notification.id}

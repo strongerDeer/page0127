@@ -39,15 +39,18 @@ export const CalendarSection = async ({ userId }: CalendarSectionProps) => {
     .lte('completed_date', endDate)
     .order('completed_date', { ascending: true });
 
-  // 날짜별 그룹핑
+  // 날짜별 그룹핑 — ReadingCalendar의 Book 모양(cover/rating 비-널)으로
+  // 여기서 바로 변환한다. 이전에는 cover_image 키 그대로 담고
+  // `as unknown as`로 캐스팅해, 다이얼로그에서 book.cover가 항상
+  // undefined였다 (API 라우트는 cover로 매핑하므로 월 이동 후에만 표지가 떴다).
   const booksByDate = new Map<
     string,
     Array<{
       id: string;
       title: string;
       author: string;
-      cover_image: string | null;
-      rating: number | null;
+      cover: string;
+      rating: number;
     }>
   >();
   let totalPages = 0;
@@ -59,23 +62,14 @@ export const CalendarSection = async ({ userId }: CalendarSectionProps) => {
       id: book.id,
       title: book.title,
       author: book.author,
-      cover_image: book.cover_image,
-      rating: book.rating,
+      cover: book.cover_image ?? '',
+      rating: book.rating ?? 0,
     });
     if (book.page_count) totalPages += book.page_count;
   });
 
   const initialData: CalendarData[] = Array.from(booksByDate.entries()).map(
-    ([date, books]) => ({
-      date,
-      books: books as unknown as Array<{
-        id: string;
-        title: string;
-        author: string;
-        cover: string;
-        rating: number;
-      }>,
-    })
+    ([date, books]) => ({ date, books })
   );
 
   const initialSummary = {

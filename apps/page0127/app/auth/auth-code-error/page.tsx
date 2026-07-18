@@ -10,7 +10,7 @@ const AuthCodeErrorPage = () => {
   return (
     <div className='flex min-h-screen items-center justify-center'>
       <div className='text-center'>
-        <h1 className='mb-4 text-2xl font-bold'>인증 오류</h1>
+        <h1 className='heading-1 mb-4 text-text-strong'>인증 오류</h1>
         <p className='mb-6 text-muted-foreground'>
           로그인 중 문제가 발생했습니다. 다시 시도해주세요.
         </p>

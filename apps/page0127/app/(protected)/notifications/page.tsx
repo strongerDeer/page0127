@@ -15,9 +15,8 @@ export default function Notifications() {
   return (
     <PageContainer width='narrow' className='space-y-6'>
       <div>
-        <h1 className='text-2xl font-bold'>알림</h1>
-        <p className='mt-2 text-muted-foreground'>모든 알림을 확인하세요</p>
-      </div>
+        <h1 className='heading-1 text-text-strong'>알림</h1>
+              </div>
 
       <NotificationPage />
     </PageContainer>

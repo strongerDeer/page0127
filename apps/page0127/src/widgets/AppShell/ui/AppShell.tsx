@@ -24,5 +24,5 @@ export const AppShell = async ({
 
   const shellUser = await getShellUser(user.id);
 
-  return <AppShellLayout {...shellUser}>{children}</AppShellLayout>;
+  return <AppShellLayout user={shellUser}>{children}</AppShellLayout>;
 };

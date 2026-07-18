@@ -1,13 +1,17 @@
 import { Suspense } from 'react';
 
+import { ArrowRight, BookOpen, ScanSearch, Sparkles } from 'lucide-react';
+
 import { createClient } from '@/shared/config/supabase/server';
 import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 
 import { BookRankingError } from '@/widgets/book/ui/BookRankingError';
 import { BookRankingListSkeleton } from '@/widgets/book/ui/BookRankingListSkeleton';
 import { BookRankingSection } from '@/widgets/book/ui/BookRankingSection';
+import { DiscoveryCard } from '@/widgets/landing/ui/DiscoveryCard';
 import { HeroBannerSection } from '@/widgets/landing/ui/HeroBannerSection';
 import { HeroBannerSkeleton } from '@/widgets/landing/ui/HeroBannerSkeleton';
+import { PromoCards } from '@/widgets/landing/ui/PromoCards';
 import { SiteFooter } from '@/widgets/landing/ui/SiteFooter';
 import { StartCtaButton } from '@/widgets/landing/ui/StartCtaButton';
 import { TasteExampleCard } from '@/widgets/landing/ui/TasteExampleCard';
@@ -45,7 +49,6 @@ const Home = async () => {
   } = await supabase.auth.getUser();
 
   const myReadIsbns: string[] = [];
-  const myLikedIds: string[] = [];
 
   if (user) {
     const { data: myBooks } = await supabase
@@ -56,12 +59,6 @@ const Home = async () => {
     myBooks?.forEach((b: { isbn: string | null }) => {
       if (b.isbn) myReadIsbns.push(b.isbn);
     });
-
-    const { data: myLikes } = await supabase
-      .from('book_likes')
-      .select('book_id')
-      .eq('user_id', user.id);
-    myLikes?.forEach((l: { book_id: string }) => myLikedIds.push(l.book_id));
   }
 
   const aggregatedDate = getAggregatedDate();
@@ -84,63 +81,118 @@ const Home = async () => {
           </Suspense>
         </ErrorBoundary>
 
-        {/* 랭킹 — 각 섹션은 독립적으로 스트리밍되고 독립적으로 실패한다.
+        {/* 발견 카드(틴트 투톤) + 랭킹 리스트 — 편집 면과 데이터 면을 나란히.
+            각 섹션은 독립적으로 스트리밍되고 독립적으로 실패한다.
             ErrorBoundary(바깥) > Suspense(안): 로딩은 Suspense, 에러는 ErrorBoundary */}
-        <ErrorBoundary fallback={<BookRankingError title='이번 주 많이 읽힌 책' />}>
-          <Suspense fallback={<BookRankingListSkeleton />}>
-            <BookRankingSection
-              type='most'
-              title='이번 주 많이 읽힌 책'
-              meta={`${aggregatedDate} 기준`}
-              myReadIsbns={myReadIsbns}
-              myLikedIds={myLikedIds}
-              isLoggedIn={!!user}
-            />
-          </Suspense>
-        </ErrorBoundary>
+        <div className='grid items-start gap-8 lg:grid-cols-[2fr_3fr]'>
+          <ErrorBoundary fallback={null}>
+            <Suspense
+              fallback={
+                <div className='min-h-72 animate-pulse rounded-xl border border-line-soft bg-sunken' />
+              }
+            >
+              <DiscoveryCard />
+            </Suspense>
+          </ErrorBoundary>
 
+          <ErrorBoundary
+            fallback={<BookRankingError title='이번 주 많이 읽힌 책' />}
+          >
+            <Suspense fallback={<BookRankingListSkeleton />}>
+              <BookRankingSection
+                type='most'
+                title='이번 주 많이 읽힌 책'
+                meta={`${aggregatedDate} 기준`}
+                myReadIsbns={myReadIsbns}
+              />
+            </Suspense>
+          </ErrorBoundary>
+        </div>
+
+        {/* 프로모 카드 — 실제 기능으로 연결되는 비비드 면 2장 */}
+        <PromoCards isLoggedIn={!!user} />
+
+        {/* 10점 랭킹 — 데이터가 쌓이면 나타난다 */}
         <ErrorBoundary
           fallback={<BookRankingError title='10점을 준 사람이 가장 많은 책' />}
         >
-          <Suspense fallback={<BookRankingListSkeleton />}>
+          <Suspense fallback={null}>
             <BookRankingSection
               type='best'
               title='10점을 준 사람이 가장 많은 책'
               meta={`${aggregatedDate} 기준`}
               myReadIsbns={myReadIsbns}
-              myLikedIds={myLikedIds}
-              isLoggedIn={!!user}
             />
           </Suspense>
         </ErrorBoundary>
 
-        {/* 취향 분석 — 무엇을 해주는지 말로 설명하는 대신 결과물을 보여준다 */}
-        <section>
-          <div className='mb-5 flex items-end justify-between'>
-            <div>
-              <h2 className='heading-2 text-text-strong'>
-                page0127이 읽어주는 독서 성향
-              </h2>
-              <p className='mt-1 text-sm text-text-subtle'>
-                완독한 책이 다섯 권 모이면 이런 이야기를 들려드려요.
+        {/* 실제 책 표지와 결과지를 함께 보여주는 에디토리얼 취향 분석 섹션 */}
+        <section
+          className='overflow-hidden rounded-2xl border border-line-soft p-7 md:p-10'
+          style={{
+            background:
+              'linear-gradient(135deg, #f8f7f3 0%, #f1f4f7 58%, #edf2f8 100%)',
+          }}
+        >
+          <div className='grid items-center gap-10 lg:grid-cols-[5fr_7fr] lg:gap-14'>
+            <div className='max-w-md'>
+              <p className='flex items-center gap-2 text-xs font-semibold text-primary'>
+                <Sparkles aria-hidden='true' className='size-4' />
+                PAGE0127 TASTE REPORT
               </p>
+              <h2 className='mt-4 text-[28px] font-bold leading-[1.3] text-text-strong md:text-[34px]'>
+                다섯 권의 책이
+                <br />
+                <span className='text-primary'>취향의 문장</span>이 됩니다
+              </h2>
+              <p className='mt-4 max-w-sm break-keep text-[15px] leading-relaxed text-text-body'>
+                완독 기록에 반복해서 나타나는 주제와 문장의 결을 읽고, 한 편의
+                취향 노트로 정리해 드려요.
+              </p>
+
+              <div className='mt-8 flex flex-wrap items-center gap-2 text-xs font-medium text-text-subtle'>
+                <span className='flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-2'>
+                  <BookOpen aria-hidden='true' className='size-3.5' />
+                  완독 기록
+                </span>
+                <ArrowRight aria-hidden='true' className='size-3.5 text-text-faint' />
+                <span className='flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-2'>
+                  <ScanSearch aria-hidden='true' className='size-3.5' />
+                  패턴 분석
+                </span>
+                <ArrowRight aria-hidden='true' className='size-3.5 text-text-faint' />
+                <span className='flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-2'>
+                  <Sparkles aria-hidden='true' className='size-3.5' />
+                  취향 노트
+                </span>
+              </div>
             </div>
+
+            <Suspense
+              fallback={
+                <div className='min-h-96 animate-pulse rounded-2xl border border-line-soft bg-white/70' />
+              }
+            >
+              <TasteExampleCard />
+            </Suspense>
           </div>
-          <TasteExampleCard />
         </section>
 
-        {/* 시작하기 — 배너 CTA와 중복되지 않게 한 줄로만 */}
+        {/* 시작하기 — 흰 카드 대신 네이비 밴드. 페이지 끝을 무겁게 닫는다 */}
         {!user && (
-          <section className='flex flex-col items-center gap-4 rounded-xl border border-line bg-card px-6 py-10 text-center'>
-            <h2 className='heading-2 text-text-strong'>
+          <section
+            className='flex flex-col items-center gap-4 rounded-2xl px-6 py-12 text-center'
+            style={{ backgroundColor: '#14294e' }}
+          >
+            <h2 className='heading-2 text-white'>
               책장은 한 권부터 시작합니다
             </h2>
-            <p className='text-sm text-text-body'>
+            <p className='text-sm text-white/70'>
               구글 계정으로 10초면 시작할 수 있어요.
             </p>
             {/* GA4 이벤트 추적을 위해 Client 컴포넌트로 분리된 CTA */}
             <div className='mt-2'>
-              <StartCtaButton location='landing_bottom' />
+              <StartCtaButton location='landing_bottom' variant='inverse' />
             </div>
           </section>
         )}

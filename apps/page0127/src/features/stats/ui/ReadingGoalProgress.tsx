@@ -38,7 +38,7 @@ export const ReadingGoalProgress = ({
   // 목표가 설정되지 않은 경우
   if (!target || target === 0) {
     return (
-      <Card className='shadow-none'>
+      <Card>
         <CardHeader>
           <CardTitle className='flex items-center gap-2 text-lg text-foreground'>
             <Target className='h-5 w-5 text-primary' />

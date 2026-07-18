@@ -376,7 +376,7 @@ const CompatibilityResult = ({
       />
 
       {/* 4. 재분석 */}
-      <div className='flex items-center justify-between rounded-lg border border-border bg-muted/30 p-4'>
+      <div className='flex items-center justify-between rounded-xl bg-sunken p-4'>
         <p className='text-sm text-muted-foreground'>
           분석일:{' '}
           {new Date(analysis.created_at).toLocaleDateString('ko-KR')} — 책장이

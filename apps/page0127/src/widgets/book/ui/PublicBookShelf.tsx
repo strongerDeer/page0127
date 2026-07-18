@@ -17,6 +17,8 @@ type PublicBookShelfProps = {
    */
   bookHref?: (book: Book) => string;
   username?: string;
+  /** 대시보드처럼 카드 안에 들어갈 때 사용하는 조밀한 선반 */
+  compact?: boolean;
 };
 
 /**
@@ -31,6 +33,7 @@ export const PublicBookShelf = ({
   books,
   bookHref,
   username,
+  compact = false,
 }: PublicBookShelfProps) => {
   const [imgSrc, setImgSrc] = useState<Record<string, string>>({});
 
@@ -46,14 +49,14 @@ export const PublicBookShelf = ({
 
   if (books.length === 0) {
     return (
-      <div className='rounded-lg border border-border bg-muted/50 p-12 text-center'>
-        <p className='text-muted-foreground'>조건에 맞는 책이 없습니다.</p>
+      <div className='rounded-2xl bg-sunken p-12 text-center'>
+        <p className='text-text-body'>조건에 맞는 책이 없어요.</p>
       </div>
     );
   }
 
   return (
-    <div className={styles.shelf}>
+    <div className={`${styles.shelf} ${compact ? styles.compact : ''}`}>
       <ul className={styles.books}>
         {books.map((book) => {
           const isCoverView = book.rating === 5 || book.rating === 10;

@@ -2,7 +2,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { Star } from 'lucide-react';
-import { BookCheck, BookOpen, MessageSquare } from 'lucide-react';
 
 import { RelativeTime } from '@/shared/ui/RelativeTime';
 
@@ -14,36 +13,25 @@ import { LikeButton } from '@/features/like';
 /**
  * 활동 카드 컴포넌트
  *
- * 학습 포인트:
- * - 활동 타입별 다른 UI 표시
- * - 상대 시간 표시 (예: "3시간 전")
- * - 조건부 렌더링
+ * 디자인:
+ * - "누가 · 무엇을 · 언제"를 헤더 한 줄로 압축한다 (기존: 두 줄 + 색 아이콘)
+ * - 책은 본문이 아니라 "첨부" — 흰색 보더 모듈에 표지와 정보를 담는다.
+ * - 좋아요·댓글은 한 줄의 액션 바로 (기존: 세로로 쌓여 카드가 길어졌다)
+ * - 시간은 RelativeTime(<time> 시맨틱) 공용 컴포넌트 하나만 쓴다
  */
 type ActivityCardProps = {
   activity: Activity;
   initialCommentsOpen?: boolean; // 댓글 섹션 초기 펼침 상태
 };
 
-// 활동 타입별 의미 색은 차트 팔레트로 통일 (인디고 베이스 + 보조 파스텔)
-const getActivityIcon = (type: Activity['activity_type']) => {
-  switch (type) {
-    case 'book_added':
-      return <BookOpen className='h-5 w-5 text-chart-1' />;
-    case 'book_completed':
-      return <BookCheck className='h-5 w-5 text-chart-3' />;
-    case 'review_added':
-      return <MessageSquare className='h-5 w-5 text-chart-2' />;
-  }
-};
-
 const getActivityText = (type: Activity['activity_type']) => {
   switch (type) {
     case 'book_added':
-      return '새로운 책을 추가했습니다';
+      return '책장에 담았어요';
     case 'book_completed':
-      return '책을 완독했습니다';
+      return '완독했어요';
     case 'review_added':
-      return '리뷰를 작성했습니다';
+      return '리뷰를 남겼어요';
   }
 };
 
@@ -54,107 +42,102 @@ export const ActivityCard = ({
   if (!activity.book) return null;
 
   return (
-    <div className='rounded-lg border border-border bg-card p-4'>
-      {/* 사용자 정보 및 활동 타입 */}
-      <div className='mb-3 flex items-center gap-3'>
-        {/* 프로필 이미지 */}
+    // 테두리 카드가 아니라 구분선 리스트의 한 항목 — 부모(ActivityFeed)가 divide-y를 건다
+    <article className='py-7'>
+      {/* 헤더 — 누가 · 무엇을 · 언제, 한 줄 */}
+      <div className='flex items-center gap-3'>
         {activity.user.photo_url ? (
-          <div className='relative h-10 w-10 overflow-hidden rounded-full'>
+          <div className='relative size-11 shrink-0 overflow-hidden rounded-full'>
             <Image
               src={activity.user.photo_url}
-              alt={activity.user.nickname || '사용자'}
+              alt=''
               fill
-              sizes='40px'
+              sizes='44px'
               className='object-cover'
             />
           </div>
         ) : (
-          <div className='flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-bold text-muted-foreground'>
+          <div className='flex size-11 shrink-0 items-center justify-center rounded-full bg-accent text-base font-bold text-accent-foreground'>
             {(activity.user.nickname || 'U').charAt(0).toUpperCase()}
           </div>
         )}
 
-        {/* 사용자 이름 및 활동 */}
-        <div className='flex-1'>
-          <div className='flex items-center gap-2'>
-            <Link
-              href={`/${activity.user.nickname || activity.user.id}`}
-              className='font-semibold text-foreground hover:text-primary'
-            >
-              {activity.user.nickname || '익명'}
-            </Link>
-            {getActivityIcon(activity.activity_type)}
-          </div>
-          <p className='text-sm text-muted-foreground'>
+        <p className='min-w-0 flex-1 truncate text-base'>
+          <Link
+            href={`/${activity.user.nickname || activity.user.id}`}
+            className='font-semibold text-text-strong hover:underline'
+          >
+            {activity.user.nickname || '익명'}
+          </Link>
+          <span className='ml-1.5 text-text-subtle'>
             {getActivityText(activity.activity_type)}
-          </p>
-        </div>
+          </span>
+        </p>
 
-        {/* 시간 — 상대 시간은 "지금이 몇 시인지 아는 화면"에서만 나온다 */}
         <RelativeTime
           date={activity.created_at}
           className='shrink-0 text-sm text-text-faint'
         />
       </div>
 
-      {/* 책 정보 */}
-      <div className='flex gap-3'>
-        {/* 책 표지 */}
+      {/* 책 첨부 — 작은 표지 + 제목·저자·별점 */}
+      <div className='mt-4 flex items-center gap-4 rounded-xl border border-line-soft bg-card p-4'>
         {activity.book.cover_image ? (
-          <div className='relative h-32 w-24 flex-shrink-0 overflow-hidden rounded'>
-            <Image
-              src={activity.book.cover_image}
-              alt={activity.book.title}
-              fill
-              sizes='96px'
-              className='object-cover'
-            />
-          </div>
+          <Image
+            src={activity.book.cover_image}
+            alt=''
+            width={64}
+            height={96}
+            className='book-cover h-24 w-16 shrink-0 object-cover'
+          />
         ) : (
-          <div className='flex h-32 w-24 flex-shrink-0 items-center justify-center rounded bg-muted text-muted-foreground'>
-            <BookOpen className='h-8 w-8' />
-          </div>
+          <span className='book-cover flex h-24 w-16 shrink-0 items-center justify-center bg-sunken p-2 text-center text-[10px] leading-tight text-text-faint'>
+            {activity.book.title.slice(0, 10)}
+          </span>
         )}
 
-        {/* 책 상세 */}
-        <div className='flex-1'>
-          <h3 className='font-semibold text-foreground'>{activity.book.title}</h3>
-          <p className='text-sm text-muted-foreground'>{activity.book.author}</p>
+        <div className='min-w-0 flex-1'>
+          <p className='truncate text-base font-semibold text-text-strong'>
+            {activity.book.title}
+          </p>
+          <p className='mt-1 truncate text-sm text-text-subtle'>
+            {activity.book.author}
+          </p>
+        </div>
 
-          {/* 평점 (완독 시) */}
-          {activity.activity_type === 'book_completed' &&
-            activity.book.rating && (
-              <div className='mt-2 flex items-center gap-1'>
-                <Star className='h-3.5 w-3.5 fill-chart-4 text-chart-4' />
-                <span className='text-sm font-medium text-text-body'>
-                  {activity.book.rating}/10
-                </span>
-              </div>
-            )}
-
-          {/* 리뷰 내용 */}
-          {activity.activity_type === 'review_added' && activity.content && (
-            <p className='mt-2 line-clamp-3 text-sm text-muted-foreground'>
-              {activity.content}
+        {/* 평점 (완독 시) — 첨부 우측에 정렬 */}
+        {activity.activity_type === 'book_completed' &&
+          activity.book.rating && (
+            <p className='flex shrink-0 items-center gap-1.5 text-sm font-medium text-text-body'>
+              <Star
+                aria-hidden='true'
+                className='size-3.5 fill-rank-up text-rank-up'
+              />
+              {activity.book.rating}
             </p>
           )}
-        </div>
       </div>
 
-      {/* 좋아요 및 댓글 */}
-      <div className='mt-3 space-y-3 border-t pt-3'>
+      {/* 리뷰 내용 — 유저가 쓴 글은 다듬지 않고 그대로 보여준다 */}
+      {activity.activity_type === 'review_added' && activity.content && (
+        <p className='mt-4 line-clamp-3 break-keep text-[15px] leading-7 text-text-body'>
+          {activity.content}
+        </p>
+      )}
+
+      {/* 액션 바 — 좋아요·댓글 한 줄. 댓글 패널은 w-full로 줄바꿈해 전체 폭 사용.
+          리스트 구분선과 겹치므로 자체 border는 두지 않는다 */}
+      <div className='mt-3 flex flex-wrap items-center gap-1'>
         <LikeButton
           activityId={activity.id}
           count={activity.likes.count}
           isLiked={activity.likes.isLiked}
         />
-
-        {/* 댓글 섹션 */}
         <CommentSection
           activityId={activity.id}
           initialOpen={initialCommentsOpen}
         />
       </div>
-    </div>
+    </article>
   );
 };

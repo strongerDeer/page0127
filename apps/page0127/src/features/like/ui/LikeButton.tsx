@@ -135,8 +135,8 @@ export const LikeButton = ({ activityId, count, isLiked }: LikeButtonProps) => {
         aria-hidden='true'
         className={`h-4 w-4 transition-all ${
           isLiked
-            ? 'fill-chart-5 text-chart-5'
-            : 'text-muted-foreground hover:text-chart-5'
+            ? 'fill-rank-up text-rank-up'
+            : 'text-text-faint hover:text-rank-up'
         }`}
       />
       <span className='text-sm text-muted-foreground'>{count}</span>

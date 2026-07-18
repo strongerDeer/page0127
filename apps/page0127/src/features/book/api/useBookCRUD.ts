@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { bookApi } from '@/entities/book';
 
@@ -71,29 +71,31 @@ export const useBookCRUD = () => {
 
   /**
    * R: 도서 상세 조회
-   * useCallback 불필요: 이 함수를 useEffect 의존성 배열에 넣는 곳이 없다.
-   * useCallback이 필요한 경우는 "이 함수가 useEffect deps에 들어가거나,
-   * React.memo로 감싼 자식 컴포넌트에 props로 전달될 때"뿐이다.
+   * 수정 페이지의 useEffect 의존성으로 사용되므로 함수 참조를 고정한다.
+   * 참조가 렌더마다 바뀌면 로딩 상태 변경 → 재렌더 → 재조회가 반복된다.
    */
-  const getBookById = async (id: string): Promise<Book | null> => {
-    setIsLoading(true);
-    setError(null);
+  const getBookById = useCallback(
+    async (id: string): Promise<Book | null> => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const data = await bookApi.getBookById(id);
-      return data;
-    } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : '도서 조회 중 오류가 발생했습니다.';
-      setError(message);
-      console.error(err);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      try {
+        const data = await bookApi.getBookById(id);
+        return data;
+      } catch (err) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : '도서 조회 중 오류가 발생했습니다.';
+        setError(message);
+        console.error(err);
+        return null;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
 
   /**
    * U: 도서 정보 수정

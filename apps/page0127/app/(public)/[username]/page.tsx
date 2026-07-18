@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
 
-import { getBookStats } from '@/entities/book/server';
+import { getBookStats, getOverallStats } from '@/entities/book/server';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 
 import { PublicLibraryContent } from '@/widgets/public-library/PublicLibraryContent';
@@ -25,7 +25,7 @@ const getPublicBooks = async (userId: string): Promise<Book[]> => {
     .select('*')
     .eq('user_id', userId)
     .eq('is_public', true)
-    .order('created_at', { ascending: false});
+    .order('created_at', { ascending: false });
 
   if (error) {
     console.error('책 목록 조회 실패:', error.message);
@@ -53,7 +53,12 @@ const PublicLibraryPage = async ({ params, searchParams }: PageProps) => {
   const selectedYear = year ? parseInt(year, 10) : currentYear;
 
   // 1. 프로필 조회와 현재 사용자 확인은 서로 독립 → 병렬
-  const [profile, { data: { user: currentUser } }] = await Promise.all([
+  const [
+    profile,
+    {
+      data: { user: currentUser },
+    },
+  ] = await Promise.all([
     getProfileByUsername(username),
     supabase.auth.getUser(),
   ]);
@@ -65,20 +70,21 @@ const PublicLibraryPage = async ({ params, searchParams }: PageProps) => {
   const isOwnProfile = currentUser?.id === profile.id;
 
   // 2. 공개된 책 목록과 연도별 통계는 profile.id에만 의존 → 병렬
-  const [allBooks, stats] = await Promise.all([
+  const [allBooks, stats, overallStats] = await Promise.all([
     getPublicBooks(profile.id),
     getBookStats(profile.id, selectedYear),
+    getOverallStats(profile.id),
   ]);
 
   // 3. 사용 가능한 연도 목록 생성
   const bookYears = allBooks
     .map((book) =>
-      book.created_at ? new Date(book.created_at).getFullYear() : null,
+      book.created_at ? new Date(book.created_at).getFullYear() : null
     )
     .filter((year): year is number => year !== null);
 
   const uniqueYears = Array.from(new Set([currentYear, ...bookYears])).sort(
-    (a, b) => b - a,
+    (a, b) => b - a
   );
 
   // 4. 선택된 연도의 책만 필터링
@@ -95,6 +101,7 @@ const PublicLibraryPage = async ({ params, searchParams }: PageProps) => {
       currentUserId={currentUser?.id}
       books={booksInYear}
       stats={stats}
+      yearlyReading={overallStats.yearlyTrend}
       availableYears={uniqueYears}
       selectedYear={selectedYear}
     />

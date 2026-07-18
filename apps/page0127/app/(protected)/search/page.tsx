@@ -20,9 +20,9 @@ export default async function SearchPage() {
   return (
     <PageContainer width='narrow' className='space-y-6'>
       <div>
-        <h1 className='text-2xl font-bold'>사용자 검색</h1>
-        <p className='mt-2 text-muted-foreground'>
-          닉네임이나 사용자명으로 다른 사용자를 찾아보세요
+        <h1 className='heading-1 text-text-strong'>사용자 검색</h1>
+        <p className='mt-2 text-sm text-text-subtle'>
+          닉네임이나 아이디로 함께 읽는 사람을 찾아보세요
         </p>
       </div>
 
