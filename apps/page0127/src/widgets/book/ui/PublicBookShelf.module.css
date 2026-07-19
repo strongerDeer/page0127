@@ -21,20 +21,26 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 30px 0;
+  /* 줄 반복 높이 = li 249 + gap 31 = 280 = background-size 높이 (오차 누적 없음) */
+  gap: 31px 0;
 }
 
 .books li {
   flex-shrink: 0;
+  /* li 높이가 클수록 책 바닥이 아래로 내려가 선반에 붙는다.
+     240px=선반에서 뜸, 250px=상판 덮음 → 249px가 "선반에 붙어 얹힌" 지점. */
+  height: 249px;
+  /* 항상 바닥 정렬 → 표지·책등이 섞여도 밑단이 선반에 나란히 놓임 */
   display: flex;
-  align-content: center;
+  align-items: flex-end;
   justify-content: flex-start;
 }
 
 .books li a {
   display: block;
   transition: all 0.3s;
-  padding: 10px 1px 0;
+  /* 위 패딩 제거: flex-end에서 위 패딩은 이미지를 선반 아래로 밀어 선을 덮는다 */
+  padding: 0 1px;
 }
 
 .books li a img {
@@ -101,13 +107,19 @@
 }
 
 .compact .books {
-  justify-content: flex-start;
-  gap: 18px 2px;
+  justify-content: center;
+  /* 줄 반복 = li 218 + gap 28 = 246 = compact background-size 높이 */
+  gap: 28px 2px;
 }
 
 .compact .books li a img,
 .compact .noImage {
   height: 210px;
+}
+
+/* li 높이가 클수록 책이 선반에 붙는다 → 218px가 얹힌 지점 */
+.compact .books li {
+  height: 218px;
 }
 
 .compact .noImage.cover {

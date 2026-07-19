@@ -25,7 +25,8 @@ const getPublicBooks = async (userId: string): Promise<Book[]> => {
     .select('*')
     .eq('user_id', userId)
     .eq('is_public', true)
-    .order('created_at', { ascending: false });
+    // 내 서재와 동일하게 완독일 기준으로 정렬한다 (연도 분류도 completed_date 기준)
+    .order('completed_date', { ascending: false });
 
   if (error) {
     console.error('책 목록 조회 실패:', error.message);
@@ -76,10 +77,10 @@ const PublicLibraryPage = async ({ params, searchParams }: PageProps) => {
     getOverallStats(profile.id),
   ]);
 
-  // 3. 사용 가능한 연도 목록 생성
+  // 3. 사용 가능한 연도 목록 생성 (완독일 기준 — 내 서재와 동일)
   const bookYears = allBooks
     .map((book) =>
-      book.created_at ? new Date(book.created_at).getFullYear() : null
+      book.completed_date ? new Date(book.completed_date).getFullYear() : null
     )
     .filter((year): year is number => year !== null);
 
@@ -87,10 +88,10 @@ const PublicLibraryPage = async ({ params, searchParams }: PageProps) => {
     (a, b) => b - a
   );
 
-  // 4. 선택된 연도의 책만 필터링
+  // 4. 선택된 연도의 책만 필터링 (완독일 기준)
   const booksInYear = allBooks.filter((book) => {
-    if (!book.created_at) return false;
-    return new Date(book.created_at).getFullYear() === selectedYear;
+    if (!book.completed_date) return false;
+    return new Date(book.completed_date).getFullYear() === selectedYear;
   });
 
   return (

@@ -29,6 +29,11 @@ export const YearlyTrendChart = ({ data }: Props) => {
   const peakYear = data.reduce((max, item) =>
     item.count > max.count ? item : max
   );
+  // 강조할 연도 = 올해. 단, 올해 기록이 없어 막대가 없으면 가장 최신 연도로 폴백.
+  const thisYear = new Date().getFullYear();
+  const highlightYear = data.some((d) => d.year === thisYear)
+    ? thisYear
+    : data[data.length - 1].year;
   const currentYear = data[data.length - 1];
   const previousYear = data[data.length - 2];
   const growthRate =
@@ -78,7 +83,9 @@ export const YearlyTrendChart = ({ data }: Props) => {
               <Cell
                 key={item.year}
                 fill={
-                  item.year === peakYear.year ? 'var(--primary)' : 'var(--line)'
+                  item.year === highlightYear
+                    ? 'var(--primary)'
+                    : 'var(--line)'
                 }
               />
             ))}

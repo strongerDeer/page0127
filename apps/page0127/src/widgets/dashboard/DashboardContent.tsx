@@ -33,8 +33,11 @@ import {
 
 import { ReadingGoalDialog } from '@/features/profile/ui/ReadingGoalDialog';
 import { useLibraryFilters } from '@/features/stats/model/useLibraryFilters';
+import { CategoryRadarChart } from '@/features/stats/ui/CategoryRadarChart';
 import { DashboardBookList } from '@/features/stats/ui/DashboardBookList';
+import { OverallDistribution } from '@/features/stats/ui/OverallDistribution';
 import { ReadingProgressOverview } from '@/features/stats/ui/ReadingProgressOverview';
+import { YearlyTrendChart } from '@/features/stats/ui/YearlyTrendChart';
 
 import { PublicBookShelf } from '@/widgets/book/ui/PublicBookShelf';
 import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
@@ -65,8 +68,11 @@ type DashboardContentProps = {
   /** 통계 데이터 */
   stats: BookStats;
 
-  /** 완독한 책 목록 */
+  /** 완독한 책 목록 (선택된 연도로 필터링됨) */
   books: Book[];
+
+  /** 취향 분석 게이트용 — 전체 기록 중 완독+별점 있는 책 수 (연도 무관) */
+  analyzableBookCount: number;
 
   /** 사용자 이메일 */
   userEmail: string;
@@ -108,6 +114,7 @@ export const DashboardContent = ({
   overallStats,
   stats,
   books,
+  analyzableBookCount,
   userEmail: _userEmail,
   availableYears,
   selectedYear,
@@ -178,12 +185,10 @@ export const DashboardContent = ({
   };
 
   // AI 취향 분석 — 최소 조건 확인 후 확인 다이얼로그 오픈
+  // books는 선택 연도로 필터링돼 있으므로, 게이트 판정은 전체 기준 카운트를 쓴다.
+  // (실제 분석도 서버에서 전체 책으로 수행된다)
   const handleAnalyzeTaste = () => {
-    const completedBooks = books.filter(
-      (book) => book.status === 'completed' && book.rating !== null
-    );
-
-    if (completedBooks.length < 5) {
+    if (analyzableBookCount < 5) {
       toast.error(
         '취향 분석을 위해 최소 5권의 완독한 책(별점 포함)이 필요합니다.'
       );
@@ -225,24 +230,8 @@ export const DashboardContent = ({
           </p>
         </div>
 
+        {/* 연도 셀렉트는 아래 '연도별 기록' 섹션으로 이동 — header엔 액션만 둔다 */}
         <div className='flex flex-wrap items-center gap-3'>
-          {/* Year Select */}
-          <Select
-            value={selectedYear.toString()}
-            onValueChange={handleYearChange}
-          >
-            <SelectTrigger className='w-[140px] bg-card shadow-none'>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {availableYears.map((year) => (
-                <SelectItem key={year} value={year.toString()}>
-                  {year}년
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
           <Button onClick={handleAnalyzeTaste} disabled={isAnalyzing}>
             {isAnalyzing ? '분석 중…' : '취향 분석'}
           </Button>
@@ -262,7 +251,114 @@ export const DashboardContent = ({
         </div>
       </header>
 
-      {/* 서재의 주인공은 책: 카드 면 없이 가로선 사이에 바로 배치한다. */}
+      {/* ━━━━━ 1. 전체 통합 통계 (연도 무관, 누적) ━━━━━ */}
+      <section className='space-y-6'>
+        <h2 className='heading-2 text-text-strong'>전체 기록</h2>
+
+        {/* 상단: 누적 지표 카드 + 연도별 완독 추이 막대 */}
+        <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
+          <Card className='rounded-2xl bg-card py-6 shadow-none'>
+            <CardHeader>
+              <CardTitle>지금까지의 기록</CardTitle>
+            </CardHeader>
+            <CardContent className='space-y-4'>
+              <ReadingJourneyCard data={overallStats.journey} />
+            </CardContent>
+          </Card>
+
+          <Card className='rounded-2xl bg-card py-6 shadow-none lg:col-span-2'>
+            <CardHeader className='pb-4'>
+              <CardTitle>연도별 완독 추이</CardTitle>
+              <p className='text-sm text-muted-foreground'>
+                최근 연도별 완독 권수를 비교합니다
+              </p>
+            </CardHeader>
+            <CardContent className='pb-6'>
+              <YearlyTrendChart data={overallStats.yearlyTrend} />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 하단: 카테고리 레이더 + 평점 분포 막대 */}
+        <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
+          <Card className='rounded-2xl bg-card py-6 shadow-none'>
+            <CardHeader className='pb-4'>
+              <CardTitle>카테고리 취향</CardTitle>
+              <p className='text-sm text-muted-foreground'>
+                전체 완독 기준으로 정리했습니다
+              </p>
+            </CardHeader>
+            <CardContent className='pb-6'>
+              <CategoryRadarChart data={overallStats.categoryDistribution} />
+            </CardContent>
+          </Card>
+
+          <Card className='rounded-2xl bg-card py-6 shadow-none'>
+            <CardHeader className='pb-4'>
+              <CardTitle>평점 분포</CardTitle>
+              <p className='text-sm text-muted-foreground'>
+                전체 완독 기준입니다
+              </p>
+            </CardHeader>
+            <CardContent className='pb-6'>
+              <OverallDistribution ratings={overallStats.ratingDistribution} />
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* ━━━━━ 2. 연도별 통계 (선택 연도 기준) ━━━━━ */}
+      <section className='space-y-6'>
+        <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+          <h2 className='heading-2 text-text-strong'>연도별 기록</h2>
+
+          {/* Year Select — 연도별 섹션 안으로 이동 */}
+          <Select value={selectedYear.toString()} onValueChange={handleYearChange}>
+            <SelectTrigger className='w-[140px] bg-card shadow-none'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {availableYears.map((year) => (
+                <SelectItem key={year} value={year.toString()}>
+                  {year}년
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <ReadingProgressOverview
+          year={selectedYear}
+          completed={stats.totalCompletedBooks}
+          target={goalTarget}
+          totalPages={stats.totalPages}
+          averageRating={stats.averageRating}
+          favoriteBooks={stats.fiveStarBooks}
+          books={books}
+          onSetGoal={
+            selectedYear === currentYear
+              ? () => setIsGoalDialogOpen(true)
+              : undefined
+          }
+        />
+
+        <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
+          <div className='space-y-6 lg:col-span-2'>
+            <DashboardCharts
+              monthlyReading={stats.monthlyReading}
+              yearlyReading={overallStats.yearlyTrend}
+              categoryReading={stats.categoryReading}
+              ratingReading={stats.ratingReading}
+              averageRating={stats.averageRating}
+              onMonthClick={handleMonthClick}
+              onRatingClick={handleRatingClick}
+            />
+          </div>
+          <div className='space-y-6'>{calendarSlot}</div>
+        </div>
+      </section>
+
+      {/* ━━━━━ 3. 서재 책장 (맨 아래) ━━━━━ */}
       <section
         className='py-6'
         style={{
@@ -290,53 +386,6 @@ export const DashboardContent = ({
           )}
         />
       </section>
-
-      <ReadingProgressOverview
-        year={selectedYear}
-        completed={stats.totalCompletedBooks}
-        target={goalTarget}
-        totalPages={stats.totalPages}
-        averageRating={stats.averageRating}
-        favoriteBooks={stats.fiveStarBooks}
-        books={books}
-        onSetGoal={
-          selectedYear === currentYear
-            ? () => setIsGoalDialogOpen(true)
-            : undefined
-        }
-      />
-
-      {/* Main Grid Section */}
-      <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
-        {/* Left Column (Hero / Charts) - Spans 2 cols */}
-        <div className='space-y-6 lg:col-span-2'>
-          <DashboardCharts
-            monthlyReading={stats.monthlyReading}
-            yearlyReading={overallStats.yearlyTrend}
-            categoryReading={stats.categoryReading}
-            ratingReading={stats.ratingReading}
-            averageRating={stats.averageRating}
-            onMonthClick={handleMonthClick}
-            onRatingClick={handleRatingClick}
-          />
-        </div>
-
-        {/* Right Column (Side Widgets) */}
-        <div className='space-y-6'>
-          {/* Reading Journey (All Time) */}
-          <Card className='rounded-2xl bg-card py-6 shadow-none'>
-            <CardHeader>
-              <CardTitle>지금까지의 기록</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-4'>
-              <ReadingJourneyCard data={overallStats.journey} />
-            </CardContent>
-          </Card>
-
-          {/* 누적 기록 다음에 월별 독서 흐름을 바로 확인한다. */}
-          {calendarSlot}
-        </div>
-      </div>
 
       <ReadingGoalDialog
         isOpen={isGoalDialogOpen}

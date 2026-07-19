@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // 서버 전용 환경변수 — NEXT_PUBLIC_ 접두사를 붙이면 키가 클라이언트 번들에 인라인된다
 const ALADIN_API_KEY = process.env.ALADIN_API_KEY;
-const ALADIN_API_BASE_URL = 'http://www.aladin.co.kr/ttb/api/ItemLookUp.aspx';
+const ALADIN_API_BASE_URL = 'https://www.aladin.co.kr/ttb/api/ItemLookUp.aspx';
 
 /**
  * 알라딘 도서 상세 조회 API Route

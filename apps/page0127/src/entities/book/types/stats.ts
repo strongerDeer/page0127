@@ -99,6 +99,9 @@ export type OverallStats = {
 
   /** 평점 분포 (Horizontal Bar용) */
   ratingDistribution: RatingDistribution[];
+
+  /** 전체 카테고리 분포 (권수 많은 순) — 상단 전체 통계 섹션용 */
+  categoryDistribution: CategoryReadingData[];
 };
 
 /**

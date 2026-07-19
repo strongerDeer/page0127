@@ -24,9 +24,11 @@ export const useGoogleLogin = () => {
     const supabase = createClient();
 
     // OAuth 리디렉션 URL 설정
-    // 1. 환경 변수가 설정되어 있으면 사용
-    // 2. 없으면 location.origin 사용 (브라우저 현재 도메인)
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || location.origin;
+    // - 항상 "지금 접속 중인 브라우저 도메인"(location.origin)을 우선한다.
+    //   → 로컬은 localhost:3000, 프로덕션은 배포 도메인이 자동으로 잡힘.
+    // - NEXT_PUBLIC_* 는 빌드 타임에 값이 박혀서, localhost로 빌드하면
+    //   프로덕션에서도 localhost로 돌아오는 문제가 있었음 → 환경변수는 폴백으로만.
+    const siteUrl = location.origin || process.env.NEXT_PUBLIC_SITE_URL;
 
     // Google OAuth 로그인 시작
     // signInWithOAuth는 즉시 리디렉션 발생 → 외부 Google 로그인 페이지로 이동

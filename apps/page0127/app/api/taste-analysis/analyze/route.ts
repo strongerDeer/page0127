@@ -220,7 +220,7 @@ async function enrichRecommendationsWithAladinData(
 ): Promise<void> {
   // 서버 전용 환경변수 — NEXT_PUBLIC_ 접두사를 붙이면 키가 클라이언트 번들에 인라인된다
   const ALADIN_API_KEY = process.env.ALADIN_API_KEY;
-  const ALADIN_API_BASE_URL = 'http://www.aladin.co.kr/ttb/api/ItemSearch.aspx';
+  const ALADIN_API_BASE_URL = 'https://www.aladin.co.kr/ttb/api/ItemSearch.aspx';
 
   if (!ALADIN_API_KEY) {
     console.error('ALADIN_API_KEY 환경변수가 설정되지 않아 추천 도서 보강을 건너뜁니다.');

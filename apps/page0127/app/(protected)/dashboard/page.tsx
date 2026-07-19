@@ -53,26 +53,44 @@ const DashboardPage = async (props: {
     return p;
   };
 
+  // 서재 목록 쿼리 — 선택된 연도(completed_date 기준)로 필터링한다.
+  // 체이닝 중간에 조건을 끼우기 위해 쿼리를 먼저 변수로 만든 뒤 gte/lte를 붙인다.
+  // (getMyBooks의 연도 필터와 동일한 방식: completed_date가 그 해에 속하는 책만)
+  const booksQuery = supabase
+    .from('books')
+    .select('*')
+    .eq('user_id', user!.id)
+    .gte('completed_date', `${selectedYear}-01-01`)
+    .lte('completed_date', `${selectedYear}-12-31`)
+    .order('completed_date', { ascending: false });
+
   // 서로 독립적인 4개 데이터를 병렬로 페치 → 직렬 await(waterfall) 제거
   // (selectedYear는 위 getAvailableYears 결과에만 의존하므로 여기서 안전)
   const [profile, overallStats, stats, allBooksResult] = await Promise.all([
     ensureProfile(),
     getOverallStats(user!.id),
     getBookStats(user!.id, selectedYear),
-    supabase
-      .from('books')
-      .select('*')
-      .eq('user_id', user!.id)
-      .order('created_at', { ascending: false }),
+    booksQuery,
   ]);
 
   const books = allBooksResult.data ?? [];
+
+  // 취향 분석 게이트는 "선택 연도"가 아니라 "전체 기록" 기준이어야 한다.
+  // (books는 위에서 연도 필터가 걸려 있으므로 여기 카운트에 쓰면 안 됨)
+  // 완독 + 별점 있는 책이 전체에서 몇 권인지 별도로 조회한다.
+  const { count: analyzableBookCount } = await supabase
+    .from('books')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user!.id)
+    .eq('status', 'completed')
+    .not('rating', 'is', null);
 
   return (
     <DashboardContent
       overallStats={overallStats}
       stats={stats}
       books={books}
+      analyzableBookCount={analyzableBookCount ?? 0}
       userEmail={user!.email!}
       availableYears={availableYears}
       selectedYear={selectedYear}
