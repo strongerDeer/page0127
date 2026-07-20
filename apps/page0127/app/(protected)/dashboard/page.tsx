@@ -37,11 +37,12 @@ const DashboardPage = async (props: {
   const availableYears = await getAvailableYears(user!.id);
 
   const currentYear = new Date().getFullYear();
-  const selectedYear = searchParams.year
-    ? parseInt(searchParams.year, 10)
-    : availableYears.includes(currentYear)
-      ? currentYear
-      : (availableYears[0] ?? currentYear);
+  // 뷰 모드: 'all'(전체 누적) 또는 특정 연도.
+  // 기본은 '전체' — 누적을 먼저 보여주고 연도 탭으로 좁혀 들어가는 흐름.
+  const isAllView = !searchParams.year || searchParams.year === 'all';
+  const selectedYear = isAllView
+    ? currentYear // 전체 뷰에서도 목표/그래프 기준 연도로 올해를 쓴다
+    : parseInt(searchParams.year!, 10);
 
   // profile은 없으면 생성 후 재조회해야 하므로 헬퍼로 감싼다 (Promise.all에 넣기 위함)
   const ensureProfile = async () => {
@@ -53,23 +54,29 @@ const DashboardPage = async (props: {
     return p;
   };
 
-  // 서재 목록 쿼리 — 선택된 연도(completed_date 기준)로 필터링한다.
-  // 체이닝 중간에 조건을 끼우기 위해 쿼리를 먼저 변수로 만든 뒤 gte/lte를 붙인다.
-  // (getMyBooks의 연도 필터와 동일한 방식: completed_date가 그 해에 속하는 책만)
-  const booksQuery = supabase
+  // 서재 목록 쿼리 — 전체 뷰는 완독 전체, 연도 뷰는 그 해 completed_date만.
+  // (체이닝 중간에 조건을 끼우기 위해 쿼리를 먼저 변수로 만든다)
+  let booksQuery = supabase
     .from('books')
     .select('*')
     .eq('user_id', user!.id)
-    .gte('completed_date', `${selectedYear}-01-01`)
-    .lte('completed_date', `${selectedYear}-12-31`)
-    .order('completed_date', { ascending: false });
+    .eq('status', 'completed')
+    .order('completed_date', { ascending: false })
+    // 전체 뷰는 서재 전권을 싣되 과도한 로딩을 막는 안전 상한
+    .limit(1000);
+
+  if (!isAllView) {
+    booksQuery = booksQuery
+      .gte('completed_date', `${selectedYear}-01-01`)
+      .lte('completed_date', `${selectedYear}-12-31`);
+  }
 
   // 서로 독립적인 4개 데이터를 병렬로 페치 → 직렬 await(waterfall) 제거
-  // (selectedYear는 위 getAvailableYears 결과에만 의존하므로 여기서 안전)
+  // 전체 뷰면 연도 통계도 전체 기준(year=null)으로 집계한다.
   const [profile, overallStats, stats, allBooksResult] = await Promise.all([
     ensureProfile(),
     getOverallStats(user!.id),
-    getBookStats(user!.id, selectedYear),
+    getBookStats(user!.id, isAllView ? null : selectedYear),
     booksQuery,
   ]);
 
@@ -94,6 +101,7 @@ const DashboardPage = async (props: {
       userEmail={user!.email!}
       availableYears={availableYears}
       selectedYear={selectedYear}
+      isAllView={isAllView}
       profile={profile}
       currentYear={currentYear}
       // Calendar 영역은 외부에서 주입 (ErrorBoundary > Suspense로 감싸 별도 스트리밍)

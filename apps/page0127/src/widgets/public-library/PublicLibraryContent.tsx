@@ -26,7 +26,7 @@ import { PublicBookShelf } from '@/widgets/book/ui/PublicBookShelf';
 
 import { PublicLibraryHeader } from './PublicLibraryHeader';
 
-import type { Book, YearlyTrend } from '@/entities/book';
+import type { Book } from '@/entities/book';
 import type { BookStats } from '@/entities/book';
 import type { Profile } from '@/entities/profile/types';
 
@@ -37,7 +37,6 @@ type PublicLibraryContentProps = {
   currentUserId?: string;
   books: Book[];
   stats: BookStats;
-  yearlyReading: YearlyTrend[];
   availableYears: number[];
   selectedYear: number;
 };
@@ -57,7 +56,6 @@ export const PublicLibraryContent = ({
   currentUserId,
   books,
   stats,
-  yearlyReading,
   availableYears,
   selectedYear,
 }: PublicLibraryContentProps) => {
@@ -123,6 +121,7 @@ export const PublicLibraryContent = ({
 
       <ReadingProgressOverview
         year={selectedYear}
+        currentYear={new Date().getFullYear()}
         completed={stats.totalCompletedBooks}
         target={goalTarget}
         totalPages={stats.totalPages}
@@ -143,7 +142,6 @@ export const PublicLibraryContent = ({
 
         <DashboardCharts
           monthlyReading={stats.monthlyReading}
-          yearlyReading={yearlyReading}
           categoryReading={stats.categoryReading}
           ratingReading={stats.ratingReading}
           averageRating={stats.averageRating}

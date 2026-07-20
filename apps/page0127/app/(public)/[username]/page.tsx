@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
 
-import { getBookStats, getOverallStats } from '@/entities/book/server';
+import { getBookStats } from '@/entities/book/server';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 
 import { PublicLibraryContent } from '@/widgets/public-library/PublicLibraryContent';
@@ -71,10 +71,9 @@ const PublicLibraryPage = async ({ params, searchParams }: PageProps) => {
   const isOwnProfile = currentUser?.id === profile.id;
 
   // 2. 공개된 책 목록과 연도별 통계는 profile.id에만 의존 → 병렬
-  const [allBooks, stats, overallStats] = await Promise.all([
+  const [allBooks, stats] = await Promise.all([
     getPublicBooks(profile.id),
     getBookStats(profile.id, selectedYear),
-    getOverallStats(profile.id),
   ]);
 
   // 3. 사용 가능한 연도 목록 생성 (완독일 기준 — 내 서재와 동일)
@@ -102,7 +101,6 @@ const PublicLibraryPage = async ({ params, searchParams }: PageProps) => {
       currentUserId={currentUser?.id}
       books={booksInYear}
       stats={stats}
-      yearlyReading={overallStats.yearlyTrend}
       availableYears={uniqueYears}
       selectedYear={selectedYear}
     />

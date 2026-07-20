@@ -1,24 +1,19 @@
 'use client';
 
-import { useState } from 'react';
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 
 import { CategoryRadarChart } from './CategoryRadarChart';
 import { MonthlyReadingChart } from './MonthlyReadingChart';
 import { RatingDoughnutChart } from './RatingDoughnutChart';
-import { YearlyTrendChart } from './YearlyTrendChart';
 
 import type {
   CategoryReadingData,
   MonthlyReadingData,
   RatingReadingData,
-  YearlyTrend,
 } from '@/entities/book';
 
 type DashboardChartsProps = {
   monthlyReading: MonthlyReadingData[];
-  yearlyReading: YearlyTrend[];
   categoryReading: CategoryReadingData[];
   ratingReading: RatingReadingData[];
   averageRating: number;
@@ -47,70 +42,30 @@ type DashboardChartsProps = {
  */
 export const DashboardCharts = ({
   monthlyReading,
-  yearlyReading,
   categoryReading,
   ratingReading,
   averageRating,
   onMonthClick,
   onRatingClick,
 }: DashboardChartsProps) => {
-  const [trendPeriod, setTrendPeriod] = useState<'monthly' | 'yearly'>(
-    'monthly'
-  );
 
   return (
     <div className='mb-10 space-y-6'>
-      {/* 같은 성격의 시간 추이는 한 카드 안에서 기간만 전환한다. */}
+      {/* 연도 뷰의 추이는 '월별'만 — 연도별 추이는 전체 뷰가 담당하므로 탭을 없앤다 */}
       <Card className='rounded-2xl bg-card py-6 shadow-none'>
         <CardHeader className='pb-4'>
-          <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
-            <div>
-              <CardTitle className='text-lg font-bold tracking-tight text-foreground'>
-                독서 추이
-              </CardTitle>
-              <p className='mt-2 text-sm text-muted-foreground'>
-                {trendPeriod === 'monthly'
-                  ? '막대를 클릭하면 해당 월의 책을 모아볼 수 있습니다'
-                  : '최근 연도별 완독 권수를 비교합니다'}
-              </p>
-            </div>
-
-            <div
-              role='tablist'
-              aria-label='독서 추이 기간'
-              className='flex w-fit rounded-lg bg-sunken p-1'
-            >
-              {(['monthly', 'yearly'] as const).map((period) => {
-                const isSelected = trendPeriod === period;
-                return (
-                  <button
-                    key={period}
-                    type='button'
-                    role='tab'
-                    aria-selected={isSelected}
-                    onClick={() => setTrendPeriod(period)}
-                    className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
-                      isSelected
-                        ? 'bg-card text-text-strong'
-                        : 'text-text-subtle hover:text-text-strong'
-                    }`}
-                  >
-                    {period === 'monthly' ? '월별' : '연도별'}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <CardTitle className='text-lg font-bold tracking-tight text-foreground'>
+            월별 독서 추이
+          </CardTitle>
+          <p className='mt-2 text-sm text-muted-foreground'>
+            막대를 클릭하면 해당 월의 책을 모아볼 수 있습니다
+          </p>
         </CardHeader>
         <CardContent className='pb-6'>
-          {trendPeriod === 'monthly' ? (
-            <MonthlyReadingChart
-              data={monthlyReading}
-              onMonthClick={onMonthClick}
-            />
-          ) : (
-            <YearlyTrendChart data={yearlyReading} />
-          )}
+          <MonthlyReadingChart
+            data={monthlyReading}
+            onMonthClick={onMonthClick}
+          />
         </CardContent>
       </Card>
 

@@ -8,6 +8,8 @@ import type { Book } from '@/entities/book';
 
 type ReadingProgressOverviewProps = {
   year: number;
+  /** 현재 연도 — year가 과거면 목표를 '남았다'가 아니라 달성/실패로 확정한다 */
+  currentYear: number;
   completed: number;
   target: number;
   totalPages: number;
@@ -39,6 +41,7 @@ const Metric = ({
 
 export const ReadingProgressOverview = ({
   year,
+  currentYear,
   completed,
   target,
   totalPages,
@@ -55,11 +58,19 @@ export const ReadingProgressOverview = ({
   const coverBooks = books.filter((book) => book.cover_image).slice(0, 3);
   const milestone = hasGoal ? Math.max(Math.ceil(target / 2), 1) : 0;
 
+  // 과거 연도는 결과가 확정됐다 → '남았다/올해' 대신 달성·실패로 말한다.
+  const isPastYear = year < currentYear;
+  const metGoal = hasGoal && completed >= target;
+
   const headline = !hasGoal
     ? `${completed}권의 기록이 쌓였어요`
-    : remaining === 0
-      ? '올해의 독서 목표를 완주했어요'
-      : `목표까지 ${remaining}권 남았어요`;
+    : isPastYear
+      ? metGoal
+        ? `${year}년 목표를 달성했어요`
+        : `아쉽게도 ${year}년 목표는 이루지 못했어요`
+      : remaining === 0
+        ? '올해의 독서 목표를 완주했어요'
+        : `목표까지 ${remaining}권 남았어요`;
 
   return (
     <section className='overflow-hidden rounded-[28px] border border-line-soft bg-card'>
