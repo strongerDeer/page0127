@@ -60,7 +60,9 @@ export const PublicLibraryContent = ({
   };
 
   return (
-    <PageContainer width='wide' className='space-y-10'>
+    // 공개 서재는 '전시장' — 배경을 한 단 눌러(sunken) 흰 카드가 뜨게 한다.
+    // 내 서재(작업대)의 순백 배경과 구분되는 시각 신호.
+    <PageContainer width='wide' bg='sunken' className='space-y-10'>
       <PublicLibraryHeader
         profile={profile}
         username={username}

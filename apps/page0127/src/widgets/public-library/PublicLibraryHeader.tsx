@@ -49,7 +49,8 @@ export const PublicLibraryHeader = ({
 
   return (
     <>
-      <header className='flex flex-col gap-6 md:flex-row md:items-center md:justify-between'>
+      {/* 스카이 틴트 면 — 공개 서재의 '전시장 입구'. sunken 배경 위에서 얼굴이 된다 */}
+      <header className='flex flex-col gap-6 rounded-[28px] bg-accent p-6 sm:p-8 md:flex-row md:items-center md:justify-between'>
         <div className='flex min-w-0 items-center gap-5'>
           {profile.photo_url ? (
             <div className='relative size-20 shrink-0 overflow-hidden rounded-full bg-muted'>
