@@ -13,6 +13,7 @@ import { OverallDistribution } from '@/features/stats/ui/OverallDistribution';
 import { ReadingProgressOverview } from '@/features/stats/ui/ReadingProgressOverview';
 import { YearlyTrendChart } from '@/features/stats/ui/YearlyTrendChart';
 
+import { CategoryBookShelf } from '@/widgets/book/ui/CategoryBookShelf';
 import { PublicBookShelf } from '@/widgets/book/ui/PublicBookShelf';
 import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
 import { ViewTabs } from '@/widgets/dashboard/ViewTabs';
@@ -149,9 +150,19 @@ export const LibraryView = ({
         onSearchChange={filters.setSearch}
         onStatusChange={filters.setStatus}
         onResetAll={filters.resetAll}
-        renderBooks={(filteredBooks) => (
-          <PublicBookShelf books={filteredBooks} username={username} compact />
-        )}
+        // 책장형은 PublicBookShelf/CategoryBookShelf가 username으로 직접 링크를 계산하지만,
+        // 피드형(BookFeedGrid)은 DashboardBookList 내부에서 렌더링되므로
+        // bookHref를 통해 공개 서재/내 서재 링크를 구분해 넘겨야 한다
+        bookHref={(book) =>
+          username ? `/${username}/${book.id}` : `/books/${book.id}`
+        }
+        renderBooks={(filteredBooks) =>
+          isAllView ? (
+            <CategoryBookShelf books={filteredBooks} username={username} />
+          ) : (
+            <PublicBookShelf books={filteredBooks} username={username} compact />
+          )
+        }
       />
     </section>
   );

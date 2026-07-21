@@ -11,7 +11,7 @@ import {
 
 import Link from 'next/link';
 
-import { Search, SearchX, SlidersHorizontal, X } from 'lucide-react';
+import { LayoutGrid, Library, Search, SearchX, SlidersHorizontal, X } from 'lucide-react';
 
 import { mapToMainCategory } from '@/shared/lib/categoryMapper';
 import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
@@ -28,6 +28,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select';
+
+// FSD 경계 규칙(features → widgets 금지) 예외: 설계 문서
+// (docs/superpowers/specs/2026-07-21-library-view-toggle-design.md §3)가
+// BookFeedGrid를 PublicBookShelf와 같은 계층(widgets/book/ui)에 두고
+// DashboardBookList가 직접 import하도록 명시적으로 정했다. BookFeedGrid는
+// 이 컴포넌트만 소비하는 표시 전용 리프 컴포넌트라 실질적인 역참조(widgets → features)는
+// 없지만, 근본적으로는 BookFeedGrid를 features/stats/ui로 옮기는 것이 더 바른 구조다.
+// eslint-disable-next-line import/no-restricted-paths
+import { BookFeedGrid } from '@/widgets/book/ui/BookFeedGrid';
 
 import { BookGridItem } from './BookGridItem';
 import { BookListFilterInput, type BookListFilterInputHandle } from './BookListFilterInput';
@@ -159,6 +168,25 @@ export const DashboardBookList = ({
     'dashboard-sort-option',
     'created_at-desc'
   );
+
+  // 책장형(선반)/피드형(번호 붙은 카드 그리드) 토글 — 내 서재·공개 서재 공용 컴포넌트라
+  // 여기서 저장하면 두 화면 모두 같은 값을 공유한다
+  const [viewMode, setViewMode] = useLocalStorage<'shelf' | 'feed'>(
+    'library-view-mode',
+    'shelf'
+  );
+
+  // 피드형 "BOOK #번호"는 검색/카테고리 필터와 무관하게 고정되어야 한다 →
+  // 필터 적용 전 원본 books를 완독일 오름차순으로 정렬해 번호를 매긴다.
+  // (React Compiler가 자동 메모이제이션하므로 수동 useMemo는 쓰지 않는다)
+  const rankMap = new Map<string, number>();
+  [...books]
+    .sort((a, b) => {
+      const dateA = new Date(a.completed_date ?? a.created_at).getTime();
+      const dateB = new Date(b.completed_date ?? b.created_at).getTime();
+      return dateA - dateB;
+    })
+    .forEach((book, index) => rankMap.set(book.id, index + 1));
 
   // React Compiler 자동 메모이제이션 → 손으로 쓰던 useMemo·deps 배열 제거 (Day 65)
   // Compiler가 books·필터 조건 의존성을 자동 추적해 같은 입력이면 캐시 반환한다
@@ -392,6 +420,27 @@ export const DashboardBookList = ({
           </PopoverContent>
         </Popover>
 
+        <div className='flex items-center gap-0.5 rounded-md border border-line-soft p-0.5'>
+          <Button
+            variant={viewMode === 'shelf' ? 'secondary' : 'ghost'}
+            size='sm'
+            className='h-7 px-2'
+            aria-pressed={viewMode === 'shelf'}
+            onClick={() => setViewMode('shelf')}
+          >
+            <Library className='h-4 w-4' />
+          </Button>
+          <Button
+            variant={viewMode === 'feed' ? 'secondary' : 'ghost'}
+            size='sm'
+            className='h-7 px-2'
+            aria-pressed={viewMode === 'feed'}
+            onClick={() => setViewMode('feed')}
+          >
+            <LayoutGrid className='h-4 w-4' />
+          </Button>
+        </div>
+
         <Select value={sortOption} onValueChange={handleSortChange}>
           <SelectTrigger className='w-[105px] border-0 bg-transparent px-2 shadow-none sm:w-[120px]'>
             <SelectValue placeholder='정렬 선택' />
@@ -480,7 +529,13 @@ export const DashboardBookList = ({
               transition: 'opacity 0.15s',
             }}
           >
-            {renderBooks ? (
+            {viewMode === 'feed' ? (
+              <BookFeedGrid
+                books={filteredBooks}
+                rankMap={rankMap}
+                bookHref={bookHref}
+              />
+            ) : renderBooks ? (
               // 커스텀 렌더러: 선반 레이아웃 등 외부에서 주입
               renderBooks(filteredBooks)
             ) : (
@@ -497,7 +552,7 @@ export const DashboardBookList = ({
             )}
 
             {/* 페이지네이션 — 커스텀 렌더러 사용 시 숨김 */}
-            {!renderBooks && totalPages > 1 && (
+            {viewMode === 'shelf' && !renderBooks && totalPages > 1 && (
               <div className='mt-6 flex items-center justify-center gap-2'>
                 <Button
                   variant='outline'
