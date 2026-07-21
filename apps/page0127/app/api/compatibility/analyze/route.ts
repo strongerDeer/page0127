@@ -8,6 +8,10 @@ import { getCompatibilityTypeByScore } from '@/entities/compatibility/model/comp
 
 import type { Book } from '@/entities/book';
 
+// gpt-4o + max_tokens 4000 응답은 경우에 따라 수십 초가 걸릴 수 있어
+// 배포 플랫폼 기본 함수 타임아웃(짧으면 10초)에 걸려 강제 종료되는 것을 방지
+export const maxDuration = 60;
+
 /**
  * 독서 궁합 분석 API
  *
@@ -29,7 +33,10 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 });
+      return NextResponse.json(
+        { error: '로그인이 필요합니다.' },
+        { status: 401 }
+      );
     }
 
     // 2. 요청 검증
@@ -44,7 +51,10 @@ export async function POST(request: NextRequest) {
         : false;
 
     if (!targetUserId) {
-      return NextResponse.json({ error: 'targetUserId가 필요합니다.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'targetUserId가 필요합니다.' },
+        { status: 400 }
+      );
     }
     if (targetUserId === user.id) {
       return NextResponse.json(
@@ -55,7 +65,9 @@ export async function POST(request: NextRequest) {
 
     // 3. 쌍 정렬 — DB 제약(user_id_1 < user_id_2)과 동일한 순서로 저장/조회
     const [userId1, userId2] =
-      user.id < targetUserId ? [user.id, targetUserId] : [targetUserId, user.id];
+      user.id < targetUserId
+        ? [user.id, targetUserId]
+        : [targetUserId, user.id];
 
     // 4. 캐시 확인 — 같은 쌍의 기존 분석이 있으면 그대로 사용
     if (!force) {
@@ -92,7 +104,10 @@ export async function POST(request: NextRequest) {
       await Promise.all([
         fetchCompletedBooks(userId1),
         fetchCompletedBooks(userId2),
-        supabase.from('profiles').select('id, nickname, username').in('id', [userId1, userId2]),
+        supabase
+          .from('profiles')
+          .select('id, nickname, username')
+          .in('id', [userId1, userId2]),
       ]);
 
     const MIN_BOOKS = 5;
@@ -101,13 +116,17 @@ export async function POST(request: NextRequest) {
 
     if (!myBooks || myBooks.length < MIN_BOOKS) {
       return NextResponse.json(
-        { error: `궁합 분석을 위해 내 완독 책(별점 포함)이 ${MIN_BOOKS}권 이상 필요합니다.` },
+        {
+          error: `궁합 분석을 위해 내 완독 책(별점 포함)이 ${MIN_BOOKS}권 이상 필요합니다.`,
+        },
         { status: 400 }
       );
     }
     if (!targetBooks || targetBooks.length < MIN_BOOKS) {
       return NextResponse.json(
-        { error: `상대방의 공개된 완독 책(별점 포함)이 ${MIN_BOOKS}권 이상일 때 분석할 수 있습니다.` },
+        {
+          error: `상대방의 공개된 완독 책(별점 포함)이 ${MIN_BOOKS}권 이상일 때 분석할 수 있습니다.`,
+        },
         { status: 400 }
       );
     }
@@ -137,7 +156,8 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: '당신은 독서 궁합 분석 전문가입니다. JSON 형식으로 응답하세요.',
+          content:
+            '당신은 독서 궁합 분석 전문가입니다. JSON 형식으로 응답하세요.',
         },
         { role: 'user', content: prompt },
       ],
@@ -173,7 +193,10 @@ export async function POST(request: NextRequest) {
         analyzed_books_count_1: Math.min(books1!.length, MAX_BOOKS_FOR_PROMPT),
         analyzed_books_count_2: Math.min(books2!.length, MAX_BOOKS_FOR_PROMPT),
         analysis_model: AI_MODEL,
-        cost_in_cents: calculateCost(completion.usage?.total_tokens || 0),
+        cost_in_cents: calculateCost(
+          completion.usage?.prompt_tokens || 0,
+          completion.usage?.completion_tokens || 0
+        ),
       })
       .select()
       .single();
@@ -268,7 +291,9 @@ function mapRecommendations(
         to_user_id: ids.toUserId,
         isbn: matched?.isbn ?? null,
         title: matched?.title ?? rec.title,
-        author: matched?.author ?? (typeof rec.author === 'string' ? rec.author : null),
+        author:
+          matched?.author ??
+          (typeof rec.author === 'string' ? rec.author : null),
         publisher: matched?.publisher ?? null,
         cover_image: matched?.cover_image ?? null,
         category: matched?.category ?? null,
@@ -280,8 +305,12 @@ function mapRecommendations(
 
 /**
  * 토큰 사용량 기반 비용 계산 (센트 단위) — taste-analysis와 동일 기준
+ * gpt-4o 단가: 입력 $2.50 / 100만 토큰, 출력 $10.00 / 100만 토큰
  */
-function calculateCost(totalTokens: number): number {
-  const costPerToken = 0.3 / 1_000_000;
-  return Math.ceil(totalTokens * costPerToken * 100);
+function calculateCost(promptTokens: number, completionTokens: number): number {
+  const inputCostPerToken = 2.5 / 1_000_000;
+  const outputCostPerToken = 10.0 / 1_000_000;
+  const cost =
+    promptTokens * inputCostPerToken + completionTokens * outputCostPerToken;
+  return Math.ceil(cost * 100);
 }

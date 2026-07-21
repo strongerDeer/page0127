@@ -74,11 +74,20 @@ const PublicLibraryPage = async ({ params, searchParams }: PageProps) => {
   // 2. 책 목록·연도 통계·전체 통계는 profile.id에만 의존 → 병렬.
   //    통계는 publicOnly=true — 공개된 책만 집계해 책장 숫자와 일치시킨다.
   //    전체 뷰면 연도 통계도 전체 기준(year=null)으로 집계한다.
-  const [allBooks, stats, overallStats] = await Promise.all([
-    getPublicBooks(profile.id),
-    getBookStats(profile.id, isAllView ? null : selectedYear, true),
-    getOverallStats(profile.id, true),
-  ]);
+  //    취향 분석은 자세한 내용 없이 최신 성향 타입 이름만 배지로 노출한다.
+  const [allBooks, stats, overallStats, { data: latestAnalysis }] =
+    await Promise.all([
+      getPublicBooks(profile.id),
+      getBookStats(profile.id, isAllView ? null : selectedYear, true),
+      getOverallStats(profile.id, true),
+      supabase
+        .from('taste_analyses')
+        .select('personality_type')
+        .eq('user_id', profile.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
 
   // 3. 사용 가능한 연도 목록 생성 (완독일 기준 — 내 서재와 동일)
   const bookYears = allBooks
@@ -112,6 +121,7 @@ const PublicLibraryPage = async ({ params, searchParams }: PageProps) => {
       selectedYear={selectedYear}
       isAllView={isAllView}
       currentYear={currentYear}
+      personalityType={latestAnalysis?.personality_type ?? null}
     />
   );
 };

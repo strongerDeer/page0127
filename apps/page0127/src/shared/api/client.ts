@@ -6,12 +6,15 @@ import axios from 'axios';
  * 학습 포인트:
  * - axios.create(): 공통 설정을 가진 인스턴스 생성
  * - baseURL: 모든 요청의 기본 URL (/api)
- * - timeout: 요청 제한 시간 (10초)
+ * - timeout: 요청 제한 시간 (60초)
+ *   AI 분석처럼 오래 걸리는 요청을 감안해 넉넉하게 설정.
+ *   단, 이 타임아웃은 브라우저→우리 서버 구간에만 적용되고
+ *   서버→OpenAI 요청은 별개로 계속 진행된다 (타임아웃 나도 토큰은 소모됨)
  * - 인터셉터: 요청/응답 전후 공통 로직 처리
  */
 export const apiClient = axios.create({
   baseURL: '/api',
-  timeout: 10000,
+  timeout: 60000,
   // 쿠키 기반 인증: 모든 요청에 자격 증명(쿠키) 포함 (fetch의 credentials: 'include' 대체)
   withCredentials: true,
   headers: {

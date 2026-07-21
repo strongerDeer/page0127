@@ -54,6 +54,9 @@ export function createTasteAnalysisPrompt(
     .map((t) => `- "${t.name}": ${t.criteria}`)
     .join('\n');
 
+  // 추천 도서 출간 시기 하한선 — 매 요청마다 "최근 3년"을 계산
+  const recentYearThreshold = new Date().getFullYear() - 3;
+
   return `당신은 독서 취향 분석 전문가입니다. 사용자의 독서 기록을 분석하여 깊이 있는 인사이트를 제공해주세요.
 
 ## 분석 데이터
@@ -109,6 +112,8 @@ ${formatBooks(lowRatedBooks)}
   - type: "challenge" - 전혀 다르지만 좋아할 만한 책 5권
 - display_order는 각 타입 내에서 1부터 5까지
 - reason은 구체적이고 개인화된 추천 이유 (100-150자)
+- **출간 시기 제한**: ${recentYearThreshold}년 이후 출간된 책 위주로 추천하세요.
+  그보다 오래된 책은 지금도 꾸준히 읽히는 베스트셀러·스테디셀러급이 아니면 추천하지 마세요.
 
 ## 성향 타입 목록 ⚠️ 매우 중요
 personality_type은 반드시 아래 목록 중 하나를 **이름 그대로(글자 하나 바꾸지 말 것)** 선택하세요:

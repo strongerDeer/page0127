@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { Link2 } from 'lucide-react';
+import { Link2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/client';
@@ -23,6 +23,7 @@ import { Button } from '@/shared/ui/button';
 import { PageContainer } from '@/shared/ui/PageContainer';
 
 import { ReadingGoalDialog } from '@/features/profile/ui/ReadingGoalDialog';
+import { TasteAnalysisHistoryCards } from '@/features/taste-analysis/ui/TasteAnalysisHistoryCards';
 
 // 통계 본문은 공개 서재와 공유한다 (widgets/library/LibraryView)
 import { LibraryView } from '@/widgets/library/LibraryView';
@@ -30,6 +31,7 @@ import { LibraryView } from '@/widgets/library/LibraryView';
 import type { Book } from '@/entities/book';
 import type { BookStats, OverallStats } from '@/entities/book';
 import type { Profile } from '@/entities/profile/types';
+import type { TasteAnalysisSummary } from '@/entities/taste-analysis/types';
 
 type DashboardContentProps = {
   /** 전체 독서 통계 (연도 무관) */
@@ -43,6 +45,12 @@ type DashboardContentProps = {
 
   /** 취향 분석 게이트용 — 전체 기록 중 완독+별점 있는 책 수 (연도 무관) */
   analyzableBookCount: number;
+
+  /** 재분석 게이트용 — 마지막 분석 이후 새로 쌓인 완독+별점 책 수. 분석 이력이 없으면 null */
+  newBooksSinceLastAnalysis: number | null;
+
+  /** 취향 분석 기록 카드 목록 (최근 10개) */
+  analysisHistory: TasteAnalysisSummary[];
 
   /** 사용자 이메일 */
   userEmail: string;
@@ -88,6 +96,8 @@ export const DashboardContent = ({
   stats,
   books,
   analyzableBookCount,
+  newBooksSinceLastAnalysis,
+  analysisHistory,
   userEmail: _userEmail,
   availableYears,
   selectedYear,
@@ -140,6 +150,15 @@ export const DashboardContent = ({
       return;
     }
 
+    // 재분석 게이트 — 이전 분석이 있다면 그 이후 새로 5권은 쌓여야 재분석 허용
+    // (같은 책장으로 반복 분석하면 결과는 비슷한데 비용만 또 나가기 때문)
+    if (newBooksSinceLastAnalysis !== null && newBooksSinceLastAnalysis < 5) {
+      toast.error(
+        `이전 분석 이후 새로 읽은 책이 ${newBooksSinceLastAnalysis}권이에요. 5권 이상 쌓이면 다시 분석할 수 있어요.`
+      );
+      return;
+    }
+
     setIsAnalyzeDialogOpen(true);
   };
 
@@ -178,7 +197,8 @@ export const DashboardContent = ({
         {/* 연도 셀렉트는 아래 '연도별 기록' 섹션으로 이동 — header엔 액션만 둔다 */}
         <div className='flex flex-wrap items-center gap-3'>
           <Button onClick={handleAnalyzeTaste} disabled={isAnalyzing}>
-            {isAnalyzing ? '분석 중…' : '취향 분석'}
+            {isAnalyzing && <Loader2 className='h-4 w-4 animate-spin' />}
+            {isAnalyzing ? '분석 중… (최대 1분)' : '취향 분석'}
           </Button>
 
           {profile?.username && (
@@ -195,6 +215,9 @@ export const DashboardContent = ({
           )}
         </div>
       </header>
+
+      {/* 취향 분석 기록 카드 — 있을 때만 노출 */}
+      <TasteAnalysisHistoryCards items={analysisHistory} />
 
       {/* 통계 본문 — 공개 서재와 공유하는 컴포넌트 */}
       <LibraryView
@@ -228,7 +251,8 @@ export const DashboardContent = ({
           <AlertDialogHeader>
             <AlertDialogTitle>AI 독서 취향 분석</AlertDialogTitle>
             <AlertDialogDescription>
-              분석에 약 30초 정도 소요됩니다. 시작하시겠습니까?
+              분석에 최대 1분 정도 소요될 수 있어요. 완료될 때까지 이 화면을
+              유지해주세요. 시작하시겠습니까?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -237,6 +261,21 @@ export const DashboardContent = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* 분석 중 전체 화면 오버레이 — AlertDialog는 시작 클릭 시 자동으로 닫히므로
+          그 뒤로 이 오버레이가 최대 1분간 대기 상태를 보여준다 */}
+      {isAnalyzing && (
+        <div className='fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-background/80 backdrop-blur-sm'>
+          <Loader2 className='h-10 w-10 animate-spin text-primary' />
+          <div className='text-center'>
+            <p className='text-lg font-medium'>취향을 분석하고 있어요~</p>
+            <p className='mt-1 text-sm text-muted-foreground'>
+              최대 1분 정도 걸려요. 이 화면을 벗어나지 말고 잠시만
+              기다려주세요.
+            </p>
+          </div>
+        </div>
+      )}
     </PageContainer>
   );
 };

@@ -10,6 +10,8 @@ import { toast } from 'sonner';
 
 import { Button } from '@/shared/ui/button';
 
+import { getPersonalityColor } from '@/entities/taste-analysis/model/personalityTypes';
+
 import { FollowButton, FollowListModal, FollowStats } from '@/features/follow';
 
 type Profile = {
@@ -24,6 +26,8 @@ type PublicLibraryHeaderProps = {
   username: string;
   isOwnProfile: boolean;
   currentUserId?: string;
+  /** 최신 취향 분석의 성향 타입 이름 — 분석 이력이 없으면 null */
+  personalityType: string | null;
 };
 
 export const PublicLibraryHeader = ({
@@ -31,6 +35,7 @@ export const PublicLibraryHeader = ({
   username,
   isOwnProfile,
   currentUserId,
+  personalityType,
 }: PublicLibraryHeaderProps) => {
   const [followersModalOpen, setFollowersModalOpen] = useState(false);
   const [followingModalOpen, setFollowingModalOpen] = useState(false);
@@ -81,6 +86,17 @@ export const PublicLibraryHeader = ({
                 onFollowersClick={() => setFollowersModalOpen(true)}
                 onFollowingClick={() => setFollowingModalOpen(true)}
               />
+              {personalityType && (
+                <span className='inline-flex items-center gap-1.5 rounded-full border border-line-soft bg-card px-3 py-1 text-xs font-medium text-text-body'>
+                  <span
+                    className='size-2 rounded-full'
+                    style={{
+                      backgroundColor: getPersonalityColor(personalityType),
+                    }}
+                  />
+                  {personalityType}
+                </span>
+              )}
             </div>
             {profile.bio && (
               <p className='mt-3 max-w-2xl break-keep text-sm leading-relaxed text-text-body'>

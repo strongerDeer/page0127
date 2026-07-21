@@ -125,6 +125,14 @@ export type BookRecommendation = {
 };
 
 /**
+ * 취향 분석 기록 카드용 요약 (히스토리 목록)
+ */
+export type TasteAnalysisSummary = Pick<
+  TasteAnalysis,
+  'id' | 'personality_type' | 'created_at' | 'analyzed_books_count'
+>;
+
+/**
  * 취향 분석 결과 + 추천 도서 (조회용)
  */
 export type TasteAnalysisWithRecommendations = TasteAnalysis & {

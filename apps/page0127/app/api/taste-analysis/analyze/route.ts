@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { after, NextRequest, NextResponse } from 'next/server';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { upgradeImageResolution } from '@/shared/lib/imageUtils';
 import { AI_MODEL, MAX_TOKENS, openai, TEMPERATURE } from '@/shared/lib/openai';
 import { createTasteAnalysisPrompt } from '@/shared/lib/openai/prompts/taste-analysis';
 
@@ -8,6 +9,10 @@ import { READING_PERSONALITY_TYPES } from '@/entities/taste-analysis/model/perso
 
 import type { Book } from '@/entities/book';
 import type { SupabaseClient } from '@supabase/supabase-js';
+
+// gpt-4o + max_tokens 4000 응답은 경우에 따라 수십 초가 걸릴 수 있어
+// 배포 플랫폼 기본 함수 타임아웃(짧으면 10초)에 걸려 강제 종료되는 것을 방지
+export const maxDuration = 60;
 
 /**
  * 독서 취향 분석 API
@@ -28,21 +33,30 @@ export async function POST(_request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 });
+      return NextResponse.json(
+        { error: '로그인이 필요합니다.' },
+        { status: 401 }
+      );
     }
 
     // 2. 완독한 책 목록 조회 (최소 5권 필요)
+    //    최신순 정렬 후 최근 N권까지만 프롬프트에 사용 — 응답 속도·비용 관리
+    const MAX_BOOKS_FOR_PROMPT = 100;
     const { data: books, error: booksError } = await supabase
       .from('books')
       .select('*')
       .eq('user_id', user.id)
       .eq('status', 'completed')
       .not('rating', 'is', null) // 별점이 있는 책만
-      .order('completed_date', { ascending: false });
+      .order('completed_date', { ascending: false })
+      .limit(MAX_BOOKS_FOR_PROMPT);
 
     if (booksError) {
       console.error('책 목록 조회 실패:', booksError);
-      return NextResponse.json({ error: '책 목록을 불러올 수 없습니다.' }, { status: 500 });
+      return NextResponse.json(
+        { error: '책 목록을 불러올 수 없습니다.' },
+        { status: 500 }
+      );
     }
 
     if (!books || books.length < 5) {
@@ -63,7 +77,8 @@ export async function POST(_request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: '당신은 독서 취향 분석 전문가입니다. JSON 형식으로 응답하세요.',
+          content:
+            '당신은 독서 취향 분석 전문가입니다. JSON 형식으로 응답하세요.',
         },
         {
           role: 'user',
@@ -113,14 +128,20 @@ export async function POST(_request: NextRequest) {
         preference_profile: aiResponse.preference_profile,
         analyzed_books_count: books.length,
         analysis_model: AI_MODEL,
-        cost_in_cents: calculateCost(completion.usage?.total_tokens || 0),
+        cost_in_cents: calculateCost(
+          completion.usage?.prompt_tokens || 0,
+          completion.usage?.completion_tokens || 0
+        ),
       })
       .select()
       .single();
 
     if (analysisError) {
       console.error('분석 결과 저장 실패:', analysisError);
-      return NextResponse.json({ error: '분석 결과를 저장할 수 없습니다.' }, { status: 500 });
+      return NextResponse.json(
+        { error: '분석 결과를 저장할 수 없습니다.' },
+        { status: 500 }
+      );
     }
 
     // 6. 추천 도서 저장
@@ -133,14 +154,14 @@ export async function POST(_request: NextRequest) {
           reason: string;
           display_order: number;
         }) => ({
-        taste_analysis_id: analysis.id,
-        recommendation_type: rec.type,
-        isbn: null, // AI는 제목/저자만 제공 (ISBN 없음)
-        title: rec.title,
-        author: rec.author || null,
-        publisher: null,
-        cover_image: null,
-        category: null,
+          taste_analysis_id: analysis.id,
+          recommendation_type: rec.type,
+          isbn: null, // AI는 제목/저자만 제공 (ISBN 없음)
+          title: rec.title,
+          author: rec.author || null,
+          publisher: null,
+          cover_image: null,
+          category: null,
           reason: rec.reason,
           display_order: rec.display_order,
         })
@@ -153,22 +174,29 @@ export async function POST(_request: NextRequest) {
       if (recError) {
         console.error('추천 도서 저장 실패:', recError);
         console.error('추천 도서 데이터:', recommendations);
-      } else if (process.env.NODE_ENV === 'development') {
-        console.warn(`추천 도서 ${recommendations.length}건 저장 완료`);
-
-        // 7. 알라딘 API로 표지 이미지 업데이트 (동기적으로 처리)
-        try {
-          await enrichRecommendationsWithAladinData(
-            supabase,
-            aiResponse.recommendations,
-            analysis.id
-          );
-          if (process.env.NODE_ENV === 'development') {
-            console.warn('알라딘 API 업데이트 완료');
-          }
-        } catch (err: unknown) {
-          console.error('알라딘 API 업데이트 실패:', err);
+      } else {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`추천 도서 ${recommendations.length}건 저장 완료`);
         }
+
+        // 7. 알라딘 API로 표지 이미지 업데이트
+        // after()로 감싸서 응답을 먼저 보낸 뒤 백그라운드에서 처리한다.
+        // 추천 도서 수만큼 알라딘 API를 순차 호출(rate limit 방지용 딜레이 포함)하기 때문에
+        // 응답 전에 기다리면 사용자 체감 대기 시간이 그만큼 늘어난다.
+        after(async () => {
+          try {
+            await enrichRecommendationsWithAladinData(
+              supabase,
+              aiResponse.recommendations,
+              analysis.id
+            );
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('알라딘 API 업데이트 완료');
+            }
+          } catch (err: unknown) {
+            console.error('알라딘 API 업데이트 실패:', err);
+          }
+        });
       }
     } else {
       console.warn('AI 응답에 추천 도서가 없습니다.');
@@ -191,12 +219,16 @@ export async function POST(_request: NextRequest) {
 
 /**
  * 토큰 사용량 기반 비용 계산 (센트 단위)
- * GPT-4o-mini: $0.15 / 1M input tokens, $0.60 / 1M output tokens
+ * GPT-4o: $2.50 / 1M input tokens, $10.00 / 1M output tokens
  */
-function calculateCost(totalTokens: number): number {
-  // 간단하게 평균 $0.30 / 1M tokens로 계산
-  const costPerToken = 0.30 / 1_000_000;
-  return Math.ceil(totalTokens * costPerToken * 100); // 센트 단위
+function calculateCost(promptTokens: number, completionTokens: number): number {
+  // gpt-4o 단가: 입력 $2.50 / 100만 토큰, 출력 $10.00 / 100만 토큰
+  // 입력·출력 단가가 4배 차이 나서 total_tokens 하나로 뭉뚱그리면 오차가 큼 → 분리 계산
+  const inputCostPerToken = 2.5 / 1_000_000;
+  const outputCostPerToken = 10.0 / 1_000_000;
+  const cost =
+    promptTokens * inputCostPerToken + completionTokens * outputCostPerToken;
+  return Math.ceil(cost * 100); // 센트 단위
 }
 
 /**
@@ -220,10 +252,13 @@ async function enrichRecommendationsWithAladinData(
 ): Promise<void> {
   // 서버 전용 환경변수 — NEXT_PUBLIC_ 접두사를 붙이면 키가 클라이언트 번들에 인라인된다
   const ALADIN_API_KEY = process.env.ALADIN_API_KEY;
-  const ALADIN_API_BASE_URL = 'https://www.aladin.co.kr/ttb/api/ItemSearch.aspx';
+  const ALADIN_API_BASE_URL =
+    'https://www.aladin.co.kr/ttb/api/ItemSearch.aspx';
 
   if (!ALADIN_API_KEY) {
-    console.error('ALADIN_API_KEY 환경변수가 설정되지 않아 추천 도서 보강을 건너뜁니다.');
+    console.error(
+      'ALADIN_API_KEY 환경변수가 설정되지 않아 추천 도서 보강을 건너뜁니다.'
+    );
     return;
   }
 
@@ -239,6 +274,8 @@ async function enrichRecommendationsWithAladinData(
         SearchTarget: 'Book',
         output: 'js',
         Version: '20131101',
+        // 기본값은 저해상도 썸네일 — Big으로 지정해야 큰 사이즈 표지를 받는다
+        Cover: 'Big',
       });
 
       const url = `${ALADIN_API_BASE_URL}?${params.toString()}`;
@@ -265,7 +302,9 @@ async function enrichRecommendationsWithAladinData(
             isbn: matchedBook.isbn13 || matchedBook.isbn,
             title: matchedBook.title, // 알라딘 제목으로 덮어쓰기
             author: matchedBook.author, // 알라딘 저자로 덮어쓰기
-            cover_image: matchedBook.cover,
+            cover_image: matchedBook.cover
+              ? upgradeImageResolution(matchedBook.cover)
+              : null,
             publisher: matchedBook.publisher,
             category: matchedBook.categoryName,
           })
@@ -277,7 +316,9 @@ async function enrichRecommendationsWithAladinData(
         if (updateError) {
           console.error(`DB 업데이트 실패 (${rec.title}):`, updateError);
         } else if (process.env.NODE_ENV === 'development') {
-          console.warn(`✅ ${matchedBook.title} (${matchedBook.author}) - 알라딘 정보 업데이트 완료`);
+          console.warn(
+            `✅ ${matchedBook.title} (${matchedBook.author}) - 알라딘 정보 업데이트 완료`
+          );
         }
       } else {
         // 알라딘에서 찾을 수 없는 책은 삭제

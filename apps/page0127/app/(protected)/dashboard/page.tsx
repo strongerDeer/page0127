@@ -92,12 +92,39 @@ const DashboardPage = async (props: {
     .eq('status', 'completed')
     .not('rating', 'is', null);
 
+  // 취향 분석 기록 카드용 — 최근 10개까지 요약 정보만 조회
+  // (같은 쿼리 결과를 재분석 게이트 계산에도 재사용한다)
+  const { data: analysisHistory } = await supabase
+    .from('taste_analyses')
+    .select('id, personality_type, created_at, analyzed_books_count')
+    .eq('user_id', user!.id)
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  // 재분석 게이트 — 마지막 분석 이후 새로 쌓인 책 수를 계산한다.
+  // 분석 기록이 없으면 null (이 경우 위의 analyzableBookCount 기준 게이트만 적용)
+  const lastAnalysis = analysisHistory?.[0] ?? null;
+
+  let newBooksSinceLastAnalysis: number | null = null;
+  if (lastAnalysis) {
+    const { count } = await supabase
+      .from('books')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user!.id)
+      .eq('status', 'completed')
+      .not('rating', 'is', null)
+      .gt('completed_date', lastAnalysis.created_at);
+    newBooksSinceLastAnalysis = count ?? 0;
+  }
+
   return (
     <DashboardContent
       overallStats={overallStats}
       stats={stats}
       books={books}
       analyzableBookCount={analyzableBookCount ?? 0}
+      newBooksSinceLastAnalysis={newBooksSinceLastAnalysis}
+      analysisHistory={analysisHistory ?? []}
       userEmail={user!.email!}
       availableYears={availableYears}
       selectedYear={selectedYear}

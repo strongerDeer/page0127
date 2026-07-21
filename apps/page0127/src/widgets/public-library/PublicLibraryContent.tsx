@@ -24,6 +24,8 @@ type PublicLibraryContentProps = {
   selectedYear: number;
   isAllView: boolean;
   currentYear: number;
+  /** 최신 취향 분석의 성향 타입 이름 — 분석 이력이 없으면 null */
+  personalityType: string | null;
 };
 
 /**
@@ -46,6 +48,7 @@ export const PublicLibraryContent = ({
   selectedYear,
   isAllView,
   currentYear,
+  personalityType,
 }: PublicLibraryContentProps) => {
   const router = useRouter();
 
@@ -68,6 +71,7 @@ export const PublicLibraryContent = ({
         username={username}
         isOwnProfile={isOwnProfile}
         currentUserId={currentUserId}
+        personalityType={personalityType}
       />
 
       <LibraryView

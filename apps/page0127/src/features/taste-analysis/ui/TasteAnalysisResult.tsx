@@ -16,6 +16,8 @@ import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { PageContainer } from '@/shared/ui/PageContainer';
 
+import { getPersonalityColor } from '@/entities/taste-analysis/model/personalityTypes';
+
 import type { TasteAnalysisWithRecommendations } from '@/entities/taste-analysis/types';
 
 type TasteAnalysisResultProps = {
@@ -47,8 +49,7 @@ export const TasteAnalysisResult = ({ analysis }: TasteAnalysisResultProps) => {
       <div className='mb-8'>
         <Link href='/dashboard'>
           <Button variant='outline' size='sm' className='mb-4'>
-            <ArrowLeft className='h-4 w-4' />
-            내 서재로
+            <ArrowLeft className='h-4 w-4' />내 서재로
           </Button>
         </Link>
         <h1 className='heading-1 text-text-strong'>독서 취향 분석</h1>
@@ -67,8 +68,12 @@ export const TasteAnalysisResult = ({ analysis }: TasteAnalysisResultProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className='mb-4 rounded-lg bg-accent px-4 py-3'>
-            <p className='text-center text-lg font-bold text-accent-foreground'>
+          <div className='mb-4 flex items-stretch gap-3 rounded-lg bg-sunken px-4 py-3'>
+            <div
+              className='w-1 shrink-0 rounded-full'
+              style={{ backgroundColor: getPersonalityColor(personality_type) }}
+            />
+            <p className='flex items-center text-lg font-bold text-text-strong'>
               {personality_type}
             </p>
           </div>
@@ -102,7 +107,9 @@ export const TasteAnalysisResult = ({ analysis }: TasteAnalysisResultProps) => {
 
           {/* 덜 끌리는 것 — "피하는 것"은 단정적이라 표현을 눅였다 */}
           <div>
-            <h3 className='mb-3 font-semibold text-text-subtle'>덜 끌리는 것</h3>
+            <h3 className='mb-3 font-semibold text-text-subtle'>
+              덜 끌리는 것
+            </h3>
             <div className='space-y-3'>
               <TagRow
                 label='주제'
@@ -125,7 +132,8 @@ export const TasteAnalysisResult = ({ analysis }: TasteAnalysisResultProps) => {
             </h3>
             <div className='space-y-1 text-sm text-text-body'>
               <p>
-                선호 페이지 수: {preference_profile.patterns.page_count_preference}
+                선호 페이지 수:{' '}
+                {preference_profile.patterns.page_count_preference}
               </p>
               <p>선호 저자 유형: {preference_profile.patterns.author_type}</p>
               <p>
@@ -141,19 +149,19 @@ export const TasteAnalysisResult = ({ analysis }: TasteAnalysisResultProps) => {
         <RecommendationSection
           icon={<Target className='h-4.5 w-4.5 text-text-subtle' />}
           title='성향 맞춤 추천'
-          description='기존 취향에 딱 맞는 안전한 추천'
+          description='지금까지 읽어온 책들과 결이 비슷해서 골라봤어요'
           books={recommendations.match}
         />
         <RecommendationSection
           icon={<Sprout className='h-4.5 w-4.5 text-text-subtle' />}
           title='성향 확장 추천'
-          description='비슷하지만 조금 다른 영역으로 확장'
+          description='좋아하는 영역과 맞닿아 있지만, 아직 안 읽어본 결이에요'
           books={recommendations.expand}
         />
         <RecommendationSection
           icon={<Rocket className='h-4.5 w-4.5 text-text-subtle' />}
           title='챌린지 추천'
-          description='안 읽었지만 좋아할 가능성 있는 새로운 영역'
+          description='지금까지는 잘 안 읽었지만, 이 책장이라면 좋아할 것 같아요'
           books={recommendations.challenge}
         />
       </div>
