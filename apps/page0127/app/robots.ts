@@ -11,7 +11,6 @@ const robots = (): MetadataRoute.Robots => {
       allow: '/',
       // 로그인 필요 영역·API 는 검색 노출 제외
       disallow: [
-        '/dashboard',
         '/books',
         '/feed',
         '/notifications',
