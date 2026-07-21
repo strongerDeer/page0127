@@ -11,6 +11,7 @@ import { PublicLibraryHeader } from './PublicLibraryHeader';
 import type { Book } from '@/entities/book';
 import type { BookStats, OverallStats } from '@/entities/book';
 import type { Profile } from '@/entities/profile/types';
+import type { TasteAnalysisSummary } from '@/entities/taste-analysis/types';
 
 type PublicLibraryContentProps = {
   profile: Profile;
@@ -26,6 +27,14 @@ type PublicLibraryContentProps = {
   currentYear: number;
   /** 최신 취향 분석의 성향 타입 이름 — 분석 이력이 없으면 null */
   personalityType: string | null;
+  /** 취향 분석 가능한 책 권수 (별점 있는 완독 책) — 소유자 전용, 방문자는 0 */
+  analyzableBookCount: number;
+  /** 마지막 분석 이후 새로 추가된 분석 가능 책 권수 — 분석 이력이 없으면 null */
+  newBooksSinceLastAnalysis: number | null;
+  /** 취향 분석 이력 (최신순 최대 10건) — 소유자 전용, 방문자는 빈 배열 */
+  analysisHistory: TasteAnalysisSummary[];
+  /** 이달의 독서 캘린더 슬롯 — 소유자만 전달, 방문자는 undefined */
+  calendarSlot?: React.ReactNode;
 };
 
 /**
@@ -49,6 +58,10 @@ export const PublicLibraryContent = ({
   isAllView,
   currentYear,
   personalityType,
+  analyzableBookCount,
+  newBooksSinceLastAnalysis,
+  analysisHistory,
+  calendarSlot,
 }: PublicLibraryContentProps) => {
   const router = useRouter();
 

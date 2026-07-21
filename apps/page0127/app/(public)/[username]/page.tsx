@@ -1,32 +1,44 @@
+import { Suspense } from 'react';
+
 import { notFound } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 
 import { getBookStats, getOverallStats } from '@/entities/book/server';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 
+import { CalendarBlockError } from '@/widgets/dashboard/CalendarBlockError';
+import { CalendarBlockSkeleton } from '@/widgets/dashboard/CalendarBlockSkeleton';
+import { CalendarSection } from '@/widgets/dashboard/CalendarSection';
 import { PublicLibraryContent } from '@/widgets/public-library/PublicLibraryContent';
 
 import type { Book } from '@/entities/book';
+import type { TasteAnalysisSummary } from '@/entities/taste-analysis/types';
 
 type PageProps = {
   params: Promise<{ username: string }>;
   searchParams: Promise<{ year?: string }>;
 };
 
-/**
- * 공개된 책 목록 조회 (is_public = true)
- */
-const getPublicBooks = async (userId: string): Promise<Book[]> => {
+/** 책 목록 조회 — 소유자면 전체(공개+보관), 방문자면 공개된 것만 */
+const getBooks = async (
+  userId: string,
+  publicOnly: boolean
+): Promise<Book[]> => {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  let query = supabase
     .from('books')
     .select('*')
     .eq('user_id', userId)
-    .eq('is_public', true)
-    // 내 서재와 동일하게 완독일 기준으로 정렬한다 (연도 분류도 completed_date 기준)
     .order('completed_date', { ascending: false });
+
+  if (publicOnly) {
+    query = query.eq('is_public', true);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error('책 목록 조회 실패:', error.message);
@@ -37,24 +49,20 @@ const getPublicBooks = async (userId: string): Promise<Book[]> => {
 };
 
 /**
- * 공개 서재 페이지
+ * 서재 페이지 (Server Component)
  *
- * 학습 포인트:
- * - Dashboard와 동일한 구조
- * - 년도별 통계 표시
- * - 공개된 책만 조회 (is_public = true)
+ * 본인이 보면 소유자 모드(전체 책, 캘린더, 목표, 취향분석 전체 진입, 보관 탭),
+ * 남이 보면 방문자 모드(공개된 책만, 읽기 전용)로 같은 화면이 갈린다.
  */
-const PublicLibraryPage = async ({ params, searchParams }: PageProps) => {
+const LibraryPage = async ({ params, searchParams }: PageProps) => {
   const { username } = await params;
   const { year } = await searchParams;
 
   const supabase = await createClient();
   const currentYear = new Date().getFullYear();
-  // 뷰 모드: 'all'(전체 누적) 또는 특정 연도 — 내 서재(대시보드)와 동일한 규칙.
   const isAllView = !year || year === 'all';
   const selectedYear = isAllView ? currentYear : parseInt(year!, 10);
 
-  // 1. 프로필 조회와 현재 사용자 확인은 서로 독립 → 병렬
   const [
     profile,
     {
@@ -71,15 +79,11 @@ const PublicLibraryPage = async ({ params, searchParams }: PageProps) => {
 
   const isOwnProfile = currentUser?.id === profile.id;
 
-  // 2. 책 목록·연도 통계·전체 통계는 profile.id에만 의존 → 병렬.
-  //    통계는 publicOnly=true — 공개된 책만 집계해 책장 숫자와 일치시킨다.
-  //    전체 뷰면 연도 통계도 전체 기준(year=null)으로 집계한다.
-  //    취향 분석은 자세한 내용 없이 최신 성향 타입 이름만 배지로 노출한다.
   const [allBooks, stats, overallStats, { data: latestAnalysis }] =
     await Promise.all([
-      getPublicBooks(profile.id),
-      getBookStats(profile.id, isAllView ? null : selectedYear, true),
-      getOverallStats(profile.id, true),
+      getBooks(profile.id, !isOwnProfile),
+      getBookStats(profile.id, isAllView ? null : selectedYear, !isOwnProfile),
+      getOverallStats(profile.id, !isOwnProfile),
       supabase
         .from('taste_analyses')
         .select('personality_type')
@@ -89,24 +93,57 @@ const PublicLibraryPage = async ({ params, searchParams }: PageProps) => {
         .maybeSingle(),
     ]);
 
-  // 3. 사용 가능한 연도 목록 생성 (완독일 기준 — 내 서재와 동일)
   const bookYears = allBooks
     .map((book) =>
       book.completed_date ? new Date(book.completed_date).getFullYear() : null
     )
-    .filter((year): year is number => year !== null);
+    .filter((y): y is number => y !== null);
 
   const uniqueYears = Array.from(new Set([currentYear, ...bookYears])).sort(
     (a, b) => b - a
   );
 
-  // 4. 전체 뷰는 공개된 책 전부, 연도 뷰는 그 해 완독분만 (완독일 기준)
   const booksToShow = isAllView
     ? allBooks
     : allBooks.filter((book) => {
         if (!book.completed_date) return false;
         return new Date(book.completed_date).getFullYear() === selectedYear;
       });
+
+  // 소유자 전용 데이터 — 방문자면 아예 조회하지 않는다
+  let analyzableBookCount = 0;
+  let newBooksSinceLastAnalysis: number | null = null;
+  let analysisHistory: TasteAnalysisSummary[] = [];
+
+  if (isOwnProfile) {
+    const { count } = await supabase
+      .from('books')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', profile.id)
+      .eq('status', 'completed')
+      .not('rating', 'is', null);
+    analyzableBookCount = count ?? 0;
+
+    const { data: history } = await supabase
+      .from('taste_analyses')
+      .select('id, personality_type, created_at, analyzed_books_count')
+      .eq('user_id', profile.id)
+      .order('created_at', { ascending: false })
+      .limit(10);
+    analysisHistory = history ?? [];
+
+    const lastAnalysis = analysisHistory[0] ?? null;
+    if (lastAnalysis) {
+      const { count: newCount } = await supabase
+        .from('books')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', profile.id)
+        .eq('status', 'completed')
+        .not('rating', 'is', null)
+        .gt('completed_date', lastAnalysis.created_at);
+      newBooksSinceLastAnalysis = newCount ?? 0;
+    }
+  }
 
   return (
     <PublicLibraryContent
@@ -122,8 +159,20 @@ const PublicLibraryPage = async ({ params, searchParams }: PageProps) => {
       isAllView={isAllView}
       currentYear={currentYear}
       personalityType={latestAnalysis?.personality_type ?? null}
+      analyzableBookCount={analyzableBookCount}
+      newBooksSinceLastAnalysis={newBooksSinceLastAnalysis}
+      analysisHistory={analysisHistory}
+      calendarSlot={
+        isOwnProfile ? (
+          <ErrorBoundary fallback={<CalendarBlockError />}>
+            <Suspense fallback={<CalendarBlockSkeleton />}>
+              <CalendarSection userId={profile.id} />
+            </Suspense>
+          </ErrorBoundary>
+        ) : undefined
+      }
     />
   );
 };
 
-export default PublicLibraryPage;
+export default LibraryPage;
