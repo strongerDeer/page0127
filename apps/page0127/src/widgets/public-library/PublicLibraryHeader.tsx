@@ -9,13 +9,6 @@ import { Link2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/shared/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/ui/select';
 
 import { FollowButton, FollowListModal, FollowStats } from '@/features/follow';
 
@@ -31,9 +24,6 @@ type PublicLibraryHeaderProps = {
   username: string;
   isOwnProfile: boolean;
   currentUserId?: string;
-  availableYears: number[];
-  selectedYear: number;
-  onYearChange: (year: string) => void;
 };
 
 export const PublicLibraryHeader = ({
@@ -41,9 +31,6 @@ export const PublicLibraryHeader = ({
   username,
   isOwnProfile,
   currentUserId,
-  availableYears,
-  selectedYear,
-  onYearChange,
 }: PublicLibraryHeaderProps) => {
   const [followersModalOpen, setFollowersModalOpen] = useState(false);
   const [followingModalOpen, setFollowingModalOpen] = useState(false);
@@ -103,19 +90,6 @@ export const PublicLibraryHeader = ({
         </div>
 
         <div className='flex shrink-0 flex-wrap items-center gap-2 md:justify-end'>
-          <Select value={selectedYear.toString()} onValueChange={onYearChange}>
-            <SelectTrigger className='w-[126px] bg-card shadow-none'>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {availableYears.map((year) => (
-                <SelectItem key={year} value={year.toString()}>
-                  {year}년
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
           {!isOwnProfile && <FollowButton userId={profile.id} />}
 
           {!isOwnProfile ? (

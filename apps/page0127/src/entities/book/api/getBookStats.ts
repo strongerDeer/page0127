@@ -21,11 +21,13 @@ import type {
  *
  * @param userId - 사용자 ID
  * @param year - 통계 조회 연도 (null = 전체)
+ * @param publicOnly - 공개(is_public) 책만 집계할지 (공개 서재용)
  * @returns 독서 통계 데이터
  */
 export const getBookStats = async (
   userId: string,
-  year: number | null = null
+  year: number | null = null,
+  publicOnly = false
 ): Promise<BookStats> => {
   const supabase = await createClient();
 
@@ -45,6 +47,12 @@ export const getBookStats = async (
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId);
 
+    // 공개 서재 경로에서는 RLS에만 기대지 않고 코드에서도 명시적으로 거른다.
+    // (RLS 정책은 마이그레이션 밖에 있어 눈에 보이지 않으므로 이중 방어)
+    if (publicOnly) {
+      totalBooksQuery = totalBooksQuery.eq('is_public', true);
+    }
+
     if (yearFilter) {
       totalBooksQuery = totalBooksQuery
         .gte('created_at', yearFilter.startDate)
@@ -63,6 +71,10 @@ export const getBookStats = async (
       .eq('user_id', userId)
       .eq('status', 'completed');
 
+    if (publicOnly) {
+      completedBooksQuery = completedBooksQuery.eq('is_public', true);
+    }
+
     if (yearFilter) {
       completedBooksQuery = completedBooksQuery
         .gte('completed_date', yearFilter.startDate)
@@ -80,6 +92,10 @@ export const getBookStats = async (
       .select('page_count, completed_date, category, rating')
       .eq('user_id', userId)
       .eq('status', 'completed');
+
+    if (publicOnly) {
+      completedBooksDataQuery = completedBooksDataQuery.eq('is_public', true);
+    }
 
     if (yearFilter) {
       completedBooksDataQuery = completedBooksDataQuery

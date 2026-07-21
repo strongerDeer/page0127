@@ -20,22 +20,31 @@ import type {
  * - 대시보드 상단 "전체 독서 통계" 섹션에 사용
  *
  * @param userId - 사용자 ID
+ * @param publicOnly - 공개(is_public) 책만 집계할지 (공개 서재용)
  * @returns 전체 독서 통계
  */
 export const getOverallStats = async (
-  userId: string
+  userId: string,
+  publicOnly = false
 ): Promise<OverallStats> => {
   const supabase = await createClient();
 
   try {
     // 완독한 책들의 데이터 전체 조회
-    const { data: completedBooks, error } = await supabase
+    let query = supabase
       .from('books')
       .select('*')
       .eq('user_id', userId)
       .eq('status', 'completed')
       .not('completed_date', 'is', null)
       .order('completed_date', { ascending: true });
+
+    // 공개 서재 경로에서는 RLS에만 기대지 않고 코드에서도 명시적으로 거른다
+    if (publicOnly) {
+      query = query.eq('is_public', true);
+    }
+
+    const { data: completedBooks, error } = await query;
 
     if (error) throw error;
     if (!completedBooks || completedBooks.length === 0) {
