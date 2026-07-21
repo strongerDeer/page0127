@@ -47,30 +47,34 @@ export const BookFeedGrid = ({
             key={book.id}
             href={bookHref(book)}
             title={book.title}
-            // 카드 전체를 정사각형(aspect-square)으로 고정하고, 그 안을
-            // 뱃지 줄 / 표지 이미지(남는 공간을 채움) / 워터마크 밴드로 세로 분할한다
-            className='group flex aspect-square flex-col overflow-hidden rounded-md border border-line-soft bg-card transition-transform hover:-translate-y-0.5 hover:shadow-md'
+            // 카드 전체를 정사각형(aspect-square)으로 고정한다. bg-muted가
+            // 카드 전체의 "배경"이 되고, 표지는 그 위에 중간 크기로 얹힌 것처럼 보이게 한다
+            className='group flex aspect-square flex-col overflow-hidden rounded-md border border-line-soft bg-muted transition-transform hover:-translate-y-0.5 hover:shadow-md'
           >
             {rank !== undefined && (
-              <div className='px-2 pt-2'>
-                <span className='inline-block rounded-full bg-text-strong/85 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-white'>
-                  BOOK #{String(rank).padStart(3, '0')}
-                </span>
+              <div className='pt-3 text-center leading-none'>
+                <p className='text-[10px] font-bold tracking-[0.2em] text-text-faint'>
+                  BOOK
+                </p>
+                <p className='text-xl font-black text-text-strong'>
+                  #{String(rank).padStart(3, '0')}
+                </p>
               </div>
             )}
 
-            {/* min-h-0: flex 자식이 내용 크기만큼 늘어나지 않고 남는 공간만 채우게 함 */}
-            <div className='relative mx-2 my-2 min-h-0 flex-1 overflow-hidden rounded-sm bg-muted'>
+            {/* min-h-0: flex 자식이 내용 크기만큼 늘어나지 않고 남는 공간만 채우게 함
+                object-contain + 안쪽 padding: 표지를 배경 위에 중간 크기로 띄운다 (꽉 채우지 않음) */}
+            <div className='relative min-h-0 flex-1 px-6 py-2'>
               {book.cover_image ? (
                 <Image
                   src={book.cover_image}
                   alt={book.title}
                   fill
                   sizes='(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw'
-                  className='object-cover'
+                  className='object-contain drop-shadow-md'
                 />
               ) : (
-                <div className='flex h-full w-full flex-col justify-between px-2 py-2.5 text-left'>
+                <div className='flex h-full w-full flex-col justify-center gap-1 rounded-sm bg-card px-3 py-2.5 text-left shadow-sm'>
                   <p className='line-clamp-4 break-keep text-[11px] font-bold leading-snug text-text-strong'>
                     {book.title}
                   </p>
@@ -83,7 +87,7 @@ export const BookFeedGrid = ({
               )}
             </div>
 
-            {/* 선반 명패처럼 보이는 하단 워터마크 밴드 — 카드 상단(흰색)과 뚜렷이 구분되는 톤 */}
+            {/* 선반 명패처럼 보이는 하단 워터마크 밴드 — 배경(bg-muted)보다 한 톤 더 짙게 */}
             <div className='shrink-0 bg-line px-2 py-1.5 text-center'>
               <p className='text-[9px] font-semibold uppercase tracking-[0.2em] text-text-subtle'>
                 page0127
