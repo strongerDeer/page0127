@@ -206,8 +206,10 @@ export const DashboardBookList = ({
       const [field, order] = sortOption.split('-');
 
       if (field === 'created_at') {
-        const dateA = new Date(a.created_at).getTime();
-        const dateB = new Date(b.created_at).getTime();
+        // '최신순'/'오래된순'은 등록 시각이 아니라 완독일 기준이어야 한다.
+        // completed_date가 없는 예외 케이스만 created_at으로 대체한다.
+        const dateA = new Date(a.completed_date ?? a.created_at).getTime();
+        const dateB = new Date(b.completed_date ?? b.created_at).getTime();
         return order === 'desc' ? dateB - dateA : dateA - dateB;
       }
 
