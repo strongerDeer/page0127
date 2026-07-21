@@ -6,6 +6,13 @@
 
 **Live**: [book-page0127.vercel.app](https://book-page0127.vercel.app/)
 
+<!--
+TODO: 스크린샷/GIF 추가
+- 랜딩, 개인 책장, 통계 대시보드, AI 취향 분석 결과 정도 추천
+- 아래 형식으로 삽입:
+  ![대시보드 스크린샷](./docs/images/dashboard.png)
+-->
+
 ## 📖 프로젝트명 의미
 
 **Page 0127** → **Page 읽 .** (페이지 읽다)
@@ -29,18 +36,18 @@
 - **Framework**: Next.js 16 (App Router) + React 19
 - **Language**: TypeScript (strict)
 - **Styling**: Tailwind CSS v4 + shadcn/ui
-- **Server State**: TanStack Query v5
+- **Server State**: TanStack Query v5 — 서버 상태 캐싱·낙관적 업데이트로 로딩/에러 처리 일관성 확보
 - **Charts**: Recharts
 
 ### Backend
 
 - **Database / Auth**: Supabase (PostgreSQL, Google OAuth)
-- **AI**: OpenAI API — 취향 분석·추천·독서 궁합
+- **AI**: OpenAI API — 취향 분석·추천·독서 궁합, 한국어 품질과 JSON 모드 안정성 기준으로 선택
 - **Book API**: 알라딘 도서 검색 API (서버 라우트에서 중계 + 캐시)
 
 ### DevOps
 
-- **Monorepo**: Turborepo + pnpm workspace (`apps/page0127`, `packages/design-tokens`, `packages/icons`)
+- **Monorepo**: Turborepo + pnpm workspace (`apps/page0127`, `packages/design-tokens`, `packages/icons`) — 디자인 토큰·아이콘을 패키지로 분리해 재사용
 - **Deployment**: Vercel
 
 ## 📅 진행 상태
@@ -48,15 +55,17 @@
 ### 구현 완료
 
 - 개인 책장, 도서 등록·수정·삭제, 완독·별점 기록
-- 연도별/월별/카테고리/평점 통계 대시보드, 독서 목표 진행률
+- 연도별/월별/카테고리/평점 통계 대시보드, 독서 목표 진행률, 전체/연도 뷰 분리
 - AI 독서 취향 분석·추천 도서 생성, 독서 성향 타입 카탈로그, 독서 궁합
 - 공개 서재, 팔로우, 활동 피드 무한 스크롤, 좋아요, 댓글, 알림
+- 공개 책 상세 페이지, 도서 랭킹 순위 변동 표시(▲/▼/−)
 - SEO(메타데이터·sitemap), 키보드 내비게이션·스크린 리더 접근성
 
 ### 개선 중
 
-- 알림 UX와 공개 범위 정책
-- AI 분석 결과의 저장·비교 경험과 추천 설명 품질
+- 서피스별 정보 밀도 분리 마무리 (발견 화면은 감추고, 비교 화면은 편다)
+- 실사용 데이터 축적 — 등록 도서·완독 기록이 적어 랭킹·통계가 아직 얇음
+- 남은 화면(공개 서재·피드·알림)에 새 디자인 토큰 전면 적용 점검
 
 ## 📂 프로젝트 구조
 
@@ -99,4 +108,4 @@ pnpm dev
 
 ---
 
-**Last Updated**: 2026-07-12
+**Last Updated**: 2026-07-21
