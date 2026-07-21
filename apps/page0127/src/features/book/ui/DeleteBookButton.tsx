@@ -20,6 +20,8 @@ import { useBookCRUD } from '../api/useBookCRUD';
 
 type DeleteBookButtonProps = {
   bookId: string;
+  /** 삭제 성공 후 이동할 경로 (예: 소유자의 /{username}) */
+  redirectTo: string;
 };
 
 /**
@@ -29,7 +31,10 @@ type DeleteBookButtonProps = {
  * - confirm() 대신 AlertDialog — 브라우저 기본 UI 탈피
  * - AlertDialog는 내부적으로 Portal 사용 → z-index 문제 없음
  */
-export const DeleteBookButton = ({ bookId }: DeleteBookButtonProps) => {
+export const DeleteBookButton = ({
+  bookId,
+  redirectTo,
+}: DeleteBookButtonProps) => {
   const router = useRouter();
   const { deleteBook } = useBookCRUD();
   const [open, setOpen] = useState(false);
@@ -37,7 +42,7 @@ export const DeleteBookButton = ({ bookId }: DeleteBookButtonProps) => {
   const handleConfirm = async () => {
     const success = await deleteBook(bookId);
     if (success) {
-      router.push('/books');
+      router.push(redirectTo);
     }
   };
 
