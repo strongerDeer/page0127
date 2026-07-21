@@ -46,7 +46,12 @@ const AddBookPage = () => {
     totalResults,
     itemsPerPage,
   } = useBookSearch();
-  const { createBook, getBookByISBN, isLoading: isCreating } = useBookCRUD();
+  const {
+    createBook,
+    updateBook,
+    getBookByISBN,
+    isLoading: isCreating,
+  } = useBookCRUD();
 
   const [selectedBook, setSelectedBook] = useState<AladinBook | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
@@ -138,12 +143,10 @@ const AddBookPage = () => {
   const handleSubmit = async (formData: BookFormData) => {
     if (!selectedBook) return;
 
-    // 이미지 URL 변환 및 검증
+    // 표지는 고해상도로 즉시 변환. 책등(spine) 이미지는 알라딘에 실제로 존재하는지
+    // 확인해야 하는데(최대 3초 x 2회) 이 검증을 등록 전에 기다리면 체감 등록 시간이
+    // 크게 늘어난다. 그래서 등록은 먼저 끝내고, 검증은 아래에서 백그라운드로 돌린다.
     const highResCoverImage = upgradeImageResolution(selectedBook.cover);
-    const spineImage = await validateSpineImageUrl(
-      selectedBook.cover,
-      selectedBook.isbn13
-    );
 
     // 재독 횟수 계산 (기존 책이 있으면 +1, 없으면 1)
     const readCount = existingBook ? existingBook.read_count + 1 : 1;
@@ -155,7 +158,7 @@ const AddBookPage = () => {
       author: selectedBook.author,
       publisher: selectedBook.publisher,
       cover_image: highResCoverImage, // 고해상도 표지 이미지
-      spine_image: spineImage, // 책등 이미지
+      spine_image: null, // 책등 이미지 — 등록 성공 후 백그라운드로 채운다
       description: selectedBook.description,
       pub_date: selectedBook.pubDate,
       category: selectedBook.categoryName,
@@ -178,6 +181,11 @@ const AddBookPage = () => {
       setExistingBook(null);
 
       router.push('/books'); // 도서 목록 페이지로 이동
+
+      // 책등 이미지 존재 여부 확인 — 등록을 막지 않도록 결과를 기다리지 않는다
+      validateSpineImageUrl(selectedBook.cover, selectedBook.isbn13).then(
+        (spineImage) => updateBook(result.id, { spine_image: spineImage })
+      );
     } else {
       toast.error('도서 등록에 실패했습니다.');
     }

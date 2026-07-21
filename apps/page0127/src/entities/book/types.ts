@@ -102,7 +102,6 @@ export type BookRanking = {
   has_history?: boolean;
 };
 
-
 /**
  * 도서 등록/수정 시 사용하는 타입
  */
@@ -113,7 +112,7 @@ export type BookInput = {
   author?: string;
   publisher?: string;
   cover_image?: string;
-  spine_image?: string; // 책등 이미지 (책장 UI용)
+  spine_image?: string | null; // 책등 이미지 (책장 UI용) — null로 명시적으로 지울 수 있다
   description?: string;
   pub_date?: string;
   category?: string;

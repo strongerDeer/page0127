@@ -4,6 +4,8 @@ import { useId, useReducer } from 'react';
 
 import Image from 'next/image';
 
+import { RefreshCw } from 'lucide-react';
+
 import { upgradeImageResolution } from '@/shared/lib/imageUtils';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
@@ -20,6 +22,8 @@ type BookRegistrationFormProps = {
   onCancel: () => void;
   isLoading?: boolean;
   initialData?: Partial<BookFormData>;
+  // 수정 모드에서만 전달 — 있을 때만 "책 선택부터 다시" 버튼을 보여준다
+  onReselectBook?: () => void;
 };
 
 export type BookFormData = {
@@ -118,6 +122,7 @@ export const BookRegistrationForm = ({
   onCancel,
   isLoading = false,
   initialData,
+  onReselectBook,
 }: BookRegistrationFormProps) => {
   // 고해상도 이미지 URL로 변환
   const highResCover = book.cover
@@ -224,32 +229,47 @@ export const BookRegistrationForm = ({
       <CardContent>
         <form onSubmit={handleSubmit} className='space-y-6'>
           {/* 책 정보 미리보기 */}
-          <div className='flex gap-4 rounded-lg bg-muted/50 p-4'>
-            <div className='relative h-32 w-24 shrink-0'>
-              {highResCover ? (
-                <Image
-                  src={highResCover}
-                  alt={book.title}
-                  fill
-                  className='object-cover'
-                  sizes='96px'
-                />
-              ) : (
-                <div className='flex h-full w-full items-center justify-center bg-sunken text-sm text-text-faint'>
-                  표지 없음
-                </div>
-              )}
-            </div>
-            <div>
-              <h4 className='font-semibold'>{book.title}</h4>
-              <p className='text-sm text-foreground'>{book.author}</p>
-              <p className='text-sm text-muted-foreground'>{book.publisher}</p>
-              {book.subInfo?.itemPage && (
+          <div className='flex items-start justify-between gap-4 rounded-lg bg-muted/50 p-4'>
+            <div className='flex gap-4'>
+              <div className='relative h-32 w-24 shrink-0'>
+                {highResCover ? (
+                  <Image
+                    src={highResCover}
+                    alt={book.title}
+                    fill
+                    className='object-cover'
+                    sizes='96px'
+                  />
+                ) : (
+                  <div className='flex h-full w-full items-center justify-center bg-sunken text-sm text-text-faint'>
+                    표지 없음
+                  </div>
+                )}
+              </div>
+              <div>
+                <h4 className='font-semibold'>{book.title}</h4>
+                <p className='text-sm text-foreground'>{book.author}</p>
                 <p className='text-sm text-muted-foreground'>
-                  {book.subInfo.itemPage}쪽
+                  {book.publisher}
                 </p>
-              )}
+                {book.subInfo?.itemPage && (
+                  <p className='text-sm text-muted-foreground'>
+                    {book.subInfo.itemPage}쪽
+                  </p>
+                )}
+              </div>
             </div>
+            {onReselectBook && (
+              <Button
+                type='button'
+                variant='outline'
+                size='sm'
+                onClick={onReselectBook}
+                className='shrink-0 shadow-none'
+              >
+                <RefreshCw className='h-3.5 w-3.5' />책 변경
+              </Button>
+            )}
           </div>
 
           {/* 독서 상태 */}
@@ -341,7 +361,10 @@ export const BookRegistrationForm = ({
                     aria-pressed={rating === score}
                     aria-label={`${score}점`}
                     onClick={() =>
-                      dispatch({ type: 'SET_RATING', rating: score as BookRating })
+                      dispatch({
+                        type: 'SET_RATING',
+                        rating: score as BookRating,
+                      })
                     }
                     className={`rounded-md border px-4 py-2 transition-colors ${
                       rating === score
@@ -365,7 +388,10 @@ export const BookRegistrationForm = ({
                 type='text'
                 value={oneLineReview}
                 onChange={(e) =>
-                  dispatch({ type: 'SET_ONE_LINE_REVIEW', value: e.target.value })
+                  dispatch({
+                    type: 'SET_ONE_LINE_REVIEW',
+                    value: e.target.value,
+                  })
                 }
                 placeholder='이 책에 대한 한줄평을 남겨주세요'
                 maxLength={100}

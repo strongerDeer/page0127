@@ -77,15 +77,14 @@ export const validateSpineImageUrl = async (
   const spineflipUrl1 = `${imgArr[0]}spineflip${fileName}_d.jpg`;
   const spineflipUrl2 = `${imgArr[0]}spineflip/${isbn}_d.jpg`;
 
-  // 첫 번째 패턴 URL 검증
-  if (await validateImageUrl(spineflipUrl1)) {
-    return spineflipUrl1;
-  }
+  // 두 패턴을 동시에 검증 — 순차 실행 시 최대 6초(3초 x 2)까지 걸리던 것을 최대 3초로 줄인다
+  const [isValid1, isValid2] = await Promise.all([
+    validateImageUrl(spineflipUrl1),
+    validateImageUrl(spineflipUrl2),
+  ]);
 
-  // 두 번째 패턴 URL 검증
-  if (await validateImageUrl(spineflipUrl2)) {
-    return spineflipUrl2;
-  }
+  if (isValid1) return spineflipUrl1;
+  if (isValid2) return spineflipUrl2;
 
   // 둘 다 실패하면 fallback 이미지 반환
   return '/images/no-book.jpg';
