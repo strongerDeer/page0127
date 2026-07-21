@@ -138,3 +138,27 @@ export const upsertProfile = async (
     }
   );
 };
+
+/**
+ * 프로필이 없으면 생성하고, username까지 보장해서 반환한다.
+ *
+ * 로그인 콜백 등 "프로필이 확실히 있어야 다음 단계로 갈 수 있는" 지점에서 쓴다.
+ * (dashboard/page.tsx에 있던 로직을 재사용 가능한 형태로 옮겼다)
+ */
+export const ensureProfile = async (
+  userId: string,
+  email: string
+): Promise<Profile> => {
+  let profile = await getProfile(userId);
+
+  if (!profile) {
+    await upsertProfile(userId, email);
+    profile = await getProfile(userId);
+  }
+
+  if (!profile) {
+    throw new Error('프로필 생성에 실패했습니다.');
+  }
+
+  return profile;
+};

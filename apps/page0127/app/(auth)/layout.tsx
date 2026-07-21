@@ -2,12 +2,14 @@ import { redirect } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
 
+import { ensureProfile } from '@/entities/profile/api/getProfile';
+
 /**
  * 인증 페이지 레이아웃 (로그인, 회원가입 등)
  *
  * 학습 포인트:
  * - Route Group의 layout.tsx에서 접근 제어 처리
- * - 이미 로그인한 사용자는 대시보드로 리디렉션
+ * - 이미 로그인한 사용자는 본인 서재로 리디렉션
  * - 하위 모든 페이지에 자동 적용 (login, signup 등)
  */
 const AuthLayout = async ({ children }: { children: React.ReactNode }) => {
@@ -16,9 +18,10 @@ const AuthLayout = async ({ children }: { children: React.ReactNode }) => {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 이미 로그인한 사용자는 대시보드로 리디렉션
+  // 이미 로그인한 사용자는 본인 서재로 리디렉션
   if (user) {
-    redirect('/dashboard');
+    const profile = await ensureProfile(user.id, user.email!);
+    redirect(`/${profile.username}`);
   }
 
   return <>{children}</>;
