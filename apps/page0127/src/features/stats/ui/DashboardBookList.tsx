@@ -29,12 +29,6 @@ import {
   SelectValue,
 } from '@/shared/ui/select';
 
-// FSD 경계 규칙(features → widgets 금지) 예외: 설계 문서
-// (docs/superpowers/specs/2026-07-21-library-view-toggle-design.md §3)가
-// BookFeedGrid를 PublicBookShelf와 같은 계층(widgets/book/ui)에 두고
-// DashboardBookList가 직접 import하도록 명시적으로 정했다. BookFeedGrid는
-// 이 컴포넌트만 소비하는 표시 전용 리프 컴포넌트라 실질적인 역참조(widgets → features)는
-// 없지만, 근본적으로는 BookFeedGrid를 features/stats/ui로 옮기는 것이 더 바른 구조다.
 import { BookFeedGrid } from './BookFeedGrid';
 import { BookGridItem } from './BookGridItem';
 import { BookListFilterInput, type BookListFilterInputHandle } from './BookListFilterInput';
