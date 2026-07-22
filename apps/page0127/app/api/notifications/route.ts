@@ -93,19 +93,24 @@ export async function GET(request: NextRequest) {
  * Request Body:
  * - user_id: 알림을 받을 사용자 ID
  * - type: 'follow' | 'comment' | 'like'
- * - actor_id: 알림을 발생시킨 사용자 ID
  * - target_id: 관련 리소스 ID (선택)
  * - target_type: 'activity' | 'comment' (선택)
  *
  * 학습 포인트:
+ * - actor_id(알림을 발생시킨 사람)는 body로 받지 않고 인증된 본인으로 고정한다
+ *   — DB의 RLS가 `WITH CHECK (true)`라 누구나 insert 가능해서, 로그인 검증과
+ *   actor_id 위조 방지를 이 API 레이어에서 직접 해야 한다.
  * - 자기 자신에게는 알림 생성하지 않음
- * - RLS 정책: 시스템만 생성 가능 (WITH CHECK true)
  */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await getSupabaseClient();
+    const { user, error: authError } = await getCurrentUser();
+    if (authError) return authError;
+
     const body = await request.json();
-    const { user_id, type, actor_id, target_id, target_type } = body;
+    const { user_id, type, target_id, target_type } = body;
+    const actor_id = user!.id;
 
     // 자기 자신에게는 알림 보내지 않음
     if (user_id === actor_id) {
