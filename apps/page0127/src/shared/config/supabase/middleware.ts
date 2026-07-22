@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { createServerClient } from '@supabase/ssr';
 
+import type { SupabaseClient, User } from '@supabase/supabase-js';
+
 /**
  * Middleware용 Supabase 클라이언트
  *
@@ -9,8 +11,14 @@ import { createServerClient } from '@supabase/ssr';
  * - Next.js Middleware에서 사용 (라우팅 전에 실행)
  * - 인증 상태 확인 후 리디렉션 처리
  * - Request/Response 쿠키 모두 처리
+ * - user와 supabase 클라이언트를 반환값에 포함시켜 상위 middleware.ts가
+ *   재사용한다 (레이트 리밋 체크에서 다시 만들지 않기 위함)
  */
-export async function updateSession(request: NextRequest) {
+export async function updateSession(request: NextRequest): Promise<{
+  response: NextResponse;
+  user: User | null;
+  supabase: SupabaseClient;
+}> {
   const supabaseResponse = NextResponse.next({
     request,
   });
@@ -71,8 +79,8 @@ export async function updateSession(request: NextRequest) {
   if (!user && isProtected) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
-    return NextResponse.redirect(url);
+    return { response: NextResponse.redirect(url), user, supabase };
   }
 
-  return supabaseResponse;
+  return { response: supabaseResponse, user, supabase };
 }
