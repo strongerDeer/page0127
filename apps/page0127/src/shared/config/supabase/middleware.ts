@@ -52,6 +52,7 @@ export async function updateSession(request: NextRequest): Promise<{
   // '/dashboard'는 이제 로그인 사용자의 /{username}으로 리다이렉트만 하는
   // 얇은 스텁이라 보호가 필요 없다 (안 걸려도 로그인 자체는 각 실제 기능에서 확인한다).
   const PROTECTED_PREFIXES = [
+    '/admin',
     '/books',
     '/feed',
     '/search',
