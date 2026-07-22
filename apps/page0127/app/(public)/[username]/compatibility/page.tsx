@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { checkUsageLimit } from '@/shared/lib/aiUsage';
 
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 
@@ -59,19 +60,24 @@ const CompatibilityPage = async ({ params }: PageProps) => {
       .eq('status', 'completed')
       .not('rating', 'is', null);
 
-  const [{ data: analysis }, { count: myBooksCount }, { count: targetBooksCount }] =
-    await Promise.all([
-      supabase
-        .from('compatibility_analyses')
-        .select('*')
-        .eq('user_id_1', userId1)
-        .eq('user_id_2', userId2)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      countCompletedBooks(user.id),
-      countCompletedBooks(profile.id),
-    ]);
+  const [
+    { data: analysis },
+    { count: myBooksCount },
+    { count: targetBooksCount },
+    { remaining: compatibilityRemaining },
+  ] = await Promise.all([
+    supabase
+      .from('compatibility_analyses')
+      .select('*')
+      .eq('user_id_1', userId1)
+      .eq('user_id_2', userId2)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    countCompletedBooks(user.id),
+    countCompletedBooks(profile.id),
+    checkUsageLimit(supabase, user.id, 'compatibility'),
+  ]);
 
   // 5. 상호 추천 도서 조회 (분석이 있을 때만)
   let recommendations: MutualRecommendation[] = [];
@@ -99,6 +105,7 @@ const CompatibilityPage = async ({ params }: PageProps) => {
       myBooksCount={myBooksCount ?? 0}
       targetBooksCount={targetBooksCount ?? 0}
       isCurrentUserFirst={isCurrentUserFirst}
+      compatibilityRemaining={compatibilityRemaining}
     />
   );
 };

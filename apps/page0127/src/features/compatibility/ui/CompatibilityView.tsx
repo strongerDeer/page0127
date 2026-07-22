@@ -56,6 +56,8 @@ type CompatibilityViewProps = {
   targetBooksCount: number;
   /** 정렬된 쌍에서 내가 user1인지 (reading_patterns 매핑용) */
   isCurrentUserFirst: boolean;
+  /** 이번 달 궁합분석 남은 횟수 (0~3) */
+  compatibilityRemaining: number;
 };
 
 const MIN_BOOKS = 5;
@@ -78,13 +80,15 @@ export const CompatibilityView = ({
   myBooksCount,
   targetBooksCount,
   isCurrentUserFirst,
+  compatibilityRemaining,
 }: CompatibilityViewProps) => {
   const router = useRouter();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const canAnalyze =
+  const hasEnoughBooks =
     myBooksCount >= MIN_BOOKS && targetBooksCount >= MIN_BOOKS;
+  const canAnalyze = hasEnoughBooks && compatibilityRemaining > 0;
 
   const runAnalysis = async (force: boolean) => {
     setIsAnalyzing(true);
@@ -125,6 +129,7 @@ export const CompatibilityView = ({
           recommendationsForTarget={recommendationsForTarget}
           isCurrentUserFirst={isCurrentUserFirst}
           isAnalyzing={isAnalyzing}
+          compatibilityRemaining={compatibilityRemaining}
           onReanalyze={() => setIsDialogOpen(true)}
         />
       ) : (
@@ -132,6 +137,8 @@ export const CompatibilityView = ({
           targetName={targetName}
           myBooksCount={myBooksCount}
           targetBooksCount={targetBooksCount}
+          hasEnoughBooks={hasEnoughBooks}
+          compatibilityRemaining={compatibilityRemaining}
           canAnalyze={canAnalyze}
           isAnalyzing={isAnalyzing}
           onAnalyze={() => setIsDialogOpen(true)}
@@ -166,6 +173,8 @@ type CompatibilityIntroProps = {
   targetName: string;
   myBooksCount: number;
   targetBooksCount: number;
+  hasEnoughBooks: boolean;
+  compatibilityRemaining: number;
   canAnalyze: boolean;
   isAnalyzing: boolean;
   onAnalyze: () => void;
@@ -175,6 +184,8 @@ const CompatibilityIntro = ({
   targetName,
   myBooksCount,
   targetBooksCount,
+  hasEnoughBooks,
+  compatibilityRemaining,
   canAnalyze,
   isAnalyzing,
   onAnalyze,
@@ -213,9 +224,18 @@ const CompatibilityIntro = ({
           ? '두 분의 책장을 나란히 읽는 중이에요…'
           : '궁합 분석하기'}
       </Button>
-      {!canAnalyze && (
+      {!hasEnoughBooks ? (
         <p className='mt-3 text-sm text-text-subtle'>
           아직 책이 조금 부족해요. 책장이 더 쌓이면 다시 만나요.
+        </p>
+      ) : compatibilityRemaining <= 0 ? (
+        <p className='mt-3 text-sm text-text-subtle'>
+          이번 달 무료 분석 횟수(3회)를 모두 사용했어요. 다음 달 1일에
+          초기화돼요.
+        </p>
+      ) : (
+        <p className='mt-3 text-sm text-text-subtle'>
+          이번 달 {compatibilityRemaining}/3회 남았어요.
         </p>
       )}
     </CardContent>
@@ -252,6 +272,7 @@ type CompatibilityResultProps = {
   recommendationsForTarget: MutualRecommendation[];
   isCurrentUserFirst: boolean;
   isAnalyzing: boolean;
+  compatibilityRemaining: number;
   onReanalyze: () => void;
 };
 
@@ -262,6 +283,7 @@ const CompatibilityResult = ({
   recommendationsForTarget,
   isCurrentUserFirst,
   isAnalyzing,
+  compatibilityRemaining,
   onReanalyze,
 }: CompatibilityResultProps) => {
   const { similarity_analysis: similarity } = analysis;
@@ -378,14 +400,16 @@ const CompatibilityResult = ({
       {/* 4. 재분석 */}
       <div className='flex items-center justify-between rounded-xl bg-sunken p-4'>
         <p className='text-sm text-muted-foreground'>
-          분석일:{' '}
-          {new Date(analysis.created_at).toLocaleDateString('ko-KR')} — 책장이
-          더 쌓였다면 다시 분석해보세요.
+          분석일: {new Date(analysis.created_at).toLocaleDateString('ko-KR')}{' '}
+          —{' '}
+          {compatibilityRemaining > 0
+            ? '책장이 더 쌓였다면 다시 분석해보세요.'
+            : '이번 달 무료 분석 횟수를 모두 사용했어요. 다음 달 1일에 초기화돼요.'}
         </p>
         <Button
           variant='outline'
           size='sm'
-          disabled={isAnalyzing}
+          disabled={isAnalyzing || compatibilityRemaining <= 0}
           onClick={onReanalyze}
         >
           {isAnalyzing ? '분석 중이에요…' : '다시 분석하기'}
