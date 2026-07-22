@@ -2,24 +2,30 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 
-// 외부 유료 API(OpenAI, 알라딘)를 호출하는 라우트 — 더 엄격한 제한
+// OpenAI를 호출하는 라우트 — 호출 자체가 비싸고 UI에도 재시도 유도가 없어 가장 엄격하게 제한
 const STRICT_PATHS = [
   '/api/taste-analysis/analyze',
   '/api/compatibility/analyze',
-  '/api/books/search',
 ];
 
+// 알라딘 API(비용 발생)를 호출하지만, 검색창 입력마다(debounce 400ms) 자동 호출되는
+// 라이브 검색이라 strict(5회/분)로 묶으면 정상 사용자도 오타 수정 몇 번에 429를 본다.
+// strict보다 여유 있게, standard보다는 낮게 별도 등급을 둔다.
+const SEARCH_PATHS = ['/api/books/search'];
+
 const STRICT_LIMIT = 5;
+const SEARCH_LIMIT = 20;
 const STANDARD_LIMIT = 60;
 const WINDOW_MS = 60_000; // 1분
 
 // Vercel Cron이 호출하는 라우트 — CRON_SECRET으로 이미 보호되는 서버 간 호출이라 제외
 const EXCLUDED_PREFIXES = ['/api/cron'];
 
-type Tier = 'strict' | 'standard';
+type Tier = 'strict' | 'search' | 'standard';
 
 const TIER_LIMITS: Record<Tier, number> = {
   strict: STRICT_LIMIT,
+  search: SEARCH_LIMIT,
   standard: STANDARD_LIMIT,
 };
 
@@ -28,7 +34,9 @@ function getTier(pathname: string): Tier | null {
   if (EXCLUDED_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
     return null;
   }
-  return STRICT_PATHS.includes(pathname) ? 'strict' : 'standard';
+  if (STRICT_PATHS.includes(pathname)) return 'strict';
+  if (SEARCH_PATHS.includes(pathname)) return 'search';
+  return 'standard';
 }
 
 /**
@@ -36,8 +44,8 @@ function getTier(pathname: string): Tier | null {
  * Vercel은 프록시를 거친 요청에 x-forwarded-for 헤더를 자동으로 붙여준다.
  *
  * 등급(tier)을 식별자 앞에 붙이는 이유:
- * 등급을 안 붙이면 strict 라우트(5회)와 standard 라우트(60회)가 같은 카운터를
- * 공유하게 되어, strict 쪽을 몇 번 쓰기만 해도 standard 쪽 예산이 같이 줄어든다.
+ * 등급을 안 붙이면 strict(5회)·search(20회)·standard(60회) 라우트가 같은 카운터를
+ * 공유하게 되어, 한 등급을 몇 번 쓰기만 해도 다른 등급 예산이 같이 줄어든다.
  * 등급별로 완전히 독립된 카운터를 쓰기 위해 붙인다.
  */
 function getIdentifier(request: NextRequest, user: User | null, tier: Tier): string {
