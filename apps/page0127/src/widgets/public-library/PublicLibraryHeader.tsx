@@ -50,6 +50,8 @@ type PublicLibraryHeaderProps = {
   newBooksSinceLastAnalysis: number | null;
   /** 취향 분석 이력 (최신순 최대 10건) — 소유자 전용, 방문자는 빈 배열 */
   analysisHistory: TasteAnalysisSummary[];
+  /** 이번 달 취향분석 남은 횟수 (0~3) — 방문자는 항상 0 */
+  tasteAnalysisRemaining: number;
 };
 
 export const PublicLibraryHeader = ({
@@ -61,6 +63,7 @@ export const PublicLibraryHeader = ({
   analyzableBookCount,
   newBooksSinceLastAnalysis,
   analysisHistory,
+  tasteAnalysisRemaining,
 }: PublicLibraryHeaderProps) => {
   const router = useRouter();
   const [followersModalOpen, setFollowersModalOpen] = useState(false);
@@ -80,6 +83,13 @@ export const PublicLibraryHeader = ({
     if (newBooksSinceLastAnalysis !== null && newBooksSinceLastAnalysis < 5) {
       toast.error(
         `이전 분석 이후 새로 읽은 책이 ${newBooksSinceLastAnalysis}권이에요. 5권 이상 쌓이면 다시 분석할 수 있어요.`
+      );
+      return;
+    }
+
+    if (tasteAnalysisRemaining <= 0) {
+      toast.error(
+        '이번 달 무료 분석 횟수(3회)를 모두 사용했어요. 다음 달 1일에 초기화돼요.'
       );
       return;
     }
@@ -182,7 +192,9 @@ export const PublicLibraryHeader = ({
             <>
               <Button onClick={handleAnalyzeTaste} disabled={isAnalyzing}>
                 {isAnalyzing && <Loader2 className='h-4 w-4 animate-spin' />}
-                {isAnalyzing ? '분석 중… (최대 1분)' : '취향 분석'}
+                {isAnalyzing
+                  ? '분석 중… (최대 1분)'
+                  : `취향 분석 (${tasteAnalysisRemaining}/3 남음)`}
               </Button>
               <Button asChild variant='outline' className='shadow-none'>
                 <Link href='/settings'>프로필 편집</Link>

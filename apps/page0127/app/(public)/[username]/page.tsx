@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { checkUsageLimit } from '@/shared/lib/aiUsage';
 import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 
 import { getBookStats, getOverallStats } from '@/entities/book/server';
@@ -114,6 +115,7 @@ const LibraryPage = async ({ params, searchParams }: PageProps) => {
   let analyzableBookCount = 0;
   let newBooksSinceLastAnalysis: number | null = null;
   let analysisHistory: TasteAnalysisSummary[] = [];
+  let tasteAnalysisRemaining = 0;
 
   if (isOwnProfile) {
     const { count } = await supabase
@@ -143,6 +145,13 @@ const LibraryPage = async ({ params, searchParams }: PageProps) => {
         .gt('completed_date', lastAnalysis.created_at);
       newBooksSinceLastAnalysis = newCount ?? 0;
     }
+
+    const { remaining } = await checkUsageLimit(
+      supabase,
+      profile.id,
+      'taste_analysis'
+    );
+    tasteAnalysisRemaining = remaining;
   }
 
   return (
@@ -162,6 +171,7 @@ const LibraryPage = async ({ params, searchParams }: PageProps) => {
       analyzableBookCount={analyzableBookCount}
       newBooksSinceLastAnalysis={newBooksSinceLastAnalysis}
       analysisHistory={analysisHistory}
+      tasteAnalysisRemaining={tasteAnalysisRemaining}
       calendarSlot={
         isOwnProfile ? (
           <ErrorBoundary fallback={<CalendarBlockError />}>

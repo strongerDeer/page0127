@@ -37,6 +37,7 @@ type PublicLibraryContentProps = {
   analyzableBookCount: number;
   newBooksSinceLastAnalysis: number | null;
   analysisHistory: TasteAnalysisSummary[];
+  tasteAnalysisRemaining: number;
   /** 소유자 모드에서만 주입되는 캘린더 슬롯 (방문자는 undefined) */
   calendarSlot?: React.ReactNode;
 };
@@ -65,6 +66,7 @@ export const PublicLibraryContent = ({
   analyzableBookCount,
   newBooksSinceLastAnalysis,
   analysisHistory,
+  tasteAnalysisRemaining,
   calendarSlot,
 }: PublicLibraryContentProps) => {
   const router = useRouter();
@@ -108,6 +110,7 @@ export const PublicLibraryContent = ({
         analyzableBookCount={analyzableBookCount}
         newBooksSinceLastAnalysis={newBooksSinceLastAnalysis}
         analysisHistory={analysisHistory}
+        tasteAnalysisRemaining={tasteAnalysisRemaining}
       />
 
       <LibraryView
