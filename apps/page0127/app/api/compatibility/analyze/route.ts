@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { checkUsageLimit, recordUsage } from '@/shared/lib/aiUsage';
 import { AI_MODEL, MAX_TOKENS, openai, TEMPERATURE } from '@/shared/lib/openai';
 import { createCompatibilityPrompt } from '@/shared/lib/openai/prompts/compatibility';
 
@@ -131,6 +132,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 사용량 확인 (무료 사용자 월 3회 제한)
+    // 캐시 히트는 이 지점보다 앞에서 이미 응답을 반환하므로 quota를 소모하지 않는다
+    const { allowed } = await checkUsageLimit(
+      supabase,
+      user.id,
+      'compatibility'
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        {
+          error:
+            '이번 달 무료 분석 횟수(3회)를 모두 사용했습니다. 다음 달 1일에 초기화됩니다.',
+        },
+        { status: 429 }
+      );
+    }
+
     const getName = (userId: string) => {
       const profile = profiles?.find((p) => p.id === userId);
       return profile?.nickname || profile?.username || '독서가';
@@ -208,6 +226,9 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // 사용량 기록 — 실제로 분석을 유발한 호출자(user.id) 기준으로만 기록한다
+    await recordUsage(supabase, user.id, 'compatibility');
 
     // 9. 상호 추천 도서 저장 — AI가 고른 제목을 실제 책 레코드와 매칭
     const recommendations = [
