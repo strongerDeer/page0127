@@ -68,9 +68,12 @@
 
 | 티어 | 대상 | 제한 (제안값, 실제 운영하며 조정 가능) |
 |---|---|---|
-| strict | `/api/taste-analysis/analyze`, `/api/compatibility/analyze`, `/api/books/search` | 5회 / 60초 |
+| strict | `/api/taste-analysis/analyze`, `/api/compatibility/analyze` | 5회 / 60초 |
+| search | `/api/books/search` | 20회 / 60초 |
 | standard | 그 외 모든 `/api/*` | 60회 / 60초 |
 | 제외 | `/api/cron/*` | 적용 안 함 |
+
+`books/search`는 알라딘 API 호출 비용이 들지만, 검색창 입력마다(debounce 400ms) 자동 호출되는 라이브 검색이라 strict(5회)로 묶으면 정상 사용자도 오타 수정 몇 번에 429를 본다. strict보다 여유 있고 standard보다는 낮은 별도 등급을 둔다.
 
 ## 5. 식별자
 
@@ -81,7 +84,7 @@
 
 신규 `apps/page0127/src/shared/lib/rate-limit/index.ts` 파일 하나:
 
-- `checkApiRateLimit(request, user, supabase)`: pathname으로 제한값(strict=5/standard=60/제외=null) 판별 → 식별자(`user:<id>` 또는 `ip:<ip>`) 계산 → 현재 1분 구간을 `supabase.rpc('increment_rate_limit', ...)`로 증가시키고 반환된 값이 제한을 넘으면 429 `NextResponse`를, 아니면 `null`을 반환한다.
+- `checkApiRateLimit(request, user, supabase)`: pathname으로 제한값(strict=5/search=20/standard=60/제외=null) 판별 → 식별자(`user:<id>` 또는 `ip:<ip>`) 계산 → 현재 1분 구간을 `supabase.rpc('increment_rate_limit', ...)`로 증가시키고 반환된 값이 제한을 넘으면 429 `NextResponse`를, 아니면 `null`을 반환한다.
 
 ## 7. 예외 상황 처리
 
@@ -98,5 +101,5 @@
 
 1. `npm run type-check`, `npm run lint` 통과 확인
 2. 개발 서버(`npm run dev`)에서 `curl`로 같은 엔드포인트를 6번 연속 호출 → 6번째에 429가 오는지 확인
-3. `standard` 티어 라우트도 61번째 호출에서 429가 오는지 확인
+3. `search`(`/api/books/search`, 21번째 호출) · `standard`(61번째 호출) 티어 라우트도 각각 429가 오는지 확인
 4. Supabase Studio Table Editor에서 `rate_limits` 테이블에 실제로 행이 쌓이는지 눈으로 확인
