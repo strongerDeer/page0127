@@ -22,6 +22,7 @@ import type { TasteAnalysisWithRecommendations } from '@/entities/taste-analysis
 
 type TasteAnalysisResultProps = {
   analysis: TasteAnalysisWithRecommendations;
+  username: string;
 };
 
 /**
@@ -35,7 +36,10 @@ type TasteAnalysisResultProps = {
  * - AI 분석 결과 시각화
  * - 추천 도서를 타입별로 구분하여 표시
  */
-export const TasteAnalysisResult = ({ analysis }: TasteAnalysisResultProps) => {
+export const TasteAnalysisResult = ({
+  analysis,
+  username,
+}: TasteAnalysisResultProps) => {
   const {
     personality_type,
     personality_description,
@@ -47,7 +51,7 @@ export const TasteAnalysisResult = ({ analysis }: TasteAnalysisResultProps) => {
     <PageContainer width='content'>
       {/* 헤더 */}
       <div className='mb-8'>
-        <Link href='/dashboard'>
+        <Link href={`/${username}`}>
           <Button variant='outline' size='sm' className='mb-4'>
             <ArrowLeft className='h-4 w-4' />내 서재로
           </Button>

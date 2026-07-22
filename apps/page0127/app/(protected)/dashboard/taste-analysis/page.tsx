@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
 
+import { getProfile } from '@/entities/profile/api/getProfile';
+
 import { TasteAnalysisResult } from '@/features/taste-analysis/ui/TasteAnalysisResult';
 
 /**
@@ -23,6 +25,11 @@ const TasteAnalysisPage = async () => {
     redirect('/login');
   }
 
+  const profile = await getProfile(user.id);
+  if (!profile?.username) {
+    redirect('/login');
+  }
+
   // 최신 분석 결과 조회
   const { data: analysis, error: analysisError } = await supabase
     .from('taste_analyses')
@@ -33,7 +40,7 @@ const TasteAnalysisPage = async () => {
     .single();
 
   if (analysisError || !analysis) {
-    redirect('/dashboard');
+    redirect(`/${profile.username}`);
   }
 
   // 추천 도서 조회
@@ -65,7 +72,12 @@ const TasteAnalysisPage = async () => {
     recommendations: groupedRecommendations,
   };
 
-  return <TasteAnalysisResult analysis={analysisWithRecommendations} />;
+  return (
+    <TasteAnalysisResult
+      analysis={analysisWithRecommendations}
+      username={profile.username}
+    />
+  );
 };
 
 export default TasteAnalysisPage;

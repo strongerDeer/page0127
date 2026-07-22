@@ -2,6 +2,8 @@ import { notFound, redirect } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
 
+import { getProfile } from '@/entities/profile/api/getProfile';
+
 import { TasteAnalysisResult } from '@/features/taste-analysis/ui/TasteAnalysisResult';
 
 type PageProps = {
@@ -24,6 +26,11 @@ const TasteAnalysisDetailPage = async ({ params }: PageProps) => {
   } = await supabase.auth.getUser();
 
   if (!user) {
+    redirect('/login');
+  }
+
+  const profile = await getProfile(user.id);
+  if (!profile?.username) {
     redirect('/login');
   }
 
@@ -68,7 +75,12 @@ const TasteAnalysisDetailPage = async ({ params }: PageProps) => {
     recommendations: groupedRecommendations,
   };
 
-  return <TasteAnalysisResult analysis={analysisWithRecommendations} />;
+  return (
+    <TasteAnalysisResult
+      analysis={analysisWithRecommendations}
+      username={profile.username}
+    />
+  );
 };
 
 export default TasteAnalysisDetailPage;
