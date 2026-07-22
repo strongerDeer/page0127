@@ -128,6 +128,11 @@ export const PublicLibraryContent = ({
             ? '내 서재 전체'
             : `${profile.nickname || username}님의 서재 전체`
         }
+        lifeBooksTitle={
+          isOwnProfile
+            ? '내 인생책'
+            : `${profile.nickname || username}의 인생책이에요!`
+        }
         username={username}
         onSetGoal={isOwnProfile ? () => setIsGoalDialogOpen(true) : undefined}
         calendarSlot={isOwnProfile ? calendarSlot : undefined}
