@@ -1,17 +1,17 @@
 /**
  * 사이트 운영 정보 — 한 곳에서만 고친다.
  *
- * TODO(문의 창구): 아직 정하지 않았다.
- *   창구가 생기면 여기에 CONTACT 를 추가하고
- *   - SiteFooter 에 '문의' 링크를 되살리고
- *   - app/(public)/contact/page.tsx 를 만들고
- *   - /privacy 에 개인정보 문의처 절을 추가한다.
- *   그 전까지는 "준비 중" 스텁 페이지를 두지 않는다 — 미완성이라는 자백이 된다.
+ * 문의 창구: 카카오톡 1:1 오픈채팅. 링크가 바뀌면 여기 한 곳만 고치면
+ * 푸터·contact 페이지·privacy 문의처가 모두 따라 바뀐다.
  */
 export const SITE_INFO = {
   name: 'page0127',
   since: '2025년 11월',
   lastUpdated: '2026년 7월 13일',
+  contact: {
+    // 카카오톡 1:1 오픈채팅 — 방문자가 링크로 들어와 1:1 대화, 운영자는 카카오톡 알림으로 수신
+    kakaoOpenChatUrl: 'https://open.kakao.com/o/scK1DkFi',
+  },
 } as const;
 
 /**

@@ -1,13 +1,10 @@
 import Link from 'next/link';
 
 // 사이트 공통 푸터
-//
-// '문의'는 창구가 정해질 때까지 빼 둔다 — "준비 중" 페이지를 링크하는 건
-// 방문자에게 "이건 미완성 데모"라고 자백하는 것과 같다.
-// (siteInfo.ts 의 TODO 참조)
 const footerLinks = [
   { href: '/books/all', label: '전체 도서' },
   { href: '/about', label: '소개' },
+  { href: '/contact', label: '문의' },
   { href: '/privacy', label: '개인정보처리방침' },
   { href: '/terms', label: '이용약관' },
 ];
