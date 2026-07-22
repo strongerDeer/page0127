@@ -1,13 +1,17 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { Archive, Library } from 'lucide-react';
+
+import { Button } from '@/shared/ui/button';
 import { PageContainer } from '@/shared/ui/PageContainer';
 
 import { ReadingGoalDialog } from '@/features/profile/ui/ReadingGoalDialog';
 
+import { PublicBookShelf } from '@/widgets/book/ui/PublicBookShelf';
 import { LibraryView } from '@/widgets/library/LibraryView';
 
 import { PublicLibraryHeader } from './PublicLibraryHeader';
@@ -77,6 +81,18 @@ export const PublicLibraryContent = ({
         ? stats.yearlyGoal
         : 0;
 
+  const [showArchived, setShowArchived] = useState(false);
+
+  const archivedBooks = useMemo(
+    () => books.filter((book) => !book.is_public),
+    [books]
+  );
+
+  const visibleBooks = useMemo(
+    () => books.filter((book) => book.is_public),
+    [books]
+  );
+
   const handleViewChange = (value: string) => {
     router.push(`/${username}?year=${value}`);
   };
@@ -97,7 +113,7 @@ export const PublicLibraryContent = ({
       <LibraryView
         overallStats={overallStats}
         stats={stats}
-        books={books}
+        books={isOwnProfile ? visibleBooks : books}
         availableYears={availableYears}
         selectedYear={selectedYear}
         isAllView={isAllView}
@@ -113,6 +129,37 @@ export const PublicLibraryContent = ({
         onSetGoal={isOwnProfile ? () => setIsGoalDialogOpen(true) : undefined}
         calendarSlot={isOwnProfile ? calendarSlot : undefined}
       />
+
+      {isOwnProfile && archivedBooks.length > 0 && (
+        <div className='space-y-4'>
+          <div className='flex items-center gap-2'>
+            <Button
+              variant={showArchived ? 'outline' : 'secondary'}
+              size='sm'
+              onClick={() => setShowArchived(false)}
+            >
+              <Library className='h-4 w-4' />
+              책장
+            </Button>
+            <Button
+              variant={showArchived ? 'secondary' : 'outline'}
+              size='sm'
+              onClick={() => setShowArchived(true)}
+            >
+              <Archive className='h-4 w-4' />
+              보관 {archivedBooks.length}
+            </Button>
+          </div>
+
+          {showArchived && (
+            <PublicBookShelf
+              books={archivedBooks}
+              username={username}
+              bookHref={(book) => `/${username}/${book.id}`}
+            />
+          )}
+        </div>
+      )}
 
       {isOwnProfile && (
         <ReadingGoalDialog
