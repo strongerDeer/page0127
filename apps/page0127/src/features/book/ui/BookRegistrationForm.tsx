@@ -448,6 +448,9 @@ export const BookRegistrationForm = ({
                     ? '다른 사람들이 이 책을 볼 수 있습니다.'
                     : '나만 볼 수 있습니다. (비공개)'}
                 </p>
+                <p className='text-xs text-muted-foreground'>
+                  나중에 서재에서 보관으로 옮길 수 있어요.
+                </p>
               </div>
               <Switch
                 id={ids.isPublic}
