@@ -32,6 +32,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# 단, 값이 없는 템플릿 파일은 커밋 대상에 포함
+!.env.example
 
 # vercel
 .vercel
