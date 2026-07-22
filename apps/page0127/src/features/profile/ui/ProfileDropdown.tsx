@@ -12,7 +12,7 @@
 
 import Link from 'next/link';
 
-import { BookOpen, Home, LogOut, Settings } from 'lucide-react';
+import { BookOpen, LogOut, Settings } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 import {
@@ -64,23 +64,15 @@ export const ProfileDropdown = ({
         <DropdownMenuLabel>{displayName}</DropdownMenuLabel>
         <DropdownMenuSeparator />
 
-        {/* 공개 서재 */}
+        {/* 내 서재 — 공개 서재와 같은 화면이라 항목을 하나로 합쳤다 */}
         {username && (
           <DropdownMenuItem asChild>
             <Link href={`/${username}`} className='flex cursor-pointer items-center'>
-              <Home className='mr-2 h-4 w-4' />
-              <span>공개 서재</span>
+              <BookOpen className='mr-2 h-4 w-4' />
+              <span>내 서재</span>
             </Link>
           </DropdownMenuItem>
         )}
-
-        {/* 내 서재 */}
-        <DropdownMenuItem asChild>
-          <Link href='/dashboard' className='flex cursor-pointer items-center'>
-            <BookOpen className='mr-2 h-4 w-4' />
-            <span>내 서재</span>
-          </Link>
-        </DropdownMenuItem>
 
         {/* 설정 */}
         <DropdownMenuItem asChild>

@@ -36,7 +36,7 @@ export const AppShellLayout = ({ user, children }: AppShellLayoutProps) => {
         {children}
       </main>
       {/* 하단 탭 메뉴는 전부 로그인 전용 라우트 → 비로그인에겐 숨긴다 */}
-      {user && <BottomTabBar />}
+      {user && <BottomTabBar username={user.username} />}
     </div>
   );
 };
