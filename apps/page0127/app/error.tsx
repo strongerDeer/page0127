@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 
+import * as Sentry from '@sentry/nextjs';
+
 import { ErrorFallback } from '@/shared/ui/ErrorFallback';
 
 /**
@@ -24,7 +26,8 @@ type ErrorProps = {
 
 const Error = ({ error, reset }: ErrorProps) => {
   useEffect(() => {
-    // 에러 로깅 (실제로는 Sentry 등 에러 추적 서비스로 전송)
+    // 프로덕션 에러 추적: Sentry로 전송 + 로컬 콘솔에도 남긴다
+    Sentry.captureException(error);
     console.error('Global Error:', error);
   }, [error]);
 
