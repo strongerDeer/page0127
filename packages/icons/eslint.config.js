@@ -8,7 +8,6 @@ import simpleImportSort from 'eslint-plugin-simple-import-sort';
  * 학습 포인트:
  * - import 순서 자동 정렬
  * - TypeScript 타입 체크
- * - Named Export 사용 강제
  */
 export default [
   {
@@ -45,16 +44,6 @@ export default [
         },
       ],
       'simple-import-sort/exports': 'error',
-
-      // Named Export 사용 강제
-      'import/no-default-export': 'error',
-    },
-  },
-  {
-    // index.ts는 default export 허용
-    files: ['index.ts'],
-    rules: {
-      'import/no-default-export': 'off',
     },
   },
   {

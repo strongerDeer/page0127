@@ -1,5 +1,6 @@
-import { Icon as IconifyIcon } from "@iconify/react";
 import { memo } from "react";
+
+import { Icon as IconifyIcon } from "@iconify/react";
 
 // tabler icons 매핑 객체
 // 자주 사용하는 아이콘을 미리 정의해서 사용 (별칭)

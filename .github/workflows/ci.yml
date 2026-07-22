@@ -1,0 +1,41 @@
+name: CI
+
+# main 브랜치로의 PR과 push마다 lint / type-check / build를 자동 실행한다.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  quality:
+    name: Lint · Type-check · Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Node 22 + npm 캐시(package-lock.json 해시 기준)로 설치 속도 확보
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # lockfile 기준 정확 재현 설치. package.json과 어긋나면 여기서 실패한다.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type-check
+        run: npm run type-check
+
+      # 빌드는 OpenAI 클라이언트가 모듈 로드 시점에 키를 요구하므로 더미 값을 준다.
+      # (실제 키는 Vercel에만 존재. CI는 컴파일 성공 여부만 검증한다.)
+      - name: Build
+        run: npm run build
+        env:
+          OPENAI_API_KEY: dummy
