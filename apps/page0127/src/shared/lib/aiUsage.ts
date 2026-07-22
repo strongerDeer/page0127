@@ -11,8 +11,28 @@ export const USAGE_LIMIT_EXCEEDED_MESSAGE = `이번 달 무료 분석 횟수(${M
 
 export type AiUsageFeature = 'taste_analysis' | 'compatibility';
 
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
 /**
- * 이번 달(달력 기준 1일 00:00~) 사용 횟수를 세어 한도 초과 여부를 반환한다.
+ * KST(UTC+9) 기준 "이번 달 1일 00:00"에 해당하는 실제 UTC 시각을 반환한다.
+ *
+ * 서버가 어떤 타임존에서 돌든(배포 환경은 보통 UTC) 결과가 항상 KST 달력
+ * 기준이 되도록, 현재 시각에 9시간을 더한 뒤 UTC getter로 "KST 벽시계
+ * 값"을 읽어 연/월을 구하고, 그 값으로 만든 UTC 자정에서 다시 9시간을
+ * 빼서 실제 UTC 시각으로 되돌린다.
+ */
+function getStartOfMonthKst(): Date {
+  const nowAsIfKst = new Date(Date.now() + KST_OFFSET_MS);
+  const startOfMonthKstLabeledAsUtc = Date.UTC(
+    nowAsIfKst.getUTCFullYear(),
+    nowAsIfKst.getUTCMonth(),
+    1
+  );
+  return new Date(startOfMonthKstLabeledAsUtc - KST_OFFSET_MS);
+}
+
+/**
+ * 이번 달(KST 달력 기준 1일 00:00~) 사용 횟수를 세어 한도 초과 여부를 반환한다.
  * 실제 OpenAI 호출 직전에만 호출해야 한다 (캐시 히트·입력값 검증 통과 이후).
  *
  * DB 조회 오류 시 fail-closed: { allowed: false, remaining: 0 }을 반환해
@@ -23,9 +43,7 @@ export async function checkUsageLimit(
   userId: string,
   feature: AiUsageFeature
 ): Promise<{ allowed: boolean; remaining: number }> {
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
+  const startOfMonth = getStartOfMonthKst();
 
   const { count, error } = await supabase
     .from('ai_usage_logs')

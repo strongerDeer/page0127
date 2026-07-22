@@ -120,7 +120,7 @@ const LibraryPage = async ({ params, searchParams }: PageProps) => {
   let analysisHistory: TasteAnalysisSummary[] = [];
   let tasteAnalysisRemaining = 0;
 
-  if (isOwnProfile) {
+  if (isOwnProfile && currentUser) {
     const { count } = await supabase
       .from('books')
       .select('*', { count: 'exact', head: true })
@@ -149,9 +149,13 @@ const LibraryPage = async ({ params, searchParams }: PageProps) => {
       newBooksSinceLastAnalysis = newCount ?? 0;
     }
 
+    // 인증된 호출자(currentUser.id) 기준으로 조회한다 — API 라우트의 quota
+    // 체크·기록도 항상 user.id 기준이므로 여기서도 동일한 기준을 맞춘다.
+    // (isOwnProfile이 참이면 currentUser.id === profile.id로 값은 같지만,
+    // 이 블록의 조건이 앞으로 바뀌어도 깨지지 않도록 명시적으로 고정한다)
     const { remaining } = await checkUsageLimit(
       supabase,
-      profile.id,
+      currentUser.id,
       'taste_analysis'
     );
     tasteAnalysisRemaining = remaining;
