@@ -80,11 +80,14 @@ const LibraryPage = async ({ params, searchParams }: PageProps) => {
 
   const isOwnProfile = currentUser?.id === profile.id;
 
+  // 통계는 소유자여도 항상 공개된 책만 집계한다 — 책장(visibleBooks)이
+  // 보관된 책을 안 보여주는데 통계 숫자만 보관분까지 세면 서로 어긋나 보인다.
+  // (책 목록 자체(allBooks)는 보관 탭에 써야 하니 소유자에게 전체를 내려준다)
   const [allBooks, stats, overallStats, { data: latestAnalysis }] =
     await Promise.all([
       getBooks(profile.id, !isOwnProfile),
-      getBookStats(profile.id, isAllView ? null : selectedYear, !isOwnProfile),
-      getOverallStats(profile.id, !isOwnProfile),
+      getBookStats(profile.id, isAllView ? null : selectedYear, true),
+      getOverallStats(profile.id, true),
       supabase
         .from('taste_analyses')
         .select('personality_type')
