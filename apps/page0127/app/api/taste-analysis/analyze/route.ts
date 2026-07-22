@@ -1,6 +1,7 @@
 import { after, NextRequest, NextResponse } from 'next/server';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { checkUsageLimit, recordUsage } from '@/shared/lib/aiUsage';
 import { upgradeImageResolution } from '@/shared/lib/imageUtils';
 import { AI_MODEL, MAX_TOKENS, openai, TEMPERATURE } from '@/shared/lib/openai';
 import { createTasteAnalysisPrompt } from '@/shared/lib/openai/prompts/taste-analysis';
@@ -63,6 +64,22 @@ export async function POST(_request: NextRequest) {
       return NextResponse.json(
         { error: '분석을 위해 최소 5권의 완독한 책(별점 포함)이 필요합니다.' },
         { status: 400 }
+      );
+    }
+
+    // 2-1. 이번 달 사용량 확인 (무료 사용자 월 3회 제한)
+    const { allowed } = await checkUsageLimit(
+      supabase,
+      user.id,
+      'taste_analysis'
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        {
+          error:
+            '이번 달 무료 분석 횟수(3회)를 모두 사용했습니다. 다음 달 1일에 초기화됩니다.',
+        },
+        { status: 429 }
       );
     }
 
@@ -143,6 +160,9 @@ export async function POST(_request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // 사용량 기록 — 분석이 성공적으로 저장된 뒤에만 기록한다
+    await recordUsage(supabase, user.id, 'taste_analysis');
 
     // 6. 추천 도서 저장
     if (aiResponse.recommendations && aiResponse.recommendations.length > 0) {
