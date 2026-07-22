@@ -1,7 +1,13 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 /** 무료 사용자 월별 허용 횟수 (기능별 독립 카운트) */
-const MONTHLY_LIMIT = 3;
+export const MONTHLY_LIMIT = 3;
+
+/** API 에러 응답용 — 두 라우트가 동일한 문구를 쓰도록 한 곳에서 관리한다 */
+export const USAGE_LIMIT_EXCEEDED_ERROR = `이번 달 무료 분석 횟수(${MONTHLY_LIMIT}회)를 모두 사용했습니다. 다음 달 1일에 초기화됩니다.`;
+
+/** UI 안내용 (토스트/캡션) — 여러 컴포넌트가 동일한 문구를 쓰도록 한 곳에서 관리한다 */
+export const USAGE_LIMIT_EXCEEDED_MESSAGE = `이번 달 무료 분석 횟수(${MONTHLY_LIMIT}회)를 모두 사용했어요. 다음 달 1일에 초기화돼요.`;
 
 export type AiUsageFeature = 'taste_analysis' | 'compatibility';
 

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { createClient } from '@/shared/config/supabase/server';
-import { checkUsageLimit, recordUsage } from '@/shared/lib/aiUsage';
+import {
+  checkUsageLimit,
+  recordUsage,
+  USAGE_LIMIT_EXCEEDED_ERROR,
+} from '@/shared/lib/aiUsage';
 import { AI_MODEL, MAX_TOKENS, openai, TEMPERATURE } from '@/shared/lib/openai';
 import { createCompatibilityPrompt } from '@/shared/lib/openai/prompts/compatibility';
 
@@ -141,10 +145,7 @@ export async function POST(request: NextRequest) {
     );
     if (!allowed) {
       return NextResponse.json(
-        {
-          error:
-            '이번 달 무료 분석 횟수(3회)를 모두 사용했습니다. 다음 달 1일에 초기화됩니다.',
-        },
+        { error: USAGE_LIMIT_EXCEEDED_ERROR },
         { status: 429 }
       );
     }

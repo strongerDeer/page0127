@@ -12,6 +12,10 @@ import { toast } from 'sonner';
 import { apiClient } from '@/shared/api/client';
 import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
 import {
+  MONTHLY_LIMIT,
+  USAGE_LIMIT_EXCEEDED_MESSAGE,
+} from '@/shared/lib/aiUsage';
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -88,9 +92,7 @@ export const PublicLibraryHeader = ({
     }
 
     if (tasteAnalysisRemaining <= 0) {
-      toast.error(
-        '이번 달 무료 분석 횟수(3회)를 모두 사용했어요. 다음 달 1일에 초기화돼요.'
-      );
+      toast.error(USAGE_LIMIT_EXCEEDED_MESSAGE);
       return;
     }
 
@@ -103,6 +105,10 @@ export const PublicLibraryHeader = ({
     try {
       await apiClient.post('/taste-analysis/analyze');
       toast.success('취향 분석이 완료되었습니다!');
+      // 분석 성공으로 남은 횟수가 줄었으므로, 다른 화면으로 이동하기 전에
+      // 이 라우트의 캐시를 무효화해둔다 — 나중에 "내 서재로" 등으로
+      // 돌아왔을 때 남은 횟수가 갱신 전 값으로 보이는 것을 방지한다.
+      router.refresh();
       router.push('/dashboard/taste-analysis');
     } catch (error) {
       toast.error(
@@ -194,7 +200,7 @@ export const PublicLibraryHeader = ({
                 {isAnalyzing && <Loader2 className='h-4 w-4 animate-spin' />}
                 {isAnalyzing
                   ? '분석 중… (최대 1분)'
-                  : `취향 분석 (${tasteAnalysisRemaining}/3 남음)`}
+                  : `취향 분석 (${tasteAnalysisRemaining}/${MONTHLY_LIMIT} 남음)`}
               </Button>
               <Button asChild variant='outline' className='shadow-none'>
                 <Link href='/settings'>프로필 편집</Link>

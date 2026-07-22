@@ -20,6 +20,10 @@ import { toast } from 'sonner';
 import { apiClient } from '@/shared/api/client';
 import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
 import {
+  MONTHLY_LIMIT,
+  USAGE_LIMIT_EXCEEDED_MESSAGE,
+} from '@/shared/lib/aiUsage';
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -230,12 +234,11 @@ const CompatibilityIntro = ({
         </p>
       ) : compatibilityRemaining <= 0 ? (
         <p className='mt-3 text-sm text-text-subtle'>
-          이번 달 무료 분석 횟수(3회)를 모두 사용했어요. 다음 달 1일에
-          초기화돼요.
+          {USAGE_LIMIT_EXCEEDED_MESSAGE}
         </p>
       ) : (
         <p className='mt-3 text-sm text-text-subtle'>
-          이번 달 {compatibilityRemaining}/3회 남았어요.
+          이번 달 {compatibilityRemaining}/{MONTHLY_LIMIT}회 남았어요.
         </p>
       )}
     </CardContent>
@@ -404,7 +407,7 @@ const CompatibilityResult = ({
           —{' '}
           {compatibilityRemaining > 0
             ? '책장이 더 쌓였다면 다시 분석해보세요.'
-            : '이번 달 무료 분석 횟수를 모두 사용했어요. 다음 달 1일에 초기화돼요.'}
+            : USAGE_LIMIT_EXCEEDED_MESSAGE}
         </p>
         <Button
           variant='outline'
