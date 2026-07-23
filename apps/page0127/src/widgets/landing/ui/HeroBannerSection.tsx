@@ -1,5 +1,7 @@
 import { createClient } from '@/shared/config/supabase/server';
 
+import { getActiveHeroSlides } from '@/entities/banner/api/getActiveHeroSlides';
+
 import { HERO_SLIDES } from '@/widgets/landing/model/heroSlides';
 import { HeroBanner } from '@/widgets/landing/ui/HeroBanner';
 
@@ -26,5 +28,8 @@ export const HeroBannerSection = async () => {
     .map((row) => row.book_info?.cover_image)
     .filter((url): url is string => Boolean(url));
 
-  return <HeroBanner slides={HERO_SLIDES} covers={covers} />;
+  // 켜진 슬라이드를 DB에서, 비면 코드 상수 폴백
+  const slides = await getActiveHeroSlides(HERO_SLIDES);
+
+  return <HeroBanner slides={slides} covers={covers} />;
 };
