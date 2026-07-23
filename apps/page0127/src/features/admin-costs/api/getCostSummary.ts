@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/shared/config/supabase/admin';
+import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 
 import { sumCents } from '../lib/cost';
 
@@ -14,7 +15,9 @@ export type CostSummary = {
 
 // 이번 달 1일 00:00(로컬 근사, UTC)로 시작 경계를 잡는다.
 function monthStartISO(now = new Date()): string {
-  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
+  return new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)
+  ).toISOString();
 }
 
 function dayKey(iso: string): string {
@@ -22,6 +25,7 @@ function dayKey(iso: string): string {
 }
 
 export async function getCostSummary(): Promise<CostSummary> {
+  await assertAdmin();
   const supabase = createAdminClient();
   const since = monthStartISO();
 
@@ -60,7 +64,10 @@ export async function getCostSummary(): Promise<CostSummary> {
   const count = (f: string) => usageRows.filter((u) => u.feature === f).length;
   const byFeature = {
     taste: { cents: sumCents(tasteRows), count: count('taste_analysis') },
-    compatibility: { cents: sumCents(compatRows), count: count('compatibility') },
+    compatibility: {
+      cents: sumCents(compatRows),
+      count: count('compatibility'),
+    },
   };
 
   // 사용자별 호출 건수 Top 10 (비용 아님 — 궁합은 단일 귀속 불가)

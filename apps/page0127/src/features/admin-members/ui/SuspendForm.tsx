@@ -22,6 +22,7 @@ export const SuspendForm = ({
   const [isPending, startTransition] = useTransition();
 
   const onSuspend = () => {
+    if (mode === 'days' && (!Number.isFinite(days) || days < 1)) return;
     const input: SuspendInput =
       mode === 'permanent' ? { kind: 'permanent' } : { kind: 'days', days };
     startTransition(() => suspendUser(userId, input, reason));

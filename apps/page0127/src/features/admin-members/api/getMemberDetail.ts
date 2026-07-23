@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/shared/config/supabase/admin';
+import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 
 import { isCurrentlySuspended } from '../lib/suspension';
 
@@ -14,19 +15,30 @@ export type MemberDetail = {
   suspendedUntil: string | null;
 };
 
-export async function getMemberDetail(id: string): Promise<MemberDetail | null> {
+export async function getMemberDetail(
+  id: string
+): Promise<MemberDetail | null> {
+  await assertAdmin();
   const supabase = createAdminClient();
 
   const { data: p } = await supabase
     .from('profiles')
-    .select('id, email, nickname, username, created_at, status, suspended_until')
+    .select(
+      'id, email, nickname, username, created_at, status, suspended_until'
+    )
     .eq('id', id)
     .single();
   if (!p) return null;
 
   const [books, usage] = await Promise.all([
-    supabase.from('books').select('id', { count: 'exact', head: true }).eq('user_id', id),
-    supabase.from('ai_usage_logs').select('id', { count: 'exact', head: true }).eq('user_id', id),
+    supabase
+      .from('books')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', id),
+    supabase
+      .from('ai_usage_logs')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', id),
   ]);
 
   return {

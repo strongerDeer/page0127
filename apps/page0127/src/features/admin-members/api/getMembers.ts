@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/shared/config/supabase/admin';
+import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 
 import { isCurrentlySuspended } from '../lib/suspension';
 
@@ -17,6 +18,7 @@ export async function getMembers(opts: {
   page?: number;
   pageSize?: number;
 }): Promise<{ rows: MemberRow[]; total: number }> {
+  await assertAdmin();
   const pageSize = opts.pageSize ?? 50;
   const page = opts.page ?? 1;
   const from = (page - 1) * pageSize;

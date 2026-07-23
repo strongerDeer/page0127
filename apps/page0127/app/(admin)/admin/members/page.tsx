@@ -7,7 +7,9 @@ export default async function AdminMembersPage({
   searchParams: Promise<{ q?: string; page?: string }>;
 }) {
   const sp = await searchParams;
-  const page = Number(sp.page ?? '1');
+  const rawPage = Number(sp.page ?? '1');
+  const page =
+    Number.isFinite(rawPage) && rawPage >= 1 ? Math.floor(rawPage) : 1;
   const { rows, total } = await getMembers({ search: sp.q, page });
 
   return (
