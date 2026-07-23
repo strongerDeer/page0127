@@ -2,12 +2,18 @@
 
 import { useCallback, useMemo, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { Archive, Library } from 'lucide-react';
 
 import { Button } from '@/shared/ui/button';
 import { PageContainer } from '@/shared/ui/PageContainer';
+
+import {
+  calculateBookStats,
+  filterBooksByLibraryYear,
+  getLibraryYears,
+} from '@/entities/book';
 
 import { ReadingGoalDialog } from '@/features/profile/ui/ReadingGoalDialog';
 
@@ -17,7 +23,7 @@ import { LibraryView } from '@/widgets/library/LibraryView';
 import { PublicLibraryHeader } from './PublicLibraryHeader';
 
 import type { Book } from '@/entities/book';
-import type { BookStats, OverallStats } from '@/entities/book';
+import type { OverallStats } from '@/entities/book';
 import type { Profile } from '@/entities/profile/types';
 import type { TasteAnalysisSummary } from '@/entities/taste-analysis/types';
 
@@ -27,11 +33,7 @@ type PublicLibraryContentProps = {
   isOwnProfile: boolean;
   currentUserId?: string;
   books: Book[];
-  stats: BookStats;
   overallStats: OverallStats;
-  availableYears: number[];
-  selectedYear: number;
-  isAllView: boolean;
   currentYear: number;
   personalityType: string | null;
   analyzableBookCount: number;
@@ -56,11 +58,7 @@ export const PublicLibraryContent = ({
   isOwnProfile,
   currentUserId,
   books,
-  stats,
   overallStats,
-  availableYears,
-  selectedYear,
-  isAllView,
   currentYear,
   personalityType,
   analyzableBookCount,
@@ -70,10 +68,50 @@ export const PublicLibraryContent = ({
   calendarSlot,
 }: PublicLibraryContentProps) => {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
+  const yearParam = searchParams.get('year');
+  const parsedYear = yearParam ? Number(yearParam) : NaN;
+  const isAllView = !yearParam || yearParam === 'all';
+  const selectedYear =
+    !isAllView && Number.isInteger(parsedYear) ? parsedYear : currentYear;
+  const selectedPeriod = isAllView ? null : selectedYear;
 
   const handleGoalClose = useCallback(() => setIsGoalDialogOpen(false), []);
   const handleGoalSuccess = useCallback(() => router.refresh(), [router]);
+
+  const [showArchived, setShowArchived] = useState(false);
+
+  const availableYears = useMemo(
+    () => getLibraryYears(books, currentYear),
+    [books, currentYear]
+  );
+
+  const periodBooks = useMemo(
+    () => filterBooksByLibraryYear(books, selectedPeriod, currentYear),
+    [books, currentYear, selectedPeriod]
+  );
+
+  const archivedBooks = useMemo(
+    () => periodBooks.filter((book) => !book.is_public),
+    [periodBooks]
+  );
+
+  const visibleBooks = useMemo(
+    () => periodBooks.filter((book) => book.is_public),
+    [periodBooks]
+  );
+
+  const publicBooks = useMemo(
+    () => books.filter((book) => book.is_public),
+    [books]
+  );
+
+  const stats = useMemo(
+    () => calculateBookStats(publicBooks, selectedPeriod, currentYear),
+    [currentYear, publicBooks, selectedPeriod]
+  );
 
   const readingGoal = profile.reading_goal;
   const goalTarget =
@@ -83,20 +121,13 @@ export const PublicLibraryContent = ({
         ? stats.yearlyGoal
         : 0;
 
-  const [showArchived, setShowArchived] = useState(false);
-
-  const archivedBooks = useMemo(
-    () => books.filter((book) => !book.is_public),
-    [books]
-  );
-
-  const visibleBooks = useMemo(
-    () => books.filter((book) => book.is_public),
-    [books]
-  );
-
   const handleViewChange = (value: string) => {
-    router.push(`/${username}?year=${value}`);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('year', value);
+
+    // Next.js가 History API를 useSearchParams와 동기화하므로 서버 재요청 없이
+    // URL·뒤로가기 기록은 유지하면서 화면만 즉시 바뀐다.
+    window.history.pushState(null, '', `${pathname}?${params.toString()}`);
   };
 
   return (
@@ -116,7 +147,7 @@ export const PublicLibraryContent = ({
       <LibraryView
         overallStats={overallStats}
         stats={stats}
-        books={isOwnProfile ? visibleBooks : books}
+        books={visibleBooks}
         availableYears={availableYears}
         selectedYear={selectedYear}
         isAllView={isAllView}

@@ -6,7 +6,8 @@ import { createClient } from '@/shared/config/supabase/server';
 import { checkUsageLimit } from '@/shared/lib/aiUsage';
 import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 
-import { getBookStats, getOverallStats } from '@/entities/book/server';
+import { getCurrentLibraryYear } from '@/entities/book';
+import { getOverallStats } from '@/entities/book/server';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 
 import { CalendarBlockError } from '@/widgets/dashboard/CalendarBlockError';
@@ -19,7 +20,6 @@ import type { TasteAnalysisSummary } from '@/entities/taste-analysis/types';
 
 type PageProps = {
   params: Promise<{ username: string }>;
-  searchParams: Promise<{ year?: string }>;
 };
 
 /** 책 목록 조회 — 소유자면 전체(공개+보관), 방문자면 공개된 것만 */
@@ -55,14 +55,11 @@ const getBooks = async (
  * 본인이 보면 소유자 모드(전체 책, 캘린더, 목표, 취향분석 전체 진입, 보관 탭),
  * 남이 보면 방문자 모드(공개된 책만, 읽기 전용)로 같은 화면이 갈린다.
  */
-const LibraryPage = async ({ params, searchParams }: PageProps) => {
+const LibraryPage = async ({ params }: PageProps) => {
   const { username } = await params;
-  const { year } = await searchParams;
 
   const supabase = await createClient();
-  const currentYear = new Date().getFullYear();
-  const isAllView = !year || year === 'all';
-  const selectedYear = isAllView ? currentYear : parseInt(year!, 10);
+  const currentYear = getCurrentLibraryYear();
 
   const [
     profile,
@@ -83,36 +80,19 @@ const LibraryPage = async ({ params, searchParams }: PageProps) => {
   // 통계는 소유자여도 항상 공개된 책만 집계한다 — 책장(visibleBooks)이
   // 보관된 책을 안 보여주는데 통계 숫자만 보관분까지 세면 서로 어긋나 보인다.
   // (책 목록 자체(allBooks)는 보관 탭에 써야 하니 소유자에게 전체를 내려준다)
-  const [allBooks, stats, overallStats, { data: latestAnalysis }] =
-    await Promise.all([
-      getBooks(profile.id, !isOwnProfile),
-      getBookStats(profile.id, isAllView ? null : selectedYear, true),
-      getOverallStats(profile.id, true),
-      supabase
-        .from('taste_analyses')
-        .select('personality_type')
-        .eq('user_id', profile.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-    ]);
-
-  const bookYears = allBooks
-    .map((book) =>
-      book.completed_date ? new Date(book.completed_date).getFullYear() : null
-    )
-    .filter((y): y is number => y !== null);
-
-  const uniqueYears = Array.from(new Set([currentYear, ...bookYears])).sort(
-    (a, b) => b - a
-  );
-
-  const booksToShow = isAllView
-    ? allBooks
-    : allBooks.filter((book) => {
-        if (!book.completed_date) return false;
-        return new Date(book.completed_date).getFullYear() === selectedYear;
-      });
+  // 연도 탭은 이 전체 목록을 클라이언트에서 즉시 분류한다.
+  // 따라서 탭을 바꿀 때 이 Server Component와 DB 쿼리가 다시 실행되지 않는다.
+  const [allBooks, overallStats, { data: latestAnalysis }] = await Promise.all([
+    getBooks(profile.id, !isOwnProfile),
+    getOverallStats(profile.id, true),
+    supabase
+      .from('taste_analyses')
+      .select('personality_type')
+      .eq('user_id', profile.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
   // 소유자 전용 데이터 — 방문자면 아예 조회하지 않는다
   let analyzableBookCount = 0;
@@ -121,21 +101,25 @@ const LibraryPage = async ({ params, searchParams }: PageProps) => {
   let tasteAnalysisRemaining = 0;
 
   if (isOwnProfile && currentUser) {
-    const { count } = await supabase
-      .from('books')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', profile.id)
-      .eq('status', 'completed')
-      .not('rating', 'is', null);
-    analyzableBookCount = count ?? 0;
+    const [{ count }, { data: history }, { remaining }] = await Promise.all([
+      supabase
+        .from('books')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', profile.id)
+        .eq('status', 'completed')
+        .not('rating', 'is', null),
+      supabase
+        .from('taste_analyses')
+        .select('id, personality_type, created_at, analyzed_books_count')
+        .eq('user_id', profile.id)
+        .order('created_at', { ascending: false })
+        .limit(10),
+      checkUsageLimit(supabase, currentUser.id, 'taste_analysis'),
+    ]);
 
-    const { data: history } = await supabase
-      .from('taste_analyses')
-      .select('id, personality_type, created_at, analyzed_books_count')
-      .eq('user_id', profile.id)
-      .order('created_at', { ascending: false })
-      .limit(10);
+    analyzableBookCount = count ?? 0;
     analysisHistory = history ?? [];
+    tasteAnalysisRemaining = remaining;
 
     const lastAnalysis = analysisHistory[0] ?? null;
     if (lastAnalysis) {
@@ -148,17 +132,6 @@ const LibraryPage = async ({ params, searchParams }: PageProps) => {
         .gt('completed_date', lastAnalysis.created_at);
       newBooksSinceLastAnalysis = newCount ?? 0;
     }
-
-    // 인증된 호출자(currentUser.id) 기준으로 조회한다 — API 라우트의 quota
-    // 체크·기록도 항상 user.id 기준이므로 여기서도 동일한 기준을 맞춘다.
-    // (isOwnProfile이 참이면 currentUser.id === profile.id로 값은 같지만,
-    // 이 블록의 조건이 앞으로 바뀌어도 깨지지 않도록 명시적으로 고정한다)
-    const { remaining } = await checkUsageLimit(
-      supabase,
-      currentUser.id,
-      'taste_analysis'
-    );
-    tasteAnalysisRemaining = remaining;
   }
 
   return (
@@ -167,12 +140,8 @@ const LibraryPage = async ({ params, searchParams }: PageProps) => {
       username={username}
       isOwnProfile={isOwnProfile}
       currentUserId={currentUser?.id}
-      books={booksToShow}
-      stats={stats}
+      books={allBooks}
       overallStats={overallStats}
-      availableYears={uniqueYears}
-      selectedYear={selectedYear}
-      isAllView={isAllView}
       currentYear={currentYear}
       personalityType={latestAnalysis?.personality_type ?? null}
       analyzableBookCount={analyzableBookCount}

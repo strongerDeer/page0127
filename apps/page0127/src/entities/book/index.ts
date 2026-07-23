@@ -30,3 +30,12 @@ export type {
 // 주의: next/headers 에 의존하는 서버 전용 함수는 './server' 에서 별도로 export 한다.
 //       (클라이언트 컴포넌트가 이 배럴을 import 할 때 서버 모듈이 끌려가지 않도록 분리)
 export { bookApi } from './api/bookApi';
+
+// 서재 기간 분류·통계 (서버에서 받은 책 목록을 클라이언트에서도 재사용)
+export {
+  calculateBookStats,
+  filterBooksByLibraryYear,
+  getBookLibraryYear,
+  getCurrentLibraryYear,
+  getLibraryYears,
+} from './model/libraryPeriod';

@@ -128,9 +128,7 @@ export const LibraryView = ({
     startFilterTransition(() => filters.toggleRating(rating));
 
   // 책장 제목은 지금 보는 범위를 그대로 말한다
-  const shelfTitle = isAllView
-    ? allShelfTitle
-    : `${selectedYear}년에 읽은 책`;
+  const shelfTitle = isAllView ? allShelfTitle : `${selectedYear}년 서재`;
 
   const bookShelf = (
     <section
@@ -165,7 +163,11 @@ export const LibraryView = ({
           isAllView ? (
             <CategoryBookShelf books={filteredBooks} username={username} />
           ) : (
-            <PublicBookShelf books={filteredBooks} username={username} compact />
+            <PublicBookShelf
+              books={filteredBooks}
+              username={username}
+              compact
+            />
           )
         }
       />
@@ -224,7 +226,9 @@ export const LibraryView = ({
                   </p>
                 </CardHeader>
                 <CardContent className='pb-6'>
-                  <CategoryRadarChart data={overallStats.categoryDistribution} />
+                  <CategoryRadarChart
+                    data={overallStats.categoryDistribution}
+                  />
                 </CardContent>
               </Card>
 
@@ -236,7 +240,9 @@ export const LibraryView = ({
                   </p>
                 </CardHeader>
                 <CardContent className='pb-6'>
-                  <OverallDistribution ratings={overallStats.ratingDistribution} />
+                  <OverallDistribution
+                    ratings={overallStats.ratingDistribution}
+                  />
                 </CardContent>
               </Card>
             </div>
@@ -256,7 +262,9 @@ export const LibraryView = ({
               favoriteBooks={stats.fiveStarBooks}
               books={books}
               onSetGoal={
-                onSetGoal && selectedYear === currentYear ? onSetGoal : undefined
+                onSetGoal && selectedYear === currentYear
+                  ? onSetGoal
+                  : undefined
               }
             />
 
