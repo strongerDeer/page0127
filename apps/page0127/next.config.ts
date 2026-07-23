@@ -5,6 +5,15 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   // React Compiler 자동 메모이제이션 (Next.js 16부터 stable)
   reactCompiler: true,
+  // 프로덕션 빌드에서 console.* 호출을 제거한다. F12를 연 사용자에게 개발용
+  // 디버그 로그(console.log/info/debug/warn)가 보이지 않게 한다.
+  // 단, console.error는 남겨 실제 에러가 Sentry로 수집되도록 유지한다.
+  // (dev 모드에는 영향 없음 — 개발 중엔 로그가 그대로 보인다.)
+  compiler: {
+    removeConsole: {
+      exclude: ['error'],
+    },
+  },
   // 모노레포 패키지의 CSS/JS 파일을 트랜스파일하도록 설정
   // @repo/design-tokens 는 어디서도 import 되지 않아 제거했다.
   // 디자인 토큰의 단일 출처는 app/globals.css 다.
