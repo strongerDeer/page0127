@@ -34,7 +34,7 @@ import { BookGridItem } from './BookGridItem';
 import { BookListFilterInput, type BookListFilterInputHandle } from './BookListFilterInput';
 import { CategoryFilter } from './CategoryFilter';
 
-import type { Book, BookStatus } from '@/entities/book';
+import type { Book } from '@/entities/book';
 import type { CategoryReadingData } from '@/entities/book';
 
 type DashboardBookListProps = {
@@ -62,10 +62,6 @@ type DashboardBookListProps = {
   /** 검색어 */
   searchQuery: string;
 
-  /** 상태 필터 (전체/완독/읽는 중/읽고 싶은)
-   *  부모 reducer에서 관리 → RESET_ALL 한 번으로 전체 초기화 가능 */
-  statusFilter: BookStatus | 'all';
-
   /** 카테고리 다중 선택 핸들러 */
   onCategoriesChange: (categories: string[]) => void;
 
@@ -77,9 +73,6 @@ type DashboardBookListProps = {
 
   /** 검색어 변경 핸들러 */
   onSearchChange: (query: string) => void;
-
-  /** 상태 필터 변경 핸들러 */
-  onStatusChange: (status: BookStatus | 'all') => void;
 
   /** 책 목록 커스텀 렌더러 — 제공 시 기본 그리드 대신 사용
    *  filteredBooks(필터 적용된 전체 목록)를 받아 ReactNode 반환
@@ -112,12 +105,10 @@ export const DashboardBookList = ({
   selectedCategories,
   selectedRating = null,
   searchQuery,
-  statusFilter,
   onCategoriesChange,
   onRemoveMonthFilter,
   onRemoveRatingFilter,
   onSearchChange,
-  onStatusChange,
   renderBooks,
   onResetAll,
   showViewAll = false,
@@ -169,7 +160,7 @@ export const DashboardBookList = ({
   );
 
   // 피드형 "BOOK #번호"는 검색/카테고리 필터와 무관하게 고정되어야 한다 →
-  // 필터 적용 전 원본 books를 완독일 오름차순으로 정렬해 번호를 매긴다.
+  // 필터 적용 전 원본 books(완독 책만 들어온다)를 완독일 오름차순으로 정렬해 번호를 매긴다.
   // (React Compiler가 자동 메모이제이션하므로 수동 useMemo는 쓰지 않는다)
   const rankMap = new Map<string, number>();
   [...books]
@@ -184,30 +175,25 @@ export const DashboardBookList = ({
   // Compiler가 books·필터 조건 의존성을 자동 추적해 같은 입력이면 캐시 반환한다
   const filteredBooks = books
     .filter((book) => {
-      // 1. 상태 필터 확인
-      if (statusFilter !== 'all' && book.status !== statusFilter) {
-        return false;
-      }
-
-      // 2. 월 필터 확인 (완독한 책만)
+      // 1. 월 필터 확인 (완독한 책만)
       if (selectedMonth !== null && book.completed_date) {
         const completedDate = new Date(book.completed_date);
         const bookMonth = completedDate.getMonth() + 1; // 0-11 → 1-12
         if (bookMonth !== selectedMonth) return false;
       }
 
-      // 3. 카테고리 필터 확인
+      // 2. 카테고리 필터 확인
       if (selectedCategories.length > 0) {
         const mainCategory = mapToMainCategory(book.category);
         if (!selectedCategories.includes(mainCategory)) return false;
       }
 
-      // 4. 평점 필터 확인
+      // 3. 평점 필터 확인
       if (selectedRating !== null) {
         if (book.rating !== selectedRating) return false;
       }
 
-      // 5. 검색어 필터 확인 (제목 + 저자)
+      // 4. 검색어 필터 확인 (제목 + 저자)
       // deferredSearchQuery: 타이핑 중에는 이전 값 유지 → 목록 필터링이 input을 막지 않음
       if (deferredSearchQuery.trim()) {
         const query = deferredSearchQuery.toLowerCase();
@@ -259,7 +245,7 @@ export const DashboardBookList = ({
 
   // 필터 변경 시 첫 페이지로 이동
   // setCurrentPage(1)은 즉시 — 탭 UI 반응은 빠르게
-  // onCategoriesChange/onStatusChange/setSortOption은 transition 안 — 목록 재계산은 급하지 않음
+  // onCategoriesChange/setSortOption은 transition 안 — 목록 재계산은 급하지 않음
   const handleCategoriesChange = (categories: string[]) => {
     setCurrentPage(1);
     startTabTransition(() => onCategoriesChange(categories));
@@ -268,11 +254,6 @@ export const DashboardBookList = ({
   const handleRemoveMonthFilter = () => {
     setCurrentPage(1);
     onRemoveMonthFilter?.();
-  };
-
-  const handleStatusChange = (status: BookStatus | 'all') => {
-    setCurrentPage(1);
-    startTabTransition(() => onStatusChange(status));
   };
 
   const handleSortChange = (option: string) => {
@@ -295,18 +276,10 @@ export const DashboardBookList = ({
   );
 
   const activeFilterCount = [
-    statusFilter !== 'all',
     selectedMonth !== null,
     ...selectedCategories.map(() => true),
     selectedRating !== null,
   ].filter(Boolean).length;
-
-  const statusLabel: Record<BookStatus | 'all', string> = {
-    all: '전체',
-    completed: '완독',
-    reading: '읽는 중',
-    want_to_read: '읽고 싶은',
-  };
 
   return (
     <div>
@@ -365,7 +338,7 @@ export const DashboardBookList = ({
               <div>
                 <h4 className='text-sm font-semibold text-text-strong'>필터</h4>
                 <p className='mt-0.5 text-xs text-text-subtle'>
-                  상태는 하나, 카테고리는 여러 개 선택할 수 있어요.
+                  카테고리는 여러 개 선택할 수 있어요.
                 </p>
               </div>
               {onResetAll && activeFilterCount > 0 && (
@@ -381,28 +354,6 @@ export const DashboardBookList = ({
             </div>
 
             <div className='space-y-4'>
-              <div className='space-y-2.5'>
-                <p className='text-xs font-medium text-text-strong'>
-                  읽기 상태
-                </p>
-                <Select
-                  value={statusFilter}
-                  onValueChange={(value) =>
-                    handleStatusChange(value as BookStatus | 'all')
-                  }
-                >
-                  <SelectTrigger className='w-full bg-card shadow-none'>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value='all'>전체 상태</SelectItem>
-                    <SelectItem value='completed'>완독</SelectItem>
-                    <SelectItem value='reading'>읽는 중</SelectItem>
-                    <SelectItem value='want_to_read'>읽고 싶은</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
               <CategoryFilter
                 categories={categories}
                 selectedCategories={selectedCategories}
@@ -463,14 +414,6 @@ export const DashboardBookList = ({
       {/* 적용된 조건만 한 줄로 남기고, 필터 목록은 감춘다. */}
       {(activeFilterCount > 0 || searchQuery !== '') && (
         <div className='mb-4 flex flex-wrap items-center gap-2'>
-          {statusFilter !== 'all' && (
-            <button
-              onClick={() => handleStatusChange('all')}
-              className='flex items-center gap-1 rounded-full bg-sunken px-3 py-1 text-sm text-text-body hover:text-text-strong'
-            >
-              {statusLabel[statusFilter]} <X className='h-3.5 w-3.5' />
-            </button>
-          )}
           {selectedMonth !== null && (
             <button
               onClick={handleRemoveMonthFilter}
