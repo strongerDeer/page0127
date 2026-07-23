@@ -19,6 +19,41 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'sjngwxtykqhlsvxcyqah.supabase.co' },
     ],
   },
+  // 모든 응답에 붙는 보안 헤더.
+  // CSP(Content-Security-Policy)는 GA·Supabase·Sentry 터널·인라인 스크립트를
+  // 잘못 막으면 앱이 통째로 깨질 수 있어 여기서는 제외하고, 깨질 위험이 없는
+  // 4종만 먼저 적용한다. (CSP는 별도 단계에서 실제 렌더링을 확인하며 도입)
+  async headers() {
+    return [
+      {
+        // '/:path*' = 모든 경로에 동일 헤더 적용
+        source: '/:path*',
+        headers: [
+          {
+            // HTTPS 강제 + 브라우저가 2년간 기억(preload 목록 등재 대비).
+            // 로컬(http)엔 영향 없고 배포(https)에서만 의미가 있다.
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
+          },
+          {
+            // 서버가 지정한 Content-Type을 브라우저가 멋대로 추측(sniff)하지 못하게 막음
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            // 외부 사이트로 이동할 때 경로·쿼리는 빼고 출처(origin)만 리퍼러로 전송
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            // 우리 도메인 외의 iframe 삽입 금지 → 클릭재킹 방지
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default withSentryConfig(nextConfig, {
