@@ -54,6 +54,11 @@ const nextConfig: NextConfig = {
       "'unsafe-inline'", // GA init·Next 인라인 하이드레이션 스크립트
       ...(isDev ? ["'unsafe-eval'"] : []),
       'https://www.googletagmanager.com',
+      // Vercel Web Analytics·Speed Insights 로더.
+      // 프로덕션(Vercel)에선 대개 동일 출처(/_vercel/…)로 프록시되지만,
+      // 로컬·비-Vercel 환경에선 이 도메인에서 스크립트를 받으므로 허용한다.
+      // (데이터 비콘은 /_vercel/… 동일 출처라 connect-src는 'self'로 충분)
+      'https://va.vercel-scripts.com',
     ].join(' ');
     const contentSecurityPolicy = [
       "default-src 'self'",
