@@ -17,10 +17,10 @@ import { checkApiRateLimit } from '@/shared/lib/rate-limit';
  * - matcher로 실행할 경로 지정 (성능 최적화)
  */
 export async function proxy(request: NextRequest) {
-  const { response, user, supabase } = await updateSession(request);
+  const { response, user } = await updateSession(request);
 
   if (request.nextUrl.pathname.startsWith('/api/')) {
-    const rateLimitResponse = await checkApiRateLimit(request, user, supabase);
+    const rateLimitResponse = await checkApiRateLimit(request, user);
     if (rateLimitResponse) {
       return rateLimitResponse;
     }

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import type { SupabaseClient, User } from '@supabase/supabase-js';
+import { createAdminClient } from '@/shared/config/supabase/admin';
+
+import type { User } from '@supabase/supabase-js';
 
 // OpenAI를 호출하는 라우트 — 호출 자체가 비싸고 UI에도 재시도 유도가 없어 가장 엄격하게 제한
 const STRICT_PATHS = [
@@ -59,11 +61,14 @@ function getIdentifier(request: NextRequest, user: User | null, tier: Tier): str
  * /api/* 요청에 레이트 리밋을 적용한다.
  * 제한을 넘으면 429 응답을, 통과하거나 적용 대상이 아니면 null을 반환한다.
  * increment_rate_limit RPC 자체가 실패해도 요청은 막지 않는다 — fail-open.
+ *
+ * RPC는 service_role(admin)로만 호출한다. anon 키로 직접 호출해 카운터를 조작하는 것을
+ * 막기 위해 함수의 EXECUTE 권한을 service_role에만 부여했기 때문이다.
+ * (proxy는 서버에서 실행되므로 service_role 키가 브라우저로 노출되지 않는다.)
  */
 export async function checkApiRateLimit(
   request: NextRequest,
-  user: User | null,
-  supabase: SupabaseClient
+  user: User | null
 ): Promise<NextResponse | null> {
   const { pathname } = request.nextUrl;
   const tier = getTier(pathname);
@@ -74,15 +79,15 @@ export async function checkApiRateLimit(
 
   const limit = TIER_LIMITS[tier];
 
-  // 현재 몇 번째 1분 구간인지를 그 구간의 시작 시각으로 표현한다.
-  // 예: 10:23:47 → 10:23:00 (같은 구간에 들어온 요청은 모두 같은 window_start를 갖는다)
+  // 응답의 Retry-After 계산용으로만 현재 1분 구간의 시작 시각을 구한다.
+  // (실제 카운팅 윈도우는 DB 함수 안에서 now() 기준으로 계산된다)
   const windowStartMs = Math.floor(Date.now() / WINDOW_MS) * WINDOW_MS;
 
   try {
     const identifier = getIdentifier(request, user, tier);
-    const { data: count, error } = await supabase.rpc('increment_rate_limit', {
+    const admin = createAdminClient();
+    const { data: count, error } = await admin.rpc('increment_rate_limit', {
       p_identifier: identifier,
-      p_window_start: new Date(windowStartMs).toISOString(),
     });
 
     if (error) {
