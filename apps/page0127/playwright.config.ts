@@ -38,7 +38,13 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: `npm run dev -- --port ${PORT}`,
+    // 로컬은 dev 서버로 빠르게 반복 개발한다.
+    // CI는 매번 새 서버를 띄우므로(reuseExistingServer:false), dev의 온디맨드 컴파일
+    // 대신 미리 빌드된 프로덕션 서버(next start)를 써서 부팅·응답을 안정화한다.
+    // → CI job에서는 이 테스트 이전에 반드시 `npm run build`가 선행돼야 한다.
+    command: process.env.CI
+      ? `npm run start -- --port ${PORT}`
+      : `npm run dev -- --port ${PORT}`,
     // 재사용 판단·접속에 쓰는 주소. 이미 3000에 dev가 떠 있으면 그 서버를 쓴다.
     url: baseURL,
     reuseExistingServer: !process.env.CI,
