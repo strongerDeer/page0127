@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { parseAdminEmails, isAdminEmail } from './config';
+import { isAdminEmail, parseAdminEmails } from './config';
 
 describe('parseAdminEmails', () => {
   it('빈 값이면 빈 배열', () => {
