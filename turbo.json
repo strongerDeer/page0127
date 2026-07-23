@@ -15,6 +15,9 @@
       "dependsOn": ["^lint"]
     },
     "type-check": {},
+    "test": {
+      "outputs": []
+    },
     "clean": {
       "cache": false
     },

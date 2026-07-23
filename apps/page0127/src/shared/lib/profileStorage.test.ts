@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from 'vitest';
 
-import { extractOwnedProfileImagePath } from '../src/shared/lib/profileStorage';
+import { extractOwnedProfileImagePath } from './profileStorage';
 
 const SUPABASE_URL = 'https://project-ref.supabase.co';
 const USER_ID = '11111111-1111-4111-8111-111111111111';

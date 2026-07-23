@@ -33,6 +33,11 @@ jobs:
       - name: Type-check
         run: npm run type-check
 
+      # 단위 테스트(vitest): 순수 함수만 검증하므로 서버·Supabase secrets가 필요 없다.
+      # 브라우저 스모크(Playwright)는 별도 job으로 분리한다.
+      - name: Unit test
+        run: npm run test
+
       # 빌드는 OpenAI 클라이언트가 모듈 로드 시점에 키를 요구하므로 더미 값을 준다.
       # (실제 키는 Vercel에만 존재. CI는 컴파일 성공 여부만 검증한다.)
       - name: Build

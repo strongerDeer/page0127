@@ -1,6 +1,6 @@
-import { expect, test } from '@playwright/test';
+import { afterEach, expect, test } from 'vitest';
 
-import { cronAuthResult } from '@/app/api/_helpers/cron-auth';
+import { cronAuthResult } from './cron-auth';
 
 const ORIGINAL_CRON_SECRET = process.env.CRON_SECRET;
 const ORIGINAL_NODE_ENV = process.env.NODE_ENV;
@@ -13,7 +13,7 @@ const setNodeEnv = (value: string | undefined) => {
   Reflect.set(process.env, 'NODE_ENV', value);
 };
 
-test.afterEach(() => {
+afterEach(() => {
   process.env.CRON_SECRET = ORIGINAL_CRON_SECRET;
   setNodeEnv(ORIGINAL_NODE_ENV);
 });
