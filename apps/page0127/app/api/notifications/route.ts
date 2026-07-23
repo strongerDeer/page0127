@@ -86,56 +86,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-/**
- * POST /api/notifications
- * 알림 생성 (내부 API - 다른 API에서 호출)
- *
- * Request Body:
- * - user_id: 알림을 받을 사용자 ID
- * - type: 'follow' | 'comment' | 'like'
- * - target_id: 관련 리소스 ID (선택)
- * - target_type: 'activity' | 'comment' (선택)
- *
- * 학습 포인트:
- * - actor_id(알림을 발생시킨 사람)는 body로 받지 않고 인증된 본인으로 고정한다
- *   — DB의 RLS가 `WITH CHECK (true)`라 누구나 insert 가능해서, 로그인 검증과
- *   actor_id 위조 방지를 이 API 레이어에서 직접 해야 한다.
- * - 자기 자신에게는 알림 생성하지 않음
- */
-export async function POST(request: NextRequest) {
-  try {
-    const supabase = await getSupabaseClient();
-    const { user, error: authError } = await getCurrentUser();
-    if (authError) return authError;
-
-    const body = await request.json();
-    const { user_id, type, target_id, target_type } = body;
-    const actor_id = user!.id;
-
-    // 자기 자신에게는 알림 보내지 않음
-    if (user_id === actor_id) {
-      return successResponse({ message: '자기 자신에게는 알림을 보내지 않습니다.' });
-    }
-
-    // 알림 생성
-    const { data, error } = await supabase
-      .from('notifications')
-      .insert({
-        user_id,
-        type,
-        actor_id,
-        target_id,
-        target_type,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      return errorResponse(error.message);
-    }
-
-    return successResponse(data, 201);
-  } catch {
-    return errorResponse('알림 생성에 실패했습니다.');
-  }
-}
+// POST /api/notifications 핸들러는 제거됨.
+// 이 엔드포인트는 실제로 호출되는 곳이 없었고(죽은 코드), 로그인 사용자가 남에게
+// 가짜 알림을 만들 수 있는 공격 표면만 열어 두고 있었다.
+// 정상 알림은 팔로우/댓글/좋아요 서버 라우트가 이벤트 발생 시점에 직접 생성한다
+// (그쪽에서 actor_id=인증 사용자, 수신자=실제 리소스 소유자로 안전하게 처리).

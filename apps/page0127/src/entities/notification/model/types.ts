@@ -35,18 +35,6 @@ export type Notification = {
 }
 
 /**
- * 알림 생성 요청 DTO
- */
-export type CreateNotificationDto = {
-  user_id: string;
-  type: NotificationType;
-  actor_id: string;
-  target_id?: string | null;
-  target_type?: NotificationTargetType | null;
-  message?: string | null;
-}
-
-/**
  * 알림 조회 응답 (프로필 정보 포함)
  */
 export type NotificationWithActor = {
