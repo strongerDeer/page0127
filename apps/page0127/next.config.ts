@@ -56,7 +56,9 @@ const nextConfig: NextConfig = {
       // Pretendard woff 폰트(jsdelivr)
       "font-src 'self' https://cdn.jsdelivr.net",
       // API·Sentry 터널(self) + Supabase REST/realtime(wss) + GA 비콘
-      `connect-src 'self' https://${SUPABASE_HOST} wss://${SUPABASE_HOST} https://www.google-analytics.com https://www.googletagmanager.com`,
+      // + jsdelivr: Pretendard 폰트 CSS의 소스맵(.map) fetch. DevTools를 열었을
+      //   때만 요청되고 일반 방문자엔 영향 없지만, 콘솔 위반을 없애려고 허용한다.
+      `connect-src 'self' https://${SUPABASE_HOST} wss://${SUPABASE_HOST} https://cdn.jsdelivr.net https://www.google-analytics.com https://www.googletagmanager.com`,
       // 클릭재킹 방지(X-Frame-Options의 현대적 대응) + 기타 하드닝
       "frame-ancestors 'self'",
       "base-uri 'self'",
