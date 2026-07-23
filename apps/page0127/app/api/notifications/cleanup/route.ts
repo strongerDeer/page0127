@@ -1,5 +1,6 @@
-import { createClient } from '@/shared/config/supabase/server';
+import { createAdminClient } from '@/shared/config/supabase/admin';
 
+import { cronAuthResult } from '../../_helpers/cron-auth';
 import { errorResponse, successResponse } from '../../_helpers/response';
 
 /**
@@ -19,16 +20,15 @@ import { errorResponse, successResponse } from '../../_helpers/response';
  */
 const cleanupNotifications = async (request: Request) => {
   try {
-    // Vercel Cron Secret 검증 (환경변수 미설정 시 건너뜀 — 로컬 개발용)
-    const cronSecret = process.env.CRON_SECRET;
-    if (cronSecret) {
-      const authHeader = request.headers.get('authorization');
-      if (authHeader !== `Bearer ${cronSecret}`) {
-        return errorResponse('Unauthorized', 401);
-      }
+    // 크론 인증 — 시크릿 미설정 시 운영에서는 차단(fail-closed), 개발만 통과.
+    const auth = cronAuthResult(request);
+    if (!auth.ok) {
+      return errorResponse(auth.message, auth.status);
     }
 
-    const supabase = await createClient();
+    // 익명 크론 요청은 세션이 없어 RLS에 막혀 다른 사용자의 알림을 못 지운다.
+    // service_role(admin)로 RLS를 넘어 전체 사용자의 오래된 읽은 알림을 정리한다.
+    const supabase = createAdminClient();
 
     // 30일 이전 날짜 계산
     const thirtyDaysAgo = new Date();
@@ -63,5 +63,5 @@ const cleanupNotifications = async (request: Request) => {
 // Vercel Cron 이 호출하는 메서드
 export const GET = cleanupNotifications;
 
-// 수동 호출용 (기존 동작 유지)
+// 수동 호출용 — 이제 GET과 동일하게 cron 시크릿이 필요하다(관리자/크론 전용).
 export const POST = cleanupNotifications;
