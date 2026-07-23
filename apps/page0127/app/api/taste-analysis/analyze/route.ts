@@ -1,9 +1,10 @@
 import { after, NextRequest, NextResponse } from 'next/server';
 
+import { createAdminClient } from '@/shared/config/supabase/admin';
 import { createClient } from '@/shared/config/supabase/server';
 import {
-  checkUsageLimit,
-  recordUsage,
+  refundUsage,
+  reserveUsage,
   USAGE_LIMIT_EXCEEDED_ERROR,
 } from '@/shared/lib/aiUsage';
 import { upgradeImageResolution } from '@/shared/lib/imageUtils';
@@ -30,6 +31,11 @@ export const maxDuration = 60;
  * POST /api/taste-analysis/analyze
  */
 export async function POST(_request: NextRequest) {
+  // 예약된 usage 행 id — OpenAI 요청 전 실패 시에만 환불(삭제)한다.
+  let reservedUsageId: string | null = null;
+  // OpenAI 요청을 시작하면 비용이 발생할 수 있으므로 이후 실패는 환불하지 않는다.
+  let aiRequestStarted = false;
+
   try {
     // 1. 인증 확인
     const supabase = await createClient();
@@ -71,18 +77,16 @@ export async function POST(_request: NextRequest) {
       );
     }
 
-    // 2-1. 이번 달 사용량 확인 (무료 사용자 월 3회 제한)
-    const { allowed } = await checkUsageLimit(
-      supabase,
-      user.id,
-      'taste_analysis'
-    );
-    if (!allowed) {
+    // 2-1. 이번 달 슬롯을 원자적으로 예약한다 (OpenAI 호출 전).
+    //      동시 요청이 한도를 넘겨 유료 API를 중복 호출하는 것을 원천 차단한다.
+    const reservation = await reserveUsage(supabase, 'taste_analysis');
+    if (!reservation.allowed) {
       return NextResponse.json(
         { error: USAGE_LIMIT_EXCEEDED_ERROR },
         { status: 429 }
       );
     }
+    reservedUsageId = reservation.usageId;
 
     // 3. AI 분석 실행 — 성향 타입은 고정 카탈로그에서 고르게 한다
     const prompt = createTasteAnalysisPrompt(
@@ -90,6 +94,7 @@ export async function POST(_request: NextRequest) {
       READING_PERSONALITY_TYPES
     );
 
+    aiRequestStarted = true;
     const completion = await openai.chat.completions.create({
       model: AI_MODEL,
       messages: [
@@ -162,9 +167,6 @@ export async function POST(_request: NextRequest) {
       );
     }
 
-    // 사용량 기록 — 분석이 성공적으로 저장된 뒤에만 기록한다
-    await recordUsage(supabase, user.id, 'taste_analysis');
-
     // 6. 추천 도서 저장
     if (aiResponse.recommendations && aiResponse.recommendations.length > 0) {
       const recommendations = aiResponse.recommendations.map(
@@ -235,6 +237,17 @@ export async function POST(_request: NextRequest) {
       { error: '취향 분석 중 오류가 발생했습니다.' },
       { status: 500 }
     );
+  } finally {
+    // 슬롯 예약 후 OpenAI 요청을 시작하기 전에 실패한 경우에만 환불한다.
+    // 요청을 시작한 뒤에는 비용이 발생했을 수 있으므로 실패해도 사용량을 유지한다.
+    // 환불 정리가 응답을 깨뜨리지 않도록 자체 try로 감싼다.
+    if (!aiRequestStarted && reservedUsageId) {
+      try {
+        await refundUsage(createAdminClient(), reservedUsageId);
+      } catch (refundError) {
+        console.error('AI 사용량 환불 처리 실패:', refundError);
+      }
+    }
   }
 }
 

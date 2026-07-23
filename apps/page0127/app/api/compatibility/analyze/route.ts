@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { createAdminClient } from '@/shared/config/supabase/admin';
 import { createClient } from '@/shared/config/supabase/server';
 import {
-  checkUsageLimit,
-  recordUsage,
+  refundUsage,
+  reserveUsage,
   USAGE_LIMIT_EXCEEDED_ERROR,
 } from '@/shared/lib/aiUsage';
 import { AI_MODEL, MAX_TOKENS, openai, TEMPERATURE } from '@/shared/lib/openai';
@@ -30,6 +31,11 @@ export const maxDuration = 60;
  * Body: { targetUserId: string, force?: boolean }
  */
 export async function POST(request: NextRequest) {
+  // 예약된 usage 행 id — OpenAI 요청 전 실패 시에만 환불(삭제)한다.
+  let reservedUsageId: string | null = null;
+  // OpenAI 요청을 시작하면 비용이 발생할 수 있으므로 이후 실패는 환불하지 않는다.
+  let aiRequestStarted = false;
+
   try {
     // 1. 인증 확인
     const supabase = await createClient();
@@ -136,19 +142,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 사용량 확인 (무료 사용자 월 3회 제한)
-    // 캐시 히트는 이 지점보다 앞에서 이미 응답을 반환하므로 quota를 소모하지 않는다
-    const { allowed } = await checkUsageLimit(
-      supabase,
-      user.id,
-      'compatibility'
-    );
-    if (!allowed) {
+    // 이번 달 슬롯을 원자적으로 예약한다 (OpenAI 호출 전). 동시 요청 초과 호출 차단.
+    // 캐시 히트는 이 지점보다 앞에서 이미 응답을 반환하므로 예약도 하지 않는다.
+    const reservation = await reserveUsage(supabase, 'compatibility');
+    if (!reservation.allowed) {
       return NextResponse.json(
         { error: USAGE_LIMIT_EXCEEDED_ERROR },
         { status: 429 }
       );
     }
+    reservedUsageId = reservation.usageId;
 
     const getName = (userId: string) => {
       const profile = profiles?.find((p) => p.id === userId);
@@ -170,6 +173,7 @@ export async function POST(request: NextRequest) {
       user2: { name: getName(userId2), books: toPromptBooks(books2 as Book[]) },
     });
 
+    aiRequestStarted = true;
     const completion = await openai.chat.completions.create({
       model: AI_MODEL,
       messages: [
@@ -228,9 +232,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 사용량 기록 — 실제로 분석을 유발한 호출자(user.id) 기준으로만 기록한다
-    await recordUsage(supabase, user.id, 'compatibility');
-
     // 9. 상호 추천 도서 저장 — AI가 고른 제목을 실제 책 레코드와 매칭
     const recommendations = [
       // user1이 받는 추천 = user2의 책장에서 고른 책
@@ -268,6 +269,17 @@ export async function POST(request: NextRequest) {
       { error: '궁합 분석 중 오류가 발생했습니다.' },
       { status: 500 }
     );
+  } finally {
+    // 슬롯 예약 후 OpenAI 요청을 시작하기 전에 실패한 경우에만 환불한다.
+    // 요청을 시작한 뒤에는 비용이 발생했을 수 있으므로 실패해도 사용량을 유지한다.
+    // 환불 정리가 응답을 깨뜨리지 않도록 자체 try로 감싼다.
+    if (!aiRequestStarted && reservedUsageId) {
+      try {
+        await refundUsage(createAdminClient(), reservedUsageId);
+      } catch (refundError) {
+        console.error('AI 사용량 환불 처리 실패:', refundError);
+      }
+    }
   }
 }
 

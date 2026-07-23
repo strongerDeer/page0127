@@ -66,22 +66,71 @@ export async function checkUsageLimit(
 }
 
 /**
- * 사용 기록 1건을 남긴다. OpenAI 호출과 결과 저장이 모두 성공한 뒤에만 호출해야
- * 한다 — 실패한 시도로 사용자의 quota가 낭비되는 것을 막기 위함이다.
+ * OpenAI 호출 "전에" 이번 달 슬롯 1건을 원자적으로 예약한다.
  *
- * INSERT 오류 시 로그만 남기고 throws하지 않는다. 호출자(분석 완료)의 성공을
- * 사용량 기록 장애로 인해 실패 처리하지 않기 위함이다.
+ * reserve_ai_usage RPC가 카운트 확인 + 로그 insert를 한 트랜잭션에서 수행하고,
+ * 같은 사용자+기능 동시 요청은 advisory lock으로 직렬화하므로 한도 초과 호출이
+ * 원천 차단된다. (기존 checkUsageLimit → OpenAI → recordUsage 구조는 조회와
+ * 기록 사이에 OpenAI가 끼어 동시 요청이 중복 호출될 수 있었다.)
+ *
+ * 반환:
+ * - allowed: 예약 성공 여부 (false면 이번 달 한도 소진)
+ * - remaining: 예약 반영 후 남은 횟수
+ * - usageId: 예약된 로그 행 id (분석 실패 시 refund 대상). allowed=false면 null.
+ *
+ * RPC/조회 오류 시 fail-closed: { allowed: false } 로 OpenAI 호출을 차단한다.
  */
-export async function recordUsage(
+export async function reserveUsage(
   supabase: SupabaseClient,
-  userId: string,
   feature: AiUsageFeature
-): Promise<void> {
-  const { error } = await supabase
-    .from('ai_usage_logs')
-    .insert({ user_id: userId, feature });
+): Promise<{ allowed: boolean; remaining: number; usageId: string | null }> {
+  const { data, error } = await supabase.rpc('reserve_ai_usage', {
+    p_feature: feature,
+  });
 
   if (error) {
-    console.error('AI 사용량 기록 저장 실패:', error);
+    console.error('AI 사용량 예약 실패:', error);
+    // fail-closed: 예약 실패 시 OpenAI 호출 차단
+    return { allowed: false, remaining: 0, usageId: null };
+  }
+
+  // TABLE 반환 함수라 data는 행 배열 — 첫 행을 읽는다
+  const row = (Array.isArray(data) ? data[0] : data) as
+    | { allowed: boolean; remaining: number; usage_id: string | null }
+    | undefined;
+
+  if (!row) {
+    return { allowed: false, remaining: 0, usageId: null };
+  }
+
+  return {
+    allowed: row.allowed,
+    remaining: row.remaining,
+    usageId: row.usage_id,
+  };
+}
+
+/**
+ * 예약했던 슬롯 1건을 되돌린다 (OpenAI 호출 시작 전에 실패했을 때만).
+ *
+ * ⚠️ 반드시 service-role(admin) 클라이언트로 호출해야 한다.
+ *   일반 사용자에게 ai_usage_logs 삭제 권한을 열면, 자기 사용 기록을 지워
+ *   월 한도를 무한히 리셋할 수 있기 때문이다. 그래서 삭제는 서버 전용
+ *   service_role로만 수행하고, 예약한 행의 id로 "그 행만" 정확히 지운다.
+ *
+ * OpenAI 요청을 시작한 뒤에는 API 비용이 발생했을 수 있으므로 환불하지 않는다.
+ * best-effort: 삭제가 실패해도 throw하지 않는다.
+ */
+export async function refundUsage(
+  adminSupabase: SupabaseClient,
+  usageId: string
+): Promise<void> {
+  const { error } = await adminSupabase
+    .from('ai_usage_logs')
+    .delete()
+    .eq('id', usageId);
+
+  if (error) {
+    console.error('AI 사용량 환불(삭제) 실패:', error);
   }
 }
