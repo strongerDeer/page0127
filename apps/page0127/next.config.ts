@@ -64,6 +64,13 @@ export default withSentryConfig(nextConfig, {
 
   project: 'page0127',
 
+  // Vercel 빌드처럼 토큰이 실제로 주입된 환경에서만 소스맵을 업로드한다.
+  // 로컬·일반 CI에서 Sentry 후처리가 빌드를 멈추게 하지 않도록 한다.
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  sourcemaps: {
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+  },
+
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,
 

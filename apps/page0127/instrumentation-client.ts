@@ -5,13 +5,14 @@
 import * as Sentry from '@sentry/nextjs';
 
 Sentry.init({
-  dsn: 'https://136a87e4c6262335a3595fa14aee2415@o4511780176986112.ingest.us.sentry.io/4511780178886656',
+  // DSN은 브라우저에 공개되는 프로젝트 식별자지만, 환경별 분리와 교체를 위해
+  // 코드에 고정하지 않고 Vercel 환경변수로 관리한다.
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
   dataCollection: {
-    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
-    // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#dataCollection
-    // userInfo: false,
-    // httpBodies: [],
+    // 독서 기록·이메일 같은 개인정보가 오류 이벤트에 실리지 않도록 최소 수집한다.
+    userInfo: false,
+    httpBodies: [],
   },
 });
 
