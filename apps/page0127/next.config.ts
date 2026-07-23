@@ -20,10 +20,35 @@ const nextConfig: NextConfig = {
     ],
   },
   // 모든 응답에 붙는 보안 헤더.
-  // CSP(Content-Security-Policy)는 GA·Supabase·Sentry 터널·인라인 스크립트를
-  // 잘못 막으면 앱이 통째로 깨질 수 있어 여기서는 제외하고, 깨질 위험이 없는
-  // 4종만 먼저 적용한다. (CSP는 별도 단계에서 실제 렌더링을 확인하며 도입)
   async headers() {
+    // Content-Security-Policy — 우선 Report-Only로 도입한다.
+    // Report-Only는 아무것도 차단하지 않고 위반을 브라우저 콘솔에만 보고하므로
+    // 앱이 깨지지 않는다. 주요 페이지를 돌며 위반이 없는지 확인한 뒤, 맨 아래
+    // 헤더 key를 'Content-Security-Policy'로 바꾸면 실제 차단이 켜진다.
+    //
+    // 주의: GA 인라인 스크립트와 Next.js 인라인 하이드레이션 스크립트 때문에
+    // script-src에 'unsafe-inline'이 필요하다. nonce로 더 강화하려면 proxy에서
+    // 요청마다 nonce를 생성해 주입해야 한다(별도 작업).
+    const SUPABASE_HOST = 'sjngwxtykqhlsvxcyqah.supabase.co';
+    const contentSecurityPolicy = [
+      "default-src 'self'",
+      // 인라인 스크립트(GA init, Next 하이드레이션) 허용을 위해 'unsafe-inline'
+      "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com",
+      // Pretendard 폰트 CSS(jsdelivr) + Next/Tailwind 인라인 스타일
+      "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+      // 앱 자체 + Aladin/Supabase 이미지 + GA 픽셀, data/blob(블러 플레이스홀더)
+      `img-src 'self' data: blob: https://image.aladin.co.kr https://${SUPABASE_HOST} https://www.googletagmanager.com https://www.google-analytics.com`,
+      // Pretendard woff 폰트(jsdelivr)
+      "font-src 'self' https://cdn.jsdelivr.net",
+      // API·Sentry 터널(self) + Supabase REST/realtime(wss) + GA 비콘
+      `connect-src 'self' https://${SUPABASE_HOST} wss://${SUPABASE_HOST} https://www.google-analytics.com https://www.googletagmanager.com`,
+      // 클릭재킹 방지(X-Frame-Options의 현대적 대응) + 기타 하드닝
+      "frame-ancestors 'self'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "object-src 'none'",
+    ].join('; ');
+
     return [
       {
         // '/:path*' = 모든 경로에 동일 헤더 적용
@@ -49,6 +74,13 @@ const nextConfig: NextConfig = {
             // 우리 도메인 외의 iframe 삽입 금지 → 클릭재킹 방지
             key: 'X-Frame-Options',
             value: 'SAMEORIGIN',
+          },
+          {
+            // ⚠️ Report-Only: 지금은 차단하지 않고 위반만 콘솔에 보고한다.
+            //    콘솔에 위반이 없음을 확인한 뒤 key를 'Content-Security-Policy'로
+            //    바꾸면 실제 차단이 활성화된다.
+            key: 'Content-Security-Policy-Report-Only',
+            value: contentSecurityPolicy,
           },
         ],
       },
