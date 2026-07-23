@@ -79,21 +79,18 @@ DELETE /api/auth/account
 | `deleteUser` 실패 (FK 위반 등 포함) | 500, 실패 안내 (재시도 가능) |
 | Storage 이미지 삭제 실패 | 로그만 남기고 200 유지 |
 
-## 선행 확인 (구현 첫 단계)
+## 선행 확인 (구현 첫 단계) — 완료 (2026-07-23)
 
-1. **스키마 드리프트 확인**: 현재 route가 삭제하는 `reading_records`, `activity_likes`가
-   마이그레이션에 존재하지 않는다. 라이브 DB에 이 테이블들이 실제로 있는지, 있다면
-   `auth.users`를 `ON DELETE CASCADE`로 참조하는지 확인한다.
-   - CASCADE가 아니거나 FK가 없으면 `deleteUser`가 FK 위반으로 실패하므로, 그때만
-     마이그레이션으로 FK를 보정한다.
-   - 확인 SQL 예:
-     ```sql
-     SELECT conname, conrelid::regclass AS table_name, confdeltype
-     FROM pg_constraint
-     WHERE confrelid = 'auth.users'::regclass;
-     -- confdeltype: c=CASCADE, n=SET NULL, a=NO ACTION, r=RESTRICT
-     ```
-2. **환경변수 확인**: 운영 환경에 `SUPABASE_SERVICE_ROLE_KEY`가 실제 설정돼 있는지 확인한다.
+1. **스키마 드리프트 확인 결과**: 라이브 DB의 `auth.users` 참조 FK를 전수 확인한 결과,
+   `a`(NO ACTION)/`r`(RESTRICT)는 하나도 없어 `deleteUser`가 FK 위반으로 막힐 위험은 없었다.
+   - `activity_likes`: 마이그레이션엔 없지만 대시보드에서 생성됐고 이미 `CASCADE` FK가 있어 정상.
+   - `reading_records`: **BASE TABLE**이지만 `auth.users`로 향하는 CASCADE FK가 없어 고아 위험이
+     있었다. 현재 행 0개(고아 0). → 마이그레이션
+     `20260723000002_add_reading_records_user_fk.sql`로 CASCADE FK를 추가해 보정.
+   - `user_follow_stats`: **VIEW**(follows에서 계산)라 삭제 대상 아님.
+   - (확인에 쓴 SQL은 `pg_constraint`의 `confdeltype`, `information_schema`의 `table_type` 조회.)
+2. **환경변수 확인 결과**: 운영(Vercel Production·Preview)에 `SUPABASE_SERVICE_ROLE_KEY`가
+   Sensitive 값으로 등록돼 있음을 확인.
 
 ## 검증 (구현 후)
 
