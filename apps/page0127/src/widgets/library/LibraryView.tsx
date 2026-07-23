@@ -19,6 +19,9 @@ import { PublicBookShelf } from '@/widgets/book/ui/PublicBookShelf';
 import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
 import { ViewTabs } from '@/widgets/dashboard/ViewTabs';
 
+import { ReadingNowStrip } from './ReadingNowStrip';
+import { WishlistShelf } from './WishlistShelf';
+
 // Recharts는 브라우저 measure가 필요한 클라이언트 전용 라이브러리
 // → next/dynamic + ssr:false 로 분리해서 초기 번들에서 제외
 const DashboardCharts = dynamic(
@@ -79,6 +82,15 @@ type LibraryViewProps = {
 
   /** 캘린더 슬롯 — 내 서재에서만 주입 */
   calendarSlot?: React.ReactNode;
+
+  /** '읽고 싶어요' 탭 노출 여부 (내 서재에서만 true) */
+  showWishlist?: boolean;
+
+  /** 지금 위시리스트 뷰를 보고 있는지 (탭 상태는 상위가 URL로 소유) */
+  isWishlistView?: boolean;
+
+  /** 위시리스트 책 목록 — 연도와 무관한 전체 want_to_read (내 서재만 주입) */
+  wishlistBooks?: Book[];
 };
 
 /**
@@ -108,15 +120,21 @@ export const LibraryView = ({
   username,
   onSetGoal,
   calendarSlot,
+  showWishlist = false,
+  isWishlistView = false,
+  wishlistBooks = [],
 }: LibraryViewProps) => {
   const filters = useLibraryFilters();
-  const {
-    selectedMonth,
-    selectedCategories,
-    selectedRating,
-    searchQuery,
-    statusFilter,
-  } = filters;
+  const { selectedMonth, selectedCategories, selectedRating, searchQuery } =
+    filters;
+
+  // 링크 계산은 세 곳(읽는 중 스트립·완독 shelf·위시리스트)이 같은 규칙을 써야 한다
+  const bookHref = (book: Book) =>
+    username ? `/${username}/${book.id}` : `/books/${book.id}`;
+
+  // status로 3분할 — 서재 본문은 완독만, 읽는 중은 상단 스트립, 읽고 싶은은 별도 탭
+  const readingBooks = books.filter((book) => book.status === 'reading');
+  const completedBooks = books.filter((book) => book.status === 'completed');
 
   // 차트 클릭 → 목록 필터링은 급하지 않음 → 우선순위를 낮춰 입력 응답성을 지킨다
   const [isFilterPending, startFilterTransition] = useTransition();
@@ -131,47 +149,47 @@ export const LibraryView = ({
   const shelfTitle = isAllView ? allShelfTitle : `${selectedYear}년 서재`;
 
   const bookShelf = (
-    <section
-      className='py-6'
-      style={{
-        opacity: isFilterPending ? 0.6 : 1,
-        transition: 'opacity 0.2s',
-      }}
-    >
-      <DashboardBookList
-        title={shelfTitle}
-        books={books}
-        categories={stats.categoryReading}
-        selectedMonth={selectedMonth}
-        selectedCategories={selectedCategories}
-        selectedRating={selectedRating}
-        searchQuery={searchQuery}
-        statusFilter={statusFilter}
-        onCategoriesChange={filters.setCategories}
-        onRemoveMonthFilter={filters.clearMonth}
-        onRemoveRatingFilter={filters.clearRating}
-        onSearchChange={filters.setSearch}
-        onStatusChange={filters.setStatus}
-        onResetAll={filters.resetAll}
-        // 책장형은 PublicBookShelf/CategoryBookShelf가 username으로 직접 링크를 계산하지만,
-        // 피드형(BookFeedGrid)은 DashboardBookList 내부에서 렌더링되므로
-        // bookHref를 통해 공개 서재/내 서재 링크를 구분해 넘겨야 한다
-        bookHref={(book) =>
-          username ? `/${username}/${book.id}` : `/books/${book.id}`
-        }
-        renderBooks={(filteredBooks) =>
-          isAllView ? (
-            <CategoryBookShelf books={filteredBooks} username={username} />
-          ) : (
-            <PublicBookShelf
-              books={filteredBooks}
-              username={username}
-              compact
-            />
-          )
-        }
-      />
-    </section>
+    <div className='space-y-6 py-6'>
+      {/* 읽는 중은 필터와 무관하게 항상 앞세운다 → 필터 dimming 밖에 둔다 */}
+      <ReadingNowStrip books={readingBooks} bookHref={bookHref} />
+
+      <section
+        style={{
+          opacity: isFilterPending ? 0.6 : 1,
+          transition: 'opacity 0.2s',
+        }}
+      >
+        <DashboardBookList
+          title={shelfTitle}
+          books={completedBooks}
+          categories={stats.categoryReading}
+          selectedMonth={selectedMonth}
+          selectedCategories={selectedCategories}
+          selectedRating={selectedRating}
+          searchQuery={searchQuery}
+          onCategoriesChange={filters.setCategories}
+          onRemoveMonthFilter={filters.clearMonth}
+          onRemoveRatingFilter={filters.clearRating}
+          onSearchChange={filters.setSearch}
+          onResetAll={filters.resetAll}
+          // 책장형은 PublicBookShelf/CategoryBookShelf가 username으로 직접 링크를 계산하지만,
+          // 피드형(BookFeedGrid)은 DashboardBookList 내부에서 렌더링되므로
+          // bookHref를 통해 공개 서재/내 서재 링크를 구분해 넘겨야 한다
+          bookHref={bookHref}
+          renderBooks={(filteredBooks) =>
+            isAllView ? (
+              <CategoryBookShelf books={filteredBooks} username={username} />
+            ) : (
+              <PublicBookShelf
+                books={filteredBooks}
+                username={username}
+                compact
+              />
+            )
+          }
+        />
+      </section>
+    </div>
   );
 
   return (
@@ -182,9 +200,14 @@ export const LibraryView = ({
           selectedYear={selectedYear}
           isAllView={isAllView}
           onChange={onViewChange}
+          showWishlist={showWishlist}
+          isWishlistView={isWishlistView}
         />
 
-        {isAllView ? (
+        {isWishlistView ? (
+          /* ── 읽고 싶어요(위시리스트) 뷰 ── 서재와 분리된 별도 목록 */
+          <WishlistShelf books={wishlistBooks} bookHref={bookHref} />
+        ) : isAllView ? (
           /* ── 전체(누적) 뷰 ── */
           <div className='space-y-6'>
             <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
@@ -285,8 +308,8 @@ export const LibraryView = ({
         )}
       </section>
 
-      {/* 전체 뷰는 통계가 주인공 → 책장을 맨 아래에 둔다 */}
-      {isAllView && bookShelf}
+      {/* 전체 뷰는 통계가 주인공 → 책장을 맨 아래에 둔다 (위시리스트 뷰는 제외) */}
+      {!isWishlistView && isAllView && bookShelf}
     </>
   );
 };
