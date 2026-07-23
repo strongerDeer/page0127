@@ -30,10 +30,19 @@ const nextConfig: NextConfig = {
     // script-src에 'unsafe-inline'이 필요하다. nonce로 더 강화하려면 proxy에서
     // 요청마다 nonce를 생성해 주입해야 한다(별도 작업).
     const SUPABASE_HOST = 'sjngwxtykqhlsvxcyqah.supabase.co';
+    // 개발 모드의 HMR/Fast Refresh는 문자열을 eval로 실행한다(프로덕션 빌드는
+    // 필요 없음). 그래서 'unsafe-eval'은 dev에서만 허용하고, 프로덕션 정책은
+    // eval 없이 엄격하게 유지한다.
+    const isDev = process.env.NODE_ENV !== 'production';
+    const scriptSrc = [
+      "'self'",
+      "'unsafe-inline'", // GA init·Next 인라인 하이드레이션 스크립트
+      ...(isDev ? ["'unsafe-eval'"] : []),
+      'https://www.googletagmanager.com',
+    ].join(' ');
     const contentSecurityPolicy = [
       "default-src 'self'",
-      // 인라인 스크립트(GA init, Next 하이드레이션) 허용을 위해 'unsafe-inline'
-      "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com",
+      `script-src ${scriptSrc}`,
       // Pretendard 폰트 CSS(jsdelivr) + Next/Tailwind 인라인 스타일
       "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
       // 앱 자체 + Aladin/Supabase 이미지 + GA 픽셀, data/blob(블러 플레이스홀더)
