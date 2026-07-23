@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 
+import * as Sentry from '@sentry/nextjs';
+
 import { ErrorFallback } from '@/shared/ui/ErrorFallback';
 
 import './globals.css';
@@ -25,7 +27,8 @@ type GlobalErrorProps = {
  */
 const GlobalError = ({ error, reset }: GlobalErrorProps) => {
   useEffect(() => {
-    // layout 에러는 가장 치명적이라 반드시 로깅 (실제로는 Sentry 등으로 전송)
+    // layout 에러는 가장 치명적이라 반드시 Sentry로 전송 + 콘솔에도 남긴다
+    Sentry.captureException(error);
     console.error('Global (root layout) Error:', error);
   }, [error]);
 

@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { DocList, DocPage, DocSection } from '@/widgets/landing/ui/DocPage';
 
 import type { Metadata } from 'next';
@@ -18,8 +20,7 @@ export const metadata: Metadata = {
  * - AI 분석: OpenAI
  * - 도서 정보: 알라딘 API
  * - 사용 통계: Google Analytics 4 (NEXT_PUBLIC_GA_ID 설정 시)
- *
- * TODO(문의 창구): 창구가 정해지면 "개인정보 문의" 절을 추가한다.
+ * - 개인정보 문의: 카카오톡 1:1 오픈채팅(/contact)
  */
 const PrivacyPage = () => {
   return (
@@ -33,10 +34,7 @@ const PrivacyPage = () => {
           구글 계정으로 로그인할 때
         </p>
         <DocList
-          items={[
-            '이메일 주소',
-            '이름과 프로필 사진 (구글 계정에 등록된 것)',
-          ]}
+          items={['이메일 주소', '이름과 프로필 사진 (구글 계정에 등록된 것)']}
         />
         <p className='mt-4 font-medium text-text-strong'>
           서비스를 쓰면서 직접 남기는 것
@@ -91,7 +89,9 @@ const PrivacyPage = () => {
             <tbody className='text-text-body'>
               <tr className='border-b border-line-soft'>
                 <td className='py-2.5 pr-4'>Supabase</td>
-                <td className='py-2.5 pr-4'>로그인, 데이터 저장, 이미지 보관</td>
+                <td className='py-2.5 pr-4'>
+                  로그인, 데이터 저장, 이미지 보관
+                </td>
                 <td className='py-2.5'>계정 정보, 독서 기록 전체</td>
               </tr>
               <tr className='border-b border-line-soft'>
@@ -131,8 +131,8 @@ const PrivacyPage = () => {
           지워지며 복구할 수 없습니다.
         </p>
         <p className='text-sm text-text-subtle'>
-          다만 다른 사람의 화면에 이미 남은 활동(예: 내가 단 댓글에 달린
-          답글)의 맥락은 탈퇴한 사용자로 표시될 수 있습니다.
+          다만 다른 사람의 화면에 이미 남은 활동(예: 내가 단 댓글에 달린 답글)의
+          맥락은 탈퇴한 사용자로 표시될 수 있습니다.
         </p>
       </DocSection>
 
@@ -162,6 +162,16 @@ const PrivacyPage = () => {
         <p>
           로그인 상태를 유지하기 위해 인증 쿠키를 씁니다. 브라우저에서 쿠키를
           지우면 로그아웃됩니다. 광고 목적의 추적 쿠키는 쓰지 않습니다.
+        </p>
+      </DocSection>
+
+      <DocSection title='8. 개인정보 문의'>
+        <p>
+          개인정보 처리에 관한 문의나 요청(열람·수정·삭제 등)은{' '}
+          <Link href='/contact' className='underline'>
+            문의 페이지
+          </Link>
+          의 카카오톡 창구로 연락 주세요.
         </p>
       </DocSection>
     </DocPage>

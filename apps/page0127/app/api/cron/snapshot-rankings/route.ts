@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/shared/config/supabase/admin';
 
+import { cronAuthResult } from '../../_helpers/cron-auth';
 import { errorResponse, successResponse } from '../../_helpers/response';
 
 /**
@@ -29,14 +30,10 @@ type SnapshotRow = {
 
 export async function GET(request: Request) {
   try {
-    // Vercel Cron 은 CRON_SECRET 환경변수가 있으면 Authorization 헤더를 붙여 보낸다.
-    // 시크릿을 설정하지 않은 환경(로컬)에서는 검증을 건너뛴다.
-    const cronSecret = process.env.CRON_SECRET;
-    if (cronSecret) {
-      const authHeader = request.headers.get('authorization');
-      if (authHeader !== `Bearer ${cronSecret}`) {
-        return errorResponse('Unauthorized', 401);
-      }
+    // 크론 인증 — 시크릿 미설정 시 운영에서는 차단(fail-closed), 개발만 통과.
+    const auth = cronAuthResult(request);
+    if (!auth.ok) {
+      return errorResponse(auth.message, auth.status);
     }
 
     const supabase = createAdminClient();

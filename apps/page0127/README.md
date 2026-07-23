@@ -5,18 +5,19 @@
 ## 개발 서버 실행
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 ## 스크립트
 
 ```bash
-pnpm lint          # eslint
-pnpm lint:fix       # eslint --fix
-pnpm format         # prettier --write
-pnpm format:check   # prettier --check
-pnpm type-check     # tsc --noEmit
-pnpm analyze        # 번들 분석 (next experimental-analyze)
+npm run lint          # eslint
+npm run lint:fix      # eslint --fix
+npm run format        # prettier --write
+npm run format:check  # prettier --check
+npm run type-check    # tsc --noEmit
+npm run test:e2e      # playwright (E2E 테스트)
+npm run analyze       # 번들 분석 (next experimental-analyze)
 ```
 
 ## 환경 변수

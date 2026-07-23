@@ -6,7 +6,6 @@
 import { apiClient } from '@/shared/api/client';
 
 import type {
-  CreateNotificationDto,
   GetNotificationsOptions,
   Notification,
   NotificationWithActor,
@@ -92,19 +91,6 @@ export async function deleteNotification(
   const { data } = await apiClient.delete<{ success: boolean }>(
     `/notifications/${notificationId}`
   );
-
-  return data;
-}
-
-/**
- * 알림 생성 (내부 API - 서버에서만 사용)
- * @param dto - 알림 생성 데이터
- * @returns 생성된 알림
- */
-export async function createNotification(
-  dto: CreateNotificationDto
-): Promise<Notification> {
-  const { data } = await apiClient.post<Notification>('/notifications', dto);
 
   return data;
 }
