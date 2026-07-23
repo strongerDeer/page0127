@@ -13,15 +13,23 @@ export type CostSummary = {
   topUsers: { userId: string; count: number }[];
 };
 
-// 이번 달 1일 00:00(로컬 근사, UTC)로 시작 경계를 잡는다.
+// KST(UTC+9) 기준으로 월 경계와 일별 버킷을 잡는다.
+// 서버가 어떤 타임존에서 돌든(배포는 보통 UTC) 항상 KST 달력 기준이 되도록
+// 9시간을 보정한다. (AI 사용량 한도 계산과 동일한 기준)
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+// 이번 달 1일 00:00(KST)에 해당하는 실제 UTC 시각 ISO
 function monthStartISO(now = new Date()): string {
-  return new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)
-  ).toISOString();
+  const kst = new Date(now.getTime() + KST_OFFSET_MS);
+  const startKstAsUtc = Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), 1);
+  return new Date(startKstAsUtc - KST_OFFSET_MS).toISOString();
 }
 
+// UTC 타임스탬프를 KST 달력 날짜(YYYY-MM-DD)로 버킷팅한다.
 function dayKey(iso: string): string {
-  return iso.slice(0, 10); // YYYY-MM-DD
+  return new Date(new Date(iso).getTime() + KST_OFFSET_MS)
+    .toISOString()
+    .slice(0, 10);
 }
 
 export async function getCostSummary(): Promise<CostSummary> {
@@ -43,6 +51,17 @@ export async function getCostSummary(): Promise<CostSummary> {
       .select('user_id, feature, created_at')
       .gte('created_at', since),
   ]);
+
+  // 쿼리 실패 시 빈 데이터로 물러나되(대시보드가 죽지 않게) 원인은 로그로 남긴다.
+  if (taste.error)
+    console.error('[admin] taste_analyses 조회 실패:', taste.error.message);
+  if (compat.error)
+    console.error(
+      '[admin] compatibility_analyses 조회 실패:',
+      compat.error.message
+    );
+  if (usage.error)
+    console.error('[admin] ai_usage_logs 조회 실패:', usage.error.message);
 
   const tasteRows = taste.data ?? [];
   const compatRows = compat.data ?? [];

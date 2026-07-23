@@ -19,16 +19,36 @@ export const SuspendForm = ({
   const [reason, setReason] = useState('');
   const [mode, setMode] = useState<'permanent' | 'days'>('permanent');
   const [days, setDays] = useState(7);
+  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const onSuspend = () => {
     if (mode === 'days' && (!Number.isFinite(days) || days < 1)) return;
     const input: SuspendInput =
       mode === 'permanent' ? { kind: 'permanent' } : { kind: 'days', days };
-    startTransition(() => suspendUser(userId, input, reason));
+    setError(null);
+    // 서버액션이 throw하면(ban/미러/감사 실패) 사용자에게 인라인으로 알린다.
+    startTransition(async () => {
+      try {
+        await suspendUser(userId, input, reason);
+      } catch (e) {
+        setError(
+          e instanceof Error ? e.message : '정지 처리 중 오류가 발생했습니다.'
+        );
+      }
+    });
   };
   const onUnsuspend = () => {
-    startTransition(() => unsuspendUser(userId, reason));
+    setError(null);
+    startTransition(async () => {
+      try {
+        await unsuspendUser(userId, reason);
+      } catch (e) {
+        setError(
+          e instanceof Error ? e.message : '해제 처리 중 오류가 발생했습니다.'
+        );
+      }
+    });
   };
 
   if (suspended) {
@@ -48,6 +68,7 @@ export const SuspendForm = ({
         >
           정지 해제
         </button>
+        {error && <p className='mt-2 text-sm text-destructive'>{error}</p>}
       </div>
     );
   }
@@ -96,6 +117,7 @@ export const SuspendForm = ({
       >
         정지
       </button>
+      {error && <p className='mt-2 text-sm text-destructive'>{error}</p>}
     </div>
   );
 };

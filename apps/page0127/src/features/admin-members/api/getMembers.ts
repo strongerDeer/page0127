@@ -3,6 +3,9 @@ import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 
 import { isCurrentlySuspended } from '../lib/suspension';
 
+// 목록 페이지 크기 — 페이지네이션 UI(page.tsx)와 공유해 두 곳이 어긋나지 않게 한다.
+export const DEFAULT_PAGE_SIZE = 50;
+
 export type MemberRow = {
   id: string;
   email: string | null;
@@ -19,7 +22,7 @@ export async function getMembers(opts: {
   pageSize?: number;
 }): Promise<{ rows: MemberRow[]; total: number }> {
   await assertAdmin();
-  const pageSize = opts.pageSize ?? 50;
+  const pageSize = opts.pageSize ?? DEFAULT_PAGE_SIZE;
   const page = opts.page ?? 1;
   const from = (page - 1) * pageSize;
   const to = from + pageSize - 1;
@@ -40,16 +43,19 @@ export async function getMembers(opts: {
     query = query.or(`email.ilike.%${safe}%,nickname.ilike.%${safe}%`);
   }
 
-  const { data: profiles, count } = await query;
+  const { data: profiles, count, error } = await query;
+  if (error) console.error('[admin] 회원 목록 조회 실패:', error.message);
   const ids = (profiles ?? []).map((p) => p.id);
 
   // 등록 책 수 — 이번 페이지 유저만 (관리자 저트래픽이라 클라이언트 집계로 충분)
   const counts = new Map<string, number>();
   if (ids.length > 0) {
-    const { data: books } = await supabase
+    const { data: books, error: booksError } = await supabase
       .from('books')
       .select('user_id')
       .in('user_id', ids);
+    if (booksError)
+      console.error('[admin] 등록 책 수 조회 실패:', booksError.message);
     for (const b of books ?? []) {
       counts.set(b.user_id, (counts.get(b.user_id) ?? 0) + 1);
     }
