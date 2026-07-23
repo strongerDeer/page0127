@@ -65,6 +65,28 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # secrets가 실제로 이 job에 전달됐는지 먼저 확인한다(값은 노출하지 않고 SET/UNSET만).
+      # 비어 있으면 여기서 즉시 실패 → webServer 120초 타임아웃 대신 원인이 바로 드러난다.
+      - name: Check Supabase secrets present
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          missing=0
+          if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ]; then
+            echo "::error::NEXT_PUBLIC_SUPABASE_URL 이(가) 비어 있음 — repository secret 이름/스코프 확인 필요"
+            missing=1
+          else
+            echo "NEXT_PUBLIC_SUPABASE_URL: SET (length=${#NEXT_PUBLIC_SUPABASE_URL})"
+          fi
+          if [ -z "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; then
+            echo "::error::NEXT_PUBLIC_SUPABASE_ANON_KEY 이(가) 비어 있음 — repository secret 이름/스코프 확인 필요"
+            missing=1
+          else
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY: SET (length=${#NEXT_PUBLIC_SUPABASE_ANON_KEY})"
+          fi
+          exit $missing
+
       # 프로덕션 빌드. NEXT_PUBLIC_* 값은 이 시점에 번들에 박히므로 여기서 env를 준다.
       # (turbo strict env 모드라, 이 값들은 turbo.json build task의 env에도 선언돼 있어야 전달된다)
       - name: Build
