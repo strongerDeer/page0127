@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
   // 디자인 토큰의 단일 출처는 app/globals.css 다.
   transpilePackages: ['@repo/icons'],
   experimental: {
+    // 프로필 이미지는 앱에서 최대 5MB까지 허용한다. multipart 메타데이터
+    // 여유를 포함해 Server Action 요청 본문은 6MB로 제한한다.
+    serverActions: {
+      bodySizeLimit: '6mb',
+    },
     // barrel(index) import를 개별 모듈 import로 변환해 tree-shaking 강화
     optimizePackageImports: ['lucide-react'],
   },
