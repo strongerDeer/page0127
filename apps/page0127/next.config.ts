@@ -26,10 +26,11 @@ const nextConfig: NextConfig = {
   },
   // 모든 응답에 붙는 보안 헤더.
   async headers() {
-    // Content-Security-Policy — 우선 Report-Only로 도입한다.
-    // Report-Only는 아무것도 차단하지 않고 위반을 브라우저 콘솔에만 보고하므로
-    // 앱이 깨지지 않는다. 주요 페이지를 돌며 위반이 없는지 확인한 뒤, 맨 아래
-    // 헤더 key를 'Content-Security-Policy'로 바꾸면 실제 차단이 켜진다.
+    // Content-Security-Policy — enforce(실제 차단) 모드.
+    // Report-Only로 먼저 도입해, 프로덕션 빌드로 주요 페이지(로그인 전/후)를
+    // 돌며 위반 0을 확인한 뒤 맨 아래 헤더 key를 'Content-Security-Policy'로
+    // 바꿔 차단을 활성화했다. 이제 정책에 없는 출처의 스크립트/스타일/이미지/
+    // 연결(fetch·ws)은 브라우저가 실제로 차단한다.
     //
     // 주의: GA 인라인 스크립트와 Next.js 인라인 하이드레이션 스크립트 때문에
     // script-src에 'unsafe-inline'이 필요하다. nonce로 더 강화하려면 proxy에서
@@ -90,10 +91,10 @@ const nextConfig: NextConfig = {
             value: 'SAMEORIGIN',
           },
           {
-            // ⚠️ Report-Only: 지금은 차단하지 않고 위반만 콘솔에 보고한다.
-            //    콘솔에 위반이 없음을 확인한 뒤 key를 'Content-Security-Policy'로
-            //    바꾸면 실제 차단이 활성화된다.
-            key: 'Content-Security-Policy-Report-Only',
+            // ✅ enforce: 정책 위반 리소스를 브라우저가 실제로 차단한다.
+            //    Report-Only로 위반 0을 검증한 뒤 전환했다. 문제가 생기면 key를
+            //    다시 'Content-Security-Policy-Report-Only'로 바꿔 되돌릴 수 있다.
+            key: 'Content-Security-Policy',
             value: contentSecurityPolicy,
           },
         ],
