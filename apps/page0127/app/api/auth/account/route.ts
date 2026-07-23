@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { createClient } from '@/shared/config/supabase/server';
+import {
+  extractOwnedProfileImagePath,
+  PROFILE_STORAGE_BUCKET,
+} from '@/shared/lib/profileStorage';
 
 /**
  * 계정 삭제 API
@@ -22,27 +26,6 @@ import { createClient } from '@/shared/config/supabase/server';
  * 인증은 쿠키 세션으로 "본인"만 확인하고, 실제 삭제는 RLS를 넘는 service_role(admin)로
  * 수행한다. DB 밖 자원인 Storage 프로필 이미지만 애플리케이션에서 직접 정리한다.
  */
-
-/**
- * Storage 공개 URL에서 버킷(profiles) 이후의 파일 경로만 뽑아낸다.
- * 저장 방식에 따라 URL 형태가 달라서 여러 마커를 순서대로 시도한다.
- */
-function extractProfileImagePath(photoUrl: string): string | null {
-  const markers = [
-    '/storage/v1/object/public/profiles/',
-    '/object/public/profiles/',
-    '/profiles/',
-  ];
-
-  for (const marker of markers) {
-    if (photoUrl.includes(marker)) {
-      const parts = photoUrl.split(marker);
-      return parts.length > 1 ? parts[1] : null;
-    }
-  }
-
-  return null;
-}
 
 export async function DELETE() {
   try {
@@ -88,10 +71,10 @@ export async function DELETE() {
     // 5. DB 밖 자원인 Storage 프로필 이미지 정리 (best-effort)
     //    계정은 이미 삭제됐으므로, 이미지 정리에 실패해도 성공(200)으로 본다.
     if (profile?.photo_url) {
-      const filePath = extractProfileImagePath(profile.photo_url);
+      const filePath = extractOwnedProfileImagePath(profile.photo_url, user.id);
       if (filePath) {
         const { error: storageError } = await admin.storage
-          .from('profiles')
+          .from(PROFILE_STORAGE_BUCKET)
           .remove([filePath]);
 
         if (storageError) {

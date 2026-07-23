@@ -1,9 +1,13 @@
 'use server';
 
 import { createClient } from '@/shared/config/supabase/server';
+import {
+  extractOwnedProfileImagePath,
+  PROFILE_STORAGE_BUCKET,
+} from '@/shared/lib/profileStorage';
 
 // 아바타가 저장되는 Supabase Storage 버킷
-const BUCKET = 'profiles';
+const BUCKET = PROFILE_STORAGE_BUCKET;
 
 // 서버 Supabase 클라이언트 타입 (any 없이 createClient 반환값에서 추론)
 type ServerSupabase = Awaited<ReturnType<typeof createClient>>;
@@ -20,32 +24,14 @@ export type ProfileActionState = {
   photoUrl?: string | null;
 };
 
-/**
- * Storage URL에서 버킷 이후 파일 경로 추출
- * (기존 useAvatarStorage의 클라이언트 로직을 서버로 이동)
- */
-const extractFilePath = (url: string): string | null => {
-  const patterns = [
-    `/storage/v1/object/public/${BUCKET}/`,
-    `/object/public/${BUCKET}/`,
-    `/${BUCKET}/`,
-  ];
-  for (const pattern of patterns) {
-    if (url.includes(pattern)) {
-      const parts = url.split(pattern);
-      return parts.length > 1 ? parts[1] : null;
-    }
-  }
-  return null;
-};
-
 // 기존 이미지를 Storage에서 삭제 (URL이 없거나 경로 파싱 실패 시 조용히 통과)
 const deleteFromStorage = async (
   supabase: ServerSupabase,
-  url: string | null
+  url: string | null,
+  userId: string
 ): Promise<void> => {
   if (!url) return;
-  const filePath = extractFilePath(url);
+  const filePath = extractOwnedProfileImagePath(url, userId);
   if (!filePath) return;
   await supabase.storage.from(BUCKET).remove([filePath]);
 };
@@ -79,29 +65,48 @@ export const updateProfileAction = async (
     return { status: 'error', message: '로그인이 필요합니다.' };
   }
 
-  // 2. 텍스트 필드 수집 (FormData 값은 항상 문자열)
+  // 2. 현재 프로필은 서버가 직접 조회한다.
+  // 브라우저가 보낸 기존 이미지 URL을 신뢰하면 다른 사용자의 파일 삭제를 시도할 수 있다.
+  const { data: currentProfile, error: profileError } = await supabase
+    .from('profiles')
+    .select('photo_url')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (profileError) {
+    console.error('현재 프로필 조회 실패:', profileError.message);
+    return { status: 'error', message: '프로필을 불러올 수 없습니다.' };
+  }
+
+  const currentPhotoUrl = currentProfile?.photo_url ?? null;
+
+  // 3. 텍스트 필드 수집 (FormData 값은 항상 문자열)
   const nickname = ((formData.get('nickname') as string) ?? '').trim();
   const bio = ((formData.get('bio') as string) ?? '').trim();
 
-  // 3. 아바타 입력 수집
+  // 4. 아바타 입력 수집
   // - avatar: 새로 선택한 파일 (없으면 size 0인 빈 File 또는 null)
   // - removeAvatar: '이미지 제거'를 눌렀는지 여부
-  // - currentPhotoUrl: 기존 이미지 URL (삭제·교체 시 정리용)
   const avatarFile = formData.get('avatar') as File | null;
   const isImageRemoved = formData.get('removeAvatar') === 'true';
-  const currentPhotoUrl = (formData.get('currentPhotoUrl') as string) || null;
 
   // photoUrl: undefined = 변경 없음 / null = 제거 / string = 새 이미지 URL
   let photoUrl: string | null | undefined;
 
   try {
     if (isImageRemoved) {
-      await deleteFromStorage(supabase, currentPhotoUrl);
+      await deleteFromStorage(supabase, currentPhotoUrl, user.id);
       photoUrl = null;
     } else if (avatarFile && avatarFile.size > 0) {
       // 서버 유효성 검사 (클라이언트 검사를 신뢰하지 않고 다시 확인)
-      const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-      if (!validTypes.includes(avatarFile.type)) {
+      const extensionByMimeType: Record<string, string> = {
+        'image/jpeg': 'jpg',
+        'image/png': 'png',
+        'image/webp': 'webp',
+        'image/gif': 'gif',
+      };
+      const fileExt = extensionByMimeType[avatarFile.type];
+      if (!fileExt) {
         return { status: 'error', message: '지원하지 않는 이미지 형식입니다.' };
       }
       if (avatarFile.size > 5 * 1024 * 1024) {
@@ -112,8 +117,7 @@ export const updateProfileAction = async (
       }
 
       // 기존 이미지 삭제 후 새 파일 업로드
-      await deleteFromStorage(supabase, currentPhotoUrl);
-      const fileExt = avatarFile.name.split('.').pop();
+      await deleteFromStorage(supabase, currentPhotoUrl, user.id);
       const filePath = `avatars/${user.id}_${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
@@ -133,7 +137,7 @@ export const updateProfileAction = async (
     return { status: 'error', message: '이미지 처리 중 오류가 발생했습니다.' };
   }
 
-  // 4. DB 업데이트
+  // 5. DB 업데이트
   // 빈 문자열은 보내지 않아 기존 값을 유지(= 기존 updateProfile 동작 보존),
   // photoUrl이 undefined면 photo_url 컬럼은 건드리지 않는다.
   const updateData: {
