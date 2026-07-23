@@ -9,21 +9,11 @@
  *
  * 배너는 편집 산출물이므로 코드가 아니라 이 파일만 고치면 되도록 분리했다.
  */
-export type HeroSlide = {
-  id: string;
-  /** 배너 위 작은 라벨 — 기간·회차·분류 */
-  eyebrow: string;
-  /** 2줄 메인 카피 */
-  lines: [string, string];
-  /** 서브 카피 */
-  sub: string;
-  href: string;
-  cta: string;
-  /** 배너 배경 (단색 — 그라디언트를 쓰지 않는다) */
-  bg: string;
-  /** 배너 위 글자색 */
-  fg: string;
-};
+import type { HeroSlide } from '@/entities/banner/types';
+
+// HeroSlide 타입은 entities/banner로 이동했다 (FSD: widget·feature가 공용으로 import).
+// 기존 import 경로(@/widgets/landing/model/heroSlides)를 깨지 않도록 재export한다.
+export type { HeroSlide };
 
 export const HERO_SLIDES: HeroSlide[] = [
   {
