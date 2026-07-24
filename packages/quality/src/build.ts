@@ -1,6 +1,6 @@
 import { execSync } from 'node:child_process';
 import { existsSync, readFileSync, statSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { join } from 'node:path';
 
 import type { BundleMetrics, CodeHealthMetrics } from './types';
 
@@ -110,7 +110,9 @@ export type BuildResult = {
 };
 
 export const measureBuild = (repoPath: string): BuildResult => {
-  const pm = basename(repoPath) === 'chart' ? 'npm run' : 'yarn';
+  // 빌드 명령은 대상 repo의 패키지 매니저에 맞춘다. yarn.lock이 있으면 yarn,
+  // 없으면 npm(page0127은 npm workspaces). shop-chart 원본은 'chart' 경로만 npm run이었다.
+  const pm = existsSync(join(repoPath, 'yarn.lock')) ? 'yarn' : 'npm run';
 
   const start = Date.now();
   const build = execStatus(`${pm} build`, repoPath);
