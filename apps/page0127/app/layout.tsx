@@ -1,3 +1,5 @@
+import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Geist_Mono } from 'next/font/google';
 
 import { GoogleAnalytics } from '@/shared/lib/analytics/GoogleAnalytics';
@@ -97,6 +99,10 @@ const RootLayout = ({
         </QueryProvider>
         {/* GA4 — 측정 ID(NEXT_PUBLIC_GA_ID) 설정 시에만 로드 */}
         <GoogleAnalytics />
+        {/* Vercel Speed Insights — 실사용자 페이지 성능(Core Web Vitals) 수집 */}
+        <SpeedInsights />
+        {/* Vercel Web Analytics — 페이지 조회수·방문자 수집 */}
+        <Analytics />
       </body>
     </html>
   );
