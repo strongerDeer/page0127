@@ -4,7 +4,7 @@
 >
 > 독서 기록을 책장·통계·AI 취향 분석·소셜 피드로 연결한 개인 프로젝트
 
-**Live**: [book-page0127.vercel.app](https://book-page0127.vercel.app/)
+**Live**: [page0127.vercel.app](https://page0127.vercel.app/)
 
 <!--
 TODO: 스크린샷/GIF 추가
