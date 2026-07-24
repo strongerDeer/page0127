@@ -1,6 +1,6 @@
 import type { QualityRecord } from '@repo/quality/types';
 
-export function PageScoreTable({ record }: { record: QualityRecord }) {
+export const PageScoreTable = ({ record }: { record: QualityRecord }) => {
   return (
     <section className='rounded-lg border border-line p-4'>
       <h2 className='mb-3 text-sm font-semibold'>페이지별 점수 (모바일)</h2>

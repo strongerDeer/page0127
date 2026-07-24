@@ -1,6 +1,6 @@
 import ReactMarkdown from 'react-markdown';
 
-export function QualityReport({ md }: { md: string | null }) {
+export const QualityReport = ({ md }: { md: string | null }) => {
   if (!md) return null;
   return (
     <section className='rounded-lg border border-line p-4'>

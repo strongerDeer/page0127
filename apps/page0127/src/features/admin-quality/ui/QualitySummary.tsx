@@ -1,6 +1,6 @@
-import type { QualityRecord } from '@repo/quality/types';
+import { type Verdict,verdict } from '../lib/verdict';
 
-import { verdict, type Verdict } from '../lib/verdict';
+import type { QualityRecord } from '@repo/quality/types';
 
 // 판정 → 클래스. neutral은 회색(랩 LCP 등 "판정 제외").
 const CHIP: Record<Verdict, string> = {
@@ -10,7 +10,7 @@ const CHIP: Record<Verdict, string> = {
   neutral: 'bg-gray-100 text-gray-500 ring-gray-400/20',
 };
 
-function Chip({ v, label }: { v: Verdict; label: string }) {
+const Chip = ({ v, label }: { v: Verdict; label: string }) => {
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${CHIP[v]}`}
@@ -20,7 +20,7 @@ function Chip({ v, label }: { v: Verdict; label: string }) {
   );
 }
 
-export function QualitySummary({ record }: { record: QualityRecord }) {
+export const QualitySummary = ({ record }: { record: QualityRecord }) => {
   const field = record.field?.mobile;
   return (
     <section className='rounded-lg border border-line p-4'>

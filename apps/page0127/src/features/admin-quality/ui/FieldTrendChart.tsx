@@ -15,7 +15,7 @@ import { chartInk } from '@/shared/lib/chartStyles';
 import type { FieldHistoryRow } from '../api/getQualityDashboard';
 
 // metric='lcp'의 good 비율(0~1)을 주 단위로. 값 없는 주는 점만(선 안 이음).
-export function FieldTrendChart({ rows }: { rows: FieldHistoryRow[] }) {
+export const FieldTrendChart = ({ rows }: { rows: FieldHistoryRow[] }) => {
   const data = rows
     .filter((r) => r.metric === 'lcp')
     .map((r) => ({ week: r.period_end.slice(5), good: r.good }));

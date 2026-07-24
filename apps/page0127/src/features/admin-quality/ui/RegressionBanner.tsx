@@ -1,6 +1,6 @@
 import type { QualityRecord } from '@repo/quality/types';
 
-export function RegressionBanner({ record }: { record: QualityRecord }) {
+export const RegressionBanner = ({ record }: { record: QualityRecord }) => {
   const regressions = record.regressions ?? [];
   if (regressions.length === 0) return null;
   return (
