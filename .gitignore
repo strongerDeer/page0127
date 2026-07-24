@@ -47,3 +47,6 @@ AGENTS.md
 CLAUDE.md
 .claude/
 .playwright-mcp/
+
+# Supabase Studio 로컬 스크래치 쿼리 (정식 변경은 migrations/에)
+supabase/snippets/
