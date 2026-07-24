@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { isBannedRedirect } from '@/shared/lib/auth/isBannedRedirect';
 
 import { ensureProfile } from '@/entities/profile/api/getProfile';
 
@@ -16,6 +17,12 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code');
   const next = searchParams.get('next');
 
+  // 정지(ban)된 계정은 code 없이 error_code=user_banned 로 돌아온다
+  // → 일반 인증 오류가 아니라 정지 안내로 보낸다
+  if (isBannedRedirect(searchParams)) {
+    return NextResponse.redirect(`${origin}/auth/suspended`);
+  }
+
   if (code) {
     const supabase = await createClient();
 
@@ -28,6 +35,6 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // 에러 발생 시 에러 페이지로 리디렉션
+  // 그 밖의 에러는 일반 인증 오류 페이지로
   return NextResponse.redirect(`${origin}/auth/auth-code-error`);
 }
