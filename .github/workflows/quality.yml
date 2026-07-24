@@ -1,0 +1,43 @@
+name: quality
+
+# 주 1회(월 09:00 KST) 자동 + 필요 시 수동으로 배포된 page0127의 품질을 측정해
+# Supabase(quality_records/field_history)에 쌓는다. 측정은 무거워(Chrome+빌드) CI에서만 돈다.
+on:
+  schedule:
+    - cron: '0 0 * * 1' # 매주 월 09:00 KST (UTC 00:00)
+  workflow_dispatch: {}
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    # 5앵커 × 2폼팩터 × 3회 = 30 Lighthouse + next build + tsc/eslint. 여유 있게 45분.
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # Lighthouse는 ubuntu-latest 사전설치 Chrome을 chrome-launcher가 자동 탐지해 쓴다.
+      # 여기서 설치하는 건 measureRuntime(runtime.ts)이 쓰는 Playwright chromium이다.
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+        working-directory: apps/page0127
+
+      # measure는 내부에서 apps/page0127를 next build 한다(measureBuild가 번들/코드건강 측정).
+      # 따라서 빌드에 필요한 공개 env + OPENAI 더미 키를, 저장에 필요한 service_role과 함께 준다.
+      - name: Measure quality
+        run: npm run measure -w @repo/quality
+        env:
+          # 측정 대상 = 배포된 사이트 URL(Lighthouse/CrUX/SEO/runtime가 원격으로 접속)
+          QUALITY_TARGET_URL: ${{ secrets.QUALITY_TARGET_URL }}
+          # 저장(service_role은 RLS 우회) — store.ts가 이 두 값을 읽는다
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # 내부 next build가 요구하는 값들(공개 env는 번들에 박히고, OPENAI는 모듈 로드 시 필요)
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          OPENAI_API_KEY: dummy
+          # CrUX(없으면 필드 지표만 생략하고 측정은 계속). ?key= 방식.
+          CRUX_API_KEY: ${{ secrets.CRUX_API_KEY }}
