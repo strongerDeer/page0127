@@ -50,3 +50,6 @@ CLAUDE.md
 
 # Supabase Studio 로컬 스크래치 쿼리 (정식 변경은 migrations/에)
 supabase/snippets/
+
+# 품질 측정 로컬 JSON 산출물 (검증용, Supabase 전환 후 미사용)
+packages/quality/.data/
