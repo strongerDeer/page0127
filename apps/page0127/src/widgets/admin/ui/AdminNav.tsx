@@ -1,10 +1,19 @@
 import Link from 'next/link';
 
-import { ImageIcon, LayoutDashboard, Receipt, Users } from 'lucide-react';
+import {
+  Gauge,
+  ImageIcon,
+  LayoutDashboard,
+  LineChart,
+  Receipt,
+  Users,
+} from 'lucide-react';
 
 // 이모지 대신 lucide 단색 아이콘, 입체는 1px 선으로만 표현한다.
 const NAV = [
   { href: '/admin', label: '대시보드', icon: LayoutDashboard },
+  { href: '/admin/quality', label: '품질', icon: Gauge },
+  { href: '/admin/analytics', label: '유입분석', icon: LineChart },
   { href: '/admin/costs', label: 'AI 비용', icon: Receipt },
   { href: '/admin/members', label: '회원 관리', icon: Users },
   { href: '/admin/banners', label: '메인 배너', icon: ImageIcon },
