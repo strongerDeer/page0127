@@ -1,6 +1,7 @@
+import { Geist_Mono } from 'next/font/google';
+
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { Geist_Mono } from 'next/font/google';
 
 import { GoogleAnalytics } from '@/shared/lib/analytics/GoogleAnalytics';
 import { QueryProvider } from '@/shared/providers/QueryProvider';
