@@ -4,6 +4,9 @@
   "private": true,
   "description": "page0127 품질 측정 엔진 (Lighthouse/CrUX/SEO/번들)",
   "type": "module",
+  "exports": {
+    "./types": "./src/types.ts"
+  },
   "scripts": {
     "measure": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON src/run.ts",
     "test": "vitest run",
