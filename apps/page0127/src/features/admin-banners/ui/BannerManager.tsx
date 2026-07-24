@@ -65,6 +65,9 @@ export const BannerManager = ({ initial }: { initial: HeroSlideRow[] }) => {
         </p>
       ) : (
         <DndContext
+          // 고정 id: 없으면 dnd-kit이 aria-describedby를 내부 카운터로 만들어
+          // 서버/클라이언트 값이 어긋나 hydration mismatch가 난다. id를 주면 결정적으로 생성됨.
+          id='banner-sortable'
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={onDragEnd}
