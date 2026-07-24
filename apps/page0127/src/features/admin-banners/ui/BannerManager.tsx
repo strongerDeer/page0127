@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 
 import {
   closestCenter,
@@ -26,6 +26,13 @@ import type { HeroSlideRow } from '@/entities/banner/types';
 
 export const BannerManager = ({ initial }: { initial: HeroSlideRow[] }) => {
   const [slides, setSlides] = useState(initial);
+
+  // 서버액션의 revalidatePath 후 새로 전달되는 initial을 로컬 상태에 반영한다.
+  // (create/delete/toggle 결과가 화면에 나타나도록 — 드래그는 낙관적 갱신)
+  useEffect(() => {
+    setSlides(initial);
+  }, [initial]);
+
   const [isPending, startTransition] = useTransition();
   const sensors = useSensors(useSensor(PointerSensor));
 
