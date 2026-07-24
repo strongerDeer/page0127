@@ -2,19 +2,13 @@ import { execSync } from 'node:child_process';
 
 import { analyze } from './analyze.ts';
 import { measureBuild } from './build.ts';
-import {
-  APP,
-  DATA_PATH,
-  FIELD_HISTORY_PATH,
-  FORM_FACTORS,
-  LIGHTHOUSE_RUNS,
-} from './config.ts';
+import { APP, FORM_FACTORS, LIGHTHOUSE_RUNS } from './config.ts';
 import { measureField, measureFieldHistory } from './crux.ts';
 import { measureLighthouseMedian } from './lighthouse.ts';
 import { buildNarrative } from './report.ts';
 import { measureRuntime } from './runtime.ts';
 import { measureSeo } from './seo.ts';
-import { appendRecord, readHistory, saveFieldHistory } from './store.ts';
+import { readPriorRecords, saveFieldHistoryToDb, saveRecord } from './store.ts';
 import type { FormFactor, PageMetrics, QualityRecord } from './types.ts';
 
 // 번들/코드건강을 측정할 대상 = page0127 앱 디렉터리(자기 repo).
@@ -84,7 +78,7 @@ const main = async (): Promise<void> => {
   }
   try {
     const fieldHistory = await measureFieldHistory(homeUrl);
-    if (fieldHistory) saveFieldHistory(FIELD_HISTORY_PATH, APP.name, fieldHistory);
+    if (fieldHistory) await saveFieldHistoryToDb(fieldHistory);
   } catch (e) {
     console.warn('[quality] CrUX 추세 조회 실패 — 추세 없이 진행:', e);
   }
@@ -107,15 +101,14 @@ const main = async (): Promise<void> => {
     codeHealth: build.codeHealth,
   };
 
-  const priorHistory = readHistory(DATA_PATH).history.filter(
-    (r) => r.app === APP.name
-  );
+  // 단일 앱(page0127)이라 앱 필터가 필요 없다 — 최근 레코드를 그대로 회귀 기준으로 쓴다.
+  const priorHistory = await readPriorRecords();
   const analysis = analyze([...priorHistory, record]);
   record.analysisComment = buildNarrative(analysis);
   record.regressions = analysis.regressions;
   record.suppressedRegressions = analysis.suppressedRegressions;
 
-  appendRecord(DATA_PATH, record);
+  await saveRecord(record, record.analysisComment ?? '');
   console.error(
     `[quality] 완료: ${APP.name} (회귀 ${analysis.regressions.length}건)`
   );
