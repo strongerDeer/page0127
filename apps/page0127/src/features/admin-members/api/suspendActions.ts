@@ -5,7 +5,11 @@ import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 
-import { computeBan, type SuspendInput } from '../lib/suspension';
+import {
+  computeBan,
+  isSelfSuspension,
+  type SuspendInput,
+} from '../lib/suspension';
 
 /**
  * 정지: 실제 차단(Auth ban) + 표시 미러(profiles) + 감사 로그를 함께 쓴다.
@@ -17,6 +21,12 @@ export async function suspendUser(
   reason: string
 ): Promise<void> {
   const admin = await assertAdmin();
+
+  // 자기 자신 정지 방지: 정지되면 본인도 로그인 불가 → admin 콘솔 락아웃
+  if (isSelfSuspension(admin.id, targetUserId)) {
+    throw new Error('본인 계정은 정지할 수 없습니다.');
+  }
+
   const supabase = createAdminClient();
   const { banDuration, suspendedUntil } = computeBan(input, new Date());
 

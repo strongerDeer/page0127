@@ -33,3 +33,15 @@ export function isCurrentlySuspended(
   if (suspendedUntil === null) return true; // 영구
   return new Date(suspendedUntil).getTime() > now.getTime();
 }
+
+/**
+ * 관리자가 자기 자신을 정지하려는지 판정한다.
+ * 자기 정지는 곧 자기 락아웃(로그인 불가 → admin 콘솔 접근 불가)이라,
+ * suspendUser 진입부에서 막는다.
+ */
+export function isSelfSuspension(
+  adminId: string,
+  targetUserId: string
+): boolean {
+  return adminId === targetUserId;
+}

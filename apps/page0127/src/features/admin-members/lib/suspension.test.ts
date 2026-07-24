@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { computeBan, isCurrentlySuspended } from './suspension';
+import { computeBan, isCurrentlySuspended, isSelfSuspension } from './suspension';
 
 describe('computeBan', () => {
   it('영구 정지: 긴 기간 + suspendedUntil null', () => {
@@ -36,5 +36,14 @@ describe('isCurrentlySuspended', () => {
     expect(isCurrentlySuspended('suspended', '2026-07-01T00:00:00Z', now)).toBe(
       false
     );
+  });
+});
+
+describe('isSelfSuspension', () => {
+  it('관리자 본인 id면 true (자기 자신 정지 방지)', () => {
+    expect(isSelfSuspension('admin-1', 'admin-1')).toBe(true);
+  });
+  it('다른 유저 id면 false', () => {
+    expect(isSelfSuspension('admin-1', 'user-2')).toBe(false);
   });
 });
