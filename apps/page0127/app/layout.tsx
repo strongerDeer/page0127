@@ -59,6 +59,11 @@ export const metadata: Metadata = {
     title: siteTitle,
     description: siteDescription,
   },
+  // 구글 서치 콘솔 소유권 확인 (URL 접두어 · HTML 태그 방식)
+  // → 모든 페이지 <head>에 <meta name="google-site-verification" ...> 자동 삽입
+  verification: {
+    google: 'S1f6m1CJ5CxxM962yAvh8gvAErhndacXCGb1R1R0-JU',
+  },
 };
 
 /*
