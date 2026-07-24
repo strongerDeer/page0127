@@ -72,8 +72,10 @@ export const PublicLibraryContent = ({
   const searchParams = useSearchParams();
   const [isGoalDialogOpen, setIsGoalDialogOpen] = useState(false);
   const yearParam = searchParams.get('year');
+  // 위시리스트는 내 서재에서만, 연도와 무관한 별도 탭이다
+  const isWishlistView = isOwnProfile && yearParam === 'wishlist';
   const parsedYear = yearParam ? Number(yearParam) : NaN;
-  const isAllView = !yearParam || yearParam === 'all';
+  const isAllView = !yearParam || yearParam === 'all' || isWishlistView;
   const selectedYear =
     !isAllView && Number.isInteger(parsedYear) ? parsedYear : currentYear;
   const selectedPeriod = isAllView ? null : selectedYear;
@@ -105,6 +107,12 @@ export const PublicLibraryContent = ({
 
   const publicBooks = useMemo(
     () => books.filter((book) => book.is_public),
+    [books]
+  );
+
+  // 위시리스트는 내 개인 목록이라 연도·공개여부와 무관하게 전부 모은다
+  const wishlistBooks = useMemo(
+    () => books.filter((book) => book.status === 'want_to_read'),
     [books]
   );
 
@@ -167,9 +175,12 @@ export const PublicLibraryContent = ({
         username={username}
         onSetGoal={isOwnProfile ? () => setIsGoalDialogOpen(true) : undefined}
         calendarSlot={isOwnProfile ? calendarSlot : undefined}
+        showWishlist={isOwnProfile}
+        isWishlistView={isWishlistView}
+        wishlistBooks={wishlistBooks}
       />
 
-      {isOwnProfile && archivedBooks.length > 0 && (
+      {!isWishlistView && isOwnProfile && archivedBooks.length > 0 && (
         <div className='space-y-4'>
           <div className='flex items-center gap-2'>
             <Button

@@ -5,6 +5,15 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   // React Compiler 자동 메모이제이션 (Next.js 16부터 stable)
   reactCompiler: true,
+  // 프로덕션 빌드에서 console.* 호출을 제거한다. F12를 연 사용자에게 개발용
+  // 디버그 로그(console.log/info/debug/warn)가 보이지 않게 한다.
+  // 단, console.error는 남겨 실제 에러가 Sentry로 수집되도록 유지한다.
+  // (dev 모드에는 영향 없음 — 개발 중엔 로그가 그대로 보인다.)
+  compiler: {
+    removeConsole: {
+      exclude: ['error'],
+    },
+  },
   // 모노레포 패키지의 CSS/JS 파일을 트랜스파일하도록 설정
   // @repo/design-tokens 는 어디서도 import 되지 않아 제거했다.
   // 디자인 토큰의 단일 출처는 app/globals.css 다.
@@ -45,6 +54,11 @@ const nextConfig: NextConfig = {
       "'unsafe-inline'", // GA init·Next 인라인 하이드레이션 스크립트
       ...(isDev ? ["'unsafe-eval'"] : []),
       'https://www.googletagmanager.com',
+      // Vercel Web Analytics·Speed Insights 로더.
+      // 프로덕션(Vercel)에선 대개 동일 출처(/_vercel/…)로 프록시되지만,
+      // 로컬·비-Vercel 환경에선 이 도메인에서 스크립트를 받으므로 허용한다.
+      // (데이터 비콘은 /_vercel/… 동일 출처라 connect-src는 'self'로 충분)
+      'https://va.vercel-scripts.com',
     ].join(' ');
     const contentSecurityPolicy = [
       "default-src 'self'",
