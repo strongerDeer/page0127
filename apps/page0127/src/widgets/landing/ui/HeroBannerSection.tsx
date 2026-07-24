@@ -19,7 +19,7 @@ type RankingRow = { book_info: { cover_image: string | null } | null };
 export const HeroBannerSection = async () => {
   const supabase = await createClient();
 
-  // 슬라이드 4장 × 3권 = 12권
+  // 배너에 세울 책 표지 후보 12권(슬라이드 수는 DB에 따라 가변, HeroBanner가 순환 사용).
   const { data } = await supabase.rpc('get_most_read_books', {
     limit_count: 12,
   });

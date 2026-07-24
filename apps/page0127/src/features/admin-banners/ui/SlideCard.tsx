@@ -99,7 +99,8 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
             <input
               value={fields[key]}
               onChange={(e) => set(key, e.target.value)}
-              className='mt-0.5 w-full rounded border border-line bg-white px-2 py-1 text-sm text-text-strong'
+              disabled={isPending}
+              className='mt-0.5 w-full rounded border border-line bg-white px-2 py-1 text-sm text-text-strong disabled:opacity-50'
             />
           </label>
         ))}
@@ -109,7 +110,8 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
             type='color'
             value={fields.bg}
             onChange={(e) => set('bg', e.target.value)}
-            className='mt-0.5 block h-8 w-16'
+            disabled={isPending}
+            className='mt-0.5 block h-8 w-16 disabled:opacity-50'
           />
         </label>
         <label className='text-xs'>
@@ -118,7 +120,8 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
             type='color'
             value={fields.fg}
             onChange={(e) => set('fg', e.target.value)}
-            className='mt-0.5 block h-8 w-16'
+            disabled={isPending}
+            className='mt-0.5 block h-8 w-16 disabled:opacity-50'
           />
         </label>
       </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 
 import {
   closestCenter,
@@ -29,9 +29,13 @@ export const BannerManager = ({ initial }: { initial: HeroSlideRow[] }) => {
 
   // 서버액션의 revalidatePath 후 새로 전달되는 initial을 로컬 상태에 반영한다.
   // (create/delete/toggle 결과가 화면에 나타나도록 — 드래그는 낙관적 갱신)
-  useEffect(() => {
+  // React 권장 "prop 변경 시 상태 조정" 패턴: 렌더 중 이전 prop과 비교해 갱신하여
+  // useEffect+setState의 cascading 렌더/경고를 피한다.
+  const [prevInitial, setPrevInitial] = useState(initial);
+  if (initial !== prevInitial) {
+    setPrevInitial(initial);
     setSlides(initial);
-  }, [initial]);
+  }
 
   const [isPending, startTransition] = useTransition();
   const sensors = useSensors(useSensor(PointerSensor));

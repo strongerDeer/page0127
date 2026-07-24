@@ -25,13 +25,15 @@ export async function createSlide(): Promise<void> {
   await assertAdmin();
   const supabase = createAdminClient();
 
-  // 새 슬라이드는 맨 끝 순서로
-  const { data: last } = await supabase
+  // 새 슬라이드는 맨 끝 순서로. 읽기 실패 시 order 0으로 떨어져 기존 슬라이드와
+  // 충돌할 수 있으므로 에러를 던진다.
+  const { data: last, error: lastErr } = await supabase
     .from('hero_slides')
     .select('sort_order')
     .order('sort_order', { ascending: false })
     .limit(1)
     .maybeSingle();
+  if (lastErr) throw new Error(`슬라이드 순서 조회 실패: ${lastErr.message}`);
   const nextOrder = (last?.sort_order ?? -1) + 1;
 
   const { error } = await supabase.from('hero_slides').insert({
