@@ -21,4 +21,19 @@ export const activityApi = {
     });
     return response.data;
   },
+
+  /**
+   * 특정 책의 활동 타임라인 조회
+   */
+  getBookActivities: async (
+    bookId: string,
+    params?: FeedParams
+  ): Promise<Activity[]> => {
+    const { limit = 20, offset = 0 } = params || {};
+    const response = await apiClient.get<Activity[]>(
+      API_ENDPOINTS.books.activities(bookId),
+      { params: { limit, offset } }
+    );
+    return response.data;
+  },
 };

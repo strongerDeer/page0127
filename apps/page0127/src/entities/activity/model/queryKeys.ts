@@ -13,6 +13,10 @@ export const activityKeys = {
   feeds: () => [...activityKeys.all, 'feed'] as const,
   feed: (filter?: FeedFilter) => [...activityKeys.feeds(), filter] as const,
 
+  // 책별 활동 타임라인
+  bookActivities: (bookId: string) =>
+    [...activityKeys.all, 'book', bookId] as const,
+
   // 상세 조회 관련
   details: () => [...activityKeys.all, 'detail'] as const,
   detail: (id: string) => [...activityKeys.details(), id] as const,

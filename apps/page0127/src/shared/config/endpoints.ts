@@ -15,6 +15,7 @@ export const API_ENDPOINTS = {
     delete: (id: string) => `/books/${id}`,
     stats: '/books/stats', // 통계 조회
     like: '/books/like', // 책 좋아요 토글
+    activities: (id: string) => `/books/${id}/activities`, // GET: 책별 활동 타임라인
   },
   follows: {
     follow: '/follows', // POST: 팔로우하기
