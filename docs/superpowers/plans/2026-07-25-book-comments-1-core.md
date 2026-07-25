@@ -484,7 +484,9 @@ git commit -m "feat(db): activity 댓글·좋아요를 책 단위로 이관하�
   - `type CommentUser = { id: string; nickname: string | null; photoUrl: string | null }`
   - `type CommentNode = { id, userId, parentCommentId, content, createdAt, updatedAt, user, replies }`
   - `buildCommentTree(rows: CommentRow[], profiles: ProfileRow[]): CommentNode[]`
-- Task 4·5·7이 이 타입과 함수를 사용한다.
+  - `type ClassifiedError = { message: string; status: number }`
+  - `classifyBookCommentError(error: { code?: string; message: string }): ClassifiedError`
+- Task 4·5·7이 이 타입과 함수를 사용한다. **DB 에러는 반드시 `classifyBookCommentError`로 분류해서 라우트에 넘긴다** — 트리거 문구를 라우트마다 직접 매칭하지 않는다.
 
 - [ ] **Step 1: 실패하는 테스트 작성**
 
@@ -637,6 +639,35 @@ const toUser = (
 const byCreatedAt = (a: { createdAt: string }, b: { createdAt: string }) =>
   a.createdAt.localeCompare(b.createdAt);
 
+/** DB 에러를 클라이언트가 이해할 수 있는 상태코드로 분류한 결과 */
+export type ClassifiedError = { message: string; status: number };
+
+/**
+ * Postgres/PostgREST 에러를 라우트가 그대로 쓸 수 있는 { message, status }로 분류한다.
+ *
+ * 학습 포인트:
+ * - 이 함수는 순수 함수다(NextResponse 등 프레임워크 의존 없음) — 라우트에서 이 결과를
+ *   그대로 errorResponse(message, status)에 넘기면 된다. DB 트리거 문구가 바뀌는 사고를
+ *   테스트로 잡기 위해 매핑 규칙을 여기 한 곳에 모아둔다(Task 4·5·7이 공유).
+ * - RLS 위반(42501 또는 "row-level security" 문구)은 403으로 매핑해 "권한 없음"과
+ *   "서버 고장"을 구분하고, 내부 테이블/정책 이름이 그대로 클라이언트에 노출되지 않게 한다.
+ */
+export function classifyBookCommentError(error: {
+  code?: string;
+  message: string;
+}): ClassifiedError {
+  if (error.message.includes('1depth')) {
+    return { message: '대댓글의 대댓글은 작성할 수 없습니다.', status: 400 };
+  }
+  if (error.message.includes('다른 대상')) {
+    return { message: '잘못된 답글 대상입니다.', status: 400 };
+  }
+  if (error.code === '42501' || error.message.includes('row-level security')) {
+    return { message: '권한이 없습니다.', status: 403 };
+  }
+  return { message: error.message, status: 500 };
+}
+
 export function buildCommentTree(
   rows: CommentRow[],
   profiles: ProfileRow[]
@@ -678,7 +709,7 @@ export function buildCommentTree(
 - [ ] **Step 4: 테스트 통과 확인**
 
 Run: `cd apps/page0127 && npx vitest run app/api/_helpers/bookComments.test.ts`
-Expected: PASS (5 tests)
+Expected: PASS (`buildCommentTree` 5개 + `classifyBookCommentError` 5개, 총 10 tests)
 
 - [ ] **Step 5: 커밋**
 
@@ -704,8 +735,11 @@ git commit -m "feat(api): 책 댓글 계층 구조 빌드 순수 함수 추가"
 // apps/page0127/app/api/books/[id]/comments/route.ts
 import { NextRequest } from 'next/server';
 
-import { buildCommentTree } from '../../../_helpers/bookComments';
 import { getCurrentUser, getSupabaseClient } from '../../../_helpers/auth';
+import {
+  buildCommentTree,
+  classifyBookCommentError,
+} from '../../../_helpers/bookComments';
 import { errorResponse, successResponse } from '../../../_helpers/response';
 
 import type { CommentRow, ProfileRow } from '../../../_helpers/bookComments';
@@ -753,7 +787,10 @@ export async function GET(_request: NextRequest, { params }: Params) {
       .eq('book_id', id)
       .order('created_at', { ascending: true });
 
-    if (error) return errorResponse(error.message);
+    if (error) {
+      const { message, status } = classifyBookCommentError(error);
+      return errorResponse(message, status);
+    }
     if (!rows || rows.length === 0) return successResponse([]);
 
     const profiles = await fetchProfiles(supabase, rows);
@@ -794,13 +831,8 @@ export async function POST(request: NextRequest, { params }: Params) {
       .single();
 
     if (error) {
-      if (error.message.includes('1depth')) {
-        return errorResponse('대댓글의 대댓글은 작성할 수 없습니다.', 400);
-      }
-      if (error.message.includes('다른 대상')) {
-        return errorResponse('잘못된 답글 대상입니다.', 400);
-      }
-      return errorResponse(error.message);
+      const { message, status } = classifyBookCommentError(error);
+      return errorResponse(message, status);
     }
 
     const profiles = await fetchProfiles(supabase, [comment]);
@@ -890,6 +922,15 @@ git commit -m "feat(api): 책 단위 댓글 목록·작성 API 추가"
 **Interfaces:**
 - Consumes: Task 3의 `buildCommentTree`
 - Produces: `PATCH` → 수정된 `CommentNode`, `DELETE` → `{ success: true }`
+
+> **DB 에러 분류**: 진짜 DB 에러(트리거 위반, RLS 위반 등)는 `classifyBookCommentError`
+> (Task 3)로 분류해서 `errorResponse(message, status)`에 넘겨라 — `error.message.includes(...)`를
+> 라우트에서 직접 매칭하지 마라. 다만 PATCH의 `.single()`이 "대상 행이 안 보여 0행 갱신"으로
+> 실패하는 경우는 PostgREST가 `PGRST116`(no rows) 에러를 던지는 것이지 book_comments 트리거
+> 메시지가 아니므로, `classifyBookCommentError`가 이를 500으로 분류해버릴 수 있다. 그 경우는
+> 여전히 명시적으로 403 "댓글을 수정할 권한이 없습니다"로 처리하고, 그 외 진짜 DB 에러만
+> `classifyBookCommentError`에 맡겨라. 아래 초안 코드(PATCH의 고정 403, DELETE의
+> `errorResponse(error.message)`)는 아직 이 구분을 반영하지 않았으니 구현 시 반영하라.
 
 - [ ] **Step 1: 라우트 구현**
 
@@ -1072,6 +1113,12 @@ git commit -m "feat(notification): 책 스레드 댓글 알림 라우팅 추가"
   - `mergeStreamItems(activities: StreamActivity[], comments: CommentNode[]): StreamItem[]`
   - `GET /api/books/[id]/stream` → `{ items: StreamItem[]; hasMore: boolean }`
 - Task 10의 `BookStreamSection`이 이 응답을 렌더한다.
+
+> **DB 에러 분류**: `commentError`(book_comments 조회 에러)는 `classifyBookCommentError`
+> (Task 3)로 분류해서 `errorResponse(message, status)`에 넘겨라. `activityError`는
+> book_comments와 무관한 테이블(`activities`)의 에러라 이 분류 대상이 아니다 — 그대로
+> `errorResponse(activityError.message)`를 유지해도 된다. 아래 초안 코드는 아직
+> `commentError`를 분류하지 않으니 구현 시 반영하라.
 
 - [ ] **Step 1: 실패하는 테스트 작성**
 

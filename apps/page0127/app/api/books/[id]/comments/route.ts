@@ -1,7 +1,10 @@
 import { NextRequest } from 'next/server';
 
 import { getCurrentUser, getSupabaseClient } from '../../../_helpers/auth';
-import { buildCommentTree } from '../../../_helpers/bookComments';
+import {
+  buildCommentTree,
+  classifyBookCommentError,
+} from '../../../_helpers/bookComments';
 import { errorResponse, successResponse } from '../../../_helpers/response';
 
 import type { CommentRow, ProfileRow } from '../../../_helpers/bookComments';
@@ -49,7 +52,10 @@ export async function GET(_request: NextRequest, { params }: Params) {
       .eq('book_id', id)
       .order('created_at', { ascending: true });
 
-    if (error) return errorResponse(error.message);
+    if (error) {
+      const { message, status } = classifyBookCommentError(error);
+      return errorResponse(message, status);
+    }
     if (!rows || rows.length === 0) return successResponse([]);
 
     const profiles = await fetchProfiles(supabase, rows);
@@ -90,13 +96,8 @@ export async function POST(request: NextRequest, { params }: Params) {
       .single();
 
     if (error) {
-      if (error.message.includes('1depth')) {
-        return errorResponse('대댓글의 대댓글은 작성할 수 없습니다.', 400);
-      }
-      if (error.message.includes('다른 대상')) {
-        return errorResponse('잘못된 답글 대상입니다.', 400);
-      }
-      return errorResponse(error.message);
+      const { message, status } = classifyBookCommentError(error);
+      return errorResponse(message, status);
     }
 
     const profiles = await fetchProfiles(supabase, [comment]);

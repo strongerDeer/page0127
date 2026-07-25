@@ -61,6 +61,35 @@ const toUser = (
 const byCreatedAt = (a: { createdAt: string }, b: { createdAt: string }) =>
   a.createdAt.localeCompare(b.createdAt);
 
+/** DB 에러를 클라이언트가 이해할 수 있는 상태코드로 분류한 결과 */
+export type ClassifiedError = { message: string; status: number };
+
+/**
+ * Postgres/PostgREST 에러를 라우트가 그대로 쓸 수 있는 { message, status }로 분류한다.
+ *
+ * 학습 포인트:
+ * - 이 함수는 순수 함수다(NextResponse 등 프레임워크 의존 없음) — 라우트에서 이 결과를
+ *   그대로 errorResponse(message, status)에 넘기면 된다. DB 트리거 문구가 바뀌는 사고를
+ *   테스트로 잡기 위해 매핑 규칙을 여기 한 곳에 모아둔다(Task 4·5·7이 공유).
+ * - RLS 위반(42501 또는 "row-level security" 문구)은 403으로 매핑해 "권한 없음"과
+ *   "서버 고장"을 구분하고, 내부 테이블/정책 이름이 그대로 클라이언트에 노출되지 않게 한다.
+ */
+export function classifyBookCommentError(error: {
+  code?: string;
+  message: string;
+}): ClassifiedError {
+  if (error.message.includes('1depth')) {
+    return { message: '대댓글의 대댓글은 작성할 수 없습니다.', status: 400 };
+  }
+  if (error.message.includes('다른 대상')) {
+    return { message: '잘못된 답글 대상입니다.', status: 400 };
+  }
+  if (error.code === '42501' || error.message.includes('row-level security')) {
+    return { message: '권한이 없습니다.', status: 403 };
+  }
+  return { message: error.message, status: 500 };
+}
+
 export function buildCommentTree(
   rows: CommentRow[],
   profiles: ProfileRow[]

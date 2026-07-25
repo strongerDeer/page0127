@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildCommentTree } from './bookComments';
+import { buildCommentTree, classifyBookCommentError } from './bookComments';
 
 const profiles = [
   { id: 'u1', nickname: '경민', username: 'kyungmin', photo_url: null },
@@ -68,5 +68,47 @@ describe('buildCommentTree', () => {
     );
 
     expect(result.map((c) => c.id)).toEqual(['early', 'late']);
+  });
+});
+
+describe('classifyBookCommentError', () => {
+  it('메시지에 1depth가 포함되면 400과 안내 문구를 준다', () => {
+    expect(
+      classifyBookCommentError({
+        message: '대댓글의 대댓글은 작성할 수 없습니다. (1depth만 허용)',
+      })
+    ).toEqual({
+      message: '대댓글의 대댓글은 작성할 수 없습니다.',
+      status: 400,
+    });
+  });
+
+  it('메시지에 다른 대상이 포함되면 400과 안내 문구를 준다', () => {
+    expect(
+      classifyBookCommentError({
+        message: '부모 댓글과 다른 대상에는 답글을 달 수 없습니다.',
+      })
+    ).toEqual({ message: '잘못된 답글 대상입니다.', status: 400 });
+  });
+
+  it('code가 42501이면 403 권한 없음으로 분류한다', () => {
+    expect(
+      classifyBookCommentError({ code: '42501', message: '아무 메시지' })
+    ).toEqual({ message: '권한이 없습니다.', status: 403 });
+  });
+
+  it('메시지에 row-level security가 포함되면 403 권한 없음으로 분류한다', () => {
+    expect(
+      classifyBookCommentError({
+        message:
+          'new row violates row-level security policy for table "book_comments"',
+      })
+    ).toEqual({ message: '권한이 없습니다.', status: 403 });
+  });
+
+  it('그 외 에러는 500과 원본 메시지를 그대로 유지한다', () => {
+    expect(
+      classifyBookCommentError({ message: '알 수 없는 DB 에러' })
+    ).toEqual({ message: '알 수 없는 DB 에러', status: 500 });
   });
 });
