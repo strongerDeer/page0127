@@ -27,16 +27,24 @@ export const TodayStrip = async () => {
   const today = getKstToday();
 
   // 오늘 완독 수 / 누적 완독 수 — 서로 독립이므로 병렬
+  //
+  // is_public 을 명시하는 이유 (여러 사용자를 걸치는 집계의 일반 규칙):
+  //   books SELECT 정책은 `is_public = true OR auth.uid() = user_id` 다.
+  //   즉 RLS 는 익명 방문자만 걸러주고, 로그인 사용자에게는 자기 비공개 기록까지
+  //   더해 센다. 그러면 같은 문구의 숫자가 보는 사람마다 달라진다.
+  //   → 사용자를 걸치는 집계는 반드시 is_public 을 직접 걸어야 한다.
   const [todayRes, totalRes] = await Promise.all([
     supabase
       .from('books')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'completed')
+      .eq('is_public', true)
       .eq('completed_date', today),
     supabase
       .from('books')
       .select('id', { count: 'exact', head: true })
-      .eq('status', 'completed'),
+      .eq('status', 'completed')
+      .eq('is_public', true),
   ]);
 
   const todayCount = todayRes.count ?? 0;
