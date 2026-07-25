@@ -9,7 +9,7 @@ export type RawActivity = {
   content: string | null;
   created_at: string;
 };
-export type RawProfile = { id: string; nickname: string | null; photo_url: string | null };
+export type RawProfile = { id: string; nickname: string | null; username?: string | null; photo_url: string | null };
 export type RawBook = {
   id: string;
   title: string;
@@ -54,7 +54,8 @@ export function buildActivityItems({
       created_at: a.created_at,
       user: {
         id: a.user_id,
-        nickname: profile?.nickname ?? null,
+        // nickname 미설정 시 username으로 대체(username은 가입 시 항상 생성됨) → '익명' 대신 이름 노출
+        nickname: profile?.nickname ?? profile?.username ?? null,
         photo_url: profile?.photo_url ?? null,
       },
       book: book

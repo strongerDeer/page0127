@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
     const activityIds = activities.map((a) => a.id);
 
     const [{ data: profiles }, { data: books }, { data: likes }] = await Promise.all([
-      supabase.from('profiles').select('id, nickname, photo_url').in('id', userIds),
+      supabase.from('profiles').select('id, nickname, username, photo_url').in('id', userIds),
       supabase.from('books').select('id, title, author, cover_image, status, rating').in('id', bookIds),
       supabase.from('activity_likes').select('activity_id, user_id').in('activity_id', activityIds),
     ]);
