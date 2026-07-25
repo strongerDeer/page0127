@@ -25,6 +25,26 @@ type CompatibilityPromptInput = {
 };
 
 /**
+ * 평점 표기 — 5점 만점으로 접어서 모델에 전달한다.
+ *
+ * DB의 rating 은 0,1,2,3,4,5,10 이고 균일한 척도가 아니다
+ * (0 = "평가 안 함", 10 = "인생책" = 최고점의 별칭).
+ * `${rating}/10` 은 5점 책을 "5/10(중간)"으로, 0점 책을 "0/10(최악)"으로
+ * 전달해 "별점 주는 방식의 유사도" 계산 자체를 왜곡했다.
+ *
+ * 규칙의 단일 출처는 entities/book/model/rating.ts 다. 다만 FSD상 shared 는
+ * entities 를 import 할 수 없어(eslint import/no-restricted-paths) 표기에 필요한
+ * 최소한만 여기서 되풀이한다. 컬럼을 분리할 때 두 곳을 함께 고쳐야 한다.
+ */
+const RATING_MAX = 5;
+const isRated = (rating: number | null): rating is number =>
+  rating !== null && rating > 0;
+const formatRating = (rating: number | null) =>
+  isRated(rating)
+    ? `${rating === 10 ? RATING_MAX : rating}/${RATING_MAX}`
+    : '평가 안 함';
+
+/**
  * 독서 궁합 분석 프롬프트 생성
  */
 export function createCompatibilityPrompt({
@@ -35,7 +55,7 @@ export function createCompatibilityPrompt({
     books
       .map(
         (book, idx) =>
-          `${idx + 1}. "${book.title}" - ${book.author ?? '저자 미상'} / ${book.category ?? '카테고리 없음'} / 별점 ${book.rating}/10`
+          `${idx + 1}. "${book.title}" - ${book.author ?? '저자 미상'} / ${book.category ?? '카테고리 없음'} / 별점 ${formatRating(book.rating)}`
       )
       .join('\n');
 
