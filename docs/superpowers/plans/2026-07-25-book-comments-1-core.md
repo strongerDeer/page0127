@@ -1038,12 +1038,15 @@ git commit -m "feat(api): 책 단위 댓글 수정·삭제 API 추가"
 **Files:**
 - Modify: `apps/page0127/src/features/notification/ui/NotificationList.tsx:125`
 - Modify: `apps/page0127/src/features/notification/ui/NotificationPage.tsx:114`
+- Fix: `app/(protected)/books/[id]/page.tsx` (레거시 리다이렉트를 책 소유자 기준으로 수정)
 
 **Interfaces:**
 - Consumes: Task 4가 만드는 `target_type: 'book'` 알림
 - Produces: 없음 (UI 동작 변경)
 
 Task 4부터 `target_type: 'book'` 알림이 쌓이는데, 라우팅이 없으면 `/feed/{book_id}`로 가서 깨진다. 그래서 바로 이어서 고친다.
+
+**알림 경로 설계 노트**: 알림이 `/books/{target_id}`로 가면 비소유자(대댓글 작성자의 알림 수신자)도 접근하게 되는데, 그 경로는 원래 소유자 전용이었다. 하지만 `app/(protected)/books/[id]/page.tsx`의 레거시 리다이렉트를 책 소유자 기준으로 수정하면, 누구든 `/books/{bookId}`에 오면 `/{owner.username}/{bookId}` (공개 상세)로 가므로 소유자·비소유자 모두 올바른 경로에 도착한다. 이 수정으로 공유 링크나 북마크도 함께 고쳐진다.
 
 - [ ] **Step 1: 두 파일의 클릭 핸들러에 분기 추가**
 
