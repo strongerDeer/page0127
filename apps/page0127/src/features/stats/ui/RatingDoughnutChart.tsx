@@ -15,7 +15,11 @@ type RatingDoughnutChartProps = {
 // 평점 숫자 → 라벨. 10은 점수가 아니라 "인생책", 0은 점수가 아니라 "평가 안 함"이다
 // (OverallDistribution 과 같은 규칙)
 const ratingLabel = (rating: number) =>
-  isLifeBook(rating) ? '인생책' : isRated(rating) ? `${rating}점` : '평가 안 함';
+  isLifeBook(rating)
+    ? '인생책'
+    : isRated(rating)
+      ? `${rating}점`
+      : '평가 안 함';
 
 /** 평균 평점과 평점별 권수를 함께 보여주는 분포 */
 export const RatingDoughnutChart = ({

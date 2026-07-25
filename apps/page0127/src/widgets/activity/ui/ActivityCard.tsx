@@ -120,7 +120,9 @@ export const ActivityCard = ({
                   aria-hidden='true'
                   className='size-3.5 fill-rank-up text-rank-up'
                 />
-                {isLifeBook(activity.book.rating) ? '인생책' : activity.book.rating}
+                {isLifeBook(activity.book.rating)
+                  ? '인생책'
+                  : activity.book.rating}
               </p>
             )}
         </div>

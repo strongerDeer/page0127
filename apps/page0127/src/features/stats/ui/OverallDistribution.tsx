@@ -17,7 +17,11 @@ type OverallDistributionProps = {
 // 평점 숫자 → 라벨. 10은 점수가 아니라 "인생책"이고, 0도 점수가 아니라 "평가 안 함"이다.
 // (10만 이름으로 부르고 0을 `0점`으로 두면 척도가 반쪽만 고쳐진다)
 const ratingLabel = (rating: number) =>
-  isLifeBook(rating) ? '인생책' : isRated(rating) ? `${rating}점` : '평가 안 함';
+  isLifeBook(rating)
+    ? '인생책'
+    : isRated(rating)
+      ? `${rating}점`
+      : '평가 안 함';
 
 export const OverallDistribution = ({ ratings }: OverallDistributionProps) => {
   // count 0인 평점은 숨기고, 최댓값 기준으로 막대 폭 정규화

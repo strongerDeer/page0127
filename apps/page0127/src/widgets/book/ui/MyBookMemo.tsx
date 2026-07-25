@@ -32,7 +32,9 @@ export const MyBookMemo = async ({ isbn }: MyBookMemoProps) => {
     .maybeSingle();
 
   if (error) {
-    console.warn(`[MyBookMemo] 내 기록 조회 실패 (isbn=${isbn}): ${error.message}`);
+    console.warn(
+      `[MyBookMemo] 내 기록 조회 실패 (isbn=${isbn}): ${error.message}`
+    );
     return null;
   }
 
