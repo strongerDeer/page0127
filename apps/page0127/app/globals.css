@@ -89,6 +89,15 @@
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     "Courier New", monospace;
 
+  /* 타이포 스케일 — 07 문서 기준 (00_docs/07 §2.2)
+     Tailwind 기본 줄간격(14/20, 12/16)은 한글 다행 텍스트에 좁다.
+     크기는 그대로 두고 줄간격만 넓힌다. 클래스 이름이 안 바뀌므로
+     text-sm / text-xs 를 쓰는 345곳을 손대지 않아도 된다. */
+  --text-sm: 14px;
+  --text-sm--line-height: 22px;
+  --text-xs: 12px;
+  --text-xs--line-height: 18px;
+
   --radius-sm: calc(var(--radius) - 4px); /* 4px */
   --radius-md: calc(var(--radius) - 2px); /* 6px */
   --radius-lg: var(--radius); /* 8px */
@@ -108,27 +117,33 @@ body {
    유틸리티
    ============================================ */
 
+/* 줄간격을 비율이 아니라 px 로 못 박는다.
+   비율(1.35)로 두면 28px 에서 37.8px 이 나와 07 스펙(40)과 어긋나고,
+   Figma Text Style 과도 값이 맞지 않는다.
+   모바일 값은 07 의 데스크톱 비율을 그대로 내려 구했다 (24×1.43≈34, 18×1.5=27). */
 .heading-1 {
   font-size: var(--font-h1-mobile);
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 34px;
 }
 
 @media (min-width: 768px) {
   .heading-1 {
     font-size: var(--font-h1-desktop);
+    line-height: 40px;
   }
 }
 
 .heading-2 {
   font-size: var(--font-h2-mobile);
   font-weight: 700;
-  line-height: 1.4;
+  line-height: 27px;
 }
 
 @media (min-width: 768px) {
   .heading-2 {
     font-size: var(--font-h2-desktop);
+    line-height: 30px;
   }
 }
 
