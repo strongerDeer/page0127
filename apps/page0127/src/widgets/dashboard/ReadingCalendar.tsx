@@ -15,6 +15,8 @@ import {
   DialogTitle,
 } from '@/shared/ui/dialog';
 
+import { isLifeBook, isRated } from '@/entities/book';
+
 /**
  * 독서 캘린더 컴포넌트
  *
@@ -265,9 +267,10 @@ export const ReadingCalendar = ({
                     {book.author}
                   </p>
                 </div>
-                {book.rating > 0 && (
+                {/* 0("평가 안 함")은 숨기고, 10은 점수가 아니라 '인생책'이다 */}
+                {isRated(book.rating) && (
                   <span className='shrink-0 text-sm font-medium text-text-body'>
-                    {book.rating}점
+                    {isLifeBook(book.rating) ? '인생책' : `${book.rating}점`}
                   </span>
                 )}
               </div>

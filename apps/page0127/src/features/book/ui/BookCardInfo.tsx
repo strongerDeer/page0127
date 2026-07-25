@@ -6,6 +6,8 @@ import { Button } from '@/shared/ui/button';
 import { CardContent, CardHeader } from '@/shared/ui/card';
 import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
 
+import { isLifeBook, isRated } from '@/entities/book';
+
 import type { Book } from '@/entities/book';
 
 type BookCardInfoProps = {
@@ -49,9 +51,10 @@ export const BookCardInfo = ({ book, onDelete }: BookCardInfoProps) => {
 
             <ReadCountBadge readCount={book.read_count} size='sm' />
 
-            {book.rating !== null && book.rating !== undefined && (
+            {/* 0("평가 안 함")은 배지를 걸지 않고, 10은 점수가 아니라 '인생책'이다 */}
+            {isRated(book.rating) && (
               <span className='text-sm font-medium text-chart-4'>
-                {book.rating}
+                {isLifeBook(book.rating) ? '인생책' : book.rating}
               </span>
             )}
           </div>
