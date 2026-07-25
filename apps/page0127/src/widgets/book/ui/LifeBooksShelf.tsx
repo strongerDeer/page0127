@@ -2,6 +2,8 @@ import { Heart } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 
+import { isLifeBook } from '@/entities/book';
+
 import { PublicBookShelf } from './PublicBookShelf';
 
 import type { Book } from '@/entities/book';
@@ -32,7 +34,7 @@ export const LifeBooksShelf = ({
   username,
 }: LifeBooksShelfProps) => {
   // books는 완독 최신순으로 정렬돼 내려오므로 인생책도 그대로 최신순이 된다
-  const lifeBooks = books.filter((book) => book.rating === 10);
+  const lifeBooks = books.filter((book) => isLifeBook(book.rating));
 
   if (lifeBooks.length === 0) return null;
 

@@ -1,3 +1,5 @@
+import { isLifeBook } from '@/entities/book';
+
 import type { RatingDistribution } from '@/entities/book';
 
 /**
@@ -12,8 +14,9 @@ type OverallDistributionProps = {
   ratings: RatingDistribution[];
 };
 
-// 평점 숫자 → 라벨 (10은 만점)
-const ratingLabel = (rating: number) => (rating === 10 ? '만점' : `${rating}점`);
+// 평점 숫자 → 라벨 (10은 점수가 아니라 "인생책")
+const ratingLabel = (rating: number) =>
+  isLifeBook(rating) ? '인생책' : `${rating}점`;
 
 export const OverallDistribution = ({ ratings }: OverallDistributionProps) => {
   // count 0인 평점은 숨기고, 최댓값 기준으로 막대 폭 정규화

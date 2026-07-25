@@ -1,6 +1,8 @@
 import { createClient } from '@/shared/config/supabase/server';
 import { mapToMainCategory } from '@/shared/lib/categoryMapper';
 
+import { isLifeBook } from '../model/rating';
+
 import type { Book } from '../types';
 import type {
   CategoryReadingData,
@@ -90,8 +92,8 @@ export const getOverallStats = async (
 const calculateReadingJourney = (books: Book[]): ReadingJourney => {
   const totalBooks = books.length;
 
-  // 10점 만점 책
-  const perfectScoreBooks = books.filter((book) => book.rating === 10).length;
+  // 인생책 (rating 10)
+  const perfectScoreBooks = books.filter((book) => isLifeBook(book.rating)).length;
   const perfectScoreRate =
     totalBooks > 0 ? Math.round((perfectScoreBooks / totalBooks) * 100) : 0;
 
