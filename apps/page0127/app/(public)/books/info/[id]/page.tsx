@@ -9,7 +9,7 @@ import { decodeHtmlEntities } from '@/shared/lib/htmlEntities';
 import { Button } from '@/shared/ui/button';
 import { PageContainer } from '@/shared/ui/PageContainer';
 
-import { averageScore, RATING_MAX } from '@/entities/book';
+import { RATING_MAX, summarizeRatings } from '@/entities/book';
 
 import { AddToLibraryButton } from '@/widgets/book/ui/AddToLibraryButton';
 import { MyBookMemo } from '@/widgets/book/ui/MyBookMemo';
@@ -72,28 +72,46 @@ async function getBookStats(isbn: string) {
   // is_public 을 명시하는 이유: RLS 는 익명 방문자만 걸러준다.
   // 로그인 사용자에게는 자기 비공개 기록까지 섞여 방문자와 다른 숫자가 보였다.
   // "이 책을 몇 명이 완독했나"는 누가 보든 같아야 한다.
-  const { count: completedCount } = await supabase
+  const { count: completedCount, error: completedError } = await supabase
     .from('books')
     .select('*', { count: 'exact', head: true })
     .eq('isbn', isbn)
     .eq('status', 'completed')
     .eq('is_public', true);
 
-  const { data: ratings } = await supabase
+  // status 를 여기도 거는 이유: 완독 수는 status = 'completed' 로 세므로
+  // 평점 모집단이 더 넓으면 괄호 숫자가 완독 수를 넘을 수 있다
+  // ("4.5 / 5 (12) · 8명이 완독"). 등록 폼이 '읽는 중'으로 되돌릴 때 rating 을
+  // 지우지 않으므로 실제로 도달 가능한 경로다.
+  // 완독의 부분집합이 되면 방문자에게 자연스럽게 읽힌다
+  // (0점 완독 책은 평점 쪽에만 빠지므로 완전히 같아지지는 않는다).
+  const { data: ratings, error: ratingsError } = await supabase
     .from('books')
     .select('rating')
     .eq('isbn', isbn)
+    .eq('status', 'completed')
     .eq('is_public', true)
     .not('rating', 'is', null);
 
+  // 에러를 버리면 스키마가 어긋났을 때 "0.0 / 5 · 0명이 완독"이 조용히 렌더된다.
+  // 앱에 Supabase 생성 타입이 없어 tsc 가 못 잡으므로 런타임 error 가 유일한 신호다.
+  if (completedError || ratingsError) {
+    console.warn(
+      `[books/info] 통계 조회 실패 (isbn=${isbn}): ` +
+        `${completedError?.message ?? ''} ${ratingsError?.message ?? ''}`.trim()
+    );
+  }
+
   // 0("평가 안 함")과 10("인생책")을 그대로 평균 내면 양쪽으로 왜곡된다 — model/rating.ts
-  const scores = (ratings ?? []).map((row) => row.rating);
+  // 평균과 권수는 같은 모집단을 써야 하므로 한 함수에서 함께 만든다.
+  const { average, ratedCount } = summarizeRatings(
+    (ratings ?? []).map((row) => row.rating)
+  );
 
   return {
     completedCount: completedCount || 0,
-    avgRating: averageScore(scores),
-    // 평균에 실제로 들어간 권수만 센다 (0점 기록은 제외)
-    ratingCount: scores.filter((rating) => rating !== null && rating > 0).length,
+    avgRating: average,
+    ratingCount: ratedCount,
   };
 }
 

@@ -41,3 +41,14 @@ export const averageScore = (ratings: (number | null)[]): number => {
   const sum = scores.reduce((total, score) => total + score, 0);
   return Math.round((sum / scores.length) * 10) / 10;
 };
+
+/**
+ * 평점 행 목록 → 화면에 쓸 요약. 평균과 권수가 같은 기준을 쓰도록 한곳에서 만든다.
+ *
+ * "4.5 / 5 (12)" 처럼 평균과 괄호 숫자를 나란히 적는 자리에서, 두 값을 각자
+ * 계산하면 분모가 갈라진다(평균은 0을 빼는데 권수는 세는 식). 그래서 함께 만든다.
+ */
+export const summarizeRatings = (ratings: (number | null)[]) => ({
+  average: averageScore(ratings),
+  ratedCount: ratings.filter(isRated).length,
+});

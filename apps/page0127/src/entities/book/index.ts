@@ -47,5 +47,6 @@ export {
   isRated,
   isTopRated,
   RATING_MAX,
+  summarizeRatings,
   toScore,
 } from './model/rating';

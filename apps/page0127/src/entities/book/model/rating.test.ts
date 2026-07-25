@@ -6,6 +6,7 @@ import {
   isRated,
   isTopRated,
   RATING_MAX,
+  summarizeRatings,
   toScore,
 } from './rating';
 
@@ -54,5 +55,22 @@ describe('rating', () => {
     expect(averageScore([])).toBe(0);
     expect(averageScore([0])).toBe(0);
     expect(averageScore([null, 0])).toBe(0);
+  });
+
+  describe('summarizeRatings', () => {
+    it('평균과 권수가 같은 모집단을 쓴다 (0·null 제외, 10은 5로 접힘)', () => {
+      // 평가에 드는 값은 10, 4, 4 → (5 + 4 + 4) / 3 = 4.33... → 4.3, 3권
+      const summary = summarizeRatings([10, 4, 4, 0, null]);
+
+      expect(summary).toEqual({ average: 4.3, ratedCount: 3 });
+    });
+
+    it('빈 목록과 평가 없는 목록은 둘 다 0으로 요약한다', () => {
+      expect(summarizeRatings([])).toEqual({ average: 0, ratedCount: 0 });
+      expect(summarizeRatings([0, null, 0])).toEqual({
+        average: 0,
+        ratedCount: 0,
+      });
+    });
   });
 });
