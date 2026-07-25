@@ -160,12 +160,11 @@ CREATE POLICY "Users can insert own book comments"
     )
   );
 
--- WITH CHECK을 생략하면 Postgres가 USING을 암시적 WITH CHECK로도 쓴다. 그러면
--- user_id 재지정만 막히고 book_id/global_book_id 재지정은 아무 검사 없이 통과한다
--- (이전 행은 USING 통과, 새 행은 여전히 내 user_id라 암시적 check도 통과, one_target
--- CHECK도 한 컬럼만 바꾸면 유지된다). 그 결과 INSERT로는 절대 못 다는 남의 비공개
--- 책 스레드에 UPDATE로 내 댓글을 옮겨 꽂을 수 있게 된다. INSERT 정책과 동일한
--- 가시성 조건을 WITH CHECK로 명시해 대상 재지정도 막는다.
+-- Postgres는 UPDATE 새 행에도 테이블 SELECT 정책의 USING을 항상 강제한다
+-- (이 정책의 WITH CHECK 유무와 무관) — 지금 SELECT 정책("공개 또는 본인")
+-- 하에서는 이것 없이도 대상 재지정이 막힌다(현재는 중복 방어). INSERT 정책과
+-- 대칭을 맞추고, SELECT 정책이 나중에 느슨해지면(예: 팔로워 분기) 그때부터
+-- 이 절이 대상 재지정을 막는 실제 방어선이 되도록 명시해둔다.
 DROP POLICY IF EXISTS "Users can update own book comments" ON public.book_comments;
 CREATE POLICY "Users can update own book comments"
   ON public.book_comments FOR UPDATE
