@@ -183,6 +183,15 @@ type StreamItem =
 `book_id` 목록으로 **활동 요약을 배치 조회하는 쿼리 1회**를 추가한다. "중복 제거"와 "맥락 보존"을
 동시에 얻기 위한 값이다.
 
+> **미결 사항 (계획 2 착수 전에 정할 것)**: `reviewContent`는 `review_added` 활동을 전제하는데,
+> `createActivity` 호출처는 `app/api/books/route.ts:107`(`book_added`)과
+> `app/api/books/[id]/route.ts:80`(`book_completed`, 조건부) 딱 두 곳뿐이다. **`review_added`는
+> 생성하는 코드가 아예 없어 데이터가 0건이다.** 따라서 지금 그대로 구현하면 `reviewContent`는 항상
+> `null`이고, 스트림의 "리뷰를 남겼어요" 마커도 절대 나타나지 않는다. 둘 중 하나를 골라야 한다:
+> (a) `books.one_line_review`를 카드 본문으로 쓴다(오늘 바로 값이 있다. 단 시각 정보가 없어 스트림
+> 마커로는 못 쓴다), (b) 한줄평/리뷰 저장 시 `review_added` 활동을 생성하는 코드를 추가한다(스코프
+> 증가, 과거 리뷰는 소급 생성 안 됨).
+
 `buildActivityItems`는 `activity_likes` 대신 `book_record_likes`를 받도록 바꾼다.
 
 ### ⑤ UI
