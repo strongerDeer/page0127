@@ -39,3 +39,13 @@ export {
   getCurrentLibraryYear,
   getLibraryYears,
 } from './model/libraryPeriod';
+
+// 평점 의미 (0 = 평가 안 함, 10 = 인생책) — 판정과 평균 계산의 유일한 출처
+export {
+  averageScore,
+  isLifeBook,
+  isRated,
+  isTopRated,
+  RATING_MAX,
+  toScore,
+} from './model/rating';
