@@ -90,9 +90,27 @@ CREATE POLICY "Users can insert own book comments"
     )
   );
 
+-- WITH CHECK을 생략하면 Postgres가 USING을 암시적 WITH CHECK로도 쓴다. 그러면
+-- user_id 재지정만 막히고 book_id/global_book_id 재지정은 아무 검사 없이 통과한다
+-- (이전 행은 USING 통과, 새 행은 여전히 내 user_id라 암시적 check도 통과, one_target
+-- CHECK도 한 컬럼만 바꾸면 유지된다). 그 결과 INSERT로는 절대 못 다는 남의 비공개
+-- 책 스레드에 UPDATE로 내 댓글을 옮겨 꽂을 수 있게 된다. INSERT 정책과 동일한
+-- 가시성 조건을 WITH CHECK로 명시해 대상 재지정도 막는다.
 DROP POLICY IF EXISTS "Users can update own book comments" ON public.book_comments;
 CREATE POLICY "Users can update own book comments"
-  ON public.book_comments FOR UPDATE USING (auth.uid() = user_id);
+  ON public.book_comments FOR UPDATE
+  USING (auth.uid() = user_id)
+  WITH CHECK (
+    auth.uid() = user_id
+    AND (
+      global_book_id IS NOT NULL
+      OR EXISTS (
+        SELECT 1 FROM public.books b
+        WHERE b.id = book_comments.book_id
+          AND (b.is_public = true OR b.user_id = auth.uid())
+      )
+    )
+  );
 
 DROP POLICY IF EXISTS "Users can delete own book comments" ON public.book_comments;
 CREATE POLICY "Users can delete own book comments"
