@@ -22,6 +22,7 @@ import { LikeButton } from '@/features/like';
 type ActivityCardProps = {
   activity: Activity;
   initialCommentsOpen?: boolean; // 댓글 섹션 초기 펼침 상태
+  hideBook?: boolean; // 책 상세에선 책 표지 첨부를 숨긴다(중복 방지)
 };
 
 const getActivityText = (type: Activity['activity_type']) => {
@@ -38,6 +39,7 @@ const getActivityText = (type: Activity['activity_type']) => {
 export const ActivityCard = ({
   activity,
   initialCommentsOpen = false,
+  hideBook = false,
 }: ActivityCardProps) => {
   if (!activity.book) return null;
 
@@ -81,42 +83,44 @@ export const ActivityCard = ({
       </div>
 
       {/* 책 첨부 — 작은 표지 + 제목·저자·별점 */}
-      <div className='mt-4 flex items-center gap-4 rounded-xl border border-line-soft bg-card p-4'>
-        {activity.book.cover_image ? (
-          <Image
-            src={activity.book.cover_image}
-            alt=''
-            width={64}
-            height={96}
-            className='book-cover h-24 w-16 shrink-0 object-cover'
-          />
-        ) : (
-          <span className='book-cover flex h-24 w-16 shrink-0 items-center justify-center bg-sunken p-2 text-center text-[10px] leading-tight text-text-faint'>
-            {activity.book.title.slice(0, 10)}
-          </span>
-        )}
-
-        <div className='min-w-0 flex-1'>
-          <p className='truncate text-base font-semibold text-text-strong'>
-            {activity.book.title}
-          </p>
-          <p className='mt-1 truncate text-sm text-text-subtle'>
-            {activity.book.author}
-          </p>
-        </div>
-
-        {/* 평점 (완독 시) — 첨부 우측에 정렬 */}
-        {activity.activity_type === 'book_completed' &&
-          activity.book.rating && (
-            <p className='flex shrink-0 items-center gap-1.5 text-sm font-medium text-text-body'>
-              <Star
-                aria-hidden='true'
-                className='size-3.5 fill-rank-up text-rank-up'
-              />
-              {activity.book.rating}
-            </p>
+      {!hideBook && (
+        <div className='mt-4 flex items-center gap-4 rounded-xl border border-line-soft bg-card p-4'>
+          {activity.book.cover_image ? (
+            <Image
+              src={activity.book.cover_image}
+              alt=''
+              width={64}
+              height={96}
+              className='book-cover h-24 w-16 shrink-0 object-cover'
+            />
+          ) : (
+            <span className='book-cover flex h-24 w-16 shrink-0 items-center justify-center bg-sunken p-2 text-center text-[10px] leading-tight text-text-faint'>
+              {activity.book.title.slice(0, 10)}
+            </span>
           )}
-      </div>
+
+          <div className='min-w-0 flex-1'>
+            <p className='truncate text-base font-semibold text-text-strong'>
+              {activity.book.title}
+            </p>
+            <p className='mt-1 truncate text-sm text-text-subtle'>
+              {activity.book.author}
+            </p>
+          </div>
+
+          {/* 평점 (완독 시) — 첨부 우측에 정렬 */}
+          {activity.activity_type === 'book_completed' &&
+            activity.book.rating && (
+              <p className='flex shrink-0 items-center gap-1.5 text-sm font-medium text-text-body'>
+                <Star
+                  aria-hidden='true'
+                  className='size-3.5 fill-rank-up text-rank-up'
+                />
+                {activity.book.rating}
+              </p>
+            )}
+        </div>
+      )}
 
       {/* 리뷰 내용 — 유저가 쓴 글은 다듬지 않고 그대로 보여준다 */}
       {activity.activity_type === 'review_added' && activity.content && (
