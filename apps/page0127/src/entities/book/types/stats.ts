@@ -115,11 +115,11 @@ export type ReadingJourney = {
   /** 총 읽은 책 (전체) */
   totalBooks: number;
 
-  /** 10점 만점 책 권수 */
-  perfectScoreBooks: number;
+  /** 인생책(rating 10) 권수 */
+  lifeBookCount: number;
 
-  /** 10점 만점 비율 (%) */
-  perfectScoreRate: number;
+  /** 인생책(rating 10) 비율 (%) */
+  lifeBookRate: number;
 
   /** 총 읽은 쪽수 */
   totalPages: number;

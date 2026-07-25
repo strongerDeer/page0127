@@ -62,9 +62,9 @@ export const ReadingJourneyCard = ({ data }: Props) => {
         <div className='border-t border-line-soft'>
           <JourneyRow
             icon={<Star className='size-4' />}
-            label='최고 평점 책'
-            value={`${data.perfectScoreBooks}권`}
-            description={`전체 기록의 ${data.perfectScoreRate}%`}
+            label='인생책'
+            value={`${data.lifeBookCount}권`}
+            description={`전체 기록의 ${data.lifeBookRate}%`}
           />
         </div>
         <div className='border-t border-line-soft'>
