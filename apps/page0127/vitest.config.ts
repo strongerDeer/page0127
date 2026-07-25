@@ -1,3 +1,4 @@
+import { resolve } from 'path';
 import { defineConfig } from 'vitest/config';
 
 /**
@@ -11,10 +12,22 @@ import { defineConfig } from 'vitest/config';
  *   Playwright 스모크는 e2e/ 폴더의 '.spec.ts'를 쓰므로, 여기서는 확장자를 '.test.ts'로
  *   분리해 vitest가 Playwright 스펙을 실수로 집어가지 않게 한다.
  *   (vitest = *.test.ts / playwright = e2e/*.spec.ts 로 역할을 나눈다)
+ * - resolve.alias: TypeScript 경로 별칭 (@/...) 해석
+ *   vitest가 tsconfig.json의 paths를 자동으로 인식하도록 명시적으로 구성한다.
  */
 export default defineConfig({
   test: {
     environment: 'node',
     include: ['{src,app}/**/*.test.{ts,tsx}'],
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+      '@/shared': resolve(__dirname, './src/shared'),
+      '@/entities': resolve(__dirname, './src/entities'),
+      '@/features': resolve(__dirname, './src/features'),
+      '@/widgets': resolve(__dirname, './src/widgets'),
+      '@/app': resolve(__dirname, './app'),
+    },
   },
 });
