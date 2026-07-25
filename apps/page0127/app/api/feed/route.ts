@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 
 import { getCurrentUser, getSupabaseClient } from '../_helpers/auth';
+import { buildActivityItems } from '../_helpers/buildActivityItems';
 import { errorResponse, successResponse } from '../_helpers/response';
 
 /**
@@ -55,71 +56,23 @@ export async function GET(request: NextRequest) {
       return successResponse([]);
     }
 
-    // 활동과 관련된 사용자 정보 조회
+    // 활동과 관련된 프로필/책/좋아요 조회 (배치)
     const userIds = [...new Set(activities.map((a) => a.user_id))];
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, nickname, photo_url')
-      .in('id', userIds);
-
-    const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
-
-    // 활동과 관련된 책 정보 조회
     const bookIds = [...new Set(activities.map((a) => a.book_id))];
-    const { data: books } = await supabase
-      .from('books')
-      .select('id, title, author, cover_image, status, rating')
-      .in('id', bookIds);
-
-    const bookMap = new Map(books?.map((b) => [b.id, b]) || []);
-
-    // 활동들의 좋아요 정보 조회 (배치)
     const activityIds = activities.map((a) => a.id);
-    const { data: allLikes } = await supabase
-      .from('activity_likes')
-      .select('activity_id, user_id')
-      .in('activity_id', activityIds);
 
-    // 활동별 좋아요 정보 맵 생성
-    const likesMap = new Map<string, { count: number; isLiked: boolean }>();
-    activityIds.forEach((activityId) => {
-      const activityLikes = allLikes?.filter(
-        (like) => like.activity_id === activityId
-      );
-      likesMap.set(activityId, {
-        count: activityLikes?.length || 0,
-        isLiked: activityLikes?.some((like) => like.user_id === user!.id) || false,
-      });
-    });
+    const [{ data: profiles }, { data: books }, { data: likes }] = await Promise.all([
+      supabase.from('profiles').select('id, nickname, photo_url').in('id', userIds),
+      supabase.from('books').select('id, title, author, cover_image, status, rating').in('id', bookIds),
+      supabase.from('activity_likes').select('activity_id, user_id').in('activity_id', activityIds),
+    ]);
 
-    // 결과 조합
-    const feed = activities.map((activity) => {
-      const profile = profileMap.get(activity.user_id);
-      const book = bookMap.get(activity.book_id);
-      const likeInfo = likesMap.get(activity.id) || { count: 0, isLiked: false };
-
-      return {
-        id: activity.id,
-        activity_type: activity.activity_type,
-        content: activity.content,
-        created_at: activity.created_at,
-        user: {
-          id: activity.user_id,
-          nickname: profile?.nickname || null,
-          photo_url: profile?.photo_url || null,
-        },
-        book: book
-          ? {
-              id: book.id,
-              title: book.title,
-              author: book.author,
-              cover_image: book.cover_image,
-              status: book.status,
-              rating: book.rating,
-            }
-          : null,
-        likes: likeInfo,
-      };
+    const feed = buildActivityItems({
+      activities,
+      profiles: profiles ?? [],
+      books: books ?? [],
+      likes: likes ?? [],
+      currentUserId: user!.id,
     });
 
     return successResponse(feed);
