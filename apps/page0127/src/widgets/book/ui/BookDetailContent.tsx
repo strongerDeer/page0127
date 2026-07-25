@@ -5,8 +5,9 @@ import { Globe, Lock, Star } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
 
-import type { Book } from '@/entities/book';
 import { BookActivitySection } from './BookActivitySection';
+
+import type { Book } from '@/entities/book';
 
 const STATUS_TEXT: Record<Book['status'], string> = {
   completed: '완독',
