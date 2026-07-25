@@ -40,7 +40,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
     const userIds = [...new Set(comments.map((c) => c.user_id))];
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, nickname, photo_url')
+      .select('id, nickname, username, photo_url')
       .in('id', userIds);
 
     const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
@@ -58,7 +58,8 @@ export async function GET(_request: NextRequest, { params }: Params) {
         updatedAt: comment.updated_at,
         user: {
           id: comment.user_id,
-          nickname: profile?.nickname || null,
+          // 닉네임 미설정 시 username으로 대체 (익명 방지)
+          nickname: profile?.nickname || profile?.username || null,
           photoUrl: profile?.photo_url || null,
         },
       };
@@ -130,7 +131,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     // 작성자 프로필 정보 조회
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, nickname, photo_url')
+      .select('id, nickname, username, photo_url')
       .eq('id', user!.id)
       .single();
 
@@ -188,7 +189,8 @@ export async function POST(request: NextRequest, { params }: Params) {
         updatedAt: comment.updated_at,
         user: {
           id: user!.id,
-          nickname: profile?.nickname || null,
+          // 닉네임 미설정 시 username으로 대체 (익명 방지)
+          nickname: profile?.nickname || profile?.username || null,
           photoUrl: profile?.photo_url || null,
         },
       },
