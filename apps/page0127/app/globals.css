@@ -1,11 +1,16 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@repo/design-tokens/tokens.css";
 
 /* ============================================
    page0127 디자인 시스템
 
-   브랜드 팔레트: 스카이블루 램프 (2026-07-17 확정)
-   #0455BF · #1E69CB · #2D78DB · #438EF2 · #74B0FF
+   토큰의 단일 출처는 @repo/design-tokens 다.
+   색·간격·모서리 값을 바꾸려면 이 파일이 아니라
+   packages/design-tokens/tokens/*.json 을 고친다.
+   (그쪽이 Figma Variables 와 왕복하는 원본이다)
+
+   이 파일은 "그 값을 Tailwind 에 어떻게 노출할지"만 담당한다.
 
    원칙 (교보문고·밀리의서재 실측에서 도출 — 00_docs/07 참조)
    1. 무채(네이비 잉크)가 지배한다. 유채색은 장식이 아니라 "직무"다.
@@ -19,76 +24,6 @@
    4. letter-spacing 은 건드리지 않는다.
       Pretendard 는 자간이 이미 최적화돼 있다. (밀리도 전 요소 normal)
    ============================================ */
-
-:root {
-  /* 모서리 — 카드 8px 기준 */
-  --radius: 0.5rem;
-
-  /* --- 배경: 순백. 입체는 카드 테두리가 아니라
-         면(--sunken 모듈)과 구분선으로 만든다 --- */
-  --background: #ffffff; /* 페이지 */
-  --card: #ffffff; /* 카드·표면 */
-  --popover: #ffffff;
-  --sunken: #f6f7f8; /* 중립 모듈 면·틴트·플레이스홀더 */
-
-  /* --- 텍스트 4단계: 순검정 대신 진한 블루 잉크(네이비) --- */
-  --text-strong: #14294e; /* 제목·책 제목 */
-  --text-body: #3b4e70; /* 본문 */
-  --text-subtle: #66779a; /* 저자·출판사·메타 */
-  --text-faint: #97a4c0; /* 캡션 */
-
-  /* shadcn 호환 별칭 — 기존 컴포넌트가 참조한다 */
-  --foreground: var(--text-strong);
-  --card-foreground: var(--text-strong);
-  --popover-foreground: var(--text-strong);
-  --muted-foreground: var(--text-subtle);
-
-  /* --- 유채색: 각각 직무 하나씩 --- */
-  --primary: #1e69cb; /* 진한 블루 — 브랜드·주 CTA (흰 글자 대비 4.7:1) */
-  --primary-foreground: #ffffff;
-  --accent: #e3eefc; /* 스카이 틴트 — 활성 메뉴/호버 배경 */
-  --accent-foreground: #0455bf;
-  --rank-up: #d9480f; /* 코랄 오렌지 — 순위 상승·포인트 전용 (블루의 보색) */
-  --destructive: #c0392b; /* 삭제·탈퇴 전용 */
-
-  --secondary: #f1f3f5;
-  --secondary-foreground: var(--text-strong);
-  --muted: #f1f3f5;
-
-  /* --- 경계: 그림자 대신 선 --- */
-  --line: #dfe3e8;
-  --line-soft: #eceff2;
-  --border: var(--line);
-  --input: var(--line);
-  --ring: #1e69cb;
-
-  /* --- 차트: 블루 램프 + 직무색 --- */
-  --chart-1: #1e69cb; /* 진한 블루 */
-  --chart-2: #d9480f; /* 코랄 오렌지 */
-  --chart-3: #74b0ff; /* 라이트 스카이 */
-  --chart-4: #d9a520; /* 앰버 */
-  --chart-5: #5b6b8c; /* 슬레이트 네이비 */
-  --chart-6: #14b8a6; /* 틸 — 카테고리 구분 보조 */
-  --chart-7: #7a5cf0; /* 바이올렛 — 카테고리 구분 보조 (프로모 카드와 동일 계열) */
-
-  /* --- 사이드바 (모바일 시트 등 shadcn 호환용) --- */
-  --sidebar: #ffffff;
-  --sidebar-foreground: var(--text-strong);
-  --sidebar-primary: #1e69cb;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e3eefc;
-  --sidebar-accent-foreground: #0455bf;
-  --sidebar-border: var(--line);
-  --sidebar-ring: #1e69cb;
-
-  /* --- 랜딩 타이포·간격 ---
-     h1 50px → 28px. 교보 홈 최대 24px, 밀리 섹션 제목 20px.
-     헤드라인이 과장되게 큰 것이 "AI 랜딩"의 대표적 신호다. */
-  --font-h1-desktop: 28px;
-  --font-h1-mobile: 24px;
-  --font-h2-desktop: 20px;
-  --font-h2-mobile: 18px;
-}
 
 /* Tailwind 테마 확장 */
 @theme inline {

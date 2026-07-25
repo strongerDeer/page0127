@@ -4,7 +4,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "src/**"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
       "env": [
         "OPENAI_API_KEY",
         "NEXT_PUBLIC_SUPABASE_URL",

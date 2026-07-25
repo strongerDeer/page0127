@@ -34,9 +34,8 @@ const nextConfig: NextConfig = {
     },
   },
   // 모노레포 패키지의 CSS/JS 파일을 트랜스파일하도록 설정
-  // @repo/design-tokens 는 어디서도 import 되지 않아 제거했다.
-  // 디자인 토큰의 단일 출처는 app/globals.css 다.
-  transpilePackages: ['@repo/icons'],
+  // 디자인 토큰의 단일 출처는 @repo/design-tokens 다 (globals.css 가 import 한다).
+  transpilePackages: ['@repo/icons', '@repo/design-tokens'],
   experimental: {
     // 프로필 이미지는 앱에서 최대 5MB까지 허용한다. multipart 메타데이터
     // 여유를 포함해 Server Action 요청 본문은 6MB로 제한한다.

@@ -1,58 +1,35 @@
 # @repo/design-tokens
 
-디자인 토큰 패키지 - Figma Tokens Studio 연동
+page0127 디자인 토큰. **Figma Variables 와 왕복하는 단일 출처.**
 
-## 📦 사용 방법
+## 구조
 
-### 1. JavaScript/TypeScript에서 사용
-
-```typescript
-// Light 테마
-import tokens from '@repo/design-tokens/light';
-
-console.log(tokens.color.text.primary); // #111827
-
-// Dark 테마
-import darkTokens from '@repo/design-tokens/dark';
-
-console.log(darkTokens.color.text.primary); // #f9fafb
+```
+tokens/primitives.json   원색 팔레트 (blue/navy/gray/…, space, corner)
+tokens/semantic.json     직무 토큰 (text/strong, primary, line, …)
+        ↓ npm run build
+dist/tokens.css          globals.css 가 import 하는 생성물
 ```
 
-### 2. CSS에서 사용
+- **primitive**는 화면에 직접 쓰지 않는다. semantic 이 참조할 원색일 뿐이다.
+- **semantic**만 컴포넌트에서 쓴다. 이름이 곧 용도다.
+- `space`·`corner`는 **Figma 전용**이라 CSS 로 나가지 않는다. 코드에서 간격·모서리는 Tailwind 기본 스케일을 쓴다.
 
-```css
-/* Light 테마 */
-@import '@repo/design-tokens/css/light';
+## 값을 바꾸려면
 
-/* Dark 테마 */
-@import '@repo/design-tokens/css/dark';
+1. Figma 에서 Variables 수정
+2. Tokens Studio 플러그인에서 JSON export → `tokens/` 에 덮어쓰기
+3. `npm run build`
+4. `npm run test` 로 회귀 확인
 
-/* 사용 예시 */
-.button {
-  background-color: var(--color-action-primary-default);
-  color: var(--color-text-inverse);
-}
-```
+## 명령
 
-## 🎨 토큰 구조
+| 명령 | 하는 일 |
+| --- | --- |
+| `npm run build` | `dist/tokens.css` 생성 |
+| `npm run test` | 이사 전 기준선과 대조 (회귀 방지) |
+| `npm run baseline` | 기준선 재생성 — **평소에 쓰지 않는다** (아래) |
 
-- `tokens/core.json` - 기본 색상 팔레트, 간격, 폰트 등
-- `tokens/light.json` - Light 테마 시맨틱 토큰
-- `tokens/dark.json` - Dark 테마 시맨틱 토큰
-
-## 🔄 Figma 토큰 업데이트
-
-1. Figma에서 Tokens Studio 플러그인 사용
-2. JSON 파일 export
-3. `tokens/` 디렉토리에 파일 교체
-4. 빌드 실행
-
-```bash
-npm run build
-```
-
-## 📝 빌드 스크립트
-
-- `npm run build` - 토큰 빌드 (CSS, JS, JSON 생성)
-- `npm run clean` - 생성된 파일 삭제
-- `npm run rebuild` - 클린 후 재빌드
+> ⚠️ `npm run baseline` 은 `tests/baseline.json` 을 현재 `globals.css` 기준으로 덮어쓴다.
+> 이 스냅샷은 "토큰 이사 이전 상태"를 붙잡아 둔 것이라, 다시 돌리면 회귀 감지 능력이 사라진다.
+> 의도적으로 기준을 갱신할 때만 쓴다.
