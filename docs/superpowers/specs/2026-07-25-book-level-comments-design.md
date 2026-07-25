@@ -285,21 +285,36 @@ WHERE c.book_id IS DISTINCT FROM p.book_id
 
 ## 테스트
 
-**vitest**
+이 프로젝트의 vitest는 **순수 함수 전용**이다([vitest.config.ts](../../../apps/page0127/vitest.config.ts) —
+`environment: 'node'`, Supabase를 띄우지 않아 CI에서 secrets가 필요 없다). 그래서 DB 제약·트리거·이관
+SQL은 vitest로 검증할 수 없고, 로컬 Supabase에 psql로 직접 확인한다.
+
+**vitest (순수 함수)**
+
+- 댓글 계층 구조 빌드 — 대댓글 중첩, 닉네임 폴백(`nickname || username`), 탈퇴 사용자(`user` = null),
+  부모가 없는 대댓글을 루트로 승격, `created_at` 오름차순
+- 스트림 병합 정렬 — 활동과 댓글이 `created_at` 오름차순으로 섞이고, 동시각이면 활동이 앞
+- `newCommentCount` — 내 댓글 제외, `last_read_at` 이후만
+- `buildActivityItems` — `book_record_likes` 기준 `isLiked` 판정
+
+**psql (로컬 Supabase, `postgresql://postgres:postgres@127.0.0.1:54322/postgres`)**
 
 - `book_comments` CHECK 제약 — 대상 0개/2개 모두 거부
 - 부모-대상 일치 트리거 — 다른 책 댓글을 부모로 지정하면 거부
 - 1depth 제한 트리거
 - 이관 SQL — 댓글 수·부모 관계 보존, 좋아요 병합 개수(한 사람이 같은 책 활동 3개에 눌렀으면 1행)
-- 스트림 병합 정렬 — 활동과 댓글이 `created_at` 오름차순으로 섞이는지
-- `newCommentCount` — 내 댓글 제외, `last_read_at` 이후만
-- `buildActivityItems` — `book_record_likes` 기준 `isLiked` 판정
 
 **Playwright e2e**
+
+기존 `e2e/` 스펙 3개는 전부 **비인증 공개 페이지 스모크**이고, 로그인 상태를 만드는 하네스가 없다.
+댓글 작성은 로그인이 필요하므로 지금 구조로는 e2e를 쓸 수 없다. **인증 e2e 하네스 구축은 별개 과제**로
+두고, 그 전까지는 아래를 수동 브라우저 확인으로 대신한다.
 
 - 책 상세에서 댓글 작성 → 스트림에 즉시 나타남
 - 같은 책에 활동이 여러 개여도 피드 카드는 1장
 - 전역 책 페이지(`/books/info/[id]`)에서 댓글 작성
+
+인증이 필요 없는 것만 e2e에 남긴다: 기존 3개 스펙이 계속 통과하는지(회귀 확인).
 
 ## 파일 변경 (예상)
 
