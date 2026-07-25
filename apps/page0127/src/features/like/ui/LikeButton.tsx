@@ -81,11 +81,12 @@ export const LikeButton = ({ activityId, count, isLiked }: LikeButtonProps) => {
             }
           : activity;
 
-      // 피드 캐시 수정 (InfiniteData → pages: Activity[][])
-      queryClient.setQueryData<InfiniteData<Activity[]>>(
-        activityKeys.feeds(),
+      // 모든 활동 목록 캐시 수정 (피드·책 타임라인 = InfiniteData → pages: Activity[][]).
+      // activityKeys.all로 매칭해 어느 목록에서 눌러도 즉시(낙관적) 반영된다.
+      queryClient.setQueriesData<InfiniteData<Activity[]>>(
+        { queryKey: activityKeys.all },
         (old) =>
-          old
+          old && 'pages' in old
             ? { ...old, pages: old.pages.map((page) => page.map(toggle)) }
             : old
       );
@@ -110,12 +111,11 @@ export const LikeButton = ({ activityId, count, isLiked }: LikeButtonProps) => {
       }
       toast.error('좋아요 처리에 실패했습니다.');
     },
-    // ③ 성공/실패 무관: 서버 기준으로 최종 동기화
+    // ③ 성공/실패 무관: 서버 기준으로 최종 동기화.
+    //    activityKeys.all로 무효화해 피드·상세뿐 아니라 책 타임라인(bookActivities)까지
+    //    갱신한다 → 어느 목록에서 눌러도 새로고침 없이 반영된다.
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: activityKeys.feeds() });
-      queryClient.invalidateQueries({
-        queryKey: activityKeys.detail(activityId),
-      });
+      queryClient.invalidateQueries({ queryKey: activityKeys.all });
     },
   });
 
