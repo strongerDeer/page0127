@@ -9,6 +9,8 @@ import { decodeHtmlEntities } from '@/shared/lib/htmlEntities';
 import { Button } from '@/shared/ui/button';
 import { PageContainer } from '@/shared/ui/PageContainer';
 
+import { averageScore, RATING_MAX } from '@/entities/book';
+
 import { AddToLibraryButton } from '@/widgets/book/ui/AddToLibraryButton';
 import { MyBookMemo } from '@/widgets/book/ui/MyBookMemo';
 import { ReaderProfiles } from '@/widgets/book/ui/ReaderProfiles';
@@ -67,32 +69,31 @@ export async function generateMetadata({
 async function getBookStats(isbn: string) {
   const supabase = await createClient();
 
-  // 완독 수
+  // is_public 을 명시하는 이유: RLS 는 익명 방문자만 걸러준다.
+  // 로그인 사용자에게는 자기 비공개 기록까지 섞여 방문자와 다른 숫자가 보였다.
+  // "이 책을 몇 명이 완독했나"는 누가 보든 같아야 한다.
   const { count: completedCount } = await supabase
     .from('books')
     .select('*', { count: 'exact', head: true })
     .eq('isbn', isbn)
-    .eq('status', 'completed');
+    .eq('status', 'completed')
+    .eq('is_public', true);
 
-  // 평균 평점
   const { data: ratings } = await supabase
     .from('books')
     .select('rating')
     .eq('isbn', isbn)
+    .eq('is_public', true)
     .not('rating', 'is', null);
 
-  const avgRating =
-    ratings && ratings.length > 0
-      ? (
-          ratings.reduce((acc, curr) => acc + (curr.rating || 0), 0) /
-          ratings.length
-        ).toFixed(1)
-      : '0.0';
+  // 0("평가 안 함")과 10("인생책")을 그대로 평균 내면 양쪽으로 왜곡된다 — model/rating.ts
+  const scores = (ratings ?? []).map((row) => row.rating);
 
   return {
     completedCount: completedCount || 0,
-    avgRating,
-    ratingCount: ratings?.length || 0,
+    avgRating: averageScore(scores),
+    // 평균에 실제로 들어간 권수만 센다 (0점 기록은 제외)
+    ratingCount: scores.filter((rating) => rating !== null && rating > 0).length,
   };
 }
 
@@ -186,9 +187,9 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
                   aria-hidden='true'
                   className='size-4 fill-chart-4 text-chart-4'
                 />
-                {stats.avgRating}
+                {stats.avgRating.toFixed(1)}
                 <span className='font-normal text-text-faint'>
-                  ({stats.ratingCount})
+                  / {RATING_MAX} ({stats.ratingCount})
                 </span>
               </span>
               <span aria-hidden='true' className='text-text-faint'>
