@@ -48,9 +48,16 @@
    `app/(public)/books/info/[id]/page.tsx`의 인라인 `getBookStats`가 완독 수·평점을
    `is_public` 없이 집계한다. RLS는 익명 방문자만 걸러주므로, **로그인 사용자에게는 자기
    비공개 기록까지 섞여** 방문자와 다른 숫자가 보인다. `ReaderProfiles`와 같은 부류의 결함.
-8. **`RatingDistributionChart`는 "6.4 / 5.0" 같은 표시를 낼 수 있다.**
+8. **`RatingDistributionChart`는 죽은 코드이고, 그 안에 "6.4 / 5.0" 버그가 있다.**
    자체적으로 `rating * count`의 가중합을 구해 `/ 5.0`으로 표기하는데, 가중합에 10점이
    포함되므로 산술적으로 5.0을 넘길 수 있다.
+
+   단, **이 컴포넌트는 어디에서도 import되지 않는다** (앱 전체에서 식별자가 자기 정의
+   1곳에만 등장). 즉 이 버그는 코드에 실재하지만 사용자에게 렌더된 적이 없다.
+   같은 자리에 실제로 렌더되는 것은 `features/stats/ui/OverallDistribution.tsx`와
+   `features/stats/ui/RatingDoughnutChart.tsx`이며, 둘 다 `LibraryView`가 쓴다.
+   → **고치지 않고 파일을 삭제한다.** 살아 있는 평균 표시는 결함 6이 고쳐지면
+   `calculateBookStats`를 통해 함께 바로잡힌다.
 
 ### 리뷰 제안 중 채택하지 않은 것
 
@@ -79,35 +86,46 @@
 | `isRated(rating)` | `null`과 `0` 제외 (`0` = "평가 안 함") |
 | `toScore(rating)` | `10` → `5`, 나머지는 그대로 |
 | `isLifeBook(rating)` | `rating === 10` |
+| `isTopRated(rating)` | 최고 평가(5점 또는 인생책) — 책장 표지 뷰 판정용 |
 | `averageScore(ratings)` | `isRated` 필터 → `toScore` 평균 → 소수 1자리. 대상 없으면 `0` |
 
 **packages화 검토 (CLAUDE.md #5):** 앱이 `page0127` 하나뿐이고 이 규칙은 page0127의
 도메인 규칙이다. `packages/`(design-tokens, icons, quality)로 뺄 근거가 없으므로
 FSD 규칙대로 `entities/book/model`에 둔다.
 
-**평균 계산 3곳을 교체:**
+**평균 계산 지점 교체:**
 
 | 파일 | 변경 |
 | --- | --- |
 | `src/entities/book/model/libraryPeriod.ts` | `calculateBookStats`의 `ratingSum` 직접 합산 → `averageScore` |
-| `src/widgets/dashboard/RatingDistributionChart.tsx` | 자체 `weightedSum` 계산 제거 → `averageScore` |
 | `app/(public)/books/info/[id]/page.tsx` | 인라인 `getBookStats`의 `reduce` → `averageScore` |
+| `src/widgets/dashboard/RatingDistributionChart.tsx` | 죽은 코드 — **파일 삭제** (결함 8) |
 
-**`rating === 10` 산재 지점을 `isLifeBook()`으로 교체** (동작 동일, 의미 명시화):
+`calculateBookStats.averageRating`을 고치면 이를 소비하는 살아 있는 표시가
+함께 바로잡힌다: `RatingDoughnutChart`(평균 큰 숫자), `ReadingProgressOverview`
+(요약 줄), 둘 다 `LibraryView` 경유.
 
-- `src/widgets/book/ui/LifeBooksShelf.tsx`
-- `src/widgets/book/ui/PublicBookShelf.tsx` (표지 뷰 판정 — `rating === 5 || rating === 10`)
-- `src/widgets/dashboard/RatingDistributionChart.tsx` ("← 인생책!" 라벨)
-- `src/features/stats/ui/OverallDistribution.tsx` (`ratingLabel`)
-- `src/entities/book/api/getOverallStats.ts` (`perfectScoreBooks`)
+**`rating === 10` 산재 지점을 `rating.ts` 헬퍼로 교체** (동작 동일, 의미 명시화):
+
+- `src/widgets/book/ui/LifeBooksShelf.tsx` → `isLifeBook`
+- `src/widgets/book/ui/PublicBookShelf.tsx` → `isTopRated`
+  (표지 뷰 판정 `rating === 5 || rating === 10`이 "만점 = 5점 또는 인생책"과 같다)
+- `src/features/stats/ui/OverallDistribution.tsx` → `isLifeBook` (`ratingLabel`)
+- `src/entities/book/api/getOverallStats.ts` → `isLifeBook` (`perfectScoreBooks`)
 
 이렇게 모으면 트랙 F에서 컬럼을 나눌 때 고칠 지점이 `rating.ts` 한 곳으로 수렴한다.
 
 **DB 함수는 건드리지 않는다.** `get_books_of_life`와 `ranking_snapshots`의
 `rating = 10` 조건은 그대로 둔다 (트랙 F 범위).
 
-**표기:** 공개 책 페이지 평균 옆에 `/ 5`를 붙인다. `RatingDistributionChart`의
-기존 `/ 5.0` 표기는 유지한다 (이제 값이 실제로 5를 넘지 않는다).
+**표기:** 공개 책 페이지 평균 옆에 `/ 5`를 붙인다.
+
+`OverallDistribution`의 `ratingLabel`은 10점을 "만점"으로 부르는데, A-5에서 등록 폼을
+"인생책"으로 바꾸므로 같은 이름으로 맞춘다("만점" → "인생책").
+
+`RatingDoughnutChart`는 평균을 만점 표기 없이 큰 숫자로만 보여준다. 같은 모호함이
+있지만 이는 서재 화면의 카피·디자인 결정이라 이번 범위에서 제외한다 — 값 자체는
+정규화로 정확해진다.
 
 ### A-2. 공개 책 페이지 `is_public` 필터
 
@@ -213,7 +231,8 @@ A-2와 A-3의 핵심 검증이다.
 ## 작업 순서
 
 1. A-1 `rating.ts` 작성 + 단위 테스트 (테스트 먼저)
-2. A-1 소비 지점 3곳 교체 + `isLifeBook` 치환 + `libraryPeriod.test.ts` 보강
+2. A-1 평균 계산 2곳 교체 + 헬퍼 치환 4곳 + 죽은 `RatingDistributionChart` 삭제
+   + `libraryPeriod.test.ts` 보강
 3. A-2 공개 책 페이지 `is_public` 필터
 4. A-3 ReaderProfiles 검증 후 커밋
 5. A-4 재분석 조건
