@@ -15,6 +15,7 @@ export const BookActivitySection = ({ bookId }: { bookId: string }) => (
       queryKey={activityKeys.bookActivities(bookId)}
       queryFn={(params) => activityApi.getBookActivities(bookId, params)}
       hideBook
+      initialCommentsOpen
       emptyState={
         <p className='rounded-2xl bg-sunken py-10 text-center text-text-body'>
           아직 이 책의 기록이 없어요.
