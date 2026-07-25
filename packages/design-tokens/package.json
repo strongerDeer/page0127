@@ -1,31 +1,24 @@
 {
   "name": "@repo/design-tokens",
   "version": "0.0.1",
-  "description": "Design tokens for the monorepo",
-  "main": "./src/js/light.js",
-  "types": "./src/js/light.d.ts",
+  "private": true,
+  "description": "page0127 디자인 토큰 — Figma Variables 와 왕복하는 단일 출처",
+  "type": "module",
   "exports": {
-    "./light": {
-      "import": "./src/js/light.js",
-      "types": "./src/js/light.d.ts"
-    },
-    "./dark": {
-      "import": "./src/js/dark.js",
-      "types": "./src/js/dark.d.ts"
-    },
-    "./css/light.css": "./src/css/light.css",
-    "./css/dark.css": "./src/css/dark.css"
+    "./tokens.css": "./dist/tokens.css"
   },
   "scripts": {
-    "build": "node style-dictionary.config.js",
-    "clean": "rm -rf src",
+    "build": "node build.mjs",
+    "baseline": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/extract-baseline.ts",
+    "test": "vitest run",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist",
     "rebuild": "npm run clean && npm run build"
   },
+  "files": ["dist", "tokens"],
   "devDependencies": {
-    "style-dictionary": "^3.9.2"
-  },
-  "files": [
-    "src",
-    "tokens"
-  ]
+    "style-dictionary": "^5.0.0",
+    "typescript": "^5",
+    "vitest": "^4.1.10"
+  }
 }
