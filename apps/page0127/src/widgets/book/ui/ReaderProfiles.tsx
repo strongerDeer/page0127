@@ -18,7 +18,7 @@ export const ReaderProfiles = async ({ isbn }: ReaderProfilesProps) => {
   // books.user_id 의 외래키는 auth.users 하나뿐이고 profiles 를 참조하지 않는다.
   // → PostgREST 가 books ↔ profiles 관계를 찾지 못해 중첩 select 조인은 PGRST200 으로 실패한다.
   //   그래서 user_id 를 먼저 모으고 profiles 를 따로 조회하는 2단계 방식을 쓴다.
-  const { data: readerRows } = await supabase
+  const { data: readerRows, error: readerError } = await supabase
     .from('books')
     .select('user_id')
     .eq('isbn', isbn)
@@ -30,16 +30,34 @@ export const ReaderProfiles = async ({ isbn }: ReaderProfilesProps) => {
     .order('completed_date', { ascending: false, nullsFirst: false })
     .limit(FETCH_LIMIT);
 
+  // 에러를 버리면 "독자 없음"과 "쿼리가 깨졌음"이 구분되지 않는다.
+  // 앱이 Supabase 생성 타입(Database 제네릭) 없이 클라이언트를 만들기 때문에
+  // 없는 컬럼을 select 해도 tsc 가 못 잡는다 → 런타임 error 가 유일한 신호다.
+  // (avatar_url 오타가 운영에서 오래 살아남은 이유)
+  if (readerError) {
+    console.warn(
+      `[ReaderProfiles] 완독 독자 조회 실패 (isbn=${isbn}): ${readerError.message}`
+    );
+    return null;
+  }
+
   if (!readerRows || readerRows.length === 0) return null;
 
   // 완독일 내림차순을 유지한 채 중복 user_id 제거 (Set 은 삽입 순서를 보존한다)
   const uniqueUserIds = [...new Set(readerRows.map((row) => row.user_id))];
   const visibleUserIds = uniqueUserIds.slice(0, MAX_READERS);
 
-  const { data: profiles } = await supabase
+  const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
     .select('id, username, nickname, photo_url')
     .in('id', visibleUserIds);
+
+  if (profilesError) {
+    console.warn(
+      `[ReaderProfiles] 프로필 조회 실패 (isbn=${isbn}): ${profilesError.message}`
+    );
+    return null;
+  }
 
   if (!profiles || profiles.length === 0) return null;
 
