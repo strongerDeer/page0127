@@ -14,6 +14,8 @@ import { Label } from '@/shared/ui/label';
 import { Switch } from '@/shared/ui/switch';
 import { Textarea } from '@/shared/ui/textarea';
 
+import { isLifeBook } from '@/entities/book';
+
 import type { AladinBook, BookRating, BookStatus } from '@/entities/book';
 
 type BookRegistrationFormProps = {
@@ -353,28 +355,34 @@ export const BookRegistrationForm = ({
                 aria-labelledby={ids.rating}
                 className='flex flex-wrap gap-2'
               >
-                {[0, 1, 2, 3, 4, 5, 10].map((score) => (
-                  <button
-                    key={score}
-                    type='button'
-                    // aria-pressed: 어떤 점수가 선택됐는지 스크린 리더에 전달
-                    aria-pressed={rating === score}
-                    aria-label={`${score}점`}
-                    onClick={() =>
-                      dispatch({
-                        type: 'SET_RATING',
-                        rating: score as BookRating,
-                      })
-                    }
-                    className={`rounded-md border px-4 py-2 transition-colors ${
-                      rating === score
-                        ? 'border-primary bg-primary text-primary-foreground'
-                        : 'border-border bg-card text-foreground hover:bg-accent'
-                    }`}
-                  >
-                    {score}
-                  </button>
-                ))}
+                {[0, 1, 2, 3, 4, 5, 10].map((score) => {
+                  // 10은 11번째 점수가 아니라 "인생책"이다.
+                  // 버튼에 10을 그대로 쓰면 척도가 깨져 보이므로 이름으로 보여준다.
+                  const label = isLifeBook(score) ? '인생책' : `${score}점`;
+
+                  return (
+                    <button
+                      key={score}
+                      type='button'
+                      // aria-pressed: 어떤 점수가 선택됐는지 스크린 리더에 전달
+                      aria-pressed={rating === score}
+                      aria-label={label}
+                      onClick={() =>
+                        dispatch({
+                          type: 'SET_RATING',
+                          rating: score as BookRating,
+                        })
+                      }
+                      className={`rounded-md border px-4 py-2 transition-colors ${
+                        rating === score
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-border bg-card text-foreground hover:bg-accent'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
