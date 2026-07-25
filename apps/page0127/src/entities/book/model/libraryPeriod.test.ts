@@ -110,4 +110,30 @@ describe('libraryPeriod', () => {
     expect(stats.averageRating).toBe(5);
     expect(stats.monthlyReading[0].count).toBe(1);
   });
+
+  it('평균 평점은 평가 안 함(0)을 빼고 인생책(10)을 5점으로 접어 계산한다', () => {
+    const books = [
+      createBook({
+        status: 'completed',
+        completed_date: '2026-01-10',
+        rating: 10, // 인생책 → 5점으로 접힌다
+      }),
+      createBook({
+        status: 'completed',
+        completed_date: '2026-02-10',
+        rating: 4,
+      }),
+      createBook({
+        status: 'completed',
+        completed_date: '2026-03-10',
+        rating: 0, // "평가 안 함" — 평균에서 빠진다
+      }),
+    ];
+
+    const stats = calculateBookStats(books, 2026, 2026);
+
+    // (5 + 4) / 2 = 4.5 — 0을 세면 3.0, 10을 그대로 더하면 4.7이 된다
+    expect(stats.averageRating).toBe(4.5);
+    expect(stats.totalCompletedBooks).toBe(3);
+  });
 });
