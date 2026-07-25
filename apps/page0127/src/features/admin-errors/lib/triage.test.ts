@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { triage, type SentryIssue } from './triage';
+import { type SentryIssue,triage } from './triage';
 
 // 실측 이슈(2026-07-23 발생)를 기준으로 삼는다. 필드는 판정에 쓰는 것만 채운다.
 const issue = (over: Partial<SentryIssue> = {}): SentryIssue => ({

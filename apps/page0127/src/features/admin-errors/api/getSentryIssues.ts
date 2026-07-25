@@ -1,6 +1,6 @@
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 
-import { triage, type SentryIssue, type TriagedIssue } from '../lib/triage';
+import { type SentryIssue, triage, type TriagedIssue } from '../lib/triage';
 
 const ORG = 'stronger';
 const PROJECT = 'page0127';
