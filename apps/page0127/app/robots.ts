@@ -8,10 +8,12 @@ const robots = (): MetadataRoute.Robots => {
   return {
     rules: {
       userAgent: '*',
-      allow: '/',
+      // /books 아래에는 공개·보호 경로가 섞여 있다. 더 구체적인 Allow가
+      // /books/ Disallow보다 우선해 공개 카탈로그와 상세 페이지는 색인된다.
+      allow: ['/', '/books/all', '/books/info/'],
       // 로그인 필요 영역·API 는 검색 노출 제외
       disallow: [
-        '/books',
+        '/books/',
         '/feed',
         '/notifications',
         '/settings',

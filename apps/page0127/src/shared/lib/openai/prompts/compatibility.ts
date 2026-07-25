@@ -19,18 +19,17 @@ type BookForCompatibility = {
 };
 
 type CompatibilityPromptInput = {
-  /** 첫 번째 사용자 (분석을 요청한 사람) */
-  user1: { name: string; books: BookForCompatibility[] };
-  /** 두 번째 사용자 (공개 서재의 주인) */
-  user2: { name: string; books: BookForCompatibility[] };
+  /** 이름·닉네임 없이 책 정보만 전달한다. */
+  user1Books: BookForCompatibility[];
+  user2Books: BookForCompatibility[];
 };
 
 /**
  * 독서 궁합 분석 프롬프트 생성
  */
 export function createCompatibilityPrompt({
-  user1,
-  user2,
+  user1Books,
+  user2Books,
 }: CompatibilityPromptInput): string {
   const formatBooks = (books: BookForCompatibility[]) =>
     books
@@ -44,11 +43,11 @@ export function createCompatibilityPrompt({
 
 ## 분석 데이터
 
-### user1 — ${user1.name} (${user1.books.length}권):
-${formatBooks(user1.books)}
+### user1 (${user1Books.length}권):
+${formatBooks(user1Books)}
 
-### user2 — ${user2.name} (${user2.books.length}권):
-${formatBooks(user2.books)}
+### user2 (${user2Books.length}권):
+${formatBooks(user2Books)}
 
 ## 응답 형식
 
@@ -93,9 +92,9 @@ ${formatBooks(user2.books)}
 
 ## 문체 지침
 - compatibility_description과 reason은 부드럽고 따뜻한 해요체로 써주세요 (예: "~해요", "~네요", "~일 거예요")
-- 두 사람을 지칭할 때는 이름 뒤에 "님"을 붙여주세요
+- 실명·닉네임을 추정하거나 만들어 내지 마세요. 두 사람을 함께 지칭할 때는 "두 분"이라고 표현하세요
 - ⚠️ **2인칭 "당신"을 쓰지 마세요.** 한국어 서비스에서 "당신"은 번역투로 읽힙니다.
-  주어를 생략하거나 이름+"님"으로 부르세요.
+  주어를 생략하거나 user1·user2로 구분하세요.
 - 차이점은 단점이 아니라 "서로를 넓혀줄 부분"으로 표현해주세요
 - 사용자가 몰랐던 연결고리를 발견하게 해주세요 — 단순 통계 나열은 피해주세요`;
 }

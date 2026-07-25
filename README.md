@@ -47,7 +47,7 @@ TODO: 스크린샷/GIF 추가
 
 ### DevOps
 
-- **Monorepo**: Turborepo + pnpm workspace (`apps/page0127`, `packages/design-tokens`, `packages/icons`) — 디자인 토큰·아이콘을 패키지로 분리해 재사용
+- **Monorepo**: Turborepo + npm workspaces (`apps/page0127`, `packages/design-tokens`, `packages/icons`) — 디자인 토큰·아이콘을 패키지로 분리해 재사용
 - **Deployment**: Vercel
 
 ## 📅 진행 상태
@@ -87,7 +87,7 @@ TODO: 스크린샷/GIF 추가
 git clone git@github.com:strongerDeer/page0127.git
 
 # 2. Install
-pnpm install
+npm ci
 
 # 3. 환경 변수 — apps/page0127/.env.local 생성
 #    (아래 키가 필요합니다)
@@ -96,7 +96,7 @@ pnpm install
 #    NEXT_PUBLIC_SITE_URL / NEXT_PUBLIC_GA_ID / CRON_SECRET
 
 # 4. Run
-pnpm dev
+npm run dev
 ```
 
 ## 📖 문서

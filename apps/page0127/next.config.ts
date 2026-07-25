@@ -2,6 +2,25 @@ import { withSentryConfig } from '@sentry/nextjs';
 
 import type { NextConfig } from 'next';
 
+// Preview가 운영 DB에 연결된 채 배포되는 사고를 빌드 단계에서 차단한다.
+// Vercel Preview 환경에는 운영 URL(비교용)과 개발 Supabase URL을 각각 넣는다.
+if (process.env.VERCEL_ENV === 'preview') {
+  const previewUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const productionUrl = process.env.PRODUCTION_SUPABASE_URL;
+
+  if (!previewUrl || !productionUrl) {
+    throw new Error(
+      'Preview 배포에는 NEXT_PUBLIC_SUPABASE_URL과 PRODUCTION_SUPABASE_URL이 모두 필요합니다.'
+    );
+  }
+
+  if (new URL(previewUrl).origin === new URL(productionUrl).origin) {
+    throw new Error(
+      'Preview 배포가 운영 Supabase를 가리키고 있어 빌드를 중단합니다.'
+    );
+  }
+}
+
 const nextConfig: NextConfig = {
   // React Compiler 자동 메모이제이션 (Next.js 16부터 stable)
   reactCompiler: true,

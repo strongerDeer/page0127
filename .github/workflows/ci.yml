@@ -7,6 +7,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality:
     name: Lint · Type-check · Build
@@ -71,6 +75,8 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PRODUCTION_SUPABASE_URL: ${{ secrets.PRODUCTION_SUPABASE_URL }}
         run: |
           missing=0
           if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ]; then
@@ -85,7 +91,25 @@ jobs:
           else
             echo "NEXT_PUBLIC_SUPABASE_ANON_KEY: SET (length=${#NEXT_PUBLIC_SUPABASE_ANON_KEY})"
           fi
+          if [ -z "$PRODUCTION_SUPABASE_URL" ]; then
+            echo "::error::PRODUCTION_SUPABASE_URL 이(가) 비어 있음 — 운영 DB 비교용 secret 필요"
+            missing=1
+          else
+            echo "PRODUCTION_SUPABASE_URL: SET (length=${#PRODUCTION_SUPABASE_URL})"
+          fi
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::error::SUPABASE_SERVICE_ROLE_KEY 이(가) 비어 있음 — 개발/테스트 프로젝트 키 필요"
+            missing=1
+          else
+            echo "SUPABASE_SERVICE_ROLE_KEY: SET (length=${#SUPABASE_SERVICE_ROLE_KEY})"
+          fi
           exit $missing
+
+      - name: Block production database in CI
+        run: npm run check:non-production-db
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          PRODUCTION_SUPABASE_URL: ${{ secrets.PRODUCTION_SUPABASE_URL }}
 
       # 프로덕션 빌드. NEXT_PUBLIC_* 값은 이 시점에 번들에 박히므로 여기서 env를 준다.
       # (turbo strict env 모드라, 이 값들은 turbo.json build task의 env에도 선언돼 있어야 전달된다)
@@ -94,6 +118,7 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          PRODUCTION_SUPABASE_URL: ${{ secrets.PRODUCTION_SUPABASE_URL }}
           OPENAI_API_KEY: dummy
 
       # Chromium 브라우저와 실행에 필요한 시스템 라이브러리를 설치한다.
@@ -108,4 +133,5 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           OPENAI_API_KEY: dummy

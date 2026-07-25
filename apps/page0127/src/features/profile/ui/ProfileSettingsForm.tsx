@@ -90,7 +90,7 @@ const ProfileSettingsFormDangerZone = ({
 }: ProfileSettingsFormDangerZoneProps) => (
   <div className='mt-6 flex items-center justify-between gap-4 rounded-2xl bg-sunken px-5 py-4'>
     <p className='text-sm text-text-subtle'>
-      계정을 삭제하면 모든 기록이 영구적으로 사라집니다.
+      계정을 삭제하면 독서 기록과 계정 정보가 영구적으로 사라집니다.
     </p>
     <DeleteAccountDialog userEmail={userEmail} />
   </div>
@@ -127,12 +127,6 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
 
   // 이미지 제거 의도 추적 (사용자가 '이미지 제거'를 눌렀는지)
   const [isImageRemoved, setIsImageRemoved] = useState(false);
-
-  // 공개 서재 URL (Hydration 에러 방지 — 클라이언트에서만 계산)
-  const [profileUrl, setProfileUrl] = useState('');
-  useEffect(() => {
-    setProfileUrl(`${window.location.origin}/${profile.username}`);
-  }, [profile.username]);
 
   // [state, formAction] — Server Action을 연결
   // isPending은 제출 버튼(SubmitButton)이 useFormStatus로 직접 읽으므로 구조분해하지 않음
@@ -214,7 +208,7 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
               className='bg-muted'
             />
             <p className='text-xs text-text-faint'>
-              공개 서재 주소 {profileUrl || `/${profile.username}`}
+              공개 서재 주소 /{profile.username}
             </p>
           </div>
 

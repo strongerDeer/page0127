@@ -5,15 +5,16 @@ import { useEffect, useEffectEvent, useRef } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 
-import type { Activity } from '@/entities/activity';
-
 import { ActivityCard } from './ActivityCard';
+
+import type { Activity } from '@/entities/activity';
 
 type ActivityListProps = {
   queryKey: readonly unknown[];
   queryFn: (params: { limit: number; offset: number }) => Promise<Activity[]>;
   emptyState?: React.ReactNode;
   hideBook?: boolean;
+  initialCommentsOpen?: boolean; // 각 카드의 댓글을 기본 펼침으로 (책 타임라인용)
 };
 
 const PAGE_SIZE = 20;
@@ -22,13 +23,20 @@ const PAGE_SIZE = 20;
  * 활동 목록(무한 스크롤) 공용 컴포넌트.
  * 학습 포인트: 데이터 소스(queryKey/queryFn)를 주입받아 피드·책 타임라인이 재사용한다.
  */
-export const ActivityList = ({ queryKey, queryFn, emptyState, hideBook }: ActivityListProps) => {
+export const ActivityList = ({
+  queryKey,
+  queryFn,
+  emptyState,
+  hideBook,
+  initialCommentsOpen,
+}: ActivityListProps) => {
   const observerRef = useRef<HTMLDivElement>(null);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
       queryKey,
-      queryFn: ({ pageParam = 0 }) => queryFn({ limit: PAGE_SIZE, offset: pageParam }),
+      queryFn: ({ pageParam = 0 }) =>
+        queryFn({ limit: PAGE_SIZE, offset: pageParam }),
       getNextPageParam: (lastPage, allPages) =>
         lastPage.length < PAGE_SIZE ? undefined : allPages.flat().length,
       initialPageParam: 0,
@@ -67,7 +75,12 @@ export const ActivityList = ({ queryKey, queryFn, emptyState, hideBook }: Activi
     <div>
       <div className='divide-y divide-line-soft border-t border-line'>
         {activities.map((activity) => (
-          <ActivityCard key={activity.id} activity={activity} hideBook={hideBook} />
+          <ActivityCard
+            key={activity.id}
+            activity={activity}
+            hideBook={hideBook}
+            initialCommentsOpen={initialCommentsOpen}
+          />
         ))}
       </div>
       <div ref={observerRef} className='py-4'>

@@ -1,5 +1,3 @@
-import { Geist_Mono } from 'next/font/google';
-
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
@@ -18,12 +16,6 @@ import './globals.css';
 // (가변폰트 전체는 2.1MB, dynamic subset은 실사용 100KB 안팎)
 const PRETENDARD_CSS =
   'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css';
-
-// 코드 블록 등 고정폭이 필요한 곳에만 남긴다
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
 
 // 사이트 절대 URL — sitemap/robots/OG 이미지가 절대 경로를 만들 때 공통으로 참조
 // (환경변수 미설정 시 로컬 기본값으로 폴백)
@@ -94,7 +86,7 @@ const RootLayout = ({
         />
         <link rel='stylesheet' href={PRETENDARD_CSS} />
       </head>
-      <body className={`${geistMono.variable} antialiased`}>
+      <body className='antialiased'>
         {/* antialiased: 폰트 렌더링 최적화 */}
         <QueryProvider>
           {/* QueryProvider 안에 있어야 useCurrentUser(React Query)를 쓸 수 있다 */}

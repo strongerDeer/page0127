@@ -111,15 +111,10 @@ export async function POST(request: NextRequest) {
         .not('rating', 'is', null)
         .order('completed_date', { ascending: false });
 
-    const [{ data: books1 }, { data: books2 }, { data: profiles }] =
-      await Promise.all([
-        fetchCompletedBooks(userId1),
-        fetchCompletedBooks(userId2),
-        supabase
-          .from('profiles')
-          .select('id, nickname, username')
-          .in('id', [userId1, userId2]),
-      ]);
+    const [{ data: books1 }, { data: books2 }] = await Promise.all([
+      fetchCompletedBooks(userId1),
+      fetchCompletedBooks(userId2),
+    ]);
 
     const MIN_BOOKS = 5;
     const myBooks = user.id === userId1 ? books1 : books2;
@@ -153,11 +148,6 @@ export async function POST(request: NextRequest) {
     }
     reservedUsageId = reservation.usageId;
 
-    const getName = (userId: string) => {
-      const profile = profiles?.find((p) => p.id === userId);
-      return profile?.nickname || profile?.username || '독서가';
-    };
-
     // 6. AI 분석 실행 — 토큰 절약을 위해 최근 30권까지만 전달
     const MAX_BOOKS_FOR_PROMPT = 30;
     const toPromptBooks = (books: Book[]) =>
@@ -169,8 +159,8 @@ export async function POST(request: NextRequest) {
       }));
 
     const prompt = createCompatibilityPrompt({
-      user1: { name: getName(userId1), books: toPromptBooks(books1 as Book[]) },
-      user2: { name: getName(userId2), books: toPromptBooks(books2 as Book[]) },
+      user1Books: toPromptBooks(books1 as Book[]),
+      user2Books: toPromptBooks(books2 as Book[]),
     });
 
     aiRequestStarted = true;

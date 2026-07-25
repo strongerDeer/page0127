@@ -1,5 +1,7 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
+import 'server-only';
+
 /**
  * 관리자(service_role) Supabase 클라이언트 — ⚠️ 서버 전용
  *

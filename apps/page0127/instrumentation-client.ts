@@ -14,6 +14,10 @@ Sentry.init({
     userInfo: false,
     httpBodies: [],
   },
+
+  // 사용자 체감 성능 흐름은 소량만 표본 수집한다. 오류 이벤트는 이 비율과
+  // 무관하게 전송된다.
+  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.05 : 1,
 });
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

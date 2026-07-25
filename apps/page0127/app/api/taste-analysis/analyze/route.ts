@@ -196,7 +196,6 @@ export async function POST(_request: NextRequest) {
 
       if (recError) {
         console.error('추천 도서 저장 실패:', recError);
-        console.error('추천 도서 데이터:', recommendations);
       } else {
         if (process.env.NODE_ENV === 'development') {
           console.warn(`추천 도서 ${recommendations.length}건 저장 완료`);

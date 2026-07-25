@@ -1,5 +1,5 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import "tailwindcss";
+@import "tw-animate-css";
 
 /* ============================================
    page0127 디자인 시스템
@@ -148,9 +148,11 @@
      letter-spacing 은 주지 않는다: Pretendard 는 자간이 이미 최적화돼 있고,
      밀리의서재도 전 요소 normal 이다. (교보의 -0.01em 은 NotoSansKR 스택이라 필요한 값) */
   --font-sans:
-    'Pretendard Variable', Pretendard, -apple-system, 'Apple SD Gothic Neo',
+    "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo",
     sans-serif;
-  --font-mono: var(--font-geist-mono);
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
 
   --radius-sm: calc(var(--radius) - 4px); /* 4px */
   --radius-md: calc(var(--radius) - 2px); /* 6px */
@@ -160,7 +162,10 @@
 
 body {
   font-family:
-    'Pretendard Variable', Pretendard, -apple-system, 'Apple SD Gothic Neo',
+    "Pretendard Variable",
+    Pretendard,
+    -apple-system,
+    "Apple SD Gothic Neo",
     sans-serif;
 }
 

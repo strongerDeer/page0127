@@ -7,7 +7,7 @@
 export const SITE_INFO = {
   name: 'page0127',
   since: '2025년 11월',
-  lastUpdated: '2026년 7월 13일',
+  lastUpdated: '2026년 7월 25일',
   contact: {
     // 카카오톡 1:1 오픈채팅 — 방문자가 링크로 들어와 1:1 대화, 운영자는 카카오톡 알림으로 수신
     kakaoOpenChatUrl: 'https://open.kakao.com/o/scK1DkFi',

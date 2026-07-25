@@ -1,7 +1,20 @@
 # 운영 런북 (Operations Runbook)
 
 page0127 서비스의 상태 확인·백업·장애 대응 절차를 한곳에 모은 문서.
-`<...>` 표시는 팀에서 실제 값으로 채워야 하는 부분이다.
+오픈 전 확인하지 못한 항목은 `미확인 — 오픈 차단`으로 표시한다.
+
+## 0. Go-live 게이트
+
+다음 항목이 모두 체크되기 전에는 정식 오픈으로 전환하지 않는다.
+
+- [ ] 최신 DB 마이그레이션 적용 및 RPC 권한 allowlist 확인
+- [ ] GitHub `main` 브랜치 보호: PR 필수 + `Lint · Type-check · Build`, `E2E smoke (Playwright)` 필수 체크
+- [ ] Vercel Preview와 GitHub Actions가 개발/테스트 Supabase를 사용
+- [ ] Vercel Preview에 `PRODUCTION_SUPABASE_URL` 설정 후 오연결 차단 빌드 확인
+- [ ] 운영 배포 직전 백업 생성 및 복원 가능한 백업인지 확인
+- [ ] 외부 uptime 모니터와 장애 알림 실수신 확인
+- [ ] Sentry 테스트 오류가 이슈·알림으로 도착하고 소스맵이 해석되는지 확인
+- [ ] 두 테스트 계정으로 가입 → 책 CRUD → AI 분석 → 팔로우/알림 → 탈퇴 확인
 
 ---
 
@@ -25,11 +38,11 @@ page0127 서비스의 상태 확인·백업·장애 대응 절차를 한곳에 �
 
 | 항목 | 값 |
 | --- | --- |
-| Monitor URL | `https://<프로덕션-도메인>/api/health` |
+| Monitor URL | `https://page0127.vercel.app/api/health` |
 | 방식 | HTTP(s) — 상태코드 200 확인 (가능하면 본문에 `"status":"ok"` 포함 검사) |
 | 주기 | 1~5분 |
 | 실패 판정 | 연속 2회 실패 시 알림 (일시적 흔들림으로 인한 오탐 방지) |
-| 알림 채널 | `<Slack 채널 / 이메일 / SMS>` |
+| 알림 채널 | `미확인 — 오픈 차단` |
 
 > 배포 플랫폼(Vercel)의 함수 콜드스타트로 첫 응답이 느릴 수 있으니 타임아웃은 10초 이상으로.
 
@@ -39,9 +52,10 @@ page0127 서비스의 상태 확인·백업·장애 대응 절차를 한곳에 �
 
 ### 백업 현황 확인
 
-- Supabase 대시보드 → Project `<프로젝트>` → **Database → Backups**
+- Supabase 대시보드 → 운영 Project → **Database → Backups**
   - 플랜에 따라 **일 단위 자동 백업** 또는 **PITR(Point-in-Time Recovery)** 제공
-  - 현재 플랜: `<Free / Pro / ...>` / 보관 기간: `<N일>`
+  - 현재 플랜: `미확인 — 오픈 차단`
+  - 자동 백업/PITR 및 보관 기간: `미확인 — 오픈 차단`
 - ⚠️ Free 플랜은 자동 백업 보관이 짧거나 없을 수 있다. 중요 데이터라면
   Pro 이상(또는 아래 수동 백업 병행)을 검토.
 
@@ -55,8 +69,8 @@ supabase db dump --db-url "<POSTGRES_CONNECTION_STRING>" -f backup_$(date +%Y%m%
 pg_dump "<POSTGRES_CONNECTION_STRING>" > backup_$(date +%Y%m%d).sql
 ```
 
-- 저장 위치: `<안전한 오브젝트 스토리지 / 사내 저장소>`
-- 주기: `<주 1회 등>`
+- 저장 위치: `미확인 — 오픈 차단`
+- 주기: 자동 백업이 없다면 최소 주 1회
 
 ### 복구 리허설 체크리스트 (분기 1회 권장)
 
@@ -89,22 +103,22 @@ pg_dump "<POSTGRES_CONNECTION_STRING>" > backup_$(date +%Y%m%d).sql
    - 방금 배포가 원인 → **Vercel에서 직전 배포로 롤백** (Deployments → 이전 성공 배포 → Promote)
    - DB 마이그레이션이 원인 → 되돌리는 마이그레이션 작성(운영 DB 직접 수정 지양)
    - 외부 의존성(OpenAI/Aladin) 장애 → 해당 기능만 임시 비활성/안내
-4. **공지**: `<상태 페이지 / 공지 채널>`에 인지 사실 알림
+4. **공지**: 서비스 공지 채널에 인지 사실 알림
 5. **사후(postmortem)**: 원인·타임라인·재발방지책을 아래 "변경 이력" 또는 별도 문서에 기록
 
 ### 관측 도구 링크
 
-- Sentry: `https://<org>.sentry.io/` (org: `stronger`, project: `page0127`)
-- Vercel: `<프로젝트 대시보드 URL>`
-- Supabase: `<프로젝트 대시보드 URL>`
-- Uptime 모니터: `<모니터 대시보드 URL>`
+- Sentry: org `stronger`, project `page0127`
+- Vercel: 팀 대시보드의 `page0127` 프로젝트
+- Supabase: 운영 프로젝트 대시보드
+- Uptime 모니터: `미설정 — 오픈 차단`
 
 ### 에스컬레이션
 
 | 순위 | 담당 | 연락 |
 | --- | --- | --- |
-| 1차 | `<이름/역할>` | `<연락처>` |
-| 2차 | `<이름/역할>` | `<연락처>` |
+| 1차 | page0127 운영자 | 카카오톡 문의 채널 |
+| 2차 | - | - |
 
 ---
 
@@ -115,6 +129,33 @@ pg_dump "<POSTGRES_CONNECTION_STRING>" > backup_$(date +%Y%m%d).sql
 - [ ] Sentry에 방치된 미해결 이슈가 쌓였는지
 - [ ] 만료 임박한 키/토큰 확인 (`OPENAI_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `SENTRY_AUTH_TOKEN`)
 
+## 5. 배포 환경 필수 설정
+
+### GitHub Actions secrets
+
+- `NEXT_PUBLIC_SUPABASE_URL`: 개발/테스트 Supabase
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: 개발/테스트 anon key
+- `SUPABASE_SERVICE_ROLE_KEY`: 개발/테스트 service role key
+- `PRODUCTION_SUPABASE_URL`: 운영 Supabase URL(오연결 비교용)
+
+CI의 `Block production database in CI` 단계가 두 URL이 같으면 실패해야 정상이다.
+
+### Vercel
+
+- Production: 운영 Supabase 값
+- Preview: 개발/테스트 Supabase 값
+- Preview의 `PRODUCTION_SUPABASE_URL`: 운영 Supabase URL
+- Git Production Branch: `main`
+- GitHub의 필수 체크가 끝난 커밋만 Production에 배포되도록 설정
+
+### Sentry 실수신 테스트
+
+1. Preview에서 의도적으로 테스트 예외 1건을 발생시킨다.
+2. Sentry 환경이 `vercel-preview`로 분리되는지 확인한다.
+3. 파일명과 원본 줄 번호가 보이면 소스맵 정상이다.
+4. 운영 알림 규칙을 테스트해 실제 알림을 받은 시각을 기록한다.
+5. 테스트 이슈를 resolve하고 테스트 코드는 제거한다.
+
 ---
 
 ## 변경 이력
@@ -122,3 +163,4 @@ pg_dump "<POSTGRES_CONNECTION_STRING>" > backup_$(date +%Y%m%d).sql
 | 날짜 | 내용 | 작성 |
 | --- | --- | --- |
 | 2026-07-23 | 런북 최초 작성 | - |
+| 2026-07-25 | Go-live 게이트·환경 분리·Sentry 실수신 절차 추가 | - |
