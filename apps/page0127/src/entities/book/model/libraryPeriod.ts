@@ -1,5 +1,5 @@
 import { mapToMainCategory } from '../../../shared/lib/categoryMapper';
-import { averageScore } from './rating';
+import { averageScore, isLifeBook } from './rating';
 
 import type { Book } from '../types';
 import type {
@@ -190,6 +190,9 @@ export const calculateBookStats = (
     ratingReading: calculateRatingReading(completedBooks),
     // 0("평가 안 함")은 제외하고 10("인생책")은 5점으로 접는다 — model/rating.ts 참고
     averageRating: averageScore(completedBooks.map((book) => book.rating)),
-    fiveStarBooks: completedBooks.filter((book) => book.rating === 5).length,
+    // 화면 라벨이 '인생책'이므로 세는 기준도 인생책(10)이어야 한다.
+    // 전에는 rating === 5 만 세서, 같은 라벨이 탭에 따라 다른 숫자를 보여줬다.
+    lifeBookCount: completedBooks.filter((book) => isLifeBook(book.rating))
+      .length,
   };
 };

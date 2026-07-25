@@ -14,6 +14,7 @@ type ReadingProgressOverviewProps = {
   target: number;
   totalPages: number;
   averageRating: number;
+  /** 인생책(rating 10) 권수 — 라벨이 '인생책'이므로 같은 기준으로 센 값을 받는다 */
   favoriteBooks: number;
   books: Book[];
   onSetGoal?: () => void;
@@ -158,7 +159,7 @@ export const ReadingProgressOverview = ({
             <div className='pl-4'>
               <Metric
                 icon={<Trophy className='size-3.5' />}
-                label='인생 책'
+                label='인생책'
                 value={`${favoriteBooks}권`}
               />
             </div>
