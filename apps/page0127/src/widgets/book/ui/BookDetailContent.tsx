@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
 
 import type { Book } from '@/entities/book';
+import { BookActivitySection } from './BookActivitySection';
 
 const STATUS_TEXT: Record<Book['status'], string> = {
   completed: '완독',
@@ -162,6 +163,8 @@ export const BookDetailContent = ({
           </CardContent>
         </Card>
       )}
+
+      <BookActivitySection bookId={book.id} />
     </>
   );
 };
