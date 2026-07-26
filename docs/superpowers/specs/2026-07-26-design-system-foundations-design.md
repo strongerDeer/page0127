@@ -453,3 +453,15 @@ packages/design-tokens/
 얽혀 있고, 타이포 weight/line-height를 토큰화하려면 `semantic.json`에 새 그룹을 추가하고 `globals.css`의 유틸리티 구조를
 바꿔야 한다 — 둘 다 "컴포넌트 0줄 수정"을 지키면서 이번 라운드 범위(§3.1)를 넘어선다. 라운드 2 이후, 컴포넌트 작업과 함께
 다시 설계하는 것을 과제로 남긴다.
+
+### 미결: `baseline.json`의 역할 전환 (최종 리뷰에서 확인, 2026-07-26)
+
+`tests/baseline.json`은 지금 "이사 전 `globals.css` 값을 동결한 기록" 역할이다. 반면 `scripts/update-baseline.ts`는
+"`dist/tokens.css`의 현재 승인값으로 갱신"하는 도구다. 이번 라운드에서는 `--secondary`·`--muted`가 §5.2에서
+의도적으로 값이 바뀌었기 때문에, 지금 `update-baseline`을 그냥 돌리면 이 두 토큰에 diff 가 나고(정상) —
+그 결과를 커밋하면 baseline 이 "이사 전 기록"이 아니게 되고, `tests/tokens.test.ts`의
+`INTENTIONAL_VALUE_CHANGES`가 검사하던 이사 시점 값 변화 기록이 사라진다.
+
+**라운드 2 착수 전에 결정해야 할 것:** Figma 에서 값을 바꿔 내려받는 시점부터 `baseline.json`의 역할을
+"이사 전 기록"에서 "현재 승인값"으로 전환할지, 전환한다면 `INTENTIONAL_VALUE_CHANGES`(이사 시점 전용 예외 목록)를
+비우고 갈지 다른 방식으로 대체할지. 이 결정 전까지는 `update-baseline`을 돌려도 그 결과를 커밋하지 않는다.

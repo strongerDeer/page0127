@@ -34,7 +34,16 @@ dist/tokens.css          globals.css 가 import 하는 생성물
 > 이 스냅샷이 곧 회귀 테스트의 "정답"이므로, **값이 의도적으로 바뀐 커밋에서만** 돌린다.
 > 실행 전 `npm run build`로 `dist/tokens.css`를 최신 상태로 만들어야 하고, 실행 후 `tests/baseline.json`의
 > `git diff`가 리뷰 대상이 된다 — 의도한 토큰만 바뀌었는지 diff로 반드시 확인한다.
-> 값을 바꾸지 않았는데 그냥 돌리면 회귀 감지 능력이 사라지므로 하지 않는다.
+>
+> **지금(2026 라운드 1) 그냥 돌리면 `--secondary`·`--muted` 두 개에 diff 가 난다** (`#f1f3f5` → `#f6f7f8`).
+> 버그가 아니라 정상이다 — `baseline.json`은 이사 전 `globals.css` 값을 동결한 기록이고, `dist/tokens.css`는
+> 이사 후 승인값을 담는데, 두 토큰은 설계 문서 §5.2 에서 의도적으로 `gray/50`으로 통합됐다. 이 차이는
+> `tests/tokens.test.ts`의 `INTENTIONAL_VALUE_CHANGES`가 이미 알고 검사하는 중이다.
+>
+> **따라서 지금은 이 스크립트 결과를 커밋하면 안 된다.** 커밋하면 `baseline.json`이 "이사로 무엇이
+> 바뀌었나"를 기록하는 역할을 잃고 `INTENTIONAL_VALUE_CHANGES`가 무의미해진다. 이 스크립트가 다시
+> 쓸모 있어지는 시점은 라운드 2 이후 Figma 값 변경 시이며, 그때는 먼저 `baseline.json`의 역할을
+> "이사 전 기록"에서 "현재 승인값"으로 전환할지부터 정해야 한다(설계 문서 §11 근처의 미결 항목 참고).
 
 ## `dist/tokens.css`를 커밋하는 이유
 
