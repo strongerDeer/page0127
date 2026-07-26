@@ -5,7 +5,7 @@ import { Globe, Lock, Star } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
 
-import { BookActivitySection } from './BookActivitySection';
+import { BookStreamSection } from './BookStreamSection';
 
 import type { Book } from '@/entities/book';
 
@@ -165,7 +165,7 @@ export const BookDetailContent = ({
         </Card>
       )}
 
-      <BookActivitySection bookId={book.id} />
+      <BookStreamSection bookId={book.id} rating={book.rating} />
     </>
   );
 };
