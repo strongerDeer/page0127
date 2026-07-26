@@ -49,7 +49,7 @@ export const getBookStats = async (
       categoryReading: [],
       ratingReading: [],
       averageRating: 0,
-      fiveStarBooks: 0,
+      lifeBookCount: 0,
     };
   }
 };

@@ -10,6 +10,8 @@ import {
   DialogTitle,
 } from '@/shared/ui/dialog';
 
+import { isLifeBook, isRated } from '@/entities/book';
+
 import type { Book } from '@/entities/book';
 
 type DuplicateBookDialogProps = {
@@ -78,10 +80,17 @@ export const DuplicateBookDialog = ({
                   <dd className='font-medium'>{existingBook.completed_date}</dd>
                 </div>
               )}
-              {existingBook.rating && (
+              {/* isRated: 0("평가 안 함")을 걸러낸다. `rating &&` 로 두면 0이
+                  숫자 그대로 렌더돼 목록에 "0"만 남는다.
+                  10은 11번째 점수가 아니라 '인생책'이므로 이름으로 보여준다 */}
+              {isRated(existingBook.rating) && (
                 <div className='flex justify-between'>
                   <dt className='text-muted-foreground'>평점:</dt>
-                  <dd className='font-medium'>{existingBook.rating}점</dd>
+                  <dd className='font-medium'>
+                    {isLifeBook(existingBook.rating)
+                      ? '인생책'
+                      : `${existingBook.rating}점`}
+                  </dd>
                 </div>
               )}
             </dl>

@@ -1,3 +1,5 @@
+import { isLifeBook, isRated } from '@/entities/book';
+
 import type { RatingDistribution } from '@/entities/book';
 
 /**
@@ -12,8 +14,14 @@ type OverallDistributionProps = {
   ratings: RatingDistribution[];
 };
 
-// 평점 숫자 → 라벨 (10은 만점)
-const ratingLabel = (rating: number) => (rating === 10 ? '만점' : `${rating}점`);
+// 평점 숫자 → 라벨. 10은 점수가 아니라 "인생책"이고, 0도 점수가 아니라 "평가 안 함"이다.
+// (10만 이름으로 부르고 0을 `0점`으로 두면 척도가 반쪽만 고쳐진다)
+const ratingLabel = (rating: number) =>
+  isLifeBook(rating)
+    ? '인생책'
+    : isRated(rating)
+      ? `${rating}점`
+      : '평가 안 함';
 
 export const OverallDistribution = ({ ratings }: OverallDistributionProps) => {
   // count 0인 평점은 숨기고, 최댓값 기준으로 막대 폭 정규화
@@ -28,7 +36,8 @@ export const OverallDistribution = ({ ratings }: OverallDistributionProps) => {
     <ul className='space-y-3'>
       {rows.map((r) => (
         <li key={r.rating} className='flex items-center gap-3'>
-          <span className='w-12 shrink-0 text-sm text-text-subtle'>
+          {/* w-16: '평가 안 함'이 한 줄에 들어가야 한다 */}
+          <span className='w-16 shrink-0 text-sm text-text-subtle'>
             {ratingLabel(r.rating)}
           </span>
           <div className='relative h-2.5 flex-1 overflow-hidden rounded-full bg-sunken'>

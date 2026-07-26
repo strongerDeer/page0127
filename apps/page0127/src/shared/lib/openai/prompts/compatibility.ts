@@ -10,12 +10,17 @@
 
 /**
  * 궁합 분석에 필요한 책 정보 타입
+ *
+ * score: **이미 5점 만점으로 접힌** 점수를 받는다 (null = 평가 안 함).
+ *   DB의 rating(0,1,2,3,4,5,10)은 균일한 척도가 아니라 그대로 쓸 수 없다.
+ *   접는 규칙의 단일 출처는 entities/book/model/rating.ts 이고, shared는 entities를
+ *   모르므로 **호출부에서 변환해 주입받는다.**
  */
 type BookForCompatibility = {
   title: string;
   author: string | null;
   category: string | null;
-  rating: number | null;
+  score: number | null;
 };
 
 type CompatibilityPromptInput = {
@@ -23,6 +28,9 @@ type CompatibilityPromptInput = {
   user1Books: BookForCompatibility[];
   user2Books: BookForCompatibility[];
 };
+
+/** 프롬프트에 적는 점수 만점 — 호출부가 이미 이 척도로 접어서 넘긴다 */
+const SCORE_MAX = 5;
 
 /**
  * 독서 궁합 분석 프롬프트 생성
@@ -35,7 +43,7 @@ export function createCompatibilityPrompt({
     books
       .map(
         (book, idx) =>
-          `${idx + 1}. "${book.title}" - ${book.author ?? '저자 미상'} / ${book.category ?? '카테고리 없음'} / 별점 ${book.rating}/10`
+          `${idx + 1}. "${book.title}" - ${book.author ?? '저자 미상'} / ${book.category ?? '카테고리 없음'} / 별점 ${book.score === null ? '평가 안 함' : `${book.score}/${SCORE_MAX}`}`
       )
       .join('\n');
 

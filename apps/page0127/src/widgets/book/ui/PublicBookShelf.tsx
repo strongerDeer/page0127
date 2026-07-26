@@ -5,6 +5,8 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { isTopRated } from '@/entities/book';
+
 import type { Book } from '@/entities/book';
 
 import styles from './PublicBookShelf.module.css';
@@ -59,7 +61,8 @@ export const PublicBookShelf = ({
     <div className={`${styles.shelf} ${compact ? styles.compact : ''}`}>
       <ul className={styles.books}>
         {books.map((book) => {
-          const isCoverView = book.rating === 5 || book.rating === 10;
+          // 최고 평가(5점·인생책)만 표지를 크게 세우고 나머지는 책등으로 꽂는다
+          const isCoverView = isTopRated(book.rating);
           const imageUrl = isCoverView ? book.cover_image : book.spine_image;
           const hasImage = !!imageUrl;
 

@@ -5,7 +5,7 @@ import { Star } from 'lucide-react';
 // → shared의 createClient를 직접 호출하고, user 조회는 인라인으로 처리
 import { createClient } from '@/shared/config/supabase/server';
 
-import { Book } from '@/entities/book';
+import { Book, isLifeBook, isRated } from '@/entities/book';
 
 type MyBookMemoProps = {
   isbn: string;
@@ -20,12 +20,23 @@ export const MyBookMemo = async ({ isbn }: MyBookMemoProps) => {
 
   if (!user) return null;
 
-  const { data: book } = await supabase
+  // maybeSingle: PostgREST 의 single() 은 0행에도 에러를 낸다.
+  // "서재에 없음"은 정상 상황이므로 에러가 아니라 null 로 받아야 한다.
+  // 반대로 같은 ISBN 이 두 행이면 single() 은 에러 → 에러를 버리면 기록 카드가
+  // 조용히 사라진다. 그래서 에러는 남기고 화면만 안전하게 접는다.
+  const { data: book, error } = await supabase
     .from('books')
     .select('*')
     .eq('user_id', user.id)
     .eq('isbn', isbn)
-    .single();
+    .maybeSingle();
+
+  if (error) {
+    console.warn(
+      `[MyBookMemo] 내 기록 조회 실패 (isbn=${isbn}): ${error.message}`
+    );
+    return null;
+  }
 
   if (!book) return null; // Not in library, nothing to show
 
@@ -55,13 +66,15 @@ export const MyBookMemo = async ({ isbn }: MyBookMemoProps) => {
                 : '읽고 싶은 책'}
           </span>
 
-          {myBook.rating !== null && (
+          {/* 별 배지는 "평점이 있다"는 표시다 → 0("평가 안 함")이면 배지를 아예 걸지 않는다.
+              같은 화면 위쪽 평균이 5점 만점이므로 10은 숫자가 아니라 '인생책'으로 부른다 */}
+          {isRated(myBook.rating) && (
             <span className='flex items-center gap-1 text-sm font-semibold text-text-strong'>
               <Star
                 aria-hidden='true'
                 className='size-4 fill-chart-4 text-chart-4'
               />
-              {myBook.rating}
+              {isLifeBook(myBook.rating) ? '인생책' : myBook.rating}
             </span>
           )}
         </div>

@@ -29,7 +29,7 @@ export const HERO_SLIDES: HeroSlide[] = [
   {
     id: 'taste',
     eyebrow: '완독 5권부터',
-    lines: ['열 권이면 충분해요', '취향은 이미 쌓였습니다'],
+    lines: ['다섯 권이면 충분해요', '취향은 이미 쌓였습니다'],
     sub: '책장을 찬찬히 읽고, 다음에 읽을 책까지 골라 드립니다.',
     href: '/login',
     cta: '취향 분석 보기',

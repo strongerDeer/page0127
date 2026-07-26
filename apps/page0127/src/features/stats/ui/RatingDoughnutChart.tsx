@@ -2,6 +2,8 @@
 
 import { Star } from 'lucide-react';
 
+import { isLifeBook, isRated } from '@/entities/book';
+
 import type { RatingReadingData } from '@/entities/book';
 
 type RatingDoughnutChartProps = {
@@ -9,6 +11,15 @@ type RatingDoughnutChartProps = {
   averageRating: number;
   onRatingClick: (rating: number) => void;
 };
+
+// 평점 숫자 → 라벨. 10은 점수가 아니라 "인생책", 0은 점수가 아니라 "평가 안 함"이다
+// (OverallDistribution 과 같은 규칙)
+const ratingLabel = (rating: number) =>
+  isLifeBook(rating)
+    ? '인생책'
+    : isRated(rating)
+      ? `${rating}점`
+      : '평가 안 함';
 
 /** 평균 평점과 평점별 권수를 함께 보여주는 분포 */
 export const RatingDoughnutChart = ({
@@ -19,7 +30,13 @@ export const RatingDoughnutChart = ({
   const filteredData = data
     .filter((item) => item.count > 0)
     .sort((a, b) => b.rating - a.rating);
+  // 막대 폭의 분모 — 분포 전체(평가 안 함 포함) 대비 비율이라 그대로 둔다
   const total = filteredData.reduce((sum, item) => sum + item.count, 0);
+  // 캡션의 분모 — 평균(averageScore)이 0("평가 안 함")을 빼고 계산하므로
+  // 캡션도 같은 모집단을 세야 한다. 안 그러면 바로 아래 0점 막대에 눈으로 검산된다.
+  const ratedTotal = filteredData
+    .filter((item) => isRated(item.rating))
+    .reduce((sum, item) => sum + item.count, 0);
 
   if (filteredData.length === 0) {
     return (
@@ -40,7 +57,7 @@ export const RatingDoughnutChart = ({
             <Star className='size-4 fill-current' />
             <span className='text-sm font-semibold'>평균 평점</span>
           </div>
-          <p className='mt-0.5 text-xs text-text-faint'>{total}권 기준</p>
+          <p className='mt-0.5 text-xs text-text-faint'>{ratedTotal}권 기준</p>
         </div>
       </div>
 
@@ -53,10 +70,11 @@ export const RatingDoughnutChart = ({
               key={item.rating}
               type='button'
               onClick={() => onRatingClick(item.rating)}
-              className='grid w-full grid-cols-[42px_1fr_36px] items-center gap-3 text-sm'
+              // 라벨 폭: '평가 안 함'이 한 줄에 들어가야 한다 (42px에서는 줄바꿈됐다)
+              className='grid w-full grid-cols-[64px_1fr_36px] items-center gap-3 text-sm'
             >
               <span className='text-left font-medium text-text-body'>
-                {item.rating}점
+                {ratingLabel(item.rating)}
               </span>
               <span className='h-2 overflow-hidden rounded-full bg-sunken'>
                 <span

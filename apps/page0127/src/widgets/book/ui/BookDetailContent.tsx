@@ -5,6 +5,8 @@ import { Globe, Lock, Star } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
 
+import { isLifeBook, isRated } from '@/entities/book';
+
 import { BookActivitySection } from './BookActivitySection';
 
 import type { Book } from '@/entities/book';
@@ -79,10 +81,11 @@ export const BookDetailContent = ({
 
                 <ReadCountBadge readCount={book.read_count} />
 
-                {book.rating !== null && book.rating !== undefined && (
+                {/* 0("평가 안 함")은 별 배지를 걸지 않고, 10은 점수가 아니라 '인생책'이다 */}
+                {isRated(book.rating) && (
                   <span className='flex items-center gap-1 text-lg font-medium text-text-strong'>
                     <Star className='h-4 w-4 fill-chart-4 text-chart-4' />
-                    {book.rating}점
+                    {isLifeBook(book.rating) ? '인생책' : `${book.rating}점`}
                   </span>
                 )}
 

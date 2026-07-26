@@ -282,7 +282,7 @@ export const LibraryView = ({
               target={goalTarget}
               totalPages={stats.totalPages}
               averageRating={stats.averageRating}
-              favoriteBooks={stats.fiveStarBooks}
+              favoriteBooks={stats.lifeBookCount}
               books={books}
               onSetGoal={
                 onSetGoal && selectedYear === currentYear

@@ -1,6 +1,8 @@
 import { createClient } from '@/shared/config/supabase/server';
 import { mapToMainCategory } from '@/shared/lib/categoryMapper';
 
+import { isLifeBook } from '../model/rating';
+
 import type { Book } from '../types';
 import type {
   CategoryReadingData,
@@ -83,17 +85,17 @@ export const getOverallStats = async (
  * 독서 여정 계산
  *
  * 학습 포인트:
- * - 총 읽은 책, 10점 만점 책
+ * - 총 읽은 책, 인생책
  * - 총 읽은 쪽수, 하루 평균 쪽수
  * - 독서 기간, 예상 독서 시간
  */
 const calculateReadingJourney = (books: Book[]): ReadingJourney => {
   const totalBooks = books.length;
 
-  // 10점 만점 책
-  const perfectScoreBooks = books.filter((book) => book.rating === 10).length;
-  const perfectScoreRate =
-    totalBooks > 0 ? Math.round((perfectScoreBooks / totalBooks) * 100) : 0;
+  // 인생책 (rating 10)
+  const lifeBookCount = books.filter((book) => isLifeBook(book.rating)).length;
+  const lifeBookRate =
+    totalBooks > 0 ? Math.round((lifeBookCount / totalBooks) * 100) : 0;
 
   // 총 읽은 쪽수
   const totalPages = books.reduce((sum, book) => sum + (book.page_count || 0), 0);
@@ -124,8 +126,8 @@ const calculateReadingJourney = (books: Book[]): ReadingJourney => {
 
   return {
     totalBooks,
-    perfectScoreBooks,
-    perfectScoreRate,
+    lifeBookCount,
+    lifeBookRate,
     totalPages,
     averagePagesPerDay,
     readingSince,
@@ -243,8 +245,8 @@ const getEmptyStats = (): OverallStats => {
   return {
     journey: {
       totalBooks: 0,
-      perfectScoreBooks: 0,
-      perfectScoreRate: 0,
+      lifeBookCount: 0,
+      lifeBookRate: 0,
       totalPages: 0,
       averagePagesPerDay: 0,
       readingSince: new Date().toISOString(),

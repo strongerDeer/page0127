@@ -123,14 +123,23 @@ const LibraryPage = async ({ params }: PageProps) => {
 
     const lastAnalysis = analysisHistory[0] ?? null;
     if (lastAnalysis) {
-      const { count: newCount } = await supabase
-        .from('books')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', profile.id)
-        .eq('status', 'completed')
-        .not('rating', 'is', null)
-        .gt('completed_date', lastAnalysis.created_at);
-      newBooksSinceLastAnalysis = newCount ?? 0;
+      // 이전에는 completed_date(date)를 created_at(timestamptz)와 직접 비교했다.
+      // 타입이 어긋나는 데다, 과거에 읽은 책을 오늘 등록하면 새 기록으로 세지 않았다.
+      // analyzed_books_count 는 분석 당시의 "완독 + 별점" 권수라 지금 값과 같은 집합이다.
+      // → 총량 차이로 세면 '읽고싶어요로 담아둔 책을 나중에 완독'하는 흐름도 잡힌다.
+      //
+      // 알려진 한계 (둘 다 수용) — 오차 방향이 한쪽이 아니다:
+      //  1) 과다 계산(허용 쪽): 분석 라우트가 프롬프트용으로 100권까지만 세므로
+      //     (MAX_BOOKS_FOR_PROMPT) 분석 대상이 100권을 넘으면 델타가 커진다.
+      //     사용자를 막지 않고 재분석은 월간 사용량 한도로 이미 묶여 있다.
+      //  2) 과소 계산(막는 쪽): 책 삭제·별점 제거는 현재 총량만 줄이고 저장된
+      //     analyzed_books_count 는 그대로 두므로 델타가 실제보다 작아진다.
+      //     2권을 지우고 5권을 새로 읽으면 델타가 3이라 아래 게이트(< 5)에 막힌다.
+      //     다음 분석을 한 번 하면 저장값이 현재 총량으로 맞춰져 스스로 회복된다.
+      newBooksSinceLastAnalysis = Math.max(
+        0,
+        analyzableBookCount - lastAnalysis.analyzed_books_count
+      );
     }
   }
 
