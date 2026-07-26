@@ -16,6 +16,15 @@ export const API_ENDPOINTS = {
     stats: '/books/stats', // 통계 조회
     like: '/books/like', // 책 좋아요 토글
     activities: (id: string) => `/books/${id}/activities`, // GET: 책별 활동 타임라인
+    comments: (bookId: string) => `/books/${bookId}/comments`, // GET/POST: 댓글 목록/작성
+    commentDetail: (bookId: string, commentId: string) =>
+      `/books/${bookId}/comments/${commentId}`, // PATCH/DELETE: 댓글 수정/삭제
+    stream: (bookId: string) => `/books/${bookId}/stream`, // GET: 활동+댓글 병합 스트림
+  },
+  globalBooks: {
+    comments: (id: string) => `/global-books/${id}/comments`, // GET/POST: 전역 책 스레드
+    commentDetail: (id: string, commentId: string) =>
+      `/global-books/${id}/comments/${commentId}`, // PATCH/DELETE
   },
   follows: {
     follow: '/follows', // POST: 팔로우하기

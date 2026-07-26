@@ -8,9 +8,18 @@
  * - 탈퇴한 사용자 처리: userId와 user가 null일 수 있음
  */
 
+/**
+ * 댓글이 붙는 대상
+ *
+ * 학습 포인트:
+ * - 댓글은 활동이 아니라 책에 붙는다. 개인 서재 책과 전역 책 두 종류가 있어
+ *   구별 유니온으로 표현한다.
+ */
+export type CommentTarget =
+  { type: 'book'; id: string } | { type: 'globalBook'; id: string };
+
 export type Comment = {
   id: string;
-  activityId: string;
   userId: string | null; // 탈퇴한 사용자의 경우 null
   parentCommentId: string | null;
   content: string;
