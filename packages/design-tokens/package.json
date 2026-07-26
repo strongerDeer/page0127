@@ -5,17 +5,18 @@
   "description": "page0127 디자인 토큰 — Figma Variables 와 왕복하는 단일 출처",
   "type": "module",
   "exports": {
-    "./tokens.css": "./dist/tokens.css"
+    "./tokens.css": "./dist/tokens.css",
+    "./css-vars": "./src/css-vars.ts"
   },
   "scripts": {
     "build": "node build.mjs",
-    "baseline": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/extract-baseline.ts",
+    "update-baseline": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/update-baseline.ts",
     "test": "vitest run",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",
     "rebuild": "npm run clean && npm run build"
   },
-  "files": ["dist", "tokens"],
+  "files": ["dist", "tokens", "src"],
   "devDependencies": {
     "style-dictionary": "^5.0.0",
     "typescript": "^5",

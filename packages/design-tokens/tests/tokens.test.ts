@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
-import { normalize, parseCssVars, resolveVar } from './css-vars.ts';
+import { normalize, parseCssVars, resolveVar } from '../src/css-vars.ts';
 
 const baseline: Record<string, string> = JSON.parse(
   readFileSync(new URL('./baseline.json', import.meta.url), 'utf8'),
