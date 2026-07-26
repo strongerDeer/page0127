@@ -1,0 +1,72 @@
+/**
+ * Do not edit directly, this file was auto-generated.
+ */
+
+:root {
+  --blue-50: #e3eefc;
+  --blue-300: #74b0ff;
+  --blue-400: #438ef2;
+  --blue-500: #2d78db;
+  --blue-600: #1e69cb;
+  --blue-700: #0455bf;
+  --navy-300: #97a4c0;
+  --navy-500: #66779a;
+  --navy-700: #3b4e70;
+  --navy-900: #14294e;
+  --gray-0: #ffffff;
+  --gray-50: #f6f7f8;
+  --gray-200: #eceff2;
+  --gray-300: #dfe3e8;
+  --orange-600: #d9480f;
+  --red-600: #c0392b;
+  --amber-500: #d9a520;
+  --slate-500: #5b6b8c;
+  --teal-500: #14b8a6;
+  --violet-500: #7a5cf0;
+  --radius: 0.5rem;
+  --font-h1-desktop: 28px;
+  --font-h1-mobile: 24px;
+  --font-h2-desktop: 20px;
+  --font-h2-mobile: 18px;
+  --text-strong: var(--navy-900);
+  --text-body: var(--navy-700);
+  --text-subtle: var(--navy-500);
+  --text-faint: var(--navy-300);
+  --chart-1: var(--blue-600);
+  --chart-2: var(--orange-600);
+  --chart-3: var(--blue-300);
+  --chart-4: var(--amber-500);
+  --chart-5: var(--slate-500);
+  --chart-6: var(--teal-500);
+  --chart-7: var(--violet-500);
+  --background: var(--gray-0);
+  --card: var(--gray-0);
+  --popover: var(--gray-0);
+  --sunken: var(--gray-50);
+  --secondary: var(--gray-50);
+  --muted: var(--gray-50);
+  --line: var(--gray-300);
+  --line-soft: var(--gray-200);
+  --primary: var(--blue-600);
+  --primary-foreground: var(--gray-0);
+  --accent: var(--blue-50);
+  --accent-foreground: var(--blue-700);
+  --ring: var(--blue-600);
+  --rank-up: var(--orange-600);
+  --destructive: var(--red-600);
+  --sidebar: var(--gray-0);
+  --sidebar-primary: var(--blue-600);
+  --sidebar-primary-foreground: var(--gray-0);
+  --sidebar-accent: var(--blue-50);
+  --sidebar-accent-foreground: var(--blue-700);
+  --sidebar-ring: var(--blue-600);
+  --foreground: var(--text-strong);
+  --card-foreground: var(--text-strong);
+  --popover-foreground: var(--text-strong);
+  --secondary-foreground: var(--text-strong);
+  --muted-foreground: var(--text-subtle);
+  --border: var(--line);
+  --input: var(--line);
+  --sidebar-foreground: var(--text-strong);
+  --sidebar-border: var(--line);
+}

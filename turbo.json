@@ -28,6 +28,10 @@
     "test": {
       "outputs": []
     },
+    "@repo/design-tokens#test": {
+      "dependsOn": ["@repo/design-tokens#build"],
+      "outputs": []
+    },
     "clean": {
       "cache": false
     },

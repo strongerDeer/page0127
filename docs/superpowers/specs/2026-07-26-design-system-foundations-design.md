@@ -357,8 +357,14 @@ packages/design-tokens/
 │   ├── primitives.json   ← Tokens Studio가 읽고 쓰는 파일
 │   └── semantic.json
 ├── build.mjs
-└── dist/tokens.css       생성물 (gitignore, turbo가 빌드)
+└── dist/tokens.css       생성물이지만 커밋한다 (아래 근거)
 ```
+
+> **왜 생성물을 커밋하는가 (구현 중 정정):** `packages/quality`가 turbo를 거치지 않고
+> `apps/page0127`에서 `next build`를 직접 호출하는 경로(`.github/workflows/quality.yml`)가 있어,
+> `dist/tokens.css`가 항상 turbo 빌드 순서대로 먼저 생성된다는 보장이 없다. gitignore한 채로 두면
+> 그 경로에서 `@import "@repo/design-tokens/tokens.css"`가 ENOENT로 실패한다. 커밋해 두면
+> 어떤 진입 경로든 파일이 항상 존재한다. 대신 값을 바꿀 때는 `npm run build` 결과를 함께 커밋해야 한다.
 
 `globals.css`의 변화:
 
