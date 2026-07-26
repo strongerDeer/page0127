@@ -1,27 +1,27 @@
 {
   "text": {
-    "strong": { "$value": "{navy.900}", "$type": "color" },
-    "body":   { "$value": "{navy.700}", "$type": "color" },
-    "subtle": { "$value": "{navy.500}", "$type": "color" },
-    "faint":  { "$value": "{navy.300}", "$type": "color" }
+    "strong": { "$value": "{navy.900}", "$type": "color", "$description": "제목·책 제목" },
+    "body":   { "$value": "{navy.700}", "$type": "color", "$description": "본문" },
+    "subtle": { "$value": "{navy.500}", "$type": "color", "$description": "저자·출판사·메타" },
+    "faint":  { "$value": "{navy.300}", "$type": "color", "$description": "캡션" }
   },
 
   "chart": {
-    "1": { "$value": "{blue.600}",   "$type": "color" },
-    "2": { "$value": "{orange.600}", "$type": "color" },
-    "3": { "$value": "{blue.300}",   "$type": "color" },
-    "4": { "$value": "{amber.500}",  "$type": "color" },
-    "5": { "$value": "{slate.500}",  "$type": "color" },
-    "6": { "$value": "{teal.500}",   "$type": "color" },
-    "7": { "$value": "{violet.500}", "$type": "color" }
+    "1": { "$value": "{blue.600}",   "$type": "color", "$description": "차트 계열 1 — 진한 블루 (primary 와 동일 색)" },
+    "2": { "$value": "{orange.600}", "$type": "color", "$description": "차트 계열 2 — 코랄 오렌지 (rank-up 과 동일 색)" },
+    "3": { "$value": "{blue.300}",   "$type": "color", "$description": "차트 계열 3 — 라이트 스카이" },
+    "4": { "$value": "{amber.500}",  "$type": "color", "$description": "차트 계열 4 — 앰버" },
+    "5": { "$value": "{slate.500}",  "$type": "color", "$description": "차트 계열 5 — 슬레이트 네이비" },
+    "6": { "$value": "{teal.500}",   "$type": "color", "$description": "차트 계열 6 — 틸, 카테고리 구분 보조" },
+    "7": { "$value": "{violet.500}", "$type": "color", "$description": "차트 계열 7 — 바이올렛, 카테고리 구분 보조 (프로모 카드와 동일 계열)" }
   },
 
   "background": { "$value": "{gray.0}",  "$type": "color" },
   "card":       { "$value": "{gray.0}",  "$type": "color" },
   "popover":    { "$value": "{gray.0}",  "$type": "color" },
-  "sunken":     { "$value": "{gray.50}", "$type": "color" },
-  "secondary":  { "$value": "{gray.50}", "$type": "color" },
-  "muted":      { "$value": "{gray.50}", "$type": "color" },
+  "sunken":     { "$value": "{gray.50}", "$type": "color", "$description": "중립 모듈 면·틴트·플레이스홀더 배경" },
+  "secondary":  { "$value": "{gray.50}", "$type": "color", "$description": "중립 면. sunken 과 같은 값 — 과거 #f1f3f5 로 따로 있었으나 육안 구분이 안 되는 밝기 차(L* 약 2)라 통합했다" },
+  "muted":      { "$value": "{gray.50}", "$type": "color", "$description": "중립 면. sunken 과 같은 값 — 과거 #f1f3f5 로 따로 있었으나 육안 구분이 안 되는 밝기 차(L* 약 2)라 통합했다" },
 
   "foreground":           { "$value": "{text.strong}", "$type": "color" },
   "card-foreground":      { "$value": "{text.strong}", "$type": "color" },
@@ -29,18 +29,18 @@
   "secondary-foreground": { "$value": "{text.strong}", "$type": "color" },
   "muted-foreground":     { "$value": "{text.subtle}", "$type": "color" },
 
-  "line":      { "$value": "{gray.300}", "$type": "color" },
-  "line-soft": { "$value": "{gray.200}", "$type": "color" },
+  "line":      { "$value": "{gray.300}", "$type": "color", "$description": "카드·섹션 경계선. 입체는 그림자가 아니라 이 1px 선으로 만든다" },
+  "line-soft": { "$value": "{gray.200}", "$type": "color", "$description": "line 보다 옅은 보조 구분선 (리스트 아이템 사이 등)" },
   "border":    { "$value": "{line}",     "$type": "color" },
   "input":     { "$value": "{line}",     "$type": "color" },
 
-  "primary":            { "$value": "{blue.600}",   "$type": "color" },
+  "primary":            { "$value": "{blue.600}",   "$type": "color", "$description": "브랜드·주 CTA·링크 전용 진한 블루 (흰 글자 대비 4.7:1). 완독 등 핵심 행동 강조에도 쓴다" },
   "primary-foreground": { "$value": "{gray.0}",     "$type": "color" },
-  "accent":             { "$value": "{blue.50}",    "$type": "color" },
+  "accent":             { "$value": "{blue.50}",    "$type": "color", "$description": "활성 메뉴·호버 배경 (스카이 틴트)" },
   "accent-foreground":  { "$value": "{blue.700}",   "$type": "color" },
   "ring":               { "$value": "{blue.600}",   "$type": "color" },
-  "rank-up":            { "$value": "{orange.600}", "$type": "color" },
-  "destructive":        { "$value": "{red.600}",    "$type": "color" },
+  "rank-up":            { "$value": "{orange.600}", "$type": "color", "$description": "순위 상승·포인트 강조 전용 코랄 오렌지 (primary 블루의 보색). 다른 용도로 쓰지 않는다" },
+  "destructive":        { "$value": "{red.600}",    "$type": "color", "$description": "삭제·탈퇴 전용. 그 외 경고·에러 표시에는 쓰지 않는다" },
 
   "sidebar":                    { "$value": "{gray.0}",     "$type": "color" },
   "sidebar-foreground":         { "$value": "{text.strong}","$type": "color" },
@@ -51,7 +51,7 @@
   "sidebar-border":             { "$value": "{line}",       "$type": "color" },
   "sidebar-ring":               { "$value": "{blue.600}",   "$type": "color" },
 
-  "radius": { "$value": "0.5rem", "$type": "dimension" },
+  "radius": { "$value": "0.5rem", "$type": "dimension", "$description": "카드 모서리 반경 기준(8px). radius-sm/md/lg/xl 은 이 값에서 파생된다" },
   "font": {
     "h1": {
       "desktop": { "$value": "28px", "$type": "dimension" },

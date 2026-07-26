@@ -23,37 +23,37 @@
   --slate-500: #5b6b8c;
   --teal-500: #14b8a6;
   --violet-500: #7a5cf0;
-  --radius: 0.5rem;
+  --radius: 0.5rem; /** 카드 모서리 반경 기준(8px). radius-sm/md/lg/xl 은 이 값에서 파생된다 */
   --font-h1-desktop: 28px;
   --font-h1-mobile: 24px;
   --font-h2-desktop: 20px;
   --font-h2-mobile: 18px;
-  --text-strong: var(--navy-900);
-  --text-body: var(--navy-700);
-  --text-subtle: var(--navy-500);
-  --text-faint: var(--navy-300);
-  --chart-1: var(--blue-600);
-  --chart-2: var(--orange-600);
-  --chart-3: var(--blue-300);
-  --chart-4: var(--amber-500);
-  --chart-5: var(--slate-500);
-  --chart-6: var(--teal-500);
-  --chart-7: var(--violet-500);
+  --text-strong: var(--navy-900); /** 제목·책 제목 */
+  --text-body: var(--navy-700); /** 본문 */
+  --text-subtle: var(--navy-500); /** 저자·출판사·메타 */
+  --text-faint: var(--navy-300); /** 캡션 */
+  --chart-1: var(--blue-600); /** 차트 계열 1 — 진한 블루 (primary 와 동일 색) */
+  --chart-2: var(--orange-600); /** 차트 계열 2 — 코랄 오렌지 (rank-up 과 동일 색) */
+  --chart-3: var(--blue-300); /** 차트 계열 3 — 라이트 스카이 */
+  --chart-4: var(--amber-500); /** 차트 계열 4 — 앰버 */
+  --chart-5: var(--slate-500); /** 차트 계열 5 — 슬레이트 네이비 */
+  --chart-6: var(--teal-500); /** 차트 계열 6 — 틸, 카테고리 구분 보조 */
+  --chart-7: var(--violet-500); /** 차트 계열 7 — 바이올렛, 카테고리 구분 보조 (프로모 카드와 동일 계열) */
   --background: var(--gray-0);
   --card: var(--gray-0);
   --popover: var(--gray-0);
-  --sunken: var(--gray-50);
-  --secondary: var(--gray-50);
-  --muted: var(--gray-50);
-  --line: var(--gray-300);
-  --line-soft: var(--gray-200);
-  --primary: var(--blue-600);
+  --sunken: var(--gray-50); /** 중립 모듈 면·틴트·플레이스홀더 배경 */
+  --secondary: var(--gray-50); /** 중립 면. sunken 과 같은 값 — 과거 #f1f3f5 로 따로 있었으나 육안 구분이 안 되는 밝기 차(L* 약 2)라 통합했다 */
+  --muted: var(--gray-50); /** 중립 면. sunken 과 같은 값 — 과거 #f1f3f5 로 따로 있었으나 육안 구분이 안 되는 밝기 차(L* 약 2)라 통합했다 */
+  --line: var(--gray-300); /** 카드·섹션 경계선. 입체는 그림자가 아니라 이 1px 선으로 만든다 */
+  --line-soft: var(--gray-200); /** line 보다 옅은 보조 구분선 (리스트 아이템 사이 등) */
+  --primary: var(--blue-600); /** 브랜드·주 CTA·링크 전용 진한 블루 (흰 글자 대비 4.7:1). 완독 등 핵심 행동 강조에도 쓴다 */
   --primary-foreground: var(--gray-0);
-  --accent: var(--blue-50);
+  --accent: var(--blue-50); /** 활성 메뉴·호버 배경 (스카이 틴트) */
   --accent-foreground: var(--blue-700);
   --ring: var(--blue-600);
-  --rank-up: var(--orange-600);
-  --destructive: var(--red-600);
+  --rank-up: var(--orange-600); /** 순위 상승·포인트 강조 전용 코랄 오렌지 (primary 블루의 보색). 다른 용도로 쓰지 않는다 */
+  --destructive: var(--red-600); /** 삭제·탈퇴 전용. 그 외 경고·에러 표시에는 쓰지 않는다 */
   --sidebar: var(--gray-0);
   --sidebar-primary: var(--blue-600);
   --sidebar-primary-foreground: var(--gray-0);
