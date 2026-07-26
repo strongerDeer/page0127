@@ -1,6 +1,5 @@
-import { readFileSync } from 'node:fs';
-
 import { parseCssVars } from '@repo/design-tokens/css-vars';
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 /**

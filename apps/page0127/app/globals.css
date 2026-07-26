@@ -98,6 +98,13 @@
   --text-xs: 12px;
   --text-xs--line-height: 18px;
 
+  /* body(16/24)는 지금 Tailwind 기본값과 우연히 같은 값이라 명시하지 않아도
+     화면은 똑같이 나온다. 하지만 그건 "우연"일 뿐 못 박아 둔 게 아니라서,
+     Tailwind 가 나중에 text-base 기본값을 바꾸면 07 스펙이 조용히 어긋난다.
+     sm/xs 처럼 여기서도 명시적으로 고정한다 (값은 기존과 동일 — 화면 변화 없음). */
+  --text-base: 16px;
+  --text-base--line-height: 24px;
+
   --radius-sm: calc(var(--radius) - 4px); /* 4px */
   --radius-md: calc(var(--radius) - 2px); /* 6px */
   --radius-lg: var(--radius); /* 8px */
@@ -120,7 +127,9 @@ body {
 /* 줄간격을 비율이 아니라 px 로 못 박는다.
    비율(1.35)로 두면 28px 에서 37.8px 이 나와 07 스펙(40)과 어긋나고,
    Figma Text Style 과도 값이 맞지 않는다.
-   모바일 값은 07 의 데스크톱 비율을 그대로 내려 구했다 (24×1.43≈34, 18×1.5=27). */
+   모바일 값은 07 의 데스크톱 비율을 그대로 적용해 구했다 — 07 에 모바일 정의가
+   없어 데스크톱 비율(display 40/28≈1.43, heading 30/20=1.5)을 모바일 크기에
+   내려 계산했다: 24×1.43≈34, 18×1.5=27. */
 .heading-1 {
   font-size: var(--font-h1-mobile);
   font-weight: 700;

@@ -434,3 +434,22 @@ packages/design-tokens/
 - `00_docs/07_리디자인_진단_및_실행안.md` — 컬러·타이포·셰이프 원칙의 근거 (실측 기반)
 - `apps/page0127/app/globals.css` — 이사 대상 원본
 - `apps/page0127/next.config.ts:37` — 기존 패키지 폐기 경위
+
+---
+
+## 11. 알려진 이중 인코딩 지점 (최종 리뷰에서 확인, 2026-07-26)
+
+색·텍스트 토큰은 §4.2 원칙대로 "패키지가 값을 갖고 앱은 노출 방식만 갖는" 구조가 깨끗이 성립한다.
+하지만 radius 와 타이포 일부는 **같은 값이 패키지와 앱 두 곳에 따로 인코딩**돼 있다. 한쪽만 바뀌어도
+지금 있는 테스트는 전혀 반응하지 않는다 — Figma에서 값을 바꿔 내려도 앱이 조용히 어긋날 수 있는 지점이다.
+
+| 값 | 패키지 | 앱 | 위험 |
+|---|---|---|---|
+| radius 4/6/8/12 | `primitives.json`의 `corner/sm~xl` (Figma 전용, CSS 출력에서 제외됨) | `globals.css`의 `calc(var(--radius) ± Npx)` | `corner/sm~xl`을 Figma에서 바꿔도 앱의 `calc()` 파생값은 그대로다 — 둘이 애초에 연결돼 있지 않다 |
+| 타이포 줄간격 | 없음 (semantic.json에 line-height 토큰 없음) | `globals.css`의 `--text-*--line-height`와 `.heading-*` 유틸리티의 하드코딩 px | Figma Text Style의 줄간격을 바꿔도 코드에 반영할 자동 경로가 없다. 코드를 손으로 맞춰야 한다 |
+| 타이포 weight | 없음 | 없음 — `.heading-*`의 `font-weight: 700`만 하드코딩, `text-sm`/`text-xs`/`text-base`는 weight 토큰 자체가 없다 | 07 스펙은 body 500 / sub 400 / micro 500을 요구하는데 이를 강제하는 토큰도 테스트도 없다. 컴포넌트가 임의 weight를 쓰면 아무도 잡지 못한다 |
+
+**왜 이번 라운드에서 고치지 않는가:** radius를 Figma Variables로 완전히 옮기려면 비대칭 radius(`.book-cover`)를 못 담는 문제(§6.5)와
+얽혀 있고, 타이포 weight/line-height를 토큰화하려면 `semantic.json`에 새 그룹을 추가하고 `globals.css`의 유틸리티 구조를
+바꿔야 한다 — 둘 다 "컴포넌트 0줄 수정"을 지키면서 이번 라운드 범위(§3.1)를 넘어선다. 라운드 2 이후, 컴포넌트 작업과 함께
+다시 설계하는 것을 과제로 남긴다.

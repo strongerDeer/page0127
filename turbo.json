@@ -37,7 +37,7 @@
     },
     "rebuild": {
       "dependsOn": ["clean"],
-      "outputs": [".next/**", "!.next/cache/**", "src/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     }
   }
 }

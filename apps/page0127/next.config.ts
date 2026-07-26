@@ -34,7 +34,11 @@ const nextConfig: NextConfig = {
     },
   },
   // 모노레포 패키지의 CSS/JS 파일을 트랜스파일하도록 설정
-  // 디자인 토큰의 단일 출처는 @repo/design-tokens 다 (globals.css 가 import 한다).
+  // @repo/design-tokens 는 실제로는 CSS(dist/tokens.css)만 내보낸다. globals.css 의
+  // @import 로 들어와 @tailwindcss/postcss 가 인라인하므로 Next 의 JS 모듈 그래프를
+  // 타지 않고, 이 목록에서 빼도 그 import 자체는 계속 동작할 가능성이 높다. 다만
+  // 검증 없이 빼는 건 위험해 남겨 둔다 — 나중에 이 패키지가 JS 진입점(예: 토큰 타입,
+  // 헬퍼 함수)을 내보내게 되면 이때는 실제로 필요해진다.
   transpilePackages: ['@repo/icons', '@repo/design-tokens'],
   experimental: {
     // 프로필 이미지는 앱에서 최대 5MB까지 허용한다. multipart 메타데이터
