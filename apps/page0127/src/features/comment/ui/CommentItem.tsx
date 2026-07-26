@@ -33,9 +33,11 @@ import { useCurrentUserContext } from '@/entities/user';
 
 import { CommentForm } from './CommentForm';
 
+import type { CommentTarget } from '@/entities/comment';
+
 type CommentItemProps = {
   comment: Comment;
-  activityId: string;
+  target: CommentTarget;
   isReply?: boolean;
 };
 
@@ -50,7 +52,7 @@ type CommentItemProps = {
  */
 export const CommentItem = ({
   comment,
-  activityId,
+  target,
   isReply = false,
 }: CommentItemProps) => {
   const queryClient = useQueryClient();
@@ -66,13 +68,13 @@ export const CommentItem = ({
   // 댓글 수정 뮤테이션
   const updateMutation = useMutation({
     mutationFn: async (content: string) => {
-      return await commentApi.updateComment(activityId, comment.id, {
+      return await commentApi.updateComment(target, comment.id, {
         content,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: commentKeys.byActivity(activityId),
+        queryKey: commentKeys.byTarget(target),
       });
       setIsEditing(false);
       toast.success('댓글이 수정되었습니다.');
@@ -85,11 +87,11 @@ export const CommentItem = ({
   // 댓글 삭제 뮤테이션
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      return await commentApi.deleteComment(activityId, comment.id);
+      return await commentApi.deleteComment(target, comment.id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: commentKeys.byActivity(activityId),
+        queryKey: commentKeys.byTarget(target),
       });
       toast.success('댓글이 삭제되었습니다.');
     },
@@ -215,7 +217,7 @@ export const CommentItem = ({
           {isReplying && (
             <div className='pt-2'>
               <CommentForm
-                activityId={activityId}
+                target={target}
                 parentCommentId={comment.id}
                 onSuccess={() => setIsReplying(false)}
                 onCancel={() => setIsReplying(false)}

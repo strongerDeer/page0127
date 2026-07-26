@@ -12,8 +12,10 @@ import { Textarea } from '@/shared/ui/textarea';
 
 import { commentApi, commentKeys } from '@/entities/comment';
 
+import type { CommentTarget } from '@/entities/comment';
+
 type CommentFormProps = {
-  activityId: string;
+  target: CommentTarget;
   parentCommentId?: string | null;
   onSuccess?: () => void;
   onCancel?: () => void;
@@ -31,7 +33,7 @@ type CommentFormProps = {
  * - parentCommentId로 댓글/대댓글 구분
  */
 export const CommentForm = ({
-  activityId,
+  target,
   parentCommentId = null,
   onSuccess,
   onCancel,
@@ -43,14 +45,14 @@ export const CommentForm = ({
 
   const createMutation = useMutation({
     mutationFn: (content: string) =>
-      commentApi.createComment(activityId, {
+      commentApi.createComment(target, {
         content,
         parentCommentId,
       }),
     onSuccess: () => {
       // 댓글 목록 쿼리 무효화
       queryClient.invalidateQueries({
-        queryKey: commentKeys.byActivity(activityId),
+        queryKey: commentKeys.byTarget(target),
       });
       setContent('');
       onSuccess?.();

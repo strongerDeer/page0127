@@ -13,8 +13,10 @@ import { useCurrentUserContext } from '@/entities/user';
 import { CommentForm } from './CommentForm';
 import { CommentList } from './CommentList';
 
+import type { CommentTarget } from '@/entities/comment';
+
 type CommentSectionProps = {
-  activityId: string;
+  target: CommentTarget;
   initialOpen?: boolean; // 초기 펼침 상태
 };
 
@@ -28,7 +30,7 @@ type CommentSectionProps = {
  * - 댓글 개수를 실시간으로 업데이트
  */
 export const CommentSection = ({
-  activityId,
+  target,
   initialOpen = false,
 }: CommentSectionProps) => {
   const { currentUser } = useCurrentUserContext();
@@ -37,8 +39,8 @@ export const CommentSection = ({
 
   // 댓글 개수 조회
   const { data: comments = [] } = useQuery({
-    queryKey: commentKeys.byActivity(activityId),
-    queryFn: () => commentApi.getComments(activityId),
+    queryKey: commentKeys.byTarget(target),
+    queryFn: () => commentApi.getComments(target),
   });
 
   // useMemo 불필요: comments가 바뀌면 어차피 다시 계산해야 하고,
@@ -71,12 +73,12 @@ export const CommentSection = ({
           {/* 댓글 작성 폼 (로그인한 경우만) */}
           {currentUserId && (
             <div className='pb-4 border-b'>
-              <CommentForm activityId={activityId} />
+              <CommentForm target={target} />
             </div>
           )}
 
           {/* 댓글 목록 */}
-          <CommentList activityId={activityId} />
+          <CommentList target={target} />
         </div>
       )}
     </div>
