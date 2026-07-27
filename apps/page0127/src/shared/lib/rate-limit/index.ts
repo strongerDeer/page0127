@@ -15,19 +15,26 @@ const STRICT_PATHS = [
 // strict보다 여유 있게, standard보다는 낮게 별도 등급을 둔다.
 const SEARCH_PATHS = ['/api/books/search'];
 
+// 자체 RUM 비콘 — 페이지 이동마다 자동 발사되므로 사람이 누르는 API와 성격이 다르다.
+// standard(60회/분)를 함께 쓰게 두면 비콘이 예산을 먹어 **정작 사용자의 진짜 API 호출이
+// 429를 맞는다**. 등급을 따로 둬 카운터를 분리한다(등급이 식별자 앞에 붙는다 — 아래 참고).
+const BEACON_PATHS = ['/api/rum'];
+
 const STRICT_LIMIT = 5;
 const SEARCH_LIMIT = 20;
 const STANDARD_LIMIT = 60;
+const BEACON_LIMIT = 120;
 const WINDOW_MS = 60_000; // 1분
 
 // Vercel Cron이 호출하는 라우트 — CRON_SECRET으로 이미 보호되는 서버 간 호출이라 제외
 const EXCLUDED_PREFIXES = ['/api/cron'];
 
-type Tier = 'strict' | 'search' | 'standard';
+type Tier = 'strict' | 'search' | 'beacon' | 'standard';
 
 const TIER_LIMITS: Record<Tier, number> = {
   strict: STRICT_LIMIT,
   search: SEARCH_LIMIT,
+  beacon: BEACON_LIMIT,
   standard: STANDARD_LIMIT,
 };
 
@@ -38,6 +45,7 @@ function getTier(pathname: string): Tier | null {
   }
   if (STRICT_PATHS.includes(pathname)) return 'strict';
   if (SEARCH_PATHS.includes(pathname)) return 'search';
+  if (BEACON_PATHS.includes(pathname)) return 'beacon';
   return 'standard';
 }
 
