@@ -74,21 +74,25 @@ export async function POST(request: NextRequest) {
 
     // 1. global_books에 책이 없으면 추가 (ISBN 기준)
     // ON CONFLICT DO NOTHING을 사용하여 이미 존재하면 무시
-    const { error: globalError } = await supabase.from('global_books').insert({
-      isbn: body.isbn,
-      title: body.title,
-      author: body.author,
-      publisher: body.publisher,
-      cover_image: body.cover_image,
-      spine_image: body.spine_image,
-      description: body.description,
-      pub_date: body.pub_date,
-      category: body.category,
-    }).select().single();
+    const { error: globalError } = await supabase
+      .from('global_books')
+      .insert({
+        isbn: body.isbn,
+        title: body.title,
+        author: body.author,
+        publisher: body.publisher,
+        cover_image: body.cover_image,
+        spine_image: body.spine_image,
+        description: body.description,
+        pub_date: body.pub_date,
+        category: body.category,
+      })
+      .select()
+      .single();
 
     // global_books 에러는 무시하고 진행 (이미 존재하는 경우 등)
     if (globalError && globalError.code !== '23505') {
-       console.error('Failed to sync global book:', globalError);
+      console.error('Failed to sync global book:', globalError);
     }
 
     // 2. 사용자 책장에 추가
@@ -103,12 +107,15 @@ export async function POST(request: NextRequest) {
 
     if (error) return errorResponse(error.message);
 
-    // 3. 활동 생성 (book_added)
+    // 3. 활동 생성
+    // 담는 순간 이미 완독이면 "완독했어요"가 사실에 가깝다. 담기와 완독을 둘 다 남기면
+    // 같은 시각에 두 줄이 겹쳐 스트림만 지저분해진다(PATCH의 완독 처리와 같은 규칙).
     await createActivity({
       supabase,
       userId: user!.id,
       bookId: data.id,
-      activityType: 'book_added',
+      activityType:
+        body.status === 'completed' ? 'book_completed' : 'book_added',
     });
 
     return successResponse(data, 201);
