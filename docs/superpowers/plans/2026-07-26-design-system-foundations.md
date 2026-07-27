@@ -891,6 +891,12 @@ px 로 고정했다 (40/34, 30/27).
 
 ## Task 5: Figma 스파이크 — Tokens Studio 기능 범위 확인
 
+> ## ⏭️ 이 태스크는 수행하지 않았다 (2026-07-27)
+>
+> **불필요해졌기 때문이다.** MCP `use_figma` 가 Figma Plugin API 에 JavaScript 를 직접 실행하므로, Tokens Studio 가 제공하려던 우회로를 이미 갖고 있었다. 플러그인을 설치하지 않고 Task 6·7 을 스크립트로 수행했다.
+>
+> 설계 문서 §2.1 의 정정과 §9 를 참고할 것. 아래 Step 들은 **실행되지 않았으며**, 기록으로만 남긴다.
+
 **여기서부터는 Figma UI에서 하는 수동 작업이다.** 설계 문서 §9의 불확실성을 이 태스크에서 해소한다.
 
 **Files:** 없음 (확인 결과만 기록)
@@ -947,6 +953,17 @@ git commit -m "docs(spec): Tokens Studio 기능 범위 확인 결과 기록"
 
 ## Task 6: Figma Variables 2개 컬렉션을 만든다
 
+> ## ✅ 완료 (2026-07-27) — 단, 수동이 아니라 스크립트로
+>
+> 아래 Step 들은 "Figma UI 에서 손으로" 를 전제로 썼으나, 실제로는 **MCP `use_figma` 스크립트 2회**로 생성했다.
+>
+> - `Primitives` 32개 — 원색 20 은 `scopes = []` 로 색 피커에서 감췄다. `space`·`corner` 는 각각 `["GAP","WIDTH_HEIGHT"]`·`["CORNER_RADIUS"]`
+> - `Semantic` 46개 — 색 41개 **전부 alias 참조**, 값 복사 0건. `border → line → gray/300` 같은 2단 체인 포함
+> - 계획에 없던 것: 각 변수에 CSS 이름을 **Code Syntax**(`var(--primary)`)로, `$description` 을 **Figma 변수 설명**으로 심었다
+> - **검증**: Figma 에서 alias 를 끝까지 따라간 최종값 46개를 `dist/tokens.css` 와 대조 → **불일치 0건**
+>
+> Step 3(컬렉션 숨김)은 개념이 틀려 다르게 구현했다 — 설계 문서 §4.3 의 정정 참고.
+
 **Files:** 없음 (Figma 파일 작업)
 
 ---
@@ -988,6 +1005,16 @@ Expected: `primary` 변수가 `#1e69cb`로 해석되어 반환된다. 확인 후
 ---
 
 ## Task 7: Text Styles와 Foundations 페이지
+
+> ## ✅ 완료 (2026-07-27) — 폰트만 사용자가 교체
+>
+> - `Page 1` → **`Foundations`** 로 이름 변경, 스타일 가이드 **4프레임** 생성 (`1 · Colors` / `2 · Semantic` / `3 · Spacing & Corner` / `4 · Typography`)
+> - **Text Style 7개** 생성 — 크기·줄간격·weight 는 §6.2 확정값 그대로
+> - 가이드의 스와치·간격 막대·모서리 상자를 **Variables 에 바인딩**해, 토큰이 바뀌면 가이드도 따라 움직인다
+>
+> **폰트는 에이전트가 넣지 못했다.** MCP 컨텍스트에 Pretendard 가 없어(로컬에 설치돼 있어도 `listAvailableFontsAsync` 에 안 잡힘) Noto Sans KR 로 만들었고, **사용자가 Figma UI 에서 7개 스타일의 Font 만 Pretendard 로 교체**했다. 교체 후 확인 결과 7개 전부 `Pretendard`(Bold/Medium/Regular)이고 크기·줄간격은 확정값이 유지됐다.
+>
+> 이 폰트 제약은 라운드 2·3 에 파급이 있다 — 설계 문서 §9.1 참고.
 
 **Files:** 없음 (Figma 파일 작업)
 
@@ -1047,9 +1074,23 @@ git commit -m "docs(spec): 라운드 1 Foundations 완료 기록"
 
 라운드 1이 끝났다고 말하려면 아래가 전부 참이어야 한다.
 
-- [ ] `npm run test`가 통과한다 (토큰 46개 이름·값 회귀 없음)
-- [ ] `npm run build`가 통과하고, 토큰 패키지가 앱보다 먼저 빌드된다
-- [ ] 주요 4화면이 이사 전과 같아 보인다 (`--secondary`·`--muted` 제외)
-- [ ] 컴포넌트 파일의 diff가 **0줄**이다
-- [ ] Figma `Semantic` 컬렉션 46개가 전부 `Primitives`를 **참조**로 가리킨다
-- [ ] Figma `Foundations` 페이지에 스타일 가이드 4프레임이 있다
+- [x] `npm run test`가 통과한다 (토큰 46개 이름·값 회귀 없음) — 머지된 `main`에서 재확인, 4/4 태스크
+- [x] `npm run build`가 통과하고, 토큰 패키지가 앱보다 먼저 빌드된다 — 컴파일 41초
+- [x] 컴포넌트 파일의 diff가 **0줄**이다
+- [x] Figma `Semantic` 컬렉션 46개가 전부 `Primitives`를 **참조**로 가리킨다 — alias 41/41, 값 복사 0
+- [x] Figma `Foundations` 페이지에 스타일 가이드 4프레임이 있다
+- [~] 주요 4화면이 이사 전과 같아 보인다 (`--secondary`·`--muted` 제외) — **부분 완료**
+
+> **미완 항목 하나**: 육안 검증은 **비로그인으로 접근 가능한 화면만** 했다. Playwright 로 토큰 10개·줄간격 6개를 computed style 로 실측하고 가로 오버플로가 없음을 확인했지만, **내 서재 · 책 상세 · 대시보드**는 로그인이 필요해 확인하지 못했다.
+>
+> 코드 리스크는 낮다(값이 전부 실측으로 일치). 다만 §6.2 의 줄간격 변경이 345곳에 걸리고 그 세 화면이 가장 조밀한 레이아웃이므로, **사용자가 로그인 상태에서 한 번은 봐야 한다.** 특히 긴 책 제목이 두 줄로 넘어가는 카드 그리드와 대시보드 통계 카드.
+
+---
+
+## 라운드 1 이후
+
+**다음 라운드 착수 전에 결정할 것** (설계 문서 §11):
+`baseline.json` 의 역할을 "이사 전 기록"에서 "현재 승인값"으로 전환할지. 그 전까지 `npm run update-baseline` 결과를 커밋하면 회귀 감지 기준이 사라진다.
+
+**라운드 2 계획을 세울 때 전제로 삼을 것** (설계 문서 §9.1):
+MCP 컨텍스트에서 Pretendard 텍스트의 `characters`·폰트·크기를 수정할 수 없다. 컴포넌트의 텍스트 내용은 생성 시점에 확정하거나 사용자에게 넘기는 방식으로 태스크를 나눠야 한다.

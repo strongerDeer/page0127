@@ -57,19 +57,28 @@
 |---|---|---|
 | 1 | **코드 → Figma 1회 이사, 이후 Figma가 원본** | 07 문서의 실측 근거를 보존하면서 디자인 워크플로를 연다 |
 | 2 | **다크모드는 구조만 열어두고 값은 나중에** | 2층 구조를 갖추면 나중에 semantic 값만 갈아끼우면 된다. 지금 비용 거의 없음 |
-| 3 | **파이프라인: Tokens Studio 왕복** | Pro 플랜에서 자동화 가능한 유일한 경로 (아래 2.1) |
+| 3 | ~~**파이프라인: Tokens Studio 왕복**~~ → **MCP `use_figma` 직접 실행** | 설계 시점 판단이 구현 중 뒤집혔다 (아래 2.1) |
 | 4 | **`gray/50`·`gray/100` 통합** | 밝기 차 L\* 약 2로 육안 구분 불가 (§4.3) |
 | 5 | **타이포는 6단이 아니라 5단** | 07의 `caption 13px`는 실사용 0곳 (§5.2) |
 
-### 2.1 왜 Tokens Studio인가 — 플랜 제약
+### 2.1 파이프라인 — 설계 시점 판단과 그 정정
 
 Figma 계정은 **Pro 플랜 / Full seat** (`dreamfulbud@gmail.com`, 팀 `Dreamfulbud`).
 
-- Figma **Variables REST API는 Enterprise 전용**이다. Pro에서는 코드에서 Variables를 직접 읽거나 쓸 수 없다.
-- MCP `get_variable_defs`는 *노드에 바인딩된* 변수만 반환하므로 토큰 전체를 덤프하는 용도로는 부적합하다.
-- Tokens Studio 플러그인은 Plugin API를 쓰므로 이 제약을 우회한다.
+**설계 시점의 제약 분석** (이 부분은 여전히 맞다):
 
-MCP 사용량 한도는 Pro/Full 기준 **200 calls/day, 15/min** — 이 작업에 충분하다.
+- Figma **Variables REST API는 Enterprise 전용**이다. Pro에서는 REST로 Variables를 읽거나 쓸 수 없다.
+- MCP `get_variable_defs`는 *노드에 바인딩된* 변수만 반환하므로 토큰 전체를 덤프하는 용도로는 부적합하다.
+
+여기서 "그러니 Plugin API를 쓰는 Tokens Studio 플러그인이 유일한 우회로"라고 결론지었는데, **이것이 틀렸다.**
+
+> **정정 (구현 중, 2026-07-27):** MCP `use_figma` 자체가 **Figma Plugin API에 JavaScript를 직접 실행**한다. 즉 Tokens Studio가 제공하던 우회로를 MCP가 이미 갖고 있었다. 플러그인 설치·임포트·수동 동기화 없이 Variables 78개와 Text Style 7개를 스크립트로 생성했고, 값 검증까지 같은 경로로 했다.
+>
+> **교훈**: "REST API가 막혔다"와 "프로그래매틱 접근이 막혔다"는 다른 명제다. 도구의 실제 실행 방식(무엇을 통해 파일에 접근하는가)을 확인하기 전에 우회로부터 설계했다.
+
+MCP 사용량 한도는 Pro/Full 기준 **200 calls/day, 15/min** — 이 작업 전체에 충분했다.
+
+**Tokens Studio가 여전히 필요한 경우**: 디자이너가 Figma UI에서 토큰을 편집하고 그것을 JSON으로 내보내야 할 때. 지금처럼 코드가 원본이고 에이전트가 동기화하는 구조에서는 필요 없다.
 
 ---
 
@@ -99,7 +108,7 @@ MCP 사용량 한도는 Pro/Full 기준 **200 calls/day, 15/min** — 이 작업
 
 | 라운드 | 범위 | 상태 |
 |---|---|---|
-| **1. Foundations** | 컬러·타이포·스페이싱·radius 토큰 | **이 문서** |
+| **1. Foundations** | 컬러·타이포·스페이싱·radius 토큰 | ✅ **완료 (2026-07-27)** — 코드 `a604390` + Figma Variables 78 / Text Style 7 |
 | 2. Primitives | shadcn 계열 27개 컴포넌트 + variants + Code Connect | 예정 |
 | 3. 도메인 컴포넌트 | BookCover, BookCard, 활동 타임라인 등 | 예정 |
 | 4. 다크모드 | Semantic 컬렉션에 Dark 모드 값 추가 | 예정 |
@@ -142,7 +151,9 @@ Layer 3(`button/primary/bg` 같은 component 토큰)은 만들지 않는다. 필
 | Figma Variables | `그룹/이름` (슬래시가 폴더가 됨) | `blue/600`, `text/strong` |
 | CSS 변수 | `--그룹-이름` | `--blue-600`, `--text-strong` |
 
-Figma에서 `Primitives` 컬렉션은 **숨김 처리**한다. 디자이너가 색을 고를 때 원색 램프가 아니라 직무 토큰만 보이게 해서, 규칙 위반을 애초에 어렵게 만드는 장치다.
+Figma에서 원색은 **색 피커에 뜨지 않게** 한다. 디자이너가 색을 고를 때 원색 램프가 아니라 직무 토큰만 보이게 해서, 규칙 위반을 애초에 어렵게 만드는 장치다.
+
+> **정정 (구현 중):** 설계 시점에는 이것을 "`Primitives` 컬렉션을 숨김 처리한다"고 적었으나, Figma의 *hide from publishing*은 **라이브러리 게시** 제어라 피커 노출과는 다른 개념이다. 의도를 실제로 달성하는 것은 `variable.scopes`다. 그래서 **원색 20개는 `scopes = []`** 로 두어 어떤 피커에도 나타나지 않게 했고, 반대로 `space`·`corner`는 Figma에서 쓰라고 만든 것이므로 각각 `["GAP","WIDTH_HEIGHT"]`·`["CORNER_RADIUS"]`로 해당 피커에만 노출시켰다. 컬렉션 자체는 게시 숨김 처리하지 않았다 — 그렇게 하면 `space`·`corner`까지 함께 사라진다.
 
 ---
 
@@ -270,14 +281,21 @@ Figma에서 `Primitives` 컬렉션은 **숨김 처리**한다. 디자이너가 �
 
 **Variables 컬렉션 2개**
 
-| 컬렉션 | 모드 | 내용 | 게시 |
+| 컬렉션 | 모드 | 내용 | 피커 노출 |
 |---|---|---|---|
-| `Primitives` | `Value` | 색 20 + spacing 8 + radius 4 = **32개** | **숨김** |
-| `Semantic` | `Light` | **46개**, 전부 Primitives 참조 | 공개 |
+| `Primitives` | `Value` | 색 20 (`scopes = []`) + `space` 8 + `corner` 4 = **32개** | 색은 **숨김**, space/corner만 해당 피커에 |
+| `Semantic` | `Light` | **46개**, 색 41개 전부 Primitives 참조 | 직무에 맞는 피커에만 |
 
 **Text Styles 7개** — §6.2 표의 7개. 모바일 2개가 별도 스타일인 이유는 Figma Text Style이 브레이크포인트를 담지 못하기 때문이다. 코드에서 `.heading-1`이 미디어쿼리로 처리하는 것을 Figma에서는 두 스타일로 나눠 표현한다.
 
 `Foundations` 페이지에는 램프·스케일을 눈으로 확인하는 스타일 가이드 프레임을 그린다.
+
+> **실제 구현 결과 (2026-07-27):** 위 구조 그대로 생성했고, 계획에 없던 두 가지를 더했다.
+>
+> - **Code Syntax** — 각 변수에 `var(--primary)` 형태의 CSS 이름을 심었다. Figma에서 변수를 선택하면 코드 이름이 바로 보인다.
+> - **살아있는 가이드** — 스타일 가이드의 스와치·간격 막대·모서리 상자를 전부 Variables에 바인딩했다(색은 fill, `space`는 `width`, `corner`는 네 모서리 radius). 토큰 값을 바꾸면 가이드가 자동으로 따라 움직인다.
+>
+> `Foundations` 페이지 구성: `1 · Colors` / `2 · Semantic` / `3 · Spacing & Corner` / `4 · Typography` 4프레임.
 
 ### 7.2 Semantic 46개 전체 매핑
 
@@ -354,7 +372,7 @@ Figma에서 `Primitives` 컬렉션은 **숨김 처리**한다. 디자이너가 �
 packages/design-tokens/
 ├── package.json          style-dictionary ^5 (ESM) — 기존 v3 설정은 폐기
 ├── tokens/
-│   ├── primitives.json   ← Tokens Studio가 읽고 쓰는 파일
+│   ├── primitives.json   ← 토큰의 단일 출처 (Figma 는 여기서 생성된다)
 │   └── semantic.json
 ├── build.mjs
 └── dist/tokens.css       생성물이지만 커밋한다 (아래 근거)
@@ -385,11 +403,13 @@ packages/design-tokens/
 
 ### 7.4 왕복 절차
 
-| | 방향 | 하는 일 | 횟수 |
+| | 방향 | 하는 일 | 상태 |
 |---|---|---|---|
-| 1 | 코드 → JSON | `globals.css` 46개를 primitive/semantic으로 갈라 JSON에 기록 | 1회 |
-| 2 | JSON → Figma | Tokens Studio로 임포트 → Variables 생성 | 1회 |
-| 3 | Figma → 코드 | 플러그인에서 JSON export → `npm run build` → `tokens.css` | 이후 계속 |
+| 1 | 코드 → JSON | `globals.css` 46개를 primitive/semantic으로 갈라 JSON에 기록 | ✅ 완료 |
+| 2 | JSON → Figma | **MCP `use_figma` 스크립트**로 Variables 생성 (Tokens Studio 불필요) | ✅ 완료 |
+| 3 | Figma → 코드 | 값이 Figma 에서 바뀌면 `tokens/*.json` 수정 → `npm run build` → `tokens.css` | 이후 계속 |
+
+3단계는 아직 실전 검증이 없다 — 이번 라운드에서 값이 Figma 쪽에서 먼저 바뀐 적이 없기 때문이다. 라운드 2에서 처음 겪게 되며, 그때 §11의 `baseline.json` 역할 결정이 함께 필요해진다.
 
 ---
 
@@ -413,19 +433,33 @@ packages/design-tokens/
 
 ---
 
-## 9. 불확실성과 우회 경로
+## 9. 불확실성과 그 결말
 
-**Tokens Studio 무료 플랜의 Variables 생성 지원 범위**가 확정되지 않았다. 최근 유료화 범위가 넓어졌다.
+설계 시점의 미결 사항은 **"Tokens Studio 무료 플랜에서 Variables 생성이 되는가"** 였고, 안 될 경우 MCP → 수동 순으로 우회하기로 했다.
 
-구현 1단계를 **"플러그인 설치 후 기능 범위 확인"** 스파이크로 잡고, 결과에 따라 분기한다.
+**결말 (2026-07-27): 질문 자체가 필요 없었다.** 표의 2순위였던 MCP 경로가 곧바로 동작해 Tokens Studio를 설치조차 하지 않았다. §2.1의 정정을 참고할 것.
 
-| 결과 | 대응 |
+### 9.1 대신 실제로 발목을 잡은 것 — 폰트
+
+예상하지 못한 제약이 하나 나왔다. **MCP가 실행되는 Figma 컨텍스트에는 로컬 폰트가 없다.**
+
+- `~/Library/Fonts`에 Pretendard 9종이 2023년부터 설치돼 있고 macOS도 정상 인식한다
+- 그런데 `figma.listAvailableFontsAsync()`가 반환한 8,934개 폰트에 Pretendard가 없다
+- `loadFontAsync({family:'Pretendard'})`는 `font family does not exist`로 실패한다
+
+그래서 Text Style 7개를 **Noto Sans KR로 만들고 사용자가 Figma UI에서 폰트만 교체**했다. 크기·줄간격·weight는 에이전트가 확정값으로 넣었으므로 교체는 드롭다운 7번이었다.
+
+**이 제약의 파급 (라운드 2·3에서 중요):**
+
+폰트가 Pretendard로 바뀐 뒤로는 **에이전트가 그 텍스트 노드의 `characters`를 수정할 수 없다.** Figma Plugin API는 텍스트를 바꾸기 전에 현재 폰트 로드를 요구하는데, 그 폰트가 MCP 컨텍스트에 없기 때문이다. 실제로 이번에도 안내 문구를 수정하려다 실패해 노드를 삭제하는 것으로 우회했다.
+
+| 라운드 2·3에서 가능한 것 | 불가능한 것 |
 |---|---|
-| Variables 생성 가능 | 계획대로 진행 |
-| 불가 | Figma MCP(`use_figma`)로 Variables 생성 시도 |
-| 둘 다 불가 | 수동 생성 (총 78개 — 반나절 규모, 라운드를 막지 않음) |
+| 노드 생성·삭제, 이동, 리사이즈 | Pretendard 텍스트의 `characters` 수정 |
+| 색·간격·radius 변경, 변수 바인딩 | Pretendard 텍스트의 폰트·크기 변경 |
+| 컴포넌트/variant 구성, 스타일 적용 | — |
 
-어느 경로든 **JSON ↔ Style Dictionary ↔ `tokens.css`** 구간은 영향받지 않으므로, 코드 쪽 작업은 이 스파이크와 병행할 수 있다.
+**대응**: 컴포넌트의 텍스트 내용은 (a) 생성 시점에 확정하거나, (b) Noto로 만들고 사용자가 일괄 교체하거나, (c) 텍스트 수정이 필요한 작업은 사용자에게 넘긴다. 라운드 2 계획을 세울 때 이 제약을 전제로 태스크를 나눌 것.
 
 ---
 
