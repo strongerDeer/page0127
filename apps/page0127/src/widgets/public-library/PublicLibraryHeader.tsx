@@ -78,8 +78,10 @@ export const PublicLibraryHeader = ({
 
   const handleAnalyzeTaste = () => {
     if (analyzableBookCount < 5) {
-      toast.error(
-        '취향 분석을 위해 최소 5권의 완독한 책(별점 포함)이 필요합니다.'
+      // "필요합니다"(요건)가 아니라 "볼 수 있어요"(가까워진 보상)로 말한다.
+      // 5권 게이트 자체는 AI 비용과 묶인 제품 결정이라 그대로 둔다.
+      toast.info(
+        `별점을 남긴 완독 책이 ${5 - analyzableBookCount}권 더 모이면 취향 분석을 볼 수 있어요.`
       );
       return;
     }
