@@ -17,6 +17,7 @@ import { bookApi } from '@/entities/book';
 
 import { useBookCRUD } from '@/features/book/api/useBookCRUD';
 import { useBookSearch } from '@/features/book/api/useBookSearch';
+import { resolveReadCount } from '@/features/book/lib/resolveReadCount';
 import {
   type BookFormData,
   BookRegistrationForm,
@@ -166,8 +167,9 @@ const AddBookPage = () => {
     // 크게 늘어난다. 그래서 등록은 먼저 끝내고, 검증은 아래에서 백그라운드로 돌린다.
     const highResCoverImage = upgradeImageResolution(selectedBook.cover);
 
-    // 재독 횟수 계산 (기존 책이 있으면 +1, 없으면 1)
-    const readCount = existingBook ? existingBook.read_count + 1 : 1;
+    // 재독 횟수 계산 — existingBook 은 중복 다이얼로그를 취소해도 남아 있어서
+    // ISBN 이 지금 저장하는 책과 같은지 함께 본다(자세한 근거는 resolveReadCount 주석)
+    const readCount = resolveReadCount(existingBook, selectedBook.isbn13);
 
     // 알라딘 도서 정보 + 사용자 입력 데이터 결합
     const bookData = {
