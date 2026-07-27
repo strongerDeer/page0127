@@ -66,7 +66,7 @@ describe('buildCommentTree', () => {
     expect(result.map((c) => c.id)).toEqual(['c2']);
   });
 
-  it('created_at 오름차순으로 정렬한다', () => {
+  it('루트 댓글은 최신이 위(내림차순)로 온다', () => {
     const result = buildCommentTree(
       [
         row({ id: 'late', created_at: '2026-07-05T00:00:00Z' }),
@@ -75,7 +75,28 @@ describe('buildCommentTree', () => {
       profiles
     );
 
-    expect(result.map((c) => c.id)).toEqual(['early', 'late']);
+    expect(result.map((c) => c.id)).toEqual(['late', 'early']);
+  });
+
+  it('대댓글은 부모 아래에서 시간순(오름차순)을 지킨다', () => {
+    const result = buildCommentTree(
+      [
+        row({ id: 'parent', created_at: '2026-07-01T00:00:00Z' }),
+        row({
+          id: 'reply2',
+          parent_comment_id: 'parent',
+          created_at: '2026-07-03T00:00:00Z',
+        }),
+        row({
+          id: 'reply1',
+          parent_comment_id: 'parent',
+          created_at: '2026-07-02T00:00:00Z',
+        }),
+      ],
+      profiles
+    );
+
+    expect(result[0].replies.map((r) => r.id)).toEqual(['reply1', 'reply2']);
   });
 
   // Postgres 는 마이크로초가 0이면 소수부를 생략한다. localeCompare 로 비교하면
@@ -89,7 +110,8 @@ describe('buildCommentTree', () => {
       profiles
     );
 
-    expect(result.map((c) => c.id)).toEqual(['먼저', '나중']);
+    // 루트는 내림차순이므로 나중에 달린 것이 위에 온다
+    expect(result.map((c) => c.id)).toEqual(['나중', '먼저']);
   });
 });
 

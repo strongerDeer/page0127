@@ -132,7 +132,9 @@ export function buildCommentTree(
     else roots.push(node);
   }
 
-  roots.sort(byCreatedAt);
+  // 루트 댓글은 최신이 위(내림차순) — 새 댓글을 보러 스크롤을 내리지 않아도 된다.
+  // 대댓글은 부모 아래에서 시간순(오름차순)을 지킨다. 답글은 대화라 위에서 아래로 읽힌다.
+  roots.sort((a, b) => byCreatedAt(b, a));
   for (const root of roots) root.replies.sort(byCreatedAt);
 
   return roots;
