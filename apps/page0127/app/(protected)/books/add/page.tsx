@@ -192,7 +192,11 @@ const AddBookPage = () => {
 
       // 완독이 아니면 "책장에 꽂혔어요"가 거짓이 된다 — 예전 흐름 그대로 서재로 보낸다
       if (formData.status !== 'completed') {
-        toast.success('도서가 등록되었습니다!');
+        toast.success(
+          readCount > 1
+            ? `${readCount}회독 도서가 등록되었습니다!`
+            : '도서가 등록되었습니다!'
+        );
         router.push('/books');
         return;
       }

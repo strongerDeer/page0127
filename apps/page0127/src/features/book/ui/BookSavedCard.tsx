@@ -1,5 +1,3 @@
-'use client';
-
 import Image from 'next/image';
 
 import { Button } from '@/shared/ui/button';
@@ -56,9 +54,9 @@ export const BookSavedCard = ({
         )}
 
         <div className='space-y-1'>
-          <p className='heading-2 text-text-strong'>
+          <h2 role='status' className='heading-2 text-text-strong'>
             {savedBookMessage(completedCount, readCount)}
-          </p>
+          </h2>
           <p className='text-sm text-text-subtle'>{title}</p>
         </div>
 
