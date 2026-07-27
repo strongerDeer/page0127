@@ -25,6 +25,8 @@ export type ProfileRow = {
 export type CommentUser = {
   id: string;
   nickname: string | null;
+  /** 프로필 경로(/{username})용 — 표시용 nickname 과 달리 폴백하지 않는다 */
+  username: string | null;
   photoUrl: string | null;
 };
 
@@ -53,6 +55,8 @@ const toUser = (
     id: userId,
     // 닉네임 미설정 시 username으로 대체 (익명 방지)
     nickname: profile?.nickname || profile?.username || null,
+    // 링크 경로용 — 없는 값으로 /{username} 을 만들면 404가 되므로 폴백하지 않는다
+    username: profile?.username || null,
     photoUrl: profile?.photo_url || null,
   };
 };
@@ -132,7 +136,9 @@ export function buildCommentTree(
     else roots.push(node);
   }
 
-  roots.sort(byCreatedAt);
+  // 루트 댓글은 최신이 위(내림차순) — 새 댓글을 보러 스크롤을 내리지 않아도 된다.
+  // 대댓글은 부모 아래에서 시간순(오름차순)을 지킨다. 답글은 대화라 위에서 아래로 읽힌다.
+  roots.sort((a, b) => byCreatedAt(b, a));
   for (const root of roots) root.replies.sort(byCreatedAt);
 
   return roots;

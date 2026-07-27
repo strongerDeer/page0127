@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
@@ -77,11 +77,14 @@ export const BookStreamSection = ({
       },
       initialPageParam: undefined as string | undefined,
       // 다음 커서는 이번 페이지에서 가장 오래된 댓글의 시각.
-      // items가 오름차순이므로 첫 번째 댓글이 그 기준이다.
-      getNextPageParam: (lastPage) =>
-        lastPage.hasMore
-          ? lastPage.items.find((item) => item.kind === 'comment')?.createdAt
-          : undefined,
+      // items가 내림차순(최신이 위)이므로 마지막 댓글이 그 기준이다.
+      getNextPageParam: (lastPage) => {
+        if (!lastPage.hasMore) return undefined;
+        const comments = lastPage.items.filter(
+          (item) => item.kind === 'comment'
+        );
+        return comments.at(-1)?.createdAt;
+      },
     });
 
   const items = useMemo(() => {
@@ -90,14 +93,26 @@ export const BookStreamSection = ({
       for (const item of page.items) byId.set(item.id, item);
     }
 
+    // 최신이 위(내림차순) — 서버와 같은 규칙이다
     return [...byId.values()].sort((a, b) => {
-      const diff = compareIsoTime(a.createdAt, b.createdAt);
+      const diff = compareIsoTime(b.createdAt, a.createdAt);
       if (diff !== 0) return diff;
-      // 같은 시각이면 활동을 먼저 — "완독했어요" 아래에 그에 대한 댓글이 오는 게 자연스럽다
+      // 같은 시각이면 활동을 아래에 — 위에서 아래로 과거를 향하므로,
+      // "완독했어요"가 그에 달린 댓글보다 아래에 오는 게 자연스럽다
       if (a.kind === b.kind) return 0;
-      return a.kind === 'activity' ? -1 : 1;
+      return a.kind === 'activity' ? 1 : -1;
     });
   }, [data]);
+
+  // 스트림을 실제로 받아온 뒤에만 "읽었다"고 기록한다.
+  // 못 본 것을 봤다고 표시하면 안 되므로 로딩 중·실패 시에는 기록하지 않는다.
+  const loaded = !isLoading && data !== undefined;
+  useEffect(() => {
+    if (!currentUser || !loaded) return;
+    apiClient.post(API_ENDPOINTS.books.threadRead(bookId)).catch(() => {
+      // 배지 갱신 실패는 읽기를 막을 이유가 아니다 — 조용히 넘긴다
+    });
+  }, [bookId, currentUser, loaded]);
 
   return (
     <section className='mt-6'>
@@ -113,23 +128,6 @@ export const BookStreamSection = ({
         </p>
       ) : (
         <div className='space-y-3 border-t border-line-soft pt-4'>
-          {/* 오래된 것이 위에 오므로 더보기 버튼도 목록 맨 위에 둔다 */}
-          {hasNextPage && (
-            <div className='flex justify-center'>
-              <Button
-                variant='ghost'
-                size='sm'
-                onClick={() => fetchNextPage()}
-                disabled={isFetchingNextPage}
-              >
-                {isFetchingNextPage && (
-                  <Loader2 className='mr-2 size-4 animate-spin' />
-                )}
-                이전 댓글 더보기
-              </Button>
-            </div>
-          )}
-
           {items.map((item) =>
             item.kind === 'activity' ? (
               <BookStreamEvent
@@ -152,6 +150,23 @@ export const BookStreamSection = ({
                 ))}
               </div>
             )
+          )}
+
+          {/* 최신이 위에 오므로, 과거로 내려가는 더보기는 목록 맨 아래에 둔다 */}
+          {hasNextPage && (
+            <div className='flex justify-center pt-2'>
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
+              >
+                {isFetchingNextPage && (
+                  <Loader2 className='mr-2 size-4 animate-spin' />
+                )}
+                이전 댓글 더보기
+              </Button>
+            </div>
           )}
         </div>
       )}

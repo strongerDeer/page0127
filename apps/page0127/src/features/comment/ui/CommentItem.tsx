@@ -25,6 +25,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
+import { ProfileLink } from '@/shared/ui/ProfileLink';
 import { RelativeTime } from '@/shared/ui/RelativeTime';
 import { Textarea } from '@/shared/ui/textarea';
 
@@ -114,19 +115,26 @@ export const CommentItem = ({
   return (
     <>
       <div className={`flex gap-3 ${isReply ? 'ml-12' : ''}`}>
-        {/* 프로필 사진 */}
-        <Avatar className='h-8 w-8'>
-          <AvatarImage src={comment.user?.photoUrl || undefined} />
-          <AvatarFallback>{comment.user?.nickname?.[0] || '익'}</AvatarFallback>
-        </Avatar>
+        {/* 프로필 사진 — 탈퇴한 사용자(user=null)나 username 이 없으면 링크를 걸지 않는다 */}
+        <ProfileLink username={comment.user?.username ?? null}>
+          <Avatar className='h-8 w-8'>
+            <AvatarImage src={comment.user?.photoUrl || undefined} />
+            <AvatarFallback>
+              {comment.user?.nickname?.[0] || '익'}
+            </AvatarFallback>
+          </Avatar>
+        </ProfileLink>
 
         <div className='flex-1 space-y-2'>
           {/* 댓글 헤더 */}
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-2'>
-              <span className='text-sm font-medium'>
+              <ProfileLink
+                username={comment.user?.username ?? null}
+                className='text-sm font-medium hover:underline'
+              >
                 {comment.user?.nickname || '익명'}
-              </span>
+              </ProfileLink>
               <RelativeTime
                 date={comment.createdAt}
                 className='text-xs text-text-faint'

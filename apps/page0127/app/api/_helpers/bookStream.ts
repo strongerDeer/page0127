@@ -31,11 +31,14 @@ export function mergeStreamItems(
     kind: 'comment',
   }));
 
+  // 최신이 위(내림차순). 스트림 맨 아래에 입력창이 있으므로, 방금 달린 댓글을 보려고
+  // 긴 목록을 스크롤할 필요가 없다.
   return [...activities, ...commentItems].sort((a, b) => {
-    const diff = compareIsoTime(a.createdAt, b.createdAt);
+    const diff = compareIsoTime(b.createdAt, a.createdAt);
     if (diff !== 0) return diff;
-    // 같은 시각이면 활동을 먼저 — "완독했어요" 아래에 그에 대한 댓글이 오는 게 자연스럽다
+    // 같은 시각이면 활동을 아래에 — 위(최신)에서 아래(과거)로 읽으므로,
+    // "완독했어요"가 그에 달린 댓글보다 아래에 오는 게 자연스럽다
     if (a.kind === b.kind) return 0;
-    return a.kind === 'activity' ? -1 : 1;
+    return a.kind === 'activity' ? 1 : -1;
   });
 }
