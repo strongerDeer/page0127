@@ -242,4 +242,39 @@ describe('buildActivityItems', () => {
 
     expect(item.user.nickname).toBe('kyungmin');
   });
+
+  // 표시용 nickname 과 달리 링크 경로용 username 은 폴백하면 안 된다.
+  // 없는 값으로 /{username}/{bookId} 를 만들면 404가 된다.
+  it('username은 표시용 닉네임과 별개로 그대로 싣는다', () => {
+    const [item] = buildActivityItems({
+      activities,
+      profiles: [
+        { id: 'u1', nickname: '경민', username: 'kyungmin', photo_url: null },
+      ],
+      books,
+      likes: [],
+      comments: [],
+      threadReads: [],
+      bookEvents: [],
+      currentUserId: 'u1',
+    });
+
+    expect(item.user.nickname).toBe('경민');
+    expect(item.user.username).toBe('kyungmin');
+  });
+
+  it('프로필이 없으면 username은 null이다 (닉네임으로 대체하지 않는다)', () => {
+    const [item] = buildActivityItems({
+      activities,
+      profiles: [],
+      books,
+      likes: [],
+      comments: [],
+      threadReads: [],
+      bookEvents: [],
+      currentUserId: 'u1',
+    });
+
+    expect(item.user.username).toBeNull();
+  });
 });

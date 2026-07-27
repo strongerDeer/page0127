@@ -116,6 +116,9 @@ export function buildActivityItems({
         id: a.user_id,
         // nickname 미설정 시 username으로 대체(username은 가입 시 항상 생성됨) → '익명' 대신 이름 노출
         nickname: profile?.nickname ?? profile?.username ?? null,
+        // 링크 경로용 — 표시용 nickname 과 달리 폴백하지 않는다.
+        // 없는 값으로 경로를 만들면 404가 되므로, 호출부가 없을 때를 판단하게 둔다.
+        username: profile?.username ?? null,
         photo_url: profile?.photo_url ?? null,
       },
       book: book

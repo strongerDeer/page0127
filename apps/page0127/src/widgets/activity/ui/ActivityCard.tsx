@@ -41,6 +41,38 @@ const formatBookEvents = (events: Activity['bookEvents']) =>
     })
     .join(' · ');
 
+type BookAttachmentLinkProps = {
+  username: string | null;
+  bookId: string;
+  children: React.ReactNode;
+};
+
+/**
+ * 책 첨부를 상세로 가는 링크로 감싼다.
+ *
+ * 학습 포인트: username 이 없으면 링크 없이 그대로 그린다. 없는 값으로 경로를 만들면
+ * 404로 보내게 되므로, "누를 수 있지만 깨진 링크"보다 "누를 수 없는 카드"가 낫다.
+ */
+const BookAttachmentLink = ({
+  username,
+  bookId,
+  children,
+}: BookAttachmentLinkProps) => {
+  const className =
+    'mt-4 flex items-center gap-4 rounded-xl border border-line-soft bg-card p-4';
+
+  if (!username) return <div className={className}>{children}</div>;
+
+  return (
+    <Link
+      href={`/${username}/${bookId}`}
+      className={`${className} transition-colors hover:bg-sunken`}
+    >
+      {children}
+    </Link>
+  );
+};
+
 const getActivityText = (type: Activity['activity_type']) => {
   switch (type) {
     case 'book_added':
@@ -81,8 +113,10 @@ export const ActivityCard = ({
         )}
 
         <p className='min-w-0 flex-1 truncate text-base'>
+          {/* 경로는 username 기준이다. nickname 으로 만들면 닉네임을 바꾼 사람의
+              링크가 404가 된다(둘이 같은 계정에서만 우연히 동작한다) */}
           <Link
-            href={`/${activity.user.nickname || activity.user.id}`}
+            href={`/${activity.user.username ?? activity.user.id}`}
             className='font-semibold text-text-strong hover:underline'
           >
             {activity.user.nickname || '익명'}
@@ -98,9 +132,14 @@ export const ActivityCard = ({
         />
       </div>
 
-      {/* 책 첨부 — 작은 표지 + 제목·저자·별점 */}
+      {/* 책 첨부 — 작은 표지 + 제목·저자·별점.
+          책 상세는 /{username}/{bookId} 하나뿐이다(/books/[id]는 옛 경로 리다이렉트).
+          username 이 없으면(이론상) 링크를 걸지 않고 그대로 둔다 — 깨진 경로보다 낫다 */}
       {!hideBook && (
-        <div className='mt-4 flex items-center gap-4 rounded-xl border border-line-soft bg-card p-4'>
+        <BookAttachmentLink
+          username={activity.user.username}
+          bookId={activity.book.id}
+        >
           {activity.book.cover_image ? (
             <Image
               src={activity.book.cover_image}
@@ -140,7 +179,7 @@ export const ActivityCard = ({
                   : activity.book.rating}
               </p>
             )}
-        </div>
+        </BookAttachmentLink>
       )}
 
       {/* 리뷰 내용 — 유저가 쓴 글은 다듬지 않고 그대로 보여준다 */}

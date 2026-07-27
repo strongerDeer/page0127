@@ -16,6 +16,8 @@ export type Activity = {
   user: {
     id: string;
     nickname: string | null;
+    /** 공개 프로필·책 상세 경로(/{username}/{bookId})에 쓴다 */
+    username: string | null;
     photo_url: string | null;
   };
   book: {
