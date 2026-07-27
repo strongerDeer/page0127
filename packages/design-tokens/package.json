@@ -10,7 +10,6 @@
   },
   "scripts": {
     "build": "node build.mjs",
-    "update-baseline": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/update-baseline.ts",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
     "type-check": "tsc --noEmit",

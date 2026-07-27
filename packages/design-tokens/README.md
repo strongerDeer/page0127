@@ -27,23 +27,23 @@ dist/tokens.css          globals.css 가 import 하는 생성물
 | 명령 | 하는 일 |
 | --- | --- |
 | `npm run build` | `dist/tokens.css` 생성 |
-| `npm run test` | 기준선(`tests/baseline.json`)과 대조 (회귀 방지) |
-| `npm run update-baseline` | 기준선을 **현재 승인된 값**으로 갱신 — **평소에 쓰지 않는다** (아래) |
+| `npm run test` | 생성물이 2층 구조 계약을 지키는지 검사 |
 
-> ⚠️ `npm run update-baseline` 은 `tests/baseline.json` 을 `dist/tokens.css`(빌드 결과) 기준으로 덮어쓴다.
-> 이 스냅샷이 곧 회귀 테스트의 "정답"이므로, **값이 의도적으로 바뀐 커밋에서만** 돌린다.
-> 실행 전 `npm run build`로 `dist/tokens.css`를 최신 상태로 만들어야 하고, 실행 후 `tests/baseline.json`의
-> `git diff`가 리뷰 대상이 된다 — 의도한 토큰만 바뀌었는지 diff로 반드시 확인한다.
->
-> **지금(2026 라운드 1) 그냥 돌리면 `--secondary`·`--muted` 두 개에 diff 가 난다** (`#f1f3f5` → `#f6f7f8`).
-> 버그가 아니라 정상이다 — `baseline.json`은 이사 전 `globals.css` 값을 동결한 기록이고, `dist/tokens.css`는
-> 이사 후 승인값을 담는데, 두 토큰은 설계 문서 §5.2 에서 의도적으로 `gray/50`으로 통합됐다. 이 차이는
-> `tests/tokens.test.ts`의 `INTENTIONAL_VALUE_CHANGES`가 이미 알고 검사하는 중이다.
->
-> **따라서 지금은 이 스크립트 결과를 커밋하면 안 된다.** 커밋하면 `baseline.json`이 "이사로 무엇이
-> 바뀌었나"를 기록하는 역할을 잃고 `INTENTIONAL_VALUE_CHANGES`가 무의미해진다. 이 스크립트가 다시
-> 쓸모 있어지는 시점은 라운드 2 이후 Figma 값 변경 시이며, 그때는 먼저 `baseline.json`의 역할을
-> "이사 전 기록"에서 "현재 승인값"으로 전환할지부터 정해야 한다(설계 문서 §11 근처의 미결 항목 참고).
+## 회귀는 무엇이 막는가
+
+토큰이 깨지는 방식이 세 가지라, 각각 다른 장치가 맡는다.
+
+| 무엇이 깨지나 | 무엇이 막나 |
+| --- | --- |
+| **값이 실수로 바뀜** | `dist/tokens.css` 를 커밋하므로 **git diff** 에 그대로 드러난다 |
+| **이름이 사라짐** — 쓰는 쪽이 조용히 죽는다 | `apps/page0127/app/token-usage.test.ts` — 소스가 쓰는 `var(--…)` 를 전부 모아 정의 존재를 확인 |
+| **구조가 무너짐** — semantic 이 원색을 참조하지 않고 값을 복사 | `tests/tokens.test.ts` (이 패키지) |
+
+여기에 `apps/page0127/app/globals.test.ts` 가 하나 더 있다 — `@theme inline` 이 semantic 색을 빠짐없이 `--color-*` 로 노출하는지 본다. 토큰이 살아 있어도 그 배선이 끊기면 `bg-rank-up` 같은 클래스가 조용히 죽기 때문이다.
+
+> **값 대조 스냅샷(`baseline.json`)은 없앴다.** 이사 직후에는 "이사 전 값과 같은가"로 회귀를 막았지만,
+> 그 방식은 값이 **정당하게** 바뀌는 순간부터 방해가 된다 — 다크모드나 브랜드 색 조정이 오면 실패하는데
+> 버그인지 의도인지 구분할 수 없다. 값 변경 감시는 커밋된 `dist/tokens.css` 의 diff 가 더 잘한다.
 
 ## `dist/tokens.css`를 커밋하는 이유
 
