@@ -28,6 +28,8 @@ export type Comment = {
   user: {
     id: string;
     nickname: string | null;
+    /** 프로필 경로(/{username})용 — 표시용 nickname 과 달리 폴백하지 않는다 */
+    username: string | null;
     photoUrl: string | null;
   } | null; // 탈퇴한 사용자의 경우 null (UI에서 "탈퇴한 사용자"로 표시)
   replies?: Comment[]; // 대댓글 목록 (1depth만)

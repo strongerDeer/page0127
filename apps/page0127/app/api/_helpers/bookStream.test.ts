@@ -20,12 +20,12 @@ const comment = (id: string, createdAt: string): CommentNode => ({
   content: '댓글',
   createdAt,
   updatedAt: createdAt,
-  user: { id: 'u1', nickname: '경민', photoUrl: null },
+  user: { id: 'u1', nickname: '경민', username: 'kyungmin', photoUrl: null },
   replies: [],
 });
 
 describe('mergeStreamItems', () => {
-  it('활동과 댓글을 created_at 오름차순으로 섞는다', () => {
+  it('활동과 댓글을 created_at 내림차순(최신이 위)으로 섞는다', () => {
     const result = mergeStreamItems(
       [
         activity('a1', '2026-07-01T00:00:00Z'),
@@ -37,17 +37,17 @@ describe('mergeStreamItems', () => {
       ]
     );
 
-    expect(result.map((i) => i.id)).toEqual(['a1', 'c1', 'a2', 'c2']);
+    expect(result.map((i) => i.id)).toEqual(['c2', 'a2', 'c1', 'a1']);
   });
 
-  it('시각이 같으면 활동을 먼저 놓는다', () => {
+  it('시각이 같으면 활동을 아래에 놓는다', () => {
     const same = '2026-07-01T00:00:00Z';
     const result = mergeStreamItems(
       [activity('a1', same)],
       [comment('c1', same)]
     );
 
-    expect(result.map((i) => i.id)).toEqual(['a1', 'c1']);
+    expect(result.map((i) => i.id)).toEqual(['c1', 'a1']);
   });
 
   it('댓글에 kind를 붙이고 대댓글은 중첩된 채로 둔다', () => {
@@ -73,6 +73,7 @@ describe('mergeStreamItems', () => {
       [comment('나중', '2026-07-01T00:00:05.123456+00:00')]
     );
 
-    expect(result.map((i) => i.id)).toEqual(['먼저', '나중']);
+    // 내림차순이므로 나중에 달린 것이 위에 온다
+    expect(result.map((i) => i.id)).toEqual(['나중', '먼저']);
   });
 });
