@@ -9,7 +9,7 @@ import { Activity } from '@/entities/activity';
 import { isLifeBook, isRated } from '@/entities/book';
 
 import { CommentSection } from '@/features/comment';
-import { LikeButton } from '@/features/like';
+import { BookRecordLikeButton } from '@/features/like';
 
 /**
  * 활동 카드 컴포넌트
@@ -25,6 +25,21 @@ type ActivityCardProps = {
   initialCommentsOpen?: boolean; // 댓글 섹션 초기 펼침 상태
   hideBook?: boolean; // 책 상세에선 책 표지 첨부를 숨긴다(중복 방지)
 };
+
+const EVENT_LABEL: Record<Activity['activity_type'], string> = {
+  book_added: '담음',
+  book_completed: '완독',
+  review_added: '리뷰',
+};
+
+/** "담음 7/01 · 완독 7/20" — 중복 제거로 접힌 활동들을 한 줄로 되살린다 */
+const formatBookEvents = (events: Activity['bookEvents']) =>
+  events
+    .map((e) => {
+      const d = new Date(e.createdAt);
+      return `${EVENT_LABEL[e.activityType]} ${d.getMonth() + 1}/${d.getDate()}`;
+    })
+    .join(' · ');
 
 const getActivityText = (type: Activity['activity_type']) => {
   switch (type) {
@@ -135,11 +150,26 @@ export const ActivityCard = ({
         </p>
       )}
 
+      {/* 접힌 상태 변화 요약 — 이 카드는 책 1장이므로 개별 활동은 여기로 압축된다.
+          활동이 하나뿐이면 헤더에 이미 적혀 있어 중복이라 감춘다 */}
+      {activity.bookEvents.length > 1 && (
+        <p className='mt-3 text-sm text-text-faint'>
+          {formatBookEvents(activity.bookEvents)}
+        </p>
+      )}
+
+      {/* 한줄평 — 최신 활동이 완독이어도 리뷰 본문이 보이게 한다 */}
+      {activity.reviewContent && (
+        <p className='mt-2 line-clamp-3 break-keep text-[15px] leading-7 text-text-body'>
+          {activity.reviewContent}
+        </p>
+      )}
+
       {/* 액션 바 — 좋아요·댓글 한 줄. 댓글 패널은 w-full로 줄바꿈해 전체 폭 사용.
           리스트 구분선과 겹치므로 자체 border는 두지 않는다 */}
       <div className='mt-3 flex flex-wrap items-center gap-1'>
-        <LikeButton
-          activityId={activity.id}
+        <BookRecordLikeButton
+          bookId={activity.book.id}
           count={activity.likes.count}
           isLiked={activity.likes.isLiked}
         />
@@ -147,6 +177,12 @@ export const ActivityCard = ({
           target={{ type: 'book', id: activity.book.id }}
           initialOpen={initialCommentsOpen}
         />
+        {/* 마지막으로 이 스레드를 본 뒤 남이 단 댓글 — 열면 사라진다 */}
+        {activity.newCommentCount > 0 && (
+          <span className='rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground'>
+            새 댓글 {activity.newCommentCount}
+          </span>
+        )}
       </div>
     </article>
   );
