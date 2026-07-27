@@ -41,7 +41,7 @@ export async function GET(
     // 프로필 일괄 조회
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, nickname, bio, photo_url')
+      .select('id, nickname, username, bio, photo_url')
       .in('id', followingIds);
 
     // 프로필 맵 생성
@@ -53,6 +53,8 @@ export async function GET(
       return {
         id: follow.following_id,
         nickname: profile?.nickname || null,
+        // 표시 이름 대체 및 프로필 링크(/[username])에 필요
+        username: profile?.username || null,
         bio: profile?.bio || null,
         photo_url: profile?.photo_url || null,
         followers_count: 0,

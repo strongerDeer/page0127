@@ -1,5 +1,7 @@
 import { createClient } from '@/shared/config/supabase/server';
 
+import { toIdentityDefaults } from '../model/identityDefaults';
+
 import type { Profile } from '../types';
 
 /**
@@ -65,7 +67,9 @@ const generateUsernameFromEmail = (email: string): string => {
  * @param email - 사용자 이메일
  * @returns 고유한 username
  */
-export const generateUniqueUsername = async (email: string): Promise<string> => {
+export const generateUniqueUsername = async (
+  email: string
+): Promise<string> => {
   const supabase = await createClient();
   const baseUsername = generateUsernameFromEmail(email);
 
@@ -109,10 +113,12 @@ export const generateUniqueUsername = async (email: string): Promise<string> => 
  *
  * @param userId - 사용자 ID
  * @param email - 사용자 이메일
+ * @param metadata - OAuth 공급자가 준 user_metadata (신규 생성 시 이름·사진 초기값)
  */
 export const upsertProfile = async (
   userId: string,
-  email: string
+  email: string,
+  metadata?: Record<string, unknown> | null
 ): Promise<void> => {
   const supabase = await createClient();
 
@@ -125,12 +131,20 @@ export const upsertProfile = async (
     username = await generateUniqueUsername(email);
   }
 
-  // 3. upsert (username이 있으면 추가, 없으면 기존 유지)
+  // 3. 이름·사진 초기값은 "처음 만들 때"만 넣는다.
+  //    이미 있는 프로필에 덮으면 사용자가 지운 프로필 사진이 로그인할 때마다 되살아난다.
+  const defaults = existingProfile
+    ? { nickname: null, photoUrl: null }
+    : toIdentityDefaults(metadata);
+
+  // 4. upsert (값이 있는 항목만 추가, 없으면 기존 유지)
   await supabase.from('profiles').upsert(
     {
       id: userId,
       email,
       ...(username && { username }), // username이 있을 때만 추가
+      ...(defaults.nickname && { nickname: defaults.nickname }),
+      ...(defaults.photoUrl && { photo_url: defaults.photoUrl }),
       updated_at: new Date().toISOString(),
     },
     {
@@ -144,15 +158,18 @@ export const upsertProfile = async (
  *
  * 로그인 콜백 등 "프로필이 확실히 있어야 다음 단계로 갈 수 있는" 지점에서 쓴다.
  * (dashboard/page.tsx에 있던 로직을 재사용 가능한 형태로 옮겼다)
+ *
+ * @param metadata - OAuth 공급자가 준 user_metadata. 첫 생성 시 닉네임·사진의 초기값이 된다.
  */
 export const ensureProfile = async (
   userId: string,
-  email: string
+  email: string,
+  metadata?: Record<string, unknown> | null
 ): Promise<Profile> => {
   let profile = await getProfile(userId);
 
   if (!profile) {
-    await upsertProfile(userId, email);
+    await upsertProfile(userId, email, metadata);
     profile = await getProfile(userId);
   }
 

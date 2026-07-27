@@ -38,6 +38,12 @@ export type FollowStats = {
 export type UserWithFollowInfo = {
   id: string;
   nickname: string | null;
+  /**
+   * 가입 시 이메일에서 자동 생성되는 고유 아이디.
+   * nickname은 사용자가 직접 설정하기 전까지 null이므로 표시 이름의 대체값이 되고,
+   * 공개 서재 경로(/[username])의 유일한 키이기도 하다 → 링크에는 반드시 이 값을 쓴다.
+   */
+  username: string | null;
   bio: string | null;
   photo_url: string | null;
   followers_count: number;
