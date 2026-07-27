@@ -117,7 +117,6 @@ function formReducer(state: FormState, action: FormAction): FormState {
  * - 완독일 때 한줄평과 평가 점수를 맨 위에 두어 바로 손이 가게 한다.
  * - 완독일·시작일·메모·태그·공개 설정은 '더 남기기'로 접는다 (기본값이 이미
  *   옳아 필수 입력이 아니다). 완독일을 비우면 제출 시 오늘로 채워진다.
- * - 읽는중/읽고싶은책은 완독 전용 필드(한줄평·평가 점수·완독일)만 뺀 나머지를 표시.
  */
 export const BookRegistrationForm = ({
   book,
