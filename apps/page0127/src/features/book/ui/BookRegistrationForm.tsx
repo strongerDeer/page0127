@@ -115,8 +115,11 @@ function formReducer(state: FormState, action: FormAction): FormState {
  *
  * UX 개선 (완독 기록을 한 문장 중심으로):
  * - 완독일 때 한줄평과 평가 점수를 맨 위에 두어 바로 손이 가게 한다.
- * - 완독일·시작일·메모·태그·공개 설정은 '더 남기기'로 접는다 (기본값이 이미
- *   옳아 필수 입력이 아니다). 완독일을 비우면 제출 시 오늘로 채워진다.
+ * - 완독일·시작일·메모·태그는 '더 남기기'로 접는다 (기본값이 이미 옳아
+ *   필수 입력이 아니다). 완독일을 비우면 제출 시 오늘로 채워진다.
+ * - 공개 설정은 접지 않는다: 기본값이 공개(true)라 방금 쓴 문장이 공개 서재에
+ *   게시되는데, 접어 두면 사용자가 '공개'라는 단어를 한 번도 못 보고 저장한다.
+ *   편리한 기본값과 주의가 필요 없는 결정은 다르다.
  */
 export const BookRegistrationForm = ({
   book,
@@ -373,7 +376,7 @@ export const BookRegistrationForm = ({
           )}
 
           {/* 선택 항목은 접어 둔다 — 완독 기록에 필요한 입력은 사실 0개다
-              (상태·완독일·공개 여부 모두 기본값이 옳다) */}
+              (상태·완독일 모두 기본값이 옳다). 공개 설정은 여기 넣지 않는다 */}
           <details
             open={!!initialData}
             className='rounded-lg border border-line p-4'
@@ -477,34 +480,37 @@ export const BookRegistrationForm = ({
                   </p>
                 )}
               </div>
-
-              {/* 공개/비공개 설정 */}
-              <div className='space-y-2'>
-                <div className='flex items-center justify-between rounded-lg border p-4'>
-                  <div className='space-y-0.5'>
-                    <Label htmlFor={ids.isPublic} className='text-base'>
-                      공개 설정
-                    </Label>
-                    <p className='text-sm text-muted-foreground'>
-                      {isPublic
-                        ? '다른 사람들이 이 책을 볼 수 있습니다.'
-                        : '나만 볼 수 있습니다. (비공개)'}
-                    </p>
-                    <p className='text-xs text-muted-foreground'>
-                      나중에 서재에서 보관으로 옮길 수 있어요.
-                    </p>
-                  </div>
-                  <Switch
-                    id={ids.isPublic}
-                    checked={isPublic}
-                    onCheckedChange={(checked) =>
-                      dispatch({ type: 'SET_IS_PUBLIC', isPublic: checked })
-                    }
-                  />
-                </div>
-              </div>
             </div>
           </details>
+
+          {/* 접기 밖에 둔다 — isPublic 기본값이 true 라, 접어 두면 처음 쓰는 사용자가
+              사적인 생각을 적고 섹션을 한 번도 열지 않고 '공개'라는 단어를 못 본 채
+              공개 서재에 게시한다. 스위치와 설명 문구는 저장 시점에 화면에 있어야 한다. */}
+          {/* 공개/비공개 설정 */}
+          <div className='space-y-2'>
+            <div className='flex items-center justify-between rounded-lg border p-4'>
+              <div className='space-y-0.5'>
+                <Label htmlFor={ids.isPublic} className='text-base'>
+                  공개 설정
+                </Label>
+                <p className='text-sm text-muted-foreground'>
+                  {isPublic
+                    ? '다른 사람들이 이 책을 볼 수 있습니다.'
+                    : '나만 볼 수 있습니다. (비공개)'}
+                </p>
+                <p className='text-xs text-muted-foreground'>
+                  나중에 서재에서 보관으로 옮길 수 있어요.
+                </p>
+              </div>
+              <Switch
+                id={ids.isPublic}
+                checked={isPublic}
+                onCheckedChange={(checked) =>
+                  dispatch({ type: 'SET_IS_PUBLIC', isPublic: checked })
+                }
+              />
+            </div>
+          </div>
 
           {/* 버튼 */}
           <div className='flex gap-3'>
