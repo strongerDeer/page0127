@@ -53,8 +53,11 @@ export const BookSavedCard = ({
           />
         )}
 
-        <div className='space-y-1'>
-          <h2 role='status' className='heading-2 text-text-strong'>
+        {/* 카드는 라우트 이동이 아니라 state 교체로 나타나므로 아무것도 읽어주지 않는다.
+            제출 버튼도 언마운트돼 포커스가 body 로 떨어진다 → 확인 문구만 라이브 리전으로 감싼다.
+            role 을 h2 에 직접 주면 암시적 heading 역할이 덮여 제목 탐색에서 사라진다. */}
+        <div role='status' className='space-y-1'>
+          <h2 className='heading-2 text-text-strong'>
             {savedBookMessage(completedCount, readCount)}
           </h2>
           <p className='text-sm text-text-subtle'>{title}</p>
