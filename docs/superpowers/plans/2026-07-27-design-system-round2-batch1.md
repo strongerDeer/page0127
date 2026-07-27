@@ -159,6 +159,8 @@ grep -c "dark:\|shadow-" apps/page0127/src/shared/ui/button.tsx apps/page0127/sr
 ```
 Expected: 두 파일 모두 `0`
 
+> **실행 중 확인:** `button.tsx` 는 **1** 이 나온다. Step 2 가 지시한 주석에 "shadow-xs" 라는 문자열이 들어 있기 때문이며 실제 클래스는 아니다(`input.tsx` 는 0). 묶음 2~4 에서 같은 grep 을 재사용할 때는 주석을 제외하거나 기대값을 조정할 것.
+
 - [ ] **Step 6: 테스트·lint·타입체크를 돌린다**
 
 Run:

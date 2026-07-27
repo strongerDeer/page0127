@@ -41,6 +41,7 @@
   "ring":               { "$value": "{blue.600}",   "$type": "color" },
   "rank-up":            { "$value": "{orange.600}", "$type": "color", "$description": "순위 상승·포인트 강조 전용 코랄 오렌지 (primary 블루의 보색). 다른 용도로 쓰지 않는다" },
   "destructive":        { "$value": "{red.600}",    "$type": "color", "$description": "삭제·탈퇴 전용. 그 외 경고·에러 표시에는 쓰지 않는다" },
+  "overlay":            { "$value": "#00000080", "$type": "color", "$description": "모달·드로어 뒤를 덮는 막. 검정 50% — 팔레트 색이 아니라 화면을 가리는 용도라 primitive 를 참조하지 않는다" },
 
   "sidebar":                    { "$value": "{gray.0}",     "$type": "color" },
   "sidebar-foreground":         { "$value": "{text.strong}","$type": "color" },

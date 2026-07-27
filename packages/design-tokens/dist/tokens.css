@@ -23,6 +23,7 @@
   --slate-500: #5b6b8c;
   --teal-500: #14b8a6;
   --violet-500: #7a5cf0;
+  --overlay: rgba(0, 0, 0, 0.5); /** 모달·드로어 뒤를 덮는 막. 검정 50% — 팔레트 색이 아니라 화면을 가리는 용도라 primitive 를 참조하지 않는다 */
   --radius: 0.5rem; /** 카드 모서리 반경 기준(8px). radius-sm/md/lg/xl 은 이 값에서 파생된다 */
   --font-h1-desktop: 28px;
   --font-h1-mobile: 24px;

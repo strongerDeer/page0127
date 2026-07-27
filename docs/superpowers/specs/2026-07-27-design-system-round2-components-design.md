@@ -99,7 +99,7 @@ Pro 플랜에서는 불가능하다. 계획서에 넣기 전 확인했어야 했
 ### 4.2 묶음
 
 ```
-묶음 1 ← 이번 스펙   button(41) · card(17) · skeleton(9) · input(7) · alert-dialog(6)
+묶음 1 ✅ 완료   button(41) · card(17) · skeleton(9) · input(7) · alert-dialog(6)
 묶음 2               textarea(4) · dialog(4) · avatar(4) · label(3) · ReadCountBadge(3)
 묶음 3               popover(2) · dropdown-menu(2) · badge(2) · ErrorFallback(2) · switch(1)
 묶음 4               select(1) · scroll-area(1) · progress(1) · pagination(1) · Toaster(1, sonner.tsx)
@@ -253,6 +253,78 @@ Button/default·default 의 description:
 기존 테스트 4종이 전부 통과해야 한다.
 
 > **예상되는 변화 하나:** `button.tsx`에서 `dark:bg-input/30`을 지우면 `--input` 토큰의 사용처가 하나 줄어든다. `token-usage.test.ts`는 "쓰는데 정의가 없는 것"을 잡지 그 반대는 아니므로 통과한다. **토큰이 안 쓰이게 되는 것은 정리의 결과이지 회귀가 아니다.**
+
+---
+
+### 8.4 묶음 1 완료 기록 (2026-07-27)
+
+**코드 정리** (커밋 `0b11084`)
+
+`button.tsx` — `shadow-xs` 1개 + `dark:` **7개**(스펙에 4개로 적었던 것을 정정), `input.tsx` — `shadow-xs` 1개 + `dark:` 2개 제거. `focus-visible:` 3개와 `text-base md:text-sm` 은 보존.
+
+브라우저 실측(Playwright, computed style):
+
+| 확인 | 결과 |
+|---|---|
+| 버튼 8개 `box-shadow` | 전부 `none` |
+| primary 버튼 배경 | `rgb(30, 105, 203)` = `#1e69cb` |
+| `input` `box-shadow` / `border-color` | `none` / `rgb(223, 227, 232)` = `#dfe3e8` = `--line` |
+
+그림자만 사라지고 경계는 살아 있음을 확인했다.
+
+**Figma** — `Components` 페이지
+
+| 컴포넌트 | 내용 |
+|---|---|
+| `Button` | variant set **6** (variant 3 × size 2) |
+| `Input` | variant set **4** (state) |
+| `Card` · `Skeleton` · `AlertDialog` | 단독 컴포넌트 3 |
+| `doc/Button 상태` | hover·focus·disabled × 3 variant 표 |
+| `note/만들지 않은 것` | ghost·link·secondary, icon 3종 제외 근거 |
+
+전부 Variables 바인딩. **하드코딩된 색 0건** — 전수 검사 스크립트로 확인했다(`doc/`·`note/` 로 시작하는 문서용 노드는 검사 대상에서 제외한다).
+
+### 8.5 구현 중 계획과 달라진 것 셋
+
+**① Card 슬롯을 개별 컴포넌트로 만들지 않았다.**
+
+계획은 "슬롯 7종을 개별 컴포넌트로"였으나 **Figma 제약과 충돌한다** — 인스턴스에는 자식을 추가할 수 없어, 슬롯이 각각 컴포넌트면 `Card` 인스턴스 안에서 조립이 오히려 불가능해진다. 슬롯을 `Card` 내부 레이어로 두되 **이름을 코드 슬롯명과 1:1로 맞췄다**(`CardHeader` > `CardTitle`·`CardDescription`·`CardAction`, `CardContent`, `CardFooter`). 레이어 트리가 곧 JSX 구조가 된다.
+
+**② AlertDialog 오버레이 — 처음엔 예외로 뒀다가 뒤집었다.**
+
+코드가 `bg-black/50`을 쓰는데 팔레트에 대응 토큰이 없어, "Figma에만 토큰을 만들면 미러 원칙이 깨진다"는 이유로 바인딩 없이 남겼다. **최종 리뷰가 이것이 완료 기준("하드코딩된 색 0건")과 모순임을 지적했고, 판단을 뒤집었다** — 아래 ④가 그 결과다.
+
+뒤집은 이유는 근거가 틀렸기 때문이 아니라 **선택지를 좁게 봤기 때문**이다. "Figma에만 만든다 vs 안 만든다" 두 갈래로 봤는데, **양쪽에 만드는** 세 번째 길이 있었다.
+
+**③ Title 계열 3개가 07 타이포 스케일을 벗어난다 — 코드를 고치지 않았다.**
+
+`CardTitle` 하나만 발견해 기록했다가 최종 리뷰에서 같은 이탈이 셋임을 확인했다.
+
+| 컴포넌트 | 클래스 | 이탈 |
+|---|---|---|
+| `CardTitle` | `leading-none font-semibold` | weight **600** |
+| `AlertDialogTitle` | `text-lg font-semibold` | weight **600** + **18px** |
+| `DialogTitle` (묶음 2) | `text-lg leading-none font-semibold` | weight **600** + **18px** |
+
+07 §2.2 는 weight 를 400/500/700 3단계로, 크기를 28/20/16/14/12 5단으로 못박았다. `font-semibold`(600)와 `text-lg`(18px)는 둘 다 그 밖이다 — 18px 는 `heading-mobile` 로만 존재하는 모바일 전용 값이다.
+
+**코드를 고치지 않았다.** 이번 라운드의 정리 범위는 `shadow`·`dark:`로 합의됐고, 무엇보다 **셋이 일관되게 같은 값을 쓴다는 사실 자체가 신호**다. shadcn 이 기본으로 주는 값이긴 하나, 제목에 600·18px 가 계속 필요하다면 07 의 3단계·5단 스케일이 현실과 안 맞는 것일 수 있다.
+
+**→ 07 스케일 자체를 재검토하기로 했다** (스케일을 넓힐지, 코드를 좁힐지). 이 판단 전에는 어느 쪽으로도 손대지 않는다. 라운드 2 나머지 묶음에서 Title 계열을 만날 때마다 이 표에 추가한다.
+
+> **감사 방식의 구멍도 함께 드러났다.** `shadow`·`dark:`는 grep 으로 잡았지만 weight·size 이탈은 사람이 눈으로 훑어 하나를 놓쳤다. 묶음 2~4 에서는 `font-semibold|font-bold|font-normal|text-lg|text-xl|text-2xl` 처럼 **07 스케일 밖 클래스를 grep 하는 절차**를 코드 정리 태스크에 넣는다.
+
+**④ `overlay` 토큰을 신설했다 (최종 리뷰 후 추가 결정).**
+
+처음에는 AlertDialog 오버레이의 `bg-black/50`을 "대응 토큰이 없으니 예외"로 두었으나, 계획서 완료 기준("하드코딩된 색 0건")과 모순이고 `dialog`·`popover`·`dropdown-menu`가 같은 오버레이를 써서 예외가 3~4번 반복될 참이었다.
+
+**코드와 Figma를 함께 바꿔** 미러 원칙을 지켰다 — `semantic.json`에 `overlay`(검정 50%)를 추가하고, `globals.css`에 `--color-overlay` 매핑을, `alert-dialog.tsx`에 `bg-overlay`를 넣었다.
+
+이 토큰만 primitive 를 참조하지 않고 값을 직접 갖는다. 브랜드 팔레트의 색이 아니라 "화면을 가리는 검정"이라 `blue`·`navy`·`gray` 램프 어디에도 대응이 없기 때문이다.
+
+### 8.6 다음 묶음을 위한 구현 메모
+
+`combineAsVariants()` 직후 **자식들이 같은 위치에 겹친다.** Button set이 57×36으로 나와서 알았고, variant×size 격자로 `x`/`y`를 직접 배치해야 했다. 묶음 2~4에서 variant set을 만들 때마다 반복된다.
 
 ---
 

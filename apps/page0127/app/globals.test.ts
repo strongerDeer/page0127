@@ -59,9 +59,11 @@ const themeVars = parseCssVars(globalsCss, { blockSelector: '@theme inline' });
 
 /**
  * 매핑이 의도적으로 없는 semantic 색 토큰의 제외 목록.
- * 조사 결과(2026-07-26): 현재 semantic 색 토큰 41개 전부가 `--color-*` 로
- * 매핑되어 있어 제외 대상이 없다(`--sunken`·`--line-soft` 포함, 둘 다 확인함).
+ * 조사 결과(2026-07-27 기준): semantic 색 토큰 42개 전부가 `--color-*` 로
+ * 매핑되어 있어 제외 대상이 없다(2026-07-26 에 41개였고, 라운드 2 에서
+ * `overlay` 가 추가돼 42개가 됐다).
  * 나중에 의도적으로 매핑을 빼는 토큰이 생기면 여기 추가하고 이유를 남긴다.
+ * 개수는 참고용이다 — 검사는 semantic.json 을 읽어 동적으로 돈다.
  */
 const MAPPING_NOT_REQUIRED: string[] = [];
 
