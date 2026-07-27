@@ -42,7 +42,10 @@ describe('buildCommentTree', () => {
 
     expect(result[0].user).toEqual({
       id: 'u2',
+      // 표시용 nickname 은 username 으로 폴백하지만,
+      // 링크 경로용 username 은 원래 값을 그대로 싣는다
       nickname: 'jieun',
+      username: 'jieun',
       photoUrl: 'p.png',
     });
   });

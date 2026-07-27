@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { Star } from 'lucide-react';
 
+import { ProfileLink } from '@/shared/ui/ProfileLink';
 import { RelativeTime } from '@/shared/ui/RelativeTime';
 
 import { Activity } from '@/entities/activity';
@@ -96,31 +97,31 @@ export const ActivityCard = ({
     <article className='py-7'>
       {/* 헤더 — 누가 · 무엇을 · 언제, 한 줄 */}
       <div className='flex items-center gap-3'>
-        {activity.user.photo_url ? (
-          <div className='relative size-11 shrink-0 overflow-hidden rounded-full'>
-            <Image
-              src={activity.user.photo_url}
-              alt=''
-              fill
-              sizes='44px'
-              className='object-cover'
-            />
-          </div>
-        ) : (
-          <div className='flex size-11 shrink-0 items-center justify-center rounded-full bg-accent text-base font-bold text-accent-foreground'>
-            {(activity.user.nickname || 'U').charAt(0).toUpperCase()}
-          </div>
-        )}
+        <ProfileLink username={activity.user.username} className='shrink-0'>
+          {activity.user.photo_url ? (
+            <div className='relative size-11 overflow-hidden rounded-full'>
+              <Image
+                src={activity.user.photo_url}
+                alt=''
+                fill
+                sizes='44px'
+                className='object-cover'
+              />
+            </div>
+          ) : (
+            <div className='flex size-11 items-center justify-center rounded-full bg-accent text-base font-bold text-accent-foreground'>
+              {(activity.user.nickname || 'U').charAt(0).toUpperCase()}
+            </div>
+          )}
+        </ProfileLink>
 
         <p className='min-w-0 flex-1 truncate text-base'>
-          {/* 경로는 username 기준이다. nickname 으로 만들면 닉네임을 바꾼 사람의
-              링크가 404가 된다(둘이 같은 계정에서만 우연히 동작한다) */}
-          <Link
-            href={`/${activity.user.username ?? activity.user.id}`}
+          <ProfileLink
+            username={activity.user.username}
             className='font-semibold text-text-strong hover:underline'
           >
             {activity.user.nickname || '익명'}
-          </Link>
+          </ProfileLink>
           <span className='ml-1.5 text-text-subtle'>
             {getActivityText(activity.activity_type)}
           </span>

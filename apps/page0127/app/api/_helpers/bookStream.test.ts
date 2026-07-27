@@ -20,7 +20,7 @@ const comment = (id: string, createdAt: string): CommentNode => ({
   content: '댓글',
   createdAt,
   updatedAt: createdAt,
-  user: { id: 'u1', nickname: '경민', photoUrl: null },
+  user: { id: 'u1', nickname: '경민', username: 'kyungmin', photoUrl: null },
   replies: [],
 });
 

@@ -25,6 +25,8 @@ export type ProfileRow = {
 export type CommentUser = {
   id: string;
   nickname: string | null;
+  /** 프로필 경로(/{username})용 — 표시용 nickname 과 달리 폴백하지 않는다 */
+  username: string | null;
   photoUrl: string | null;
 };
 
@@ -53,6 +55,8 @@ const toUser = (
     id: userId,
     // 닉네임 미설정 시 username으로 대체 (익명 방지)
     nickname: profile?.nickname || profile?.username || null,
+    // 링크 경로용 — 없는 값으로 /{username} 을 만들면 404가 되므로 폴백하지 않는다
+    username: profile?.username || null,
     photoUrl: profile?.photo_url || null,
   };
 };
