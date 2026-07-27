@@ -39,11 +39,11 @@ export const toInitial = (source: NameSource): string => {
 /**
  * 공개 서재 경로. username 이 없으면 갈 곳이 없으므로 null을 돌려주고,
  * 호출부가 링크를 걸지 말지 결정한다 (깨진 링크보다 링크 없는 편이 낫다).
+ *
+ * JSX 안에서 링크를 그릴 때는 이 함수를 직접 쓰지 말고 shared/ui/ProfileLink 를 쓴다.
+ * (ProfileLink 가 내부적으로 이 함수를 호출한다 — 경로 규칙은 여기 한 곳뿐이다)
  */
-export const profileHref = (source: {
-  id: string;
-  username: string | null;
-}): string | null => {
-  const username = firstFilled(source.username);
-  return username ? `/${username}` : null;
+export const profileHref = (username: string | null): string | null => {
+  const name = firstFilled(username);
+  return name ? `/${name}` : null;
 };

@@ -41,12 +41,11 @@ describe('displayName', () => {
   it('프로필 경로는 username으로만 만든다', () => {
     // 공개 서재는 /[username]에서 username 컬럼으로만 조회한다.
     // nickname('강혜진')이나 uuid로 링크를 만들면 404가 된다
-    expect(profileHref({ id: 'uuid-1', username: 'dreamfulbud' })).toBe(
-      '/dreamfulbud'
-    );
+    expect(profileHref('dreamfulbud')).toBe('/dreamfulbud');
   });
 
   it('username이 없으면 프로필 경로를 만들 수 없다', () => {
-    expect(profileHref({ id: 'uuid-1', username: null })).toBeNull();
+    expect(profileHref(null)).toBeNull();
+    expect(profileHref('  ')).toBeNull();
   });
 });

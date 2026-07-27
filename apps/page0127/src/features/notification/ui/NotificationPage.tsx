@@ -112,7 +112,7 @@ export const NotificationPage = () => {
     // 알림 타입별 페이지 이동
     if (notification.type === 'follow') {
       // actor_id(uuid)로 보내면 /[username] 조회에 걸리지 않아 404가 된다 → 이동하지 않는다
-      const href = profileHref(notification.actor);
+      const href = profileHref(notification.actor.username);
       if (href) router.push(href);
       // 책 스레드 알림 — 소유자든 방문자든 내 서재 경로로 보내면
       // 소유자가 아닐 때 404가 나므로, 공개 상세 경로로 보낸다.
