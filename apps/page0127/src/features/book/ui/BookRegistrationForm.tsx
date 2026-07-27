@@ -429,7 +429,10 @@ export const BookRegistrationForm = ({
                       }
                       className='h-4 w-4'
                     />
-                    <Label htmlFor={ids.showStartDate} className='cursor-pointer'>
+                    <Label
+                      htmlFor={ids.showStartDate}
+                      className='cursor-pointer'
+                    >
                       시작일 추가 (옵션)
                     </Label>
                   </div>
@@ -439,7 +442,10 @@ export const BookRegistrationForm = ({
                       type='date'
                       value={startDate}
                       onChange={(e) =>
-                        dispatch({ type: 'SET_START_DATE', date: e.target.value })
+                        dispatch({
+                          type: 'SET_START_DATE',
+                          date: e.target.value,
+                        })
                       }
                       placeholder='시작일'
                     />
@@ -454,7 +460,10 @@ export const BookRegistrationForm = ({
                   id={ids.personalMemo}
                   value={personalMemo}
                   onChange={(e) =>
-                    dispatch({ type: 'SET_PERSONAL_MEMO', value: e.target.value })
+                    dispatch({
+                      type: 'SET_PERSONAL_MEMO',
+                      value: e.target.value,
+                    })
                   }
                   placeholder='개인적인 생각이나 메모를 자유롭게 작성하세요'
                   rows={4}
