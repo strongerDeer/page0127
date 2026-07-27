@@ -16,6 +16,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 import { Button } from '@/shared/ui/button';
 import { RelativeTime } from '@/shared/ui/RelativeTime';
 
+import { toDisplayName, toInitial } from '@/entities/profile/model/displayName';
+
 import type { NotificationWithActor } from '@/entities/notification';
 
 type NotificationItemProps = {
@@ -23,7 +25,7 @@ type NotificationItemProps = {
   onClick: () => void;
   onDelete?: (id: string) => void;
   onMarkAsRead?: (id: string) => void;
-}
+};
 
 export const NotificationItem = ({
   notification,
@@ -61,6 +63,8 @@ export const NotificationItem = ({
   };
 
   const { icon, message } = getNotificationContent();
+  // nickname은 미설정이면 null이라 그대로 쓰면 "님이 팔로우했습니다"처럼 이름이 빈다
+  const actorName = toDisplayName(actor);
 
   return (
     <div
@@ -70,8 +74,8 @@ export const NotificationItem = ({
     >
       {/* 프로필 이미지 */}
       <Avatar className='h-10 w-10'>
-        <AvatarImage src={actor.photo_url || undefined} alt={actor.nickname} />
-        <AvatarFallback>{actor.nickname?.[0] || '?'}</AvatarFallback>
+        <AvatarImage src={actor.photo_url || undefined} alt={actorName} />
+        <AvatarFallback>{toInitial(actor)}</AvatarFallback>
       </Avatar>
 
       {/* 알림 내용 - 클릭 가능 영역 */}
@@ -79,7 +83,7 @@ export const NotificationItem = ({
         <div className='flex items-center gap-2'>
           {icon}
           <p className='text-sm'>
-            <span className='font-semibold'>{actor.nickname}</span>
+            <span className='font-semibold'>{actorName}</span>
             {message}
           </p>
         </div>
@@ -127,4 +131,4 @@ export const NotificationItem = ({
       </div>
     </div>
   );
-}
+};

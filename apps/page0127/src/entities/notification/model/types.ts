@@ -33,7 +33,7 @@ export type Notification = {
   message: string | null; // 선택적 메시지 (프론트에서 생성 가능)
   created_at: string;
   updated_at: string;
-}
+};
 
 /**
  * 알림 조회 응답 (프로필 정보 포함)
@@ -41,11 +41,13 @@ export type Notification = {
 export type NotificationWithActor = {
   actor: {
     id: string;
-    nickname: string;
+    // 사용자가 프로필 설정에서 직접 넣기 전까지 null이다.
+    // 화면에 쓸 때는 displayName 모듈로 username 대체를 거친다
+    nickname: string | null;
     photo_url: string | null;
     username: string | null;
   };
-} & Notification
+} & Notification;
 
 /**
  * 알림 목록 조회 옵션
@@ -55,7 +57,7 @@ export type GetNotificationsOptions = {
   limit?: number;
   offset?: number;
   is_read?: boolean; // 읽음/읽지 않음 필터
-}
+};
 
 /**
  * 알림 읽음 처리 요청
@@ -63,18 +65,18 @@ export type GetNotificationsOptions = {
 export type MarkAsReadDto = {
   notification_id: string;
   user_id: string;
-}
+};
 
 /**
  * 전체 읽음 처리 요청
  */
 export type MarkAllAsReadDto = {
   user_id: string;
-}
+};
 
 /**
  * 읽지 않은 알림 개수 응답
  */
 export type UnreadCountResponse = {
   count: number;
-}
+};
