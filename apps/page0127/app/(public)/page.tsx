@@ -136,7 +136,7 @@ const Home = async () => {
         >
           <div className='grid items-center gap-10 lg:grid-cols-[5fr_7fr] lg:gap-14'>
             <div className='max-w-md'>
-              <p className='flex items-center gap-2 text-xs font-semibold text-primary'>
+              <p className='flex items-center gap-2 text-xs font-medium text-primary'>
                 <Sparkles aria-hidden='true' className='size-4' />
                 PAGE0127 TASTE REPORT
               </p>

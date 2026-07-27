@@ -15,7 +15,7 @@ export default async function AdminLayout({
   return (
     <div className='mx-auto flex min-h-screen max-w-6xl'>
       <aside className='w-56 border-r border-line'>
-        <div className='border-b border-line px-4 py-4 text-sm font-semibold'>
+        <div className='border-b border-line px-4 py-4 text-sm font-medium'>
           운영 콘솔
         </div>
         <AdminNav />

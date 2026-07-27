@@ -12,10 +12,10 @@ export const BundlePanel = ({ record }: { record: QualityRecord }) => {
   return (
     <section className='rounded-lg border border-line p-4'>
       <div className='mb-3 flex items-baseline justify-between'>
-        <h2 className='text-sm font-semibold'>첫 로드 번들</h2>
+        <h2 className='text-sm font-medium'>첫 로드 번들</h2>
         <span className='text-xs text-text-faint'>
           공유 청크{' '}
-          <span className='font-semibold tabular-nums text-gray-900'>
+          <span className='font-medium tabular-nums text-gray-900'>
             {totalFirstLoadKb}KB
           </span>
         </span>

@@ -95,7 +95,7 @@ export const UserAvatar = ({
     return (
       <div
         className={cn(
-          'rounded-full flex items-center justify-center font-semibold text-white',
+          'rounded-full flex items-center justify-center font-medium text-white',
           sizeClass,
           textSizeMap[size],
           getMonogramColor(nickname),

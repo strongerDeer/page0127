@@ -29,7 +29,7 @@ export default async function AdminMembersPage({
 
   return (
     <section>
-      <h1 className='mb-4 text-base font-semibold'>회원 관리</h1>
+      <h1 className='mb-4 text-base font-medium'>회원 관리</h1>
 
       {/* GET 폼 — 검색은 URL 쿼리로. client 컴포넌트 불필요 */}
       <form className='mb-4' action='/admin/members' method='get'>

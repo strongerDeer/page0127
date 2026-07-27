@@ -114,7 +114,7 @@ export const ErrorList = ({ result, now }: { result: SentryIssuesResult; now: Da
           return (
             <details key={grade}>
               {/* summary 자체에 flex를 주면 펼침 삼각형 마커가 사라진다. 안쪽 span으로 정렬한다 */}
-              <summary className='cursor-pointer text-sm font-semibold'>
+              <summary className='cursor-pointer text-sm font-medium'>
                 <span className='inline-flex items-center gap-2 align-middle'>{label}</span>
               </summary>
               <p className='mt-1 text-xs text-text-faint'>{hint}</p>
@@ -125,7 +125,7 @@ export const ErrorList = ({ result, now }: { result: SentryIssuesResult; now: Da
 
         return (
           <section key={grade}>
-            <h2 className='flex items-center gap-2 text-sm font-semibold'>{label}</h2>
+            <h2 className='flex items-center gap-2 text-sm font-medium'>{label}</h2>
             <p className='mt-1 text-xs text-text-faint'>{hint}</p>
             {body}
           </section>

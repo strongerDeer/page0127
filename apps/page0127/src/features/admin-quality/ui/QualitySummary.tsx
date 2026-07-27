@@ -24,7 +24,7 @@ export const QualitySummary = ({ record }: { record: QualityRecord }) => {
   const field = record.field?.mobile;
   return (
     <section className='rounded-lg border border-line p-4'>
-      <h2 className='mb-3 text-sm font-semibold'>실사용자 핵심 지표 (모바일)</h2>
+      <h2 className='mb-3 text-sm font-medium'>실사용자 핵심 지표 (모바일)</h2>
       {field ? (
         <div className='flex flex-wrap gap-2'>
           {field.lcp != null && (

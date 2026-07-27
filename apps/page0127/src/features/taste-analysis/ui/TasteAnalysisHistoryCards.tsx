@@ -44,7 +44,7 @@ export const TasteAnalysisHistoryCards = ({
                   }}
                 />
                 <div className='min-w-0'>
-                  <p className='truncate font-semibold text-text-strong'>
+                  <p className='truncate font-medium text-text-strong'>
                     {item.personality_type}
                   </p>
                   <p className='mt-1 text-xs text-text-subtle'>

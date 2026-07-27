@@ -30,7 +30,7 @@ export const FieldTrendChart = ({ rows }: { rows: FieldHistoryRow[] }) => {
 
   return (
     <section className='rounded-lg border border-line p-4'>
-      <h2 className='mb-3 text-sm font-semibold'>LCP 양호(good) 비율 추세</h2>
+      <h2 className='mb-3 text-sm font-medium'>LCP 양호(good) 비율 추세</h2>
       <ResponsiveContainer width='100%' height={220}>
         <LineChart data={data}>
           <CartesianGrid stroke={chartInk.grid} strokeDasharray='3 3' />

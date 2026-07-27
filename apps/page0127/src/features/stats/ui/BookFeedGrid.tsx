@@ -89,7 +89,7 @@ export const BookFeedGrid = ({
 
             {/* 선반 명패처럼 보이는 하단 워터마크 밴드 — 배경(bg-muted)보다 한 톤 더 짙게 */}
             <div className='shrink-0 bg-line px-2 py-1.5 text-center'>
-              <p className='text-[9px] font-semibold uppercase tracking-[0.2em] text-text-subtle'>
+              <p className='text-[9px] font-medium uppercase tracking-[0.2em] text-text-subtle'>
                 page0127
               </p>
             </div>

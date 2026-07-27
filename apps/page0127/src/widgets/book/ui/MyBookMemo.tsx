@@ -69,7 +69,7 @@ export const MyBookMemo = async ({ isbn }: MyBookMemoProps) => {
           {/* 별 배지는 "평점이 있다"는 표시다 → 0("평가 안 함")이면 배지를 아예 걸지 않는다.
               같은 화면 위쪽 평균이 5점 만점이므로 10은 숫자가 아니라 '인생책'으로 부른다 */}
           {isRated(myBook.rating) && (
-            <span className='flex items-center gap-1 text-sm font-semibold text-text-strong'>
+            <span className='flex items-center gap-1 text-sm font-medium text-text-strong'>
               <Star
                 aria-hidden='true'
                 className='size-4 fill-chart-4 text-chart-4'
@@ -89,7 +89,7 @@ export const MyBookMemo = async ({ isbn }: MyBookMemoProps) => {
         {/* Memo */}
         {myBook.personal_memo && (
           <div className='space-y-1 text-sm'>
-            <p className='font-semibold text-text-strong'>메모</p>
+            <p className='font-medium text-text-strong'>메모</p>
             <p className='whitespace-pre-wrap break-keep text-text-body'>
               {myBook.personal_memo}
             </p>

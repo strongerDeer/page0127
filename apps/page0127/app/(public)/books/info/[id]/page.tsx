@@ -200,7 +200,7 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
 
             {/* 통계 — 큰 카드 대신 제목 아래 한 줄 (교보의 별점 줄 문법) */}
             <p className='mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm'>
-              <span className='flex items-center gap-1 font-semibold text-text-strong'>
+              <span className='flex items-center gap-1 font-medium text-text-strong'>
                 <Star
                   aria-hidden='true'
                   className='size-4 fill-chart-4 text-chart-4'
@@ -214,7 +214,7 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
                 ·
               </span>
               <span className='text-text-subtle'>
-                <b className='font-semibold text-text-strong'>
+                <b className='font-medium text-text-strong'>
                   {stats.completedCount}
                 </b>
                 명이 완독

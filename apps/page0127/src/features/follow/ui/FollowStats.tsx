@@ -64,7 +64,7 @@ export const FollowStats = ({
         className='flex items-center gap-1 transition-colors hover:text-primary'
       >
         <Users className='h-4 w-4' />
-        <span className='font-semibold'>{stats?.followers_count || 0}</span>
+        <span className='font-medium'>{stats?.followers_count || 0}</span>
         <span className='text-muted-foreground'>팔로워</span>
       </button>
 
@@ -72,7 +72,7 @@ export const FollowStats = ({
         onClick={onFollowingClick}
         className='flex items-center gap-1 transition-colors hover:text-primary'
       >
-        <span className='font-semibold'>{stats?.following_count || 0}</span>
+        <span className='font-medium'>{stats?.following_count || 0}</span>
         <span className='text-muted-foreground'>팔로잉</span>
       </button>
     </div>

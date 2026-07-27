@@ -44,7 +44,7 @@ export const ReadingJourneyCard = ({ data }: Props) => {
         <div className='mt-2 flex items-end justify-between gap-4'>
           <p className='text-4xl font-bold tracking-[-0.04em] text-text-strong'>
             {data.totalBooks.toLocaleString()}
-            <span className='ml-1 text-base font-semibold text-text-subtle'>
+            <span className='ml-1 text-base font-medium text-text-subtle'>
               권
             </span>
           </p>

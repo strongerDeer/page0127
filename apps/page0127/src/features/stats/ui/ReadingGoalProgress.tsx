@@ -97,7 +97,7 @@ export const ReadingGoalProgress = ({
             </p>
           ) : (
             <p className='text-sm text-muted-foreground'>
-              목표까지 <span className='font-semibold text-primary'>{remaining}권</span> 남았어요!
+              목표까지 <span className='font-medium text-primary'>{remaining}권</span> 남았어요!
             </p>
           )}
         </div>

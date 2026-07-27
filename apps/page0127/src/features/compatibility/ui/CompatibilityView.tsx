@@ -331,11 +331,11 @@ const CompatibilityResult = ({
           <div className='grid gap-4 md:grid-cols-2'>
             <div className='rounded-lg bg-sunken p-4'>
               <p className='text-sm text-text-subtle'>나</p>
-              <p className='mt-1 font-semibold text-text-strong'>{myPattern}</p>
+              <p className='mt-1 font-medium text-text-strong'>{myPattern}</p>
             </div>
             <div className='rounded-lg bg-sunken p-4'>
               <p className='text-sm text-text-subtle'>{targetName} 님</p>
-              <p className='mt-1 font-semibold text-text-strong'>
+              <p className='mt-1 font-medium text-text-strong'>
                 {targetPattern}
               </p>
             </div>
@@ -361,7 +361,7 @@ const CompatibilityResult = ({
 
           <div className='grid gap-4 md:grid-cols-2'>
             <div>
-              <h3 className='mb-2 flex items-center gap-1.5 font-semibold text-primary'>
+              <h3 className='mb-2 flex items-center gap-1.5 font-medium text-primary'>
                 <Heart className='h-4 w-4' />
                 닮은 점
               </h3>
@@ -372,7 +372,7 @@ const CompatibilityResult = ({
               </ul>
             </div>
             <div>
-              <h3 className='mb-2 flex items-center gap-1.5 font-semibold text-text-strong'>
+              <h3 className='mb-2 flex items-center gap-1.5 font-medium text-text-strong'>
                 <Sprout className='h-4 w-4 text-text-subtle' />
                 서로를 넓혀줄 부분
               </h3>

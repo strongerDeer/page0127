@@ -55,7 +55,7 @@ const NotificationListHeader = ({
   onMarkAllAsRead,
 }: NotificationListHeaderProps) => (
   <div className='flex items-center justify-between border-b p-4'>
-    <h3 className='font-semibold'>알림</h3>
+    <h3 className='font-medium'>알림</h3>
     {hasUnread && (
       <Button
         variant='ghost'

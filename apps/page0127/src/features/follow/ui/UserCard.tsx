@@ -49,7 +49,7 @@ export const UserCard = ({ user, currentUserId }: UserCardProps) => {
 
         {/* 사용자 정보 */}
         <div className='flex-1'>
-          <h3 className='font-semibold text-foreground'>
+          <h3 className='font-medium text-foreground'>
             {displayName}
             {isCurrentUser && (
               <span className='ml-2 text-sm font-normal text-primary'>
