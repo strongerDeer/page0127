@@ -99,7 +99,7 @@ Pro 플랜에서는 불가능하다. 계획서에 넣기 전 확인했어야 했
 ### 4.2 묶음
 
 ```
-묶음 1 ← 이번 스펙   button(41) · card(17) · skeleton(9) · input(7) · alert-dialog(6)
+묶음 1 ✅ 완료   button(41) · card(17) · skeleton(9) · input(7) · alert-dialog(6)
 묶음 2               textarea(4) · dialog(4) · avatar(4) · label(3) · ReadCountBadge(3)
 묶음 3               popover(2) · dropdown-menu(2) · badge(2) · ErrorFallback(2) · switch(1)
 묶음 4               select(1) · scroll-area(1) · progress(1) · pagination(1) · Toaster(1, sonner.tsx)
@@ -294,9 +294,31 @@ Button/default·default 의 description:
 
 코드가 `bg-black/50`을 쓰는데 우리 팔레트에 대응 토큰이 없다. Figma에만 토큰을 새로 만들면 코드와 어긋나므로(미러 원칙) 그대로 뒀다. **이 파일에서 Variable 바인딩이 없는 유일한 색**이며 컴포넌트 description에도 기록했다.
 
-**③ `CardTitle`의 `font-semibold`(600)는 07 weight 3단계 밖이다.**
+**③ Title 계열 3개가 07 타이포 스케일을 벗어난다 — 코드를 고치지 않았다.**
 
-코드를 고치지 않고 Figma에 600 그대로 반영했다. 이번 라운드의 "코드 정리"는 `shadow`·`dark:`를 대상으로 합의한 것이라 범위를 임의로 넓히지 않았다. 500(body)과 700(heading) 중 무엇으로 맞출지는 별도 판단이 필요하다.
+`CardTitle` 하나만 발견해 기록했다가 최종 리뷰에서 같은 이탈이 셋임을 확인했다.
+
+| 컴포넌트 | 클래스 | 이탈 |
+|---|---|---|
+| `CardTitle` | `leading-none font-semibold` | weight **600** |
+| `AlertDialogTitle` | `text-lg font-semibold` | weight **600** + **18px** |
+| `DialogTitle` (묶음 2) | `text-lg leading-none font-semibold` | weight **600** + **18px** |
+
+07 §2.2 는 weight 를 400/500/700 3단계로, 크기를 28/20/16/14/12 5단으로 못박았다. `font-semibold`(600)와 `text-lg`(18px)는 둘 다 그 밖이다 — 18px 는 `heading-mobile` 로만 존재하는 모바일 전용 값이다.
+
+**코드를 고치지 않았다.** 이번 라운드의 정리 범위는 `shadow`·`dark:`로 합의됐고, 무엇보다 **셋이 일관되게 같은 값을 쓴다는 사실 자체가 신호**다. shadcn 이 기본으로 주는 값이긴 하나, 제목에 600·18px 가 계속 필요하다면 07 의 3단계·5단 스케일이 현실과 안 맞는 것일 수 있다.
+
+**→ 07 스케일 자체를 재검토하기로 했다** (스케일을 넓힐지, 코드를 좁힐지). 이 판단 전에는 어느 쪽으로도 손대지 않는다. 라운드 2 나머지 묶음에서 Title 계열을 만날 때마다 이 표에 추가한다.
+
+> **감사 방식의 구멍도 함께 드러났다.** `shadow`·`dark:`는 grep 으로 잡았지만 weight·size 이탈은 사람이 눈으로 훑어 하나를 놓쳤다. 묶음 2~4 에서는 `font-semibold|font-bold|font-normal|text-lg|text-xl|text-2xl` 처럼 **07 스케일 밖 클래스를 grep 하는 절차**를 코드 정리 태스크에 넣는다.
+
+**④ `overlay` 토큰을 신설했다 (최종 리뷰 후 추가 결정).**
+
+처음에는 AlertDialog 오버레이의 `bg-black/50`을 "대응 토큰이 없으니 예외"로 두었으나, 계획서 완료 기준("하드코딩된 색 0건")과 모순이고 `dialog`·`popover`·`dropdown-menu`가 같은 오버레이를 써서 예외가 3~4번 반복될 참이었다.
+
+**코드와 Figma를 함께 바꿔** 미러 원칙을 지켰다 — `semantic.json`에 `overlay`(검정 50%)를 추가하고, `globals.css`에 `--color-overlay` 매핑을, `alert-dialog.tsx`에 `bg-overlay`를 넣었다.
+
+이 토큰만 primitive 를 참조하지 않고 값을 직접 갖는다. 브랜드 팔레트의 색이 아니라 "화면을 가리는 검정"이라 `blue`·`navy`·`gray` 램프 어디에도 대응이 없기 때문이다.
 
 ### 8.6 다음 묶음을 위한 구현 메모
 
