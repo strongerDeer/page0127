@@ -20,6 +20,8 @@ export const API_ENDPOINTS = {
     commentDetail: (bookId: string, commentId: string) =>
       `/books/${bookId}/comments/${commentId}`, // PATCH/DELETE: 댓글 수정/삭제
     stream: (bookId: string) => `/books/${bookId}/stream`, // GET: 활동+댓글 병합 스트림
+    likes: (bookId: string) => `/books/${bookId}/likes`, // POST/DELETE: 개인 책 좋아요
+    threadRead: (bookId: string) => `/books/${bookId}/thread-read`, // POST: 열람 시각 기록
   },
   globalBooks: {
     comments: (id: string) => `/global-books/${id}/comments`, // GET/POST: 전역 책 스레드
