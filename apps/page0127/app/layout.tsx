@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 import { GoogleAnalytics } from '@/shared/lib/analytics/GoogleAnalytics';
+import { WebVitalsReporter } from '@/shared/lib/rum/WebVitalsReporter';
 import { QueryProvider } from '@/shared/providers/QueryProvider';
 import { Toaster } from '@/shared/ui/sonner';
 
@@ -97,7 +98,13 @@ const RootLayout = ({
         </QueryProvider>
         {/* GA4 — 측정 ID(NEXT_PUBLIC_GA_ID) 설정 시에만 로드 */}
         <GoogleAnalytics />
-        {/* Vercel Speed Insights — 실사용자 페이지 성능(Core Web Vitals) 수집 */}
+        {/* 자체 RUM — 실사용자 CWV를 우리 DB(quality_rum_samples)에 쌓아 품질
+            대시보드에서 랩 수치와 나란히 본다. CrUX는 트래픽 임계 미달로 비어 있다.
+            → apps/page0127/docs/rum-field-metrics.md */}
+        <WebVitalsReporter />
+        {/* Vercel Speed Insights — 같은 지표를 Vercel 대시보드로도 보낸다.
+            조회 API가 없어 우리 DB로 못 가져오지만, 자체 RUM 수치를 대조할
+            기준선으로 남겨 둔다(둘이 크게 어긋나면 우리 계측을 의심한다). */}
         <SpeedInsights />
         {/* Vercel Web Analytics — 페이지 조회수·방문자 수집 */}
         <Analytics />

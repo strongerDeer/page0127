@@ -2,16 +2,17 @@ import { getQualityDashboard } from '@/features/admin-quality/api/getQualityDash
 import { buildTrendPayload } from '@/features/admin-quality/lib/metrics';
 import { BundlePanel } from '@/features/admin-quality/ui/BundlePanel';
 import { CodeHealthPanel } from '@/features/admin-quality/ui/CodeHealthPanel';
+import { FieldComparisonTable } from '@/features/admin-quality/ui/FieldComparisonTable';
 import { FieldTrendChart } from '@/features/admin-quality/ui/FieldTrendChart';
 import { QualityGrid } from '@/features/admin-quality/ui/QualityGrid';
 import { QualityReport } from '@/features/admin-quality/ui/QualityReport';
-import { QualitySummary } from '@/features/admin-quality/ui/QualitySummary';
 import { QualityTrend } from '@/features/admin-quality/ui/QualityTrend';
 import { RegressionBanner } from '@/features/admin-quality/ui/RegressionBanner';
+import { RumTrendChart } from '@/features/admin-quality/ui/RumTrendChart';
 import { SeoPanel } from '@/features/admin-quality/ui/SeoPanel';
 
 export default async function AdminQualityPage() {
-  const { latest, records, fieldHistory } = await getQualityDashboard();
+  const { latest, records, fieldHistory, rum } = await getQualityDashboard();
 
   if (!latest) {
     return (
@@ -41,8 +42,11 @@ export default async function AdminQualityPage() {
       <QualityGrid data={trend} />
       <QualityTrend data={trend} />
 
-      {/* 실사용자(CrUX) — 트래픽 쌓이면 채워짐 */}
-      <QualitySummary record={latest} />
+      {/* 실사용자 지표 — 자체 RUM / CrUX / 랩을 한 표에서 출처별로 대조한다.
+          (QualitySummary의 CrUX 칩을 대체한다 — 같은 값을 세 출처와 함께 보여준다) */}
+      <FieldComparisonTable record={latest} rum={rum} />
+      {/* 두 추세는 창 길이가 달라 별도 차트다 — 자체 RUM은 그날 방문만, CrUX는 28일 이동창 */}
+      <RumTrendChart rum={rum} />
       <FieldTrendChart rows={fieldHistory} />
 
       {/* 그 외 점검 */}
