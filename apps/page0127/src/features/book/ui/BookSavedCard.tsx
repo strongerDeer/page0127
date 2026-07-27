@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react';
+
 import Image from 'next/image';
 
 import { Button } from '@/shared/ui/button';
@@ -39,52 +41,74 @@ export const BookSavedCard = ({
   readCount,
   onGoToLibrary,
   onRecordAnother,
-}: BookSavedCardProps) => (
-  <Card>
-    <CardContent className='space-y-6 py-8'>
-      <div className='flex flex-col items-center gap-4 text-center'>
-        {coverImage && (
-          <Image
-            src={coverImage}
-            alt=''
-            width={120}
-            height={174}
-            className='book-cover h-auto w-[120px]'
-          />
-        )}
+}: BookSavedCardProps) => {
+  const headingRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    // 라이브 리전을 내용과 함께 마운트하면 안 읽힐 수 있다(MDN: 빈 리전을 먼저 두고
+    // 별도 단계로 내용을 바꾸는 것이 정석, 삽입 시점 안내 특례는 role='alert' 뿐).
+    // 포커스를 옮기면 확실히 읽히고, 제출 버튼이 언마운트돼 body 로 떨어진
+    // 키보드 포커스도 카드로 돌아온다.
+    // preventScroll: 카드가 폼이 있던 자리를 그대로 차지하므로 스크롤을 건드릴 이유가 없다.
+    headingRef.current?.focus({ preventScroll: true });
+  }, []);
 
-        {/* 카드는 라우트 이동이 아니라 state 교체로 나타나므로 아무것도 읽어주지 않는다.
-            제출 버튼도 언마운트돼 포커스가 body 로 떨어진다 → 확인 문구만 라이브 리전으로 감싼다.
-            role 을 h2 에 직접 주면 암시적 heading 역할이 덮여 제목 탐색에서 사라진다. */}
-        <div role='status' className='space-y-1'>
-          <h2 className='heading-2 text-text-strong'>
-            {savedBookMessage(completedCount, readCount)}
-          </h2>
-          <p className='text-sm text-text-subtle'>{title}</p>
+  return (
+    <Card>
+      <CardContent className='space-y-6 py-8'>
+        <div className='flex flex-col items-center gap-4 text-center'>
+          {coverImage && (
+            <Image
+              src={coverImage}
+              alt=''
+              width={120}
+              height={174}
+              className='book-cover h-auto w-[120px]'
+            />
+          )}
+
+          {/* 카드는 라우트 이동이 아니라 state 교체로 나타나므로 아무것도 읽어주지 않는다.
+              그래서 확인 문구만 라이브 리전으로 감싸고, 마운트 시 여기로 포커스를 옮긴다.
+              role 을 h2 에 직접 주면 암시적 heading 역할이 덮여 제목 탐색에서 사라진다. */}
+          <div
+            ref={headingRef}
+            tabIndex={-1}
+            role='status'
+            aria-live='polite'
+            className='space-y-1'
+          >
+            <h2 className='heading-2 text-text-strong'>
+              {savedBookMessage(completedCount, readCount)}
+            </h2>
+            <p className='text-sm text-text-subtle'>{title}</p>
+          </div>
+
+          {isLifeBook(rating) && (
+            <span className='rounded-full bg-chart-3/15 px-3 py-1 text-sm font-semibold text-chart-3'>
+              인생책
+            </span>
+          )}
         </div>
 
-        {isLifeBook(rating) && (
-          <span className='rounded-full bg-chart-3/15 px-3 py-1 text-sm font-semibold text-chart-3'>
-            인생책
-          </span>
+        {/* 사용자가 쓴 문장을 그대로 되돌려준다 — 이 카드의 존재 이유다 */}
+        {oneLineReview && (
+          <blockquote className='rounded-lg bg-sunken px-4 py-3 text-center text-text-body'>
+            {oneLineReview}
+          </blockquote>
         )}
-      </div>
 
-      {/* 사용자가 쓴 문장을 그대로 되돌려준다 — 이 카드의 존재 이유다 */}
-      {oneLineReview && (
-        <blockquote className='rounded-lg bg-sunken px-4 py-3 text-center text-text-body'>
-          {oneLineReview}
-        </blockquote>
-      )}
-
-      <div className='flex gap-3'>
-        <Button onClick={onGoToLibrary} className='flex-1'>
-          내 책장 보기
-        </Button>
-        <Button variant='outline' onClick={onRecordAnother} className='flex-1'>
-          한 권 더 기록
-        </Button>
-      </div>
-    </CardContent>
-  </Card>
-);
+        <div className='flex gap-3'>
+          <Button onClick={onGoToLibrary} className='flex-1'>
+            내 책장 보기
+          </Button>
+          <Button
+            variant='outline'
+            onClick={onRecordAnother}
+            className='flex-1'
+          >
+            한 권 더 기록
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
