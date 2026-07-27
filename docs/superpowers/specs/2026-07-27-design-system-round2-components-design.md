@@ -282,7 +282,7 @@ Button/default·default 의 description:
 | `doc/Button 상태` | hover·focus·disabled × 3 variant 표 |
 | `note/만들지 않은 것` | ghost·link·secondary, icon 3종 제외 근거 |
 
-전부 Variables 바인딩. **바인딩 없는 색은 1건**이며 아래 예외다.
+전부 Variables 바인딩. **하드코딩된 색 0건** — 전수 검사 스크립트로 확인했다(`doc/`·`note/` 로 시작하는 문서용 노드는 검사 대상에서 제외한다).
 
 ### 8.5 구현 중 계획과 달라진 것 셋
 
@@ -290,9 +290,11 @@ Button/default·default 의 description:
 
 계획은 "슬롯 7종을 개별 컴포넌트로"였으나 **Figma 제약과 충돌한다** — 인스턴스에는 자식을 추가할 수 없어, 슬롯이 각각 컴포넌트면 `Card` 인스턴스 안에서 조립이 오히려 불가능해진다. 슬롯을 `Card` 내부 레이어로 두되 **이름을 코드 슬롯명과 1:1로 맞췄다**(`CardHeader` > `CardTitle`·`CardDescription`·`CardAction`, `CardContent`, `CardFooter`). 레이어 트리가 곧 JSX 구조가 된다.
 
-**② AlertDialog 오버레이의 검정 50%는 바인딩하지 않았다.**
+**② AlertDialog 오버레이 — 처음엔 예외로 뒀다가 뒤집었다.**
 
-코드가 `bg-black/50`을 쓰는데 우리 팔레트에 대응 토큰이 없다. Figma에만 토큰을 새로 만들면 코드와 어긋나므로(미러 원칙) 그대로 뒀다. **이 파일에서 Variable 바인딩이 없는 유일한 색**이며 컴포넌트 description에도 기록했다.
+코드가 `bg-black/50`을 쓰는데 팔레트에 대응 토큰이 없어, "Figma에만 토큰을 만들면 미러 원칙이 깨진다"는 이유로 바인딩 없이 남겼다. **최종 리뷰가 이것이 완료 기준("하드코딩된 색 0건")과 모순임을 지적했고, 판단을 뒤집었다** — 아래 ④가 그 결과다.
+
+뒤집은 이유는 근거가 틀렸기 때문이 아니라 **선택지를 좁게 봤기 때문**이다. "Figma에만 만든다 vs 안 만든다" 두 갈래로 봤는데, **양쪽에 만드는** 세 번째 길이 있었다.
 
 **③ Title 계열 3개가 07 타이포 스케일을 벗어난다 — 코드를 고치지 않았다.**
 
