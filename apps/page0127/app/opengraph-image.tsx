@@ -13,7 +13,13 @@ import { ImageResponse } from 'next/og';
 //   630px 캔버스를 넘치고 글자가 겹친다.
 
 // 라우트 세그먼트 설정
-export const runtime = 'edge';
+//
+// runtime: 지정하지 않는다 = Next.js 기본값인 Node.js 런타임.
+// 예전엔 runtime = 'edge' 였는데, next/og(satori + wasm 렌더러)가 통째로 실려
+// Edge Function 번들이 1.12MB가 되면서 Vercel Hobby 플랜의 1MB 한도를 넘겨
+// "Deploying outputs..." 단계에서 배포가 실패했다(빌드는 통과하므로 빌드 로그만
+// 봐서는 원인이 안 보인다). Node.js 런타임의 Serverless Function은 용량 한도가
+// 훨씬 커서 같은 번들이 문제없이 올라가고, 생성되는 이미지 결과는 동일하다.
 export const alt = 'page0127 - 책장을 보면, 그 사람이 보인다';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
