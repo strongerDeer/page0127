@@ -1,3 +1,5 @@
+import { compareIsoTime } from './bookComments';
+
 import type { CommentNode } from './bookComments';
 
 /**
@@ -30,7 +32,7 @@ export function mergeStreamItems(
   }));
 
   return [...activities, ...commentItems].sort((a, b) => {
-    const diff = a.createdAt.localeCompare(b.createdAt);
+    const diff = compareIsoTime(a.createdAt, b.createdAt);
     if (diff !== 0) return diff;
     // 같은 시각이면 활동을 먼저 — "완독했어요" 아래에 그에 대한 댓글이 오는 게 자연스럽다
     if (a.kind === b.kind) return 0;

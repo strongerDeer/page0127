@@ -41,8 +41,7 @@ export type CommentNode = {
 
 /** 대상 컬럼 — 라우트가 어느 쪽 책인지 정해서 넘긴다 */
 export type CommentTargetColumn =
-  | { book_id: string }
-  | { global_book_id: string };
+  { book_id: string } | { global_book_id: string };
 
 const toUser = (
   userId: string | null,
@@ -58,8 +57,20 @@ const toUser = (
   };
 };
 
+/**
+ * ISO 8601 시각 문자열 비교
+ *
+ * 학습 포인트:
+ * - `localeCompare`를 쓰면 안 된다. 로케일 대조는 '.' 같은 구두점을 무시할 수 있어
+ *   '…:05.123456+00:00'과 '…:05+00:00'을 비교하면 순서가 뒤집힌다. Postgres는
+ *   마이크로초가 0이면 소수부를 생략하므로 이 조합이 실제로 나온다.
+ * - ISO 8601은 사전순 = 시간순이 되도록 설계된 형식이라 단순 비교가 정확하고 빠르다.
+ */
+export const compareIsoTime = (a: string, b: string) =>
+  a < b ? -1 : a > b ? 1 : 0;
+
 const byCreatedAt = (a: { createdAt: string }, b: { createdAt: string }) =>
-  a.createdAt.localeCompare(b.createdAt);
+  compareIsoTime(a.createdAt, b.createdAt);
 
 /** DB 에러를 클라이언트가 이해할 수 있는 상태코드로 분류한 결과 */
 export type ClassifiedError = { message: string; status: number };
