@@ -27,8 +27,11 @@ describe('savedBookMessage', () => {
     expect(savedBookMessage(null, 1)).toBe('책장에 꽂혔어요');
   });
 
-  it('권수가 0으로 와도 첫 권으로 취급한다', () => {
-    // 방어: 통계가 방금 저장분을 아직 세지 않은 경우
-    expect(savedBookMessage(0, 1)).toBe('첫 번째 책이 책장에 꽂혔어요');
+  it('권수 0은 첫 권이 아니라 조회 실패로 읽는다', () => {
+    // getBookStats 는 DB·RLS 에러를 스스로 잡아 totalCompletedBooks: 0 을 반환하고
+    // 라우트가 200 으로 감싸므로, 0 은 "완독 0권"이 아니라 "못 가져왔다"는 뜻이다.
+    // 성공한 호출은 방금 저장한 완독 행 때문에 최소 1 이라 0 이 나올 수 없다
+    // → 0 을 첫 권으로 읽으면 30권 읽은 사용자에게 "첫 번째 책"이라고 말한다.
+    expect(savedBookMessage(0, 1)).toBe('책장에 꽂혔어요');
   });
 });
