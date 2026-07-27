@@ -39,7 +39,10 @@ const nextConfig: NextConfig = {
   // 타지 않고, 이 목록에서 빼도 그 import 자체는 계속 동작할 가능성이 높다. 다만
   // 검증 없이 빼는 건 위험해 남겨 둔다 — 나중에 이 패키지가 JS 진입점(예: 토큰 타입,
   // 헬퍼 함수)을 내보내게 되면 이때는 실제로 필요해진다.
-  transpilePackages: ['@repo/icons', '@repo/design-tokens'],
+  // @repo/quality 는 `./types`(타입 전용, 컴파일 시 사라짐)만 쓰이다가 `./rum`이 생기면서
+  // **런타임 코드**를 내보내게 됐다. 소스가 트랜스파일 안 된 .ts라 이 목록에 없으면
+  // 라우트 핸들러·서버 컴포넌트에서 import할 때 파싱 단계에서 깨진다.
+  transpilePackages: ['@repo/icons', '@repo/design-tokens', '@repo/quality'],
   experimental: {
     // 프로필 이미지는 앱에서 최대 5MB까지 허용한다. multipart 메타데이터
     // 여유를 포함해 Server Action 요청 본문은 6MB로 제한한다.
