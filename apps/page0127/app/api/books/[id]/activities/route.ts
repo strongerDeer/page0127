@@ -32,7 +32,9 @@ export async function GET(
     // 책 조회 + 공개범위 판정
     const { data: book } = await supabase
       .from('books')
-      .select('id, user_id, is_public, title, author, cover_image, status, rating')
+      .select(
+        'id, user_id, is_public, title, author, cover_image, status, rating, one_line_review'
+      )
       .eq('id', bookId)
       .single();
 
@@ -55,18 +57,38 @@ export async function GET(
     if (!activities || activities.length === 0) return successResponse([]);
 
     const userIds = [...new Set(activities.map((a) => a.user_id))];
-    const activityIds = activities.map((a) => a.id);
 
     const [{ data: profiles }, { data: likes }] = await Promise.all([
-      supabase.from('profiles').select('id, nickname, username, photo_url').in('id', userIds),
-      supabase.from('activity_likes').select('activity_id, user_id').in('activity_id', activityIds),
+      supabase
+        .from('profiles')
+        .select('id, nickname, username, photo_url')
+        .in('id', userIds),
+      // 좋아요는 이제 책 단위다(activity_likes 는 보존만 하고 읽지 않는다)
+      supabase
+        .from('book_record_likes')
+        .select('book_id, user_id')
+        .eq('book_id', book.id),
     ]);
 
     const items = buildActivityItems({
       activities,
       profiles: profiles ?? [],
-      books: [{ id: book.id, title: book.title, author: book.author, cover_image: book.cover_image, status: book.status, rating: book.rating }],
+      books: [
+        {
+          id: book.id,
+          title: book.title,
+          author: book.author,
+          cover_image: book.cover_image,
+          status: book.status,
+          rating: book.rating,
+          one_line_review: book.one_line_review ?? null,
+        },
+      ],
       likes: likes ?? [],
+      // 이 화면은 계획 1에서 스트림으로 대체됐다 — 집계는 스트림 쪽이 담당한다
+      comments: [],
+      threadReads: [],
+      bookEvents: [],
       currentUserId: user?.id ?? null,
     });
 
