@@ -166,7 +166,10 @@ export const BookRegistrationForm = ({
   const oneLineReviewRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     if (initialData) return;
-    oneLineReviewRef.current?.focus();
+    // preventScroll: 그냥 focus() 하면 입력란이 뷰로 스크롤되고 모바일에서는 키보드가
+    // 바로 올라와, 위쪽 표지·제목·저자 미리보기가 화면 밖으로 밀린다. 추가 흐름에서
+    // 그 미리보기는 "책을 제대로 골랐나" 를 확인할 유일한 수단이다.
+    oneLineReviewRef.current?.focus({ preventScroll: true });
   }, [initialData]);
 
   const {
