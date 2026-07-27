@@ -29,7 +29,12 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && data.user) {
-      const profile = await ensureProfile(data.user.id, data.user.email!);
+      // user_metadata를 넘겨야 Google이 준 이름·프로필 사진이 첫 프로필에 들어간다
+      const profile = await ensureProfile(
+        data.user.id,
+        data.user.email!,
+        data.user.user_metadata
+      );
       const redirectTo = next ?? `/${profile.username}`;
       return NextResponse.redirect(`${origin}${redirectTo}`);
     }

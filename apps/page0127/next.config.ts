@@ -53,6 +53,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'image.aladin.co.kr' },
       { protocol: 'https', hostname: 'sjngwxtykqhlsvxcyqah.supabase.co' },
+      // Google 로그인 프로필 사진 (lh3.googleusercontent.com 등 번호가 바뀐다)
+      { protocol: 'https', hostname: '**.googleusercontent.com' },
     ],
   },
   // 모든 응답에 붙는 보안 헤더.
@@ -101,8 +103,9 @@ const nextConfig: NextConfig = {
       `script-src ${scriptSrc}`,
       // Pretendard 폰트 CSS(jsdelivr) + Next/Tailwind 인라인 스타일
       "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
-      // 앱 자체 + Aladin/Supabase 이미지 + GA 픽셀, data/blob(블러 플레이스홀더)
-      `img-src 'self' data: blob: https://image.aladin.co.kr ${supabaseOrigin} https://www.googletagmanager.com https://www.google-analytics.com`,
+      // 앱 자체 + Aladin/Supabase 이미지 + Google 로그인 프로필 사진 + GA 픽셀,
+      // data/blob(블러 플레이스홀더)
+      `img-src 'self' data: blob: https://image.aladin.co.kr ${supabaseOrigin} https://*.googleusercontent.com https://www.googletagmanager.com https://www.google-analytics.com`,
       // Pretendard woff 폰트(jsdelivr)
       "font-src 'self' https://cdn.jsdelivr.net",
       // API·Sentry 터널(self) + Supabase REST/realtime(wss) + GA 비콘

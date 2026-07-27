@@ -20,7 +20,11 @@ const AuthLayout = async ({ children }: { children: React.ReactNode }) => {
 
   // 이미 로그인한 사용자는 본인 서재로 리디렉션
   if (user) {
-    const profile = await ensureProfile(user.id, user.email!);
+    const profile = await ensureProfile(
+      user.id,
+      user.email!,
+      user.user_metadata
+    );
     redirect(`/${profile.username}`);
   }
 
