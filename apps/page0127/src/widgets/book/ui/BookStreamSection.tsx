@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
@@ -98,6 +98,16 @@ export const BookStreamSection = ({
       return a.kind === 'activity' ? -1 : 1;
     });
   }, [data]);
+
+  // 스트림을 실제로 받아온 뒤에만 "읽었다"고 기록한다.
+  // 못 본 것을 봤다고 표시하면 안 되므로 로딩 중·실패 시에는 기록하지 않는다.
+  const loaded = !isLoading && data !== undefined;
+  useEffect(() => {
+    if (!currentUser || !loaded) return;
+    apiClient.post(API_ENDPOINTS.books.threadRead(bookId)).catch(() => {
+      // 배지 갱신 실패는 읽기를 막을 이유가 아니다 — 조용히 넘긴다
+    });
+  }, [bookId, currentUser, loaded]);
 
   return (
     <section className='mt-6'>
