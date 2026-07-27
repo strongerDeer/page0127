@@ -144,7 +144,7 @@ export const ActivityCard = ({
           isLiked={activity.likes.isLiked}
         />
         <CommentSection
-          activityId={activity.id}
+          target={{ type: 'book', id: activity.book.id }}
           initialOpen={initialCommentsOpen}
         />
       </div>

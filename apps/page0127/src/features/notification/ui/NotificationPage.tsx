@@ -111,6 +111,11 @@ export const NotificationPage = () => {
     // 알림 타입별 페이지 이동
     if (notification.type === 'follow') {
       router.push(`/${notification.actor.username || notification.actor_id}`);
+      // 책 스레드 알림 — 소유자든 방문자든 내 서재 경로로 보내면
+      // 소유자가 아닐 때 404가 나므로, 공개 상세 경로로 보낸다.
+    } else if (notification.target_type === 'book' && notification.target_id) {
+      router.push(`/books/${notification.target_id}`);
+      // 기존 활동 알림은 그대로 둔다 — 과거 알림이 깨지면 안 된다
     } else if (notification.target_id) {
       router.push(`/feed/${notification.target_id}`);
     }

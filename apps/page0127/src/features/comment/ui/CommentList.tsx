@@ -7,8 +7,10 @@ import { commentApi, commentKeys } from '@/entities/comment';
 
 import { CommentItem } from './CommentItem';
 
+import type { CommentTarget } from '@/entities/comment';
+
 type CommentListProps = {
-  activityId: string;
+  target: CommentTarget;
 };
 
 /**
@@ -19,11 +21,11 @@ type CommentListProps = {
  * - 계층 구조 렌더링 (댓글 + 대댓글)
  * - 로딩/에러 상태 처리
  */
-export const CommentList = ({ activityId }: CommentListProps) => {
+export const CommentList = ({ target }: CommentListProps) => {
   const { data: comments = [], isLoading } = useQuery({
-    queryKey: commentKeys.byActivity(activityId),
+    queryKey: commentKeys.byTarget(target),
     queryFn: async () => {
-      const result = await commentApi.getComments(activityId);
+      const result = await commentApi.getComments(target);
       return result;
     },
   });
@@ -50,10 +52,7 @@ export const CommentList = ({ activityId }: CommentListProps) => {
       {comments.map((comment) => (
         <div key={comment.id} className='space-y-4'>
           {/* 일반 댓글 */}
-          <CommentItem
-            comment={comment}
-            activityId={activityId}
-          />
+          <CommentItem comment={comment} target={target} />
 
           {/* 대댓글들 */}
           {comment.replies && comment.replies.length > 0 && (
@@ -62,7 +61,7 @@ export const CommentList = ({ activityId }: CommentListProps) => {
                 <CommentItem
                   key={reply.id}
                   comment={reply}
-                  activityId={activityId}
+                  target={target}
                   isReply
                 />
               ))}

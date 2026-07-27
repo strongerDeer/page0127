@@ -66,7 +66,21 @@ const nextConfig: NextConfig = {
     // 주의: GA 인라인 스크립트와 Next.js 인라인 하이드레이션 스크립트 때문에
     // script-src에 'unsafe-inline'이 필요하다. nonce로 더 강화하려면 proxy에서
     // 요청마다 nonce를 생성해 주입해야 한다(별도 작업).
-    const SUPABASE_HOST = 'sjngwxtykqhlsvxcyqah.supabase.co';
+    // Supabase 오리진은 환경마다 다르다 — 로컬은 Docker(http://127.0.0.1:54321),
+    // 운영/프리뷰는 프로젝트 도메인. 하드코딩하면 로컬에서 auth·realtime 연결이
+    // CSP에 막혀 브라우저가 요청을 발사조차 못 하고 "Failed to fetch"가 된다
+    // (네트워크 탭에도 안 남아 원인을 찾기 어렵다).
+    const FALLBACK_SUPABASE_ORIGIN = 'https://sjngwxtykqhlsvxcyqah.supabase.co';
+    const supabaseOrigin = (() => {
+      try {
+        return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').origin;
+      } catch {
+        // env가 없는 빌드(예: 타입체크 전용)에서도 정책이 깨지지 않게 운영 값으로 둔다
+        return FALLBACK_SUPABASE_ORIGIN;
+      }
+    })();
+    // ws(로컬 http) / wss(운영 https) — realtime 소켓 출처
+    const supabaseSocketOrigin = supabaseOrigin.replace(/^http/, 'ws');
     // 개발 모드의 HMR/Fast Refresh는 문자열을 eval로 실행한다(프로덕션 빌드는
     // 필요 없음). 그래서 'unsafe-eval'은 dev에서만 허용하고, 프로덕션 정책은
     // eval 없이 엄격하게 유지한다.
@@ -88,13 +102,13 @@ const nextConfig: NextConfig = {
       // Pretendard 폰트 CSS(jsdelivr) + Next/Tailwind 인라인 스타일
       "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
       // 앱 자체 + Aladin/Supabase 이미지 + GA 픽셀, data/blob(블러 플레이스홀더)
-      `img-src 'self' data: blob: https://image.aladin.co.kr https://${SUPABASE_HOST} https://www.googletagmanager.com https://www.google-analytics.com`,
+      `img-src 'self' data: blob: https://image.aladin.co.kr ${supabaseOrigin} https://www.googletagmanager.com https://www.google-analytics.com`,
       // Pretendard woff 폰트(jsdelivr)
       "font-src 'self' https://cdn.jsdelivr.net",
       // API·Sentry 터널(self) + Supabase REST/realtime(wss) + GA 비콘
       // + jsdelivr: Pretendard 폰트 CSS의 소스맵(.map) fetch. DevTools를 열었을
       //   때만 요청되고 일반 방문자엔 영향 없지만, 콘솔 위반을 없애려고 허용한다.
-      `connect-src 'self' https://${SUPABASE_HOST} wss://${SUPABASE_HOST} https://cdn.jsdelivr.net https://www.google-analytics.com https://www.googletagmanager.com`,
+      `connect-src 'self' ${supabaseOrigin} ${supabaseSocketOrigin} https://cdn.jsdelivr.net https://www.google-analytics.com https://www.googletagmanager.com`,
       // 클릭재킹 방지(X-Frame-Options의 현대적 대응) + 기타 하드닝
       "frame-ancestors 'self'",
       "base-uri 'self'",

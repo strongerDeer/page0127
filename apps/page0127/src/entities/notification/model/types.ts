@@ -15,8 +15,9 @@ export type NotificationType = 'follow' | 'comment' | 'like';
  * 알림 대상 타입
  * - activity: 활동 피드
  * - comment: 댓글
+ * - book: 책 스레드 (책 단위 댓글)
  */
-export type NotificationTargetType = 'activity' | 'comment';
+export type NotificationTargetType = 'activity' | 'comment' | 'book';
 
 /**
  * 알림 엔티티 (DB 테이블 구조)

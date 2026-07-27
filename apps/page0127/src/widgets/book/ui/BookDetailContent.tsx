@@ -7,7 +7,7 @@ import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
 
 import { isLifeBook, isRated } from '@/entities/book';
 
-import { BookActivitySection } from './BookActivitySection';
+import { BookStreamSection } from './BookStreamSection';
 
 import type { Book } from '@/entities/book';
 
@@ -168,7 +168,7 @@ export const BookDetailContent = ({
         </Card>
       )}
 
-      <BookActivitySection bookId={book.id} />
+      <BookStreamSection bookId={book.id} rating={book.rating} />
     </>
   );
 };
