@@ -13,12 +13,15 @@ import {
 import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 import { PageContainer } from '@/shared/ui/PageContainer';
 
+import { bookApi } from '@/entities/book';
+
 import { useBookCRUD } from '@/features/book/api/useBookCRUD';
 import { useBookSearch } from '@/features/book/api/useBookSearch';
 import {
   type BookFormData,
   BookRegistrationForm,
 } from '@/features/book/ui/BookRegistrationForm';
+import { BookSavedCard } from '@/features/book/ui/BookSavedCard';
 import { BookSearchInput } from '@/features/book/ui/BookSearchInput';
 import { BookSearchPagination } from '@/features/book/ui/BookSearchPagination';
 import { BookSearchResultCard } from '@/features/book/ui/BookSearchResultCard';
@@ -55,6 +58,14 @@ const AddBookPage = () => {
 
   const [selectedBook, setSelectedBook] = useState<AladinBook | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+
+  // 저장 완료 단계 — 검색/폼과 같은 방식으로 state 전환한다(라우트를 늘리지 않는다).
+  // 완독일 때만 채워진다. 읽고싶어요·읽는 중은 예전처럼 서재로 보낸다.
+  const [saved, setSaved] = useState<{
+    book: Book;
+    completedCount: number | null;
+    readCount: number;
+  } | null>(null);
 
   // 실험 1: forwardRef → React 19 ref as prop — 페이지 진입 시 자동 포커스
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -171,21 +182,32 @@ const AddBookPage = () => {
     const result = await createBook(bookData);
 
     if (result) {
-      const message =
-        readCount > 1
-          ? `${readCount}회독 도서가 등록되었습니다!`
-          : '도서가 등록되었습니다!';
-      toast.success(message);
-
       // 상태 초기화
       setExistingBook(null);
-
-      router.push('/books'); // 도서 목록 페이지로 이동
 
       // 책등 이미지 존재 여부 확인 — 등록을 막지 않도록 결과를 기다리지 않는다
       validateSpineImageUrl(selectedBook.cover, selectedBook.isbn13).then(
         (spineImage) => updateBook(result.id, { spine_image: spineImage })
       );
+
+      // 완독이 아니면 "책장에 꽂혔어요"가 거짓이 된다 — 예전 흐름 그대로 서재로 보낸다
+      if (formData.status !== 'completed') {
+        toast.success('도서가 등록되었습니다!');
+        router.push('/books');
+        return;
+      }
+
+      // 완독 권수는 결과 문구에만 쓴다. 실패해도 카드는 떠야 하므로 막지 않는다.
+      // (Supabase 클라이언트에 Database 제네릭이 없어 런타임 error 가 유일한 신호다)
+      let completedCount: number | null = null;
+      try {
+        const stats = await bookApi.getBookStats();
+        completedCount = stats.totalCompletedBooks;
+      } catch (err) {
+        console.warn('완독 권수 조회 실패:', err);
+      }
+
+      setSaved({ book: result, completedCount, readCount });
     } else {
       toast.error('도서 등록에 실패했습니다.');
     }
@@ -195,13 +217,28 @@ const AddBookPage = () => {
     setSelectedBook(null);
   };
 
+  const handleRecordAnother = () => {
+    setSaved(null);
+    setSelectedBook(null);
+  };
+
   return (
     <ErrorBoundary>
       <PageContainer width='content'>
         <h1 className='heading-1 mb-6 text-text-strong'>도서 추가</h1>
 
-        {/* 등록 폼이 열려있지 않을 때만 검색 UI 표시 */}
-        {!selectedBook ? (
+        {saved ? (
+          <BookSavedCard
+            title={saved.book.title}
+            coverImage={saved.book.cover_image}
+            oneLineReview={saved.book.one_line_review}
+            rating={saved.book.rating}
+            completedCount={saved.completedCount}
+            readCount={saved.readCount}
+            onGoToLibrary={() => router.push('/books')}
+            onRecordAnother={handleRecordAnother}
+          />
+        ) : !selectedBook ? (
           <div className='space-y-6'>
             {/* 검색 입력 */}
             <BookSearchInput
