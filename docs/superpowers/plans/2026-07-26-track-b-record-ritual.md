@@ -216,8 +216,12 @@ placeholder 를 지시문("남겨주세요")에서 허락형으로 바꾸는 것
 cd apps/page0127 && npm run lint && npm run type-check && npm test
 ```
 
-Expected: 셋 다 exit 0. 테스트는 95개가 그대로 통과한다(이 태스크는 테스트를 더하지 않는다).
-import 정렬 경고가 나면 `npm run lint:fix` 로 정리한다.
+Expected: 셋 다 exit 0. 테스트는 **17파일 / 90개**가 그대로 통과한다(이 태스크는 테스트를
+더하지 않는다). import 정렬 경고가 나면 `npm run lint:fix` 로 정리한다.
+
+참고: 원본 작업트리에서 세면 95개가 나오는데, 그건 다른 세션의 미커밋 파일
+(`app/api/_helpers/bookComments.test.ts`)이 5개를 더하기 때문이다. 이 worktree 의
+커밋된 기준선은 90개다.
 
 - [ ] **Step 6: 커밋한다**
 
@@ -695,7 +699,7 @@ git commit -o apps/page0127/src/widgets/public-library/PublicLibraryHeader.tsx \
 cd apps/page0127 && npm test && npm run lint && npm run type-check && npm run build
 ```
 
-Expected: 넷 다 exit 0. 테스트는 100개(기존 95 + `savedBookMessage` 5).
+Expected: 넷 다 exit 0. 테스트는 **18파일 / 95개** (기준선 17파일·90개 + `savedBookMessage` 5개).
 
 - [ ] **Step 2: 커밋되지 않은 변경이 없는지 확인한다**
 
