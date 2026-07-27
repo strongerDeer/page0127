@@ -256,6 +256,54 @@ Button/default·default 의 description:
 
 ---
 
+### 8.4 묶음 1 완료 기록 (2026-07-27)
+
+**코드 정리** (커밋 `0b11084`)
+
+`button.tsx` — `shadow-xs` 1개 + `dark:` **7개**(스펙에 4개로 적었던 것을 정정), `input.tsx` — `shadow-xs` 1개 + `dark:` 2개 제거. `focus-visible:` 3개와 `text-base md:text-sm` 은 보존.
+
+브라우저 실측(Playwright, computed style):
+
+| 확인 | 결과 |
+|---|---|
+| 버튼 8개 `box-shadow` | 전부 `none` |
+| primary 버튼 배경 | `rgb(30, 105, 203)` = `#1e69cb` |
+| `input` `box-shadow` / `border-color` | `none` / `rgb(223, 227, 232)` = `#dfe3e8` = `--line` |
+
+그림자만 사라지고 경계는 살아 있음을 확인했다.
+
+**Figma** — `Components` 페이지
+
+| 컴포넌트 | 내용 |
+|---|---|
+| `Button` | variant set **6** (variant 3 × size 2) |
+| `Input` | variant set **4** (state) |
+| `Card` · `Skeleton` · `AlertDialog` | 단독 컴포넌트 3 |
+| `doc/Button 상태` | hover·focus·disabled × 3 variant 표 |
+| `note/만들지 않은 것` | ghost·link·secondary, icon 3종 제외 근거 |
+
+전부 Variables 바인딩. **바인딩 없는 색은 1건**이며 아래 예외다.
+
+### 8.5 구현 중 계획과 달라진 것 셋
+
+**① Card 슬롯을 개별 컴포넌트로 만들지 않았다.**
+
+계획은 "슬롯 7종을 개별 컴포넌트로"였으나 **Figma 제약과 충돌한다** — 인스턴스에는 자식을 추가할 수 없어, 슬롯이 각각 컴포넌트면 `Card` 인스턴스 안에서 조립이 오히려 불가능해진다. 슬롯을 `Card` 내부 레이어로 두되 **이름을 코드 슬롯명과 1:1로 맞췄다**(`CardHeader` > `CardTitle`·`CardDescription`·`CardAction`, `CardContent`, `CardFooter`). 레이어 트리가 곧 JSX 구조가 된다.
+
+**② AlertDialog 오버레이의 검정 50%는 바인딩하지 않았다.**
+
+코드가 `bg-black/50`을 쓰는데 우리 팔레트에 대응 토큰이 없다. Figma에만 토큰을 새로 만들면 코드와 어긋나므로(미러 원칙) 그대로 뒀다. **이 파일에서 Variable 바인딩이 없는 유일한 색**이며 컴포넌트 description에도 기록했다.
+
+**③ `CardTitle`의 `font-semibold`(600)는 07 weight 3단계 밖이다.**
+
+코드를 고치지 않고 Figma에 600 그대로 반영했다. 이번 라운드의 "코드 정리"는 `shadow`·`dark:`를 대상으로 합의한 것이라 범위를 임의로 넓히지 않았다. 500(body)과 700(heading) 중 무엇으로 맞출지는 별도 판단이 필요하다.
+
+### 8.6 다음 묶음을 위한 구현 메모
+
+`combineAsVariants()` 직후 **자식들이 같은 위치에 겹친다.** Button set이 57×36으로 나와서 알았고, variant×size 격자로 `x`/`y`를 직접 배치해야 했다. 묶음 2~4에서 variant set을 만들 때마다 반복된다.
+
+---
+
 ## 9. 라운드 2 이후로 넘기는 것
 
 - **묶음 2~4** (15개) — 묶음 1에서 패턴이 정해진 뒤 한 스펙으로 묶어도 된다
