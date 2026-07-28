@@ -1,4 +1,5 @@
 import { createClient } from '@/shared/config/supabase/client';
+import { toSafeRedirect } from '@/shared/lib/auth/safeRedirect';
 
 /**
  * Google OAuth 로그인 Custom Hook
@@ -20,7 +21,8 @@ export const useGoogleLogin = () => {
   // const [isLoading, setIsLoading] = useState(false);
   // const [error, setError] = useState<string | null>(null);
 
-  const login = async () => {
+  /** @param next 로그인 후 돌아갈 내부 경로. 없으면 콜백이 본인 서재로 보낸다 */
+  const login = async (next?: string | null) => {
     const supabase = createClient();
 
     // OAuth 리디렉션 URL 설정
@@ -30,6 +32,14 @@ export const useGoogleLogin = () => {
     //   프로덕션에서도 localhost로 돌아오는 문제가 있었음 → 환경변수는 폴백으로만.
     const siteUrl = location.origin || process.env.NEXT_PUBLIC_SITE_URL;
 
+    // 로그인 뒤 돌아갈 곳을 콜백까지 들려 보낸다.
+    // 여기서 한 번 걸러도 콜백에서 다시 검증한다 — 콜백 URL 은 사용자가 직접
+    // 만들어 열 수 있어서 클라이언트 검증만으로는 못 막는다.
+    const safeNext = toSafeRedirect(next);
+    const callbackUrl = safeNext
+      ? `${siteUrl}/auth/callback?next=${encodeURIComponent(safeNext)}`
+      : `${siteUrl}/auth/callback`;
+
     // Google OAuth 로그인 시작
     // signInWithOAuth는 즉시 리디렉션 발생 → 외부 Google 로그인 페이지로 이동
     const { error } = await supabase.auth.signInWithOAuth({
@@ -38,7 +48,7 @@ export const useGoogleLogin = () => {
         // OAuth 콜백 후 리디렉션될 URL
         // - 로컬: http://localhost:3000/auth/callback
         // - 프로덕션: https://yourdomain.com/auth/callback (환경 변수 설정 필요)
-        redirectTo: `${siteUrl}/auth/callback`,
+        redirectTo: callbackUrl,
       },
     });
 

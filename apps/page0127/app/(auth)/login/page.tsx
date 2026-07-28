@@ -10,9 +10,20 @@ import {
 
 import { LoginWithGoogleButton } from '@/features/auth/ui/LoginWithGoogleButton';
 
-// 로그인 페이지
+type LoginPageProps = {
+  searchParams: Promise<{ redirect?: string }>;
+};
 
-const LoginPage = () => {
+/**
+ * 로그인 페이지
+ *
+ * 학습 포인트: `?redirect=` 를 여기(Server Component)에서 읽어 버튼에 내린다.
+ * 클라이언트에서 useSearchParams 로 읽으면 Suspense 경계가 필요해지는데,
+ * 페이지가 이미 서버에서 파라미터를 받을 수 있으므로 그럴 이유가 없다.
+ */
+const LoginPage = async ({ searchParams }: LoginPageProps) => {
+  const { redirect } = await searchParams;
+
   return (
     <div className='flex min-h-screen items-center justify-center'>
       <Card className='w-full max-w-md shadow-none'>
@@ -21,7 +32,7 @@ const LoginPage = () => {
           <CardDescription>어서 오세요. 책장이 기다리고 있어요.</CardDescription>
         </CardHeader>
         <CardContent>
-          <LoginWithGoogleButton />
+          <LoginWithGoogleButton next={redirect} />
           {/* 약관 링크는 실제 페이지로 연결한다 (기존 href='#' 죽은 링크) */}
           <p className='mt-4 text-center text-sm text-text-subtle'>
             로그인하면{' '}

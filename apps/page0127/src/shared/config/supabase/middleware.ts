@@ -76,10 +76,17 @@ export async function updateSession(request: NextRequest): Promise<{
       (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
     );
 
-  // 비로그인 사용자가 보호된 경로에 접근하면 로그인 페이지로 리디렉션
+  // 비로그인 사용자가 보호된 경로에 접근하면 로그인 페이지로 리디렉션.
+  // 원래 가려던 곳을 redirect 로 남겨, 로그인 뒤 그리로 돌아가게 한다
+  // (안 남기면 로그인 후 본인 서재로만 가서 하려던 일을 잃는다).
   if (!user && isProtected) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
+    url.search = '';
+    url.searchParams.set(
+      'redirect',
+      `${pathname}${request.nextUrl.search}${request.nextUrl.hash}`
+    );
     return { response: NextResponse.redirect(url), user, supabase };
   }
 
