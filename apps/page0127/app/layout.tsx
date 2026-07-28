@@ -8,6 +8,8 @@ import { Toaster } from '@/shared/ui/sonner';
 
 import { CurrentUserProvider } from '@/entities/user';
 
+import { VisitReporter } from '@/widgets/visit/VisitReporter';
+
 import type { Metadata } from 'next';
 
 import './globals.css';
@@ -94,6 +96,10 @@ const RootLayout = ({
           <CurrentUserProvider>
             {children}
             <Toaster />
+            {/* 방문 기록 — 로그인 사용자의 "오늘 왔다"를 하루 한 번 남긴다.
+                재방문율은 지금부터 쌓지 않으면 소급 계산이 불가능하다.
+                CurrentUserProvider 안쪽이어야 한다(로그인 상태를 읽는다). */}
+            <VisitReporter />
           </CurrentUserProvider>
         </QueryProvider>
         {/* GA4 — 측정 ID(NEXT_PUBLIC_GA_ID) 설정 시에만 로드 */}
