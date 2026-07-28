@@ -369,6 +369,60 @@ Playwright 실측 (1280px):
 
 ---
 
+### 6.7 묶음 3 완료 기록 (2026-07-28)
+
+**만든 것** — 6개. 전부 `descriptionMarkdown` 에 코드 경로 포함.
+
+| 컴포넌트 | 형태 | 노드 |
+|---|---|---|
+| `Popover` | COMPONENT, 슬롯형 | `86:2` |
+| `Badge` | COMPONENT_SET, variant 4 | `86:12` |
+| `Switch` | COMPONENT_SET, state 2 | `86:17` |
+| `DropdownMenu` | COMPONENT, 슬롯 5층 | `88:2` |
+| `DropdownMenuItem` | COMPONENT_SET, state 3 | `88:19` |
+| `ErrorFallback` | COMPONENT, 완성형 | `89:2` |
+
+**코드 정리** — `switch` 그림자 1 + 다크 3, `badge` 다크 3, `dropdown-menu` 다크 1, 그리고 `badge`·`button` 의 `text-white` → `text-primary-foreground`.
+
+**검증 결과** (전부 실측)
+
+| 항목 | 기대 | 실측 |
+|---|---|---|
+| `shadow-xs` (주석 제외) | 2 → 1 | **1** ✅ |
+| `dark:` | 6 → 1 | **1** ✅ |
+| `text-white` | 3 → 1 | **1** ✅ |
+| `bg-black` | 0 유지 | **0** ✅ |
+| vitest | 통과 | **28파일 181개** ✅ |
+| `tsc --noEmit` | 0 | **0** ✅ |
+| **페이지 전체** 바인딩 누락 | 0 | **0** ✅ |
+| description 없는 컴포넌트 | 0 | **0** (16/16) ✅ |
+| 최상위 노드 겹침 | 0 | **0** ✅ |
+
+남은 `shadow-xs`·`dark:` 는 `select.tsx:38` 하나(묶음 4 몫), `text-white` 는 `user-avatar.tsx:98`(의도적 제외 — 닉네임별 생성 색 위의 모노그램이라 대응 토큰이 없다).
+
+**치환이 무해한지는 산출물에서 확인했다.** 개발 서버가 실제로 서빙하는 CSS 를 받아 두 규칙을 대조했다:
+
+```css
+.text-primary-foreground { color: var(--primary-foreground) }   /* → var(--gray-0) → #fff */
+.text-white              { color: var(--color-white)        }   /* → #fff */
+```
+
+둘 다 `#fff` 로 귀결된다. 소스의 토큰 체인을 눈으로 따라가는 대신 **빌드 결과를 대조**한 이유는, `@theme inline` 이 빌드 시점에 참조를 치환하기 때문이다 — 소스만 봐서는 최종 값이 확정되지 않는다.
+
+> Playwright 계측은 이번에 못 했다. 다른 세션이 브라우저를 점유해(`Browser is already in use`) 접근할 수 없었다. CSS 대조가 같은 질문(두 클래스가 같은 색인가)에 더 직접적으로 답하므로 대체했다.
+
+**`text-white` 를 바꾼 이유.** `badge` 의 destructive 가 `text-white` 인데 묶음 1 이 만든 Figma Button destructive 는 이미 `primary-foreground` Variable 에 묶여 있었다. 값은 둘 다 흰색이라 지금은 같아 보이지만 **한쪽만 바뀌면 조용히 갈라진다.** 사용자가 "코드를 Figma 에 맞춘다"로 결정해 `button` 까지 함께 고쳤다(같은 이탈을 둘로 남기면 다음 사람이 어느 쪽이 맞는지 알 수 없다).
+
+**계획과 달라진 것 셋**
+
+**① `Card` 의 가로 여백은 컨테이너가 아니라 슬롯에 있었다.** `ErrorFallback` 을 만들며 기존 `Card`(`36:10`)의 값을 읽어 쓰려 했는데, 컨테이너 `paddingLeft` 가 **0** 이라 내 `|| 24` 폴백이 그걸 덮었다. 실제 `Card` 는 컨테이너가 세로 20 / 가로 0 이고 `CardHeader`·`CardContent`·`CardFooter` 가 각각 가로 24 를 갖는다. 보이는 결과는 같지만 **레이어 구조가 달라져** 교정했다. `0 || 기본값` 은 0 을 삼킨다.
+
+**② `note/` 프레임이 커지며 또 겹쳤다.** 묶음 2 에서 `Skeleton` 을 덮었던 것과 같은 일이 이번엔 `AlertDialog` 에서 났다(406 → 723px). 프레임을 `x=1900` 으로 옮겨 해결. **`note/` 에 내용을 추가하면 반드시 겹침 검사를 다시 돌린다.**
+
+**③ 내가 묶음 2 에 추가한 `note/` 텍스트가 바인딩돼 있지 않았다.** 묶음 1 의 note 텍스트는 `text/strong`·`text/body` 에 묶여 있는데 내 추가분만 하드코딩이었다. 묶음 2 검증이 *컴포넌트만* 훑어서 놓쳤다. 이번에 **페이지 전체**로 범위를 넓혀 잡았고, 겸해 묶음 2 가 남겨둔 `doc/Button 상태` 배경 4건(§6.6 의 "남은 것")도 `background` 에 묶었다. **페이지 전체 바인딩 누락이 처음으로 0 이 됐다.**
+
+---
+
 ## 7. 완료 기준
 
 1. 15개가 Figma `Components` 페이지에 있고, 각각 `descriptionMarkdown` 에 코드 경로가 있다
