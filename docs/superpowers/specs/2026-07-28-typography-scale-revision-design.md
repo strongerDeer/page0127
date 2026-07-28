@@ -178,3 +178,25 @@ Text Style 2개 이름 변경(`display-mobile` → `display-sm`, `heading-mobile
 **묶음 2~4 의 감사 기준이 명확해진다.** 지금까지는 "07 스케일 밖"을 발견해도 고칠지 기록할지 매번 판단해야 했다. 이제 스케일이 현실과 맞으므로 **밖에 있으면 고친다**가 규칙이 된다.
 
 라운드 2 묶음 1 설계 문서 §8.5 ③ 이 남긴 미결이 이 문서로 닫힌다.
+
+---
+
+## 8. 완료 기록 (2026-07-28)
+
+| 대상 | 결과 |
+|---|---|
+| 코드 | `font-semibold` → `font-medium` **78곳(54개 파일)**. 남은 600 은 **0건** |
+| 07 문서 | §2.2 를 **7단 + `stat`** 으로 개정. 개정 이력 2건(라운드 1 `caption` 제거 · 이번 재검토) 포함 |
+| Figma | Text Style 2개 개명(`-mobile` → `-sm`), `CardTitle`·`AlertDialogTitle` weight 500 |
+
+**검증**
+
+- Playwright 실측: 화면의 `font-weight` 분포가 `{400:35, 500:19, 700:15}` — **600 은 0**
+- 리뷰어가 78쌍의 diff 를 프로그래매틱 대조 — 모든 줄이 `font-semibold`→`font-medium` 만 다름, 예외 0
+- Figma Text Style 7개가 07 §2.2 표와 일치:
+  `display 28/40 700` · `display-sm 24/34 700` · `heading 20/30 700` · `heading-sm 18/27 700` · `body 16/24 500` · `sub 14/22 400` · `micro 12/18 500`
+- 테스트 130 + 4 + 58 통과, lint 3/3, type-check 4/4
+
+**부작용 하나** — `QualityGrid.tsx:155-156` 의 삼항이 양쪽 다 `font-medium` 이 됐다. weight 로 "verdict 있음/없음" 을 구분하던 자리였으나 색 점과 `text-text-faint` 로 구분이 유지되므로 기능 회귀는 아니다.
+
+**계획서 결함 하나** — Task 2 Step 2 의 `grep -c "caption"` 기대값 `0` 은 만족 불가능했다. Step 1 이 지시한 개정 이력에 "caption 13/20 을 뺐다" 가 들어 있기 때문이다. **같은 종류의 실수를 두 번째로 했다**(라운드 2 계획서의 `shadow-xs` 주석). 계획서에 grep 검증을 넣을 때는 **그 계획이 지시한 텍스트 자체가 grep 에 걸리는지** 확인해야 한다.
