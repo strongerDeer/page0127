@@ -48,7 +48,7 @@ type PublicLibraryHeaderProps = {
   currentUserId?: string;
   /** 최신 취향 분석의 성향 타입 이름 — 분석 이력이 없으면 null */
   personalityType: string | null;
-  /** 취향 분석 가능한 책 권수 (별점 있는 완독 책) — 소유자 전용, 방문자는 0 */
+  /** 취향 분석 가능한 책 권수 (평가를 남긴 완독 책) — 소유자 전용, 방문자는 0 */
   analyzableBookCount: number;
   /** 마지막 분석 이후 새로 추가된 분석 가능 책 권수 — 분석 이력이 없으면 null */
   newBooksSinceLastAnalysis: number | null;

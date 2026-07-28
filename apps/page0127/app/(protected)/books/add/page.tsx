@@ -73,6 +73,8 @@ const AddBookPage = () => {
   // 통계 왕복 동안 등록 버튼이 되살아나는데 완독 경로엔 토스트도 없다 →
   // 사용자는 아무 반응이 없으니 한 번 더 누른다. 재독이 같은 ISBN 으로 행을
   // 하나 더 만들어야 하므로 (user_id, isbn) 유니크 제약으로는 막을 수 없다.
+  // 중요: createBook 이 풀리는 순간 useBookCRUD 의 finally 가 isCreating 을 내리므로,
+  // 그 사이에 await 를 넣으면 버튼이 잠깐 살아나 이 방어가 무너진다.
   const [isFinishing, setIsFinishing] = useState(false);
 
   // 실험 1: forwardRef → React 19 ref as prop — 페이지 진입 시 자동 포커스

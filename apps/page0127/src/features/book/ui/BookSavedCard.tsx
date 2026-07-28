@@ -17,7 +17,7 @@ type BookSavedCardProps = {
   /** 사용자가 남긴 한 문장. 없으면 인용 블록을 숨긴다 */
   oneLineReview: string | null;
   rating: BookRating | null;
-  /** 완독 권수. 통계 조회 실패 시 null */
+  /** 완독 권수. 통계 조회에 실패했거나 재독이라 조회하지 않았으면 null */
   completedCount: number | null;
   /** 이 책을 몇 번째로 읽었는지 */
   readCount: number;
