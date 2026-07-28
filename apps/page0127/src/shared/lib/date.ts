@@ -106,3 +106,27 @@ export const toDateTimeAttr = (date: string | Date): string => {
  */
 export const formatDistanceToNow = (date: string): string =>
   formatRelativeTime(date);
+
+/**
+ * KST(UTC+9) 달력 날짜 키 — 'YYYY-MM-DD'.
+ *
+ * 서버는 보통 UTC로 돈다. UTC 날짜로 자르면 한국 시각 밤 9시 이후의 일이
+ * 다음 날로 밀려서, 매일 들어온 사용자가 하루 빠진 것처럼 보인다.
+ * 한국은 서머타임이 없어 고정 오프셋이 항상 정확하다.
+ *
+ * `Date`만 받는 이유: 반환값이 DB의 date 컬럼에 그대로 들어가기 때문에,
+ * 파싱 실패를 조용한 빈 문자열(`''`)로 흘려보내지 않는다. 호출처는
+ * 전부 `new Date()`로 현재 시각을 넘긴다(Task 3 API, Task 4 클라이언트).
+ * 이는 같은 파일의 표시용 함수들(`formatDate` 등)이 `''`를 반환하는 것과
+ * 다른 이유다.
+ *
+ * 같은 계산이 getCostSummary(dayKey)·aiUsage·widgets/landing/ui/TodayStrip
+ * (getKstToday)에도 있다 — 통합 후보지만 그쪽은 이 트랙과 무관해 건드리지
+ * 않았다.
+ */
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+export const toKstDateKey = (at: Date): string => {
+  // 9시간을 더한 뒤 UTC getter로 읽으면 "KST 벽시계"가 된다
+  return new Date(at.getTime() + KST_OFFSET_MS).toISOString().slice(0, 10);
+};

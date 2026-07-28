@@ -20,6 +20,7 @@ export const metadata: Metadata = {
  * - AI 분석: OpenAI
  * - 도서 정보: 알라딘 API
  * - 사용 통계: Google Analytics 4 (NEXT_PUBLIC_GA_ID 설정 시)
+ * - 접속 기록: user_daily_visits (일별, 사용자별)
  * - 개인정보 문의: 카카오톡 1:1 오픈채팅(/contact)
  */
 const PrivacyPage = () => {
@@ -52,6 +53,7 @@ const PrivacyPage = () => {
           items={[
             '로그인 상태를 유지하기 위한 인증 쿠키',
             '어떤 화면이 많이 쓰이는지에 대한 이용 통계 (Google Analytics, Vercel Analytics)',
+            '서비스에 접속한 날짜와 그날 첫 접속 시각',
           ]}
         />
         <p className='mt-4 text-sm text-text-subtle'>
