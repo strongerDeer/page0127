@@ -1,11 +1,14 @@
 import { ImageResponse } from 'next/og';
 
+import { BookShelf } from '@/shared/lib/og/BookShelf';
+import { CardFrame, Wordmark } from '@/shared/lib/og/CardFrame';
 import { RatingStars } from '@/shared/lib/og/RatingStars';
 import {
-  BOOK_SPINES,
+  BRAND_SPINES,
   OG_CACHE_CONTROL,
   OG_COLORS,
   OG_SIZE,
+  textWidth,
   truncate,
 } from '@/shared/lib/og/theme';
 
@@ -28,13 +31,26 @@ type Props = {
   params: Promise<{ username: string; bookId: string }>;
 };
 
-/** 제목 2줄, 저자 1줄, 한줄평 2줄에 들어갈 만큼만 남긴다 */
-const TITLE_MAX = 28;
-const AUTHOR_MAX = 24;
-const REVIEW_MAX = 60;
+/** 폭 기준 상한 (한글 글자 수). 라틴 제목은 같은 값에서 두 배 가까이 들어간다 */
+const TITLE_MAX_WIDTH = 26;
+const AUTHOR_MAX_WIDTH = 20;
+const REVIEW_MAX_WIDTH = 46;
+const NAME_MAX_WIDTH = 14;
 
-/** 화면(224×320)보다 크게 잡는다 — 630px 캔버스에서 320px 표지는 카드가 비어 보인다 */
-const COVER = { width: 280, height: 400 };
+/**
+ * 표지는 선반 위에 세워 둔다 — 책장 카드의 책등과 같은 바닥이다.
+ * 카드 높이(630)에서 워드마크와 선반을 빼고 남는 만큼 키웠다. 작게 두면 워드마크와
+ * 표지 사이에 150px 쯤 빈 띠가 생겨 카드가 아래로 처져 보인다.
+ */
+const COVER = { width: 292, height: 438 };
+
+/**
+ * 표지가 없을 때는 그 폭을 책등만큼으로 줄인다.
+ * 292px 짜리 색면을 그대로 두면 카드의 1/4 이 단색 덩어리가 되는데,
+ * 없는 정보가 자리만 크게 차지하는 셈이다. 좁은 책등은 "책"으로 읽히면서
+ * 남는 폭을 제목과 한줄평에 넘겨준다.
+ */
+const SPINE_ONLY = { width: 116, height: 438 };
 
 const Image = async ({ params }: Props) => {
   const { username, bookId } = await params;
@@ -57,174 +73,202 @@ const Image = async ({ params }: Props) => {
   // 비공개이거나 없는 기록 — 내용을 한 글자도 흘리지 않고 브랜드 카드로 떨어진다
   if (!book) {
     return new ImageResponse(
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          background: OG_COLORS.ink,
-          color: OG_COLORS.paper,
-          fontFamily: 'sans-serif',
-          padding: '64px 72px',
-        }}
-      >
-        <div style={{ display: 'flex', fontSize: 30, opacity: 0.65 }}>
-          page0127
+      <CardFrame>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <Wordmark />
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              marginTop: 28,
+              fontSize: 68,
+              fontWeight: 700,
+              lineHeight: 1.3,
+            }}
+          >
+            <div>책장을 보면,</div>
+            <div>그 사람이 보인다</div>
+          </div>
         </div>
-        <div
-          style={{
-            display: 'flex',
-            marginTop: 24,
-            fontSize: 64,
-            fontWeight: 700,
-          }}
-        >
-          책장을 보면, 그 사람이 보인다
-        </div>
-      </div>,
+        <BookShelf spines={BRAND_SPINES} />
+      </CardFrame>,
       { ...size, headers: { 'Cache-Control': OG_CACHE_CONTROL } }
     );
   }
 
   const lifeBook = isLifeBook(book.rating);
+  const title = truncate(book.title, TITLE_MAX_WIDTH);
 
   return new ImageResponse(
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 48,
-        background: OG_COLORS.ink,
-        color: OG_COLORS.paper,
-        fontFamily: 'sans-serif',
-        padding: '64px 72px',
-      }}
-    >
-      {/*
-        좌: 표지.
+    <CardFrame>
+      <Wordmark />
 
-        색면을 컨테이너 배경으로 깔고 그 위에 표지를 얹는다. 표지 URL 이 죽어 있으면
-        satori 는 500 을 내지 않고 **그림만 그리지 않는다** — 그러면 이 자리가 텅 빈
-        채로 카드가 나가므로(알라딘 URL 은 실제로 404 가 되는 것이 있다),
-        뒤에 깔린 색면이 그대로 보이게 해서 책 모양이 남도록 했다.
-      */}
-      <div
-        style={{
-          display: 'flex',
-          width: COVER.width,
-          height: COVER.height,
-          background: BOOK_SPINES[0].c,
-          borderRadius: 4,
-          overflow: 'hidden',
-        }}
-      >
-        {book.cover_image && (
-          <img
-            src={book.cover_image}
-            alt=''
-            width={COVER.width}
-            height={COVER.height}
-            style={{ objectFit: 'cover' }}
-          />
-        )}
-      </div>
-
-      {/* 우: 무슨 책을, 어떻게 읽었나 */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          flex: 1,
-          // 넘치면 잘라낸다 — 캔버스 밖으로 흐르면 글자가 겹쳐 보인다
-          overflow: 'hidden',
-        }}
-      >
+      {/* 표지와 기록이 나란히 선반 위에 선다 — 책장 카드의 책등과 같은 바닥이다 */}
+      <BookShelf spines={[]} minHeight={COVER.height}>
         <div
           style={{
             display: 'flex',
-            fontSize: 44,
-            fontWeight: 700,
-            lineHeight: 1.3,
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            position: 'relative',
+            width: book.cover_image ? COVER.width : SPINE_ONLY.width,
+            height: COVER.height,
+            background: BRAND_SPINES[0].c,
+            borderRadius: '4px 4px 0 0',
+            overflow: 'hidden',
+            flexShrink: 0,
           }}
         >
-          {truncate(book.title, TITLE_MAX)}
-        </div>
-
-        {book.author && (
+          {/*
+              각인을 먼저 깔고 표지를 그 위에 덮는다. 표지 URL 이 죽어 있으면 satori 는
+              500 을 내지 않고 **그림만 그리지 않으므로**(알라딘 URL 은 실제로 404 가
+              되는 것이 있다), 표지가 있다고 적힌 책도 단색 덩어리가 될 수 있다.
+              뒤에 깔린 각인이 드러나면 그 경우에도 책으로 읽힌다.
+            */}
           <div
             style={{
               display: 'flex',
-              marginTop: 12,
-              fontSize: 26,
-              opacity: 0.7,
-            }}
-          >
-            {truncate(book.author, AUTHOR_MAX)}
-          </div>
-        )}
-
-        {/* 별점 — 매기지 않았으면 줄 자체를 그리지 않는다(빈 별 5개는 0점으로 읽힌다) */}
-        {isRated(book.rating) && (
-          <div
-            style={{
-              display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
-              gap: 16,
-              marginTop: 20,
+              width: '100%',
             }}
           >
-            <RatingStars score={toScore(book.rating)} />
-            {lifeBook && (
-              <div
-                style={{
-                  display: 'flex',
-                  padding: '6px 16px',
-                  borderRadius: 999,
-                  background: OG_COLORS.gold,
-                  color: OG_COLORS.ink,
-                  fontSize: 24,
-                  fontWeight: 700,
-                }}
-              >
-                인생책
-              </div>
-            )}
+            <div
+              style={{
+                width: SPINE_ONLY.width * 0.46,
+                height: 4,
+                background: OG_COLORS.paper,
+                opacity: 0.5,
+                marginBottom: 10,
+              }}
+            />
+            <div
+              style={{
+                width: SPINE_ONLY.width * 0.28,
+                height: 4,
+                background: OG_COLORS.paper,
+                opacity: 0.3,
+              }}
+            />
           </div>
-        )}
 
-        {/* 사용자가 쓴 문장 — 이 카드의 존재 이유다 */}
-        {book.one_line_review && (
-          <div
-            style={{
-              display: 'flex',
-              marginTop: 24,
-              paddingLeft: 20,
-              borderLeft: `4px solid ${OG_COLORS.paper}`,
-              fontSize: 28,
-              lineHeight: 1.5,
-              opacity: 0.9,
-            }}
-          >
-            {truncate(book.one_line_review, REVIEW_MAX)}
-          </div>
-        )}
+          {book.cover_image && (
+            <img
+              src={book.cover_image}
+              alt=''
+              width={COVER.width}
+              height={COVER.height}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                objectFit: 'cover',
+              }}
+            />
+          )}
+        </div>
 
         <div
           style={{
             display: 'flex',
-            marginTop: 28,
-            fontSize: 24,
-            opacity: 0.55,
+            flexDirection: 'column',
+            // 표지 높이 안에서 가운데 정렬 — 바닥에 맞추면 위쪽이 통째로 빈다
+            justifyContent: 'center',
+            flex: 1,
+            height: COVER.height,
+            paddingLeft: 48,
+            // 오른쪽 끝까지 글자가 차면 카드가 답답하다
+            paddingRight: 12,
+            // 넘치면 잘라낸다 — 캔버스 밖으로 흐르면 글자가 겹쳐 보인다
+            overflow: 'hidden',
           }}
         >
-          {name ? `${truncate(name, 12)}님의 책장 · page0127` : 'page0127'}
+          <div
+            style={{
+              display: 'flex',
+              fontSize: textWidth(title) <= 14 ? 52 : 42,
+              fontWeight: 700,
+              lineHeight: 1.3,
+            }}
+          >
+            {title}
+          </div>
+
+          {book.author && (
+            <div
+              style={{
+                display: 'flex',
+                marginTop: 12,
+                fontSize: 26,
+                color: OG_COLORS.inkSoft,
+              }}
+            >
+              {truncate(book.author, AUTHOR_MAX_WIDTH)}
+            </div>
+          )}
+
+          {/* 별점 — 매기지 않았으면 줄 자체를 그리지 않는다(빈 별 5개는 0점으로 읽힌다) */}
+          {isRated(book.rating) && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                marginTop: 20,
+              }}
+            >
+              <RatingStars score={toScore(book.rating)} size={34} />
+              {lifeBook && (
+                <div
+                  style={{
+                    display: 'flex',
+                    marginLeft: 16,
+                    padding: '6px 16px',
+                    borderRadius: 999,
+                    background: OG_COLORS.gold,
+                    color: OG_COLORS.ink,
+                    fontSize: 22,
+                    fontWeight: 700,
+                  }}
+                >
+                  인생책
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 사용자가 쓴 문장 — 이 카드의 존재 이유다 */}
+          {book.one_line_review && (
+            <div
+              style={{
+                display: 'flex',
+                marginTop: 22,
+                paddingLeft: 20,
+                borderLeft: `4px solid ${OG_COLORS.skyDeep}`,
+                fontSize: 27,
+                lineHeight: 1.5,
+                color: OG_COLORS.ink,
+              }}
+            >
+              {truncate(book.one_line_review, REVIEW_MAX_WIDTH)}
+            </div>
+          )}
+
+          {name && (
+            <div
+              style={{
+                display: 'flex',
+                marginTop: 24,
+                fontSize: 24,
+                color: OG_COLORS.inkSoft,
+              }}
+            >
+              {truncate(name, NAME_MAX_WIDTH)}님의 책장
+            </div>
+          )}
         </div>
-      </div>
-    </div>,
+      </BookShelf>
+    </CardFrame>,
     { ...size, headers: { 'Cache-Control': OG_CACHE_CONTROL } }
   );
 };

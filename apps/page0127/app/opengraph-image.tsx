@@ -1,8 +1,9 @@
 import { ImageResponse } from 'next/og';
 
 import { BookShelf } from '@/shared/lib/og/BookShelf';
+import { CardFrame, Wordmark } from '@/shared/lib/og/CardFrame';
 import {
-  BOOK_SPINES,
+  BRAND_SPINES,
   OG_CACHE_CONTROL,
   OG_COLORS,
   OG_SIZE,
@@ -12,14 +13,11 @@ import {
 // - /opengraph-image 로 서빙되어 SNS 공유 시 썸네일로 노출됨
 // - 별도 이미지 에셋 없이 코드로 생성 (JSX → 이미지)
 //
-// 디자인 원칙 (00_docs/07):
-// - 인디고 그라디언트 + 📚 이모지 → 잉크 배경 + 책등이 꽂힌 선반
-// - 공유했을 때 "책"이 보여야 한다
+// 디자인:
+// - 카드 면은 앱의 `accent`(스카이 틴트)와 같다 — 링크를 눌러 들어온 화면과
+//   같은 톤이어야 같은 서비스로 읽힌다(shared/lib/og/theme.ts 참조).
+// - 카드 폭을 가로지르는 선반이 세 카드(홈·책장·책 기록)의 공통 형태다.
 //
-// 레이아웃 주의:
-// - 좌우 2단으로 짠다. 세로로 쌓으면 책등 높이가 텍스트를 밀어내
-//   630px 캔버스를 넘치고 글자가 겹친다.
-
 // 라우트 세그먼트 설정
 //
 // runtime: 지정하지 않는다 = Next.js 기본값인 Node.js 런타임.
@@ -34,35 +32,13 @@ export const contentType = 'image/png';
 
 const Image = () => {
   return new ImageResponse(
-    <div
-      style={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        background: OG_COLORS.ink,
-        color: OG_COLORS.paper,
-        fontFamily: 'sans-serif',
-        padding: '64px 72px',
-      }}
-    >
-      {/* 좌: 카피 */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          flex: 1,
-          paddingRight: 40,
-        }}
-      >
-        <div style={{ display: 'flex', fontSize: 30, opacity: 0.65 }}>
-          page0127
-        </div>
+    <CardFrame>
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <Wordmark />
 
         {/*
-            Satori(next/og) 제약: 자식이 2개 이상인 div 는 명시적 display 필요.
+            Satori 제약: 자식이 2개 이상인 div 는 명시적 display 가 필요하다.
             <br/> 대신 flex column 으로 두 줄을 각각 div 로 쌓는다.
-            한글은 글리프가 커서 lineHeight 1.25 로는 윗줄을 침범한다.
           */}
         <div
           style={{
@@ -71,7 +47,8 @@ const Image = () => {
             marginTop: 28,
             fontSize: 68,
             fontWeight: 700,
-            lineHeight: 1.4,
+            // 한글은 글리프가 커서 lineHeight 1.25 로는 윗줄을 침범한다
+            lineHeight: 1.3,
           }}
         >
           <div>책장을 보면,</div>
@@ -81,18 +58,18 @@ const Image = () => {
         <div
           style={{
             display: 'flex',
-            marginTop: 28,
-            fontSize: 27,
-            opacity: 0.7,
+            marginTop: 22,
+            fontSize: 28,
+            color: OG_COLORS.inkSoft,
           }}
         >
           읽은 책이 모여 책장이 됩니다
         </div>
       </div>
 
-      {/* 우: 선반에 꽂힌 책등 — 브랜드 카드라 선반을 가득 채운다 */}
-      <BookShelf spines={BOOK_SPINES} />
-    </div>,
+      {/* 브랜드 카드라 선반을 가득 채운다 */}
+      <BookShelf spines={BRAND_SPINES} />
+    </CardFrame>,
     {
       ...size,
       // next/og 기본값은 max-age=0 이라 크롤러가 부를 때마다 다시 그린다
