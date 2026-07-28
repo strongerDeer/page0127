@@ -12,6 +12,7 @@ import { toDisplayName } from '@/entities/profile/model/displayName';
 
 import { ArchiveToggleButton } from '@/features/book/ui/ArchiveToggleButton';
 import { DeleteBookButton } from '@/features/book/ui/DeleteBookButton';
+import { ShareButton } from '@/features/share';
 
 import { BookDetailContent } from '@/widgets/book/ui/BookDetailContent';
 
@@ -112,15 +113,26 @@ const BookDetailPage = async ({ params }: PageProps) => {
           <Button variant='outline'>← {username}님의 서재로</Button>
         </Link>
 
-        {isOwner && (
-          <div className='flex gap-2'>
-            <ArchiveToggleButton bookId={book.id} isPublic={book.is_public} />
-            <Link href={`/${username}/${book.id}/edit`}>
-              <Button variant='outline'>수정</Button>
-            </Link>
-            <DeleteBookButton bookId={book.id} redirectTo={`/${username}`} />
-          </div>
-        )}
+        <div className='flex gap-2'>
+          {/* 공개된 기록만 공유한다 — 비공개 링크는 남이 열면 404 라 공유해도 소용없다 */}
+          {book.is_public && (
+            <ShareButton
+              path={`/${username}/${book.id}`}
+              title={book.title}
+              text={book.one_line_review ?? undefined}
+            />
+          )}
+
+          {isOwner && (
+            <>
+              <ArchiveToggleButton bookId={book.id} isPublic={book.is_public} />
+              <Link href={`/${username}/${book.id}/edit`}>
+                <Button variant='outline'>수정</Button>
+              </Link>
+              <DeleteBookButton bookId={book.id} redirectTo={`/${username}`} />
+            </>
+          )}
+        </div>
       </div>
 
       <BookDetailContent book={book} isOwner={isOwner} />
