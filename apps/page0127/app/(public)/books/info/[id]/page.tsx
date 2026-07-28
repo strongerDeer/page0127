@@ -12,6 +12,7 @@ import { PageContainer } from '@/shared/ui/PageContainer';
 import { RATING_MAX, summarizeRatings } from '@/entities/book';
 
 import { AddToLibraryButton } from '@/widgets/book/ui/AddToLibraryButton';
+import { GlobalBookCommentSection } from '@/widgets/book/ui/GlobalBookCommentSection';
 import { MyBookMemo } from '@/widgets/book/ui/MyBookMemo';
 import { ReaderProfiles } from '@/widgets/book/ui/ReaderProfiles';
 
@@ -234,6 +235,8 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
               </p>
             </section>
           )}
+
+          <GlobalBookCommentSection globalBookId={book.id} />
 
           {/* 비로그인 방문자 — 여기서 서비스를 처음 만난다 */}
           {!user && (
