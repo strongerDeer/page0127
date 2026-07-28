@@ -4,7 +4,7 @@
 
 **Goal:** 전역 책(`global_books`)에도 댓글 스레드를 열고, 활동 단위로 남아 있던 옛 읽기 경로를 걷어내 대화 창구를 책 하나로 통일한다.
 
-**Architecture:** 계획 1에서 `book_comments`는 이미 `global_book_id`를 지원하고 프론트의 `CommentTarget`·`commentApi`·`commentKeys`도 `globalBook` 분기를 갖고 있다. 남은 것은 그 분기를 실제로 태울 라우트와 UI, 그리고 알림 경로다. 마지막으로 활동 상세를 책 상세로 리다이렉트시키고 활동 댓글·좋아요 API를 제거한다.
+**Architecture:** 계획 1에서 `book_comments`는 이미 `global_book_id`를 지원하고 프론트의 `CommentTarget`·`commentApi`·`commentKeys`도 `globalBook` 분기를 갖고 있다. 남은 것은 그 분기를 실제로 태울 라우트와 UI, 그리고 알림 경로다. 마지막으로 활동 상세 페이지·활동 댓글·좋아요 API와 갈 곳 없어진 알림을 걷어낸다.
 
 **Tech Stack:** Next.js 16 (App Router) · Supabase(Postgres + RLS) · TanStack Query · Tailwind · vitest
 
