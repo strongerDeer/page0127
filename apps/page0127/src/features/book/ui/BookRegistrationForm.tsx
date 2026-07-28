@@ -385,7 +385,7 @@ export const BookRegistrationForm = ({
             className='rounded-lg border border-line p-4'
           >
             {/* summary 자체에 flex 를 주면 펼침 삼각형 마커가 사라진다. 안쪽 span 으로 정렬한다 */}
-            <summary className='cursor-pointer text-sm font-semibold'>
+            <summary className='cursor-pointer text-sm font-medium'>
               <span className='inline-flex items-center align-middle'>
                 더 남기기
               </span>
