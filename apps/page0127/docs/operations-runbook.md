@@ -8,9 +8,18 @@ page0127 서비스의 상태 확인·백업·장애 대응 절차를 한곳에 �
 다음 항목이 모두 체크되기 전에는 정식 오픈으로 전환하지 않는다.
 
 - [ ] 최신 DB 마이그레이션 적용 및 RPC 권한 allowlist 확인
-- [ ] GitHub `main` 브랜치 보호: PR 필수 + `Lint · Type-check · Build`, `E2E smoke (Playwright)` 필수 체크
-- [ ] Vercel Preview와 GitHub Actions가 개발/테스트 Supabase를 사용
-- [ ] Vercel Preview에 `PRODUCTION_SUPABASE_URL` 설정 후 오연결 차단 빌드 확인
+- [x] GitHub `main` 브랜치 보호: PR 필수(승인 0건) + `Lint · Type-check · Build` 필수 체크 — 2026-07-28
+  - ⚠️ **`E2E smoke (Playwright)`는 필수 체크에 넣지 않는다.** dependabot PR에는 GitHub이
+    secrets를 전달하지 않아 e2e 잡을 skip 처리했는데, skip되는 체크를 필수로 걸면 의존성
+    PR이 머지되지 않는다. 의존성 검증은 `Lint · Type-check · Build`가 담당하고, e2e는
+    머지 후 `main` push에서 돈다.
+  - `Require approvals`는 끈다 — 혼자 작업하면 자기 PR을 자기가 승인할 수 없어 모든 머지가 막힌다.
+  - `Require branches to be up to date`도 끈다 — 세션이 여럿이라 `main`이 자주 움직여 매번 최신화해야 한다.
+- [x] Vercel Preview와 GitHub Actions가 개발/테스트 Supabase를 사용 — 2026-07-28
+  - 개발 프로젝트 `uglagvujxbgdozsucxgp` (page0127-dev) 신설, 마이그레이션 38개 적용해 운영과 테이블 34개 일치
+  - Preview 배포에서 Google 로그인 → **개발 DB에 계정 생성**까지 확인
+- [x] Vercel Preview에 `PRODUCTION_SUPABASE_URL` 설정 후 오연결 차단 빌드 확인 — 2026-07-28
+  - CI의 `Block production database in CI` 통과 + Preview 빌드가 `next.config.ts` 가드를 통과
 - [ ] 운영 배포 직전 백업 생성 및 복원 가능한 백업인지 확인
 - [ ] 외부 uptime 모니터와 장애 알림 실수신 확인
 - [ ] Sentry 테스트 오류가 이슈·알림으로 도착하고 소스맵이 해석되는지 확인
@@ -131,22 +140,64 @@ pg_dump "<POSTGRES_CONNECTION_STRING>" > backup_$(date +%Y%m%d).sql
 
 ## 5. 배포 환경 필수 설정
 
+### Supabase 프로젝트 (헷갈리기 쉬움)
+
+"개발용"이 두 개다. **서로 다른 DB이므로 값을 섞으면 안 된다.**
+
+| | 주소 | 접속 가능한 곳 | 값 출처 |
+| --- | --- | --- | --- |
+| 로컬 Docker | `http://127.0.0.1:54321` | 내 맥에서만 | `supabase status` → `apps/page0127/.env.local` |
+| 개발 클라우드 | `https://uglagvujxbgdozsucxgp.supabase.co` | 인터넷(GitHub·Vercel) | `supabase projects api-keys --project-ref uglagvujxbgdozsucxgp` |
+| 운영 | `https://sjngwxtykqhlsvxcyqah.supabase.co` | 인터넷 | `--project-ref sjngwxtykqhlsvxcyqah` |
+
+⚠️ **`.env.local` 값을 GitHub·Vercel에 복사하지 않는다.** 주소는 클라우드인데 키는 로컬 것이
+되어 `Invalid API key`로 실패한다(2026-07-28 실제 사고: CI e2e 헬스체크가 503).
+
+⚠️ **키는 `eyJ…`로 시작하는 레거시 JWT를 쓴다.** 프로젝트마다 키가 4종 발급되는데
+(`anon` 208자 / `service_role` 219자 / `sb_publishable_…` 46자 / `sb_secret_…` 41자),
+대시보드 API 페이지는 신형 키를 먼저 보여준다. 앱은 JWT로 검증돼 있으므로 위 두 개만 쓴다.
+
 ### GitHub Actions secrets
 
-- `NEXT_PUBLIC_SUPABASE_URL`: 개발/테스트 Supabase
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: 개발/테스트 anon key
-- `SUPABASE_SERVICE_ROLE_KEY`: 개발/테스트 service role key
-- `PRODUCTION_SUPABASE_URL`: 운영 Supabase URL(오연결 비교용)
+- `NEXT_PUBLIC_SUPABASE_URL`: **개발 클라우드** URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: **개발 클라우드** anon key (`eyJ…`)
+- `SUPABASE_SERVICE_ROLE_KEY`: **개발 클라우드** service role key (`eyJ…`)
+- `PRODUCTION_SUPABASE_URL`: 운영 Supabase URL(오연결 비교용 + `quality.yml` 저장 대상)
+- `PRODUCTION_SUPABASE_SERVICE_ROLE_KEY`: **운영** service role key — `quality.yml` 전용
 
 CI의 `Block production database in CI` 단계가 두 URL이 같으면 실패해야 정상이다.
 
+**왜 운영 키가 secrets에 따로 있나:** GitHub secrets는 저장소에 이름이 하나뿐이라
+워크플로마다 다른 값을 줄 수 없다. `ci.yml`(e2e)은 개발 DB가, `quality.yml`(주 1회 품질
+측정 후 **저장**)은 운영 DB가 필요해 충돌한다. 그래서 `quality.yml`에서는 환경변수 이름
+(`NEXT_PUBLIC_SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY`, `store.ts`가 읽는 이름)은 그대로
+두고 **값의 출처만** `secrets.PRODUCTION_*`로 매핑했다.
+→ secrets를 건드릴 땐 `.github/workflows/` 전체에서 그 이름의 사용처를 먼저 grep한다.
+
 ### Vercel
 
-- Production: 운영 Supabase 값
-- Preview: 개발/테스트 Supabase 값
-- Preview의 `PRODUCTION_SUPABASE_URL`: 운영 Supabase URL
+같은 이름을 **스코프별로 나눠** 등록한다(하나의 변수에 Production·Preview를 함께 체크하지 않는다).
+
+- Production 스코프: 운영 Supabase 값
+- Preview 스코프: **개발 클라우드** Supabase 값
+- Preview 스코프의 `PRODUCTION_SUPABASE_URL`: 운영 Supabase URL (가드의 대조군이므로 운영 값이 맞다)
 - Git Production Branch: `main`
 - GitHub의 필수 체크가 끝난 커밋만 Production에 배포되도록 설정
+
+⚠️ **환경변수는 배포 시점에 굳는다.** 값을 바꿔도 기존 배포에는 반영되지 않으므로 새로
+배포해야 한다(`vercel redeploy <배포URL>`이면 push 없이 가능). Hobby 플랜은 동시 빌드가
+1개라, Production과 겹치면 Preview 배포가 `Canceled`된다.
+
+### 개발 클라우드 프로젝트의 Google 로그인
+
+Preview에서 로그인까지 테스트하려면 세 가지가 필요하다(2026-07-28 설정 완료).
+
+1. Google Cloud 콘솔 → 승인된 리디렉션 URI에 `https://uglagvujxbgdozsucxgp.supabase.co/auth/v1/callback` 추가
+2. Supabase 개발 프로젝트 → Authentication → Providers → Google 활성화 + **Client ID/Secret 입력**
+   (이 값은 `supabase/.env.local`의 `SUPABASE_AUTH_EXTERNAL_GOOGLE_*`. **Google Cloud 쪽 값이라
+   로컬·개발·운영이 같은 것을 쓴다** — 프로젝트마다 다른 Supabase 키와 혼동하지 말 것)
+3. Authentication → URL Configuration → Redirect URLs에 `https://page0127-*-strongerdeers-projects.vercel.app/**`
+   (Preview 주소는 배포마다 바뀌므로 와일드카드가 필요하다)
 
 ### Sentry 실수신 테스트
 
@@ -164,3 +215,4 @@ CI의 `Block production database in CI` 단계가 두 URL이 같으면 실패해
 | --- | --- | --- |
 | 2026-07-23 | 런북 최초 작성 | - |
 | 2026-07-25 | Go-live 게이트·환경 분리·Sentry 실수신 절차 추가 | - |
+| 2026-07-28 | 개발 클라우드 Supabase 신설로 Preview·CI 분리 완료, `main` 브랜치 보호 적용 → Go-live 게이트 3건 체크. 키 출처·스코프·`E2E smoke` 제외 이유 명시 | - |
