@@ -285,7 +285,7 @@ export const DashboardBookList = ({
     <div>
       {/* 책을 먼저 보이게 하는 최소 툴바. 상세 조건은 필요할 때만 펼친다. */}
       <div className='mb-4 flex flex-wrap items-center gap-2'>
-        <h3 className='mr-auto text-lg font-semibold text-text-strong'>
+        <h3 className='mr-auto text-lg font-medium text-text-strong'>
           {title}{' '}
           <span className='font-normal text-text-subtle'>
             {filteredBooks.length}권
@@ -336,7 +336,7 @@ export const DashboardBookList = ({
           >
             <div className='mb-4 flex items-center justify-between'>
               <div>
-                <h4 className='text-sm font-semibold text-text-strong'>필터</h4>
+                <h4 className='text-sm font-medium text-text-strong'>필터</h4>
                 <p className='mt-0.5 text-xs text-text-subtle'>
                   카테고리는 여러 개 선택할 수 있어요.
                 </p>

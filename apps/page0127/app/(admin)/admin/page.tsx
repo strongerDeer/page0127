@@ -14,7 +14,7 @@ export default function AdminHomePage() {
           href={c.href}
           className='rounded border border-line p-4 hover:bg-accent'
         >
-          <div className='text-sm font-semibold'>{c.title}</div>
+          <div className='text-sm font-medium'>{c.title}</div>
           <p className='mt-1 text-sm text-text-subtle'>{c.desc}</p>
         </Link>
       ))}

@@ -118,7 +118,7 @@ export const ActivityCard = ({
         <p className='min-w-0 flex-1 truncate text-base'>
           <ProfileLink
             username={activity.user.username}
-            className='font-semibold text-text-strong hover:underline'
+            className='font-medium text-text-strong hover:underline'
           >
             {activity.user.nickname || '익명'}
           </ProfileLink>
@@ -156,7 +156,7 @@ export const ActivityCard = ({
           )}
 
           <div className='min-w-0 flex-1'>
-            <p className='truncate text-base font-semibold text-text-strong'>
+            <p className='truncate text-base font-medium text-text-strong'>
               {activity.book.title}
             </p>
             <p className='mt-1 truncate text-sm text-text-subtle'>

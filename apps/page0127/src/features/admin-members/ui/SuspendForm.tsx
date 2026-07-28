@@ -54,7 +54,7 @@ export const SuspendForm = ({
   if (suspended) {
     return (
       <div className='rounded border border-line p-4'>
-        <div className='mb-2 text-sm font-semibold'>정지 해제</div>
+        <div className='mb-2 text-sm font-medium'>정지 해제</div>
         <input
           value={reason}
           onChange={(e) => setReason(e.target.value)}
@@ -75,7 +75,7 @@ export const SuspendForm = ({
 
   return (
     <div className='rounded border border-line p-4'>
-      <div className='mb-2 text-sm font-semibold'>계정 정지</div>
+      <div className='mb-2 text-sm font-medium'>계정 정지</div>
       <div className='mb-2 flex gap-3 text-sm'>
         <label className='flex items-center gap-1'>
           <input

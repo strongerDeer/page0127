@@ -9,7 +9,7 @@ export default async function AdminErrorsPage() {
   return (
     <section className='space-y-4'>
       <div className='flex items-baseline justify-between'>
-        <h1 className='text-base font-semibold'>에러</h1>
+        <h1 className='text-base font-medium'>에러</h1>
         <span className='text-xs text-text-faint'>운영 환경(vercel-production) · 5분 캐시</span>
       </div>
       <ErrorList result={result} now={now} />

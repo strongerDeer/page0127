@@ -26,7 +26,7 @@ export const BookCardInfo = ({ book, onDelete }: BookCardInfoProps) => {
     <div className='flex flex-1 flex-col'>
       <CardHeader className='pb-3'>
         <Link href={`/books/${book.id}`}>
-          <h3 className='line-clamp-2 text-base font-semibold hover:text-primary'>
+          <h3 className='line-clamp-2 text-base font-medium hover:text-primary'>
             {book.title}
           </h3>
         </Link>

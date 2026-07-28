@@ -71,7 +71,7 @@ export const ReaderProfiles = async ({ isbn }: ReaderProfilesProps) => {
 
   return (
     <div className='space-y-4 pt-4 border-t'>
-      <h3 className='text-lg font-semibold'>이 책을 완독한 사람들</h3>
+      <h3 className='text-lg font-medium'>이 책을 완독한 사람들</h3>
       <div className='flex -space-x-3 overflow-hidden py-2'>
         {orderedProfiles.map((profile) => {
           // 닉네임 미설정 시 username 으로 대체 (익명 표기는 최후의 수단)

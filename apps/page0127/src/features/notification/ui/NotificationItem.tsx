@@ -83,7 +83,7 @@ export const NotificationItem = ({
         <div className='flex items-center gap-2'>
           {icon}
           <p className='text-sm'>
-            <span className='font-semibold'>{actorName}</span>
+            <span className='font-medium'>{actorName}</span>
             {message}
           </p>
         </div>

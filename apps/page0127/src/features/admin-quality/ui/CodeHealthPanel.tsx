@@ -20,7 +20,7 @@ const Stat = ({
   sev: Sev;
 }) => (
   <div className='rounded-md border border-line px-3 py-2.5'>
-    <div className={`text-xl font-semibold tabular-nums ${valueClass(value, sev)}`}>
+    <div className={`text-xl font-medium tabular-nums ${valueClass(value, sev)}`}>
       {value}
     </div>
     <div className='mt-0.5 text-xs text-text-faint'>{label}</div>
@@ -44,7 +44,7 @@ export const CodeHealthPanel = ({ record }: { record: QualityRecord }) => {
 
   return (
     <section className='rounded-lg border border-line p-4'>
-      <h2 className='mb-3 text-sm font-semibold'>코드 상태</h2>
+      <h2 className='mb-3 text-sm font-medium'>코드 상태</h2>
       <div className='grid grid-cols-2 gap-2 sm:grid-cols-4'>
         {items.map((it) => (
           <Stat key={it.label} label={it.label} value={it.value} sev={it.sev} />

@@ -31,7 +31,7 @@ export const SeoPanel = ({ record }: { record: QualityRecord }) => {
 
   return (
     <section className='rounded-lg border border-line p-4'>
-      <h2 className='mb-3 text-sm font-semibold'>SEO 점검</h2>
+      <h2 className='mb-3 text-sm font-medium'>SEO 점검</h2>
       <div className='flex flex-wrap gap-2'>
         {checks.map((c) => (
           <Badge key={c.label} ok={c.ok} label={c.label} />

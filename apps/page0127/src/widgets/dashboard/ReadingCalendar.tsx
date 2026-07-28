@@ -215,7 +215,7 @@ export const ReadingCalendar = ({
           {/* 통계 요약 - 로딩 중이든 아니든 항상 표시 */}
           <div className='mt-4 text-left text-xs text-text-subtle'>
             이번 달{' '}
-            <span className='font-semibold text-text-strong'>
+            <span className='font-medium text-text-strong'>
               {summary.totalBooks}권
             </span>{' '}
             완독
@@ -223,7 +223,7 @@ export const ReadingCalendar = ({
               <>
                 {' '}
                 ·{' '}
-                <span className='font-semibold text-text-strong'>
+                <span className='font-medium text-text-strong'>
                   {summary.totalPages.toLocaleString()}쪽
                 </span>
               </>

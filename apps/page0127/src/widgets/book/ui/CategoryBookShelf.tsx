@@ -43,7 +43,7 @@ export const CategoryBookShelf = ({ books, username }: CategoryBookShelfProps) =
     <div className='space-y-10'>
       {sections.map(([category, categoryBooks]) => (
         <div key={category}>
-          <h4 className='mb-2 text-base font-semibold text-text-strong'>
+          <h4 className='mb-2 text-base font-medium text-text-strong'>
             {category}{' '}
             <span className='font-normal text-text-subtle'>
               {categoryBooks.length}권

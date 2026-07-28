@@ -98,7 +98,7 @@ export const TasteAnalysisResult = ({
         <CardContent className='space-y-6'>
           {/* 좋아하는 것 */}
           <div>
-            <h3 className='mb-3 flex items-center gap-1.5 font-semibold text-primary'>
+            <h3 className='mb-3 flex items-center gap-1.5 font-medium text-primary'>
               <Heart className='h-4 w-4' />
               좋아하는 것
             </h3>
@@ -111,7 +111,7 @@ export const TasteAnalysisResult = ({
 
           {/* 덜 끌리는 것 — "피하는 것"은 단정적이라 표현을 눅였다 */}
           <div>
-            <h3 className='mb-3 font-semibold text-text-subtle'>
+            <h3 className='mb-3 font-medium text-text-subtle'>
               덜 끌리는 것
             </h3>
             <div className='space-y-3'>
@@ -130,7 +130,7 @@ export const TasteAnalysisResult = ({
 
           {/* 기타 패턴 */}
           <div className='rounded-lg bg-sunken p-4'>
-            <h3 className='mb-2 flex items-center gap-1.5 font-semibold text-text-strong'>
+            <h3 className='mb-2 flex items-center gap-1.5 font-medium text-text-strong'>
               <BarChart3 className='h-4 w-4 text-text-subtle' />
               독서 패턴
             </h3>

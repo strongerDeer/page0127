@@ -152,7 +152,7 @@ const GridTable = ({
                             <span
                               className={
                                 def.verdict
-                                  ? 'flex items-center gap-1 font-semibold tabular-nums'
+                                  ? 'flex items-center gap-1 font-medium tabular-nums'
                                   : 'font-medium tabular-nums text-text-faint'
                               }
                             >
@@ -195,7 +195,7 @@ export const QualityGrid = ({ data }: { data: TrendPayload }) => {
   return (
     <section className='space-y-3'>
       <div>
-        <h2 className='text-sm font-semibold'>한눈에 — 페이지별 지표</h2>
+        <h2 className='text-sm font-medium'>한눈에 — 페이지별 지표</h2>
         <p className='mt-0.5 text-xs text-text-faint'>
           선 색: <span className='text-emerald-700'>초록=개선</span> ·{' '}
           <span className='text-red-600'>빨강=악화</span>. 점 색은 판정(양호/주의/위험).

@@ -273,7 +273,7 @@ const Panel = ({
                   />
                   {r.page}
                 </span>
-                <b className='font-semibold tabular-nums'>{def.format(r.v)}</b>
+                <b className='font-medium tabular-nums'>{def.format(r.v)}</b>
               </div>
             ))}
           </div>
@@ -294,7 +294,7 @@ const PanelShell = ({
 }) => (
   <div className='rounded-lg border border-line p-3'>
     <div className='mb-1 flex items-baseline gap-2 px-1'>
-      <span className='text-sm font-semibold'>{label}</span>
+      <span className='text-sm font-medium'>{label}</span>
       <span className='text-[11px] text-text-faint'>{cond}</span>
     </div>
     {children}
@@ -317,7 +317,7 @@ export const QualityTrend = ({ data }: { data: TrendPayload }) => {
   return (
     <section className='space-y-3'>
       <div>
-        <h2 className='text-sm font-semibold'>추세 자세히 — 지표별</h2>
+        <h2 className='text-sm font-medium'>추세 자세히 — 지표별</h2>
         <p className='mt-0.5 text-xs text-text-faint'>
           전체 기간 연속선. 페이지 칩으로 선을 껐다 켜고, 선 위에 마우스를 올리면 그 주 값이 나옵니다.
         </p>

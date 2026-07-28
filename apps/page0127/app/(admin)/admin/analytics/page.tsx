@@ -11,7 +11,7 @@ const TABS = [
 export default function AdminAnalyticsPage() {
   return (
     <section className='space-y-4'>
-      <h1 className='text-base font-semibold'>유입분석</h1>
+      <h1 className='text-base font-medium'>유입분석</h1>
       <p className='text-sm text-text-faint'>
         GA·Search Console 연결은 베타 트래픽이 쌓인 뒤 추가됩니다. 아래는 준비된 분석
         영역입니다.

@@ -5,7 +5,7 @@ export default async function AdminCostsPage() {
   const summary = await getCostSummary();
   return (
     <section>
-      <h1 className='mb-4 text-base font-semibold'>AI 비용</h1>
+      <h1 className='mb-4 text-base font-medium'>AI 비용</h1>
       <CostDashboard summary={summary} />
     </section>
   );

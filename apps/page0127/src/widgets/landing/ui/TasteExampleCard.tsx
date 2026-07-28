@@ -43,7 +43,7 @@ export const TasteExampleCard = async () => {
 
       <div className='flex items-start justify-between gap-5'>
         <div className='min-w-0'>
-          <p className='flex items-center gap-1.5 text-xs font-semibold text-primary'>
+          <p className='flex items-center gap-1.5 text-xs font-medium text-primary'>
             <Sparkles aria-hidden='true' className='size-3.5' />
             TASTE NOTE 0127
           </p>

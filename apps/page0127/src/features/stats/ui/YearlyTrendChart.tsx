@@ -95,7 +95,7 @@ export const YearlyTrendChart = ({ data }: Props) => {
 
       <div className='text-center text-sm text-text-subtle'>
         <p>
-          <span className='font-semibold text-text-strong'>
+          <span className='font-medium text-text-strong'>
             {peakYear.year}년
           </span>
           이 최고 기록이에요. ({peakYear.count}권)

@@ -27,7 +27,7 @@ export const ReadingNowStrip = ({ books, bookHref }: ReadingNowStripProps) => {
     <section className='rounded-2xl border border-primary/20 bg-primary/5 p-4'>
       <div className='mb-3 flex items-center gap-2'>
         <BookOpen className='h-4 w-4 text-primary' />
-        <h3 className='text-sm font-semibold text-text-strong'>지금 읽는 중</h3>
+        <h3 className='text-sm font-medium text-text-strong'>지금 읽는 중</h3>
         <span className='text-sm text-text-subtle'>{books.length}권</span>
       </div>
 

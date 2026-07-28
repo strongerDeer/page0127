@@ -29,7 +29,7 @@ export const WishlistShelf = ({ books, bookHref }: WishlistShelfProps) => {
 
   return (
     <section className='py-6'>
-      <h3 className='mb-4 text-lg font-semibold text-text-strong'>
+      <h3 className='mb-4 text-lg font-medium text-text-strong'>
         읽고 싶은 책{' '}
         <span className='font-normal text-text-subtle'>{books.length}권</span>
       </h3>

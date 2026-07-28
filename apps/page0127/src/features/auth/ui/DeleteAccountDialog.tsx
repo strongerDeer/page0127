@@ -94,7 +94,7 @@ export const DeleteAccountDialog = ({
           <AlertDialogTitle>정말로 계정을 삭제하시겠습니까?</AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className='space-y-4'>
-              <p className='flex items-center gap-1.5 font-semibold text-destructive'>
+              <p className='flex items-center gap-1.5 font-medium text-destructive'>
                 <AlertTriangle className='h-4 w-4 shrink-0' />이 작업은 되돌릴
                 수 없습니다.
               </p>

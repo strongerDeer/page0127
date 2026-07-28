@@ -79,7 +79,7 @@ export const ReadingProgressOverview = ({
         <div className='p-6 sm:p-8 lg:p-10'>
           <div className='flex flex-wrap items-start justify-between gap-4'>
             <div>
-              <p className='flex items-center gap-2 text-sm font-semibold text-primary'>
+              <p className='flex items-center gap-2 text-sm font-medium text-primary'>
                 <BookOpen className='size-4' />
                 {year} 독서 여정
               </p>
@@ -112,7 +112,7 @@ export const ReadingProgressOverview = ({
                 <strong className='text-4xl font-bold tracking-[-0.04em] text-text-strong'>
                   {hasGoal ? progress : completed}
                 </strong>
-                <span className='font-semibold text-text-subtle'>
+                <span className='font-medium text-text-subtle'>
                   {hasGoal ? '%' : '권 완독'}
                 </span>
               </div>
@@ -168,7 +168,7 @@ export const ReadingProgressOverview = ({
 
         <div className='relative min-h-64 overflow-hidden bg-[#eef1f5] lg:min-h-full'>
           <div className='absolute inset-x-0 top-6 text-center'>
-            <p className='text-xs font-semibold tracking-[0.18em] text-text-faint'>
+            <p className='text-xs font-medium tracking-[0.18em] text-text-faint'>
               BOOKS OF {year}
             </p>
           </div>

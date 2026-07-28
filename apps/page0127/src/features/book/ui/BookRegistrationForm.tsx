@@ -249,7 +249,7 @@ export const BookRegistrationForm = ({
                 )}
               </div>
               <div>
-                <h4 className='font-semibold'>{book.title}</h4>
+                <h4 className='font-medium'>{book.title}</h4>
                 <p className='text-sm text-foreground'>{book.author}</p>
                 <p className='text-sm text-muted-foreground'>
                   {book.publisher}

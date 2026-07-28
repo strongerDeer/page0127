@@ -62,7 +62,7 @@ export const DuplicateBookDialog = ({
 
         <div className='space-y-4 py-4'>
           <div className='rounded-lg bg-muted/50 p-4'>
-            <h4 className='mb-2 text-sm font-semibold text-foreground'>
+            <h4 className='mb-2 text-sm font-medium text-foreground'>
               기존 등록 정보
             </h4>
             <dl className='space-y-1 text-sm'>

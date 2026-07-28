@@ -19,7 +19,7 @@ export const CostDashboard = ({ summary }: { summary: CostSummary }) => {
       {/* 예산 게이지 */}
       <section className='rounded border border-line p-4'>
         <div className='text-sm text-text-subtle'>이번 달 AI 비용</div>
-        <div className='mt-1 text-lg font-semibold'>
+        <div className='mt-1 text-lg font-medium'>
           {formatUsd(usage.usd)} ≈ {formatKrw(usage.krw)} /{' '}
           {formatKrw(usage.budgetKrw)} ({usage.percent}%)
         </div>
@@ -35,7 +35,7 @@ export const CostDashboard = ({ summary }: { summary: CostSummary }) => {
       <section className='grid gap-4 sm:grid-cols-2'>
         {(['taste', 'compatibility'] as const).map((f) => (
           <div key={f} className='rounded border border-line p-4'>
-            <div className='text-sm font-semibold'>
+            <div className='text-sm font-medium'>
               {f === 'taste' ? '취향 분석' : '궁합 분석'}
             </div>
             <div className='mt-1 text-sm text-text-subtle'>
@@ -48,7 +48,7 @@ export const CostDashboard = ({ summary }: { summary: CostSummary }) => {
 
       {/* 일별 추이 */}
       <section className='rounded border border-line p-4'>
-        <div className='text-sm font-semibold'>일별 추이 (이번 달)</div>
+        <div className='text-sm font-medium'>일별 추이 (이번 달)</div>
         {summary.daily.length === 0 ? (
           <p className='mt-2 text-sm text-text-subtle'>
             아직 이번 달 사용 내역이 없습니다.
@@ -67,7 +67,7 @@ export const CostDashboard = ({ summary }: { summary: CostSummary }) => {
 
       {/* 사용자별 호출 순위 */}
       <section className='rounded border border-line p-4'>
-        <div className='text-sm font-semibold'>많이 쓴 사용자 (호출 횟수)</div>
+        <div className='text-sm font-medium'>많이 쓴 사용자 (호출 횟수)</div>
         {summary.topUsers.length === 0 ? (
           <p className='mt-2 text-sm text-text-subtle'>데이터 없음</p>
         ) : (
