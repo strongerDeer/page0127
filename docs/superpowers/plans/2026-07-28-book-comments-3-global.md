@@ -13,7 +13,7 @@
 - 스펙: `docs/superpowers/specs/2026-07-25-book-level-comments-design.md`. 계획 1·2는 완료·main 병합됨.
 - **전역 책 스레드는 순수 댓글만.** 활동 병합도, 한줄평 병합도 없다(스펙 27·36행). 여러 사람의 책이라 특정 사용자의 상태 변화가 존재하지 않는다.
 - **새 댓글 배지도 없다**(스펙 35행 — 피드에 전역 책이 뜨지 않으므로 불필요). `book_thread_reads`는 개인 책 전용으로 둔다.
-- **옛 알림을 깨뜨리지 않는다.** `target_type = 'activity'`인 과거 알림은 계속 `/feed/{target_id}`로 이동한다. 그 경로가 책 상세로 리다이렉트되므로 결과적으로 올바른 스레드에 닿는다.
+- **옛 활동 경로는 흔적까지 지운다.** 스펙 237행은 `target_type='activity'` 알림을 남겨두라고 했지만, **아직 실사용자가 없어 지킬 과거가 없다**(2026-07-28 사용자 확인). 리다이렉트 껍데기를 남기는 대신 페이지·API·옛 알림·타입을 모두 제거한다. `/feed/[activityId]`는 protected 라우트라 검색엔진에 노출된 적이 없고, 공유 링크 기능(트랙 E)도 미착수라 외부에 퍼진 URL이 없다.
 - `activity_comments` / `activity_likes` **테이블은 삭제하지 않는다**(스펙 33행 — 보존만). 이 계획은 **읽기 경로**만 걷어낸다.
 - 시각 비교에 `localeCompare`를 쓰지 않는다 — `compareIsoTime`을 쓴다.
 - 집계 쿼리에 `is_public`을 직접 명시한다.
@@ -30,7 +30,8 @@
 | `apps/page0127/src/entities/notification/model/types.ts` (Modify) | `global_book` 타입 추가 |
 | `apps/page0127/src/features/notification/ui/NotificationList.tsx` (Modify) | 라우팅 분기 |
 | `apps/page0127/src/features/notification/ui/NotificationPage.tsx` (Modify) | 라우팅 분기 |
-| `apps/page0127/app/(protected)/feed/[activityId]/page.tsx` (Modify) | 책 상세로 리다이렉트 |
+| `supabase/migrations/20260728000001_drop_activity_notifications.sql` (Create) | 옛 활동 알림 삭제 |
+| `apps/page0127/app/(protected)/feed/[activityId]/` (Delete) | 활동 상세 페이지 |
 | `apps/page0127/app/api/activities/[id]/comments/**` (Delete) | 활동 댓글 API |
 | `apps/page0127/app/api/activities/[id]/likes/route.ts` (Delete) | 활동 좋아요 API |
 | `apps/page0127/src/widgets/activity/ui/ActivityDetail.tsx` (Delete) | 활동 상세 위젯 |
@@ -516,24 +517,27 @@ git commit -m "feat(book): 전역 책 페이지에 댓글 스레드 추가"
 
 - [ ] **Step 1: 타입에 `global_book` 추가**
 
-`src/entities/notification/model/types.ts:20`을 바꾼다. 기존 값(`'activity'` 포함)은 지우지 않는다 — 옛 알림이 깨진다.
+`src/entities/notification/model/types.ts:20`을 바꾼다.
 
 ```diff
 -export type NotificationTargetType = 'activity' | 'comment' | 'book';
-+export type NotificationTargetType =
-+  | 'activity' // 옛 알림 — 지우면 과거 알림이 깨진다
-+  | 'comment'
-+  | 'book'
-+  | 'global_book';
++export type NotificationTargetType = 'book' | 'global_book';
 ```
 
-- [ ] **Step 2: 두 화면의 클릭 핸들러에 분기 추가**
+**`'comment'`도 함께 뺀다** — 전수 조사(`grep -rn "target_type:" app`) 결과 **생성하는 코드가 한 곳도 없는 죽은 값**이다. `'activity'`는 Task 5에서 데이터까지 지운다. 결과적으로 실제로 쓰이는 값은 `'book'`(개인 책)과 `'global_book'`(전역 책) 둘뿐이다.
 
-`NotificationList.tsx`와 `NotificationPage.tsx` 각각, `target_type === 'book'` 분기 **바로 아래**에 넣는다.
+- [ ] **Step 2: 두 화면의 클릭 핸들러에서 옛 분기를 빼고 전역 책을 넣는다**
+
+`NotificationList.tsx`와 `NotificationPage.tsx` 각각을 아래처럼 바꾼다.
+
+**주의:** 마지막 분기가 `target_type`을 **검사하지 않고** `/feed/`로 보내는 fallback이다. 활동 페이지가 사라지므로 이 줄을 반드시 지워야 한다. 그냥 두면 알 수 없는 타입의 알림이 404로 간다.
 
 ```diff
      } else if (notification.target_type === 'book' && notification.target_id) {
        router.push(`/books/${notification.target_id}`);
+-      // 기존 활동 알림은 그대로 둔다 — 과거 알림이 깨지면 안 된다
+-    } else if (notification.target_id) {
+-      router.push(`/feed/${notification.target_id}`);
 +    } else if (
 +      notification.target_type === 'global_book' &&
 +      notification.target_id
@@ -541,6 +545,8 @@ git commit -m "feat(book): 전역 책 페이지에 댓글 스레드 추가"
 +      router.push(`/books/info/${notification.target_id}`);
      }
 ```
+
+분기를 지우면 팔로우 알림(대상이 프로필)만 앞쪽 분기에서 처리되고, 나머지는 아무 데도 가지 않는다 — 실제로 생성되는 타입이 `book`·`global_book` 둘뿐이므로 갈 곳 없는 알림은 없다.
 
 - [ ] **Step 3: 타입 검사·린트**
 
@@ -580,70 +586,65 @@ git commit -m "feat(notification): 전역 책 스레드 알림 라우팅 추가"
 - Modify: `apps/page0127/src/entities/like/api.ts`
 - Modify: `apps/page0127/src/shared/config/endpoints.ts`
 
-**왜 페이지를 지우지 않고 리다이렉트하나:** `target_type = 'activity'`인 과거 알림이 `/feed/{target_id}`를 가리킨다. 페이지를 없애면 그 알림이 전부 404가 된다. 활동 id로 책을 찾아 책 상세로 보내면 옛 링크가 살아난 채로 대화 창구는 하나가 된다.
+**왜 리다이렉트 껍데기를 두지 않나:** 스펙은 옛 알림 보존을 위해 경로를 남기라고 했지만, **실사용자가 없어 지킬 과거가 없다**(2026-07-28 사용자 확인). 껍데기를 남기면 죽은 경로를 계속 관리해야 하므로 알림 데이터까지 함께 정리한다.
 
-- [ ] **Step 1: 활동 상세를 책 상세로 리다이렉트**
+- [ ] **Step 1: 옛 활동 알림 정리 마이그레이션**
 
-`app/(protected)/feed/[activityId]/page.tsx`를 통째로 아래로 교체한다.
+`supabase/migrations/20260728000001_drop_activity_notifications.sql`
 
-```tsx
-import { notFound, redirect } from 'next/navigation';
+```sql
+-- 활동 단위 알림을 정리한다.
+--
+-- 배경: 댓글·좋아요 대상이 활동에서 책으로 옮겨졌고(계획 1·2), 계획 3에서 활동
+-- 상세 페이지(/feed/[activityId])와 활동 댓글·좋아요 API 를 제거했다. 그 결과
+-- target_type='activity' 알림은 갈 곳이 없다.
+--
+-- 'comment' 도 함께 지운다 — 생성하는 코드가 한 곳도 없는 죽은 값이다
+-- (grep -rn "target_type:" app 으로 확인).
+--
+-- 실사용자가 없는 시점이라 잃는 알림이 없다. 남는 타입은 'book'·'global_book' 뿐이다.
 
-import { createClient } from '@/shared/config/supabase/server';
+DO $$
+DECLARE
+  removed integer;
+BEGIN
+  DELETE FROM public.notifications
+  WHERE target_type IN ('activity', 'comment');
 
-type PageProps = {
-  params: Promise<{ activityId: string }>;
-};
-
-/**
- * 옛 활동 상세 — 이제 대화는 책 하나로 모인다.
- *
- * 이 경로를 지우지 않는 이유: target_type='activity'인 과거 알림이 여기를 가리킨다.
- * 활동이 속한 책의 상세(/{username}/{bookId})로 보내 옛 링크를 살려둔다.
- * RLS가 공개 책·본인 책만 보여주므로, 못 찾으면 권한이 없거나 지워진 활동이다.
- */
-const LegacyActivityRedirect = async ({ params }: PageProps) => {
-  const { activityId } = await params;
-  const supabase = await createClient();
-
-  const { data: activity } = await supabase
-    .from('activities')
-    .select('book_id')
-    .eq('id', activityId)
-    .single();
-
-  if (!activity?.book_id) notFound();
-
-  const { data: book } = await supabase
-    .from('books')
-    .select('id, user_id')
-    .eq('id', activity.book_id)
-    .single();
-
-  if (!book) notFound();
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('username')
-    .eq('id', book.user_id)
-    .single();
-
-  if (!profile?.username) notFound();
-
-  redirect(`/${profile.username}/${book.id}`);
-};
-
-export default LegacyActivityRedirect;
+  GET DIAGNOSTICS removed = ROW_COUNT;
+  RAISE NOTICE '갈 곳 없는 알림 삭제: % 건', removed;
+END $$;
 ```
 
-- [ ] **Step 2: 옛 API·컴포넌트 삭제**
+- [ ] **Step 2: 로컬 적용 + 개수 확인**
+
+Run: `cd /Users/dreamfulbud/Desktop/stronger/0127 && supabase migration up --local`
+Expected: `NOTICE: 갈 곳 없는 알림 삭제: N 건`
+
+남은 타입을 확인한다:
+```bash
+docker exec supabase_db_0127 psql -U postgres -d postgres -c "
+select target_type, count(*) from notifications group by target_type;"
+```
+Expected: `activity`·`comment` 없음. `book`(있다면)과 NULL(팔로우 알림)만 남는다
+
+- [ ] **Step 3: 옛 페이지·API·컴포넌트 삭제**
 
 ```bash
+git rm -r "apps/page0127/app/(protected)/feed/[activityId]"
 git rm -r "apps/page0127/app/api/activities/[id]/comments"
 git rm "apps/page0127/app/api/activities/[id]/likes/route.ts"
 git rm apps/page0127/src/widgets/activity/ui/ActivityDetail.tsx
 git rm apps/page0127/src/features/like/ui/LikeButton.tsx
 ```
+
+`app/api/activities/[id]/route.ts`(활동 상세 조회)도 확인한다. `activity_likes`를 읽고 있고 이제 호출하는 화면이 없으므로 함께 지운다:
+
+```bash
+git rm "apps/page0127/app/api/activities/[id]/route.ts"
+```
+
+지운 뒤 `app/api/activities/` 아래에 남은 파일이 없으면 디렉토리째 사라진다. 남아 있다면 무엇이 참조하는지 확인하고 판단한다.
 
 - [ ] **Step 3: 배럴과 잔여 참조 정리**
 
@@ -666,22 +667,19 @@ Expected: 두 명령 모두 결과 없음
 Run: `cd apps/page0127 && npm run type-check && npm run lint && npm test`
 Expected: PASS
 
-- [ ] **Step 5: 옛 알림이 살아 있는지 확인**
+- [ ] **Step 5: 피드에서 카드를 눌러도 죽은 경로로 안 가는지 확인**
 
-로컬 DB에 옛 활동 알림이 있으면 그것으로, 없으면 직접 만들어 확인한다.
-```bash
-docker exec supabase_db_0127 psql -U postgres -d postgres -c "
-insert into notifications (user_id, type, actor_id, target_id, target_type)
-select b.user_id, 'comment', b.user_id, a.id, 'activity'
-from activities a join books b on b.id = a.book_id limit 1
-returning id, target_id, target_type;"
-```
-알림 목록에서 그 알림을 눌러 `/feed/{activityId}` → 책 상세로 리다이렉트되는지 본다.
+`/feed`를 열고 카드의 각 요소를 눌러본다.
+Expected:
+- 책 첨부 → `/{username}/{bookId}` (계획 2)
+- 작성자 이름·아바타 → `/{username}` (계획 2)
+- **어디에도 `/feed/{activityId}`로 가는 링크가 없다**
 
-확인이 끝나면 지운다:
+혹시 남은 참조를 코드로도 확인한다:
 ```bash
-docker exec supabase_db_0127 psql -U postgres -d postgres -c "delete from notifications where target_type = 'activity';"
+cd apps/page0127 && grep -rn "feed/\${" src app; grep -rn "/feed/" src app | grep -v "'/feed'"
 ```
+Expected: 결과 없음
 
 - [ ] **Step 6: e2e 회귀 확인**
 
@@ -691,11 +689,13 @@ Expected: PASS (기존 8개)
 - [ ] **Step 7: 커밋**
 
 ```bash
-git add -A apps/page0127
+git add -A apps/page0127 supabase/migrations
 git commit -m "refactor(activity): 활동 단위 읽기 경로를 걷어낸다
 
-옛 활동 상세는 책 상세로 리다이렉트해 과거 알림을 살려둔다.
-activity_comments·activity_likes 테이블은 보존하고 읽기만 멈춘다."
+활동 상세 페이지와 활동 댓글·좋아요 API 를 지우고, 갈 곳이 없어진 알림
+(activity·comment)을 정리한다. 실사용자가 없는 시점이라 잃는 알림이 없다.
+
+activity_comments·activity_likes 테이블은 보존한다 — 읽기만 멈춘다."
 ```
 
 ---
@@ -704,8 +704,8 @@ activity_comments·activity_likes 테이블은 보존하고 읽기만 멈춘다.
 
 - 전역 책 페이지에서 댓글을 쓰고 읽을 수 있다. 알림도 그 페이지로 간다
 - 대화 창구가 책 하나로 모였다 — 활동 단위 댓글·좋아요를 읽는 코드가 없다
-- 옛 알림(`target_type='activity'`)은 책 상세로 리다이렉트되어 살아 있다
-- `activity_comments` / `activity_likes` 테이블과 데이터는 그대로 남아 있다(되돌릴 여지)
+- 알림 `target_type`은 `book`·`global_book` 둘뿐이다. 갈 곳 없던 값과 그 데이터가 사라졌다
+- `activity_comments` / `activity_likes` **테이블과 데이터는 그대로 남아 있다** — 이관이 잘못됐을 때 돌아볼 원본이다
 
 ## 남는 것 (이 재설계 밖)
 
