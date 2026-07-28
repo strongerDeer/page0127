@@ -160,11 +160,28 @@ src 없음  →  <span className='book-cover flex … bg-sunken {className}'>
              </span>
 ```
 
-대체 조판은 **하나로 통일한다**: `bg-sunken` · 가운데 정렬 · `text-[10px]` · `leading-snug` · `break-keep` · `line-clamp-4` · `text-text-faint`.
+대체 조판은 **하나로 통일한다**: 가운데 정렬 · `text-[10px]` · `leading-snug` · `break-keep` · `line-clamp-4` · `text-text-faint`.
 
 > 굵기는 **주지 않는다.** 지금 `font-bold` 인 곳이 3곳, 없는 곳이 2곳인데, 대체 표지는 진짜 표지의 자리를 메우는 것이지 강조 대상이 아니다. 07 의 weight 3단계(400/500/700)에서 **400** 이 맞다.
 
-### 4.3 `.book-cover` 유틸은 그대로 둔다
+### 4.4 `bg-sunken` 은 지금까지 한 번도 적용된 적이 없었다
+
+설계 초안은 대체 상자에 `bg-sunken`(회색 면)을 쓴다고 적었다. 기존 코드 5곳도 전부 그렇게 적혀 있었다. **그런데 실제로는 흰색으로 렌더돼 왔다.**
+
+서빙되는 CSS 를 열어 확인한 결과:
+
+| | 위치 | 레이어 |
+|---|---|---|
+| `.bg-sunken` | 2302행 | `@layer utilities` 안 |
+| `.book-cover` | **4506행** | `@layer utilities` 는 4303행에서 닫힌다 → **레이어 밖** |
+
+**레이어 밖 CSS 는 모든 레이어를 이긴다**(CSS Cascade Layers 명세). 따라서 `.book-cover` 의 `background-color: #fff` 가 `bg-sunken` 을 항상 덮었고, 대체 상자는 **흰 종이면 + 책등 음영** — 즉 "빈 책 표지" 로 보여 왔다.
+
+**코드를 사실에 맞춘다.** 죽은 `bg-sunken` 을 걷어냈다. 화면은 그대로다(원래도 적용 안 됐으므로). Figma 의 `state=fallback` 도 흰 종이면 + 책등 음영으로 맞췄다 — 코드와 다른 것을 그려두면 안 된다.
+
+> 같은 원리로 `DiscoveryCard` 의 `rounded-md` 도 죽은 클래스였다(§5). **레이어 밖 CSS 를 유틸로 덮으려는 시도는 전부 조용히 실패한다** — 이 프로젝트에서 `.book-cover` 를 쓰는 곳은 그 사실을 알고 써야 한다.
+
+### 4.5 `.book-cover` 유틸은 그대로 둔다
 
 컴포넌트가 클래스를 붙이는 방식이다. CSS 를 컴포넌트로 옮기지 않는 이유:
 

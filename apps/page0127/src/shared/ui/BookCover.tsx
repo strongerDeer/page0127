@@ -84,7 +84,11 @@ export const BookCover = ({
           : undefined
       }
       className={cn(
-        'book-cover flex bg-sunken p-2',
+        // bg-sunken 을 주지 않는다. 도메인 셰이프 CSS 가 @layer 밖이라 모든
+        // Tailwind 유틸을 이기고, 그 안의 흰 배경 + 책등 음영이 그대로 남는다.
+        // 원래 코드도 bg-sunken 을 적었지만 한 번도 적용된 적이 없다 —
+        // 대체 상자는 예나 지금이나 "빈 책 표지" 로 보인다. 코드를 사실에 맞춘다.
+        'book-cover flex p-2',
         // 저자가 있으면 위아래로 벌려 표지 조판처럼, 없으면 가운데 정렬
         author
           ? 'flex-col justify-between text-left'
