@@ -3,6 +3,8 @@
 import { createClient } from '@/shared/config/supabase/server';
 import {
   extractOwnedProfileImagePath,
+  MAX_PROFILE_IMAGE_BYTES,
+  MAX_PROFILE_IMAGE_LABEL,
   PROFILE_STORAGE_BUCKET,
 } from '@/shared/lib/profileStorage';
 
@@ -109,10 +111,10 @@ export const updateProfileAction = async (
       if (!fileExt) {
         return { status: 'error', message: '지원하지 않는 이미지 형식입니다.' };
       }
-      if (avatarFile.size > 5 * 1024 * 1024) {
+      if (avatarFile.size > MAX_PROFILE_IMAGE_BYTES) {
         return {
           status: 'error',
-          message: '이미지 크기는 5MB 이하여야 합니다.',
+          message: `이미지 크기는 ${MAX_PROFILE_IMAGE_LABEL} 이하여야 합니다.`,
         };
       }
 

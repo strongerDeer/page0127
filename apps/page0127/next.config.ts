@@ -62,10 +62,14 @@ const nextConfig: NextConfig = {
   // 라우트 핸들러·서버 컴포넌트에서 import할 때 파싱 단계에서 깨진다.
   transpilePackages: ['@repo/icons', '@repo/design-tokens', '@repo/quality'],
   experimental: {
-    // 프로필 이미지는 앱에서 최대 5MB까지 허용한다. multipart 메타데이터
-    // 여유를 포함해 Server Action 요청 본문은 6MB로 제한한다.
+    // 프로필 이미지 한도는 4MB(MAX_PROFILE_IMAGE_BYTES). multipart 메타데이터와
+    // 나머지 폼 필드 여유를 더해 4.5mb로 둔다.
+    //
+    // ⚠️ 이 값을 4.5mb보다 크게 잡아도 소용이 없다 — 그 위의 Vercel Function이
+    // 요청 body를 4.5MB에서 413으로 자르기 때문에, 초과분은 Next.js에 닿지도 않는다.
+    // (6mb로 두었던 탓에 4.5~5MB 이미지는 앱 에러 메시지 없이 멈춘 것처럼 보였다.)
     serverActions: {
-      bodySizeLimit: '6mb',
+      bodySizeLimit: '4.5mb',
     },
     // barrel(index) import를 개별 모듈 import로 변환해 tree-shaking 강화
     optimizePackageImports: ['lucide-react'],
