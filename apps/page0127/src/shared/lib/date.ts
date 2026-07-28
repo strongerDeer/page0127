@@ -120,8 +120,9 @@ export const formatDistanceToNow = (date: string): string =>
  * 이는 같은 파일의 표시용 함수들(`formatDate` 등)이 `''`를 반환하는 것과
  * 다른 이유다.
  *
- * 같은 계산이 getCostSummary(dayKey)·aiUsage 에도 있다 — 통합 후보지만
- * 그쪽은 이 트랙과 무관해 건드리지 않았다.
+ * 같은 계산이 getCostSummary(dayKey)·aiUsage·widgets/landing/ui/TodayStrip
+ * (getKstToday)에도 있다 — 통합 후보지만 그쪽은 이 트랙과 무관해 건드리지
+ * 않았다.
  */
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 

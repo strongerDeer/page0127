@@ -6,8 +6,12 @@
 -- INSERT 에서 죽었다(23505). 그 지점 뒤의 마이그레이션은 아예 적용되지 못했다.
 -- 둘 중 이 파일을 옮긴 이유: 내용이 DELETE 라 **재실행이 무해**하다(이미 지워졌으면
 -- 0 건). rum_samples 쪽은 `create table` 이라 재적용 시 already exists 로 실패한다.
--- 운영에는 옛 번호가 적용된 상태로 남아 있어, 다음 배포에서 이 파일이 한 번 더
--- 실행된다 — 위 이유로 안전하다.
+-- 운영에 옛 번호가 이미 적용됐는지는 확인되지 않았다 — 로컬 db reset을 멈춘
+-- 것과 같은 번호 중복 때문에 `supabase db push`도 이 자리에서 멈췄을 가능성이
+-- 있다. 어느 쪽이든 안전하다: 이미 실행됐다면 이 DELETE는 0건 삭제로 끝나고,
+-- 아직이라면 정상적으로 한 번 실행된다. 배포 전 실제 상태를 확인하려면:
+--   select version from supabase_migrations.schema_migrations
+--    where version like '202607280%' order by version;
 --
 -- 배경: 댓글·좋아요 대상이 활동에서 책으로 옮겨졌고(계획 1·2), 계획 3에서 활동
 -- 상세 페이지(/feed/[activityId])와 활동 댓글·좋아요 API 를 제거했다. 그 결과

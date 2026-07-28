@@ -33,7 +33,10 @@ create table public.user_daily_visits (
   primary key (user_id, visit_date)
 );
 
--- 조회는 user_id 기준이라 PK 인덱스로 충분하다. 추가 인덱스를 만들지 않는다.
+-- 재방문율 조회는 실제로는 visit_date 기간 기준(where visit_date between …)이라
+-- 선행 컬럼이 user_id인 이 PK 인덱스를 타지 못하고 순차 스캔이 된다. 그래도
+-- 추가 인덱스를 만들지 않는 이유는 규모다 — 하루 최대 가입자 수만큼만 늘고
+-- 연간 누적이 수만 행 규모라, 순차 스캔이 사실상 공짜다.
 
 alter table public.user_daily_visits enable row level security;
 

@@ -5,7 +5,9 @@ import { toKstDateKey } from './date';
 describe('toKstDateKey', () => {
   it('KST 자정 직전은 아직 같은 날이다', () => {
     // 2026-07-28 14:59Z = KST 2026-07-28 23:59
-    expect(toKstDateKey(new Date('2026-07-28T14:59:00.000Z'))).toBe('2026-07-28');
+    expect(toKstDateKey(new Date('2026-07-28T14:59:00.000Z'))).toBe(
+      '2026-07-28'
+    );
   });
 
   it('KST 자정에 날짜가 넘어간다', () => {
