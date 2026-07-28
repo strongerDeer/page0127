@@ -1,0 +1,67 @@
+name: uptime
+
+# 운영 사이트가 살아 있는지 "밖에서" 주기적으로 확인한다.
+#
+# 왜 밖에서 보나: 앱 안에 넣은 감시(Sentry 등)는 앱이 죽는 순간 같이 죽는다.
+# 서버가 응답을 못 하거나 Supabase가 끊기면 안에서는 아무도 알려줄 수 없다.
+#
+# 실패하면 이 워크플로가 빨간불이 되고 GitHub이 알림 메일을 보낸다.
+# 메일이 안 오면 https://github.com/settings/notifications 의 Actions 항목을 확인한다.
+
+on:
+  schedule:
+    # 5분마다. 단 GitHub Actions의 cron은 정확하지 않다 — 러너가 붐비면
+    # 10~20분으로 늘어지거나 건너뛴다. "몇 분 안에 반드시 알아야 한다"면
+    # 전용 uptime 서비스(UptimeRobot 등)를 써야 한다.
+    - cron: '*/5 * * * *'
+  workflow_dispatch: {}
+
+# 앞선 실행이 아직 돌고 있으면 취소하고 최신 것만 남긴다(중복 알림 방지).
+concurrency:
+  group: uptime
+  cancel-in-progress: true
+
+jobs:
+  health:
+    name: 헬스체크
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: /api/health 확인
+        env:
+          # 공개 엔드포인트라 secret이 아니다(인증 없이 호출된다).
+          TARGET: https://page0127.vercel.app/api/health
+          # 응답에 반드시 들어 있어야 하는 문자열.
+          #
+          # ⚠️ 상태코드만 보면 안 된다: 이 앱은 존재하지 않는 경로에도
+          # 200 + HTML을 반환한다(soft 404). 주소에 오타가 나도 "정상"으로
+          # 보이므로, 본문에 이 문자열이 있는지까지 확인해야 실제 상태를 안다.
+          EXPECT: '"database":"ok"'
+        run: |
+          # 일시적인 네트워크 오류나 콜드 스타트로 오탐이 나지 않도록 3회까지 시도한다.
+          # (서버리스 콜드 스타트로 첫 응답이 4초 넘게 걸리는 경우가 있어 타임아웃은 30초)
+          code=000
+          body=''
+
+          for attempt in 1 2 3; do
+            echo "시도 ${attempt}/3 — ${TARGET}"
+            code=$(curl -sS -m 30 -o /tmp/health.json -w '%{http_code}' "$TARGET" || echo "000")
+            # 키워드 검색에는 넉넉히 쓰고, 로그·알림에는 앞부분만 남긴다.
+            # (주소가 틀리면 HTML 페이지가 통째로 와서 로그가 읽을 수 없게 된다)
+            body=$(head -c 500 /tmp/health.json 2>/dev/null || echo '')
+            preview=$(printf '%s' "$body" | head -c 120)
+            echo "  HTTP ${code} / ${preview}"
+
+            if [ "$code" = "200" ] && printf '%s' "$body" | grep -qF "$EXPECT"; then
+              echo "정상 — 앱과 데이터베이스 모두 응답함"
+              exit 0
+            fi
+
+            if [ "$attempt" -lt 3 ]; then
+              echo "  재시도 대기 20초"
+              sleep 20
+            fi
+          done
+
+          echo "::error::헬스체크 실패 — 마지막 응답: HTTP ${code} / ${preview}"
+          exit 1
