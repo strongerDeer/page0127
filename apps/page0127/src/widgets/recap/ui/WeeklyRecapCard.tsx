@@ -38,6 +38,18 @@ const toKoreanDate = (dateKey: string): string => {
   return `${year}년 ${Number(month)}월 ${Number(day)}일`;
 };
 
+/**
+ * others 꼬리표 — still-reading 은 "주"와 무관하다.
+ *
+ * this-week·years-ago 의 others 는 실제로 그 주(또는 그 주의 n년 전)에 걸린
+ * 책들이지만, still-reading 의 others 는 그냥 다른 읽는 중인 책이다. 셋 다
+ * "같은 주에 N권 더"로 뭉뚱그리면 still-reading 카드에서 없는 사실을 적게 된다.
+ */
+const toTailLabel = (kind: RecapCard['kind'], count: number): string =>
+  kind === 'still-reading'
+    ? `같이 읽고 계신 책 ${count}권`
+    : `같은 주에 ${count}권 더`;
+
 /** 대표 책 아래 한 줄 — 카드마다 다른 근거를 적는다 */
 const toLeadMeta = (card: RecapCard): string | null => {
   const { lead } = card;
@@ -127,7 +139,7 @@ export const WeeklyRecapCard = async () => {
 
       {card.others.length > 0 && (
         <p className='mt-4 line-clamp-1 break-keep text-[13px] text-text-body'>
-          {`같은 주에 ${card.others.length}권 더 — `}
+          {`${toTailLabel(card.kind, card.others.length)} — `}
           {card.others.map((book) => book.title).join(' · ')}
         </p>
       )}
