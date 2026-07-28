@@ -56,6 +56,21 @@ jobs:
     name: E2E smoke (Playwright)
     runs-on: ubuntu-latest
 
+    # dependabot이 연 PR에서는 이 job을 건너뛴다.
+    #
+    # 학습 포인트:
+    # - GitHub은 dependabot PR의 워크플로에 repository secrets를 전달하지 않는다.
+    #   외부에서 받아온 새 의존성 코드가 설치·빌드되는 PR이라, secret이 유출될 수
+    #   있기 때문이다(빈 값으로 넘어와 아래 검증 스텝에서 항상 실패했다).
+    # - Dependabot 전용 secrets에 같은 값을 넣으면 통과시킬 수는 있으나,
+    #   SUPABASE_SERVICE_ROLE_KEY는 RLS를 우회하는 DB 전체 권한 키라 그 방어를
+    #   스스로 여는 셈이 된다. 그래서 등록 대신 job을 건너뛰는 쪽을 택했다.
+    # - 의존성 업데이트 검증은 quality job(Lint·Type-check·Unit test·Build)이
+    #   담당하고, 머지된 뒤 main push에서 E2E가 정상적으로 실행된다.
+    # - actor가 아닌 PR 작성자로 판정한다. 사람이 재실행해도 값이 바뀌지 않는다.
+    #   (push 이벤트에는 pull_request 컨텍스트가 없어 빈 값 → 조건 통과 → 실행됨)
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
