@@ -1,8 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 
+import { BookCover } from '@/shared/ui/BookCover';
 import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
 
 import type { Book } from '@/entities/book';
@@ -31,28 +31,18 @@ type BookGridItemProps = {
 export const BookGridItem = ({ book, href }: BookGridItemProps) => {
   return (
     <Link href={href} className='group transition-transform hover:scale-105'>
-      <div className='aspect-2/3 relative overflow-hidden rounded-lg bg-muted'>
-        {book.cover_image ? (
-          <Image
-            src={book.cover_image}
-            alt={book.title}
-            fill
-            sizes='(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw'
-            className='object-cover'
-          />
-        ) : (
-          // 표지 이미지가 없는 책 — 제목을 조판해 표지를 만든다
-          <div className='flex h-full w-full flex-col justify-between bg-sunken px-2 py-2.5 text-left'>
-            <p className='line-clamp-4 break-keep text-[11px] font-bold leading-snug text-text-strong'>
-              {book.title}
-            </p>
-            {book.author && (
-              <p className='line-clamp-1 text-[10px] text-text-faint'>
-                {book.author}
-              </p>
-            )}
-          </div>
-        )}
+      {/* 대칭 rounded-lg 를 쓰고 있었다 — BookCover 로 바꾸며 도메인 셰이프
+          (왼쪽은 책등이라 각지고 오른쪽만 둥근 비대칭)로 통일했다 */}
+      <div className='aspect-2/3 relative bg-muted'>
+        {/* 표지가 없으면 제목·저자를 조판해 표지를 만든다 (BookCover 가 처리) */}
+        <BookCover
+          src={book.cover_image}
+          title={book.title}
+          author={book.author}
+          fill
+          sizes='(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw'
+          fallbackClassName='px-2 py-2.5 text-[11px]'
+        />
         {book.read_count > 1 && (
           <div className='absolute right-2 top-2'>
             <ReadCountBadge readCount={book.read_count} size='sm' />

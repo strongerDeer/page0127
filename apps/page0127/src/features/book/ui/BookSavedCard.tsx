@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-import Image from 'next/image';
-
+import { BookCover } from '@/shared/ui/BookCover';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
 
@@ -56,13 +55,16 @@ export const BookSavedCard = ({
     <Card>
       <CardContent className='space-y-6 py-8'>
         <div className='flex flex-col items-center gap-4 text-center'>
+          {/* 표지가 없으면 아무것도 그리지 않는다 — 저장 확인 카드라 빈 상자를
+              세우지 않는다. 그래서 BookCover 의 대체 조판을 쓰지 않고 가드를 남긴다 */}
           {coverImage && (
-            <Image
+            <BookCover
               src={coverImage}
-              alt=''
+              title={title}
               width={120}
               height={174}
-              className='book-cover h-auto w-[120px]'
+              decorative
+              className='h-auto w-[120px]'
             />
           )}
 

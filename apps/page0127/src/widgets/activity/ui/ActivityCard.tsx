@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { Star } from 'lucide-react';
 
+import { BookCover } from '@/shared/ui/BookCover';
 import { ProfileLink } from '@/shared/ui/ProfileLink';
 import { RelativeTime } from '@/shared/ui/RelativeTime';
 
@@ -141,19 +142,14 @@ export const ActivityCard = ({
           username={activity.user.username}
           bookId={activity.book.id}
         >
-          {activity.book.cover_image ? (
-            <Image
-              src={activity.book.cover_image}
-              alt=''
-              width={64}
-              height={96}
-              className='book-cover h-24 w-16 shrink-0 object-cover'
-            />
-          ) : (
-            <span className='book-cover flex h-24 w-16 shrink-0 items-center justify-center bg-sunken p-2 text-center text-[10px] leading-tight text-text-faint'>
-              {activity.book.title.slice(0, 10)}
-            </span>
-          )}
+          <BookCover
+            src={activity.book.cover_image}
+            title={activity.book.title}
+            width={64}
+            height={96}
+            decorative
+            className='h-24 w-16 shrink-0'
+          />
 
           <div className='min-w-0 flex-1'>
             <p className='truncate text-base font-medium text-text-strong'>

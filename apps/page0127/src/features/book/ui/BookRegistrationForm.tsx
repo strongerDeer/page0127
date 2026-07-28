@@ -2,11 +2,10 @@
 
 import { useEffect, useId, useReducer, useRef } from 'react';
 
-import Image from 'next/image';
-
 import { RefreshCw } from 'lucide-react';
 
 import { upgradeImageResolution } from '@/shared/lib/imageUtils';
+import { BookCover } from '@/shared/ui/BookCover';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Input } from '@/shared/ui/input';
@@ -252,19 +251,12 @@ export const BookRegistrationForm = ({
           <div className='flex items-start justify-between gap-4 rounded-lg bg-muted/50 p-4'>
             <div className='flex gap-4'>
               <div className='relative h-32 w-24 shrink-0'>
-                {highResCover ? (
-                  <Image
-                    src={highResCover}
-                    alt={book.title}
-                    fill
-                    className='object-cover'
-                    sizes='96px'
-                  />
-                ) : (
-                  <div className='flex h-full w-full items-center justify-center bg-sunken text-sm text-text-faint'>
-                    표지 없음
-                  </div>
-                )}
+                <BookCover
+                  src={highResCover}
+                  title={book.title}
+                  fill
+                  sizes='96px'
+                />
               </div>
               <div>
                 <h4 className='font-medium'>{book.title}</h4>

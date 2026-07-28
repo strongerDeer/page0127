@@ -1,8 +1,7 @@
-import Image from 'next/image';
-
 import { Feather, Quote, Sparkles } from 'lucide-react';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { BookCover } from '@/shared/ui/BookCover';
 
 /** 랜딩에서 보여주는 독서 취향 분석 결과 예시 */
 const EXAMPLE = {
@@ -57,14 +56,17 @@ export const TasteExampleCard = async () => {
             aria-hidden='true'
             className='relative hidden h-28 w-36 shrink-0 sm:block'
           >
+            {/* covers 는 cover_image 가 있는 것만 걸러진 목록이라 대체 조판은
+                도달하지 않는다. 이 쿼리는 제목을 가져오지 않으므로 title 이 비어 있다 */}
             {covers.map((cover, index) => (
-              <Image
+              <BookCover
                 key={cover}
                 src={cover}
-                alt=''
+                title=''
                 width={64}
                 height={92}
-                className={`book-cover absolute h-24 w-auto border-2 border-white ${COVER_POSITIONS[index]}`}
+                decorative
+                className={`absolute h-24 w-auto border-2 border-white ${COVER_POSITIONS[index]}`}
               />
             ))}
           </div>

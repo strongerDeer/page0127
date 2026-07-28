@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 
 import {
@@ -12,6 +11,7 @@ import {
   Target,
 } from 'lucide-react';
 
+import { BookCover } from '@/shared/ui/BookCover';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { PageContainer } from '@/shared/ui/PageContainer';
@@ -111,9 +111,7 @@ export const TasteAnalysisResult = ({
 
           {/* 덜 끌리는 것 — "피하는 것"은 단정적이라 표현을 눅였다 */}
           <div>
-            <h3 className='mb-3 font-medium text-text-subtle'>
-              덜 끌리는 것
-            </h3>
+            <h3 className='mb-3 font-medium text-text-subtle'>덜 끌리는 것</h3>
             <div className='space-y-3'>
               <TagRow
                 label='주제'
@@ -240,15 +238,18 @@ const RecommendationSection = ({
                 key={book.id}
                 className='flex gap-4 border-t border-line-soft pt-4 first:border-0 first:pt-0'
               >
+                {/* 표지가 없으면 아무것도 그리지 않는다 — 추천 목록이라 빈 상자를
+                    세우지 않는다. 그래서 BookCover 의 대체 조판을 쓰지 않고 가드를 남긴다 */}
                 {book.cover_image && (
                   // 판형을 크롭하지 않는다 — 높이만 고정하고 너비는 원본 비율대로
-                  <Image
+                  <BookCover
                     src={book.cover_image}
-                    alt=''
+                    title={book.title}
                     width={200}
                     height={290}
                     sizes='88px'
-                    className='book-cover h-32 w-auto shrink-0'
+                    decorative
+                    className='h-32 w-auto shrink-0'
                   />
                 )}
                 <div className='flex-1'>

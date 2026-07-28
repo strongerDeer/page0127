@@ -1,9 +1,9 @@
-import Image from 'next/image';
 import Link from 'next/link';
 
 import { Check, Heart } from 'lucide-react';
 
 import { cn } from '@/shared/lib/utils';
+import { BookCover } from '@/shared/ui/BookCover';
 
 import { RankDeltaBadge } from './RankDeltaBadge';
 
@@ -86,22 +86,14 @@ export const BookRankingList = ({
                 </span>
 
                 {/* 표지 — 높이만 고정하고 판형(가로 비율)은 원본대로 둔다 */}
-                {book.cover_image ? (
-                  <Image
-                    src={book.cover_image}
-                    alt=''
-                    width={56}
-                    height={80}
-                    className='book-cover h-20 w-auto shrink-0'
-                  />
-                ) : (
-                  <span
-                    aria-hidden='true'
-                    className='book-cover flex h-20 w-14 shrink-0 items-center justify-center bg-sunken p-1 text-center text-[10px] leading-tight text-text-faint'
-                  >
-                    {book.title.slice(0, 12)}
-                  </span>
-                )}
+                <BookCover
+                  src={book.cover_image}
+                  title={book.title}
+                  width={56}
+                  height={80}
+                  decorative
+                  className='h-20 w-auto shrink-0'
+                />
 
                 <div className='min-w-0 flex-1'>
                   <p className='truncate text-[15px] font-medium text-text-strong group-hover:underline'>
@@ -121,9 +113,7 @@ export const BookRankingList = ({
                       />
                     )}
                     <span>
-                      <b className='font-medium text-text-body'>
-                        {item.count}
-                      </b>
+                      <b className='font-medium text-text-body'>{item.count}</b>
                       {type === 'best' ? '명이 10점' : '명이 완독'}
                     </span>
                   </p>

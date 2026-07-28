@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -33,6 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/shared/ui/alert-dialog';
+import { BookCover } from '@/shared/ui/BookCover';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { PageContainer } from '@/shared/ui/PageContainer';
@@ -104,7 +104,9 @@ export const CompatibilityView = ({
       toast.success('궁합 분석이 완료되었습니다!');
       router.refresh();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, '궁합 분석 중 오류가 발생했습니다.'));
+      toast.error(
+        getApiErrorMessage(error, '궁합 분석 중 오류가 발생했습니다.')
+      );
     } finally {
       setIsAnalyzing(false);
     }
@@ -223,10 +225,12 @@ const CompatibilityIntro = ({
         />
       </div>
 
-      <Button size='lg' disabled={!canAnalyze || isAnalyzing} onClick={onAnalyze}>
-        {isAnalyzing
-          ? '두 분의 책장을 나란히 읽는 중이에요…'
-          : '궁합 분석하기'}
+      <Button
+        size='lg'
+        disabled={!canAnalyze || isAnalyzing}
+        onClick={onAnalyze}
+      >
+        {isAnalyzing ? '두 분의 책장을 나란히 읽는 중이에요…' : '궁합 분석하기'}
       </Button>
       {!hasEnoughBooks ? (
         <p className='mt-3 text-sm text-text-subtle'>
@@ -403,8 +407,7 @@ const CompatibilityResult = ({
       {/* 4. 재분석 */}
       <div className='flex items-center justify-between rounded-xl bg-sunken p-4'>
         <p className='text-sm text-muted-foreground'>
-          분석일: {new Date(analysis.created_at).toLocaleDateString('ko-KR')}{' '}
-          —{' '}
+          분석일: {new Date(analysis.created_at).toLocaleDateString('ko-KR')} —{' '}
           {compatibilityRemaining > 0
             ? '책장이 더 쌓였다면 다시 분석해보세요.'
             : USAGE_LIMIT_EXCEEDED_MESSAGE}
@@ -455,15 +458,18 @@ const RecommendationList = ({
               key={rec.id}
               className='flex gap-4 border-t border-line-soft pt-4 first:border-0 first:pt-0'
             >
+              {/* 표지가 없으면 아무것도 그리지 않는다 — 추천 목록이라 빈 상자를
+                  세우지 않는다. 그래서 BookCover 의 대체 조판을 쓰지 않고 가드를 남긴다 */}
               {rec.cover_image && (
                 // 판형을 크롭하지 않는다 — 높이만 고정하고 너비는 원본 비율대로
-                <Image
+                <BookCover
                   src={rec.cover_image}
-                  alt=''
+                  title={rec.title}
                   width={200}
                   height={290}
                   sizes='88px'
-                  className='book-cover h-32 w-auto shrink-0'
+                  decorative
+                  className='h-32 w-auto shrink-0'
                 />
               )}
               <div className='flex-1'>
