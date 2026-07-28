@@ -106,3 +106,21 @@ export const toDateTimeAttr = (date: string | Date): string => {
  */
 export const formatDistanceToNow = (date: string): string =>
   formatRelativeTime(date);
+
+/**
+ * KST(UTC+9) 달력 날짜 키 — 'YYYY-MM-DD'.
+ *
+ * 서버는 보통 UTC로 돈다. UTC 날짜로 자르면 한국 시각 밤 9시 이후의 일이
+ * 다음 날로 밀려서, 매일 들어온 사용자가 하루 빠진 것처럼 보인다.
+ * 한국은 서머타임이 없어 고정 오프셋이 항상 정확하다.
+ *
+ * 같은 계산이 getCostSummary(dayKey)·aiUsage 에도 있다 — 통합 후보지만
+ * 그쪽은 이 트랙과 무관해 건드리지 않았다.
+ */
+const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+export const toKstDateKey = (at: Date | string): string => {
+  const d = typeof at === 'string' ? new Date(at) : at;
+  // 9시간을 더한 뒤 UTC getter로 읽으면 "KST 벽시계"가 된다
+  return new Date(d.getTime() + KST_OFFSET_MS).toISOString().slice(0, 10);
+};
