@@ -314,6 +314,8 @@ Button/default·default 의 description:
 
 > **감사 방식의 구멍도 함께 드러났다.** `shadow`·`dark:`는 grep 으로 잡았지만 weight·size 이탈은 사람이 눈으로 훑어 하나를 놓쳤다. 묶음 2~4 에서는 `font-semibold|font-bold|font-normal|text-lg|text-xl|text-2xl` 처럼 **07 스케일 밖 클래스를 grep 하는 절차**를 코드 정리 태스크에 넣는다.
 
+> **닫힘 (2026-07-28):** 재검토 결과 **07 스케일 쪽이 현실과 맞지 않았다.** `font-semibold`(600) 78곳 중 73곳이 앱 코드가 직접 선택한 값이었고, 500 과 600 이 같은 크기에서 섞여 있었다. weight 를 500 으로 통일하고(코드 78곳) 18·24px 를 정식 단계로 승격했다(문서만). 자세한 내용은 `2026-07-28-typography-scale-revision-design.md`.
+
 **④ `overlay` 토큰을 신설했다 (최종 리뷰 후 추가 결정).**
 
 처음에는 AlertDialog 오버레이의 `bg-black/50`을 "대응 토큰이 없으니 예외"로 두었으나, 계획서 완료 기준("하드코딩된 색 0건")과 모순이고 `dialog`·`popover`·`dropdown-menu`가 같은 오버레이를 써서 예외가 3~4번 반복될 참이었다.
