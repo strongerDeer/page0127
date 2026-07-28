@@ -13,11 +13,14 @@ export type NotificationType = 'follow' | 'comment' | 'like';
 
 /**
  * 알림 대상 타입
- * - activity: 활동 피드
- * - comment: 댓글
- * - book: 책 스레드 (책 단위 댓글)
+ * - book: 개인 서재 책 스레드 → /{username}/{bookId}
+ * - global_book: 전역 책 스레드 → /books/info/{id}
+ *
+ * 옛 값 'activity'·'comment'는 지웠다. 댓글·좋아요 대상이 활동에서 책으로 옮겨졌고
+ * (계획 1·2), 활동 상세 페이지도 사라졌다. 'comment'는 애초에 생성하는 코드가
+ * 한 곳도 없는 죽은 값이었다. 남아 있던 행은 20260728000001에서 정리했다.
  */
-export type NotificationTargetType = 'activity' | 'comment' | 'book';
+export type NotificationTargetType = 'book' | 'global_book';
 
 /**
  * 알림 엔티티 (DB 테이블 구조)

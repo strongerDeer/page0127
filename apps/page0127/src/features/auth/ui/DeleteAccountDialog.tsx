@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -39,6 +40,7 @@ export const DeleteAccountDialog = ({
   userEmail,
 }: DeleteAccountDialogProps) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   // 입력된 이메일 확인용 상태
   const [emailInput, setEmailInput] = useState('');
@@ -68,8 +70,13 @@ export const DeleteAccountDialog = ({
         const supabase = createClient();
         await supabase.auth.signOut();
 
+        // 캐시를 비운다 — 지운 계정의 피드·댓글이 남아 있으면 안 된다.
+        // staleTime(useCurrentUser 5분) 때문에 이걸 빠뜨리면 로그인된 화면이 유지된다.
+        queryClient.clear();
+
         // 홈페이지로 리다이렉트
         router.push('/');
+        router.refresh();
       } else {
         toast.error('계정 삭제에 실패했습니다.');
       }

@@ -118,9 +118,12 @@ export const NotificationPage = () => {
       // 소유자가 아닐 때 404가 나므로, 공개 상세 경로로 보낸다.
     } else if (notification.target_type === 'book' && notification.target_id) {
       router.push(`/books/${notification.target_id}`);
-      // 기존 활동 알림은 그대로 둔다 — 과거 알림이 깨지면 안 된다
-    } else if (notification.target_id) {
-      router.push(`/feed/${notification.target_id}`);
+      // 전역 책 스레드 — 공개 책 소개 페이지로 보낸다
+    } else if (
+      notification.target_type === 'global_book' &&
+      notification.target_id
+    ) {
+      router.push(`/books/info/${notification.target_id}`);
     }
   };
 
