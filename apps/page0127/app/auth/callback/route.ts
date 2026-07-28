@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { isBannedRedirect } from '@/shared/lib/auth/isBannedRedirect';
+import { toSafeRedirect } from '@/shared/lib/auth/safeRedirect';
 
 import { ensureProfile } from '@/entities/profile/api/getProfile';
 
@@ -35,7 +36,8 @@ export async function GET(request: NextRequest) {
         data.user.email!,
         data.user.user_metadata
       );
-      const redirectTo = next ?? `/${profile.username}`;
+      // next 는 사용자가 조작할 수 있는 값이다 — 외부 URL 이면 버리고 본인 서재로 보낸다
+      const redirectTo = toSafeRedirect(next) ?? `/${profile.username}`;
       return NextResponse.redirect(`${origin}${redirectTo}`);
     }
   }

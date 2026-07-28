@@ -40,6 +40,8 @@ type LoginWithGoogleButtonProps = {
     | 'link';
   className?: string;
   children?: React.ReactNode;
+  /** 로그인 후 돌아갈 내부 경로. 로그인 페이지가 ?redirect= 에서 받아 넘긴다 */
+  next?: string | null;
 };
 
 export const LoginWithGoogleButton = ({
@@ -47,11 +49,17 @@ export const LoginWithGoogleButton = ({
   className = 'w-full',
   variant = 'default',
   children = 'Google로 로그인',
+  next,
 }: LoginWithGoogleButtonProps) => {
   const { login } = useGoogleLogin();
 
   return (
-    <Button onClick={login} className={className} size={size} variant={variant}>
+    <Button
+      onClick={() => login(next)}
+      className={className}
+      size={size}
+      variant={variant}
+    >
       <Icons name='google' />
       {children}
     </Button>
