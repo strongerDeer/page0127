@@ -526,6 +526,11 @@ git commit -m "feat(book): 전역 책 페이지에 댓글 스레드 추가"
 
 **`'comment'`도 함께 뺀다** — 전수 조사(`grep -rn "target_type:" app`) 결과 **생성하는 코드가 한 곳도 없는 죽은 값**이다. `'activity'`는 Task 5에서 데이터까지 지운다. 결과적으로 실제로 쓰이는 값은 `'book'`(개인 책)과 `'global_book'`(전역 책) 둘뿐이다.
 
+> ⚠️ **타입을 좁혀도 tsc가 옛 코드를 잡아주지 않는다.** Supabase 클라이언트에 `Database` 제네릭이 없어
+> `.from('notifications').insert({ target_type: 'activity' })` 같은 호출이 타입 검사를 통과한다
+> (2026-07-28 실측). 그래서 옛 API가 살아 있는 한 없어진 타입의 알림이 계속 쌓인다 —
+> **Task 5에서 그 API를 지우는 것이 실질적인 차단선**이고, 타입 변경은 문서 역할에 가깝다.
+
 - [ ] **Step 2: 두 화면의 클릭 핸들러에서 옛 분기를 빼고 전역 책을 넣는다**
 
 `NotificationList.tsx`와 `NotificationPage.tsx` 각각을 아래처럼 바꾼다.
