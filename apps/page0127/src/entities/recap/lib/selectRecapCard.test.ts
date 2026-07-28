@@ -59,8 +59,10 @@ describe('selectRecapCard', () => {
   });
 
   it('4) 작년이 비어 있으면 더 거슬러 올라가고 몇 년 전인지 담는다', () => {
+    // 이번 주(2026-07-27~08-02)를 3년 전으로 밀면 2023-07-27~08-02.
+    // 07-30 은 그 구간 안이다.
     const card = selectRecapCard(
-      [book({ id: 'a', completed_date: '2023-07-26' })],
+      [book({ id: 'a', completed_date: '2023-07-30' })],
       NOW
     );
 
@@ -97,12 +99,12 @@ describe('selectRecapCard', () => {
     expect(first).toEqual(second);
   });
 
-  it('8) 기념일과의 거리가 같으면 id 오름차순으로 안정되게 고른다', () => {
-    // 기념일은 2025-07-28. 07-27 과 07-29 는 둘 다 하루 차이다.
-    // 입력 순서를 뒤집어도 같은 책이 대표여야 한다.
+  it('8) 완독일이 같으면 id 오름차순으로 안정되게 고른다', () => {
+    // 대표는 "그 주 시작일과의 차이"로 고른다. 완독일이 같으면 차이도 같아
+    // 진짜 동점이 난다 — 입력 순서를 뒤집어도 같은 책이 대표여야 한다.
     const forward = selectRecapCard(
       [
-        book({ id: 'zzz', completed_date: '2025-07-27' }),
+        book({ id: 'zzz', completed_date: '2025-07-29' }),
         book({ id: 'aaa', completed_date: '2025-07-29' }),
       ],
       NOW
@@ -110,7 +112,7 @@ describe('selectRecapCard', () => {
     const reversed = selectRecapCard(
       [
         book({ id: 'aaa', completed_date: '2025-07-29' }),
-        book({ id: 'zzz', completed_date: '2025-07-27' }),
+        book({ id: 'zzz', completed_date: '2025-07-29' }),
       ],
       NOW
     );
@@ -151,20 +153,56 @@ describe('selectRecapCard', () => {
   });
 
   it('같은 주의 나머지 책은 others 에 담는다', () => {
+    // 1년 전 이번 주는 2025-07-27~08-02. 대표는 그 구간 시작일에 가장
+    // 가까운 책, 나머지는 가까운 순으로 뒤에 붙는다.
     const card = selectRecapCard(
       [
-        book({ id: 'a', completed_date: '2025-07-28' }),
-        book({ id: 'b', completed_date: '2025-07-30' }),
-        book({ id: 'c', completed_date: '2025-07-24' }),
+        book({ id: 'a', completed_date: '2025-07-27' }),
+        book({ id: 'b', completed_date: '2025-07-29' }),
+        book({ id: 'c', completed_date: '2025-08-01' }),
       ],
       NOW
     );
 
-    expect(card?.lead.id).toBe('a'); // 기념일 당일
-    expect(card?.others.map((b) => b.id)).toEqual(['b', 'c']); // 2일 차, 4일 차
+    expect(card?.lead.id).toBe('a'); // 그 주 시작일
+    expect(card?.others.map((b) => b.id)).toEqual(['b', 'c']); // 2일 차, 5일 차
   });
 
   it('책이 하나도 없으면 null 이다', () => {
     expect(selectRecapCard([], NOW)).toBeNull();
+  });
+
+  it('그 해, 이 주의 나 — 같은 주 안에서는 오늘이 며칠이든 같은 카드가 나온다', () => {
+    // 이번 주(2026-07-27 월~08-02 일)를 1년 전으로 밀면 2025-07-27~08-02.
+    // a(07-28)·b(08-01) 둘 다 그 구간 안이라 대표는 시작일에 더 가까운 a다.
+    //
+    // 고치기 전 버그: 앵커를 "오늘"로 잡았다. 화요일(오늘=07-28)엔 앵커가
+    // 2025-07-28 이라 a(0일 차)가 b(4일 차)를 이겨 대표가 됐지만, 일요일
+    // (오늘=08-02)엔 앵커가 2025-08-02 로 옮겨가 b(1일 차)가 a(5일 차)를
+    // 이겨 대표가 바뀌었다 — 같은 주인데 새로고침 요일에 따라 카드가
+    // 달라진 것. 앵커를 "이번 주"로 고정해 이제는 같다.
+    const books = [
+      book({ id: 'a', completed_date: '2025-07-28' }),
+      book({ id: 'b', completed_date: '2025-08-01' }),
+    ];
+
+    const tuesday = selectRecapCard(books, new Date('2026-07-28T03:00:00Z'));
+    const sunday = selectRecapCard(books, new Date('2026-08-02T03:00:00Z'));
+
+    expect(tuesday?.lead.id).toBe(sunday?.lead.id);
+    expect(tuesday).toMatchObject({ kind: 'years-ago', yearsAgo: 1 });
+    expect(sunday).toMatchObject({ kind: 'years-ago', yearsAgo: 1 });
+  });
+
+  it('그 해, 이 주의 나가 아직 읽는 중보다 우선한다', () => {
+    const card = selectRecapCard(
+      [
+        book({ id: 'ago', completed_date: '2025-07-29' }), // 1년 전 이번 주
+        book({ id: 'reading', status: 'reading' }),
+      ],
+      NOW
+    );
+
+    expect(card?.kind).toBe('years-ago');
   });
 });
