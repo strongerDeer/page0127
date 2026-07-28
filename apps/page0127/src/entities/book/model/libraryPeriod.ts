@@ -9,17 +9,17 @@ import type {
   RatingReadingData,
 } from '../types/stats';
 
-const VALID_RATINGS = [10, 5, 4, 3, 2, 1, 0] as const;
-
-const RATING_COLORS: Record<number, string> = {
-  10: '#22c55e',
-  5: '#3b82f6',
-  4: '#a855f7',
-  3: '#f59e0b',
-  2: '#14b8a6',
-  1: '#f43f5e',
-  0: '#cbd5e1',
-};
+// 분포 버킷. 인생책은 이제 rating=5 라 평점만으로는 5점과 구별되지 않는다
+// → (rating, is_life_book) 조합이 버킷 키다. 인생책을 맨 위에 둔다.
+const RATING_BUCKETS = [
+  { rating: 5, is_life_book: true, fill: '#22c55e' },
+  { rating: 5, is_life_book: false, fill: '#3b82f6' },
+  { rating: 4, is_life_book: false, fill: '#a855f7' },
+  { rating: 3, is_life_book: false, fill: '#f59e0b' },
+  { rating: 2, is_life_book: false, fill: '#14b8a6' },
+  { rating: 1, is_life_book: false, fill: '#f43f5e' },
+  { rating: 0, is_life_book: false, fill: '#cbd5e1' },
+] as const;
 
 const getYear = (date: string | null): number | null => {
   if (!date) return null;
@@ -145,14 +145,13 @@ const calculateCategoryReading = (books: Book[]): CategoryReadingData[] => {
 };
 
 const calculateRatingReading = (books: Book[]): RatingReadingData[] => {
-  const ratingData = VALID_RATINGS.map((rating) => ({
-    rating,
-    count: 0,
-    fill: RATING_COLORS[rating],
-  }));
+  const ratingData = RATING_BUCKETS.map((bucket) => ({ ...bucket, count: 0 }));
 
   books.forEach((book) => {
-    const item = ratingData.find(({ rating }) => rating === book.rating);
+    const item = ratingData.find(
+      // 인생책은 rating 이 5 라도 별도 항목이다 — 두 값을 모두 본다
+      (b) => b.rating === book.rating && b.is_life_book === book.is_life_book
+    );
     if (item) item.count += 1;
   });
 

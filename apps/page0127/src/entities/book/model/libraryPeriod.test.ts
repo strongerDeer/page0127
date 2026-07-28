@@ -138,4 +138,32 @@ describe('libraryPeriod', () => {
     expect(stats.averageRating).toBe(4.5);
     expect(stats.totalCompletedBooks).toBe(3);
   });
+
+  it('5점과 인생책을 다른 항목으로 센다', () => {
+    // 백필 후 인생책도 rating=5 다. 평점만으로 그룹핑하면 두 항목이 합쳐진다.
+    const books = [
+      createBook({
+        rating: 5,
+        is_life_book: false,
+        status: 'completed',
+        completed_date: '2026-03-01',
+      }),
+      createBook({
+        rating: 5,
+        is_life_book: true,
+        status: 'completed',
+        completed_date: '2026-03-02',
+      }),
+    ];
+
+    const { ratingReading } = calculateBookStats(books, null, 2026);
+
+    const plainFive = ratingReading.find(
+      (r) => r.rating === 5 && !r.is_life_book
+    );
+    const lifeBook = ratingReading.find((r) => r.is_life_book);
+
+    expect(plainFive?.count).toBe(1);
+    expect(lifeBook?.count).toBe(1);
+  });
 });

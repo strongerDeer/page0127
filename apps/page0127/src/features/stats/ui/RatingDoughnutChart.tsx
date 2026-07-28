@@ -12,10 +12,7 @@ type RatingDoughnutChartProps = {
   onRatingClick: (rating: number) => void;
 };
 
-// 평점 숫자 → 라벨. isLifeBook 이 참이면 "인생책", 0은 점수가 아니라 "평가 안 함"이다
-// (OverallDistribution 과 같은 규칙)
-// 그룹핑 자체(10을 인생책 버킷으로 묶는 것)는 아직 이전 방식 그대로다 — Task 3에서
-// is_life_book 기준으로 바꾼다. 여기서는 시그니처만 맞춰 둔다.
+// 평점 숫자 → 라벨. 인생책은 rating 이 5 라도 "인생책"이다(OverallDistribution 과 같은 규칙)
 const ratingLabel = (rating: number, isLifeBook: boolean) =>
   isLifeBook ? '인생책' : isRated(rating) ? `${rating}점` : '평가 안 함';
 
@@ -27,7 +24,11 @@ export const RatingDoughnutChart = ({
 }: RatingDoughnutChartProps) => {
   const filteredData = data
     .filter((item) => item.count > 0)
-    .sort((a, b) => b.rating - a.rating);
+    // 인생책과 5점은 rating 이 같으므로 rating 만으로 정렬하면 순서가 흔들린다
+    .sort(
+      (a, b) =>
+        b.rating - a.rating || Number(b.is_life_book) - Number(a.is_life_book)
+    );
   // 막대 폭의 분모 — 분포 전체(평가 안 함 포함) 대비 비율이라 그대로 둔다
   const total = filteredData.reduce((sum, item) => sum + item.count, 0);
   // 캡션의 분모 — 평균(averageScore)이 0("평가 안 함")을 빼고 계산하므로
@@ -65,17 +66,14 @@ export const RatingDoughnutChart = ({
 
           return (
             <button
-              key={item.rating}
+              key={`${item.rating}-${item.is_life_book}`}
               type='button'
               onClick={() => onRatingClick(item.rating)}
               // 라벨 폭: '평가 안 함'이 한 줄에 들어가야 한다 (42px에서는 줄바꿈됐다)
               className='grid w-full grid-cols-[64px_1fr_36px] items-center gap-3 text-sm'
             >
               <span className='text-left font-medium text-text-body'>
-                {/* 그룹핑은 아직 이전 방식(Task 3에서 is_life_book 기준으로 교체) —
-                    DB에 더 이상 인생책 rating 버킷이 쌓이지 않아 항상 count 0으로
-                    필터링되므로 이 플래그는 지금 당장은 쓰이지 않는다 */}
-                {ratingLabel(item.rating, false)}
+                {ratingLabel(item.rating, item.is_life_book)}
               </span>
               <span className='h-2 overflow-hidden rounded-full bg-sunken'>
                 <span

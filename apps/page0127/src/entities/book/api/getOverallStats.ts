@@ -182,40 +182,54 @@ const calculateYearlyTrend = (books: Book[]): YearlyTrend[] => {
  * 평점 분포 계산 (Horizontal Bar용)
  *
  * 학습 포인트:
- * - 0, 1, 2, 3, 4, 5, 10점 집계
+ * - 0, 1, 2, 3, 4, 5점 집계 — 인생책은 rating=5 라 is_life_book 으로 별도 항목이다
  * - 비율 계산 (%)
- * - 내림차순 정렬 (10 → 0)
+ * - 내림차순 정렬(인생책 → 5 → 0), 인생책이 5점보다 위
  */
 const calculateRatingDistribution = (books: Book[]): RatingDistribution[] => {
-  const validRatings = [10, 5, 4, 3, 2, 1, 0];
+  // 분포 버킷. 인생책은 rating=5 라 평점만으로는 5점과 구별되지 않는다
+  // → (rating, is_life_book) 조합이 버킷 키다. 인생책을 맨 위에 둔다.
+  const buckets = [
+    { rating: 5, is_life_book: true },
+    { rating: 5, is_life_book: false },
+    { rating: 4, is_life_book: false },
+    { rating: 3, is_life_book: false },
+    { rating: 2, is_life_book: false },
+    { rating: 1, is_life_book: false },
+    { rating: 0, is_life_book: false },
+  ];
 
-  // 평점별 카운트 맵 생성
-  const ratingMap = new Map<number, number>();
-  validRatings.forEach((rating) => ratingMap.set(rating, 0));
+  // (rating, is_life_book) 합성 키로 카운트 맵 생성 — rating 만으로는
+  // 인생책(5점)과 일반 5점을 구별할 수 없다
+  const toKey = (rating: number, isLifeBook: boolean) =>
+    `${rating}:${isLifeBook}`;
+
+  const ratingMap = new Map<string, number>();
+  buckets.forEach(({ rating, is_life_book }) => {
+    ratingMap.set(toKey(rating, is_life_book), 0);
+  });
 
   books.forEach((book) => {
-    if (
-      book.rating !== null &&
-      book.rating !== undefined &&
-      validRatings.includes(book.rating)
-    ) {
-      ratingMap.set(book.rating, (ratingMap.get(book.rating) || 0) + 1);
+    // rating 이 null/undefined 거나 버킷에 없는 값이면 key 가 안 맞아 자연히 걸러진다
+    const key = toKey(book.rating ?? NaN, book.is_life_book);
+    if (ratingMap.has(key)) {
+      ratingMap.set(key, (ratingMap.get(key) || 0) + 1);
     }
   });
 
-  // 비율 계산
+  // 비율 계산 — 분모(books.length)는 그대로 둔다
   const totalBooks = books.length;
-  const result = validRatings.map((rating) => {
-    const count = ratingMap.get(rating) || 0;
+
+  return buckets.map(({ rating, is_life_book }) => {
+    const count = ratingMap.get(toKey(rating, is_life_book)) || 0;
     const percentage = Math.round((count / totalBooks) * 100);
     return {
       rating,
+      is_life_book,
       count,
       percentage,
     };
   });
-
-  return result;
 };
 
 /**
