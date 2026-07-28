@@ -313,6 +313,62 @@ grep -rn "sm:text-3xl"   --include="*.tsx" src app | wc -l
 
 ---
 
+### 6.6 묶음 2 완료 기록 (2026-07-28)
+
+**만든 것** — `Components` 페이지에 5개. 전부 `descriptionMarkdown` 에 코드 경로 포함.
+
+| 컴포넌트 | 형태 | 노드 |
+|---|---|---|
+| `Textarea` | COMPONENT_SET, state 4 | `65:14` |
+| `Label` | COMPONENT_SET, state 2 | `65:19` |
+| `Avatar` | COMPONENT_SET, type 2 | `65:24` |
+| `Dialog` | COMPONENT, 슬롯 8층 | `70:2` |
+| `ReadCountBadge` | COMPONENT_SET, size 3 | `74:11` |
+
+**코드 정리** (커밋 `f4a88a1`) — `textarea` 그림자·다크 3개, `dialog` 오버레이 토큰화, `ReadingProgressOverview` 유틸 복귀.
+
+**검증 결과** (전부 실측)
+
+| 항목 | 기대 | 실측 |
+|---|---|---|
+| `shadow-xs` (주석 제외) | 3 → 2 | **2** ✅ |
+| `dark:` | 7 → 6 | **6** ✅ |
+| `bg-black` | 1 → 0 | **0** ✅ |
+| `sm:text-3xl` | 1 → 0 | **0** ✅ |
+| `font-semibold` | 0 유지 | **0** ✅ |
+| vitest | 통과 | **28파일 181개 통과** ✅ |
+| `tsc --noEmit` | 0 | **0** ✅ |
+| 컴포넌트 fill·stroke 바인딩 누락 | 0 | **0** ✅ |
+| description 이스케이프 잔재 | 0 | **0** (11건 복구) ✅ |
+
+Playwright 실측 (1280px):
+
+| 대상 | 기대 | 실측 |
+|---|---|---|
+| `.heading-1` | 28 / 40 / 700 | **28px / 40px / 700** ✅ |
+| `bg-overlay` | `rgba(0,0,0,0.5)` | **`rgba(0, 0, 0, 0.5)`** ✅ |
+| `textarea` 그림자 | `none` | **`none`** ✅ |
+| `textarea` 테두리 | `--line` | **`rgb(223, 227, 232)`** ✅ |
+
+700px(640~767 구간)에서 `.heading-1` 은 **24px / 34px / 700** — §2에 적은 의도된 변화 그대로다.
+
+**계획과 달라진 것 넷**
+
+**① `node.description` 이 아니라 `descriptionMarkdown` 이어야 했다.** 계획 착수 전 왕복 테스트에서 발견해 §4.6으로 스펙에 반영했고, Task 2로 11건을 복구했다.
+
+**② paint 의 `opacity` 는 객체 복사로 안 들어간다.** `Object.assign({}, paint, { opacity: 0.15 })` 로 만든 fill 이 `opacity: 1` 로 저장돼 `ReadCountBadge` 가 통짜 파란 알약이 됐다(파란 배경 위 파란 글자). Figma 권장 방식인 **복제 → 수정 → 재대입**(`JSON.parse(JSON.stringify(node.fills))`)으로 고쳤다. 바인딩은 유지된다. **스크린샷을 보지 않았으면 못 잡았다** — 스크립트 반환값은 성공처럼 보였다.
+
+**③ `figma.createComponent()` 는 `currentPage` 에 붙는다.** 작업 대상 페이지 변수를 들고 있어도 소용없다 — `page.appendChild()` 를 명시하지 않은 `Dialog` 가 `Foundations` 페이지에 생성됐다. 옮겨서 해결했다. `Textarea`·`Label`·`Avatar` 는 `appendChild` 를 넣어둬서 무사했다.
+
+**④ `combineAsVariants()` 는 컨테이너를 늘리지 않는다.** 묶음 1의 메모는 *"자식이 겹친다"* 였는데, 실제로는 **자식 좌표는 들어가지만 세트 프레임이 그대로**여서 첫 variant 만 보인다. 자식 배치 전에 `resizeWithoutConstraints()` 로 세트를 먼저 키워야 한다.
+
+**남은 것 (묶음 2 범위 밖으로 기록)**
+
+- `doc/Button 상태` 프레임의 fill 4건이 Variable 에 바인딩돼 있지 않다. **컴포넌트가 아니라 문서 프레임**이라 완료 기준에는 안 걸리지만, 묶음 3에서 정리할 후보다.
+- 캔버스 겹침 2건(`doc/Button 상태` ↔ `doc/Skeleton 사용 예시`·`AlertDialog`)을 발견해 오른쪽 열을 `x=700` 으로, `note/` 를 `x=1400` 으로 옮겼다. 현재 최상위 노드 겹침 **0건**.
+
+---
+
 ## 7. 완료 기준
 
 1. 15개가 Figma `Components` 페이지에 있고, 각각 `descriptionMarkdown` 에 코드 경로가 있다
