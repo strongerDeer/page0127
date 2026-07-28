@@ -176,7 +176,7 @@ index = ceil(0.75 × n) - 1
 
 | 역할                         | 위치                                                                |
 | ---------------------------- | ------------------------------------------------------------------- |
-| 테이블                       | `supabase/migrations/20260727000001_create_quality_rum_samples.sql` |
+| 테이블                       | `supabase/migrations/20260728000001_create_quality_rum_samples.sql` |
 | 타입·정규화·집계 (순수 함수) | `packages/quality/src/rum.ts`                                       |
 | 수집 엔드포인트              | `apps/page0127/app/api/rum/route.ts`                                |
 | 클라이언트 수집기            | `apps/page0127/src/shared/lib/rum/`                                 |
