@@ -423,15 +423,112 @@ Playwright 실측 (1280px):
 
 ---
 
-## 7. 완료 기준
+### 6.8 묶음 4 완료 기록 (2026-07-28) — 라운드 2 종료
 
-1. 15개가 Figma `Components` 페이지에 있고, 각각 `descriptionMarkdown` 에 코드 경로가 있다
-2. 하드코딩 색 0건
-3. `shared/ui`에서 `shadow-xs`·`dark:`·`bg-black` **모두 0**(주석 줄 제외)
-4. `ReadingProgressOverview`가 `.heading-1`을 쓴다
-5. 기존 테스트 4종 통과
-6. 만들지 않은 것이 `note/` 또는 이 문서에 기록돼 있다
-7. **묶음 1이 남긴 description 손상 11건이 복구돼 있다**(§4.6) — 묶음 2에서 처리
+**만든 것** — 6개.
+
+| 컴포넌트 | 형태 | 노드 |
+|---|---|---|
+| `Select` | COMPONENT_SET, state 4 (Trigger) | `99:18` |
+| `SelectMenu` | COMPONENT, 슬롯형 (Content+Item) | `100:2` |
+| `Pagination` | COMPONENT, 슬롯형 | `100:10` |
+| `Progress` | COMPONENT + `doc/Progress 예시` | `101:2` / `101:4` |
+| `ScrollBar` | COMPONENT_SET, orientation 2 | `101:26` |
+| `Toast` | COMPONENT_SET, type 5 | `101:42` |
+
+**Button 세트 보강** — 6조합 추가로 **12조합**이 됐다(§아래).
+
+**코드 정리** — `select.tsx:38` 의 `shadow-xs` 1 + `dark:` 3.
+
+### 라운드 2 종료 — `shared/ui` 의 07 위반이 0이다
+
+| 항목 | 라운드 2 시작 | 지금 |
+|---|---:|---:|
+| `shadow-xs` | 4 | **0** ✅ |
+| `dark:` | 15 | **0** ✅ |
+| `bg-black` | 2 | **0** ✅ |
+| `font-semibold` | 78(앱 전체) | **0** ✅ |
+
+`text-white` 만 **1** 이 남는다 — `user-avatar.tsx:98` 의 모노그램. 배경이 `getMonogramColor(nickname)` 이 만드는 닉네임별 생성 색이라 대응 semantic 토큰이 없다. **의도적으로 남긴 것이지 미완이 아니다.**
+
+**Figma 최종 상태**
+
+| 항목 | 값 |
+|---|---|
+| 컴포넌트 | **22개** (Button 세트의 12조합은 1개로 셈) |
+| description 누락 | **0** |
+| 페이지 전체 바인딩 누락 | **0** |
+| 최상위 노드 겹침 | **0** |
+| vitest | **30파일 195개 통과** |
+
+### 묶음 1 Button 인구조사 오류 정정
+
+`pagination.tsx` 가 `buttonVariants({ variant: isActive ? 'outline' : 'ghost' })` 를 쓰는 걸 보고 확인한 결과, **묶음 1의 `note/` 가 틀렸다.**
+
+`<Button …>` **87건**을 여는 태그 파싱으로 전수 집계한 실제 조합:
+
+| 조합 | 건수 | 묶음 1 Figma |
+|---|---:|---|
+| `outline / default` | 20 | ✅ |
+| `default / default` | 18 | ✅ |
+| **`ghost / sm`** | **15** | ❌ |
+| `outline / sm` | 13 | ✅ |
+| `default / sm` | 12 | ✅ |
+| `default / lg` | 2 | ❌ |
+| `ghost / icon` | 2 | ❌ |
+| `outline / icon-sm` | 2 | ❌ |
+| `destructive / default` | 1 | ✅ |
+| `secondary / default` | 1 | ❌ |
+| `ghost / default` | 1 | ❌ |
+
+묶음 1은 `ghost`·`secondary`·`icon`·`icon-sm` 을 *"쓰인 적이 없다"* 고 적었으나 **`ghost` 는 18건(13개 파일)으로 `outline` 다음으로 많다.** 반대로 묶음 1이 만든 `destructive / sm` 은 실사용 0건이다.
+
+사용자 결정으로 **빠진 6조합을 전부 채웠다.** `destructive / sm` 은 지우지 않았다 — 세트에서 variant 를 빼면 참조 인스턴스가 깨지고, 남기는 비용이 없다. `link`(0건)·`icon-lg`(0건)는 묶음 1 기록 중 유일하게 맞은 항목이라 그대로 뒀다.
+
+`note/` 의 틀린 문장은 **추가가 아니라 교체**했다. 틀린 채로 남기면 다음 사람이 그걸 근거로 판단한다.
+
+> **왜 틀렸나.** 묶음 1이 어떻게 셌는지는 남아 있지 않지만, `badge`·`sonner` 를 파일명으로 세서 0으로 잘못 잡았던 것과 같은 계열로 보인다. **재발 방지: variant 사용량은 여는 태그를 파싱해 `variant × size` 조합으로 전수 집계한다**(명시하지 않은 prop 은 CVA 기본값으로 계산). 스크립트는 일회용이라 남기지 않았지만 방법은 이 문단이 기록이다.
+
+**계획과 달라진 것 둘**
+
+**① 중복 가드가 자기 글에 걸렸다.** `note/` 에 묶음 4 항목을 추가하기 전 `characters.includes('묶음 4')` 로 중복을 검사했는데, **같은 프레임의 Button 정정문에 "정정 (2026-07-28, 묶음 4)" 라는 문구가 있어** 항상 "이미 있음"으로 판정됐다. 가드를 **레이어 이름 기준**(`c.name === 'note/묶음 4 본문'`)으로 바꿔 해결. 계획서의 grep 자기모순과 정확히 같은 구조다 — **존재 검사는 내용이 아니라 식별자로 한다.**
+
+**② `Pagination` 은 Button 인스턴스를 품지 않는다.** 코드에서는 `buttonVariants` 를 호출해 Button 의 시각을 그대로 쓰지만, Figma 인스턴스에는 자식을 넣을 수 없어 같은 값을 직접 그렸다. **Button 을 고치면 Pagination 도 손으로 맞춰야 한다** — description 에 굵게 적었다.
+
+**남은 것 (라운드 2 밖)**
+
+- `Toast` 의 success/warning 색이 primitive(`teal/500`·`amber/500`)에 직접 묶여 있다. sonner 가 그리는 색이라 앱 코드에 대응 semantic 이 없다 — 라운드 4에서 다크 값과 함께 설계한다.
+- `switch` 의 `h-[1.15rem]`(18.4px) 토큰화 (묶음 3에서 기록)
+- `user-avatar` 연결 확인 (묶음 1 §2.1)
+- 미사용 4개 컴포넌트의 처리
+- Code Connect (플랜이 올라가면)
+
+---
+
+## 7. 완료 기준 — 전부 충족 (2026-07-28)
+
+| | 기준 | 실측 | 판정 |
+|---|---|---|---|
+| 1 | 15개가 `Components` 페이지에 있고 각각 `descriptionMarkdown` 에 코드 경로가 있다 | 묶음 2~4 로 **17개** 추가(계획 15 + `SelectMenu`·`DropdownMenuItem`), description 누락 **0** | ✅ |
+| 2 | 하드코딩 색 0건 | 페이지 **전체** 바인딩 누락 **0** (컴포넌트뿐 아니라 `doc/`·`note/` 포함) | ✅ |
+| 3 | `shared/ui` 에서 `shadow-xs`·`dark:`·`bg-black` 모두 0 (주석 줄 제외) | **0 / 0 / 0** | ✅ |
+| 4 | `ReadingProgressOverview` 가 `.heading-1` 을 쓴다 | 적용됨. 실측 28px/40px/700(≥768px), 24px/34px/700(<768px) | ✅ |
+| 5 | 기존 테스트 통과 | **30파일 195개 통과**, `tsc` 오류 0 | ✅ |
+| 6 | 만들지 않은 것이 `note/` 또는 이 문서에 기록돼 있다 | `note/만들지 않은 것` 에 묶음 2·3·4 절 + Button 정정 | ✅ |
+| 7 | 묶음 1이 남긴 description 손상 11건이 복구돼 있다 (§4.6) | 묶음 2에서 11/11 복구, 이스케이프 잔재 **0** | ✅ |
+
+> **1번 기준을 초과 달성한 이유:** 계획은 15개였으나 `Select` 를 Trigger(상태 4종)와 Content(슬롯)로 나눠야 했고(`SelectMenu`), `DropdownMenuItem` 도 hover 배치 수요 때문에 별도 컴포넌트로 뺐다. 둘 다 코드 export 와 1:1 이 아니어서 description 에 그 사실을 적었다.
+
+**라운드 2 전체 요약**
+
+| 묶음 | 컴포넌트 | PR |
+|---|---|---|
+| 1 | `Button`(6조합) `Card` `Skeleton` `Input` `AlertDialog` | (직접 커밋) |
+| 2 | `Textarea` `Label` `Avatar` `Dialog` `ReadCountBadge` | #19 |
+| 3 | `Popover` `Badge` `Switch` `DropdownMenu` `DropdownMenuItem` `ErrorFallback` | #22 |
+| 4 | `Select` `SelectMenu` `Pagination` `Progress` `ScrollBar` `Toast` + Button 6조합 보강 | (이번) |
+
+**컴포넌트 22개 · Button 12조합 · 하드코딩 색 0 · 07 위반 0.**
 
 ---
 
