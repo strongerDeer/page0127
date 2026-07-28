@@ -42,10 +42,4 @@ export const API_ENDPOINTS = {
   feed: {
     list: '/feed', // GET: 활동 피드 조회
   },
-  activities: {
-    likes: (activityId: string) => `/activities/${activityId}/likes`, // GET/POST/DELETE: 좋아요
-    comments: (activityId: string) => `/activities/${activityId}/comments`, // GET/POST: 댓글 목록/작성
-    commentDetail: (activityId: string, commentId: string) =>
-      `/activities/${activityId}/comments/${commentId}`, // PATCH/DELETE: 댓글 수정/삭제
-  },
 } as const;
