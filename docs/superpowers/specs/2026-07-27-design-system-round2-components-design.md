@@ -315,6 +315,7 @@ Button/default·default 의 description:
 > **감사 방식의 구멍도 함께 드러났다.** `shadow`·`dark:`는 grep 으로 잡았지만 weight·size 이탈은 사람이 눈으로 훑어 하나를 놓쳤다. 묶음 2~4 에서는 `font-semibold|font-bold|font-normal|text-lg|text-xl|text-2xl` 처럼 **07 스케일 밖 클래스를 grep 하는 절차**를 코드 정리 태스크에 넣는다.
 
 > **닫힘 (2026-07-28):** 재검토 결과 **07 스케일 쪽이 현실과 맞지 않았다.** `font-semibold`(600) 78곳 중 73곳이 앱 코드가 직접 선택한 값이었고, 500 과 600 이 같은 크기에서 섞여 있었다. weight 를 500 으로 통일하고(코드 78곳) 18·24px 를 정식 단계로 승격했다(문서만). 자세한 내용은 `2026-07-28-typography-scale-revision-design.md`.
+> 아울러 이 문단이 쓰는 `heading-mobile` 은 **`heading-sm` 으로 개명**됐다 — 모바일 전용이 아니라 데스크톱에서도 18px 가 21곳 쓰이기 때문이다.
 
 **④ `overlay` 토큰을 신설했다 (최종 리뷰 후 추가 결정).**
 
