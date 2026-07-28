@@ -177,7 +177,7 @@ export const FieldComparisonTable = ({
 }) => (
   <section className='rounded-lg border border-line p-4'>
     <div className='mb-1 flex items-baseline justify-between gap-2'>
-      <h2 className='text-sm font-semibold'>핵심 지표 — 출처별 대조</h2>
+      <h2 className='text-sm font-medium'>핵심 지표 — 출처별 대조</h2>
       <span className='text-xs text-text-faint'>
         자체 RUM 최근 {rum?.windowDays ?? 28}일
       </span>
@@ -195,7 +195,7 @@ export const FieldComparisonTable = ({
             <th className='w-20 py-2 text-xs font-medium text-text-faint'>지표</th>
             {COLUMNS.map((column) => (
               <th key={column.key} className='py-2 pr-4'>
-                <span className='block text-xs font-semibold'>{column.title}</span>
+                <span className='block text-xs font-medium'>{column.title}</span>
                 <span className='block text-[11px] font-normal text-text-faint'>
                   {column.subtitle}
                 </span>

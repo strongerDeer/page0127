@@ -56,7 +56,7 @@ export const RumTrendChart = ({ rum }: { rum: RumWindow | null }) => {
   return (
     <section className='rounded-lg border border-line p-4'>
       <div className='mb-1 flex items-baseline justify-between gap-2'>
-        <h2 className='text-sm font-semibold'>
+        <h2 className='text-sm font-medium'>
           자체 RUM — {label} 일별 p75 (실사용자)
         </h2>
         <span className='text-xs text-text-faint'>최근 {rum.windowDays}일</span>
