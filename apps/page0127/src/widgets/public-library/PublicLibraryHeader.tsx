@@ -48,7 +48,7 @@ type PublicLibraryHeaderProps = {
   currentUserId?: string;
   /** 최신 취향 분석의 성향 타입 이름 — 분석 이력이 없으면 null */
   personalityType: string | null;
-  /** 취향 분석 가능한 책 권수 (별점 있는 완독 책) — 소유자 전용, 방문자는 0 */
+  /** 취향 분석 가능한 책 권수 (평가를 남긴 완독 책) — 소유자 전용, 방문자는 0 */
   analyzableBookCount: number;
   /** 마지막 분석 이후 새로 추가된 분석 가능 책 권수 — 분석 이력이 없으면 null */
   newBooksSinceLastAnalysis: number | null;
@@ -78,8 +78,14 @@ export const PublicLibraryHeader = ({
 
   const handleAnalyzeTaste = () => {
     if (analyzableBookCount < 5) {
-      toast.error(
-        '취향 분석을 위해 최소 5권의 완독한 책(별점 포함)이 필요합니다.'
+      // "필요합니다"(요건)가 아니라 "볼 수 있어요"(가까워진 보상)로 말한다.
+      // 5권 게이트 자체는 AI 비용과 묶인 제품 결정이라 그대로 둔다.
+      // "별점" 이 아니라 "평가" 라고 말하는 이유: 게이트가 세는 쿼리는
+      // .not('rating','is',null) 이라 0점("평가 안 함")도 센다. 0점은 사용자가
+      // 평가 컨트롤을 건드려 고른 상태이므로 "평가를 남긴" 은 사실이지만,
+      // "별점을 남긴" 은 쿼리가 세지 않는 것을 약속하게 된다.
+      toast.info(
+        `평가를 남긴 완독 책이 ${5 - analyzableBookCount}권 더 모이면 취향 분석을 볼 수 있어요.`
       );
       return;
     }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useReducer } from 'react';
+import { useEffect, useId, useReducer, useRef } from 'react';
 
 import Image from 'next/image';
 
@@ -113,10 +113,13 @@ function formReducer(state: FormState, action: FormAction): FormState {
  * - SET_STATUS 액션이 연쇄 초기화를 한 번에 처리 (원자적 상태 전환)
  * - 상태별 조건부 필드 표시 (UX 개선)
  *
- * UX 개선 (상태별 표시 필드):
- * - 완독: 완독일(필수) + 시작일(옵션) + 평점 + 한줄평 + 메모 + 태그 + 공개설정
- * - 읽는중: 시작일(옵션) + 메모 + 태그 + 공개설정
- * - 읽고싶은책: 메모 + 태그 + 공개설정만 표시
+ * UX 개선 (완독 기록을 한 문장 중심으로):
+ * - 완독일 때 한줄평과 평가 점수를 맨 위에 두어 바로 손이 가게 한다.
+ * - 완독일·시작일·메모·태그는 '더 남기기'로 접는다 (기본값이 이미 옳아
+ *   필수 입력이 아니다). 완독일을 비우면 제출 시 오늘로 채워진다.
+ * - 공개 설정은 접지 않는다: 기본값이 공개(true)라 방금 쓴 문장이 공개 서재에
+ *   게시되는데, 접어 두면 사용자가 '공개'라는 단어를 한 번도 못 보고 저장한다.
+ *   편리한 기본값과 주의가 필요 없는 결정은 다르다.
  */
 export const BookRegistrationForm = ({
   book,
@@ -158,6 +161,17 @@ export const BookRegistrationForm = ({
       initialData?.is_public !== undefined ? initialData.is_public : true,
   });
 
+  // 완독 직후엔 손이 바로 문장으로 가야 한다 — 저장소 관례대로 autoFocus 속성 대신 ref 로 준다.
+  // 수정 화면(initialData)에서는 포커스를 옮기지 않는다: 사용자는 다른 필드를 고치러 왔을 수 있다.
+  const oneLineReviewRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (initialData) return;
+    // preventScroll: 그냥 focus() 하면 입력란이 뷰로 스크롤되고 모바일에서는 키보드가
+    // 바로 올라와, 위쪽 표지·제목·저자 미리보기가 화면 밖으로 밀린다. 추가 흐름에서
+    // 그 미리보기는 "책을 제대로 골랐나" 를 확인할 유일한 수단이다.
+    oneLineReviewRef.current?.focus({ preventScroll: true });
+  }, [initialData]);
+
   const {
     status,
     completedDate,
@@ -183,9 +197,13 @@ export const BookRegistrationForm = ({
       is_public: isPublic,
     };
 
-    // 완독: 완독일 필수
+    // 완독일은 '더 남기기' 안에 접혀 있어 required 를 걸 수 없다.
+    // 접힌 details 안의 빈 required 는 브라우저가 "not focusable" 로 제출을
+    // 조용히 막는다 — 화면엔 아무 에러도 안 뜬다.
+    // 기본값이 이미 오늘이므로 이 폴백은 사용자가 의도적으로 비운 경우에만 동작한다.
     if (status === 'completed') {
-      formData.completed_date = completedDate;
+      formData.completed_date =
+        completedDate || new Date().toISOString().split('T')[0];
     }
 
     // 시작일 추가 (완독 or 읽는중)
@@ -295,53 +313,26 @@ export const BookRegistrationForm = ({
             </select>
           </div>
 
-          {/* 완독일 - 완독 상태일 때만 표시 */}
+          {/* 이 책을 한 문장으로 — 완독 기록의 핵심이라 가장 위에 둔다 */}
           {status === 'completed' && (
             <div className='space-y-2'>
-              <Label htmlFor={ids.completedDate}>완독일 *</Label>
+              <Label htmlFor={ids.oneLineReview}>
+                이 책을 한 문장으로 남긴다면?
+              </Label>
               <Input
-                id={ids.completedDate}
-                type='date'
-                value={completedDate}
+                id={ids.oneLineReview}
+                ref={oneLineReviewRef}
+                type='text'
+                value={oneLineReview}
                 onChange={(e) =>
-                  dispatch({ type: 'SET_COMPLETED_DATE', date: e.target.value })
+                  dispatch({
+                    type: 'SET_ONE_LINE_REVIEW',
+                    value: e.target.value,
+                  })
                 }
-                required
+                placeholder='덮고 나서 남은 생각을 그대로 적어도 좋아요'
+                maxLength={100}
               />
-            </div>
-          )}
-
-          {/* 시작일 - 완독 or 읽는중일 때만 표시 */}
-          {(status === 'completed' || status === 'reading') && (
-            <div className='space-y-2'>
-              <div className='flex items-center gap-2'>
-                <input
-                  type='checkbox'
-                  id={ids.showStartDate}
-                  checked={showStartDate}
-                  onChange={(e) =>
-                    dispatch({
-                      type: 'TOGGLE_START_DATE',
-                      checked: e.target.checked,
-                    })
-                  }
-                  className='h-4 w-4'
-                />
-                <Label htmlFor={ids.showStartDate} className='cursor-pointer'>
-                  시작일 추가 (옵션)
-                </Label>
-              </div>
-
-              {showStartDate && (
-                <Input
-                  type='date'
-                  value={startDate}
-                  onChange={(e) =>
-                    dispatch({ type: 'SET_START_DATE', date: e.target.value })
-                  }
-                  placeholder='시작일'
-                />
-              )}
             </div>
           )}
 
@@ -387,63 +378,126 @@ export const BookRegistrationForm = ({
             </div>
           )}
 
-          {/* 한줄평 - 완독일 때만 표시 */}
-          {status === 'completed' && (
-            <div className='space-y-2'>
-              <Label htmlFor={ids.oneLineReview}>한줄평</Label>
-              <Input
-                id={ids.oneLineReview}
-                type='text'
-                value={oneLineReview}
-                onChange={(e) =>
-                  dispatch({
-                    type: 'SET_ONE_LINE_REVIEW',
-                    value: e.target.value,
-                  })
-                }
-                placeholder='이 책에 대한 한줄평을 남겨주세요'
-                maxLength={100}
-              />
+          {/* 선택 항목은 접어 둔다 — 완독 기록에 필요한 입력은 사실 0개다
+              (상태·완독일 모두 기본값이 옳다). 공개 설정은 여기 넣지 않는다 */}
+          <details
+            open={!!initialData}
+            className='rounded-lg border border-line p-4'
+          >
+            {/* summary 자체에 flex 를 주면 펼침 삼각형 마커가 사라진다. 안쪽 span 으로 정렬한다 */}
+            <summary className='cursor-pointer text-sm font-medium'>
+              <span className='inline-flex items-center align-middle'>
+                더 남기기
+              </span>
+            </summary>
+
+            <div className='mt-4 space-y-6'>
+              {/* 완독일 - 완독 상태일 때만 표시 */}
+              {status === 'completed' && (
+                <div className='space-y-2'>
+                  <Label htmlFor={ids.completedDate}>완독일</Label>
+                  <Input
+                    id={ids.completedDate}
+                    type='date'
+                    value={completedDate}
+                    onChange={(e) =>
+                      dispatch({
+                        type: 'SET_COMPLETED_DATE',
+                        date: e.target.value,
+                      })
+                    }
+                  />
+                  <p className='text-sm text-muted-foreground'>
+                    비워 두면 오늘로 기록해요.
+                  </p>
+                </div>
+              )}
+
+              {/* 시작일 - 완독 or 읽는중일 때만 표시 */}
+              {(status === 'completed' || status === 'reading') && (
+                <div className='space-y-2'>
+                  <div className='flex items-center gap-2'>
+                    <input
+                      type='checkbox'
+                      id={ids.showStartDate}
+                      checked={showStartDate}
+                      onChange={(e) =>
+                        dispatch({
+                          type: 'TOGGLE_START_DATE',
+                          checked: e.target.checked,
+                        })
+                      }
+                      className='h-4 w-4'
+                    />
+                    <Label
+                      htmlFor={ids.showStartDate}
+                      className='cursor-pointer'
+                    >
+                      시작일 추가 (옵션)
+                    </Label>
+                  </div>
+
+                  {showStartDate && (
+                    <Input
+                      type='date'
+                      value={startDate}
+                      onChange={(e) =>
+                        dispatch({
+                          type: 'SET_START_DATE',
+                          date: e.target.value,
+                        })
+                      }
+                      placeholder='시작일'
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* 나만의 메모 */}
+              <div className='space-y-2'>
+                <Label htmlFor={ids.personalMemo}>나만의 메모</Label>
+                <Textarea
+                  id={ids.personalMemo}
+                  value={personalMemo}
+                  onChange={(e) =>
+                    dispatch({
+                      type: 'SET_PERSONAL_MEMO',
+                      value: e.target.value,
+                    })
+                  }
+                  placeholder='개인적인 생각이나 메모를 자유롭게 작성하세요'
+                  rows={4}
+                />
+              </div>
+
+              {/* 태그 */}
+              <div className='space-y-2'>
+                <Label htmlFor={ids.tags}>태그 (쉼표로 구분)</Label>
+                <Input
+                  id={ids.tags}
+                  type='text'
+                  value={tagsInput}
+                  onChange={(e) =>
+                    dispatch({ type: 'SET_TAGS_INPUT', value: e.target.value })
+                  }
+                  placeholder='예: 자기계발, 경영, 추천도서'
+                  className={tagError ? 'border-destructive' : ''}
+                />
+                {tagError ? (
+                  <p className='text-sm text-destructive'>{tagError}</p>
+                ) : (
+                  <p className='text-sm text-muted-foreground'>
+                    쉼표(,)로 구분하여 최대 10개까지 입력할 수 있습니다. 중복된
+                    태그는 자동으로 제거됩니다.
+                  </p>
+                )}
+              </div>
             </div>
-          )}
+          </details>
 
-          {/* 나만의 메모 */}
-          <div className='space-y-2'>
-            <Label htmlFor={ids.personalMemo}>나만의 메모</Label>
-            <Textarea
-              id={ids.personalMemo}
-              value={personalMemo}
-              onChange={(e) =>
-                dispatch({ type: 'SET_PERSONAL_MEMO', value: e.target.value })
-              }
-              placeholder='개인적인 생각이나 메모를 자유롭게 작성하세요'
-              rows={4}
-            />
-          </div>
-
-          {/* 태그 */}
-          <div className='space-y-2'>
-            <Label htmlFor={ids.tags}>태그 (쉼표로 구분)</Label>
-            <Input
-              id={ids.tags}
-              type='text'
-              value={tagsInput}
-              onChange={(e) =>
-                dispatch({ type: 'SET_TAGS_INPUT', value: e.target.value })
-              }
-              placeholder='예: 자기계발, 경영, 추천도서'
-              className={tagError ? 'border-destructive' : ''}
-            />
-            {tagError ? (
-              <p className='text-sm text-destructive'>{tagError}</p>
-            ) : (
-              <p className='text-sm text-muted-foreground'>
-                쉼표(,)로 구분하여 최대 10개까지 입력할 수 있습니다. 중복된
-                태그는 자동으로 제거됩니다.
-              </p>
-            )}
-          </div>
-
+          {/* 접기 밖에 둔다 — isPublic 기본값이 true 라, 접어 두면 처음 쓰는 사용자가
+              사적인 생각을 적고 섹션을 한 번도 열지 않고 '공개'라는 단어를 못 본 채
+              공개 서재에 게시한다. 스위치와 설명 문구는 저장 시점에 화면에 있어야 한다. */}
           {/* 공개/비공개 설정 */}
           <div className='space-y-2'>
             <div className='flex items-center justify-between rounded-lg border p-4'>

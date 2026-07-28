@@ -13,12 +13,16 @@ import {
 import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 import { PageContainer } from '@/shared/ui/PageContainer';
 
+import { bookApi } from '@/entities/book';
+
 import { useBookCRUD } from '@/features/book/api/useBookCRUD';
 import { useBookSearch } from '@/features/book/api/useBookSearch';
+import { resolveReadCount } from '@/features/book/lib/resolveReadCount';
 import {
   type BookFormData,
   BookRegistrationForm,
 } from '@/features/book/ui/BookRegistrationForm';
+import { BookSavedCard } from '@/features/book/ui/BookSavedCard';
 import { BookSearchInput } from '@/features/book/ui/BookSearchInput';
 import { BookSearchPagination } from '@/features/book/ui/BookSearchPagination';
 import { BookSearchResultCard } from '@/features/book/ui/BookSearchResultCard';
@@ -55,6 +59,23 @@ const AddBookPage = () => {
 
   const [selectedBook, setSelectedBook] = useState<AladinBook | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+
+  // 저장 완료 단계 — 검색/폼과 같은 방식으로 state 전환한다(라우트를 늘리지 않는다).
+  // 완독일 때만 채워진다. 읽고싶어요·읽는 중은 예전처럼 서재로 보낸다.
+  const [saved, setSaved] = useState<{
+    book: Book;
+    completedCount: number | null;
+    readCount: number;
+  } | null>(null);
+
+  // 저장 후처리(완독 권수 조회) 동안에도 폼을 잠근 채로 둔다.
+  // createBook 의 finally 가 isCreating 을 먼저 내려버려서, 이 플래그가 없으면
+  // 통계 왕복 동안 등록 버튼이 되살아나는데 완독 경로엔 토스트도 없다 →
+  // 사용자는 아무 반응이 없으니 한 번 더 누른다. 재독이 같은 ISBN 으로 행을
+  // 하나 더 만들어야 하므로 (user_id, isbn) 유니크 제약으로는 막을 수 없다.
+  // 중요: createBook 이 풀리는 순간 useBookCRUD 의 finally 가 isCreating 을 내리므로,
+  // 그 사이에 await 를 넣으면 버튼이 잠깐 살아나 이 방어가 무너진다.
+  const [isFinishing, setIsFinishing] = useState(false);
 
   // 실험 1: forwardRef → React 19 ref as prop — 페이지 진입 시 자동 포커스
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -148,8 +169,9 @@ const AddBookPage = () => {
     // 크게 늘어난다. 그래서 등록은 먼저 끝내고, 검증은 아래에서 백그라운드로 돌린다.
     const highResCoverImage = upgradeImageResolution(selectedBook.cover);
 
-    // 재독 횟수 계산 (기존 책이 있으면 +1, 없으면 1)
-    const readCount = existingBook ? existingBook.read_count + 1 : 1;
+    // 재독 횟수 계산 — existingBook 은 중복 다이얼로그를 취소해도 남아 있어서
+    // ISBN 이 지금 저장하는 책과 같은지 함께 본다(자세한 근거는 resolveReadCount 주석)
+    const readCount = resolveReadCount(existingBook, selectedBook.isbn13);
 
     // 알라딘 도서 정보 + 사용자 입력 데이터 결합
     const bookData = {
@@ -171,21 +193,50 @@ const AddBookPage = () => {
     const result = await createBook(bookData);
 
     if (result) {
-      const message =
-        readCount > 1
-          ? `${readCount}회독 도서가 등록되었습니다!`
-          : '도서가 등록되었습니다!';
-      toast.success(message);
-
       // 상태 초기화
       setExistingBook(null);
-
-      router.push('/books'); // 도서 목록 페이지로 이동
 
       // 책등 이미지 존재 여부 확인 — 등록을 막지 않도록 결과를 기다리지 않는다
       validateSpineImageUrl(selectedBook.cover, selectedBook.isbn13).then(
         (spineImage) => updateBook(result.id, { spine_image: spineImage })
       );
+
+      // 완독이 아니면 "책장에 꽂혔어요"가 거짓이 된다 — 예전 흐름 그대로 서재로 보낸다
+      if (formData.status !== 'completed') {
+        toast.success(
+          readCount > 1
+            ? `${readCount}회독 도서가 등록되었습니다!`
+            : '도서가 등록되었습니다!'
+        );
+        router.push('/books');
+        return;
+      }
+
+      // 여기부터는 완독 후처리 — 카드로 전환되기 전까지 폼을 잠근 상태로 유지한다
+      setIsFinishing(true);
+
+      // 완독 권수는 결과 문구에만 쓴다. 실패해도 카드는 떠야 하므로 막지 않는다.
+      // 다만 catch 는 실질 방어선이 아니다 — getBookStats 는 DB·RLS 에러를 스스로 잡아
+      // totalCompletedBooks: 0 을 반환하고 라우트가 200 으로 감싸므로, 여기로 throw 되는
+      // 것은 네트워크·HTTP 실패뿐이다. 조회 실패의 실제 신호는 0 이고, 그것을 걸러내는
+      // 것은 savedBookMessage 의 `< 1` 검사다.
+      // 재독이면 savedBookMessage 가 회독 문구로 즉시 반환해 이 값을 버리므로,
+      // 책 목록 전체를 가져오는 호출 자체를 건너뛴다(조건은 그 재독 분기의 반대).
+      let completedCount: number | null = null;
+      if (readCount <= 1) {
+        try {
+          const stats = await bookApi.getBookStats();
+          completedCount = stats.totalCompletedBooks;
+        } catch (err) {
+          console.warn('완독 권수 조회 실패:', err);
+        }
+      }
+
+      setSaved({ book: result, completedCount, readCount });
+      // 같은 배치에서 풀어야 한다 — setSaved 로 폼이 언마운트되는 렌더에 함께 커밋되므로
+      // 버튼이 되살아나 보이는 중간 렌더가 없다. 반대로 여기서 풀지 않으면
+      // `한 권 더 기록` 으로 돌아온 다음 폼의 등록 버튼이 죽은 채로 남는다.
+      setIsFinishing(false);
     } else {
       toast.error('도서 등록에 실패했습니다.');
     }
@@ -195,13 +246,28 @@ const AddBookPage = () => {
     setSelectedBook(null);
   };
 
+  const handleRecordAnother = () => {
+    setSaved(null);
+    setSelectedBook(null);
+  };
+
   return (
     <ErrorBoundary>
       <PageContainer width='content'>
         <h1 className='heading-1 mb-6 text-text-strong'>도서 추가</h1>
 
-        {/* 등록 폼이 열려있지 않을 때만 검색 UI 표시 */}
-        {!selectedBook ? (
+        {saved ? (
+          <BookSavedCard
+            title={saved.book.title}
+            coverImage={saved.book.cover_image}
+            oneLineReview={saved.book.one_line_review}
+            rating={saved.book.rating}
+            completedCount={saved.completedCount}
+            readCount={saved.readCount}
+            onGoToLibrary={() => router.push('/books')}
+            onRecordAnother={handleRecordAnother}
+          />
+        ) : !selectedBook ? (
           <div className='space-y-6'>
             {/* 검색 입력 */}
             <BookSearchInput
@@ -262,7 +328,7 @@ const AddBookPage = () => {
                 book={selectedBook}
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
-                isLoading={isCreating}
+                isLoading={isCreating || isFinishing}
               />
             )}
           </>
