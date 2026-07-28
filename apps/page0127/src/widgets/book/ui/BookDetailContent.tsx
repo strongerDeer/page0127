@@ -1,7 +1,6 @@
-import Image from 'next/image';
-
 import { Globe, Lock, Star } from 'lucide-react';
 
+import { BookCover } from '@/shared/ui/BookCover';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
 
@@ -43,25 +42,24 @@ export const BookDetailContent = ({
       <Card>
         <CardContent className='p-6'>
           <div className='flex gap-6'>
+            {/* 셰이프가 없었다 — BookCover 로 바꾸며 도메인 셰이프를 입혔다.
+                표지를 크게 놓는 자리라 대체 조판의 글자도 키운다 */}
             <div className='relative h-80 w-56 flex-shrink-0'>
-              {book.cover_image ? (
-                <Image
-                  src={book.cover_image}
-                  alt={book.title}
-                  fill
-                  className='object-cover'
-                  sizes='224px'
-                />
-              ) : (
-                <div className='flex h-full w-full items-center justify-center bg-sunken text-sm text-text-faint'>
-                  표지 없음
-                </div>
-              )}
+              <BookCover
+                src={book.cover_image}
+                title={book.title}
+                author={book.author}
+                fill
+                sizes='224px'
+                fallbackClassName='px-3 py-4 text-sm'
+              />
             </div>
 
             <div className='flex-1 space-y-4'>
               <div>
-                <h1 className='heading-1 mb-2 text-text-strong'>{book.title}</h1>
+                <h1 className='heading-1 mb-2 text-text-strong'>
+                  {book.title}
+                </h1>
                 <p className='text-lg text-foreground'>{book.author}</p>
                 <p className='text-muted-foreground'>{book.publisher}</p>
               </div>
