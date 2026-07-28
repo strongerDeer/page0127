@@ -7,7 +7,14 @@ page0127 서비스의 상태 확인·백업·장애 대응 절차를 한곳에 �
 
 다음 항목이 모두 체크되기 전에는 정식 오픈으로 전환하지 않는다.
 
-- [ ] 최신 DB 마이그레이션 적용 및 RPC 권한 allowlist 확인
+- [x] 최신 DB 마이그레이션 적용 및 RPC 권한 allowlist 확인 — 2026-07-28
+  - 로컬 41개가 운영에 전부 적용됨(`supabase migration list --linked`, 미적용 0건)
+  - public 함수 11개 중 `anon`/`authenticated`에 열린 건 **정확히 allowlist 4개**뿐.
+    `ALTER DEFAULT PRIVILEGES`가 postgres·service_role에만 있어 새 함수는 자동 비공개다.
+  - 공개된 SECURITY DEFINER 함수 둘은 스스로 방어한다 — `get_book_ranking_with_delta`는
+    `is_public` 필터, `reserve_ai_usage`는 `auth.uid()` 검증, 둘 다 `search_path` 고정.
+  - 감사 방법: `supabase db dump --linked` 후 `GRANT ... ON FUNCTION` 구문을 grep한다
+    (REST API로는 확인되지 않는다). 기준은 `20260725000001_lock_down_function_privileges.sql`.
 - [x] GitHub `main` 브랜치 보호: PR 필수(승인 0건) + `Lint · Type-check · Build` 필수 체크 — 2026-07-28
   - ⚠️ **`E2E smoke (Playwright)`는 필수 체크에 넣지 않는다.** dependabot PR에는 GitHub이
     secrets를 전달하지 않아 e2e 잡을 skip 처리했는데, skip되는 체크를 필수로 걸면 의존성
@@ -21,7 +28,16 @@ page0127 서비스의 상태 확인·백업·장애 대응 절차를 한곳에 �
 - [x] Vercel Preview에 `PRODUCTION_SUPABASE_URL` 설정 후 오연결 차단 빌드 확인 — 2026-07-28
   - CI의 `Block production database in CI` 통과 + Preview 빌드가 `next.config.ts` 가드를 통과
 - [ ] 운영 배포 직전 백업 생성 및 복원 가능한 백업인지 확인
-- [ ] 외부 uptime 모니터와 장애 알림 실수신 확인
+- [x] 외부 uptime 모니터와 장애 알림 실수신 확인 — 2026-07-28
+  - 전용 서비스(UptimeRobot 등) 대신 **GitHub Actions**로 구현: `.github/workflows/uptime.yml`.
+    5분마다 `/api/health`를 호출해 실패하면 워크플로가 빨간불이 되고 GitHub이 메일을 보낸다.
+  - ⚠️ **상태코드가 아니라 응답 본문의 `"database":"ok"`를 확인한다.** 이 앱은 존재하지 않는
+    경로에도 200 + HTML을 반환하므로(soft 404), 상태코드만 보는 감시는 주소 오타를 정상으로 오판한다.
+  - 정상(성공)·실패(빨간불)·**메일 도착**까지 모두 확인 완료.
+  - 알림 실수신 테스트 방법: 별도 브랜치에서 `TARGET`을 틀리게 바꾼 뒤 Actions의 `Run workflow`에서
+    **그 브랜치를 지정해** 실행하고, 확인 후 브랜치를 버린다. 운영과 `main`을 건드리지 않는다.
+  - 한계: GitHub cron은 정확하지 않아 실제로는 10~20분 간격으로 돈다. 분 단위 감지가 필요해지면
+    전용 서비스로 옮긴다(엔드포인트는 그대로 쓸 수 있다).
 - [ ] Sentry 테스트 오류가 이슈·알림으로 도착하고 소스맵이 해석되는지 확인
 - [ ] 두 테스트 계정으로 가입 → 책 CRUD → AI 분석 → 팔로우/알림 → 탈퇴 확인
 
@@ -216,3 +232,4 @@ Preview에서 로그인까지 테스트하려면 세 가지가 필요하다(2026
 | 2026-07-23 | 런북 최초 작성 | - |
 | 2026-07-25 | Go-live 게이트·환경 분리·Sentry 실수신 절차 추가 | - |
 | 2026-07-28 | 개발 클라우드 Supabase 신설로 Preview·CI 분리 완료, `main` 브랜치 보호 적용 → Go-live 게이트 3건 체크. 키 출처·스코프·`E2E smoke` 제외 이유 명시 | - |
+| 2026-07-28 | 마이그레이션·RPC allowlist 감사 완료, GitHub Actions 기반 uptime 감시 도입(알림 실수신 확인) → Go-live 게이트 2건 추가 체크. 남은 건 백업 복원·Sentry 실수신·전체 시나리오 3건 | - |
