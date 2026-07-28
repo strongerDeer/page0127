@@ -30,6 +30,7 @@ export type BookFormData = {
   completed_date?: string;
   start_date?: string;
   rating?: BookRating;
+  is_life_book?: boolean;
   one_line_review?: string;
   personal_memo?: string;
   tags?: string[];
@@ -44,6 +45,8 @@ type FormState = {
   startDate: string;
   showStartDate: boolean;
   rating: BookRating | undefined;
+  // 인생책 = 최고점(5)의 별칭. 배타 선택이라 다른 점수를 고르면 자동으로 풀린다
+  isLifeBook: boolean;
   oneLineReview: string;
   personalMemo: string;
   tagsInput: string;
@@ -60,7 +63,7 @@ type FormAction =
   | { type: 'SET_COMPLETED_DATE'; date: string }
   | { type: 'SET_START_DATE'; date: string }
   | { type: 'TOGGLE_START_DATE'; checked: boolean }
-  | { type: 'SET_RATING'; rating: BookRating | undefined }
+  | { type: 'SET_RATING'; rating: BookRating | 'life' }
   | { type: 'SET_ONE_LINE_REVIEW'; value: string }
   | { type: 'SET_PERSONAL_MEMO'; value: string }
   | { type: 'SET_TAGS_INPUT'; value: string }
@@ -85,7 +88,10 @@ function formReducer(state: FormState, action: FormAction): FormState {
     case 'TOGGLE_START_DATE':
       return { ...state, showStartDate: action.checked };
     case 'SET_RATING':
-      return { ...state, rating: action.rating };
+      // 인생책 선택 = 최고점 + 플래그. 배타 선택이므로 다른 점수를 고르면 플래그가 풀린다
+      return action.rating === 'life'
+        ? { ...state, rating: 5, isLifeBook: true }
+        : { ...state, rating: action.rating, isLifeBook: false };
     case 'SET_ONE_LINE_REVIEW':
       return { ...state, oneLineReview: action.value };
     case 'SET_PERSONAL_MEMO':
@@ -150,6 +156,8 @@ export const BookRegistrationForm = ({
     startDate: initialData?.start_date || '',
     showStartDate: !!initialData?.start_date,
     rating: initialData?.rating,
+    // 수정 화면에서 인생책으로 저장된 책을 열었을 때 선택이 풀려 보이면 안 된다
+    isLifeBook: initialData?.is_life_book ?? false,
     oneLineReview: initialData?.one_line_review || '',
     personalMemo: initialData?.personal_memo || '',
     tagsInput: initialData?.tags ? initialData.tags.join(', ') : '',
@@ -175,6 +183,7 @@ export const BookRegistrationForm = ({
     startDate,
     showStartDate,
     rating,
+    isLifeBook,
     oneLineReview,
     personalMemo,
     tagsInput,
@@ -189,6 +198,7 @@ export const BookRegistrationForm = ({
     const formData: BookFormData = {
       status,
       rating,
+      is_life_book: isLifeBook,
       one_line_review: oneLineReview || undefined,
       personal_memo: personalMemo || undefined,
       is_public: isPublic,
@@ -336,26 +346,29 @@ export const BookRegistrationForm = ({
                 aria-labelledby={ids.rating}
                 className='flex flex-wrap gap-2'
               >
-                {/* 인생책은 이제 이 점수 버튼이 아니라 별도 is_life_book 컬럼이다
-                    (표시·입력 UI 개편은 별도 작업 몫이라, 여기서는 0~5점 선택만 남긴다) */}
-                {[0, 1, 2, 3, 4, 5].map((score) => {
-                  const label = `${score}점`;
+                {/* 인생책은 11번째 점수가 아니라 최고점의 별칭이다 — 저장할 때 rating=5 + 플래그로 나뉜다 */}
+                {([0, 1, 2, 3, 4, 5, 'life'] as const).map((score) => {
+                  const label = score === 'life' ? '인생책' : `${score}점`;
+                  const selected =
+                    score === 'life'
+                      ? isLifeBook
+                      : !isLifeBook && rating === score;
 
                   return (
                     <button
                       key={score}
                       type='button'
                       // aria-pressed: 어떤 점수가 선택됐는지 스크린 리더에 전달
-                      aria-pressed={rating === score}
+                      aria-pressed={selected}
                       aria-label={label}
                       onClick={() =>
                         dispatch({
                           type: 'SET_RATING',
-                          rating: score as BookRating,
+                          rating: score,
                         })
                       }
                       className={`rounded-md border px-4 py-2 transition-colors ${
-                        rating === score
+                        selected
                           ? 'border-primary bg-primary text-primary-foreground'
                           : 'border-border bg-card text-foreground hover:bg-accent'
                       }`}
