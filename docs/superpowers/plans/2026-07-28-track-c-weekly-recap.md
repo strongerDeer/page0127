@@ -466,8 +466,11 @@ describe('selectRecapCard', () => {
       new Date('2026-08-02T16:00:00Z')
     );
 
-    // 08-01 은 지난 주이므로 this-week 이 되면 안 된다
-    expect(card?.kind).not.toBe('this-week');
+    // 08-01 은 지난 주다. 기념일(2025-08-03) 근처도 아니고 읽는 중도 아니므로 null 이다.
+    //
+    // not.toBe('this-week') 로 쓰지 않는 이유: 그 단언은 selectRecapCard 가 무조건
+    // null 만 돌려주는 망가진 구현도 통과시킨다. 정확한 기대값을 적어야 검증이 된다.
+    expect(card).toBeNull();
   });
 
   it('이번 주에 완독과 등록이 둘 다 있으면 완독을 보여준다', () => {
