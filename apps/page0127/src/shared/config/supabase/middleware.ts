@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { createServerClient } from '@supabase/ssr';
 
+import { isProtectedPath } from '@/shared/lib/auth/protectedRoutes';
+
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 
 /**
@@ -47,34 +49,10 @@ export async function updateSession(request: NextRequest): Promise<{
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 보호된 경로 prefix 목록 — app/(protected) 그룹과 동기화한다.
-  // 여기에 누락되더라도 (protected)/layout.tsx 의 가드가 안전망으로 동작한다.
-  // '/dashboard'는 이제 로그인 사용자의 /{username}으로 리다이렉트만 하는
-  // 얇은 스텁이라 보호가 필요 없다 (안 걸려도 로그인 자체는 각 실제 기능에서 확인한다).
-  const PROTECTED_PREFIXES = [
-    '/admin',
-    '/books',
-    '/feed',
-    '/search',
-    '/settings',
-    '/notifications',
-  ];
-
-  // /books 하위지만 로그인 없이 열어두는 경로 — app/(public)/books 와 동기화한다.
-  // 카탈로그와 책 정보는 서비스의 얼굴이자 SEO 자산이다.
-  // 로그인은 "담아둘 때" 필요하지 "구경할 때" 필요한 게 아니다.
-  const PUBLIC_EXCEPTIONS = ['/books/all', '/books/info'];
-
+  // 경로 판정은 shared/lib/auth/protectedRoutes 한 곳에 있다.
+  // 로그아웃(useLogout)도 같은 함수를 써서 "막는 곳"과 "머물러도 되는 곳"이 어긋나지 않는다.
   const { pathname } = request.nextUrl;
-
-  const isPublicException = PUBLIC_EXCEPTIONS.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
-  );
-  const isProtected =
-    !isPublicException &&
-    PROTECTED_PREFIXES.some(
-      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
-    );
+  const isProtected = isProtectedPath(pathname);
 
   // 비로그인 사용자가 보호된 경로에 접근하면 로그인 페이지로 리디렉션.
   // 원래 가려던 곳을 redirect 로 남겨, 로그인 뒤 그리로 돌아가게 한다

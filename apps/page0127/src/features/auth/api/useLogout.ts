@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { createClient } from '@/shared/config/supabase/client';
+import { isProtectedPath } from '@/shared/lib/auth/protectedRoutes';
 
 /**
  * 로그아웃 Custom Hook
@@ -49,10 +50,15 @@ export const useLogout = () => {
     // 피드·댓글 캐시가 섞이면 안 된다.
     queryClient.clear();
 
-    // 로그아웃 후에는 홈으로 보낸다. 이 서비스는 비로그인 상태에서도 전체 도서·공개
-    // 서재를 볼 수 있어서, 로그인 화면으로 보내면 둘러볼 길을 막는다(계정 삭제도 홈으로 간다).
-    router.push('/');
+    // 보던 곳이 로그인 없이도 볼 수 있는 페이지면 그 자리에 머문다.
+    // 책 소개·남의 서재를 구경하다 로그아웃했다고 홈으로 쫓아낼 이유가 없다.
+    // 보호 페이지(내 서재·설정 등)에 있었다면 더는 볼 수 없으므로 홈으로 보낸다.
+    if (isProtectedPath(window.location.pathname)) {
+      router.push('/');
+    }
+
     // Server Component가 렌더해 둔 인증 상태(헤더 아바타 등)를 버린다.
+    // 제자리에 머무는 경우에도 필요하다 — 안 하면 로그인된 화면이 그대로 남는다.
     router.refresh();
   };
 
