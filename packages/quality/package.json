@@ -14,11 +14,11 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.86.0",
+    "@supabase/supabase-js": "^2.110.9",
     "chrome-launcher": "^1.2.1",
     "lighthouse": "^13.3.0",
     "node-html-parser": "^7.1.0",
-    "playwright": "^1.60.0"
+    "playwright": "^1.62.0"
   },
   "devDependencies": {
     "typescript": "^5",
