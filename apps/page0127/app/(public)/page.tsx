@@ -16,6 +16,7 @@ import { SiteFooter } from '@/widgets/landing/ui/SiteFooter';
 import { StartCtaButton } from '@/widgets/landing/ui/StartCtaButton';
 import { TasteExampleCard } from '@/widgets/landing/ui/TasteExampleCard';
 import { TodayStrip } from '@/widgets/landing/ui/TodayStrip';
+import { WeeklyRecapCard } from '@/widgets/recap/ui/WeeklyRecapCard';
 
 /**
  * 메인 랜딩 페이지
@@ -66,6 +67,14 @@ const Home = async () => {
   return (
     <div className='min-h-screen bg-background'>
       <div className='container mx-auto max-w-6xl space-y-12 px-4 py-6 md:py-8'>
+        {/* 주간 회상 — 로그인 사용자에게만, 이번 주에 할 말이 있을 때만 나온다.
+            실패하거나 할 말이 없으면 조용히 사라진다(랜딩을 막지 않는다) */}
+        <ErrorBoundary fallback={null}>
+          <Suspense fallback={null}>
+            <WeeklyRecapCard />
+          </Suspense>
+        </ErrorBoundary>
+
         {/* 히어로 배너 — 자동 롤링. 실제 책 표지가 들어간다 */}
         <ErrorBoundary fallback={<HeroBannerSkeleton />}>
           <Suspense fallback={<HeroBannerSkeleton />}>
