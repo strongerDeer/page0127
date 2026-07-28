@@ -155,8 +155,9 @@ type BookCoverProps = {
 
 ```
 src 있음  →  <Image … className='book-cover object-cover {className}' />
-src 없음  →  <span className='book-cover flex … bg-sunken {className}'>
-                <span className='line-clamp-4 …'>{title}</span>
+src 없음  →  <span className='book-cover flex p-2 … {className} {fallbackClassName}'>
+                <span className='line-clamp-4 break-keep'>{title}</span>
+                {author && <span className='line-clamp-1 shrink-0'>{author}</span>}
              </span>
 ```
 
