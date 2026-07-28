@@ -11,6 +11,7 @@ import type {
   MonthlyReadingData,
   RatingReadingData,
 } from '@/entities/book';
+import type { RatingFilter } from '@/features/stats/model/useLibraryFilters';
 
 type DashboardChartsProps = {
   monthlyReading: MonthlyReadingData[];
@@ -18,7 +19,7 @@ type DashboardChartsProps = {
   ratingReading: RatingReadingData[];
   averageRating: number;
   onMonthClick: (month: number) => void;
-  onRatingClick: (rating: number) => void;
+  onRatingClick: (rating: RatingFilter) => void;
 };
 
 /**

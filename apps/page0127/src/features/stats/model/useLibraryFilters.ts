@@ -17,10 +17,13 @@ import type { BookStatus } from '@/entities/book';
  * - 액션 함수들은 useMemo로 참조를 고정한다 — 소비처(BookSearchInput 등)의
  *   useEffect deps에 들어가므로 매 렌더 새 참조면 effect가 불필요하게 재실행된다
  */
+/** 선택된 평점 필터. 인생책은 rating 이 5 라 숫자만으로 구별되지 않아 별도 값을 쓴다 */
+export type RatingFilter = number | 'life';
+
 export type LibraryFilterState = {
   selectedMonth: number | null;
   selectedCategories: string[];
-  selectedRating: number | null;
+  selectedRating: RatingFilter | null;
   searchQuery: string;
   // DashboardBookList 내부 useState로 두면 RESET_ALL이 닿지 않음 → 부모(훅)로 lift
   statusFilter: BookStatus | 'all';
@@ -29,7 +32,7 @@ export type LibraryFilterState = {
 type FilterAction =
   | { type: 'TOGGLE_MONTH'; month: number }
   | { type: 'CLEAR_MONTH' }
-  | { type: 'TOGGLE_RATING'; rating: number }
+  | { type: 'TOGGLE_RATING'; rating: RatingFilter }
   | { type: 'CLEAR_RATING' }
   | { type: 'SET_CATEGORIES'; categories: string[] }
   | { type: 'SET_SEARCH'; query: string }
@@ -86,7 +89,7 @@ export const useLibraryFilters = () => {
     () => ({
       toggleMonth: (month: number) => dispatch({ type: 'TOGGLE_MONTH', month }),
       clearMonth: () => dispatch({ type: 'CLEAR_MONTH' }),
-      toggleRating: (rating: number) =>
+      toggleRating: (rating: RatingFilter) =>
         dispatch({ type: 'TOGGLE_RATING', rating }),
       clearRating: () => dispatch({ type: 'CLEAR_RATING' }),
       setCategories: (categories: string[]) =>

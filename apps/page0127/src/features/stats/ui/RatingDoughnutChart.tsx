@@ -5,11 +5,12 @@ import { Star } from 'lucide-react';
 import { isRated } from '@/entities/book';
 
 import type { RatingReadingData } from '@/entities/book';
+import type { RatingFilter } from '@/features/stats/model/useLibraryFilters';
 
 type RatingDoughnutChartProps = {
   data: RatingReadingData[];
   averageRating: number;
-  onRatingClick: (rating: number) => void;
+  onRatingClick: (rating: RatingFilter) => void;
 };
 
 // 평점 숫자 → 라벨. 인생책은 rating 이 5 라도 "인생책"이다(OverallDistribution 과 같은 규칙)
@@ -68,7 +69,9 @@ export const RatingDoughnutChart = ({
             <button
               key={`${item.rating}-${item.is_life_book}`}
               type='button'
-              onClick={() => onRatingClick(item.rating)}
+              onClick={() =>
+                onRatingClick(item.is_life_book ? 'life' : item.rating)
+              }
               // 라벨 폭: '평가 안 함'이 한 줄에 들어가야 한다 (42px에서는 줄바꿈됐다)
               className='grid w-full grid-cols-[64px_1fr_36px] items-center gap-3 text-sm'
             >
