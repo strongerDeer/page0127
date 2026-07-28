@@ -8,7 +8,7 @@ import { ProfileLink } from '@/shared/ui/ProfileLink';
 import { RelativeTime } from '@/shared/ui/RelativeTime';
 
 import { Activity } from '@/entities/activity';
-import { isLifeBook, isRated } from '@/entities/book';
+import { isRated } from '@/entities/book';
 
 import { CommentSection } from '@/features/comment';
 import { BookRecordLikeButton } from '@/features/like';
@@ -163,7 +163,7 @@ export const ActivityCard = ({
           {/* 평점 (완독 시) — 첨부 우측에 정렬.
               isRated: 0("평가 안 함")을 걸러낸다. `rating &&` 로 두면 0이 falsy가 아니라
               숫자 0으로 렌더돼 화면에 "0"만 남는다.
-              10은 11번째 점수가 아니라 '인생책'이므로 이름으로 보여준다 */}
+              인생책은 점수가 아니라 이름으로 보여준다 */}
           {activity.activity_type === 'book_completed' &&
             isRated(activity.book.rating) && (
               <p className='flex shrink-0 items-center gap-1.5 text-sm font-medium text-text-body'>
@@ -171,9 +171,7 @@ export const ActivityCard = ({
                   aria-hidden='true'
                   className='size-3.5 fill-rank-up text-rank-up'
                 />
-                {isLifeBook(activity.book.rating)
-                  ? '인생책'
-                  : activity.book.rating}
+                {activity.book.is_life_book ? '인생책' : activity.book.rating}
               </p>
             )}
         </BookAttachmentLink>

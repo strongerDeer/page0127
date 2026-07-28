@@ -25,6 +25,7 @@ const books = [
     cover_image: null,
     status: 'completed',
     rating: 5,
+    is_life_book: false,
     one_line_review: '읽고 나면 아침이 달라진다',
   },
 ];

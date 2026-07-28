@@ -262,6 +262,7 @@ const AddBookPage = () => {
             coverImage={saved.book.cover_image}
             oneLineReview={saved.book.one_line_review}
             rating={saved.book.rating}
+            isLifeBook={saved.book.is_life_book}
             completedCount={saved.completedCount}
             readCount={saved.readCount}
             onGoToLibrary={() => router.push('/books')}

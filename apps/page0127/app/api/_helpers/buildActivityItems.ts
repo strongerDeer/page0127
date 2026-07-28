@@ -24,6 +24,8 @@ export type RawBook = {
   cover_image: string | null;
   status: string;
   rating: number | null;
+  /** 인생책 여부. rating 과 별개 컬럼이다 */
+  is_life_book: boolean;
   one_line_review: string | null;
 };
 /** 책 단위 좋아요 — activity_id 가 아니라 book_id 로 센다 */
@@ -129,6 +131,7 @@ export function buildActivityItems({
             cover_image: book.cover_image,
             status: book.status,
             rating: book.rating,
+            is_life_book: book.is_life_book,
           }
         : null,
       likes: {

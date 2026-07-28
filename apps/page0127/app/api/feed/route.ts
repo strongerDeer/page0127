@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
       supabase
         .from('books')
         .select(
-          'id, title, author, cover_image, status, rating, one_line_review'
+          'id, title, author, cover_image, status, rating, is_life_book, one_line_review'
         )
         .in('id', bookIds),
       supabase

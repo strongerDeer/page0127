@@ -1,8 +1,6 @@
 import { createClient } from '@/shared/config/supabase/server';
 import { mapToMainCategory } from '@/shared/lib/categoryMapper';
 
-import { isLifeBook } from '../model/rating';
-
 import type { Book } from '../types';
 import type {
   CategoryReadingData,
@@ -92,13 +90,16 @@ export const getOverallStats = async (
 const calculateReadingJourney = (books: Book[]): ReadingJourney => {
   const totalBooks = books.length;
 
-  // 인생책 (rating 10)
-  const lifeBookCount = books.filter((book) => isLifeBook(book.rating)).length;
+  // 인생책 (is_life_book 플래그 — 전에는 rating=10 이라는 매직값이었다)
+  const lifeBookCount = books.filter((book) => book.is_life_book).length;
   const lifeBookRate =
     totalBooks > 0 ? Math.round((lifeBookCount / totalBooks) * 100) : 0;
 
   // 총 읽은 쪽수
-  const totalPages = books.reduce((sum, book) => sum + (book.page_count || 0), 0);
+  const totalPages = books.reduce(
+    (sum, book) => sum + (book.page_count || 0),
+    0
+  );
 
   // 독서 시작일 (첫 완독일)
   const firstBook = books[0]; // 이미 completed_date 오름차순 정렬됨
@@ -110,7 +111,9 @@ const calculateReadingJourney = (books: Book[]): ReadingJourney => {
   const yearsDiff = today.getFullYear() - firstDate.getFullYear();
   const monthsDiff = today.getMonth() - firstDate.getMonth();
   const readingYears =
-    yearsDiff + (monthsDiff < 0 ? -1 : 0) + (monthsDiff === 0 && today.getDate() < firstDate.getDate() ? -1 : 0);
+    yearsDiff +
+    (monthsDiff < 0 ? -1 : 0) +
+    (monthsDiff === 0 && today.getDate() < firstDate.getDate() ? -1 : 0);
 
   // 하루 평균 쪽수
   const daysSince = Math.floor(

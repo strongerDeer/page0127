@@ -5,7 +5,7 @@ import { Star } from 'lucide-react';
 // → shared의 createClient를 직접 호출하고, user 조회는 인라인으로 처리
 import { createClient } from '@/shared/config/supabase/server';
 
-import { Book, isLifeBook, isRated } from '@/entities/book';
+import { Book, isRated } from '@/entities/book';
 
 type MyBookMemoProps = {
   isbn: string;
@@ -67,14 +67,14 @@ export const MyBookMemo = async ({ isbn }: MyBookMemoProps) => {
           </span>
 
           {/* 별 배지는 "평점이 있다"는 표시다 → 0("평가 안 함")이면 배지를 아예 걸지 않는다.
-              같은 화면 위쪽 평균이 5점 만점이므로 10은 숫자가 아니라 '인생책'으로 부른다 */}
+              인생책은 점수 대신 이름으로 부른다 */}
           {isRated(myBook.rating) && (
             <span className='flex items-center gap-1 text-sm font-medium text-text-strong'>
               <Star
                 aria-hidden='true'
                 className='size-4 fill-chart-4 text-chart-4'
               />
-              {isLifeBook(myBook.rating) ? '인생책' : myBook.rating}
+              {myBook.is_life_book ? '인생책' : myBook.rating}
             </span>
           )}
         </div>

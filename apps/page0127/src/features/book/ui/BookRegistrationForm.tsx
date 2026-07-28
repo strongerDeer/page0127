@@ -13,8 +13,6 @@ import { Label } from '@/shared/ui/label';
 import { Switch } from '@/shared/ui/switch';
 import { Textarea } from '@/shared/ui/textarea';
 
-import { isLifeBook } from '@/entities/book';
-
 import type { AladinBook, BookRating, BookStatus } from '@/entities/book';
 
 type BookRegistrationFormProps = {
@@ -338,10 +336,10 @@ export const BookRegistrationForm = ({
                 aria-labelledby={ids.rating}
                 className='flex flex-wrap gap-2'
               >
-                {[0, 1, 2, 3, 4, 5, 10].map((score) => {
-                  // 10은 11번째 점수가 아니라 "인생책"이다.
-                  // 버튼에 10을 그대로 쓰면 척도가 깨져 보이므로 이름으로 보여준다.
-                  const label = isLifeBook(score) ? '인생책' : `${score}점`;
+                {/* 인생책은 이제 이 점수 버튼이 아니라 별도 is_life_book 컬럼이다
+                    (표시·입력 UI 개편은 별도 작업 몫이라, 여기서는 0~5점 선택만 남긴다) */}
+                {[0, 1, 2, 3, 4, 5].map((score) => {
+                  const label = `${score}점`;
 
                   return (
                     <button

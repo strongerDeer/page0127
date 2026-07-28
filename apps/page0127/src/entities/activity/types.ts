@@ -27,6 +27,8 @@ export type Activity = {
     cover_image: string | null;
     status: string;
     rating: number | null;
+    /** 인생책 여부. rating 과 별개 컬럼이다 */
+    is_life_book: boolean;
   } | null;
   likes: {
     count: number;

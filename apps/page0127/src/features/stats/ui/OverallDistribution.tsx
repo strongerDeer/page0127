@@ -1,4 +1,4 @@
-import { isLifeBook, isRated } from '@/entities/book';
+import { isRated } from '@/entities/book';
 
 import type { RatingDistribution } from '@/entities/book';
 
@@ -14,14 +14,12 @@ type OverallDistributionProps = {
   ratings: RatingDistribution[];
 };
 
-// 평점 숫자 → 라벨. 10은 점수가 아니라 "인생책"이고, 0도 점수가 아니라 "평가 안 함"이다.
-// (10만 이름으로 부르고 0을 `0점`으로 두면 척도가 반쪽만 고쳐진다)
-const ratingLabel = (rating: number) =>
-  isLifeBook(rating)
-    ? '인생책'
-    : isRated(rating)
-      ? `${rating}점`
-      : '평가 안 함';
+// 평점 숫자 → 라벨. isLifeBook 이 참이면 "인생책"이고, 0도 점수가 아니라 "평가 안 함"이다.
+// (인생책만 이름으로 부르고 0을 `0점`으로 두면 척도가 반쪽만 고쳐진다)
+// 그룹핑 자체(10을 인생책 버킷으로 묶는 것)는 아직 이전 방식 그대로다 — Task 3에서
+// is_life_book 기준으로 바꾼다. 여기서는 시그니처만 맞춰 둔다.
+const ratingLabel = (rating: number, isLifeBook: boolean) =>
+  isLifeBook ? '인생책' : isRated(rating) ? `${rating}점` : '평가 안 함';
 
 export const OverallDistribution = ({ ratings }: OverallDistributionProps) => {
   // count 0인 평점은 숨기고, 최댓값 기준으로 막대 폭 정규화
@@ -38,7 +36,10 @@ export const OverallDistribution = ({ ratings }: OverallDistributionProps) => {
         <li key={r.rating} className='flex items-center gap-3'>
           {/* w-16: '평가 안 함'이 한 줄에 들어가야 한다 */}
           <span className='w-16 shrink-0 text-sm text-text-subtle'>
-            {ratingLabel(r.rating)}
+            {/* 그룹핑은 아직 이전 방식(Task 3에서 is_life_book 기준으로 교체) —
+                DB에 더 이상 인생책 rating 버킷이 쌓이지 않아 항상 count 0으로
+                필터링되므로 이 플래그는 지금 당장은 쓰이지 않는다 */}
+            {ratingLabel(r.rating, false)}
           </span>
           <div className='relative h-2.5 flex-1 overflow-hidden rounded-full bg-sunken'>
             <div

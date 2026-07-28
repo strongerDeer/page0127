@@ -38,6 +38,8 @@ type StreamPage = {
 type BookStreamSectionProps = {
   bookId: string;
   rating?: number | null;
+  /** 인생책 여부 — rating 과 별개 컬럼이다 */
+  isLifeBook?: boolean;
 };
 
 /**
@@ -61,6 +63,7 @@ const compareIsoTime = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 export const BookStreamSection = ({
   bookId,
   rating,
+  isLifeBook,
 }: BookStreamSectionProps) => {
   const { currentUser } = useCurrentUserContext();
   const target: CommentTarget = { type: 'book', id: bookId };
@@ -136,6 +139,7 @@ export const BookStreamSection = ({
                 content={item.content}
                 createdAt={item.createdAt}
                 rating={rating}
+                isLifeBook={isLifeBook}
               />
             ) : (
               <div key={item.id} className='space-y-3'>
