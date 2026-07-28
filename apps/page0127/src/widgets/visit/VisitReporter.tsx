@@ -22,7 +22,11 @@ import { useCurrentUserContext } from '@/entities/user';
  */
 
 const ENDPOINT = '/api/visit';
-const STORAGE_KEY = 'visit-reported-date';
+
+// 키를 사용자별로 나누는 이유: 공유 기기에서 A가 오늘 방문을 보낸 뒤 B가 로그인하면,
+// 전역 키로는 B의 방문이 "이미 보냄"으로 걸러져 서버에 아예 도달하지 않는다.
+// 서버의 복합 PK는 같은 사용자의 중복만 흡수한다 — 이 경우는 요청 자체가 없다.
+const storageKey = (userId: string) => `visit-reported-date:${userId}`;
 
 export const VisitReporter = () => {
   const { currentUser } = useCurrentUserContext();
@@ -37,10 +41,11 @@ export const VisitReporter = () => {
     if (navigator.webdriver) return;
 
     const today = toKstDateKey(new Date());
+    const key = storageKey(userId);
 
     let reported: string | null = null;
     try {
-      reported = localStorage.getItem(STORAGE_KEY);
+      reported = localStorage.getItem(key);
     } catch {
       // 프라이빗 모드·차단 설정 — 매번 보내게 되지만 서버 PK가 중복을 흡수한다.
     }
@@ -48,10 +53,12 @@ export const VisitReporter = () => {
 
     void fetch(ENDPOINT, { method: 'POST' })
       .then((response) => {
-        // 실패하면 저장하지 않는다 → 다음 페이지 이동에서 다시 시도한다.
+        // 네트워크 단계에서 실패하면 저장하지 않는다 → 다음 페이지 이동에서 다시 시도한다.
+        // 주의: 서버가 DB 쓰기에 실패해도 /api/visit은 204(= ok)를 돌려준다(의도된 설계).
+        // 즉 이 분기는 **서버 쪽 저장 실패를 잡지 못한다.** 그쪽은 서버 로그로 확인한다.
         if (!response.ok) return;
         try {
-          localStorage.setItem(STORAGE_KEY, today);
+          localStorage.setItem(key, today);
         } catch {
           // 저장 실패는 무시 — 오늘 한 번 더 보낼 뿐이고 서버가 중복을 흡수한다.
         }
