@@ -40,7 +40,13 @@ const SCORE_MAX = 5;
  */
 export function createTasteAnalysisPrompt(
   books: BookForAnalysis[],
-  personalityTypes: PersonalityTypeOption[]
+  personalityTypes: PersonalityTypeOption[],
+  /**
+   * 타입별로 요청할 추천 권수.
+   * 화면에 노출할 권수보다 크게 잡는다 — 실재하지 않는 책은 서점 대조 단계에서
+   * 탈락하므로, 여유분 없이 딱 맞춰 받으면 섹션이 비어 보인다.
+   */
+  recommendationsPerType: number
 ): string {
   // 평가 안 함(score = null)은 높은 점수도 낮은 점수도 아니다 → 두 목록에서 모두 뺀다.
   // 전에는 0점 책이 "낮은 점수를 준 책들"로 모델에 전달돼 취향을 거꾸로 읽혔다.
@@ -63,9 +69,6 @@ export function createTasteAnalysisPrompt(
   const personalityTypeList = personalityTypes
     .map((t) => `- "${t.name}": ${t.criteria}`)
     .join('\n');
-
-  // 추천 도서 출간 시기 하한선 — 매 요청마다 "최근 3년"을 계산
-  const recentYearThreshold = new Date().getFullYear() - 3;
 
   return `당신은 독서 취향 분석 전문가입니다. 사용자의 독서 기록을 분석하여 깊이 있는 인사이트를 제공해주세요.
 
@@ -109,21 +112,24 @@ ${formatBooks(lowRatedBooks)}
       "reason": "추천 이유 (왜 이 책이 사용자의 취향에 맞는지 구체적으로 설명)",
       "display_order": 1
     }
-    // ... match 5권, expand 5권, challenge 5권 (총 15권)
+    // ... match ${recommendationsPerType}권, expand ${recommendationsPerType}권, challenge ${recommendationsPerType}권 (총 ${recommendationsPerType * 3}권)
   ]
 }
 
 ## 추천 도서 생성 지침 ⚠️ 매우 중요
 - **반드시 실제로 존재하는 한국 출판 도서**만 추천하세요
 - 제목과 저자를 정확하게 기재하세요 (오타 금지)
-- 각 타입별로 정확히 5권씩 추천 (총 15권)
-  - type: "match" - 기존 취향에 완벽히 맞는 책 5권
-  - type: "expand" - 비슷하지만 새로운 영역 5권
-  - type: "challenge" - 전혀 다르지만 좋아할 만한 책 5권
-- display_order는 각 타입 내에서 1부터 5까지
+- 각 타입별로 정확히 ${recommendationsPerType}권씩 추천 (총 ${recommendationsPerType * 3}권)
+  - type: "match" - 기존 취향에 완벽히 맞는 책
+  - type: "expand" - 비슷하지만 새로운 영역
+  - type: "challenge" - 전혀 다르지만 좋아할 만한 책
+- display_order는 각 타입 내에서 1부터 ${recommendationsPerType}까지
 - reason은 구체적이고 개인화된 추천 이유 (100-150자)
-- **출간 시기 제한**: ${recentYearThreshold}년 이후 출간된 책 위주로 추천하세요.
-  그보다 오래된 책은 지금도 꾸준히 읽히는 베스트셀러·스테디셀러급이 아니면 추천하지 마세요.
+- **실재 확인이 최우선**: 제목과 저자를 확실히 아는 책만 쓰세요.
+  조금이라도 확신이 없으면 그 자리를 확실히 아는 다른 책으로 바꾸세요.
+  추천한 책은 실제 서점 데이터로 대조하므로, 지어낸 제목은 그대로 탈락합니다.
+- **제목은 표지에 적힌 그대로**: 부제·시리즈명·번역서 원제를 임의로 덧붙이거나 줄이지 마세요.
+- 최신간을 억지로 고르지 마세요. 지금도 서점에서 구할 수 있는 책이면 출간 연도는 상관없습니다.
 
 ## 성향 타입 목록 ⚠️ 매우 중요
 personality_type은 반드시 아래 목록 중 하나를 **이름 그대로(글자 하나 바꾸지 말 것)** 선택하세요:
