@@ -5,6 +5,7 @@
   "packageManager": "npm@10.7.0",
   "scripts": {
     "check:non-production-db": "node scripts/assert-non-production-supabase.mjs",
+    "check:supabase-reachable": "node scripts/assert-supabase-reachable.mjs",
     "dev": "turbo run dev",
     "dev:local": "bash scripts/dev.sh",
     "build": "turbo run build",
