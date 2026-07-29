@@ -241,6 +241,10 @@ const eslintConfig = defineConfig([
       // .storybook/main.ts·preview.tsx 는 설정을, 스토리 파일은 meta 를 default 로 내보낸다.
       '.storybook/**/*.{ts,tsx}',
       '**/*.stories.{ts,tsx}',
+
+      // 앰비언트 모듈 선언 (Default Export 필수)
+      // 예: Vite 의 `?raw` import 는 문자열을 default 로 내보낸다.
+      '**/*.d.ts',
     ],
     rules: {
       'import/no-default-export': 'off',
