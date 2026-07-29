@@ -6,6 +6,8 @@ export type PublicBookRecord = {
   author: string | null;
   cover_image: string | null;
   rating: number | null;
+  /** 인생책 여부. 전에는 rating=10 이라는 매직값이었다 */
+  is_life_book: boolean;
   one_line_review: string | null;
 };
 
@@ -28,7 +30,7 @@ export const getPublicBookRecord = async (
 
   const { data, error } = await supabase
     .from('books')
-    .select('title, author, cover_image, rating, one_line_review')
+    .select('title, author, cover_image, rating, is_life_book, one_line_review')
     .eq('id', bookId)
     .eq('user_id', userId)
     .eq('is_public', true)
