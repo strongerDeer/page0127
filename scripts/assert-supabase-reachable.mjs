@@ -32,10 +32,15 @@ try {
 }
 
 /**
- * PostgREST 루트(/rest/v1/)는 인증만 통과하면 200 을 준다.
- * 테이블 이름을 몰라도 되고 RLS 도 타지 않아 "키가 이 프로젝트 것인가" 만 정확히 가른다.
+ * PostgREST 루트(/rest/v1/)를 쓰면 안 된다. OpenAPI 스키마 문서를 주는
+ * service_role 전용 경로라 멀쩡한 anon 키로도 항상 401 이 난다
+ * ("Only the `service_role` API key can be used for this endpoint").
+ * 키가 진짜 틀렸을 때와 구분이 안 되므로, 검사가 늘 실패한다.
+ *
+ * 그래서 실제 테이블을 읽는다. books 는 로그아웃 상태의 앱도 읽는 테이블이라
+ * anon 권한으로 200 이 나오고, 행이 0개여도 200 이다.
  */
-const endpoint = `${origin}/rest/v1/`;
+const endpoint = `${origin}/rest/v1/books?select=id&limit=1`;
 const timeoutMs = 10_000;
 
 const controller = new AbortController();
