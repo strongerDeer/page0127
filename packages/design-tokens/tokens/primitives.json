@@ -10,6 +10,7 @@
   "navy": {
     "300": { "$value": "#97a4c0", "$type": "color" },
     "500": { "$value": "#66779a", "$type": "color" },
+    "600": { "$value": "#5f6f8f", "$type": "color", "$description": "라이트 text/subtle 전용. navy/500 은 흰 배경에서 4.496 이라 WCAG AA(4.5)를 0.004 차이로 못 넘긴다 — 색상·채도는 그대로 두고 명도만 7% 낮춰 흰 배경 5.05 / sunken 4.71 을 확보했다. navy/500 자체를 낮추지 않은 이유는 다크의 text-faint 가 그 값을 쓰기 때문이다(낮추면 navy/900 위 3.21 → 2.94 로 그래픽 기준 3:1 마저 깨진다)" },
     "700": { "$value": "#3b4e70", "$type": "color" },
     "800": { "$value": "#1b386b", "$type": "color", "$description": "다크 모드 표면 단차 — background(navy/900) 위에 얹는 면. 라이트의 gray/50 자리다" },
     "900": { "$value": "#14294e", "$type": "color" }

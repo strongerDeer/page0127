@@ -11,6 +11,7 @@
   --blue-700: #0455bf;
   --navy-300: #97a4c0;
   --navy-500: #66779a;
+  --navy-600: #5f6f8f; /** 라이트 text/subtle 전용. navy/500 은 흰 배경에서 4.496 이라 WCAG AA(4.5)를 0.004 차이로 못 넘긴다 — 색상·채도는 그대로 두고 명도만 7% 낮춰 흰 배경 5.05 / sunken 4.71 을 확보했다. navy/500 자체를 낮추지 않은 이유는 다크의 text-faint 가 그 값을 쓰기 때문이다(낮추면 navy/900 위 3.21 → 2.94 로 그래픽 기준 3:1 마저 깨진다) */
   --navy-700: #3b4e70;
   --navy-800: #1b386b; /** 다크 모드 표면 단차 — background(navy/900) 위에 얹는 면. 라이트의 gray/50 자리다 */
   --navy-900: #14294e;
@@ -35,7 +36,7 @@
   --font-h2-mobile: 18px;
   --text-strong: var(--navy-900); /** 제목·책 제목 */
   --text-body: var(--navy-700); /** 본문 */
-  --text-subtle: var(--navy-500); /** 저자·출판사·메타 */
+  --text-subtle: var(--navy-600); /** 저자·출판사·메타. navy/500 은 흰 배경 4.496 으로 AA 에 0.004 모자라 navy/600 으로 내렸다 (Storybook addon-a11y 가 잡았다) */
   --text-faint: var(--navy-300); /** 캡션 */
   --chart-1: var(--blue-600); /** 차트 계열 1 — 진한 블루 (primary 와 동일 색) */
   --chart-2: var(--orange-600); /** 차트 계열 2 — 코랄 오렌지 (rank-up 과 동일 색) */
