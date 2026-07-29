@@ -49,6 +49,40 @@ jobs:
         env:
           OPENAI_API_KEY: dummy
 
+  # 스토리를 실제 Chromium에서 렌더하고 axe로 접근성을 검사한다.
+  #
+  # 학습 포인트:
+  # - 스토리는 목 데이터로 그려지므로 Supabase secrets가 필요 없다 → e2e와 달리
+  #   dependabot PR에서도 그대로 돈다.
+  # - preview.tsx의 `a11y: { test: 'error' }`가 위반을 테스트 실패로 만든다.
+  #   이 job이 없으면 그 설정은 Storybook UI 안에서만 의미가 있고 회귀를 못 막는다.
+  # - 자동 검사는 바닥이지 천장이 아니다. axe는 "명백한 위반"만 잡는다 —
+  #   <div>로 만든 제목이나 아무 말 없는 로딩 상태는 여전히 사람이 봐야 한다.
+  storybook:
+    name: Storybook a11y
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # 스토리 렌더에 브라우저가 필요하다(vitest browser mode).
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+        working-directory: apps/page0127
+
+      - name: Story a11y test
+        run: npm run test:storybook -w page0127
+
   # 브라우저 스모크(Playwright). quality와 독립적으로 병렬 실행된다.
   # 앱 렌더에 Supabase 공개 env가 필요하므로 secrets를 주입한다.
   # ⚠️ 운영이 아닌 "테스트/스테이징" Supabase 프로젝트 값을 secrets에 넣어야 안전하다.

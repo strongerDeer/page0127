@@ -14,6 +14,7 @@ const config: StorybookConfig = {
   addons: [
     '@storybook/addon-docs', // Props 표·MDX 문서 자동 생성
     '@storybook/addon-a11y', // 접근성 위반 자동 검사 (색 대비·aria 등)
+    '@storybook/addon-vitest', // 스토리를 테스트로 실행 — a11y 회귀를 CI 에서 막는다
   ],
 
   framework: {
