@@ -112,14 +112,14 @@ const Home = async () => {
         {/* 프로모 카드 — 실제 기능으로 연결되는 비비드 면 2장 */}
         <PromoCards isLoggedIn={!!user} />
 
-        {/* 10점 랭킹 — 데이터가 쌓이면 나타난다 */}
+        {/* 인생책 랭킹 — 데이터가 쌓이면 나타난다 */}
         <ErrorBoundary
-          fallback={<BookRankingError title='10점을 준 사람이 가장 많은 책' />}
+          fallback={<BookRankingError title='가장 많은 사람의 인생책' />}
         >
           <Suspense fallback={null}>
             <BookRankingSection
               type='best'
-              title='10점을 준 사람이 가장 많은 책'
+              title='가장 많은 사람의 인생책'
               meta={`${aggregatedDate} 기준`}
               myReadIsbns={myReadIsbns}
             />
