@@ -34,8 +34,15 @@ const eslintConfig = defineConfig([
     'next-env.d.ts',
     'node_modules/**',
     '.turbo/**',
-    'src/shared/ui/**', // shadcn/ui 컴포넌트 제외 (외부 라이브러리 코드)
-    // 단, 스토리는 우리가 직접 쓴 코드다 — 위 무시 규칙에서 되살려 검사한다.
+    // shadcn/ui 컴포넌트 제외 (외부 라이브러리 코드).
+    // `**` 가 아니라 `**/*` 인 것이 중요하다 — 전자는 디렉터리 자체를 무시해
+    // 아래 부정 패턴이 아무 효과가 없다(ESLint flat config 규칙).
+    'src/shared/ui/**/*',
+    // 단, 아래는 우리가 직접 쓴 코드다 — 위 무시 규칙에서 되살려 검사한다.
+    // 경계는 파일명이다: shadcn CLI 가 만드는 파일은 항상 kebab-case(button.tsx),
+    // 우리가 만든 컴포넌트는 PascalCase(BookCover.tsx). 새 자체 컴포넌트는
+    // 목록에 추가할 필요 없이 이 패턴으로 자동 포함된다.
+    '!src/shared/ui/[A-Z]*.tsx',
     '!src/shared/ui/**/*.stories.tsx',
   ]),
 
