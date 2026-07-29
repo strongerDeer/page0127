@@ -81,7 +81,7 @@ export const MyBookMemo = async ({ isbn }: MyBookMemoProps) => {
 
         {/* 한줄평 — 파란 인용 박스 대신 큰 본문으로. 유저의 문장이 주인공이다 */}
         {myBook.one_line_review && (
-          <p className='break-keep text-[17px] font-medium leading-relaxed text-text-strong'>
+          <p className='break-keep text-lg font-medium leading-relaxed text-text-strong'>
             &ldquo;{myBook.one_line_review}&rdquo;
           </p>
         )}

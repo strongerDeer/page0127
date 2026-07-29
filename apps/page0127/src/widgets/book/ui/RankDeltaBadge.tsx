@@ -29,7 +29,7 @@ export const RankDeltaBadge = ({
 
   if (isNew) {
     return (
-      <span className='inline-flex items-center rounded-sm border border-rank-up px-1 text-[10px] font-bold leading-4 text-rank-up'>
+      <span className='inline-flex items-center rounded-sm border border-rank-up px-1 text-xs font-bold leading-4 text-rank-up'>
         NEW
       </span>
     );
@@ -40,7 +40,7 @@ export const RankDeltaBadge = ({
   if (delta === 0) {
     return (
       <span
-        className='inline-flex items-center gap-0.5 text-[11px] text-text-faint'
+        className='inline-flex items-center gap-0.5 text-xs text-text-faint'
         title='순위 변동 없음'
       >
         <Minus className='h-3 w-3' aria-hidden />
@@ -53,7 +53,7 @@ export const RankDeltaBadge = ({
 
   return (
     <span
-      className={`inline-flex items-center gap-0.5 text-[11px] font-medium tabular-nums ${
+      className={`inline-flex items-center gap-0.5 text-xs font-medium tabular-nums ${
         isUp ? 'text-rank-up' : 'text-text-faint'
       }`}
     >

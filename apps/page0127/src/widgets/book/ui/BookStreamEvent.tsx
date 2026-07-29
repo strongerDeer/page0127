@@ -52,9 +52,7 @@ export const BookStreamEvent = ({
     </p>
 
     {activityType === 'review_added' && content && (
-      <p className='mt-1 pl-4 text-[15px] leading-7 text-text-body'>
-        {content}
-      </p>
+      <p className='mt-1 pl-4 text-base leading-7 text-text-body'>{content}</p>
     )}
   </div>
 );

@@ -115,18 +115,16 @@ export const HeroBanner = ({ slides, covers = [] }: HeroBannerProps) => {
               aria-hidden={!isActive}
               className={cn(
                 'absolute inset-0 flex items-center transition-opacity duration-500',
-                isActive
-                  ? 'opacity-100'
-                  : 'pointer-events-none opacity-0'
+                isActive ? 'opacity-100' : 'pointer-events-none opacity-0'
               )}
             >
               <div className='mx-auto flex w-full max-w-6xl items-center justify-between gap-8 px-8 md:px-12'>
                 {/* 카피 */}
                 <div className='max-w-md' style={{ color: slide.fg }}>
-                  <p className='mb-4 text-[13px] font-medium opacity-70'>
+                  <p className='mb-4 text-sm font-medium opacity-70'>
                     {slide.eyebrow}
                   </p>
-                  <h2 className='text-[28px] font-bold leading-[1.35] md:text-[36px] md:leading-[1.3]'>
+                  <h2 className='text-[28px] font-bold leading-[1.35] md:text-4xl md:leading-[1.3]'>
                     {slide.lines[0]}
                     <br />
                     {slide.lines[1]}

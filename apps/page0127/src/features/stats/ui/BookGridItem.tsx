@@ -41,7 +41,7 @@ export const BookGridItem = ({ book, href }: BookGridItemProps) => {
           author={book.author}
           fill
           sizes='(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw'
-          fallbackClassName='px-2 py-2.5 text-[11px]'
+          fallbackClassName='px-2 py-2.5 text-xs'
         />
         {book.read_count > 1 && (
           <div className='absolute right-2 top-2'>

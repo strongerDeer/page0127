@@ -2,17 +2,9 @@
 
 import { useMemo, useRef, useState } from 'react';
 
-import {
-  METRIC_ORDER,
-  METRICS,
-  PAGE_PALETTE,
-} from '../lib/metrics';
+import { METRIC_ORDER, METRICS, PAGE_PALETTE } from '../lib/metrics';
 
-import type {
-  FormFactor,
-  MetricKey,
-  TrendPayload,
-} from '../lib/metrics';
+import type { FormFactor, MetricKey, TrendPayload } from '../lib/metrics';
 
 // viewBox 좌표계(가로 넓은 3:1). 실제 표시 폭은 CSS가 100%로 늘린다.
 const CH = { w: 900, h: 300, l: 46, r: 66, t: 16, b: 30 };
@@ -57,7 +49,9 @@ const Panel = ({
   hidden: Set<string>;
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [hover, setHover] = useState<{ idx: number; left: number } | null>(null);
+  const [hover, setHover] = useState<{ idx: number; left: number } | null>(
+    null
+  );
   const def = METRICS[metric];
   const { weeks, pages } = data;
 
@@ -88,11 +82,11 @@ const Panel = ({
   }
 
   const allVals = visible.flatMap((p) =>
-    (byPage.get(p) ?? []).filter((v): v is number => v != null),
+    (byPage.get(p) ?? []).filter((v): v is number => v != null)
   );
   const { lo, hi, ticks } = niceTicks(
     allVals.length ? Math.min(...allVals) : 0,
-    allVals.length ? Math.max(...allVals) : 1,
+    allVals.length ? Math.max(...allVals) : 1
   );
   const yAt = (v: number) => CH.t + (1 - (v - lo) / (hi - lo || 1)) * plotH;
 
@@ -186,7 +180,9 @@ const Panel = ({
           {visible.map((p) => {
             const vals = byPage.get(p)!;
             const pts = vals
-              .map((v, i) => (v == null ? null : `${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`))
+              .map((v, i) =>
+                v == null ? null : `${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`
+              )
               .filter((s): s is string => s != null)
               .join(' ');
             const lastIdx = lastIndex(vals);
@@ -258,7 +254,7 @@ const Panel = ({
               left: `min(calc(100% - 128px), max(0px, ${hover.left + 10}px))`,
             }}
           >
-            <div className='mb-1 text-[11px] font-bold opacity-80'>
+            <div className='mb-1 text-xs font-bold opacity-80'>
               {weeks[hover.idx]}
             </div>
             {tooltipRows.map((r) => (
@@ -295,7 +291,7 @@ const PanelShell = ({
   <div className='rounded-lg border border-line p-3'>
     <div className='mb-1 flex items-baseline gap-2 px-1'>
       <span className='text-sm font-medium'>{label}</span>
-      <span className='text-[11px] text-text-faint'>{cond}</span>
+      <span className='text-xs text-text-faint'>{cond}</span>
     </div>
     {children}
   </div>
@@ -319,7 +315,8 @@ export const QualityTrend = ({ data }: { data: TrendPayload }) => {
       <div>
         <h2 className='text-sm font-medium'>추세 자세히 — 지표별</h2>
         <p className='mt-0.5 text-xs text-text-faint'>
-          전체 기간 연속선. 페이지 칩으로 선을 껐다 켜고, 선 위에 마우스를 올리면 그 주 값이 나옵니다.
+          전체 기간 연속선. 페이지 칩으로 선을 껐다 켜고, 선 위에 마우스를
+          올리면 그 주 값이 나옵니다.
         </p>
       </div>
 
@@ -331,7 +328,7 @@ export const QualityTrend = ({ data }: { data: TrendPayload }) => {
             type='button'
             aria-pressed={mk === metric}
             onClick={() => setMetric(mk)}
-            className={`rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition ${
+            className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${
               mk === metric
                 ? 'border-gray-900 bg-gray-900 text-white'
                 : 'border-line bg-white text-text-faint hover:bg-gray-50'

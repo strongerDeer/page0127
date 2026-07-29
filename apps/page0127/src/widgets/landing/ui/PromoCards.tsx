@@ -26,7 +26,7 @@ export const PromoCards = ({ isLoggedIn }: PromoCardsProps) => {
         <p className='text-lg font-bold leading-snug text-white'>
           책장은 주소가 됩니다
         </p>
-        <p className='mt-1.5 text-[13px] text-white/75'>
+        <p className='mt-1.5 text-sm text-white/75'>
           링크 하나로 내 책장을 통째로 공유하세요
         </p>
         <BookMarked
@@ -46,7 +46,7 @@ export const PromoCards = ({ isLoggedIn }: PromoCardsProps) => {
         <p className='text-lg font-bold leading-snug text-white'>
           완독 5권이면 취향이 보여요
         </p>
-        <p className='mt-1.5 text-[13px] text-white/75'>
+        <p className='mt-1.5 text-sm text-white/75'>
           책장을 읽고 독서 성향을 알려 드립니다
         </p>
         <Sparkles

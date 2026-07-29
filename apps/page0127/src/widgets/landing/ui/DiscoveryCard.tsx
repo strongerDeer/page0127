@@ -92,7 +92,7 @@ export const DiscoveryCard = async () => {
             {book.title.split(' - ')[0]}
           </p>
           {book.author && (
-            <p className='mt-1.5 text-[13px] text-text-subtle'>
+            <p className='mt-1.5 text-sm text-text-subtle'>
               {book.author.split(',')[0].replace(/\s*\(지은이\)/, '')}
             </p>
           )}
@@ -120,7 +120,7 @@ export const DiscoveryCard = async () => {
           page0127의 발견
         </p>
         {book.description && (
-          <p className='mt-2.5 line-clamp-2 break-keep text-[15px] leading-relaxed text-text-body'>
+          <p className='mt-2.5 line-clamp-2 break-keep text-base leading-relaxed text-text-body'>
             {firstSentence(decodeHtmlEntities(book.description))}
           </p>
         )}

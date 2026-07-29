@@ -149,12 +149,12 @@ const Home = async () => {
                 <Sparkles aria-hidden='true' className='size-4' />
                 PAGE0127 TASTE REPORT
               </p>
-              <h2 className='mt-4 text-[28px] font-bold leading-[1.3] text-text-strong md:text-[34px]'>
+              <h2 className='mt-4 text-[28px] font-bold leading-[1.3] text-text-strong md:text-4xl'>
                 다섯 권의 책이
                 <br />
                 <span className='text-primary'>취향의 문장</span>이 됩니다
               </h2>
-              <p className='mt-4 max-w-sm break-keep text-[15px] leading-relaxed text-text-body'>
+              <p className='mt-4 max-w-sm break-keep text-base leading-relaxed text-text-body'>
                 완독 기록에 반복해서 나타나는 주제와 문장의 결을 읽고, 한 편의
                 취향 노트로 정리해 드려요.
               </p>
@@ -164,12 +164,18 @@ const Home = async () => {
                   <BookOpen aria-hidden='true' className='size-3.5' />
                   완독 기록
                 </span>
-                <ArrowRight aria-hidden='true' className='size-3.5 text-text-faint' />
+                <ArrowRight
+                  aria-hidden='true'
+                  className='size-3.5 text-text-faint'
+                />
                 <span className='flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-2'>
                   <ScanSearch aria-hidden='true' className='size-3.5' />
                   패턴 분석
                 </span>
-                <ArrowRight aria-hidden='true' className='size-3.5 text-text-faint' />
+                <ArrowRight
+                  aria-hidden='true'
+                  className='size-3.5 text-text-faint'
+                />
                 <span className='flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-2'>
                   <Sparkles aria-hidden='true' className='size-3.5' />
                   취향 노트

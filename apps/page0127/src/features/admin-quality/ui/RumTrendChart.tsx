@@ -31,8 +31,8 @@ export const RumTrendChart = ({ rum }: { rum: RumWindow | null }) => {
   if (!rum) {
     return (
       <p className='rounded-lg border border-line p-4 text-sm text-text-faint'>
-        자체 RUM 조회에 실패했습니다. (데이터가 없는 것과는 다른 상태입니다 — 서버 로그를
-        확인하세요.)
+        자체 RUM 조회에 실패했습니다. (데이터가 없는 것과는 다른 상태입니다 —
+        서버 로그를 확인하세요.)
       </p>
     );
   }
@@ -61,9 +61,10 @@ export const RumTrendChart = ({ rum }: { rum: RumWindow | null }) => {
         </h2>
         <span className='text-xs text-text-faint'>최근 {rum.windowDays}일</span>
       </div>
-      <p className='mb-3 text-[11px] text-text-faint'>
-        점선은 CWV 양호 기준({formatMs(goodThreshold)}). 표본이 없는 날은 점을 찍지 않고
-        선도 잇지 않는다 — 값 0이 아니라 &quot;그날 방문이 없었음&quot;이다.
+      <p className='mb-3 text-xs text-text-faint'>
+        점선은 CWV 양호 기준({formatMs(goodThreshold)}). 표본이 없는 날은 점을
+        찍지 않고 선도 잇지 않는다 — 값 0이 아니라 &quot;그날 방문이
+        없었음&quot;이다.
       </p>
       <ResponsiveContainer width='100%' height={220}>
         <LineChart data={data}>
