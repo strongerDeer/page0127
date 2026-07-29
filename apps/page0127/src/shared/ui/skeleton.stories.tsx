@@ -27,12 +27,42 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
  *
  * 문단을 흉내 낼 때 마지막 줄을 짧게(`w-2/3`) 두면 실제 글처럼 보인다.
  * 모든 줄이 같은 길이면 표처럼 보여서 어색하다.
+ *
+ * ## 접근성 — 스켈레톤 자체는 아무 말도 하지 않는다
+ *
+ * 회색 블록은 **장식**이다. 그대로 두면 스크린리더 사용자는 화면이 비어 있는지,
+ * 불러오는 중인지, 고장 났는지 알 수 없다. 상태는 **블록이 아니라 그것을 담은
+ * 영역**이 알려야 한다:
+ *
+ * ```tsx
+ * <div role='status' aria-live='polite' aria-label='책 목록을 불러오는 중'>
+ *   <Skeleton className='h-4 w-40' />   // 블록들은 그대로 둔다
+ * </div>
+ * ```
+ *
+ * - `role='status'` + `aria-live='polite'` — 내용이 도착하면 그 사실이 읽힌다.
+ *   `assertive` 는 쓰지 않는다(하던 말을 끊는다). 로딩은 급한 소식이 아니다.
+ * - `aria-label` 로 **무엇을** 불러오는지 밝힌다. "로딩 중"만으로는 화면에 여러 영역이
+ *   동시에 로딩될 때 구분이 안 된다.
+ * - 로딩이 끝나면 이 영역을 실제 내용으로 **바꾼다.** 스켈레톤을 남겨 두고 옆에
+ *   내용을 붙이면 live region 이 계속 켜져 있게 된다.
+ *
+ * 개별 `Skeleton` 에 `aria-hidden` 을 따로 줄 필요는 없다 — 글자가 없는 빈 div 라
+ * 스크린리더가 읽을 것이 애초에 없다.
  */
 const meta = {
   title: 'UI/Skeleton',
   component: Skeleton,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],
+  argTypes: {
+    className: {
+      control: 'text',
+      description:
+        '크기·모양은 전부 여기서. 컴포넌트는 색·모서리·animate-pulse 만 갖는다.',
+      table: { category: 'Appearance' },
+    },
+  },
 } satisfies Meta<typeof Skeleton>;
 
 export default meta;
@@ -60,7 +90,7 @@ export const BookList: Story = {
     <div className='w-80 divide-y divide-line-soft'>
       {[0, 1, 2].map((i) => (
         <div key={i} className='flex items-center gap-3 py-3'>
-          <Skeleton className='h-[64px] w-[44px] shrink-0' />
+          <Skeleton className='h-16 w-11 shrink-0' />
           <div className='min-w-0 flex-1 space-y-2'>
             <Skeleton className='h-4 w-3/4' />
             <Skeleton className='h-3 w-1/2' />
