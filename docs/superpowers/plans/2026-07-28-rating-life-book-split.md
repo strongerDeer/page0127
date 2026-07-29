@@ -33,7 +33,7 @@
 ### Task 1: 마이그레이션 — 컬럼·백필·제약·DB 함수
 
 **Files:**
-- Create: `supabase/migrations/20260728000004_split_life_book_from_rating.sql`
+- Create: `supabase/migrations/20260728000005_split_life_book_from_rating.sql`
 
 **Interfaces:**
 - Produces: `books.is_life_book boolean not null default false`. 뒤의 모든 태스크가 이 컬럼을 읽는다. DB 함수 `get_books_of_life`·랭킹 스냅샷 함수가 `rating = 10` 대신 이 플래그를 본다.
@@ -55,7 +55,7 @@ docker exec supabase_db_0127 psql -U postgres -d postgres -c \
 
 - [ ] **Step 2: 마이그레이션 파일을 만든다**
 
-`supabase/migrations/20260728000004_split_life_book_from_rating.sql`:
+`supabase/migrations/20260728000005_split_life_book_from_rating.sql`:
 
 ```sql
 -- 평점에서 "인생책"을 분리한다.
@@ -80,7 +80,7 @@ alter table public.books
   add column if not exists is_life_book boolean not null default false;
 
 comment on column public.books.is_life_book is
-  '인생책 여부. 전에는 rating=10 이라는 매직값이었다(20260728000004에서 분리).';
+  '인생책 여부. 전에는 rating=10 이라는 매직값이었다(20260728000005에서 분리).';
 
 -- 2) 백필 — 이 시점엔 CHECK 가 아직 10 을 허용한다
 do $$
@@ -157,7 +157,7 @@ Expected: 에러 없이 실행된다. 로컬에 공개 인생책이 없으면 0�
 - [ ] **Step 6: 커밋**
 
 ```bash
-git add supabase/migrations/20260728000004_split_life_book_from_rating.sql
+git add supabase/migrations/20260728000005_split_life_book_from_rating.sql
 git commit -m "feat(rating): 평점에서 인생책을 is_life_book 컬럼으로 분리"
 ```
 

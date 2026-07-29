@@ -20,7 +20,7 @@ alter table public.books
   add column if not exists is_life_book boolean not null default false;
 
 comment on column public.books.is_life_book is
-  '인생책 여부. 전에는 rating=10 이라는 매직값이었다(20260728000004에서 분리).';
+  '인생책 여부. 전에는 rating=10 이라는 매직값이었다(20260728000005에서 분리).';
 
 -- 2) 백필 — 이 시점엔 CHECK 가 아직 10 을 허용한다
 do $$
