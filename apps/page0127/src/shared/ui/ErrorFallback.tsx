@@ -28,10 +28,19 @@ export const ErrorFallback = ({
   onSecondary,
 }: ErrorFallbackProps) => {
   return (
-    <div className='flex min-h-screen items-center justify-center p-4'>
+    // role='alert' 이 없으면 화면만 조용히 바뀐다 — 스크린리더 사용자는 방금 실패했다는
+    // 사실 자체를 모른 채 이전 내용을 계속 읽고 있다고 믿는다.
+    // 에러는 하던 일을 멈추고 알려야 하는 소식이라 polite 가 아니라 alert(assertive)다.
+    <div
+      role='alert'
+      className='flex min-h-screen items-center justify-center p-4'
+    >
       <Card className='w-full max-w-md'>
         <CardHeader>
-          <CardTitle className='text-destructive'>오류가 발생했습니다</CardTitle>
+          {/* 보기에만 제목이면 안 된다 — 실제 heading 이어야 제목 목록에 잡힌다 */}
+          <CardTitle className='text-destructive'>
+            <h2>오류가 발생했습니다</h2>
+          </CardTitle>
         </CardHeader>
         <CardContent className='space-y-4'>
           <p className='text-muted-foreground'>
