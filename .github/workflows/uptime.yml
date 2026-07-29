@@ -36,7 +36,9 @@ jobs:
           # ⚠️ 상태코드만 보면 안 된다: 이 앱은 존재하지 않는 경로에도
           # 200 + HTML을 반환한다(soft 404). 주소에 오타가 나도 "정상"으로
           # 보이므로, 본문에 이 문자열이 있는지까지 확인해야 실제 상태를 안다.
-          EXPECT: '"database":"ok"'
+          # database 만 보면 부족하다 — 2026-07-29 사고 때 DB 연결은 멀쩡했고
+          # books.is_life_book 컬럼만 없었다. 그래서 스키마 계약까지 확인한다.
+          EXPECT: '"schema":"ok"'
         run: |
           # 일시적인 네트워크 오류나 콜드 스타트로 오탐이 나지 않도록 3회까지 시도한다.
           # (서버리스 콜드 스타트로 첫 응답이 4초 넘게 걸리는 경우가 있어 타임아웃은 30초)
@@ -63,5 +65,15 @@ jobs:
             fi
           done
 
-          echo "::error::헬스체크 실패 — 마지막 응답: HTTP ${code} / ${preview}"
+          # 원인을 구분해서 알린다 — 새벽에 알림만 보고 무엇부터 봐야 할지 알아야 한다.
+          if printf '%s' "$body" | grep -qF '"schema":"drift"'; then
+            echo "::error::스키마 drift — 배포된 코드가 기대하는 컬럼이 운영 DB에 없습니다."
+            echo "::error::npx supabase migration list 로 미적용 마이그레이션을 확인하세요."
+            echo "::error::응답: ${preview}"
+          elif printf '%s' "$body" | grep -qF '"database":"down"'; then
+            echo "::error::DB 연결 실패 — Supabase 상태와 자격증명을 확인하세요."
+            echo "::error::응답: HTTP ${code} / ${preview}"
+          else
+            echo "::error::헬스체크 실패 — 마지막 응답: HTTP ${code} / ${preview}"
+          fi
           exit 1
