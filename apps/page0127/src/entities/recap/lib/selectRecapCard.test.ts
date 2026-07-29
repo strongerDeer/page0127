@@ -14,6 +14,7 @@ const book = (over: Partial<RecapBook> & { id: string }): RecapBook => ({
   cover_image: null,
   status: 'completed',
   rating: null,
+  is_life_book: false,
   completed_date: null,
   // 2020년 등록 = 이번 주도 아니고 기념일 언저리도 아니다
   created_at: '2020-03-05T00:00:00Z',

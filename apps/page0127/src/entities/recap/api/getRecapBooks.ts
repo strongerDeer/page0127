@@ -21,7 +21,7 @@ export const getRecapBooks = async (userId: string): Promise<RecapBook[]> => {
   const { data, error } = await supabase
     .from('books')
     .select(
-      'id, title, author, cover_image, status, rating, completed_date, created_at'
+      'id, title, author, cover_image, status, rating, is_life_book, completed_date, created_at'
     )
     .eq('user_id', userId);
 

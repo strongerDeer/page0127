@@ -14,6 +14,8 @@ export type RecapBook = Pick<
   | 'cover_image'
   | 'status'
   | 'rating'
+  // 인생책은 rating 이 아니라 별도 컬럼이다 (트랙 F에서 10점 별칭을 분리했다)
+  | 'is_life_book'
   | 'completed_date'
   | 'created_at'
 >;
