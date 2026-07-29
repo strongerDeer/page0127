@@ -54,8 +54,11 @@ export class ErrorBoundary extends Component<
 
   render() {
     if (this.state.hasError) {
-      // 커스텀 fallback UI가 있으면 사용
-      if (this.props.fallback) {
+      // 커스텀 fallback UI가 명시적으로 전달됐으면(null 포함) 그것을 쓴다.
+      // `if (this.props.fallback)` 로 쓰면 null 이 falsy 라 "아무것도 안 그림"이
+      // 의도인 fallback={null} 이 무시되고 기본 UI로 새 버린다 — prop 을
+      // 아예 안 넘긴 경우(undefined)만 기본 UI로 떨어뜨려야 한다.
+      if (this.props.fallback !== undefined) {
         return this.props.fallback;
       }
 
