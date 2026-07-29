@@ -1,9 +1,10 @@
 import type { Preview } from '@storybook/nextjs-vite';
 
 // 앱과 똑같은 스타일 기반 위에서 컴포넌트를 본다.
-// globals.css 안에서 Tailwind · 디자인 토큰(라이트/다크) · .heading-* 유틸이
-// 전부 로드되므로, 스토리에 보이는 것이 실제 화면과 같아진다.
-import '../app/globals.css';
+// preview.css 가 globals.css 를 들여오고, 거기에 스토리 파일을 Tailwind 의
+// 스캔 범위에 넣는 `@source` 한 줄을 더한다 (없으면 스토리에만 쓰인 임의값
+// 클래스가 조용히 빠진다 — 자세한 사정은 preview.css 주석 참고).
+import './preview.css';
 
 const preview: Preview = {
   parameters: {

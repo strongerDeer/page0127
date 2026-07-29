@@ -23,7 +23,7 @@
   },
   "orange": {
     "400": { "$value": "#f0642d", "$type": "color", "$description": "다크 모드 rank-up. orange/600 은 navy/900 위에서 3.35 라 본문에 못 쓴다 (색상·채도 유지, 명도만 45%→56%)" },
-    "600": { "$value": "#d9480f", "$type": "color" }
+    "600": { "$value": "#bf3f0d", "$type": "color", "$description": "라이트 rank-up·chart-2. 옛 값 #d9480f 는 흰 배경 4.30 이라 12px bold 인 RankDeltaBadge 에서 AA 미달이었다(WCAG Large 는 18.66px bold 부터다). 색상·채도는 그대로 두고 명도만 12% 낮춰 흰 배경 5.34 / sunken 4.98 — primary(5.33)·destructive(5.44)와 같은 수준으로 맞췄다. 다크는 orange/400 을 따로 쓰므로 영향 없다" }
   },
   "red": {
     "400": { "$value": "#dd7065", "$type": "color", "$description": "다크 모드 destructive. red/600 은 navy/900 위에서 2.65 라 못 쓴다 (색상·채도 유지, 명도만 46%→63%)" },
