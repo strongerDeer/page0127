@@ -4,7 +4,7 @@ import { createAnonClient } from '@/shared/config/supabase/anon';
 export type PublicShelfSummary = {
   /** 공개된 완독 권수 */
   totalBooks: number;
-  /** 그중 인생책(rating 10) 권수 */
+  /** 그중 인생책 권수 */
   lifeBooks: number;
 };
 
@@ -43,8 +43,10 @@ export const getPublicShelfSummary = async (
     { count: life, error: lifeError },
   ] = await Promise.all([
     publicCompleted(),
-    // 인생책 = rating 10 (entities/book/model/rating.ts 의 isLifeBook)
-    publicCompleted().eq('rating', 10),
+    // 인생책은 books.is_life_book 컬럼이다. 예전에는 rating=10 이라는 매직값이었지만
+    // 20260728000005 마이그레이션이 그 행들을 rating=5 + is_life_book=true 로 백필하고
+    // CHECK 에서 10 을 뺐다 — 옛 조건을 그대로 두면 조용히 0 만 세게 된다.
+    publicCompleted().eq('is_life_book', true),
   ]);
 
   if (totalError || lifeError) {
