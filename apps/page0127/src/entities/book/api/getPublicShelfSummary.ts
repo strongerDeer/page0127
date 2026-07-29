@@ -22,7 +22,8 @@ export type PublicShelfSummary = {
  * 기준: status='completed' + completed_date 있음 + is_public=true
  * (완독일이 없는 책을 통계에서 빼는 것은 getOverallStats 41행의 규칙이다)
  *
- * 조회에 실패하면 0을 돌려준다 — 카드가 깨지는 것보다 빈 선반이 낫다.
+ * 조회 실패는 **각각 격리한다** — 인생책 한 줄 때문에 총 권수까지 버리지 않는다.
+ * 카드가 깨지는 것보다 빈 선반이 낫지만, 아는 숫자까지 버릴 이유는 없다.
  */
 export const getPublicShelfSummary = async (
   userId: string
@@ -38,10 +39,7 @@ export const getPublicShelfSummary = async (
       .not('completed_date', 'is', null)
       .eq('is_public', true);
 
-  const [
-    { count: total, error: totalError },
-    { count: life, error: lifeError },
-  ] = await Promise.all([
+  const [totalResult, lifeResult] = await Promise.all([
     publicCompleted(),
     // 인생책은 books.is_life_book 컬럼이다. 예전에는 rating=10 이라는 매직값이었지만
     // 20260728000005 마이그레이션이 그 행들을 rating=5 + is_life_book=true 로 백필하고
@@ -49,13 +47,22 @@ export const getPublicShelfSummary = async (
     publicCompleted().eq('is_life_book', true),
   ]);
 
-  if (totalError || lifeError) {
-    console.error(
-      '공개 책장 요약 조회 실패:',
-      totalError?.message ?? lifeError?.message
-    );
+  // 총 권수를 못 세면 카드에 쓸 것이 없다 — 빈 선반으로 떨어진다
+  if (totalResult.error) {
+    console.error('공개 책장 권수 조회 실패:', totalResult.error.message);
     return { totalBooks: 0, lifeBooks: 0 };
   }
 
-  return { totalBooks: total ?? 0, lifeBooks: life ?? 0 };
+  const totalBooks = totalResult.count ?? 0;
+
+  // 인생책만 실패했으면 그 줄만 뺀다. 예전에는 둘 중 하나만 실패해도 0/0 을 돌려줬는데,
+  // is_life_book 컬럼이 아직 없던 배포 직후 그 경로를 타면서 155권 읽은 책장이
+  // "빈 선반"으로 나갔다(2026-07-29). 크롤러가 그 카드를 한동안 들고 있으므로,
+  // 한쪽이 죽어도 살아 있는 숫자는 내보낸다.
+  if (lifeResult.error) {
+    console.error('인생책 권수 조회 실패:', lifeResult.error.message);
+    return { totalBooks, lifeBooks: 0 };
+  }
+
+  return { totalBooks, lifeBooks: lifeResult.count ?? 0 };
 };
