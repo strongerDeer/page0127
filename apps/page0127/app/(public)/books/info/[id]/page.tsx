@@ -38,6 +38,10 @@ async function getGlobalBook(id: string): Promise<GlobalBook | null> {
 /**
  * 책 정보 페이지는 로그인 없이 열려 있다 — 이 서비스의 SEO 자산 1순위다.
  * 검색으로 유입된 사람이 "이 책을 읽은 사람들"을 보고 서비스를 알게 된다.
+ *
+ * 그래서 없는 책은 여기서 notFound() 로 닫는다. 이 세그먼트에는 loading.tsx 가
+ * 있어 본문이 도는 시점엔 이미 200 헤더가 나간 뒤이고, 그러면 없는 페이지가
+ * 정상 페이지로 색인된다(soft 404). SEO 자산 1순위인 경로에서 이건 특히 나쁘다.
  */
 export async function generateMetadata({
   params,
@@ -45,7 +49,7 @@ export async function generateMetadata({
   const { id } = await params;
   const book = await getGlobalBook(id);
 
-  if (!book) return { title: '책을 찾을 수 없습니다 | page0127' };
+  if (!book) notFound();
 
   const title = book.author
     ? `${book.title} - ${book.author} | page0127`
