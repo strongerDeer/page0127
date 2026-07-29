@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useReducer } from 'react';
+import { useCallback, useReducer, useRef } from 'react';
 
 import { searchBooks } from '@/shared/api/aladin';
 
@@ -26,12 +26,10 @@ type SearchState = {
 // SEARCH_START  → 검색 시작 (loading ON, 이전 에러 초기화)
 // SEARCH_SUCCESS → 검색 성공 (결과 저장, loading OFF)
 // SEARCH_ERROR  → 검색 실패 (에러 저장, loading OFF)
-// SEARCH_CLEAR  → 입력 비움 (초기화)
 type SearchAction =
   | { type: 'SEARCH_START'; query: string; page: number }
   | { type: 'SEARCH_SUCCESS'; books: AladinBook[]; totalResults: number }
-  | { type: 'SEARCH_ERROR' }
-  | { type: 'SEARCH_CLEAR' };
+  | { type: 'SEARCH_ERROR' };
 
 // ─── 초기 상태 ────────────────────────────────────────────────────
 const initialState: SearchState = {
@@ -69,9 +67,6 @@ function searchReducer(state: SearchState, action: SearchAction): SearchState {
         isLoading: false,
         error: '도서 검색 중 오류가 발생했습니다.',
       };
-    case 'SEARCH_CLEAR':
-      // 초기 상태로 완전 리셋
-      return initialState;
     default:
       return state;
   }
@@ -90,14 +85,26 @@ export const useBookSearch = () => {
 
   const ITEMS_PER_PAGE = 10;
 
+  // 마지막으로 시작한 요청의 번호. 입력창을 검색 중에도 열어두면서
+  // (disabled 를 걸면 브라우저가 포커스를 뺏는다 — BookSearchInput 주석 참조)
+  // 요청이 여러 개 겹칠 수 있게 됐다. 먼저 보낸 요청이 늦게 도착하면
+  // 최신 검색어의 결과를 덮어써 버리므로, 마지막 요청의 응답만 반영한다.
+  const requestIdRef = useRef(0);
+
   // useCallback으로 함수를 메모이제이션 → 매 렌더마다 새 함수가 생기는 것을 방지
   // (BookSearchInput의 useEffect가 onSearch를 의존성으로 참조하는데,
   //  참조가 매번 바뀌면 effect가 계속 재실행 → 무한 루프로 이어짐)
   const search = useCallback(async (query: string, page = 1) => {
-    if (!query.trim()) {
-      dispatch({ type: 'SEARCH_CLEAR' });
-      return;
-    }
+    // 빈 검색어로 알라딘 API 를 때리지 않기 위한 방어선. 호출처(BookSearchInput)가
+    // 모두 trim 검사를 하고 있어 실제로 도달하지 않지만, 그 계약을 여기서도 지킨다.
+    //
+    // 결과 목록은 일부러 지우지 않는다 — 검색어를 다 지우는 건 "결과를 버리겠다"가
+    // 아니라 "다시 치겠다"의 중간 단계라, 그때마다 목록이 사라지면 목록 → 빈 화면 →
+    // 로딩 → 새 목록으로 화면이 두 번 요동친다. 결과가 페이지 본문인 검색 UI
+    // (구글·알라딘 등)는 입력창을 비워도 이전 결과를 유지한다.
+    if (!query.trim()) return;
+
+    const requestId = (requestIdRef.current += 1);
 
     // 검색 시작: loading ON, 쿼리/페이지 저장
     dispatch({ type: 'SEARCH_START', query, page });
@@ -107,6 +114,7 @@ export const useBookSearch = () => {
         page,
         maxResults: ITEMS_PER_PAGE,
       });
+      if (requestId !== requestIdRef.current) return; // 뒤늦게 온 옛 응답 — 버린다
       const items = response.item || [];
 
       // 검색 성공: 결과 저장, loading OFF
@@ -116,6 +124,7 @@ export const useBookSearch = () => {
         totalResults: response.totalResults,
       });
     } catch (err) {
+      if (requestId !== requestIdRef.current) return;
       // 검색 실패: 에러 저장, loading OFF
       dispatch({ type: 'SEARCH_ERROR' });
       console.error(err);
