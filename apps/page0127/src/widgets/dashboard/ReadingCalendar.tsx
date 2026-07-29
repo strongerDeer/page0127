@@ -152,7 +152,7 @@ export const ReadingCalendar = ({
           ) : (
             <>
               {/* 요일 헤더 — 색도 토큰만: 일=포인트(코랄), 토=브랜드 블루 */}
-              <div className='mb-1 grid grid-cols-7 gap-1 text-center text-[13px] font-medium text-text-subtle'>
+              <div className='mb-1 grid grid-cols-7 gap-1 text-center text-sm font-medium text-text-subtle'>
                 {weekDays.map((day, index) => (
                   <div
                     key={day}
@@ -266,7 +266,7 @@ export const ReadingCalendar = ({
                   <h4 className='truncate text-sm font-medium text-text-strong'>
                     {book.title}
                   </h4>
-                  <p className='truncate text-[13px] text-text-subtle'>
+                  <p className='truncate text-sm text-text-subtle'>
                     {book.author}
                   </p>
                 </div>

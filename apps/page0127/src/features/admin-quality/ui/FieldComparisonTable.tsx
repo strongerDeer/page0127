@@ -41,7 +41,9 @@ const RATING_VERDICT: Record<RumRating, Verdict> = {
 const formatValue = (metric: RumMetricName, value: number): string => {
   // CLS는 무단위 누적값이라 ms 포맷을 쓰면 안 된다.
   if (metric === 'cls') return value.toFixed(3);
-  return value >= 1000 ? `${(value / 1000).toFixed(2)}s` : `${Math.round(value)}ms`;
+  return value >= 1000
+    ? `${(value / 1000).toFixed(2)}s`
+    : `${Math.round(value)}ms`;
 };
 
 type CellProps = { verdict: Verdict; label: string; note?: string };
@@ -53,7 +55,7 @@ const Cell = ({ verdict, label, note }: CellProps) => (
     >
       {label}
     </span>
-    {note && <span className='text-[11px] text-text-faint'>{note}</span>}
+    {note && <span className='text-xs text-text-faint'>{note}</span>}
   </div>
 );
 
@@ -143,7 +145,11 @@ const LabCell = ({
   // 홈 앵커 기준. 앵커는 "인기 페이지"가 아니라 회귀 감지용 고정 URL이다.
   const home = record.pages[0];
   const value =
-    metric === 'lcp' ? home?.cwv.lcp : metric === 'cls' ? home?.cwv.cls : home?.cwv.fcp;
+    metric === 'lcp'
+      ? home?.cwv.lcp
+      : metric === 'cls'
+        ? home?.cwv.cls
+        : home?.cwv.fcp;
   if (value === undefined) return <Empty reason='—' />;
 
   return (
@@ -164,7 +170,11 @@ const COLUMNS = [
     title: '자체 RUM',
     subtitle: '실사용자 · 전 폼팩터 · p75',
   },
-  { key: 'crux', title: 'CrUX', subtitle: '실사용자 Chrome · 모바일 · 28일 p75' },
+  {
+    key: 'crux',
+    title: 'CrUX',
+    subtitle: '실사용자 Chrome · 모바일 · 28일 p75',
+  },
   { key: 'lab', title: 'Lighthouse', subtitle: '랩 · 느린4G 고정 · 홈 중앙값' },
 ] as const;
 
@@ -183,20 +193,24 @@ export const FieldComparisonTable = ({
       </span>
     </div>
     <p className='mb-3 text-xs text-text-faint'>
-      세 열은 <strong>다른 것을 재는 다른 숫자</strong>다. 합치거나 대소를 직접 비교하지
-      말 것. 합격/불합격 판정은 실사용자(자체 RUM·CrUX) 값으로만 하고, 랩 수치는 회색
-      —주차 간 상대 비교 전용이다.
+      세 열은 <strong>다른 것을 재는 다른 숫자</strong>다. 합치거나 대소를 직접
+      비교하지 말 것. 합격/불합격 판정은 실사용자(자체 RUM·CrUX) 값으로만 하고,
+      랩 수치는 회색 —주차 간 상대 비교 전용이다.
     </p>
 
     <div className='overflow-x-auto'>
       <table className='w-full min-w-[520px] border-collapse text-left'>
         <thead>
           <tr className='border-b border-line'>
-            <th className='w-20 py-2 text-xs font-medium text-text-faint'>지표</th>
+            <th className='w-20 py-2 text-xs font-medium text-text-faint'>
+              지표
+            </th>
             {COLUMNS.map((column) => (
               <th key={column.key} className='py-2 pr-4'>
-                <span className='block text-xs font-medium'>{column.title}</span>
-                <span className='block text-[11px] font-normal text-text-faint'>
+                <span className='block text-xs font-medium'>
+                  {column.title}
+                </span>
+                <span className='block text-xs font-normal text-text-faint'>
                   {column.subtitle}
                 </span>
               </th>
@@ -206,7 +220,9 @@ export const FieldComparisonTable = ({
         <tbody>
           {RUM_METRICS.map((metric) => (
             <tr key={metric} className='border-b border-line/50 last:border-0'>
-              <th className='py-3 text-xs font-medium'>{METRIC_LABEL[metric]}</th>
+              <th className='py-3 text-xs font-medium'>
+                {METRIC_LABEL[metric]}
+              </th>
               <td className='py-3 pr-4 align-top'>
                 <RumCell metric={metric} rum={rum} />
               </td>
@@ -222,10 +238,10 @@ export const FieldComparisonTable = ({
       </table>
     </div>
 
-    <p className='mt-3 text-[11px] text-text-faint'>
-      자체 RUM은 표본을 지키려고 모바일·데스크탑을 합쳐 집계한다. 표본 30건 미만이면 값만
-      보여주고 판정 색을 칠하지 않는다. CLS는 Chromium 계열에서만 수집돼 다른 지표보다
-      n이 작다.
+    <p className='mt-3 text-xs text-text-faint'>
+      자체 RUM은 표본을 지키려고 모바일·데스크탑을 합쳐 집계한다. 표본 30건
+      미만이면 값만 보여주고 판정 색을 칠하지 않는다. CLS는 Chromium 계열에서만
+      수집돼 다른 지표보다 n이 작다.
     </p>
   </section>
 );

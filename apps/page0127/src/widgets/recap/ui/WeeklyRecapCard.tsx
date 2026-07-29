@@ -82,7 +82,7 @@ const RecapRating = ({
   if (!isRated(rating) && !isLifeBook) return null;
 
   return (
-    <p className='mt-1 flex items-center gap-2 text-[13px] text-text-subtle'>
+    <p className='mt-1 flex items-center gap-2 text-sm text-text-subtle'>
       {isRated(rating) && (
         <>
           <span aria-hidden='true'>
@@ -147,7 +147,7 @@ export const WeeklyRecapCard = async () => {
             {card.lead.title}
           </p>
 
-          <p className='mt-1 text-[13px] text-text-subtle'>
+          <p className='mt-1 text-sm text-text-subtle'>
             {[card.lead.author, meta].filter(Boolean).join(' · ')}
           </p>
 
@@ -159,7 +159,7 @@ export const WeeklyRecapCard = async () => {
       </div>
 
       {card.others.length > 0 && (
-        <p className='mt-4 line-clamp-1 break-keep text-[13px] text-text-body'>
+        <p className='mt-4 line-clamp-1 break-keep text-sm text-text-body'>
           {`${toTailLabel(card.kind, card.others.length)} — `}
           {card.others.map((book) => book.title).join(' · ')}
         </p>

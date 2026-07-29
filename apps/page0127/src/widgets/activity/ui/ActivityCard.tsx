@@ -179,7 +179,7 @@ export const ActivityCard = ({
 
       {/* 리뷰 내용 — 유저가 쓴 글은 다듬지 않고 그대로 보여준다 */}
       {activity.activity_type === 'review_added' && activity.content && (
-        <p className='mt-4 line-clamp-3 break-keep text-[15px] leading-7 text-text-body'>
+        <p className='mt-4 line-clamp-3 break-keep text-base leading-7 text-text-body'>
           {activity.content}
         </p>
       )}
@@ -194,7 +194,7 @@ export const ActivityCard = ({
 
       {/* 한줄평 — 최신 활동이 완독이어도 리뷰 본문이 보이게 한다 */}
       {activity.reviewContent && (
-        <p className='mt-2 line-clamp-3 break-keep text-[15px] leading-7 text-text-body'>
+        <p className='mt-2 line-clamp-3 break-keep text-base leading-7 text-text-body'>
           {activity.reviewContent}
         </p>
       )}

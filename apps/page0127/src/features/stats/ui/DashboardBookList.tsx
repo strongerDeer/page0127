@@ -11,16 +11,19 @@ import {
 
 import Link from 'next/link';
 
-import { LayoutGrid, Library, Search, SearchX, SlidersHorizontal, X } from 'lucide-react';
+import {
+  LayoutGrid,
+  Library,
+  Search,
+  SearchX,
+  SlidersHorizontal,
+  X,
+} from 'lucide-react';
 
 import { mapToMainCategory } from '@/shared/lib/categoryMapper';
 import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
 import { Button } from '@/shared/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/shared/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover';
 import {
   Select,
   SelectContent,
@@ -31,7 +34,10 @@ import {
 
 import { BookFeedGrid } from './BookFeedGrid';
 import { BookGridItem } from './BookGridItem';
-import { BookListFilterInput, type BookListFilterInputHandle } from './BookListFilterInput';
+import {
+  BookListFilterInput,
+  type BookListFilterInputHandle,
+} from './BookListFilterInput';
 import { CategoryFilter } from './CategoryFilter';
 
 import type { Book } from '@/entities/book';
@@ -329,7 +335,7 @@ export const DashboardBookList = ({
               <SlidersHorizontal className='h-4 w-4' />
               필터
               {activeFilterCount > 0 && (
-                <span className='flex size-5 items-center justify-center rounded-full bg-primary text-[11px] text-primary-foreground'>
+                <span className='flex size-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground'>
                   {activeFilterCount}
                 </span>
               )}
@@ -462,7 +468,6 @@ export const DashboardBookList = ({
 
       {/* 읽은 책 목록 */}
       <div>
-
         {/* 책 목록 — renderBooks가 있으면 커스텀 렌더링, 없으면 기본 그리드 */}
         {/* isSearchStale: 타이핑 중 아직 반영 안 된 상태 → 흐리게 표시 */}
         {filteredBooks.length > 0 ? (

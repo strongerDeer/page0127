@@ -44,16 +44,14 @@ export const CategoryFilter = ({
 
     // 모든 카테고리를 고른 결과는 필터가 없는 "전체"와 같다.
     onSelectionChange(
-      nextCategories.length === availableCategories.length
-        ? []
-        : nextCategories
+      nextCategories.length === availableCategories.length ? [] : nextCategories
     );
   };
 
   return (
     <div className='mb-5 flex flex-wrap items-center gap-1.5 border-t border-line-soft pt-4'>
       {/* 라벨은 칩과 같은 줄에 — 별도 헤딩을 세우면 필터가 섹션처럼 무거워진다 */}
-      <span className='mr-1 text-[13px] text-text-subtle'>
+      <span className='mr-1 text-sm text-text-subtle'>
         카테고리
         {selectedCategories.length > 0 && ` · ${selectedCategories.length}`}
       </span>
@@ -61,7 +59,7 @@ export const CategoryFilter = ({
       <button
         onClick={() => onSelectionChange([])}
         aria-pressed={selectedCategories.length === 0}
-        className={`rounded-full border px-3 py-1.5 text-[13px] font-medium transition-colors ${
+        className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
           selectedCategories.length === 0
             ? 'border-primary bg-primary/5 text-primary'
             : 'border-line bg-card text-text-body hover:border-text-faint hover:bg-sunken'
@@ -76,7 +74,7 @@ export const CategoryFilter = ({
           key={cat.category}
           onClick={() => toggleCategory(cat.category)}
           aria-pressed={selectedCategories.includes(cat.category)}
-          className={`rounded-full border px-3 py-1.5 text-[13px] font-medium transition-colors ${
+          className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
             selectedCategories.includes(cat.category)
               ? 'border-primary bg-primary/5 text-primary'
               : 'border-line bg-card text-text-body hover:border-text-faint hover:bg-sunken'

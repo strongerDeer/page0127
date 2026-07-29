@@ -96,11 +96,11 @@ export const BookRankingList = ({
                 />
 
                 <div className='min-w-0 flex-1'>
-                  <p className='truncate text-[15px] font-medium text-text-strong group-hover:underline'>
+                  <p className='truncate text-base font-medium text-text-strong group-hover:underline'>
                     {book.title}
                   </p>
                   {book.author && (
-                    <p className='mt-0.5 truncate text-[13px] text-text-subtle'>
+                    <p className='mt-0.5 truncate text-sm text-text-subtle'>
                       {book.author}
                     </p>
                   )}

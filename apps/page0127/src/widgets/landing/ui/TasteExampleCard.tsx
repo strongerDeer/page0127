@@ -46,7 +46,7 @@ export const TasteExampleCard = async () => {
             <Sparkles aria-hidden='true' className='size-3.5' />
             TASTE NOTE 0127
           </p>
-          <h3 className='mt-3 text-[26px] font-bold leading-tight text-text-strong md:text-[30px]'>
+          <h3 className='mt-3 text-2xl font-bold leading-tight text-text-strong md:text-3xl'>
             {EXAMPLE.personalityType}
           </h3>
         </div>
@@ -73,7 +73,7 @@ export const TasteExampleCard = async () => {
         )}
       </div>
 
-      <p className='mt-5 max-w-2xl break-keep text-[15px] leading-[1.8] text-text-body'>
+      <p className='mt-5 max-w-2xl break-keep text-base leading-[1.8] text-text-body'>
         {EXAMPLE.description}
       </p>
 
@@ -87,7 +87,7 @@ export const TasteExampleCard = async () => {
             {EXAMPLE.likedTopics.map((topic) => (
               <span
                 key={topic}
-                className='rounded-full bg-sunken px-3 py-1.5 text-[13px] font-medium text-text-body'
+                className='rounded-full bg-sunken px-3 py-1.5 text-sm font-medium text-text-body'
               >
                 {topic}
               </span>
@@ -104,7 +104,7 @@ export const TasteExampleCard = async () => {
             {EXAMPLE.likedStyles.map((style) => (
               <span
                 key={style}
-                className='rounded-full bg-sunken px-3 py-1.5 text-[13px] font-medium text-text-body'
+                className='rounded-full bg-sunken px-3 py-1.5 text-sm font-medium text-text-body'
               >
                 {style}
               </span>

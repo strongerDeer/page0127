@@ -41,10 +41,10 @@ export const BookSearchResultCard = ({
       />
 
       <div className='min-w-0 flex-1'>
-        <h3 className='truncate text-[15px] font-medium text-text-strong'>
+        <h3 className='truncate text-base font-medium text-text-strong'>
           {book.title}
         </h3>
-        <p className='mt-0.5 truncate text-[13px] text-text-subtle'>
+        <p className='mt-0.5 truncate text-sm text-text-subtle'>
           {book.author}
         </p>
         <p className='mt-1 truncate text-xs text-text-faint'>

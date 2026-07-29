@@ -224,7 +224,7 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
           {book.description && (
             <section className='border-t border-line pt-6'>
               <h2 className='heading-2 text-text-strong'>책 소개</h2>
-              <p className='mt-3 whitespace-pre-line break-keep text-[15px] leading-[1.8] text-text-body'>
+              <p className='mt-3 whitespace-pre-line break-keep text-base leading-[1.8] text-text-body'>
                 {decodeHtmlEntities(book.description)}
               </p>
             </section>

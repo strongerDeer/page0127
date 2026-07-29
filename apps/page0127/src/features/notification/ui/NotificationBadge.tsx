@@ -10,7 +10,10 @@
  * - Supabase Realtime 구독으로 새 알림이 오면 즉시 반영
  */
 
-import { useNotificationRealtime, useUnreadCount } from '@/entities/notification';
+import {
+  useNotificationRealtime,
+  useUnreadCount,
+} from '@/entities/notification';
 
 type NotificationBadgeProps = {
   userId: string;
@@ -28,7 +31,7 @@ export const NotificationBadge = ({ userId }: NotificationBadgeProps) => {
   }
 
   return (
-    <span className='ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-white'>
+    <span className='ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-xs font-bold text-white'>
       {unreadCount.count > 99 ? '99+' : unreadCount.count}
     </span>
   );

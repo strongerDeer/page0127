@@ -15,19 +15,18 @@ import { useState } from 'react';
 import { Bell } from 'lucide-react';
 
 import { Button } from '@/shared/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/shared/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover';
 
-import { useNotificationRealtime,useUnreadCount } from '@/entities/notification';
+import {
+  useNotificationRealtime,
+  useUnreadCount,
+} from '@/entities/notification';
 
 import { NotificationList } from './NotificationList';
 
 type NotificationDropdownProps = {
   userId: string;
-}
+};
 
 export const NotificationDropdown = ({ userId }: NotificationDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -43,7 +42,7 @@ export const NotificationDropdown = ({ userId }: NotificationDropdownProps) => {
           <Bell className='h-5 w-5' />
           {/* 읽지 않은 알림 뱃지 */}
           {unreadCount && unreadCount.count > 0 && (
-            <span className='absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white'>
+            <span className='absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-bold text-white'>
               {unreadCount.count > 99 ? '99+' : unreadCount.count}
             </span>
           )}
@@ -54,4 +53,4 @@ export const NotificationDropdown = ({ userId }: NotificationDropdownProps) => {
       </PopoverContent>
     </Popover>
   );
-}
+};
