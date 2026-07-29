@@ -1,3 +1,4 @@
+import { BookCover } from '@/shared/ui/BookCover';
 import { Card, CardContent } from '@/shared/ui/card';
 import { PageContainer } from '@/shared/ui/PageContainer';
 
@@ -36,6 +37,17 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
  * `bg='sunken'` 은 배경을 한 단 눌러 "책장 바닥"을 만든다. 공개 서재처럼 카드가 여러 개
  * 떠 있는 화면에서 쓴다. 파스텔 그라디언트 배경은 쓰지 않는다 — 실서비스에 없고
  * (교보·밀리 모두 단색) AI 랜딩의 대표 신호다.
+ *
+ * ## 접근성 — 여기에 `<main>` 을 넣지 않는다
+ *
+ * 이 컴포넌트는 의도적으로 **`<div>`** 다. 이름이 "페이지 컨테이너"라 `<main>` 으로
+ * 만들고 싶어지지만, `<main>` 은 이미 `AppShellLayout` 이 갖고 있다
+ * (`id='main-content'`, 스킵 링크의 목적지). 여기서 또 만들면 **랜드마크가 둘**이 되어
+ * 스크린리더 사용자가 "본문"을 두 번 만나게 된다 — 어느 쪽이 진짜인지 알 수 없다.
+ *
+ * 페이지 안에서 구획을 나눠야 하면 `<section aria-labelledby>` 를 `children` 쪽에서 쓴다.
+ *
+ * 페이지 제목도 이 컴포넌트가 만들지 않는다. `<h1>` 은 각 페이지가 자기 내용으로 정한다.
  */
 const meta = {
   title: 'UI/PageContainer',
@@ -126,8 +138,8 @@ export const Wide: Story = {
   },
 };
 
-/** 공개 서재 — 배경을 눌러 카드가 얹힌 면을 만든다. */
-export const SunkenBackground: Story = {
+/** 공개 서재 — 배경을 눌러 카드가 얹힌 면을 만든다. 최대 6xl. */
+export const Library: Story = {
   args: {
     width: 'library',
     bg: 'sunken',
@@ -136,6 +148,64 @@ export const SunkenBackground: Story = {
       <>
         <Filler label='width=library · bg=sunken — 공개 서재' />
         <Filler label='배경이 한 단 낮아 카드가 떠 보인다' />
+      </>
+    ),
+  },
+};
+
+/**
+ * 실제 화면 한 조각 — 공개 서재.
+ *
+ * 눈여겨볼 것: `<main>` 이 없다(AppShellLayout 이 갖는다), 제목은 페이지가 `<h1>` 로
+ * 직접 만든다, 세로 리듬(`space-y-8`)은 `className` 으로 주입한다, 목록은 `<ul>` 이다.
+ */
+export const RealWorld: Story = {
+  args: {
+    width: 'library',
+    bg: 'sunken',
+    className: 'space-y-8',
+    children: (
+      <>
+        <header>
+          <h1 className='heading-1 text-text-strong'>책벌레님의 책장</h1>
+          <p className='mt-2 text-sm text-text-subtle'>
+            완독 42권 · 읽는 중 3권
+          </p>
+        </header>
+
+        <section aria-labelledby='recent-heading' className='space-y-3'>
+          <h2 id='recent-heading' className='heading-2 text-text-strong'>
+            최근에 읽은 책
+          </h2>
+          <ul className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
+            {[
+              { title: '아무튼, 계속', author: '김미소' },
+              { title: '읽었습니다', author: '이다혜' },
+              { title: '동물농장', author: '조지 오웰' },
+              { title: '사피엔스', author: '유발 하라리' },
+            ].map((book) => (
+              <li key={book.title}>
+                <Card className='py-4'>
+                  <CardContent className='flex items-center gap-3 px-4'>
+                    <BookCover
+                      title={book.title}
+                      decorative
+                      className='h-16 w-11 shrink-0'
+                    />
+                    <div className='min-w-0'>
+                      <p className='truncate text-sm font-medium text-text-strong'>
+                        {book.title}
+                      </p>
+                      <p className='mt-0.5 truncate text-xs text-text-subtle'>
+                        {book.author}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </li>
+            ))}
+          </ul>
+        </section>
       </>
     ),
   },

@@ -42,12 +42,53 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
  *
  * 목록의 항목 하나하나를 카드로 감싸면 경계선이 줄줄이 겹쳐 오히려 읽기 어려워진다.
  * 그럴 땐 카드 하나 안에 `line-soft` 로 항목을 나누는 편이 낫다.
+ *
+ * ## 접근성 — 카드는 의미가 없는 상자다
+ *
+ * `Card` 도 `CardTitle` 도 전부 **`<div>`** 다. 보기에는 제목이지만 스크린리더에는
+ * 그냥 글자 덩어리라, 제목 목록으로 페이지를 훑는 사용자에게 잡히지 않는다.
+ * 화면을 보는 사람만 구조를 인식하는 상태가 된다.
+ *
+ * 그래서 **의미는 쓰는 쪽이 준다**:
+ *
+ * - 카드가 페이지의 한 구획이면 → `<section aria-labelledby='...'>` 로 감싸고
+ *   `CardTitle` 안에 `<h2 id='...'>` 를 넣는다
+ * - 카드가 목록의 항목이면 → 바깥을 `<ul>`, 각 카드를 `<li>` 로 감싼다
+ * - 카드 전체가 링크면 → 카드를 `<a>` 로 감싸지 말고 **제목만 링크로 만든 뒤**
+ *   `::after` 로 카드 전체를 덮는다. 카드를 통째로 감싸면 스크린리더가 카드 안 모든
+ *   텍스트를 링크 이름으로 읽어 버린다
+ *
+ * `Card` 는 `<div>` 의 모든 속성을 그대로 받으므로 `role` · `aria-*` 를 직접 줄 수 있다.
  */
 const meta = {
   title: 'UI/Card',
   component: Card,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],
+  argTypes: {
+    children: {
+      description:
+        '슬롯 조합. CardHeader / CardTitle / CardDescription / CardAction / CardContent / CardFooter.',
+      table: { category: 'Content' },
+    },
+    className: {
+      control: 'text',
+      description:
+        '바깥 상자에 붙는다. 너비·여백은 여기서. 가로 여백은 각 슬롯이 갖는다(px-6).',
+      table: { category: 'Appearance' },
+    },
+    role: {
+      control: 'text',
+      description:
+        "목록 항목이면 'listitem' 등. div 라 기본 의미가 없어 필요하면 직접 준다.",
+      table: { category: 'Accessibility' },
+    },
+    'aria-labelledby': {
+      control: 'text',
+      description: '구획으로 쓸 때 제목 요소의 id 를 가리킨다.',
+      table: { category: 'Accessibility' },
+    },
+  },
 } satisfies Meta<typeof Card>;
 
 export default meta;
@@ -127,6 +168,66 @@ export const ContentOnly: Story = {
         </CardContent>
       </Card>
     </div>
+  ),
+};
+
+/**
+ * 페이지의 한 구획으로 쓸 때. `<section aria-labelledby>` 로 감싸고 제목을
+ * 진짜 `<h2>` 로 만든다 — 그래야 제목 목록으로 페이지를 훑는 사용자에게 잡힌다.
+ *
+ * `CardTitle` 을 그대로 두면 보기에만 제목이고 스크린리더에는 글자 덩어리다.
+ */
+export const AsSection: Story = {
+  render: () => (
+    <section aria-labelledby='weekly-title'>
+      <Card className='w-96'>
+        <CardHeader>
+          <CardTitle>
+            <h2 id='weekly-title' className='text-base font-medium'>
+              이번 주 많이 읽은 책
+            </h2>
+          </CardTitle>
+          <CardDescription>최근 7일 완독 기준</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className='text-sm text-text-body'>
+            같은 책을 여러 번 읽어도 한 번으로 셉니다.
+          </p>
+        </CardContent>
+      </Card>
+    </section>
+  ),
+};
+
+/**
+ * 카드가 목록의 항목일 때. 바깥을 `<ul>`, 각 카드를 `<li>` 로 감싼다 —
+ * 스크린리더가 "목록, 항목 3개"를 먼저 알려 준다.
+ *
+ * 여기서는 카드를 겹쳐 쌓는 예가 아니라 **각 항목이 독립된 카드여야 하는 경우**다
+ * (항목마다 행동 버튼이 붙는 등). 단순 나열이면 아래 `ListInsideOneCard` 를 쓴다.
+ */
+export const AsListItems: Story = {
+  render: () => (
+    <ul className='w-80 space-y-3'>
+      {[
+        { title: '아무튼, 계속', meta: '김미소 · 코난북스' },
+        { title: '읽었습니다', meta: '이다혜 · 위즈덤하우스' },
+      ].map((book) => (
+        <li key={book.title}>
+          <Card>
+            <CardHeader>
+              <CardTitle>{book.title}</CardTitle>
+              <CardDescription>{book.meta}</CardDescription>
+              <CardAction>
+                <Button variant='outline' size='sm'>
+                  담기
+                </Button>
+              </CardAction>
+            </CardHeader>
+          </Card>
+        </li>
+      ))}
+    </ul>
   ),
 };
 

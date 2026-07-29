@@ -72,14 +72,14 @@ type Story = StoryObj<typeof meta>;
 
 /** 표지 이미지가 없을 때 — 제목을 조판한다. */
 export const Fallback: Story = {
-  args: { className: 'w-[100px] h-[145px]' },
+  args: { className: 'w-25 h-[145px]' },
 };
 
 /** 저자를 주면 두 줄이 된다. 표지를 크게 놓는 자리에 쓴다. */
 export const FallbackWithAuthor: Story = {
   args: {
     author: '김미소',
-    className: 'w-[140px] h-[200px] text-sm',
+    className: 'w-35 h-50 text-sm',
   },
 };
 
@@ -88,7 +88,7 @@ export const LongTitle: Story = {
   args: {
     title: '우리가 빛의 속도로 갈 수 없다면 그래도 우리는 계속 나아간다',
     author: '김초엽',
-    className: 'w-[100px] h-[145px]',
+    className: 'w-25 h-[145px]',
   },
 };
 
@@ -96,12 +96,12 @@ export const LongTitle: Story = {
 export const Sizes: Story = {
   render: () => (
     <div className='flex items-end gap-4'>
-      <BookCover title='아무튼, 계속' className='h-[80px] w-[56px]' />
-      <BookCover title='아무튼, 계속' className='h-[116px] w-[80px]' />
+      <BookCover title='아무튼, 계속' className='h-20 w-14' />
+      <BookCover title='아무튼, 계속' className='h-29 w-20' />
       <BookCover
         title='아무튼, 계속'
         author='김미소'
-        className='h-[200px] w-[140px] text-sm'
+        className='h-50 w-35 text-sm'
       />
     </div>
   ),
@@ -122,7 +122,7 @@ export const InList: Story = {
           <BookCover
             title={book.title}
             decorative
-            className='h-[64px] w-[44px] shrink-0'
+            className='h-16 w-11 shrink-0'
           />
           <div className='min-w-0'>
             <p className='truncate text-sm font-medium text-text-strong'>
