@@ -41,6 +41,36 @@
   transition: all 0.3s;
   /* 위 패딩 제거: flex-end에서 위 패딩은 이미지를 선반 아래로 밀어 선을 덮는다 */
   padding: 0 1px;
+  /* 회독 뱃지를 표지 위에 얹기 위한 기준점 */
+  position: relative;
+}
+
+/* 회독 뱃지 — 책장은 같은 책의 회독을 한 권으로 합쳐 세우므로,
+   "여러 번 읽었다"는 사실은 이 뱃지로만 남는다.
+   뱃지가 클릭을 가로채면 책 링크가 부분적으로 죽는다 → pointer-events 해제 */
+.readCount {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  pointer-events: none;
+}
+
+/* 책등은 폭이 50px뿐이라 "2회독" 뱃지가 들어가지 않는다 → 숫자만 원형으로 */
+.readCountSpine {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1;
 }
 
 .books li a img {
@@ -49,6 +79,14 @@
   border: 1px solid #eee;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
   margin: 0 1px;
+}
+
+/* 여러 번 읽은 책은 조금 크게 세운다 — 손때가 탄 책이 책장에서 도드라지듯.
+   li 는 바닥 정렬이라 커진 만큼 위로만 자란다(선반 선은 그대로).
+   +12px 는 줄 간격(gap 31px) 안이라 윗줄과 겹치지 않는다. */
+.books li a.reread img,
+.books li a.reread .noImage {
+  height: 252px;
 }
 
 .books li:hover a {
@@ -115,6 +153,12 @@
 .compact .books li a img,
 .compact .noImage {
   height: 210px;
+}
+
+/* 재독 책은 여기서도 조금 크게 (gap 28px 안이라 윗줄과 안 겹친다) */
+.compact .books li a.reread img,
+.compact .books li a.reread .noImage {
+  height: 221px;
 }
 
 /* li 높이가 클수록 책이 선반에 붙는다 → 218px가 얹힌 지점 */
