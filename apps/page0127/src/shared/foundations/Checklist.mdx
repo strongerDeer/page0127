@@ -105,8 +105,14 @@ variant · size · state 를 **망라**한다. 눈으로 훑어 "이 컴포넌�
 | `input` | 7 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | **14** | Gold |
 | `card` | 18 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | **14** | Gold |
 | `skeleton` | 9 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | **14** | Gold |
+| `textarea` | 4 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | **14** | Gold |
+| `RelativeTime` | 4 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | **14** | Gold |
 | `BookCover` | 14 | 2 | 2 | 2 | 2 | 1 | 2 | 2 | **13** | Gold |
 | `progress` | 1 | 2 | 2 | 1 | 2 | 2 | 2 | 2 | **13** | Gold |
+| `dialog` | 4 | 2 | 2 | 1 | 2 | 2 | 2 | 2 | **13** | Gold |
+| `alert-dialog` | 5 | 2 | 2 | 1 | 2 | 2 | 2 | 2 | **13** | Gold |
+| `avatar` | 4 | 2 | 1 | 2 | 2 | 2 | 2 | 2 | **13** | Gold |
+| `ErrorBoundary` | 4 | 2 | 2 | 1 | 2 | 2 | 2 | 2 | **13** | Gold |
 | `PageContainer` | 17 | 2 | 2 | 1 | 2 | 1 | 2 | 2 | **12** | Gold |
 
 **채점은 후하게 하지 않았다.** 방금 쓴 문서라도 빈칸은 빈칸이다.
@@ -135,12 +141,19 @@ variant · size · state 를 **망라**한다. 눈으로 훑어 "이 컴포넌�
 - **`PageContainer`** — 이름 때문에 `<main>` 으로 만들고 싶어지지만 `<main>` 은 이미
   `AppShellLayout` 이 갖는다. 여기서 또 만들면 **랜드마크가 둘**이 된다.
 
+### 2026-07-29 3차 — 사용처 4곳 이상을 전부 덮었다
+
+`dialog` · `alert-dialog` · `textarea` · `avatar` · `ErrorBoundary` · `RelativeTime` 6개 추가.
+**이제 사용처가 4곳 이상인 컴포넌트에는 모두 스토리가 있다.**
+
+여기서도 자동 검사가 못 잡는 결함이 하나 나왔다 — `ErrorFallback` 에 `role` 도 `aria-*` 도
+없어서, 화면이 에러 UI 로 갈아끼워져도 **스크린리더 사용자는 실패 사실 자체를 몰랐다.**
+`role='alert'` 과 실제 `<h2>` 를 넣어 고쳤다.
+
 ### 스토리 없음
 
 | 컴포넌트 | 사용처 |
 | --- | ---: |
-| `alert-dialog` | 5 |
-| `ErrorBoundary` · `RelativeTime` · `avatar` · `dialog` · `textarea` | 각 4 |
 | `ReadCountBadge` · `label` | 각 3 |
 | `ErrorFallback` · `SubmitButton` · `dropdown-menu` · `pagination` · `popover` | 각 2 |
 | `scroll-area` · `select` · `sonner` · `switch` | 각 1 |
@@ -151,11 +164,12 @@ variant · size · state 를 **망라**한다. 눈으로 훑어 "이 컴포넌�
 
 ~~1. `card` · `skeleton` · `PageContainer` 의 접근성·Props 채우기~~ — 2026-07-29 완료.
 
-2. **사용처 4곳 이상인 것부터 신규 스토리** — `alert-dialog`(5) · `dialog`(4) ·
-   `textarea`(4) · `avatar`(4) · `ErrorBoundary`(4) · `RelativeTime`(4).
-   여기까지 하면 사용처 4곳 이상인 컴포넌트가 전부 덮인다.
-3. **addon-a11y 를 `test: 'todo'` 에서 `error` 로 올린다** — 전 컴포넌트에 스토리가
-   깔리고 위반이 0이 된 뒤에. 그래야 회귀가 CI 에서 막힌다.
+~~2. 사용처 4곳 이상인 것부터 신규 스토리~~ — 2026-07-29 완료.
+
+3. **addon-a11y 를 `test: 'todo'` 에서 `error` 로 올린다.** 지금이 그때다 — 자주 쓰는
+   컴포넌트에는 스토리가 다 깔렸다. 올리기 전에 전 스토리의 위반이 0인지 먼저 확인한다.
+4. 남은 컴포넌트(사용처 3곳 이하)는 **필요해질 때 만든다.** `switch` 하나를 위해 스토리를
+   쓰는 것보다, 그 컴포넌트가 두 번째 화면에 쓰이는 순간 쓰는 편이 낫다.
 
 **자동 검사는 바닥이지 천장이 아니다.** 2차 작업에서 채운 셋은 addon-a11y 위반이
 원래 0이었는데도 접근성 0점이었다 — 검사가 잡는 건 "명백한 위반"뿐이고, `<div>` 로 만든
