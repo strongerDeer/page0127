@@ -51,4 +51,34 @@ describe('EXPECTED_MIGRATION_VERSION', () => {
 
     expect(latest).toBe(EXPECTED_MIGRATION_VERSION);
   });
+
+  /**
+   * 번호가 겹치면 둘 중 하나는 영영 적용되지 않는다.
+   *
+   * schema_migrations 의 PK 가 version 이라, 같은 번호의 두 번째 파일은
+   * `duplicate key ... already exists` 로 튕긴다. 그런데 이미 적용된 쪽이
+   * 기대 버전과 같으면 헬스체크는 ok 로 보이기 때문에, **빠진 마이그레이션이
+   * 조용히 방치된다.**
+   *
+   * 실제로 2026-07-29 에 두 세션이 같은 날 각자 20260729000001 을 만들어
+   * 이 일이 벌어졌다. 병렬 작업에서는 로컬 폴더만 봐서는 막을 수 없으므로
+   * (상대 브랜치가 아직 안 올라왔을 수 있다) 병합 시점에 CI 가 잡게 한다.
+   */
+  it('같은 번호를 쓰는 마이그레이션이 없다', () => {
+    const dir = join(process.cwd(), '..', '..', 'supabase', 'migrations');
+
+    const files = readdirSync(dir).filter((name) => name.endsWith('.sql'));
+
+    const byVersion = new Map<string, string[]>();
+    files.forEach((name) => {
+      const version = name.slice(0, 14);
+      byVersion.set(version, [...(byVersion.get(version) ?? []), name]);
+    });
+
+    const duplicates = [...byVersion.entries()].filter(
+      ([, names]) => names.length > 1
+    );
+
+    expect(duplicates).toEqual([]);
+  });
 });
