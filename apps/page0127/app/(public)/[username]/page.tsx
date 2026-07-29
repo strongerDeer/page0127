@@ -17,9 +17,12 @@ import { CalendarBlockError } from '@/widgets/dashboard/CalendarBlockError';
 import { CalendarBlockSkeleton } from '@/widgets/dashboard/CalendarBlockSkeleton';
 import { CalendarSection } from '@/widgets/dashboard/CalendarSection';
 import { PublicLibraryContent } from '@/widgets/public-library/PublicLibraryContent';
+import { PublicLibrarySkeleton } from '@/widgets/public-library/PublicLibrarySkeleton';
 
 import type { Book } from '@/entities/book';
+import type { Profile } from '@/entities/profile/types';
 import type { TasteAnalysisSummary } from '@/entities/taste-analysis/types';
+import type { User } from '@supabase/supabase-js';
 import type { Metadata } from 'next';
 
 type PageProps = {
@@ -36,6 +39,13 @@ type PageProps = {
  * 세션을 읽지 않는 조회를 쓰는 이유는 opengraph-image.tsx 와 같다 —
  * 미리보기는 링크를 받은 사람이 볼 것과 같아야 한다.
  * OG 이미지 자체는 같은 폴더의 opengraph-image.tsx 가 파일 규칙으로 자동 연결한다.
+ *
+ * 없는 사용자면 여기서 notFound() 를 부른다 — 아래 페이지 본문이 아니라.
+ * 이 세그먼트에는 loading.tsx 가 있어서, 본문이 실행될 때는 Next 가 이미
+ * 뼈대 화면과 함께 200 헤더를 보낸 뒤다. 그 시점의 notFound() 는 화면만
+ * 404 로 바꿀 뿐 상태 코드를 되돌리지 못해 **검색엔진이 없는 페이지를
+ * 정상 페이지로 색인한다**(soft 404). generateMetadata 는 뼈대 전송 전에
+ * 평가되므로 여기서 판정해야 진짜 404 가 나간다.
  */
 export const generateMetadata = async ({
   params,
@@ -44,7 +54,7 @@ export const generateMetadata = async ({
   const profile = await getPublicProfileByUsername(username);
 
   if (!profile) {
-    return { title: '책장을 찾을 수 없습니다 | page0127' };
+    notFound();
   }
 
   const name = toDisplayName(profile);
@@ -95,14 +105,23 @@ const getBooks = async (
 /**
  * 서재 페이지 (Server Component)
  *
- * 본인이 보면 소유자 모드(전체 책, 캘린더, 목표, 취향분석 전체 진입, 보관 탭),
- * 남이 보면 방문자 모드(공개된 책만, 읽기 전용)로 같은 화면이 갈린다.
+ * **존재 확인만 여기서 하고, 무거운 조회는 Suspense 안으로 미룬다.**
+ *
+ * 예전에는 이 세그먼트에 loading.tsx 가 있었다. 그러면 Next 가 뼈대 화면을
+ * 먼저 보내면서 200 헤더를 확정해버려, 뒤늦게 notFound() 를 불러도 상태 코드가
+ * 200 으로 남았다 — 화면은 "찾을 수 없습니다"인데 서버는 정상이라고 답하는
+ * soft 404 다. 검색엔진은 상태 코드를 믿으므로 없는 책장이 색인된다.
+ * (generateMetadata 에서 notFound() 를 불러도 마찬가지였다 — 실측으로 확인)
+ *
+ * 그래서 구조를 뒤집었다:
+ *   1. 프로필 조회(가볍다) → 없으면 notFound() → 여기서 404 가 확정된다
+ *   2. 나머지(책 목록·통계·분석 이력)는 아래 LibraryContent 에서 조회하고
+ *      Suspense 로 감싼다 → 스켈레톤은 그대로 보이고 스트리밍도 유지된다
  */
 const LibraryPage = async ({ params }: PageProps) => {
   const { username } = await params;
 
   const supabase = await createClient();
-  const currentYear = getCurrentLibraryYear();
 
   const [
     profile,
@@ -117,6 +136,35 @@ const LibraryPage = async ({ params }: PageProps) => {
   if (!profile) {
     notFound();
   }
+
+  return (
+    <Suspense fallback={<PublicLibrarySkeleton />}>
+      <LibraryContent
+        profile={profile}
+        currentUser={currentUser}
+        username={username}
+      />
+    </Suspense>
+  );
+};
+
+type LibraryContentProps = {
+  profile: Profile;
+  currentUser: User | null;
+  username: string;
+};
+
+/**
+ * 서재 본문 — 실제 데이터 조회는 전부 여기서 한다.
+ * 위 Suspense 경계 안이라 이 컴포넌트가 늦어도 상태 코드에는 영향이 없다.
+ */
+const LibraryContent = async ({
+  profile,
+  currentUser,
+  username,
+}: LibraryContentProps) => {
+  const supabase = await createClient();
+  const currentYear = getCurrentLibraryYear();
 
   const isOwnProfile = currentUser?.id === profile.id;
 
