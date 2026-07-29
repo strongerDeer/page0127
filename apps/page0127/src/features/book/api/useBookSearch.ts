@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useReducer } from 'react';
+import { useCallback, useReducer, useRef } from 'react';
 
 import { searchBooks } from '@/shared/api/aladin';
 
@@ -90,14 +90,23 @@ export const useBookSearch = () => {
 
   const ITEMS_PER_PAGE = 10;
 
+  // 마지막으로 시작한 요청의 번호. 입력창을 검색 중에도 열어두면서
+  // (disabled 를 걸면 브라우저가 포커스를 뺏는다 — BookSearchInput 주석 참조)
+  // 요청이 여러 개 겹칠 수 있게 됐다. 먼저 보낸 요청이 늦게 도착하면
+  // 최신 검색어의 결과를 덮어써 버리므로, 마지막 요청의 응답만 반영한다.
+  const requestIdRef = useRef(0);
+
   // useCallback으로 함수를 메모이제이션 → 매 렌더마다 새 함수가 생기는 것을 방지
   // (BookSearchInput의 useEffect가 onSearch를 의존성으로 참조하는데,
   //  참조가 매번 바뀌면 effect가 계속 재실행 → 무한 루프로 이어짐)
   const search = useCallback(async (query: string, page = 1) => {
     if (!query.trim()) {
+      requestIdRef.current += 1; // 진행 중인 응답이 초기화를 되돌리지 못하게 한다
       dispatch({ type: 'SEARCH_CLEAR' });
       return;
     }
+
+    const requestId = (requestIdRef.current += 1);
 
     // 검색 시작: loading ON, 쿼리/페이지 저장
     dispatch({ type: 'SEARCH_START', query, page });
@@ -107,6 +116,7 @@ export const useBookSearch = () => {
         page,
         maxResults: ITEMS_PER_PAGE,
       });
+      if (requestId !== requestIdRef.current) return; // 뒤늦게 온 옛 응답 — 버린다
       const items = response.item || [];
 
       // 검색 성공: 결과 저장, loading OFF
@@ -116,6 +126,7 @@ export const useBookSearch = () => {
         totalResults: response.totalResults,
       });
     } catch (err) {
+      if (requestId !== requestIdRef.current) return;
       // 검색 실패: 에러 저장, loading OFF
       dispatch({ type: 'SEARCH_ERROR' });
       console.error(err);

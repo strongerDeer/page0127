@@ -89,6 +89,13 @@ export const BookSearchInput = ({
   return (
     <div className='relative'>
       <form onSubmit={handleSubmit} className='flex gap-2'>
+        {/*
+          입력창에는 disabled 를 걸지 않는다.
+          400ms 디바운스 자동 검색이 타이핑 도중에 걸리는데, 그때 input 이 disabled 가 되면
+          브라우저가 포커스를 강제로 떼어낸다(그리고 다시 돌려주지 않는다).
+          → 사용자 체감: "치다가 멈추고 포커스가 사라진다".
+          로딩 표시는 버튼에서만 한다.
+        */}
         <Input
           ref={ref}
           type='text'
@@ -97,7 +104,6 @@ export const BookSearchInput = ({
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setTimeout(() => setIsFocused(false), 150)}
-          disabled={isLoading}
           className='flex-1'
         />
         <Button type='submit' disabled={isLoading || !query.trim()}>
