@@ -5,6 +5,11 @@
 
 import * as Sentry from '@sentry/nextjs';
 
+import {
+  extractEventText,
+  isNoiseEvent,
+} from '@/shared/config/sentryNoiseFilter';
+
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
@@ -13,6 +18,11 @@ Sentry.init({
       levels: ['error'],
     }),
   ],
+
+  // 서버 설정과 동일한 노이즈 필터 (미들웨어·엣지 라우트)
+  beforeSend(event) {
+    return isNoiseEvent(extractEventText(event)) ? null : event;
+  },
 
   dataCollection: {
     userInfo: false,
