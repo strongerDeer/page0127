@@ -5,6 +5,7 @@ import {
   SCHEMA_CONTRACT,
   UNDEFINED_COLUMN,
   UNDEFINED_TABLE,
+  UNDEFINED_TABLE_POSTGREST,
 } from './schemaContract';
 
 /**
@@ -57,6 +58,26 @@ describe('스키마 계약', () => {
     );
     expect(failures).toHaveLength(1);
     expect(failures[0].code).toBe(UNDEFINED_TABLE);
+  });
+
+  it('테이블이 없을 때 PostgREST 가 주는 PGRST205 도 잡는다', async () => {
+    // 42P01 만 보던 시절 이걸 놓쳤다. 2026-07-29 개발 DB 에 user_daily_visits 가
+    // 통째로 없었는데 헬스체크는 정상으로 떴다 — PostgREST 는 스키마 캐시에
+    // 테이블이 없으면 쿼리를 실행하지 않고 PGRST205 로 끊기 때문이다.
+    const failures = await checkSchemaContract(async (table) =>
+      table === 'user_daily_visits'
+        ? {
+            code: UNDEFINED_TABLE_POSTGREST,
+            message:
+              "Could not find the table 'public.user_daily_visits' in the schema cache",
+          }
+        : null
+    );
+
+    expect(failures).toHaveLength(1);
+    expect(failures[0].table).toBe('user_daily_visits');
+    expect(failures[0].code).toBe(UNDEFINED_TABLE_POSTGREST);
+    expect(failures[0].breaks).toContain('재방문');
   });
 
   it('스키마와 무관한 실패(연결 끊김 등)는 계약 위반으로 보지 않는다', async () => {
