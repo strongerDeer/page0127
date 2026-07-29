@@ -2,6 +2,7 @@
 // → @/app/api/_helpers/auth의 getSupabaseClient 대신 shared의 createClient 직접 사용
 import { createClient } from '@/shared/config/supabase/server';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
+import { ProfileLink } from '@/shared/ui/ProfileLink';
 
 type ReaderProfilesProps = {
   isbn: string;
@@ -79,12 +80,17 @@ export const ReaderProfiles = async ({ isbn }: ReaderProfilesProps) => {
 
           return (
             <div key={profile.id} className='relative group' title={name}>
-              <Avatar className='w-10 h-10 border-2 border-card cursor-pointer hover:z-10 hover:scale-110 transition-transform'>
-                <AvatarImage src={profile.photo_url ?? undefined} />
-                <AvatarFallback className='bg-primary/15 text-primary text-xs'>
-                  {name.slice(0, 2)}
-                </AvatarFallback>
-              </Avatar>
+              {/* username 이 없으면 ProfileLink 가 링크 없이 그대로 그린다
+                  (갈 곳 없는 링크를 만들지 않는다 — ProfileLink 주석 참고) */}
+              <ProfileLink username={profile.username} className='block'>
+                <Avatar className='w-10 h-10 border-2 border-card cursor-pointer hover:z-10 hover:scale-110 transition-transform'>
+                  {/* 링크 안이 이미지뿐이면 스크린리더가 읽을 이름이 없다 → alt 로 이름을 준다 */}
+                  <AvatarImage src={profile.photo_url ?? undefined} alt={name} />
+                  <AvatarFallback className='bg-primary/15 text-primary text-xs'>
+                    {name.slice(0, 2)}
+                  </AvatarFallback>
+                </Avatar>
+              </ProfileLink>
             </div>
           );
         })}
