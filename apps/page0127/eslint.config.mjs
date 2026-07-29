@@ -35,6 +35,8 @@ const eslintConfig = defineConfig([
     'node_modules/**',
     '.turbo/**',
     'src/shared/ui/**', // shadcn/ui 컴포넌트 제외 (외부 라이브러리 코드)
+    // 단, 스토리는 우리가 직접 쓴 코드다 — 위 무시 규칙에서 되살려 검사한다.
+    '!src/shared/ui/**/*.stories.tsx',
   ]),
 
   // 커스텀 규칙
@@ -227,6 +229,11 @@ const eslintConfig = defineConfig([
       // 설정 파일 (Default Export 필수)
       '*.config.{js,ts,mjs,cjs}',
       'tailwind.config.{js,ts}',
+
+      // Storybook (Default Export 필수 — 프레임워크 계약이라 우회할 수 없다)
+      // .storybook/main.ts·preview.tsx 는 설정을, 스토리 파일은 meta 를 default 로 내보낸다.
+      '.storybook/**/*.{ts,tsx}',
+      '**/*.stories.{ts,tsx}',
     ],
     rules: {
       'import/no-default-export': 'off',
