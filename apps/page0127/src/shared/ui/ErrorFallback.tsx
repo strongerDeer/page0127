@@ -47,13 +47,17 @@ export const ErrorFallback = ({
             예상치 못한 오류가 발생했습니다. 다시 시도해주세요.
           </p>
 
-          {/* 개발 환경에서만 에러 메시지 표시 (운영 노출 방지) */}
+          {/* 개발 환경에서만 에러 메시지 표시 (운영 노출 방지)
+
+              색에 투명도를 주지 않는다(옛 destructive/90 · /80) — 옅은 배경 위에서
+              대비가 4.5 아래로 떨어진다(실측 4.04). 개발 전용 화면이지만 여기서
+              흐린 글씨를 허용하면 같은 패턴이 다른 곳으로 번진다. */}
           {process.env.NODE_ENV === 'development' && error && (
             <div className='rounded-md bg-destructive/10 p-3'>
               <p className='text-sm font-medium text-destructive'>에러 메시지:</p>
-              <p className='mt-1 text-sm text-destructive/90'>{error.message}</p>
+              <p className='mt-1 text-sm text-destructive'>{error.message}</p>
               {error.digest && (
-                <p className='mt-1 text-xs text-destructive/80'>
+                <p className='mt-1 text-xs text-destructive'>
                   Digest: {error.digest}
                 </p>
               )}
