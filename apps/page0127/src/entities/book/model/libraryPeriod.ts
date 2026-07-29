@@ -1,4 +1,5 @@
 import { mapToMainCategory } from '../../../shared/lib/categoryMapper';
+import { dedupeReadings } from './dedupeReadings';
 import { averageScore } from './rating';
 
 import type { Book } from '../types';
@@ -148,10 +149,15 @@ const calculateRatingReading = (books: Book[]): RatingReadingData[] => {
   const ratingData = RATING_BUCKETS.map((bucket) => ({ ...bucket, count: 0 }));
 
   books.forEach((book) => {
-    const item = ratingData.find(
-      // 인생책은 rating 이 5 라도 별도 항목이다 — 두 값을 모두 본다
-      (b) => b.rating === book.rating && b.is_life_book === book.is_life_book
-    );
+    // 인생책은 점수와 무관하게 '인생책' 칸에 들어간다.
+    // 전에는 (rating, is_life_book) 두 값이 모두 맞아야 했는데, 인생책 버킷의
+    // rating 이 5 로 고정돼 있어 '4점인데 인생책'인 책이 어느 칸에도 못 들어가고
+    // 조용히 사라졌다 — 분포 합이 총 권수보다 적어진다.
+    // 회독을 합치면(1회독 5점 인생책 + 2회독 4점) 이 조합이 실제로 만들어진다.
+    const item = book.is_life_book
+      ? ratingData.find((b) => b.is_life_book)
+      : ratingData.find((b) => b.rating === book.rating && !b.is_life_book);
+
     if (item) item.count += 1;
   });
 
@@ -167,7 +173,11 @@ export const calculateBookStats = (
   year: number | null,
   currentYear: number
 ): BookStats => {
-  const scopedBooks = filterBooksByLibraryYear(books, year, currentYear);
+  // 기간으로 자른 '뒤에' 회독을 합친다 — 책장이 보여주는 범위와 숫자를 맞추기
+  // 위해서다. 먼저 합치면 옛 회독이 사라져 그 해 통계가 통째로 비어버린다.
+  const scopedBooks = dedupeReadings(
+    filterBooksByLibraryYear(books, year, currentYear)
+  );
   const completedBooks = scopedBooks.filter(
     (book) => book.status === 'completed' && book.completed_date
   );
