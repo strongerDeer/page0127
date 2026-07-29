@@ -3,6 +3,7 @@ import { after, NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { createClient } from '@/shared/config/supabase/server';
 import {
+  isUnbilledOpenAiFailure,
   refundUsage,
   reserveUsage,
   USAGE_LIMIT_EXCEEDED_ERROR,
@@ -33,10 +34,12 @@ export const maxDuration = 60;
  * POST /api/taste-analysis/analyze
  */
 export async function POST(_request: NextRequest) {
-  // 예약된 usage 행 id — OpenAI 요청 전 실패 시에만 환불(삭제)한다.
+  // 예약된 usage 행 id — 환불(삭제) 대상.
   let reservedUsageId: string | null = null;
   // OpenAI 요청을 시작하면 비용이 발생할 수 있으므로 이후 실패는 환불하지 않는다.
   let aiRequestStarted = false;
+  // 단, OpenAI가 과금 없이 반려한 경우(잘못된 키·한도 초과 등)는 예외적으로 환불한다.
+  let refundableRejection = false;
 
   try {
     // 1. 인증 확인
@@ -244,15 +247,18 @@ export async function POST(_request: NextRequest) {
     });
   } catch (error) {
     console.error('취향 분석 실패:', error);
+    refundableRejection = isUnbilledOpenAiFailure(error);
     return NextResponse.json(
       { error: '취향 분석 중 오류가 발생했습니다.' },
       { status: 500 }
     );
   } finally {
-    // 슬롯 예약 후 OpenAI 요청을 시작하기 전에 실패한 경우에만 환불한다.
-    // 요청을 시작한 뒤에는 비용이 발생했을 수 있으므로 실패해도 사용량을 유지한다.
+    // 환불 조건 두 가지:
+    // (1) OpenAI 요청을 시작하기 전에 실패한 경우
+    // (2) OpenAI가 토큰을 쓰지 않고 반려한 경우 (401·429·400 등)
+    // 그 밖의 실패는 비용이 발생했을 수 있으므로 사용량을 유지한다.
     // 환불 정리가 응답을 깨뜨리지 않도록 자체 try로 감싼다.
-    if (!aiRequestStarted && reservedUsageId) {
+    if ((!aiRequestStarted || refundableRejection) && reservedUsageId) {
       try {
         await refundUsage(createAdminClient(), reservedUsageId);
       } catch (refundError) {
