@@ -6,6 +6,7 @@
   "type": "module",
   "exports": {
     "./tokens.css": "./dist/tokens.css",
+    "./tokens-dark.css": "./dist/tokens-dark.css",
     "./css-vars": "./src/css-vars.ts"
   },
   "scripts": {
