@@ -1,3 +1,5 @@
+import { APIError } from 'openai';
+
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 /** 무료 사용자 월별 허용 횟수 (기능별 독립 카운트) */
@@ -111,14 +113,37 @@ export async function reserveUsage(
 }
 
 /**
- * 예약했던 슬롯 1건을 되돌린다 (OpenAI 호출 시작 전에 실패했을 때만).
+ * OpenAI가 "과금 없이" 요청을 반려했는지 판정한다.
+ *
+ * 4xx는 요청이 모델에 닿기 전에 반려된 것이라 토큰 비용이 발생하지 않는다.
+ * (잘못된 API 키 401, 잔액 부족·요청 한도 429, 잘못된 파라미터 400 등)
+ * 이런 실패까지 사용 횟수를 차감하면, 서비스 쪽 설정 실수의 대가를 사용자가
+ * 월 한도로 치르게 된다.
+ *
+ * 반대로 5xx·연결 오류·408은 생성이 시작된 뒤 끊겼을 수 있어 환불하지 않는다.
+ * 판정이 애매할 때는 "차감 유지" 쪽이 안전하다 — 잘못 환불하면 유료 호출을
+ * 한도 없이 반복할 수 있기 때문이다.
+ */
+export function isUnbilledOpenAiFailure(error: unknown): boolean {
+  if (!(error instanceof APIError)) return false;
+
+  const { status } = error;
+  if (typeof status !== 'number') return false;
+
+  return status >= 400 && status < 500 && status !== 408;
+}
+
+/**
+ * 예약했던 슬롯 1건을 되돌린다.
+ * (OpenAI 호출 시작 전 실패 또는 위 isUnbilledOpenAiFailure에 해당하는 실패)
  *
  * ⚠️ 반드시 service-role(admin) 클라이언트로 호출해야 한다.
  *   일반 사용자에게 ai_usage_logs 삭제 권한을 열면, 자기 사용 기록을 지워
  *   월 한도를 무한히 리셋할 수 있기 때문이다. 그래서 삭제는 서버 전용
  *   service_role로만 수행하고, 예약한 행의 id로 "그 행만" 정확히 지운다.
  *
- * OpenAI 요청을 시작한 뒤에는 API 비용이 발생했을 수 있으므로 환불하지 않는다.
+ * 토큰 비용이 발생했을 수 있는 실패(5xx·연결 끊김 등)는 호출부에서 걸러내고
+ * 이 함수까지 오지 않게 한다.
  * best-effort: 삭제가 실패해도 throw하지 않는다.
  */
 export async function refundUsage(
