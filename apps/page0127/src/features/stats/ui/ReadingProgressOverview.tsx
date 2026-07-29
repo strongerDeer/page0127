@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { BookOpen, FileText, Pencil, Star, Trophy } from 'lucide-react';
 
 import { Button } from '@/shared/ui/button';
+import { Progress } from '@/shared/ui/progress';
 
 import type { Book } from '@/entities/book';
 
@@ -123,12 +124,16 @@ export const ReadingProgressOverview = ({
               )}
             </div>
 
-            <div className='relative h-3 overflow-hidden rounded-full bg-sunken'>
-              <div
-                className='h-full rounded-full bg-primary transition-[width] duration-500'
-                style={{ width: `${hasGoal ? progress : 0}%` }}
-              />
-            </div>
+            {/* 손으로 그린 div 두 겹이었다. Progress 는 Radix 기반이라
+                role="progressbar" 와 aria-valuenow 가 자동으로 붙는다 —
+                손그림에는 그게 없어 스크린리더에 아무 의미도 전달되지 않았다. */}
+            <Progress
+              value={hasGoal ? progress : 0}
+              className='h-3'
+              aria-label={
+                hasGoal ? '올해 독서 목표 진행률' : '올해 완독 진행률'
+              }
+            />
 
             {hasGoal && (
               <div className='mt-3 grid grid-cols-3 text-xs text-text-faint'>
