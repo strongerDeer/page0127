@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/shared/config/supabase/server';
 
 import { getProfile } from '@/entities/profile/api/getProfile';
+import { groupRecommendationsByType } from '@/entities/taste-analysis/model/recommendations';
 
 import { TasteAnalysisResult } from '@/features/taste-analysis/ui/TasteAnalysisResult';
 
@@ -51,21 +52,8 @@ const TasteAnalysisPage = async () => {
     .order('recommendation_type')
     .order('display_order');
 
-  // 타입별로 그룹화 (표지가 있는 책만 필터링)
-  const groupedRecommendations = {
-    match:
-      recommendations?.filter(
-        (r) => r.recommendation_type === 'match' && r.cover_image !== null
-      ) || [],
-    expand:
-      recommendations?.filter(
-        (r) => r.recommendation_type === 'expand' && r.cover_image !== null
-      ) || [],
-    challenge:
-      recommendations?.filter(
-        (r) => r.recommendation_type === 'challenge' && r.cover_image !== null
-      ) || [],
-  };
+  // 타입별로 그룹화 (노출 상한까지만)
+  const groupedRecommendations = groupRecommendationsByType(recommendations);
 
   const analysisWithRecommendations = {
     ...analysis,

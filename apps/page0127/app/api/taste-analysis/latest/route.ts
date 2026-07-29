@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { createClient } from '@/shared/config/supabase/server';
 
+import { groupRecommendationsByType } from '@/entities/taste-analysis/model/recommendations';
+
 /**
  * 최신 독서 취향 분석 결과 조회 API
  *
@@ -54,12 +56,8 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json({ error: '추천 도서를 불러올 수 없습니다.' }, { status: 500 });
     }
 
-    // 4. 타입별로 그룹화
-    const groupedRecommendations = {
-      match: recommendations?.filter((r) => r.recommendation_type === 'match') || [],
-      expand: recommendations?.filter((r) => r.recommendation_type === 'expand') || [],
-      challenge: recommendations?.filter((r) => r.recommendation_type === 'challenge') || [],
-    };
+    // 4. 타입별로 그룹화 (노출 상한까지만 — 화면 3곳이 같은 규칙을 쓴다)
+    const groupedRecommendations = groupRecommendationsByType(recommendations);
 
     // 5. 성공 응답
     return NextResponse.json({
