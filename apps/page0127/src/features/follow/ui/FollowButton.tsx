@@ -37,33 +37,58 @@ export const FollowButton = ({
     queryFn: () => followApi.isFollowing(userId),
   });
 
+  // 버튼 라벨을 서버 왕복 전에 뒤집어 둔다. 실패 시 onError에서 되돌린다.
+  const optimisticToggle = async (next: boolean) => {
+    await queryClient.cancelQueries({
+      queryKey: followKeys.isFollowing(userId),
+    });
+    const previous = queryClient.getQueryData<boolean>(
+      followKeys.isFollowing(userId)
+    );
+    queryClient.setQueryData(followKeys.isFollowing(userId), next);
+    return { previous };
+  };
+
+  const rollbackToggle = (previous: boolean | undefined) => {
+    if (previous !== undefined) {
+      queryClient.setQueryData(followKeys.isFollowing(userId), previous);
+    }
+  };
+
   // 팔로우 Mutation
   const followMutation = useMutation({
     mutationFn: () => followApi.followUser({ following_id: userId }),
+    onMutate: () => optimisticToggle(true),
     onSuccess: () => {
-      // 모든 팔로우 관련 쿼리 무효화 (최신 상태 반영)
-      queryClient.invalidateQueries({ queryKey: followKeys.all });
       // 다른 탭에 팔로우 이벤트 전송
       followBroadcast.sendFollowEvent('follow', userId);
       toast.success('팔로우했습니다.');
     },
-    onError: (error) => {
+    onError: (error, _vars, context) => {
+      rollbackToggle(context?.previous);
       toast.error(getApiErrorMessage(error, '팔로우에 실패했습니다.'));
+    },
+    // 팔로워 수·목록 등 나머지 팔로우 쿼리를 서버 값으로 맞춘다
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: followKeys.all });
     },
   });
 
   // 언팔로우 Mutation
   const unfollowMutation = useMutation({
     mutationFn: () => followApi.unfollowUser(userId),
+    onMutate: () => optimisticToggle(false),
     onSuccess: () => {
-      // 모든 팔로우 관련 쿼리 무효화 (최신 상태 반영)
-      queryClient.invalidateQueries({ queryKey: followKeys.all });
       // 다른 탭에 언팔로우 이벤트 전송
       followBroadcast.sendFollowEvent('unfollow', userId);
       toast.success('언팔로우했습니다.');
     },
-    onError: (error) => {
+    onError: (error, _vars, context) => {
+      rollbackToggle(context?.previous);
       toast.error(getApiErrorMessage(error, '언팔로우에 실패했습니다.'));
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: followKeys.all });
     },
   });
 
@@ -92,9 +117,9 @@ export const FollowButton = ({
       onClick={handleClick}
       disabled={isPending}
     >
-      {isPending ? (
-        <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-      ) : isFollowing ? (
+      {/* 낙관적 업데이트로 상태가 즉시 뒤집히므로 대기 스피너를 띄우지 않는다.
+          연타 방지는 disabled가 맡는다. */}
+      {isFollowing ? (
         <UserMinus className='mr-2 h-4 w-4' />
       ) : (
         <UserPlus className='mr-2 h-4 w-4' />
