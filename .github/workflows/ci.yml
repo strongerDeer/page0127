@@ -120,6 +120,34 @@ jobs:
           fi
           exit $missing
 
+      # 존재만 확인하면 "값이 있는데 틀린" 경우를 못 잡는다.
+      #
+      # 실제로 그런 일이 있었다: URL 과 키가 서로 다른 프로젝트 것이라 DB 에 전혀
+      # 못 닿는 상태였는데, 위 검사는 3일 내내 "secrets 정상"이라고 표시했다.
+      # E2E 는 앱이 DB 에러를 삼키는 덕분에 8개 중 7개가 통과했다.
+      #
+      # 그래서 한 번 호출해 본다. 401/403 이면 키가 그 URL 의 것이 아니다.
+      - name: Verify Supabase credentials actually work
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          code=$(curl -sS -m 20 -o /tmp/supa.json -w '%{http_code}' \
+            "${NEXT_PUBLIC_SUPABASE_URL}/rest/v1/" \
+            -H "apikey: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${NEXT_PUBLIC_SUPABASE_ANON_KEY}" || echo "000")
+
+          echo "PostgREST 응답: HTTP ${code}"
+
+          # 200 = 스키마 문서를 받았다(정상). 그 외는 전부 문제로 본다.
+          if [ "$code" != "200" ]; then
+            echo "::error::Supabase 자격증명이 실제로는 동작하지 않는다 (HTTP ${code}). URL 과 키가 같은 프로젝트 것인지 확인할 것."
+            head -c 300 /tmp/supa.json || true
+            exit 1
+          fi
+
+          echo "자격증명 정상 — URL 과 키가 같은 프로젝트를 가리킨다"
+
       - name: Block production database in CI
         run: npm run check:non-production-db
         env:
