@@ -210,6 +210,37 @@ Tailwind v4 의 `dark:` 변형은 **기본값이 `prefers-color-scheme`** 이다
 
 ---
 
+## 7.5 Figma 완료 기록 (2026-07-29)
+
+**Primitives 컬렉션** — 보강 4개 추가(`navy/800` `red/400` `orange/400` `slate/400`). 라운드 1 규칙대로 `scopes = []` 로 피커에서 숨기고 Code Syntax 를 심었다.
+
+**Semantic 컬렉션** — `Dark` 모드 추가, 29개에 primitive alias 설정. 누락 0.
+
+**Figma 와 코드가 일치한다.** 양쪽에서 같은 토큰을 해석해 대조했다:
+
+| 토큰 | Light | Dark |
+|---|---|---|
+| `foreground` (파생) | `#14294e` | **`#ffffff`** |
+| `card-foreground` (파생) | `#14294e` | **`#ffffff`** |
+| `muted-foreground` (파생) | `#66779a` | **`#97a4c0`** |
+| `border` (파생) | `#dfe3e8` | **`#3b4e70`** |
+| `primary` | `#1e69cb` | `#74b0ff` |
+| `primary-foreground` | `#ffffff` | `#14294e` |
+| `destructive` | `#c0392b` | `#dd7065` |
+| `background` | `#ffffff` | `#14294e` |
+| `overlay` | `#000000` | `#000000` (양쪽 동일) |
+| `chart/4` | `#d9a520` | `#d9a520` (양쪽 동일) |
+
+**파생 토큰 4개가 재정의 없이 다크 값으로 해석된다** — 코드의 `var()` 체인과 Figma 의 alias 가 같은 방식으로 동작한다는 증거다.
+
+**페이지 모드를 Dark 로 돌려 컴포넌트를 눈으로 확인했다.** 22개가 전부 따라왔다. 라운드 1부터 "하드코딩 색 0건" 을 고집한 값이 여기서 나온다 — 바인딩이 하나라도 빠졌으면 그 부분만 밝은 채로 남는다.
+
+확인 중 **놓쳤던 검사를 하나 찾았다**: destructive 버튼 *안쪽* 대비(`red/400` 배경 + `primary-foreground` 글자)를 재지 않았었다. 재보니 **4.52 ✅** 였고, 만약 흰 글자였다면 3.19 로 미달이었다. 다크에서 `primary-foreground` 를 어두운 색으로 뒤집은 결정이 여기서도 값을 했다.
+
+작업 후 페이지 모드는 **Light 로 되돌렸다** — 라이브러리의 기본 표시는 라이트다.
+
+---
+
 ## 8. 완료 기준
 
 1. `dist/tokens-dark.css` 가 `@media (prefers-color-scheme: dark)` 안에 29개를 덮는다
