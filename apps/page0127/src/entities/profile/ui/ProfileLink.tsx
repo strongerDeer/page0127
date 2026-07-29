@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { profileHref } from '@/entities/profile/model/displayName';
+import { profileHref } from '../model/displayName';
 
 type ProfileLinkProps = {
   /** 없으면(탈퇴·미설정) 링크를 걸지 않는다 */

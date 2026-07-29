@@ -44,3 +44,6 @@ next-env.d.ts
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# Storybook 정적 빌드 산출물
+storybook-static

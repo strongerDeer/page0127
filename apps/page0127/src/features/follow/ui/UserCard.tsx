@@ -1,9 +1,8 @@
 import Image from 'next/image';
 
-import { ProfileLink } from '@/shared/ui/ProfileLink';
-
 import { UserWithFollowInfo } from '@/entities/follow';
 import { toDisplayName, toInitial } from '@/entities/profile/model/displayName';
+import { ProfileLink } from '@/entities/profile/ui/ProfileLink';
 
 import { FollowButton } from './FollowButton';
 

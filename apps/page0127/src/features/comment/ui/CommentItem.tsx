@@ -25,11 +25,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/ui/dropdown-menu';
-import { ProfileLink } from '@/shared/ui/ProfileLink';
 import { RelativeTime } from '@/shared/ui/RelativeTime';
 import { Textarea } from '@/shared/ui/textarea';
 
 import { Comment, commentApi, commentKeys } from '@/entities/comment';
+import { ProfileLink } from '@/entities/profile/ui/ProfileLink';
 import { useCurrentUserContext } from '@/entities/user';
 
 import { CommentForm } from './CommentForm';

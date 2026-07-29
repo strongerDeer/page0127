@@ -2,7 +2,7 @@
   "text": {
     "strong": { "$value": "{navy.900}", "$type": "color", "$description": "제목·책 제목" },
     "body":   { "$value": "{navy.700}", "$type": "color", "$description": "본문" },
-    "subtle": { "$value": "{navy.500}", "$type": "color", "$description": "저자·출판사·메타" },
+    "subtle": { "$value": "{navy.600}", "$type": "color", "$description": "저자·출판사·메타. navy/500 은 흰 배경 4.496 으로 AA 에 0.004 모자라 navy/600 으로 내렸다 (Storybook addon-a11y 가 잡았다)" },
     "faint":  { "$value": "{navy.300}", "$type": "color", "$description": "캡션" }
   },
 
