@@ -40,7 +40,7 @@ export const RatingDoughnutChart = ({
 
   if (filteredData.length === 0) {
     return (
-      <div className='flex h-[280px] items-center justify-center text-sm text-text-faint'>
+      <div className='flex h-[280px] items-center justify-center text-sm text-text-subtle'>
         책에 평점을 남기면 분포가 표시됩니다.
       </div>
     );
@@ -57,7 +57,7 @@ export const RatingDoughnutChart = ({
             <Star className='size-4 fill-current' />
             <span className='text-sm font-medium'>평균 평점</span>
           </div>
-          <p className='mt-0.5 text-xs text-text-faint'>{ratedTotal}권 기준</p>
+          <p className='mt-0.5 text-xs text-text-subtle'>{ratedTotal}권 기준</p>
         </div>
       </div>
 

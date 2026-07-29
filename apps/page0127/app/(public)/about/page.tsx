@@ -51,7 +51,7 @@ const AboutPage = () => {
         <ol className='space-y-6'>
           {CHANGELOG.map((entry) => (
             <li key={entry.date} className='flex gap-4'>
-              <time className='w-20 shrink-0 pt-0.5 text-sm tabular-nums text-text-faint'>
+              <time className='w-20 shrink-0 pt-0.5 text-sm tabular-nums text-text-subtle'>
                 {entry.date}
               </time>
               <div className='flex-1 border-l border-line pb-1 pl-4'>

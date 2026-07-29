@@ -30,7 +30,7 @@ const formatMs = (value: number): string =>
 export const RumTrendChart = ({ rum }: { rum: RumWindow | null }) => {
   if (!rum) {
     return (
-      <p className='rounded-lg border border-line p-4 text-sm text-text-faint'>
+      <p className='rounded-lg border border-line p-4 text-sm text-text-subtle'>
         자체 RUM 조회에 실패했습니다. (데이터가 없는 것과는 다른 상태입니다 —
         서버 로그를 확인하세요.)
       </p>
@@ -39,7 +39,7 @@ export const RumTrendChart = ({ rum }: { rum: RumWindow | null }) => {
 
   if (rum.trend.length === 0) {
     return (
-      <p className='rounded-lg border border-line p-4 text-sm text-text-faint'>
+      <p className='rounded-lg border border-line p-4 text-sm text-text-subtle'>
         자체 RUM 샘플이 아직 없습니다. 배포 후 실제 방문이 발생하면 채워집니다.
       </p>
     );
@@ -59,9 +59,9 @@ export const RumTrendChart = ({ rum }: { rum: RumWindow | null }) => {
         <h2 className='text-sm font-medium'>
           자체 RUM — {label} 일별 p75 (실사용자)
         </h2>
-        <span className='text-xs text-text-faint'>최근 {rum.windowDays}일</span>
+        <span className='text-xs text-text-subtle'>최근 {rum.windowDays}일</span>
       </div>
-      <p className='mb-3 text-xs text-text-faint'>
+      <p className='mb-3 text-xs text-text-subtle'>
         점선은 CWV 양호 기준({formatMs(goodThreshold)}). 표본이 없는 날은 점을
         찍지 않고 선도 잇지 않는다 — 값 0이 아니라 &quot;그날 방문이
         없었음&quot;이다.

@@ -23,7 +23,7 @@ const JourneyRow = ({
     </div>
     <div className='min-w-0 flex-1'>
       <p className='text-sm font-medium text-text-strong'>{label}</p>
-      <p className='mt-0.5 truncate text-xs text-text-faint'>{description}</p>
+      <p className='mt-0.5 truncate text-xs text-text-subtle'>{description}</p>
     </div>
     <strong className='shrink-0 text-sm text-text-strong'>{value}</strong>
   </div>
@@ -48,7 +48,7 @@ export const ReadingJourneyCard = ({ data }: Props) => {
               권
             </span>
           </p>
-          <p className='pb-1 text-xs text-text-faint'>{readingSince}부터</p>
+          <p className='pb-1 text-xs text-text-subtle'>{readingSince}부터</p>
         </div>
       </div>
 
@@ -77,7 +77,7 @@ export const ReadingJourneyCard = ({ data }: Props) => {
         </div>
       </div>
 
-      <p className='mt-4 flex items-center gap-2 text-xs text-text-faint'>
+      <p className='mt-4 flex items-center gap-2 text-xs text-text-subtle'>
         <CalendarDays className='size-3.5' />
         {data.readingYears > 0
           ? `${data.readingYears}년 동안 이어온 기록입니다.`

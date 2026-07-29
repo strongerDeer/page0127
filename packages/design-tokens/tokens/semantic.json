@@ -2,8 +2,7 @@
   "text": {
     "strong": { "$value": "{navy.900}", "$type": "color", "$description": "제목·책 제목" },
     "body":   { "$value": "{navy.700}", "$type": "color", "$description": "본문" },
-    "subtle": { "$value": "{navy.600}", "$type": "color", "$description": "저자·출판사·메타. navy/500 은 흰 배경 4.496 으로 AA 에 0.004 모자라 navy/600 으로 내렸다 (Storybook addon-a11y 가 잡았다)" },
-    "faint":  { "$value": "{navy.300}", "$type": "color", "$description": "캡션" }
+    "subtle": { "$value": "{navy.600}", "$type": "color", "$description": "저자·출판사·메타·캡션. navy/500 은 흰 배경 4.496 으로 AA 에 0.004 모자라 navy/600 으로 내렸다 (Storybook addon-a11y 가 잡았다). 2026-07-29 부터 옛 faint 자리도 이 토큰이 맡는다 — faint(navy/300)는 흰 배경 2.50 으로 AA 미달이었고, 4.5 를 넘기려면 이 값과 육안 구분이 안 되는 색이 되어 4단계가 성립하지 않았다" }
   },
 
   "chart": {

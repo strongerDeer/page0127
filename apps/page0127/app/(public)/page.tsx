@@ -166,7 +166,7 @@ const Home = async () => {
                 </span>
                 <ArrowRight
                   aria-hidden='true'
-                  className='size-3.5 text-text-faint'
+                  className='size-3.5 text-text-subtle'
                 />
                 <span className='flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-2'>
                   <ScanSearch aria-hidden='true' className='size-3.5' />
@@ -174,7 +174,7 @@ const Home = async () => {
                 </span>
                 <ArrowRight
                   aria-hidden='true'
-                  className='size-3.5 text-text-faint'
+                  className='size-3.5 text-text-subtle'
                 />
                 <span className='flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-2'>
                   <Sparkles aria-hidden='true' className='size-3.5' />

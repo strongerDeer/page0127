@@ -87,7 +87,7 @@ export const NotificationItem = ({
             {message}
           </p>
         </div>
-        <RelativeTime date={created_at} className='text-xs text-text-faint' />
+        <RelativeTime date={created_at} className='text-xs text-text-subtle' />
       </button>
 
       {/* 액션 버튼 영역 */}

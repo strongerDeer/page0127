@@ -74,7 +74,7 @@ const Panel = ({
   if (byPage.size === 0) {
     return (
       <PanelShell label={label} cond={cond}>
-        <p className='px-2 py-10 text-center text-sm text-text-faint'>
+        <p className='px-2 py-10 text-center text-sm text-text-subtle'>
           {label} 측정 데이터가 아직 없습니다.
         </p>
       </PanelShell>
@@ -291,7 +291,7 @@ const PanelShell = ({
   <div className='rounded-lg border border-line p-3'>
     <div className='mb-1 flex items-baseline gap-2 px-1'>
       <span className='text-sm font-medium'>{label}</span>
-      <span className='text-xs text-text-faint'>{cond}</span>
+      <span className='text-xs text-text-subtle'>{cond}</span>
     </div>
     {children}
   </div>
@@ -314,7 +314,7 @@ export const QualityTrend = ({ data }: { data: TrendPayload }) => {
     <section className='space-y-3'>
       <div>
         <h2 className='text-sm font-medium'>추세 자세히 — 지표별</h2>
-        <p className='mt-0.5 text-xs text-text-faint'>
+        <p className='mt-0.5 text-xs text-text-subtle'>
           전체 기간 연속선. 페이지 칩으로 선을 껐다 켜고, 선 위에 마우스를
           올리면 그 주 값이 나옵니다.
         </p>
@@ -331,7 +331,7 @@ export const QualityTrend = ({ data }: { data: TrendPayload }) => {
             className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${
               mk === metric
                 ? 'border-gray-900 bg-gray-900 text-white'
-                : 'border-line bg-white text-text-faint hover:bg-gray-50'
+                : 'border-line bg-white text-text-subtle hover:bg-gray-50'
             }`}
           >
             {METRICS[mk].label}
@@ -341,7 +341,7 @@ export const QualityTrend = ({ data }: { data: TrendPayload }) => {
 
       {/* 페이지 토글 칩 */}
       <div className='flex flex-wrap items-center gap-2'>
-        <span className='text-xs text-text-faint'>페이지</span>
+        <span className='text-xs text-text-subtle'>페이지</span>
         {data.pages.map((p) => {
           const on = !hidden.has(p);
           const color = colorOf(data.pages, p);
@@ -354,7 +354,7 @@ export const QualityTrend = ({ data }: { data: TrendPayload }) => {
               className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12.5px] font-medium transition ${
                 on
                   ? 'border-line bg-white text-gray-900'
-                  : 'border-line/60 bg-transparent text-text-faint'
+                  : 'border-line/60 bg-transparent text-text-subtle'
               }`}
             >
               <span

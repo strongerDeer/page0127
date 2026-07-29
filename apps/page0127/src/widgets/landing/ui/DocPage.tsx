@@ -30,7 +30,7 @@ export const DocPage = ({
           <h1 className='heading-1 text-text-strong'>{title}</h1>
           {description && <p className='mt-2 text-text-body'>{description}</p>}
           {showUpdatedAt && (
-            <p className='mt-3 text-xs text-text-faint'>
+            <p className='mt-3 text-xs text-text-subtle'>
               최종 수정일: {SITE_INFO.lastUpdated}
             </p>
           )}
@@ -62,7 +62,7 @@ export const DocList = ({ items }: { items: React.ReactNode[] }) => (
   <ul className='space-y-1.5'>
     {items.map((item, i) => (
       <li key={i} className='flex gap-2'>
-        <span className='select-none text-text-faint'>·</span>
+        <span className='select-none text-text-subtle'>·</span>
         <span className='flex-1'>{item}</span>
       </li>
     ))}

@@ -38,7 +38,7 @@ export const SiteFooter = () => {
           </nav>
         </div>
 
-        <p className='mt-8 border-t border-line-soft pt-6 text-xs text-text-faint'>
+        <p className='mt-8 border-t border-line-soft pt-6 text-xs text-text-subtle'>
           © 2026 page0127
         </p>
       </div>

@@ -205,11 +205,11 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
                   className='size-4 fill-chart-4 text-chart-4'
                 />
                 {stats.avgRating.toFixed(1)}
-                <span className='font-normal text-text-faint'>
+                <span className='font-normal text-text-subtle'>
                   / {RATING_MAX} ({stats.ratingCount})
                 </span>
               </span>
-              <span aria-hidden='true' className='text-text-faint'>
+              <span aria-hidden='true' className='text-text-subtle'>
                 ·
               </span>
               <span className='text-text-subtle'>

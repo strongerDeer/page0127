@@ -20,10 +20,10 @@ const sinceLabel = (lastSeen: string, now: Date) => {
 export const ErrorCard = ({ issue, now }: { issue: TriagedIssue; now: Date }) => (
   <li className={`rounded-lg border p-4 ${TONE[issue.grade]}`}>
     <div className='text-sm font-medium'>{issue.metadata?.type ?? '오류'}</div>
-    <p className='mt-1 line-clamp-2 text-sm text-text-faint'>
+    <p className='mt-1 line-clamp-2 text-sm text-text-subtle'>
       {issue.metadata?.value ?? issue.title}
     </p>
-    <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-faint'>
+    <div className='mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-subtle'>
       <span>{issue.culprit ?? '위치 불명'}</span>
       <span>{issue.count}회</span>
       <span>{sinceLabel(issue.lastSeen, now)}</span>

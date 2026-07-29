@@ -95,7 +95,7 @@ export const BookCover = ({
           : 'items-center justify-center text-center',
         // 대체 표지는 진짜 표지의 자리를 메우는 것이지 강조 대상이 아니다 —
         // 07 의 weight 3단계 중 400 을 쓴다. 크기는 호출부가 덮을 수 있다(twMerge)
-        'text-xs leading-snug text-text-faint',
+        'text-xs leading-snug text-text-subtle',
         fill && 'h-full w-full',
         className,
         fallbackClassName

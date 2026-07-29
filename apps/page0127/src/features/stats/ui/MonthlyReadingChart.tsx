@@ -68,7 +68,7 @@ export const MonthlyReadingChart = ({
             axisLine={false}
             tickLine={false}
             tickFormatter={(month) => `${month}월`}
-            tick={{ fill: 'var(--text-faint)', fontSize: 12 }}
+            tick={{ fill: 'var(--text-subtle)', fontSize: 12 }}
           />
 
           {/* Y축: 권수 */}
@@ -76,7 +76,7 @@ export const MonthlyReadingChart = ({
             axisLine={false}
             tickLine={false}
             allowDecimals={false}
-            tick={{ fill: 'var(--text-faint)', fontSize: 12 }}
+            tick={{ fill: 'var(--text-subtle)', fontSize: 12 }}
           />
 
           {/* 툴팁 */}

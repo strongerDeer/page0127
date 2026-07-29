@@ -11,8 +11,7 @@
   :root {
     --text-strong: var(--gray-0); /** 제목·책 제목. navy/900 배경 위 14.41:1 — 라이트 모드와 같은 대비다 */
     --text-body: var(--gray-300); /** 본문. 11.18:1 */
-    --text-subtle: var(--navy-300); /** 저자·출판사·메타. 5.76:1 */
-    --text-faint: var(--navy-500); /** 캡션. 3.21:1 — 라이트의 faint 와 같은 역할·같은 수준이다 */
+    --text-subtle: var(--navy-300); /** 저자·출판사·메타·캡션. 5.76:1 — 2026-07-29 부터 옛 faint 자리도 맡는다 */
     --background: var(--navy-900);
     --card: var(--navy-900);
     --popover: var(--navy-900);

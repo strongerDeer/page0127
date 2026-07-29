@@ -47,7 +47,7 @@ export const BookSearchResultCard = ({
         <p className='mt-0.5 truncate text-sm text-text-subtle'>
           {book.author}
         </p>
-        <p className='mt-1 truncate text-xs text-text-faint'>
+        <p className='mt-1 truncate text-xs text-text-subtle'>
           {book.publisher}
           {book.pubDate && ` · ${book.pubDate}`}
         </p>

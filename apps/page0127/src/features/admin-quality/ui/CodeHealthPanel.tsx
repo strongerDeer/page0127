@@ -4,7 +4,7 @@ type Sev = 'error' | 'warn' | 'info';
 
 // 카운트가 0이면 회색(정상), >0이면 심각도 색. 에러류는 0이어야 정상.
 const valueClass = (n: number, sev: Sev) => {
-  if (n === 0) return 'text-text-faint';
+  if (n === 0) return 'text-text-subtle';
   if (sev === 'error') return 'text-red-600';
   if (sev === 'warn') return 'text-amber-600';
   return 'text-gray-900';
@@ -23,7 +23,7 @@ const Stat = ({
     <div className={`text-xl font-medium tabular-nums ${valueClass(value, sev)}`}>
       {value}
     </div>
-    <div className='mt-0.5 text-xs text-text-faint'>{label}</div>
+    <div className='mt-0.5 text-xs text-text-subtle'>{label}</div>
   </div>
 );
 

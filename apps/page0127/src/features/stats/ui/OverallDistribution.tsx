@@ -25,7 +25,7 @@ export const OverallDistribution = ({ ratings }: OverallDistributionProps) => {
   const max = Math.max(...rows.map((r) => r.count), 1);
 
   if (rows.length === 0) {
-    return <p className='text-sm text-text-faint'>아직 평점이 없어요.</p>;
+    return <p className='text-sm text-text-subtle'>아직 평점이 없어요.</p>;
   }
 
   return (

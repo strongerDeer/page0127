@@ -53,7 +53,7 @@ export const BookFeedGrid = ({
           >
             {rank !== undefined && (
               <div className='pt-3 text-center leading-none'>
-                <p className='text-xs font-bold tracking-[0.2em] text-text-faint'>
+                <p className='text-xs font-bold tracking-[0.2em] text-text-subtle'>
                   BOOK
                 </p>
                 <p className='text-xl font-black text-text-strong'>
@@ -79,7 +79,7 @@ export const BookFeedGrid = ({
                     {book.title}
                   </p>
                   {book.author && (
-                    <p className='line-clamp-1 text-xs text-text-faint'>
+                    <p className='line-clamp-1 text-xs text-text-subtle'>
                       {book.author}
                     </p>
                   )}

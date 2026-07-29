@@ -199,7 +199,7 @@ const CompatibilityIntro = ({
 }: CompatibilityIntroProps) => (
   <Card>
     <CardContent className='py-12 text-center'>
-      <BookCopy className='mx-auto mb-4 h-9 w-9 text-text-faint' />
+      <BookCopy className='mx-auto mb-4 h-9 w-9 text-text-subtle' />
       <h2 className='mb-2 heading-2 text-text-strong'>
         두 사람의 책장을 나란히 놓아볼까요?
       </h2>
@@ -320,7 +320,7 @@ const CompatibilityResult = ({
         <CardContent className='py-10 text-center'>
           <p className='text-6xl font-bold text-primary'>
             {analysis.compatibility_score}
-            <span className='text-2xl text-text-faint'>/100</span>
+            <span className='text-2xl text-text-subtle'>/100</span>
           </p>
           <p className='mt-4 text-2xl font-bold text-text-strong'>
             {analysis.compatibility_type}

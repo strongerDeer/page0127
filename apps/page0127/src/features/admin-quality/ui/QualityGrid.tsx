@@ -22,7 +22,7 @@ const DIR_COLOR: Record<Dir, string> = {
 const DIR_TEXT: Record<Dir, string> = {
   up: 'text-emerald-700',
   down: 'text-red-600',
-  flat: 'text-text-faint',
+  flat: 'text-text-subtle',
 };
 const ARROW: Record<Dir, string> = { up: '▲', down: '▼', flat: '→' };
 const VERDICT_COLOR: Record<Verdict, string> = {
@@ -46,7 +46,7 @@ const Sparkline = ({
   const pts = values
     .map((v, i) => ({ v, i }))
     .filter((p): p is { v: number; i: number } => p.v != null);
-  if (pts.length === 0) return <span className='text-text-faint'>–</span>;
+  if (pts.length === 0) return <span className='text-text-subtle'>–</span>;
 
   const vals = pts.map((p) => p.v);
   const min = Math.min(...vals);
@@ -102,7 +102,7 @@ const GridTable = ({
 
   if (pages.length === 0) {
     return (
-      <p className='rounded-lg border border-line p-4 text-sm text-text-faint'>
+      <p className='rounded-lg border border-line p-4 text-sm text-text-subtle'>
         {ff === 'desktop' ? '데스크탑' : '모바일'} 측정 데이터가 아직 없습니다.
       </p>
     );
@@ -112,7 +112,7 @@ const GridTable = ({
     <div className='rounded-lg border border-line'>
       <div className='overflow-x-auto'>
         <table className='w-full min-w-[560px] text-sm'>
-          <thead className='text-text-faint'>
+          <thead className='text-text-subtle'>
             <tr className='border-b border-line text-left'>
               <th className='py-2.5 pl-4 pr-4 font-medium'>페이지</th>
               {METRIC_ORDER.map((mk) => (
@@ -153,7 +153,7 @@ const GridTable = ({
                               className={
                                 def.verdict
                                   ? 'flex items-center gap-1 font-medium tabular-nums'
-                                  : 'font-medium tabular-nums text-text-faint'
+                                  : 'font-medium tabular-nums text-text-subtle'
                               }
                             >
                               {def.verdict && last != null && (
@@ -196,23 +196,23 @@ export const QualityGrid = ({ data }: { data: TrendPayload }) => {
     <section className='space-y-3'>
       <div>
         <h2 className='text-sm font-medium'>한눈에 — 페이지별 지표</h2>
-        <p className='mt-0.5 text-xs text-text-faint'>
+        <p className='mt-0.5 text-xs text-text-subtle'>
           선 색: <span className='text-emerald-700'>초록=개선</span> ·{' '}
           <span className='text-red-600'>빨강=악화</span>. 점 색은 판정(양호/주의/위험).
         </p>
       </div>
 
       <div className='space-y-1.5'>
-        <p className='px-1 text-xs text-text-faint'>
-          모바일 <span className='text-text-faint/70'>· 느린 4G · CPU 4× 스로틀</span>
+        <p className='px-1 text-xs text-text-subtle'>
+          모바일 <span className='text-text-subtle/70'>· 느린 4G · CPU 4× 스로틀</span>
         </p>
         <GridTable ff='mobile' payload={data} />
       </div>
 
       <div className='space-y-1.5 pt-1'>
-        <p className='px-1 text-xs text-text-faint'>
+        <p className='px-1 text-xs text-text-subtle'>
           데스크탑{' '}
-          <span className='text-text-faint/70'>· 빠른 4G · 스로틀 없음</span>
+          <span className='text-text-subtle/70'>· 빠른 4G · 스로틀 없음</span>
         </p>
         <GridTable ff='desktop' payload={data} />
       </div>

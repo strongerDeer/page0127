@@ -130,7 +130,7 @@ export const ActivityCard = ({
 
         <RelativeTime
           date={activity.created_at}
-          className='shrink-0 text-sm text-text-faint'
+          className='shrink-0 text-sm text-text-subtle'
         />
       </div>
 
@@ -187,7 +187,7 @@ export const ActivityCard = ({
       {/* 접힌 상태 변화 요약 — 이 카드는 책 1장이므로 개별 활동은 여기로 압축된다.
           활동이 하나뿐이면 헤더에 이미 적혀 있어 중복이라 감춘다 */}
       {activity.bookEvents.length > 1 && (
-        <p className='mt-3 text-sm text-text-faint'>
+        <p className='mt-3 text-sm text-text-subtle'>
           {formatBookEvents(activity.bookEvents)}
         </p>
       )}

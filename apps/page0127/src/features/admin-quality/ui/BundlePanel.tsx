@@ -13,7 +13,7 @@ export const BundlePanel = ({ record }: { record: QualityRecord }) => {
     <section className='rounded-lg border border-line p-4'>
       <div className='mb-3 flex items-baseline justify-between'>
         <h2 className='text-sm font-medium'>첫 로드 번들</h2>
-        <span className='text-xs text-text-faint'>
+        <span className='text-xs text-text-subtle'>
           공유 청크{' '}
           <span className='font-medium tabular-nums text-gray-900'>
             {totalFirstLoadKb}KB
@@ -22,12 +22,12 @@ export const BundlePanel = ({ record }: { record: QualityRecord }) => {
       </div>
 
       {perRoute.length === 0 ? (
-        <p className='text-sm text-text-faint'>라우트별 번들 데이터가 없습니다.</p>
+        <p className='text-sm text-text-subtle'>라우트별 번들 데이터가 없습니다.</p>
       ) : (
         <ul className='space-y-2'>
           {perRoute.map((r) => (
             <li key={r.route} className='flex items-center gap-3 text-sm'>
-              <span className='w-40 flex-none truncate text-text-faint' title={r.route}>
+              <span className='w-40 flex-none truncate text-text-subtle' title={r.route}>
                 {r.route}
               </span>
               <span className='h-2 flex-1 overflow-hidden rounded-full bg-gray-100'>

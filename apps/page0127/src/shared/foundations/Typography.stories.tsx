@@ -111,7 +111,7 @@ export const Hierarchy: Story = {
         부족한, 읽기라는 습관 그 자체에 대한 이야기.
       </p>
       <p className='mt-3 text-sm text-text-subtle'>김미소 · 코난북스</p>
-      <p className='mt-1 text-xs text-text-faint'>3일 전 · 완독 12명</p>
+      <p className='mt-1 text-xs text-text-subtle'>3일 전 · 완독 12명</p>
     </div>
   ),
 };

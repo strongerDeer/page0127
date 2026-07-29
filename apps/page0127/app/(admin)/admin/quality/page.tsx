@@ -18,7 +18,7 @@ export default async function AdminQualityPage() {
     return (
       <section>
         <h1 className='mb-4 text-base font-medium'>품질</h1>
-        <p className='text-sm text-text-faint'>
+        <p className='text-sm text-text-subtle'>
           아직 측정 데이터가 없습니다. 품질 워크플로우가 처음 실행되면 표시됩니다.
         </p>
       </section>
@@ -31,7 +31,7 @@ export default async function AdminQualityPage() {
     <section className='space-y-6'>
       <div className='flex items-baseline justify-between'>
         <h1 className='text-base font-medium'>품질</h1>
-        <span className='text-xs text-text-faint'>
+        <span className='text-xs text-text-subtle'>
           측정 {new Date(latest.timestamp).toLocaleString('ko-KR')} · {latest.gitRef}
         </span>
       </div>

@@ -33,11 +33,12 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  /* 텍스트 위계 — text-strong / text-body / text-subtle / text-faint */
+  /* 텍스트 위계 3단 — text-strong / text-body / text-subtle
+     (faint 는 없앴다. 흰 배경에서 2.5:1 이라 AA 미달이었는데, 4.5 를 넘기려면
+      subtle 과 육안 구분이 안 되는 값이 된다 — 4단계가 애초에 성립하지 않았다) */
   --color-text-strong: var(--text-strong);
   --color-text-body: var(--text-body);
   --color-text-subtle: var(--text-subtle);
-  --color-text-faint: var(--text-faint);
 
   /* 표면·선 */
   --color-sunken: var(--sunken);
