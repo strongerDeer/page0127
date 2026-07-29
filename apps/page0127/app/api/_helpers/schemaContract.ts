@@ -45,8 +45,27 @@ export const SCHEMA_CONTRACT: SchemaProbe[] = [
 
 /** PostgREST 가 "컬럼 없음" 으로 주는 코드. 다른 실패와 구분해야 원인이 드러난다. */
 export const UNDEFINED_COLUMN = '42703';
-/** 테이블 자체가 없을 때 */
+/** 테이블 자체가 없을 때 (Postgres 가 그대로 올려보내는 경우) */
 export const UNDEFINED_TABLE = '42P01';
+/**
+ * 테이블이 없을 때 PostgREST 가 실제로 주는 코드.
+ *
+ * 42P01 만 보면 **테이블이 통째로 사라져도 검사가 통과한다.** PostgREST 는 요청을
+ * Postgres 로 보내기 전에 자기 스키마 캐시에서 테이블을 찾는데, 거기 없으면
+ * 쿼리를 아예 실행하지 않고 PGRST205 (+ HTTP 404) 로 끊는다. 그래서 42P01 은
+ * 오지 않는다.
+ *
+ * 실제로 겪었다: 2026-07-29 개발 DB 에 user_daily_visits 가 통째로 없었는데
+ * 이 검사는 books 컬럼 하나만 잡고 그 테이블은 정상으로 취급했다.
+ */
+export const UNDEFINED_TABLE_POSTGREST = 'PGRST205';
+
+/** 스키마 이상으로 볼 코드들 — 연결 끊김·일시 오류와 구분한다. */
+const SCHEMA_ERROR_CODES = new Set<string>([
+  UNDEFINED_COLUMN,
+  UNDEFINED_TABLE,
+  UNDEFINED_TABLE_POSTGREST,
+]);
 
 export type ProbeFailure = {
   table: string;
@@ -71,7 +90,7 @@ export async function checkSchemaContract(
     // 스키마 이상(컬럼·테이블 없음)만 계약 위반으로 본다.
     // 연결 끊김이나 일시적 오류는 database 체크가 따로 잡는다.
     const code = error.code ?? null;
-    if (code === UNDEFINED_COLUMN || code === UNDEFINED_TABLE) {
+    if (code !== null && SCHEMA_ERROR_CODES.has(code)) {
       failures.push({
         table: probe.table,
         code,
