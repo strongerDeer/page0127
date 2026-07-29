@@ -70,5 +70,26 @@ jobs:
             fi
           done
 
-          echo "::error::헬스체크 실패 — 마지막 응답: HTTP ${code} / ${preview}"
+          # 원인을 나눠서 알린다.
+          #
+          # 왜: 이 알림은 새벽에도 온다. "헬스체크 실패" 한 줄만 오면 받는 사람이
+          # 로그를 열어 본문을 읽고 어느 층이 고장인지 판단해야 한다. 세 경우는
+          # 대응이 완전히 다르다 — 마이그레이션을 올릴 것인가, Supabase 상태를
+          # 볼 것인가, 배포가 죽었는지 볼 것인가.
+          if printf '%s' "$body" | grep -qF '"schema":"drift"'; then
+            echo "::error::스키마 어긋남 — 배포된 코드가 기대하는 마이그레이션이 운영 DB에 없습니다."
+            echo "::error::대응: npx supabase migration list --linked 로 미적용분을 확인하고 올립니다."
+          elif printf '%s' "$body" | grep -qF '"schema":"unknown"'; then
+            # 감지 장치가 고장난 것과 서비스가 고장난 것은 다르다(health route 주석 참조).
+            # 서비스는 살아 있을 수 있으므로 문구를 구분한다.
+            echo "::error::스키마 버전을 읽지 못했습니다 — 서비스가 아니라 감시가 고장났을 수 있습니다."
+            echo "::error::대응: SUPABASE_SERVICE_ROLE_KEY 와 applied_migration_version 함수 권한을 확인합니다."
+          elif printf '%s' "$body" | grep -qF '"database":"down"'; then
+            echo "::error::DB 연결 실패 — Supabase 상태와 자격증명을 확인합니다."
+          else
+            # 200 이 아니거나 본문이 예상과 다른 경우(배포 실패·soft 404 등)
+            echo "::error::헬스체크 실패 — 응답이 예상 형식이 아닙니다."
+          fi
+
+          echo "::error::마지막 응답: HTTP ${code} / ${preview}"
           exit 1
