@@ -5,6 +5,8 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
+
 import { isTopRated } from '@/entities/book';
 
 import type { Book } from '@/entities/book';
@@ -65,10 +67,16 @@ export const PublicBookShelf = ({
           const isCoverView = isTopRated(book.rating, book.is_life_book);
           const imageUrl = isCoverView ? book.cover_image : book.spine_image;
           const hasImage = !!imageUrl;
+          // 여러 번 읽은 책은 조금 크게 — 뱃지가 잘 안 보이는 책등에서도
+          // "이 책은 다르다"가 실루엣만으로 읽힌다
+          const isReread = book.read_count > 1;
 
           return (
             <li key={book.id}>
-              <Link href={getHref(book)}>
+              <Link
+                href={getHref(book)}
+                className={isReread ? styles.reread : undefined}
+              >
                 {hasImage ? (
                   <Image
                     src={imgSrc[book.id] || imageUrl}
@@ -85,6 +93,24 @@ export const PublicBookShelf = ({
                     <p>{book.title}</p>
                   </div>
                 )}
+
+                {/* 회독 뱃지. 표지는 자리가 있어 "n회독"을 그대로 쓰고,
+                    책등(50px)은 숫자만 원형으로 얹는다 */}
+                {isReread &&
+                  (isCoverView ? (
+                    <ReadCountBadge
+                      readCount={book.read_count}
+                      size='sm'
+                      className={`${styles.readCount} bg-primary text-primary-foreground shadow-sm`}
+                    />
+                  ) : (
+                    <span
+                      className={`${styles.readCountSpine} bg-primary text-primary-foreground shadow-sm`}
+                    >
+                      <span aria-hidden='true'>{book.read_count}</span>
+                      <span className='sr-only'>{book.read_count}회독</span>
+                    </span>
+                  ))}
               </Link>
             </li>
           );

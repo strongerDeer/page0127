@@ -1,6 +1,8 @@
 import { createClient } from '@/shared/config/supabase/server';
 import { mapToMainCategory } from '@/shared/lib/categoryMapper';
 
+import { dedupeReadings } from '../model/dedupeReadings';
+
 import type { Book } from '../types';
 import type {
   CategoryReadingData,
@@ -51,21 +53,24 @@ export const getOverallStats = async (
       return getEmptyStats();
     }
 
+    // 재독은 새 row 로 쌓인다 — 여기는 '전체 기간' 통계이므로 전체 범위에서
+    // 같은 책을 한 권으로 센다. (연도별 추이만 연도 안에서 따로 합친다)
+    const allReadings = completedBooks as Book[];
+    const uniqueBooks = dedupeReadings(allReadings);
+
     // 1. 독서 여정 계산
-    const journey = calculateReadingJourney(completedBooks as Book[]);
+    // 시작일만은 합치기 전 목록으로 구한다 — 합치면 대표가 '최신 회독'이라
+    // 2020년에 처음 읽은 책이 2026년 재독 날짜로 바뀌어 시작일이 밀린다
+    const journey = calculateReadingJourney(uniqueBooks, allReadings);
 
     // 2. 최근 5년 독서량 계산
-    const yearlyTrend = calculateYearlyTrend(completedBooks as Book[]);
+    const yearlyTrend = calculateYearlyTrend(allReadings);
 
     // 3. 평점 분포 계산
-    const ratingDistribution = calculateRatingDistribution(
-      completedBooks as Book[]
-    );
+    const ratingDistribution = calculateRatingDistribution(uniqueBooks);
 
     // 4. 전체 카테고리 분포 계산
-    const categoryDistribution = calculateCategoryDistribution(
-      completedBooks as Book[]
-    );
+    const categoryDistribution = calculateCategoryDistribution(uniqueBooks);
 
     return {
       journey,
@@ -86,8 +91,14 @@ export const getOverallStats = async (
  * - 총 읽은 책, 인생책
  * - 총 읽은 쪽수, 하루 평균 쪽수
  * - 독서 기간, 예상 독서 시간
+ *
+ * @param books 회독을 합친 목록 — 권수·쪽수는 서로 다른 책 기준으로 센다
+ * @param allReadings 합치기 전 전체 회독 기록 (완독일 오름차순) — 시작일 계산용
  */
-const calculateReadingJourney = (books: Book[]): ReadingJourney => {
+const calculateReadingJourney = (
+  books: Book[],
+  allReadings: Book[]
+): ReadingJourney => {
   const totalBooks = books.length;
 
   // 인생책 (is_life_book 플래그 — 전에는 rating=10 이라는 매직값이었다)
@@ -101,8 +112,8 @@ const calculateReadingJourney = (books: Book[]): ReadingJourney => {
     0
   );
 
-  // 독서 시작일 (첫 완독일)
-  const firstBook = books[0]; // 이미 completed_date 오름차순 정렬됨
+  // 독서 시작일 (첫 완독일) — 합치기 전 목록이라야 옛 1회독 날짜가 살아 있다
+  const firstBook = allReadings[0]; // 이미 completed_date 오름차순 정렬됨
   const readingSince = firstBook?.completed_date || new Date().toISOString();
 
   // 독서 년수 계산
@@ -147,25 +158,29 @@ const calculateReadingJourney = (books: Book[]): ReadingJourney => {
  * - 완독일 기준으로 연도별 집계
  * - 최근 5년만 표시 (데이터 부족 시 전체)
  * - 오름차순 정렬 (2020 → 2024)
+ *
+ * 회독은 '그 연도 안에서' 합친다. 전체 기준으로 먼저 합치면 옛 회독이 사라져
+ * 지난 연도 막대가 실제보다 낮아진다 — 2020년에 읽은 사실은 남아야 한다.
+ * 그래서 연도 막대의 합이 '총 읽은 책'보다 클 수 있다(해를 걸친 재독).
  */
-const calculateYearlyTrend = (books: Book[]): YearlyTrend[] => {
+const calculateYearlyTrend = (allReadings: Book[]): YearlyTrend[] => {
   const MAX_YEARS = 5;
 
-  // 연도별 카운트 맵 생성
-  const yearMap = new Map<number, number>();
+  // 연도별로 기록을 모은 뒤, 각 연도 안에서 같은 책을 한 권으로 합친다
+  const readingsByYear = new Map<number, Book[]>();
 
-  books.forEach((book) => {
+  allReadings.forEach((book) => {
     if (book.completed_date) {
       const year = new Date(book.completed_date).getFullYear();
-      yearMap.set(year, (yearMap.get(year) || 0) + 1);
+      readingsByYear.set(year, [...(readingsByYear.get(year) ?? []), book]);
     }
   });
 
   // 연도 오름차순 정렬
-  const sortedYears = Array.from(yearMap.entries())
-    .map(([year, count]) => ({
+  const sortedYears = Array.from(readingsByYear.entries())
+    .map(([year, readings]) => ({
       year,
-      count,
+      count: dedupeReadings(readings).length,
     }))
     .sort((a, b) => a.year - b.year);
 
@@ -210,8 +225,14 @@ const calculateRatingDistribution = (books: Book[]): RatingDistribution[] => {
   });
 
   books.forEach((book) => {
+    // 인생책은 점수와 무관하게 '인생책' 칸으로 보낸다. 인생책 버킷의 rating 이
+    // 5 로 고정돼 있어, 두 값을 그대로 키로 쓰면 '4점인데 인생책'인 책이 어느
+    // 칸에도 못 들어가고 조용히 빠진다 — 분포 합이 총 권수보다 적어진다.
+    // 회독을 합치면(1회독 5점 인생책 + 2회독 4점) 이 조합이 실제로 만들어진다.
     // rating 이 null/undefined 거나 버킷에 없는 값이면 key 가 안 맞아 자연히 걸러진다
-    const key = toKey(book.rating ?? NaN, book.is_life_book);
+    const key = book.is_life_book
+      ? toKey(5, true)
+      : toKey(book.rating ?? NaN, false);
     if (ratingMap.has(key)) {
       ratingMap.set(key, (ratingMap.get(key) || 0) + 1);
     }

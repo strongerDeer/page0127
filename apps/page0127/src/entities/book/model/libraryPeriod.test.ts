@@ -13,7 +13,10 @@ import type { Book } from '../types';
 const createBook = (overrides: Partial<Book> = {}): Book => ({
   id: crypto.randomUUID(),
   user_id: 'user-id',
-  isbn: 'isbn',
+  // 통계는 같은 ISBN 을 한 책의 회독으로 보고 합친다 → 기본값을 고정 문자열로
+  // 두면 서로 다른 책으로 만든 픽스처가 한 권으로 뭉쳐 권수가 어긋난다.
+  // 재독을 테스트하려면 isbn 을 명시적으로 같게 준다.
+  isbn: crypto.randomUUID(),
   title: '테스트 책',
   author: null,
   publisher: null,
@@ -137,6 +140,96 @@ describe('libraryPeriod', () => {
     // (5 + 4) / 2 = 4.5 — 0을 세면 3.0이 된다
     expect(stats.averageRating).toBe(4.5);
     expect(stats.totalCompletedBooks).toBe(3);
+  });
+
+  it('같은 책을 두 번 읽어도 통계에서는 한 권으로 센다', () => {
+    const books = [
+      createBook({
+        isbn: '9788901234567',
+        read_count: 1,
+        status: 'completed',
+        completed_date: '2026-01-10',
+        rating: 5,
+      }),
+      createBook({
+        isbn: '9788901234567',
+        read_count: 2,
+        status: 'completed',
+        completed_date: '2026-06-10',
+        rating: 5,
+      }),
+    ];
+
+    const stats = calculateBookStats(books, 2026, 2026);
+
+    expect(stats.totalCompletedBooks).toBe(1);
+    // 월별 막대도 한 번만 서야 한다 — 1월·6월에 각각 세면 합계가 2가 된다
+    expect(stats.monthlyReading.reduce((sum, m) => sum + m.count, 0)).toBe(1);
+  });
+
+  it('해가 다른 재독은 각 연도 통계에 그대로 남는다', () => {
+    // 2026년에 한 번, 2027년에 한 번 읽었으면 두 해 모두 1권이어야 한다.
+    // 전체 기준으로 먼저 합치면 옛 연도가 0권이 된다.
+    const books = [
+      createBook({
+        isbn: '9788901234567',
+        read_count: 1,
+        status: 'completed',
+        completed_date: '2026-05-10',
+      }),
+      createBook({
+        isbn: '9788901234567',
+        read_count: 2,
+        status: 'completed',
+        completed_date: '2027-05-10',
+      }),
+    ];
+
+    expect(calculateBookStats(books, 2026, 2027).totalCompletedBooks).toBe(1);
+    expect(calculateBookStats(books, 2027, 2027).totalCompletedBooks).toBe(1);
+  });
+
+  it('1회독 때만 인생책으로 꼽았어도 인생책 수에 남는다', () => {
+    const books = [
+      createBook({
+        isbn: '9788901234567',
+        read_count: 1,
+        status: 'completed',
+        completed_date: '2026-01-10',
+        rating: 5,
+        is_life_book: true,
+      }),
+      createBook({
+        isbn: '9788901234567',
+        read_count: 2,
+        status: 'completed',
+        completed_date: '2026-06-10',
+        rating: 5,
+        is_life_book: false,
+      }),
+    ];
+
+    expect(calculateBookStats(books, 2026, 2026).lifeBookCount).toBe(1);
+  });
+
+  it('5점이 아닌 인생책도 평점 분포에서 빠지지 않는다', () => {
+    // 인생책 버킷의 rating 은 5 로 고정돼 있다. 두 값을 모두 맞춰 찾으면
+    // '4점인데 인생책'인 책이 어느 칸에도 못 들어가 분포 합이 총 권수보다 적어진다.
+    // (1회독 5점 인생책 + 2회독 4점을 합치면 실제로 이 조합이 나온다)
+    const books = [
+      createBook({
+        rating: 4,
+        is_life_book: true,
+        status: 'completed',
+        completed_date: '2026-03-01',
+      }),
+    ];
+
+    const { ratingReading } = calculateBookStats(books, null, 2026);
+    const total = ratingReading.reduce((sum, item) => sum + item.count, 0);
+
+    expect(ratingReading.find((r) => r.is_life_book)?.count).toBe(1);
+    expect(total).toBe(1);
   });
 
   it('5점과 인생책을 다른 항목으로 센다', () => {

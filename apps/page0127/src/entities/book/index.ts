@@ -31,6 +31,9 @@ export type {
 //       (클라이언트 컴포넌트가 이 배럴을 import 할 때 서버 모듈이 끌려가지 않도록 분리)
 export { bookApi } from './api/bookApi';
 
+// 재독 기록 합치기 — 같은 책의 회독이 책장에 여러 번 서지 않게 한다
+export { dedupeReadings } from './model/dedupeReadings';
+
 // 서재 기간 분류·통계 (서버에서 받은 책 목록을 클라이언트에서도 재사용)
 export {
   calculateBookStats,

@@ -11,6 +11,7 @@ import { PageContainer } from '@/shared/ui/PageContainer';
 
 import {
   calculateBookStats,
+  dedupeReadings,
   filterBooksByLibraryYear,
   getLibraryYears,
 } from '@/entities/book';
@@ -95,13 +96,16 @@ export const PublicLibraryContent = ({
     [books, currentYear, selectedPeriod]
   );
 
+  // 재독은 새 row 로 쌓이므로 그대로 그리면 같은 책이 회독 수만큼 책장에 선다.
+  // 공개/보관을 나눈 뒤에 합친다 — 1회독은 공개, 2회독은 보관처럼 회독마다
+  // 공개 설정이 다를 수 있어, 합치고 나서 나누면 한쪽 칸에서 통째로 사라진다.
   const archivedBooks = useMemo(
-    () => periodBooks.filter((book) => !book.is_public),
+    () => dedupeReadings(periodBooks.filter((book) => !book.is_public)),
     [periodBooks]
   );
 
   const visibleBooks = useMemo(
-    () => periodBooks.filter((book) => book.is_public),
+    () => dedupeReadings(periodBooks.filter((book) => book.is_public)),
     [periodBooks]
   );
 
@@ -112,7 +116,7 @@ export const PublicLibraryContent = ({
 
   // 위시리스트는 내 개인 목록이라 연도·공개여부와 무관하게 전부 모은다
   const wishlistBooks = useMemo(
-    () => books.filter((book) => book.status === 'want_to_read'),
+    () => dedupeReadings(books.filter((book) => book.status === 'want_to_read')),
     [books]
   );
 
