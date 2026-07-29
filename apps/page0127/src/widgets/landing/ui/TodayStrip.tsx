@@ -63,7 +63,7 @@ export const TodayStrip = async () => {
       <span className='font-medium text-text-body'>{headline}</span>
       <time
         dateTime={today}
-        className='text-xs tabular-nums text-text-faint'
+        className='text-xs tabular-nums text-text-subtle'
       >
         {formatFullDate(today)}
       </time>

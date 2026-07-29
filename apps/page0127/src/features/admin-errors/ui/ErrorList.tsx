@@ -47,21 +47,21 @@ const SECTIONS: {
     title: '잠잠해짐',
     hint: '7일 넘게 조용합니다. 고쳤다면 Sentry에서 Resolve 하세요',
     icon: Moon,
-    tone: 'text-text-faint',
+    tone: 'text-text-subtle',
   },
   {
     grade: 'log',
     title: '로그성',
     hint: 'console.error로 남긴 기록. 크래시가 아닙니다',
     icon: ScrollText,
-    tone: 'text-text-faint',
+    tone: 'text-text-subtle',
   },
   {
     grade: 'noise',
     title: '무시해도 되는 것',
     hint: '브라우저 잡음·확장 프로그램·정상 제어 흐름',
     icon: BellOff,
-    tone: 'text-text-faint',
+    tone: 'text-text-subtle',
   },
 ];
 
@@ -85,7 +85,7 @@ export const ErrorList = ({ result, now }: { result: SentryIssuesResult; now: Da
   }
 
   if (result.issues.length === 0) {
-    return <p className='text-sm text-text-faint'>운영 환경에 확인할 오류가 없습니다.</p>;
+    return <p className='text-sm text-text-subtle'>운영 환경에 확인할 오류가 없습니다.</p>;
   }
 
   return (
@@ -117,7 +117,7 @@ export const ErrorList = ({ result, now }: { result: SentryIssuesResult; now: Da
               <summary className='cursor-pointer text-sm font-medium'>
                 <span className='inline-flex items-center gap-2 align-middle'>{label}</span>
               </summary>
-              <p className='mt-1 text-xs text-text-faint'>{hint}</p>
+              <p className='mt-1 text-xs text-text-subtle'>{hint}</p>
               {body}
             </details>
           );
@@ -126,7 +126,7 @@ export const ErrorList = ({ result, now }: { result: SentryIssuesResult; now: Da
         return (
           <section key={grade}>
             <h2 className='flex items-center gap-2 text-sm font-medium'>{label}</h2>
-            <p className='mt-1 text-xs text-text-faint'>{hint}</p>
+            <p className='mt-1 text-xs text-text-subtle'>{hint}</p>
             {body}
           </section>
         );

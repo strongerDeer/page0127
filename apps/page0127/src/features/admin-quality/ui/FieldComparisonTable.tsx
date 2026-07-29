@@ -55,12 +55,12 @@ const Cell = ({ verdict, label, note }: CellProps) => (
     >
       {label}
     </span>
-    {note && <span className='text-xs text-text-faint'>{note}</span>}
+    {note && <span className='text-xs text-text-subtle'>{note}</span>}
   </div>
 );
 
 const Empty = ({ reason }: { reason: string }) => (
-  <span className='text-xs text-text-faint'>{reason}</span>
+  <span className='text-xs text-text-subtle'>{reason}</span>
 );
 
 // ── 열별 셀 ──────────────────────────────────────────────────────────────
@@ -188,11 +188,11 @@ export const FieldComparisonTable = ({
   <section className='rounded-lg border border-line p-4'>
     <div className='mb-1 flex items-baseline justify-between gap-2'>
       <h2 className='text-sm font-medium'>핵심 지표 — 출처별 대조</h2>
-      <span className='text-xs text-text-faint'>
+      <span className='text-xs text-text-subtle'>
         자체 RUM 최근 {rum?.windowDays ?? 28}일
       </span>
     </div>
-    <p className='mb-3 text-xs text-text-faint'>
+    <p className='mb-3 text-xs text-text-subtle'>
       세 열은 <strong>다른 것을 재는 다른 숫자</strong>다. 합치거나 대소를 직접
       비교하지 말 것. 합격/불합격 판정은 실사용자(자체 RUM·CrUX) 값으로만 하고,
       랩 수치는 회색 —주차 간 상대 비교 전용이다.
@@ -202,7 +202,7 @@ export const FieldComparisonTable = ({
       <table className='w-full min-w-[520px] border-collapse text-left'>
         <thead>
           <tr className='border-b border-line'>
-            <th className='w-20 py-2 text-xs font-medium text-text-faint'>
+            <th className='w-20 py-2 text-xs font-medium text-text-subtle'>
               지표
             </th>
             {COLUMNS.map((column) => (
@@ -210,7 +210,7 @@ export const FieldComparisonTable = ({
                 <span className='block text-xs font-medium'>
                   {column.title}
                 </span>
-                <span className='block text-xs font-normal text-text-faint'>
+                <span className='block text-xs font-normal text-text-subtle'>
                   {column.subtitle}
                 </span>
               </th>
@@ -238,7 +238,7 @@ export const FieldComparisonTable = ({
       </table>
     </div>
 
-    <p className='mt-3 text-xs text-text-faint'>
+    <p className='mt-3 text-xs text-text-subtle'>
       자체 RUM은 표본을 지키려고 모바일·데스크탑을 합쳐 집계한다. 표본 30건
       미만이면 값만 보여주고 판정 색을 칠하지 않는다. CLS는 Chromium 계열에서만
       수집돼 다른 지표보다 n이 작다.

@@ -189,7 +189,7 @@ export const ReadingCalendar = ({
                       className={`relative h-9 rounded-md pt-1 text-xs transition-colors ${
                         bookCount > 0
                           ? 'cursor-pointer bg-accent/60 font-medium text-text-strong hover:bg-accent'
-                          : 'cursor-default text-text-faint'
+                          : 'cursor-default text-text-subtle'
                       }`}
                     >
                       <span>{day}</span>

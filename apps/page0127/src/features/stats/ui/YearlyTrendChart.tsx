@@ -20,7 +20,7 @@ type Props = { data: YearlyTrend[] };
 export const YearlyTrendChart = ({ data }: Props) => {
   if (data.length === 0) {
     return (
-      <div className='flex h-[300px] items-center justify-center text-sm text-text-faint'>
+      <div className='flex h-[300px] items-center justify-center text-sm text-text-subtle'>
         연도별 독서 기록이 아직 없습니다.
       </div>
     );
@@ -56,14 +56,14 @@ export const YearlyTrendChart = ({ data }: Props) => {
             dataKey='year'
             axisLine={false}
             tickLine={false}
-            tick={{ fill: 'var(--text-faint)', fontSize: 12 }}
+            tick={{ fill: 'var(--text-subtle)', fontSize: 12 }}
             dy={10}
           />
           <YAxis
             axisLine={false}
             tickLine={false}
             allowDecimals={false}
-            tick={{ fill: 'var(--text-faint)', fontSize: 12 }}
+            tick={{ fill: 'var(--text-subtle)', fontSize: 12 }}
           />
           <Tooltip
             cursor={{ fill: 'var(--sunken)' }}
@@ -101,7 +101,7 @@ export const YearlyTrendChart = ({ data }: Props) => {
           이 최고 기록이에요. ({peakYear.count}권)
         </p>
         {previousYear && growthRate !== 0 && (
-          <p className='mt-1 text-xs text-text-faint'>
+          <p className='mt-1 text-xs text-text-subtle'>
             전년 대비 {growthRate > 0 ? '+' : ''}
             {growthRate}%
           </p>

@@ -62,7 +62,7 @@ export const Swatch = ({
 
       {/* 별칭이면 무엇을 가리키는지 보여준다 — 원색을 바꿨을 때 무엇이 따라 움직이는지가 보인다 */}
       {token.isAlias && (
-        <span className='mt-0.5 block truncate font-mono text-xs text-text-faint'>
+        <span className='mt-0.5 block truncate font-mono text-xs text-text-subtle'>
           → {token.raw.replace(/var\(|\)/g, '').replace(/^--/, '')}
         </span>
       )}

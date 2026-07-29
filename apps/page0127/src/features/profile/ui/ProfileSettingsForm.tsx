@@ -68,7 +68,7 @@ const ProfileSettingsFormMyAccount = ({
         href={`/${username}`}
         className='flex items-center gap-2.5 py-3.5 text-sm font-medium text-text-body transition-colors hover:text-text-strong'
       >
-        <Globe className='size-4 text-text-faint' />
+        <Globe className='size-4 text-text-subtle' />
         공개 서재 보기
       </Link>
     )}
@@ -77,7 +77,7 @@ const ProfileSettingsFormMyAccount = ({
       onClick={onLogout}
       className='flex w-full items-center gap-2.5 py-3.5 text-left text-sm font-medium text-text-body transition-colors hover:text-text-strong'
     >
-      <LogOut className='size-4 text-text-faint' />
+      <LogOut className='size-4 text-text-subtle' />
       로그아웃
     </button>
   </div>
@@ -207,7 +207,7 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
               disabled
               className='bg-muted'
             />
-            <p className='text-xs text-text-faint'>
+            <p className='text-xs text-text-subtle'>
               공개 서재 주소 /{profile.username}
             </p>
           </div>

@@ -91,7 +91,7 @@ export const BookDetailContent = ({
                 {isOwner && (
                   <span
                     className={`inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-sm ${
-                      book.is_public ? 'text-text-body' : 'text-text-faint'
+                      book.is_public ? 'text-text-body' : 'text-text-subtle'
                     }`}
                   >
                     {book.is_public ? (

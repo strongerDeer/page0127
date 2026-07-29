@@ -114,11 +114,29 @@ export const Disabled: Story = {
 export const Types: Story = {
   render: () => (
     <div className='w-80 space-y-3'>
-      <Input type='text' placeholder='text — 기본' />
-      <Input type='email' placeholder='email — @ 가 있는 키보드' />
-      <Input type='password' defaultValue='password' />
-      <Input type='search' placeholder='search — 지우기 버튼이 붙는다' />
-      <Input type='number' placeholder='number — 숫자 키패드' />
+      {/* 모든 입력칸에 이름이 있어야 한다 — password 는 placeholder 를 쓸 수 없으니
+          aria-label 로 준다(문서용 예시라 라벨을 따로 두지 않았다) */}
+      <Input type='text' placeholder='text — 기본' aria-label='text 입력 예시' />
+      <Input
+        type='email'
+        placeholder='email — @ 가 있는 키보드'
+        aria-label='email 입력 예시'
+      />
+      <Input
+        type='password'
+        defaultValue='password'
+        aria-label='password 입력 예시'
+      />
+      <Input
+        type='search'
+        placeholder='search — 지우기 버튼이 붙는다'
+        aria-label='search 입력 예시'
+      />
+      <Input
+        type='number'
+        placeholder='number — 숫자 키패드'
+        aria-label='number 입력 예시'
+      />
     </div>
   ),
 };

@@ -36,7 +36,7 @@ export const BookStreamEvent = ({
   <div className='py-2'>
     <p className='flex items-center gap-2 text-sm text-text-subtle'>
       <span aria-hidden='true' className='size-1.5 rounded-full bg-line' />
-      <RelativeTime date={createdAt} className='text-text-faint' />
+      <RelativeTime date={createdAt} className='text-text-subtle' />
       <span>{EVENT_TEXT[activityType]}</span>
       {/* 0("평가 안 함")은 별 배지를 걸지 않고, 인생책은 점수 대신 이름으로 보여준다
           (책 상세 본문의 평점 배지와 같은 규칙) */}

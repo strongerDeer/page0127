@@ -24,7 +24,7 @@ export const chartInk = {
   gold: '#eab308',
   /** 그리드 선 (= --line) */
   grid: '#e5e2dc',
-  /** 축 눈금 글자 (= --text-faint) */
+  /** 축 눈금 글자 (= --text-subtle) */
   axis: '#9a9a9a',
   /** 호버 커서 배경 — 그린 8% */
   cursor: 'rgba(34, 197, 94, 0.08)',

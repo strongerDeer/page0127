@@ -137,7 +137,7 @@ export const CommentItem = ({
               </ProfileLink>
               <RelativeTime
                 date={comment.createdAt}
-                className='text-xs text-text-faint'
+                className='text-xs text-text-subtle'
               />
               {comment.updatedAt !== comment.createdAt && (
                 <span className='text-xs text-muted-foreground'>(수정됨)</span>

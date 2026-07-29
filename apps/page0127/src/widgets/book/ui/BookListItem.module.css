@@ -127,7 +127,7 @@
 
 .fallbackAuthor {
   font-size: 10px;
-  color: var(--text-faint);
+  color: var(--text-subtle);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

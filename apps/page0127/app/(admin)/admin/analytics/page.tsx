@@ -12,7 +12,7 @@ export default function AdminAnalyticsPage() {
   return (
     <section className='space-y-4'>
       <h1 className='text-base font-medium'>유입분석</h1>
-      <p className='text-sm text-text-faint'>
+      <p className='text-sm text-text-subtle'>
         GA·Search Console 연결은 베타 트래픽이 쌓인 뒤 추가됩니다. 아래는 준비된 분석
         영역입니다.
       </p>
@@ -20,8 +20,8 @@ export default function AdminAnalyticsPage() {
         {TABS.map((t) => (
           <div key={t.key} className='rounded-lg border border-line p-4'>
             <div className='text-sm font-medium'>{t.label}</div>
-            <div className='mt-1 text-xs text-text-faint'>{t.desc}</div>
-            <div className='mt-3 text-xs text-text-faint'>데이터 연결 예정</div>
+            <div className='mt-1 text-xs text-text-subtle'>{t.desc}</div>
+            <div className='mt-3 text-xs text-text-subtle'>데이터 연결 예정</div>
           </div>
         ))}
       </div>

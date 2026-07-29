@@ -22,7 +22,7 @@ export const FieldTrendChart = ({ rows }: { rows: FieldHistoryRow[] }) => {
 
   if (data.length === 0) {
     return (
-      <p className='rounded-lg border border-line p-4 text-sm text-text-faint'>
+      <p className='rounded-lg border border-line p-4 text-sm text-text-subtle'>
         CrUX 추세 데이터가 아직 없습니다.
       </p>
     );

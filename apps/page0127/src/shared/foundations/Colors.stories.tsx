@@ -71,15 +71,10 @@ export const Semantic: Story = {
   render: () => (
     <div className='p-6'>
       <SwatchRow
-        title='텍스트 위계'
-        description='흰 배경(background) 기준. text-faint 는 2.50 으로 본문 기준 미달인데, 캡션에만 쓰고 정보를 담지 않는다는 전제로 남겨 둔 값이다 — 읽어야 하는 글에는 쓰지 않는다.'
+        title='텍스트 위계 — 3단'
+        description='흰 배경(background) 기준. 전부 AA(4.5) 이상이다. 한때 네 번째 단계 faint(2.50)가 있었으나 없앴다 — 4.5 를 넘기려면 subtle 과 육안 구분이 안 되는 값이 되어, 4단계가 흰 배경에서 애초에 성립하지 않았다.'
       >
-        {pick(
-          '--text-strong',
-          '--text-body',
-          '--text-subtle',
-          '--text-faint'
-        ).map((token) => (
+        {pick('--text-strong', '--text-body', '--text-subtle').map((token) => (
           <Swatch key={token.name} token={token} contrastAgainst={WHITE} />
         ))}
       </SwatchRow>

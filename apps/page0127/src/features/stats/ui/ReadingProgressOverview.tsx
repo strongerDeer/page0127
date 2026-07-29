@@ -136,7 +136,7 @@ export const ReadingProgressOverview = ({
             />
 
             {hasGoal && (
-              <div className='mt-3 grid grid-cols-3 text-xs text-text-faint'>
+              <div className='mt-3 grid grid-cols-3 text-xs text-text-subtle'>
                 <span>시작</span>
                 <span className='text-center'>{milestone}권 · 절반</span>
                 <span className='text-right'>{target}권 · 목표</span>
@@ -173,7 +173,7 @@ export const ReadingProgressOverview = ({
 
         <div className='relative min-h-64 overflow-hidden bg-[#eef1f5] lg:min-h-full'>
           <div className='absolute inset-x-0 top-6 text-center'>
-            <p className='text-xs font-medium tracking-[0.18em] text-text-faint'>
+            <p className='text-xs font-medium tracking-[0.18em] text-text-subtle'>
               BOOKS OF {year}
             </p>
           </div>

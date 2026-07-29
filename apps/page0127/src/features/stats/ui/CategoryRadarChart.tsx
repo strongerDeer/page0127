@@ -22,7 +22,7 @@ type CategoryRadarChartProps = {
 export const CategoryRadarChart = ({ data }: CategoryRadarChartProps) => {
   if (data.length === 0) {
     return (
-      <div className='flex h-[300px] items-center justify-center text-sm text-text-faint'>
+      <div className='flex h-[300px] items-center justify-center text-sm text-text-subtle'>
         책을 완독하면 카테고리 취향이 표시됩니다.
       </div>
     );

@@ -38,7 +38,7 @@ export const TypeSpecimen = ({
         <p className='mt-1 font-mono text-xs text-text-subtle'>
           {size && leading ? `${size}/${leading} · w${weight}` : '측정 중…'}
         </p>
-        <p className='mt-0.5 text-xs text-text-faint'>{usage}</p>
+        <p className='mt-0.5 text-xs text-text-subtle'>{usage}</p>
       </div>
       <p ref={ref} className={className}>
         {sample}

@@ -103,7 +103,7 @@ export const RealWorld: Story = {
         <span className='text-sm font-medium text-text-subtle'>27 / 60권</span>
       </div>
       <Progress value={45} className='h-3' aria-label='올해 독서 목표 진행률' />
-      <div className='mt-3 grid grid-cols-3 text-xs text-text-faint'>
+      <div className='mt-3 grid grid-cols-3 text-xs text-text-subtle'>
         <span>시작</span>
         <span className='text-center'>30권 · 절반</span>
         <span className='text-right'>60권 · 목표</span>

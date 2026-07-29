@@ -189,7 +189,7 @@ const TagRow = ({ label, tags, muted }: TagRowProps) => {
           <span
             key={tag}
             className={`rounded-full border border-line px-3 py-1 text-sm ${
-              muted ? 'text-text-faint' : 'text-text-body'
+              muted ? 'text-text-subtle' : 'text-text-body'
             }`}
           >
             {tag}

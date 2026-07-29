@@ -15,12 +15,7 @@
     "text-subtle": {
       "$value": "{navy.300}",
       "$type": "color",
-      "$description": "저자·출판사·메타. 5.76:1"
-    },
-    "text-faint": {
-      "$value": "{navy.500}",
-      "$type": "color",
-      "$description": "캡션. 3.21:1 — 라이트의 faint 와 같은 역할·같은 수준이다"
+      "$description": "저자·출판사·메타·캡션. 5.76:1 — 2026-07-29 부터 옛 faint 자리도 맡는다"
     },
 
     "background": { "$value": "{navy.900}", "$type": "color" },

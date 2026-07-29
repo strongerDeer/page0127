@@ -62,7 +62,7 @@ export const CategoryFilter = ({
         className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
           selectedCategories.length === 0
             ? 'border-primary bg-primary/5 text-primary'
-            : 'border-line bg-card text-text-body hover:border-text-faint hover:bg-sunken'
+            : 'border-line bg-card text-text-body hover:border-text-subtle hover:bg-sunken'
         }`}
       >
         전체
@@ -77,7 +77,7 @@ export const CategoryFilter = ({
           className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
             selectedCategories.includes(cat.category)
               ? 'border-primary bg-primary/5 text-primary'
-              : 'border-line bg-card text-text-body hover:border-text-faint hover:bg-sunken'
+              : 'border-line bg-card text-text-body hover:border-text-subtle hover:bg-sunken'
           }`}
         >
           {selectedCategories.includes(cat.category) && (

@@ -43,7 +43,7 @@ export const BookRankingList = ({
       <div className='mb-3 flex items-baseline justify-between gap-4'>
         <h2 className='heading-2 text-text-strong'>{title}</h2>
         <div className='flex shrink-0 items-baseline gap-3'>
-          {meta && <span className='text-xs text-text-faint'>{meta}</span>}
+          {meta && <span className='text-xs text-text-subtle'>{meta}</span>}
           <Link
             href='/books/all'
             className='text-sm text-text-subtle transition-colors hover:text-text-strong'
@@ -72,7 +72,7 @@ export const BookRankingList = ({
                     aria-hidden='true'
                     className={cn(
                       'text-base font-bold tabular-nums',
-                      rank <= 3 ? 'text-text-strong' : 'text-text-faint'
+                      rank <= 3 ? 'text-text-strong' : 'text-text-subtle'
                     )}
                   >
                     {rank}
