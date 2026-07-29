@@ -33,6 +33,10 @@ type PageProps = {
  * 볼 것과 같아야 한다 — 소유자가 비공개 기록 링크를 붙였을 때 한줄평이 카드로
  * 새어 나가면 그건 사용자가 의도한 공개가 아니다.
  * OG 이미지도 같은 규칙으로 같은 폴더의 opengraph-image.tsx 가 그린다.
+ *
+ * 없는 대상이면 여기서 notFound() 를 부른다 — 본문이 아니라. 이 세그먼트는
+ * loading.tsx 를 상속해서, 본문이 도는 시점엔 이미 200 헤더가 나간 뒤다
+ * (자세한 설명은 ../page.tsx 의 같은 자리에).
  */
 export const generateMetadata = async ({
   params,
@@ -41,12 +45,25 @@ export const generateMetadata = async ({
   const profile = await getPublicProfileByUsername(username);
 
   if (!profile) {
-    return { title: '책장을 찾을 수 없습니다 | page0127' };
+    notFound();
   }
 
   const book = await getPublicBookRecord(profile.id, bookId);
 
   if (!book) {
+    // 공개 기록이 없다고 곧장 404 로 확정하면 안 된다 — 본문은 소유자에게
+    // 자기 비공개 기록을 보여주기 때문이다(아래 isOwner 분기). 그래서
+    // 소유자일 때만 통과시키고, 그 밖(없는 id·남의 비공개)은 404 로 닫는다.
+    // 검색 크롤러는 항상 비로그인이라 SEO 목적은 이걸로 온전히 달성된다.
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user?.id !== profile.id) {
+      notFound();
+    }
+
     return { title: '기록을 찾을 수 없습니다 | page0127' };
   }
 
