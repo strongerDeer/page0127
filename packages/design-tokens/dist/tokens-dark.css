@@ -1,0 +1,42 @@
+/**
+ * Do not edit directly, this file was auto-generated.
+ *
+ * 다크 모드 — OS 설정(prefers-color-scheme)을 따른다. 앱 안에 토글은 없다.
+ * 여기 없는 토큰은 라이트 값을 그대로 쓴다. 다른 semantic 을 참조하는
+ * 파생 토큰(foreground·border·muted-foreground 등)은 참조 대상만 바뀌면
+ * 자동으로 따라오므로 재정의하지 않는다.
+ */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-strong: var(--gray-0); /** 제목·책 제목. navy/900 배경 위 14.41:1 — 라이트 모드와 같은 대비다 */
+    --text-body: var(--gray-300); /** 본문. 11.18:1 */
+    --text-subtle: var(--navy-300); /** 저자·출판사·메타. 5.76:1 */
+    --text-faint: var(--navy-500); /** 캡션. 3.21:1 — 라이트의 faint 와 같은 역할·같은 수준이다 */
+    --background: var(--navy-900);
+    --card: var(--navy-900);
+    --popover: var(--navy-900);
+    --sidebar: var(--navy-900);
+    --sunken: var(--navy-800); /** 중립 모듈 면. 배경 대비 1.25 — 면 단차는 대비 기준이 아니라 보이기만 하면 된다 */
+    --secondary: var(--navy-800);
+    --muted: var(--navy-800);
+    --line: var(--navy-700); /** 카드·섹션 경계선. 다크에서도 입체는 그림자가 아니라 이 1px 선으로 만든다 */
+    --line-soft: var(--navy-800);
+    --primary: var(--blue-300); /** 다크에서는 밝은 파랑이 브랜드색이 된다. blue/600 은 navy/900 위에서 2.70 밖에 안 나온다 */
+    --primary-foreground: var(--navy-900); /** 밝은 파랑 버튼 위의 어두운 글자. 6.45:1 */
+    --accent: var(--navy-700); /** 활성 메뉴·호버 배경. 라이트의 스카이 틴트 자리를 어두운 네이비가 대신한다 */
+    --accent-foreground: var(--gray-0); /** navy/700 위 8.37:1. blue/300 은 3.74 라 14px 본문에 못 쓴다 */
+    --ring: var(--blue-300);
+    --sidebar-primary: var(--blue-300);
+    --sidebar-primary-foreground: var(--navy-900);
+    --sidebar-accent: var(--navy-700);
+    --sidebar-accent-foreground: var(--gray-0);
+    --sidebar-ring: var(--blue-300);
+    --destructive: var(--red-400); /** 삭제·탈퇴. red/600 은 navy/900 위에서 2.65 라 못 쓴다 → 4.52 */
+    --rank-up: var(--orange-400); /** 순위 상승·포인트 강조. orange/600 은 3.35 라 본문에 못 쓴다 → 4.51 */
+    --chart-1: var(--blue-300); /** primary 와 같은 색 (라이트와 같은 규칙) */
+    --chart-2: var(--orange-400); /** rank-up 과 같은 색 */
+    --chart-3: var(--blue-500); /** 라이트에서는 blue/300 이었으나 다크에서 그 색이 chart-1 로 올라가 겹친다. 한 단 내린다 (3.31 — 그래픽이라 3:1 기준) */
+    --chart-5: var(--slate-400); /** slate/500 은 navy/900 위 2.70 이라 그래픽 기준(3:1)도 못 넘는다 → 3.03 */
+  }
+}

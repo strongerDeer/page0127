@@ -12,14 +12,18 @@
   --navy-300: #97a4c0;
   --navy-500: #66779a;
   --navy-700: #3b4e70;
+  --navy-800: #1b386b; /** 다크 모드 표면 단차 — background(navy/900) 위에 얹는 면. 라이트의 gray/50 자리다 */
   --navy-900: #14294e;
   --gray-0: #ffffff;
   --gray-50: #f6f7f8;
   --gray-200: #eceff2;
   --gray-300: #dfe3e8;
+  --orange-400: #f0642d; /** 다크 모드 rank-up. orange/600 은 navy/900 위에서 3.35 라 본문에 못 쓴다 (색상·채도 유지, 명도만 45%→56%) */
   --orange-600: #d9480f;
+  --red-400: #dd7065; /** 다크 모드 destructive. red/600 은 navy/900 위에서 2.65 라 못 쓴다 (색상·채도 유지, 명도만 46%→63%) */
   --red-600: #c0392b;
   --amber-500: #d9a520;
+  --slate-400: #627397; /** 다크 모드 chart-5. slate/500 은 navy/900 위 2.70 으로 그래픽 기준(3:1)도 못 넘는다 (명도 45%→49%) */
   --slate-500: #5b6b8c;
   --teal-500: #14b8a6;
   --violet-500: #7a5cf0;

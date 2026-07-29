@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "@repo/design-tokens/tokens.css";
+/* 다크는 OS 설정(prefers-color-scheme)을 따른다 — 앱 안에 토글은 없다.
+   라이트 뒤에 와야 같은 변수를 덮는다. */
+@import "@repo/design-tokens/tokens-dark.css";
 
 /* ============================================
    page0127 디자인 시스템
@@ -170,6 +173,21 @@ body {
     rgba(0, 0, 0, 0.05) 3px,
     transparent 8px
   );
+}
+
+/* 다크에서 흰 종이면을 그대로 두면 표지 없는 책이 화면에서 튄다.
+   면은 sunken 으로 낮추고, 책등 음영은 검정이 안 먹으므로 흰 하이라이트로 뒤집는다.
+   (표지 이미지가 있으면 어차피 덮이므로 이 값은 대체 조판에서만 보인다) */
+@media (prefers-color-scheme: dark) {
+  .book-cover {
+    background-color: var(--sunken);
+    background-image: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.1) 0px,
+      rgba(255, 255, 255, 0.04) 3px,
+      transparent 8px
+    );
+  }
 }
 
 @layer base {
