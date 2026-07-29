@@ -114,7 +114,7 @@ export const BookRankingList = ({
                     )}
                     <span>
                       <b className='font-medium text-text-body'>{item.count}</b>
-                      {type === 'best' ? '명이 10점' : '명이 완독'}
+                      {type === 'best' ? '명의 인생책' : '명이 완독'}
                     </span>
                   </p>
                 </div>

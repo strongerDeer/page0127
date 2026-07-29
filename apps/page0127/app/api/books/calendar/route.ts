@@ -56,7 +56,9 @@ export async function GET(request: NextRequest) {
     // 완독한 책 조회 (completed_date 기준)
     const { data: books, error } = await supabase
       .from('books')
-      .select('id, title, author, cover_image, rating, completed_date, page_count')
+      .select(
+        'id, title, author, cover_image, rating, is_life_book, completed_date, page_count'
+      )
       .eq('user_id', user!.id)
       .eq('status', 'completed') // 완독한 책만
       .not('completed_date', 'is', null) // completed_date가 null이 아닌 것만
@@ -75,6 +77,7 @@ export async function GET(request: NextRequest) {
         author: string;
         cover: string | null;
         rating: number | null;
+        is_life_book: boolean;
       }>
     >();
     let totalPages = 0;
@@ -90,6 +93,7 @@ export async function GET(request: NextRequest) {
         author: book.author,
         cover: book.cover_image,
         rating: book.rating,
+        is_life_book: book.is_life_book,
       });
 
       // 총 쪽수 계산

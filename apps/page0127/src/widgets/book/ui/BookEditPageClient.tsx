@@ -294,6 +294,7 @@ export const BookEditPageClient = ({
             completed_date: book.completed_date || undefined,
             start_date: book.start_date || undefined,
             rating: book.rating || undefined,
+            is_life_book: book.is_life_book,
             one_line_review: book.one_line_review || undefined,
             personal_memo: book.personal_memo || undefined,
             tags: book.tags || undefined,

@@ -62,7 +62,7 @@ export const PublicBookShelf = ({
       <ul className={styles.books}>
         {books.map((book) => {
           // 최고 평가(5점·인생책)만 표지를 크게 세우고 나머지는 책등으로 꽂는다
-          const isCoverView = isTopRated(book.rating);
+          const isCoverView = isTopRated(book.rating, book.is_life_book);
           const imageUrl = isCoverView ? book.cover_image : book.spine_image;
           const hasImage = !!imageUrl;
 

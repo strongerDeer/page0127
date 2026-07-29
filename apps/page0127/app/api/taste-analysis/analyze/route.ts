@@ -11,7 +11,7 @@ import { upgradeImageResolution } from '@/shared/lib/imageUtils';
 import { AI_MODEL, MAX_TOKENS, openai, TEMPERATURE } from '@/shared/lib/openai';
 import { createTasteAnalysisPrompt } from '@/shared/lib/openai/prompts/taste-analysis';
 
-import { isRated, toScore } from '@/entities/book';
+import { isRated } from '@/entities/book';
 import { READING_PERSONALITY_TYPES } from '@/entities/taste-analysis/model/personalityTypes';
 
 import type { Book } from '@/entities/book';
@@ -90,16 +90,14 @@ export async function POST(_request: NextRequest) {
     reservedUsageId = reservation.usageId;
 
     // 3. AI 분석 실행 — 성향 타입은 고정 카탈로그에서 고르게 한다
-    //    평점은 프롬프트에 넘기기 전에 5점 만점으로 접는다. shared는 entities를
-    //    모르므로 성향 타입과 같이 여기서 변환해 주입한다 (규칙의 단일 출처는
-    //    entities/book/model/rating.ts).
-    //    0("평가 안 함")은 점수가 아니므로 null, 10("인생책")은 만점으로 접힌다.
+    //    0("평가 안 함")은 점수가 아니므로 null 로 프롬프트에 넘긴다.
+    //    인생책은 별도 컬럼(is_life_book)이라 여기서는 rating 그대로 쓴다.
     const prompt = createTasteAnalysisPrompt(
       (books as Book[]).map((book) => ({
         title: book.title,
         author: book.author,
         category: book.category,
-        score: isRated(book.rating) ? toScore(book.rating) : null,
+        score: isRated(book.rating) ? book.rating : null,
         description: book.description,
         toc: book.toc,
       })),

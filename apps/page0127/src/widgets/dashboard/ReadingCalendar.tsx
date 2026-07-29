@@ -14,7 +14,7 @@ import {
   DialogTitle,
 } from '@/shared/ui/dialog';
 
-import { isLifeBook, isRated } from '@/entities/book';
+import { isRated } from '@/entities/book';
 
 /**
  * 독서 캘린더 컴포넌트
@@ -36,6 +36,8 @@ type Book = {
   author: string;
   cover: string;
   rating: number;
+  /** 인생책 여부. rating 과 별개 컬럼이다 */
+  is_life_book: boolean;
 };
 
 export type CalendarData = {
@@ -268,10 +270,10 @@ export const ReadingCalendar = ({
                     {book.author}
                   </p>
                 </div>
-                {/* 0("평가 안 함")은 숨기고, 10은 점수가 아니라 '인생책'이다 */}
+                {/* 0("평가 안 함")은 숨기고, 인생책은 점수 대신 이름으로 보여준다 */}
                 {isRated(book.rating) && (
                   <span className='shrink-0 text-sm font-medium text-text-body'>
-                    {isLifeBook(book.rating) ? '인생책' : `${book.rating}점`}
+                    {book.is_life_book ? '인생책' : `${book.rating}점`}
                   </span>
                 )}
               </div>

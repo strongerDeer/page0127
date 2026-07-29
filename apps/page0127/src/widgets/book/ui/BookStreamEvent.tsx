@@ -2,13 +2,15 @@ import { Star } from 'lucide-react';
 
 import { RelativeTime } from '@/shared/ui/RelativeTime';
 
-import { isLifeBook, isRated } from '@/entities/book';
+import { isRated } from '@/entities/book';
 
 type BookStreamEventProps = {
   activityType: 'book_added' | 'book_completed' | 'review_added';
   content: string | null;
   createdAt: string;
   rating?: number | null;
+  /** 인생책 여부 — rating 과 별개 컬럼이다 */
+  isLifeBook?: boolean;
 };
 
 const EVENT_TEXT: Record<BookStreamEventProps['activityType'], string> = {
@@ -29,13 +31,14 @@ export const BookStreamEvent = ({
   content,
   createdAt,
   rating,
+  isLifeBook,
 }: BookStreamEventProps) => (
   <div className='py-2'>
     <p className='flex items-center gap-2 text-sm text-text-subtle'>
       <span aria-hidden='true' className='size-1.5 rounded-full bg-line' />
       <RelativeTime date={createdAt} className='text-text-faint' />
       <span>{EVENT_TEXT[activityType]}</span>
-      {/* 0("평가 안 함")은 별 배지를 걸지 않고, 10은 점수가 아니라 '인생책'이다
+      {/* 0("평가 안 함")은 별 배지를 걸지 않고, 인생책은 점수 대신 이름으로 보여준다
           (책 상세 본문의 평점 배지와 같은 규칙) */}
       {activityType === 'book_completed' && isRated(rating ?? null) ? (
         <span className='flex items-center gap-1 text-text-body'>
@@ -43,7 +46,7 @@ export const BookStreamEvent = ({
             aria-hidden='true'
             className='size-3.5 fill-chart-4 text-chart-4'
           />
-          {isLifeBook(rating ?? null) ? '인생책' : rating}
+          {isLifeBook ? '인생책' : rating}
         </span>
       ) : null}
     </p>

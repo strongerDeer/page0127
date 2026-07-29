@@ -4,7 +4,7 @@ import { BookCover } from '@/shared/ui/BookCover';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
 
-import { isLifeBook, isRated } from '@/entities/book';
+import { isRated } from '@/entities/book';
 
 import { BookStreamSection } from './BookStreamSection';
 
@@ -79,11 +79,11 @@ export const BookDetailContent = ({
 
                 <ReadCountBadge readCount={book.read_count} />
 
-                {/* 0("평가 안 함")은 별 배지를 걸지 않고, 10은 점수가 아니라 '인생책'이다 */}
+                {/* 0("평가 안 함")은 별 배지를 걸지 않고, 인생책은 점수 대신 이름으로 보여준다 */}
                 {isRated(book.rating) && (
                   <span className='flex items-center gap-1 text-lg font-medium text-text-strong'>
                     <Star className='h-4 w-4 fill-chart-4 text-chart-4' />
-                    {isLifeBook(book.rating) ? '인생책' : `${book.rating}점`}
+                    {book.is_life_book ? '인생책' : `${book.rating}점`}
                   </span>
                 )}
 
@@ -166,7 +166,11 @@ export const BookDetailContent = ({
         </Card>
       )}
 
-      <BookStreamSection bookId={book.id} rating={book.rating} />
+      <BookStreamSection
+        bookId={book.id}
+        rating={book.rating}
+        isLifeBook={book.is_life_book}
+      />
     </>
   );
 };

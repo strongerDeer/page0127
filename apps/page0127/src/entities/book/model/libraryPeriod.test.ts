@@ -29,6 +29,7 @@ const createBook = (overrides: Partial<Book> = {}): Book => ({
   start_date: null,
   completed_date: null,
   rating: null,
+  is_life_book: false,
   one_line_review: null,
   personal_memo: null,
   tags: null,
@@ -111,12 +112,13 @@ describe('libraryPeriod', () => {
     expect(stats.monthlyReading[0].count).toBe(1);
   });
 
-  it('평균 평점은 평가 안 함(0)을 빼고 인생책(10)을 5점으로 접어 계산한다', () => {
+  it('평균 평점은 평가 안 함(0)을 빼고 계산한다 (인생책도 rating은 그대로 5다)', () => {
     const books = [
       createBook({
         status: 'completed',
         completed_date: '2026-01-10',
-        rating: 10, // 인생책 → 5점으로 접힌다
+        rating: 5,
+        is_life_book: true, // 인생책 — rating 자체는 5점, is_life_book은 별도 플래그다
       }),
       createBook({
         status: 'completed',
@@ -132,8 +134,36 @@ describe('libraryPeriod', () => {
 
     const stats = calculateBookStats(books, 2026, 2026);
 
-    // (5 + 4) / 2 = 4.5 — 0을 세면 3.0, 10을 그대로 더하면 4.7이 된다
+    // (5 + 4) / 2 = 4.5 — 0을 세면 3.0이 된다
     expect(stats.averageRating).toBe(4.5);
     expect(stats.totalCompletedBooks).toBe(3);
+  });
+
+  it('5점과 인생책을 다른 항목으로 센다', () => {
+    // 백필 후 인생책도 rating=5 다. 평점만으로 그룹핑하면 두 항목이 합쳐진다.
+    const books = [
+      createBook({
+        rating: 5,
+        is_life_book: false,
+        status: 'completed',
+        completed_date: '2026-03-01',
+      }),
+      createBook({
+        rating: 5,
+        is_life_book: true,
+        status: 'completed',
+        completed_date: '2026-03-02',
+      }),
+    ];
+
+    const { ratingReading } = calculateBookStats(books, null, 2026);
+
+    const plainFive = ratingReading.find(
+      (r) => r.rating === 5 && !r.is_life_book
+    );
+    const lifeBook = ratingReading.find((r) => r.is_life_book);
+
+    expect(plainFive?.count).toBe(1);
+    expect(lifeBook?.count).toBe(1);
   });
 });

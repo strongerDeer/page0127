@@ -36,6 +36,7 @@ import { CategoryFilter } from './CategoryFilter';
 
 import type { Book } from '@/entities/book';
 import type { CategoryReadingData } from '@/entities/book';
+import type { RatingFilter } from '@/features/stats/model/useLibraryFilters';
 
 type DashboardBookListProps = {
   /** 완독한 책 목록 */
@@ -56,8 +57,8 @@ type DashboardBookListProps = {
   /** 선택된 카테고리들 */
   selectedCategories: string[];
 
-  /** 선택된 평점 (1-5, null = 전체) — 차트 연동 없는 경우 생략 가능 */
-  selectedRating?: number | null;
+  /** 선택된 평점 (1-5 또는 'life' = 인생책, null = 전체) — 차트 연동 없는 경우 생략 가능 */
+  selectedRating?: RatingFilter | null;
 
   /** 검색어 */
   searchQuery: string;
@@ -190,7 +191,13 @@ export const DashboardBookList = ({
 
       // 3. 평점 필터 확인
       if (selectedRating !== null) {
-        if (book.rating !== selectedRating) return false;
+        // 인생책 필터는 rating 이 아니라 플래그로 판정한다 — 인생책도 rating 이 5 라
+        // 숫자 비교만 하면 평범한 5점 책까지 함께 걸린다
+        if (selectedRating === 'life') {
+          if (!book.is_life_book) return false;
+        } else if (book.rating !== selectedRating || book.is_life_book) {
+          return false;
+        }
       }
 
       // 4. 검색어 필터 확인 (제목 + 저자)
@@ -438,7 +445,8 @@ export const DashboardBookList = ({
               onClick={onRemoveRatingFilter}
               className='flex items-center gap-1 rounded-full bg-sunken px-3 py-1 text-sm text-text-body hover:text-text-strong'
             >
-              {selectedRating}점 <X className='h-3.5 w-3.5' />
+              {selectedRating === 'life' ? '인생책' : `${selectedRating}점`}{' '}
+              <X className='h-3.5 w-3.5' />
             </button>
           )}
           {searchQuery !== '' && (

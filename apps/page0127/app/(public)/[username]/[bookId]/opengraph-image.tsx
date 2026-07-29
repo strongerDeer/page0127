@@ -12,7 +12,7 @@ import {
   truncate,
 } from '@/shared/lib/og/theme';
 
-import { isLifeBook, isRated, toScore } from '@/entities/book';
+import { isRated } from '@/entities/book';
 import { getPublicBookRecord } from '@/entities/book/api/getPublicBookRecord';
 import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProfileByUsername';
 import { toDisplayName } from '@/entities/profile/model/displayName';
@@ -96,7 +96,7 @@ const Image = async ({ params }: Props) => {
     );
   }
 
-  const lifeBook = isLifeBook(book.rating);
+  const lifeBook = book.is_life_book;
   const title = truncate(book.title, TITLE_MAX_WIDTH);
 
   return new ImageResponse(
@@ -217,7 +217,7 @@ const Image = async ({ params }: Props) => {
                 marginTop: 20,
               }}
             >
-              <RatingStars score={toScore(book.rating)} size={34} />
+              <RatingStars score={book.rating} size={34} />
               {lifeBook && (
                 <div
                   style={{
