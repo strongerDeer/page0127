@@ -1,11 +1,10 @@
-import Image from 'next/image';
-
 import { Globe, Lock, Star } from 'lucide-react';
 
+import { BookCover } from '@/shared/ui/BookCover';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
 
-import { isLifeBook, isRated } from '@/entities/book';
+import { isRated } from '@/entities/book';
 
 import { BookStreamSection } from './BookStreamSection';
 
@@ -43,25 +42,24 @@ export const BookDetailContent = ({
       <Card>
         <CardContent className='p-6'>
           <div className='flex gap-6'>
+            {/* 셰이프가 없었다 — BookCover 로 바꾸며 도메인 셰이프를 입혔다.
+                표지를 크게 놓는 자리라 대체 조판의 글자도 키운다 */}
             <div className='relative h-80 w-56 flex-shrink-0'>
-              {book.cover_image ? (
-                <Image
-                  src={book.cover_image}
-                  alt={book.title}
-                  fill
-                  className='object-cover'
-                  sizes='224px'
-                />
-              ) : (
-                <div className='flex h-full w-full items-center justify-center bg-sunken text-sm text-text-faint'>
-                  표지 없음
-                </div>
-              )}
+              <BookCover
+                src={book.cover_image}
+                title={book.title}
+                author={book.author}
+                fill
+                sizes='224px'
+                fallbackClassName='px-3 py-4 text-sm'
+              />
             </div>
 
             <div className='flex-1 space-y-4'>
               <div>
-                <h1 className='heading-1 mb-2 text-text-strong'>{book.title}</h1>
+                <h1 className='heading-1 mb-2 text-text-strong'>
+                  {book.title}
+                </h1>
                 <p className='text-lg text-foreground'>{book.author}</p>
                 <p className='text-muted-foreground'>{book.publisher}</p>
               </div>
@@ -81,11 +79,11 @@ export const BookDetailContent = ({
 
                 <ReadCountBadge readCount={book.read_count} />
 
-                {/* 0("평가 안 함")은 별 배지를 걸지 않고, 10은 점수가 아니라 '인생책'이다 */}
+                {/* 0("평가 안 함")은 별 배지를 걸지 않고, 인생책은 점수 대신 이름으로 보여준다 */}
                 {isRated(book.rating) && (
                   <span className='flex items-center gap-1 text-lg font-medium text-text-strong'>
                     <Star className='h-4 w-4 fill-chart-4 text-chart-4' />
-                    {isLifeBook(book.rating) ? '인생책' : `${book.rating}점`}
+                    {book.is_life_book ? '인생책' : `${book.rating}점`}
                   </span>
                 )}
 
@@ -168,7 +166,11 @@ export const BookDetailContent = ({
         </Card>
       )}
 
-      <BookStreamSection bookId={book.id} rating={book.rating} />
+      <BookStreamSection
+        bookId={book.id}
+        rating={book.rating}
+        isLifeBook={book.is_life_book}
+      />
     </>
   );
 };

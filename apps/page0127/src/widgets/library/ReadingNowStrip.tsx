@@ -1,7 +1,8 @@
-import Image from 'next/image';
 import Link from 'next/link';
 
 import { BookOpen } from 'lucide-react';
+
+import { BookCover } from '@/shared/ui/BookCover';
 
 import type { Book } from '@/entities/book';
 
@@ -38,20 +39,15 @@ export const ReadingNowStrip = ({ books, bookHref }: ReadingNowStripProps) => {
               href={bookHref(book)}
               className='group flex w-24 flex-col gap-2'
             >
-              <div className='aspect-2/3 relative overflow-hidden rounded-md bg-muted shadow-sm'>
-                {book.cover_image ? (
-                  <Image
-                    src={book.cover_image}
-                    alt={book.title}
-                    fill
-                    sizes='96px'
-                    className='object-cover'
-                  />
-                ) : (
-                  <div className='flex h-full w-full items-center justify-center bg-sunken p-2 text-center text-[10px] font-bold leading-snug text-text-strong'>
-                    {book.title}
-                  </div>
-                )}
+              {/* 대칭 rounded-md 와 shadow-sm 을 쓰고 있었다 — 표지는 그림자로
+                  띄우지 않는다(07 §2.3). BookCover 로 바꾸며 도메인 셰이프로 통일했다 */}
+              <div className='aspect-2/3 relative bg-muted'>
+                <BookCover
+                  src={book.cover_image}
+                  title={book.title}
+                  fill
+                  sizes='96px'
+                />
               </div>
               <p className='line-clamp-2 text-xs text-text-body group-hover:text-primary'>
                 {book.title}

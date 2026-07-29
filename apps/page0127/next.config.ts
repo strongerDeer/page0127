@@ -21,6 +21,24 @@ if (process.env.VERCEL_ENV === 'preview') {
   }
 }
 
+// Supabase 오리진은 환경마다 다르다 — 로컬은 Docker(http://127.0.0.1:54321),
+// Preview는 개발 프로젝트, 운영은 운영 프로젝트. env가 없는 빌드(타입체크 전용 등)에서도
+// 설정이 깨지지 않게 운영 값으로 떨어뜨린다.
+//
+// ⚠️ 여기서 파생하지 않고 호스트를 하드코딩하면 "그 환경에서만" 조용히 깨진다.
+//   2026-07-28: images.remotePatterns에 운영 호스트만 있어서, Preview·로컬에서
+//   업로드한 프로필 이미지를 next/image가 거부해(허용되지 않은 호스트) 깨져 보였다.
+//   운영에서만 우연히 동작하던 상태라 발견이 늦었다.
+const FALLBACK_SUPABASE_ORIGIN = 'https://sjngwxtykqhlsvxcyqah.supabase.co';
+const supabaseOrigin = (() => {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').origin;
+  } catch {
+    return FALLBACK_SUPABASE_ORIGIN;
+  }
+})();
+const supabaseUrl = new URL(supabaseOrigin);
+
 const nextConfig: NextConfig = {
   // React Compiler 자동 메모이제이션 (Next.js 16부터 stable)
   reactCompiler: true,
@@ -44,10 +62,14 @@ const nextConfig: NextConfig = {
   // 라우트 핸들러·서버 컴포넌트에서 import할 때 파싱 단계에서 깨진다.
   transpilePackages: ['@repo/icons', '@repo/design-tokens', '@repo/quality'],
   experimental: {
-    // 프로필 이미지는 앱에서 최대 5MB까지 허용한다. multipart 메타데이터
-    // 여유를 포함해 Server Action 요청 본문은 6MB로 제한한다.
+    // 프로필 이미지 한도는 4MB(MAX_PROFILE_IMAGE_BYTES). multipart 메타데이터와
+    // 나머지 폼 필드 여유를 더해 4.5mb로 둔다.
+    //
+    // ⚠️ 이 값을 4.5mb보다 크게 잡아도 소용이 없다 — 그 위의 Vercel Function이
+    // 요청 body를 4.5MB에서 413으로 자르기 때문에, 초과분은 Next.js에 닿지도 않는다.
+    // (6mb로 두었던 탓에 4.5~5MB 이미지는 앱 에러 메시지 없이 멈춘 것처럼 보였다.)
     serverActions: {
-      bodySizeLimit: '6mb',
+      bodySizeLimit: '4.5mb',
     },
     // barrel(index) import를 개별 모듈 import로 변환해 tree-shaking 강화
     optimizePackageImports: ['lucide-react'],
@@ -55,7 +77,13 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'image.aladin.co.kr' },
-      { protocol: 'https', hostname: 'sjngwxtykqhlsvxcyqah.supabase.co' },
+      // Supabase Storage(프로필 이미지). 호스트가 환경마다 달라 env에서 파생한다.
+      // 로컬은 http + 포트(54321)라 프로토콜·포트도 URL에서 그대로 가져온다.
+      {
+        protocol: supabaseUrl.protocol === 'http:' ? 'http' : 'https',
+        hostname: supabaseUrl.hostname,
+        ...(supabaseUrl.port ? { port: supabaseUrl.port } : {}),
+      },
       // Google 로그인 프로필 사진 (lh3.googleusercontent.com 등 번호가 바뀐다)
       { protocol: 'https', hostname: '**.googleusercontent.com' },
     ],
@@ -71,19 +99,9 @@ const nextConfig: NextConfig = {
     // 주의: GA 인라인 스크립트와 Next.js 인라인 하이드레이션 스크립트 때문에
     // script-src에 'unsafe-inline'이 필요하다. nonce로 더 강화하려면 proxy에서
     // 요청마다 nonce를 생성해 주입해야 한다(별도 작업).
-    // Supabase 오리진은 환경마다 다르다 — 로컬은 Docker(http://127.0.0.1:54321),
-    // 운영/프리뷰는 프로젝트 도메인. 하드코딩하면 로컬에서 auth·realtime 연결이
-    // CSP에 막혀 브라우저가 요청을 발사조차 못 하고 "Failed to fetch"가 된다
-    // (네트워크 탭에도 안 남아 원인을 찾기 어렵다).
-    const FALLBACK_SUPABASE_ORIGIN = 'https://sjngwxtykqhlsvxcyqah.supabase.co';
-    const supabaseOrigin = (() => {
-      try {
-        return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').origin;
-      } catch {
-        // env가 없는 빌드(예: 타입체크 전용)에서도 정책이 깨지지 않게 운영 값으로 둔다
-        return FALLBACK_SUPABASE_ORIGIN;
-      }
-    })();
+    // supabaseOrigin은 파일 상단에서 한 번만 파생한다(images.remotePatterns와 공유).
+    // 하드코딩하면 로컬에서 auth·realtime 연결이 CSP에 막혀 브라우저가 요청을
+    // 발사조차 못 하고 "Failed to fetch"가 된다(네트워크 탭에도 안 남아 원인 찾기가 어렵다).
     // ws(로컬 http) / wss(운영 https) — realtime 소켓 출처
     const supabaseSocketOrigin = supabaseOrigin.replace(/^http/, 'ws');
     // 개발 모드의 HMR/Fast Refresh는 문자열을 eval로 실행한다(프로덕션 빌드는

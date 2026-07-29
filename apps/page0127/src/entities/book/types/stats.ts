@@ -69,14 +69,17 @@ export type CategoryReadingData = {
  *
  * 학습 포인트:
  * - Recharts PieChart(Doughnut)에서 사용할 수 있는 형태
- * - rating은 0, 1, 2, 3, 4, 5, 10점 (7가지 평점)
- * - fill은 차트 색상 (10점: 진한 초록 → 0점: 회색)
+ * - rating은 0, 1, 2, 3, 4, 5점 (6가지 평점) — is_life_book 과 조합해 항목을 나눈다
+ * - fill은 차트 색상 (인생책: 진한 초록 → 0점: 회색)
  */
 export type RatingReadingData = {
-  /** 평점 (0, 1, 2, 3, 4, 5, 10) */
+  /** 평점 (0~5) */
   rating: number;
 
-  /** 해당 평점의 책 권수 */
+  /** 인생책 항목인지. rating 만으로는 5점과 구별되지 않는다 */
+  is_life_book: boolean;
+
+  /** 해당 평점(또는 인생책)의 책 권수 */
   count: number;
 
   /** 차트 색상 (색상 그라데이션) */
@@ -159,14 +162,17 @@ export type YearlyTrend = {
  * 평점 분포 데이터 (Horizontal Bar용)
  *
  * 학습 포인트:
- * - 0~10점 평점 분포
+ * - 0~5점 평점 분포 — is_life_book 과 조합해 항목을 나눈다
  * - 권수와 비율을 함께 표시
  */
 export type RatingDistribution = {
-  /** 평점 (0, 1, 2, 3, 4, 5, 10) */
+  /** 평점 (0~5) */
   rating: number;
 
-  /** 해당 평점의 책 권수 */
+  /** 인생책 항목인지. rating 만으로는 5점과 구별되지 않는다 */
+  is_life_book: boolean;
+
+  /** 해당 평점(또는 인생책)의 책 권수 */
   count: number;
 
   /** 비율 (%) */

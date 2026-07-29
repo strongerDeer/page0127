@@ -39,6 +39,7 @@ const DashboardCharts = dynamic(
 
 import type { Book } from '@/entities/book';
 import type { BookStats, OverallStats } from '@/entities/book';
+import type { RatingFilter } from '@/features/stats/model/useLibraryFilters';
 
 type LibraryViewProps = {
   /** 전체 독서 통계 (연도 무관) */
@@ -142,7 +143,7 @@ export const LibraryView = ({
   const handleMonthClick = (month: number) =>
     startFilterTransition(() => filters.toggleMonth(month));
 
-  const handleRatingClick = (rating: number) =>
+  const handleRatingClick = (rating: RatingFilter) =>
     startFilterTransition(() => filters.toggleRating(rating));
 
   // 책장 제목은 지금 보는 범위를 그대로 말한다

@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -6,6 +5,7 @@ import { ArrowLeft, Star } from 'lucide-react';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { decodeHtmlEntities } from '@/shared/lib/htmlEntities';
+import { BookCover } from '@/shared/ui/BookCover';
 import { Button } from '@/shared/ui/button';
 import { PageContainer } from '@/shared/ui/PageContainer';
 
@@ -124,10 +124,12 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
 
   // stats(book.isbn 의존)와 현재 사용자 조회는 서로 독립 → 병렬
   const supabase = await createClient();
-  const [stats, { data: { user } }] = await Promise.all([
-    getBookStats(book.isbn),
-    supabase.auth.getUser(),
-  ]);
+  const [
+    stats,
+    {
+      data: { user },
+    },
+  ] = await Promise.all([getBookStats(book.isbn), supabase.auth.getUser()]);
 
   // 라이브러리 포함 여부는 user + book.isbn 둘 다 필요 → user 확정 후 조회
   let isInLibrary = false;
@@ -162,28 +164,20 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
         {/* 책 표지 & 독자 프로필 */}
         <div className='space-y-6'>
           {/* 판형을 크롭하지 않는다 — 너비만 맞추고 높이는 원본 비율대로 */}
-          {book.cover_image ? (
-            <Image
-              src={book.cover_image}
-              alt=''
-              width={400}
-              height={580}
-              sizes='200px'
-              priority
-              className='book-cover h-auto w-full'
-            />
-          ) : (
-            <div className='book-cover flex aspect-[1/1.45] w-full flex-col justify-between border border-line bg-sunken px-3 py-4 text-left'>
-              <p className='line-clamp-5 break-keep text-sm font-bold leading-snug text-text-strong'>
-                {book.title}
-              </p>
-              {book.author && (
-                <p className='line-clamp-1 text-xs text-text-faint'>
-                  {book.author}
-                </p>
-              )}
-            </div>
-          )}
+          <BookCover
+            src={book.cover_image}
+            title={book.title}
+            author={book.author}
+            width={400}
+            height={580}
+            sizes='200px'
+            priority
+            decorative
+            className='h-auto w-full'
+            // 이미지는 원본 비율로 놓지만 대체 상자에는 비율이 없어 따로 준다.
+            // 표지를 크게 놓는 자리라 글자도 키운다 (기본 10px → 14px)
+            fallbackClassName='aspect-[1/1.45] h-auto w-full border border-line px-3 py-4 text-sm'
+          />
 
           {/* 완독한 독자 프로필 (왼쪽 컬럼 배치) */}
           <ReaderProfiles isbn={book.isbn} />

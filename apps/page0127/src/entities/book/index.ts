@@ -40,13 +40,12 @@ export {
   getLibraryYears,
 } from './model/libraryPeriod';
 
-// 평점 의미 (0 = 평가 안 함, 10 = 인생책) — 판정과 평균 계산의 유일한 출처
+// 평점 의미 (0 = 평가 안 함) — 판정과 평균 계산의 유일한 출처.
+// 인생책은 rating 이 아니라 별도 컬럼(is_life_book)이다.
 export {
   averageScore,
-  isLifeBook,
   isRated,
   isTopRated,
   RATING_MAX,
   summarizeRatings,
-  toScore,
 } from './model/rating';

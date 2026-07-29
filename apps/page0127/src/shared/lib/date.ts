@@ -116,14 +116,15 @@ export const formatDistanceToNow = (date: string): string =>
  *
  * `Date`만 받는 이유: 반환값이 DB의 date 컬럼에 그대로 들어가기 때문에,
  * 파싱 실패를 조용한 빈 문자열(`''`)로 흘려보내지 않는다. 호출처 대부분은
- * `new Date()`로 현재 시각을 넘기지만(Task 3 API, Task 4 클라이언트),
+ * `new Date()`로 현재 시각을 넘기지만(방문 기록 API·클라이언트),
  * `selectRecapCard`처럼 과거 시각(`new Date(book.created_at)`)을 넘겨
  * 그 시각의 KST 날짜 키를 구하는 곳도 있다.
  * 이는 같은 파일의 표시용 함수들(`formatDate` 등)이 `''`를 반환하는 것과
  * 다른 이유다.
  *
- * 같은 계산이 getCostSummary(dayKey)·aiUsage 에도 있다 — 통합 후보지만
- * 그쪽은 이 트랙과 무관해 건드리지 않았다.
+ * 같은 계산이 getCostSummary(dayKey)·aiUsage·widgets/landing/ui/TodayStrip
+ * (getKstToday)에도 있다 — 통합 후보지만 그쪽은 이 트랙과 무관해 건드리지
+ * 않았다.
  */
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 

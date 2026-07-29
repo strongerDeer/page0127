@@ -11,6 +11,7 @@
     "300": { "$value": "#97a4c0", "$type": "color" },
     "500": { "$value": "#66779a", "$type": "color" },
     "700": { "$value": "#3b4e70", "$type": "color" },
+    "800": { "$value": "#1b386b", "$type": "color", "$description": "다크 모드 표면 단차 — background(navy/900) 위에 얹는 면. 라이트의 gray/50 자리다" },
     "900": { "$value": "#14294e", "$type": "color" }
   },
   "gray": {
@@ -19,10 +20,19 @@
     "200": { "$value": "#eceff2", "$type": "color" },
     "300": { "$value": "#dfe3e8", "$type": "color" }
   },
-  "orange": { "600": { "$value": "#d9480f", "$type": "color" } },
-  "red":    { "600": { "$value": "#c0392b", "$type": "color" } },
+  "orange": {
+    "400": { "$value": "#f0642d", "$type": "color", "$description": "다크 모드 rank-up. orange/600 은 navy/900 위에서 3.35 라 본문에 못 쓴다 (색상·채도 유지, 명도만 45%→56%)" },
+    "600": { "$value": "#d9480f", "$type": "color" }
+  },
+  "red": {
+    "400": { "$value": "#dd7065", "$type": "color", "$description": "다크 모드 destructive. red/600 은 navy/900 위에서 2.65 라 못 쓴다 (색상·채도 유지, 명도만 46%→63%)" },
+    "600": { "$value": "#c0392b", "$type": "color" }
+  },
   "amber":  { "500": { "$value": "#d9a520", "$type": "color" } },
-  "slate":  { "500": { "$value": "#5b6b8c", "$type": "color" } },
+  "slate": {
+    "400": { "$value": "#627397", "$type": "color", "$description": "다크 모드 chart-5. slate/500 은 navy/900 위 2.70 으로 그래픽 기준(3:1)도 못 넘는다 (명도 45%→49%)" },
+    "500": { "$value": "#5b6b8c", "$type": "color" }
+  },
   "teal":   { "500": { "$value": "#14b8a6", "$type": "color" } },
   "violet": { "500": { "$value": "#7a5cf0", "$type": "color" } },
 

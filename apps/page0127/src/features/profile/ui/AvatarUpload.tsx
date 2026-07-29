@@ -6,6 +6,10 @@ import Image from 'next/image';
 
 import { toast } from 'sonner';
 
+import {
+  MAX_PROFILE_IMAGE_BYTES,
+  MAX_PROFILE_IMAGE_LABEL,
+} from '@/shared/lib/profileStorage';
 import { Button } from '@/shared/ui/button';
 
 type AvatarUploadProps = {
@@ -49,9 +53,8 @@ export const AvatarUpload = ({
       return;
     }
 
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-      toast.error('이미지 크기는 5MB 이하여야 합니다.');
+    if (file.size > MAX_PROFILE_IMAGE_BYTES) {
+      toast.error(`이미지 크기는 ${MAX_PROFILE_IMAGE_LABEL} 이하여야 합니다.`);
       return;
     }
 
@@ -135,7 +138,8 @@ export const AvatarUpload = ({
 
       {/* 안내 문구 */}
       <p className='text-xs text-muted-foreground'>
-        JPG, PNG, WEBP, GIF (최대 5MB) · 저장 버튼을 눌러야 업로드됩니다
+        JPG, PNG, WEBP, GIF (최대 {MAX_PROFILE_IMAGE_LABEL}) · 저장 버튼을 눌러야
+        업로드됩니다
       </p>
     </div>
   );

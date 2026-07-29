@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { Link2, Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/client';
@@ -30,6 +30,7 @@ import { Button } from '@/shared/ui/button';
 import { getPersonalityColor } from '@/entities/taste-analysis/model/personalityTypes';
 
 import { FollowButton, FollowListModal, FollowStats } from '@/features/follow';
+import { ShareButton } from '@/features/share';
 import { TasteAnalysisHistoryCards } from '@/features/taste-analysis/ui/TasteAnalysisHistoryCards';
 
 import type { TasteAnalysisSummary } from '@/entities/taste-analysis/types';
@@ -125,17 +126,6 @@ export const PublicLibraryHeader = ({
     }
   };
 
-  const handleCopyUrl = async () => {
-    try {
-      await navigator.clipboard.writeText(
-        `${window.location.origin}/${username}`
-      );
-      toast.success('서재 주소를 복사했어요.');
-    } catch {
-      toast.error('서재 주소를 복사하지 못했어요.');
-    }
-  };
-
   return (
     <>
       {/* 스카이 틴트 면 — 공개 서재의 '전시장 입구'. sunken 배경 위에서 얼굴이 된다 */}
@@ -214,16 +204,12 @@ export const PublicLibraryHeader = ({
             </>
           )}
 
-          <Button
-            variant='outline'
-            size='icon'
-            className='shadow-none'
-            onClick={handleCopyUrl}
-            title='공개 서재 주소 복사'
-          >
-            <span className='sr-only'>공개 서재 주소 복사</span>
-            <Link2 className='h-4 w-4' />
-          </Button>
+          {/* 모바일에서는 네이티브 공유 시트로, 데스크톱에서는 주소 복사로 떨어진다 */}
+          <ShareButton
+            path={`/${username}`}
+            title={`${displayName}님의 책장`}
+            text='책장을 보면, 그 사람이 보입니다.'
+          />
         </div>
       </header>
 
@@ -258,8 +244,7 @@ export const PublicLibraryHeader = ({
           <div className='text-center'>
             <p className='text-lg font-medium'>취향을 분석하고 있어요~</p>
             <p className='mt-1 text-sm text-muted-foreground'>
-              최대 1분 정도 걸려요. 이 화면을 벗어나지 말고 잠시만
-              기다려주세요.
+              최대 1분 정도 걸려요. 이 화면을 벗어나지 말고 잠시만 기다려주세요.
             </p>
           </div>
         </div>

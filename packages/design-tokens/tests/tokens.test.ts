@@ -76,3 +76,51 @@ describe('토큰 생성물 구조', () => {
     expect(names.filter((n) => !isPrimitive(n)).length).toBeGreaterThanOrEqual(46);
   });
 });
+
+/**
+ * 다크 생성물(dist/tokens-dark.css).
+ *
+ * 여기서 가장 중요한 건 **이름 대조**다. 다크에만 있는 이름을 쓰면(오타 포함)
+ * 아무도 읽지 않는 변수가 조용히 생기고, 화면은 라이트 값을 그대로 쓴 채
+ * 아무 에러도 나지 않는다. 라이트에 같은 이름이 있어야만 덮어쓰기가 성립한다.
+ */
+const darkCss = readFileSync(
+  new URL('../dist/tokens-dark.css', import.meta.url),
+  'utf8',
+);
+const darkVars = parseCssVars(darkCss);
+
+describe('다크 토큰 생성물', () => {
+  it('OS 설정을 따르는 @media 블록 안에 있다 — .dark 클래스 전략이 아니다', () => {
+    expect(darkCss).toContain('@media (prefers-color-scheme: dark)');
+    // 블록 밖에 :root 가 또 있으면 라이트에서도 덮어써 버린다
+    const rootCount = (darkCss.match(/:root/g) ?? []).length;
+    expect(rootCount).toBe(1);
+  });
+
+  it('모든 다크 토큰 이름이 라이트에도 존재한다 — 없으면 아무도 안 읽는 변수다', () => {
+    const orphans = Object.keys(darkVars).filter((n) => !(n in vars));
+    expect(orphans).toEqual([]);
+  });
+
+  it('다크 토큰은 원색을 var() 로 참조한다 — 리터럴이면 2층 구조가 깨진다', () => {
+    const copied = Object.entries(darkVars)
+      .filter(([, raw]) => raw.startsWith('#'))
+      .map(([n, raw]) => `${n}: ${raw}`);
+    expect(copied).toEqual([]);
+  });
+
+  it('다크가 참조하는 원색이 라이트 파일에 전부 있다 — 끊긴 참조가 없다', () => {
+    const broken: string[] = [];
+    for (const [name, raw] of Object.entries(darkVars)) {
+      for (const m of raw.matchAll(/var\((--[a-zA-Z0-9-]+)\)/g)) {
+        if (!(m[1] in vars)) broken.push(`${name} → ${m[1]}`);
+      }
+    }
+    expect(broken).toEqual([]);
+  });
+
+  it('덮어쓸 토큰이 실제로 있다 — 파일이 비어도 위 테스트들이 공짜로 통과하기 때문', () => {
+    expect(Object.keys(darkVars).length).toBeGreaterThanOrEqual(25);
+  });
+});

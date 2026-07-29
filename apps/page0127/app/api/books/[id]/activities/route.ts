@@ -2,7 +2,11 @@ import { NextRequest } from 'next/server';
 
 import { getSupabaseClient } from '../../../_helpers/auth';
 import { buildActivityItems } from '../../../_helpers/buildActivityItems';
-import { errorResponse, notFoundResponse, successResponse } from '../../../_helpers/response';
+import {
+  errorResponse,
+  notFoundResponse,
+  successResponse,
+} from '../../../_helpers/response';
 
 /**
  * GET /api/books/[id]/activities?limit=20&offset=0
@@ -33,7 +37,7 @@ export async function GET(
     const { data: book } = await supabase
       .from('books')
       .select(
-        'id, user_id, is_public, title, author, cover_image, status, rating, one_line_review'
+        'id, user_id, is_public, title, author, cover_image, status, rating, is_life_book, one_line_review'
       )
       .eq('id', bookId)
       .single();
@@ -81,6 +85,7 @@ export async function GET(
           cover_image: book.cover_image,
           status: book.status,
           rating: book.rating,
+          is_life_book: book.is_life_book,
           one_line_review: book.one_line_review ?? null,
         },
       ],

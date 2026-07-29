@@ -2,24 +2,20 @@
 
 import { Star } from 'lucide-react';
 
-import { isLifeBook, isRated } from '@/entities/book';
+import { isRated } from '@/entities/book';
 
 import type { RatingReadingData } from '@/entities/book';
+import type { RatingFilter } from '@/features/stats/model/useLibraryFilters';
 
 type RatingDoughnutChartProps = {
   data: RatingReadingData[];
   averageRating: number;
-  onRatingClick: (rating: number) => void;
+  onRatingClick: (rating: RatingFilter) => void;
 };
 
-// 평점 숫자 → 라벨. 10은 점수가 아니라 "인생책", 0은 점수가 아니라 "평가 안 함"이다
-// (OverallDistribution 과 같은 규칙)
-const ratingLabel = (rating: number) =>
-  isLifeBook(rating)
-    ? '인생책'
-    : isRated(rating)
-      ? `${rating}점`
-      : '평가 안 함';
+// 평점 숫자 → 라벨. 인생책은 rating 이 5 라도 "인생책"이다(OverallDistribution 과 같은 규칙)
+const ratingLabel = (rating: number, isLifeBook: boolean) =>
+  isLifeBook ? '인생책' : isRated(rating) ? `${rating}점` : '평가 안 함';
 
 /** 평균 평점과 평점별 권수를 함께 보여주는 분포 */
 export const RatingDoughnutChart = ({
@@ -29,7 +25,11 @@ export const RatingDoughnutChart = ({
 }: RatingDoughnutChartProps) => {
   const filteredData = data
     .filter((item) => item.count > 0)
-    .sort((a, b) => b.rating - a.rating);
+    // 인생책과 5점은 rating 이 같으므로 rating 만으로 정렬하면 순서가 흔들린다
+    .sort(
+      (a, b) =>
+        b.rating - a.rating || Number(b.is_life_book) - Number(a.is_life_book)
+    );
   // 막대 폭의 분모 — 분포 전체(평가 안 함 포함) 대비 비율이라 그대로 둔다
   const total = filteredData.reduce((sum, item) => sum + item.count, 0);
   // 캡션의 분모 — 평균(averageScore)이 0("평가 안 함")을 빼고 계산하므로
@@ -67,14 +67,16 @@ export const RatingDoughnutChart = ({
 
           return (
             <button
-              key={item.rating}
+              key={`${item.rating}-${item.is_life_book}`}
               type='button'
-              onClick={() => onRatingClick(item.rating)}
+              onClick={() =>
+                onRatingClick(item.is_life_book ? 'life' : item.rating)
+              }
               // 라벨 폭: '평가 안 함'이 한 줄에 들어가야 한다 (42px에서는 줄바꿈됐다)
               className='grid w-full grid-cols-[64px_1fr_36px] items-center gap-3 text-sm'
             >
               <span className='text-left font-medium text-text-body'>
-                {ratingLabel(item.rating)}
+                {ratingLabel(item.rating, item.is_life_book)}
               </span>
               <span className='h-2 overflow-hidden rounded-full bg-sunken'>
                 <span

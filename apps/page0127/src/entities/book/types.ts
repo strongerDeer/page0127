@@ -14,9 +14,9 @@ export type { AladinBook, AladinSearchResponse } from '@/shared/types/aladin';
 export type BookStatus = 'want_to_read' | 'reading' | 'completed';
 
 /**
- * 도서 평가 점수
+ * 도서 평가 점수 — 인생책(전에는 10)은 is_life_book 컬럼으로 분리됐다
  */
-export type BookRating = 0 | 1 | 2 | 3 | 4 | 5 | 10;
+export type BookRating = 0 | 1 | 2 | 3 | 4 | 5;
 
 /**
  * Supabase books 테이블 타입
@@ -50,6 +50,8 @@ export type Book = {
 
   // 평가
   rating: BookRating | null;
+  /** 인생책 여부. 전에는 rating=10 이라는 매직값이었다 */
+  is_life_book: boolean;
 
   // 사용자 입력
   one_line_review: string | null;
@@ -131,6 +133,7 @@ export type BookInput = {
 
   // 평가
   rating?: BookRating;
+  is_life_book?: boolean;
 
   // 사용자 입력
   one_line_review?: string;

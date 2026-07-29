@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 
-import Image from 'next/image';
-
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
+import { BookCover } from '@/shared/ui/BookCover';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import {
@@ -15,7 +14,7 @@ import {
   DialogTitle,
 } from '@/shared/ui/dialog';
 
-import { isLifeBook, isRated } from '@/entities/book';
+import { isRated } from '@/entities/book';
 
 /**
  * 독서 캘린더 컴포넌트
@@ -37,6 +36,8 @@ type Book = {
   author: string;
   cover: string;
   rating: number;
+  /** 인생책 여부. rating 과 별개 컬럼이다 */
+  is_life_book: boolean;
 };
 
 export type CalendarData = {
@@ -249,14 +250,16 @@ export const ReadingCalendar = ({
           <div className='divide-y divide-line-soft'>
             {selectedDate?.books.map((book) => (
               <div key={book.id} className='flex items-center gap-3 py-3'>
-                {/* next/image는 width/height가 필수 — 없으면 런타임 에러가 난다 */}
+                {/* 표지가 없으면 아무것도 그리지 않는다 — 날짜별 목록이라 빈 상자를
+                    세우지 않는다. 그래서 BookCover 의 대체 조판을 쓰지 않고 가드를 남긴다 */}
                 {book.cover && (
-                  <Image
+                  <BookCover
                     src={book.cover}
-                    alt=''
+                    title={book.title}
                     width={44}
                     height={64}
-                    className='book-cover h-16 w-auto shrink-0'
+                    decorative
+                    className='h-16 w-auto shrink-0'
                   />
                 )}
                 <div className='min-w-0 flex-1'>
@@ -267,10 +270,10 @@ export const ReadingCalendar = ({
                     {book.author}
                   </p>
                 </div>
-                {/* 0("평가 안 함")은 숨기고, 10은 점수가 아니라 '인생책'이다 */}
+                {/* 0("평가 안 함")은 숨기고, 인생책은 점수 대신 이름으로 보여준다 */}
                 {isRated(book.rating) && (
                   <span className='shrink-0 text-sm font-medium text-text-body'>
-                    {isLifeBook(book.rating) ? '인생책' : `${book.rating}점`}
+                    {book.is_life_book ? '인생책' : `${book.rating}점`}
                   </span>
                 )}
               </div>

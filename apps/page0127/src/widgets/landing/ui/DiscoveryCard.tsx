@@ -1,10 +1,10 @@
-import Image from 'next/image';
 import Link from 'next/link';
 
 import { Sparkles } from 'lucide-react';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { decodeHtmlEntities } from '@/shared/lib/htmlEntities';
+import { BookCover } from '@/shared/ui/BookCover';
 
 /**
  * "page0127의 발견" — 최근 등록된 책 한 권을 크게 보여주는 편집 카드
@@ -97,13 +97,18 @@ export const DiscoveryCard = async () => {
             </p>
           )}
         </div>
+        {/* 표지가 없으면 아무것도 그리지 않는다 — 랜딩 카드라 빈 상자를 세우지 않는다.
+            그래서 BookCover 의 대체 조판을 쓰지 않고 가드를 남긴다.
+            전에 붙어 있던 rounded-md 는 뺐다 — 도메인 셰이프를 정의한 CSS 가
+            레이어 밖이라 Tailwind 유틸을 이기므로 애초에 적용되지 않던 클래스다 */}
         {book.cover_image && (
-          <Image
+          <BookCover
             src={book.cover_image}
-            alt=''
+            title={book.title}
             width={120}
             height={174}
-            className='book-cover -mb-5 h-40 w-auto shrink-0 rounded-md'
+            decorative
+            className='-mb-5 h-40 w-auto shrink-0'
           />
         )}
       </div>

@@ -11,7 +11,7 @@ const buttonVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
         destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20",
+          "bg-destructive text-primary-foreground hover:bg-destructive/90 focus-visible:ring-destructive/20",
         // 07 §2.3 — 그림자는 실제로 떠 있는 것에만. outline 버튼은 표면에 붙어 있고
         // border 가 이미 경계를 만들므로 shadow-xs 를 뺐다.
         outline:

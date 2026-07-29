@@ -1,11 +1,8 @@
 import { useEffect, useRef } from 'react';
 
-import Image from 'next/image';
-
+import { BookCover } from '@/shared/ui/BookCover';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
-
-import { isLifeBook } from '@/entities/book';
 
 import { savedBookMessage } from '../lib/savedBookMessage';
 
@@ -17,6 +14,8 @@ type BookSavedCardProps = {
   /** 사용자가 남긴 한 문장. 없으면 인용 블록을 숨긴다 */
   oneLineReview: string | null;
   rating: BookRating | null;
+  /** 인생책 여부 — rating 과 별개 컬럼이다 */
+  isLifeBook: boolean;
   /** 완독 권수. 통계 조회에 실패했거나 재독이라 조회하지 않았으면 null */
   completedCount: number | null;
   /** 이 책을 몇 번째로 읽었는지 */
@@ -36,7 +35,8 @@ export const BookSavedCard = ({
   title,
   coverImage,
   oneLineReview,
-  rating,
+  rating: _rating,
+  isLifeBook,
   completedCount,
   readCount,
   onGoToLibrary,
@@ -56,13 +56,16 @@ export const BookSavedCard = ({
     <Card>
       <CardContent className='space-y-6 py-8'>
         <div className='flex flex-col items-center gap-4 text-center'>
+          {/* 표지가 없으면 아무것도 그리지 않는다 — 저장 확인 카드라 빈 상자를
+              세우지 않는다. 그래서 BookCover 의 대체 조판을 쓰지 않고 가드를 남긴다 */}
           {coverImage && (
-            <Image
+            <BookCover
               src={coverImage}
-              alt=''
+              title={title}
               width={120}
               height={174}
-              className='book-cover h-auto w-[120px]'
+              decorative
+              className='h-auto w-[120px]'
             />
           )}
 
@@ -82,7 +85,7 @@ export const BookSavedCard = ({
             <p className='text-sm text-text-subtle'>{title}</p>
           </div>
 
-          {isLifeBook(rating) && (
+          {isLifeBook && (
             <span className='rounded-full bg-chart-3/15 px-3 py-1 text-sm font-medium text-chart-3'>
               인생책
             </span>

@@ -1,8 +1,7 @@
 'use client';
 
-import Image from 'next/image';
-
 import { upgradeImageResolution } from '@/shared/lib/imageUtils';
+import { BookCover } from '@/shared/ui/BookCover';
 import { Button } from '@/shared/ui/button';
 
 import type { AladinBook } from '@/entities/book';
@@ -32,22 +31,14 @@ export const BookSearchResultCard = ({
 
   return (
     <article className='flex items-center gap-4 py-3.5'>
-      {highResCover ? (
-        <Image
-          src={highResCover}
-          alt=''
-          width={56}
-          height={80}
-          className='book-cover h-20 w-auto shrink-0'
-        />
-      ) : (
-        <span
-          aria-hidden='true'
-          className='book-cover flex h-20 w-14 shrink-0 items-center justify-center bg-sunken p-1 text-center text-[10px] leading-tight text-text-faint'
-        >
-          표지 없음
-        </span>
-      )}
+      <BookCover
+        src={highResCover}
+        title={book.title}
+        width={56}
+        height={80}
+        decorative
+        className='h-20 w-auto shrink-0'
+      />
 
       <div className='min-w-0 flex-1'>
         <h3 className='truncate text-[15px] font-medium text-text-strong'>
