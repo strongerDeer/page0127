@@ -3,6 +3,10 @@ import { NextRequest } from 'next/server';
 import { createActivity } from '../_helpers/activity';
 import { getCurrentUser, getSupabaseClient } from '../_helpers/auth';
 import { errorResponse, successResponse } from '../_helpers/response';
+import {
+  hasLifeBookReading,
+  syncLifeBookAcrossReadings,
+} from '../_helpers/syncLifeBookAcrossReadings';
 
 /**
  * GET /api/books
@@ -96,16 +100,35 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. 사용자 책장에 추가
+    //
+    // 인생책은 '책' 단위 속성이라 재독을 담을 때 양쪽을 맞춰야 한다.
+    // - 1회독 때 꼽아뒀으면 등록 폼 체크가 꺼져 있어도 새 회독은 인생책이다
+    // - 이번에 꼽았으면 아래에서 기존 회독들에도 반영한다
+    const isLifeBook =
+      body.is_life_book === true ||
+      (await hasLifeBookReading(supabase, user!.id, body.isbn));
+
     const { data, error } = await supabase
       .from('books')
       .insert({
         ...body,
+        is_life_book: isLifeBook,
         user_id: user!.id,
       })
       .select()
       .single();
 
     if (error) return errorResponse(error.message);
+
+    if (isLifeBook) {
+      await syncLifeBookAcrossReadings({
+        supabase,
+        userId: user!.id,
+        isbn: data.isbn,
+        isLifeBook: true,
+        exceptBookId: data.id,
+      });
+    }
 
     // 3. 활동 생성
     // 담는 순간 이미 완독이면 "완독했어요"가 사실에 가깝다. 담기와 완독을 둘 다 남기면
