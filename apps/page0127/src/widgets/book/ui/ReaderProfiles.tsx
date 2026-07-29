@@ -2,7 +2,8 @@
 // → @/app/api/_helpers/auth의 getSupabaseClient 대신 shared의 createClient 직접 사용
 import { createClient } from '@/shared/config/supabase/server';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
-import { ProfileLink } from '@/shared/ui/ProfileLink';
+
+import { ProfileLink } from '@/entities/profile/ui/ProfileLink';
 
 type ReaderProfilesProps = {
   isbn: string;

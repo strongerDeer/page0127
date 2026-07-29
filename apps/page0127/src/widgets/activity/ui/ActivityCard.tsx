@@ -4,11 +4,11 @@ import Link from 'next/link';
 import { Star } from 'lucide-react';
 
 import { BookCover } from '@/shared/ui/BookCover';
-import { ProfileLink } from '@/shared/ui/ProfileLink';
 import { RelativeTime } from '@/shared/ui/RelativeTime';
 
 import { Activity } from '@/entities/activity';
 import { isRated } from '@/entities/book';
+import { ProfileLink } from '@/entities/profile/ui/ProfileLink';
 
 import { CommentSection } from '@/features/comment';
 import { BookRecordLikeButton } from '@/features/like';
