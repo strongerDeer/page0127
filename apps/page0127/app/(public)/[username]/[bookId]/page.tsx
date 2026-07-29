@@ -5,6 +5,7 @@ import { createClient } from '@/shared/config/supabase/server';
 import { Button } from '@/shared/ui/button';
 import { PageContainer } from '@/shared/ui/PageContainer';
 
+import { getBookReadings } from '@/entities/book/api/getBookReadings';
 import { getPublicBookRecord } from '@/entities/book/api/getPublicBookRecord';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProfileByUsername';
@@ -15,6 +16,7 @@ import { DeleteBookButton } from '@/features/book/ui/DeleteBookButton';
 import { ShareButton } from '@/features/share';
 
 import { BookDetailContent } from '@/widgets/book/ui/BookDetailContent';
+import { BookReadingList } from '@/widgets/book/ui/BookReadingList';
 
 import type { Book } from '@/entities/book';
 import type { Metadata } from 'next';
@@ -106,6 +108,10 @@ const BookDetailPage = async ({ params }: PageProps) => {
     notFound();
   }
 
+  // 책장은 회독을 한 권으로 합쳐 최신 회독만 링크한다 → 옛 회독으로 가는 길을
+  // 여기서 되돌려 준다. 방문자에게는 공개된 회독만 보인다.
+  const readings = await getBookReadings(profile.id, book.isbn, isOwner);
+
   return (
     <PageContainer width='content'>
       <div className='mb-6 flex flex-wrap items-center justify-between gap-3'>
@@ -136,6 +142,14 @@ const BookDetailPage = async ({ params }: PageProps) => {
       </div>
 
       <BookDetailContent book={book} isOwner={isOwner} />
+
+      <div className='mt-6'>
+        <BookReadingList
+          readings={readings}
+          currentBookId={book.id}
+          username={username}
+        />
+      </div>
     </PageContainer>
   );
 };
