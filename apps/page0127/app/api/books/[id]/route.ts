@@ -7,6 +7,7 @@ import {
   notFoundResponse,
   successResponse,
 } from '../../_helpers/response';
+import { syncLifeBookAcrossReadings } from '../../_helpers/syncLifeBookAcrossReadings';
 
 type Params = {
   params: Promise<{ id: string }>;
@@ -74,6 +75,18 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       .single();
 
     if (error) return notFoundResponse('책');
+
+    // 인생책은 '회독'이 아니라 '책'을 꼽은 것이다 → 같은 책의 다른 회독에도 반영한다.
+    // 안 맞추면 책장(회독을 합쳐 인생책으로 표시)과 상세(행 그대로)가 어긋난다.
+    if (typeof body.is_life_book === 'boolean') {
+      await syncLifeBookAcrossReadings({
+        supabase,
+        userId: user.id,
+        isbn: data.isbn,
+        isLifeBook: body.is_life_book,
+        exceptBookId: id,
+      });
+    }
 
     // status가 completed로 변경된 경우 활동 생성
     if (oldBook?.status !== 'completed' && body.status === 'completed') {
