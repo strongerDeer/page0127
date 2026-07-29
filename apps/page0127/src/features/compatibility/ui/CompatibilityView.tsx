@@ -37,6 +37,7 @@ import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { PageContainer } from '@/shared/ui/PageContainer';
 
+import { replaceUserLabels } from '@/entities/compatibility/lib/replaceUserLabels';
 import { getCompatibilityTypeByScore } from '@/entities/compatibility/model/compatibilityTypes';
 
 import type {
@@ -304,6 +305,14 @@ const CompatibilityResult = ({
     ? similarity.reading_patterns.user2
     : similarity.reading_patterns.user1;
 
+  // AI가 만든 자유 문장에는 익명 라벨(user1/user2)이 그대로 남아 있다.
+  // 화면에 뿌리기 직전에 보는 사람 기준으로 바꾼다 (저장값은 익명 그대로 둔다 —
+  // 같은 결과를 상대가 열면 '나'가 반대쪽이어야 하기 때문이다)
+  const labelNames = isCurrentUserFirst
+    ? { first: '나', second: `${targetName} 님` }
+    : { first: `${targetName} 님`, second: '나' };
+  const label = (text: string) => replaceUserLabels(text, labelNames);
+
   return (
     <div className='space-y-6'>
       {/* 1. 궁합 점수 */}
@@ -318,7 +327,7 @@ const CompatibilityResult = ({
           </p>
           <p className='mt-2 text-text-subtle'>{typeBand.tagline}</p>
           <p className='mx-auto mt-6 max-w-xl whitespace-pre-wrap text-left leading-relaxed text-text-body'>
-            {analysis.compatibility_description}
+            {label(analysis.compatibility_description)}
           </p>
         </CardContent>
       </Card>
@@ -335,12 +344,14 @@ const CompatibilityResult = ({
           <div className='grid gap-4 md:grid-cols-2'>
             <div className='rounded-lg bg-sunken p-4'>
               <p className='text-sm text-text-subtle'>나</p>
-              <p className='mt-1 font-medium text-text-strong'>{myPattern}</p>
+              <p className='mt-1 font-medium text-text-strong'>
+                {label(myPattern)}
+              </p>
             </div>
             <div className='rounded-lg bg-sunken p-4'>
               <p className='text-sm text-text-subtle'>{targetName} 님</p>
               <p className='mt-1 font-medium text-text-strong'>
-                {targetPattern}
+                {label(targetPattern)}
               </p>
             </div>
           </div>
@@ -356,7 +367,7 @@ const CompatibilityResult = ({
                     key={interest}
                     className='rounded-full border border-line px-3 py-1 text-sm text-text-body'
                   >
-                    {interest}
+                    {label(interest)}
                   </span>
                 ))}
               </div>
@@ -371,7 +382,7 @@ const CompatibilityResult = ({
               </h3>
               <ul className='space-y-1 text-sm text-text-body'>
                 {similarity.commonalities.map((item) => (
-                  <li key={item}>• {item}</li>
+                  <li key={item}>• {label(item)}</li>
                 ))}
               </ul>
             </div>
@@ -382,7 +393,7 @@ const CompatibilityResult = ({
               </h3>
               <ul className='space-y-1 text-sm text-text-body'>
                 {similarity.differences.map((item) => (
-                  <li key={item}>• {item}</li>
+                  <li key={item}>• {label(item)}</li>
                 ))}
               </ul>
             </div>
@@ -396,12 +407,14 @@ const CompatibilityResult = ({
         title={`${targetName} 님의 책장에서 골라온 책`}
         description='상대방이 읽은 책 중, 지금 이어 읽기 좋은 책들이에요.'
         recommendations={recommendationsForMe}
+        label={label}
       />
       <RecommendationList
         icon={<Gift className='h-4.5 w-4.5 text-text-subtle' />}
         title={`내 책장에서 ${targetName} 님에게 건네는 책`}
         description='내가 읽은 책 중, 상대방이 좋아할 만한 책들이에요.'
         recommendations={recommendationsForTarget}
+        label={label}
       />
 
       {/* 4. 재분석 */}
@@ -432,6 +445,8 @@ type RecommendationListProps = {
   title: string;
   description: string;
   recommendations: MutualRecommendation[];
+  /** 추천 이유에도 user1/user2 라벨이 섞여 있어 같은 치환을 거친다 */
+  label: (text: string) => string;
 };
 
 const RecommendationList = ({
@@ -439,6 +454,7 @@ const RecommendationList = ({
   title,
   description,
   recommendations,
+  label,
 }: RecommendationListProps) => {
   if (recommendations.length === 0) return null;
 
@@ -478,7 +494,7 @@ const RecommendationList = ({
                   <p className='text-sm text-text-subtle'>{rec.author}</p>
                 )}
                 <p className='mt-2 text-sm leading-relaxed text-text-body'>
-                  {rec.reason}
+                  {label(rec.reason)}
                 </p>
               </div>
             </div>
