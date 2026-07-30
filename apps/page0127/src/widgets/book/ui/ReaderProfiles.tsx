@@ -1,7 +1,8 @@
 // FSD: widgets는 app을 import할 수 없다 (역방향)
 // → @/app/api/_helpers/auth의 getSupabaseClient 대신 shared의 createClient 직접 사용
+import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui';
+
 import { createClient } from '@/shared/config/supabase/server';
-import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 
 import { ProfileLink } from '@/entities/profile/ui/ProfileLink';
 

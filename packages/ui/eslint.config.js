@@ -55,6 +55,24 @@ export default [
     },
   },
   {
-    ignores: ['node_modules/**', '.turbo/**'],
+    ignores: [
+      'node_modules/**',
+      '.turbo/**',
+      // shadcn/ui 원본 컴포넌트는 검사하지 않는다 — 우리가 쓴 코드가 아니라
+      // CLI 가 찍어낸 것이고, 규칙에 맞추려 손대면 다음 업스트림 갱신 때마다
+      // 그 수정을 다시 해야 한다.
+      //
+      // 경계는 파일명이다(앱에서 쓰던 관례를 그대로 가져왔다):
+      //   kebab-case(button.tsx)  = shadcn CLI 산출물 → 제외
+      //   PascalCase(BookCover.tsx) = 우리가 만든 것   → 검사
+      // 새 자체 컴포넌트는 목록에 추가할 필요 없이 이 패턴으로 자동 포함된다.
+      //
+      // `**` 가 아니라 `**/*` 인 것이 중요하다 — 전자는 디렉터리 자체를 무시해
+      // 아래 부정 패턴이 아무 효과가 없다(ESLint flat config 규칙).
+      'src/components/**/*',
+      '!src/components/[A-Z]*.tsx',
+      // 스토리는 누가 만든 컴포넌트를 다루든 우리가 쓴 문서다.
+      '!src/components/**/*.stories.tsx',
+    ],
   },
 ];

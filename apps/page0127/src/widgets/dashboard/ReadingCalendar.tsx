@@ -3,16 +3,9 @@
 import { useState } from 'react';
 
 import { Button } from '@repo/ui';
+import { Card, CardContent, CardHeader, CardTitle, Dialog, DialogContent, DialogHeader, DialogTitle } from '@repo/ui';
+import { BookCover } from '@repo/ui';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-
-import { BookCover } from '@/shared/ui/BookCover';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/shared/ui/dialog';
 
 import { isRated } from '@/entities/book';
 

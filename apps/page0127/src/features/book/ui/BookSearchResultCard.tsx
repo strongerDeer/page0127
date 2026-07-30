@@ -1,9 +1,9 @@
 'use client';
 
 import { Button } from '@repo/ui';
+import { BookCover } from '@repo/ui';
 
 import { upgradeImageResolution } from '@/shared/lib/imageUtils';
-import { BookCover } from '@/shared/ui/BookCover';
 
 import type { AladinBook } from '@/entities/book';
 

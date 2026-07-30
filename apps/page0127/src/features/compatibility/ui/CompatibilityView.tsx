@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@repo/ui';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
+import { BookCover, PageContainer, PageHeader } from '@repo/ui';
 import {
   BookCopy,
   BookOpen,
@@ -23,20 +25,6 @@ import {
   MONTHLY_LIMIT,
   USAGE_LIMIT_EXCEEDED_MESSAGE,
 } from '@/shared/lib/aiUsage';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/shared/ui/alert-dialog';
-import { BookCover } from '@/shared/ui/BookCover';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { PageContainer } from '@/shared/ui/PageContainer';
-import { PageHeader } from '@/shared/ui/PageHeader';
 
 import { replaceUserLabels } from '@/entities/compatibility/lib/replaceUserLabels';
 import { getCompatibilityTypeByScore } from '@/entities/compatibility/model/compatibilityTypes';

@@ -3,30 +3,13 @@
 import { useState } from 'react';
 
 import { Button } from '@repo/ui';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Avatar, AvatarFallback, AvatarImage, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Textarea } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { MoreVertical, Pencil, Reply, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/shared/ui/alert-dialog';
-import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/shared/ui/dropdown-menu';
 import { RelativeTime } from '@/shared/ui/RelativeTime';
-import { Textarea } from '@/shared/ui/textarea';
 
 import { Comment, commentApi, commentKeys } from '@/entities/comment';
 import { ProfileLink } from '@/entities/profile/ui/ProfileLink';

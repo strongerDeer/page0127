@@ -1,8 +1,7 @@
 import Link from 'next/link';
 
+import { BookCover } from '@repo/ui';
 import { BookOpen } from 'lucide-react';
-
-import { BookCover } from '@/shared/ui/BookCover';
 
 import type { Book } from '@/entities/book';
 

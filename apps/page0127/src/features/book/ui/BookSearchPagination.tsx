@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/shared/ui/pagination';
-
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@repo/ui';
 type BookSearchPaginationProps = {
   currentPage: number;
   totalResults: number;

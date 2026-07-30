@@ -5,9 +5,8 @@ import { useCallback, useMemo, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { Button } from '@repo/ui';
+import { PageContainer } from '@repo/ui';
 import { Archive, Library } from 'lucide-react';
-
-import { PageContainer } from '@/shared/ui/PageContainer';
 
 import {
   calculateBookStats,

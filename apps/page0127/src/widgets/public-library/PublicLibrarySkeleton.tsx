@@ -1,6 +1,5 @@
-import { PageContainer } from '@/shared/ui/PageContainer';
-import { Skeleton } from '@/shared/ui/skeleton';
-
+import { Skeleton } from '@repo/ui';
+import { PageContainer } from '@repo/ui';
 /** 공개 서재의 실제 레이아웃과 같은 폭·리듬을 사용하는 로딩 화면 */
 export const PublicLibrarySkeleton = () => {
   return (

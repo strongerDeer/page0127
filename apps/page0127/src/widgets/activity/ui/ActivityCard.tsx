@@ -1,9 +1,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { BookCover } from '@repo/ui';
 import { Star } from 'lucide-react';
 
-import { BookCover } from '@/shared/ui/BookCover';
 import { RelativeTime } from '@/shared/ui/RelativeTime';
 
 import { Activity } from '@/entities/activity';

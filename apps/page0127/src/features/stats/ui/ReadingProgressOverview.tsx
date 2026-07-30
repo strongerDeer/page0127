@@ -1,9 +1,8 @@
 import Image from 'next/image';
 
 import { Button } from '@repo/ui';
+import { Progress } from '@repo/ui';
 import { BookOpen, FileText, Pencil, Star, Trophy } from 'lucide-react';
-
-import { Progress } from '@/shared/ui/progress';
 
 import type { Book } from '@/entities/book';
 

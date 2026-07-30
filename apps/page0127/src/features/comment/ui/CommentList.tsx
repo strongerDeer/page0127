@@ -1,9 +1,8 @@
 'use client';
 
+import { Spinner } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
 import { MessageSquare } from 'lucide-react';
-
-import { Spinner } from '@/shared/ui/Spinner';
 
 import { commentApi, commentKeys } from '@/entities/comment';
 

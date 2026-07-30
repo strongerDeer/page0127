@@ -2,10 +2,8 @@
 
 import { useEffect, useImperativeHandle, useRef, useState } from 'react';
 
+import { Input } from '@repo/ui';
 import { Search, X } from 'lucide-react';
-
-import { Input } from '@/shared/ui/input';
-
 type BookListFilterInputProps = {
   /** 검색어 변경 핸들러 */
   onSearchChange: (query: string) => void;

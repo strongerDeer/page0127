@@ -6,14 +6,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@repo/ui';
+import { Card, Input, Label, Textarea } from '@repo/ui';
 import { Globe, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { Card } from '@/shared/ui/card';
-import { Input } from '@/shared/ui/input';
-import { Label } from '@/shared/ui/label';
 import { SubmitButton } from '@/shared/ui/SubmitButton';
-import { Textarea } from '@/shared/ui/textarea';
 
 import { useLogout } from '@/features/auth/api/useLogout';
 import { DeleteAccountDialog } from '@/features/auth/ui/DeleteAccountDialog';

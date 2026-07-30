@@ -1,9 +1,9 @@
 import Link from 'next/link';
 
+import { BookCover } from '@repo/ui';
 import { Check, Heart } from 'lucide-react';
 
 import { cn } from '@/shared/lib/utils';
-import { BookCover } from '@/shared/ui/BookCover';
 
 import { RankDeltaBadge } from './RankDeltaBadge';
 

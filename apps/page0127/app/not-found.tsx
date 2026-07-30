@@ -1,9 +1,7 @@
 import Link from 'next/link';
 
 import { Button } from '@repo/ui';
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 /**
  * 404 Not Found 페이지 (Next.js 파일 규칙)
  *

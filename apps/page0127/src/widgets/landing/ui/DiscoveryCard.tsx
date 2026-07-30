@@ -1,11 +1,10 @@
 import Link from 'next/link';
 
+import { BookCover } from '@repo/ui';
 import { Sparkles } from 'lucide-react';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { decodeHtmlEntities } from '@/shared/lib/htmlEntities';
-import { BookCover } from '@/shared/ui/BookCover';
-
 /**
  * "page0127의 발견" — 최근 등록된 책 한 권을 크게 보여주는 편집 카드
  *

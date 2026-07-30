@@ -2,12 +2,11 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { Button } from '@repo/ui';
+import { BookCover, PageContainer } from '@repo/ui';
 import { ArrowLeft, Star } from 'lucide-react';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { decodeHtmlEntities } from '@/shared/lib/htmlEntities';
-import { BookCover } from '@/shared/ui/BookCover';
-import { PageContainer } from '@/shared/ui/PageContainer';
 
 import { RATING_MAX, summarizeRatings } from '@/entities/book';
 

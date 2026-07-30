@@ -1,5 +1,5 @@
-import { PageContainer } from '@/shared/ui/PageContainer';
-import { Skeleton } from '@/shared/ui/skeleton';
+import { Skeleton } from '@repo/ui';
+import { PageContainer } from '@repo/ui';
 
 import { BookListItemSkeleton } from '@/widgets/book/ui/BookListItemSkeleton';
 

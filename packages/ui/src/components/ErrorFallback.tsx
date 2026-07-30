@@ -1,0 +1,83 @@
+'use client';
+
+import { Button } from './button';
+import { Card, CardContent, CardHeader, CardTitle } from './card';
+
+type ErrorFallbackProps = {
+  // 개발 환경에서만 노출할 에러 객체 (digest는 Next.js error.tsx에서만 존재)
+  error?: (Error & { digest?: string }) | null;
+  // 1차 복구: 다시 시도
+  onRetry: () => void;
+  // 2차 동선: 라벨/동작을 호출부가 결정 (홈으로 / 새로고침 등)
+  secondaryLabel: string;
+  onSecondary: () => void;
+};
+
+/**
+ * 전체화면 에러 fallback (공통 UI)
+ *
+ * 학습 포인트:
+ * - error.tsx(Next 규칙)와 ErrorBoundary(Class)가 같은 fallback을 복붙하던 걸 추출
+ * - 둘의 차이는 "2차 동선"뿐 → secondaryLabel/onSecondary prop으로만 분기
+ * - 1차(onRetry)·2차(onSecondary)로 복구 동선을 분리 = Day 62의 복구 단계 설계
+ */
+export const ErrorFallback = ({
+  error,
+  onRetry,
+  secondaryLabel,
+  onSecondary,
+}: ErrorFallbackProps) => {
+  return (
+    // role='alert' 이 없으면 화면만 조용히 바뀐다 — 스크린리더 사용자는 방금 실패했다는
+    // 사실 자체를 모른 채 이전 내용을 계속 읽고 있다고 믿는다.
+    // 에러는 하던 일을 멈추고 알려야 하는 소식이라 polite 가 아니라 alert(assertive)다.
+    <div
+      role='alert'
+      className='flex min-h-screen items-center justify-center p-4'
+    >
+      <Card className='w-full max-w-md'>
+        <CardHeader>
+          {/* 보기에만 제목이면 안 된다 — 실제 heading 이어야 제목 목록에 잡힌다 */}
+          <CardTitle className='text-destructive'>
+            <h2>오류가 발생했습니다</h2>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className='space-y-4'>
+          <p className='text-muted-foreground'>
+            예상치 못한 오류가 발생했습니다. 다시 시도해주세요.
+          </p>
+
+          {/* 개발 환경에서만 에러 메시지 표시 (운영 노출 방지)
+
+              색에 투명도를 주지 않는다(옛 destructive/90 · /80) — 옅은 배경 위에서
+              대비가 4.5 아래로 떨어진다(실측 4.04). 개발 전용 화면이지만 여기서
+              흐린 글씨를 허용하면 같은 패턴이 다른 곳으로 번진다. */}
+          {process.env.NODE_ENV === 'development' && error && (
+            <div className='rounded-md bg-destructive/10 p-3'>
+              <p className='text-sm font-medium text-destructive'>에러 메시지:</p>
+              <p className='mt-1 text-sm text-destructive'>{error.message}</p>
+              {error.digest && (
+                <p className='mt-1 text-xs text-destructive'>
+                  Digest: {error.digest}
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className='flex gap-2'>
+            <Button onClick={onRetry} className='flex-1'>
+              다시 시도
+            </Button>
+            <Button
+              variant='outline'
+              onClick={onSecondary}
+              className='flex-1'
+            >
+              {secondaryLabel}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};

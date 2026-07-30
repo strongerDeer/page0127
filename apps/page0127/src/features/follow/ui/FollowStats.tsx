@@ -2,11 +2,11 @@
 
 import { useEffect, useEffectEvent } from 'react';
 
+import { Spinner } from '@repo/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Users } from 'lucide-react';
 
 import { followBroadcast } from '@/shared/lib/broadcastChannel';
-import { Spinner } from '@/shared/ui/Spinner';
 
 import { followApi, followKeys } from '@/entities/follow';
 

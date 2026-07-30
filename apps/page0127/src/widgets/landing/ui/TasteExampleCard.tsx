@@ -1,8 +1,7 @@
+import { BookCover } from '@repo/ui';
 import { Feather, Quote, Sparkles } from 'lucide-react';
 
 import { createClient } from '@/shared/config/supabase/server';
-import { BookCover } from '@/shared/ui/BookCover';
-
 /** 랜딩에서 보여주는 독서 취향 분석 결과 예시 */
 const EXAMPLE = {
   personalityType: '마음의 결을 읽는 사람',

@@ -2,10 +2,8 @@
 
 import { useEffect } from 'react';
 
+import { ErrorFallback } from '@repo/ui';
 import * as Sentry from '@sentry/nextjs';
-
-import { ErrorFallback } from '@/shared/ui/ErrorFallback';
-
 /**
  * 전역 에러 페이지 (Next.js 파일 규칙)
  *

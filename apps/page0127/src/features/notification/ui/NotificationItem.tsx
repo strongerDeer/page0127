@@ -11,9 +11,9 @@
  */
 
 import { Button } from '@repo/ui';
+import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui';
 import { Check, Heart, MessageCircle, UserPlus, X } from 'lucide-react';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 import { RelativeTime } from '@/shared/ui/RelativeTime';
 
 import { toDisplayName, toInitial } from '@/entities/profile/model/displayName';

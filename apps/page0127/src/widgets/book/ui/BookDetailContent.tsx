@@ -1,8 +1,6 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
+import { BookCover, ReadCountBadge } from '@repo/ui';
 import { Globe, Lock, Star } from 'lucide-react';
-
-import { BookCover } from '@/shared/ui/BookCover';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
 
 import { isRated } from '@/entities/book';
 

@@ -1,4 +1,4 @@
-import { PageContainer } from '@/shared/ui/PageContainer';
+import { PageContainer } from '@repo/ui';
 
 import { SITE_INFO } from '@/widgets/landing/model/siteInfo';
 import { SiteFooter } from '@/widgets/landing/ui/SiteFooter';

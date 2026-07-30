@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 
-import { BookCover } from '@/shared/ui/BookCover';
-import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
+import { BookCover, ReadCountBadge } from '@repo/ui';
 
 import type { Book } from '@/entities/book';
 

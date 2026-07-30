@@ -5,16 +5,14 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@repo/ui';
+import { Card, CardContent, CardHeader, Skeleton } from '@repo/ui';
+import { ErrorBoundary, PageContainer } from '@repo/ui';
 import { toast } from 'sonner';
 
 import {
   upgradeImageResolution,
   validateSpineImageUrl,
 } from '@/shared/lib/imageUtils';
-import { Card, CardContent, CardHeader } from '@/shared/ui/card';
-import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
-import { PageContainer } from '@/shared/ui/PageContainer';
-import { Skeleton } from '@/shared/ui/skeleton';
 
 import { useBookCRUD } from '@/features/book/api/useBookCRUD';
 import { useBookSearch } from '@/features/book/api/useBookSearch';

@@ -2,9 +2,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { Button } from '@repo/ui';
+import { PageContainer } from '@repo/ui';
 
 import { createClient } from '@/shared/config/supabase/server';
-import { PageContainer } from '@/shared/ui/PageContainer';
 
 import { getBookReadings } from '@/entities/book/api/getBookReadings';
 import { getPublicBookRecord } from '@/entities/book/api/getPublicBookRecord';

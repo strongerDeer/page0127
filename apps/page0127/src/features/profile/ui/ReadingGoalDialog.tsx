@@ -3,18 +3,9 @@
 import { useActionState, useEffect, useId } from 'react';
 
 import { Button } from '@repo/ui';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input, Label } from '@repo/ui';
 import { toast } from 'sonner';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/shared/ui/dialog';
-import { Input } from '@/shared/ui/input';
-import { Label } from '@/shared/ui/label';
 import { SubmitButton } from '@/shared/ui/SubmitButton';
 
 import {

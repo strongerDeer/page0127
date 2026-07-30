@@ -108,12 +108,14 @@ describe('토큰 소비처 대조', () => {
   it('스캔이 실제로 동작한다 — 토큰 사용처를 찾지 못하면 이 테스트는 무의미하다', () => {
     // 스캔 경로나 정규식이 잘못되면 usages 가 비어 위 테스트가 공짜로 통과한다.
     //
-    // 하한이 40 에서 15 로 내려간 것은 앱이 토큰을 덜 쓰게 됐다는 뜻이 아니라,
-    // @theme inline 과 유틸 클래스가 packages/ui 로 옮겨 갔기 때문이다.
-    // 앱에 남은 것은 CSS Module 의 도메인 셰이프 등 19종이고, 그 대부분이
-    // 시스템 토큰을 직접 참조한다.
+    // 하한이 40 에서 10 으로 내려간 것은 앱이 토큰을 덜 쓰게 됐다는 뜻이 아니라,
+    // @theme inline·유틸 클래스·컴포넌트가 전부 packages/ui 로 옮겨 갔기
+    // 때문이다. 앱에 남은 11 종은 대부분 CSS Module 의 도메인 셰이프
+    // (BookListItem·PublicBookShelf 의 책등 그라디언트 등)가 쓰는 것이고,
+    // 그것들은 여전히 시스템 토큰을 직접 참조한다 — 앱이 자기 색을 새로
+    // 만들어 쓰기 시작하면 이 목록에 정의 없는 이름이 나타난다.
     const distinct = new Set(usages.map((u) => u.name));
-    expect(distinct.size).toBeGreaterThanOrEqual(15);
+    expect(distinct.size).toBeGreaterThanOrEqual(10);
     expect(distinct.has('--line')).toBe(true);
   });
 });

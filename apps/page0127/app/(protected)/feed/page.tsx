@@ -1,5 +1,4 @@
-import { PageContainer } from '@/shared/ui/PageContainer';
-import { PageHeader } from '@/shared/ui/PageHeader';
+import { PageContainer, PageHeader } from '@repo/ui';
 
 import { ActivityFeed } from '@/widgets/activity';
 

@@ -1,6 +1,6 @@
+import { PageContainer, PageHeader } from '@repo/ui';
+
 import { createClient } from '@/shared/config/supabase/server';
-import { PageContainer } from '@/shared/ui/PageContainer';
-import { PageHeader } from '@/shared/ui/PageHeader';
 
 import { UserSearch } from '@/features/user';
 

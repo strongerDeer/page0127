@@ -3,22 +3,11 @@
 import { useEffect, useId, useReducer, useRef } from 'react';
 
 import { Button } from '@repo/ui';
+import { Card, CardContent, CardHeader, CardTitle, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, Textarea } from '@repo/ui';
+import { BookCover } from '@repo/ui';
 import { RefreshCw } from 'lucide-react';
 
 import { upgradeImageResolution } from '@/shared/lib/imageUtils';
-import { BookCover } from '@/shared/ui/BookCover';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Input } from '@/shared/ui/input';
-import { Label } from '@/shared/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/ui/select';
-import { Switch } from '@/shared/ui/switch';
-import { Textarea } from '@/shared/ui/textarea';
 
 import type { AladinBook, BookRating, BookStatus } from '@/entities/book';
 

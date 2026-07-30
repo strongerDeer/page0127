@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 
 import { CategoryRadarChart } from './CategoryRadarChart';
 import { MonthlyReadingChart } from './MonthlyReadingChart';

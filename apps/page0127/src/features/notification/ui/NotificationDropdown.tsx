@@ -13,9 +13,8 @@
 import { useState } from 'react';
 
 import { Button } from '@repo/ui';
+import { Popover, PopoverContent, PopoverTrigger } from '@repo/ui';
 import { Bell } from 'lucide-react';
-
-import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover';
 
 import {
   useNotificationRealtime,
