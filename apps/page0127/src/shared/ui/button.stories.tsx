@@ -82,6 +82,12 @@ const meta = {
       description: '비활성. 투명도 50% + 포인터 이벤트 차단.',
       table: { category: 'State', defaultValue: { summary: 'false' } },
     },
+    loading: {
+      control: 'boolean',
+      description:
+        '요청 진행 중. 스피너를 앞에 붙이고 버튼을 잠근다(aria-busy).',
+      table: { category: 'State', defaultValue: { summary: 'false' } },
+    },
     asChild: {
       control: 'boolean',
       description:
@@ -182,6 +188,30 @@ export const WithIcon: Story = {
         <Trash2 />
         삭제
       </Button>
+    </div>
+  ),
+};
+
+/**
+ * 요청이 진행 중일 때. `loading` 이 스피너를 붙이고 버튼을 잠근다.
+ *
+ * **버튼 안 로딩에는 `Spinner` 컴포넌트를 쓰지 않는다** — 버튼은 이미 자기 이름을
+ * 갖고 있어서 `role='status'` 를 또 두면 스크린리더가 두 번 읽는다.
+ * 여기서는 `aria-busy` 로 "이 버튼이 일하는 중"만 알린다.
+ *
+ * 글자가 없는 버튼(아래 세 번째)은 `aria-label` 이 필요하다 — 스피너만 남으면
+ * 읽을 이름이 사라진다.
+ */
+export const Loading: Story = {
+  render: (args) => (
+    <div className='flex flex-wrap items-center gap-3'>
+      <Button {...args} loading>
+        저장 중
+      </Button>
+      <Button {...args} variant='outline' loading>
+        불러오는 중
+      </Button>
+      <Button {...args} size='icon' loading aria-label='불러오는 중' />
     </div>
   ),
 };

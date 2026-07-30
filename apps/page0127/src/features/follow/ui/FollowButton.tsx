@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2, UserMinus, UserPlus } from 'lucide-react';
+import { UserMinus, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
@@ -104,9 +104,7 @@ export const FollowButton = ({
 
   if (isLoading) {
     return (
-      <Button variant={variant} size={size} disabled>
-        <Loader2 className='h-4 w-4 animate-spin' />
-      </Button>
+      <Button variant={variant} size={size} loading aria-label='불러오는 중' />
     );
   }
 
