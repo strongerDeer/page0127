@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/shared/ui/button';
+import { Button } from '@repo/ui';
 
 /**
  * CalendarSection 실패 시 Error Boundary fallback

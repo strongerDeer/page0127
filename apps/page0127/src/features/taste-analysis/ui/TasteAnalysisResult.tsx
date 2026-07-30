@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { Button } from '@repo/ui';
 import {
   ArrowLeft,
   BarChart3,
@@ -12,7 +13,6 @@ import {
 } from 'lucide-react';
 
 import { BookCover } from '@/shared/ui/BookCover';
-import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { PageContainer } from '@/shared/ui/PageContainer';
 import { PageHeader } from '@/shared/ui/PageHeader';

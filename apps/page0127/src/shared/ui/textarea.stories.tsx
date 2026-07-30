@@ -1,4 +1,5 @@
-import { Button } from '@/shared/ui/button';
+import { Button } from '@repo/ui';
+
 import { Label } from '@/shared/ui/label';
 import { Textarea } from '@/shared/ui/textarea';
 

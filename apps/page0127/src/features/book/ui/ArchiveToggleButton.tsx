@@ -4,10 +4,9 @@ import { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { Button } from '@repo/ui';
 import { Archive, ArchiveRestore } from 'lucide-react';
 import { toast } from 'sonner';
-
-import { Button } from '@/shared/ui/button';
 
 import { useBookCRUD } from '../api/useBookCRUD';
 

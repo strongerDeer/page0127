@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 
+import { Button } from '@repo/ui';
+
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
-import { Button } from '@/shared/ui/button';
 
 // 랜딩 히어로의 메인 CTA ("내 책장 만들기")
 // - Server Component 인 랜딩 페이지에서 onClick 을 쓰기 위해 Client 로 분리

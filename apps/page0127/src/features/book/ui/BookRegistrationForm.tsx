@@ -2,11 +2,11 @@
 
 import { useEffect, useId, useReducer, useRef } from 'react';
 
+import { Button } from '@repo/ui';
 import { RefreshCw } from 'lucide-react';
 
 import { upgradeImageResolution } from '@/shared/lib/imageUtils';
 import { BookCover } from '@/shared/ui/BookCover';
-import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';

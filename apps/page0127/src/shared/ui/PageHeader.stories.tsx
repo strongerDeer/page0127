@@ -1,6 +1,6 @@
+import { Button } from '@repo/ui';
 import { ArrowLeft } from 'lucide-react';
 
-import { Button } from '@/shared/ui/button';
 import { PageHeader } from '@/shared/ui/PageHeader';
 
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';

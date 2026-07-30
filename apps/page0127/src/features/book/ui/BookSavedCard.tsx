@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 
+import { Button } from '@repo/ui';
+
 import { BookCover } from '@/shared/ui/BookCover';
-import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
 
 import { savedBookMessage } from '../lib/savedBookMessage';

@@ -1,11 +1,11 @@
 'use client';
 
+import { Button } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Heart } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
-import { Button } from '@/shared/ui/button';
 
 import { activityKeys } from '@/entities/activity';
 import { bookLikeApi } from '@/entities/like';

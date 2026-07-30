@@ -4,13 +4,13 @@ import { useRef, useState } from 'react';
 
 import Image from 'next/image';
 
+import { Button } from '@repo/ui';
 import { toast } from 'sonner';
 
 import {
   MAX_PROFILE_IMAGE_BYTES,
   MAX_PROFILE_IMAGE_LABEL,
 } from '@/shared/lib/profileStorage';
-import { Button } from '@/shared/ui/button';
 
 type AvatarUploadProps = {
   currentPhotoUrl: string | null;

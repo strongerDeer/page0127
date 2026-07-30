@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { Button } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { MoreVertical, Pencil, Reply, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -18,7 +19,6 @@ import {
   AlertDialogTitle,
 } from '@/shared/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
-import { Button } from '@/shared/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,

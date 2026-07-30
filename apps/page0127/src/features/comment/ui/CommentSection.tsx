@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 
+import { Button } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
 import { MessageSquare } from 'lucide-react';
-
-import { Button } from '@/shared/ui/button';
 
 import { commentApi, commentKeys } from '@/entities/comment';
 import { useCurrentUserContext } from '@/entities/user';

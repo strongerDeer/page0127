@@ -4,9 +4,9 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
+import { Button } from '@repo/ui';
 import { Archive, Library } from 'lucide-react';
 
-import { Button } from '@/shared/ui/button';
 import { PageContainer } from '@/shared/ui/PageContainer';
 
 import {

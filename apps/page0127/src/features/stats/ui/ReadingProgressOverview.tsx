@@ -1,8 +1,8 @@
 import Image from 'next/image';
 
+import { Button } from '@repo/ui';
 import { BookOpen, FileText, Pencil, Star, Trophy } from 'lucide-react';
 
-import { Button } from '@/shared/ui/button';
 import { Progress } from '@/shared/ui/progress';
 
 import type { Book } from '@/entities/book';

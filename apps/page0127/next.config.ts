@@ -60,7 +60,16 @@ const nextConfig: NextConfig = {
   // @repo/quality 는 `./types`(타입 전용, 컴파일 시 사라짐)만 쓰이다가 `./rum`이 생기면서
   // **런타임 코드**를 내보내게 됐다. 소스가 트랜스파일 안 된 .ts라 이 목록에 없으면
   // 라우트 핸들러·서버 컴포넌트에서 import할 때 파싱 단계에서 깨진다.
-  transpilePackages: ['@repo/icons', '@repo/design-tokens', '@repo/quality'],
+  // @repo/ui 는 빌드 산출물이 아니라 .tsx 소스를 그대로 내보낸다. 여기 없으면
+  // Next 가 node_modules 안의 TSX 를 파싱하지 못해 import 하는 순간 깨진다.
+  // 소스를 그대로 두는 이유는 Tailwind 때문이다 — 클래스 문자열이 소스에 남아
+  // 있어야 스캔되고, 미리 빌드하면 그 문자열이 사라진 CSS 를 따로 실어야 한다.
+  transpilePackages: [
+    '@repo/icons',
+    '@repo/design-tokens',
+    '@repo/quality',
+    '@repo/ui',
+  ],
   experimental: {
     // 프로필 이미지 한도는 4MB(MAX_PROFILE_IMAGE_BYTES). multipart 메타데이터와
     // 나머지 폼 필드 여유를 더해 4.5mb로 둔다.

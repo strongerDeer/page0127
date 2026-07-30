@@ -1,12 +1,12 @@
 'use client';
 
+import { Button } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UserMinus, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
 import { followBroadcast } from '@/shared/lib/broadcastChannel';
-import { Button } from '@/shared/ui/button';
 
 import { followApi, followKeys } from '@/entities/follow';
 

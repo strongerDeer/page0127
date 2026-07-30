@@ -34,6 +34,11 @@ const eslintConfig = defineConfig([
     'next-env.d.ts',
     'node_modules/**',
     '.turbo/**',
+    // Storybook 정적 빌드 산출물. gitignore 에는 있었지만 여기 없어서,
+    // build-storybook 을 한 번이라도 돌린 트리에서 lint 가 번들된 벤더 JS 를
+    // 검사하며 12,000 건 넘는 에러를 뱉었다. Chromatic 이 CI 에서 이 빌드를
+    // 돌리므로 반드시 막아야 한다.
+    'storybook-static/**',
     // shadcn/ui 컴포넌트 제외 (외부 라이브러리 코드).
     // `**` 가 아니라 `**/*` 인 것이 중요하다 — 전자는 디렉터리 자체를 무시해
     // 아래 부정 패턴이 아무 효과가 없다(ESLint flat config 규칙).

@@ -38,6 +38,7 @@
     "@repo/design-tokens": "*",
     "@repo/icons": "*",
     "@repo/quality": "*",
+    "@repo/ui": "*",
     "@sentry/nextjs": "^10.68.0",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.9",

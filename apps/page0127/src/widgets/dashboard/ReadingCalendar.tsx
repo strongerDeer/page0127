@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 
+import { Button } from '@repo/ui';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { BookCover } from '@/shared/ui/BookCover';
-import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import {
   Dialog,

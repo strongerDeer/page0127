@@ -1,4 +1,5 @@
-import { Button } from '@/shared/ui/button';
+import { Button } from '@repo/ui';
+
 import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';

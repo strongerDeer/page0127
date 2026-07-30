@@ -4,10 +4,9 @@ import { useOptimistic, useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { Button } from '@repo/ui';
 import { Heart } from 'lucide-react';
 import { toast } from 'sonner';
-
-import { Button } from '@/shared/ui/button';
 
 import { bookApi } from '@/entities/book';
 

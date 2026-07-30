@@ -16,3 +16,8 @@
 @import "../app/globals.css";
 
 @source "../src/**/*.stories.tsx";
+
+/* 디자인 시스템 스토리도 같은 이유로 스캔 범위에 넣는다.
+   packages/ui 의 컴포넌트 소스는 패키지 CSS 가 스스로 잡지만(@source),
+   그 옆의 스토리 파일은 앱 쪽 진입점인 여기서만 보인다. */
+@source "../../../packages/ui/src/**/*.stories.tsx";

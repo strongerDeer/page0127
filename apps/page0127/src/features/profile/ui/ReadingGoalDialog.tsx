@@ -2,9 +2,9 @@
 
 import { useActionState, useEffect, useId } from 'react';
 
+import { Button } from '@repo/ui';
 import { toast } from 'sonner';
 
-import { Button } from '@/shared/ui/button';
 import {
   Dialog,
   DialogContent,

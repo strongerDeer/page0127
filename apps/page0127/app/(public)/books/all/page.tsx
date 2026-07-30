@@ -1,7 +1,8 @@
 import Link from 'next/link';
 
+import { Button } from '@repo/ui';
+
 import { createClient } from '@/shared/config/supabase/server';
-import { Button } from '@/shared/ui/button';
 import { PageContainer } from '@/shared/ui/PageContainer';
 import { PageHeader } from '@/shared/ui/PageHeader';
 import {

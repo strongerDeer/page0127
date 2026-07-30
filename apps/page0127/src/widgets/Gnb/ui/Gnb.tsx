@@ -1,8 +1,7 @@
 import Link from 'next/link';
 
+import { Button } from '@repo/ui';
 import { Plus, Search } from 'lucide-react';
-
-import { Button } from '@/shared/ui/button';
 
 import { NotificationDropdown } from '@/features/notification';
 import { ProfileDropdown } from '@/features/profile';

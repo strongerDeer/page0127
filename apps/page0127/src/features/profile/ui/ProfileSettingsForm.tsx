@@ -5,10 +5,10 @@ import { useActionState, useEffect, useId, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { Button } from '@repo/ui';
 import { Globe, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';

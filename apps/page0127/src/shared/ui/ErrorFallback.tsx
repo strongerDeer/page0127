@@ -1,6 +1,7 @@
 'use client';
 
-import { Button } from './button';
+import { Button } from '@repo/ui';
+
 import { Card, CardContent, CardHeader, CardTitle } from './card';
 
 type ErrorFallbackProps = {

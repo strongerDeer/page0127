@@ -12,9 +12,9 @@
 
 import { useState } from 'react';
 
+import { Button } from '@repo/ui';
 import { Bell } from 'lucide-react';
 
-import { Button } from '@/shared/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover';
 
 import {

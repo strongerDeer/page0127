@@ -1,3 +1,5 @@
+import { Button } from '@repo/ui';
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,7 +11,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/shared/ui/alert-dialog';
-import { Button } from '@/shared/ui/button';
 
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 

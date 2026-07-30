@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 
+import { Button } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Search, X } from 'lucide-react';
 
-import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Spinner } from '@/shared/ui/Spinner';
 

@@ -4,13 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { Button } from '@repo/ui';
 import { toast } from 'sonner';
 
 import {
   upgradeImageResolution,
   validateSpineImageUrl,
 } from '@/shared/lib/imageUtils';
-import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader } from '@/shared/ui/card';
 import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 import { PageContainer } from '@/shared/ui/PageContainer';

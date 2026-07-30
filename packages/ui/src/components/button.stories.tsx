@@ -1,6 +1,6 @@
 import { BookOpen, Plus, Trash2 } from 'lucide-react';
 
-import { Button } from '@/shared/ui/button';
+import { Button } from './button';
 
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 

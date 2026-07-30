@@ -1,4 +1,5 @@
-import { Button } from '@/shared/ui/button';
+import { Button } from '@repo/ui';
+
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 

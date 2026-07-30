@@ -11,6 +11,7 @@ import {
 
 import Link from 'next/link';
 
+import { Button } from '@repo/ui';
 import {
   LayoutGrid,
   Library,
@@ -22,7 +23,6 @@ import {
 
 import { mapToMainCategory } from '@/shared/lib/categoryMapper';
 import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
-import { Button } from '@/shared/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover';
 import {
   Select,
