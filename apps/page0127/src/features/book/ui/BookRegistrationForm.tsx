@@ -10,6 +10,13 @@ import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select';
 import { Switch } from '@/shared/ui/switch';
 import { Textarea } from '@/shared/ui/textarea';
 
@@ -294,23 +301,35 @@ export const BookRegistrationForm = ({
 
           {/* 독서 상태 */}
           <div className='space-y-2'>
+            {/* 같은 폼의 Label·Input·Switch 와 같은 자리에서 나온 컨트롤이라
+                디자인 시스템 Select 를 쓴다. 네이티브 <select> 였을 때는 높이·테두리를
+                손으로 맞췄고 focus-visible 링이 없었다.
+
+                htmlFor 가 그대로 동작한다 — SelectTrigger 는 <button> 이고
+                button 은 labelable 요소다(라벨을 눌러도 포커스가 간다).
+
+                required 는 뺐다. status 는 reducer 초기값이 있어 빈 값이 될 수 없으므로
+                브라우저 검증이 발동할 일이 없고, Radix 에서는 hidden input 을 통해
+                다르게 동작한다. */}
             <Label htmlFor={ids.status}>독서 상태 *</Label>
-            <select
-              id={ids.status}
+            <Select
               value={status}
-              onChange={(e) =>
+              onValueChange={(value) =>
                 dispatch({
                   type: 'SET_STATUS',
-                  status: e.target.value as BookStatus,
+                  status: value as BookStatus,
                 })
               }
-              className='w-full rounded-md border border-line p-2'
-              required
             >
-              <option value='completed'>완독</option>
-              <option value='reading'>읽는 중</option>
-              <option value='want_to_read'>읽고 싶은 책</option>
-            </select>
+              <SelectTrigger id={ids.status} className='w-full'>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='completed'>완독</SelectItem>
+                <SelectItem value='reading'>읽는 중</SelectItem>
+                <SelectItem value='want_to_read'>읽고 싶은 책</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* 이 책을 한 문장으로 — 완독 기록의 핵심이라 가장 위에 둔다 */}
