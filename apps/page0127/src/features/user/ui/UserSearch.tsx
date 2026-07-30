@@ -3,10 +3,11 @@
 import { useState } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
-import { Loader2, Search, X } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
+import { Spinner } from '@/shared/ui/Spinner';
 
 import { userApi, userKeys } from '@/entities/user';
 
@@ -84,9 +85,7 @@ export const UserSearch = ({ currentUserId }: UserSearchProps) => {
 
       {/* 로딩 상태 */}
       {isLoading && (
-        <div className='flex items-center justify-center py-8'>
-          <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
-        </div>
+        <Spinner label='사용자를 찾는 중' className='py-8' />
       )}
 
       {/* 검색 결과 */}

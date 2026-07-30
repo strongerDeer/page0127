@@ -41,7 +41,7 @@ export const BookRankingList = ({
   return (
     <section>
       <div className='mb-3 flex items-baseline justify-between gap-4'>
-        <h2 className='heading-2 text-text-strong'>{title}</h2>
+        <h2 className='heading-2'>{title}</h2>
         <div className='flex shrink-0 items-baseline gap-3'>
           {meta && <span className='text-xs text-text-subtle'>{meta}</span>}
           <Link

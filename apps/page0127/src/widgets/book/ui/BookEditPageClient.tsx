@@ -215,7 +215,7 @@ export const BookEditPageClient = ({
     return (
       <ErrorBoundary>
         <PageContainer width='content'>
-          <h1 className='heading-1 mb-6 text-text-strong'>책 다시 선택</h1>
+          <h1 className='heading-1 mb-6'>책 다시 선택</h1>
 
           {isLoadingDetail ? (
             <p className='text-center text-muted-foreground'>

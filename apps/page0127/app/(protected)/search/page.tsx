@@ -1,5 +1,6 @@
 import { createClient } from '@/shared/config/supabase/server';
 import { PageContainer } from '@/shared/ui/PageContainer';
+import { PageHeader } from '@/shared/ui/PageHeader';
 
 import { UserSearch } from '@/features/user';
 
@@ -19,12 +20,10 @@ export default async function SearchPage() {
 
   return (
     <PageContainer width='narrow' className='space-y-6'>
-      <div>
-        <h1 className='heading-1 text-text-strong'>사용자 검색</h1>
-        <p className='mt-2 text-sm text-text-subtle'>
-          닉네임이나 아이디로 함께 읽는 사람을 찾아보세요
-        </p>
-      </div>
+      <PageHeader
+        title='사용자 검색'
+        description='닉네임이나 아이디로 함께 읽는 사람을 찾아보세요'
+      />
 
       <UserSearch currentUserId={user?.id} />
     </PageContainer>

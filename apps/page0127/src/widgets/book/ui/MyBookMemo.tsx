@@ -44,7 +44,7 @@ export const MyBookMemo = async ({ isbn }: MyBookMemoProps) => {
 
   return (
     <section>
-      <h2 className='heading-2 text-text-strong'>나의 기록</h2>
+      <h2 className='heading-2'>나의 기록</h2>
 
       {/* 플랫 sunken 모듈 — 내 기록은 페이지 안의 "메모지" 면 */}
       <div className='mt-3 space-y-4 rounded-2xl bg-sunken p-5 md:p-6'>

@@ -15,11 +15,11 @@ import { useEffect, useEffectEvent, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
 
 import { apiClient } from '@/shared/api/client';
 import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
 import { Button } from '@/shared/ui/button';
+import { Spinner } from '@/shared/ui/Spinner';
 
 import {
   notificationKeys,
@@ -141,9 +141,7 @@ export const NotificationPage = () => {
 
   if (isLoading) {
     return (
-      <div className='flex items-center justify-center py-12'>
-        <Loader2 className='h-8 w-8 animate-spin text-muted-foreground' />
-      </div>
+      <Spinner label='알림을 불러오는 중' size='lg' className='py-12' />
     );
   }
 
@@ -208,7 +206,7 @@ export const NotificationPage = () => {
           {hasNextPage && (
             <div ref={observerRef} className='flex justify-center py-4'>
               {isFetchingNextPage && (
-                <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
+                <Spinner label='알림을 더 불러오는 중' />
               )}
             </div>
           )}

@@ -3,9 +3,10 @@
 import { useEffect, useEffectEvent } from 'react';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 
 import { followBroadcast } from '@/shared/lib/broadcastChannel';
+import { Spinner } from '@/shared/ui/Spinner';
 
 import { followApi, followKeys } from '@/entities/follow';
 
@@ -51,9 +52,7 @@ export const FollowStats = ({
 
   if (isLoading) {
     return (
-      <div className='flex items-center gap-4 text-sm text-muted-foreground'>
-        <Loader2 className='h-4 w-4 animate-spin' />
-      </div>
+      <Spinner label='팔로우 정보를 불러오는 중' size='sm' />
     );
   }
 

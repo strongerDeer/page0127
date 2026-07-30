@@ -3,7 +3,6 @@
 import { useState } from 'react';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
@@ -99,11 +98,9 @@ export const CommentForm = ({
         <Button
           type='submit'
           size='sm'
-          disabled={createMutation.isPending || !content.trim()}
+          disabled={!content.trim()}
+          loading={createMutation.isPending}
         >
-          {createMutation.isPending && (
-            <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-          )}
           {submitText}
         </Button>
       </div>

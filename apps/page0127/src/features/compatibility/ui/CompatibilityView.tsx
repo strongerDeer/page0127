@@ -36,6 +36,7 @@ import { BookCover } from '@/shared/ui/BookCover';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { PageContainer } from '@/shared/ui/PageContainer';
+import { PageHeader } from '@/shared/ui/PageHeader';
 
 import { replaceUserLabels } from '@/entities/compatibility/lib/replaceUserLabels';
 import { getCompatibilityTypeByScore } from '@/entities/compatibility/model/compatibilityTypes';
@@ -115,18 +116,18 @@ export const CompatibilityView = ({
 
   return (
     <PageContainer width='content'>
-      {/* 헤더 */}
-      <div className='mb-8'>
-        <Link href={`/${username}`}>
-          <Button variant='outline' size='sm' className='mb-4'>
-            ← {targetName} 님의 서재로
-          </Button>
-        </Link>
-        <h1 className='heading-1 text-text-strong'>독서 궁합</h1>
-        <p className='mt-1 text-sm text-text-subtle'>
-          {targetName} 님과 나, 얼마나 닮은 독서가일까요?
-        </p>
-      </div>
+      <PageHeader
+        className='mb-8'
+        above={
+          <Link href={`/${username}`}>
+            <Button variant='outline' size='sm'>
+              ← {targetName} 님의 서재로
+            </Button>
+          </Link>
+        }
+        title='독서 궁합'
+        description={`${targetName} 님과 나, 얼마나 닮은 독서가일까요?`}
+      />
 
       {analysis ? (
         <CompatibilityResult
@@ -200,7 +201,7 @@ const CompatibilityIntro = ({
   <Card>
     <CardContent className='py-12 text-center'>
       <BookCopy className='mx-auto mb-4 h-9 w-9 text-text-subtle' />
-      <h2 className='mb-2 heading-2 text-text-strong'>
+      <h2 className='mb-2 heading-2'>
         두 사람의 책장을 나란히 놓아볼까요?
       </h2>
       <p className='mb-8 text-sm text-text-body'>

@@ -119,7 +119,7 @@ export const BookStreamSection = ({
 
   return (
     <section className='mt-6'>
-      <h2 className='heading-2 mb-3 text-text-strong'>이 책의 기록</h2>
+      <h2 className='heading-2 mb-3'>이 책의 기록</h2>
 
       {isLoading ? (
         <div className='flex justify-center py-8'>
