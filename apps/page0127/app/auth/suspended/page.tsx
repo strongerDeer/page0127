@@ -12,7 +12,7 @@ const SuspendedPage = () => {
   return (
     <div className='flex min-h-screen items-center justify-center'>
       <div className='text-center'>
-        <h1 className='heading-1 mb-4 text-text-strong'>정지된 계정입니다</h1>
+        <h1 className='heading-1 mb-4'>정지된 계정입니다</h1>
         <p className='mb-6 text-muted-foreground'>
           회원님의 계정은 현재 이용이 정지되어 로그인할 수 없습니다.
         </p>

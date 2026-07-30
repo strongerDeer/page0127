@@ -18,6 +18,11 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
  * 줄간격을 비율이 아니라 px 로 못 박은 이유: 비율(1.35)로 두면 28px 에서 37.8px 이
  * 나와 스펙(40)과 어긋나고 Figma Text Style 과도 값이 맞지 않는다.
  *
+ * **색도 이 유틸이 갖는다**(`text-strong`). 21곳 중 19곳이 `text-text-strong` 과 함께
+ * 쓰이고 있어 기본값으로 넣었다 — 이제 호출부에서 색을 다시 적지 않는다.
+ * 다른 색이 필요하면 `text-white` 처럼 유틸로 덮으면 된다. `@layer components` 안에
+ * 있어서 유틸이 이긴다(레이어 밖에 두면 유틸이 조용히 무시된다).
+ *
  * ## 크기 단계는 5개뿐이다
  *
  * 07 문서가 제안한 caption(13px)은 만들지 않았다 — 실사용이 0곳이고 12 와 14 사이에
@@ -105,7 +110,7 @@ export const Weight: Story = {
 export const Hierarchy: Story = {
   render: () => (
     <div className='max-w-md p-6'>
-      <p className='heading-2 text-text-strong'>아무튼, 계속</p>
+      <p className='heading-2'>아무튼, 계속</p>
       <p className='mt-2 text-base text-text-body'>
         읽는 일에 대해 오래 생각해온 사람의 기록이다. 책을 좋아한다는 말로는
         부족한, 읽기라는 습관 그 자체에 대한 이야기.

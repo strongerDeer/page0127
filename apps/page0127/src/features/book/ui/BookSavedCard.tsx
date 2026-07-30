@@ -79,7 +79,7 @@ export const BookSavedCard = ({
             aria-live='polite'
             className='space-y-1'
           >
-            <h2 className='heading-2 text-text-strong'>
+            <h2 className='heading-2'>
               {savedBookMessage(completedCount, readCount)}
             </h2>
             <p className='text-sm text-text-subtle'>{title}</p>

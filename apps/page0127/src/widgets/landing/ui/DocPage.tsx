@@ -27,7 +27,7 @@ export const DocPage = ({
     <>
       <PageContainer width='content'>
         <header className='mb-10 border-b border-line pb-6'>
-          <h1 className='heading-1 text-text-strong'>{title}</h1>
+          <h1 className='heading-1'>{title}</h1>
           {description && <p className='mt-2 text-text-body'>{description}</p>}
           {showUpdatedAt && (
             <p className='mt-3 text-xs text-text-subtle'>
@@ -52,7 +52,7 @@ type DocSectionProps = {
 
 export const DocSection = ({ title, children }: DocSectionProps) => (
   <section>
-    <h2 className='heading-2 mb-3 text-text-strong'>{title}</h2>
+    <h2 className='heading-2 mb-3'>{title}</h2>
     <div className='space-y-3 leading-relaxed text-text-body'>{children}</div>
   </section>
 );

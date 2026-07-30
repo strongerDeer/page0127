@@ -84,7 +84,7 @@ export const ReadingProgressOverview = ({
                 <BookOpen className='size-4' />
                 {year} 독서 여정
               </p>
-              <h2 className='heading-1 mt-3 break-keep tracking-tight text-text-strong'>
+              <h2 className='heading-1 mt-3 break-keep tracking-tight'>
                 {headline}
               </h2>
               <p className='mt-2 text-sm text-text-subtle'>

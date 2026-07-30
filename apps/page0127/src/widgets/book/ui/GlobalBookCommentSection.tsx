@@ -41,7 +41,7 @@ export const GlobalBookCommentSection = ({
 
   return (
     <section className='border-t border-line pt-6'>
-      <h2 className='heading-2 text-text-strong'>이 책 이야기 {totalCount}</h2>
+      <h2 className='heading-2'>이 책 이야기 {totalCount}</h2>
 
       {isLoading ? (
         <div className='flex justify-center py-8'>

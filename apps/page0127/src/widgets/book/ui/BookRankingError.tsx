@@ -25,7 +25,7 @@ export const BookRankingError = ({ title }: BookRankingErrorProps) => {
     <section>
       {title && (
         <div className='mb-3'>
-          <h2 className='heading-2 text-text-strong'>{title}</h2>
+          <h2 className='heading-2'>{title}</h2>
         </div>
       )}
       <div className='flex flex-col items-center justify-center gap-3 rounded-2xl bg-sunken py-12'>

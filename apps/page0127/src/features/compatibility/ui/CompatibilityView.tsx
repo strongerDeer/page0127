@@ -201,7 +201,7 @@ const CompatibilityIntro = ({
   <Card>
     <CardContent className='py-12 text-center'>
       <BookCopy className='mx-auto mb-4 h-9 w-9 text-text-subtle' />
-      <h2 className='mb-2 heading-2 text-text-strong'>
+      <h2 className='mb-2 heading-2'>
         두 사람의 책장을 나란히 놓아볼까요?
       </h2>
       <p className='mb-8 text-sm text-text-body'>

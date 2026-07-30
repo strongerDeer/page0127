@@ -254,7 +254,7 @@ const AddBookPage = () => {
   return (
     <ErrorBoundary>
       <PageContainer width='content'>
-        <h1 className='heading-1 mb-6 text-text-strong'>도서 추가</h1>
+        <h1 className='heading-1 mb-6'>도서 추가</h1>
 
         {saved ? (
           <BookSavedCard

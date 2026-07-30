@@ -190,7 +190,7 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
         {/* 책 정보 & 통계 & 메모 */}
         <div className='space-y-6'>
           <div>
-            <h1 className='heading-1 text-text-strong'>{book.title}</h1>
+            <h1 className='heading-1'>{book.title}</h1>
             <p className='mt-2 text-text-body'>{book.author}</p>
             <p className='text-sm text-text-subtle'>
               {book.publisher}
@@ -227,7 +227,7 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
           {/* 책 소개 — 카드가 아니라 구분선으로 시작하는 본문 섹션 */}
           {book.description && (
             <section className='border-t border-line pt-6'>
-              <h2 className='heading-2 text-text-strong'>책 소개</h2>
+              <h2 className='heading-2'>책 소개</h2>
               <p className='mt-3 whitespace-pre-line break-keep text-base leading-[1.8] text-text-body'>
                 {decodeHtmlEntities(book.description)}
               </p>

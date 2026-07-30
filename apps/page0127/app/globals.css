@@ -135,29 +135,39 @@ body {
    모바일 값은 07 의 데스크톱 비율을 그대로 적용해 구했다 — 07 에 모바일 정의가
    없어 데스크톱 비율(display 40/28≈1.43, heading 30/20=1.5)을 모바일 크기에
    내려 계산했다: 24×1.43≈34, 18×1.5=27. */
-.heading-1 {
-  font-size: var(--font-h1-mobile);
-  font-weight: 700;
-  line-height: 34px;
-}
-
-@media (min-width: 768px) {
+/* @layer components 안에 두는 것이 중요하다.
+   레이어 밖에 두면 이 클래스가 Tailwind 유틸을 이겨서, 제목 색을 다르게 써야 하는
+   자리(어두운 배너 위 text-white 등)에서 유틸이 조용히 무시된다.
+   components 는 utilities 보다 앞이라 유틸로 덮을 수 있다. */
+@layer components {
   .heading-1 {
-    font-size: var(--font-h1-desktop);
-    line-height: 40px;
+    font-size: var(--font-h1-mobile);
+    font-weight: 700;
+    line-height: 34px;
+    /* 21곳 중 19곳이 text-text-strong 과 함께 쓰였다 — 기본값으로 넣어
+       호출부에서 뗀다. 다른 색이 필요하면 text-* 유틸로 덮으면 된다. */
+    color: var(--text-strong);
   }
-}
 
-.heading-2 {
-  font-size: var(--font-h2-mobile);
-  font-weight: 700;
-  line-height: 27px;
-}
+  @media (min-width: 768px) {
+    .heading-1 {
+      font-size: var(--font-h1-desktop);
+      line-height: 40px;
+    }
+  }
 
-@media (min-width: 768px) {
   .heading-2 {
-    font-size: var(--font-h2-desktop);
-    line-height: 30px;
+    font-size: var(--font-h2-mobile);
+    font-weight: 700;
+    line-height: 27px;
+    color: var(--text-strong);
+  }
+
+  @media (min-width: 768px) {
+    .heading-2 {
+      font-size: var(--font-h2-desktop);
+      line-height: 30px;
+    }
   }
 }
 

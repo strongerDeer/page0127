@@ -150,7 +150,7 @@ export const PublicLibraryHeader = ({
 
           <div className='min-w-0'>
             <p className='mb-1 text-sm font-medium text-primary'>공개 서재</p>
-            <h1 className='heading-1 truncate text-text-strong'>
+            <h1 className='heading-1 truncate'>
               {displayName}님의 서재
             </h1>
             <div className='mt-2 flex flex-wrap items-center gap-x-4 gap-y-2'>

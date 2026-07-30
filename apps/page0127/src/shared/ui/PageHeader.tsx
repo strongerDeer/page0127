@@ -33,7 +33,8 @@ export const PageHeader = ({
     {above}
     {/* 뒤로가기와 제목 사이는 제목·설명 사이보다 넓게 둔다 — 성격이 다른 요소라
         같은 간격이면 한 덩어리로 읽힌다 */}
-    <h1 className={cn('heading-1 text-text-strong', above && 'mt-4')}>
+    {/* 색은 `.heading-1` 이 갖는다 — text-text-strong 을 여기서 다시 주지 않는다 */}
+    <h1 className={cn('heading-1', above && 'mt-4')}>
       {title}
     </h1>
     {description && (

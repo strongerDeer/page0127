@@ -162,7 +162,7 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
     // onSubmit 대신 action에 Server Action을 연결
     <form action={formAction}>
       {/* 제목은 카드 밖으로 — 카드 안 제목은 폼을 패널처럼 무겁게 만든다 */}
-      <h1 className='heading-1 mb-6 text-text-strong'>설정</h1>
+      <h1 className='heading-1 mb-6'>설정</h1>
 
       <Card className='p-6'>
         <div className='space-y-5'>

@@ -57,7 +57,7 @@ export const BookDetailContent = ({
 
             <div className='flex-1 space-y-4'>
               <div>
-                <h1 className='heading-1 mb-2 text-text-strong'>
+                <h1 className='heading-1 mb-2'>
                   {book.title}
                 </h1>
                 <p className='text-lg text-foreground'>{book.author}</p>
