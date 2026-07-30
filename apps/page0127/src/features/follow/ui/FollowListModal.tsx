@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
 
 import {
   Dialog,
@@ -9,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/shared/ui/dialog';
+import { Spinner } from '@/shared/ui/Spinner';
 
 import { followApi, followKeys } from '@/entities/follow';
 
@@ -60,9 +60,7 @@ export const FollowListModal = ({
 
         <div className='mt-4 space-y-3'>
           {isLoading ? (
-            <div className='flex items-center justify-center py-8'>
-              <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
-            </div>
+            <Spinner label='목록을 불러오는 중' className='py-8' />
           ) : users.length === 0 ? (
             <div className='py-8 text-center text-sm text-muted-foreground'>
               {type === 'followers'

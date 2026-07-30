@@ -1,7 +1,9 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { Loader2, MessageSquare } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
+
+import { Spinner } from '@/shared/ui/Spinner';
 
 import { commentApi, commentKeys } from '@/entities/comment';
 
@@ -32,9 +34,7 @@ export const CommentList = ({ target }: CommentListProps) => {
 
   if (isLoading) {
     return (
-      <div className='flex justify-center py-8'>
-        <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
-      </div>
+      <Spinner label='댓글을 불러오는 중' className='py-8' />
     );
   }
 
