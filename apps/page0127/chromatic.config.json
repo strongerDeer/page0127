@@ -1,0 +1,8 @@
+{
+  "$schema": "https://www.chromatic.com/config-file.schema.json",
+  "buildScriptName": "build-storybook",
+  "storybookBaseDir": "apps/page0127",
+  "autoAcceptChanges": "main",
+  "onlyChanged": true,
+  "externals": ["../../packages/design-tokens/dist/**", "../../packages/ui/src/styles/**"]
+}
