@@ -15,6 +15,7 @@ import { BookCover } from '@/shared/ui/BookCover';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { PageContainer } from '@/shared/ui/PageContainer';
+import { PageHeader } from '@/shared/ui/PageHeader';
 
 import { getPersonalityColor } from '@/entities/taste-analysis/model/personalityTypes';
 
@@ -49,19 +50,20 @@ export const TasteAnalysisResult = ({
 
   return (
     <PageContainer width='content'>
-      {/* 헤더 */}
-      <div className='mb-8'>
-        <Link href={`/${username}`}>
-          <Button variant='outline' size='sm' className='mb-4'>
-            <ArrowLeft className='h-4 w-4' />내 서재로
-          </Button>
-        </Link>
-        <h1 className='heading-1 text-text-strong'>독서 취향 분석</h1>
-        <p className='mt-1 text-sm text-text-subtle'>
-          {new Date(analysis.created_at).toLocaleDateString('ko-KR')} 분석 ·
-          완독한 책 {analysis.analyzed_books_count}권을 읽었습니다
-        </p>
-      </div>
+      <PageHeader
+        className='mb-8'
+        above={
+          <Link href={`/${username}`}>
+            <Button variant='outline' size='sm'>
+              <ArrowLeft className='h-4 w-4' />내 서재로
+            </Button>
+          </Link>
+        }
+        title='독서 취향 분석'
+        description={`${new Date(analysis.created_at).toLocaleDateString(
+          'ko-KR'
+        )} 분석 · 완독한 책 ${analysis.analyzed_books_count}권을 읽었습니다`}
+      />
 
       {/* 1. 독서 성향 */}
       <Card className='mb-6'>

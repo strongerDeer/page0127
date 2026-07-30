@@ -1,4 +1,5 @@
 import { PageContainer } from '@/shared/ui/PageContainer';
+import { PageHeader } from '@/shared/ui/PageHeader';
 
 import { ActivityFeed } from '@/widgets/activity';
 
@@ -13,12 +14,10 @@ import { ActivityFeed } from '@/widgets/activity';
 export default function FeedPage() {
   return (
     <PageContainer width='content' className='space-y-8'>
-      <header>
-        <h1 className='heading-1 text-text-strong'>피드</h1>
-        <p className='mt-2 text-sm text-text-subtle'>
-          함께 읽는 사람들의 새로운 독서 기록을 만나보세요.
-        </p>
-      </header>
+      <PageHeader
+        title='피드'
+        description='함께 읽는 사람들의 새로운 독서 기록을 만나보세요.'
+      />
 
       <ActivityFeed />
     </PageContainer>

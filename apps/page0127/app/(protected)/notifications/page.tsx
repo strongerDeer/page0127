@@ -1,4 +1,5 @@
 import { PageContainer } from '@/shared/ui/PageContainer';
+import { PageHeader } from '@/shared/ui/PageHeader';
 
 import { NotificationPage } from '@/features/notification/ui/NotificationPage';
 
@@ -14,9 +15,7 @@ import { NotificationPage } from '@/features/notification/ui/NotificationPage';
 export default function Notifications() {
   return (
     <PageContainer width='narrow' className='space-y-6'>
-      <div>
-        <h1 className='heading-1 text-text-strong'>알림</h1>
-              </div>
+      <PageHeader title='알림' />
 
       <NotificationPage />
     </PageContainer>

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { createClient } from '@/shared/config/supabase/server';
 import { Button } from '@/shared/ui/button';
 import { PageContainer } from '@/shared/ui/PageContainer';
+import { PageHeader } from '@/shared/ui/PageHeader';
 import {
   Pagination,
   PaginationContent,
@@ -84,18 +85,16 @@ export default async function GlobalBooksPage(props: {
   return (
     <PageContainer width='wide'>
       <div className='mb-8 flex items-center justify-between'>
-        <div>
-          <h1 className='heading-1 text-text-strong'>
-            {q ? `'${q}' 검색 결과` : '전체 도서'}
-          </h1>
-          <p className='mt-1 text-sm text-text-subtle'>
-            {q
+        <PageHeader
+          title={q ? `'${q}' 검색 결과` : '전체 도서'}
+          description={
+            q
               ? `${(booksRes.count ?? 0).toLocaleString()}권을 찾았어요.`
               : booksRes.count
                 ? `${booksRes.count.toLocaleString()}권이 등록돼 있어요.`
-                : '아직 등록된 책이 없어요.'}
-          </p>
-        </div>
+                : '아직 등록된 책이 없어요.'
+          }
+        />
 
         {/* 정렬 옵션 (간단하게 구현) */}
         <div className='flex gap-2'>
