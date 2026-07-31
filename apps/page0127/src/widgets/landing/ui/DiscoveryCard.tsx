@@ -104,11 +104,10 @@ export const DiscoveryCard = async () => {
           <BookCover
             src={book.cover_image}
             title={book.title}
-            width={120}
-            height={174}
             decorative
-            className='-mb-5 h-40 w-auto shrink-0'
-          />
+            className='-mb-5'
+          size='xl'
+        />
         )}
       </div>
 

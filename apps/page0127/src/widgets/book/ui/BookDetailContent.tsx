@@ -47,10 +47,8 @@ export const BookDetailContent = ({
                 src={book.cover_image}
                 title={book.title}
                 author={book.author}
-                fill
-                sizes='224px'
-                fallbackClassName='px-3 py-4 text-sm'
-              />
+          size='fill'
+        />
             </div>
 
             <div className='flex-1 space-y-4'>

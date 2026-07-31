@@ -249,11 +249,9 @@ export const ReadingCalendar = ({
                   <BookCover
                     src={book.cover}
                     title={book.title}
-                    width={44}
-                    height={64}
                     decorative
-                    className='h-16 w-auto shrink-0'
-                  />
+          size='xs'
+        />
                 )}
                 <div className='min-w-0 flex-1'>
                   <h4 className='truncate text-sm font-medium text-text-strong'>

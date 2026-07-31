@@ -44,9 +44,8 @@ export const ReadingNowStrip = ({ books, bookHref }: ReadingNowStripProps) => {
                 <BookCover
                   src={book.cover_image}
                   title={book.title}
-                  fill
-                  sizes='96px'
-                />
+          size='fill'
+        />
               </div>
               <p className='line-clamp-2 text-xs text-text-body group-hover:text-primary'>
                 {book.title}

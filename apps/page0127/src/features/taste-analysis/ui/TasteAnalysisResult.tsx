@@ -244,12 +244,9 @@ const RecommendationSection = ({
                   <BookCover
                     src={book.cover_image}
                     title={book.title}
-                    width={200}
-                    height={290}
-                    sizes='88px'
                     decorative
-                    className='h-32 w-auto shrink-0'
-                  />
+          size='lg'
+        />
                 )}
                 <div className='flex-1'>
                   <h4 className='font-medium text-text-strong'>{book.title}</h4>

@@ -89,11 +89,9 @@ export const BookRankingList = ({
                 <BookCover
                   src={book.cover_image}
                   title={book.title}
-                  width={56}
-                  height={80}
                   decorative
-                  className='h-20 w-auto shrink-0'
-                />
+          size='sm'
+        />
 
                 <div className='min-w-0 flex-1'>
                   <p className='truncate text-base font-medium text-text-strong group-hover:underline'>

@@ -470,12 +470,9 @@ const RecommendationList = ({
                 <BookCover
                   src={rec.cover_image}
                   title={rec.title}
-                  width={200}
-                  height={290}
-                  sizes='88px'
                   decorative
-                  className='h-32 w-auto shrink-0'
-                />
+          size='lg'
+        />
               )}
               <div className='flex-1'>
                 <h4 className='font-medium text-text-strong'>{rec.title}</h4>

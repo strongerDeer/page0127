@@ -258,9 +258,8 @@ export const BookRegistrationForm = ({
                 <BookCover
                   src={highResCover}
                   title={book.title}
-                  fill
-                  sizes='96px'
-                />
+          size='fill'
+        />
               </div>
               <div>
                 <h4 className='font-medium'>{book.title}</h4>

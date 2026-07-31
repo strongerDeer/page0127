@@ -184,33 +184,77 @@ body {
   }
 }
 
-/* 책 표지 — 도메인 셰이프
-   왼쪽이 책등이라 각지고, 오른쪽 모서리만 둥글다.
-   그림자로 띄우지 않는다. (교보 `16px 16px 16px 0` / 밀리 표지 254개 그림자 0) */
-.book-cover {
-  border-radius: 2px 6px 6px 2px;
-  box-shadow: none;
-  background-color: #fff;
-  background-image: linear-gradient(
-    to right,
-    rgba(0, 0, 0, 0.14) 0px,
-    rgba(0, 0, 0, 0.05) 3px,
-    transparent 8px
-  );
+/* ============================================
+   책 표지 — 이 시스템의 도메인 셰이프
+
+   범용 컴포넌트 라이브러리에는 없는 자리다. 책을 다루는 서비스라
+   "표지처럼 생긴 것"이 시스템의 1급 요소여야 한다.
+
+   값을 변수로 올린 이유: 예전에는 border-radius·책등 그라디언트가
+   여기와 BookListItem.module.css·PublicBookShelf.module.css 에 각각
+   복제돼 있었다. 한 곳을 고쳐도 나머지가 남아 같은 책 표지가 화면마다
+   다르게 보였다.
+   ============================================ */
+:root {
+  /* 판형 비율 — 국내 단행본 실측 기준 1:1.45.
+     너비를 높이에서 파생시켜 목록의 표지 폭이 흔들리지 않게 한다.
+     (aspect-ratio 용이라 너비/높이 순서다) */
+  --book-cover-ratio: 20 / 29;
+
+  /* 책등 — 종이 두께를 만드는 왼쪽 음영.
+     세 값이 한 벌이다: 시작 농도 / 꺾이는 지점 / 사라지는 지점 */
+  --book-spine-ink: rgba(0, 0, 0, 0.14);
+  --book-spine-ink-soft: rgba(0, 0, 0, 0.05);
+  --book-spine-fold: 3px;
+  --book-spine-width: 8px;
+
+  /* 표지 면. 표지 이미지가 있으면 덮이므로 실제로는 대체 조판에서만 보인다 */
+  --book-cover-surface: #fff;
+
+  /* 모서리 — 왼쪽은 책등이라 각지고 오른쪽만 둥글다 */
+  --book-cover-radius: 2px 6px 6px 2px;
 }
 
 /* 다크에서 흰 종이면을 그대로 두면 표지 없는 책이 화면에서 튄다.
-   면은 sunken 으로 낮추고, 책등 음영은 검정이 안 먹으므로 흰 하이라이트로 뒤집는다.
-   (표지 이미지가 있으면 어차피 덮이므로 이 값은 대체 조판에서만 보인다) */
+   면은 sunken 으로 낮추고, 책등 음영은 검정이 안 먹으므로 흰 하이라이트로 뒤집는다. */
 @media (prefers-color-scheme: dark) {
+  :root {
+    --book-cover-surface: var(--sunken);
+    --book-spine-ink: rgba(255, 255, 255, 0.1);
+    --book-spine-ink-soft: rgba(255, 255, 255, 0.04);
+  }
+}
+
+/* @layer components 안에 두는 것이 중요하다.
+   레이어 밖이면 이 클래스가 Tailwind 유틸을 이겨서, 호출부가 `bg-sunken`
+   같은 유틸로 면을 바꾸려 해도 조용히 무시된다. 실제로 BookCover 의
+   대체 조판이 `bg-sunken` 을 적어 두고도 한 번도 적용된 적이 없었다
+   (.heading-* 가 겪은 것과 같은 함정). */
+@layer components {
   .book-cover {
-    background-color: var(--sunken);
+    border-radius: var(--book-cover-radius);
+    box-shadow: none;
+    background-color: var(--book-cover-surface);
+    /* 좌측 책등 — 종이 두께 */
     background-image: linear-gradient(
       to right,
-      rgba(255, 255, 255, 0.1) 0px,
-      rgba(255, 255, 255, 0.04) 3px,
-      transparent 8px
+      var(--book-spine-ink) 0px,
+      var(--book-spine-ink-soft) var(--book-spine-fold),
+      transparent var(--book-spine-width)
     );
+  }
+
+  /* 표지 슬롯 — 판형 비율을 고정한다.
+     높이는 BookCover 가 size 계단에서 인라인으로 주고, 너비는 이 비율에서
+     나온다. `w-auto` 로 원본 비율을 따르던 곳들이 제각각 다른 폭이 되어
+     목록 정렬이 흔들리던 것을 이 한 줄이 막는다.
+
+     ⚠️ aspect-ratio 는 높이가 정해진 요소에서 너비를 만들어 낸다. 높이를
+     주지 않으면 아무 일도 일어나지 않으므로, 이 클래스는 반드시 높이와
+     함께 쓴다(BookCover 가 보장한다). */
+  .book-cover-box {
+    aspect-ratio: var(--book-cover-ratio);
+    flex-shrink: 0;
   }
 }
 

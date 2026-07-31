@@ -62,10 +62,9 @@ export const TasteExampleCard = async () => {
                 key={cover}
                 src={cover}
                 title=''
-                width={64}
-                height={92}
                 decorative
-                className={`absolute h-24 w-auto border-2 border-white ${COVER_POSITIONS[index]}`}
+                size='md'
+                className={`absolute border-2 border-white ${COVER_POSITIONS[index]}`}
               />
             ))}
           </div>

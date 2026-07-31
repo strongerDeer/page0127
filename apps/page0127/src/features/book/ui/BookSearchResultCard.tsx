@@ -35,11 +35,9 @@ export const BookSearchResultCard = ({
       <BookCover
         src={highResCover}
         title={book.title}
-        width={56}
-        height={80}
         decorative
-        className='h-20 w-auto shrink-0'
-      />
+          size='sm'
+        />
 
       <div className='min-w-0 flex-1'>
         <h3 className='truncate text-base font-medium text-text-strong'>
