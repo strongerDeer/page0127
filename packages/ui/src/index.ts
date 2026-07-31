@@ -51,4 +51,4 @@ export { Spinner } from './components/Spinner';
 /* Domain — 이 서비스가 책을 다루기 때문에 존재하는 것들.
    범용 컴포넌트 라이브러리라면 없었을 자리다. */
 export { BookCover } from './components/BookCover';
-export { ReadCountBadge } from './components/ReadCountBadge';
+export { ReadCountBadge, shouldShowReadCount } from './components/ReadCountBadge';

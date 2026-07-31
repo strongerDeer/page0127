@@ -67,7 +67,7 @@ export const BookLikeButton = ({
   return (
     <Button
       variant='ghost'
-      size='icon'
+      size='icon-md'
       className={`relative z-30 h-8 w-8 rounded-full border border-line bg-card transition-transform hover:scale-110 ${className}`}
       onClick={handleToggle}
       disabled={isPending}

@@ -24,18 +24,24 @@ const buttonVariants = cva(
           "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
+      // 크기 이름은 시스템 전체에서 sm / md / lg 다.
+      //
+      // shadcn 원본은 중간 크기를 `default` 라 부르지만, 그 이름은 "무엇의
+      // 기본인가"를 말할 뿐 크기를 말하지 않는다. Spinner·ReadCountBadge 가
+      // 이미 sm/md/lg 를 쓰고 있어 한 시스템 안에서 같은 크기를 두 이름으로
+      // 부르는 상태였다. 기본값이라는 사실은 defaultVariants 가 표현한다.
       size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
         sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
+        md: "h-9 px-4 py-2 has-[>svg]:px-3",
         lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
-        icon: "size-9",
         "icon-sm": "size-8",
+        "icon-md": "size-9",
         "icon-lg": "size-10",
       },
     },
     defaultVariants: {
       variant: "default",
-      size: "default",
+      size: "md",
     },
   }
 )

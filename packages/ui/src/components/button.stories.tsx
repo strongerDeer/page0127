@@ -25,7 +25,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
  *
  * ## 접근성
  *
- * - `size='icon'` 계열은 글자가 없다 → **`aria-label` 이 필수**다.
+ * - `size='icon-md'` 계열은 글자가 없다 → **`aria-label` 이 필수**다.
  *   없으면 스크린리더가 "버튼"이라고만 읽는다.
  * - 포커스 링은 `focus-visible` 에만 붙는다 — 마우스로 눌렀을 때는 안 보이고
  *   키보드 `Tab` 으로 왔을 때만 보인다. 이 링을 `outline-none` 으로 지우지 말 것.
@@ -37,7 +37,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
  * ```tsx
  * <Button>기록 시작하기</Button>
  * <Button variant='outline'>취소</Button>
- * <Button size='icon' aria-label='책 추가'><Plus /></Button>
+ * <Button size='icon-md' aria-label='책 추가'><Plus /></Button>
  *
  * // 링크로 쓰기 — a 태그가 되면서 버튼 스타일만 물려받는다
  * <Button asChild>
@@ -68,9 +68,10 @@ const meta = {
     },
     size: {
       control: 'select',
-      options: ['default', 'sm', 'lg', 'icon', 'icon-sm', 'icon-lg'],
-      description: 'icon 계열은 정사각형이며 aria-label 이 필요하다.',
-      table: { category: 'Appearance', defaultValue: { summary: 'default' } },
+      options: ['sm', 'md', 'lg', 'icon-sm', 'icon-md', 'icon-lg'],
+      description:
+        '시스템 공통 크기 이름(sm/md/lg). icon 계열은 정사각형이며 aria-label 이 필요하다.',
+      table: { category: 'Appearance', defaultValue: { summary: 'md' } },
     },
     children: {
       control: 'text',
@@ -136,15 +137,22 @@ export const Variants: Story = {
   ),
 };
 
-/** 높이 3단(32/36/40px). 본문 흐름 안에서는 sm, 페이지 주 행동은 lg. */
+/**
+ * 높이 3단(32/36/40px). 본문 흐름 안에서는 sm, 페이지 주 행동은 lg.
+ *
+ * 이름이 `sm`/`md`/`lg` 인 것은 시스템 공통 규칙이다 — Spinner·ReadCountBadge 도
+ * 같은 이름을 쓴다. shadcn 원본의 `default` 를 그대로 뒀다면 한 시스템 안에서
+ * 같은 크기를 두 이름으로 부르게 된다. 기본값이라는 사실은 이름이 아니라
+ * `defaultVariants` 가 표현한다.
+ */
 export const Sizes: Story = {
   render: (args) => (
     <div className='flex flex-wrap items-center gap-3'>
       <Button {...args} size='sm'>
         sm · 32px
       </Button>
-      <Button {...args} size='default'>
-        default · 36px
+      <Button {...args} size='md'>
+        md · 36px (기본)
       </Button>
       <Button {...args} size='lg'>
         lg · 40px
@@ -163,7 +171,7 @@ export const IconOnly: Story = {
       <Button {...args} size='icon-sm' variant='ghost' aria-label='책 추가'>
         <Plus />
       </Button>
-      <Button {...args} size='icon' variant='outline' aria-label='책 추가'>
+      <Button {...args} size='icon-md' variant='outline' aria-label='책 추가'>
         <Plus />
       </Button>
       <Button {...args} size='icon-lg' aria-label='책 추가'>
@@ -211,7 +219,7 @@ export const Loading: Story = {
       <Button {...args} variant='outline' loading>
         불러오는 중
       </Button>
-      <Button {...args} size='icon' loading aria-label='불러오는 중' />
+      <Button {...args} size='icon-md' loading aria-label='불러오는 중' />
     </div>
   ),
 };
@@ -249,7 +257,7 @@ export const RealWorld: Story = {
       <div className='mt-4 flex items-center gap-2'>
         <Button className='flex-1'>완독으로 기록</Button>
         <Button variant='outline'>담기</Button>
-        <Button variant='ghost' size='icon' aria-label='더보기'>
+        <Button variant='ghost' size='icon-md' aria-label='더보기'>
           <Plus />
         </Button>
       </div>

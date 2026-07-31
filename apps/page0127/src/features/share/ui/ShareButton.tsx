@@ -64,7 +64,7 @@ export const ShareButton = ({ path, title, text, label }: ShareButtonProps) => {
   return (
     <Button
       variant='outline'
-      size={label ? 'default' : 'icon'}
+      size={label ? 'md' : 'icon-md'}
       className='shadow-none'
       onClick={handleShare}
       title={title}

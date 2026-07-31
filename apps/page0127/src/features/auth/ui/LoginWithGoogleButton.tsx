@@ -26,17 +26,15 @@ import { useGoogleLogin } from '../api/useGoogleLogin';
  * ```
  */
 
-type LoginWithGoogleButtonProps = {
-  /** 버튼 크기 (shadcn/ui Button size) */
-  size?: 'default' | 'sm' | 'lg' | 'icon';
-  /** 버튼 variant (shadcn/ui Button variant) */
-  variant?:
-    | 'default'
-    | 'destructive'
-    | 'outline'
-    | 'secondary'
-    | 'ghost'
-    | 'link';
+// 디자인 시스템의 Button 에서 그대로 물려받는다. 예전에는 여기에 크기·variant
+// 목록을 손으로 적어 뒀는데, 그러면 시스템이 이름을 바꿀 때(`default` → `md`)
+// 이 파일만 옛 이름을 들고 남는다. 실제로 그 상태였고 타입 검사가 잡았다.
+type ButtonStyleProps = Pick<
+  React.ComponentProps<typeof Button>,
+  'size' | 'variant'
+>;
+
+type LoginWithGoogleButtonProps = ButtonStyleProps & {
   className?: string;
   children?: React.ReactNode;
   /** 로그인 후 돌아갈 내부 경로. 로그인 페이지가 ?redirect= 에서 받아 넘긴다 */

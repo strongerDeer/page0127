@@ -20,14 +20,20 @@ import { followApi, followKeys } from '@/entities/follow';
  */
 type FollowButtonProps = {
   userId: string; // 팔로우할 사용자 ID
-  variant?: 'default' | 'outline';
-  size?: 'default' | 'sm' | 'lg';
+  // variant 는 의도적으로 좁힌다 — 팔로우 버튼에 destructive·link 를 쓸 일이
+  // 없고, 좁혀 두면 호출부가 잘못 고르는 것을 타입이 막는다.
+  variant?: Extract<
+    React.ComponentProps<typeof Button>['variant'],
+    'default' | 'outline'
+  >;
+  // 크기는 시스템 이름을 그대로 물려받는다(sm/md/lg).
+  size?: React.ComponentProps<typeof Button>['size'];
 };
 
 export const FollowButton = ({
   userId,
   variant = 'default',
-  size = 'default',
+  size = 'md',
 }: FollowButtonProps) => {
   const queryClient = useQueryClient();
 

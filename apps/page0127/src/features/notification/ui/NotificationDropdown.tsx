@@ -37,7 +37,7 @@ export const NotificationDropdown = ({ userId }: NotificationDropdownProps) => {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant='ghost' size='icon' className='relative'>
+        <Button variant='ghost' size='icon-md' className='relative'>
           <Bell className='h-5 w-5' />
           {/* 읽지 않은 알림 뱃지 */}
           {unreadCount && unreadCount.count > 0 && (
