@@ -5,8 +5,13 @@ page0127 디자인 시스템. **토큰 위에 올라가는 컴포넌트 계층**
 앱(`apps/page0127`)은 이 패키지의 소비자다. 앱의 `globals.css` 는
 `@import "@repo/ui/styles.css"` 한 줄뿐이고, 색을 직접 적을 자리가 없다.
 
-- 📚 **Storybook** — 컴포넌트 카탈로그와 Foundation 문서 (Chromatic 배포)
+- 📚 **[Storybook](https://main--679c930a5345426f2c80fbfa.chromatic.com)** —
+  컴포넌트 20개 · 스토리 100개. 로그인 없이 볼 수 있다
 - 🎨 **Figma** — `page0127 Design System` (파일 `5ErSDsG1MNfvexSDZ2PfLS`)
+
+> Storybook 주소는 **브랜치 permalink** 다 — `main` 의 최신 배포를 항상 가리킨다.
+> 빌드마다 바뀌는 주소(`<빌드해시>-<appId>.chromatic.com`)를 문서에 박으면
+> 다음 배포에서 죽는다.
 
 ---
 
@@ -95,6 +100,18 @@ BookCover 만 다섯 계단(`xs`~`xl`)에 `full` · `fill` 이 더 있다.
 > `<div>` 로 만든 제목, 아무 말 없는 로딩 상태는 여전히 사람이 봐야 한다.
 > 실제로 그렇게 잡은 결함이 셋 있었다(카드·스켈레톤의 접근성 0점,
 > `progress` 의 `aria-valuenow` 누락, `ErrorFallback` 의 `role` 부재).
+
+### 공개된 Storybook 에 무엇이 실리나
+
+빌드 산출물을 받아 검사한 결과다(2026-08-04):
+API 키·토큰 **0건**, Supabase URL 노출 **없음**, 소스맵 **미배포**(404).
+
+우연이 아니라 구조 때문이다 — **스토리는 목 데이터로만 돌고 앱 런타임 코드를
+import 하지 않는다.** 같은 이유로 CI 의 스토리 테스트는 secrets 없이 돌아가고,
+그래서 dependabot PR 에서도 실행된다.
+
+⚠️ 이 성질이 깨지는 순간이 있다: 스토리에서 실제 API 클라이언트나 `process.env`
+를 끌어다 쓰면 그 값이 공개 번들에 박힌다. 스토리에는 목만 넣는다.
 
 ---
 
