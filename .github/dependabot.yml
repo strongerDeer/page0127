@@ -8,6 +8,13 @@ updates:
       time: "00:30"
       timezone: Asia/Seoul
     open-pull-requests-limit: 5
+    # TypeScript 7 은 컴파일러가 Go 로 재작성되면서 기존 JS 컴파일러 API 가 빠졌다.
+    # typescript-eslint(#10940)·Next.js 가 아직 그 API 에 의존해서 TS 7 로 올리면 lint·build 가 통째로 죽는다.
+    # 두 도구가 지원을 발표하면 이 항목을 지우고 메이저 업그레이드를 별도 PR 로 검증한다.
+    ignore:
+      - dependency-name: typescript
+        update-types:
+          - version-update:semver-major
     groups:
       production-minor-patch:
         dependency-type: production
