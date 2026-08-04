@@ -1,14 +1,8 @@
 'use client';
 
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@repo/ui';
+import { Spinner } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
-
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/shared/ui/dialog';
-import { Spinner } from '@/shared/ui/Spinner';
 
 import { followApi, followKeys } from '@/entities/follow';
 

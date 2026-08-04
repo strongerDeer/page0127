@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation';
 
+import { PageContainer } from '@repo/ui';
+
 import { createClient } from '@/shared/config/supabase/server';
-import { PageContainer } from '@/shared/ui/PageContainer';
 
 import { getProfile } from '@/entities/profile/api/getProfile';
 

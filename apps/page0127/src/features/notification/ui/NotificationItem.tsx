@@ -10,10 +10,10 @@
  * - 상대 시간 표시 (예: "3분 전")
  */
 
+import { Button } from '@repo/ui';
+import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui';
 import { Check, Heart, MessageCircle, UserPlus, X } from 'lucide-react';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
-import { Button } from '@/shared/ui/button';
 import { RelativeTime } from '@/shared/ui/RelativeTime';
 
 import { toDisplayName, toInitial } from '@/entities/profile/model/displayName';

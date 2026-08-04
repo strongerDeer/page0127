@@ -1,11 +1,10 @@
 import Link from 'next/link';
 
+import { BookCover } from '@repo/ui';
 import { Sparkles } from 'lucide-react';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { decodeHtmlEntities } from '@/shared/lib/htmlEntities';
-import { BookCover } from '@/shared/ui/BookCover';
-
 /**
  * "page0127의 발견" — 최근 등록된 책 한 권을 크게 보여주는 편집 카드
  *
@@ -105,11 +104,10 @@ export const DiscoveryCard = async () => {
           <BookCover
             src={book.cover_image}
             title={book.title}
-            width={120}
-            height={174}
             decorative
-            className='-mb-5 h-40 w-auto shrink-0'
-          />
+            className='-mb-5'
+          size='xl'
+        />
         )}
       </div>
 

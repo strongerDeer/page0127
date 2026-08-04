@@ -13,8 +13,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/shared/ui/button';
-import { ScrollArea } from '@/shared/ui/scroll-area';
+import { Button } from '@repo/ui';
+import { ScrollArea } from '@repo/ui';
 
 import {
   type NotificationWithActor,

@@ -4,10 +4,9 @@ import { useOptimistic, useState, useTransition } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { Button } from '@repo/ui';
 import { Heart } from 'lucide-react';
 import { toast } from 'sonner';
-
-import { Button } from '@/shared/ui/button';
 
 import { bookApi } from '@/entities/book';
 
@@ -68,7 +67,7 @@ export const BookLikeButton = ({
   return (
     <Button
       variant='ghost'
-      size='icon'
+      size='icon-md'
       className={`relative z-30 h-8 w-8 rounded-full border border-line bg-card transition-transform hover:scale-110 ${className}`}
       onClick={handleToggle}
       disabled={isPending}

@@ -17,9 +17,14 @@ import { describe, expect, it } from 'vitest';
  * 이름이 사라지면 반드시 깨진다 — 설계 문서 §4.2 가 지키려던 것이 정확히 이것이다.
  * (값이 실수로 바뀌는 것은 dist/tokens.css 가 커밋되므로 git diff 가 잡는다)
  *
+ * 여기가 지키는 것은 **앱 쪽 절반**이다. 디자인 시스템 자신이 쓰는 변수는
+ * packages/ui/tests/token-usage.test.ts 가 따로 본다. 둘을 나눈 이유는 방향
+ * 때문이다 — 시스템은 자기를 누가 쓰는지 몰라야 하고, 앱은 시스템이 준 것만
+ * 써야 한다. 한쪽에 몰아두면 그 경계가 테스트에서부터 흐려진다.
+ *
  * 정의처는 두 곳이다:
  * - packages/design-tokens/dist/tokens.css — primitive/semantic 토큰
- * - apps/page0127/app/globals.css — @theme inline 의 Tailwind 노출 변수
+ * - packages/ui/src/styles/index.css — @theme inline 의 Tailwind 노출 변수
  */
 
 const APP_ROOT = fileURLToPath(new URL('..', import.meta.url));
@@ -81,7 +86,12 @@ const defined = {
       'utf8',
     ),
   ),
-  ...parseCssVars(readFileSync(new URL('./globals.css', import.meta.url), 'utf8')),
+  ...parseCssVars(
+    readFileSync(
+      new URL('../../../packages/ui/src/styles/index.css', import.meta.url),
+      'utf8',
+    ),
+  ),
 };
 
 describe('토큰 소비처 대조', () => {
@@ -97,9 +107,15 @@ describe('토큰 소비처 대조', () => {
 
   it('스캔이 실제로 동작한다 — 토큰 사용처를 찾지 못하면 이 테스트는 무의미하다', () => {
     // 스캔 경로나 정규식이 잘못되면 usages 가 비어 위 테스트가 공짜로 통과한다.
-    // 실제 사용량(46종 이상)을 하한으로 못 박아 그 상황을 잡는다.
+    //
+    // 하한이 40 에서 10 으로 내려간 것은 앱이 토큰을 덜 쓰게 됐다는 뜻이 아니라,
+    // @theme inline·유틸 클래스·컴포넌트가 전부 packages/ui 로 옮겨 갔기
+    // 때문이다. 앱에 남은 11 종은 대부분 CSS Module 의 도메인 셰이프
+    // (BookListItem·PublicBookShelf 의 책등 그라디언트 등)가 쓰는 것이고,
+    // 그것들은 여전히 시스템 토큰을 직접 참조한다 — 앱이 자기 색을 새로
+    // 만들어 쓰기 시작하면 이 목록에 정의 없는 이름이 나타난다.
     const distinct = new Set(usages.map((u) => u.name));
-    expect(distinct.size).toBeGreaterThanOrEqual(40);
-    expect(distinct.has('--primary')).toBe(true);
+    expect(distinct.size).toBeGreaterThanOrEqual(10);
+    expect(distinct.has('--line')).toBe(true);
   });
 });

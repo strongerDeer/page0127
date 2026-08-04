@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@/shared/ui/button';
+import { Button } from '@repo/ui';
 
 type BookRankingErrorProps = {
   // 어느 랭킹이 실패했는지 표시 (스켈레톤과 같은 외곽 유지용)

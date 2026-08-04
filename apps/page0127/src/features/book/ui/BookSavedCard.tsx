@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 
-import { BookCover } from '@/shared/ui/BookCover';
-import { Button } from '@/shared/ui/button';
-import { Card, CardContent } from '@/shared/ui/card';
+import { Button } from '@repo/ui';
+import { Card, CardContent } from '@repo/ui';
+import { BookCover } from '@repo/ui';
 
 import { savedBookMessage } from '../lib/savedBookMessage';
 
@@ -59,14 +59,7 @@ export const BookSavedCard = ({
           {/* 표지가 없으면 아무것도 그리지 않는다 — 저장 확인 카드라 빈 상자를
               세우지 않는다. 그래서 BookCover 의 대체 조판을 쓰지 않고 가드를 남긴다 */}
           {coverImage && (
-            <BookCover
-              src={coverImage}
-              title={title}
-              width={120}
-              height={174}
-              decorative
-              className='h-auto w-[120px]'
-            />
+            <BookCover src={coverImage} title={title} decorative size='xl' />
           )}
 
           {/* 카드는 라우트 이동이 아니라 state 교체로 나타나므로 아무것도 읽어주지 않는다.

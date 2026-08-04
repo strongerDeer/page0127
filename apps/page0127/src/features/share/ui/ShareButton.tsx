@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 
+import { Button } from '@repo/ui';
 import { Link2, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
-
-import { Button } from '@/shared/ui/button';
 
 type ShareButtonProps = {
   /** 공유할 경로. 절대 URL 은 이 컴포넌트가 현재 origin 으로 만든다 */
@@ -65,7 +64,7 @@ export const ShareButton = ({ path, title, text, label }: ShareButtonProps) => {
   return (
     <Button
       variant='outline'
-      size={label ? 'default' : 'icon'}
+      size={label ? 'md' : 'icon-md'}
       className='shadow-none'
       onClick={handleShare}
       title={title}

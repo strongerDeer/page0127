@@ -14,12 +14,12 @@ import { useEffect, useEffectEvent, useRef } from 'react';
 
 import { useRouter } from 'next/navigation';
 
+import { Button } from '@repo/ui';
+import { Spinner } from '@repo/ui';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
 import { apiClient } from '@/shared/api/client';
 import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
-import { Button } from '@/shared/ui/button';
-import { Spinner } from '@/shared/ui/Spinner';
 
 import {
   notificationKeys,

@@ -3,11 +3,10 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { Button } from '@repo/ui';
 import { useMutation } from '@tanstack/react-query';
 import { Check, Plus } from 'lucide-react';
 import { toast } from 'sonner';
-
-import { Button } from '@/shared/ui/button';
 
 import { bookApi } from '@/entities/book';
 import { GlobalBook } from '@/entities/book';

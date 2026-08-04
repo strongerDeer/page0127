@@ -1,17 +1,10 @@
 import Link from 'next/link';
 
+import { Button } from '@repo/ui';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@repo/ui';
+import { PageContainer, PageHeader } from '@repo/ui';
+
 import { createClient } from '@/shared/config/supabase/server';
-import { Button } from '@/shared/ui/button';
-import { PageContainer } from '@/shared/ui/PageContainer';
-import { PageHeader } from '@/shared/ui/PageHeader';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/shared/ui/pagination';
 
 import { BookListItem } from '@/widgets/book/ui/BookListItem';
 

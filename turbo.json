@@ -32,6 +32,10 @@
       "dependsOn": ["@repo/design-tokens#build"],
       "outputs": []
     },
+    "@repo/ui#test": {
+      "dependsOn": ["@repo/design-tokens#build"],
+      "outputs": []
+    },
     "clean": {
       "cache": false
     },

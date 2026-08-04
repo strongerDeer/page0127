@@ -1,7 +1,5 @@
-import { Card, CardContent, CardHeader } from '@/shared/ui/card';
-import { PageContainer } from '@/shared/ui/PageContainer';
-import { Skeleton } from '@/shared/ui/skeleton';
-
+import { Card, CardContent, CardHeader, Skeleton } from '@repo/ui';
+import { PageContainer } from '@repo/ui';
 /**
  * AI 취향 분석 결과 페이지 fallback
  *

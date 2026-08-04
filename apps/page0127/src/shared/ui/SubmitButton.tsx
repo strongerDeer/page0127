@@ -2,7 +2,7 @@
 
 import { useFormStatus } from 'react-dom';
 
-import { Button } from '@/shared/ui/button';
+import { Button } from '@repo/ui';
 
 type SubmitButtonProps = {
   /** 평상시 라벨 */

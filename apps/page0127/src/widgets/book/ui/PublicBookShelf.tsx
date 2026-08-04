@@ -5,7 +5,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
+import { ReadCountBadge } from '@repo/ui';
 
 import { isTopRated } from '@/entities/book';
 

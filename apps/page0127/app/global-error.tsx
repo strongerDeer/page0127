@@ -2,9 +2,8 @@
 
 import { useEffect } from 'react';
 
+import { ErrorFallback } from '@repo/ui';
 import * as Sentry from '@sentry/nextjs';
-
-import { ErrorFallback } from '@/shared/ui/ErrorFallback';
 
 import './globals.css';
 

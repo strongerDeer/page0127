@@ -1,7 +1,5 @@
-import { Card, CardContent } from '@/shared/ui/card';
-import { PageContainer } from '@/shared/ui/PageContainer';
-import { Skeleton } from '@/shared/ui/skeleton';
-
+import { Card, CardContent, Skeleton } from '@repo/ui';
+import { PageContainer } from '@repo/ui';
 /**
  * 책 상세 페이지 fallback
  *

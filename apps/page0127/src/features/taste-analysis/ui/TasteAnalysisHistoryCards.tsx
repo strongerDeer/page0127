@@ -1,8 +1,7 @@
 import Link from 'next/link';
 
+import { Card, CardContent } from '@repo/ui';
 import { BookOpen } from 'lucide-react';
-
-import { Card, CardContent } from '@/shared/ui/card';
 
 import { getPersonalityColor } from '@/entities/taste-analysis/model/personalityTypes';
 

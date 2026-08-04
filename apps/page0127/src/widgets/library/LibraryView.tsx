@@ -4,7 +4,7 @@ import { useTransition } from 'react';
 
 import dynamic from 'next/dynamic';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 
 import { useLibraryFilters } from '@/features/stats/model/useLibraryFilters';
 import { CategoryRadarChart } from '@/features/stats/ui/CategoryRadarChart';

@@ -1,5 +1,4 @@
-import { Skeleton } from '@/shared/ui/skeleton';
-
+import { Skeleton } from '@repo/ui';
 /**
  * HeroBannerSection fallback
  *

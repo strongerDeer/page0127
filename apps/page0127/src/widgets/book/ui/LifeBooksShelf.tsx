@@ -1,6 +1,5 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 import { Heart } from 'lucide-react';
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 
 import { PublicBookShelf } from './PublicBookShelf';
 

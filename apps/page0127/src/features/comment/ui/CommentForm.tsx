@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 
+import { Button } from '@repo/ui';
+import { Textarea } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
-import { Button } from '@/shared/ui/button';
-import { Textarea } from '@/shared/ui/textarea';
 
 import { commentApi, commentKeys } from '@/entities/comment';
 

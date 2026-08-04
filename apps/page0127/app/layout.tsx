@@ -1,10 +1,10 @@
+import { Toaster } from '@repo/ui';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 import { GoogleAnalytics } from '@/shared/lib/analytics/GoogleAnalytics';
 import { WebVitalsReporter } from '@/shared/lib/rum/WebVitalsReporter';
 import { QueryProvider } from '@/shared/providers/QueryProvider';
-import { Toaster } from '@/shared/ui/sonner';
 
 import { CurrentUserProvider } from '@/entities/user';
 

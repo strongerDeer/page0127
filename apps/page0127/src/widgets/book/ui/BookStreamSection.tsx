@@ -2,12 +2,12 @@
 
 import { useEffect, useMemo } from 'react';
 
+import { Button } from '@repo/ui';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 
 import { apiClient } from '@/shared/api/client';
 import { API_ENDPOINTS } from '@/shared/config/endpoints';
-import { Button } from '@/shared/ui/button';
 
 import { commentKeys } from '@/entities/comment';
 import { useCurrentUserContext } from '@/entities/user';

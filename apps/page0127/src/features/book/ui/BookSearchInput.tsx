@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react';
 
+import { Button } from '@repo/ui';
+import { Input } from '@repo/ui';
+
 import { useDebounce } from '@/shared/lib/hooks/useDebounce';
 import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
 import { useRotatingPlaceholder } from '@/shared/lib/hooks/useRotatingPlaceholder';
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
 
 import {
   PLACEHOLDER_ROTATION_MS,

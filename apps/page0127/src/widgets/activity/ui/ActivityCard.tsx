@@ -1,9 +1,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { BookCover } from '@repo/ui';
 import { Star } from 'lucide-react';
 
-import { BookCover } from '@/shared/ui/BookCover';
 import { RelativeTime } from '@/shared/ui/RelativeTime';
 
 import { Activity } from '@/entities/activity';
@@ -145,10 +145,8 @@ export const ActivityCard = ({
           <BookCover
             src={activity.book.cover_image}
             title={activity.book.title}
-            width={64}
-            height={96}
             decorative
-            className='h-24 w-16 shrink-0'
+            size='md'
           />
 
           <div className='min-w-0 flex-1'>

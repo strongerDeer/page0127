@@ -12,17 +12,8 @@
 
 import Link from 'next/link';
 
+import { Avatar, AvatarFallback, AvatarImage, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@repo/ui';
 import { BookOpen, LogOut, Settings } from 'lucide-react';
-
-import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/shared/ui/dropdown-menu';
 
 import { useLogout } from '@/features/auth/api/useLogout';
 

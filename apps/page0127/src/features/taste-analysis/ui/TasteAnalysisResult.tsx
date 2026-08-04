@@ -1,5 +1,8 @@
 import Link from 'next/link';
 
+import { Button } from '@repo/ui';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
+import { BookCover, PageContainer, PageHeader } from '@repo/ui';
 import {
   ArrowLeft,
   BarChart3,
@@ -10,12 +13,6 @@ import {
   Star,
   Target,
 } from 'lucide-react';
-
-import { BookCover } from '@/shared/ui/BookCover';
-import { Button } from '@/shared/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { PageContainer } from '@/shared/ui/PageContainer';
-import { PageHeader } from '@/shared/ui/PageHeader';
 
 import { getPersonalityColor } from '@/entities/taste-analysis/model/personalityTypes';
 
@@ -247,12 +244,9 @@ const RecommendationSection = ({
                   <BookCover
                     src={book.cover_image}
                     title={book.title}
-                    width={200}
-                    height={290}
-                    sizes='88px'
                     decorative
-                    className='h-32 w-auto shrink-0'
-                  />
+          size='lg'
+        />
                 )}
                 <div className='flex-1'>
                   <h4 className='font-medium text-text-strong'>{book.title}</h4>

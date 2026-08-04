@@ -1,8 +1,6 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
+import { BookCover, ReadCountBadge } from '@repo/ui';
 import { Globe, Lock, Star } from 'lucide-react';
-
-import { BookCover } from '@/shared/ui/BookCover';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
 
 import { isRated } from '@/entities/book';
 
@@ -49,10 +47,8 @@ export const BookDetailContent = ({
                 src={book.cover_image}
                 title={book.title}
                 author={book.author}
-                fill
-                sizes='224px'
-                fallbackClassName='px-3 py-4 text-sm'
-              />
+          size='fill'
+        />
             </div>
 
             <div className='flex-1 space-y-4'>

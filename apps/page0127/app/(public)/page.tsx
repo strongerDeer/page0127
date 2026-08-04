@@ -1,9 +1,9 @@
 import { Suspense } from 'react';
 
+import { ErrorBoundary } from '@repo/ui';
 import { ArrowRight, BookOpen, ScanSearch, Sparkles } from 'lucide-react';
 
 import { createClient } from '@/shared/config/supabase/server';
-import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 
 import { BookRankingError } from '@/widgets/book/ui/BookRankingError';
 import { BookRankingListSkeleton } from '@/widgets/book/ui/BookRankingListSkeleton';

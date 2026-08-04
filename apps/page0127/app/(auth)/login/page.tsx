@@ -1,12 +1,6 @@
 import Link from 'next/link';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/shared/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui';
 
 import { LoginWithGoogleButton } from '@/features/auth/ui/LoginWithGoogleButton';
 

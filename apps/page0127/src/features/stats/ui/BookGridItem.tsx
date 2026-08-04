@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 
-import { BookCover } from '@/shared/ui/BookCover';
-import { ReadCountBadge } from '@/shared/ui/ReadCountBadge';
+import { BookCover, ReadCountBadge } from '@repo/ui';
 
 import type { Book } from '@/entities/book';
 
@@ -39,9 +38,7 @@ export const BookGridItem = ({ book, href }: BookGridItemProps) => {
           src={book.cover_image}
           title={book.title}
           author={book.author}
-          fill
-          sizes='(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw'
-          fallbackClassName='px-2 py-2.5 text-xs'
+          size='fill'
         />
         {book.read_count > 1 && (
           <div className='absolute right-2 top-2'>

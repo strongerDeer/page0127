@@ -1,13 +1,12 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+import { Button } from '@repo/ui';
+import { BookCover, PageContainer } from '@repo/ui';
 import { ArrowLeft, Star } from 'lucide-react';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { decodeHtmlEntities } from '@/shared/lib/htmlEntities';
-import { BookCover } from '@/shared/ui/BookCover';
-import { Button } from '@/shared/ui/button';
-import { PageContainer } from '@/shared/ui/PageContainer';
 
 import { RATING_MAX, summarizeRatings } from '@/entities/book';
 
@@ -167,20 +166,19 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
       <div className='grid gap-8 md:grid-cols-[200px_1fr]'>
         {/* 책 표지 & 독자 프로필 */}
         <div className='space-y-6'>
-          {/* 판형을 크롭하지 않는다 — 너비만 맞추고 높이는 원본 비율대로 */}
+          {/* 표지가 컬럼 한 칸을 통째로 차지하는 자리 — size='full'.
+              판형 비율은 시스템이 정하므로 여기서 aspect 를 적지 않는다.
+              글자만 키운다(기본 12px → 14px): 표지를 크게 놓는 자리라
+              대체 조판도 그만큼 읽혀야 한다 */}
           <BookCover
             src={book.cover_image}
             title={book.title}
             author={book.author}
-            width={400}
-            height={580}
+            size='full'
             sizes='200px'
             priority
             decorative
-            className='h-auto w-full'
-            // 이미지는 원본 비율로 놓지만 대체 상자에는 비율이 없어 따로 준다.
-            // 표지를 크게 놓는 자리라 글자도 키운다 (기본 10px → 14px)
-            fallbackClassName='aspect-[1/1.45] h-auto w-full border border-line px-3 py-4 text-sm'
+            className='px-3 py-4 text-sm'
           />
 
           {/* 완독한 독자 프로필 (왼쪽 컬럼 배치) */}

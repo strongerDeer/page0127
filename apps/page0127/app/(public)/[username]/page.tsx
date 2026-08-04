@@ -2,9 +2,10 @@ import { Suspense } from 'react';
 
 import { notFound } from 'next/navigation';
 
+import { ErrorBoundary } from '@repo/ui';
+
 import { createClient } from '@/shared/config/supabase/server';
 import { checkUsageLimit } from '@/shared/lib/aiUsage';
-import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 
 import { getCurrentLibraryYear } from '@/entities/book';
 import { getPublicShelfSummary } from '@/entities/book/api/getPublicShelfSummary';
