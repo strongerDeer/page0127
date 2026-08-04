@@ -26,9 +26,18 @@ jobs:
     name: Visual regression · Storybook 배포
     runs-on: ubuntu-latest
 
-    # 토큰이 없는 포크·dependabot PR 에서는 건너뛴다. GitHub 은 그런 PR 에
-    # repository secrets 를 전달하지 않아 실행해도 인증에서 실패할 뿐이다.
-    if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'push'
+    # secrets 가 오지 않는 PR 에서는 건너뛴다 — 실행해도 인증에서 실패할 뿐이다.
+    #
+    # 두 경우를 **각각** 걸러야 한다. 처음에는 fork 조건만 두었는데,
+    # dependabot 은 fork 가 아니라 **같은 레포에 브랜치를 딴다.** 그래서
+    # head.repo 검사를 통과해 job 이 돌았고, 토큰만 빈 값이라
+    # `✖ Missing project token` 으로 죽었다(PR #70~#74 전부 빨간불).
+    #
+    # ci.yml 의 E2E job 이 이미 같은 이유로 dependabot 을 명시적으로 거른다.
+    if: >
+      github.event_name == 'push' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.user.login != 'dependabot[bot]')
 
     steps:
       - name: Checkout
