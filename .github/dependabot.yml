@@ -15,6 +15,16 @@ updates:
       - dependency-name: typescript
         update-types:
           - version-update:semver-major
+      # ESLint 10 은 규칙 컨텍스트에서 `context.getFilename()` 을 제거했는데
+      # eslint-plugin-react 가 아직 그 API 에 의존한다. 올리면 lint 가 통째로 죽는다:
+      #   TypeError: Error while loading rule 'react/display-name':
+      #   contextOrFilename.getFilename is not a function
+      # (PR #73 에서 실측 — Lint 작업이 47초 만에 exit 2)
+      # 플러그인이 ESLint 10 지원을 발표하면 이 항목을 지우고 메이저 업그레이드를
+      # 별도 PR 로 검증한다. typescript 와 같은 이유·같은 처리다.
+      - dependency-name: eslint
+        update-types:
+          - version-update:semver-major
     groups:
       production-minor-patch:
         dependency-type: production
