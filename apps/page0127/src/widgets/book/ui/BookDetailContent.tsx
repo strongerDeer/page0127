@@ -22,6 +22,12 @@ type BookDetailContentProps = {
    * (공개 서재 방문자에게는 사적 메모와 공개 여부를 감춘다)
    */
   isOwner?: boolean;
+  /**
+   * 이 기록이 몇 회독인지. 저장된 `book.read_count` 는 등록 시점에 정해져
+   * 재독을 놓친 경우 1 로 남으므로, 회독 목록에서 센 번호를 받아 쓴다
+   * (entities/book/model/numberReadings.ts). 없으면 저장값으로 떨어진다.
+   */
+  readCount?: number;
 };
 
 /**
@@ -34,6 +40,7 @@ type BookDetailContentProps = {
 export const BookDetailContent = ({
   book,
   isOwner = false,
+  readCount = book.read_count,
 }: BookDetailContentProps) => {
   return (
     <>
@@ -73,7 +80,7 @@ export const BookDetailContent = ({
                   {STATUS_TEXT[book.status]}
                 </span>
 
-                <ReadCountBadge readCount={book.read_count} />
+                <ReadCountBadge readCount={readCount} />
 
                 {/* 0("평가 안 함")은 별 배지를 걸지 않고, 인생책은 점수 대신 이름으로 보여준다 */}
                 {isRated(book.rating) && (

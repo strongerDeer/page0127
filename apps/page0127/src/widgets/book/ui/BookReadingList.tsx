@@ -57,7 +57,7 @@ export const BookReadingList = ({
                     : 'font-medium text-text-strong'
                 }
               >
-                {reading.read_count}회독
+                {reading.reading_number}회독
               </span>
 
               <span className='text-sm text-text-body'>
