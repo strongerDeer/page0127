@@ -1,5 +1,7 @@
 import { createClient } from '@/shared/config/supabase/server';
 
+import { numberReadings } from '../model/numberReadings';
+
 import type { Book } from '../types';
 
 /** 회독 목록 한 줄에 필요한 만큼만 */
@@ -9,11 +11,15 @@ export type BookReading = Pick<
   | 'read_count'
   | 'status'
   | 'completed_date'
+  | 'created_at'
   | 'rating'
   | 'is_life_book'
   | 'one_line_review'
   | 'is_public'
->;
+> & {
+  /** 몇 회독인지 — 저장된 read_count 가 아니라 읽은 순서대로 센 값 */
+  reading_number: number;
+};
 
 /**
  * 같은 책의 회독 기록을 모두 가져온다 (Server Component용)
@@ -25,6 +31,9 @@ export type BookReading = Pick<
  * 묶는 기준은 ISBN 이다 — 앱의 다른 곳과 같은 규칙
  * (entities/book/model/dedupeReadings.ts). ISBN 이 비어 있는 수기 등록 책은
  * 묶을 근거가 없으므로 자기 자신만 돌려준다.
+ *
+ * 회독 번호는 저장된 read_count 가 아니라 읽은 순서대로 센다
+ * (model/numberReadings.ts) — 이유는 그 파일 주석 참고.
  *
  * @param userId 책장 주인
  * @param isbn 대상 책의 ISBN
@@ -40,15 +49,15 @@ export const getBookReadings = async (
 
   const supabase = await createClient();
 
+  // 정렬·번호는 numberReadings 가 맡는다. read_count 로 정렬해 봐야
+  // 재독인데 값이 둘 다 1 이면 순서가 DB 마음대로 정해진다.
   let query = supabase
     .from('books')
     .select(
-      'id, read_count, status, completed_date, rating, is_life_book, one_line_review, is_public'
+      'id, read_count, status, completed_date, created_at, rating, is_life_book, one_line_review, is_public'
     )
     .eq('user_id', userId)
-    .eq('isbn', isbn)
-    // 최근에 읽은 회독을 위에 둔다
-    .order('read_count', { ascending: false });
+    .eq('isbn', isbn);
 
   if (!includePrivate) {
     query = query.eq('is_public', true);
@@ -61,5 +70,5 @@ export const getBookReadings = async (
     return [];
   }
 
-  return data ?? [];
+  return numberReadings(data ?? []);
 };

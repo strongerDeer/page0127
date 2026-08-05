@@ -16,7 +16,8 @@ import type { Book } from '../types';
  * - 대표 = 가장 최근에 읽은 회독 (완독일 없으면 등록 시각, 그마저 같으면 회독 수)
  * - `is_life_book` = 회독 중 하나라도 인생책이면 true
  *   (1회독 때만 인생책으로 꼽았어도 '내 인생책'에서 사라지면 안 된다)
- * - `read_count` = 기록 중 최대값 (배지가 "몇 번 읽었나"를 말해야 한다)
+ * - `read_count` = 저장된 최대값과 '합쳐진 기록 수' 중 큰 쪽
+ *   (배지가 "몇 번 읽었나"를 말해야 한다)
  *
  * 입력 순서는 그대로 지킨다. 정렬은 호출부가 이미 끝낸 상태로 들어온다.
  */
@@ -41,26 +42,35 @@ export const dedupeReadings = (books: Book[]): Book[] => {
     return diff !== 0 ? diff > 0 : candidate.read_count > current.read_count;
   };
 
-  // 그룹별 대표를 고르면서, 어느 자리에 놓을지(원래 순서)도 함께 기억한다
-  const groups = new Map<string, { order: number; book: Book }>();
+  // 그룹별 대표를 고르면서, 어느 자리에 놓을지(원래 순서)와
+  // 몇 개가 합쳐졌는지(= 몇 회독인지)도 함께 기억한다
+  const groups = new Map<string, { order: number; count: number; book: Book }>();
 
   books.forEach((book, index) => {
     const key = groupKey(book);
     const group = groups.get(key);
 
     if (!group) {
-      groups.set(key, { order: index, book });
+      groups.set(key, { order: index, count: 1, book });
       return;
     }
 
     const merged: Book = isNewerReading(book, group.book) ? book : group.book;
+    const count = group.count + 1;
 
     groups.set(key, {
       order: group.order,
+      count,
       book: {
         ...merged,
         is_life_book: group.book.is_life_book || book.is_life_book,
-        read_count: Math.max(group.book.read_count, book.read_count),
+        // 저장된 read_count 는 등록 시점에 한 번 정해진다 — 중복 감지가
+        // ISBN 표기 차이(ISBN10/13, 알라딘 상품코드)로 빗나가면 재독인데도
+        // 둘 다 1 로 남는다. 나중에 ISBN 을 맞춰 합쳐져도 그 값은 따라오지
+        // 않아 배지가 영영 안 붙는다. 같은 칸에 같은 책 기록이 n 개 있다는
+        // 것 자체가 n 회독이므로, 합쳐진 개수를 하한으로 쓴다.
+        // 저장값이 더 크면(제대로 등록된 3회독 등) 그쪽을 존중한다.
+        read_count: Math.max(group.book.read_count, book.read_count, count),
       },
     });
   });

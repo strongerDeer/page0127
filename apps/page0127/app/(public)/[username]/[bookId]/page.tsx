@@ -130,6 +130,12 @@ const BookDetailPage = async ({ params }: PageProps) => {
   // 여기서 되돌려 준다. 방문자에게는 공개된 회독만 보인다.
   const readings = await getBookReadings(profile.id, book.isbn, isOwner);
 
+  // 헤더 배지와 아래 목록이 같은 번호를 말해야 한다 — 저장된 read_count 는
+  // 재독을 놓친 경우 1 로 남아 있어 목록과 어긋난다
+  const readCount =
+    readings.find((reading) => reading.id === book.id)?.reading_number ??
+    book.read_count;
+
   return (
     <PageContainer width='content'>
       <div className='mb-6 flex flex-wrap items-center justify-between gap-3'>
@@ -159,7 +165,7 @@ const BookDetailPage = async ({ params }: PageProps) => {
         </div>
       </div>
 
-      <BookDetailContent book={book} isOwner={isOwner} />
+      <BookDetailContent book={book} isOwner={isOwner} readCount={readCount} />
 
       <div className='mt-6'>
         <BookReadingList
