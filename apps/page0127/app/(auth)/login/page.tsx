@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui';
 
-import { LoginWithGoogleButton } from '@/features/auth/ui/LoginWithGoogleButton';
+import { OAuthLoginButtons } from '@/features/auth/ui/OAuthLoginButtons';
 
 type LoginPageProps = {
   searchParams: Promise<{ redirect?: string }>;
@@ -26,7 +26,7 @@ const LoginPage = async ({ searchParams }: LoginPageProps) => {
           <CardDescription>어서 오세요. 책장이 기다리고 있어요.</CardDescription>
         </CardHeader>
         <CardContent>
-          <LoginWithGoogleButton next={redirect} />
+          <OAuthLoginButtons next={redirect} />
           {/* 약관 링크는 실제 페이지로 연결한다 (기존 href='#' 죽은 링크) */}
           <p className='mt-4 text-center text-sm text-text-subtle'>
             로그인하면{' '}
