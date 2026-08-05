@@ -118,13 +118,15 @@ export const HeroBanner = ({ slides, covers = [] }: HeroBannerProps) => {
                 isActive ? 'opacity-100' : 'pointer-events-none opacity-0'
               )}
             >
-              <div className='mx-auto flex w-full max-w-6xl items-center justify-between gap-8 px-8 md:px-12'>
-                {/* 카피 */}
-                <div className='max-w-md' style={{ color: slide.fg }}>
+              <div className='mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 md:gap-8 md:px-12'>
+                {/* 카피 — min-w-0 이 없으면 긴 제목이 표지를 화면 밖으로 밀어낸다 */}
+                <div className='min-w-0 max-w-md' style={{ color: slide.fg }}>
                   <p className='mb-4 text-sm font-medium opacity-70'>
                     {slide.eyebrow}
                   </p>
-                  <h2 className='text-[28px] font-bold leading-[1.35] md:text-4xl md:leading-[1.3]'>
+                  {/* 모바일 24px — 28px 로 두면 카피가 238px 를 먹어 표지가 49px 로
+                      눌린다(375 화면 기준). 4px 를 내주고 책을 제 크기로 세운다. */}
+                  <h2 className='text-2xl font-bold leading-[1.35] md:text-4xl md:leading-[1.3]'>
                     {slide.lines[0]}
                     <br />
                     {slide.lines[1]}
@@ -149,13 +151,29 @@ export const HeroBanner = ({ slides, covers = [] }: HeroBannerProps) => {
 
                 {/* 실제 책 표지 — 선반에 세워둔다.
                     판형을 크롭하지 않는다: 높이만 고정하고 너비는 원본 비율대로 둔다.
-                    문고본과 양장본은 실제로 판형이 다르고, 그 불균일이 "진짜 책"의 증거다. */}
+                    문고본과 양장본은 실제로 판형이 다르고, 그 불균일이 "진짜 책"의 증거다.
+
+                    모바일에도 반드시 나와야 한다. 예전엔 md 미만에서 통째로 숨겼는데,
+                    그러면 "폴드 안에 책이 보여야 한다"는 이 배너의 존재 이유가
+                    **트래픽이 가장 많은 화면에서만** 사라진다. 대신 375px 에 들어가도록
+                    모바일에서는 한 권만 세운다.
+
+                    shrink-0 이 없으면 카피와 표지가 함께 눌려, 표지가 제 폭을 못 갖고
+                    컨테이너 밖으로 흘러나간다. 표지는 고정하고 카피(min-w-0)가 남는 폭을 쓴다. */}
                 {slideCovers.length > 0 && (
-                  <div className='hidden items-end gap-3 md:flex'>
+                  <div className='flex shrink-0 items-end gap-1.5 md:gap-3'>
                     {slideCovers.map((cover, ci) => (
                       <div
                         key={`${slide.id}-${ci}`}
-                        className='relative shrink-0'
+                        className={cn(
+                          'relative shrink-0',
+                          // 모바일에는 한 권만 세운다.
+                          // 두 권을 넣어 봤더니 375px 화면에서 둘째가 398px 까지
+                          // 나가 잘렸다. 표지는 판형을 그대로 두는 정책이라 폭이
+                          // 책마다 다르고(0.65~1.0), 크기를 줄여 맞춰도 넓은 판형
+                          // 하나가 들어오면 다시 삐져나온다. 한 권은 항상 안전하다.
+                          ci > 0 && 'hidden md:block'
+                        )}
                         style={{
                           // 가운데 책을 살짝 올려 진열대처럼 보이게 한다
                           transform: ci === 1 ? 'translateY(-14px)' : undefined,
@@ -166,13 +184,13 @@ export const HeroBanner = ({ slides, covers = [] }: HeroBannerProps) => {
                           alt=''
                           width={300}
                           height={430}
-                          sizes='(min-width: 1024px) 220px, 180px'
+                          sizes='(min-width: 1024px) 220px, (min-width: 768px) 180px, 100px'
                           // 첫 슬라이드의 표지는 폴드 위 LCP 요소다 — 지연 로딩하면 안 된다
                           priority={i === 0}
                           // 나머지 슬라이드도 미리 로드한다 — lazy로 두면
                           // 슬라이드가 넘어간 순간 표지 없이 책등 줄만 보인다
                           loading={i === 0 ? undefined : 'eager'}
-                          className='h-45 w-auto rounded-r-md lg:h-55'
+                          className='h-28 w-auto rounded-r-md md:h-45 lg:h-55'
                         />
                         {/* 좌측 책등 — 종이 두께 */}
                         <span
