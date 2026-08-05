@@ -30,6 +30,12 @@ export type Profile = {
   /** 사용자 고유 ID (공개 서재 URL용, 예: abc, abc1, abc2) */
   username: string | null;
 
+  /**
+   * 아이디를 바꾼 시각. null 이면 가입 시 자동 발급된 상태(변경 기회 1회 남음).
+   * 값을 채우는 것은 DB 트리거다 — 클라이언트가 보낸 값은 채택되지 않는다.
+   */
+  username_changed_at: string | null;
+
   /** 닉네임 */
   nickname: string | null;
 
