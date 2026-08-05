@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 const CARDS = [
+  { href: '/admin/reports', title: '신고', desc: '접수된 신고 확인·댓글 숨김' },
   { href: '/admin/costs', title: 'AI 비용', desc: '이번 달 사용액과 예산 대비' },
   { href: '/admin/members', title: '회원 관리', desc: '가입자 조회·정지' },
 ];
