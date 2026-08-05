@@ -111,6 +111,30 @@ describe('dedupeReadings', () => {
     expect(merged.read_count).toBe(3);
   });
 
+  it('저장된 회독 수가 모두 1이어도 기록이 2개면 2회독으로 센다', () => {
+    // read_count 는 등록 시점에 한 번 정해진다 — 중복 감지(getBookByISBN)가
+    // ISBN 표기 차이로 빗나가면 둘 다 1 로 남는다. 나중에 ISBN 을 맞춰
+    // 합쳐지더라도 그 값은 따라오지 않아 배지가 영영 안 붙는다.
+    // 같은 칸에 같은 책 기록이 2개 있다는 것 자체가 2회독이다.
+    const books = [
+      createBook({ id: 'first', read_count: 1, completed_date: '2025-09-12' }),
+      createBook({ id: 'second', read_count: 1, completed_date: '2026-05-08' }),
+    ];
+
+    const [merged] = dedupeReadings(books);
+
+    expect(merged.id).toBe('second');
+    expect(merged.read_count).toBe(2);
+  });
+
+  it('저장된 회독 수가 기록 수보다 크면 저장된 값을 쓴다', () => {
+    // 재독 다이얼로그로 제대로 등록해 read_count 가 3 인데 그 해에 읽은
+    // 기록만 화면에 남은 경우 — 세는 값(1)으로 덮으면 회독 수가 되레 줄어든다
+    const books = [createBook({ id: 'only', read_count: 3 })];
+
+    expect(dedupeReadings(books)[0].read_count).toBe(3);
+  });
+
   it('서로 다른 책은 합치지 않고 원래 순서를 지킨다', () => {
     const books = [
       createBook({ id: 'a', isbn: '111' }),
