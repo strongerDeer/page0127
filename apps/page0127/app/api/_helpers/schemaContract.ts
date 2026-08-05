@@ -43,6 +43,18 @@ export const SCHEMA_CONTRACT: SchemaProbe[] = [
     columns: ['visit_date', 'first_visit_at'],
     breaks: '재방문 계측 적재 (트랙 D-1)',
   },
+  {
+    table: 'book_comments',
+    // is_hidden 이 없으면 SELECT 정책의 필터가 사라진 것 — 가려 둔 댓글이 다시 보인다.
+    // 조용히 되살아나는 종류의 사고라 여기서 잡는다.
+    columns: ['is_hidden'],
+    breaks: '댓글 숨김 — 없으면 가려 둔 댓글이 다시 노출된다',
+  },
+  {
+    table: 'reports',
+    columns: ['reporter_id', 'comment_id', 'status'],
+    breaks: '신고 접수와 어드민 신고 처리 화면',
+  },
 ];
 
 /** PostgREST 가 "컬럼 없음" 으로 주는 코드. 다른 실패와 구분해야 원인이 드러난다. */
