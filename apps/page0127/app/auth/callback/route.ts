@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       // user_metadata를 넘겨야 Google이 준 이름·프로필 사진이 첫 프로필에 들어간다
       const profile = await ensureProfile(
         data.user.id,
-        data.user.email!,
+        data.user.email ?? null,
         data.user.user_metadata
       );
       // next 는 사용자가 조작할 수 있는 값이다 — 외부 URL 이면 버리고 본인 서재로 보낸다
