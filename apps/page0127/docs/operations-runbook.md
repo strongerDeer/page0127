@@ -63,7 +63,7 @@ page0127 서비스의 상태 확인·백업·장애 대응 절차를 한곳에 �
 
 | 항목 | 값 |
 | --- | --- |
-| Monitor URL | `https://page0127.vercel.app/api/health` |
+| Monitor URL | `https://page0127.com/api/health` |
 | 방식 | HTTP(s) — 상태코드 200 확인 (가능하면 본문에 `"status":"ok"` 포함 검사) |
 | 주기 | 1~5분 |
 | 실패 판정 | 연속 2회 실패 시 알림 (일시적 흔들림으로 인한 오탐 방지) |
