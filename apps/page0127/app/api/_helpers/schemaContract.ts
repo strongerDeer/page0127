@@ -31,8 +31,10 @@ export const SCHEMA_CONTRACT: SchemaProbe[] = [
   },
   {
     table: 'profiles',
-    columns: ['username', 'nickname'],
-    breaks: '로그인 후 모든 화면 (사용자 식별)',
+    // username_changed_at — 설정 화면이 "아이디 변경 기회가 남았는가"를 이 값으로 판단한다.
+    // NULL 이면 아직 안 바꾼 것. 컬럼이 없으면 설정 화면이 죽는다.
+    columns: ['username', 'nickname', 'username_changed_at'],
+    breaks: '로그인 후 모든 화면 (사용자 식별) · 설정의 아이디 변경',
   },
   {
     table: 'user_daily_visits',

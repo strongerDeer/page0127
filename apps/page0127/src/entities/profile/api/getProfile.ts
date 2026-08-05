@@ -1,8 +1,12 @@
 import { createClient } from '@/shared/config/supabase/server';
 
 import { toIdentityDefaults } from '../model/identityDefaults';
+import { generateUsernameFromEmail, USERNAME_MAX_LENGTH } from '../model/username';
 
 import type { Profile } from '../types';
+
+/** Postgres 유니크 제약 위반. 같은 username 을 동시에 고른 가입자를 구분한다 */
+const UNIQUE_VIOLATION = '23505';
 
 /**
  * 사용자 프로필 조회 (Server Component용)
@@ -35,72 +39,48 @@ export const getProfile = async (userId: string): Promise<Profile | null> => {
   return profile;
 };
 
-/**
- * 이메일에서 username 생성 (abc@gmail.com -> abc)
- *
- * 학습 포인트:
- * - 이메일의 @ 앞부분을 username으로 사용
- * - 특수문자 제거하여 안전한 URL 생성
- *
- * @param email - 사용자 이메일
- * @returns username (예: abc)
- */
-const generateUsernameFromEmail = (email: string): string => {
-  // @ 앞부분만 추출
-  const localPart = email.split('@')[0];
+/** 접미사를 붙여도 20자를 넘지 않도록 앞부분을 자른다 */
+const withSuffix = (base: string, suffix: string): string =>
+  `${base.slice(0, USERNAME_MAX_LENGTH - suffix.length)}${suffix}`;
 
-  // 영문, 숫자, 언더스코어만 허용 (특수문자 제거)
-  const cleaned = localPart.replace(/[^a-zA-Z0-9_]/g, '');
-
-  // 소문자로 변환
-  return cleaned.toLowerCase();
-};
+/** 겹쳤을 때 쓸 무작위 접미사 — 소문자·숫자만이라 형식 규칙을 깨지 않는다 */
+const randomSuffix = (): string => Math.random().toString(36).slice(2, 8);
 
 /**
- * 고유한 username 생성 (중복 시 숫자 추가)
+ * 겹치지 않는 username 을 만든다.
  *
- * 학습 포인트:
- * - username이 중복되면 1, 2, 3... 추가
- * - 예: abc -> abc1 -> abc2
- * - 최대 100번 시도 (무한루프 방지)
+ * 기존 구현은 후보 하나마다 쿼리를 던져 **최대 101회 왕복**했다.
+ * 여기서는 후보를 한 번에 만들고 한 번의 `in` 조회로 걸러 낸다.
+ *
+ * ⚠️ 확인과 저장 사이의 경합은 여기서 막을 수 없다(같은 순간 같은 이름을 고른
+ *    두 가입자). 최종 방어선은 DB 의 유니크 제약이고, 저장에 실패하면
+ *    upsertProfile 이 무작위 이름으로 다시 시도한다.
  *
  * @param email - 사용자 이메일
- * @returns 고유한 username
+ * @returns 형식 규칙을 통과하고, 조회 시점에 비어 있던 username
  */
 export const generateUniqueUsername = async (
   email: string
 ): Promise<string> => {
   const supabase = await createClient();
-  const baseUsername = generateUsernameFromEmail(email);
+  const base = generateUsernameFromEmail(email);
 
-  // 1. 먼저 기본 username 시도
-  const { data: existing } = await supabase
+  // base, base1 … base20 을 후보로 둔다
+  const candidates = [
+    base,
+    ...Array.from({ length: 20 }, (_, i) => withSuffix(base, String(i + 1))),
+  ];
+
+  const { data } = await supabase
     .from('profiles')
     .select('username')
-    .eq('username', baseUsername)
-    .maybeSingle();
+    .in('username', candidates);
 
-  if (!existing) {
-    return baseUsername; // 중복 없으면 바로 반환
-  }
+  const taken = new Set((data ?? []).map((row) => row.username));
+  const free = candidates.find((candidate) => !taken.has(candidate));
 
-  // 2. 중복이 있으면 숫자 추가 (1부터 시작)
-  for (let i = 1; i <= 100; i++) {
-    const candidateUsername = `${baseUsername}${i}`;
-
-    const { data: duplicate } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('username', candidateUsername)
-      .maybeSingle();
-
-    if (!duplicate) {
-      return candidateUsername; // 사용 가능한 username 발견
-    }
-  }
-
-  // 100번 시도해도 실패하면 랜덤 숫자 추가
-  return `${baseUsername}${Date.now()}`;
+  // 21개가 전부 찼으면 무작위로 간다 (base 가 흔한 이름일 때)
+  return free ?? withSuffix(base, randomSuffix());
 };
 
 /**
@@ -138,19 +118,41 @@ export const upsertProfile = async (
     : toIdentityDefaults(metadata);
 
   // 4. upsert (값이 있는 항목만 추가, 없으면 기존 유지)
-  await supabase.from('profiles').upsert(
-    {
-      id: userId,
-      email,
-      ...(username && { username }), // username이 있을 때만 추가
-      ...(defaults.nickname && { nickname: defaults.nickname }),
-      ...(defaults.photoUrl && { photo_url: defaults.photoUrl }),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      onConflict: 'id',
-    }
+  //
+  // username 은 경합에 질 수 있다 — 같은 순간 같은 이름을 고른 다른 가입자가
+  // 먼저 저장하면 유니크 제약(23505)에 걸린다. 그때는 무작위 이름으로 한 번 더
+  // 시도한다. 예전에는 에러를 통째로 무시해서, 실패하면 프로필 없이 조용히
+  // 넘어갔다가 ensureProfile 이 "프로필 생성에 실패했습니다"로 죽었다.
+  const save = (name: string | undefined) =>
+    supabase.from('profiles').upsert(
+      {
+        id: userId,
+        email,
+        ...(name && { username: name }), // username이 있을 때만 추가
+        ...(defaults.nickname && { nickname: defaults.nickname }),
+        ...(defaults.photoUrl && { photo_url: defaults.photoUrl }),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: 'id',
+      }
+    );
+
+  const { error } = await save(username);
+  if (!error) return;
+
+  // username 을 만들지 않은 호출(이미 있는 프로필)이면 재시도해도 결과가 같다
+  if (error.code !== UNIQUE_VIOLATION || !username) {
+    console.error('프로필 저장 실패:', error.message);
+    return;
+  }
+
+  const { error: retryError } = await save(
+    withSuffix(generateUsernameFromEmail(email), randomSuffix())
   );
+  if (retryError) {
+    console.error('프로필 저장 재시도 실패:', retryError.message);
+  }
 };
 
 /**
