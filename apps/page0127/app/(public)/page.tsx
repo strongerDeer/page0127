@@ -93,7 +93,11 @@ const Home = async () => {
         {/* 발견 카드(틴트 투톤) + 랭킹 리스트 — 편집 면과 데이터 면을 나란히.
             각 섹션은 독립적으로 스트리밍되고 독립적으로 실패한다.
             ErrorBoundary(바깥) > Suspense(안): 로딩은 Suspense, 에러는 ErrorBoundary */}
-        <div className='grid items-start gap-8 lg:grid-cols-[2fr_3fr]'>
+        {/* minmax(0,...) 를 쓰는 이유: 그리드 아이템의 min-width 기본값은 auto 라
+            안의 내용이 트랙보다 넓으면 트랙 자체가 밀려난다. 실제로 모바일에서
+            페이지가 17px 가로 스크롤됐다(375 화면에 392). 0 을 하한으로 박아
+            트랙이 컨테이너를 넘지 못하게 한다. */}
+        <div className='grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]'>
           <ErrorBoundary fallback={null}>
             <Suspense
               fallback={
