@@ -20,6 +20,18 @@ import type { BookRanking } from '@/entities/book';
  *   "매일 집계가 돌고 있다"는 증거 (RankDeltaBadge 참조)
  * - 좋아요 버튼은 여기 두지 않는다 — 비교·행동은 책 정보 페이지의 일이다.
  */
+/**
+ * 근거 수치를 화면에 적는 최소 인원.
+ *
+ * 왜 감추나: 1~2명일 때 "1명이 완독"을 그대로 박으면, 처음 온 사람은 랭킹이 아니라
+ * **아무도 안 쓰는 서비스**를 본다. 순위 자체는 여전히 맞다 — 적은 표본을 크게 말하지
+ * 않을 뿐이다. 숫자를 지어내는 것(“오늘 0권 완독” 같은 문구)과는 반대 방향의 처방이다.
+ *
+ * 이 값 아래에서는 줄을 통째로 지운다. 표지·순위·제목·저자 네 필드가 남아
+ * 발견 면의 밀도는 그대로다(00_docs/07 §6-9).
+ */
+const MIN_COUNT_TO_SHOW = 3;
+
 type BookRankingListProps = {
   title: string;
   /** 집계 기준일 등 — 제목 우측에 붙는 메타 정보 */
@@ -102,19 +114,24 @@ export const BookRankingList = ({
                       {book.author}
                     </p>
                   )}
-                  {/* 랭킹 근거 수치 — 발견 면의 마지막 필드 */}
-                  <p className='mt-1 flex items-center gap-1 text-xs text-text-subtle'>
-                    {type === 'best' && (
-                      <Heart
-                        aria-hidden='true'
-                        className='size-3 fill-rank-up text-rank-up'
-                      />
-                    )}
-                    <span>
-                      <b className='font-medium text-text-body'>{item.count}</b>
-                      {type === 'best' ? '명의 인생책' : '명이 완독'}
-                    </span>
-                  </p>
+                  {/* 랭킹 근거 수치 — 발견 면의 마지막 필드.
+                      표본이 얇으면 적지 않는다(MIN_COUNT_TO_SHOW 참조) */}
+                  {item.count >= MIN_COUNT_TO_SHOW && (
+                    <p className='mt-1 flex items-center gap-1 text-xs text-text-subtle'>
+                      {type === 'best' && (
+                        <Heart
+                          aria-hidden='true'
+                          className='size-3 fill-rank-up text-rank-up'
+                        />
+                      )}
+                      <span>
+                        <b className='font-medium text-text-body'>
+                          {item.count}
+                        </b>
+                        {type === 'best' ? '명의 인생책' : '명이 완독'}
+                      </span>
+                    </p>
+                  )}
                 </div>
 
                 {/* 내가 완독한 책 — 완독 표시는 브랜드 블루의 직무다 */}
