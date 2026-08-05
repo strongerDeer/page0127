@@ -18,6 +18,7 @@ import {
   type ProfileActionState,
   updateProfileAction,
 } from '@/features/profile/api/updateProfileAction';
+import { UsernameChangeDialog } from '@/features/profile/ui/UsernameChangeDialog';
 
 import { AvatarUpload } from './AvatarUpload';
 
@@ -40,6 +41,56 @@ type ProfileSettingsFormMyAccountProps = {
   username: string | null;
   onLogout: () => void;
 };
+
+type ProfileSettingsFormUsernameProps = {
+  inputId: string;
+  username: string | null;
+  /** null 이면 아직 안 바꾼 것 — 변경 기회가 한 번 남아 있다 */
+  changedAt: string | null;
+};
+
+/**
+ * 아이디 칸.
+ *
+ * 가입 시 아이디는 이메일 앞부분에서 자동으로 만들어진다. 그 사실을 모르면
+ * 자기 이메일 앞부분이 공개 주소가 된 줄도 모르고 지나가므로, 아직 바꾸지 않은
+ * 사람에게는 그 사정을 먼저 알려 바꿀지 정하게 한다.
+ */
+const ProfileSettingsFormUsername = ({
+  inputId,
+  username,
+  changedAt,
+}: ProfileSettingsFormUsernameProps) => (
+  <div className='space-y-2'>
+    <Label htmlFor={inputId}>아이디</Label>
+    <div className='flex items-center gap-2'>
+      {/* name 이 없으므로 이 값은 프로필 저장 FormData 에 실리지 않는다 */}
+      <Input
+        id={inputId}
+        type='text'
+        value={username || ''}
+        disabled
+        className='bg-muted'
+      />
+      {username && !changedAt && (
+        <UsernameChangeDialog currentUsername={username} />
+      )}
+    </div>
+    <p className='text-xs text-text-subtle'>
+      공개 서재 주소 /{username}
+    </p>
+    {changedAt ? (
+      <p className='text-xs text-text-subtle'>
+        아이디는 한 번만 바꿀 수 있어요. 이미 변경해서 더는 바꿀 수 없습니다.
+      </p>
+    ) : (
+      <p className='text-xs text-text-subtle'>
+        가입할 때 이메일 앞부분으로 자동으로 만들어진 아이디예요.{' '}
+        <strong>한 번만</strong> 바꿀 수 있습니다.
+      </p>
+    )}
+  </div>
+);
 
 const ProfileSettingsFormPhoto = ({
   currentPhotoUrl,
@@ -194,20 +245,13 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
             />
           </div>
 
-          {/* 아이디 (읽기 전용) — 공개 서재 URL에 쓰인다 */}
-          <div className='space-y-2'>
-            <Label htmlFor={ids.username}>아이디</Label>
-            <Input
-              id={ids.username}
-              type='text'
-              value={profile.username || ''}
-              disabled
-              className='bg-muted'
-            />
-            <p className='text-xs text-text-subtle'>
-              공개 서재 주소 /{profile.username}
-            </p>
-          </div>
+          {/* 아이디 — 공개 서재 URL에 쓰인다. 변경은 평생 한 번뿐이라
+              이 폼(name 없음 → 전송 안 함)이 아니라 별도 다이얼로그가 맡는다. */}
+          <ProfileSettingsForm.Username
+            inputId={ids.username}
+            username={profile.username}
+            changedAt={profile.username_changed_at}
+          />
 
           {/* 닉네임 — 비제어(defaultValue) + name 으로 FormData 자동 수집 */}
           <div className='space-y-2'>
@@ -264,5 +308,6 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
 };
 
 ProfileSettingsForm.Photo = ProfileSettingsFormPhoto;
+ProfileSettingsForm.Username = ProfileSettingsFormUsername;
 ProfileSettingsForm.MyAccount = ProfileSettingsFormMyAccount;
 ProfileSettingsForm.DangerZone = ProfileSettingsFormDangerZone;
