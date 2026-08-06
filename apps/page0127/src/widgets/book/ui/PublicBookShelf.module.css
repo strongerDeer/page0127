@@ -13,6 +13,9 @@
   --shelf-under: #d1d5db;
   --shelf-shadow: rgba(0, 0, 0, 0.2);
   --shelf-shadow-soft: rgba(0, 0, 0, 0.14);
+  /* 책 낱권의 윤곽. 밝은 표지가 흰 배경에 묻히지 않게 두는 선이라 다크에서는 반대로 어두워야 한다 */
+  --book-border: #eee;
+  --book-border-empty: #ddd;
 
   margin-top: 2rem;
   background-color: transparent;
@@ -91,7 +94,7 @@
 .books li a img {
   width: auto;
   height: 240px;
-  border: 1px solid #eee;
+  border: 1px solid var(--book-border);
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
   margin: 0 1px;
 }
@@ -113,7 +116,7 @@
 .noImage {
   width: auto;
   height: 240px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--book-border-empty);
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
   margin: 0 1px;
   background-color: #f5f5f5;
@@ -194,11 +197,13 @@
 */
 @media (prefers-color-scheme: dark) {
   .shelf {
-    --shelf-top: #2a2d33;
-    --shelf-face: #33373e;
-    --shelf-edge: #212429;
-    --shelf-under: #17191d;
-    --shelf-shadow: rgba(0, 0, 0, 0.5);
-    --shelf-shadow-soft: rgba(0, 0, 0, 0.38);
+    --shelf-top: #1e2126;
+    --shelf-face: #262a30;
+    --shelf-edge: #16181c;
+    --shelf-under: #101215;
+    --shelf-shadow: rgba(0, 0, 0, 0.6);
+    --shelf-shadow-soft: rgba(0, 0, 0, 0.45);
+    --book-border: #2e3136;
+    --book-border-empty: #24262a;
   }
 }
