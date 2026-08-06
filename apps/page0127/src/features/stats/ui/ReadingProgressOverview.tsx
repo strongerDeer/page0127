@@ -170,7 +170,7 @@ export const ReadingProgressOverview = ({
           </div>
         </div>
 
-        <div className='relative min-h-64 overflow-hidden bg-[#eef1f5] lg:min-h-full'>
+        <div className='relative min-h-64 overflow-hidden bg-sunken lg:min-h-full'>
           <div className='absolute inset-x-0 top-6 text-center'>
             <p className='text-xs font-medium tracking-[0.18em] text-text-subtle'>
               BOOKS OF {year}

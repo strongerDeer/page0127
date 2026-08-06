@@ -139,14 +139,10 @@ const Home = async () => {
           </Suspense>
         </ErrorBoundary>
 
-        {/* 실제 책 표지와 결과지를 함께 보여주는 에디토리얼 취향 분석 섹션 */}
-        <section
-          className='overflow-hidden rounded-2xl border border-line-soft p-7 md:p-10'
-          style={{
-            background:
-              'linear-gradient(135deg, #f8f7f3 0%, #f1f4f7 58%, #edf2f8 100%)',
-          }}
-        >
+        {/* 실제 책 표지와 결과지를 함께 보여주는 에디토리얼 취향 분석 섹션.
+            그라디언트 값은 디자인 시스템이 갖는다(tint-editorial) — 여기 hex 로
+            박혀 있던 동안 다크에서 이 면만 밝게 남아 대비가 1.07:1 이었다. */}
+        <section className='tint-editorial overflow-hidden rounded-2xl border border-line-soft p-7 md:p-10'>
           <div className='grid items-center gap-10 lg:grid-cols-[5fr_7fr] lg:gap-14'>
             <div className='max-w-md'>
               <p className='flex items-center gap-2 text-xs font-medium text-primary'>
@@ -164,7 +160,7 @@ const Home = async () => {
               </p>
 
               <div className='mt-8 flex flex-wrap items-center gap-2 text-xs font-medium text-text-subtle'>
-                <span className='flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-2'>
+                <span className='tint-chip flex items-center gap-1.5 rounded-full px-3 py-2'>
                   <BookOpen aria-hidden='true' className='size-3.5' />
                   완독 기록
                 </span>
@@ -172,7 +168,7 @@ const Home = async () => {
                   aria-hidden='true'
                   className='size-3.5 text-text-subtle'
                 />
-                <span className='flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-2'>
+                <span className='tint-chip flex items-center gap-1.5 rounded-full px-3 py-2'>
                   <ScanSearch aria-hidden='true' className='size-3.5' />
                   패턴 분석
                 </span>
@@ -180,7 +176,7 @@ const Home = async () => {
                   aria-hidden='true'
                   className='size-3.5 text-text-subtle'
                 />
-                <span className='flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-2'>
+                <span className='tint-chip flex items-center gap-1.5 rounded-full px-3 py-2'>
                   <Sparkles aria-hidden='true' className='size-3.5' />
                   취향 노트
                 </span>
@@ -189,7 +185,7 @@ const Home = async () => {
 
             <Suspense
               fallback={
-                <div className='min-h-96 animate-pulse rounded-2xl border border-line-soft bg-white/70' />
+                <div className='tint-chip min-h-96 animate-pulse rounded-2xl border border-line-soft' />
               }
             >
               <TasteExampleCard />
@@ -197,12 +193,11 @@ const Home = async () => {
           </div>
         </section>
 
-        {/* 시작하기 — 흰 카드 대신 네이비 밴드. 페이지 끝을 무겁게 닫는다 */}
+        {/* 시작하기 — 흰 카드 대신 네이비 밴드. 페이지 끝을 무겁게 닫는다.
+            색은 시스템이 갖는다(band-strong) — 여기 박혀 있던 #14294e 는
+            **다크 모드의 background 와 같은 색**이라 밴드가 배경에 녹았다. */}
         {!user && (
-          <section
-            className='flex flex-col items-center gap-4 rounded-2xl px-6 py-12 text-center'
-            style={{ backgroundColor: '#14294e' }}
-          >
+          <section className='band-strong flex flex-col items-center gap-4 rounded-2xl px-6 py-12 text-center'>
             <h2 className='heading-2 text-white'>
               책장은 한 권부터 시작합니다
             </h2>
