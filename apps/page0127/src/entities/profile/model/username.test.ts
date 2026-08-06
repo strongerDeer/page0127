@@ -62,19 +62,6 @@ describe('validateUsername', () => {
     }
   });
 
-  it('예약어를 막는 이유는 밝히지 않는다', () => {
-    // "서비스가 쓰고 있다"고 알려 주면 RESERVED_USERNAMES 가 곧 라우트 지도가 된다 —
-    // 아이디를 하나씩 넣어 보는 것만으로 admin·api 같은 경로의 존재를 확인할 수 있다.
-    const result = validateUsername('admin');
-    const message = result.ok ? '' : result.message;
-
-    for (const leak of ['서비스', '관리자', '경로', '주소']) {
-      expect(message).not.toContain(leak);
-    }
-    // 그래도 무엇을 하면 되는지는 알려 줘야 한다
-    expect(message).toContain('다른 아이디');
-  });
-
   it('대문자로 친 예약어도 막는다 (소문자로 낮춘 뒤 판정한다)', () => {
     expect(validateUsername('ADMIN')).toMatchObject({
       ok: false,

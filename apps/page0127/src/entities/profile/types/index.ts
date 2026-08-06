@@ -36,12 +36,6 @@ export type Profile = {
    */
   username_changed_at: string | null;
 
-  /**
-   * 첫 로그인 온보딩을 마친 시각. null 이면 미완료 — 로그인 후 온보딩으로 보낸다.
-   * username_changed_at 과 마찬가지로 **서버 소유 컬럼**이다(트리거가 지킨다).
-   */
-  onboarded_at: string | null;
-
   /** 닉네임 */
   nickname: string | null;
 
