@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import {
   Bug,
+  Flag,
   Gauge,
   ImageIcon,
   LayoutDashboard,
@@ -15,6 +16,7 @@ const NAV = [
   { href: '/admin', label: '대시보드', icon: LayoutDashboard },
   { href: '/admin/quality', label: '품질', icon: Gauge },
   { href: '/admin/errors', label: '에러', icon: Bug },
+  { href: '/admin/reports', label: '신고', icon: Flag },
   { href: '/admin/analytics', label: '유입분석', icon: LineChart },
   { href: '/admin/costs', label: 'AI 비용', icon: Receipt },
   { href: '/admin/members', label: '회원 관리', icon: Users },

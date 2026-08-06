@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from '@repo/ui';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Avatar, AvatarFallback, AvatarImage, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Textarea } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { MoreVertical, Pencil, Reply, Trash2 } from 'lucide-react';
+import { Flag, MoreVertical, Pencil, Reply, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
@@ -14,6 +14,8 @@ import { RelativeTime } from '@/shared/ui/RelativeTime';
 import { Comment, commentApi, commentKeys } from '@/entities/comment';
 import { ProfileLink } from '@/entities/profile/ui/ProfileLink';
 import { useCurrentUserContext } from '@/entities/user';
+
+import { ReportCommentDialog } from '@/features/report/ui/ReportCommentDialog';
 
 import { CommentForm } from './CommentForm';
 
@@ -45,6 +47,7 @@ export const CommentItem = ({
   const [isEditing, setIsEditing] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
 
   const isAuthor = currentUserId === comment.userId;
@@ -141,26 +144,45 @@ export const CommentItem = ({
                 </Button>
               )}
 
-              {/* 수정/삭제 메뉴 (본인 댓글만) */}
-              {isAuthor && (
+              {/* 본인 댓글이면 수정·삭제, 남의 댓글이면 신고.
+                  같은 자리·같은 아이콘이라 사용자는 "이 댓글에 할 수 있는 일"을
+                  한 곳에서 찾는다. 비로그인은 신고할 수 없으므로 메뉴가 없다. */}
+              {(isAuthor || currentUserId) && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant='ghost' size='sm' className='h-8 w-8 p-0'>
+                    <Button
+                      variant='ghost'
+                      size='sm'
+                      className='h-8 w-8 p-0'
+                      aria-label='댓글 메뉴'
+                    >
                       <MoreVertical className='h-4 w-4' />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align='end'>
-                    <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                      <Pencil className='mr-2 h-4 w-4' />
-                      수정
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={handleDelete}
-                      className='text-destructive'
-                    >
-                      <Trash2 className='mr-2 h-4 w-4' />
-                      삭제
-                    </DropdownMenuItem>
+                    {isAuthor ? (
+                      <>
+                        <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                          <Pencil className='mr-2 h-4 w-4' />
+                          수정
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={handleDelete}
+                          className='text-destructive'
+                        >
+                          <Trash2 className='mr-2 h-4 w-4' />
+                          삭제
+                        </DropdownMenuItem>
+                      </>
+                    ) : (
+                      <DropdownMenuItem
+                        onClick={() => setIsReportOpen(true)}
+                        className='text-destructive'
+                      >
+                        <Flag className='mr-2 h-4 w-4' />
+                        신고
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
@@ -242,6 +264,15 @@ export const CommentItem = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* 신고는 남의 댓글에만 뜬다 — 본인 댓글이면 메뉴에 항목 자체가 없다 */}
+      {!isAuthor && (
+        <ReportCommentDialog
+          commentId={comment.id}
+          open={isReportOpen}
+          onOpenChange={setIsReportOpen}
+        />
+      )}
     </>
   );
 };
