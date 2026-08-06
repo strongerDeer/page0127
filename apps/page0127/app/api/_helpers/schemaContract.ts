@@ -55,6 +55,14 @@ export const SCHEMA_CONTRACT: SchemaProbe[] = [
     columns: ['reporter_id', 'comment_id', 'status'],
     breaks: '신고 접수와 어드민 신고 처리 화면',
   },
+  {
+    table: 'hero_slides',
+    // audience 가 없으면 대상 필터가 통째로 사라져 비로그인용 배너("지금
+    // 가입하세요")가 로그인 사용자에게도 뜬다 — 화면은 안 깨지고 문구만
+    // 거짓말이 되는, 조용한 종류의 고장이다.
+    columns: ['audience', 'starts_at', 'ends_at', 'click_count'],
+    breaks: '랜딩 히어로 배너 — 대상·기간 필터와 클릭 집계',
+  },
 ];
 
 /** PostgREST 가 "컬럼 없음" 으로 주는 코드. 다른 실패와 구분해야 원인이 드러난다. */
