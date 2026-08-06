@@ -24,6 +24,10 @@ const PRETENDARD_CSS =
 // (환경변수 미설정 시 로컬 기본값으로 폴백)
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
+// 네이버 서치어드바이저 소유권 확인 코드. 없으면 메타 태그를 내보내지 않는다.
+// (한국 서비스인데 네이버에 등록하지 않으면 검색 유입이 구조적으로 0이다)
+const naverSiteVerification = process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION;
+
 const siteTitle = 'page0127 - 책장을 보면, 그 사람이 보인다';
 const siteDescription =
   '읽은 책을 한 권씩 기록해 보세요. 책장이 쌓이면 AI가 나도 몰랐던 독서 취향을 들려주고, 다음에 읽을 책까지 건네드립니다.';
@@ -55,10 +59,20 @@ export const metadata: Metadata = {
     title: siteTitle,
     description: siteDescription,
   },
-  // 구글 서치 콘솔 소유권 확인 (URL 접두어 · HTML 태그 방식)
-  // → 모든 페이지 <head>에 <meta name="google-site-verification" ...> 자동 삽입
+  // 표준 주소 — 같은 화면이 여러 주소로 열려도 검색엔진이 한 곳으로 몰아준다.
+  // 옛 page0127.vercel.app 은 308 로 넘어오지만, 공유 링크에 붙는 추적 파라미터
+  // (?utm_source=… 등)까지 각각 다른 페이지로 세지 않게 하려면 이게 필요하다.
+  alternates: { canonical: '/' },
+  // 검색엔진 소유권 확인 — 모든 페이지 <head> 에 메타 태그로 자동 삽입된다.
+  //
+  // 네이버는 값을 코드에 박지 않고 환경변수로 받는다. 구글 것은 이미 박혀 있지만,
+  // 새로 넣는 쪽은 **값을 받는 시점과 배포 시점을 떼어놓는 게** 낫다 —
+  // 네이버 서치어드바이저에서 코드를 받아 Vercel 환경변수에 넣으면 재배포만으로
+  // 끝나고, 코드 리뷰를 한 번 더 돌 필요가 없다.
+  // 값이 없으면 태그 자체가 안 나가므로 지금 머지해도 안전하다.
   verification: {
     google: 'S1f6m1CJ5CxxM962yAvh8gvAErhndacXCGb1R1R0-JU',
+    ...(naverSiteVerification ? { other: { 'naver-site-verification': naverSiteVerification } } : {}),
   },
 };
 
