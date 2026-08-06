@@ -71,6 +71,16 @@ export const BookLikeButton = ({
       className={`relative z-30 h-8 w-8 rounded-full border border-line bg-card transition-transform hover:scale-110 ${className}`}
       onClick={handleToggle}
       disabled={isPending}
+      /*
+        아이콘만 있는 버튼이라 이름을 직접 준다 — 스크린리더는 하트 그림을 읽지 못하고
+        "버튼" 이라고만 읽는다. 목록 화면에는 이런 버튼이 책 수만큼 있다.
+
+        aria-pressed 로 켜짐/꺼짐을 알린다. 라벨을 "좋아요"/"좋아요 취소" 로 바꾸는
+        방법도 있지만, 그러면 누를 때마다 이름 자체가 바뀌어 "방금 그 버튼" 을 다시
+        찾기 어렵다. 이름은 고정하고 상태만 따로 알리는 쪽이 표준이다.
+      */
+      aria-label='좋아요'
+      aria-pressed={optimisticLiked}
     >
       <Heart
         className={`h-5 w-5 transition-colors ${

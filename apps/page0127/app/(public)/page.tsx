@@ -75,6 +75,16 @@ const Home = async () => {
           </Suspense>
         </ErrorBoundary>
 
+        {/*
+          페이지 대표 제목 — 화면에는 안 보이고 검색엔진과 스크린리더만 읽는다.
+
+          시각적 제목 역할은 히어로 배너가 하지만 h1 으로 삼을 수 없다. 배너 문구는
+          슬라이드마다 바뀌고 DB(hero_slides)에서 오기도 해서, 크롤러가 올 때마다
+          페이지 제목이 달라진다. 그렇다고 h1 을 비워 두면 검색엔진이 "이 페이지가
+          무엇인가" 를 판단할 첫 단서를 잃는다 — 실측 결과 랜딩의 h1 은 0개였다.
+        */}
+        <h1 className='sr-only'>page0127 — 책장을 보면, 그 사람이 보인다</h1>
+
         {/* 히어로 배너 — 자동 롤링. 실제 책 표지가 들어간다 */}
         <ErrorBoundary fallback={<HeroBannerSkeleton />}>
           <Suspense fallback={<HeroBannerSkeleton />}>

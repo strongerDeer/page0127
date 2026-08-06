@@ -35,6 +35,15 @@ const LoginPage = async ({ searchParams }: LoginPageProps) => {
     <div className='flex min-h-screen items-center justify-center'>
       <Card className='w-full max-w-md shadow-none'>
         <CardHeader className='text-center'>
+          {/*
+            페이지 대표 제목 — 화면에는 안 보인다.
+
+            눈에 보이는 큰 글자는 브랜드명(page0127.)인데, 그건 이 **페이지가 무엇인지**
+            를 말하지 않는다. 로그인 화면은 sitemap 에 올라가 색인되므로(위 metadata 주석
+            참조) 크롤러와 스크린리더에게 "여기는 로그인" 이라고 알려 줄 h1 이 따로 필요하다.
+            CardTitle 은 div 로 렌더돼 제목 계층에 잡히지 않는다.
+          */}
+          <h1 className='sr-only'>로그인</h1>
           <CardTitle className='heading-1'>page0127.</CardTitle>
           <CardDescription>어서 오세요. 책장이 기다리고 있어요.</CardDescription>
         </CardHeader>
