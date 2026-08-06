@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/shared/config/supabase/server';
 import { toAuthErrorReason } from '@/shared/lib/auth/authErrorReason';
 import { isBannedRedirect } from '@/shared/lib/auth/isBannedRedirect';
+import { toLinkFailurePath } from '@/shared/lib/auth/linkFlow';
 import { toPostLoginPath } from '@/shared/lib/auth/onboardingRedirect';
 
 import { ensureProfile } from '@/entities/profile/api/getProfile';
@@ -47,6 +48,15 @@ export async function GET(request: NextRequest) {
       });
       return NextResponse.redirect(`${origin}${redirectTo}`);
     }
+  }
+
+  // 계정 '연결'이 실패한 것이면 로그인 오류 페이지로 보내면 안 된다.
+  // 사용자는 로그인이 아니라 연결을 하던 참이라 '로그인하지 못했어요' 는
+  // 두 번 틀린 안내가 된다 — 하려던 일도, 원인도.
+  // 시작한 자리인 설정 화면으로 돌려보내고 거기서 사정을 알린다.
+  const linkFailurePath = toLinkFailurePath(next);
+  if (linkFailurePath) {
+    return NextResponse.redirect(`${origin}${linkFailurePath}`);
   }
 
   // 그 밖의 실패는 사유를 실어 안내 페이지로 보낸다.

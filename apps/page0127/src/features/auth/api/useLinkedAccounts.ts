@@ -6,6 +6,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { createClient } from '@/shared/config/supabase/client';
+import { LINKED_PARAM } from '@/shared/lib/auth/linkFlow';
 
 import { toLinkedAccountRows } from '../model/linkedAccounts';
 import { OAUTH_PROVIDERS, type OAuthProvider } from '../model/providers';
@@ -15,13 +16,9 @@ export const linkedAccountKeys = {
   all: ['linkedAccounts'] as const,
 };
 
-/**
- * 연결을 마치고 돌아왔음을 알리는 쿼리 파라미터.
- *
- * 값은 URL 에서 오므로 **사용자가 손으로 바꿀 수 있다.** 읽는 쪽에서
- * 아는 공급자인지 확인하고 쓴다 (isOAuthProvider).
- */
-export const LINKED_PARAM = 'linked';
+// LINKED_PARAM 은 shared/lib/auth/linkFlow 로 옮겼다 —
+// 콜백 라우트(서버)도 같은 값을 봐야 하는데, 이 파일은 'use client' 라
+// 서버에서 가져올 수 없다.
 
 const fetchLinkedAccounts = async () => {
   const supabase = createClient();
