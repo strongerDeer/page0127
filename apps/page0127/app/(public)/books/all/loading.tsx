@@ -14,13 +14,20 @@ import { BookListItemSkeleton } from '@/widgets/book/ui/BookListItemSkeleton';
 export default function Loading() {
   return (
     <PageContainer width='wide'>
-      {/* Header */}
-      <div className='mb-8 flex items-center justify-between'>
-        <div className='space-y-2'>
-          <Skeleton className='h-9 w-56' />
-          <Skeleton className='h-5 w-80' />
+      {/*
+        Header
+
+        ⚠️ 스켈레톤도 375px 안에 들어와야 한다. 예전에는 부제목이 `w-80`(320px) 고정이라
+        정렬 버튼 자리(128px)와 합쳐 448px이 되어 **로딩 동안만 가로 스크롤이 생겼다.**
+        목록이 뜨면 사라지므로 눈으로는 잡기 어렵다(실측으로 발견).
+        폭을 최대치로만 두고 좁은 화면에서는 줄어들게 한다.
+      */}
+      <div className='mb-8 flex items-center justify-between gap-4'>
+        <div className='min-w-0 flex-1 space-y-2'>
+          <Skeleton className='h-9 w-full max-w-56' />
+          <Skeleton className='h-5 w-full max-w-80' />
         </div>
-        <div className='flex gap-2'>
+        <div className='flex shrink-0 gap-2'>
           <Skeleton className='h-9 w-16' />
           <Skeleton className='h-9 w-16' />
         </div>
