@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import { createClient } from '@/shared/config/supabase/client';
 
@@ -13,6 +14,14 @@ import { OAUTH_PROVIDERS, type OAuthProvider } from '../model/providers';
 export const linkedAccountKeys = {
   all: ['linkedAccounts'] as const,
 };
+
+/**
+ * 연결을 마치고 돌아왔음을 알리는 쿼리 파라미터.
+ *
+ * 값은 URL 에서 오므로 **사용자가 손으로 바꿀 수 있다.** 읽는 쪽에서
+ * 아는 공급자인지 확인하고 쓴다 (isOAuthProvider).
+ */
+export const LINKED_PARAM = 'linked';
 
 const fetchLinkedAccounts = async () => {
   const supabase = createClient();
@@ -62,10 +71,16 @@ export const useLinkedAccounts = () => {
 
     // 연결이 끝나면 설정 화면으로 돌아온다 — 시작한 자리로 돌려보내야
     // 사용자가 "됐나?" 하고 목록을 다시 찾아 헤매지 않는다.
+    //
+    // ?linked= 를 달아 보내는 이유: 연결은 공급자 페이지를 왕복하고 오므로
+    // 이 함수 안에서는 성공을 알 수 없다(성공하면 코드가 여기서 끝난다).
+    // 돌아온 화면이 이 값을 보고 알림을 띄운다.
+    const next = `/settings?${LINKED_PARAM}=${provider}`;
+
     const { error } = await supabase.auth.linkIdentity({
       provider,
       options: {
-        redirectTo: `${siteUrl}/auth/callback?next=${encodeURIComponent('/settings')}`,
+        redirectTo: `${siteUrl}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
 
@@ -103,6 +118,10 @@ export const useLinkedAccounts = () => {
     if (error) {
       console.error('계정 해제 실패:', error.message);
       setActionError('연결을 끊지 못했어요. 잠시 후 다시 시도해 주세요.');
+    } else {
+      // 목록만 조용히 바뀌면 눌린 건지 알기 어렵다.
+      // 되돌릴 수 있는 동작이라 확인 다이얼로그 대신 알림으로 끝낸다.
+      toast.success(`${OAUTH_PROVIDERS[provider].label} 연결을 끊었어요.`);
     }
 
     await queryClient.invalidateQueries({ queryKey: linkedAccountKeys.all });

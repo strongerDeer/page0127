@@ -69,3 +69,16 @@ export const OAUTH_PROVIDERS: Record<OAuthProvider, ProviderMeta> = {
 
 /** 로그인 화면에 세우는 순서 */
 export const LOGIN_PROVIDER_ORDER: OAuthProvider[] = ['kakao', 'google'];
+
+/**
+ * 우리가 아는 공급자인지 본다.
+ *
+ * URL 쿼리처럼 **밖에서 온 문자열**을 OAUTH_PROVIDERS 의 키로 쓰기 전에 거른다.
+ * 걸르지 않으면 `?linked=nonsense` 로 `undefined.label` 을 읽어 화면이 죽는다.
+ *
+ * ⚠️ `in` 이 아니라 `Object.hasOwn` 을 쓴다. `in` 은 프로토타입 체인까지 보므로
+ *    `'toString' in OAUTH_PROVIDERS` 가 true 가 되고, 그 뒤 `.label` 이
+ *    undefined 로 새어 나온다 (테스트로 잡았다).
+ */
+export const isOAuthProvider = (value: unknown): value is OAuthProvider =>
+  typeof value === 'string' && Object.hasOwn(OAUTH_PROVIDERS, value);
