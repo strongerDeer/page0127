@@ -26,6 +26,8 @@ const PRIMITIVE_PREFIXES = [
   '--blue-',
   '--navy-',
   '--gray-',
+  // 다크 모드 표면 전용 계열. 라이트의 navy 를 뒤집어 쓰던 것을 대체한다
+  '--ink-',
   '--orange-',
   '--red-',
   '--amber-',

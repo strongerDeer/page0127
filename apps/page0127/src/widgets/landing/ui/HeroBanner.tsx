@@ -151,7 +151,10 @@ export const HeroBanner = ({ slides, covers = [] }: HeroBannerProps) => {
                       // 되므로 어드민 목록에도 숫자를 남긴다.
                       countBannerClick(slide.id);
                     }}
-                    className='mt-6 inline-flex h-10 items-center rounded-md bg-white px-5 text-sm font-medium text-text-strong transition-opacity hover:opacity-90'
+                    /* 배너 면은 슬라이드가 지정한 색(항상 어둡다)이라 버튼도 모드를
+                       타면 안 된다. text-text-strong 은 다크에서 흰색이 되어
+                       흰 버튼 위 흰 글자가 된다 — 원색을 직접 참조한다. */
+                    className='mt-6 inline-flex h-10 items-center rounded-md bg-white px-5 text-sm font-medium text-[color:var(--navy-900)] transition-opacity hover:opacity-90'
                   >
                     {slide.cta}
                   </Link>

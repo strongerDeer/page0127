@@ -13,28 +13,28 @@
       "$description": "본문. 11.18:1"
     },
     "text-subtle": {
-      "$value": "{navy.300}",
+      "$value": "{ink.400}",
       "$type": "color",
       "$description": "저자·출판사·메타·캡션. 5.76:1 — 2026-07-29 부터 옛 faint 자리도 맡는다"
     },
 
-    "background": { "$value": "{navy.900}", "$type": "color" },
-    "card": { "$value": "{navy.900}", "$type": "color" },
-    "popover": { "$value": "{navy.900}", "$type": "color" },
-    "sidebar": { "$value": "{navy.900}", "$type": "color" },
+    "background": { "$value": "{ink.950}", "$type": "color" },
+    "card": { "$value": "{ink.900}", "$type": "color" },
+    "popover": { "$value": "{ink.900}", "$type": "color" },
+    "sidebar": { "$value": "{ink.900}", "$type": "color" },
     "sunken": {
-      "$value": "{navy.800}",
+      "$value": "{ink.975}",
       "$type": "color",
       "$description": "중립 모듈 면. 배경 대비 1.25 — 면 단차는 대비 기준이 아니라 보이기만 하면 된다"
     },
-    "secondary": { "$value": "{navy.800}", "$type": "color" },
-    "muted": { "$value": "{navy.800}", "$type": "color" },
+    "secondary": { "$value": "{ink.800}", "$type": "color" },
+    "muted": { "$value": "{ink.800}", "$type": "color" },
     "line": {
-      "$value": "{navy.700}",
+      "$value": "{ink.700}",
       "$type": "color",
       "$description": "카드·섹션 경계선. 다크에서도 입체는 그림자가 아니라 이 1px 선으로 만든다"
     },
-    "line-soft": { "$value": "{navy.800}", "$type": "color" },
+    "line-soft": { "$value": "{ink.800}", "$type": "color" },
 
     "primary": {
       "$value": "{blue.300}",
@@ -42,12 +42,12 @@
       "$description": "다크에서는 밝은 파랑이 브랜드색이 된다. blue/600 은 navy/900 위에서 2.70 밖에 안 나온다"
     },
     "primary-foreground": {
-      "$value": "{navy.900}",
+      "$value": "{ink.950}",
       "$type": "color",
       "$description": "밝은 파랑 버튼 위의 어두운 글자. 6.45:1"
     },
     "accent": {
-      "$value": "{navy.700}",
+      "$value": "{ink.600}",
       "$type": "color",
       "$description": "활성 메뉴·호버 배경. 라이트의 스카이 틴트 자리를 어두운 네이비가 대신한다"
     },
@@ -59,8 +59,8 @@
     "ring": { "$value": "{blue.300}", "$type": "color" },
 
     "sidebar-primary": { "$value": "{blue.300}", "$type": "color" },
-    "sidebar-primary-foreground": { "$value": "{navy.900}", "$type": "color" },
-    "sidebar-accent": { "$value": "{navy.700}", "$type": "color" },
+    "sidebar-primary-foreground": { "$value": "{ink.950}", "$type": "color" },
+    "sidebar-accent": { "$value": "{ink.600}", "$type": "color" },
     "sidebar-accent-foreground": { "$value": "{gray.0}", "$type": "color" },
     "sidebar-ring": { "$value": "{blue.300}", "$type": "color" },
 
