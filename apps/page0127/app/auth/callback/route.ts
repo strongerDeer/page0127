@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/shared/config/supabase/server';
 import { toAuthErrorReason } from '@/shared/lib/auth/authErrorReason';
 import { isBannedRedirect } from '@/shared/lib/auth/isBannedRedirect';
-import { toSafeRedirect } from '@/shared/lib/auth/safeRedirect';
+import { toPostLoginPath } from '@/shared/lib/auth/onboardingRedirect';
 
 import { ensureProfile } from '@/entities/profile/api/getProfile';
 
@@ -38,8 +38,13 @@ export async function GET(request: NextRequest) {
         data.user.email ?? null,
         data.user.user_metadata
       );
-      // next 는 사용자가 조작할 수 있는 값이다 — 외부 URL 이면 버리고 본인 서재로 보낸다
-      const redirectTo = toSafeRedirect(next) ?? `/${profile.username}`;
+      // 어디로 보낼지는 순수 함수가 정한다 — 온보딩 미완료면 next 보다 먼저다.
+      // (next 가 외부 URL 인 경우도 그 안에서 걸러진다)
+      const redirectTo = toPostLoginPath({
+        username: profile.username,
+        onboardedAt: profile.onboarded_at,
+        next,
+      });
       return NextResponse.redirect(`${origin}${redirectTo}`);
     }
   }
