@@ -90,7 +90,11 @@ const MESSAGES: Record<UsernameIssue, string> = {
   too_short: `아이디는 ${USERNAME_MIN_LENGTH}자 이상이어야 해요.`,
   too_long: `아이디는 ${USERNAME_MAX_LENGTH}자 이하여야 해요.`,
   invalid_chars: '영문 소문자, 숫자, 밑줄(_)만 쓸 수 있어요.',
-  reserved: '이미 서비스가 쓰고 있는 주소예요. 다른 아이디를 골라 주세요.',
+  // ⚠️ **왜 막혔는지는 말하지 않는다.**
+  //    "서비스가 쓰고 있다"고 알려 주면 RESERVED_USERNAMES 가 곧 라우트 지도가 된다 —
+  //    아이디를 하나씩 넣어 보는 것만으로 admin·api 같은 경로의 존재를 확인할 수 있다.
+  //    사용자가 할 일("다른 걸 고른다")은 그대로 전해지므로 잃는 것도 없다.
+  reserved: '쓸 수 없는 아이디예요. 다른 아이디를 골라 주세요.',
 };
 
 /**
