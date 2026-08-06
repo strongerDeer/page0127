@@ -14,7 +14,9 @@ export const metadata: Metadata = {
  * 개인정보처리방침
  *
  * 코드에서 실제로 확인한 처리 내역만 적는다. 지어내지 않는다.
- * - 인증: Supabase Auth + Google OAuth
+ * - 인증: Supabase Auth + Google·Kakao OAuth
+ *   (카카오는 이메일 동의가 선택이라 email 이 null 로 올 수 있다 —
+ *    app/auth/callback/route.ts, entities/profile/model/identityDefaults.ts)
  * - 저장: Supabase(Postgres, Storage)
  * - 호스팅: Vercel
  * - AI 분석: OpenAI
@@ -32,11 +34,18 @@ const PrivacyPage = () => {
     >
       <DocSection title='1. 수집하는 정보'>
         <p className='font-medium text-text-strong'>
-          구글 계정으로 로그인할 때
+          소셜 계정으로 로그인할 때
         </p>
         <DocList
-          items={['이메일 주소', '이름과 프로필 사진 (구글 계정에 등록된 것)']}
+          items={[
+            '구글 — 이메일 주소, 이름, 프로필 사진',
+            '카카오 — 닉네임, 프로필 사진, 이메일 주소(동의한 경우에만)',
+          ]}
         />
+        <p className='mt-3 text-sm text-text-subtle'>
+          카카오는 이메일 제공이 선택 항목입니다. 동의하지 않아도 가입할 수
+          있으며, 그때는 이메일을 받지 않습니다.
+        </p>
         <p className='mt-4 font-medium text-text-strong'>
           서비스를 쓰면서 직접 남기는 것
         </p>
