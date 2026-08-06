@@ -95,6 +95,10 @@ const nextConfig: NextConfig = {
       },
       // Google 로그인 프로필 사진 (lh3.googleusercontent.com 등 번호가 바뀐다)
       { protocol: 'https', hostname: '**.googleusercontent.com' },
+      // 카카오 로그인 프로필 사진 (img1·k·t1 등 호스트 번호가 바뀐다).
+      // 카카오는 avatar_url 을 http 로 주지만, toIdentityDefaults 가 https 로
+      // 올려 저장하므로 여기서는 https 만 허용한다.
+      { protocol: 'https', hostname: '**.kakaocdn.net' },
     ],
   },
   // 모든 응답에 붙는 보안 헤더.
@@ -135,7 +139,10 @@ const nextConfig: NextConfig = {
       "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
       // 앱 자체 + Aladin/Supabase 이미지 + Google 로그인 프로필 사진 + GA 픽셀,
       // data/blob(블러 플레이스홀더)
-      `img-src 'self' data: blob: https://image.aladin.co.kr ${supabaseOrigin} https://*.googleusercontent.com https://www.googletagmanager.com https://www.google-analytics.com`,
+      // 프로필 사진 출처: 구글(googleusercontent)·카카오(kakaocdn).
+      // remotePatterns 와 짝을 이룬다 — 한쪽만 열면 next/image 가 통과시킨 뒤
+      // 브라우저가 막거나, 그 반대가 되어 조용히 깨진다.
+      `img-src 'self' data: blob: https://image.aladin.co.kr ${supabaseOrigin} https://*.googleusercontent.com https://*.kakaocdn.net https://www.googletagmanager.com https://www.google-analytics.com`,
       // Pretendard woff 폰트(jsdelivr)
       "font-src 'self' https://cdn.jsdelivr.net",
       // API·Sentry 터널(self) + Supabase REST/realtime(wss) + GA 비콘
