@@ -11,6 +11,8 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
 // 색인에 올릴 책 수 상한 — 무한정 나열하면 sitemap 이 비대해진다
 const MAX_BOOK_URLS = 1000;
+// 공개 서재도 같은 이유로 상한을 둔다
+const MAX_LIBRARY_URLS = 1000;
 
 const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
   const lastModified = new Date();
@@ -34,6 +36,12 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
       lastModified,
       changeFrequency: 'monthly',
       priority: 0.4,
+    },
+    {
+      url: `${siteUrl}/contact`,
+      lastModified,
+      changeFrequency: 'monthly',
+      priority: 0.3,
     },
     {
       url: `${siteUrl}/privacy`,
@@ -66,7 +74,42 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
       priority: 0.6,
     }));
 
-    return [...staticRoutes, ...bookRoutes];
+    // 공개 서재(/{username}) — 이 서비스의 두 번째 SEO 자산이다.
+    // "책장을 보면 그 사람이 보인다"가 실제로 보이는 화면인데 지금까지 sitemap 에
+    // 없었다. robots 는 막고 있지 않아 색인은 되지만, 스스로 알리지는 않았다.
+    //
+    // ⚠️ **공개 책이 한 권이라도 있는 서재만 넣는다.** 빈 서재를 색인에 올리면
+    //    검색 결과에 내용 없는 페이지가 뜨고, 그게 쌓이면 사이트 전체 평가가
+    //    깎인다. 색인은 "많이"가 아니라 "볼 게 있는 것만"이다.
+    const { data: publicBooks } = await supabase
+      .from('books')
+      .select('user_id')
+      .eq('is_public', true)
+      .limit(10000);
+
+    const ownerIds = [...new Set((publicBooks ?? []).map((b) => b.user_id))];
+
+    let libraryRoutes: MetadataRoute.Sitemap = [];
+    if (ownerIds.length > 0) {
+      const { data: owners } = await supabase
+        .from('profiles')
+        .select('username, updated_at')
+        .in('id', ownerIds.slice(0, MAX_LIBRARY_URLS))
+        .not('username', 'is', null);
+
+      libraryRoutes = (owners ?? [])
+        .filter((p): p is { username: string; updated_at: string | null } =>
+          Boolean(p.username)
+        )
+        .map((p) => ({
+          url: `${siteUrl}/${p.username}`,
+          lastModified: p.updated_at ? new Date(p.updated_at) : lastModified,
+          changeFrequency: 'weekly' as const,
+          priority: 0.7,
+        }));
+    }
+
+    return [...staticRoutes, ...bookRoutes, ...libraryRoutes];
   } catch {
     return staticRoutes;
   }

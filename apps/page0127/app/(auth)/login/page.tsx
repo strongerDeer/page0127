@@ -4,6 +4,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo
 
 import { OAuthLoginButtons } from '@/features/auth/ui/OAuthLoginButtons';
 
+import type { Metadata } from 'next';
+
+/**
+ * 로그인 화면도 sitemap 에 있어 색인된다. 제목을 안 주면 랜딩과 같은 제목으로
+ * 올라가는데, 그러면 검색 결과에서 **로그인 화면이 랜딩 자리를 뺏을 수 있다.**
+ * 처음 온 사람이 서비스 소개 대신 버튼만 있는 화면에 떨어진다.
+ */
+export const metadata: Metadata = {
+  title: '로그인 | page0127',
+  description: '구글 또는 카카오 계정으로 10초면 시작할 수 있어요.',
+  alternates: { canonical: '/login' },
+};
+
 type LoginPageProps = {
   searchParams: Promise<{ redirect?: string }>;
 };
