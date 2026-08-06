@@ -35,12 +35,20 @@ const fetchLinkedAccounts = async () => {
  * 연결된 소셜 계정 조회·연결·해제.
  *
  * 대부분의 사용자는 이 기능이 필요 없다 — 같은 이메일이면 Supabase 가 알아서
- * identity 를 붙여 준다. 구글과 카카오에 **다른 이메일**을 쓴 사람이 갈라진
- * 계정을 직접 합치는 자리다.
+ * identity 를 붙여 준다. 구글과 카카오에 **다른 이메일**을 쓴 사람을 위한 자리다.
+ *
+ * ⚠️ **계정을 합치는 기능이 아니다.** 내 계정에 로그인 수단을 하나 더 붙일 뿐이다.
+ *    이미 다른 계정에 붙어 있는 identity 는 가져올 수 없다 — Supabase 가 거부한다
+ *    (안 막으면 남의 카카오로 로그인해 그 사람의 로그인 수단을 빼앗을 수 있다).
+ *    그래서 계정이 이미 둘로 갈라진 사람은 여기서 구제되지 않는다. 옛 계정에서
+ *    연결을 끊어야 옮길 수 있고, 옛 계정의 수단이 하나뿐이면 그마저 안 된다.
  *
  * ⚠️ linkIdentity 는 Supabase 의 **Manual Linking 이 켜져 있어야** 동작한다
- *    (로컬은 config.toml 의 enable_manual_linking, 운영·개발은 대시보드).
- *    꺼져 있으면 422 가 돌아온다.
+ *    (로컬은 config.toml 의 enable_manual_linking, 운영·개발은 대시보드의
+ *    Authentication → Sign In / Providers → Allow manual linking).
+ *    꺼졌을 때의 응답은 직접 확인하지 않았다 — 문서상으로는 "Manual linking is
+ *    disabled" 다. 켜졌는지는 눌러 보는 것 말고 확인할 방법이 없다
+ *    (`/auth/v1/settings` 에도 노출되지 않는다).
  */
 export const useLinkedAccounts = () => {
   const queryClient = useQueryClient();
