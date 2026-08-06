@@ -16,27 +16,31 @@
 export const OG_SIZE = { width: 1200, height: 630 } as const;
 
 /**
- * 팔레트 — 앱의 시맨틱 토큰에서 그대로 가져온다.
+ * 팔레트 — 디자인 시스템의 시맨틱 토큰을 그대로 가져온다.
  *
- * 카드는 **공개 서재 헤더와 같은 면**이다(`bg-accent` = blue.50, 흰 배경 위 스카이 틴트).
- * 이전 카드는 배경에 navy.900 을 썼는데, 그건 앱에서 **본문 글자색**이다 —
- * 링크를 눌러 들어온 화면과 톤이 정반대라 같은 서비스로 보이지 않았다.
+ * 흰 면 위에 가운데 정렬이다. 이전 카드는 스카이 배경(blue.50)에 좌측 정렬이었는데
+ * 두 가지 문제가 있었다:
+ * - 좌측 정렬은 **정사각 크롭에서 잘린다.** 일부 플랫폼이 1.91:1 카드를 정사각으로
+ *   잘라 쓰는데, 그때 오른쪽에 있던 숫자("157권")가 통째로 사라졌다.
+ * - 배경 색면이 카드의 절반을 차지해 정작 내용이 들어갈 자리를 좁혔다.
  *
- * (packages/design-tokens/tokens/semantic.json 기준. 값이 바뀌면 여기도 따라간다)
+ * (packages/design-tokens 와 Figma `page0127-Design-System` 의 Semantic 컬렉션 기준)
  */
 export const OG_COLORS = {
-  /** 카드 배경 — blue.50 = 앱의 `accent`, 공개 서재 헤더와 같은 면 */
-  sky: '#e3eefc',
-  /** 브랜드·강조 숫자 — blue.700 = 앱의 `accent-foreground` */
-  skyDeep: '#0455bf',
-  /** 본문 텍스트 — navy.900 = 앱의 `foreground` */
-  ink: '#14294e',
-  /** 보조 텍스트 — navy.500 = 앱의 `muted-foreground` */
-  inkSoft: '#66779a',
-  /** 선반·표지 바탕 — gray.0 */
+  /** 카드 배경 — background = gray/0 */
   paper: '#ffffff',
-  /** 인생책 — amber.500 = 앱의 `chart-4` */
-  gold: '#d9a520',
+  /** 제목·본문 — text/strong = navy/900 */
+  ink: '#14294e',
+  /** 보조 텍스트 — text/subtle = navy/600 */
+  inkSoft: '#5f6f8f',
+  /** 강조 숫자 — accent-foreground = blue/700 */
+  accentDeep: '#0455bf',
+  /** 브랜드 심볼 바탕·별점 — brand/symbol-bg = blue/600 */
+  brand: '#1e69cb',
+  /** 심볼 북마크와 강조 책등 — brand/accent = mint/300. 유일한 비(非)블루 요소 */
+  mint: '#6ee7b7',
+  /** 선반 널·빈 별 — line = gray/300 */
+  line: '#dfe3e8',
 } as const;
 
 /**
@@ -47,11 +51,39 @@ export const OG_COLORS = {
  */
 export const OG_CACHE_CONTROL = 'public, max-age=3600, s-maxage=3600';
 
-/** 카드 안쪽 폭 = 1200 − 좌우 패딩 64×2 (CardFrame 과 맞춰야 한다) */
-export const SHELF_WIDTH = 1072;
+/**
+ * 카드 안쪽 여백.
+ *
+ * 세로 72는 **최소 보장선**이다. 이전 카드는 표지가 커서 워드마크와 맨 아랫줄이
+ * 잘려 나갔다 — 내용이 늘면 글자 크기를 줄여서라도 이 여백을 지킨다.
+ */
+export const CARD_PADDING = { x: 90, y: 72 } as const;
+
+/**
+ * 배경 책장 — 선반이 아니라 **바닥에 깔린 무늬**다.
+ *
+ * 이전에는 선반이 카드 하단의 주인공이었다. 지금은 옅게 깔아 글자가 흰 여백 위에
+ * 얹히게 한다. 대비가 낮아진 만큼 면적으로 보완한다.
+ */
+export const BG_SHELF = {
+  /** 홈·책장 카드 */
+  height: 200,
+  /** 책 기록 카드 — 표지가 주인공이라 띠로 낮춘다 */
+  compactHeight: 90,
+  opacity: 0.22,
+  compactOpacity: 0.16,
+} as const;
+
+/**
+ * 배경 책장은 카드 폭을 가득 채운다.
+ *
+ * 이전에는 좌우 패딩 안쪽(1072px)에만 깔았다. 지금은 가장자리까지 이어 붙여
+ * **양 끝이 잘리게** 둔다 — 잘린 책등은 "책이 더 있다"로 읽힌다.
+ */
+export const SHELF_WIDTH = OG_SIZE.width;
 
 /** 책등 사이 틈. 실제 책장에서 책은 서로 맞닿아 있다 */
-export const SPINE_GAP = 1;
+export const SPINE_GAP = 5;
 
 /** 이보다 좁으면 책으로 안 보인다 — 선반 끝을 메울 때의 하한 */
 const MIN_SPINE_WIDTH = 30;
@@ -60,33 +92,36 @@ const MIN_SPINE_WIDTH = 30;
  * 책등의 크기와 색을 **서로 다른 주기로** 돌린다.
  *
  * 한 배열을 순환시키면 8권마다 같은 책이 반복되는 게 눈에 보인다.
- * 크기 7종 × 색 8종이라 56권까지 같은 조합이 다시 나오지 않는다
- * (선반에 들어가는 27권보다 넉넉하다).
+ * 크기 7종 × 색 8종이라 56권까지 같은 조합이 다시 나오지 않는다.
+ *
+ * 높이는 배경 책장 높이(200)를 넘지 않는다 — 넘으면 위쪽이 잘려 평평해진다.
  */
 const SPINE_SIZES = [
-  { h: 172, w: 42 },
-  { h: 208, w: 34 },
-  { h: 156, w: 46 },
-  { h: 192, w: 38 },
-  { h: 164, w: 32 },
-  { h: 216, w: 44 },
-  { h: 180, w: 36 },
+  { h: 150, w: 46 },
+  { h: 196, w: 36 },
+  { h: 132, w: 50 },
+  { h: 178, w: 40 },
+  { h: 158, w: 34 },
+  { h: 200, w: 46 },
+  { h: 140, w: 38 },
 ] as const;
 
 /**
- * 책등 색 — 밝은 스카이 배경에서 또렷하게 읽히도록 **진한 쪽**으로 모았다.
- * 이전 팔레트의 blue.300(#74b0ff)은 배경과 명도가 가까워 흐릿하게 뭉갠다.
- * 앰버와 오렌지는 리듬을 만드는 포인트라 비중을 낮게 둔다.
+ * 책등 색 — **진한 블루로 모았다.**
+ *
+ * 배경 책장은 투명도 22%로 깔린다. 그 상태에서 blue.300 같은 옅은 색은 흰 배경과
+ * 구분되지 않아 **책장이 듬성듬성 비어 보인다**(실제로 그렇게 렌더됐다).
+ * 민트는 8권에 한 번만 섞어 "여기 한 권이 특별하다"로 읽히게 한다.
  */
 const SPINE_COLORS = [
-  '#1e69cb',
-  '#3b4e70',
   '#0455bf',
-  '#d9a520',
+  '#1e69cb',
   '#2d78db',
-  '#66779a',
   '#438ef2',
-  '#d9480f',
+  '#6ee7b7',
+  '#1e69cb',
+  '#0455bf',
+  '#2d78db',
 ] as const;
 
 export type Spine = { h: number; w: number; c: string };
@@ -95,8 +130,7 @@ export type Spine = { h: number; w: number; c: string };
  * 실제 권수만큼 책등을 세운다 — 카드가 "이 사람의 책장"임을 텍스트 없이 전달하는 부분.
  *
  * 상한을 "몇 권"이 아니라 **선반 폭**으로 잡는다. 개수로 자르면 남는 자리가 생겨
- * 선반 오른쪽이 휑하게 비고(24권일 때 174px 이 남았다) 카드 좌우가 비대칭이 된다.
- * 폭으로 자르면 다 읽은 사람의 선반이 양끝까지 꽉 찬다.
+ * 선반 오른쪽이 휑하게 비고 카드 좌우가 비대칭이 된다.
  */
 export const spinesFor = (bookCount: number): Spine[] => {
   const count = Math.max(0, Math.floor(bookCount));
@@ -111,9 +145,8 @@ export const spinesFor = (bookCount: number): Spine[] => {
     x += size.w + SPINE_GAP;
   }
 
-  // 남은 자리가 책 한 권만큼 되는데 다음 책등 폭이 딱 안 맞아 비는 경우가 있다
-  // (26권을 세우고 39px 이 남았다). 아직 못 세운 책이 있으면 그 자리를 마지막 한 권으로
-  // 채워 선반이 양끝까지 이어지게 한다 — 오른쪽만 비면 카드 좌우가 어긋나 보인다.
+  // 남은 자리가 책 한 권만큼 되는데 다음 책등 폭이 딱 안 맞아 비는 경우가 있다.
+  // 아직 못 세운 책이 있으면 그 자리를 마지막 한 권으로 채워 선반이 양끝까지 이어지게 한다.
   const remain = SHELF_WIDTH - x;
   const i = spines.length;
 
@@ -136,15 +169,15 @@ export const BRAND_SPINES = spinesFor(Number.MAX_SAFE_INTEGER);
  * 선반 선만 남기면 렌더가 깨진 것처럼 보이므로, 옅은 윤곽으로 자리를 그려 둔다.
  */
 export const GHOST_SPINES = [
-  { h: 172, w: 44 },
-  { h: 208, w: 34 },
-  { h: 156, w: 52 },
-  { h: 192, w: 38 },
-  { h: 164, w: 30 },
+  { h: 150, w: 44 },
+  { h: 196, w: 34 },
+  { h: 132, w: 52 },
+  { h: 178, w: 38 },
+  { h: 158, w: 30 },
 ] as const;
 
 /**
- * 글자가 차지하는 **폭**을 근사한다 (1 = 대문자 한글 한 글자).
+ * 글자가 차지하는 **폭**을 근사한다 (1 = 한글 한 글자).
  *
  * 글자 수만 세면 라틴 이름이 억울하게 잘린다 — `stronger_deer`(13자)는 한글 8자 정도
  * 폭인데도 "10자 초과"로 걸려 `stronger_d…` 가 됐다. 한글·CJK·이모지는 정폭에 가깝고,
@@ -199,13 +232,13 @@ export const truncate = (text: string, maxWidth: number): string => {
 };
 
 /**
- * 제목 줄의 글자 크기 — 한 줄에 담기는 선에서 최대한 크게.
+ * 제목 줄의 글자 크기.
  *
- * 카드 안쪽 폭은 SHELF_WIDTH(1072px)이고 한글 글리프는 폰트 크기와 거의 같은 폭을
- * 차지한다. 폭 기준이라 라틴 이름은 자연히 더 여유가 생긴다.
+ * 가운데 정렬로 바뀌면서 2단계로 줄였다. 이전에는 68/56/46 세 단계였는데,
+ * 68은 좌측 정렬에서 한 줄을 꽉 채우는 크기였다. 가운데 정렬에서는 같은 글자가
+ * 양옆 여백까지 밀어내 **상하 여백 72px 을 깨뜨린다.**
+ *
+ * 카드 안쪽 폭은 1200 − 90×2 = 1020px 이고 한글 글리프는 폰트 크기와 거의 같은
+ * 폭을 차지한다. 폭 기준이라 라틴 이름은 자연히 더 여유가 생긴다.
  */
-export const titleFontSize = (width: number): number => {
-  if (width <= 13) return 68;
-  if (width <= 17) return 56;
-  return 46;
-};
+export const titleFontSize = (width: number): number => (width <= 13 ? 54 : 46);

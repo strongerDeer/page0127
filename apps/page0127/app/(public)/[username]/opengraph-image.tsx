@@ -1,6 +1,5 @@
 import { ImageResponse } from 'next/og';
 
-import { BookShelf } from '@/shared/lib/og/BookShelf';
 import { CardFrame, Wordmark } from '@/shared/lib/og/CardFrame';
 import {
   BRAND_SPINES,
@@ -18,6 +17,9 @@ import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProf
 import { toDisplayName } from '@/entities/profile/model/displayName';
 
 // 공개 책장의 동적 OG 이미지 — "누구의 책장인가"를 카드가 말하게 한다.
+//
+// 이 카드의 주인공은 **숫자**다. 홈 카드가 서비스를 설명한다면 이 카드는
+// "이 사람이 157권 읽었다"를 전한다. 그래서 권수만 글자 크기를 키웠다.
 //
 // runtime 을 지정하지 않는다 = Node.js 런타임.
 // 'edge' 로 두면 next/og(satori + resvg wasm, ~2.4MB)가 Edge Function 번들에 통째로
@@ -50,12 +52,21 @@ const NAME_MAX_WIDTH = 16;
  * 간격을 gap 이 아니라 margin 으로 주는 이유: satori 의 gap 처리가 미덥지 않아
  * "155권인생책 17권" 처럼 붙어 나온 적이 있다. margin 은 확실하게 먹는다.
  */
-const Stat = ({ label, value }: { label: string; value: number }) => (
+const Stat = ({
+  label,
+  value,
+  last = false,
+}: {
+  label: string;
+  value: number;
+  last?: boolean;
+}) => (
   <div
     style={{
       display: 'flex',
       alignItems: 'flex-end',
-      marginRight: 34,
+      // space/12 — 두 통계가 한 덩어리로 붙어 보이지 않을 만큼만 띄운다
+      marginRight: last ? 0 : 48,
     }}
   >
     <div
@@ -71,12 +82,12 @@ const Stat = ({ label, value }: { label: string; value: number }) => (
     <div
       style={{
         display: 'flex',
-        fontSize: 46,
+        fontSize: 58,
         fontWeight: 700,
-        color: OG_COLORS.skyDeep,
+        color: OG_COLORS.accentDeep,
         // 큰 글자의 아랫선을 라벨에 맞춘다 — satori 는 baseline 정렬이 불안정하다
         lineHeight: 1,
-        marginRight: 4,
+        marginRight: 8,
       }}
     >
       {value}
@@ -114,60 +125,57 @@ const Image = async ({ params }: Props) => {
     ? `${shownName}님의 책장`
     : '책장을 보면, 그 사람이 보인다';
 
+  // 0권이면 숫자를 세지 않는다 — "0권"은 초대가 아니라 빈 성적표로 읽힌다
+  const hasStats = Boolean(shownName) && totalBooks > 0;
+
   return new ImageResponse(
-    <CardFrame>
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <Wordmark />
+    <CardFrame spines={shownName ? spinesFor(totalBooks) : BRAND_SPINES}>
+      <Wordmark size={38} />
 
-        <div
-          style={{
-            display: 'flex',
-            marginTop: 28,
-            fontSize: titleFontSize(textWidth(title)),
-            fontWeight: 700,
-            // 한글은 글리프가 커서 lineHeight 1.25 로는 윗줄을 침범한다
-            lineHeight: 1.3,
-          }}
-        >
-          {title}
-        </div>
-
-        {/*
-            0권이면 숫자를 세지 않는다 — "0권"은 초대가 아니라 빈 성적표로 읽힌다.
-            Fragment 로 두 Stat 을 묶지 않는다: satori 가 Fragment 를 flex 자식으로
-            세지 못해 두 항목이 한 덩어리로 붙어 렌더된 적이 있다.
-          */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'flex-end',
-            marginTop: 24,
-          }}
-        >
-          {!shownName || totalBooks === 0 ? (
-            <div
-              style={{
-                display: 'flex',
-                fontSize: 28,
-                color: OG_COLORS.inkSoft,
-              }}
-            >
-              읽은 책이 모여 책장이 됩니다
-            </div>
-          ) : null}
-
-          {shownName && totalBooks > 0 ? (
-            <Stat label='읽은 책' value={totalBooks} />
-          ) : null}
-
-          {shownName && totalBooks > 0 && lifeBooks > 0 ? (
-            <Stat label='인생책' value={lifeBooks} />
-          ) : null}
-        </div>
+      <div
+        style={{
+          display: 'flex',
+          marginTop: 24,
+          fontSize: titleFontSize(textWidth(title)),
+          fontWeight: 700,
+          // 한글은 글리프가 커서 lineHeight 1.25 로는 윗줄을 침범한다
+          lineHeight: 1.3,
+        }}
+      >
+        {title}
       </div>
 
-      {/* 권수만큼 실제로 차오르는 선반 — 글자가 다 사라져도 이 형태는 남는다 */}
-      <BookShelf spines={shownName ? spinesFor(totalBooks) : BRAND_SPINES} />
+      {/*
+        Fragment 로 두 Stat 을 묶지 않는다: satori 가 Fragment 를 flex 자식으로
+        세지 못해 두 항목이 한 덩어리로 붙어 렌더된 적이 있다.
+      */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-end',
+          marginTop: 24,
+        }}
+      >
+        {!hasStats ? (
+          <div
+            style={{
+              display: 'flex',
+              fontSize: 27,
+              color: OG_COLORS.inkSoft,
+            }}
+          >
+            한 권씩 채우면, 취향이 보입니다
+          </div>
+        ) : null}
+
+        {hasStats ? (
+          <Stat label='읽은 책' value={totalBooks} last={lifeBooks === 0} />
+        ) : null}
+
+        {hasStats && lifeBooks > 0 ? (
+          <Stat label='인생책' value={lifeBooks} last />
+        ) : null}
+      </div>
     </CardFrame>,
     {
       ...size,
