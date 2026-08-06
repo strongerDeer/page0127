@@ -24,6 +24,26 @@ const FIELD_LABELS: { key: keyof SlideFields; label: string }[] = [
   { key: 'href', label: '링크' },
 ];
 
+const AUDIENCE_OPTIONS = [
+  { value: 'all', label: '모두' },
+  { value: 'guest', label: '비로그인만' },
+  { value: 'member', label: '로그인만' },
+] as const;
+
+/**
+ * timestamptz → datetime-local 입력값.
+ *
+ * datetime-local 은 **로컬 시각 문자열**을 받는다(타임존 표기가 없다). ISO 를
+ * 그대로 넣으면 브라우저가 값을 버리고 칸이 빈 채로 뜬다 — 운영자는 예약을
+ * 걸어 뒀는데 화면에 안 보이는 상태가 된다.
+ */
+const toLocalInput = (iso: string | null): string => {
+  if (!iso) return '';
+  const at = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}T${pad(at.getHours())}:${pad(at.getMinutes())}`;
+};
+
 export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: slide.id });
@@ -36,11 +56,14 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
     cta: slide.cta,
     bg: slide.bg,
     fg: slide.fg,
+    audience: slide.audience,
+    starts_at: toLocalInput(slide.starts_at),
+    ends_at: toLocalInput(slide.ends_at),
   });
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const set = (k: keyof SlideFields, v: string) =>
+  const set = <K extends keyof SlideFields>(k: K, v: SlideFields[K]) =>
     setFields((f) => ({ ...f, [k]: v }));
 
   const run = (fn: () => Promise<void>) => {
@@ -79,17 +102,24 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
         >
           <GripVertical className='h-4 w-4' aria-hidden />
         </button>
-        <label className='flex items-center gap-1 text-xs'>
-          <input
-            type='checkbox'
-            checked={slide.is_active}
-            onChange={(e) =>
-              run(() => toggleActive(slide.id, e.target.checked))
-            }
-            disabled={isPending}
-          />
-          노출
-        </label>
+        <div className='flex items-center gap-3'>
+          {/* 클릭 수 — 무엇이 먹히는지 여기서 바로 비교한다.
+              0 도 정보다("아무도 안 누른다")이므로 감추지 않는다 */}
+          <span className='text-xs tabular-nums opacity-70'>
+            클릭 {slide.click_count.toLocaleString('ko-KR')}
+          </span>
+          <label className='flex items-center gap-1 text-xs'>
+            <input
+              type='checkbox'
+              checked={slide.is_active}
+              onChange={(e) =>
+                run(() => toggleActive(slide.id, e.target.checked))
+              }
+              disabled={isPending}
+            />
+            노출
+          </label>
+        </div>
       </div>
 
       <div className='grid gap-2 sm:grid-cols-2'>
@@ -104,6 +134,46 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
             />
           </label>
         ))}
+        <label className='text-xs'>
+          노출 대상
+          <select
+            value={fields.audience}
+            onChange={(e) =>
+              set('audience', e.target.value as SlideFields['audience'])
+            }
+            disabled={isPending}
+            className='mt-0.5 w-full rounded border border-line bg-white px-2 py-1 text-sm text-text-strong disabled:opacity-50'
+          >
+            {AUDIENCE_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {/* 비워 두면 "제한 없음". 저장 시 NULL 로 돌아간다 */}
+        <label className='text-xs'>
+          시작 (비우면 제한 없음)
+          <input
+            type='datetime-local'
+            value={fields.starts_at}
+            onChange={(e) => set('starts_at', e.target.value)}
+            disabled={isPending}
+            className='mt-0.5 w-full rounded border border-line bg-white px-2 py-1 text-sm text-text-strong disabled:opacity-50'
+          />
+        </label>
+        <label className='text-xs'>
+          종료 (비우면 제한 없음)
+          <input
+            type='datetime-local'
+            value={fields.ends_at}
+            onChange={(e) => set('ends_at', e.target.value)}
+            disabled={isPending}
+            className='mt-0.5 w-full rounded border border-line bg-white px-2 py-1 text-sm text-text-strong disabled:opacity-50'
+          />
+        </label>
+
         <label className='text-xs'>
           배경색
           <input

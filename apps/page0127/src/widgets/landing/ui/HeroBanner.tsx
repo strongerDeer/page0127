@@ -10,6 +10,8 @@ import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { cn } from '@/shared/lib/utils';
 
+import { countBannerClick } from '@/entities/banner/api/countBannerClick';
+
 import type { HeroSlide } from '@/widgets/landing/model/heroSlides';
 
 const AUTOPLAY_MS = 6000;
@@ -137,12 +139,18 @@ export const HeroBanner = ({ slides, covers = [] }: HeroBannerProps) => {
                   <Link
                     href={slide.href}
                     tabIndex={isActive ? 0 : -1}
-                    onClick={() =>
+                    onClick={() => {
+                      // GA 에 슬라이드 id 도 실어 보낸다 — label(CTA 문구)만으로는
+                      // 같은 문구를 쓰는 배너끼리 구분되지 않는다.
                       trackEvent('cta_click', {
                         location: 'hero_banner',
                         label: slide.cta,
-                      })
-                    }
+                        slide_id: slide.id,
+                      });
+                      // DB 카운터는 따로 센다. 혼자 운영하면 GA 를 자주 안 열게
+                      // 되므로 어드민 목록에도 숫자를 남긴다.
+                      countBannerClick(slide.id);
+                    }}
                     className='mt-6 inline-flex h-10 items-center rounded-md bg-white px-5 text-sm font-medium text-text-strong transition-opacity hover:opacity-90'
                   >
                     {slide.cta}
