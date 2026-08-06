@@ -104,7 +104,7 @@ export const generateUniqueUsername = async (source: {
  * "프로필 생성에 실패했습니다" 만 보였다 — Sentry 에도 증상만 쌓였다.
  */
 export type UpsertProfileResult =
-  | { ok: true; savedRows: number }
+  | { ok: true; savedRows: number; profile: Profile | null }
   | { ok: false; reason: string };
 
 export const upsertProfile = async (
@@ -164,10 +164,16 @@ export const upsertProfile = async (
           onConflict: 'id',
         }
       )
-      .select('id');
+      // 저장된 행을 통째로 돌려받는다 — 호출자가 다시 조회하지 않아도 되게
+      .select('*');
 
   const { data, error } = await save(username);
-  if (!error) return { ok: true, savedRows: data?.length ?? 0 };
+  if (!error)
+    return {
+      ok: true,
+      savedRows: data?.length ?? 0,
+      profile: data?.[0] ?? null,
+    };
 
   // username 을 만들지 않은 호출(이미 있는 프로필)이면 재시도해도 결과가 같다
   if (error.code !== UNIQUE_VIOLATION || !username) {
@@ -189,7 +195,11 @@ export const upsertProfile = async (
     };
   }
 
-  return { ok: true, savedRows: retryData?.length ?? 0 };
+  return {
+    ok: true,
+    savedRows: retryData?.length ?? 0,
+    profile: retryData?.[0] ?? null,
+  };
 };
 
 /**
@@ -205,12 +215,25 @@ export const ensureProfile = async (
   email: string | null,
   metadata?: Record<string, unknown> | null
 ): Promise<Profile> => {
-  let profile = await getProfile(userId);
+  const profile = await getProfile(userId);
   if (profile) return profile;
 
   const saved = await upsertProfile(userId, email, metadata);
-  profile = await getProfile(userId);
-  if (profile) return profile;
+
+  /*
+    ⚠️ 여기서 `getProfile` 을 다시 부르면 안 된다.
+
+    Next.js 는 한 번의 렌더 안에서 **같은 GET 요청을 한 번만 실행하고 결과를
+    재사용한다**(Request Memoization). `upsertProfile` 안에서 이미 같은 조회가
+    나갔기 때문에, 저장에 성공했더라도 재조회는 **저장 전의 빈 결과**를 돌려준다.
+
+    그래서 가입 직후 첫 화면이 500 이 났다. 두 번째 요청은 새 렌더라 메모이제이션이
+    초기화돼 정상 동작했고, 그 탓에 "가끔 되는" 문제로 보였다.
+    (행이 실제로 DB에 저장된 것은 service_role 조회로 확인했다)
+
+    저장이 돌려준 행을 그대로 쓴다 — 재조회 자체를 없애는 편이 확실하다.
+  */
+  if (saved.ok && saved.profile) return saved.profile;
 
   /*
     여기까지 왔다는 건 저장과 조회 사이에서 무언가 어긋났다는 뜻이다.
