@@ -363,6 +363,35 @@ body {
   }
 }
 
+/* ============================================
+   프로모 카드 — 랜딩의 비비드 면 2장
+
+   틴트(위)와 달리 **모드에 따라 바뀌지 않는다.** 채도 높은 브랜드 면이라
+   라이트·다크 어느 쪽에서도 같은 색으로 서고, 흰 글자가 그 위에 얹힌다.
+   그래서 다크 오버라이드가 없다.
+
+   값이 여기 있는 이유는 대비 때문이다. 컴포넌트에 hex 로 박혀 있던 동안
+   **제목 4.36:1 / 서브 3.15:1** 이었다(AA 4.5 미달). 제목이 text-lg(18px) bold 라
+   WCAG Large 기준 18.66px 에 0.66px 못 미쳐 일반 본문 기준을 받는다는 것을
+   놓치기 쉬웠다. 시작색을 한 단 낮춰 여기서 관리한다.
+   ============================================ */
+@layer components {
+  .promo-blue {
+    background: linear-gradient(
+      135deg,
+      var(--blue-600) 0%,
+      var(--blue-700) 100%
+    );
+  }
+  .promo-violet {
+    background: linear-gradient(
+      135deg,
+      var(--violet-600) 0%,
+      var(--violet-700) 100%
+    );
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
