@@ -96,11 +96,22 @@ export const generateUniqueUsername = async (source: {
  * @param email - 사용자 이메일. **없을 수 있다** — 카카오는 이메일 동의가 선택이다
  * @param metadata - OAuth 공급자가 준 user_metadata (신규 생성 시 이름·사진 초기값)
  */
+/**
+ * 저장 결과. 실패 사유를 호출자에게 넘긴다.
+ *
+ * 예전에는 `void` 를 반환하고 실패를 `console.error` 로만 남겼다. 그래서
+ * `ensureProfile` 은 프로필이 왜 없는지 알 수 없었고, 사용자에게는 원인 없는
+ * "프로필 생성에 실패했습니다" 만 보였다 — Sentry 에도 증상만 쌓였다.
+ */
+export type UpsertProfileResult =
+  | { ok: true; savedRows: number }
+  | { ok: false; reason: string };
+
 export const upsertProfile = async (
   userId: string,
   email: string | null,
   metadata?: Record<string, unknown> | null
-): Promise<void> => {
+): Promise<UpsertProfileResult> => {
   const supabase = await createClient();
 
   // 1. 기존 프로필 확인
@@ -130,31 +141,41 @@ export const upsertProfile = async (
   // 먼저 저장하면 유니크 제약(23505)에 걸린다. 그때는 무작위 이름으로 한 번 더
   // 시도한다. 예전에는 에러를 통째로 무시해서, 실패하면 프로필 없이 조용히
   // 넘어갔다가 ensureProfile 이 "프로필 생성에 실패했습니다"로 죽었다.
-  const save = (name: string | undefined) =>
-    supabase.from('profiles').upsert(
-      {
-        id: userId,
-        email,
-        ...(name && { username: name }), // username이 있을 때만 추가
-        ...(defaults.nickname && { nickname: defaults.nickname }),
-        ...(defaults.photoUrl && { photo_url: defaults.photoUrl }),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        onConflict: 'id',
-      }
-    );
+  /*
+    `.select('id')` 를 붙이는 이유: **몇 행이 저장됐는지** 알기 위해서다.
 
-  const { error } = await save(username);
-  if (!error) return;
+    붙이지 않으면 PostgREST 는 저장된 행을 돌려주지 않는다. 그러면 RLS 정책에
+    막혀 0행이 처리된 경우와 정상 저장이 구분되지 않는다 — 둘 다 `error` 가
+    비어 있어 "성공" 으로 보인다. 실제로 프로필 없이 넘어간 사고가 있었다.
+  */
+  const save = (name: string | undefined) =>
+    supabase
+      .from('profiles')
+      .upsert(
+        {
+          id: userId,
+          email,
+          ...(name && { username: name }), // username이 있을 때만 추가
+          ...(defaults.nickname && { nickname: defaults.nickname }),
+          ...(defaults.photoUrl && { photo_url: defaults.photoUrl }),
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: 'id',
+        }
+      )
+      .select('id');
+
+  const { data, error } = await save(username);
+  if (!error) return { ok: true, savedRows: data?.length ?? 0 };
 
   // username 을 만들지 않은 호출(이미 있는 프로필)이면 재시도해도 결과가 같다
   if (error.code !== UNIQUE_VIOLATION || !username) {
     console.error('프로필 저장 실패:', error.message);
-    return;
+    return { ok: false, reason: `저장 실패(${error.code}): ${error.message}` };
   }
 
-  const { error: retryError } = await save(
+  const { data: retryData, error: retryError } = await save(
     withSuffix(
       generateUsernameSeed({ email, nickname: identity.nickname }),
       randomSuffix()
@@ -162,7 +183,13 @@ export const upsertProfile = async (
   );
   if (retryError) {
     console.error('프로필 저장 재시도 실패:', retryError.message);
+    return {
+      ok: false,
+      reason: `아이디 중복 후 재시도도 실패(${retryError.code}): ${retryError.message}`,
+    };
   }
+
+  return { ok: true, savedRows: retryData?.length ?? 0 };
 };
 
 /**
@@ -179,15 +206,30 @@ export const ensureProfile = async (
   metadata?: Record<string, unknown> | null
 ): Promise<Profile> => {
   let profile = await getProfile(userId);
+  if (profile) return profile;
 
-  if (!profile) {
-    await upsertProfile(userId, email, metadata);
-    profile = await getProfile(userId);
+  const saved = await upsertProfile(userId, email, metadata);
+  profile = await getProfile(userId);
+  if (profile) return profile;
+
+  /*
+    여기까지 왔다는 건 저장과 조회 사이에서 무언가 어긋났다는 뜻이다.
+    예전 메시지는 "프로필 생성에 실패했습니다." 한 줄이라 **원인을 하나도
+    말하지 않았다** — 가입 직후 첫 화면에서 나는 500 인데 Sentry 에도
+    증상만 쌓였다. 세 갈래를 구분해 남긴다.
+  */
+  if (!saved.ok) {
+    throw new Error(`프로필 생성 실패 — ${saved.reason}`);
   }
 
-  if (!profile) {
-    throw new Error('프로필 생성에 실패했습니다.');
+  if (saved.savedRows === 0) {
+    // upsert 가 에러 없이 0행을 처리한 경우. RLS 정책에 막히면 이렇게 된다.
+    throw new Error(
+      '프로필 생성 실패 — 저장 요청은 통과했지만 0행이 반영됐습니다 (profiles RLS 정책 확인 필요)'
+    );
   }
 
-  return profile;
+  throw new Error(
+    `프로필 생성 실패 — ${saved.savedRows}행을 저장했는데 곧바로 조회되지 않았습니다 (조회 권한 또는 반영 지연 확인 필요)`
+  );
 };
