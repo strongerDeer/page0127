@@ -6,6 +6,7 @@ import { createClient } from '@/shared/config/supabase/server';
 
 import { getProfile } from '@/entities/profile/api/getProfile';
 
+import { LinkedAccountsSection } from '@/features/auth/ui/LinkedAccountsSection';
 import { ProfileSettingsForm } from '@/features/profile/ui/ProfileSettingsForm';
 
 /**
@@ -43,7 +44,12 @@ export default async function SettingsPage() {
 
   return (
     <PageContainer width='narrow'>
-      <ProfileSettingsForm profile={profile} />
+      <ProfileSettingsForm profile={profile}>
+        {/* 연결 목록은 브라우저에서 세션으로 읽는다 — 서버에서 미리 받아 내리면
+            연결/해제 직후 값이 어긋난다.
+            위치는 '내 계정' 아래, '계정 삭제' 위다 (ProfileSettingsForm 참조) */}
+        <LinkedAccountsSection />
+      </ProfileSettingsForm>
     </PageContainer>
   );
 }

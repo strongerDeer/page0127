@@ -26,6 +26,14 @@ import type { Profile } from '@/entities/profile/types';
 
 type ProfileSettingsFormProps = {
   profile: Profile;
+  /**
+   * 내 계정과 위험 구역 사이에 끼워 넣을 섹션.
+   *
+   * 위험 구역(계정 삭제)이 폼 안에 있어서, 페이지가 그냥 뒤에 덧붙이면
+   * 삭제 버튼 **아래**로 밀려난다. 파괴적 액션은 화면에서 항상 마지막이라야
+   * 하므로 자리를 여기로 정해 둔다.
+   */
+  children?: React.ReactNode;
 };
 
 type ProfileSettingsFormPhotoProps = {
@@ -160,7 +168,10 @@ const initialState: ProfileActionState = { status: 'idle', message: '' };
  * - 단, 글자수 카운터(bio)는 제어 상태로, 이미지 미리보기(displayPhotoUrl)는 파생값으로 둔다
  *   → "폼 제출만 Action으로, UX 표시는 state/파생값으로"
  */
-export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
+export const ProfileSettingsForm = ({
+  profile,
+  children,
+}: ProfileSettingsFormProps) => {
   const router = useRouter();
   const { logout } = useLogout();
 
@@ -306,6 +317,10 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
         username={profile.username}
         onLogout={logout}
       />
+
+      {/* 페이지가 끼워 넣는 섹션(연결된 계정 등). 위험 구역 **위**에 온다 —
+          계정 삭제는 화면에서 항상 마지막이어야 한다 */}
+      {children}
 
       <ProfileSettingsForm.DangerZone username={profile.username} />
     </form>

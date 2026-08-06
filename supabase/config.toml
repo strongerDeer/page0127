@@ -177,7 +177,9 @@ enable_signup = true
 # Allow/disallow anonymous sign-ins to your project.
 enable_anonymous_sign_ins = false
 # Allow/disallow testing manual linking of accounts
-enable_manual_linking = false
+# 설정 화면의 "연결된 계정"(linkIdentity)이 이 값에 달려 있다. 꺼져 있으면 422.
+# ⚠️ 운영·개발 대시보드에서도 따로 켜야 한다 — 이 파일은 로컬에만 적용된다.
+enable_manual_linking = true
 # Passwords shorter than this value will be rejected as weak. Minimum 6, recommended 8 or more.
 minimum_password_length = 6
 # Passwords that do not meet the following requirements will be rejected as weak. Supported values
