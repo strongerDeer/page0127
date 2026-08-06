@@ -141,7 +141,11 @@ const nextConfig: NextConfig = {
       // API·Sentry 터널(self) + Supabase REST/realtime(wss) + GA 비콘
       // + jsdelivr: Pretendard 폰트 CSS의 소스맵(.map) fetch. DevTools를 열었을
       //   때만 요청되고 일반 방문자엔 영향 없지만, 콘솔 위반을 없애려고 허용한다.
-      `connect-src 'self' ${supabaseOrigin} ${supabaseSocketOrigin} https://cdn.jsdelivr.net https://www.google-analytics.com https://www.googletagmanager.com`,
+      // + www.google.com: GA4 의 Google 신호(Google Signals) 핑이 여기로 간다.
+      //   주 수집 경로(google-analytics.com)와 **호스트가 달라** 빠뜨리기 쉽고,
+      //   빠지면 이벤트는 멀쩡한데 인구통계·관심사·교차기기만 조용히 빈다.
+      //   2026-08-06 운영에서 체류가 쌓인 뒤 4건 차단되는 것을 확인하고 열었다.
+      `connect-src 'self' ${supabaseOrigin} ${supabaseSocketOrigin} https://cdn.jsdelivr.net https://www.google-analytics.com https://www.googletagmanager.com https://www.google.com`,
       // 클릭재킹 방지(X-Frame-Options의 현대적 대응) + 기타 하드닝
       "frame-ancestors 'self'",
       "base-uri 'self'",
