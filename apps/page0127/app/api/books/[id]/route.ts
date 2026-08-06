@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server';
 
+import { isNewlyCompleted } from '@/entities/book/model/completion';
+
 import { createActivity } from '../../_helpers/activity';
 import { getCurrentUser, getSupabaseClient } from '../../_helpers/auth';
 import {
@@ -88,8 +90,10 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       });
     }
 
-    // status가 completed로 변경된 경우 활동 생성
-    if (oldBook?.status !== 'completed' && body.status === 'completed') {
+    // status가 completed로 변경된 경우 활동 생성.
+    // 판정은 클라이언트 계측(book_complete)과 같은 함수를 쓴다 — 두 곳에 각각
+    // 적으면 한쪽만 고치는 날 활동 기록과 GA 수치가 조용히 어긋난다.
+    if (isNewlyCompleted(oldBook?.status, body.status)) {
       await createActivity({
         supabase,
         userId: user.id,

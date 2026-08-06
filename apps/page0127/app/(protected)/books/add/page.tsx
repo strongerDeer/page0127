@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { ErrorBoundary, PageContainer } from '@repo/ui';
 import { toast } from 'sonner';
 
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import {
   upgradeImageResolution,
   validateSpineImageUrl,
@@ -192,6 +193,14 @@ const AddBookPage = () => {
     const result = await createBook(bookData);
 
     if (result) {
+      // 활성화 계측 — 가입 다음 단계가 "첫 책을 꽂았다"이다.
+      // 등록하면서 바로 완독으로 담는 경우가 흔한데, 그 흐름은 편집 화면을 거치지
+      // 않으므로 여기서 세지 않으면 그 완독은 통째로 누락된다.
+      trackEvent('book_add', { status: formData.status, read_count: readCount });
+      if (formData.status === 'completed') {
+        trackEvent('book_complete', { from: 'register' });
+      }
+
       // 상태 초기화
       setExistingBook(null);
 

@@ -6,6 +6,8 @@ import { Button } from '@repo/ui';
 import { Link2, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
+
 type ShareButtonProps = {
   /** 공유할 경로. 절대 URL 은 이 컴포넌트가 현재 origin 으로 만든다 */
   path: string;
@@ -39,6 +41,8 @@ export const ShareButton = ({ path, title, text, label }: ShareButtonProps) => {
 
       try {
         await navigator.share({ title, text, url });
+        // 성공한 뒤에만 센다 — 시트를 열었다 닫은 것은 공유가 아니다
+        trackEvent('share_click', { method: 'native', path });
         return;
       } catch (error) {
         // 사용자가 공유 시트를 닫은 것은 실패가 아니다 — 아무 말도 하지 않는다
@@ -53,6 +57,7 @@ export const ShareButton = ({ path, title, text, label }: ShareButtonProps) => {
 
     try {
       await navigator.clipboard.writeText(url);
+      trackEvent('share_click', { method: 'copy', path });
       toast.success('주소를 복사했어요.');
     } catch {
       toast.error('주소를 복사하지 못했어요.');
