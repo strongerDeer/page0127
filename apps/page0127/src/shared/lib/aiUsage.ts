@@ -1,5 +1,7 @@
 import { APIError } from 'openai';
 
+import { MONTHLY_BUDGET_CENTS } from '@/shared/lib/admin/config';
+
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 /** 무료 사용자 월별 허용 횟수 (기능별 독립 카운트) */
@@ -10,6 +12,19 @@ export const USAGE_LIMIT_EXCEEDED_ERROR = `이번 달 무료 분석 횟수(${MON
 
 /** UI 안내용 (토스트/캡션) — 여러 컴포넌트가 동일한 문구를 쓰도록 한 곳에서 관리한다 */
 export const USAGE_LIMIT_EXCEEDED_MESSAGE = `이번 달 무료 분석 횟수(${MONTHLY_LIMIT}회)를 모두 사용했어요. 다음 달 1일에 초기화돼요.`;
+
+/**
+ * 전역 예산이 바닥났을 때의 문구.
+ *
+ * 개인 한도 초과와 **다른 말을 해야 한다.** 횟수가 남아 있는데 "횟수를 다
+ * 썼다"고 하면 사용자는 자기 화면(3/3 남음)과 어긋난 말을 듣고 고장으로 읽는다.
+ * 서비스 사정이라는 것을 밝히되, 운영자의 지갑 사정까지 설명할 필요는 없다.
+ */
+export const BUDGET_EXCEEDED_ERROR =
+  '이번 달 AI 분석이 모두 소진됐습니다. 다음 달 1일에 다시 열립니다.';
+
+export const BUDGET_EXCEEDED_MESSAGE =
+  '이번 달 AI 분석이 모두 소진됐어요. 다음 달 1일에 다시 열려요.';
 
 export type AiUsageFeature = 'taste_analysis' | 'compatibility';
 
@@ -82,18 +97,70 @@ export async function checkUsageLimit(
  *
  * RPC/조회 오류 시 fail-closed: { allowed: false } 로 OpenAI 호출을 차단한다.
  */
+/**
+ * 이번 달(KST) 지금까지 쓴 금액을 USD 센트로 돌려준다.
+ *
+ * 비용은 ai_usage_logs 가 아니라 **분석 결과 테이블**에 있다(cost_in_cents).
+ * 호출 횟수가 아니라 실제 토큰 비용이라 이쪽이 청구서에 가깝다.
+ *
+ * 어드민 대시보드(getCostSummary)와 같은 두 테이블을 같은 월 경계로 본다.
+ * 기준이 갈리면 "게이지는 80%인데 차단은 안 되는" 상태가 생긴다.
+ *
+ * 조회 실패는 0 으로 떨어뜨린다 — 여기서 막아 버리면 DB 일시 오류에
+ * 기능 전체가 멈춘다. 진짜 관문은 DB 안의 reserve_ai_usage 이고,
+ * 이 함수는 **거절 사유를 가르는 용도**다.
+ */
+export async function getMonthlySpentCents(
+  supabase: SupabaseClient
+): Promise<number> {
+  const since = getStartOfMonthKst().toISOString();
+
+  const [taste, compat] = await Promise.all([
+    supabase
+      .from('taste_analyses')
+      .select('cost_in_cents')
+      .gte('created_at', since),
+    supabase
+      .from('compatibility_analyses')
+      .select('cost_in_cents')
+      .gte('created_at', since),
+  ]);
+
+  if (taste.error || compat.error) {
+    console.error(
+      'AI 사용액 조회 실패:',
+      taste.error?.message ?? compat.error?.message
+    );
+    return 0;
+  }
+
+  const sum = (rows: { cost_in_cents: number | null }[] | null) =>
+    (rows ?? []).reduce((acc, r) => acc + (r.cost_in_cents ?? 0), 0);
+
+  return sum(taste.data) + sum(compat.data);
+}
+
 export async function reserveUsage(
   supabase: SupabaseClient,
   feature: AiUsageFeature
-): Promise<{ allowed: boolean; remaining: number; usageId: string | null }> {
+): Promise<{
+  allowed: boolean;
+  remaining: number;
+  usageId: string | null;
+  /** 거절 사유 — 개인 한도와 전역 예산은 사용자에게 다른 말을 해야 한다 */
+  reason: 'ok' | 'user_limit' | 'budget' | 'error';
+}> {
+  // 전역 상한을 앱이 넘긴다. DB 에 값을 박아 두면 환율·예산을 고칠 때
+  // 어드민 게이지와 실제 차단 기준이 어긋난다.
   const { data, error } = await supabase.rpc('reserve_ai_usage', {
     p_feature: feature,
+    p_budget_cents: MONTHLY_BUDGET_CENTS,
   });
 
   if (error) {
     console.error('AI 사용량 예약 실패:', error);
     // fail-closed: 예약 실패 시 OpenAI 호출 차단
-    return { allowed: false, remaining: 0, usageId: null };
+    return { allowed: false, remaining: 0, usageId: null, reason: 'error' };
   }
 
   // TABLE 반환 함수라 data는 행 배열 — 첫 행을 읽는다
@@ -102,13 +169,23 @@ export async function reserveUsage(
     | undefined;
 
   if (!row) {
-    return { allowed: false, remaining: 0, usageId: null };
+    return { allowed: false, remaining: 0, usageId: null, reason: 'error' };
+  }
+
+  // 거절 사유는 DB 가 돌려주지 않는다(반환 형태를 바꾸면 호출부가 전부 흔들린다).
+  // 대신 여기서 한 번 더 확인해 가른다 — 전역 예산은 사용자와 무관하게 결정되므로
+  // 같은 기준으로 다시 재도 결과가 같다.
+  let reason: 'ok' | 'user_limit' | 'budget' | 'error' = 'ok';
+  if (!row.allowed) {
+    const spent = await getMonthlySpentCents(supabase);
+    reason = spent >= MONTHLY_BUDGET_CENTS ? 'budget' : 'user_limit';
   }
 
   return {
     allowed: row.allowed,
     remaining: row.remaining,
     usageId: row.usage_id,
+    reason,
   };
 }
 

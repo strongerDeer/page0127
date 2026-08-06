@@ -56,6 +56,13 @@ export const SCHEMA_CONTRACT: SchemaProbe[] = [
     breaks: '신고 접수와 어드민 신고 처리 화면',
   },
   {
+    table: 'taste_analyses',
+    // cost_in_cents 가 없으면 전역 예산 계산이 0 이 되어 **킬스위치가 통째로 열린다.**
+    // 막히는 게 아니라 안 막히는 쪽으로 고장나므로 청구서로 돌아온다.
+    columns: ['cost_in_cents'],
+    breaks: 'AI 전역 예산 차단 — 없으면 한도 없이 유료 호출이 나간다',
+  },
+  {
     table: 'hero_slides',
     // audience 가 없으면 대상 필터가 통째로 사라져 비로그인용 배너("지금
     // 가입하세요")가 로그인 사용자에게도 뜬다 — 화면은 안 깨지고 문구만

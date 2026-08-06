@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { createClient } from '@/shared/config/supabase/server';
 import {
+  BUDGET_EXCEEDED_ERROR,
   isUnbilledOpenAiFailure,
   refundUsage,
   reserveUsage,
@@ -145,8 +146,15 @@ export async function POST(request: NextRequest) {
     // 캐시 히트는 이 지점보다 앞에서 이미 응답을 반환하므로 예약도 하지 않는다.
     const reservation = await reserveUsage(supabase, 'compatibility');
     if (!reservation.allowed) {
+      // 개인 한도와 전역 예산은 사용자에게 다른 말을 해야 한다 — 횟수가 남아
+      // 있는데 "횟수를 다 썼다"고 하면 자기 화면(3/3 남음)과 어긋나 고장으로 읽힌다.
       return NextResponse.json(
-        { error: USAGE_LIMIT_EXCEEDED_ERROR },
+        {
+          error:
+            reservation.reason === 'budget'
+              ? BUDGET_EXCEEDED_ERROR
+              : USAGE_LIMIT_EXCEEDED_ERROR,
+        },
         { status: 429 }
       );
     }
