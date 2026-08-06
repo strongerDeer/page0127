@@ -216,7 +216,9 @@ const eslintConfig = defineConfig([
       'src/app/**/sitemap.ts',
       'src/app/**/manifest.ts',
       'src/app/**/{opengraph,twitter}-image.tsx',
-      'src/app/**/icon.tsx',
+      // icon 과 apple-icon 은 별개 파일이다 — icon.tsx 글롭이 apple-icon.tsx 를
+      // 잡아 주지 않는다. 둘 다 Next.js 가 default export 를 요구한다.
+      'src/app/**/{icon,apple-icon}.tsx',
 
       //app
       'app/**/page.tsx',
@@ -233,7 +235,7 @@ const eslintConfig = defineConfig([
       'app/**/sitemap.ts',
       'app/**/manifest.ts',
       'app/**/{opengraph,twitter}-image.tsx',
-      'app/**/icon.tsx',
+      'app/**/{icon,apple-icon}.tsx',
 
       // Pages Router 파일
       'src/pages/**/*.tsx',
