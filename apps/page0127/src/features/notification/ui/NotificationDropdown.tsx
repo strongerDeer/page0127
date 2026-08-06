@@ -37,11 +37,30 @@ export const NotificationDropdown = ({ userId }: NotificationDropdownProps) => {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant='ghost' size='icon-md' className='relative'>
+        {/*
+          아이콘만 있는 버튼이라 이름을 직접 준다 — 스크린리더는 종 그림을 읽지 못한다.
+          이 버튼은 GNB 에 있어 **로그인한 사람이 보는 모든 화면**에 나온다.
+
+          읽지 않은 개수를 이름에 넣는다. 뱃지 숫자는 눈으로만 보이는 정보라,
+          이름이 "알림" 뿐이면 새 알림이 있는지 소리로는 알 수 없다.
+        */}
+        <Button
+          variant='ghost'
+          size='icon-md'
+          className='relative'
+          aria-label={
+            unreadCount && unreadCount.count > 0
+              ? `알림, 읽지 않음 ${unreadCount.count}건`
+              : '알림'
+          }
+        >
           <Bell className='h-5 w-5' />
-          {/* 읽지 않은 알림 뱃지 */}
+          {/* 읽지 않은 알림 뱃지 — 이름에 이미 개수가 들어가므로 중복해 읽지 않게 숨긴다 */}
           {unreadCount && unreadCount.count > 0 && (
-            <span className='absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-bold text-white'>
+            <span
+              aria-hidden='true'
+              className='absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-bold text-white'
+            >
               {unreadCount.count > 99 ? '99+' : unreadCount.count}
             </span>
           )}

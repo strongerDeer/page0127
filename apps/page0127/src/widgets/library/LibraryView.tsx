@@ -78,6 +78,15 @@ type LibraryViewProps = {
   /** 공개 서재에서 책 링크에 쓸 username (내 서재는 생략) */
   username?: string;
 
+  /**
+   * 지금 이 서재의 주인이 보고 있는지.
+   *
+   * ⚠️ `username` 유무로는 판별할 수 없다 — 내 서재로 들어가도 `/[username]` 으로
+   * 넘어오기 때문에 주인도 방문자도 같은 라우트를 본다. 빈 서재 안내 문구가
+   * "첫 책을 기록해 보세요"(주인) / "아직 공개된 기록이 없어요"(방문자)로 갈린다.
+   */
+  isOwner?: boolean;
+
   /** 목표 설정 — 소유자에게만 전달 (없으면 버튼 자체가 안 보인다) */
   onSetGoal?: () => void;
 
@@ -119,6 +128,7 @@ export const LibraryView = ({
   allShelfTitle = '서재 전체',
   lifeBooksTitle = '인생책',
   username,
+  isOwner = false,
   onSetGoal,
   calendarSlot,
   showWishlist = false,
@@ -211,6 +221,34 @@ export const LibraryView = ({
         ) : isAllView ? (
           /* ── 전체(누적) 뷰 ── */
           <div className='space-y-6'>
+            {/*
+              기록이 하나도 없을 때는 안내를 **통계보다 먼저** 보여준다.
+
+              처음 가입한 사람에게 이 화면은 `0권 · 0쪽 · 0권` 세 숫자로 시작한다.
+              숫자만 놓으면 초대가 아니라 **빈 성적표**로 읽힌다. 같은 이유로 공유
+              카드에서도 0권일 때는 숫자를 세지 않기로 했다
+              (app/(public)/[username]/opengraph-image.tsx).
+
+              통계 카드를 지우지는 않는다 — 한 권을 넣었을 때 어디가 채워지는지
+              미리 보이는 편이 낫다.
+            */}
+            {books.length === 0 && (
+              <Card className='rounded-2xl border-dashed bg-card py-6 shadow-none'>
+                <CardHeader>
+                  <CardTitle>
+                    {isOwner
+                      ? '첫 책을 기록해 보세요'
+                      : '아직 공개된 기록이 없어요'}
+                  </CardTitle>
+                  <p className='text-sm text-muted-foreground'>
+                    {isOwner
+                      ? '상단 “도서 추가”로 한 권을 넣으면 아래 통계가 채워지기 시작합니다. 한 권이면 충분해요.'
+                      : '이 서재의 주인이 책을 공개하면 여기에 쌓입니다.'}
+                  </p>
+                </CardHeader>
+              </Card>
+            )}
+
             <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
               <Card className='rounded-2xl bg-card py-6 shadow-none'>
                 <CardHeader>

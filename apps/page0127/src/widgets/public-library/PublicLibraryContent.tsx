@@ -179,6 +179,7 @@ export const PublicLibraryContent = ({
         onSetGoal={isOwnProfile ? () => setIsGoalDialogOpen(true) : undefined}
         calendarSlot={isOwnProfile ? calendarSlot : undefined}
         showWishlist={isOwnProfile}
+        isOwner={isOwnProfile}
         isWishlistView={isWishlistView}
         wishlistBooks={wishlistBooks}
       />
