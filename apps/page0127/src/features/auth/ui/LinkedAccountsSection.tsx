@@ -8,31 +8,42 @@ import { Button } from '@repo/ui';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { LINKED_PARAM, useLinkedAccounts } from '../api/useLinkedAccounts';
+import { LINK_FAILED_PARAM, LINKED_PARAM } from '@/shared/lib/auth/linkFlow';
+
+import { useLinkedAccounts } from '../api/useLinkedAccounts';
 import { UNLINK_BLOCKED_MESSAGE } from '../model/linkedAccounts';
-import { isOAuthProvider, OAUTH_PROVIDERS } from '../model/providers';
+import { toLinkResultMessage } from '../model/linkResult';
+import { OAUTH_PROVIDERS } from '../model/providers';
 
 /**
- * 연결을 마치고 돌아왔으면 한 번 알리고 URL 을 정리한다.
+ * 연결을 마치고 돌아왔으면 결과를 한 번 알리고 URL 을 정리한다.
  *
- * 연결은 공급자 페이지를 왕복하므로 훅 안에서는 성공을 알 수 없다.
- * 돌아온 화면이 `?linked=` 를 보고 알린다.
+ * 연결은 공급자 페이지를 왕복하므로 훅 안에서는 결과를 알 수 없다.
+ * 돌아온 화면이 `?linked=`(성공) 또는 `?linkFailed=`(실패)를 보고 알린다.
  *
  * 알린 뒤 파라미터를 지우는 이유: 안 지우면 새로고침할 때마다 다시 뜨고,
  * 그 URL 을 공유하면 남의 화면에서도 뜬다.
  */
-const useLinkedToast = () => {
+const useLinkResultToast = () => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
   const linked = searchParams.get(LINKED_PARAM);
+  const failed = searchParams.get(LINK_FAILED_PARAM);
 
   useEffect(() => {
-    if (!isOAuthProvider(linked)) return;
+    const message = toLinkResultMessage({ linked, failed });
+    if (!message) return;
 
-    toast.success(`${OAUTH_PROVIDERS[linked].label} 계정을 연결했어요.`);
+    if (message.kind === 'success') {
+      toast.success(message.text);
+    } else {
+      // 실패 문구는 길고 할 일이 담겨 있어 기본 시간으로는 다 못 읽는다
+      toast.error(message.text, { duration: 8000 });
+    }
+
     router.replace(pathname, { scroll: false });
-  }, [linked, pathname, router]);
+  }, [linked, failed, pathname, router]);
 };
 
 /**
@@ -45,7 +56,7 @@ export const LinkedAccountsSection = () => {
   const { rows, isPending, error, pendingProvider, link, unlink } =
     useLinkedAccounts();
 
-  useLinkedToast();
+  useLinkResultToast();
 
   return (
     <section className='mt-6 rounded-2xl bg-sunken px-5 py-4'>
