@@ -9,10 +9,13 @@ import { Card, CardContent, CardHeader, Skeleton } from '@repo/ui';
 import { ErrorBoundary, PageContainer } from '@repo/ui';
 import { toast } from 'sonner';
 
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import {
   upgradeImageResolution,
   validateSpineImageUrl,
 } from '@/shared/lib/imageUtils';
+
+import { isNewlyCompleted } from '@/entities/book/model/completion';
 
 import { useBookCRUD } from '@/features/book/api/useBookCRUD';
 import { useBookSearch } from '@/features/book/api/useBookSearch';
@@ -90,6 +93,10 @@ export const BookEditPageClient = ({
   const handleSubmit = async (formData: BookFormData) => {
     setIsUpdating(true);
 
+    // 저장 **전에** 판정해야 한다 — updateBook 이 성공하면 book 은 이미 새 상태다.
+    // 판정 규칙은 서버가 활동 기록을 만들 때 쓰는 것과 같은 함수를 쓴다.
+    const justCompleted = isNewlyCompleted(book?.status, formData.status);
+
     // 책을 다시 선택했다면 도서 자체 정보(제목/저자/표지 등)도 함께 갱신
     const updates: Partial<BookInput> = { ...formData };
     if (reselectedBook) {
@@ -111,6 +118,8 @@ export const BookEditPageClient = ({
     const result = await updateBook(id, updates);
 
     if (result) {
+      if (justCompleted) trackEvent('book_complete', { from: 'edit' });
+
       toast.success('도서 정보가 수정되었습니다!');
       router.push(`/${username}/${id}`); // 수정한 책 상세로 이동
 

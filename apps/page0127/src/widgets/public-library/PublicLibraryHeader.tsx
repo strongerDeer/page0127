@@ -17,6 +17,7 @@ import {
   MONTHLY_LIMIT,
   USAGE_LIMIT_EXCEEDED_MESSAGE,
 } from '@/shared/lib/aiUsage';
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import { getPersonalityColor } from '@/entities/taste-analysis/model/personalityTypes';
 
@@ -102,6 +103,8 @@ export const PublicLibraryHeader = ({
 
     try {
       await apiClient.post('/taste-analysis/analyze');
+      // 성공한 것만 센다 — 월 한도 초과나 실패는 "실행"이 아니다
+      trackEvent('taste_analysis_run');
       toast.success('취향 분석이 완료되었습니다!');
       // 분석 성공으로 남은 횟수가 줄었으므로, 다른 화면으로 이동하기 전에
       // 이 라우트의 캐시를 무효화해둔다 — 나중에 "내 서재로" 등으로
