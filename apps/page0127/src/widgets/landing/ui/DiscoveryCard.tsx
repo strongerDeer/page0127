@@ -27,18 +27,22 @@ type GlobalBookRow = {
 };
 
 // 종이톤 틴트 로테이션 — 책 표지를 방해하지 않도록 채도를 낮춘다.
-const TINTS: Array<[string, string]> = [
-  ['#edf4ef', '#f8faf8'], // 세이지
-  ['#eef3f8', '#fafbfd'], // 쿨 그레이
-  ['#f7f0eb', '#fcfaf8'], // 웜 페이퍼
-  ['#f2eff6', '#faf9fc'], // 소프트 라벤더
-];
+//
+// 값은 디자인 시스템(@repo/ui styles)이 갖는다. 예전에는 여기 hex 로 박혀 있었는데,
+// 그러면 **다크 모드에서 면만 밝게 남아** 흰 글자가 흰 배경에 얹혔다(대비 1.12:1).
+// 이제 클래스만 고르고, 다크에서 무엇으로 바뀔지는 시스템이 정한다.
+const TINT_CLASSES = [
+  'tint-sage',
+  'tint-cool',
+  'tint-warm',
+  'tint-lavender',
+] as const;
 
 // 문자열 해시 → 틴트 인덱스 (같은 책은 항상 같은 색)
-const tintOf = (id: string): [string, string] => {
+const tintOf = (id: string): string => {
   let hash = 0;
   for (const ch of id) hash = (hash * 31 + ch.charCodeAt(0)) | 0;
-  return TINTS[Math.abs(hash) % TINTS.length];
+  return TINT_CLASSES[Math.abs(hash) % TINT_CLASSES.length];
 };
 
 // 소개글의 HTML 흔적을 걷어낸 뒤 첫 문장만 사용한다.
@@ -72,7 +76,7 @@ export const DiscoveryCard = async () => {
   const book = (data as GlobalBookRow[] | null)?.[0];
   if (!book) return null;
 
-  const [tintFrom, tintTo] = tintOf(book.id);
+  const tintClass = tintOf(book.id);
 
   return (
     <Link
@@ -81,10 +85,7 @@ export const DiscoveryCard = async () => {
     >
       {/* 상단 — 틴트 면: 제목·저자(좌) + 표지(우, 경계에 걸침) */}
       <div
-        className='flex min-h-56 items-start justify-between gap-4 px-7 pt-7'
-        style={{
-          background: `linear-gradient(170deg, ${tintFrom}, ${tintTo})`,
-        }}
+        className={`flex min-h-56 items-start justify-between gap-4 px-7 pt-7 ${tintClass}`}
       >
         <div className='pt-1'>
           <p className='text-lg font-bold leading-snug text-text-strong'>
