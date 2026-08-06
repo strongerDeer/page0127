@@ -2,7 +2,7 @@ import { createClient } from '@/shared/config/supabase/server';
 
 import { getActiveHeroSlides } from '@/entities/banner/api/getActiveHeroSlides';
 
-import { HERO_SLIDES } from '@/widgets/landing/model/heroSlides';
+import { heroSlidesFor } from '@/widgets/landing/model/heroSlides';
 import { HeroBanner } from '@/widgets/landing/ui/HeroBanner';
 
 type RankingRow = { book_info: { cover_image: string | null } | null };
@@ -28,8 +28,10 @@ export const HeroBannerSection = async () => {
     .map((row) => row.book_info?.cover_image)
     .filter((url): url is string => Boolean(url));
 
-  // 켜진 슬라이드를 DB에서, 비면 코드 상수 폴백
-  const slides = await getActiveHeroSlides(HERO_SLIDES);
+  // 켜진 슬라이드를 DB에서, 비면 코드 폴백.
+  // 폴백을 요청 시점으로 만드는 이유: eyebrow 의 연도가 해가 바뀌어도 따라가야 한다
+  // (모듈 상수로 두면 서버가 떠 있는 동안 작년 연도가 박혀 있는다).
+  const slides = await getActiveHeroSlides(heroSlidesFor(new Date()));
 
   return <HeroBanner slides={slides} covers={covers} />;
 };

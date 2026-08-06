@@ -8,6 +8,9 @@
  * - "당신"을 쓰지 않는다 (밀리도 UI 문구엔 0회)
  *
  * 배너는 편집 산출물이므로 코드가 아니라 이 파일만 고치면 되도록 분리했다.
+ *
+ * ⚠️ 이건 **폴백**이다. `hero_slides` 테이블에 켜진 슬라이드가 있으면 그쪽이 이긴다
+ * (`entities/banner/api/getActiveHeroSlides`). DB 슬라이드의 카피는 어드민에서 고친다.
  */
 import type { HeroSlide } from '@/entities/banner/types';
 
@@ -15,7 +18,18 @@ import type { HeroSlide } from '@/entities/banner/types';
 // 기존 import 경로(@/widgets/landing/model/heroSlides)를 깨지 않도록 재export한다.
 export type { HeroSlide };
 
-export const HERO_SLIDES: HeroSlide[] = [
+/**
+ * 슬라이드를 **호출 시점 기준으로** 만든다.
+ *
+ * 상수 배열이 아니라 함수인 이유: eyebrow 에 날짜를 박는 규칙 때문에 카피가 낡는다.
+ * 실제로 `2026년 하반기 / 올해 절반이 지났어요 / 남은 여섯 달의 목표` 가 박혀 있었는데,
+ * 이건 7월에만 맞는 말이다. 몇 달만 지나도 "누군가 관리하고 있다"는 신호가
+ * **정반대 신호**로 뒤집힌다 — 갱신을 잊은 사이트로 읽힌다.
+ *
+ * 그래서 시점에 묶이는 표현은 **연도 하나만** 남기고 전부 걷어냈다. 연도는 계산으로
+ * 따라가므로 손대지 않아도 맞고, "올해 목표"라는 맥락은 그대로 산다.
+ */
+export const heroSlidesFor = (now: Date): HeroSlide[] => [
   {
     id: 'shelf',
     eyebrow: 'page0127',
@@ -49,8 +63,8 @@ export const HERO_SLIDES: HeroSlide[] = [
   },
   {
     id: 'goal',
-    eyebrow: '2026년 하반기',
-    lines: ['올해 절반이 지났어요', '남은 여섯 달의 목표'],
+    eyebrow: `${now.getFullYear()}년 독서 목표`,
+    lines: ['한 해의 목표를', '숫자로 세워 보세요'],
     sub: '연간 목표를 세우고, 달력에 완독의 흔적을 남겨 보세요.',
     href: '/login',
     cta: '목표 세우기',
