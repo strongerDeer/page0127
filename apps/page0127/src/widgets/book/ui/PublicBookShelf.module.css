@@ -1,14 +1,29 @@
 .shelf {
+  /*
+    선반 널의 다섯 단계. 예전에는 여기 색이 직접 박혀 있어 **다크 모드에서도
+    흰 띠가 그대로 그어졌다** — 어두운 배경 위에서 선반이 책보다 밝아 먼저 눈에 띄었다.
+    변수로 빼서 아래 다크 블록이 통째로 갈아끼운다.
+
+    시맨틱 토큰을 쓰지 않는 이유: 선반은 면(surface)이 아니라 **나무 널의 입체 표현**이라
+    카드·배경 토큰과 역할이 다르다. globals.css 의 .book-cover 와 같은 예외다.
+  */
+  --shelf-top: #f3f4f6;
+  --shelf-face: #ffffff;
+  --shelf-edge: #e5e7eb;
+  --shelf-under: #d1d5db;
+  --shelf-shadow: rgba(0, 0, 0, 0.2);
+  --shelf-shadow-soft: rgba(0, 0, 0, 0.14);
+
   margin-top: 2rem;
   background-color: transparent;
   background-image: linear-gradient(
     to bottom,
     transparent 240px,
-    #f3f4f6 250px,
-    #ffffff 250px,
-    #e5e7eb 260px,
-    #d1d5db 262px,
-    rgba(0, 0, 0, 0.2) 262px,
+    var(--shelf-top) 250px,
+    var(--shelf-face) 250px,
+    var(--shelf-edge) 260px,
+    var(--shelf-under) 262px,
+    var(--shelf-shadow) 262px,
     transparent 263px
   );
 
@@ -133,11 +148,11 @@
   background-image: linear-gradient(
     to bottom,
     transparent 210px,
-    #f3f4f6 218px,
-    #ffffff 218px,
-    #e5e7eb 226px,
-    #d1d5db 228px,
-    rgba(0, 0, 0, 0.14) 228px,
+    var(--shelf-top) 218px,
+    var(--shelf-face) 218px,
+    var(--shelf-edge) 226px,
+    var(--shelf-under) 228px,
+    var(--shelf-shadow-soft) 228px,
     transparent 229px
   );
   background-size: 100% 246px;
@@ -168,4 +183,22 @@
 
 .compact .noImage.cover {
   width: 149px;
+}
+
+/*
+  다크 모드 선반 — 어두운 방의 나무 널.
+
+  배경(ink/950 #0f1012)보다는 밝고 카드(ink/900 #1a1c1f)보다 살짝 밝게 둔다.
+  선반이 배경에 묻히면 책이 허공에 뜨고, 너무 밝으면 책보다 먼저 눈에 들어온다.
+  그림자는 라이트보다 진하게 — 어두운 면 위에서는 옅은 그림자가 보이지 않는다.
+*/
+@media (prefers-color-scheme: dark) {
+  .shelf {
+    --shelf-top: #2a2d33;
+    --shelf-face: #33373e;
+    --shelf-edge: #212429;
+    --shelf-under: #17191d;
+    --shelf-shadow: rgba(0, 0, 0, 0.5);
+    --shelf-shadow-soft: rgba(0, 0, 0, 0.38);
+  }
 }
