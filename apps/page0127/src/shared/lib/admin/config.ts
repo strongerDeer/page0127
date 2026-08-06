@@ -33,3 +33,16 @@ export const USD_TO_KRW = 1400;
 
 /** 월 예산 (원) */
 export const MONTHLY_BUDGET_KRW = 30000;
+
+/**
+ * 월 예산을 USD 센트로 환산한 값 — **유료 호출을 막는 실제 기준**이다.
+ *
+ * 어드민 게이지가 쓰는 값과 같은 상수에서 나온다. 예산이나 환율을 고치면
+ * 보여주는 숫자와 막는 기준이 함께 움직여야 하기 때문이다. DB 에 따로 적어 두면
+ * 그 둘이 어긋나고, 어긋나는 쪽은 대개 "막는 기준"이라 청구서로 돌아온다.
+ *
+ * reserve_ai_usage 에 인자로 넘어간다.
+ */
+export const MONTHLY_BUDGET_CENTS = Math.round(
+  (MONTHLY_BUDGET_KRW / USD_TO_KRW) * 100
+);
