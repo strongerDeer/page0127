@@ -1,6 +1,6 @@
 {
   "blue": {
-    "50":  { "$value": "#e3eefc", "$type": "color" },
+    "50": { "$value": "#e3eefc", "$type": "color" },
     "300": { "$value": "#74b0ff", "$type": "color" },
     "400": { "$value": "#438ef2", "$type": "color" },
     "500": { "$value": "#2d78db", "$type": "color" },
@@ -10,47 +10,83 @@
   "navy": {
     "300": { "$value": "#97a4c0", "$type": "color" },
     "500": { "$value": "#66779a", "$type": "color" },
-    "600": { "$value": "#5f6f8f", "$type": "color", "$description": "라이트 text/subtle 전용. navy/500 은 흰 배경에서 4.496 이라 WCAG AA(4.5)를 0.004 차이로 못 넘긴다 — 색상·채도는 그대로 두고 명도만 7% 낮춰 흰 배경 5.05 / sunken 4.71 을 확보했다. navy/500 자체를 낮추지 않은 이유는 다크의 text-faint 가 그 값을 쓰기 때문이다(낮추면 navy/900 위 3.21 → 2.94 로 그래픽 기준 3:1 마저 깨진다)" },
+    "600": {
+      "$value": "#5f6f8f",
+      "$type": "color",
+      "$description": "라이트 text/subtle 전용. navy/500 은 흰 배경에서 4.496 이라 WCAG AA(4.5)를 0.004 차이로 못 넘긴다 — 색상·채도는 그대로 두고 명도만 7% 낮춰 흰 배경 5.05 / sunken 4.71 을 확보했다. navy/500 자체를 낮추지 않은 이유는 다크의 text-faint 가 그 값을 쓰기 때문이다(낮추면 navy/900 위 3.21 → 2.94 로 그래픽 기준 3:1 마저 깨진다)"
+    },
     "700": { "$value": "#3b4e70", "$type": "color" },
-    "800": { "$value": "#1b386b", "$type": "color", "$description": "다크 모드 표면 단차 — background(navy/900) 위에 얹는 면. 라이트의 gray/50 자리다" },
+    "800": {
+      "$value": "#1b386b",
+      "$type": "color",
+      "$description": "다크 모드 표면 단차 — background(navy/900) 위에 얹는 면. 라이트의 gray/50 자리다"
+    },
     "900": { "$value": "#14294e", "$type": "color" }
   },
   "gray": {
-    "0":   { "$value": "#ffffff", "$type": "color" },
-    "50":  { "$value": "#f6f7f8", "$type": "color" },
+    "0": { "$value": "#ffffff", "$type": "color" },
+    "50": { "$value": "#f6f7f8", "$type": "color" },
     "200": { "$value": "#eceff2", "$type": "color" },
     "300": { "$value": "#dfe3e8", "$type": "color" }
   },
   "orange": {
-    "400": { "$value": "#f0642d", "$type": "color", "$description": "다크 모드 rank-up. orange/600 은 navy/900 위에서 3.35 라 본문에 못 쓴다 (색상·채도 유지, 명도만 45%→56%)" },
-    "600": { "$value": "#bf3f0d", "$type": "color", "$description": "라이트 rank-up·chart-2. 옛 값 #d9480f 는 흰 배경 4.30 이라 12px bold 인 RankDeltaBadge 에서 AA 미달이었다(WCAG Large 는 18.66px bold 부터다). 색상·채도는 그대로 두고 명도만 12% 낮춰 흰 배경 5.34 / sunken 4.98 — primary(5.33)·destructive(5.44)와 같은 수준으로 맞췄다. 다크는 orange/400 을 따로 쓰므로 영향 없다" }
+    "400": {
+      "$value": "#f0642d",
+      "$type": "color",
+      "$description": "다크 모드 rank-up. orange/600 은 navy/900 위에서 3.35 라 본문에 못 쓴다 (색상·채도 유지, 명도만 45%→56%)"
+    },
+    "600": {
+      "$value": "#bf3f0d",
+      "$type": "color",
+      "$description": "라이트 rank-up·chart-2. 옛 값 #d9480f 는 흰 배경 4.30 이라 12px bold 인 RankDeltaBadge 에서 AA 미달이었다(WCAG Large 는 18.66px bold 부터다). 색상·채도는 그대로 두고 명도만 12% 낮춰 흰 배경 5.34 / sunken 4.98 — primary(5.33)·destructive(5.44)와 같은 수준으로 맞췄다. 다크는 orange/400 을 따로 쓰므로 영향 없다"
+    }
   },
   "red": {
-    "400": { "$value": "#dd7065", "$type": "color", "$description": "다크 모드 destructive. red/600 은 navy/900 위에서 2.65 라 못 쓴다 (색상·채도 유지, 명도만 46%→63%)" },
+    "400": {
+      "$value": "#dd7065",
+      "$type": "color",
+      "$description": "다크 모드 destructive. red/600 은 navy/900 위에서 2.65 라 못 쓴다 (색상·채도 유지, 명도만 46%→63%)"
+    },
     "600": { "$value": "#c0392b", "$type": "color" }
   },
-  "amber":  { "500": { "$value": "#d9a520", "$type": "color" } },
+  "amber": { "500": { "$value": "#d9a520", "$type": "color" } },
   "slate": {
-    "400": { "$value": "#627397", "$type": "color", "$description": "다크 모드 chart-5. slate/500 은 navy/900 위 2.70 으로 그래픽 기준(3:1)도 못 넘는다 (명도 45%→49%)" },
+    "400": {
+      "$value": "#627397",
+      "$type": "color",
+      "$description": "다크 모드 chart-5. slate/500 은 navy/900 위 2.70 으로 그래픽 기준(3:1)도 못 넘는다 (명도 45%→49%)"
+    },
     "500": { "$value": "#5b6b8c", "$type": "color" }
   },
-  "teal":   { "500": { "$value": "#14b8a6", "$type": "color" } },
-  "violet": { "500": { "$value": "#7a5cf0", "$type": "color" } },
+  "teal": { "500": { "$value": "#14b8a6", "$type": "color" } },
+  "violet": {
+    "500": { "$value": "#7a5cf0", "$type": "color" },
+    "600": {
+      "$value": "#6a49ee",
+      "$type": "color",
+      "$description": "랜딩 프로모 카드의 보라 면. violet/500 은 흰 글자 4.55 로 AA 를 겨우 넘고, 그 위의 반투명 서브(흰 75%)는 3.27 로 미달이었다. 색상(252°)·채도(83%)는 그대로 두고 명도만 65%→61% 로 낮춰 제목 5.52 / 서브(흰 90%) 4.79 를 확보했다 — orange/400·600 과 같은 방식이다"
+    },
+    "700": {
+      "$value": "#5438c8",
+      "$type": "color",
+      "$description": "보라 면의 어두운 끝. 프로모 카드에 hex 로 박혀 있던 값을 그대로 승격했다 — 색상선(252°)은 500·600 과 같고, 어두운 쪽에서 채도가 낮아지는 형태다"
+    }
+  },
 
   "space": {
-    "1":  { "$value": "4px",  "$type": "dimension" },
-    "2":  { "$value": "8px",  "$type": "dimension" },
-    "3":  { "$value": "12px", "$type": "dimension" },
-    "4":  { "$value": "16px", "$type": "dimension" },
-    "6":  { "$value": "24px", "$type": "dimension" },
-    "8":  { "$value": "32px", "$type": "dimension" },
+    "1": { "$value": "4px", "$type": "dimension" },
+    "2": { "$value": "8px", "$type": "dimension" },
+    "3": { "$value": "12px", "$type": "dimension" },
+    "4": { "$value": "16px", "$type": "dimension" },
+    "6": { "$value": "24px", "$type": "dimension" },
+    "8": { "$value": "32px", "$type": "dimension" },
     "12": { "$value": "48px", "$type": "dimension" },
     "16": { "$value": "64px", "$type": "dimension" }
   },
   "corner": {
-    "sm": { "$value": "4px",  "$type": "dimension" },
-    "md": { "$value": "6px",  "$type": "dimension" },
-    "lg": { "$value": "8px",  "$type": "dimension" },
+    "sm": { "$value": "4px", "$type": "dimension" },
+    "md": { "$value": "6px", "$type": "dimension" },
+    "lg": { "$value": "8px", "$type": "dimension" },
     "xl": { "$value": "12px", "$type": "dimension" }
   }
 }
