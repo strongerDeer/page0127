@@ -57,4 +57,26 @@ describe('toIdentityDefaults', () => {
       toIdentityDefaults({ avatar_url: 'javascript:alert(1)' }).photoUrl
     ).toBeNull();
   });
+
+  it('카카오가 주는 http 사진 주소를 https 로 올린다', () => {
+    // 카카오는 avatar_url 을 http 로 준다(2026-08-06 실측).
+    // 그대로 두면 운영(https)에서 mixed content 로 브라우저가 차단한다.
+    expect(
+      toIdentityDefaults({
+        avatar_url: 'http://img1.kakaocdn.net/thumb/R640x640.q70/abc.jpg',
+      }).photoUrl
+    ).toBe('https://img1.kakaocdn.net/thumb/R640x640.q70/abc.jpg');
+  });
+
+  it('이미 https 인 주소는 건드리지 않는다', () => {
+    expect(
+      toIdentityDefaults({ avatar_url: 'https://example.com/p.png' }).photoUrl
+    ).toBe('https://example.com/p.png');
+  });
+
+  it('카카오 닉네임이 이모지뿐이어도 그대로 쓴다', () => {
+    // 실측된 실제 값이다. 표시 이름으로는 문제없다 —
+    // 아이디는 generateUsernameSeed 가 따로 걸러 reader 로 떨어뜨린다.
+    expect(toIdentityDefaults({ full_name: '🫥' }).nickname).toBe('🫥');
+  });
 });

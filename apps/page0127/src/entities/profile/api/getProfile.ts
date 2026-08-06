@@ -1,7 +1,7 @@
 import { createClient } from '@/shared/config/supabase/server';
 
 import { toIdentityDefaults } from '../model/identityDefaults';
-import { generateUsernameFromEmail, USERNAME_MAX_LENGTH } from '../model/username';
+import { generateUsernameSeed, USERNAME_MAX_LENGTH } from '../model/username';
 
 import type { Profile } from '../types';
 
@@ -56,14 +56,15 @@ const randomSuffix = (): string => Math.random().toString(36).slice(2, 8);
  *    두 가입자). 최종 방어선은 DB 의 유니크 제약이고, 저장에 실패하면
  *    upsertProfile 이 무작위 이름으로 다시 시도한다.
  *
- * @param email - 사용자 이메일
+ * @param source - 아이디를 뽑을 재료. 이메일이 없을 수 있어(카카오) 닉네임도 받는다
  * @returns 형식 규칙을 통과하고, 조회 시점에 비어 있던 username
  */
-export const generateUniqueUsername = async (
-  email: string
-): Promise<string> => {
+export const generateUniqueUsername = async (source: {
+  email?: string | null;
+  nickname?: string | null;
+}): Promise<string> => {
   const supabase = await createClient();
-  const base = generateUsernameFromEmail(email);
+  const base = generateUsernameSeed(source);
 
   // base, base1 … base20 을 후보로 둔다
   const candidates = [
@@ -92,12 +93,12 @@ export const generateUniqueUsername = async (
  * - username이 없으면 자동 생성
  *
  * @param userId - 사용자 ID
- * @param email - 사용자 이메일
+ * @param email - 사용자 이메일. **없을 수 있다** — 카카오는 이메일 동의가 선택이다
  * @param metadata - OAuth 공급자가 준 user_metadata (신규 생성 시 이름·사진 초기값)
  */
 export const upsertProfile = async (
   userId: string,
-  email: string,
+  email: string | null,
   metadata?: Record<string, unknown> | null
 ): Promise<void> => {
   const supabase = await createClient();
@@ -105,19 +106,25 @@ export const upsertProfile = async (
   // 1. 기존 프로필 확인
   const existingProfile = await getProfile(userId);
 
-  // 2. username이 없으면 생성
+  // 2. 공급자가 준 이름·사진. 이메일이 없을 때 아이디의 재료로도 쓰인다.
+  const identity = toIdentityDefaults(metadata);
+
+  // 3. username이 없으면 생성
   let username: string | undefined;
   if (!existingProfile?.username) {
-    username = await generateUniqueUsername(email);
+    username = await generateUniqueUsername({
+      email,
+      nickname: identity.nickname,
+    });
   }
 
-  // 3. 이름·사진 초기값은 "처음 만들 때"만 넣는다.
+  // 4. 이름·사진 초기값은 "처음 만들 때"만 넣는다.
   //    이미 있는 프로필에 덮으면 사용자가 지운 프로필 사진이 로그인할 때마다 되살아난다.
   const defaults = existingProfile
     ? { nickname: null, photoUrl: null }
-    : toIdentityDefaults(metadata);
+    : identity;
 
-  // 4. upsert (값이 있는 항목만 추가, 없으면 기존 유지)
+  // 5. upsert (값이 있는 항목만 추가, 없으면 기존 유지)
   //
   // username 은 경합에 질 수 있다 — 같은 순간 같은 이름을 고른 다른 가입자가
   // 먼저 저장하면 유니크 제약(23505)에 걸린다. 그때는 무작위 이름으로 한 번 더
@@ -148,7 +155,10 @@ export const upsertProfile = async (
   }
 
   const { error: retryError } = await save(
-    withSuffix(generateUsernameFromEmail(email), randomSuffix())
+    withSuffix(
+      generateUsernameSeed({ email, nickname: identity.nickname }),
+      randomSuffix()
+    )
   );
   if (retryError) {
     console.error('프로필 저장 재시도 실패:', retryError.message);
@@ -165,7 +175,7 @@ export const upsertProfile = async (
  */
 export const ensureProfile = async (
   userId: string,
-  email: string,
+  email: string | null,
   metadata?: Record<string, unknown> | null
 ): Promise<Profile> => {
   let profile = await getProfile(userId);

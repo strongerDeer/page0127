@@ -34,7 +34,7 @@ type ProfileSettingsFormPhotoProps = {
 };
 
 type ProfileSettingsFormDangerZoneProps = {
-  userEmail: string;
+  username: string | null;
 };
 
 type ProfileSettingsFormMyAccountProps = {
@@ -84,9 +84,11 @@ const ProfileSettingsFormUsername = ({
         아이디는 한 번만 바꿀 수 있어요. 이미 변경해서 더는 바꿀 수 없습니다.
       </p>
     ) : (
+      // 재료가 이메일일 수도 닉네임일 수도 있다(카카오는 이메일을 안 줄 수 있다).
+      // 어느 쪽인지 단정하지 않고 "자동으로 만들어졌다"까지만 말한다.
       <p className='text-xs text-text-subtle'>
-        가입할 때 이메일 앞부분으로 자동으로 만들어진 아이디예요.{' '}
-        <strong>한 번만</strong> 바꿀 수 있습니다.
+        가입할 때 자동으로 만들어진 아이디예요. <strong>한 번만</strong> 바꿀 수
+        있습니다.
       </p>
     )}
   </div>
@@ -134,13 +136,13 @@ const ProfileSettingsFormMyAccount = ({
 // 파괴적 액션은 빨간 패널로 소리치지 않는다 — 한 줄로 조용히 두고,
 // 실제 경고는 확인 다이얼로그가 맡는다 (토스 설정 화면 문법)
 const ProfileSettingsFormDangerZone = ({
-  userEmail,
+  username,
 }: ProfileSettingsFormDangerZoneProps) => (
   <div className='mt-6 flex items-center justify-between gap-4 rounded-2xl bg-sunken px-5 py-4'>
     <p className='text-sm text-text-subtle'>
       계정을 삭제하면 독서 기록과 계정 정보가 영구적으로 사라집니다.
     </p>
-    <DeleteAccountDialog userEmail={userEmail} />
+    <DeleteAccountDialog username={username} />
   </div>
 );
 
@@ -233,13 +235,16 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
           />
 
           {/* 이메일 (읽기 전용 — name 없음 → 전송 안 함)
-              disabled 스타일이 이미 "변경 불가"를 말하므로 헬퍼 문구는 생략 */}
+              disabled 스타일이 이미 "변경 불가"를 말하므로 헬퍼 문구는 생략.
+              카카오는 이메일 동의가 선택이라 **비어 있을 수 있다** — 빈 칸만
+              덩그러니 두면 고장으로 보이므로 placeholder 로 사정을 적는다. */}
           <div className='space-y-2'>
             <Label htmlFor={ids.email}>이메일</Label>
             <Input
               id={ids.email}
               type='email'
               value={profile.email || ''}
+              placeholder='연결된 이메일이 없어요'
               disabled
               className='bg-muted'
             />
@@ -302,7 +307,7 @@ export const ProfileSettingsForm = ({ profile }: ProfileSettingsFormProps) => {
         onLogout={logout}
       />
 
-      <ProfileSettingsForm.DangerZone userEmail={profile.email || ''} />
+      <ProfileSettingsForm.DangerZone username={profile.username} />
     </form>
   );
 };

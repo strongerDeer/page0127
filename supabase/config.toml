@@ -342,6 +342,17 @@ secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
 # 로컬에서 Google 로그인 시 nonce 검사를 꺼야 정상 동작한다(위 apple 주석 참고).
 skip_nonce_check = true
 
+# 로컬 개발용 Kakao OAuth. client_id/secret은 supabase/.env.local(git 미추적)에서 주입한다.
+# client_id 에는 카카오 디벨로퍼스의 **REST API 키**를 넣는다(JavaScript 키가 아니다).
+[auth.external.kakao]
+enabled = true
+client_id = "env(SUPABASE_AUTH_EXTERNAL_KAKAO_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_KAKAO_SECRET)"
+# 카카오는 이메일이 **선택 동의** 항목이라 주지 않을 수 있다.
+# 이 값이 false(기본값)면 이메일 없는 사용자의 로그인을 Supabase 가 먼저 거부한다.
+# 앱 코드를 아무리 이메일 없이 돌게 고쳐도 그 코드에 도달하지 못한다.
+email_optional = true
+
 # Allow Solana wallet holders to sign in to your project via the Sign in with Solana (SIWS, EIP-4361) standard.
 # You can configure "web3" rate limit in the [auth.rate_limit] section and set up [auth.captcha] if self-hosting.
 [auth.web3.solana]

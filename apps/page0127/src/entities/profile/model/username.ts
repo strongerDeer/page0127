@@ -134,25 +134,49 @@ export const validateUsername = (input: string): UsernameCheck => {
   return { ok: true, value };
 };
 
-/**
- * 가입 시 이메일에서 아이디 후보를 만든다.
- *
- * 기존 구현에는 결함이 세 개 있었다.
- * 1. `한글@naver.com` 처럼 ASCII 가 없는 주소면 **빈 문자열**이 나와
- *    로그인 후 `/${''}` = `/` 로 튕겼다.
- * 2. 2자 이하 주소(`ab@`)가 그대로 통과해 길이 규칙을 깼다.
- * 3. `admin@` 이면 예약어와 충돌했다.
- * 여기서는 셋 다 막고, 못 쓰는 값이면 `reader` 접두사로 갈아탄다.
- *
- * @returns 형식·예약어 규칙을 통과하는 후보 (중복 여부는 호출한 쪽이 확인한다)
- */
-export const generateUsernameFromEmail = (email: string): string => {
-  const localPart = email.split('@')[0] ?? '';
-  const cleaned = localPart
+/** 아무것도 못 건졌을 때 쓰는 씨앗. 뒤에 무작위 접미사가 붙는다 */
+export const USERNAME_FALLBACK_SEED = 'reader';
+
+/** 문자열에서 아이디로 쓸 수 있는 글자만 남긴다 */
+const toUsernameCandidate = (source: string): string =>
+  source
     .toLowerCase()
     .replace(/[^a-z0-9_]/g, '')
     .slice(0, USERNAME_MAX_LENGTH);
 
-  // 규칙을 통과하지 못하는 후보는 쓰지 않는다 — 무작위 접미사로 대체된다
-  return validateUsername(cleaned).ok ? cleaned : 'reader';
+/**
+ * 가입 시 아이디 후보를 만든다.
+ *
+ * 이메일에서만 뽑던 것을 넓혔다. 카카오는 **이메일을 주지 않을 수 있어서**
+ * (동의 항목이 선택이다) 이메일만 보면 이메일 없는 가입자가 통째로 막힌다.
+ *
+ *   1순위 이메일 로컬파트  — 구글, 이메일에 동의한 카카오
+ *   2순위 공급자가 준 닉네임 — 이메일 없는 카카오
+ *   3순위 'reader'         — 한글 닉네임처럼 ASCII 가 안 남는 경우
+ *
+ * 예전 구현의 결함 셋도 그대로 막는다.
+ * 1. `한글@naver.com` 처럼 ASCII 가 없으면 **빈 문자열**이 나와 로그인 후
+ *    `/${''}` = `/` 로 튕겼다.
+ * 2. 2자 이하(`ab@`)가 통과해 길이 규칙을 깼다.
+ * 3. `admin@` 이면 예약어와 충돌했다.
+ *
+ * @returns 형식·예약어 규칙을 통과하는 후보 (중복 여부는 호출한 쪽이 확인한다)
+ */
+export const generateUsernameSeed = (source: {
+  email?: string | null;
+  nickname?: string | null;
+}): string => {
+  const candidates = [
+    source.email?.split('@')[0],
+    source.nickname,
+  ];
+
+  for (const raw of candidates) {
+    if (!raw) continue;
+    const candidate = toUsernameCandidate(raw);
+    // 규칙을 통과하지 못하는 후보는 버리고 다음 순위로 넘어간다
+    if (validateUsername(candidate).ok) return candidate;
+  }
+
+  return USERNAME_FALLBACK_SEED;
 };

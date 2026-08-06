@@ -4,6 +4,15 @@ import { Icon as IconifyIcon } from "@iconify/react";
 
 // tabler icons 매핑 객체
 // 자주 사용하는 아이콘을 미리 정의해서 사용 (별칭)
+//
+// ⚠️ 이 컴포넌트는 아이콘을 **런타임에 api.iconify.design 에서 받아온다.**
+//    page0127 의 CSP connect-src 는 그 호스트를 허용하지 않으므로 앱 안에서는
+//    아이콘이 렌더되지 않는다(2026-08-06 운영 로그인 화면에서 확인).
+//    앱에서 쓰려면 둘 중 하나를 먼저 해야 한다.
+//      - CSP 에 api.iconify.design 을 추가한다 (아이콘 몇 개 때문에 모든 페이지에
+//        서드파티 연결을 여는 셈이라 권하지 않는다)
+//      - @iconify-json/* 을 의존성에 넣고 addCollection 으로 번들에 담는다
+//    브랜드 마크 두 개(구글·카카오)는 그래서 features/auth 에 인라인 SVG 로 두었다.
 const iconMapping = {
   google: "tabler:brand-google-filled",
 } as const;

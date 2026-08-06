@@ -20,15 +20,30 @@ const asText = (value: unknown): string | null =>
 
 /**
  * 이미지 주소로 쓸 수 있는 값만 통과시킨다.
+ *
  * 외부에서 온 문자열이 그대로 <Image src>로 들어가면 안 되므로 http(s)만 허용한다.
+ *
+ * http 는 버리지 않고 **https 로 올린다.** 카카오가 프로필 사진을
+ * `http://img1.kakaocdn.net/...` 으로 주기 때문이다(2026-08-06 실측).
+ * 그대로 두면 운영(https)에서 mixed content 로 브라우저가 차단해 사진이 깨진다.
+ * 카카오 CDN 은 같은 경로를 https 로도 서빙한다.
+ *
+ * ⚠️ 여기 오는 값은 **OAuth 공급자가 준 metadata 뿐이다.** 사용자가 직접 올린
+ *    이미지(로컬 Supabase Storage 는 http://127.0.0.1:54321)는 이 경로를 타지
+ *    않으므로, http 를 올려도 로컬 개발이 깨지지 않는다.
  */
 const asImageUrl = (value: unknown): string | null => {
   const text = asText(value);
   if (!text) return null;
 
   try {
-    const { protocol } = new URL(text);
-    return protocol === 'http:' || protocol === 'https:' ? text : null;
+    const url = new URL(text);
+    if (url.protocol === 'https:') return text;
+    if (url.protocol === 'http:') {
+      url.protocol = 'https:';
+      return url.toString();
+    }
+    return null;
   } catch {
     return null; // URL로 파싱조차 안 되면 버린다
   }

@@ -22,7 +22,7 @@ const AuthLayout = async ({ children }: { children: React.ReactNode }) => {
   if (user) {
     const profile = await ensureProfile(
       user.id,
-      user.email!,
+      user.email ?? null,
       user.user_metadata
     );
     redirect(`/${profile.username}`);

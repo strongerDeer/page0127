@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  generateUsernameFromEmail,
+  generateUsernameSeed,
   normalizeUsername,
   RESERVED_USERNAMES,
   USERNAME_MAX_LENGTH,
@@ -78,46 +78,69 @@ describe('validateUsername', () => {
   });
 });
 
-describe('generateUsernameFromEmail', () => {
-  it('이메일 앞부분을 쓴다', () => {
-    expect(generateUsernameFromEmail('bookworm@gmail.com')).toBe('bookworm');
+describe('generateUsernameSeed', () => {
+  it('이메일 앞부분을 1순위로 쓴다', () => {
+    expect(
+      generateUsernameSeed({ email: 'bookworm@gmail.com', nickname: '책벌레' })
+    ).toBe('bookworm');
   });
 
   it('허용되지 않는 문자를 걸러 낸다', () => {
-    expect(generateUsernameFromEmail('hong.gil-dong@gmail.com')).toBe(
+    expect(generateUsernameSeed({ email: 'hong.gil-dong@gmail.com' })).toBe(
       'honggildong'
     );
   });
 
   it('20자를 넘으면 잘라 낸다', () => {
-    const long = `${'a'.repeat(30)}@gmail.com`;
-    expect(generateUsernameFromEmail(long)).toHaveLength(USERNAME_MAX_LENGTH);
+    const email = `${'a'.repeat(30)}@gmail.com`;
+    expect(generateUsernameSeed({ email })).toHaveLength(USERNAME_MAX_LENGTH);
   });
 
-  it('ASCII가 하나도 없는 주소에서 빈 문자열을 만들지 않는다', () => {
-    // 기존 구현은 여기서 '' 를 돌려줘 로그인 후 / 로 튕겼다
-    expect(generateUsernameFromEmail('한글이름@naver.com')).toBe('reader');
+  it('이메일이 없으면 닉네임에서 뽑는다 (이메일 미동의 카카오)', () => {
+    expect(generateUsernameSeed({ email: null, nickname: 'bookworm' })).toBe(
+      'bookworm'
+    );
   });
 
-  it('너무 짧은 앞부분은 쓰지 않는다', () => {
-    expect(generateUsernameFromEmail('ab@gmail.com')).toBe('reader');
+  it('이메일에서 못 건지면 닉네임으로 넘어간다', () => {
+    // 한글 주소라 1순위가 비고, 2순위 닉네임이 규칙을 통과한다
+    expect(
+      generateUsernameSeed({ email: '한글이름@naver.com', nickname: 'reader99' })
+    ).toBe('reader99');
   });
 
-  it('예약어와 겹치는 앞부분은 쓰지 않는다', () => {
-    expect(generateUsernameFromEmail('admin@gmail.com')).toBe('reader');
+  it('둘 다 못 쓰면 reader 로 떨어진다', () => {
+    // 예전 구현은 여기서 '' 를 돌려줘 로그인 후 / 로 튕겼다
+    expect(
+      generateUsernameSeed({ email: '한글이름@naver.com', nickname: '책벌레' })
+    ).toBe('reader');
+    expect(generateUsernameSeed({})).toBe('reader');
+    expect(generateUsernameSeed({ email: null, nickname: null })).toBe('reader');
+  });
+
+  it('너무 짧거나 예약어인 후보는 건너뛴다', () => {
+    expect(generateUsernameSeed({ email: 'ab@gmail.com' })).toBe('reader');
+    expect(generateUsernameSeed({ email: 'admin@gmail.com' })).toBe('reader');
+    // 1순위가 예약어라도 2순위가 멀쩡하면 그쪽을 쓴다
+    expect(
+      generateUsernameSeed({ email: 'admin@gmail.com', nickname: 'bookworm' })
+    ).toBe('bookworm');
   });
 
   it('결과는 항상 형식 규칙을 통과한다', () => {
-    const emails = [
-      'bookworm@gmail.com',
-      '한글@naver.com',
-      'ab@x.com',
-      'admin@x.com',
-      '...@x.com',
-      `${'z'.repeat(40)}@x.com`,
+    const sources = [
+      { email: 'bookworm@gmail.com' },
+      { email: '한글@naver.com' },
+      { email: 'ab@x.com' },
+      { email: 'admin@x.com' },
+      { email: '...@x.com' },
+      { email: `${'z'.repeat(40)}@x.com` },
+      { nickname: '책벌레' },
+      { nickname: 'a' },
+      {},
     ];
-    for (const email of emails) {
-      expect(validateUsername(generateUsernameFromEmail(email)).ok).toBe(true);
+    for (const source of sources) {
+      expect(validateUsername(generateUsernameSeed(source)).ok).toBe(true);
     }
   });
 });

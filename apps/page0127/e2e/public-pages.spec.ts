@@ -15,11 +15,17 @@ test('랜딩 페이지가 로드된다', async ({ page }) => {
   await expect(page.getByText('PAGE0127 TASTE REPORT')).toBeVisible();
 });
 
-test('로그인 페이지에 Google 로그인 버튼이 보인다', async ({ page }) => {
+test('로그인 페이지에 소셜 로그인 버튼이 모두 보인다', async ({ page }) => {
   await page.goto('/login');
 
+  // ⚠️ 문구는 src/features/auth/model/providers.tsx 가 정한다.
+  //    거기서 label 을 바꾸면 이 테스트도 같이 고쳐야 한다 —
+  //    실제로 '구글로 계속하기'로 바꿨을 때 이 테스트가 잡아냈다.
   await expect(
-    page.getByRole('button', { name: /Google로 로그인/ })
+    page.getByRole('button', { name: /카카오 로그인/ })
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: /구글로 계속하기/ })
   ).toBeVisible();
 });
 
