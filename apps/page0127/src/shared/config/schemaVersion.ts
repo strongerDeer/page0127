@@ -11,7 +11,7 @@
  * 마이그레이션을 추가했다면:
  *   이 값을 새 파일의 앞 14자리 번호로 바꾼다. (예: 20260729000000)
  */
-export const EXPECTED_MIGRATION_VERSION = '20260806000000';
+export const EXPECTED_MIGRATION_VERSION = '20260807000000';
 
 /**
  * 스키마 대조 결과.

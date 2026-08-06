@@ -14,7 +14,21 @@ export type SlideFields = {
   cta: string;
   bg: string;
   fg: string;
+  /** 노출 대상 — all/guest/member */
+  audience: 'all' | 'guest' | 'member';
+  /** 예약 게시. 폼에서는 datetime-local 문자열이고, 비어 있으면 '제한 없음' */
+  starts_at: string;
+  ends_at: string;
 };
+
+/**
+ * 빈 문자열을 NULL 로 되돌린다.
+ *
+ * datetime-local 입력을 비우면 '' 가 오는데, 그대로 넣으면 timestamptz 캐스팅이
+ * 실패한다. 빈 값의 뜻은 "제한 없음"이므로 NULL 이어야 한다 — 여기서 안 바꾸면
+ * 운영자가 예약을 **취소할 방법이 없어진다**(한 번 넣으면 못 지운다).
+ */
+const emptyToNull = (value: string): string | null => value.trim() || null;
 
 function revalidate() {
   revalidatePath('/admin/banners');
@@ -60,9 +74,20 @@ export async function updateSlide(
   const supabase = createAdminClient();
   const { error } = await supabase
     .from('hero_slides')
-    .update({ ...fields, updated_at: new Date().toISOString() })
+    .update({
+      ...fields,
+      starts_at: emptyToNull(fields.starts_at),
+      ends_at: emptyToNull(fields.ends_at),
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', id);
-  if (error) throw new Error(`슬라이드 저장 실패: ${error.message}`);
+  if (error) {
+    // 기간이 거꾸로면 DB CHECK 이 막는다 — 그 뜻을 운영자 말로 옮긴다
+    if (error.message.includes('hero_slides_period_order')) {
+      throw new Error('종료 시각이 시작 시각보다 앞설 수 없습니다.');
+    }
+    throw new Error(`슬라이드 저장 실패: ${error.message}`);
+  }
   revalidate();
 }
 

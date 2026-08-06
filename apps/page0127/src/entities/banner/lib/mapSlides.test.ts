@@ -16,6 +16,10 @@ const row: HeroSlideRow = {
   fg: '#fff',
   sort_order: 0,
   is_active: true,
+  audience: 'all',
+  starts_at: null,
+  ends_at: null,
+  click_count: 0,
 };
 
 describe('rowToHeroSlide', () => {
