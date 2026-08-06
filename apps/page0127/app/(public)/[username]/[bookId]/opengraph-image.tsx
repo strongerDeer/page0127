@@ -1,10 +1,8 @@
 import { ImageResponse } from 'next/og';
 
-import { BookShelf } from '@/shared/lib/og/BookShelf';
 import { CardFrame, Wordmark } from '@/shared/lib/og/CardFrame';
 import { RatingStars } from '@/shared/lib/og/RatingStars';
 import {
-  BRAND_SPINES,
   OG_CACHE_CONTROL,
   OG_COLORS,
   OG_SIZE,
@@ -18,6 +16,12 @@ import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProf
 import { toDisplayName } from '@/entities/profile/model/displayName';
 
 // 책 기록 한 건의 동적 OG — "누가, 무슨 책을, 뭐라고 읽었나"를 카드가 말하게 한다.
+//
+// **이 카드만 가로 2단이다.** 홈·책장 카드는 세로 가운데 정렬인데 여기만 다른 이유는,
+// 담아야 할 것이 표지·제목·저자·별점·인생책·한줄평·기록자로 일곱 가지이기 때문이다.
+// 세로로 쌓으면 상하 여백 72px 을 지킬 수 없고, 줄이려면 한줄평을 버려야 한다 —
+// 사용자가 쓴 문장이 이 카드의 존재 이유라 그쪽을 포기할 수 없다.
+// 대신 흰 배경·블루 팔레트·심볼 워드마크는 세 카드가 공유해 톤은 같다.
 //
 // runtime 을 지정하지 않는다(= Node.js). 'edge' 로 두면 next/og 번들(~2.4MB)이
 // Vercel Hobby 의 Edge Function 1MB 한도를 넘겨 배포 단계에서만 실패한다.
@@ -38,19 +42,21 @@ const REVIEW_MAX_WIDTH = 46;
 const NAME_MAX_WIDTH = 14;
 
 /**
- * 표지는 선반 위에 세워 둔다 — 책장 카드의 책등과 같은 바닥이다.
- * 카드 높이(630)에서 워드마크와 선반을 빼고 남는 만큼 키웠다. 작게 두면 워드마크와
- * 표지 사이에 150px 쯤 빈 띠가 생겨 카드가 아래로 처져 보인다.
+ * 표지 크기.
+ *
+ * 카드 높이 630 에서 상하 여백 72×2 와 워드마크(34 + 간격 24)를 빼면 428 이 남는다.
+ * 414 는 그 안에 들어가는 가장 큰 값이다 — 이전 438 은 **여백을 14px 잡아먹어**
+ * 워드마크가 위로 밀려 잘렸다.
  */
-const COVER = { width: 292, height: 438 };
+const COVER = { width: 276, height: 414 };
 
 /**
  * 표지가 없을 때는 그 폭을 책등만큼으로 줄인다.
- * 292px 짜리 색면을 그대로 두면 카드의 1/4 이 단색 덩어리가 되는데,
+ * 276px 짜리 색면을 그대로 두면 카드의 1/4 이 단색 덩어리가 되는데,
  * 없는 정보가 자리만 크게 차지하는 셈이다. 좁은 책등은 "책"으로 읽히면서
  * 남는 폭을 제목과 한줄평에 넘겨준다.
  */
-const SPINE_ONLY = { width: 116, height: 438 };
+const SPINE_ONLY = { width: 110, height: 414 };
 
 const Image = async ({ params }: Props) => {
   const { username, bookId } = await params;
@@ -74,23 +80,31 @@ const Image = async ({ params }: Props) => {
   if (!book) {
     return new ImageResponse(
       <CardFrame>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <Wordmark />
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              marginTop: 28,
-              fontSize: 68,
-              fontWeight: 700,
-              lineHeight: 1.3,
-            }}
-          >
-            <div>책장을 보면,</div>
-            <div>그 사람이 보인다</div>
-          </div>
+        <Wordmark size={46} />
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            marginTop: 24,
+            fontSize: 62,
+            fontWeight: 700,
+            lineHeight: 1.3,
+          }}
+        >
+          <div>책장을 보면,</div>
+          <div>그 사람이 보인다</div>
         </div>
-        <BookShelf spines={BRAND_SPINES} />
+        <div
+          style={{
+            display: 'flex',
+            marginTop: 24,
+            fontSize: 27,
+            color: OG_COLORS.inkSoft,
+          }}
+        >
+          한 권씩 채우면, 취향이 보입니다
+        </div>
       </CardFrame>,
       { ...size, headers: { 'Cache-Control': OG_CACHE_CONTROL } }
     );
@@ -100,11 +114,18 @@ const Image = async ({ params }: Props) => {
   const title = truncate(book.title, TITLE_MAX_WIDTH);
 
   return new ImageResponse(
-    <CardFrame>
-      <Wordmark />
+    // 표지가 주인공이라 배경 책장은 얕은 띠로 물러난다
+    <CardFrame compact>
+      <Wordmark size={34} />
 
-      {/* 표지와 기록이 나란히 선반 위에 선다 — 책장 카드의 책등과 같은 바닥이다 */}
-      <BookShelf spines={[]} minHeight={COVER.height}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          marginTop: 24,
+          width: '100%',
+        }}
+      >
         <div
           style={{
             display: 'flex',
@@ -114,18 +135,19 @@ const Image = async ({ params }: Props) => {
             position: 'relative',
             width: book.cover_image ? COVER.width : SPINE_ONLY.width,
             height: COVER.height,
-            background: BRAND_SPINES[0].c,
-            borderRadius: '4px 4px 0 0',
+            // brand/shelf-1 — 배경 책장의 가장 진한 책등과 같은 색
+            background: OG_COLORS.accentDeep,
+            borderRadius: 4,
             overflow: 'hidden',
             flexShrink: 0,
           }}
         >
           {/*
-              각인을 먼저 깔고 표지를 그 위에 덮는다. 표지 URL 이 죽어 있으면 satori 는
-              500 을 내지 않고 **그림만 그리지 않으므로**(알라딘 URL 은 실제로 404 가
-              되는 것이 있다), 표지가 있다고 적힌 책도 단색 덩어리가 될 수 있다.
-              뒤에 깔린 각인이 드러나면 그 경우에도 책으로 읽힌다.
-            */}
+            각인을 먼저 깔고 표지를 그 위에 덮는다. 표지 URL 이 죽어 있으면 satori 는
+            500 을 내지 않고 **그림만 그리지 않으므로**(알라딘 URL 은 실제로 404 가
+            되는 것이 있다), 표지가 있다고 적힌 책도 단색 덩어리가 될 수 있다.
+            뒤에 깔린 각인이 드러나면 그 경우에도 책으로 읽힌다.
+          */}
           <div
             style={{
               display: 'flex',
@@ -225,7 +247,8 @@ const Image = async ({ params }: Props) => {
                     marginLeft: 16,
                     padding: '6px 16px',
                     borderRadius: 999,
-                    background: OG_COLORS.gold,
+                    // brand/accent — 카드에서 유일한 비(非)블루라 "특별하다"가 색으로 읽힌다
+                    background: OG_COLORS.mint,
                     color: OG_COLORS.ink,
                     fontSize: 22,
                     fontWeight: 700,
@@ -244,7 +267,7 @@ const Image = async ({ params }: Props) => {
                 display: 'flex',
                 marginTop: 22,
                 paddingLeft: 20,
-                borderLeft: `4px solid ${OG_COLORS.skyDeep}`,
+                borderLeft: `4px solid ${OG_COLORS.accentDeep}`,
                 fontSize: 27,
                 lineHeight: 1.5,
                 color: OG_COLORS.ink,
@@ -267,7 +290,7 @@ const Image = async ({ params }: Props) => {
             </div>
           )}
         </div>
-      </BookShelf>
+      </div>
     </CardFrame>,
     { ...size, headers: { 'Cache-Control': OG_CACHE_CONTROL } }
   );

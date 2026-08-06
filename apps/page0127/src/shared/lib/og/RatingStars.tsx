@@ -30,9 +30,12 @@ export const RatingStars = ({ score, size = 40 }: RatingStarsProps) => (
         height={size}
         viewBox='0 0 24 24'
         // 빈 별도 자리를 지켜야 "5점 중 3점"이 눈에 들어온다.
-        // 밝은 스카이 배경이라 빈 별은 흰색이 아니라 옅은 잉크로 둔다(흰색은 사라진다).
-        fill={index < score ? OG_COLORS.gold : OG_COLORS.inkSoft}
-        opacity={index < score ? 1 : 0.3}
+        // 흰 배경이라 빈 별은 흰색이 아니라 경계선 색으로 둔다(흰색은 사라진다).
+        //
+        // 채운 별에 brand/accent(민트)가 아니라 primary(blue/600)를 쓰는 이유:
+        // 별점은 브랜드 자산이 아니라 앱 UI 요소다. 브랜드 색을 바꿀 때
+        // 평점 표시가 같이 흔들리면 안 된다.
+        fill={index < score ? OG_COLORS.brand : OG_COLORS.line}
       >
         <path d={STAR_PATH} />
       </svg>

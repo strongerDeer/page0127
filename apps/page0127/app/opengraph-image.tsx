@@ -1,22 +1,16 @@
 import { ImageResponse } from 'next/og';
 
-import { BookShelf } from '@/shared/lib/og/BookShelf';
 import { CardFrame, Wordmark } from '@/shared/lib/og/CardFrame';
-import {
-  BRAND_SPINES,
-  OG_CACHE_CONTROL,
-  OG_COLORS,
-  OG_SIZE,
-} from '@/shared/lib/og/theme';
+import { OG_CACHE_CONTROL, OG_COLORS, OG_SIZE } from '@/shared/lib/og/theme';
 
 // 동적 Open Graph 이미지 (Next.js 파일 규칙)
 // - /opengraph-image 로 서빙되어 SNS 공유 시 썸네일로 노출됨
 // - 별도 이미지 에셋 없이 코드로 생성 (JSX → 이미지)
 //
 // 디자인:
-// - 카드 면은 앱의 `accent`(스카이 틴트)와 같다 — 링크를 눌러 들어온 화면과
-//   같은 톤이어야 같은 서비스로 읽힌다(shared/lib/og/theme.ts 참조).
-// - 카드 폭을 가로지르는 선반이 세 카드(홈·책장·책 기록)의 공통 형태다.
+// - 흰 면에 가운데 정렬. 카톡·슬랙 타임라인에서 정사각으로 잘려도 핵심이 남는다.
+// - 배경 책장은 뒤로 물린 무늬다 — 글자는 흰 여백 위에 얹혀 대비를 지킨다.
+// - 워드마크의 심볼은 파비콘과 같은 형태다(shared/lib/brand/BrandSymbol).
 //
 // 라우트 세그먼트 설정
 //
@@ -33,42 +27,44 @@ export const contentType = 'image/png';
 const Image = () => {
   return new ImageResponse(
     <CardFrame>
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <Wordmark />
+      <Wordmark size={46} />
 
-        {/*
-            Satori 제약: 자식이 2개 이상인 div 는 명시적 display 가 필요하다.
-            <br/> 대신 flex column 으로 두 줄을 각각 div 로 쌓는다.
-          */}
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            marginTop: 28,
-            fontSize: 68,
-            fontWeight: 700,
-            // 한글은 글리프가 커서 lineHeight 1.25 로는 윗줄을 침범한다
-            lineHeight: 1.3,
-          }}
-        >
-          <div>책장을 보면,</div>
-          <div>그 사람이 보인다</div>
-        </div>
-
-        <div
-          style={{
-            display: 'flex',
-            marginTop: 22,
-            fontSize: 28,
-            color: OG_COLORS.inkSoft,
-          }}
-        >
-          읽은 책이 모여 책장이 됩니다
-        </div>
+      {/*
+        Satori 제약: 자식이 2개 이상인 div 는 명시적 display 가 필요하다.
+        <br/> 대신 flex column 으로 두 줄을 각각 div 로 쌓는다.
+      */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          marginTop: 24,
+          fontSize: 62,
+          fontWeight: 700,
+          // 한글은 글리프가 커서 lineHeight 1.25 로는 윗줄을 침범한다
+          lineHeight: 1.3,
+        }}
+      >
+        <div>책장을 보면,</div>
+        <div>그 사람이 보인다</div>
       </div>
 
-      {/* 브랜드 카드라 선반을 가득 채운다 */}
-      <BookShelf spines={BRAND_SPINES} />
+      {/*
+        서브 카피가 "읽은 책이 모여 책장이 됩니다" 였을 때의 문제:
+        메인 카피가 이미 '책장'을 말했는데 같은 말을 한 번 더 해서,
+        **무슨 서비스인지 말할 자리**를 잃었다. 카드는 아직 들어오지 않은
+        사람이 보는 것이라 행동(기록)과 보상(취향)을 함께 말해야 한다.
+      */}
+      <div
+        style={{
+          display: 'flex',
+          marginTop: 24,
+          fontSize: 27,
+          color: OG_COLORS.inkSoft,
+        }}
+      >
+        한 권씩 채우면, 취향이 보입니다
+      </div>
     </CardFrame>,
     {
       ...size,

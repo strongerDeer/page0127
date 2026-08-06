@@ -93,16 +93,18 @@ describe('truncate', () => {
 });
 
 describe('titleFontSize', () => {
+  // 가운데 정렬로 바꾸면서 68/56/46 세 단계를 54/46 두 단계로 줄였다.
+  // 68은 좌측 정렬 기준 크기였고, 가운데 정렬에서는 상하 여백 72px 을 깨뜨린다.
   it('짧은 제목은 크게 쓴다', () => {
-    expect(titleFontSize(7)).toBe(68);
+    expect(titleFontSize(7)).toBe(54);
   });
 
   it('한 줄에 들어오는 한계까지는 크기를 유지한다', () => {
-    expect(titleFontSize(13)).toBe(68);
+    expect(titleFontSize(13)).toBe(54);
   });
 
   it('길어지면 줄이 접히기 전에 글자를 줄인다', () => {
-    expect(titleFontSize(14)).toBe(56);
+    expect(titleFontSize(14)).toBe(46);
     expect(titleFontSize(18)).toBe(46);
   });
 });
