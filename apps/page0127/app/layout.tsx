@@ -10,7 +10,7 @@ import { CurrentUserProvider } from '@/entities/user';
 
 import { VisitReporter } from '@/widgets/visit/VisitReporter';
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 
 import './globals.css';
 
@@ -41,6 +41,20 @@ const siteDescription =
   - Open Graph/트위터 이미지의 상대 경로를 절대 URL로 변환하는 기준
   - opengraph-image.tsx가 생성한 /opengraph-image 도 이 기준으로 절대화됨
 */
+/*
+  뷰포트·테마 색
+
+  themeColor 는 모바일 브라우저의 주소창·상태바 색을 바꾼다. 안드로이드 크롬에서
+  화면 맨 위 띠가 브랜드 색이 되어, 스크롤하는 동안 브랜드 인상이 화면 밖까지
+  이어진다. 값은 파비콘 바탕과 같은 blue/600 이다 — 다르면 아이콘과 띠가 따로 논다.
+
+  metadata 가 아니라 viewport 로 나가는 이유: Next.js 14부터 themeColor·colorScheme·
+  viewport 는 metadata 에서 분리됐다. metadata 에 두면 빌드 경고가 뜬다.
+*/
+export const viewport: Viewport = {
+  themeColor: '#1e69cb',
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: siteTitle,
