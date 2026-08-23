@@ -1,5 +1,7 @@
 import Image from 'next/image';
 
+import { isPreOptimizedImageSrc } from '@repo/ui';
+
 import { createClient } from '@/shared/config/supabase/server';
 
 import { isRated, RATING_MAX } from '@/entities/book';
@@ -138,6 +140,7 @@ export const WeeklyRecapCard = async () => {
             alt=''
             width={120}
             height={174}
+            unoptimized={isPreOptimizedImageSrc(card.lead.cover_image)}
             className='book-cover h-28 w-auto shrink-0 rounded-md'
           />
         )}

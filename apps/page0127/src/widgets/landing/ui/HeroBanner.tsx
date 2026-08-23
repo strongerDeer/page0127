@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { isPreOptimizedImageSrc } from '@repo/ui';
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
@@ -195,6 +196,7 @@ export const HeroBanner = ({ slides, covers = [] }: HeroBannerProps) => {
                           alt=''
                           width={300}
                           height={430}
+                          unoptimized={isPreOptimizedImageSrc(cover)}
                           sizes='(min-width: 1024px) 220px, (min-width: 768px) 180px, 100px'
                           // 첫 슬라이드의 표지는 폴드 위 LCP 요소다 — 지연 로딩하면 안 된다
                           priority={i === 0}

@@ -1,6 +1,7 @@
 import Image from 'next/image';
 
 import { Button } from '@repo/ui';
+import { isPreOptimizedImageSrc } from '@repo/ui';
 import { Progress } from '@repo/ui';
 import { BookOpen, FileText, Pencil, Star, Trophy } from 'lucide-react';
 
@@ -196,6 +197,7 @@ export const ReadingProgressOverview = ({
                       alt={book.title}
                       fill
                       sizes='120px'
+                      unoptimized={isPreOptimizedImageSrc(book.cover_image)}
                       className='object-cover'
                     />
                   </div>

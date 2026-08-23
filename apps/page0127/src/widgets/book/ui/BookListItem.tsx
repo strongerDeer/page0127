@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { isPreOptimizedImageSrc } from '@repo/ui';
+
 import { BookLikeButton } from './BookLikeButton';
 
 import type { Book, GlobalBook } from '@/entities/book';
@@ -72,7 +74,13 @@ const BookListItemCover = ({
           {/* 책등 이미지 */}
           <div className={styles.flipCover}>
             {spine ? (
-              <Image src={spine} alt='' width='400' height='400' />
+              <Image
+                src={spine}
+                alt=''
+                width='400'
+                height='400'
+                unoptimized={isPreOptimizedImageSrc(spine)}
+              />
             ) : (
               <div className={styles.spineFallback} />
             )}
@@ -81,7 +89,13 @@ const BookListItemCover = ({
           {/* 앞 표지 — 이미지가 없으면 제목·저자를 조판해 표지를 생성한다
               (기존에는 존재하지 않는 /images/placeholder-cover.png 를 가리켜 깨졌다) */}
           {cover ? (
-            <Image src={cover} alt={title} width='400' height='400' />
+            <Image
+              src={cover}
+              alt={title}
+              width='400'
+              height='400'
+              unoptimized={isPreOptimizedImageSrc(cover)}
+            />
           ) : (
             <div className={styles.fallback}>
               <p className={styles.fallbackTitle}>{title}</p>
