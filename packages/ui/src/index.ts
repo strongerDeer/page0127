@@ -11,6 +11,7 @@
  */
 
 export { cn } from './lib/cn';
+export { isPreOptimizedImageSrc } from './lib/imageOptimization';
 
 /* Action */
 export { Button, buttonVariants } from './components/button';

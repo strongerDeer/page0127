@@ -2,6 +2,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import Image from 'next/image';
 
 import { cn } from '../lib/cn';
+import { isPreOptimizedImageSrc } from '../lib/imageOptimization';
 
 /**
  * 표지 크기 계단.
@@ -94,6 +95,11 @@ export const BookCover = ({
   // 이겨 버린다 — twMerge 는 나중에 온 것을 남기기 때문이다.
   const shape = coverVariants({ size });
 
+  // 알라딘 표지는 이미 완성된 JPG 라 Vercel 이미지 최적화를 태우지 않는다.
+  // 호출부가 신경 쓰지 않아도 되도록 여기서 판정한다 — 이 컴포넌트가 앱
+  // 15곳에서 쓰이는데, 그중 한 곳이라도 빠지면 그 화면만 조용히 한도를 태운다.
+  const unoptimized = isPreOptimizedImageSrc(src);
+
   if (size === 'fill' || size === 'full') {
     // fill: 부모가 크기를 정한다(부모에 relative + 크기 필요).
     // full: 컬럼 폭을 채우고 높이는 aspect-ratio 가 만든다.
@@ -109,6 +115,7 @@ export const BookCover = ({
             { width: 400, height: 580 })}
         sizes={sizes}
         priority={priority}
+        unoptimized={unoptimized}
         className={cn(shape, 'object-cover', size === 'full' && 'h-auto', className)}
       />
     ) : (
@@ -142,6 +149,7 @@ export const BookCover = ({
         height={height}
         sizes={resolvedSizes}
         priority={priority}
+        unoptimized={unoptimized}
         // 높이 계단이 정한 상자를 이미지가 채운다. 판형이 다른 책이 섞여도
         // 목록의 표지 폭이 흔들리지 않는다.
         className={cn(shape, 'object-cover', className)}
