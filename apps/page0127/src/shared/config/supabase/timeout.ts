@@ -55,9 +55,15 @@ export const createTimeoutFetch = (
 
     // 호출자가 이미 signal 을 넘겼다면(supabase-js 의 .abortSignal() 등)
     // 둘 중 먼저 끊기는 쪽을 따른다 — 남의 취소를 덮어쓰지 않는다.
-    const signal = init?.signal
-      ? AbortSignal.any([init.signal, controller.signal])
-      : controller.signal;
+    //
+    // AbortSignal.any 의 존재를 확인하고 쓰는 이유: 이 래퍼는 proxy.ts(미들웨어)를
+    // 통해 **Edge 런타임**에서도 돈다. 거기엔 이 API 가 없을 수 있고, 없는 채로
+    // 호출하면 모든 요청이 미들웨어에서 터진다 — 상한을 걸려다 사이트를 세우는 셈이다.
+    // 없으면 상한만 적용한다(현재 코드베이스에 signal 을 넘기는 호출부는 없다).
+    const signal =
+      init?.signal && typeof AbortSignal.any === 'function'
+        ? AbortSignal.any([init.signal, controller.signal])
+        : controller.signal;
 
     try {
       return await fetch(input, { ...init, signal });

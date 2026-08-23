@@ -4,6 +4,8 @@ import { createServerClient } from '@supabase/ssr';
 
 import { isProtectedPath } from '@/shared/lib/auth/protectedRoutes';
 
+import { createTimeoutFetch } from './timeout';
+
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 
 /**
@@ -29,6 +31,14 @@ export async function updateSession(request: NextRequest): Promise<{
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      // 여기서 하는 인증 호출은 세션 확인뿐이라 외부 IdP 왕복이 없다.
+      // 그래서 콜백용 15초가 아니라 짧게 잡는다 — 이 호출은 **매 요청** 걸리므로
+      // 상한이 길면 Auth 가 느려질 때 사이트 전체가 그만큼 멈춘다.
+      //
+      // 알고 쓸 것: 아래 getUser() 는 error 를 보지 않고 user 만 꺼내므로, 상한에
+      // 걸리면 로그인한 사용자도 user=null 이 되어 보호 경로에서 /login 으로 간다.
+      // 상한이 없을 때의 대안이 "60초 뒤 함수 타임아웃"이라 이쪽을 택했다.
+      global: { fetch: createTimeoutFetch({ authMs: 5_000 }) },
       cookies: {
         getAll() {
           return request.cookies.getAll();
