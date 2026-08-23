@@ -2,6 +2,8 @@ import { cookies } from 'next/headers';
 
 import { createServerClient } from '@supabase/ssr';
 
+import { createTimeoutFetch } from './timeout';
+
 /**
  * Server Component용 Supabase 클라이언트
  *
@@ -17,6 +19,8 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      // DB가 응답하지 않아도 함수 한도(60초)까지 기다리지 않는다 → timeout.ts
+      global: { fetch: createTimeoutFetch() },
       cookies: {
         getAll() {
           return cookieStore.getAll();

@@ -1,5 +1,7 @@
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
+import { createTimeoutFetch } from './timeout';
+
 import 'server-only';
 
 /**
@@ -30,6 +32,8 @@ export const createAnonClient = () => {
   }
 
   return createSupabaseClient(url, anonKey, {
+    // DB가 응답하지 않아도 함수 한도(60초)까지 기다리지 않는다 → timeout.ts
+    global: { fetch: createTimeoutFetch() },
     auth: {
       // 세션을 저장·갱신하지 않는 일회성 클라이언트
       persistSession: false,
