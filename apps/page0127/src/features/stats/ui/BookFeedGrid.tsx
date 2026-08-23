@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { isPreOptimizedImageSrc } from '@repo/ui';
+
 import type { Book } from '@/entities/book';
 
 type BookFeedGridProps = {
@@ -71,6 +73,7 @@ export const BookFeedGrid = ({
                   alt={book.title}
                   fill
                   sizes='(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw'
+                  unoptimized={isPreOptimizedImageSrc(book.cover_image)}
                   className='object-contain drop-shadow-md'
                 />
               ) : (

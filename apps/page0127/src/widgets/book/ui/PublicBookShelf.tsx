@@ -5,7 +5,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { ReadCountBadge } from '@repo/ui';
+import { isPreOptimizedImageSrc, ReadCountBadge } from '@repo/ui';
 
 import { isTopRated } from '@/entities/book';
 
@@ -66,7 +66,9 @@ export const PublicBookShelf = ({
           // 최고 평가(5점·인생책)만 표지를 크게 세우고 나머지는 책등으로 꽂는다
           const isCoverView = isTopRated(book.rating, book.is_life_book);
           const imageUrl = isCoverView ? book.cover_image : book.spine_image;
-          const hasImage = !!imageUrl;
+          // onError 로 대체된 뒤에는 로컬 이미지(no-book.jpg)가 들어온다.
+          // 최적화 여부 판정은 실제로 그릴 src 기준이어야 한다.
+          const renderedSrc = imgSrc[book.id] || imageUrl;
           // 여러 번 읽은 책은 조금 크게 — 뱃지가 잘 안 보이는 책등에서도
           // "이 책은 다르다"가 실루엣만으로 읽힌다
           const isReread = book.read_count > 1;
@@ -77,13 +79,14 @@ export const PublicBookShelf = ({
                 href={getHref(book)}
                 className={isReread ? styles.reread : undefined}
               >
-                {hasImage ? (
+                {renderedSrc ? (
                   <Image
-                    src={imgSrc[book.id] || imageUrl}
+                    src={renderedSrc}
                     alt={book.title}
                     width={isCoverView ? 170 : 50}
                     height={240}
                     sizes='(max-width: 768px) 170px, 170px'
+                    unoptimized={isPreOptimizedImageSrc(renderedSrc)}
                     onError={() => onError(book.id)}
                   />
                 ) : (
