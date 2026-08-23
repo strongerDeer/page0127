@@ -23,18 +23,47 @@
 /** 사용자 대면 조회 상한. 정상 응답은 서울 리전 기준 0.1~0.4초다. */
 export const DB_TIMEOUT_MS = 5_000;
 
+/**
+ * 인증(GoTrue) 상한 — 조회보다 넉넉하게 준다.
+ *
+ * server.ts 의 클라이언트는 조회만 하는 게 아니다. app/auth/callback/route.ts 의
+ * exchangeCodeForSession 이 같은 클라이언트를 쓰고, 그 호출은 Supabase 를 넘어
+ * **구글·카카오까지 왕복**한다. 조회용 5초를 그대로 씌우면 남의 IdP 가 느린 날
+ * 로그인이 실패한다. 랭킹 섹션이 조용히 빠지는 것과 달리 로그인 실패는 사용자가
+ * 서비스에 들어오지 못하는 실패라, 같은 상한으로 묶지 않는다.
+ */
+export const AUTH_TIMEOUT_MS = 15_000;
+
+/** Supabase 인증 엔드포인트인가 — GoTrue 는 `/auth/v1/` 아래에 있다. */
+const isAuthRequest = (input: RequestInfo | URL): boolean => {
+  const url =
+    typeof input === 'string'
+      ? input
+      : input instanceof URL
+        ? input.href
+        : input.url;
+  return url.includes('/auth/v1/');
+};
+
 export const createTimeoutFetch = (
-  timeoutMs: number = DB_TIMEOUT_MS
+  { dbMs = DB_TIMEOUT_MS, authMs = AUTH_TIMEOUT_MS } = {}
 ): typeof fetch => {
   return async (input, init) => {
+    const timeoutMs = isAuthRequest(input) ? authMs : dbMs;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
     // 호출자가 이미 signal 을 넘겼다면(supabase-js 의 .abortSignal() 등)
     // 둘 중 먼저 끊기는 쪽을 따른다 — 남의 취소를 덮어쓰지 않는다.
-    const signal = init?.signal
-      ? AbortSignal.any([init.signal, controller.signal])
-      : controller.signal;
+    //
+    // AbortSignal.any 의 존재를 확인하고 쓰는 이유: 이 래퍼는 proxy.ts(미들웨어)를
+    // 통해 **Edge 런타임**에서도 돈다. 거기엔 이 API 가 없을 수 있고, 없는 채로
+    // 호출하면 모든 요청이 미들웨어에서 터진다 — 상한을 걸려다 사이트를 세우는 셈이다.
+    // 없으면 상한만 적용한다(현재 코드베이스에 signal 을 넘기는 호출부는 없다).
+    const signal =
+      init?.signal && typeof AbortSignal.any === 'function'
+        ? AbortSignal.any([init.signal, controller.signal])
+        : controller.signal;
 
     try {
       return await fetch(input, { ...init, signal });
