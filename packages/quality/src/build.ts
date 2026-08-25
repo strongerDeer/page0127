@@ -65,6 +65,14 @@ export const parseEslintCount = (
   return { errors: Number(m[1]), warnings: Number(m[2]) };
 };
 
+const BUILD_LOG_TAIL_LINES = 40;
+
+// 순수: 문자열의 마지막 n줄만 남긴다(빈 줄은 앞뒤로 정리).
+export const tailLines = (output: string, n: number): string => {
+  const lines = output.trimEnd().split('\n');
+  return lines.slice(-n).join('\n');
+};
+
 const execStatus = (
   cmd: string,
   cwd: string,
@@ -121,6 +129,10 @@ export const measureBuild = (repoPath: string): BuildResult => {
     console.error(
       `[quality] ${repoPath} 빌드 실패 — 번들 측정을 신뢰할 수 없음(0으로 기록될 수 있음)`,
     );
+    // 실패 출력을 버리면 CI 로그만 보고는 원인을 알 수 없다(실제로 그래서
+    // 번들 0 기록이 몇 주간 방치됐다). 앞부분은 대개 진행 로그라 끝 40줄만 남긴다.
+    console.error(`[quality] 빌드 출력(마지막 ${BUILD_LOG_TAIL_LINES}줄):`);
+    console.error(tailLines(build.output, BUILD_LOG_TAIL_LINES));
   }
 
   const tscOut = safeExec(`npx tsc --noEmit`, repoPath);
