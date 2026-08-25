@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@repo/ui';
+import { Button, isPreOptimizedImageSrc } from '@repo/ui';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@repo/ui';
 import { Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
@@ -134,6 +134,7 @@ export const PublicLibraryHeader = ({
                 sizes='80px'
                 className='object-cover'
                 priority
+                unoptimized={isPreOptimizedImageSrc(profile.photo_url)}
               />
             </div>
           ) : (

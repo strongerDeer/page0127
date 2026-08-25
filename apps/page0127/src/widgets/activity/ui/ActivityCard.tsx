@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { BookCover } from '@repo/ui';
+import { BookCover, isPreOptimizedImageSrc } from '@repo/ui';
 import { Star } from 'lucide-react';
 
 import { RelativeTime } from '@/shared/ui/RelativeTime';
@@ -107,6 +107,7 @@ export const ActivityCard = ({
                 fill
                 sizes='44px'
                 className='object-cover'
+                unoptimized={isPreOptimizedImageSrc(activity.user.photo_url)}
               />
             </div>
           ) : (
