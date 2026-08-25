@@ -26,9 +26,21 @@ describe('BookCover 의 이미지 최적화 경로', () => {
     expect(html).not.toContain('/_next/image');
   });
 
-  it('Supabase 업로드 이미지는 최적화를 거친다', () => {
+  it('Supabase 업로드 이미지도 원본 URL 로 나간다', () => {
+    // 2026-08-25 방침 변경. 한도가 소진되면 캐시 없는 새 이미지는 402 로
+    // 아예 사라진다 — 크게 나가더라도 보이는 편을 택했다.
     const html = renderToStaticMarkup(
       <BookCover src={SUPABASE_UPLOAD} title='어떤 책' />
+    );
+
+    expect(html).toContain(SUPABASE_UPLOAD);
+    expect(html).not.toContain('/_next/image');
+  });
+
+  it('로컬 정적 이미지는 여전히 최적화를 거친다', () => {
+    // 전부 unoptimized 로 밀어버린 게 아님을 못 박는다.
+    const html = renderToStaticMarkup(
+      <BookCover src='/images/no-book.jpg' title='어떤 책' />
     );
 
     expect(html).toContain('/_next/image');
