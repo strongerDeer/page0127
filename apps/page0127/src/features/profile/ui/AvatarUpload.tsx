@@ -4,13 +4,14 @@ import { useRef, useState } from 'react';
 
 import Image from 'next/image';
 
-import { Button } from '@repo/ui';
+import { Button, isPreOptimizedImageSrc } from '@repo/ui';
 import { toast } from 'sonner';
 
 import {
   MAX_PROFILE_IMAGE_BYTES,
   MAX_PROFILE_IMAGE_LABEL,
 } from '@/shared/lib/profileStorage';
+import { resizeAvatarFile } from '@/shared/lib/resizeAvatar';
 
 type AvatarUploadProps = {
   currentPhotoUrl: string | null;
@@ -42,7 +43,7 @@ export const AvatarUpload = ({
   };
 
   // 파일 선택 핸들러
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -58,16 +59,21 @@ export const AvatarUpload = ({
       return;
     }
 
-    // 2. FileReader로 미리보기 생성
+    // 2. 저장 전에 줄인다 — 프로필 사진은 화면에서 아무리 커도 96px 인데
+    //    지금까지는 원본이 그대로 저장됐다. 실패하면 원본을 그대로 쓴다.
+    const uploadFile = await resizeAvatarFile(file);
+
+    // 3. FileReader로 미리보기 생성
+    //    줄인 결과로 미리 보여 준다 — 실제 저장될 그림과 같아야 한다.
     const reader = new FileReader();
     reader.onloadend = () => {
       setPreviewUrl(reader.result as string);
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(uploadFile);
 
-    // 3. 파일 객체 저장 및 부모 컴포넌트에 전달
-    setSelectedFile(file);
-    onFileSelect(file);
+    // 4. 파일 객체 저장 및 부모 컴포넌트에 전달
+    setSelectedFile(uploadFile);
+    onFileSelect(uploadFile);
   };
 
   // 이미지 제거
@@ -93,6 +99,14 @@ export const AvatarUpload = ({
               sizes='96px'
               className='object-cover transition-opacity duration-300'
               priority
+              /*
+                previewUrl 은 두 가지다.
+                - 방금 고른 파일: FileReader 가 만든 data: URL → next/image 가
+                  알아서 최적화를 건너뛴다(판정은 false 가 나온다)
+                - 저장돼 있던 사진: Supabase Storage URL → 판정이 true 가 되어
+                  변환을 타지 않는다
+              */
+              unoptimized={isPreOptimizedImageSrc(previewUrl)}
             />
           ) : (
             <div className='flex h-full items-center justify-center text-muted-foreground'>

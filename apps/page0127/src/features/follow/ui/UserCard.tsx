@@ -1,5 +1,7 @@
 import Image from 'next/image';
 
+import { isPreOptimizedImageSrc } from '@repo/ui';
+
 import { UserWithFollowInfo } from '@/entities/follow';
 import { toDisplayName, toInitial } from '@/entities/profile/model/displayName';
 import { ProfileLink } from '@/entities/profile/ui/ProfileLink';
@@ -38,6 +40,7 @@ export const UserCard = ({ user, currentUserId }: UserCardProps) => {
               fill
               sizes='48px'
               className='object-cover'
+              unoptimized={isPreOptimizedImageSrc(user.photo_url)}
             />
           </div>
         ) : (
