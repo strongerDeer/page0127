@@ -41,6 +41,30 @@ const HANGUL = /[가-힣]/;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+// 크론이 도는 경로. **apps/page0127/vercel.json 의 crons 와 같아야 한다.**
+// 크론을 추가·이동하면 여기도 고친다(안 고치면 조용히 로그성으로 묻힌다).
+//
+// 경로만 봐서는 크론인지 알 수 없다 — /api/notifications/cleanup 은 이름에
+// cron 이 없지만 스케줄러가 부른다. 그래서 접두사 규칙 대신 목록을 둔다.
+const CRON_PATHS = [
+  '/api/cron/snapshot-rankings',
+  '/api/notifications/cleanup',
+  '/api/cron/cleanup-rate-limits',
+];
+
+/**
+ * 크론이 실패한 이슈인가.
+ *
+ * 크론은 사람이 보고 있지 않을 때 돌고, 실패해도 화면에 아무 표시가 없다.
+ * 2026-08-18~22 랭킹 스냅샷이 5일 연속 실패했지만 메시지가 한글이라 로그성으로
+ * 묻혔고, 그동안 그 5일치 순위 데이터가 영구히 비었다. 되돌릴 수 없는 손실이라
+ * "우리가 남긴 로그"로 내려보내지 않는다.
+ */
+const isCronFailure = (issue: SentryIssue) => {
+  const culprit = issue.culprit ?? '';
+  return CRON_PATHS.some((path) => culprit.includes(path));
+};
+
 const messageOf = (issue: SentryIssue) => issue.metadata?.value ?? issue.title;
 
 /**
@@ -56,7 +80,9 @@ export const triage = (issue: SentryIssue, now: Date): Grade => {
     return 'noise';
   }
 
-  if (HANGUL.test(message)) return 'log';
+  // 한글 규칙보다 크론이 우선한다 — 같은 크론 실패인데 메시지가 한글이냐
+  // 영어냐로 등급이 갈리던 것을 막는다(실제로 랭킹 스냅샷만 묻혔다).
+  if (!isCronFailure(issue) && HANGUL.test(message)) return 'log';
 
   const firstSeen = new Date(issue.firstSeen).getTime();
   const lastSeen = new Date(issue.lastSeen).getTime();
