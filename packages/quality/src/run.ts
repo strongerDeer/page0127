@@ -114,7 +114,27 @@ const main = async (): Promise<void> => {
   );
 };
 
+// 실패 원인을 나눠서 알린다(uptime.yml과 같은 이유). "품질 측정 실패" 한 줄만
+// 보이면 받는 사람이 로그를 열어 스택을 읽어야 한다. 아래 두 경우는 대응이 다르다 —
+// 자격증명을 고칠 것인가, 측정 대상 사이트를 볼 것인가.
+//
+// 42501은 실제로 4주간(2026-08-03~08-24) 이 워크플로를 조용히 죽였다: 측정은
+// 매번 성공하고 마지막 insert만 실패해서, 로그 끝을 보지 않으면 알 수 없었다.
+const explain = (e: unknown): string => {
+  const err = e as { code?: string; message?: string };
+  if (err?.code === '42501') {
+    return [
+      'DB 저장 거부(RLS) — 측정은 성공했지만 기록되지 않았습니다.',
+      'service_role이 아닌 키로 붙었다는 뜻입니다(키가 틀렸다면 401이 납니다).',
+      '대응: GitHub secret PRODUCTION_SUPABASE_SERVICE_ROLE_KEY에 운영 프로젝트의 secret 키를 다시 넣습니다.',
+    ].join(' ');
+  }
+  return `품질 측정 실패: ${err?.message ?? String(e)}`;
+};
+
 main().catch((e) => {
   console.error('[quality] 실패:', e);
+  // ::error:: 는 GitHub Actions가 요약 화면 최상단에 띄운다 — 로그를 안 열어도 보인다.
+  console.error(`::error::${explain(e)}`);
   process.exitCode = 1;
 });

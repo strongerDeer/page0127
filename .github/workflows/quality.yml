@@ -7,6 +7,11 @@ on:
     - cron: '0 0 * * 1' # 매주 월 09:00 KST (UTC 00:00)
   workflow_dispatch: {}
 
+# 실패 시 이슈를 열려면 필요하다. 기본 토큰은 contents: read 만 갖는다.
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   measure:
     runs-on: ubuntu-latest
@@ -48,3 +53,37 @@ jobs:
           OPENAI_API_KEY: dummy
           # CrUX(없으면 필드 지표만 생략하고 측정은 계속). ?key= 방식.
           CRUX_API_KEY: ${{ secrets.CRUX_API_KEY }}
+
+      # 실패를 이슈로 남긴다.
+      #
+      # 왜 메일로 충분하지 않나: 이 워크플로는 2026-08-03부터 4주 연속 빨간불이었는데
+      # 아무도 몰랐다. schedule 실행의 실패 메일은 묻히기 쉽고, 주 1회라 대시보드가
+      # 비어 있어도 "아직 측정 전이겠지"로 보인다. 이슈는 레포를 열면 보인다.
+      #
+      # 중복 방지: 같은 제목의 열린 이슈가 있으면 새로 만들지 않고 댓글만 단다.
+      # (안 그러면 주마다 이슈가 하나씩 쌓인다)
+      - name: 실패를 이슈로 알림
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE: '🚨 주간 품질 측정 실패'
+          # 중복 탐지용 검색어. 이모지는 검색 색인에서 신뢰할 수 없어 빼고 찾는다.
+          SEARCH: '주간 품질 측정 실패'
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          body="주간 품질 측정(quality.yml)이 실패했습니다. \`/admin/quality\` 데이터가 이번 주치만큼 비어 있습니다.
+
+          - 실행 로그: ${RUN_URL}
+          - 커밋: \`${GITHUB_SHA}\`
+
+          로그 맨 끝의 \`[quality] 실패:\` 줄이 원인입니다. 측정(Lighthouse)은 성공하고 마지막 저장만 실패하는 경우가 있으니 끝까지 확인하세요."
+
+          # `// empty` 가 없으면 결과가 없을 때 문자열 "null" 이 잡혀 없는 이슈에 댓글을 시도한다.
+          existing=$(gh issue list --state open --search "$SEARCH in:title" --json number --jq '.[0].number // empty')
+
+          if [ -n "$existing" ]; then
+            echo "기존 이슈 #${existing} 에 댓글을 답니다(중복 생성 방지)."
+            gh issue comment "$existing" --body "$body"
+          else
+            gh issue create --title "$TITLE" --body "$body"
+          fi
