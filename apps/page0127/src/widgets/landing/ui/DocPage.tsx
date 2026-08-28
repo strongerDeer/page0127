@@ -1,7 +1,6 @@
 import { PageContainer } from '@repo/ui';
 
 import { SITE_INFO } from '@/widgets/landing/model/siteInfo';
-import { SiteFooter } from '@/widgets/landing/ui/SiteFooter';
 
 /**
  * 정적 문서 페이지 공통 껍데기 (소개·약관·개인정보·문의)
@@ -24,23 +23,19 @@ export const DocPage = ({
   children,
 }: DocPageProps) => {
   return (
-    <>
-      <PageContainer width='content'>
-        <header className='mb-10 border-b border-line pb-6'>
-          <h1 className='heading-1'>{title}</h1>
-          {description && <p className='mt-2 text-text-body'>{description}</p>}
-          {showUpdatedAt && (
-            <p className='mt-3 text-xs text-text-subtle'>
-              최종 수정일: {SITE_INFO.lastUpdated}
-            </p>
-          )}
-        </header>
+    <PageContainer width='content'>
+      <header className='mb-10 border-b border-line pb-6'>
+        <h1 className='heading-1'>{title}</h1>
+        {description && <p className='mt-2 text-text-body'>{description}</p>}
+        {showUpdatedAt && (
+          <p className='mt-3 text-xs text-text-subtle'>
+            최종 수정일: {SITE_INFO.lastUpdated}
+          </p>
+        )}
+      </header>
 
-        <div className='space-y-10 pb-16'>{children}</div>
-      </PageContainer>
-
-      <SiteFooter />
-    </>
+      <div className='space-y-10 pb-16'>{children}</div>
+    </PageContainer>
   );
 };
 
