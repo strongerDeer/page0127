@@ -12,7 +12,6 @@ import { DiscoveryCard } from '@/widgets/landing/ui/DiscoveryCard';
 import { HeroBannerSection } from '@/widgets/landing/ui/HeroBannerSection';
 import { HeroBannerSkeleton } from '@/widgets/landing/ui/HeroBannerSkeleton';
 import { PromoCards } from '@/widgets/landing/ui/PromoCards';
-import { SiteFooter } from '@/widgets/landing/ui/SiteFooter';
 import { StartCtaButton } from '@/widgets/landing/ui/StartCtaButton';
 import { TasteExampleCard } from '@/widgets/landing/ui/TasteExampleCard';
 import { TodayStrip } from '@/widgets/landing/ui/TodayStrip';
@@ -221,8 +220,6 @@ const Home = async () => {
           </section>
         )}
       </div>
-
-      <SiteFooter />
     </div>
   );
 };

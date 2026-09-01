@@ -1,6 +1,7 @@
 import { Gnb } from '@/widgets/Gnb';
 
 import { BottomTabBar } from './BottomTabBar';
+import { SiteFooter } from './SiteFooter';
 
 import type { ShellUser } from '../api/getShellUser';
 
@@ -28,13 +29,19 @@ export const AppShellLayout = ({ user, children }: AppShellLayoutProps) => {
         본문 바로가기
       </a>
       <Gnb user={user} />
-      {/* 모바일 하단 탭바 높이만큼 pb 확보 (로그인 시에만 탭바가 있다) */}
-      <main
-        id='main-content'
-        className={user ? 'flex-1 pb-16 md:pb-0' : 'flex-1'}
-      >
+      {/*
+        탭바 높이 확보는 이제 푸터가 맡는다 — 본문 다음에 푸터가 오므로
+        여기서도 pb 를 주면 본문과 푸터 사이에 빈 띠가 두 번 생긴다.
+      */}
+      <main id='main-content' className='flex-1'>
         {children}
       </main>
+      {/*
+        푸터는 로그인 여부와 상관없이 붙인다. 문의·개인정보처리방침·이용약관은
+        쓰다가 막힌 사람(=로그인한 사람)이 가장 필요로 하는 것들이다.
+        탭바가 있는 모바일에서는 푸터 끝이 가리므로 그만큼 아래 여백을 더한다.
+      */}
+      <SiteFooter className={user ? 'pb-16 md:pb-0' : undefined} />
       {/* 하단 탭 메뉴는 전부 로그인 전용 라우트 → 비로그인에겐 숨긴다 */}
       {user && <BottomTabBar username={user.username} />}
     </div>
