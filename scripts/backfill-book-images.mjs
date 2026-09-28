@@ -111,6 +111,43 @@ const supabase = createClient(
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/**
+ * 저장된 식별자를 YES24가 받는 ISBN13으로 바꾼다.
+ *
+ * **운영 DB의 isbn 컬럼은 ISBN13이 아니다.** 알라딘 시절 응답의 `isbn` 필드를 그대로
+ * 넣어 왔기 때문이다. 2026-09-28 실측(164권):
+ *
+ *   ISBN13   68권  그대로 쓴다
+ *   ISBN10   26권  978 + 앞 9자리 + 체크digit 재계산으로 변환된다
+ *   K코드    70권  알라딘 내부 ID다. ISBN이 아니라 계산으로 못 바꾼다
+ *
+ * K코드가 43%나 된다. 이 책들은 **알라딘에 물어봐야만** 진짜 ISBN13을 알 수 있고,
+ * 알라딘은 2026-10-30에 죽는다. 백필을 지금 돌려야 하는 가장 큰 이유다.
+ */
+const isbn10To13 = (isbn10) => {
+  const core = '978' + isbn10.slice(0, 9);
+  let sum = 0;
+  for (let i = 0; i < 12; i += 1) sum += Number(core[i]) * (i % 2 === 0 ? 1 : 3);
+  return core + String((10 - (sum % 10)) % 10);
+};
+
+const resolveIsbn13 = async (stored) => {
+  const value = (stored ?? '').trim();
+
+  if (/^97[89]\d{10}$/.test(value)) return { isbn13: value, via: 'stored' };
+  if (/^\d{9}[\dX]$/i.test(value)) return { isbn13: isbn10To13(value), via: 'isbn10' };
+
+  // K코드 등 — 알라딘에게 진짜 ISBN13을 물어본다 (ItemIdType=ISBN)
+  const record = await fetchAladin(value, 'ISBN');
+  const fromAladin = (record?.isbn13 ?? '').trim();
+
+  if (/^97[89]\d{10}$/.test(fromAladin)) {
+    return { isbn13: fromAladin, via: 'aladin', aladin: record };
+  }
+
+  return { isbn13: null, via: 'unresolved', aladin: record ?? null };
+};
+
 /** YES24 상세 조회. 없으면 null, 실패하면 throw */
 const fetchYes24 = async (isbn) => {
   const url =
@@ -134,7 +171,7 @@ const fetchYes24 = async (isbn) => {
  * 알라딘 폴백. YES24 에 없는 절판서를 위한 마지막 통로다.
  * 2026-10-30 이후로는 항상 실패하므로, 그때는 조용히 건너뛰게 둔다.
  */
-const fetchAladin = async (isbn) => {
+const fetchAladin = async (isbn, itemIdType = 'ISBN13') => {
   if (!env.ALADIN_API_KEY) return null;
 
   const url =
@@ -142,7 +179,8 @@ const fetchAladin = async (isbn) => {
     new URLSearchParams({
       ttbkey: env.ALADIN_API_KEY,
       ItemId: isbn,
-      ItemIdType: 'ISBN13',
+      // K코드·ISBN10 은 'ISBN' 으로 물어봐야 한다. 'ISBN13' 으로 보내면 못 찾는다
+      ItemIdType: itemIdType,
       output: 'js',
       Version: '20131101',
       Cover: 'Big',
@@ -240,6 +278,7 @@ const stats = {
   spines: 0,
   backs: 0,
   thickness: 0,
+  resolved: {},
 };
 const failures = [];
 
@@ -310,11 +349,20 @@ const processWithAladin = async (row, aladin) => {
 };
 
 const processRow = async (row) => {
-  const item = await fetchYes24(row.isbn);
+  // 저장된 식별자가 ISBN13이 아닐 수 있다(ISBN10 26권, K코드 70권).
+  // K코드는 알라딘을 다리로 써야 진짜 ISBN13을 알 수 있다.
+  const resolved = await resolveIsbn13(row.isbn);
+  stats.resolved[resolved.via] = (stats.resolved[resolved.via] ?? 0) + 1;
+
+  const item = resolved.isbn13 ? await fetchYes24(resolved.isbn13) : null;
 
   if (!item) {
-    // YES24 에 없다 → 알라딘으로 한 번 더. 절판서가 여기서 걸린다.
-    const aladin = await fetchAladin(row.isbn);
+    // YES24 에 없다 → 알라딘으로. 절판서와 ISBN 없는 책이 여기서 걸린다.
+    // 식별자를 풀며 이미 받아 온 게 있으면 다시 호출하지 않는다.
+    const aladin =
+      resolved.aladin ??
+      (await fetchAladin(row.isbn, resolved.via === 'stored' ? 'ISBN13' : 'ISBN'));
+
     if (!aladin) {
       stats.notFound += 1;
       failures.push({ isbn: row.isbn, title: row.title, reason: '두 공급자 모두 없음' });
@@ -441,6 +489,17 @@ const main = async () => {
   console.log(`  실패           ${stats.failed}권`);
   console.log('');
   console.log(`표지 ${stats.covers} · 책등 ${stats.spines} · 뒷표지 ${stats.backs} · 두께 ${stats.thickness}`);
+  console.log('');
+  // 저장된 식별자가 무엇이었는지 — K코드 비중이 알라딘 의존도를 그대로 보여준다
+  const viaLabel = {
+    stored: 'ISBN13 그대로',
+    isbn10: 'ISBN10 → 변환',
+    aladin: 'K코드 → 알라딘이 알려줌',
+    unresolved: 'ISBN13을 못 구함',
+  };
+  Object.entries(stats.resolved).forEach(([via, n]) =>
+    console.log(`  ${(viaLabel[via] ?? via).padEnd(26)} ${n}권`)
+  );
 
   if (failures.length) {
     console.log('');
