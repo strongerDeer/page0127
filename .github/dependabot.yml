@@ -25,6 +25,20 @@ updates:
       - dependency-name: eslint
         update-types:
           - version-update:semver-major
+      # Vitest 5 는 @storybook/addon-vitest 정식판(10.6)이 아직 받지 않는다 — peer 가
+      # `vitest ^3 || ^4`, `@vitest/browser-playwright ^4` 까지다(5 지원은 11.0 알파뿐).
+      # Dependabot 은 vitest 계열을 한 패키지씩 따로 올려서 버전이 어긋나고, Storybook
+      # a11y 가 통째로 죽는다:
+      #   SyntaxError: The requested module 'vitest/node' does not provide an export
+      #   named 'BrowserConnectionError'
+      # (PR #123 에서 실측 — browser-playwright 만 5 로 오른 상태)
+      # Storybook 11 정식판이 나오면 이 항목을 지우고 vitest·@vitest/* 를 한 PR 에서 같이 올린다.
+      - dependency-name: vitest
+        update-types:
+          - version-update:semver-major
+      - dependency-name: "@vitest/*"
+        update-types:
+          - version-update:semver-major
     groups:
       production-minor-patch:
         dependency-type: production
