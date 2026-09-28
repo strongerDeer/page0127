@@ -1,65 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// 서버 전용 환경변수 — NEXT_PUBLIC_ 접두사를 붙이면 키가 클라이언트 번들에 인라인된다
-const ALADIN_API_KEY = process.env.ALADIN_API_KEY;
-const ALADIN_API_BASE_URL = 'https://www.aladin.co.kr/ttb/api/ItemLookUp.aspx';
+import { getBookProvider } from '@/shared/api/book-provider';
 
 /**
- * 알라딘 도서 상세 조회 API Route
+ * 도서 상세 조회 API Route
  *
- * 학습 포인트:
- * - ItemLookUp API: ISBN으로 상세 정보 조회 (쪽수, 목차 포함)
- * - OptResult: packing, toc, fulldescription - AI 분석용 추가 정보
- * - ItemSearch API와 다른 엔드포인트
+ * ISBN13으로 쪽수·목차·책소개까지 받아 등록 폼과 AI 분석에 넘긴다.
+ * 검색 응답에는 쪽수가 없어(공급자 공통) 상세 조회가 따로 필요하다.
  */
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const isbn = searchParams.get('isbn');
+  const isbn = request.nextUrl.searchParams.get('isbn');
 
   if (!isbn) {
-    return NextResponse.json(
-      { error: 'ISBN을 입력해주세요.' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'ISBN을 입력해주세요.' }, { status: 400 });
   }
-
-  if (!ALADIN_API_KEY) {
-    console.error('ALADIN_API_KEY 환경변수가 설정되지 않았습니다.');
-    return NextResponse.json(
-      { error: '도서 상세 정보 조회 중 오류가 발생했습니다.' },
-      { status: 500 }
-    );
-  }
-
-  // 알라딘 API 쿼리 파라미터 생성
-  const params = new URLSearchParams({
-    ttbkey: ALADIN_API_KEY,
-    ItemId: isbn,
-    ItemIdType: 'ISBN13',
-    output: 'js',
-    Version: '20131101',
-    Cover: 'Big', // 큰 표지 이미지 요청
-    // AI 분석을 위한 추가 정보 요청
-    // packing: subInfo(쪽수 등), toc: 목차, fulldescription: 전체 소개, authors: 저자 소개
-    OptResult: 'packing,toc,fulldescription,authors',
-  });
-
-  const url = `${ALADIN_API_BASE_URL}?${params.toString()}`;
 
   try {
-    // 도서 상세 정보(제목, 저자, 목차)는 거의 변하지 않음 → 24시간 캐시
-    const response = await fetch(url, {
-      next: { revalidate: 86400 },
-    });
+    const book = await getBookProvider().getByIsbn(isbn);
 
-    if (!response.ok) {
-      throw new Error(`알라딘 API 오류: ${response.status}`);
+    // 없는 ISBN 은 오류가 아니다 — 호출 측이 기본 정보로 진행할 수 있게 204 로 답한다
+    if (!book) {
+      return new NextResponse(null, { status: 204 });
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    return NextResponse.json(book);
   } catch (error) {
-    console.error('알라딘 API 요청 실패:', error);
+    console.error('도서 상세 정보 조회 실패:', error);
     return NextResponse.json(
       { error: '도서 상세 정보 조회 중 오류가 발생했습니다.' },
       { status: 500 }

@@ -9,6 +9,7 @@ import { createClient } from '@/shared/config/supabase/server';
 import { decodeHtmlEntities } from '@/shared/lib/htmlEntities';
 
 import { RATING_MAX, summarizeRatings } from '@/entities/book';
+import { BookSourceCredit } from '@/entities/book/ui/BookSourceCredit';
 
 import { AddToLibraryButton } from '@/widgets/book/ui/AddToLibraryButton';
 import { GlobalBookCommentSection } from '@/widgets/book/ui/GlobalBookCommentSection';
@@ -189,11 +190,22 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
         <div className='space-y-6'>
           <div>
             <h1 className='heading-1'>{book.title}</h1>
+            {/* 부제는 제목보다 작게 — 제목 덩어리로 묶이되 저자 줄과 경쟁하지 않게 */}
+            {book.sub_title && (
+              <p className='mt-1 text-sm text-text-subtle'>{book.sub_title}</p>
+            )}
             <p className='mt-2 text-text-body'>{book.author}</p>
             <p className='text-sm text-text-subtle'>
               {book.publisher}
               {book.pub_date && ` · ${book.pub_date}`}
             </p>
+            {/* 출처 표기는 약관상 의무다 — 지우지 말 것 */}
+            <BookSourceCredit
+              source={book.source}
+              providerItemId={book.provider_item_id}
+              isbn={book.isbn}
+              className='mt-1 text-xs text-text-subtle'
+            />
 
             {/* 통계 — 큰 카드 대신 제목 아래 한 줄 (교보의 별점 줄 문법) */}
             <p className='mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm'>

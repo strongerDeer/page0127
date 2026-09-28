@@ -15,6 +15,8 @@ import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@repo/ui';
 import { BookOpen, LogOut, Settings } from 'lucide-react';
 
+import { nameInitials } from '@/entities/profile/model/displayName';
+
 import { useLogout } from '@/features/auth/api/useLogout';
 
 type ProfileDropdownProps = {
@@ -37,8 +39,10 @@ export const ProfileDropdown = ({
     logout();
   };
 
-  // 닉네임 첫 글자 (Avatar fallback용)
-  const initial = displayName?.[0]?.toUpperCase() || 'U';
+  // 닉네임 첫 글자 (Avatar fallback용).
+  // `displayName[0]` 로 직접 자르면 이모지 닉네임에서 서로게이트가 쪼개져
+  // hydration 이 깨진다 — 근거는 nameInitials 주석 참조.
+  const initial = nameInitials(displayName);
 
   return (
     <DropdownMenu>

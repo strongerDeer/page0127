@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui';
 
 import { createClient } from '@/shared/config/supabase/server';
 
+import { nameInitials } from '@/entities/profile/model/displayName';
 import { ProfileLink } from '@/entities/profile/ui/ProfileLink';
 
 type ReaderProfilesProps = {
@@ -89,7 +90,7 @@ export const ReaderProfiles = async ({ isbn }: ReaderProfilesProps) => {
                   {/* 링크 안이 이미지뿐이면 스크린리더가 읽을 이름이 없다 → alt 로 이름을 준다 */}
                   <AvatarImage src={profile.photo_url ?? undefined} alt={name} />
                   <AvatarFallback className='bg-primary/15 text-primary text-xs'>
-                    {name.slice(0, 2)}
+                    {nameInitials(name, 2)}
                   </AvatarFallback>
                 </Avatar>
               </ProfileLink>

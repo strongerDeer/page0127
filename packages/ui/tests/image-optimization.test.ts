@@ -27,6 +27,26 @@ describe('isPreOptimizedImageSrc', () => {
     ).toBe(true);
   });
 
+  it('YES24 표지·책등·뒷표지는 최적화를 건너뛴다', () => {
+    // 현재 공급자다. 표지는 이 앱에서 가장 많이 그려지는 이미지라, 최적화 한도가
+    // 소진되면 서재·검색·랭킹이 한꺼번에 빈 칸이 된다.
+    expect(isPreOptimizedImageSrc('https://image.yes24.com/goods/13137546/XL')).toBe(
+      true
+    );
+    expect(
+      isPreOptimizedImageSrc('https://image.yes24.com/goods/13137546/SIDE/XL')
+    ).toBe(true);
+    expect(
+      isPreOptimizedImageSrc('https://image.yes24.com/goods/13137546/BACK/XL')
+    ).toBe(true);
+  });
+
+  it('이름만 흉내 낸 YES24 도메인은 통과시키지 않는다', () => {
+    expect(isPreOptimizedImageSrc('https://image.yes24.com.evil.com/a.jpg')).toBe(
+      false
+    );
+  });
+
   it('소셜 로그인 프로필 사진은 최적화를 건너뛴다', () => {
     // 구글·카카오는 서브도메인 번호가 바뀌므로 접미사로 판정한다.
     // 두 CDN 모두 이미 작은 썸네일을 주기 때문에 변환 이득이 없다.

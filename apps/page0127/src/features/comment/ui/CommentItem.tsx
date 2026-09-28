@@ -12,6 +12,7 @@ import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
 import { RelativeTime } from '@/shared/ui/RelativeTime';
 
 import { Comment, commentApi, commentKeys } from '@/entities/comment';
+import { nameInitials } from '@/entities/profile/model/displayName';
 import { ProfileLink } from '@/entities/profile/ui/ProfileLink';
 import { useCurrentUserContext } from '@/entities/user';
 
@@ -106,7 +107,9 @@ export const CommentItem = ({
           <Avatar className='h-8 w-8'>
             <AvatarImage src={comment.user?.photoUrl || undefined} />
             <AvatarFallback>
-              {comment.user?.nickname?.[0] || '익'}
+              {comment.user?.nickname
+                ? nameInitials(comment.user.nickname)
+                : '익'}
             </AvatarFallback>
           </Avatar>
         </ProfileLink>

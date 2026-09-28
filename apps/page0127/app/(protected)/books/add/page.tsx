@@ -7,13 +7,12 @@ import { useRouter } from 'next/navigation';
 import { ErrorBoundary, PageContainer } from '@repo/ui';
 import { toast } from 'sonner';
 
+import { getBookDetail } from '@/shared/api/book';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
-import {
-  upgradeImageResolution,
-  validateSpineImageUrl,
-} from '@/shared/lib/imageUtils';
+import { resolveSpineImageUrl } from '@/shared/lib/spineImage';
 
 import { bookApi } from '@/entities/book';
+import { BookSourceCredit } from '@/entities/book/ui/BookSourceCredit';
 
 import { useBookCRUD } from '@/features/book/api/useBookCRUD';
 import { useBookSearch } from '@/features/book/api/useBookSearch';
@@ -28,7 +27,7 @@ import { BookSearchPagination } from '@/features/book/ui/BookSearchPagination';
 import { BookSearchResultCard } from '@/features/book/ui/BookSearchResultCard';
 import { DuplicateBookDialog } from '@/features/book/ui/DuplicateBookDialog';
 
-import type { AladinBook, Book } from '@/entities/book';
+import type { Book, ProviderBook } from '@/entities/book';
 
 /**
  * 도서 추가 페이지
@@ -57,7 +56,7 @@ const AddBookPage = () => {
     isLoading: isCreating,
   } = useBookCRUD();
 
-  const [selectedBook, setSelectedBook] = useState<AladinBook | null>(null);
+  const [selectedBook, setSelectedBook] = useState<ProviderBook | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
 
   // 저장 완료 단계 — 검색/폼과 같은 방식으로 state 전환한다(라우트를 늘리지 않는다).
@@ -99,22 +98,17 @@ const AddBookPage = () => {
   // 중복 체크 모달 상태
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [existingBook, setExistingBook] = useState<Book | null>(null);
-  const [pendingBook, setPendingBook] = useState<AladinBook | null>(null);
+  const [pendingBook, setPendingBook] = useState<ProviderBook | null>(null);
 
-  // 알라딘 상세 조회 → 쪽수(subInfo)를 병합해 등록 폼으로 넘긴다.
+  // 상세 조회 → 쪽수·목차를 보강해 등록 폼으로 넘긴다. 검색 응답에는 쪽수가 없다.
   // handleSelectBook·handleReread가 같은 try/catch ~40줄을 복붙하고 있던 것을 추출.
   // 실패해도 기본 정보로 진행한다 — 상세 조회는 보강이지 필수가 아니다.
-  const loadBookDetail = async (book: AladinBook) => {
+  const loadBookDetail = async (book: ProviderBook) => {
     setIsLoadingDetail(true);
     try {
-      const response = await fetch(`/api/books/detail?isbn=${book.isbn13}`);
-      if (!response.ok) throw new Error('상세 정보 조회 실패');
-
-      const data = await response.json();
-      const detailedBook = data.item?.[0];
-      setSelectedBook(
-        detailedBook ? { ...book, subInfo: detailedBook.subInfo } : book
-      );
+      const detailed = await getBookDetail(book.isbn);
+      // 상세가 없으면(204) 검색 결과 그대로 간다 — 오류가 아니다
+      setSelectedBook(detailed ?? book);
     } catch (error) {
       console.error('상세 정보 조회 실패:', error);
       setSelectedBook(book);
@@ -125,11 +119,11 @@ const AddBookPage = () => {
   };
 
   // 책 선택 시 중복 체크 + 상세 정보 조회
-  const handleSelectBook = async (book: AladinBook) => {
+  const handleSelectBook = async (book: ProviderBook) => {
     setIsLoadingDetail(true);
 
     // ISBN으로 기존 책 확인 (중복 등록 체크)
-    const existingBooks = await getBookByISBN(book.isbn13);
+    const existingBooks = await getBookByISBN(book.isbn);
 
     if (existingBooks.length > 0) {
       // 기존 책이 있다면 모달 표시
@@ -164,27 +158,29 @@ const AddBookPage = () => {
   const handleSubmit = async (formData: BookFormData) => {
     if (!selectedBook) return;
 
-    // 표지는 고해상도로 즉시 변환. 책등(spine) 이미지는 알라딘에 실제로 존재하는지
-    // 확인해야 하는데(최대 3초 x 2회) 이 검증을 등록 전에 기다리면 체감 등록 시간이
-    // 크게 늘어난다. 그래서 등록은 먼저 끝내고, 검증은 아래에서 백그라운드로 돌린다.
-    const highResCoverImage = upgradeImageResolution(selectedBook.cover);
-
     // 재독 횟수 계산 — existingBook 은 중복 다이얼로그를 취소해도 남아 있어서
     // ISBN 이 지금 저장하는 책과 같은지 함께 본다(자세한 근거는 resolveReadCount 주석)
-    const readCount = resolveReadCount(existingBook, selectedBook.isbn13);
+    const readCount = resolveReadCount(existingBook, selectedBook.isbn);
 
-    // 알라딘 도서 정보 + 사용자 입력 데이터 결합
+    // 공급자 도서 정보 + 사용자 입력 데이터 결합.
+    // 표지는 어댑터가 이미 최대 해상도로 맞춰 준다.
     const bookData = {
-      isbn: selectedBook.isbn13,
+      isbn: selectedBook.isbn,
       title: selectedBook.title,
+      sub_title: selectedBook.subTitle,
+      // 출처 표기(약관 의무)에 필요하다 — 화면이 books 를 직접 읽으므로 여기 같이 담는다
+      source: selectedBook.source,
+      provider_item_id: selectedBook.providerItemId,
       author: selectedBook.author,
       publisher: selectedBook.publisher,
-      cover_image: highResCoverImage, // 고해상도 표지 이미지
-      spine_image: null, // 책등 이미지 — 등록 성공 후 백그라운드로 채운다
+      cover_image: selectedBook.coverImage,
+      // 책등 이미지는 실제로 존재하는지 확인해야 하는데(최대 3초) 그 검증을 등록 전에
+      // 기다리면 체감 등록 시간이 늘어난다. 등록을 먼저 끝내고 아래에서 백그라운드로 채운다.
+      spine_image: null,
       description: selectedBook.description,
-      pub_date: selectedBook.pubDate,
-      category: selectedBook.categoryName,
-      page_count: selectedBook.subInfo?.itemPage, // 쪽수 정보 저장
+      pub_date: selectedBook.pubDate ?? undefined,
+      category: selectedBook.category,
+      page_count: selectedBook.page ?? undefined,
       read_count: readCount, // 재독 횟수
       ...formData,
     };
@@ -204,9 +200,10 @@ const AddBookPage = () => {
       // 상태 초기화
       setExistingBook(null);
 
-      // 책등 이미지 존재 여부 확인 — 등록을 막지 않도록 결과를 기다리지 않는다
-      validateSpineImageUrl(selectedBook.cover, selectedBook.isbn13).then(
-        (spineImage) => updateBook(result.id, { spine_image: spineImage })
+      // 책등 이미지 존재 여부 확인 — 등록을 막지 않도록 결과를 기다리지 않는다.
+      // YES24는 책등이 없어도 200에 회색 플레이스홀더를 주므로 크기로 판정한다.
+      resolveSpineImageUrl(selectedBook.spineImage).then((spineImage) =>
+        updateBook(result.id, { spine_image: spineImage })
       );
 
       // 완독이 아니면 "책장에 꽂혔어요"가 거짓이 된다 — 예전 흐름 그대로 서재로 보낸다
@@ -293,13 +290,25 @@ const AddBookPage = () => {
             {/* 검색 결과 — 행 리스트를 카드 하나에 담는다 */}
             {!isSearching && books.length > 0 && (
               <div className='space-y-3'>
-                <p className='text-sm text-text-subtle'>
-                  총 {totalResults.toLocaleString()}권 중 {books.length}권
-                </p>
+                <div className='flex flex-wrap items-baseline justify-between gap-x-3'>
+                  <p className='text-sm text-text-subtle'>
+                    총 {totalResults.toLocaleString()}권 중 {books.length}권
+                  </p>
+                  {/*
+                    검색 결과는 공급자 데이터를 그대로 보여주는 화면이라 출처 표기가
+                    필요하다(약관 의무). 결과마다 붙이면 시끄러우므로 목록에 한 줄로 둔다.
+                    첫 결과의 출처를 쓴다 — 한 번의 검색은 한 공급자에서만 온다.
+                  */}
+                  <BookSourceCredit
+                    source={books[0]?.source}
+                    providerItemId={books[0]?.providerItemId}
+                    isbn={books[0]?.isbn ?? ''}
+                  />
+                </div>
                 <div className='divide-y divide-line-soft border-t border-line'>
-                  {books.map((book, index) => (
+                  {books.map((book) => (
                     <BookSearchResultCard
-                      key={`${book.isbn13}-${index}`}
+                      key={book.isbn}
                       book={book}
                       onSelect={handleSelectBook}
                     />

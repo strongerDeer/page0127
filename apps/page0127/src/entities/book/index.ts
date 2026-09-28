@@ -4,8 +4,6 @@
 
 // 도메인 타입
 export type {
-  AladinBook,
-  AladinSearchResponse,
   Book,
   BookInput,
   BookRanking,
@@ -13,6 +11,8 @@ export type {
   BookStats,
   BookStatus,
   GlobalBook,
+  ProviderBook,
+  ProviderSearchResult,
 } from './types';
 
 // 통계 도메인 타입

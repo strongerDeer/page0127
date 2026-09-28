@@ -1,12 +1,18 @@
 /**
- * 알라딘 API 타입 re-export
+ * 도서 공급자 타입 re-export
  *
  * 학습 포인트:
  * - FSD에서 entities는 shared를 import 가능
  * - 외부 API 타입은 shared에 정의하고, entities에서 re-export
  * - 타입 중복 방지
+ *
+ * `ProviderBook` 은 공급자(알라딘/YES24)와 무관한 도서 표현이다. 화면은 이것만
+ * 알면 되고, 공급자 교체는 `shared/api/book-provider` 안에서 끝난다.
  */
-export type { AladinBook, AladinSearchResponse } from '@/shared/types/aladin';
+export type {
+  ProviderBook,
+  ProviderSearchResult,
+} from '@/shared/api/book-provider';
 
 /**
  * 도서 독서 상태
@@ -28,6 +34,12 @@ export type Book = {
   // 알라딘 API 데이터
   isbn: string;
   title: string;
+  /** 부제. 알라딘에서 온 기존 책은 null 이다(제목에 합쳐져 있다) */
+  sub_title: string | null;
+  /** 도서정보 출처 공급자. 출처 표기(약관 의무)에 쓴다. 백필 전 행은 null */
+  source: string | null;
+  /** 공급자 상품번호. 상품 상세페이지 링크를 만드는 데 쓴다 */
+  provider_item_id: string | null;
   author: string | null;
   publisher: string | null;
   cover_image: string | null;
@@ -73,6 +85,11 @@ export type GlobalBook = {
   id: string;
   isbn: string;
   title: string;
+  sub_title: string | null;
+  /** 도서정보 출처 공급자. 출처 표기(약관 의무)에 쓴다. 백필 전 행은 null */
+  source: string | null;
+  /** 공급자 상품번호. 상품 상세페이지 링크를 만드는 데 쓴다 */
+  provider_item_id: string | null;
   author: string | null;
   publisher: string | null;
   cover_image: string | null;
@@ -111,6 +128,9 @@ export type BookInput = {
   // 알라딘 API 데이터
   isbn: string;
   title: string;
+  sub_title?: string | null;
+  source?: string | null;
+  provider_item_id?: string | null;
   author?: string;
   publisher?: string;
   cover_image?: string;
