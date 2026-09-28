@@ -30,11 +30,35 @@ const firstFilled = (
 export const toDisplayName = (source: NameSource): string =>
   firstFilled(source.nickname, source.username) ?? ANONYMOUS;
 
-/** 프로필 이미지가 없을 때 아바타에 넣을 이니셜 (한 글자) */
-export const toInitial = (source: NameSource): string => {
-  const name = firstFilled(source.nickname, source.username);
-  return name ? name.charAt(0).toUpperCase() : 'U';
+/**
+ * 이름의 앞 글자를 잘라 아바타 이니셜을 만든다.
+ *
+ * ⚠️ `name[0]`·`charAt(0)`·`slice(0, 2)` 로 자르면 **안 된다.** 자바스크립트
+ * 문자열은 UTF-16 코드 단위 배열이라, 이모지처럼 BMP 밖 문자는 길이가 2다.
+ * 앞에서 1만 잘라내면 서로게이트 쌍의 **반쪽**(예: `'🫥'[0]` → U+D83E)이 남는데,
+ * 그 단독 서로게이트는 서버가 HTML 로 내보내는 순간 U+FFFD 로 바뀐다.
+ * 클라이언트는 원본을 그대로 들고 있으므로 렌더 결과가 서로 달라지고,
+ * **React 가 hydration 실패를 낸다.** 2026-09-28 실제 발생(nickname 이 '🫥').
+ *
+ * `Array.from` 은 코드 포인트 단위로 쪼개므로 이 문제가 없다.
+ * (가족 이모지처럼 ZWJ 로 이어 붙인 것은 여전히 첫 조각만 나오지만,
+ *  깨진 문자가 아니라 온전한 문자라 화면도 hydration 도 멀쩡하다.)
+ */
+export const nameInitials = (
+  name: string | null | undefined,
+  count: number = 1
+): string => {
+  if (!name) return 'U';
+
+  const trimmed = name.trim();
+  if (!trimmed) return 'U';
+
+  return Array.from(trimmed).slice(0, count).join('').toUpperCase();
 };
+
+/** 프로필 이미지가 없을 때 아바타에 넣을 이니셜 (한 글자) */
+export const toInitial = (source: NameSource): string =>
+  nameInitials(firstFilled(source.nickname, source.username));
 
 /**
  * 공개 서재 경로. username 이 없으면 갈 곳이 없으므로 null을 돌려주고,
