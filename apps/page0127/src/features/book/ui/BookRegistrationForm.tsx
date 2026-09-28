@@ -7,12 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle, Input, Label, Select, SelectC
 import { BookCover } from '@repo/ui';
 import { RefreshCw } from 'lucide-react';
 
-import { upgradeImageResolution } from '@/shared/lib/imageUtils';
-
-import type { AladinBook, BookRating, BookStatus } from '@/entities/book';
+import type { BookRating, BookStatus, ProviderBook } from '@/entities/book';
 
 type BookRegistrationFormProps = {
-  book: AladinBook;
+  book: ProviderBook;
   onSubmit: (formData: BookFormData) => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -128,10 +126,6 @@ export const BookRegistrationForm = ({
   initialData,
   onReselectBook,
 }: BookRegistrationFormProps) => {
-  // 고해상도 이미지 URL로 변환
-  const highResCover = book.cover
-    ? upgradeImageResolution(book.cover)
-    : book.cover;
 
   const formId = useId();
   const ids = {
@@ -256,20 +250,26 @@ export const BookRegistrationForm = ({
             <div className='flex gap-4'>
               <div className='relative h-32 w-24 shrink-0'>
                 <BookCover
-                  src={highResCover}
+                  src={book.coverImage}
                   title={book.title}
           size='fill'
         />
               </div>
               <div>
                 <h4 className='font-medium'>{book.title}</h4>
+                {book.subTitle && (
+                  <p className='text-xs text-muted-foreground'>
+                    {book.subTitle}
+                  </p>
+                )}
                 <p className='text-sm text-foreground'>{book.author}</p>
                 <p className='text-sm text-muted-foreground'>
                   {book.publisher}
                 </p>
-                {book.subInfo?.itemPage && (
+                {/* 좌변을 boolean 으로 좁힌다 — 쪽수가 0이면 화면에 "0"이 찍힌다 */}
+                {book.page !== null && book.page > 0 && (
                   <p className='text-sm text-muted-foreground'>
-                    {book.subInfo.itemPage}쪽
+                    {book.page}쪽
                   </p>
                 )}
               </div>

@@ -83,6 +83,9 @@ export async function POST(request: NextRequest) {
       .insert({
         isbn: body.isbn,
         title: body.title,
+        sub_title: body.sub_title,
+        source: body.source,
+        provider_item_id: body.provider_item_id,
         author: body.author,
         publisher: body.publisher,
         cover_image: body.cover_image,

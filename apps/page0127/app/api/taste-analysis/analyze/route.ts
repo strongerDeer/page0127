@@ -1,5 +1,6 @@
 import { after, NextRequest, NextResponse } from 'next/server';
 
+import { getBookProvider } from '@/shared/api/book-provider';
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { createClient } from '@/shared/config/supabase/server';
 import {
@@ -9,7 +10,6 @@ import {
   reserveUsage,
   USAGE_LIMIT_EXCEEDED_ERROR,
 } from '@/shared/lib/aiUsage';
-import { upgradeImageResolution } from '@/shared/lib/imageUtils';
 import { AI_MODEL, MAX_TOKENS, openai, TEMPERATURE } from '@/shared/lib/openai';
 import { createTasteAnalysisPrompt } from '@/shared/lib/openai/prompts/taste-analysis';
 
@@ -17,7 +17,7 @@ import { isRated } from '@/entities/book';
 import { READING_PERSONALITY_TYPES } from '@/entities/taste-analysis/model/personalityTypes';
 import { RECOMMENDATIONS_REQUEST_COUNT } from '@/entities/taste-analysis/model/recommendations';
 
-import type { Book } from '@/entities/book';
+import type { Book, ProviderBook } from '@/entities/book';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 // gpt-4o + max_tokens 4000 응답은 경우에 따라 수십 초가 걸릴 수 있어
@@ -230,7 +230,7 @@ export async function POST(_request: NextRequest) {
         // 응답 전에 기다리면 사용자 체감 대기 시간이 그만큼 늘어난다.
         after(async () => {
           try {
-            await enrichRecommendationsWithAladinData(
+            await enrichRecommendationsWithProviderData(
               supabase,
               aiResponse.recommendations,
               analysis.id
@@ -290,26 +290,15 @@ function calculateCost(promptTokens: number, completionTokens: number): number {
   return Math.ceil(cost * 100); // 센트 단위
 }
 
-/** 알라딘 ItemSearch 응답 중 실제로 쓰는 필드만 추린 타입 */
-type AladinItem = {
-  isbn?: string;
-  isbn13?: string;
-  title: string;
-  author: string;
-  cover?: string;
-  publisher?: string;
-  categoryName?: string;
-};
-
 /**
- * 알라딘 API로 추천 도서 정보 보강 (표지, ISBN, 출판사)
+ * 공급자 API로 추천 도서 정보 보강 (표지, ISBN, 출판사)
  *
  * 학습 포인트:
- * - 제목+저자로 알라딘 API 검색
+ * - 제목+저자로 공급자 API 검색
  * - 검색 결과에서 책 정보 추출
  * - DB 업데이트 (표지, ISBN, 출판사)
  */
-async function enrichRecommendationsWithAladinData(
+async function enrichRecommendationsWithProviderData(
   supabase: SupabaseClient,
   recommendations: Array<{
     type: string;
@@ -320,78 +309,46 @@ async function enrichRecommendationsWithAladinData(
   }>,
   tasteAnalysisId: string
 ): Promise<void> {
-  // 서버 전용 환경변수 — NEXT_PUBLIC_ 접두사를 붙이면 키가 클라이언트 번들에 인라인된다
-  const ALADIN_API_KEY = process.env.ALADIN_API_KEY;
-  const ALADIN_API_BASE_URL =
-    'https://www.aladin.co.kr/ttb/api/ItemSearch.aspx';
+  const provider = getBookProvider();
 
-  if (!ALADIN_API_KEY) {
-    console.error(
-      'ALADIN_API_KEY 환경변수가 설정되지 않아 추천 도서 보강을 건너뜁니다.'
-    );
-    return;
-  }
-
-  /** 알라딘 검색 1회 — 결과가 없으면 null */
-  const searchAladin = async (
-    query: string,
-    queryType: 'Title' | 'Keyword'
-  ): Promise<AladinItem | null> => {
-    const params = new URLSearchParams({
-      ttbkey: ALADIN_API_KEY,
-      Query: query,
-      QueryType: queryType,
-      MaxResults: '3',
-      start: '1',
-      SearchTarget: 'Book',
-      output: 'js',
-      Version: '20131101',
-      // 기본값은 저해상도 썸네일 — Big으로 지정해야 큰 사이즈 표지를 받는다
-      Cover: 'Big',
-    });
-
-    const url = `${ALADIN_API_BASE_URL}?${params.toString()}`;
-    // 같은 추천 키워드로 알라딘 검색 시 24시간 동안 캐시 재사용
-    const response = await fetch(url, { next: { revalidate: 86400 } });
-
-    if (!response.ok) {
-      console.error(`알라딘 API 실패 (${query}/${queryType}):`, response.status);
+  /** 공급자 검색 1회 — 결과가 없으면 null */
+  const searchProvider = async (query: string): Promise<ProviderBook | null> => {
+    try {
+      const result = await provider.search(query, { maxResults: 3 });
+      // 검색 결과에서 첫 번째 책 사용 (제목이 가장 유사)
+      return result.items[0] ?? null;
+    } catch (error) {
+      console.error(`도서 검색 실패 (${query}):`, error);
       return null;
     }
-
-    const data = await response.json();
-    // 검색 결과에서 첫 번째 책 사용 (제목이 가장 유사)
-    return (data.item?.[0] as AladinItem | undefined) ?? null;
   };
 
   for (const rec of recommendations) {
     try {
-      // 1차: 제목 검색. 실패하면 키워드 검색으로 한 번 더 시도한다.
-      //   AI가 부제를 붙이거나 띄어쓰기를 다르게 쓰면 Title 검색은 0건이 나오는데,
+      // 1차: 제목만으로 검색. 실패하면 저자를 붙여 한 번 더 시도한다.
+      //   AI가 부제를 붙이거나 띄어쓰기를 다르게 쓰면 0건이 나오는데,
       //   그걸 "존재하지 않는 책"으로 단정하고 지우면 섹션이 빈 채로 남는다.
-      let matchedBook = await searchAladin(rec.title, 'Title');
+      let matchedBook = await searchProvider(rec.title);
 
       if (!matchedBook) {
         await new Promise((resolve) => setTimeout(resolve, 200));
         const fallbackQuery = rec.author
           ? `${rec.title} ${rec.author}`
           : rec.title;
-        matchedBook = await searchAladin(fallbackQuery, 'Keyword');
+        matchedBook = await searchProvider(fallbackQuery);
       }
 
       if (matchedBook) {
-        // DB 업데이트 (알라딘 정보로 덮어쓰기)
+        // DB 업데이트 (공급자 정보로 덮어쓰기)
         const { error: updateError } = await supabase
           .from('book_recommendations')
           .update({
-            isbn: matchedBook.isbn13 || matchedBook.isbn,
-            title: matchedBook.title, // 알라딘 제목으로 덮어쓰기
-            author: matchedBook.author, // 알라딘 저자로 덮어쓰기
-            cover_image: matchedBook.cover
-              ? upgradeImageResolution(matchedBook.cover)
-              : null,
+            isbn: matchedBook.isbn,
+            title: matchedBook.title,
+            author: matchedBook.author,
+            cover_image: matchedBook.coverImage || null,
             publisher: matchedBook.publisher,
-            category: matchedBook.categoryName,
+            category: matchedBook.category,
           })
           .eq('taste_analysis_id', tasteAnalysisId)
           .eq('title', rec.title)
@@ -402,11 +359,11 @@ async function enrichRecommendationsWithAladinData(
           console.error(`DB 업데이트 실패 (${rec.title}):`, updateError);
         } else if (process.env.NODE_ENV === 'development') {
           console.warn(
-            `✅ ${matchedBook.title} (${matchedBook.author}) - 알라딘 정보 업데이트 완료`
+            `✅ ${matchedBook.title} (${matchedBook.author}) - 공급자 정보 업데이트 완료`
           );
         }
       } else {
-        // 알라딘에서 찾을 수 없는 책은 삭제
+        // 공급자에서 찾을 수 없는 책은 삭제
         const { error: deleteError } = await supabase
           .from('book_recommendations')
           .delete()
@@ -418,7 +375,7 @@ async function enrichRecommendationsWithAladinData(
         if (deleteError) {
           console.error(`삭제 실패 (${rec.title}):`, deleteError);
         } else {
-          console.warn(`❌ ${rec.title} - 알라딘에서 찾을 수 없어 삭제`);
+          console.warn(`❌ ${rec.title} - 공급자에서 찾을 수 없어 삭제`);
         }
       }
 

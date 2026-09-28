@@ -3,6 +3,7 @@ import { BookCover, ReadCountBadge } from '@repo/ui';
 import { Globe, Lock, Star } from 'lucide-react';
 
 import { isRated } from '@/entities/book';
+import { BookSourceCredit } from '@/entities/book/ui/BookSourceCredit';
 
 import { BookStreamSection } from './BookStreamSection';
 
@@ -60,9 +61,15 @@ export const BookDetailContent = ({
 
             <div className='flex-1 space-y-4'>
               <div>
-                <h1 className='heading-1 mb-2'>
+                <h1 className='heading-1 mb-1'>
                   {book.title}
                 </h1>
+                {/* 부제는 제목보다 작게 — 제목 덩어리로 묶이되 저자 줄과 경쟁하지 않게 */}
+                {book.sub_title && (
+                  <p className='mb-2 text-sm text-muted-foreground'>
+                    {book.sub_title}
+                  </p>
+                )}
                 <p className='text-lg text-foreground'>{book.author}</p>
                 <p className='text-muted-foreground'>{book.publisher}</p>
               </div>
@@ -112,6 +119,13 @@ export const BookDetailContent = ({
                 {book.start_date && <p>시작일: {book.start_date}</p>}
                 {book.completed_date && <p>완독일: {book.completed_date}</p>}
                 {book.pub_date && <p>출간일: {book.pub_date}</p>}
+                {/* 출처 표기는 약관상 의무다 — 지우지 말 것 */}
+                <BookSourceCredit
+                  source={book.source}
+                  providerItemId={book.provider_item_id}
+                  isbn={book.isbn}
+                  className='pt-1 text-xs text-muted-foreground'
+                />
               </div>
 
               {book.tags && book.tags.length > 0 && (

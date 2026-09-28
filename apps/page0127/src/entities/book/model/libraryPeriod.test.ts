@@ -18,6 +18,9 @@ const createBook = (overrides: Partial<Book> = {}): Book => ({
   // 재독을 테스트하려면 isbn 을 명시적으로 같게 준다.
   isbn: crypto.randomUUID(),
   title: '테스트 책',
+  sub_title: null,
+  source: null,
+  provider_item_id: null,
   author: null,
   publisher: null,
   cover_image: null,

@@ -9,11 +9,9 @@ import { Card, CardContent, CardHeader, Skeleton } from '@repo/ui';
 import { ErrorBoundary, PageContainer } from '@repo/ui';
 import { toast } from 'sonner';
 
+import { getBookDetail } from '@/shared/api/book';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
-import {
-  upgradeImageResolution,
-  validateSpineImageUrl,
-} from '@/shared/lib/imageUtils';
+import { resolveSpineImageUrl } from '@/shared/lib/spineImage';
 
 import { isNewlyCompleted } from '@/entities/book/model/completion';
 
@@ -27,7 +25,7 @@ import { BookSearchInput } from '@/features/book/ui/BookSearchInput';
 import { BookSearchPagination } from '@/features/book/ui/BookSearchPagination';
 import { BookSearchResultCard } from '@/features/book/ui/BookSearchResultCard';
 
-import type { AladinBook, Book, BookInput } from '@/entities/book';
+import type { Book, BookInput, ProviderBook } from '@/entities/book';
 
 type BookEditPageClientProps = {
   bookId: string;
@@ -55,7 +53,7 @@ export const BookEditPageClient = ({
   // "책 선택부터 다시" — 검색으로 다른 책을 골라 현재 기록에 덮어씌운다.
   // reselectedBook이 있으면 폼 미리보기·저장 시 원래 book 대신 이 책 정보를 쓴다.
   const [isReselecting, setIsReselecting] = useState(false);
-  const [reselectedBook, setReselectedBook] = useState<AladinBook | null>(null);
+  const [reselectedBook, setReselectedBook] = useState<ProviderBook | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const {
     books: searchResults,
@@ -100,19 +98,23 @@ export const BookEditPageClient = ({
     // 책을 다시 선택했다면 도서 자체 정보(제목/저자/표지 등)도 함께 갱신
     const updates: Partial<BookInput> = { ...formData };
     if (reselectedBook) {
-      updates.isbn = reselectedBook.isbn13;
+      updates.isbn = reselectedBook.isbn;
       updates.title = reselectedBook.title;
+      updates.sub_title = reselectedBook.subTitle;
+      updates.source = reselectedBook.source;
+      updates.provider_item_id = reselectedBook.providerItemId;
       updates.author = reselectedBook.author;
       updates.publisher = reselectedBook.publisher;
-      updates.cover_image = upgradeImageResolution(reselectedBook.cover);
-      // 책등(spine) 이미지는 알라딘에 실제로 존재하는지 확인해야 하는데,
-      // 이 검증(최대 3초 x 2회)을 저장 전에 기다리면 체감 저장 시간이 크게 늘어난다.
-      // 그래서 저장은 먼저 끝내고, 검증은 아래에서 저장 성공 후 백그라운드로 돌린다.
+      // 표지는 어댑터가 이미 최대 해상도로 맞춰 준다
+      updates.cover_image = reselectedBook.coverImage;
+      // 책등(spine) 이미지는 실제로 존재하는지 확인해야 하는데, 이 검증(최대 3초)을
+      // 저장 전에 기다리면 체감 저장 시간이 늘어난다. 저장을 먼저 끝내고
+      // 검증은 아래에서 저장 성공 후 백그라운드로 돌린다.
       updates.spine_image = null;
       updates.description = reselectedBook.description;
-      updates.pub_date = reselectedBook.pubDate;
-      updates.category = reselectedBook.categoryName;
-      updates.page_count = reselectedBook.subInfo?.itemPage;
+      updates.pub_date = reselectedBook.pubDate ?? undefined;
+      updates.category = reselectedBook.category;
+      updates.page_count = reselectedBook.page ?? undefined;
     }
 
     const result = await updateBook(id, updates);
@@ -125,8 +127,8 @@ export const BookEditPageClient = ({
 
       // 책등 이미지 존재 여부 확인 — 저장을 막지 않도록 결과를 기다리지 않는다
       if (reselectedBook) {
-        validateSpineImageUrl(reselectedBook.cover, reselectedBook.isbn13).then(
-          (spineImage) => updateBook(id, { spine_image: spineImage })
+        resolveSpineImageUrl(reselectedBook.spineImage).then((spineImage) =>
+          updateBook(id, { spine_image: spineImage })
         );
       }
     } else {
@@ -141,17 +143,12 @@ export const BookEditPageClient = ({
   };
 
   // 검색 결과에서 책을 고르면 쪽수 등 상세 정보를 보강해 미리보기로 전환
-  const handleSelectBook = async (selected: AladinBook) => {
+  const handleSelectBook = async (selected: ProviderBook) => {
     setIsLoadingDetail(true);
     try {
-      const response = await fetch(`/api/books/detail?isbn=${selected.isbn13}`);
-      if (!response.ok) throw new Error('상세 정보 조회 실패');
-
-      const data = await response.json();
-      const detailedBook = data.item?.[0];
-      setReselectedBook(
-        detailedBook ? { ...selected, subInfo: detailedBook.subInfo } : selected
-      );
+      const detailed = await getBookDetail(selected.isbn);
+      // 상세가 없으면(204) 검색 결과 그대로 간다 — 오류가 아니다
+      setReselectedBook(detailed ?? selected);
     } catch (error) {
       console.error('상세 정보 조회 실패:', error);
       setReselectedBook(selected);
@@ -203,18 +200,29 @@ export const BookEditPageClient = ({
     );
   }
 
-  // Book 타입을 AladinBook 형식으로 변환 (책을 다시 선택했다면 그 책 정보 우선)
-  const aladinBookFormat: AladinBook = reselectedBook || {
-    isbn13: book.isbn,
+  // 저장된 Book 을 공급자 형식으로 되돌린다 (책을 다시 선택했다면 그 책 정보 우선).
+  // 수정 화면은 등록 폼을 재사용하므로 폼이 아는 한 가지 형태로 맞춰 준다.
+  const providerBookFormat: ProviderBook = reselectedBook || {
+    isbn: book.isbn,
     title: book.title,
+    subTitle: book.sub_title,
     author: book.author || '',
     publisher: book.publisher || '',
-    cover: book.cover_image || '',
+    pubDate: book.pub_date,
     description: book.description || '',
-    pubDate: book.pub_date || '',
-    categoryName: book.category || '',
-    priceStandard: 0, // 수정 시에는 가격 정보 불필요
-    link: '', // 수정 시에는 링크 정보 불필요
+    category: book.category || '',
+    coverImage: book.cover_image || '',
+    spineImage: book.spine_image,
+    backImage: null,
+    page: book.page_count,
+    toc: book.toc,
+    // 저장된 책에는 치수가 없다 — 백필이 global_books 에만 채운다
+    dimensions: null,
+    // 저장된 책은 어느 공급자에서 왔는지 행에 남아 있지 않다. 이 값은 폼 표시에만
+    // 쓰이고 다시 저장되지 않으므로, 실제 출처를 꾸며내지 않도록 manual 로 둔다.
+    source: 'manual',
+    providerItemId: null,
+    providerLink: '',
   };
 
   // 책 선택 화면 — "책 선택부터 다시" 클릭 시 폼 대신 검색 UI를 보여준다
@@ -249,7 +257,7 @@ export const BookEditPageClient = ({
                   <div className='divide-y divide-line-soft border-t border-line'>
                     {searchResults.map((result, index) => (
                       <BookSearchResultCard
-                        key={`${result.isbn13}-${index}`}
+                        key={`${result.isbn}-${index}`}
                         book={result}
                         onSelect={handleSelectBook}
                       />
@@ -291,7 +299,7 @@ export const BookEditPageClient = ({
     <ErrorBoundary>
       <PageContainer width='content'>
         <BookRegistrationForm
-          book={aladinBookFormat}
+          book={providerBookFormat}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           onReselectBook={() => setIsReselecting(true)}

@@ -2,9 +2,9 @@
 
 import { useCallback, useReducer, useRef } from 'react';
 
-import { searchBooks } from '@/shared/api/aladin';
+import { searchBooks } from '@/shared/api/book';
 
-import type { AladinBook } from '@/entities/book';
+import type { ProviderBook } from '@/entities/book';
 
 // ─── State 타입 정의 ───────────────────────────────────────────────
 // 검색과 관련된 모든 상태를 하나의 객체로 관리
@@ -13,7 +13,7 @@ import type { AladinBook } from '@/entities/book';
 //   → useState 6개라면 렌더링이 여러 번 트리거될 수 있음
 //   → reducer로 묶으면 dispatch 한 번에 원자적(atomic)으로 갱신
 type SearchState = {
-  books: AladinBook[];
+  books: ProviderBook[];
   isLoading: boolean;
   error: string | null;
   currentPage: number;
@@ -28,7 +28,7 @@ type SearchState = {
 // SEARCH_ERROR  → 검색 실패 (에러 저장, loading OFF)
 type SearchAction =
   | { type: 'SEARCH_START'; query: string; page: number }
-  | { type: 'SEARCH_SUCCESS'; books: AladinBook[]; totalResults: number }
+  | { type: 'SEARCH_SUCCESS'; books: ProviderBook[]; totalResults: number }
   | { type: 'SEARCH_ERROR' };
 
 // ─── 초기 상태 ────────────────────────────────────────────────────
@@ -115,12 +115,12 @@ export const useBookSearch = () => {
         maxResults: ITEMS_PER_PAGE,
       });
       if (requestId !== requestIdRef.current) return; // 뒤늦게 온 옛 응답 — 버린다
-      const items = response.item || [];
 
       // 검색 성공: 결과 저장, loading OFF
+      // items 는 ISBN 없는 항목(세트 상품 등)이 걸러진 뒤라 totalResults 보다 적을 수 있다
       dispatch({
         type: 'SEARCH_SUCCESS',
-        books: items,
+        books: response.items,
         totalResults: response.totalResults,
       });
     } catch (err) {
