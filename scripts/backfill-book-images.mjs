@@ -278,6 +278,7 @@ const stats = {
   spines: 0,
   backs: 0,
   thickness: 0,
+  rescued: 0,
   resolved: {},
 };
 const failures = [];
@@ -348,6 +349,63 @@ const processWithAladin = async (row, aladin) => {
   }
 };
 
+/**
+ * 두 공급자 모두 못 찾았을 때, DB에 이미 있는 외부 URL 로 이미지만 건져 온다.
+ *
+ * 메타데이터는 포기하고 이미지만 옮긴다. `source` 도 건드리지 않는다 —
+ * 어디서 왔는지는 그대로 사실이고, 바뀐 건 "어디에 보관하는가" 뿐이다.
+ *
+ * 옮길 게 하나도 없으면 `false` 를 돌려줘서 호출부가 실패로 세게 한다.
+ */
+const rescueFromStoredUrls = async (row) => {
+  const isExternal = (url) =>
+    typeof url === 'string' && /^https?:\/\//.test(url) && !url.includes('supabase.co');
+
+  const [cover, spine] = await Promise.all([
+    isExternal(row.cover_image)
+      ? syncImage(row.cover_image, `${row.isbn}/cover.jpg`, COVER_FIT)
+      : { url: null },
+    isExternal(row.spine_image)
+      ? syncImage(row.spine_image, `${row.isbn}/spine.jpg`, SPINE_FIT)
+      : { url: null },
+  ]);
+
+  if (!cover.url && !spine.url) return false;
+
+  stats.rescued += 1;
+  if (cover.url) stats.covers += 1;
+  if (spine.url) stats.spines += 1;
+
+  console.log(
+    `  · ${row.isbn} ${(row.title ?? '').slice(0, 26).padEnd(26)} ` +
+      `표지:${cover.url ? 'O' : 'X'} 책등:${spine.url ? 'O' : 'X'} 뒷:-  [기존 URL 에서 건짐]`
+  );
+
+  if (DRY_RUN) return true;
+
+  const patch = { cover_synced_at: new Date().toISOString() };
+  if (cover.url) patch.cover_image = cover.url;
+  if (spine.url) patch.spine_image = spine.url;
+
+  const { error } = await supabase
+    .from('global_books')
+    .update(patch)
+    .eq('isbn', row.isbn);
+  if (error) throw new Error(`global_books 갱신 실패: ${error.message}`);
+
+  const booksPatch = {};
+  if (cover.url) booksPatch.cover_image = cover.url;
+  if (spine.url) booksPatch.spine_image = spine.url;
+
+  const { error: booksError } = await supabase
+    .from('books')
+    .update(booksPatch)
+    .eq('isbn', row.isbn);
+  if (booksError) throw new Error(`books 갱신 실패: ${booksError.message}`);
+
+  return true;
+};
+
 const processRow = async (row) => {
   // 저장된 식별자가 ISBN13이 아닐 수 있다(ISBN10 26권, K코드 70권).
   // K코드는 알라딘을 다리로 써야 진짜 ISBN13을 알 수 있다.
@@ -364,6 +422,15 @@ const processRow = async (row) => {
       (await fetchAladin(row.isbn, resolved.via === 'stored' ? 'ISBN13' : 'ISBN'));
 
     if (!aladin) {
+      // 마지막 경로: 공급자가 못 찾아도 **이미 갖고 있는 URL이 살아 있으면 그거라도 옮긴다.**
+      //
+      // 절판되어 카탈로그에서 내려간 책이 여기 걸린다(알라딘 errorCode 8). API 로는
+      // 못 찾지만 CDN 의 이미지 파일은 남아 있는 경우가 있다 — 우리가 원하는 건
+      // 메타데이터가 아니라 **이미지를 우리 쪽으로 옮기는 것**이므로 API 가 없어도 된다.
+      // 이 경로를 안 타면 그 책은 알라딘 CDN 에 영영 묶인 채 남는다.
+      const rescued = await rescueFromStoredUrls(row);
+      if (rescued) return;
+
       stats.notFound += 1;
       failures.push({ isbn: row.isbn, title: row.title, reason: '두 공급자 모두 없음' });
       return;
@@ -429,6 +496,8 @@ const processRow = async (row) => {
   if (cover.url) booksPatch.cover_image = cover.url;
   if (spine.url) booksPatch.spine_image = spine.url;
   if (patch.sub_title) booksPatch.sub_title = patch.sub_title;
+  // 책장이 books 를 직접 읽는다 — 두께가 여기 없으면 책등 폭이 기본값으로 떨어진다
+  if (thickness !== null) booksPatch.thickness_mm = thickness;
 
   if (Object.keys(booksPatch).length > 0) {
     const { error: booksError } = await supabase
@@ -485,6 +554,7 @@ const main = async () => {
   console.log(`처리 대상        ${stats.total}권`);
   console.log(`  YES24 확보     ${stats.yes24}권`);
   console.log(`  알라딘 폴백    ${stats.aladinFallback}권`);
+  console.log(`  기존 URL 에서 건짐 ${stats.rescued}권`);
   console.log(`  두 곳 모두 없음 ${stats.notFound}권`);
   console.log(`  실패           ${stats.failed}권`);
   console.log('');
