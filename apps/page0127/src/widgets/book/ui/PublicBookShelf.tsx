@@ -93,11 +93,17 @@ export const PublicBookShelf = ({
                     onError={() => onError(book.id)}
                     // 책등만 폭을 고정한다. CSS 의 `width: auto` 를 그대로 두면 폭이
                     // 이미지 비율로 정해져 실제 두께와 어긋난다(더 얇은 책이 더 두껍게
-                    // 보였다). 잡아 늘이지 않도록 object-fit 은 cover 로 덮는다.
+                    // 보였다).
+                    //
+                    // ⚠️ object-fit 은 반드시 `fill`(늘이기)이어야 한다. `cover` 로 덮으면
+                    // **책등 위아래가 잘린다** — 스캔이 세로로 길어서(예: 54x600) 폭
+                    // 41px·높이 240px 박스를 덮으려면 세로가 455px 로 넘쳐 제목이 잘린다.
+                    // 2026-09-29 실측 25권 평균: cover 는 세로 55% 손실, fill 은 가로
+                    // 2.27배 늘어남. 제목이 반쯤 사라지는 것보다 조금 굵어지는 편이 낫다.
                     style={
                       isCoverView
                         ? undefined
-                        : { width: `${spineWidth}px`, objectFit: 'cover' }
+                        : { width: `${spineWidth}px`, objectFit: 'fill' }
                     }
                   />
                 ) : (
