@@ -40,6 +40,8 @@ export type Book = {
   source: string | null;
   /** 공급자 상품번호. 상품 상세페이지 링크를 만드는 데 쓴다 */
   provider_item_id: string | null;
+  /** 책등 두께(mm). 책장에서 책등 폭을 실물 비례로 그린다. 모르면 null */
+  thickness_mm: number | null;
   author: string | null;
   publisher: string | null;
   cover_image: string | null;
@@ -131,6 +133,7 @@ export type BookInput = {
   sub_title?: string | null;
   source?: string | null;
   provider_item_id?: string | null;
+  thickness_mm?: number | null;
   author?: string;
   publisher?: string;
   cover_image?: string;

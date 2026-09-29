@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { isPreOptimizedImageSrc, ReadCountBadge } from '@repo/ui';
 
 import { isTopRated } from '@/entities/book';
+import { spineWidthPx } from '@/entities/book/model/spineWidth';
 
 import type { Book } from '@/entities/book';
 
@@ -72,6 +73,8 @@ export const PublicBookShelf = ({
           // 여러 번 읽은 책은 조금 크게 — 뱃지가 잘 안 보이는 책등에서도
           // "이 책은 다르다"가 실루엣만으로 읽힌다
           const isReread = book.read_count > 1;
+          // 책등 폭은 실물 두께에서 만든다 — 이미지 비율로 두면 순서가 뒤집힌다
+          const spineWidth = spineWidthPx(book.thickness_mm);
 
           return (
             <li key={book.id}>
@@ -83,15 +86,26 @@ export const PublicBookShelf = ({
                   <Image
                     src={renderedSrc}
                     alt={book.title}
-                    width={isCoverView ? 170 : 50}
+                    width={isCoverView ? 170 : spineWidth}
                     height={240}
                     sizes='(max-width: 768px) 170px, 170px'
                     unoptimized={isPreOptimizedImageSrc(renderedSrc)}
                     onError={() => onError(book.id)}
+                    // 책등만 폭을 고정한다. CSS 의 `width: auto` 를 그대로 두면 폭이
+                    // 이미지 비율로 정해져 실제 두께와 어긋난다(더 얇은 책이 더 두껍게
+                    // 보였다). 잡아 늘이지 않도록 object-fit 은 cover 로 덮는다.
+                    style={
+                      isCoverView
+                        ? undefined
+                        : { width: `${spineWidth}px`, objectFit: 'cover' }
+                    }
                   />
                 ) : (
                   <div
                     className={`${styles.noImage} ${isCoverView ? styles.cover : styles.spine}`}
+                    // 이미지가 있는 책등과 같은 규칙으로 넓힌다 — 한쪽만 두께를
+                    // 반영하면 선반에서 두 종류의 책이 서로 다른 언어로 보인다
+                    style={isCoverView ? undefined : { width: `${spineWidth}px` }}
                   >
                     <p>{book.title}</p>
                   </div>

@@ -12,6 +12,7 @@ const createBook = (overrides: Partial<Book> = {}): Book => ({
   sub_title: null,
   source: null,
   provider_item_id: null,
+  thickness_mm: null,
   author: null,
   publisher: null,
   cover_image: null,
