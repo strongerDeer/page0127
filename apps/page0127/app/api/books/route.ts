@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get('status');
     const isbn = searchParams.get('isbn');
+    const providerItemId = searchParams.get('providerItemId');
     const sortBy = searchParams.get('sortBy') || 'created_at';
     const order = searchParams.get('order') || 'desc';
 
@@ -35,9 +36,21 @@ export async function GET(request: NextRequest) {
       query = query.eq('user_id', user.user.id);
     }
 
-    // ISBN 필터링 (중복 등록 체크용)
-    if (isbn) {
+    // 중복 등록 체크용 필터.
+    //
+    // ⚠️ isbn 만 보면 안 된다. `books.isbn` 은 ISBN13 이 아닐 수 있다 — 알라딘 시절
+    // 응답의 `isbn` 을 그대로 저장해 와서 ISBN10 과 K코드가 섞여 있다. 그래서
+    // K코드로 담아 둔 책을 검색으로 다시 담으면(공급자는 ISBN13 을 준다) isbn 이
+    // 달라 "이미 등록한 책" 경고가 뜨지 않고 **쌍둥이 행**이 생긴다.
+    // 2026-09-29 운영에서 실제로 3권이 그렇게 갈라져 있었다.
+    //
+    // 상품번호가 같으면 같은 상품이므로, 둘 중 하나라도 맞으면 기존 책으로 본다.
+    if (isbn && providerItemId) {
+      query = query.or(`isbn.eq.${isbn},provider_item_id.eq.${providerItemId}`);
+    } else if (isbn) {
       query = query.eq('isbn', isbn);
+    } else if (providerItemId) {
+      query = query.eq('provider_item_id', providerItemId);
     }
 
     // 상태별 필터링 (선택적)

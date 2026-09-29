@@ -123,7 +123,9 @@ const AddBookPage = () => {
     setIsLoadingDetail(true);
 
     // ISBN으로 기존 책 확인 (중복 등록 체크)
-    const existingBooks = await getBookByISBN(book.isbn);
+    // 상품번호도 함께 넘긴다 — isbn 만 보면 K코드로 담아 둔 같은 책을 못 알아보고
+    // 중복 경고 없이 쌍둥이 행이 생긴다(2026-09-29 운영에서 3권 발생)
+    const existingBooks = await getBookByISBN(book.isbn, book.providerItemId);
 
     if (existingBooks.length > 0) {
       // 기존 책이 있다면 모달 표시
