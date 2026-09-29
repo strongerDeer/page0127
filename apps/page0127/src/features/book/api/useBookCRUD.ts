@@ -147,14 +147,20 @@ export const useBookCRUD = () => {
   };
 
   /**
-   * R: ISBN으로 책 검색 (중복 등록 체크용)
+   * R: 이미 담아 둔 책인지 확인 (중복 등록 체크용)
+   *
+   * 상품번호를 같이 넘기면 식별자 형태가 달라도 같은 책을 알아본다
+   * (`books.isbn` 에는 ISBN10·K코드가 섞여 있다).
    */
-  const getBookByISBN = async (isbn: string): Promise<Book[]> => {
+  const getBookByISBN = async (
+    isbn: string,
+    providerItemId?: string | null
+  ): Promise<Book[]> => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const data = await bookApi.getBookByISBN(isbn);
+      const data = await bookApi.getBookByISBN(isbn, providerItemId);
       return data;
     } catch (err) {
       const message =

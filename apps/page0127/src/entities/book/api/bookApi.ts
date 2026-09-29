@@ -45,12 +45,18 @@ export const bookApi = {
   },
 
   /**
-   * R: ISBN으로 책 검색 (중복 등록 체크용)
-   * GET /api/books?isbn=9788...
+   * R: 이미 담아 둔 책인지 확인 (중복 등록 체크용)
+   * GET /api/books?isbn=9788...&providerItemId=13137546
+   *
+   * 상품번호를 함께 보내는 이유: `books.isbn` 은 ISBN13 이 아닐 수 있다(ISBN10·K코드가
+   * 섞여 있다). isbn 만으로 찾으면 K코드로 담아 둔 책을 못 알아보고 쌍둥이 행이 생긴다.
    */
-  getBookByISBN: async (isbn: string): Promise<Book[]> => {
+  getBookByISBN: async (
+    isbn: string,
+    providerItemId?: string | null
+  ): Promise<Book[]> => {
     const response = await apiClient.get<Book[]>(API_ENDPOINTS.books.list, {
-      params: { isbn },
+      params: providerItemId ? { isbn, providerItemId } : { isbn },
     });
     return response.data;
   },
