@@ -18,6 +18,14 @@
  *   node scripts/backfill-book-images.mjs --limit 20       앞의 20권만
  *   node scripts/backfill-book-images.mjs --force          이미 끝난 행도 다시
  *   node scripts/backfill-book-images.mjs --env .env.local  환경파일 지정
+ *   node scripts/backfill-book-images.mjs --aladin-urls    남은 알라딘 이미지 주소만 옮긴다
+ *   node scripts/backfill-book-images.mjs --sync-books-source  books 의 빈 출처를 채운다
+ *   node scripts/backfill-book-images.mjs --rematch-aladin  알라딘 출처 책을 제목으로 다시 찾는다
+ *
+ * `--aladin-urls` 는 위의 백필과 별개 모드다. 백필은 "받아 온 것만 덮어쓴다" 규칙이라
+ * YES24 에 책등이 없는 책은 알라딘 책등 주소가 그대로 남았다(2026-09-30 실측:
+ * global_books 20 · books 22 · book_recommendations 35). 알라딘 이미지 서버에 기대는
+ * 이 주소들을 우리 Storage 로 옮긴다. 옮기지 못한 칸은 비운다.
  *
  * 중단해도 안전하다. 이미 끝난 행(cover_synced_at 이 있는 행)은 건너뛰므로
  * 그냥 다시 실행하면 이어서 진행한다.
@@ -64,6 +72,9 @@ const getOption = (name, fallback) => {
 const DRY_RUN = hasFlag('--dry-run');
 /** 이미 끝난 행까지 다시 처리한다. 스크립트를 고친 뒤 되돌릴 때 쓴다. */
 const FORCE = hasFlag('--force');
+const ALADIN_URLS = hasFlag('--aladin-urls');
+const SYNC_BOOKS_SOURCE = hasFlag('--sync-books-source');
+const REMATCH_ALADIN = hasFlag('--rematch-aladin');
 const LIMIT = Number(getOption('--limit', '0')) || null;
 const ENV_FILE = getOption('--env', 'apps/page0127/.env.local');
 
@@ -325,6 +336,16 @@ const processRow = async (row) => {
     return;
   }
 
+  await applyYes24Item(row, item);
+};
+
+/**
+ * YES24 상품 하나를 우리 행에 입힌다 — 이미지·치수·상품번호·출처.
+ *
+ * `row.isbn` 은 우리 쪽 식별자(PK)라 바꾸지 않는다. ISBN10·K코드로 저장된 책도
+ * 식별자는 그대로 두고 내용만 YES24 로 채운다.
+ */
+const applyYes24Item = async (row, item) => {
   stats.yes24 += 1;
   const itemId = String(item.itemId);
 
@@ -376,30 +397,299 @@ const processRow = async (row) => {
   if (error) throw new Error(`global_books 갱신 실패: ${error.message}`);
 
   // 사용자별 books 도 같은 이미지를 들고 있다(비정규화). 화면은 이쪽을 읽는다.
-  const booksPatch = {};
+  //
+  // 출처·상품번호도 반드시 같이 적는다. 2026-09-28 백필은 이걸 빠뜨려서 books 160행 중
+  // 158행의 출처가 비었고, 내 서재 책 상세에서 출처 표기(약관 의무)가 사라졌다.
+  const booksPatch = { source: 'yes24', provider_item_id: itemId };
   if (cover.url) booksPatch.cover_image = cover.url;
   if (spine.url) booksPatch.spine_image = spine.url;
   if (patch.sub_title) booksPatch.sub_title = patch.sub_title;
   // 책장이 books 를 직접 읽는다 — 두께가 여기 없으면 책등 폭이 기본값으로 떨어진다
   if (thickness !== null) booksPatch.thickness_mm = thickness;
 
-  if (Object.keys(booksPatch).length > 0) {
-    const { error: booksError } = await supabase
-      .from('books')
-      .update(booksPatch)
-      .eq('isbn', row.isbn);
+  const { error: booksError } = await supabase
+    .from('books')
+    .update(booksPatch)
+    .eq('isbn', row.isbn);
 
-    if (booksError) throw new Error(`books 갱신 실패: ${booksError.message}`);
+  if (booksError) throw new Error(`books 갱신 실패: ${booksError.message}`);
+};
+
+// ─── 알라딘 이미지 주소 옮기기 (--aladin-urls) ────────────────────────
+
+/**
+ * 알라딘 이미지 주소가 남아 있을 수 있는 칸들.
+ * 책등만 높이로 줄인다 — 이유는 COVER_FIT / SPINE_FIT 주석 참고.
+ */
+const ALADIN_COLUMNS = [
+  { table: 'global_books', column: 'cover_image', fit: COVER_FIT },
+  { table: 'global_books', column: 'spine_image', fit: SPINE_FIT },
+  { table: 'global_books', column: 'back_image', fit: COVER_FIT },
+  { table: 'books', column: 'cover_image', fit: COVER_FIT },
+  { table: 'books', column: 'spine_image', fit: SPINE_FIT },
+  { table: 'book_recommendations', column: 'cover_image', fit: COVER_FIT },
+];
+
+/**
+ * 행이 아니라 **주소** 단위로 옮긴다.
+ *
+ * 같은 책의 표지가 global_books·books(사용자 수만큼)·추천에 똑같이 들어 있다.
+ * 주소 하나를 한 번만 받아 올리고, 그 주소를 쓰던 칸을 전부 한꺼번에 바꾼다.
+ *
+ * 저장 경로는 알라딘 경로를 그대로 따른다(`aladin/product/.../x.jpg`).
+ * 다시 돌려도 같은 파일에 덮어쓸 뿐이라 중단 후 재실행이 안전하다.
+ */
+const migrateAladinUrls = async () => {
+  /** url → { fit, refs: [{ table, column }] } */
+  const targets = new Map();
+
+  for (const { table, column, fit } of ALADIN_COLUMNS) {
+    const { data, error } = await supabase
+      .from(table)
+      .select(column)
+      .ilike(column, '%image.aladin.co.kr%');
+    if (error) throw new Error(`${table}.${column} 조회 실패: ${error.message}`);
+
+    for (const row of data) {
+      const url = row[column];
+      const target = targets.get(url) ?? { fit, refs: [] };
+      // 같은 테이블·칸은 update 한 번이 모든 행을 바꾸므로 한 번만 적는다
+      if (!target.refs.some((ref) => ref.table === table && ref.column === column)) {
+        target.refs.push({ table, column });
+      }
+      targets.set(url, target);
+    }
   }
+
+  console.log(`옮길 알라딘 주소: ${targets.size}개`);
+  console.log('');
+
+  const result = { moved: 0, cleared: 0, skipped: 0 };
+
+  for (const [url, { fit, refs }] of targets) {
+    const objectPath = `aladin${new URL(url).pathname}`;
+    const where = refs.map((ref) => `${ref.table}.${ref.column}`).join(', ');
+
+    let synced;
+    try {
+      synced = await syncImage(url, objectPath, fit);
+    } catch (err) {
+      // 네트워크 오류는 "이미지가 없다"는 뜻이 아니다 — 비우지 않고 다음 실행에 맡긴다
+      result.skipped += 1;
+      console.log(`  ? ${objectPath}  (${err.message ?? err} — 건너뜀)  ${where}`);
+      continue;
+    }
+
+    // 서버 쪽 일시 장애(5xx)도 마찬가지로 건너뛴다
+    if (!synced.url && /^HTTP 5\d\d$/.test(synced.reason)) {
+      result.skipped += 1;
+      console.log(`  ? ${objectPath}  (${synced.reason} — 건너뜀)  ${where}`);
+      continue;
+    }
+
+    // 확실히 없는 주소(4xx·이미지 아님)는 비운다 — 도메인을 막으면 어차피 깨질 주소다.
+    // 비워 두면 책장은 제목이 적힌 기본 책등, 추천은 표지 없이 그려진다.
+    const nextUrl = synced.url;
+
+    if (nextUrl) result.moved += 1;
+    else result.cleared += 1;
+
+    console.log(`  ${nextUrl ? '→' : '×'} ${objectPath}  (${synced.reason})  ${where}`);
+
+    if (!DRY_RUN) {
+      for (const { table, column } of refs) {
+        const { error } = await supabase
+          .from(table)
+          .update({ [column]: nextUrl })
+          .eq(column, url);
+        if (error) throw new Error(`${table}.${column} 갱신 실패: ${error.message}`);
+      }
+    }
+
+    await sleep(REQUEST_INTERVAL_MS);
+  }
+
+  console.log('');
+  console.log('─'.repeat(60));
+  console.log(`Storage 로 옮김  ${result.moved}개`);
+  console.log(`못 옮겨 비움     ${result.cleared}개`);
+  console.log(`건너뜀(재실행)   ${result.skipped}개`);
+};
+
+// ─── books 출처 채우기 (--sync-books-source) ──────────────────────────
+
+/**
+ * global_books 의 출처·상품번호를 같은 isbn 의 books 로 복사한다.
+ *
+ * 화면(내 서재 책 상세)은 books 를 읽는데, 2026-09-28 백필이 global_books 에만
+ * 출처를 적었다. 이미 값이 있는 books 행은 건드리지 않는다(`source is null` 만).
+ */
+const syncBooksSource = async () => {
+  const { data: rows, error } = await supabase
+    .from('global_books')
+    .select('isbn, title, source, provider_item_id')
+    .not('source', 'is', null)
+    .order('isbn');
+  if (error) throw new Error(`global_books 조회 실패: ${error.message}`);
+
+  let updated = 0;
+
+  for (const row of rows) {
+    const { count, error: countError } = await supabase
+      .from('books')
+      .select('id', { count: 'exact', head: true })
+      .eq('isbn', row.isbn)
+      .is('source', null);
+    if (countError) throw new Error(`books 조회 실패: ${countError.message}`);
+    if (!count) continue;
+
+    console.log(`  · ${row.isbn} ${(row.title ?? '').slice(0, 26).padEnd(26)} ${row.source} × ${count}행`);
+    updated += count;
+
+    if (DRY_RUN) continue;
+
+    const { error: updateError } = await supabase
+      .from('books')
+      .update({ source: row.source, provider_item_id: row.provider_item_id })
+      .eq('isbn', row.isbn)
+      .is('source', null);
+    if (updateError) throw new Error(`books 갱신 실패: ${updateError.message}`);
+  }
+
+  console.log('');
+  console.log('─'.repeat(60));
+  console.log(`출처를 채운 books  ${updated}행`);
+};
+
+// ─── 알라딘 출처 책 다시 찾기 (--rematch-aladin) ─────────────────────
+
+/** 비교용 정규화 — 공백·문장부호·대소문자 차이를 없앤다 */
+const normalizeText = (value) =>
+  (value ?? '').toLowerCase().replace(/[\s\p{P}\p{S}]/gu, '');
+
+/**
+ * 첫 저자 이름만 뽑는다.
+ * 알라딘 `한강 (지은이), 홍길동 (옮긴이)` / YES24 `한강 저/홍길동 역` 처럼 표기가 달라
+ * 첫 이름에서 역할 표기(`저`·`역` 등)를 떼고 견준다.
+ */
+const firstAuthor = (value) =>
+  normalizeText(
+    (value ?? '')
+      .split(/[(,/]/)[0]
+      .trim()
+      .replace(/\s+(저|지음|글|역|옮김|엮음|편저|편|그림|원작)$/, '')
+  );
+
+/**
+ * YES24 검색 결과에서 **확실히 같은 책**만 고른다.
+ *
+ * 제목과 첫 저자가 모두 일치해야 한다. 알라딘은 부제를 제목에 ` - 부제` 로 붙였으므로
+ * YES24 쪽은 "제목"과 "제목+부제" 둘 다 견준다. 후보가 둘 이상이면(개정판 등)
+ * 고르지 않는다 — 틀린 책을 붙이면 표지·출처가 조용히 어긋난다.
+ */
+const pickSameBook = (row, items) => {
+  const title = normalizeText(row.title);
+  const author = firstAuthor(row.author);
+
+  const matches = items.filter((item) => {
+    if (!item.isbn13) return false; // 세트 상품
+    const titles = [normalizeText(item.title), normalizeText(`${item.title}${item.subTitle ?? ''}`)];
+    return titles.includes(title) && author !== '' && firstAuthor(item.author) === author;
+  });
+
+  return matches.length === 1 ? matches[0] : null;
+};
+
+const searchYes24 = async (query) => {
+  const url =
+    'https://apis.yes24.com/v1/goods/itemList?' +
+    new URLSearchParams({ query, category: 'BOOK', page: '1', pageSize: '20' });
+
+  const res = await fetch(url, { headers: { 'X-Api-Key': env.YES24_API_KEY } });
+  if (!res.ok) throw new Error(`YES24 HTTP ${res.status}`);
+
+  const body = await res.json();
+  if (!body.success || !body.data) throw new Error(`YES24: ${body.message}`);
+
+  return body.data.items ?? [];
+};
+
+/**
+ * YES24 가 ISBN 으로 못 찾은(= 출처가 아직 알라딘인) 책을 제목·저자로 다시 찾는다.
+ *
+ * 찾으면 백필과 같은 경로(`applyYes24Item`)로 이미지·치수·상품번호·출처를 채운다.
+ * 못 찾은 책은 출처 "알라딘"으로 남는다 — 사실이고, 알라딘 웹사이트 링크도 계속 산다.
+ */
+const rematchAladin = async () => {
+  const { data: rows, error } = await supabase
+    .from('global_books')
+    .select('isbn, title, author, cover_image, spine_image')
+    .eq('source', 'aladin')
+    .order('isbn');
+  if (error) throw new Error(`global_books 조회 실패: ${error.message}`);
+
+  console.log(`출처가 알라딘인 책: ${rows.length}권`);
+  console.log('');
+
+  let matched = 0;
+
+  for (const row of rows) {
+    const found = pickSameBook(row, await searchYes24(`${row.title} ${firstAuthor(row.author)}`));
+
+    if (!found) {
+      console.log(`  × ${row.isbn} ${row.title} / ${row.author} — 확실히 같은 책을 못 찾음`);
+      await sleep(REQUEST_INTERVAL_MS);
+      continue;
+    }
+
+    // 이미 같은 ISBN13 이 다른 행으로 있으면 붙이지 않는다 — 한 책이 두 행이 된다(#137)
+    const { count } = await supabase
+      .from('global_books')
+      .select('isbn', { count: 'exact', head: true })
+      .eq('isbn', found.isbn13);
+    if (count) {
+      console.log(`  ! ${row.isbn} ${row.title} — ${found.isbn13} 이 이미 다른 행으로 있음(중복 병합 필요)`);
+      continue;
+    }
+
+    console.log(`  = ${row.isbn} ${row.title} / ${row.author}`);
+    console.log(`    → YES24 ${found.itemId} ${found.title} / ${found.author} (${found.isbn13})`);
+
+    // 검색 결과에는 치수가 없다 — 상세로 다시 받는다
+    const detail = (await fetchYes24(found.isbn13)) ?? found;
+    await applyYes24Item(row, detail);
+    matched += 1;
+
+    await sleep(REQUEST_INTERVAL_MS);
+  }
+
+  console.log('');
+  console.log('─'.repeat(60));
+  console.log(`YES24 로 바꿈  ${matched}권`);
+  console.log(`알라딘으로 남음 ${rows.length - matched}권`);
 };
 
 const main = async () => {
   console.log(`대상 DB : ${env.NEXT_PUBLIC_SUPABASE_URL}`);
   console.log(
     `모드    : ${DRY_RUN ? 'DRY RUN (아무것도 쓰지 않음)' : '실제 실행'}` +
-      (FORCE ? ' · FORCE (이미 끝난 행도 다시 처리)' : '')
+      (FORCE ? ' · FORCE (이미 끝난 행도 다시 처리)' : '') +
+      (ALADIN_URLS ? ' · 알라딘 이미지 주소 옮기기' : '')
   );
   console.log('');
+
+  if (ALADIN_URLS) {
+    await migrateAladinUrls();
+    return;
+  }
+  if (SYNC_BOOKS_SOURCE) {
+    await syncBooksSource();
+    return;
+  }
+  if (REMATCH_ALADIN) {
+    await rematchAladin();
+    return;
+  }
 
   // 아직 안 끝난 행만 가져온다 → 중단 후 재실행이 그대로 이어진다
   let query = supabase
