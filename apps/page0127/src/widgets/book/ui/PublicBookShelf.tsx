@@ -73,7 +73,7 @@ export const PublicBookShelf = ({
           // 여러 번 읽은 책은 조금 크게 — 뱃지가 잘 안 보이는 책등에서도
           // "이 책은 다르다"가 실루엣만으로 읽힌다
           const isReread = book.read_count > 1;
-          // 책등 폭은 실물 두께에서 만든다 — 이미지 비율로 두면 순서가 뒤집힌다
+          // 이미지가 없는 책등만 두께로 폭을 만든다 (아래 Image 주석 참고)
           const spineWidth = spineWidthPx(book.thickness_mm);
 
           return (
@@ -86,31 +86,24 @@ export const PublicBookShelf = ({
                   <Image
                     src={renderedSrc}
                     alt={book.title}
-                    width={isCoverView ? 170 : spineWidth}
+                    // width·height 속성은 로딩 전 자리 잡기용 비율 힌트일 뿐이다.
+                    // 실제 크기는 CSS(`height: 240px; width: auto`)가 정한다 →
+                    // 높이는 고정, 폭은 이미지 원본 비율을 따른다.
+                    width={isCoverView ? 170 : 50}
                     height={240}
                     sizes='(max-width: 768px) 170px, 170px'
                     unoptimized={isPreOptimizedImageSrc(renderedSrc)}
                     onError={() => onError(book.id)}
-                    // 책등만 폭을 고정한다. CSS 의 `width: auto` 를 그대로 두면 폭이
-                    // 이미지 비율로 정해져 실제 두께와 어긋난다(더 얇은 책이 더 두껍게
-                    // 보였다).
-                    //
-                    // ⚠️ object-fit 은 반드시 `fill`(늘이기)이어야 한다. `cover` 로 덮으면
-                    // **책등 위아래가 잘린다** — 스캔이 세로로 길어서(예: 54x600) 폭
-                    // 41px·높이 240px 박스를 덮으려면 세로가 455px 로 넘쳐 제목이 잘린다.
-                    // 2026-09-29 실측 25권 평균: cover 는 세로 55% 손실, fill 은 가로
-                    // 2.27배 늘어남. 제목이 반쯤 사라지는 것보다 조금 굵어지는 편이 낫다.
-                    style={
-                      isCoverView
-                        ? undefined
-                        : { width: `${spineWidth}px`, objectFit: 'fill' }
-                    }
+                    // ⚠️ 책등 이미지에 폭을 강제하지 않는다.
+                    // 두께(thickness_mm)로 폭을 고정했던 적이 있다(2026-09-29). 박스가
+                    // 원본 비율보다 넓어서 `cover` 는 위아래가 잘리고(평균 55% 손실),
+                    // `fill` 은 글자가 옆으로 늘어났다(평균 2.27배). 비율을 지키는 방법은
+                    // 폭을 이미지에 맡기는 것뿐이다.
                   />
                 ) : (
                   <div
                     className={`${styles.noImage} ${isCoverView ? styles.cover : styles.spine}`}
-                    // 이미지가 있는 책등과 같은 규칙으로 넓힌다 — 한쪽만 두께를
-                    // 반영하면 선반에서 두 종류의 책이 서로 다른 언어로 보인다
+                    // 그릴 이미지가 없으니 늘어날 것도 없다 — 여기서는 두께를 폭으로 쓴다
                     style={isCoverView ? undefined : { width: `${spineWidth}px` }}
                   >
                     <p>{book.title}</p>
