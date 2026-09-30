@@ -85,8 +85,10 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [
-      // 도서 표지·책등(검색 결과). 등록된 책의 이미지는 백필로 Supabase Storage 로 옮겼다.
+      // 도서 표지·책등. YES24가 현재 공급자이고, 알라딘은 OpenAPI 종료(2026-10-30)
+      // 전에 등록된 기존 책들의 이미지가 아직 이 호스트를 가리켜 함께 열어 둔다.
       { protocol: 'https', hostname: 'image.yes24.com' },
+      { protocol: 'https', hostname: 'image.aladin.co.kr' },
       // Supabase Storage(프로필 이미지). 호스트가 환경마다 달라 env에서 파생한다.
       // 로컬은 http + 포트(54321)라 프로토콜·포트도 URL에서 그대로 가져온다.
       {
@@ -138,12 +140,12 @@ const nextConfig: NextConfig = {
       `script-src ${scriptSrc}`,
       // Pretendard 폰트 CSS(jsdelivr) + Next/Tailwind 인라인 스타일
       "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
-      // 앱 자체 + YES24/Supabase 이미지 + Google 로그인 프로필 사진 + GA 픽셀,
+      // 앱 자체 + YES24/Aladin/Supabase 이미지 + Google 로그인 프로필 사진 + GA 픽셀,
       // data/blob(블러 플레이스홀더)
       // 프로필 사진 출처: 구글(googleusercontent)·카카오(kakaocdn).
       // remotePatterns 와 짝을 이룬다 — 한쪽만 열면 next/image 가 통과시킨 뒤
       // 브라우저가 막거나, 그 반대가 되어 조용히 깨진다.
-      `img-src 'self' data: blob: https://image.yes24.com ${supabaseOrigin} https://*.googleusercontent.com https://*.kakaocdn.net https://www.googletagmanager.com https://www.google-analytics.com`,
+      `img-src 'self' data: blob: https://image.yes24.com https://image.aladin.co.kr ${supabaseOrigin} https://*.googleusercontent.com https://*.kakaocdn.net https://www.googletagmanager.com https://www.google-analytics.com`,
       // Pretendard woff 폰트(jsdelivr)
       "font-src 'self' https://cdn.jsdelivr.net",
       // API·Sentry 터널(self) + Supabase REST/realtime(wss) + GA 비콘

@@ -14,6 +14,19 @@ import { isPreOptimizedImageSrc } from '../src/lib/imageOptimization';
  * 되살아나고, 며칠 뒤 같은 방식으로 이미지가 사라진다.
  */
 describe('isPreOptimizedImageSrc', () => {
+  it('알라딘 표지·책등은 최적화를 건너뛴다', () => {
+    expect(
+      isPreOptimizedImageSrc(
+        'https://image.aladin.co.kr/product/39061/33/cover500/k852137647_1.jpg'
+      )
+    ).toBe(true);
+    expect(
+      isPreOptimizedImageSrc(
+        'https://image.aladin.co.kr/product/39061/33/spineflip/k852137647_d.jpg'
+      )
+    ).toBe(true);
+  });
+
   it('YES24 표지·책등·뒷표지는 최적화를 건너뛴다', () => {
     // 현재 공급자다. 표지는 이 앱에서 가장 많이 그려지는 이미지라, 최적화 한도가
     // 소진되면 서재·검색·랭킹이 한꺼번에 빈 칸이 된다.
@@ -80,12 +93,12 @@ describe('isPreOptimizedImageSrc', () => {
 
   it('호스트로만 판정 — 이름이 겹치는 도메인에 속지 않는다', () => {
     // `src.includes(...)` 같은 부분 문자열 판정은
-    // 공격자가 만든 image.yes24.com.evil.com 도 통과시킨다.
+    // 공격자가 만든 image.aladin.co.kr.evil.com 도 통과시킨다.
     expect(
-      isPreOptimizedImageSrc('https://image.yes24.com.evil.com/a.jpg')
+      isPreOptimizedImageSrc('https://image.aladin.co.kr.evil.com/a.jpg')
     ).toBe(false);
     expect(
-      isPreOptimizedImageSrc('https://evil.com/?u=image.yes24.com/a.jpg')
+      isPreOptimizedImageSrc('https://evil.com/?u=image.aladin.co.kr/a.jpg')
     ).toBe(false);
   });
 
