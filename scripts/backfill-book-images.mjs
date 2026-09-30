@@ -1,10 +1,11 @@
 /**
  * 기존 도서에 YES24 상품번호·표지·책등·치수를 채워 넣는다.
  *
- * 왜 지금 해야 하는가:
- *   알라딘 OpenAPI 가 2026-10-30 에 종료된다. 그전까지는 알라딘 키로 폴백 조회를
- *   할 수 있지만, 그 뒤에는 YES24 에 없는 절판서를 보강할 방법이 사라진다.
- *   표지 이미지도 알라딘 CDN 에 의존한 채로 두면 언제 차단될지 알 수 없다.
+ * 왜 필요한가:
+ *   알라딘 OpenAPI 가 2026-10-30 에 종료된다. 2026-09-28 에 이 스크립트로 전량(164권)을
+ *   옮겼고, 그 뒤 알라딘 폴백은 걷어냈다. 지금은 YES24 로만 조회하고, YES24 에 없는
+ *   책은 DB 에 저장된 외부 URL 에서 이미지만 건진다. 외부 CDN 에 기대 둔 표지는
+ *   언제 차단될지 알 수 없어서 우리 Storage 로 옮겨 둔다.
  *
  * 무엇을 남기는가 (공급자가 또 바뀌어도 살아남는 것):
  *   1. provider_item_id — 이미지 URL 을 API 없이 조립하는 열쇠. 영구히 유효하다.
@@ -121,8 +122,9 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
  *   ISBN10   26권  978 + 앞 9자리 + 체크digit 재계산으로 변환된다
  *   K코드    70권  알라딘 내부 ID다. ISBN이 아니라 계산으로 못 바꾼다
  *
- * K코드가 43%나 된다. 이 책들은 **알라딘에 물어봐야만** 진짜 ISBN13을 알 수 있고,
- * 알라딘은 2026-10-30에 죽는다. 백필을 지금 돌려야 하는 가장 큰 이유다.
+ * K코드는 알라딘에 물어봐야만 진짜 ISBN13을 알 수 있었다. 알라딘 폴백을 걷어낸 지금은
+ * `unresolved` 로 떨어지고, 저장된 URL 에서 이미지만 건지는 경로로 간다.
+ * (K코드 70권은 알라딘이 살아 있을 때 이미 전부 처리했다.)
  */
 const isbn10To13 = (isbn10) => {
   const core = '978' + isbn10.slice(0, 9);
@@ -131,21 +133,13 @@ const isbn10To13 = (isbn10) => {
   return core + String((10 - (sum % 10)) % 10);
 };
 
-const resolveIsbn13 = async (stored) => {
+const resolveIsbn13 = (stored) => {
   const value = (stored ?? '').trim();
 
   if (/^97[89]\d{10}$/.test(value)) return { isbn13: value, via: 'stored' };
   if (/^\d{9}[\dX]$/i.test(value)) return { isbn13: isbn10To13(value), via: 'isbn10' };
 
-  // K코드 등 — 알라딘에게 진짜 ISBN13을 물어본다 (ItemIdType=ISBN)
-  const record = await fetchAladin(value, 'ISBN');
-  const fromAladin = (record?.isbn13 ?? '').trim();
-
-  if (/^97[89]\d{10}$/.test(fromAladin)) {
-    return { isbn13: fromAladin, via: 'aladin', aladin: record };
-  }
-
-  return { isbn13: null, via: 'unresolved', aladin: record ?? null };
+  return { isbn13: null, via: 'unresolved' };
 };
 
 /** YES24 상세 조회. 없으면 null, 실패하면 throw */
@@ -165,36 +159,6 @@ const fetchYes24 = async (isbn) => {
   if (!body.success || !body.data) throw new Error(`YES24: ${body.message}`);
 
   return body.data.items?.[0] ?? null;
-};
-
-/**
- * 알라딘 폴백. YES24 에 없는 절판서를 위한 마지막 통로다.
- * 2026-10-30 이후로는 항상 실패하므로, 그때는 조용히 건너뛰게 둔다.
- */
-const fetchAladin = async (isbn, itemIdType = 'ISBN13') => {
-  if (!env.ALADIN_API_KEY) return null;
-
-  const url =
-    'https://www.aladin.co.kr/ttb/api/ItemLookUp.aspx?' +
-    new URLSearchParams({
-      ttbkey: env.ALADIN_API_KEY,
-      ItemId: isbn,
-      // K코드·ISBN10 은 'ISBN' 으로 물어봐야 한다. 'ISBN13' 으로 보내면 못 찾는다
-      ItemIdType: itemIdType,
-      output: 'js',
-      Version: '20131101',
-      Cover: 'Big',
-      OptResult: 'packing,toc,fulldescription',
-    });
-
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const body = await res.json();
-    return body.item?.[0] ?? null;
-  } catch {
-    return null;
-  }
 };
 
 // ─── 이미지 ────────────────────────────────────────────────────────────
@@ -271,7 +235,6 @@ const stats = {
   total: 0,
   done: 0,
   yes24: 0,
-  aladinFallback: 0,
   notFound: 0,
   failed: 0,
   covers: 0,
@@ -284,73 +247,7 @@ const stats = {
 const failures = [];
 
 /**
- * 알라딘 표지 URL에서 책등 주소를 만든다.
- *   표지: .../product/4086/97/cover200/8936434128_2.jpg
- *   책등: .../product/4086/97/spineflip/8936434128_d.jpg
- */
-const aladinSpineUrl = (coverUrl) => {
-  const parts = coverUrl.split('cover200');
-  if (parts.length < 2) return null;
-  const fileName = parts[1].split('_')[0];
-  return fileName ? `${parts[0]}spineflip${fileName}_d.jpg` : null;
-};
-
-/**
- * YES24에 없는 책을 알라딘에서 건져 이미지를 우리 Storage로 옮긴다.
- *
- * **이게 이 작업을 지금 하는 이유다.** 2026-10-30 이후에는 알라딘 API 도,
- * 그 CDN 도 보장이 없다. 절판서는 YES24 에 아예 없는 경우가 있어서,
- * 지금 옮겨 두지 않으면 그 책들의 표지는 영영 되찾을 수 없다.
- */
-const processWithAladin = async (row, aladin) => {
-  const coverUrl = aladin.cover ? aladin.cover.replace('cover200', 'cover500') : null;
-  const spineUrl = aladin.cover ? aladinSpineUrl(aladin.cover) : null;
-
-  const [cover, spine] = await Promise.all([
-    coverUrl
-      ? syncImage(coverUrl, `${row.isbn}/cover.jpg`, COVER_FIT)
-      : { url: null },
-    spineUrl ? syncImage(spineUrl, `${row.isbn}/spine.jpg`, SPINE_FIT) : { url: null },
-  ]);
-
-  if (cover.url) stats.covers += 1;
-  if (spine.url) stats.spines += 1;
-
-  console.log(
-    `  · ${row.isbn} ${(row.title ?? '').slice(0, 26).padEnd(26)} ` +
-      `표지:${cover.url ? 'O' : 'X'} 책등:${spine.url ? 'O' : 'X'} 뒷:-  [알라딘 폴백]`
-  );
-
-  if (DRY_RUN) return;
-
-  const patch = {
-    source: 'aladin',
-    cover_synced_at: new Date().toISOString(),
-  };
-  if (cover.url) patch.cover_image = cover.url;
-  if (spine.url) patch.spine_image = spine.url;
-
-  const { error } = await supabase
-    .from('global_books')
-    .update(patch)
-    .eq('isbn', row.isbn);
-  if (error) throw new Error(`global_books 갱신 실패: ${error.message}`);
-
-  const booksPatch = {};
-  if (cover.url) booksPatch.cover_image = cover.url;
-  if (spine.url) booksPatch.spine_image = spine.url;
-
-  if (Object.keys(booksPatch).length > 0) {
-    const { error: booksError } = await supabase
-      .from('books')
-      .update(booksPatch)
-      .eq('isbn', row.isbn);
-    if (booksError) throw new Error(`books 갱신 실패: ${booksError.message}`);
-  }
-};
-
-/**
- * 두 공급자 모두 못 찾았을 때, DB에 이미 있는 외부 URL 로 이미지만 건져 온다.
+ * YES24 가 못 찾았을 때, DB에 이미 있는 외부 URL 로 이미지만 건져 온다.
  *
  * 메타데이터는 포기하고 이미지만 옮긴다. `source` 도 건드리지 않는다 —
  * 어디서 왔는지는 그대로 사실이고, 바뀐 건 "어디에 보관하는가" 뿐이다.
@@ -407,37 +304,24 @@ const rescueFromStoredUrls = async (row) => {
 };
 
 const processRow = async (row) => {
-  // 저장된 식별자가 ISBN13이 아닐 수 있다(ISBN10 26권, K코드 70권).
-  // K코드는 알라딘을 다리로 써야 진짜 ISBN13을 알 수 있다.
-  const resolved = await resolveIsbn13(row.isbn);
+  // 저장된 식별자가 ISBN13이 아닐 수 있다(ISBN10·K코드). ISBN10 은 계산으로 바꾸고,
+  // K코드는 풀 방법이 없어 unresolved 로 떨어진다.
+  const resolved = resolveIsbn13(row.isbn);
   stats.resolved[resolved.via] = (stats.resolved[resolved.via] ?? 0) + 1;
 
   const item = resolved.isbn13 ? await fetchYes24(resolved.isbn13) : null;
 
   if (!item) {
-    // YES24 에 없다 → 알라딘으로. 절판서와 ISBN 없는 책이 여기서 걸린다.
-    // 식별자를 풀며 이미 받아 온 게 있으면 다시 호출하지 않는다.
-    const aladin =
-      resolved.aladin ??
-      (await fetchAladin(row.isbn, resolved.via === 'stored' ? 'ISBN13' : 'ISBN'));
+    // 마지막 경로: 공급자가 못 찾아도 **이미 갖고 있는 URL이 살아 있으면 그거라도 옮긴다.**
+    //
+    // 절판되어 카탈로그에서 내려간 책, ISBN13 을 못 구한 책이 여기 걸린다. API 로는
+    // 못 찾지만 CDN 의 이미지 파일은 남아 있는 경우가 있다 — 우리가 원하는 건
+    // 메타데이터가 아니라 **이미지를 우리 쪽으로 옮기는 것**이므로 API 가 없어도 된다.
+    const rescued = await rescueFromStoredUrls(row);
+    if (rescued) return;
 
-    if (!aladin) {
-      // 마지막 경로: 공급자가 못 찾아도 **이미 갖고 있는 URL이 살아 있으면 그거라도 옮긴다.**
-      //
-      // 절판되어 카탈로그에서 내려간 책이 여기 걸린다(알라딘 errorCode 8). API 로는
-      // 못 찾지만 CDN 의 이미지 파일은 남아 있는 경우가 있다 — 우리가 원하는 건
-      // 메타데이터가 아니라 **이미지를 우리 쪽으로 옮기는 것**이므로 API 가 없어도 된다.
-      // 이 경로를 안 타면 그 책은 알라딘 CDN 에 영영 묶인 채 남는다.
-      const rescued = await rescueFromStoredUrls(row);
-      if (rescued) return;
-
-      stats.notFound += 1;
-      failures.push({ isbn: row.isbn, title: row.title, reason: '두 공급자 모두 없음' });
-      return;
-    }
-
-    stats.aladinFallback += 1;
-    await processWithAladin(row, aladin);
+    stats.notFound += 1;
+    failures.push({ isbn: row.isbn, title: row.title, reason: 'YES24 에 없고 건질 URL 도 없음' });
     return;
   }
 
@@ -553,18 +437,16 @@ const main = async () => {
   console.log('─'.repeat(60));
   console.log(`처리 대상        ${stats.total}권`);
   console.log(`  YES24 확보     ${stats.yes24}권`);
-  console.log(`  알라딘 폴백    ${stats.aladinFallback}권`);
   console.log(`  기존 URL 에서 건짐 ${stats.rescued}권`);
-  console.log(`  두 곳 모두 없음 ${stats.notFound}권`);
+  console.log(`  찾지 못함      ${stats.notFound}권`);
   console.log(`  실패           ${stats.failed}권`);
   console.log('');
   console.log(`표지 ${stats.covers} · 책등 ${stats.spines} · 뒷표지 ${stats.backs} · 두께 ${stats.thickness}`);
   console.log('');
-  // 저장된 식별자가 무엇이었는지 — K코드 비중이 알라딘 의존도를 그대로 보여준다
+  // 저장된 식별자가 무엇이었는지 — unresolved 는 대부분 알라딘 K코드다
   const viaLabel = {
     stored: 'ISBN13 그대로',
     isbn10: 'ISBN10 → 변환',
-    aladin: 'K코드 → 알라딘이 알려줌',
     unresolved: 'ISBN13을 못 구함',
   };
   Object.entries(stats.resolved).forEach(([via, n]) =>

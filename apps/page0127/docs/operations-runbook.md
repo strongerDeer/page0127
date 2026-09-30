@@ -127,7 +127,7 @@ pg_dump "<POSTGRES_CONNECTION_STRING>" > backup_$(date +%Y%m%d).sql
 3. **완화/롤백**:
    - 방금 배포가 원인 → **Vercel에서 직전 배포로 롤백** (Deployments → 이전 성공 배포 → Promote)
    - DB 마이그레이션이 원인 → 되돌리는 마이그레이션 작성(운영 DB 직접 수정 지양)
-   - 외부 의존성(OpenAI/Aladin) 장애 → 해당 기능만 임시 비활성/안내
+   - 외부 의존성(OpenAI/YES24) 장애 → 해당 기능만 임시 비활성/안내
 4. **공지**: 서비스 공지 채널에 인지 사실 알림
 5. **사후(postmortem)**: 원인·타임라인·재발방지책을 아래 "변경 이력" 또는 별도 문서에 기록
 
