@@ -1,8 +1,8 @@
 /**
  * 도서 공급자 공통 타입
  *
- * 왜 추상화하는가: 알라딘 OpenAPI가 2026-10-30에 종료되고, 네이버 책 검색 API는
- * 2026-07-31에 이미 종료됐다. 공급자는 앞으로도 또 바뀐다는 전제로, 화면과 DB가
+ * 왜 추상화하는가: 네이버 책 검색 API는 2026-07-31에, 알라딘 OpenAPI는
+ * 2026-10-30에 종료된다(YES24로 옮긴 뒤 알라딘 어댑터는 걷어냈다). 공급자는 앞으로도 또 바뀐다는 전제로, 화면과 DB가
  * 특정 공급자의 응답 형태에 직접 묶이지 않게 한 겹 끼운다.
  *
  * 학습 포인트:
@@ -10,7 +10,12 @@
  * - 교체 지점이 `getBookProvider()` 한 곳으로 모여, 공급자 교체가 import 변경이 된다
  */
 
-/** DB `global_books.source` 의 CHECK 제약과 값이 일치해야 한다 */
+/**
+ * DB `global_books.source` 의 CHECK 제약과 값이 일치해야 한다.
+ *
+ * `'aladin'` 은 공급자가 사라져도 남긴다 — 알라딘에서 들어온 옛 행이 이 값을 갖고 있고,
+ * 출처 표기(`toBookCredit`)가 그 행에 "알라딘"을 적는 데 쓴다.
+ */
 export const BOOK_SOURCES = ['aladin', 'yes24', 'manual'] as const;
 
 export type BookSource = (typeof BOOK_SOURCES)[number];
@@ -27,8 +32,7 @@ export type ProviderBook = {
   /**
    * 부제. 제목과 합치지 않고 따로 둔다 — 화면에서 둘째 줄에 작게 그린다.
    *
-   * 알라딘은 제목에 ` - 부제` 를 붙여 줘서 분리할 수 없었다(그래서 알라딘 어댑터는
-   * 항상 null 이다). YES24는 `subTitle` 로 따로 주므로 비로소 나눌 수 있다.
+   * YES24는 `subTitle` 로 따로 준다. 공급자가 부제를 주지 않으면 null 이다.
    */
   subTitle: string | null;
   author: string;
@@ -39,7 +43,7 @@ export type ProviderBook = {
   /** 공급자의 원본 분류 문자열. 대분류 변환은 `mapToMainCategory` 가 한다 */
   category: string;
   coverImage: string;
-  /** 책등. 알라딘은 비동기 검증이 필요해 여기서 채우지 않는다 */
+  /** 책등. 공급자가 주지 않으면 null 이다 */
   spineImage: string | null;
   /** 뒷표지. YES24만 제공한다 */
   backImage: string | null;
@@ -49,7 +53,6 @@ export type ProviderBook = {
    * 책 실물 치수(mm). 상세 조회에서만 온다.
    *
    * `thickness` 가 책등 두께다 — 책장 UI에서 책등 폭을 실물 비례로 그리는 데 쓴다.
-   * 알라딘은 주지 않으므로 전부 null 이다.
    */
   dimensions: {
     width: number | null;

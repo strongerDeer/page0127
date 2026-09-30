@@ -95,13 +95,13 @@ export const useBookSearch = () => {
   // (BookSearchInput의 useEffect가 onSearch를 의존성으로 참조하는데,
   //  참조가 매번 바뀌면 effect가 계속 재실행 → 무한 루프로 이어짐)
   const search = useCallback(async (query: string, page = 1) => {
-    // 빈 검색어로 알라딘 API 를 때리지 않기 위한 방어선. 호출처(BookSearchInput)가
+    // 빈 검색어로 도서 검색 API 를 때리지 않기 위한 방어선. 호출처(BookSearchInput)가
     // 모두 trim 검사를 하고 있어 실제로 도달하지 않지만, 그 계약을 여기서도 지킨다.
     //
     // 결과 목록은 일부러 지우지 않는다 — 검색어를 다 지우는 건 "결과를 버리겠다"가
     // 아니라 "다시 치겠다"의 중간 단계라, 그때마다 목록이 사라지면 목록 → 빈 화면 →
     // 로딩 → 새 목록으로 화면이 두 번 요동친다. 결과가 페이지 본문인 검색 UI
-    // (구글·알라딘 등)는 입력창을 비워도 이전 결과를 유지한다.
+    // (구글·YES24 등)는 입력창을 비워도 이전 결과를 유지한다.
     if (!query.trim()) return;
 
     const requestId = (requestIdRef.current += 1);
