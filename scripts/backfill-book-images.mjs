@@ -21,6 +21,8 @@
  *   node scripts/backfill-book-images.mjs --aladin-urls    남은 알라딘 이미지 주소만 옮긴다
  *   node scripts/backfill-book-images.mjs --sync-books-source  books 의 빈 출처를 채운다
  *   node scripts/backfill-book-images.mjs --rematch-aladin  알라딘 출처 책을 제목으로 다시 찾는다
+ *   node scripts/backfill-book-images.mjs --reidentify 옛[,옛]=새ISBN13  판본을 바로잡는다
+ *   node scripts/backfill-book-images.mjs --adopt-orphans  global_books 짝이 없는 책에 짝을 만든다
  *
  * `--aladin-urls` 는 위의 백필과 별개 모드다. 백필은 "받아 온 것만 덮어쓴다" 규칙이라
  * YES24 에 책등이 없는 책은 알라딘 책등 주소가 그대로 남았다(2026-09-30 실측:
@@ -75,6 +77,9 @@ const FORCE = hasFlag('--force');
 const ALADIN_URLS = hasFlag('--aladin-urls');
 const SYNC_BOOKS_SOURCE = hasFlag('--sync-books-source');
 const REMATCH_ALADIN = hasFlag('--rematch-aladin');
+/** `옛식별자=새ISBN13` — 잘못된 판본으로 들어간 책을 바로잡는다 */
+const REIDENTIFY = getOption('--reidentify', null);
+const ADOPT_ORPHANS = hasFlag('--adopt-orphans');
 const LIMIT = Number(getOption('--limit', '0')) || null;
 const ENV_FILE = getOption('--env', 'apps/page0127/.env.local');
 
@@ -669,6 +674,200 @@ const rematchAladin = async () => {
   console.log(`알라딘으로 남음 ${rows.length - matched}권`);
 };
 
+// ─── 판본 바로잡기 (--reidentify 옛=새ISBN13) ───────────────────────
+
+/** YES24 `20130615` → 저장 형식 `2013-06-15` (앱의 normalizePubDate 와 같은 규칙) */
+const toIsoDate = (value) =>
+  /^\d{8}$/.test(value ?? '')
+    ? `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}`
+    : null;
+
+/**
+ * YES24 상품에서 '책 자체' 정보를 만든다. 사용자 기록(평점·완독일·리뷰)은 여기 없다.
+ * 앱의 `mapYes24Book` 과 같은 규칙이다.
+ */
+const toBookFields = (item, isbn) => ({
+  isbn,
+  title: item.title ?? '',
+  sub_title: item.subTitle?.trim() || null,
+  author: item.author ?? '',
+  publisher: item.publisher ?? '',
+  pub_date: toIsoDate(item.publishDate),
+  description: item.contentDetail?.bookIntroduction ?? '',
+  category: item.goodsSortNm ?? '',
+  provider_item_id: String(item.itemId),
+  source: 'yes24',
+});
+
+/**
+ * 다른 판본으로 잘못 들어간 책을 올바른 판본으로 바꾼다.
+ *
+ * ⚠️ **행을 새로 만들고 옛 행을 지우면 안 된다.** `book_likes`·`book_comments` 가
+ * `global_books.id` 를 참조하고 ON DELETE CASCADE 라, 옛 행을 지우는 순간 이 책의
+ * 좋아요·책 댓글이 함께 사라진다. 그래서 **같은 행의 isbn 을 제자리에서 바꾼다** —
+ * id 가 그대로라 모든 연결이 유지된다.
+ *
+ * 랭킹 스냅샷은 옮기지 않는다. 날짜별 과거 기록이다(#137 과 같은 원칙).
+ *
+ * 중간에 끊겨도 다시 돌리면 된다 — 옛 isbn 이 이미 없고 새 isbn 이 있으면
+ * global_books 단계를 건너뛰고 나머지를 이어서 한다.
+ */
+const reidentify = async (spec) => {
+  // 옛 식별자는 쉼표로 여러 개 줄 수 있다 — 같은 책이 서로 다른 판본으로 갈라져
+  // global_books 와 books 에 따로 들어간 경우(2026-07-19 일괄 등록의 『변신』)
+  const [oldPart, newIsbn] = spec.split('=').map((value) => value?.trim());
+  const oldIsbns = (oldPart ?? '').split(',').map((value) => value.trim()).filter(Boolean);
+  if (!oldIsbns.length || !/^97[89]\d{10}$/.test(newIsbn ?? '') || oldIsbns.includes(newIsbn)) {
+    throw new Error('형식: --reidentify 옛식별자[,옛식별자]=새ISBN13');
+  }
+
+  const item = await fetchYes24(newIsbn);
+  if (!item) throw new Error(`YES24 에 ${newIsbn} 이 없습니다`);
+
+  const itemId = String(item.itemId);
+  console.log(`새 판본: YES24 ${itemId} ${item.title} / ${item.author} / ${item.publisher} (${item.publishDate})`);
+
+  const findGlobal = async (isbn) => {
+    const { data, error } = await supabase
+      .from('global_books')
+      .select('id, isbn, title, author, publisher, cover_image, spine_image')
+      .eq('isbn', isbn)
+      .maybeSingle();
+    if (error) throw new Error(`global_books 조회 실패: ${error.message}`);
+    return data;
+  };
+
+  const oldRows = (await Promise.all(oldIsbns.map(findGlobal))).filter(Boolean);
+  const newRow = await findGlobal(newIsbn);
+
+  // global_books 행이 둘 이상 남으면 한 책이 두 행이 된다 — 병합(#137)이 필요한 상황이라
+  // 여기서 다루지 않는다. 좋아요·책 댓글이 행 id 에 붙어 있어 함부로 지울 수 없다.
+  if (oldRows.length + (newRow ? 1 : 0) > 1) {
+    throw new Error(
+      `global_books 에 행이 둘 이상 있습니다(${[...oldRows, newRow].filter(Boolean).map((row) => row.isbn).join(', ')}) — 병합 필요`
+    );
+  }
+  if (!oldRows.length && !newRow) {
+    throw new Error(`${oldIsbns.join(', ')} 중 어느 것도 global_books 에 없습니다`);
+  }
+
+  const [oldRow] = oldRows;
+
+  if (oldRow) {
+    console.log(`옛 판본: ${oldRow.isbn} ${oldRow.title} / ${oldRow.author} / ${oldRow.publisher}`);
+  } else {
+    console.log('global_books 는 이미 바뀌어 있다 — 나머지 단계만 이어서 한다');
+  }
+  console.log('');
+
+  const bookFields = toBookFields(item, newIsbn);
+
+  // 1) global_books — 같은 행(id 유지)의 isbn 과 책 정보를 바꾼다
+  if (oldRow) {
+    console.log(`  global_books  1행 (id ${oldRow.id} 유지)`);
+    if (!DRY_RUN) {
+      const { error } = await supabase.from('global_books').update(bookFields).eq('id', oldRow.id);
+      if (error) throw new Error(`global_books 갱신 실패: ${error.message}`);
+    }
+  }
+
+  // 2) isbn 을 들고 있는 나머지 — 사용자 책은 책 정보까지, 나머지는 isbn 만
+  const refs = [
+    { table: 'books', column: 'isbn', patch: bookFields },
+    { table: 'reading_records', column: 'book_isbn', patch: { book_isbn: newIsbn } },
+    { table: 'book_recommendations', column: 'isbn', patch: { isbn: newIsbn } },
+    { table: 'mutual_recommendations', column: 'isbn', patch: { isbn: newIsbn } },
+  ];
+
+  for (const { table, column, patch } of refs) {
+    const { count, error } = await supabase
+      .from(table)
+      .select('*', { count: 'exact', head: true })
+      .in(column, oldIsbns);
+
+    // 환경마다 스키마가 다르다(로컬 reading_records 에는 book_isbn 이 없다) — 없으면 건너뛴다
+    if (error) {
+      console.log(`  ${table}.${column}  건너뜀 (${error.message})`);
+      continue;
+    }
+
+    console.log(`  ${table}.${column}  ${count ?? 0}행`);
+    if (DRY_RUN || !count) continue;
+
+    const { error: updateError } = await supabase.from(table).update(patch).in(column, oldIsbns);
+    if (updateError) throw new Error(`${table} 갱신 실패: ${updateError.message}`);
+  }
+
+  console.log('');
+
+  // 3) 이미지·치수는 백필과 같은 경로로 — 새 isbn 기준 Storage 경로에 올라간다.
+  //    dry-run 에서는 아직 isbn 이 안 바뀌었으므로 받아 보기만 한다.
+  await applyYes24Item({ isbn: newIsbn, title: item.title }, item);
+};
+
+// ─── 짝 없는 사용자 책 (--adopt-orphans) ─────────────────────────────
+
+/**
+ * global_books 에 짝이 없는 books 에 짝을 만들어 준다.
+ *
+ * 2026-07-19 일괄 등록에서 books 와 global_books 가 서로 다른 식별자로 들어간 책이
+ * 있다(『기록이라는 세계』 등). 짝이 없으면 백필·출처 채우기 어디에도 걸리지 않아
+ * 출처 표기도, Storage 이미지도 없이 남는다.
+ *
+ * 식별자는 사용자 책의 것을 그대로 쓴다(books.isbn 을 바꾸지 않는다).
+ * YES24 에서 못 찾으면 만들지 않고 보고만 한다 — 비어 있는 행을 지어내지 않는다.
+ */
+const adoptOrphans = async () => {
+  // 행 수가 수백 단위라 둘 다 받아 와서 비교한다(PostgREST 는 NOT EXISTS 조인이 없다)
+  const [{ data: books, error: booksError }, { data: globals, error: globalsError }] =
+    await Promise.all([
+      supabase.from('books').select('isbn, title').limit(5000),
+      supabase.from('global_books').select('isbn').limit(5000),
+    ]);
+  if (booksError) throw new Error(`books 조회 실패: ${booksError.message}`);
+  if (globalsError) throw new Error(`global_books 조회 실패: ${globalsError.message}`);
+
+  const known = new Set(globals.map((row) => row.isbn));
+  const orphans = new Map();
+  for (const row of books) {
+    if (row.isbn && !known.has(row.isbn)) orphans.set(row.isbn, row.title);
+  }
+
+  console.log(`짝 없는 사용자 책: ${orphans.size}권`);
+  console.log('');
+
+  let adopted = 0;
+
+  for (const [isbn, title] of orphans) {
+    const { isbn13 } = resolveIsbn13(isbn);
+    const item = isbn13 ? await fetchYes24(isbn13) : null;
+
+    if (!item) {
+      console.log(`  × ${isbn} ${title} — YES24 에서 못 찾음(그대로 둠)`);
+      await sleep(REQUEST_INTERVAL_MS);
+      continue;
+    }
+
+    console.log(`  + ${isbn} ${title} → YES24 ${item.itemId} ${item.title} / ${item.author}`);
+
+    if (!DRY_RUN) {
+      const { error } = await supabase.from('global_books').insert(toBookFields(item, isbn));
+      if (error) throw new Error(`global_books 추가 실패(${isbn}): ${error.message}`);
+    }
+
+    // 이미지·치수·books 출처는 백필과 같은 경로로 채운다
+    await applyYes24Item({ isbn, title }, item);
+    adopted += 1;
+
+    await sleep(REQUEST_INTERVAL_MS);
+  }
+
+  console.log('');
+  console.log('─'.repeat(60));
+  console.log(`짝을 만든 책  ${adopted}권`);
+  console.log(`못 찾은 책    ${orphans.size - adopted}권`);
+};
+
 const main = async () => {
   console.log(`대상 DB : ${env.NEXT_PUBLIC_SUPABASE_URL}`);
   console.log(
@@ -688,6 +887,14 @@ const main = async () => {
   }
   if (REMATCH_ALADIN) {
     await rematchAladin();
+    return;
+  }
+  if (REIDENTIFY) {
+    await reidentify(REIDENTIFY);
+    return;
+  }
+  if (ADOPT_ORPHANS) {
+    await adoptOrphans();
     return;
   }
 
