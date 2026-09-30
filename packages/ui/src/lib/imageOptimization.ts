@@ -16,7 +16,7 @@
  * 호스트명이 정확히 일치해야 하는 것.
  *
  * 도서 표지는 이 앱에서 가장 많이 그려지는 이미지라, 한도가 소진되면 서재·검색·
- * 랭킹이 한꺼번에 빈 칸이 된다(2026-08-23 실제 발생). 그래서 두 서점 CDN 모두
+ * 랭킹이 한꺼번에 빈 칸이 된다(2026-08-23 실제 발생). 그래서 서점 CDN 은
  * 변환을 태우지 않는다 — "크게 나가더라도 보이는 편"을 택한 것이다.
  *
  * YES24 원본(`/XL`)은 장변 1200px, 30~250KB 다. 변환 이득이 아예 없지는 않지만,
@@ -25,7 +25,6 @@
  */
 const PRE_OPTIMIZED_EXACT_HOSTS = new Set([
   'image.yes24.com',
-  'image.aladin.co.kr',
 ]);
 
 /**
@@ -50,8 +49,8 @@ const PRE_OPTIMIZED_HOST_SUFFIXES = [
 /**
  * 이 이미지를 next/image 의 최적화 없이 원본 그대로 내보낼지 판정한다.
  *
- * 호스트로만 판정한다. `src.includes('image.aladin.co.kr')` 같은 부분 문자열
- * 판정은 `image.aladin.co.kr.evil.com` 처럼 이름만 흉내 낸 도메인도 통과시킨다.
+ * 호스트로만 판정한다. `src.includes('image.yes24.com')` 같은 부분 문자열
+ * 판정은 `image.yes24.com.evil.com` 처럼 이름만 흉내 낸 도메인도 통과시킨다.
  *
  * 상대 경로(`/images/no-book.jpg`)는 URL 로 파싱되지 않아 false 가 된다 —
  * 로컬 정적 이미지는 지금처럼 최적화를 거친다.
