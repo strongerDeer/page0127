@@ -7,7 +7,7 @@
 export const SITE_INFO = {
   name: 'page0127',
   since: '2025년 11월',
-  lastUpdated: '2026년 9월 29일',
+  lastUpdated: '2026년 10월 1일',
   contact: {
     // 카카오톡 1:1 오픈채팅 — 방문자가 링크로 들어와 1:1 대화, 운영자는 카카오톡 알림으로 수신
     kakaoOpenChatUrl: 'https://open.kakao.com/o/scK1DkFi',
@@ -27,6 +27,18 @@ export type ChangelogEntry = {
 };
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    date: '2026.09.29',
+    title: '책 정보를 YES24에서 가져와요',
+    description:
+      '책 검색과 표지, 책 정보의 출처를 YES24로 옮겼습니다. 이미 기록한 책도 함께 옮겼어요.',
+  },
+  {
+    date: '2026.08.06',
+    title: '카카오로도 로그인할 수 있어요',
+    description:
+      '설정에서 구글과 카카오 계정을 한 계정에 연결하거나 끊을 수 있습니다.',
+  },
   {
     date: '2026.07.13',
     title: '디자인을 종이와 잉크의 색으로 다시 칠했어요',

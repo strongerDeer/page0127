@@ -15,13 +15,18 @@ export const metadata: Metadata = {
  *
  * 코드에서 실제로 확인한 처리 내역만 적는다. 지어내지 않는다.
  * - 인증: Supabase Auth + Google·Kakao OAuth
- *   (카카오는 이메일 동의가 선택이라 email 이 null 로 올 수 있다 —
+ *   (카카오 동의항목은 닉네임·프로필 사진·이메일 모두 "필수 동의" —
+ *    2026-10-01 카카오 콘솔에서 확인. 콘솔 설정을 바꾸면 이 문서도 고칠 것.
+ *    코드는 email 이 null 인 경우도 견디게 되어 있다:
  *    app/auth/callback/route.ts, entities/profile/model/identityDefaults.ts)
  * - 저장: Supabase(Postgres, Storage)
  * - 호스팅: Vercel
  * - AI 분석: OpenAI
  * - 도서 정보: YES24 Open API
  * - 사용 통계: Google Analytics 4 (NEXT_PUBLIC_GA_ID 설정 시)
+ * - 성능 측정: 자체 RUM(quality_rum_samples) + Vercel Speed Insights
+ * - 오류 모니터링: Sentry (us 리전, userInfo 수집 끔)
+ * - 댓글 신고: comment_reports (신고자·사유·상세)
  * - 접속 기록: user_daily_visits (일별, 사용자별)
  * - 개인정보 문의: 카카오톡 1:1 오픈채팅(/contact)
  */
@@ -39,12 +44,13 @@ const PrivacyPage = () => {
         <DocList
           items={[
             '구글 — 이메일 주소, 이름, 프로필 사진',
-            '카카오 — 닉네임, 프로필 사진, 이메일 주소(동의한 경우에만)',
+            '카카오 — 닉네임, 프로필 사진, 이메일 주소',
           ]}
         />
         <p className='mt-3 text-sm text-text-subtle'>
-          카카오는 이메일 제공이 선택 항목입니다. 동의하지 않아도 가입할 수
-          있으며, 그때는 이메일을 받지 않습니다.
+          설정에서 구글과 카카오 계정을 한 계정에 연결하면, 연결한 두 곳의
+          정보를 모두 받습니다. 연결을 끊으면 그 계정으로는 더 이상 로그인할 수
+          없습니다.
         </p>
         <p className='mt-4 font-medium text-text-strong'>
           서비스를 쓰면서 직접 남기는 것
@@ -55,6 +61,7 @@ const PrivacyPage = () => {
             '읽은 책의 기록 — 책 정보, 별점, 메모, 읽기 시작한 날과 완독한 날, 공개 여부',
             '연간 독서 목표',
             '팔로우, 좋아요, 댓글',
+            '댓글을 신고할 때 — 신고한 댓글, 신고 사유와 설명',
           ]}
         />
         <p className='mt-4 font-medium text-text-strong'>자동으로 쌓이는 것</p>
@@ -63,6 +70,8 @@ const PrivacyPage = () => {
             '로그인 상태를 유지하기 위한 인증 쿠키',
             '어떤 화면이 많이 쓰이는지에 대한 이용 통계 (Google Analytics, Vercel Analytics)',
             '서비스에 접속한 날짜와 그날 첫 접속 시각',
+            '화면이 뜨는 속도 같은 성능 측정값 (페이지 주소, 모바일·데스크톱 구분, 브라우저 종류)',
+            '오류가 났을 때의 오류 내용, 발생한 페이지 주소, 브라우저 정보',
           ]}
         />
         <p className='mt-4 text-sm text-text-subtle'>
@@ -78,7 +87,9 @@ const PrivacyPage = () => {
             'AI 독서 취향 분석과 독서 궁합 분석',
             '팔로우한 사람의 활동 알림',
             '공개로 설정한 책장을 다른 사람에게 보여 주기',
+            '신고된 댓글을 확인하고 조치하기',
             '서비스 개선 (어떤 기능이 쓰이는지 이용 통계로 확인)',
+            '오류를 찾아 고치고, 느린 화면을 개선하기',
           ]}
         />
       </DocSection>
@@ -114,8 +125,8 @@ const PrivacyPage = () => {
                 <td className='py-2.5 pr-4'>OpenAI</td>
                 <td className='py-2.5 pr-4'>독서 취향·궁합 분석</td>
                 <td className='py-2.5'>
-                  완독한 책의 제목·저자·카테고리·별점 (이름·닉네임·이메일은
-                  보내지 않습니다)
+                  완독한 책의 제목·저자·분류·책 소개·목차와 별점
+                  (이름·닉네임·이메일·메모는 보내지 않습니다)
                 </td>
               </tr>
               <tr className='border-b border-line-soft'>
@@ -128,11 +139,21 @@ const PrivacyPage = () => {
                 <td className='py-2.5 pr-4'>서비스 이용 통계</td>
                 <td className='py-2.5'>페이지 조회 및 기기·브라우저 정보</td>
               </tr>
-              <tr>
-                <td className='py-2.5 pr-4'>Vercel Analytics</td>
+              <tr className='border-b border-line-soft'>
+                <td className='py-2.5 pr-4'>
+                  Vercel Analytics · Speed Insights
+                </td>
                 <td className='py-2.5 pr-4'>사용 현황·성능 측정</td>
                 <td className='py-2.5'>
                   페이지 조회, 기기·브라우저 및 성능 정보
+                </td>
+              </tr>
+              <tr>
+                <td className='py-2.5 pr-4'>Sentry</td>
+                <td className='py-2.5 pr-4'>오류 감지</td>
+                <td className='py-2.5'>
+                  오류 내용, 발생한 페이지 주소, 브라우저 정보 (이름·이메일은
+                  보내지 않습니다)
                 </td>
               </tr>
             </tbody>
@@ -143,7 +164,60 @@ const PrivacyPage = () => {
         </p>
       </DocSection>
 
-      <DocSection title='4. 얼마나 보관하나요'>
+      {/* 개인정보보호법 제28조의8 — 국외 이전 시 국가·항목·시기·방법·보유기간·거부 방법 고지 */}
+      <DocSection title='4. 국외로 옮겨지는 정보'>
+        <p>
+          계정 정보와 독서 기록은 국내(서울) 데이터센터에 저장됩니다. 다만 아래
+          서비스는 미국에 있는 회사가 처리하므로, 해당 정보가 미국으로
+          옮겨집니다.
+        </p>
+        <div className='mt-3 overflow-x-auto'>
+          <table className='w-full text-sm'>
+            <thead>
+              <tr className='border-b border-line text-left text-text-subtle'>
+                <th className='py-2 pr-4 font-medium'>받는 곳 (국가)</th>
+                <th className='py-2 pr-4 font-medium'>옮겨지는 정보</th>
+                <th className='py-2 font-medium'>목적</th>
+              </tr>
+            </thead>
+            <tbody className='text-text-body'>
+              <tr className='border-b border-line-soft'>
+                <td className='py-2.5 pr-4'>OpenAI (미국)</td>
+                <td className='py-2.5 pr-4'>완독한 책의 정보와 별점</td>
+                <td className='py-2.5'>독서 취향·궁합 분석</td>
+              </tr>
+              <tr className='border-b border-line-soft'>
+                <td className='py-2.5 pr-4'>Vercel (미국)</td>
+                <td className='py-2.5 pr-4'>
+                  접속 기록, 페이지 조회·성능 정보
+                </td>
+                <td className='py-2.5'>호스팅, 이용 통계·성능 측정</td>
+              </tr>
+              <tr className='border-b border-line-soft'>
+                <td className='py-2.5 pr-4'>Google (미국)</td>
+                <td className='py-2.5 pr-4'>페이지 조회, 기기·브라우저 정보</td>
+                <td className='py-2.5'>이용 통계</td>
+              </tr>
+              <tr>
+                <td className='py-2.5 pr-4'>Sentry (미국)</td>
+                <td className='py-2.5 pr-4'>
+                  오류 내용, 페이지 주소, 브라우저 정보
+                </td>
+                <td className='py-2.5'>오류 감지</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <DocList
+          items={[
+            '언제, 어떻게 — 서비스를 이용할 때마다 암호화된 인터넷 통신으로 전송됩니다.',
+            '얼마나 보관 — 각 회사의 보관 정책에 따른 기간 동안 보관된 뒤 삭제됩니다.',
+            '거부하려면 — AI 분석을 쓰지 않으면 OpenAI로는 아무것도 전송되지 않습니다. 나머지는 서비스 운영에 꼭 필요한 처리라 거부하려면 서비스 이용을 멈추고 탈퇴해야 합니다. 브라우저 설정으로 통계 쿠키는 막을 수 있습니다.',
+          ]}
+        />
+      </DocSection>
+
+      <DocSection title='5. 얼마나 보관하나요'>
         <p>
           계정을 유지하는 동안 보관하고, <strong>탈퇴하면 즉시 삭제</strong>
           합니다. 계정 정보, 독서 기록, 메모, 별점, 팔로우 관계와 분석 결과는
@@ -157,7 +231,7 @@ const PrivacyPage = () => {
         </p>
       </DocSection>
 
-      <DocSection title='5. 공개되는 정보'>
+      <DocSection title='6. 공개되는 정보'>
         <p>
           책을 등록할 때 <strong>공개</strong>로 설정하면, 그 책은 공개 서재
           주소(<code className='text-sm'>/사용자명</code>)를 아는 사람 누구나 볼
@@ -169,7 +243,7 @@ const PrivacyPage = () => {
         </p>
       </DocSection>
 
-      <DocSection title='6. 이용자의 권리'>
+      <DocSection title='7. 이용자의 권리'>
         <DocList
           items={[
             '내가 남긴 기록은 언제든 열람하고 수정할 수 있습니다.',
@@ -179,7 +253,7 @@ const PrivacyPage = () => {
         />
       </DocSection>
 
-      <DocSection title='7. 쿠키'>
+      <DocSection title='8. 쿠키'>
         <p>
           로그인 상태를 유지하기 위해 인증 쿠키를 씁니다. 브라우저에서 쿠키를
           지우면 로그아웃됩니다. Google Analytics가 설정된 경우 서비스 이용
@@ -189,7 +263,7 @@ const PrivacyPage = () => {
         </p>
       </DocSection>
 
-      <DocSection title='8. 파기 방법'>
+      <DocSection title='9. 파기 방법'>
         <p>
           보유 목적이 끝난 개인정보는 데이터베이스에서 삭제하고, 프로필 이미지는
           저장소에서 삭제합니다. 전자 파일은 복구하기 어렵도록 삭제하며, 법령상
@@ -198,7 +272,7 @@ const PrivacyPage = () => {
         </p>
       </DocSection>
 
-      <DocSection title='9. 개인정보 보호 담당 및 문의'>
+      <DocSection title='10. 개인정보 보호 담당 및 문의'>
         <p>
           개인정보 보호업무 담당은 page0127 운영자입니다. 개인정보 처리에 관한
           문의나 요청(열람·수정·삭제 등)은{' '}
