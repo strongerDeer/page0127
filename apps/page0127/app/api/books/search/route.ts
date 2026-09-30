@@ -8,8 +8,8 @@ import { getBookProvider } from '@/shared/api/book-provider';
  * 학습 포인트:
  * - Next.js API Route Handler (App Router)
  * - CORS 문제 해결: 서버에서 외부 API 호출 (API 키도 서버에만 둔다)
- * - 공급자(알라딘/YES24)는 `getBookProvider()` 가 고른다 — 이 파일은 누가
- *   답하는지 모른다. 알라딘 종료 같은 사건이 라우트까지 번지지 않게 하는 경계다.
+ * - 공급자(현재 YES24)는 `getBookProvider()` 가 고른다 — 이 파일은 누가
+ *   답하는지 모른다. 공급자 종료 같은 사건이 라우트까지 번지지 않게 하는 경계다.
  */
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;

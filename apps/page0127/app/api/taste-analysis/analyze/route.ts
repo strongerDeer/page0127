@@ -224,9 +224,9 @@ export async function POST(_request: NextRequest) {
           console.warn(`추천 도서 ${recommendations.length}건 저장 완료`);
         }
 
-        // 7. 알라딘 API로 표지 이미지 업데이트
+        // 7. 도서 공급자로 표지 이미지 업데이트
         // after()로 감싸서 응답을 먼저 보낸 뒤 백그라운드에서 처리한다.
-        // 추천 도서 수만큼 알라딘 API를 순차 호출(rate limit 방지용 딜레이 포함)하기 때문에
+        // 추천 도서 수만큼 공급자 API를 순차 호출(rate limit 방지용 딜레이 포함)하기 때문에
         // 응답 전에 기다리면 사용자 체감 대기 시간이 그만큼 늘어난다.
         after(async () => {
           try {
@@ -236,10 +236,10 @@ export async function POST(_request: NextRequest) {
               analysis.id
             );
             if (process.env.NODE_ENV === 'development') {
-              console.warn('알라딘 API 업데이트 완료');
+              console.warn('공급자 데이터 업데이트 완료');
             }
           } catch (err: unknown) {
-            console.error('알라딘 API 업데이트 실패:', err);
+            console.error('공급자 데이터 업데이트 실패:', err);
           }
         });
       }
@@ -382,7 +382,7 @@ async function enrichRecommendationsWithProviderData(
       // API 요청 간 간격 (Rate Limiting 방지)
       await new Promise((resolve) => setTimeout(resolve, 200));
     } catch (error) {
-      console.error(`알라딘 API 오류 (${rec.title}):`, error);
+      console.error(`공급자 API 오류 (${rec.title}):`, error);
     }
   }
 }

@@ -20,7 +20,7 @@ export const metadata: Metadata = {
  * - 저장: Supabase(Postgres, Storage)
  * - 호스팅: Vercel
  * - AI 분석: OpenAI
- * - 도서 정보: 알라딘 API
+ * - 도서 정보: YES24 Open API
  * - 사용 통계: Google Analytics 4 (NEXT_PUBLIC_GA_ID 설정 시)
  * - 접속 기록: user_daily_visits (일별, 사용자별)
  * - 개인정보 문의: 카카오톡 1:1 오픈채팅(/contact)
@@ -119,7 +119,7 @@ const PrivacyPage = () => {
                 </td>
               </tr>
               <tr className='border-b border-line-soft'>
-                <td className='py-2.5 pr-4'>알라딘</td>
+                <td className='py-2.5 pr-4'>YES24</td>
                 <td className='py-2.5 pr-4'>책 정보 검색</td>
                 <td className='py-2.5'>검색어 (개인정보 아님)</td>
               </tr>

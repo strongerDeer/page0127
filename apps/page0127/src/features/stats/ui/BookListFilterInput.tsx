@@ -23,7 +23,7 @@ export type BookListFilterInputHandle = {
 };
 
 /**
- * 책 목록 필터 검색 Input (서재 목록을 거르는 용도 — 알라딘 검색의 features/book/ui/BookSearchInput과 다르다)
+ * 책 목록 필터 검색 Input (서재 목록을 거르는 용도 — 도서 검색의 features/book/ui/BookSearchInput과 다르다)
  *
  * 학습 포인트:
  * - React 19: forwardRef 없이 ref를 prop으로 받는다

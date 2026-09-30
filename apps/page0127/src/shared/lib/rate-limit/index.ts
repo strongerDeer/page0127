@@ -10,7 +10,7 @@ const STRICT_PATHS = [
   '/api/compatibility/analyze',
 ];
 
-// 알라딘 API(비용 발생)를 호출하지만, 검색창 입력마다(debounce 400ms) 자동 호출되는
+// 도서 공급자 API(일일 호출 한도 있음)를 호출하지만, 검색창 입력마다(debounce 400ms) 자동 호출되는
 // 라이브 검색이라 strict(5회/분)로 묶으면 정상 사용자도 오타 수정 몇 번에 429를 본다.
 // strict보다 여유 있게, standard보다는 낮게 별도 등급을 둔다.
 const SEARCH_PATHS = ['/api/books/search'];
