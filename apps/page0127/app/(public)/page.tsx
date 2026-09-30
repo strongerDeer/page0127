@@ -4,6 +4,8 @@ import { ErrorBoundary } from '@repo/ui';
 import { ArrowRight, BookOpen, ScanSearch, Sparkles } from 'lucide-react';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { JsonLd } from '@/shared/lib/seo/JsonLd';
+import { buildWebSiteJsonLd } from '@/shared/lib/seo/structuredData';
 
 import { BookRankingError } from '@/widgets/book/ui/BookRankingError';
 import { BookRankingListSkeleton } from '@/widgets/book/ui/BookRankingListSkeleton';
@@ -31,6 +33,16 @@ import { WeeklyRecapCard } from '@/widgets/recap/ui/WeeklyRecapCard';
  * - Suspense & Streaming — 배너·두 랭킹이 각각 독립적으로 도착
  * - user-specific 데이터(읽음/좋아요)는 가벼우므로 페이지에서 한 번만 fetch
  */
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+
+// 검색엔진용 사이트 정보(JSON-LD). 사이트 전체를 대표하므로 홈에만 둔다.
+const webSiteJsonLd = buildWebSiteJsonLd({
+  name: 'page0127',
+  url: siteUrl,
+  description:
+    '읽은 책을 한 권씩 기록하면 AI가 독서 취향을 분석하고 다음에 읽을 책을 추천해 주는 독서 기록 서비스',
+});
 
 // 집계 기준일 — "어제까지의 데이터"임을 명시한다.
 // 날짜를 박는다는 건 누군가 갱신 책임을 지고 있다는 선언이다.
@@ -65,6 +77,7 @@ const Home = async () => {
 
   return (
     <div className='min-h-screen bg-background'>
+      <JsonLd data={webSiteJsonLd} />
       <div className='container mx-auto max-w-6xl space-y-12 px-4 py-6 md:py-8'>
         {/* 주간 회상 — 로그인 사용자에게만, 이번 주에 할 말이 있을 때만 나온다.
             실패하거나 할 말이 없으면 조용히 사라진다(랜딩을 막지 않는다) */}

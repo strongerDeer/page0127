@@ -22,12 +22,14 @@ type CurrentUser = {
 async function getCurrentUser(): Promise<CurrentUser | null> {
   try {
     const { data } = await apiClient.get<
-      { data?: CurrentUser } & Partial<CurrentUser>
+      ({ data?: CurrentUser } & Partial<CurrentUser>) | null
     >('/auth/me');
+    // 비로그인이면 서버가 200 + null을 준다 (401이 아니다 — route.ts 주석 참고)
+    if (!data) return null;
     // successResponse 형태({ data }) 우선, 아니면 본문 자체를 사용
     return (data.data ?? data) as CurrentUser;
   } catch {
-    // 401(비로그인) 등은 정상 흐름 → 조용히 null 반환 (인터셉터에서 로깅)
+    // 네트워크·서버 오류 → 비로그인으로 취급 (인터셉터에서 로깅)
     return null;
   }
 }
