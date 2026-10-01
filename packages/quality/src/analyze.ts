@@ -6,7 +6,8 @@ import type {
   RegressionRecord,
 } from './types.ts';
 
-export type TrendLabel = 'improving' | 'degrading' | 'flat';
+// 'unmeasured' = 직전 또는 이번 값이 0(측정 실패)이라 비교할 수 없음.
+export type TrendLabel = 'improving' | 'degrading' | 'flat' | 'unmeasured';
 
 // 저장 스키마(RegressionRecord)와 동일. formFactor 없으면 'mobile'(번들 등 폼팩터 무관 지표).
 export type Regression = RegressionRecord;
@@ -51,6 +52,10 @@ const labelTrend = (
   curr: number,
   betterWhenHigher: boolean
 ): TrendLabel => {
+  // 세 추세(성능 평균·번들·평균 전송량) 모두 0 은 "측정 실패"의 표시다 — 실제 0 일 수 없다.
+  // 이걸 걸러내지 않으면 0→724KB 가 '악화'로 잡힌다(2026-10-01, 빌드 경로 버그로
+  // 번들이 0 으로 기록돼 오다 고쳐진 첫 측정에서 리포트가 "JS 가 늘었다"고 오판했다).
+  if (prev <= 0 || curr <= 0) return 'unmeasured';
   const delta = curr - prev;
   if (Math.abs(delta) < 0.5) return 'flat';
   const improved = betterWhenHigher ? delta > 0 : delta < 0;

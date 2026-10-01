@@ -106,6 +106,22 @@ describe('analyze', () => {
     expect(analyze([base, curr]).trend.bundle).toBe('degrading');
   });
 
+  it('직전 번들이 0(측정 실패)이면 trend.bundle은 unmeasured 다 — 0→724 를 악화로 보지 않는다', () => {
+    const prev = structuredClone(base);
+    prev.bundle = { totalFirstLoadKb: 0, routes: [] };
+    const curr = nextDeploy();
+    curr.bundle.totalFirstLoadKb = 724;
+    const result = analyze([prev, curr]);
+    expect(result.trend.bundle).toBe('unmeasured');
+    expect(result.regressions.some((r) => r.metric === 'bundle')).toBe(false);
+  });
+
+  it('이번 번들이 0(빌드 실패)이어도 unmeasured 다 — 200→0 을 개선으로 보지 않는다', () => {
+    const curr = nextDeploy();
+    curr.bundle = { totalFirstLoadKb: 0, routes: [] };
+    expect(analyze([base, curr]).trend.bundle).toBe('unmeasured');
+  });
+
   it('CLS 임계(0.1) 초과를 회귀로 잡는다', () => {
     const curr = nextDeploy();
     curr.pages[0].cwv.cls = 0.2;
