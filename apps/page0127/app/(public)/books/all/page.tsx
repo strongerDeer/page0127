@@ -5,6 +5,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { PageContainer, PageHeader } from '@repo/ui';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
 
 import { BookListItem } from '@/widgets/book/ui/BookListItem';
 
@@ -64,7 +65,8 @@ export default async function GlobalBooksPage(props: {
   });
   if (q) {
     // 제목 또는 저자에 검색어가 포함된 책 (대소문자 무시)
-    booksQuery = booksQuery.or(`title.ilike.%${q}%,author.ilike.%${q}%`);
+    const pattern = quotePostgrestValue(`%${q}%`);
+    booksQuery = booksQuery.or(`title.ilike.${pattern},author.ilike.${pattern}`);
   }
   booksQuery = booksQuery
     .order(sort, { ascending: order === 'asc' })
