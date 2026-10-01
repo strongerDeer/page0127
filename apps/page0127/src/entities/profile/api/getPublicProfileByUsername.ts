@@ -1,5 +1,7 @@
 import { createAnonClient } from '@/shared/config/supabase/anon';
 
+import { PROFILE_PUBLIC_COLUMNS } from './profileColumns';
+
 import type { Profile } from '../types';
 
 /**
@@ -17,7 +19,7 @@ export const getPublicProfileByUsername = async (
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('*')
+    .select(PROFILE_PUBLIC_COLUMNS)
     .eq('username', username)
     .maybeSingle();
 

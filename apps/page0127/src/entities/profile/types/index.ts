@@ -24,9 +24,6 @@ export type Profile = {
   /** 사용자 ID (auth.users.id와 동일) */
   id: string;
 
-  /** 이메일 */
-  email: string | null;
-
   /** 사용자 고유 ID (공개 서재 URL용, 예: abc, abc1, abc2) */
   username: string | null;
 

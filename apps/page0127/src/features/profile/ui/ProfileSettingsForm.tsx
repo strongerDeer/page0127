@@ -27,6 +27,11 @@ import type { Profile } from '@/entities/profile/types';
 type ProfileSettingsFormProps = {
   profile: Profile;
   /**
+   * 로그인 세션의 이메일(`user.email`). profiles.email 은 쓰지 않는다 — 그 컬럼은
+   * 남이 읽지 못하게 SELECT 권한을 막아 둬서 `Profile` 에 없다(profileColumns.ts).
+   */
+  email: string | null;
+  /**
    * 내 계정과 위험 구역 사이에 끼워 넣을 섹션.
    *
    * 위험 구역(계정 삭제)이 폼 안에 있어서, 페이지가 그냥 뒤에 덧붙이면
@@ -170,6 +175,7 @@ const initialState: ProfileActionState = { status: 'idle', message: '' };
  */
 export const ProfileSettingsForm = ({
   profile,
+  email,
   children,
 }: ProfileSettingsFormProps) => {
   const router = useRouter();
@@ -254,7 +260,7 @@ export const ProfileSettingsForm = ({
             <Input
               id={ids.email}
               type='email'
-              value={profile.email || ''}
+              value={email || ''}
               placeholder='연결된 이메일이 없어요'
               disabled
               className='bg-muted'

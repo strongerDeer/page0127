@@ -16,7 +16,8 @@ export const getShellUser = async (userId: string): Promise<ShellUser> => {
   return {
     userId,
     photoUrl: profile?.photo_url ?? null,
-    displayName: profile?.nickname || profile?.email || '사용자',
+    // profiles.email 은 읽을 수 없다(profileColumns.ts). 닉네임이 없으면 아이디로 대신한다
+    displayName: profile?.nickname || profile?.username || '사용자',
     username: profile?.username ?? null,
   };
 };
