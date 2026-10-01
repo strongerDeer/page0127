@@ -1,5 +1,7 @@
 import { createClient } from '@/shared/config/supabase/server';
 
+import { PROFILE_PUBLIC_COLUMNS } from './profileColumns';
+
 import type { Profile } from '../types';
 
 /**
@@ -16,7 +18,7 @@ export const getProfileByUsername = async (
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('*')
+    .select(PROFILE_PUBLIC_COLUMNS)
     .eq('username', username)
     .maybeSingle();
 

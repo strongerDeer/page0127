@@ -2,6 +2,7 @@ import { createClient } from '@/shared/config/supabase/server';
 
 import { toIdentityDefaults } from '../model/identityDefaults';
 import { generateUsernameSeed, USERNAME_MAX_LENGTH } from '../model/username';
+import { PROFILE_PUBLIC_COLUMNS } from './profileColumns';
 
 import type { Profile } from '../types';
 
@@ -26,7 +27,7 @@ export const getProfile = async (userId: string): Promise<Profile | null> => {
   // 학습 포인트: maybeSingle()은 0개 또는 1개의 결과를 허용 (탈퇴한 사용자 대응)
   const { data: profile, error } = await supabase
     .from('profiles')
-    .select('*')
+    .select(PROFILE_PUBLIC_COLUMNS)
     .eq('id', userId)
     .maybeSingle();
 
@@ -154,7 +155,9 @@ export const upsertProfile = async (
       .upsert(
         {
           id: userId,
-          email,
+          // email 은 보내지 않는다 — DB 트리거가 auth.users 에서 채운다.
+          // 보내면 upsert 가 `SET email = EXCLUDED.email` 을 만들고, email 의 SELECT 권한이
+          // 없는 사용자 역할에선 42501 로 가입이 통째로 실패한다(hide_profile_email 마이그레이션).
           ...(name && { username: name }), // username이 있을 때만 추가
           ...(defaults.nickname && { nickname: defaults.nickname }),
           ...(defaults.photoUrl && { photo_url: defaults.photoUrl }),
@@ -165,7 +168,7 @@ export const upsertProfile = async (
         }
       )
       // 저장된 행을 통째로 돌려받는다 — 호출자가 다시 조회하지 않아도 되게
-      .select('*');
+      .select(PROFILE_PUBLIC_COLUMNS);
 
   const { data, error } = await save(username);
   if (!error)
