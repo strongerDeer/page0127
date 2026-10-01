@@ -53,6 +53,9 @@ jobs:
           OPENAI_API_KEY: dummy
           # CrUX(없으면 필드 지표만 생략하고 측정은 계속). ?key= 방식.
           CRUX_API_KEY: ${{ secrets.CRUX_API_KEY }}
+          # 리포트 해석(report.ts). 없으면 해석만 생략하고 측정은 계속.
+          # Console 의 page0127 워크스페이스 키 — 소액 충전·자동 충전 끔으로 피해 상한을 둔다.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       # 실패를 이슈로 남긴다.
       #

@@ -85,8 +85,13 @@ const execStatus = (
     });
     return { ok: true, output };
   } catch (e) {
-    const err = e as { stdout?: string; stderr?: string };
-    return { ok: false, output: `${err.stdout ?? ''}\n${err.stderr ?? ''}` };
+    const err = e as { stdout?: string; stderr?: string; message?: string };
+    // cwd 가 없으면(ENOENT) 프로세스가 아예 안 떠서 stdout/stderr 가 비어 있다.
+    // message 까지 남겨야 "빈 출력으로 실패"가 원인 없이 묻히지 않는다.
+    return {
+      ok: false,
+      output: `${err.stdout ?? ''}\n${err.stderr ?? ''}\n${err.message ?? ''}`,
+    };
   }
 };
 

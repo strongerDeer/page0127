@@ -1,11 +1,21 @@
-import { execFileSync } from 'node:child_process';
-
 import type { Analysis } from './analyze.ts';
 
-export const buildNarrative = (a: Analysis): string => {
-  // a는 current 1건 + trend/regressions만 담아 작음 → argv로 충분.
-  // 향후 payload에 history가 실리면 argv 길이(E2BIG) 초과 가능 → stdin(input)으로 전환할 것.
-  const prompt = `너는 Novera 대표(1인 운영, 바쁘다)를 돕는 동료다. 아래 주간 품질 측정 결과(JSON)를 보고, 훑어 읽어도 바로 이해되는 쉬운 한국어 분석을 마크다운으로 써라.
+// 측정 결과를 사람이 읽을 해석으로 바꾼다 — Claude API(Messages)를 직접 부른다.
+//
+// 예전엔 `claude -p` CLI 를 실행했는데, 측정은 GitHub Actions 에서 돌고 거기엔
+// CLI 가 없다. 그래서 9주 내내 "생략"만 저장됐고, catch 가 원인을 삼켜서 아무도
+// 몰랐다. 이제 생략할 때는 **왜 생략했는지**(키 없음/HTTP 상태/시간 초과)를 남긴다.
+const ENDPOINT = 'https://api.anthropic.com/v1/messages';
+const API_VERSION = '2023-06-01';
+const MODEL = 'claude-sonnet-5-5';
+const MAX_TOKENS = 2000;
+
+// 상한은 AbortController 로 건다. AbortSignal.timeout() 은 라이브러리 재시도에
+// 먹혀 상한이 안 지켜진 적이 있다(postgrest-js, 5ms 설정이 7초).
+const TIMEOUT_MS = 120_000;
+
+const buildPrompt = (a: Analysis): string =>
+  `너는 page0127(독서 기록 서비스)을 혼자 만들고 운영하는 개발자를 돕는 동료다. 아래 주간 품질 측정 결과(JSON)를 보고, 훑어 읽어도 바로 이해되는 쉬운 한국어 분석을 마크다운으로 써라.
 형식(반드시 지킬 것):
 **핵심:** 한 문장 요약.
 
@@ -29,13 +39,78 @@ export const buildNarrative = (a: Analysis): string => {
 \`sameDeployment\`가 true이면 직전과 같은 배포본을 재측정한 것이라 코드 변화가 없다 → 모든 지표 변동은 노이즈(랩 출렁임 또는 라이브 콘텐츠 변동)이며 코드 회귀가 아니다. 이때는 \`suppressedRegressions\`를 회귀로 보고하지 말고 "동일 배포본이라 변동은 노이즈"라고만 짚어라. 진짜 개선/회귀를 보려면 새 배포 후 재측정이 필요함을 명시하라.
 
 ${JSON.stringify(a, null, 2)}`;
+
+/**
+ * Messages API 응답에서 본문 텍스트만 꺼낸다.
+ *
+ * 응답의 content 는 블록 배열이고 텍스트는 type 'text' 블록에 있다.
+ * 모양이 예상과 다르면 null — 호출부가 "생략"으로 처리한다(측정은 계속).
+ */
+export const extractText = (body: unknown): string | null => {
+  if (typeof body !== 'object' || body === null) return null;
+  const content = (body as { content?: unknown }).content;
+  if (!Array.isArray(content)) return null;
+
+  const text = content
+    .filter(
+      (b): b is { type: 'text'; text: string } =>
+        typeof b === 'object' &&
+        b !== null &&
+        (b as { type?: unknown }).type === 'text' &&
+        typeof (b as { text?: unknown }).text === 'string'
+    )
+    .map((b) => b.text)
+    .join('')
+    .trim();
+
+  return text.length > 0 ? text : null;
+};
+
+const skipped = (reason: string): string => {
+  console.warn(`[quality] 자연어 분석 생략: ${reason}`);
+  return `_(자연어 분석 생략 — ${reason})_`;
+};
+
+export const buildNarrative = async (a: Analysis): Promise<string> => {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return skipped('ANTHROPIC_API_KEY 없음');
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
   try {
-    return execFileSync('claude', ['-p', prompt], {
-      encoding: 'utf8',
-      timeout: 120_000,
-    }).trim();
-  } catch {
-    console.warn('[quality] claude -p 사용 불가 → 자연어 요약 생략');
-    return '_(자연어 분석 생략 — claude CLI 미사용 환경)_';
+    const res = await fetch(ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': API_VERSION,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: MAX_TOKENS,
+        messages: [{ role: 'user', content: buildPrompt(a) }],
+      }),
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      // 응답 본문에 원인(키 오류·크레딧 부족 등)이 담겨 온다 — 로그로만 남긴다
+      const detail = await res.text().catch(() => '');
+      console.warn(
+        `[quality] Claude API ${res.status}: ${detail.slice(0, 300)}`
+      );
+      return skipped(`Claude API HTTP ${res.status}`);
+    }
+
+    const text = extractText(await res.json());
+    return text ?? skipped('Claude API 응답에 본문 없음');
+  } catch (e) {
+    if (controller.signal.aborted) {
+      return skipped(`Claude API ${TIMEOUT_MS / 1000}초 시간 초과`);
+    }
+    return skipped(`Claude API 호출 실패(${(e as Error).message})`);
+  } finally {
+    clearTimeout(timer);
   }
 };
