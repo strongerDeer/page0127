@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server';
 
+import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
+
 import { getCurrentUser, getSupabaseClient } from '../../_helpers/auth';
 import { errorResponse, successResponse } from '../../_helpers/response';
 
@@ -30,7 +32,10 @@ export async function GET(request: NextRequest) {
     const { data: profiles, error } = await supabase
       .from('profiles')
       .select('id, nickname, username, bio, photo_url')
-      .or(`nickname.ilike.%${query}%,username.ilike.%${query}%`)
+      // 감싸지 않으면 q 에 쉼표를 넣어 다른 컬럼 조건을 덧붙일 수 있다(postgrestFilter.ts)
+      .or(
+        `nickname.ilike.${quotePostgrestValue(`%${query}%`)},username.ilike.${quotePostgrestValue(`%${query}%`)}`
+      )
       .limit(20);
 
     if (process.env.NODE_ENV === 'development') {

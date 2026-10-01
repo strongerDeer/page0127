@@ -26,15 +26,27 @@ export type SchemaProbe = {
 export const SCHEMA_CONTRACT: SchemaProbe[] = [
   {
     table: 'books',
-    columns: ['is_life_book', 'rating', 'is_public', 'read_count'],
-    breaks: '책장·완독 목록·공개 서재 — 2026-07-29 사고가 난 자리',
+    // provider_item_id — 중복 등록 판정이 isbn 과 함께 본다(books/route.ts).
+    //   없으면 같은 책이 쌍둥이 행으로 갈라진다(2026-09-29 실제 3권).
+    // thickness_mm — 책등을 실물 두께 비례로 그린다(spineWidth.ts).
+    columns: [
+      'is_life_book',
+      'rating',
+      'is_public',
+      'read_count',
+      'provider_item_id',
+      'source',
+      'thickness_mm',
+    ],
+    breaks: '책장·완독 목록·공개 서재 — 2026-07-29 사고가 난 자리 · 중복 등록 판정 · 책등 두께',
   },
   {
     table: 'profiles',
     // username_changed_at — 설정 화면이 "아이디 변경 기회가 남았는가"를 이 값으로 판단한다.
     // NULL 이면 아직 안 바꾼 것. 컬럼이 없으면 설정 화면이 죽는다.
-    columns: ['username', 'nickname', 'username_changed_at'],
-    breaks: '로그인 후 모든 화면 (사용자 식별) · 설정의 아이디 변경',
+    // onboarded_at — (protected) 레이아웃이 온보딩으로 보낼지 이 값으로 정한다.
+    columns: ['username', 'nickname', 'username_changed_at', 'onboarded_at'],
+    breaks: '로그인 후 모든 화면 (사용자 식별·온보딩 분기) · 설정의 아이디 변경',
   },
   {
     table: 'user_daily_visits',

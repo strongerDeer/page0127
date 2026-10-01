@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server';
 
+import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
+
 import { getSupabaseClient } from '../../_helpers/auth';
 import { errorResponse, successResponse } from '../../_helpers/response';
 
@@ -30,7 +32,8 @@ export async function GET(request: NextRequest) {
       .select('*', { count: 'exact' });
 
     if (search) {
-      query = query.or(`title.ilike.%${search}%,author.ilike.%${search}%`);
+      const pattern = quotePostgrestValue(`%${search}%`);
+      query = query.or(`title.ilike.${pattern},author.ilike.${pattern}`);
     }
 
     // 정렬

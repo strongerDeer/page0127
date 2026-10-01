@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server';
 
+import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
+
 import { createActivity } from '../_helpers/activity';
 import { getCurrentUser, getSupabaseClient } from '../_helpers/auth';
 import { errorResponse, successResponse } from '../_helpers/response';
@@ -46,7 +48,10 @@ export async function GET(request: NextRequest) {
     //
     // 상품번호가 같으면 같은 상품이므로, 둘 중 하나라도 맞으면 기존 책으로 본다.
     if (isbn && providerItemId) {
-      query = query.or(`isbn.eq.${isbn},provider_item_id.eq.${providerItemId}`);
+      // .or() 는 문자열을 그대로 넘기므로 값을 감싸야 쉼표·괄호로 조건을 덧붙일 수 없다
+      query = query.or(
+        `isbn.eq.${quotePostgrestValue(isbn)},provider_item_id.eq.${quotePostgrestValue(providerItemId)}`
+      );
     } else if (isbn) {
       query = query.eq('isbn', isbn);
     } else if (providerItemId) {
