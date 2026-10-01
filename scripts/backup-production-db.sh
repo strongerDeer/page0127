@@ -81,17 +81,37 @@ SCHEMA_TMP="$(mktemp "$BACKUP_DIR/.schema-XXXXXX")"
 DATA_TMP="$(mktemp "$BACKUP_DIR/.data-XXXXXX")"
 trap 'rm -f "$SCHEMA_TMP" "$DATA_TMP"' EXIT
 
-supabase db dump --linked --workdir "$ROOT" -f "$SCHEMA_TMP" \
-  || notify_failure '스키마 덤프 실패'
-supabase db dump --linked --workdir "$ROOT" --data-only --use-copy -f "$DATA_TMP" \
-  || notify_failure '데이터 덤프 실패'
+# 덤프 한 번 = "명령 성공 + 내용 검사 통과". 둘 중 하나라도 실패하면 잠시 쉬고 다시 받는다.
+#
+# 왜 재시도하나 (2026-10-01 하루에 세 번):
+#   supabase CLI 는 명령마다 임시 로그인 역할(cli_login_postgres)의 비밀번호를 새로 만드는데,
+#   연달아 부르면 풀러에 반영되기 전에 접속해 `password authentication failed` 로 실패한다.
+#   몇십 초 뒤 다시 부르면 통과했다. 주 1회 백업이 이 운에 걸려 한 주를 통째로 비우지 않게 한다.
+# 왜 내용까지 보나:
+#   종료 코드 0 인데 0바이트 파일이 남은 적이 있다. 파일이 생겼다고 성공이 아니다.
+#   스키마는 profiles 정의, 데이터는 profiles 의 COPY 블록(가입자가 있는 한 항상 있다)으로 판정한다.
+DUMP_ATTEMPTS=3
+DUMP_RETRY_WAIT="${DUMP_RETRY_WAIT:-30}"
 
-# 파일이 생겼다고 성공이 아니다 — 종료 코드 0 인데 빈 파일이 남은 적이 있다.
-# 스키마는 profiles 정의, 데이터는 profiles 의 COPY 블록(가입자가 있는 한 항상 있다)으로 판정한다.
-grep -q 'CREATE TABLE IF NOT EXISTS "public"."profiles"' "$SCHEMA_TMP" \
-  || notify_failure '스키마 덤프가 비었거나 profiles 정의가 없음 — 기존 백업은 그대로 둠'
-grep -q 'COPY "public"."profiles"' "$DATA_TMP" \
-  || notify_failure '데이터 덤프에 profiles 가 없음 — 기존 백업은 그대로 둠'
+dump_with_retry() {
+  local file="$1" must_contain="$2"
+  shift 2
+  for attempt in $(seq 1 "$DUMP_ATTEMPTS"); do
+    if supabase db dump --linked --workdir "$ROOT" -f "$file" "$@" && grep -q "$must_contain" "$file"; then
+      return 0
+    fi
+    if [ "$attempt" -lt "$DUMP_ATTEMPTS" ]; then
+      echo "  덤프 실패(${attempt}/${DUMP_ATTEMPTS}) — ${DUMP_RETRY_WAIT}초 뒤 다시 시도" >&2
+      sleep "$DUMP_RETRY_WAIT"
+    fi
+  done
+  return 1
+}
+
+dump_with_retry "$SCHEMA_TMP" 'CREATE TABLE IF NOT EXISTS "public"."profiles"' \
+  || notify_failure "스키마 덤프 ${DUMP_ATTEMPTS}회 실패 — 기존 백업은 그대로 둠"
+dump_with_retry "$DATA_TMP" 'COPY "public"."profiles"' --data-only --use-copy \
+  || notify_failure "데이터 덤프 ${DUMP_ATTEMPTS}회 실패 — 기존 백업은 그대로 둠"
 
 mv "$SCHEMA_TMP" "$SCHEMA_FILE"
 mv "$DATA_TMP" "$DATA_FILE"
