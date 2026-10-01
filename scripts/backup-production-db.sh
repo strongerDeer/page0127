@@ -10,7 +10,14 @@
 #   주간 예약을 함께 걸어도 한 주에 한 번만 받는다 — Mac 이 월요일에 꺼져 있었으면
 #   다음 로그인 때 대신 받는다(launchd 는 꺼져 있던 동안의 예약을 다시 돌리지 않는다).
 #
-# 수동 실행:  bash scripts/backup-production-db.sh --force
+# 왜 설치본을 따로 두나 (2026-10-01 실제 발생):
+#   macOS 는 ~/Desktop 을 보호 폴더로 취급해, launchd 가 띄운 bash 가 저장소 안의 이 파일을
+#   읽으려 하면 "Operation not permitted" 로 막는다. 그래서 launchd 는 Desktop 밖의 설치본
+#   (~/.page0127-backup/scripts/)을 부르고, 덤프에 필요한 링크 정보(supabase/.temp)도
+#   그 옆에 복사해 둔다. **이 파일을 고치면 --install 을 다시 돌려야 설치본에 반영된다.**
+#
+# 설치(최초 1회·수정 후):  bash scripts/backup-production-db.sh --install
+# 수동 실행:               bash scripts/backup-production-db.sh --force
 set -euo pipefail
 
 # 운영 프로젝트 ref. 링크가 개발 프로젝트로 바뀌어 있으면 **개발 DB를 받아 놓고 백업했다고
@@ -27,6 +34,20 @@ notify_failure() {
   echo "✗ $1" >&2
   exit 1
 }
+
+if [ "$FORCE" = '--install' ]; then
+  # 설치본 위치. 스크립트를 scripts/ 아래에 두어 설치본에서도 ROOT(= 한 단계 위)가
+  # 그대로 링크 정보가 있는 폴더를 가리키게 한다.
+  INSTALL_DIR="${HOME}/.page0127-backup"
+  mkdir -p "$INSTALL_DIR/scripts" "$INSTALL_DIR/supabase/.temp"
+  cp "${BASH_SOURCE[0]}" "$INSTALL_DIR/scripts/backup-production-db.sh"
+  # project-ref 만으로는 부족하다 — pooler-url 이 없으면 IPv6 직결을 시도하다 실패한다.
+  cp "$ROOT/supabase/.temp/project-ref" "$ROOT/supabase/.temp/pooler-url" \
+    "$ROOT/supabase/.temp/postgres-version" "$ROOT/supabase/.temp/linked-project.json" \
+    "$INSTALL_DIR/supabase/.temp/"
+  echo "✓ 설치 완료 — $INSTALL_DIR"
+  exit 0
+fi
 
 mkdir -p "$BACKUP_DIR"
 
@@ -53,15 +74,27 @@ fi
 SCHEMA_FILE="$BACKUP_DIR/schema-$TODAY.sql"
 DATA_FILE="$BACKUP_DIR/data-$TODAY.sql"
 
-supabase db dump --linked --workdir "$ROOT" -f "$SCHEMA_FILE" \
+# 임시 파일에 받고, 검사를 통과한 뒤에만 정식 이름으로 옮긴다.
+# 2026-10-01 launchd 실행에서 "Dumped schema" 를 출력하고도 스키마 파일이 0바이트로 남아
+# 같은 날 받아 둔 정상 백업을 덮어썼다. 빈 덤프가 좋은 백업을 지우면 백업이 없느니만 못하다.
+SCHEMA_TMP="$(mktemp "$BACKUP_DIR/.schema-XXXXXX")"
+DATA_TMP="$(mktemp "$BACKUP_DIR/.data-XXXXXX")"
+trap 'rm -f "$SCHEMA_TMP" "$DATA_TMP"' EXIT
+
+supabase db dump --linked --workdir "$ROOT" -f "$SCHEMA_TMP" \
   || notify_failure '스키마 덤프 실패'
-supabase db dump --linked --workdir "$ROOT" --data-only --use-copy -f "$DATA_FILE" \
+supabase db dump --linked --workdir "$ROOT" --data-only --use-copy -f "$DATA_TMP" \
   || notify_failure '데이터 덤프 실패'
 
-# 파일이 생겼다고 성공이 아니다 — 인증이 끊기면 빈 파일이 남을 수 있다.
-# profiles 는 가입자가 있는 한 항상 행이 있으므로 COPY 블록 존재로 판정한다.
-grep -q 'COPY "public"."profiles"' "$DATA_FILE" \
-  || notify_failure "데이터 덤프에 profiles 가 없음 — $DATA_FILE 확인"
+# 파일이 생겼다고 성공이 아니다 — 종료 코드 0 인데 빈 파일이 남은 적이 있다.
+# 스키마는 profiles 정의, 데이터는 profiles 의 COPY 블록(가입자가 있는 한 항상 있다)으로 판정한다.
+grep -q 'CREATE TABLE IF NOT EXISTS "public"."profiles"' "$SCHEMA_TMP" \
+  || notify_failure '스키마 덤프가 비었거나 profiles 정의가 없음 — 기존 백업은 그대로 둠'
+grep -q 'COPY "public"."profiles"' "$DATA_TMP" \
+  || notify_failure '데이터 덤프에 profiles 가 없음 — 기존 백업은 그대로 둠'
+
+mv "$SCHEMA_TMP" "$SCHEMA_FILE"
+mv "$DATA_TMP" "$DATA_FILE"
 
 TABLES="$(grep -c '^COPY ' "$DATA_FILE")"
 echo "✓ 백업 완료 — $DATA_FILE (테이블 ${TABLES}개)"
