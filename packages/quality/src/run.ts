@@ -104,7 +104,7 @@ const main = async (): Promise<void> => {
   // 단일 앱(page0127)이라 앱 필터가 필요 없다 — 최근 레코드를 그대로 회귀 기준으로 쓴다.
   const priorHistory = await readPriorRecords();
   const analysis = analyze([...priorHistory, record]);
-  record.analysisComment = buildNarrative(analysis);
+  record.analysisComment = await buildNarrative(analysis);
   record.regressions = analysis.regressions;
   record.suppressedRegressions = analysis.suppressedRegressions;
 
