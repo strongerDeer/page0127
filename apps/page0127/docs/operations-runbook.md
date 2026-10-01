@@ -48,54 +48,86 @@ page0127 서비스의 상태 확인·백업·장애 대응 절차를 한곳에 �
 ### `/api/health`
 
 - 경로: `GET /api/health` (인증 불필요)
-- 동작: 앱이 살아있는지 + Supabase DB에 닿는지 확인
+- 동작: 앱이 살아있는지 + Supabase DB에 닿는지 + **배포된 코드가 기대하는 스키마가 운영 DB에
+  있는지**(`SCHEMA_CONTRACT`·`EXPECTED_MIGRATION_VERSION`) 확인
 - 응답
-  - 정상: `200` `{ "status": "ok", "checks": { "database": "ok" } }`
-  - 이상: `503` `{ "status": "degraded", "checks": { "database": "down" } }`
+  - 정상: `200` `{ "status": "ok", "checks": { "database": "ok", "schema": "ok" } }`
+  - 이상: `503` — `database: "down"` 또는 `schema: "drift"`(무엇이 깨지는지 함께 반환)
 - 특징: `force-dynamic`이라 캐시되지 않고 매 요청마다 실제로 실행된다.
 
-### 외부 uptime 모니터 설정
+### 외부 uptime 모니터 — 두 겹으로 본다
 
-앱 안에서 자기 자신을 감시할 수는 없으므로(앱이 죽으면 감시도 죽음),
-**외부 서비스**가 주기적으로 `/api/health`를 호출하게 한다.
+앱 안에서 자기 자신을 감시할 수는 없으므로(앱이 죽으면 감시도 죽음), 밖에서 부른다.
 
-권장 설정 (UptimeRobot / BetterStack / Pingdom 등 무엇이든 동일):
+| 감시 | 간격 | 맡은 일 |
+| --- | --- | --- |
+| **UptimeRobot**(무료) | 5분 | **빨리 알기.** 죽었는지만 본다 |
+| GitHub Actions `uptime.yml` | 설정 5분, **실측 3~6시간** | **원인 나누기.** 스키마 어긋남·감시 고장·DB 끊김을 구분해 로그에 남긴다 |
+
+> ⚠️ `uptime.yml` 만 믿으면 안 된다 — 2026-10-01 실측으로 9/25~10/1 실행 30회의 간격이 3~6시간이었다.
+> GitHub 이 예약 실행을 그만큼 미룬다. 사이트가 죽어도 반나절 모를 수 있어서 UptimeRobot 을 더했다.
+
+**UptimeRobot 설정** (무료 플랜: 모니터 50개·5분 간격·키워드 검사·이메일 알림 포함)
 
 | 항목 | 값 |
 | --- | --- |
-| Monitor URL | `https://page0127.com/api/health` |
-| 방식 | HTTP(s) — 상태코드 200 확인 (가능하면 본문에 `"status":"ok"` 포함 검사) |
-| 주기 | 1~5분 |
-| 실패 판정 | 연속 2회 실패 시 알림 (일시적 흔들림으로 인한 오탐 방지) |
-| 알림 채널 | `미확인 — 오픈 차단` |
+| Monitor Type | **Keyword** (HTTP 가 아니라) |
+| URL | `https://page0127.com/api/health` |
+| Keyword | `"schema":"ok"` · 조건 **Alert when keyword not exists** |
+| Interval | 5분 |
+| Timeout | 30초 (서버리스 콜드스타트로 첫 응답이 4초 넘게 걸린 적 있다) |
+| 알림 | 이메일(가입 계정) |
 
-> 배포 플랫폼(Vercel)의 함수 콜드스타트로 첫 응답이 느릴 수 있으니 타임아웃은 10초 이상으로.
+왜 Keyword 인가: 이 앱은 없는 경로에도 200 을 줄 수 있고(soft 404), 스키마가 어긋나도 DB 연결은
+멀쩡하다(2026-07-29 사고). 상태코드만 보면 둘 다 "정상"이다. `"schema":"ok"` 는 DB 가 닿고 스키마도
+맞을 때만 나오므로 한 단어로 세 가지(앱·DB·스키마)를 함께 본다.
 
 ---
 
 ## 2. DB 백업 & 복구
 
-### 백업 현황 확인
+### 백업 현황
 
-- Supabase 대시보드 → 운영 Project → **Database → Backups**
-  - 플랜에 따라 **일 단위 자동 백업** 또는 **PITR(Point-in-Time Recovery)** 제공
-  - 현재 플랜: `미확인 — 오픈 차단`
-  - 자동 백업/PITR 및 보관 기간: `미확인 — 오픈 차단`
-- ⚠️ Free 플랜은 자동 백업 보관이 짧거나 없을 수 있다. 중요 데이터라면
-  Pro 이상(또는 아래 수동 백업 병행)을 검토.
+- 조직 플랜이 **free** 라 Supabase 자동 백업·PITR 이 **없다**
+  (`GET /v1/projects/<ref>/database/backups` → `{"pitr_enabled": false, "backups": []}`).
+- Pro 전환 계획 없음(2026-10-01 결정). 대신 **이 Mac 에서 주 1회 자동 덤프**한다.
 
-### 수동 백업 (선택)
+### 주간 자동 백업 (launchd)
+
+| 항목 | 값 |
+| --- | --- |
+| 스크립트 | `scripts/backup-production-db.sh` |
+| launchd | `~/Library/LaunchAgents/com.stronger.page0127-backup.plist` |
+| 언제 | 매주 월요일 09:30 + **로그인할 때**(최근 6일 안에 백업이 있으면 건너뜀) |
+| 저장 위치 | `~/page0127-backups/{schema,data}-YYYYMMDD.sql` |
+| 실패 시 | macOS 알림 센터에 "page0127 백업 실패" |
+| 로그 | `/tmp/page0127-backup.{out,err}` |
+
+- 로그인 시에도 거는 이유: launchd 는 Mac 이 **꺼져 있던** 동안의 예약을 다시 돌리지 않는다.
+- 스크립트는 링크된 프로젝트가 운영(`sjngwxtykqhlsvxcyqah`)이 아니면 멈춘다. 링크가 개발로 바뀌어
+  있으면 **개발 DB 를 받아 놓고 백업했다고 믿게 되기** 때문이다.
+- `supabase db dump` 는 Docker 안의 `pg_dump` 를 쓴다. 꺼져 있으면 스크립트가 켜고 2분 기다린다.
+- ⚠️ 덤프에 회원 이메일이 들어간다. **저장소 폴더 안에 두지 말 것**(public repo).
+- 오래된 덤프는 지우지 않는다 — 주 1MB 남짓이라 쌓여도 부담이 없고, 자동 삭제는 되돌릴 수 없다.
+
+### 수동 백업 — 대량 데이터 작업 직전에는 반드시
+
+백필·병합·일괄 수정처럼 운영 데이터를 크게 바꾸기 직전에는 주기와 상관없이 한 번 받는다.
+(2026-07-29 백업 뒤 두 달간 백업 없이 YES24 백필·식별자 병합을 돌렸다 — 그 공백을 막으려는 규칙.)
 
 ```bash
-# 전체 스키마 + 데이터 덤프 (연결 문자열은 Supabase → Settings → Database)
-supabase db dump --db-url "<POSTGRES_CONNECTION_STRING>" -f backup_$(date +%Y%m%d).sql
-
-# 또는 pg_dump 직접
-pg_dump "<POSTGRES_CONNECTION_STRING>" > backup_$(date +%Y%m%d).sql
+bash scripts/backup-production-db.sh --force
 ```
 
-- 저장 위치: `미확인 — 오픈 차단`
-- 주기: 자동 백업이 없다면 최소 주 1회
+`--force` 는 "최근 6일 안의 백업이 있으면 건너뜀"을 무시한다.
+
+**launchd 등록/해제** (최초 1회, main 에 병합된 뒤)
+
+```bash
+launchctl load ~/Library/LaunchAgents/com.stronger.page0127-backup.plist
+launchctl list | grep page0127-backup      # 등록 확인
+launchctl unload ~/Library/LaunchAgents/com.stronger.page0127-backup.plist   # 해제
+```
 
 ### 복구 리허설 체크리스트 (분기 1회 권장)
 
@@ -233,3 +265,4 @@ Preview에서 로그인까지 테스트하려면 세 가지가 필요하다(2026
 | 2026-07-25 | Go-live 게이트·환경 분리·Sentry 실수신 절차 추가 | - |
 | 2026-07-28 | 개발 클라우드 Supabase 신설로 Preview·CI 분리 완료, `main` 브랜치 보호 적용 → Go-live 게이트 3건 체크. 키 출처·스코프·`E2E smoke` 제외 이유 명시 | - |
 | 2026-07-28 | 마이그레이션·RPC allowlist 감사 완료, GitHub Actions 기반 uptime 감시 도입(알림 실수신 확인) → Go-live 게이트 2건 추가 체크. 남은 건 백업 복원·Sentry 실수신·전체 시나리오 3건 | - |
+| 2026-10-01 | uptime 실측 간격(3~6시간) 기록 + UptimeRobot 보강 절차, 헬스 응답에 `schema` 반영. 백업을 launchd 주간 자동으로 바꾸고 "대량 데이터 작업 직전 수동 1회" 규칙 추가 | - |
