@@ -1,4 +1,6 @@
 import { execSync } from 'node:child_process';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { analyze } from './analyze.ts';
 import { measureBuild } from './build.ts';
@@ -13,7 +15,16 @@ import type { FormFactor, PageMetrics, QualityRecord } from './types.ts';
 
 // 번들/코드건강을 측정할 대상 = page0127 앱 디렉터리(자기 repo).
 // shop-chart처럼 별도 repo를 체크아웃하지 않는다 — CI가 이미 page0127을 체크아웃해 둔다.
-const BUILD_PATH = process.env.QUALITY_BUILD_PATH ?? 'apps/page0127';
+//
+// 반드시 저장소 루트 기준 절대경로로 만든다. `npm run measure -w @repo/quality` 는
+// packages/quality 에서 실행되므로, 상대경로 'apps/page0127' 은 없는 폴더를 가리킨다.
+// 그 상태로 빌드가 0초 만에 출력 없이 실패해 번들·코드건강이 0, gitRef 가
+// 'unknown' 으로 기록돼 왔다(2026-09-28 실행 로그로 확인).
+const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
+const BUILD_PATH = resolve(
+  REPO_ROOT,
+  process.env.QUALITY_BUILD_PATH ?? 'apps/page0127'
+);
 
 const gitRef = (repoPath: string): string => {
   try {
