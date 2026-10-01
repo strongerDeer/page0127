@@ -96,7 +96,8 @@ page0127 서비스의 상태 확인·백업·장애 대응 절차를 한곳에 �
 
 | 항목 | 값 |
 | --- | --- |
-| 스크립트 | `scripts/backup-production-db.sh` |
+| 스크립트(원본) | `scripts/backup-production-db.sh` |
+| 스크립트(설치본) | `~/.page0127-backup/scripts/backup-production-db.sh` — **launchd 는 이것을 부른다** |
 | launchd | `~/Library/LaunchAgents/com.stronger.page0127-backup.plist` |
 | 언제 | 매주 월요일 09:30 + **로그인할 때**(최근 6일 안에 백업이 있으면 건너뜀) |
 | 저장 위치 | `~/page0127-backups/{schema,data}-YYYYMMDD.sql` |
@@ -104,6 +105,10 @@ page0127 서비스의 상태 확인·백업·장애 대응 절차를 한곳에 �
 | 로그 | `/tmp/page0127-backup.{out,err}` |
 
 - 로그인 시에도 거는 이유: launchd 는 Mac 이 **꺼져 있던** 동안의 예약을 다시 돌리지 않는다.
+- 설치본을 따로 두는 이유: macOS 가 `~/Desktop` 을 보호 폴더로 취급해, launchd 가 저장소 안의
+  스크립트를 부르면 `Operation not permitted` 로 막힌다(2026-10-01 첫 등록 때 실제 발생). bash 에
+  전체 디스크 접근 권한을 주는 대신, 스크립트와 링크 정보(`supabase/.temp`)를 Desktop 밖으로 복사한다.
+  **원본을 고치면 `--install` 을 다시 돌려야 반영된다.**
 - 스크립트는 링크된 프로젝트가 운영(`sjngwxtykqhlsvxcyqah`)이 아니면 멈춘다. 링크가 개발로 바뀌어
   있으면 **개발 DB 를 받아 놓고 백업했다고 믿게 되기** 때문이다.
 - `supabase db dump` 는 Docker 안의 `pg_dump` 를 쓴다. 꺼져 있으면 스크립트가 켜고 2분 기다린다.
@@ -121,9 +126,10 @@ bash scripts/backup-production-db.sh --force
 
 `--force` 는 "최근 6일 안의 백업이 있으면 건너뜀"을 무시한다.
 
-**launchd 등록/해제** (최초 1회, main 에 병합된 뒤)
+**launchd 등록/해제** (최초 1회, main 에 병합된 뒤. 저장소 루트에서)
 
 ```bash
+bash scripts/backup-production-db.sh --install   # 설치본 복사(스크립트를 고친 뒤에도 다시)
 launchctl load ~/Library/LaunchAgents/com.stronger.page0127-backup.plist
 launchctl list | grep page0127-backup      # 등록 확인
 launchctl unload ~/Library/LaunchAgents/com.stronger.page0127-backup.plist   # 해제
