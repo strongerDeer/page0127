@@ -22,6 +22,43 @@ export type Analysis = {
   regressions: Regression[];
   // sameDeployment일 때, 회귀로 잡혔을 변동을 관찰용으로 보존(노이즈, 코드 회귀 아님).
   suppressedRegressions: Regression[];
+  // 직전 측정과 달라진 측정 환경(예: 'Chrome 153→154'). 비어 있으면 같거나 비교 불가.
+  // 회귀를 지우지는 않는다 — 코드도 같이 바뀌었을 수 있다. 해석할 때 먼저 짚게 한다.
+  environmentChanges: string[];
+};
+
+const chromeMajor = (v: string): string => v.split('.')[0];
+
+// 판정은 Chrome 메이저·Lighthouse 버전으로만 한다. 러너 이미지는 매주 바뀌어서
+// 그것까지 넣으면 매주 "환경 변경"이 떠 아무도 안 읽게 된다 — 설명에만 덧붙인다.
+// 한쪽이라도 기록이 없거나 'unknown' 이면 비교하지 않는다(모름 ≠ 바뀜).
+export const detectEnvironmentChanges = (
+  prev: QualityRecord,
+  current: QualityRecord
+): string[] => {
+  const a = prev.environment;
+  const b = current.environment;
+  if (!a || !b) return [];
+
+  const changes: string[] = [];
+  if (
+    a.chromeVersion !== 'unknown' &&
+    b.chromeVersion !== 'unknown' &&
+    chromeMajor(a.chromeVersion) !== chromeMajor(b.chromeVersion)
+  ) {
+    changes.push(`Chrome ${a.chromeVersion}→${b.chromeVersion}`);
+  }
+  if (
+    a.lighthouseVersion !== 'unknown' &&
+    b.lighthouseVersion !== 'unknown' &&
+    a.lighthouseVersion !== b.lighthouseVersion
+  ) {
+    changes.push(`Lighthouse ${a.lighthouseVersion}→${b.lighthouseVersion}`);
+  }
+  if (changes.length > 0 && a.runnerImage !== b.runnerImage) {
+    changes.push(`러너 이미지 ${a.runnerImage}→${b.runnerImage}`);
+  }
+  return changes;
 };
 
 // 폼팩터별 회귀 임계. 데스크탑은 CPU 스로틀이 없어 표본이 훨씬 안정적이므로
@@ -173,6 +210,7 @@ export const analyze = (history: QualityRecord[]): Analysis => {
       trend: { performance: 'flat', bundle: 'flat', weight: 'flat' },
       regressions: [],
       suppressedRegressions: [],
+      environmentChanges: [],
     };
   }
 
@@ -233,5 +271,6 @@ export const analyze = (history: QualityRecord[]): Analysis => {
     },
     regressions: sameDeployment ? [] : regressions,
     suppressedRegressions: sameDeployment ? regressions : [],
+    environmentChanges: detectEnvironmentChanges(prev, current),
   };
 };
