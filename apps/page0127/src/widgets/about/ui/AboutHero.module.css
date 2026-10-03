@@ -1,0 +1,38 @@
+/* 한 줄 높이만 보이게 자르고, 세로로 쌓인 단어를 한 칸씩 올린다.
+   마지막 칸은 첫 단어의 복제 — 처음으로 돌아갈 때 튀지 않게 */
+.roll {
+  display: inline-block;
+  height: 1em;
+  line-height: 1;
+  overflow: hidden;
+  vertical-align: -0.12em;
+}
+
+.roll > span {
+  display: block;
+  animation: roll 9s cubic-bezier(0.7, 0, 0.2, 1) infinite;
+}
+
+@keyframes roll {
+  0%,
+  28% {
+    transform: translateY(0);
+  }
+  33%,
+  61% {
+    transform: translateY(-100%);
+  }
+  66%,
+  94% {
+    transform: translateY(-200%);
+  }
+  100% {
+    transform: translateY(-300%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .roll > span {
+    animation: none;
+  }
+}
