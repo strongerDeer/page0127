@@ -1,6 +1,4 @@
-import Image from 'next/image';
-
-import { isPreOptimizedImageSrc } from '@repo/ui';
+import { SafeCover } from './SafeCover';
 
 import type { ShelfBook } from '../model/coverRows';
 
@@ -15,12 +13,11 @@ const Row = ({ books, reverse }: RowProps) => (
     {[...books, ...books].map((book, i) => (
       // 두 번 이어 붙인 뒷부분은 장식 복제다 — 스크린리더가 같은 책을 두 번 읽지 않게 숨긴다
       <li key={`${book.id}-${i}`} aria-hidden={i >= books.length || undefined}>
-        <Image
+        <SafeCover
           src={book.coverImage!}
           alt={i < books.length ? book.title : ''}
           width={116}
           height={174}
-          unoptimized={isPreOptimizedImageSrc(book.coverImage)}
           className='aspect-[2/3] w-[84px] rounded-sm object-cover shadow-lg md:w-[116px]'
         />
       </li>

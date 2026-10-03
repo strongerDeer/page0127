@@ -11,6 +11,11 @@
   animation-duration: 95s;
 }
 
+/* 표지를 못 불러온 칸(SafeCover 가 비운 칸)은 간격까지 없앤다 */
+.track > li:empty {
+  display: none;
+}
+
 .rows {
   display: grid;
   gap: 22px;
