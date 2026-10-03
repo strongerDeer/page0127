@@ -1,4 +1,4 @@
-import { AboutHero } from '@/widgets/about';
+import { AboutHero, Manifesto } from '@/widgets/about';
 import { getRecentBooks } from '@/widgets/about/api/getRecentBooks';
 import { CHANGELOG, SITE_INFO } from '@/widgets/landing/model/siteInfo';
 import { DocSection } from '@/widgets/landing/ui/DocPage';
@@ -21,21 +21,10 @@ const AboutPage = async () => {
     // break-keep: 한국어를 단어 단위로 줄바꿈한다 — 없으면 '쌓/인'처럼 단어 중간에서 끊긴다
     <div className='break-keep'>
       <AboutHero books={books} />
+      <Manifesto />
       {/* 아래 섹션들은 다음 단계에서 하나씩 새 섹션으로 바뀐다.
           h1 은 히어로가 가지므로 DocPage(자체 h1) 대신 감싸기만 한다 */}
       <div className='mx-auto max-w-3xl space-y-10 px-4 py-16'>
-        <DocSection title='왜 만들었나요'>
-          <p>
-            책을 다 읽고 나면 기억은 흐려지는데, 기록은 여기저기 흩어져
-            있었어요. 메모 앱에, SNS에, 사진첩에. 한곳에 모아 두면 무엇이 보일까
-            궁금했습니다.
-          </p>
-          <p>
-            그래서 만들었습니다. 읽은 책을 한 권씩 쌓아 두면 그 책장이 무엇을
-            말해 주는지 보고 싶었어요. 책장을 보면 그 사람이 보이니까요.
-          </p>
-        </DocSection>
-
         <DocSection title='무엇을 할 수 있나요'>
           <p>
             읽은 책을 기록하고 별점과 메모를 남깁니다. 완독한 책이 다섯 권쯤
