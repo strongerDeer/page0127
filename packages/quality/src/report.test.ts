@@ -92,4 +92,46 @@ describe('buildNarrative', () => {
 
     expect(out).toContain('HTTP 401');
   });
+
+  it('길이 상한에 걸려 끊기면 잘림 표시를 붙인다 — 잘린 글을 조용히 저장하지 않는다', async () => {
+    vi.stubEnv('ANTHROPIC_API_KEY', 'test-key');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            stop_reason: 'max_tokens',
+            content: [{ type: 'text', text: '모바일(' }],
+          }),
+          { status: 200 }
+        )
+      )
+    );
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const out = await buildNarrative(analysis);
+
+    expect(out.startsWith('모바일(')).toBe(true);
+    expect(out).toContain('길이 제한으로 잘림');
+  });
+
+  it('정상 종료(end_turn)면 잘림 표시가 없다', async () => {
+    vi.stubEnv('ANTHROPIC_API_KEY', 'test-key');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            stop_reason: 'end_turn',
+            content: [{ type: 'text', text: '끝까지 쓴 분석' }],
+          }),
+          { status: 200 }
+        )
+      )
+    );
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    expect(await buildNarrative(analysis)).toBe('끝까지 쓴 분석');
+  });
 });

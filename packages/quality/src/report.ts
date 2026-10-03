@@ -8,11 +8,14 @@ import type { Analysis } from './analyze.ts';
 const ENDPOINT = 'https://api.anthropic.com/v1/messages';
 const API_VERSION = '2023-06-01';
 const MODEL = 'claude-sonnet-5-5';
-const MAX_TOKENS = 2000;
+// 2000 이었을 때 리포트가 920자에서 문장 중간에 끊겼다(2026-10-01). 한국어는
+// 글자당 토큰이 많아 여유를 크게 둔다. 주 1회 호출이라 비용 차이는 미미하다.
+const MAX_TOKENS = 8000;
 
 // 상한은 AbortController 로 건다. AbortSignal.timeout() 은 라이브러리 재시도에
 // 먹혀 상한이 안 지켜진 적이 있다(postgrest-js, 5ms 설정이 7초).
-const TIMEOUT_MS = 120_000;
+// 응답 상한을 올린 만큼 생성 시간도 길어질 수 있어 5분으로 둔다.
+const TIMEOUT_MS = 300_000;
 
 const buildPrompt = (a: Analysis): string =>
   `너는 page0127(독서 기록 서비스)을 혼자 만들고 운영하는 개발자를 돕는 동료다. 아래 주간 품질 측정 결과(JSON)를 보고, 훑어 읽어도 바로 이해되는 쉬운 한국어 분석을 마크다운으로 써라.
@@ -68,6 +71,16 @@ export const extractText = (body: unknown): string | null => {
   return text.length > 0 ? text : null;
 };
 
+/**
+ * 응답이 길이 상한(max_tokens)에 걸려 끊겼는지.
+ *
+ * 끊긴 글을 그대로 저장하면 읽는 사람은 잘린 줄 모른다 — 표시를 붙이는 데 쓴다.
+ */
+export const isTruncated = (body: unknown): boolean =>
+  typeof body === 'object' &&
+  body !== null &&
+  (body as { stop_reason?: unknown }).stop_reason === 'max_tokens';
+
 const skipped = (reason: string): string => {
   console.warn(`[quality] 자연어 분석 생략: ${reason}`);
   return `_(자연어 분석 생략 — ${reason})_`;
@@ -105,8 +118,20 @@ export const buildNarrative = async (a: Analysis): Promise<string> => {
       return skipped(`Claude API HTTP ${res.status}`);
     }
 
-    const text = extractText(await res.json());
-    return text ?? skipped('Claude API 응답에 본문 없음');
+    const body: unknown = await res.json();
+    // 종료 이유·토큰 수를 남겨 둔다 — 잘렸을 때 원인을 로그만 보고 알 수 있게
+    const meta = body as { stop_reason?: unknown; usage?: unknown };
+    console.error(
+      `[quality] Claude API 응답: stop_reason=${String(meta.stop_reason)} usage=${JSON.stringify(meta.usage)}`
+    );
+
+    const text = extractText(body);
+    if (!text) return skipped('Claude API 응답에 본문 없음');
+    if (isTruncated(body)) {
+      console.warn('[quality] 자연어 분석이 길이 상한에 걸려 잘림');
+      return `${text}\n\n_(길이 제한으로 잘림 — MAX_TOKENS ${MAX_TOKENS})_`;
+    }
+    return text;
   } catch (e) {
     if (controller.signal.aborted) {
       return skipped(`Claude API ${TIMEOUT_MS / 1000}초 시간 초과`);
