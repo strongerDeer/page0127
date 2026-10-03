@@ -15,14 +15,26 @@ import type { User } from '@supabase/supabase-js';
  * 실제 데이터 조회는 호출부에서 createAdminClient(RLS 우회)를 쓴다.
  */
 export async function assertAdmin(): Promise<User> {
+  const user = await getAdminUser();
+
+  // notFound()는 never를 반환하므로 이후 user는 non-null로 좁혀진다
+  if (!user) {
+    notFound();
+  }
+  return user;
+}
+
+/**
+ * 관리자면 유저를, 아니면(비로그인 포함) null 을 돌려준다 — 판정만 하고 응답은 정하지 않는다.
+ *
+ * API 라우트 핸들러용이다. notFound() 는 페이지 렌더용이라, 라우트에서는 이 결과를 보고
+ * 직접 404 응답을 만든다(어드민 존재를 숨긴다는 원칙은 같다).
+ */
+export async function getAdminUser(): Promise<User | null> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // notFound()는 never를 반환하므로 이후 user는 non-null로 좁혀진다
-  if (!user || !isAdminEmail(user.email, getAdminEmails())) {
-    notFound();
-  }
-  return user;
+  return user && isAdminEmail(user.email, getAdminEmails()) ? user : null;
 }

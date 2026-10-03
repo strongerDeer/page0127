@@ -266,6 +266,61 @@ Preview에서 로그인까지 테스트하려면 세 가지가 필요하다(2026
 
 ---
 
+## 6. 카카오톡 에러 알림
+
+운영 에러를 이메일 대신 **운영자 카톡**으로 받는다.
+
+```
+Sentry 알림 규칙 → POST /api/alerts/sentry (서명 검증) → 카카오 "나에게 보내기" → 운영자 카톡
+주간 크론 /api/cron/refresh-kakao-token → 토큰 갱신(리프레시 토큰 계속 연장)
+```
+
+| 항목 | 위치 |
+| --- | --- |
+| 토큰 저장 | `alert_channel_tokens` 테이블(service_role 전용) |
+| 연결 상태·다시 연결 | `/admin/errors` 상단 "카카오톡 에러 알림" |
+| 코드 | `src/shared/lib/kakao-alert/`, `app/api/alerts/sentry`, `app/api/admin/kakao-alert/*` |
+
+### 최초 설정 — 순서대로
+
+**① 카카오 알림 전용 앱** ([developers.kakao.com](https://developers.kakao.com) → 내 애플리케이션 → 추가)
+
+로그인용 앱과 **다른 앱**을 만든다. 로그인 앱에 "카카오톡 메시지" 동의를 붙이면 로그인 동의 화면이 바뀔 수 있다.
+
+1. 카카오 로그인 → **활성화 ON**
+2. 카카오 로그인 → Redirect URI: `https://page0127.com/api/admin/kakao-alert/callback`
+3. 동의항목 → **카카오톡 메시지 전송(talk_message)** → 선택 동의
+4. 앱 → 제품 링크 관리 → 웹 도메인: `https://page0127.com` (카톡 버튼이 여는 주소. 없으면 눌러도 안 열린다)
+5. 앱 키의 **REST API 키**, 보안의 **Client Secret** 을 적어 둔다
+
+**② Sentry Internal Integration** (Settings → Developer Settings → Custom Integrations → Create New Integration → Internal)
+
+1. Webhook URL: `https://page0127.com/api/alerts/sentry`
+2. **Alert Rule Action** 켜기
+3. 권한: Issue & Event → Read
+4. 저장 후 **Client Secret** 을 적어 둔다
+
+**③ Vercel 환경변수** (Production) 등록 → **재배포**(빌드에 박히는 값은 아니지만 함수가 새 값을 읽으려면 배포가 필요)
+
+`KAKAO_ALERT_REST_API_KEY` · `KAKAO_ALERT_CLIENT_SECRET` · `SENTRY_ALERT_CLIENT_SECRET`
+
+**④ 연결** — 운영 `/admin/errors` → **연결하기** → 카카오 동의 → 돌아오면 카톡으로 시험 메시지가 온다
+
+**⑤ Sentry 알림 규칙** (Alerts → Create Alert → Issues)
+
+- 환경: `vercel-production`
+- 조건: **A new issue is created**
+- 동작: **Send a notification via an integration** → ②에서 만든 Internal Integration
+
+### 장애·점검
+
+- 카톡이 안 온다 → `/admin/errors` 상단 상태부터. "연결 안 됨"이면 ④, 날짜가 지났으면 리프레시 토큰 만료 → ④ 다시
+- 상태의 "다시 연결 필요 시점"이 **매주 뒤로 밀리지 않는다** → 주간 크론이 멈춘 것(Vercel → Cron Jobs 로그)
+- 웹훅이 401 → `SENTRY_ALERT_CLIENT_SECRET` 이 Internal Integration 의 값과 다르다
+- 발송 실패는 웹훅이 200 으로 받고 로그만 남긴다(5xx 면 Sentry 가 재전송해 같은 실패가 쌓인다)
+
+---
+
 ## 변경 이력
 
 | 날짜 | 내용 | 작성 |
@@ -275,3 +330,4 @@ Preview에서 로그인까지 테스트하려면 세 가지가 필요하다(2026
 | 2026-07-28 | 개발 클라우드 Supabase 신설로 Preview·CI 분리 완료, `main` 브랜치 보호 적용 → Go-live 게이트 3건 체크. 키 출처·스코프·`E2E smoke` 제외 이유 명시 | - |
 | 2026-07-28 | 마이그레이션·RPC allowlist 감사 완료, GitHub Actions 기반 uptime 감시 도입(알림 실수신 확인) → Go-live 게이트 2건 추가 체크. 남은 건 백업 복원·Sentry 실수신·전체 시나리오 3건 | - |
 | 2026-10-01 | uptime 실측 간격(3~6시간) 기록 + UptimeRobot 보강 절차, 헬스 응답에 `schema` 반영. 백업을 launchd 주간 자동으로 바꾸고 "대량 데이터 작업 직전 수동 1회" 규칙 추가 | - |
+| 2026-10-03 | 6장 카카오톡 에러 알림 추가(최초 설정 순서·장애 점검) | - |
