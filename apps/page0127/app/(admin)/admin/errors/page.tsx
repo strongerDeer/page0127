@@ -5,8 +5,8 @@ import { KakaoAlertStatus } from '@/features/admin-errors/ui/KakaoAlertStatus';
 export default async function AdminErrorsPage({
   searchParams,
 }: {
-  // 카카오 알림 연결(callback) 결과 — ?kakao=connected|error&reason=…
-  searchParams: Promise<{ kakao?: string; reason?: string }>;
+  // 카카오 알림 연결(callback) 결과 — ?kakao=connected|error&reason=…&missing=…
+  searchParams: Promise<{ kakao?: string; reason?: string; missing?: string }>;
 }) {
   const sp = await searchParams;
   // 조회와 화면이 같은 기준 시각을 쓰도록 한 번만 만들어 넘긴다.
@@ -19,7 +19,7 @@ export default async function AdminErrorsPage({
         <h1 className='text-base font-medium'>에러</h1>
         <span className='text-xs text-text-subtle'>운영 환경(vercel-production) · 5분 캐시</span>
       </div>
-      <KakaoAlertStatus result={sp.kakao} reason={sp.reason} />
+      <KakaoAlertStatus result={sp.kakao} reason={sp.reason} missing={sp.missing} />
       <ErrorList result={result} now={now} />
     </section>
   );

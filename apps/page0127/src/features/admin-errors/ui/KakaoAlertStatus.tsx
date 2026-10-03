@@ -8,7 +8,20 @@ type KakaoAlertStatusProps = {
   /** callback 이 돌려보낸 결과(?kakao=connected|error&reason=…) */
   result?: string;
   reason?: string;
+  /** reason=missing_env 일 때 빠진 환경변수 이름들(쉼표 구분) */
+  missing?: string;
 };
+
+/**
+ * 쿼리로 온 이름 중 환경변수 이름 모양(대문자·숫자·밑줄)만 남긴다.
+ * 주소창에 아무 글이나 넣어 어드민 화면에 띄우는 것을 막는다.
+ */
+const parseMissing = (raw?: string): string[] =>
+  (raw ?? '').split(',').filter((name) => /^[A-Z0-9_]{1,64}$/.test(name));
+
+const missingEnvText = (names: string[]) =>
+  `Vercel 환경변수가 없습니다${names.length ? `: ${names.join(', ')}` : ''}. ` +
+  'Production 에 등록하고(팀 공용 변수라면 page0127 프로젝트에 연결) 재배포하세요.';
 
 const REASON_TEXT: Record<string, string> = {
   state_mismatch: '연결 요청이 만료됐거나 다른 창에서 시작됐습니다. 다시 눌러 주세요.',
@@ -25,7 +38,7 @@ const formatDate = (date: Date) =>
  * 리프레시 토큰 만료일을 보여 주는 이유: 주간 갱신 크론이 돌고 있다면 이 날짜가 계속
  * 뒤로 밀린다. 날짜가 다가오는데 그대로라면 크론이 멈춘 것이다.
  */
-export const KakaoAlertStatus = async ({ result, reason }: KakaoAlertStatusProps) => {
+export const KakaoAlertStatus = async ({ result, reason, missing }: KakaoAlertStatusProps) => {
   let tokens: StoredKakaoTokens | null = null;
   let loadFailed = false;
   try {
@@ -51,7 +64,9 @@ export const KakaoAlertStatus = async ({ result, reason }: KakaoAlertStatusProps
         )}
         {result === 'error' && (
           <p className='text-xs text-destructive'>
-            {REASON_TEXT[reason ?? ''] ?? `연결 실패(${reason ?? '알 수 없음'})`}
+            {reason === 'missing_env'
+              ? missingEnvText(parseMissing(missing))
+              : (REASON_TEXT[reason ?? ''] ?? `연결 실패(${reason ?? '알 수 없음'})`)}
           </p>
         )}
       </div>
