@@ -6,6 +6,7 @@ import type {
   CoreWebVitals,
   FormFactor,
   LighthouseScores,
+  MeasureEnvironment,
   WeightMetrics,
 } from './types';
 
@@ -13,7 +14,30 @@ export type LighthouseResult = {
   lighthouse: LighthouseScores;
   cwv: CoreWebVitals;
   weight: WeightMetrics;
+  environment: MeasureEnvironment;
 };
+
+/**
+ * Lighthouse 결과(lhr)에서 측정 환경을 꺼낸다.
+ *
+ * Chrome 버전은 hostUserAgent 에 들어 있다. 헤드리스면 'HeadlessChrome/154.0…'
+ * 처럼 오므로 두 형태를 다 받는다. 러너 이미지는 GitHub 러너가 넣어 주는
+ * ImageVersion 환경변수에서 읽는다.
+ */
+export const extractEnvironment = (
+  lhr: {
+    lighthouseVersion?: string;
+    environment?: { hostUserAgent?: string; benchmarkIndex?: number };
+  },
+  runnerImage: string | undefined
+): MeasureEnvironment => ({
+  chromeVersion:
+    lhr.environment?.hostUserAgent?.match(/Chrome\/([\d.]+)/)?.[1] ??
+    'unknown',
+  lighthouseVersion: lhr.lighthouseVersion ?? 'unknown',
+  runnerImage: runnerImage ?? 'local',
+  benchmarkIndex: Math.round(lhr.environment?.benchmarkIndex ?? 0),
+});
 
 // 중앙값(median): 정렬 후 가운데. 짝수 표본이면 두 가운데 평균을 반올림.
 // 단발 Lighthouse 의 LCP/SI 노이즈를 걷어내는 핵심 도구.
@@ -92,6 +116,10 @@ export const measureLighthouse = async (
         si: numeric('speed-index'),
       },
       weight: extractWeight(audits as Record<string, unknown>),
+      environment: extractEnvironment(
+        runnerResult.lhr,
+        process.env.ImageVersion
+      ),
     };
   } finally {
     await chrome.kill();
@@ -140,6 +168,11 @@ export const measureLighthouseMedian = async (
       totalKb: pick((r) => r.weight.totalKb),
       imageKb: pick((r) => r.weight.imageKb),
       scriptKb: pick((r) => r.weight.scriptKb),
+    },
+    // 버전류는 한 측정 안에서 같다. 성능 지수만 실행마다 출렁여 중앙값을 쓴다.
+    environment: {
+      ...results[0].environment,
+      benchmarkIndex: pick((r) => r.environment.benchmarkIndex),
     },
     samples: n,
     lcpSpreadMs: lcps.length ? Math.max(...lcps) - Math.min(...lcps) : 0,

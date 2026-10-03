@@ -151,12 +151,24 @@ export type BundleMetrics = {
   routes: { route: string; firstLoadKb: number }[];
 };
 
+// 랩 측정을 돌린 환경. 이게 바뀌면 코드와 무관하게 점수가 계단처럼 움직인다 —
+// 2026-10-01 GitHub 러너의 Chrome 이 153→154 로 오르자 모바일 성능이 9~20점 떨어졌고,
+// 대조 실험 전까지 앱 코드 회귀로 오인했다.
+export type MeasureEnvironment = {
+  chromeVersion: string; // 해석 실패 시 'unknown'
+  lighthouseVersion: string;
+  runnerImage: string; // GitHub 러너 이미지 버전(ImageVersion). 러너 밖이면 'local'
+  benchmarkIndex: number; // Lighthouse 기기 성능 지수(높을수록 빠름). 실행마다 출렁여 비교엔 안 쓴다
+};
+
 export type QualityRecord = {
   timestamp: string; // ISO
   app: string;
   env: 'production' | 'local';
   targetUrl: string;
   gitRef: string;
+  // 2026-10 부터 기록 — 그 이전 레코드엔 없다(undefined = "모름", "같음" 아님).
+  environment?: MeasureEnvironment;
   // 모바일(느린4G) 측정. 폼팩터를 섞지 않고 별도 배열로 두는 이유: 기존 10주치
   // 히스토리·대시보드·회귀 판정이 전부 "pages = 모바일"을 전제로 name 매칭한다.
   // 한 배열에 섞으면 name이 중복돼 avgPerf가 두 폼팩터 평균으로 오염된다.

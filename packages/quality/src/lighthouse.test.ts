@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { median } from './lighthouse';
+import { extractEnvironment, median } from './lighthouse';
 
 describe('median', () => {
   it('빈 배열은 0', () => {
@@ -21,5 +21,36 @@ describe('median', () => {
 
   it('LCP 노이즈(11.6/37.9/17.6s)에서 극단 38s에 휘둘리지 않는다', () => {
     expect(median([11600, 37900, 17600])).toBe(17600);
+  });
+});
+
+describe('extractEnvironment', () => {
+  it('헤드리스 UA 에서도 Chrome 버전을 꺼내고, 러너 이미지를 함께 남긴다', () => {
+    const env = extractEnvironment(
+      {
+        lighthouseVersion: '13.5.0',
+        environment: {
+          hostUserAgent:
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.8037.57 Safari/537.36',
+          benchmarkIndex: 1532.4,
+        },
+      },
+      '20260927.320.1'
+    );
+    expect(env).toEqual({
+      chromeVersion: '154.0.8037.57',
+      lighthouseVersion: '13.5.0',
+      runnerImage: '20260927.320.1',
+      benchmarkIndex: 1532,
+    });
+  });
+
+  it('정보가 없으면 unknown/local 로 남긴다 — 빈 문자열로 "같음" 판정되지 않게', () => {
+    expect(extractEnvironment({}, undefined)).toEqual({
+      chromeVersion: 'unknown',
+      lighthouseVersion: 'unknown',
+      runnerImage: 'local',
+      benchmarkIndex: 0,
+    });
   });
 });
