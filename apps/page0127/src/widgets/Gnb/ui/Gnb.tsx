@@ -4,6 +4,7 @@ import { Button } from '@repo/ui';
 import { Plus, Search } from 'lucide-react';
 
 import { NotificationDropdown } from '@/features/notification';
+import { coachTarget } from '@/features/onboarding';
 import { ProfileDropdown } from '@/features/profile';
 
 import { GnbNav } from './GnbNav';
@@ -68,7 +69,7 @@ export const Gnb = ({ user }: GnbProps) => {
             <>
               <NotificationDropdown userId={user.userId} />
               <Button asChild size='sm' className='ml-1'>
-                <Link href='/books/add'>
+                <Link href='/books/add' {...coachTarget('add-book')}>
                   <Plus aria-hidden='true' />
                   <span className='hidden md:inline'>도서 추가</span>
                   <span className='sr-only md:hidden'>도서 추가</span>

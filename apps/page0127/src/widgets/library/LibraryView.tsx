@@ -213,6 +213,7 @@ export const LibraryView = ({
           onChange={onViewChange}
           showWishlist={showWishlist}
           isWishlistView={isWishlistView}
+          goalYear={onSetGoal ? currentYear : undefined}
         />
 
         {isWishlistView ? (

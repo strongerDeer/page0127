@@ -15,6 +15,7 @@ import {
   getLibraryYears,
 } from '@/entities/book';
 
+import { CoachTipHost } from '@/features/onboarding';
 import { ReadingGoalDialog } from '@/features/profile/ui/ReadingGoalDialog';
 
 import { PublicBookShelf } from '@/widgets/book/ui/PublicBookShelf';
@@ -115,7 +116,8 @@ export const PublicLibraryContent = ({
 
   // 위시리스트는 내 개인 목록이라 연도·공개여부와 무관하게 전부 모은다
   const wishlistBooks = useMemo(
-    () => dedupeReadings(books.filter((book) => book.status === 'want_to_read')),
+    () =>
+      dedupeReadings(books.filter((book) => book.status === 'want_to_read')),
     [books]
   );
 
@@ -222,6 +224,27 @@ export const PublicLibraryContent = ({
           currentYear={currentYear}
           currentGoal={readingGoal ?? null}
           onSuccess={handleGoalSuccess}
+        />
+      )}
+
+      {/* 첫 사용 가이드 — 지금 남은 일 하나만 말풍선으로 짚어 준다 */}
+      {isOwnProfile && currentUserId && (
+        <CoachTipHost
+          userId={currentUserId}
+          facts={{
+            isOwner: isOwnProfile,
+            bookCount: books.length,
+            // 지난해 목표만 있으면 올해 목표는 아직 없는 것이다
+            hasReadingGoal: readingGoal?.year === currentYear,
+            analyzableBookCount,
+            hasTasteAnalysis: personalityType !== null,
+          }}
+          actions={{
+            'set-goal': {
+              label: '목표 정하기',
+              onClick: () => setIsGoalDialogOpen(true),
+            },
+          }}
         />
       )}
     </PageContainer>
