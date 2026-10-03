@@ -1,5 +1,7 @@
 'use client';
 
+import { coachTarget } from '@/features/onboarding';
+
 /**
  * 전체 ↔ 연도별 뷰 전환 세그먼티드 탭
  *
@@ -21,6 +23,8 @@ type ViewTabsProps = {
   showWishlist?: boolean;
   /** 지금 위시리스트 뷰를 보고 있는지 — true면 연도·전체 탭은 비활성 */
   isWishlistView?: boolean;
+  /** 이 연도 탭에 목표 설정 코치 팁을 붙인다 (내 서재에서만 넘긴다) */
+  goalYear?: number;
 };
 
 export const ViewTabs = ({
@@ -30,6 +34,7 @@ export const ViewTabs = ({
   onChange,
   showWishlist = false,
   isWishlistView = false,
+  goalYear,
 }: ViewTabsProps) => {
   const tabClass = (active: boolean) =>
     `rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
@@ -68,6 +73,7 @@ export const ViewTabs = ({
             aria-selected={active}
             onClick={() => onChange(year.toString())}
             className={tabClass(active)}
+            {...(year === goalYear ? coachTarget('set-goal') : {})}
           >
             {year}
           </button>

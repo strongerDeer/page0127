@@ -7,7 +7,16 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Button, isPreOptimizedImageSrc } from '@repo/ui';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@repo/ui';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@repo/ui';
 import { Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -22,6 +31,7 @@ import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { getPersonalityColor } from '@/entities/taste-analysis/model/personalityTypes';
 
 import { FollowButton, FollowListModal, FollowStats } from '@/features/follow';
+import { coachTarget } from '@/features/onboarding';
 import { ShareButton } from '@/features/share';
 import { TasteAnalysisHistoryCards } from '@/features/taste-analysis/ui/TasteAnalysisHistoryCards';
 
@@ -145,9 +155,7 @@ export const PublicLibraryHeader = ({
 
           <div className='min-w-0'>
             <p className='mb-1 text-sm font-medium text-primary'>공개 서재</p>
-            <h1 className='heading-1 truncate'>
-              {displayName}님의 서재
-            </h1>
+            <h1 className='heading-1 truncate'>{displayName}님의 서재</h1>
             <div className='mt-2 flex flex-wrap items-center gap-x-4 gap-y-2'>
               <span className='text-sm text-text-subtle'>@{username}</span>
               <FollowStats
@@ -187,7 +195,11 @@ export const PublicLibraryHeader = ({
             </Button>
           ) : (
             <>
-              <Button onClick={handleAnalyzeTaste} disabled={isAnalyzing}>
+              <Button
+                onClick={handleAnalyzeTaste}
+                disabled={isAnalyzing}
+                {...coachTarget('taste-analysis')}
+              >
                 {isAnalyzing && <Loader2 className='h-4 w-4 animate-spin' />}
                 {isAnalyzing
                   ? '분석 중… (최대 1분)'
