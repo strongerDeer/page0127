@@ -21,19 +21,33 @@ export type KakaoAlertConfig = {
   redirectUri: string;
 };
 
+/**
+ * 설정이 비어 있다 — 빠진 변수 이름을 함께 들고 다닌다.
+ *
+ * 2026-10-03 운영에서 Vercel 팀 공용 변수를 프로젝트에 연결하지 않아 이 에러가 났는데,
+ * 연결 라우트가 그대로 던져 브라우저 기본 500 화면만 떴다. 이름을 들고 있어야 라우트가
+ * 어드민 화면으로 돌려보내며 "무엇이 빠졌는지"를 보여 줄 수 있다.
+ */
+export class KakaoAlertConfigError extends Error {
+  constructor(readonly missing: string[]) {
+    super(`카카오 알림 환경변수가 없습니다: ${missing.join(', ')}`);
+  }
+}
+
 /** 환경변수에서 설정을 읽는다. 하나라도 비면 무엇이 비었는지 말하며 실패한다 */
 export const getKakaoAlertConfig = (): KakaoAlertConfig => {
   const restApiKey = process.env.KAKAO_ALERT_REST_API_KEY;
   const clientSecret = process.env.KAKAO_ALERT_CLIENT_SECRET;
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
-  const missing = [
-    !restApiKey && 'KAKAO_ALERT_REST_API_KEY',
-    !clientSecret && 'KAKAO_ALERT_CLIENT_SECRET',
-    !siteUrl && 'NEXT_PUBLIC_SITE_URL',
-  ].filter(Boolean);
-  if (missing.length > 0 || !restApiKey || !clientSecret || !siteUrl) {
-    throw new Error(`카카오 알림 환경변수가 없습니다: ${missing.join(', ')}`);
+  if (!restApiKey || !clientSecret || !siteUrl) {
+    throw new KakaoAlertConfigError(
+      [
+        !restApiKey && 'KAKAO_ALERT_REST_API_KEY',
+        !clientSecret && 'KAKAO_ALERT_CLIENT_SECRET',
+        !siteUrl && 'NEXT_PUBLIC_SITE_URL',
+      ].filter((name): name is string => Boolean(name))
+    );
   }
 
   return {

@@ -1,9 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 import { getAdminUser } from '@/shared/lib/admin/assertAdmin';
-import { buildAuthorizeUrl, getKakaoAlertConfig } from '@/shared/lib/kakao-alert/kakaoApi';
+import {
+  buildAuthorizeUrl,
+  getKakaoAlertConfig,
+  KakaoAlertConfigError,
+} from '@/shared/lib/kakao-alert/kakaoApi';
 
-import { KAKAO_ALERT_STATE_COOKIE } from '../state';
+import { KAKAO_ALERT_STATE_COOKIE, kakaoAlertReturnUrl } from '../state';
 
 /**
  * GET /api/admin/kakao-alert/connect
@@ -17,14 +21,27 @@ import { KAKAO_ALERT_STATE_COOKIE } from '../state';
  */
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   // 어드민이 아니면 존재 자체를 숨긴다(404)
   if (!(await getAdminUser())) {
     return new NextResponse(null, { status: 404 });
   }
 
+  let config;
+  try {
+    config = getKakaoAlertConfig();
+  } catch (e) {
+    if (!(e instanceof KakaoAlertConfigError)) throw e;
+    // 설정 누락은 운영 실수라 Sentry 에도 남긴다. 화면에는 브라우저 기본 500 대신
+    // 어드민으로 돌려보내 빠진 이름을 보여 준다(2026-10-03 실제로 500 만 보고 헤맸다).
+    console.error('[kakao-alert] 연결 시작 실패:', e.message);
+    return NextResponse.redirect(
+      kakaoAlertReturnUrl(request.nextUrl.origin, 'error', 'missing_env', e.missing)
+    );
+  }
+
   const state = crypto.randomUUID();
-  const response = NextResponse.redirect(buildAuthorizeUrl(getKakaoAlertConfig(), state));
+  const response = NextResponse.redirect(buildAuthorizeUrl(config, state));
   response.cookies.set(KAKAO_ALERT_STATE_COOKIE, state, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

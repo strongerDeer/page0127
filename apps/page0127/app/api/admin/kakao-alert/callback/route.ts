@@ -2,11 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { getAdminUser } from '@/shared/lib/admin/assertAdmin';
 import { sendKakaoAlert } from '@/shared/lib/kakao-alert/kakaoAlertSender';
-import { exchangeCode, getKakaoAlertConfig } from '@/shared/lib/kakao-alert/kakaoApi';
+import {
+  exchangeCode,
+  getKakaoAlertConfig,
+  KakaoAlertConfigError,
+} from '@/shared/lib/kakao-alert/kakaoApi';
 import { toStoredTokens } from '@/shared/lib/kakao-alert/tokens';
 import { loadKakaoTokens, saveKakaoTokens } from '@/shared/lib/kakao-alert/tokenStore';
 
-import { KAKAO_ALERT_RETURN_PATH, KAKAO_ALERT_STATE_COOKIE } from '../state';
+import {
+  KAKAO_ALERT_RETURN_PATH,
+  KAKAO_ALERT_STATE_COOKIE,
+  kakaoAlertReturnUrl,
+} from '../state';
 
 /**
  * GET /api/admin/kakao-alert/callback?code=…&state=…
@@ -22,11 +30,10 @@ export async function GET(request: NextRequest) {
     return new NextResponse(null, { status: 404 });
   }
 
-  const back = (result: 'connected' | 'error', reason?: string) => {
-    const url = new URL(KAKAO_ALERT_RETURN_PATH, request.nextUrl.origin);
-    url.searchParams.set('kakao', result);
-    if (reason) url.searchParams.set('reason', reason);
-    const response = NextResponse.redirect(url);
+  const back = (result: 'connected' | 'error', reason?: string, missing?: string[]) => {
+    const response = NextResponse.redirect(
+      kakaoAlertReturnUrl(request.nextUrl.origin, result, reason, missing)
+    );
     // state 는 한 번 쓰면 버린다 — 같은 링크로 다시 들어와도 통과하지 못하게
     response.cookies.delete({ name: KAKAO_ALERT_STATE_COOKIE, path: '/api/admin/kakao-alert' });
     return response;
@@ -59,6 +66,8 @@ export async function GET(request: NextRequest) {
     return back('connected');
   } catch (e) {
     console.error('[kakao-alert] 연결 실패:', e);
+    // 동의 도중에 환경변수가 빠진 배포로 바뀐 경우까지 원인을 나눠 보여 준다
+    if (e instanceof KakaoAlertConfigError) return back('error', 'missing_env', e.missing);
     return back('error', 'exchange_failed');
   }
 }
