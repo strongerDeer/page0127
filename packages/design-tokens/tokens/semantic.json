@@ -60,6 +60,11 @@
     "h2": {
       "desktop": { "$value": "20px", "$type": "dimension" },
       "mobile":  { "$value": "18px", "$type": "dimension" }
+    },
+    "display-xl": {
+      "$description": "마케팅 페이지(소개) 전용 큰 제목. 07 스케일의 display(28) 위 한 단계. 앱 화면에 쓰지 않는다",
+      "desktop": { "$value": "48px", "$type": "dimension" },
+      "mobile":  { "$value": "32px", "$type": "dimension" }
     }
   }
 }
