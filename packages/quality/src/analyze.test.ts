@@ -264,3 +264,65 @@ describe('analyze — 같은 배포본 재측정(sameDeployment)', () => {
     expect(result.regressions.some((r) => r.metric === 'performance')).toBe(true);
   });
 });
+
+describe('analyze — 측정 환경 변경(environmentChanges)', () => {
+  const env = {
+    chromeVersion: '153.0.8010.52',
+    lighthouseVersion: '13.5.0',
+    runnerImage: '20260920.314.1',
+    benchmarkIndex: 1500,
+  };
+  const withEnv = (r: QualityRecord, e: typeof env): QualityRecord => ({
+    ...r,
+    environment: e,
+  });
+
+  it('Chrome 메이저가 바뀌면 러너 이미지와 함께 알린다 (2026-10-01 실제 사례)', () => {
+    const prev = withEnv(base, env);
+    const curr = withEnv(nextDeploy(), {
+      ...env,
+      chromeVersion: '154.0.8037.57',
+      runnerImage: '20260927.320.1',
+    });
+    expect(analyze([prev, curr]).environmentChanges).toEqual([
+      'Chrome 153.0.8010.52→154.0.8037.57',
+      '러너 이미지 20260920.314.1→20260927.320.1',
+    ]);
+  });
+
+  it('러너 이미지·Chrome 패치만 바뀌면 알리지 않는다 — 매주 경고가 뜨지 않게', () => {
+    const prev = withEnv(base, env);
+    const curr = withEnv(nextDeploy(), {
+      ...env,
+      chromeVersion: '153.0.8010.99',
+      runnerImage: '20260927.320.1',
+    });
+    expect(analyze([prev, curr]).environmentChanges).toEqual([]);
+  });
+
+  it('Lighthouse 버전이 바뀌면 알린다', () => {
+    const prev = withEnv(base, env);
+    const curr = withEnv(nextDeploy(), { ...env, lighthouseVersion: '13.6.0' });
+    expect(analyze([prev, curr]).environmentChanges).toEqual([
+      'Lighthouse 13.5.0→13.6.0',
+    ]);
+  });
+
+  it('직전 기록에 환경이 없거나 unknown 이면 비교하지 않는다(모름 ≠ 바뀜)', () => {
+    const curr = withEnv(nextDeploy(), env);
+    expect(analyze([base, curr]).environmentChanges).toEqual([]);
+
+    const prev = withEnv(base, { ...env, chromeVersion: 'unknown' });
+    const curr2 = withEnv(nextDeploy(), { ...env, chromeVersion: '154.0.1.1' });
+    expect(analyze([prev, curr2]).environmentChanges).toEqual([]);
+  });
+
+  it('환경이 바뀌어도 회귀는 지우지 않는다 — 코드도 같이 바뀌었을 수 있다', () => {
+    const prev = withEnv(base, env);
+    const curr = withEnv(nextDeploy(), { ...env, chromeVersion: '154.0.1.1' });
+    curr.pages[0].lighthouse.performance = 70;
+    const result = analyze([prev, curr]);
+    expect(result.environmentChanges.length).toBeGreaterThan(0);
+    expect(result.regressions.some((r) => r.metric === 'performance')).toBe(true);
+  });
+});

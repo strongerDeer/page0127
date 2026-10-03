@@ -11,7 +11,12 @@ import { buildNarrative } from './report.ts';
 import { measureRuntime } from './runtime.ts';
 import { measureSeo } from './seo.ts';
 import { readPriorRecords, saveFieldHistoryToDb, saveRecord } from './store.ts';
-import type { FormFactor, PageMetrics, QualityRecord } from './types.ts';
+import type {
+  FormFactor,
+  MeasureEnvironment,
+  PageMetrics,
+  QualityRecord,
+} from './types.ts';
 
 // 번들/코드건강을 측정할 대상 = page0127 앱 디렉터리(자기 repo).
 // shop-chart처럼 별도 repo를 체크아웃하지 않는다 — CI가 이미 page0127을 체크아웃해 둔다.
@@ -37,11 +42,16 @@ const gitRef = (repoPath: string): string => {
   }
 };
 
-const measurePages = async (formFactor: FormFactor): Promise<PageMetrics[]> => {
+// 측정 환경은 첫 페이지 것을 쓴다 — 한 실행 안에서 Chrome·Lighthouse·러너는 같다.
+const measurePages = async (
+  formFactor: FormFactor
+): Promise<{ pages: PageMetrics[]; environment?: MeasureEnvironment }> => {
   const pages: PageMetrics[] = [];
+  let environment: MeasureEnvironment | undefined;
   for (const p of APP.pages) {
     const url = `${APP.targetUrl}${p.path}`;
     const lh = await measureLighthouseMedian(url, LIGHTHOUSE_RUNS, formFactor);
+    environment ??= lh.environment;
     pages.push({
       name: p.name,
       url,
@@ -54,7 +64,7 @@ const measurePages = async (formFactor: FormFactor): Promise<PageMetrics[]> => {
       tbtSpreadMs: lh.tbtSpreadMs,
     });
   }
-  return pages;
+  return { pages, environment };
 };
 
 const main = async (): Promise<void> => {
@@ -63,17 +73,23 @@ const main = async (): Promise<void> => {
   );
 
   // 모바일은 히스토리 연속성의 기준. 없으면 기록하지 않는다(회귀 시계열 단절 방지).
-  const pages = FORM_FACTORS.includes('mobile')
+  const mobile = FORM_FACTORS.includes('mobile')
     ? await measurePages('mobile')
-    : [];
+    : { pages: [] };
+  const { pages, environment } = mobile;
   if (pages.length === 0) {
     throw new Error(
       'LH_FORM_FACTORS에 mobile이 없어 기준 시계열을 만들 수 없습니다.'
     );
   }
   const desktopPages = FORM_FACTORS.includes('desktop')
-    ? await measurePages('desktop')
+    ? (await measurePages('desktop')).pages
     : undefined;
+  if (environment) {
+    console.error(
+      `[quality] 측정 환경: Chrome ${environment.chromeVersion} · Lighthouse ${environment.lighthouseVersion} · 러너 ${environment.runnerImage} · 성능지수 ${environment.benchmarkIndex}`
+    );
+  }
 
   const homeUrl = `${APP.targetUrl}${APP.pages[0]?.path ?? '/'}`;
   const homeHtml = await fetch(homeUrl).then((r) => r.text());
@@ -102,6 +118,7 @@ const main = async (): Promise<void> => {
     env: APP.env,
     targetUrl: APP.targetUrl,
     gitRef: gitRef(BUILD_PATH),
+    ...(environment ? { environment } : {}),
     pages,
     ...(desktopPages ? { desktopPages } : {}),
     bundle: build.bundle,
