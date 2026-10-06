@@ -39,6 +39,26 @@ export const extractEnvironment = (
   benchmarkIndex: Math.round(lhr.environment?.benchmarkIndex ?? 0),
 });
 
+/**
+ * 측정이 "실패한 페이지"를 쟀으면 던진다.
+ *
+ * Lighthouse 는 404·DNS 실패여도 예외 없이 결과를 돌려주고, 대신
+ * lhr.runtimeError(예: ERRORED_DOCUMENT_REQUEST)를 채우고 점수를 null 로 둔다.
+ * 아래 score() 가 null 을 0 으로 바꾸기 때문에 그냥 두면 **"성능 0점"이
+ * 정상 기록처럼 저장**되고 회귀로 잡힌다(2026-10-05, 사용자명 변경으로 앵커 404).
+ * 0점을 남기느니 측정을 실패시켜 이슈 알림(quality.yml)이 울리게 한다.
+ */
+export const assertMeasurable = (
+  lhr: { runtimeError?: { code: string; message: string } },
+  url: string
+): void => {
+  if (lhr.runtimeError) {
+    throw new Error(
+      `Lighthouse 측정 불가(${lhr.runtimeError.code}): ${url} — ${lhr.runtimeError.message}`
+    );
+  }
+};
+
 // 중앙값(median): 정렬 후 가운데. 짝수 표본이면 두 가운데 평균을 반올림.
 // 단발 Lighthouse 의 LCP/SI 노이즈를 걷어내는 핵심 도구.
 export const median = (nums: number[]): number => {
@@ -95,6 +115,7 @@ export const measureLighthouse = async (
       formFactor === 'desktop' ? desktopConfig : undefined
     );
     if (!runnerResult) throw new Error(`Lighthouse 결과 없음: ${url}`);
+    assertMeasurable(runnerResult.lhr, url);
     const { categories, audits } = runnerResult.lhr;
     const numeric = (id: string): number =>
       Math.round(audits[id]?.numericValue ?? 0);
