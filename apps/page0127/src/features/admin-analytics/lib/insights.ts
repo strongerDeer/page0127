@@ -25,12 +25,17 @@ export type Insight = {
  * GA4 는 봇 여부를 차원으로 주지 않아 도시 이름으로 추정한다(확정이 아니라 추정).
  * Boardman·The Dalles 는 오리건(AWS·구글), Ashburn 은 버지니아(AWS 최대 리전),
  * Council Bluffs 는 아이오와(구글).
+ * Des Moines 는 아이오와(마이크로소프트 Azure Central US) — GitHub Actions 러너가 Azure 라
+ * 매주 품질 측정(Lighthouse)이 여기서 잡힌다. Flint Hill 은 버지니아의 작은 마을인데 GA 봇
+ * 트래픽 위치로 흔히 보고된다. 둘 다 2026-10-06 유입분석에서 사용자 28%·19% 로 처음 확인.
  */
 const DATACENTER_CITIES = new Set([
   'Boardman',
   'The Dalles',
   'Ashburn',
   'Council Bluffs',
+  'Des Moines',
+  'Flint Hill',
   'Moses Lake',
   'Quincy',
   'Prineville',
