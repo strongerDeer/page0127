@@ -12,10 +12,12 @@ type SafeCoverProps = {
   width: number;
   height: number;
   className?: string;
+  /** 못 불러왔을 때 대신 그릴 것 — 없으면 아무것도 그리지 않는다 */
+  fallback?: React.ReactNode;
 };
 
 /**
- * 불러오지 못한 표지는 칸째로 사라진다.
+ * 불러오지 못한 표지는 칸째로 사라진다(또는 fallback 으로 바뀐다).
  *
  * 소개 페이지의 표지는 장식이라 "이미지 없음" 대체 그림을 보여 줄 이유가 없다 —
  * 깨진 아이콘이 줄지어 있는 것보다 그 자리를 비우는 편이 낫다.
@@ -28,9 +30,10 @@ export const SafeCover = ({
   width,
   height,
   className,
+  fallback = null,
 }: SafeCoverProps) => {
   const [failed, setFailed] = useState(false);
-  if (failed) return null;
+  if (failed) return fallback;
 
   return (
     <Image
