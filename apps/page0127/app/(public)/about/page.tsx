@@ -8,8 +8,8 @@ import {
   UpdatesTimeline,
 } from '@/widgets/about';
 import { getAboutStats } from '@/widgets/about/api/getAboutStats';
+import { getMostRead } from '@/widgets/about/api/getMostRead';
 import { getRecentBooks } from '@/widgets/about/api/getRecentBooks';
-import { getWeeklyTop } from '@/widgets/about/api/getWeeklyTop';
 import { shouldShowStats } from '@/widgets/about/model/aboutStats';
 import { TasteExampleCard } from '@/widgets/landing/ui/TasteExampleCard';
 
@@ -21,8 +21,9 @@ export const metadata: Metadata = {
     '읽은 책을 꽂아 두면 책장이 쌓이고, 그 책장이 독서 취향을 말해 줍니다. 기록 → 목표 → 취향 분석, 세 걸음으로 시작하세요.',
 };
 
-// 표지·랭킹·통계는 한 시간에 한 번만 새로 만든다 — 매 요청 조회할 내용이 아니다
-export const revalidate = 3600;
+// 페이지 단위 revalidate 는 두지 않는다 — (public) 레이아웃이 cookies() 를 읽어
+// 이 페이지는 어차피 요청마다 그려진다. 표지·랭킹·통계는 조회 함수가 1시간 캐시한다
+// (widgets/about/api/aboutCache.ts).
 
 /**
  * 소개 페이지 — 가입 전 설득(위) → 이용 방법(가운데) → 가입 버튼(끝).
@@ -31,7 +32,7 @@ export const revalidate = 3600;
 const AboutPage = async () => {
   const [books, top, stats] = await Promise.all([
     getRecentBooks(),
-    getWeeklyTop(),
+    getMostRead(),
     getAboutStats(),
   ]);
 

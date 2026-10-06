@@ -1,6 +1,7 @@
 import { createAnonClient } from '@/shared/config/supabase/anon';
 
 import { toRenderableSrc } from '../model/imageHost';
+import { cacheAbout } from './aboutCache';
 
 import type { ShelfBook } from '../model/coverRows';
 
@@ -13,27 +14,22 @@ type Row = {
   spine_image: string | null;
 };
 
+const RECENT_LIMIT = 24;
+
 /**
- * 최근 등록된 도서의 표지·책등.
+ * 최근 등록된 도서의 표지·책등 (1시간 캐시 — aboutCache 참고).
  *
- * 쿠키 없는 익명 클라이언트를 쓴다 — server.ts 의 createClient 는 cookies() 를 읽어
- * 페이지를 동적 렌더로 바꾸므로 revalidate(정적 생성)가 무력해진다.
- * global_books 는 책 정보(공개 데이터)라 사용자 기록이 섞이지 않는다.
+ * 쿠키 없는 익명 클라이언트를 쓴다 — 결과를 캐시해 모든 방문자에게 같이 돌려주므로
+ * 보는 사람의 세션이 섞이면 안 된다. global_books 는 책 정보(공개 데이터)다.
  */
-export const getRecentBooks = async (limit = 24): Promise<ShelfBook[]> => {
-  const supabase = createAnonClient();
-  const { data, error } = await supabase
+const loadRecentBooks = async (): Promise<ShelfBook[]> => {
+  const { data, error } = await createAnonClient()
     .from('global_books')
     .select('id, title, cover_image, spine_image')
     .not('cover_image', 'is', null)
     .order('created_at', { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    // 표지 띠는 장식이다 — 실패해도 페이지는 그린다
-    console.error('[about] 최근 도서 조회 실패:', error.message);
-    return [];
-  }
+    .limit(RECENT_LIMIT);
+  if (error) throw new Error(error.message);
 
   // 그릴 수 없는 호스트(알라딘 잔존 등)는 여기서 비운다 — 화면에서 걸러서는 늦다
   const storage = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
@@ -44,3 +40,6 @@ export const getRecentBooks = async (limit = 24): Promise<ShelfBook[]> => {
     spineImage: toRenderableSrc(r.spine_image, storage),
   }));
 };
+
+/** 표지 띠는 장식이다 — 실패하면 빈 목록(띠가 숨는다) */
+export const getRecentBooks = cacheAbout('recent-books', loadRecentBooks, []);
