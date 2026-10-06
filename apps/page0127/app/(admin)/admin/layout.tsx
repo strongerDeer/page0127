@@ -1,4 +1,5 @@
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
+import { MarkAdminDevice } from '@/shared/lib/analytics/MarkAdminDevice';
 
 import { AdminNav } from '@/widgets/admin/ui/AdminNav';
 
@@ -14,6 +15,8 @@ export default async function AdminLayout({
 
   return (
     <div className='mx-auto flex min-h-screen max-w-6xl'>
+      {/* assertAdmin 을 통과한 브라우저만 표시된다 — GA 전송 제외 */}
+      <MarkAdminDevice />
       <aside className='w-56 border-r border-line'>
         <div className='border-b border-line px-4 py-4 text-sm font-medium'>
           운영 콘솔
