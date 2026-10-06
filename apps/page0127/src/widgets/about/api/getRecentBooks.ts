@@ -1,5 +1,7 @@
 import { createAnonClient } from '@/shared/config/supabase/anon';
 
+import { toRenderableSrc } from '../model/imageHost';
+
 import type { ShelfBook } from '../model/coverRows';
 
 import 'server-only';
@@ -33,10 +35,12 @@ export const getRecentBooks = async (limit = 24): Promise<ShelfBook[]> => {
     return [];
   }
 
+  // 그릴 수 없는 호스트(알라딘 잔존 등)는 여기서 비운다 — 화면에서 걸러서는 늦다
+  const storage = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
   return ((data as Row[] | null) ?? []).map((r) => ({
     id: r.id,
     title: r.title,
-    coverImage: r.cover_image,
-    spineImage: r.spine_image,
+    coverImage: toRenderableSrc(r.cover_image, storage),
+    spineImage: toRenderableSrc(r.spine_image, storage),
   }));
 };
