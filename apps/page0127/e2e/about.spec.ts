@@ -41,6 +41,22 @@ test('세 걸음 탭: 화살표로 이동하고 직접 고르면 자동 재생�
   await expect(tabs.nth(2)).toHaveAttribute('aria-selected', 'true');
 });
 
+test('멈춘 뒤 재생 버튼을 마우스로 누르면 다시 진행한다', async ({ page }) => {
+  // 클릭하면 포커스가 버튼으로 간다 — 포커스만으로 재생을 막으면
+  // 아이콘은 '일시정지'인데 빈 화면에서 멈춘다(리뷰에서 발견)
+  await page.goto('/about#steps');
+  await page.getByRole('tab').first().click();
+  await page.getByRole('button', { name: '자동 재생 시작' }).click();
+  await expect(
+    page.getByRole('button', { name: '자동 재생 일시정지' })
+  ).toBeVisible();
+  await page.waitForTimeout(6000);
+  await expect(page.getByRole('tab').nth(1)).toHaveAttribute(
+    'aria-selected',
+    'true'
+  );
+});
+
 test('움직임 줄이기: 자동 재생하지 않고 완성된 화면을 보여 준다', async ({
   browser,
 }) => {

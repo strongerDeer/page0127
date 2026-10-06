@@ -55,6 +55,7 @@ const KEY_TARGET: Record<string, (step: StepIndex) => StepIndex> = {
 export const StepsShowcase = ({ books, tasteSlot }: StepsShowcaseProps) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const playRef = useRef<HTMLButtonElement>(null);
   const { step, local, playing, choose, togglePlay, setHold } =
     useStepPlayer(panelRef);
   const frame = stepFrame(step, local);
@@ -75,8 +76,15 @@ export const StepsShowcase = ({ books, tasteSlot }: StepsShowcaseProps) => {
       id='steps'
       aria-labelledby='steps-title'
       className='scroll-mt-16 bg-sunken px-4 py-32'
-      // React 의 onFocus/onBlur 는 버블링된다 — 영역 안 어디에 포커스가 있든 잡힌다
-      onFocus={() => setHold(true)}
+      // React 의 onFocus/onBlur 는 버블링된다 — 영역 안 어디에 포커스가 있든 잡힌다.
+      // 키보드로 옮긴 포커스(:focus-visible)일 때만 잠시 멈춘다. 마우스 클릭도 포커스를
+      // 옮기므로, 그대로 두면 재생 버튼을 누르는 순간 멈춰 '빈 화면 + 일시정지 아이콘'이
+      // 된다. 재생 버튼 자체에 간 포커스도 멈춤 사유가 아니다 — 재생하려고 누른 것이다.
+      onFocus={(e) =>
+        setHold(
+          e.target !== playRef.current && e.target.matches(':focus-visible')
+        )
+      }
       onBlur={() => setHold(false)}
     >
       <SectionHead
@@ -144,6 +152,7 @@ export const StepsShowcase = ({ books, tasteSlot }: StepsShowcaseProps) => {
           })}
         </div>
         <button
+          ref={playRef}
           type='button'
           onClick={togglePlay}
           aria-label={playing ? '자동 재생 일시정지' : '자동 재생 시작'}
