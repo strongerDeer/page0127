@@ -19,7 +19,8 @@ export default async function AdminQualityPage() {
       <section>
         <h1 className='mb-4 text-base font-medium'>품질</h1>
         <p className='text-sm text-text-subtle'>
-          아직 측정 데이터가 없습니다. 품질 워크플로우가 처음 실행되면 표시됩니다.
+          아직 측정 데이터가 없습니다. 품질 워크플로우가 처음 실행되면
+          표시됩니다.
         </p>
       </section>
     );
@@ -32,11 +33,19 @@ export default async function AdminQualityPage() {
       <div className='flex items-baseline justify-between'>
         <h1 className='text-base font-medium'>품질</h1>
         <span className='text-xs text-text-subtle'>
-          측정 {new Date(latest.timestamp).toLocaleString('ko-KR')} · {latest.gitRef}
+          측정 {new Date(latest.timestamp).toLocaleString('ko-KR')} ·{' '}
+          {latest.gitRef}
         </span>
       </div>
 
       <RegressionBanner record={latest} />
+
+      {/* 리포트는 이 페이지의 결론이라 맨 위에 둔다 — 아래 표·차트는 그 근거다.
+          맨 끝에 있을 땐 할 일까지 스크롤을 다 내려야 했다 */}
+      <QualityReport
+        md={latest.analysisComment ?? null}
+        regressionCount={latest.regressions?.length}
+      />
 
       {/* 확정안: 한눈에 그리드 → 추세 자세히 */}
       <QualityGrid data={trend} />
@@ -53,8 +62,6 @@ export default async function AdminQualityPage() {
       <SeoPanel record={latest} />
       <BundlePanel record={latest} />
       <CodeHealthPanel record={latest} />
-
-      <QualityReport md={latest.analysisComment ?? null} />
     </section>
   );
 }
