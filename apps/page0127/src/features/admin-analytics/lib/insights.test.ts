@@ -5,6 +5,7 @@ import {
   buildInsights,
   type DailyPoint,
   fillDaily,
+  isDatacenterCity,
   type Reports,
   weekOverWeek,
 } from './insights';
@@ -67,6 +68,16 @@ describe('buildHeadline', () => {
   });
   it('데이터가 없으면 0 (0 으로 나누지 않는다)', () => {
     expect(buildHeadline(reports({})).searchShare).toBe(0);
+  });
+});
+
+describe('isDatacenterCity', () => {
+  it('GitHub 러너(Azure)·봇 위치로 확인된 도시를 데이터센터로 본다', () => {
+    // 2026-10-06 유입분석: 셋이 합쳐 사용자 56% — 매주 품질 측정 횟수와 맞았다
+    expect(isDatacenterCity('Des Moines')).toBe(true);
+    expect(isDatacenterCity('Flint Hill')).toBe(true);
+    expect(isDatacenterCity('Moses Lake')).toBe(true);
+    expect(isDatacenterCity('Seoul')).toBe(false);
   });
 });
 
