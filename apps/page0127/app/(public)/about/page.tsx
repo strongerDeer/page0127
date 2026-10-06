@@ -1,29 +1,33 @@
 import {
   AboutHero,
+  FinalCta,
   Highlights,
   Manifesto,
   StatsRow,
   StepsShowcase,
+  UpdatesTimeline,
 } from '@/widgets/about';
 import { getAboutStats } from '@/widgets/about/api/getAboutStats';
 import { getRecentBooks } from '@/widgets/about/api/getRecentBooks';
 import { getWeeklyTop } from '@/widgets/about/api/getWeeklyTop';
 import { shouldShowStats } from '@/widgets/about/model/aboutStats';
-import { CHANGELOG, SITE_INFO } from '@/widgets/landing/model/siteInfo';
-import { DocSection } from '@/widgets/landing/ui/DocPage';
 import { TasteExampleCard } from '@/widgets/landing/ui/TasteExampleCard';
 
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: '소개 | page0127',
+  title: '소개 | page0127.',
   description:
-    '읽은 책을 기록하면 책장이 쌓이고, 그 책장이 독서 취향을 말해 줍니다. page0127을 소개합니다.',
+    '읽은 책을 꽂아 두면 책장이 쌓이고, 그 책장이 독서 취향을 말해 줍니다. 기록 → 목표 → 취향 분석, 세 걸음으로 시작하세요.',
 };
 
-// 표지·통계는 한 시간에 한 번만 새로 만든다 — 매 요청 조회할 내용이 아니다
+// 표지·랭킹·통계는 한 시간에 한 번만 새로 만든다 — 매 요청 조회할 내용이 아니다
 export const revalidate = 3600;
 
+/**
+ * 소개 페이지 — 가입 전 설득(위) → 이용 방법(가운데) → 가입 버튼(끝).
+ * 설계: docs/superpowers/specs/2026-10-04-about-page-renewal-design.md
+ */
 const AboutPage = async () => {
   const [books, top, stats] = await Promise.all([
     getRecentBooks(),
@@ -39,41 +43,14 @@ const AboutPage = async () => {
       <StepsShowcase books={books} tasteSlot={<TasteExampleCard />} />
       <Highlights books={books} top={top} />
       {stats && shouldShowStats(stats) && <StatsRow stats={stats} />}
-      {/* 아래 섹션들은 다음 단계에서 하나씩 새 섹션으로 바뀐다.
-          h1 은 히어로가 가지므로 DocPage(자체 h1) 대신 감싸기만 한다 */}
-      <div className='mx-auto max-w-3xl space-y-10 px-4 py-16'>
-        <DocSection title='누가 만들었나요'>
-          <p>
-            한 사람이 만들고 있는 개인 프로젝트입니다. {SITE_INFO.since}에
-            시작했어요.
-          </p>
-          <p className='text-sm text-text-subtle'>
-            혼자 만들다 보니 느리고, 가끔 고장도 납니다. AI가 읽어 주는 독서
-            성향도 늘 맞지는 않아요. 그래도 한 권씩 쌓다 보면 꽤 그럴듯한
-            이야기가 나옵니다.
-          </p>
-        </DocSection>
-
-        <DocSection title='무엇이 바뀌었나요'>
-          <ol className='space-y-6'>
-            {CHANGELOG.map((entry) => (
-              <li key={entry.date} className='flex gap-4'>
-                <time className='w-20 shrink-0 pt-0.5 text-sm tabular-nums text-text-subtle'>
-                  {entry.date}
-                </time>
-                <div className='flex-1 border-l border-line pb-1 pl-4'>
-                  <p className='font-medium text-text-strong'>{entry.title}</p>
-                  {entry.description && (
-                    <p className='mt-1 text-sm text-text-subtle'>
-                      {entry.description}
-                    </p>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ol>
-        </DocSection>
-      </div>
+      <UpdatesTimeline />
+      {/* 표지가 있는 책 중에서 고른다 — 그냥 마지막 4권이면 표지 없는 칸만 설 수 있다 */}
+      <FinalCta
+        covers={books
+          .map((b) => b.coverImage)
+          .filter(Boolean)
+          .slice(-4)}
+      />
     </div>
   );
 };
