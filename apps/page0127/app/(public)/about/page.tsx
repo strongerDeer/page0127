@@ -1,5 +1,11 @@
-import { AboutHero, Manifesto, StepsShowcase } from '@/widgets/about';
+import {
+  AboutHero,
+  Highlights,
+  Manifesto,
+  StepsShowcase,
+} from '@/widgets/about';
 import { getRecentBooks } from '@/widgets/about/api/getRecentBooks';
+import { getWeeklyTop } from '@/widgets/about/api/getWeeklyTop';
 import { CHANGELOG, SITE_INFO } from '@/widgets/landing/model/siteInfo';
 import { DocSection } from '@/widgets/landing/ui/DocPage';
 import { TasteExampleCard } from '@/widgets/landing/ui/TasteExampleCard';
@@ -16,7 +22,7 @@ export const metadata: Metadata = {
 export const revalidate = 3600;
 
 const AboutPage = async () => {
-  const books = await getRecentBooks();
+  const [books, top] = await Promise.all([getRecentBooks(), getWeeklyTop()]);
 
   return (
     // break-keep: 한국어를 단어 단위로 줄바꿈한다 — 없으면 '쌓/인'처럼 단어 중간에서 끊긴다
@@ -24,6 +30,7 @@ const AboutPage = async () => {
       <AboutHero books={books} />
       <Manifesto />
       <StepsShowcase books={books} tasteSlot={<TasteExampleCard />} />
+      <Highlights books={books} top={top} />
       {/* 아래 섹션들은 다음 단계에서 하나씩 새 섹션으로 바뀐다.
           h1 은 히어로가 가지므로 DocPage(자체 h1) 대신 감싸기만 한다 */}
       <div className='mx-auto max-w-3xl space-y-10 px-4 py-16'>
