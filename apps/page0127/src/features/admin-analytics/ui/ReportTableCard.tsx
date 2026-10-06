@@ -21,9 +21,7 @@ export const ReportTableCard = ({ def, table }: ReportTableCardProps) => (
       <table className='w-full text-xs'>
         <thead>
           <tr className='border-b border-line text-left text-text-subtle'>
-            <th className='py-1 font-normal'>
-              {def.dimensions.length > 1 ? '소스 / 매체 / 캠페인' : '항목'}
-            </th>
+            <th className='py-1 font-normal'>{def.columnLabel ?? '항목'}</th>
             {def.metrics.map((m) => (
               <th key={m.name} className='py-1 text-right font-normal'>
                 {m.label}
