@@ -1,6 +1,26 @@
 import { describe, expect, it } from 'vitest';
 
-import { extractEnvironment, median } from './lighthouse';
+import { assertMeasurable, extractEnvironment, median } from './lighthouse';
+
+describe('assertMeasurable', () => {
+  it('정상 결과(runtimeError 없음)는 통과한다', () => {
+    expect(() => assertMeasurable({}, 'https://x/ok')).not.toThrow();
+  });
+
+  it('404 문서는 0점으로 저장하지 않고 던진다 — 코드와 URL을 메시지에 남긴다', () => {
+    expect(() =>
+      assertMeasurable(
+        {
+          runtimeError: {
+            code: 'ERRORED_DOCUMENT_REQUEST',
+            message: 'Lighthouse was unable to reliably load the page (Status code: 404)',
+          },
+        },
+        'https://x/dreamfulbud'
+      )
+    ).toThrow(/ERRORED_DOCUMENT_REQUEST.*https:\/\/x\/dreamfulbud/);
+  });
+});
 
 describe('median', () => {
   it('빈 배열은 0', () => {

@@ -17,12 +17,13 @@ export const APP = {
     { name: 'home', path: '/' },
     { name: 'about', path: '/about' },
     { name: 'library', path: '/books/all' },
-    // profile: 동적 사용자 페이지. dreamfulbud는 소유자 계정이라 삭제 위험이 없다.
-    { name: 'profile', path: '/dreamfulbud' },
+    // profile: 동적 사용자 페이지. 소유자 계정이라 삭제 위험은 없지만
+    // **사용자명이 바뀌면 404가 되어 점수가 0으로 찍힌다**(2026-10-05 dreamfulbud→stronger_khj).
+    { name: 'profile', path: '/stronger_khj' },
     // detail: 무거운 동적 상세. 고정 bookId로 시계열을 유지한다(삭제되면 config에서 교체).
     {
       name: 'detail',
-      path: '/dreamfulbud/80a21270-ed22-4e3a-a1e9-17f65b361c54',
+      path: '/stronger_khj/80a21270-ed22-4e3a-a1e9-17f65b361c54',
     },
   ] satisfies PageAnchor[],
 };
