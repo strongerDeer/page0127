@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>page0127. 소개 시안 v6</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<style>
+  /* 서비스 디자인 토큰만 쓴다 — 파랑 계열 + 네이비 + 회색 */
+  :root {
+    --blue-50: #e3eefc; --blue-25: #f2f7fe; --blue-300: #74b0ff; --primary: #1e69cb; --blue-700: #0455bf;
+    --navy: #14294e; --strong: #14294e; --body: #3b4e70; --subtle: #5f6f8f;
+    --bg: #ffffff; --sunken: #f5f6f8; --line: #eceff2;
+    /* 라운드는 세 단계만 — 큰 면 / 안쪽 카드 / 버튼·작은 칸 (+ 알약·원) */
+    --r-xl: 24px; --r-lg: 16px; --r-md: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Pretendard Variable', Pretendard, sans-serif; background: var(--bg); color: var(--body); word-break: keep-all; overflow-x: hidden; }
+  /* 한 줄만 길고 다음 줄이 한두 글자로 남는 것을 막는다 */
+  h1, h2, h3, h4, p, li, time { text-wrap: balance; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+  .note { background: #fff7d6; color: #6b5300; font-size: 13px; text-align: center; padding: 8px 16px; }
+
+  .gnb { position: sticky; top: 0; z-index: 25; background: rgba(255,255,255,.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  .gnb .wrap { display: flex; align-items: center; gap: 24px; height: 64px; }
+  .logo { font-weight: 800; font-size: 19px; color: var(--primary); }
+  .logo small { font-size: 10px; background: var(--blue-50); padding: 2px 6px; border-radius: 99px; margin-left: 4px; vertical-align: 2px; }
+  .gnb nav { display: flex; gap: 20px; font-size: 14px; }
+  .sp { flex: 1; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: var(--r-md); font-weight: 600; font-size: 15px; padding: 14px 22px; border: 0; cursor: pointer; transition: transform .2s, background .2s, box-shadow .2s; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--blue-700); }
+  .btn-soft { background: var(--blue-50); color: var(--blue-700); }
+  .btn-sm { padding: 8px 14px; font-size: 13px; border-radius: var(--r-md); }
+  @media (max-width: 720px) { .gnb nav { display: none; } }
+
+  .reveal { opacity: 0; transform: translateY(28px); filter: blur(6px); transition: opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1), filter .9s; }
+  .reveal.in { opacity: 1; transform: none; filter: none; }
+  .d1 { transition-delay: .1s } .d2 { transition-delay: .2s } .d3 { transition-delay: .3s }
+
+  /* 애플식 섹션 머리: 라벨 → 큰 제목(마침표) → 회색 문단, 모두 가운데 */
+  .head { text-align: center; }
+  .label { font-size: 15px; font-weight: 600; color: var(--primary); }
+  .title { font-size: clamp(32px, 4.6vw, 56px); font-weight: 700; color: var(--strong); line-height: 1.25; letter-spacing: -0.03em; margin-top: 10px; }
+  .title em { font-style: normal; color: var(--primary); }
+  .sub { font-size: 19px; line-height: 1.7; margin: 18px auto 0; max-width: 620px; color: var(--subtle); }
+  .sub b { color: var(--strong); font-weight: 600; }
+
+  /* 1. 히어로 */
+  .hero { position: relative; padding: 112px 0 0; }
+  .hero-inner { text-align: center; }
+  .eyebrow { font-size: 15px; font-weight: 600; color: var(--primary); }
+  .hero h1 { font-size: clamp(34px, 5vw, 60px); font-weight: 700; color: var(--strong); line-height: 1.28; letter-spacing: -0.03em; margin-top: 18px; }
+  .roll { display: inline-block; height: 1.28em; overflow: hidden; vertical-align: bottom; }
+  .roll span { display: block; background: linear-gradient(90deg, #1e69cb, #4d97ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: roll 9s cubic-bezier(.7,0,.2,1) infinite; }
+  @keyframes roll { 0%,28% { transform: translateY(0) } 33%,61% { transform: translateY(-100%) } 66%,94% { transform: translateY(-200%) } 100% { transform: translateY(-300%) } }
+  .lead { font-size: 19px; line-height: 1.75; margin: 22px auto 0; color: var(--subtle); }
+  .cta { display: flex; gap: 10px; justify-content: center; margin-top: 32px; flex-wrap: wrap; }
+  .stage-blue { position: relative; margin: 72px 16px 0; border-radius: var(--r-xl); overflow: hidden; padding: 52px 0 60px;
+      background: radial-gradient(80% 60% at 50% 0%, #4d97ff 0%, transparent 60%), linear-gradient(165deg, #2a78de 0%, #1e69cb 40%, #0b4aa8 100%);
+      box-shadow: 0 40px 80px -30px rgba(30,105,203,.55); }
+  .stage-blue::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,.22) 1px, transparent 1px); background-size: 22px 22px;
+      -webkit-mask-image: radial-gradient(70% 70% at 50% 30%, #000, transparent); mask-image: radial-gradient(70% 70% at 50% 30%, #000, transparent); }
+  .stage-blue::after { content: ''; position: absolute; width: 1100px; height: 1100px; left: 50%; top: -75%; transform: translateX(-50%); pointer-events: none;
+      background: conic-gradient(from 0deg, transparent 0 20%, rgba(255,255,255,.13) 25%, transparent 30% 70%, rgba(255,255,255,.1) 75%, transparent 80%); animation: sweep 18s linear infinite; }
+  @keyframes sweep { to { transform: translateX(-50%) rotate(360deg); } }
+  .live { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 10px; color: #fff; font-size: 14px; font-weight: 600; }
+  .live i { width: 8px; height: 8px; border-radius: 50%; background: #fff; animation: pulse 1.8s infinite; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,.7); } 70% { box-shadow: 0 0 0 10px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
+  .live small { font-weight: 500; opacity: .7; font-size: 13px; }
+  .rows { position: relative; z-index: 1; margin-top: 36px; display: grid; gap: 22px;
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
+  .track-x { display: flex; gap: 22px; width: max-content; animation: slide 80s linear infinite; }
+  .track-x.rev { animation-direction: reverse; animation-duration: 95s; }
+  .stage-blue:hover .track-x { animation-play-state: paused; }
+  @keyframes slide { to { transform: translateX(-50%); } }
+  .cover { width: 116px; aspect-ratio: 2/3; border-radius: 3px 6px 6px 3px; object-fit: cover; background: rgba(255,255,255,.15); box-shadow: 0 20px 40px -12px rgba(5,25,70,.6); }
+  @media (max-width: 640px) { .stage-blue { margin: 48px 12px 0; } .cover { width: 84px; } }
+
+  /* 2. 선언문 — 가운데, 크게, 넓게 */
+  .manifesto { padding: 200px 0; text-align: center; }
+  .manifesto p.big { font-size: clamp(28px, 4.2vw, 52px); font-weight: 700; line-height: 1.45; letter-spacing: -0.03em; max-width: 980px; margin: 22px auto 0; }
+  .w { color: #c9d0da; transition: color .3s; }
+  .w.lit { color: var(--strong); }
+  .w.key.lit { color: var(--primary); }
+
+  /* 3. 세 걸음 — 큰 화면 하나 + 아래 탭 (애플 미디어 탭 문법) */
+  .steps { padding: 140px 0; background: var(--sunken); }
+  .media { max-width: 980px; margin: 24px auto 0; border-radius: var(--r-xl); padding: 48px; background: linear-gradient(160deg, #fff, var(--blue-25)); box-shadow: inset 0 0 0 1px var(--line); }
+  .browser { background: #fff; border-radius: var(--r-lg); border: 1px solid var(--line); box-shadow: 0 40px 80px -30px rgba(20,41,78,.28); overflow: hidden; }
+  .b-bar { display: flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px; background: var(--sunken); border-bottom: 1px solid var(--line); }
+  .b-bar i { width: 10px; height: 10px; border-radius: 50%; background: #dfe3e8; }
+  .b-url { margin-left: 12px; flex: 1; max-width: 300px; background: #fff; border-radius: 6px; font-size: 12px; color: var(--subtle); padding: 4px 10px; }
+  .b-body { padding: 26px; }
+  .owner { display: flex; align-items: center; gap: 10px; }
+  .owner .av { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; font-weight: 700; background: var(--blue-50); color: var(--primary); }
+  .owner b { color: var(--strong); font-size: 15px; }
+  .count { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--primary); background: var(--blue-50); padding: 4px 10px; border-radius: 99px; transition: transform .3s; }
+  .grow-shelf { display: flex; align-items: flex-end; gap: 5px; height: 100px; margin-top: 18px; padding: 0 4px; border-bottom: 8px solid var(--blue-50); }
+  .grow-shelf span { width: 26px; border-radius: 2px 4px 4px 2px; box-shadow: inset 4px 0 0 rgba(0,0,0,.14), inset -1px 0 0 rgba(255,255,255,.25); transform-origin: bottom; transform: scaleY(0); opacity: 0; transition: transform .5s cubic-bezier(.2,1.3,.4,1), opacity .3s; }
+  .grow-shelf span.on { transform: none; opacity: 1; }
+  .grow-shelf span.new { box-shadow: inset 4px 0 0 rgba(0,0,0,.14), 0 0 0 3px var(--blue-300); }
+  .scene { position: relative; height: 220px; margin-top: 18px; }
+  .card { position: absolute; inset: 0; background: var(--sunken); border-radius: var(--r-lg); padding: 20px; opacity: 0; transform: translateY(16px); transition: opacity .45s, transform .45s; }
+  .card.active { opacity: 1; transform: none; }
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 99px; background: var(--blue-50); color: var(--blue-700); }
+  .chips .chip { opacity: 0; transform: scale(.8); transition: all .3s; }
+  .chips .chip.on { opacity: 1; transform: none; }
+  .stars { color: var(--primary); font-size: 18px; letter-spacing: 3px; margin-top: 6px; }
+  .memo { margin-top: 14px; background: #fff; border-radius: var(--r-md); padding: 12px 14px; font-size: 14px; line-height: 1.6; min-height: 70px; }
+  .caret::after { content: '|'; color: var(--primary); animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .goal { display: grid; grid-template-columns: 150px 1fr; gap: 24px; align-items: center; height: 100%; }
+  .ring { --g: 0; width: 140px; height: 140px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--primary) calc(var(--g) * 1turn), #fff 0); }
+  .ring div { width: 108px; height: 108px; border-radius: 50%; background: var(--sunken); display: grid; place-items: center; text-align: center; font-size: 28px; font-weight: 700; color: var(--strong); line-height: 1; }
+  .ring small { display: block; font-size: 12px; color: var(--subtle); font-weight: 500; margin-top: 4px; }
+  .bars { display: flex; gap: 6px; align-items: flex-end; height: 110px; }
+  .bars i { flex: 1; border-radius: 3px 3px 0 0; background: var(--primary); height: 0; }
+  .bars i.future { background: #fff; }
+  .months { display: flex; gap: 6px; font-size: 10px; color: var(--subtle); margin-top: 6px; }
+  .months span { flex: 1; text-align: center; }
+  .note-type { font-size: 22px; font-weight: 700; color: var(--strong); margin-top: 10px; }
+  .note-body { font-size: 14px; line-height: 1.75; margin-top: 8px; min-height: 50px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .caption { text-align: center; font-size: 19px; line-height: 1.7; color: var(--subtle); max-width: 620px; margin: 28px auto 0; min-height: 64px; }
+  .caption b { color: var(--strong); font-weight: 600; }
+  .tabs { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 40px; flex-wrap: wrap; }
+  .tablist { display: inline-flex; gap: 4px; padding: 5px; background: #fff; border-radius: 99px; box-shadow: 0 6px 20px -8px rgba(20,41,78,.18), inset 0 0 0 1px var(--line); }
+  .tab { position: relative; overflow: hidden; border: 0; background: transparent; color: var(--subtle); font-size: 15px; font-weight: 600; padding: 11px 20px; border-radius: 99px; cursor: pointer; transition: color .3s; }
+  .tab .fill { position: absolute; inset: 0; width: 0; background: var(--blue-50); z-index: 0; }
+  .tab span { position: relative; z-index: 1; }
+  .tab[aria-selected="true"] { color: var(--blue-700); }
+  .tab:focus-visible, .play:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .play { width: 44px; height: 44px; border-radius: 50%; border: 0; background: #fff; box-shadow: 0 6px 20px -8px rgba(20,41,78,.18), inset 0 0 0 1px var(--line); color: var(--strong); cursor: pointer; font-size: 13px; }
+  @media (max-width: 720px) { .media { padding: 16px; } .b-body { padding: 16px; } .goal { grid-template-columns: 1fr; } .goal .ring { display: none; } .tab { padding: 10px 14px; font-size: 14px; } .scene { height: 240px; } }
+
+  /* 4. 일단 핵심부터 — 카드 하나에 메시지 하나 */
+  .highlights { padding: 140px 0 120px; overflow: hidden; }
+  .hl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 56px; }
+  @media (max-width: 960px) { .hl-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 640px) { .hl-grid { grid-template-columns: 1fr; } }
+  .hl { height: 480px; border-radius: var(--r-xl); background: var(--sunken); padding: 32px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+  .hl p { font-size: 20px; line-height: 1.5; color: var(--subtle); font-weight: 500; }
+  .hl p b { color: var(--strong); font-weight: 700; }
+  .hl .vis { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; margin-top: 16px; }
+  .hl.blue { background: linear-gradient(165deg, #2a78de, #1e69cb 50%, #0b4aa8); }
+  .hl.blue p { color: rgba(255,255,255,.75); } .hl.blue p b { color: #fff; }
+  .bk { width: 92px; aspect-ratio: 2/3; border-radius: 3px 6px 6px 3px; object-fit: cover; background: #dfe3e8; box-shadow: 0 16px 30px -10px rgba(20,41,78,.4); }
+  /* 궁합 */
+  .match { text-align: center; color: #fff; }
+  .match .pct { font-size: 88px; font-weight: 700; letter-spacing: -0.04em; line-height: 1; }
+  .match .who { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 14px; }
+  .match .who i { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-weight: 700; background: rgba(255,255,255,.2); }
+  .shared { display: flex; justify-content: center; gap: 8px; margin-top: 22px; }
+  .shared .bk { width: 54px; box-shadow: 0 10px 20px -8px rgba(0,0,0,.5); }
+  .match small { display: block; margin-top: 10px; font-size: 13px; opacity: .75; }
+  /* 인생책 */
+  .fan { position: relative; width: 260px; height: 230px; }
+  .fan .bk { position: absolute; width: 120px; left: 70px; top: 10px; transition: transform .45s cubic-bezier(.2,.7,.2,1); }
+  .fan .bk:nth-child(1) { transform: translateX(-70px) rotate(-12deg); }
+  .fan .bk:nth-child(3) { transform: translateX(70px) rotate(12deg); }
+  .fan .badge { position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%); background: #fff; color: var(--primary); font-weight: 700; font-size: 13px; padding: 8px 14px; border-radius: 99px; box-shadow: 0 10px 24px -8px rgba(20,41,78,.3); white-space: nowrap; z-index: 2; }
+  /* 공개 서재 링크 미리보기 */
+  .og { width: 100%; background: #fff; border-radius: var(--r-lg); overflow: hidden; box-shadow: 0 20px 40px -20px rgba(20,41,78,.35); }
+  .og-img { height: 150px; background: linear-gradient(160deg, #1e69cb, var(--navy)); display: flex; align-items: flex-end; gap: 6px; padding: 0 18px; }
+  .og-img .bk { width: 46px; margin-bottom: -6px; }
+  .og-meta { padding: 14px 16px; }
+  .og-meta b { color: var(--strong); font-size: 15px; } .og-meta p { font-size: 13px !important; margin-top: 2px; }
+  .og-meta small { color: var(--primary); font-size: 12px; font-weight: 600; }
+  /* 랭킹 */
+  .rank { width: 100%; display: grid; gap: 12px; }
+  .rank li { display: flex; align-items: center; gap: 14px; background: #fff; border-radius: var(--r-md); padding: 10px 14px; list-style: none; }
+  .rank b.n { font-size: 20px; color: var(--primary); width: 18px; }
+  .rank .bk { width: 40px; box-shadow: 0 6px 12px -6px rgba(20,41,78,.4); }
+  .rank span { font-size: 14px; font-weight: 600; color: var(--strong); flex: 1; }
+  .rank em { font-style: normal; font-size: 12px; font-weight: 700; color: var(--primary); }
+  /* 피드 */
+  .feed { width: 100%; display: grid; gap: 10px; }
+  .feed li { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: var(--r-md); padding: 12px 14px; list-style: none; font-size: 14px; }
+  .feed .av { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 13px; color: #fff; flex-shrink: 0; }
+  .feed .bk { width: 30px; margin-left: auto; box-shadow: none; }
+  .feed small { display: block; color: var(--subtle); font-size: 12px; }
+  .feed b { color: var(--strong); }
+  /* 주간 회상 */
+  .recap { width: 100%; background: #fff; border-radius: var(--r-lg); padding: 22px; box-shadow: 0 20px 40px -24px rgba(20,41,78,.3); }
+  .recap .k { font-size: 13px; color: var(--subtle); }
+  .recap .big { font-size: 40px; font-weight: 700; color: var(--strong); letter-spacing: -0.03em; }
+  .recap .big small { font-size: 16px; color: var(--subtle); font-weight: 500; }
+  .week { display: flex; gap: 6px; align-items: flex-end; height: 70px; margin-top: 14px; }
+  .week i { flex: 1; background: var(--blue-50); border-radius: 4px; }
+  .week i.on { background: var(--primary); }
+  .days { display: flex; gap: 6px; font-size: 11px; color: var(--subtle); margin-top: 6px; }
+  .days span { flex: 1; text-align: center; }
+  @media (max-width: 640px) { .hl { height: auto; min-height: 440px; padding: 26px; } }
+
+  /* 5. 숫자 — 애플 스펙 줄 */
+  .nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 96px; text-align: center; }
+  .nums .k { font-size: 14px; color: var(--subtle); }
+  .nums b { display: block; font-size: clamp(44px, 5vw, 64px); font-weight: 700; letter-spacing: -0.03em; background: linear-gradient(90deg, #1e69cb, #4d97ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin-top: 4px; }
+  .nums span { font-size: 15px; color: var(--body); }
+  @media (max-width: 640px) { .nums { grid-template-columns: 1fr; } }
+
+  /* 6. 연혁 — 최신순 */
+  .history { background: var(--sunken); padding: 140px 0; }
+  .tl { position: relative; max-width: 760px; margin: 56px auto 0; }
+  .tl::before { content: ''; position: absolute; left: 11px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(var(--primary), var(--line) 70%); }
+  .tl-item { position: relative; padding: 0 0 36px 48px; }
+  .tl-item::before { content: ''; position: absolute; left: 4px; top: 6px; width: 16px; height: 16px; border-radius: 50%; background: #fff; border: 3px solid #c9d3e0; }
+  .tl-item.now::before { border-color: var(--primary); background: var(--primary); box-shadow: 0 0 0 6px var(--blue-50); }
+  .tl-item time { font-size: 14px; font-weight: 700; color: var(--primary); }
+  .tl-item h4 { font-size: 22px; font-weight: 700; color: var(--strong); margin-top: 4px; }
+  .tl-item p { font-size: 16px; line-height: 1.7; color: var(--subtle); margin-top: 6px; }
+
+  /* 7. 마무리 — 행동 버튼이 있는 파란 무대 */
+  .final { padding: 120px 16px; }
+  .final-inner { position: relative; max-width: 1120px; margin: 0 auto; border-radius: var(--r-xl); overflow: hidden; color: #fff; display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: 24px; padding: 72px 64px;
+      background: radial-gradient(70% 80% at 85% 50%, #4d97ff 0%, transparent 60%), linear-gradient(160deg, #2a78de, #1e69cb 45%, #0b4aa8); box-shadow: 0 40px 80px -30px rgba(30,105,203,.55); }
+  .final-inner::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,.18) 1px, transparent 1px); background-size: 22px 22px; -webkit-mask-image: linear-gradient(90deg, transparent, #000); mask-image: linear-gradient(90deg, transparent, #000); }
+  .final .copy { position: relative; }
+  .final h2 { font-size: clamp(30px, 3.8vw, 46px); font-weight: 700; line-height: 1.3; letter-spacing: -0.03em; }
+  .final p.s { color: rgba(255,255,255,.8); margin-top: 14px; font-size: 17px; }
+  .logins { display: grid; gap: 10px; margin-top: 30px; max-width: 340px; }
+  .login { display: flex; align-items: center; justify-content: center; gap: 10px; height: 54px; border-radius: var(--r-md); font-weight: 600; font-size: 16px; cursor: pointer; border: 0; transition: transform .2s, box-shadow .2s; }
+  .login:hover { transform: translateY(-2px); box-shadow: 0 14px 28px -10px rgba(0,0,0,.35); }
+  .login.kakao { background: #fee500; color: rgba(0,0,0,.85); }
+  .login.google { background: #fff; color: #1f1f1f; }
+  .checks { display: flex; gap: 16px; margin-top: 18px; font-size: 14px; color: rgba(255,255,255,.8); flex-wrap: wrap; }
+  .checks span::before { content: '✓ '; color: #fff; font-weight: 700; }
+  .preview { position: relative; height: 340px; }
+  .pv { position: absolute; inset: 20px 10px; }
+  .pv-shelf { position: absolute; left: 0; right: 0; bottom: 40px; display: flex; justify-content: center; align-items: flex-end; gap: 10px; border-bottom: 10px solid rgba(255,255,255,.25); padding-bottom: 0; }
+  .pv-shelf .bk { width: 78px; box-shadow: 0 16px 28px -10px rgba(0,0,0,.5); }
+  .pv-shelf .bk.drop { animation: drop 3.2s cubic-bezier(.2,1.2,.4,1) infinite; }
+  @keyframes drop { 0% { transform: translateY(-160px) rotate(-8deg); opacity: 0; } 25%, 85% { transform: none; opacity: 1; } 100% { transform: none; opacity: 0; } }
+  .toast { position: absolute; right: 0; top: 10px; background: #fff; color: var(--strong); border-radius: var(--r-lg); padding: 12px 16px; display: flex; align-items: center; gap: 10px; box-shadow: 0 20px 40px -16px rgba(0,0,0,.4); font-size: 14px; animation: bob 3.2s ease-in-out infinite; }
+  .toast i { width: 28px; height: 28px; border-radius: 50%; background: var(--blue-50); color: var(--primary); display: grid; place-items: center; font-style: normal; font-weight: 700; }
+  .toast small { display: block; color: var(--subtle); font-size: 12px; }
+  @keyframes bob { 50% { transform: translateY(-6px); } }
+  @media (max-width: 860px) { .final-inner { grid-template-columns: 1fr; padding: 48px 24px; text-align: center; } .logins { margin-left: auto; margin-right: auto; } .checks { justify-content: center; } .preview { height: 260px; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1; transform: none; filter: none; }
+    .w { color: var(--strong); }
+  }
+</style>
+</head>
+<body>
+<div class="note">시안 v7 — 표지는 YES24 공개 표지로 대신함(실제는 최근 등록된 DB 표지). 세 걸음의 색 막대는 실제로는 책등 이미지(spine_image).</div>
+
+<header class="gnb"><div class="wrap">
+  <span class="logo">page0127.<small>베타</small></span>
+  <nav><a>홈</a><a>전체 도서</a><a>피드</a><a>사용자 검색</a></nav>
+  <span class="sp"></span>
+  <a class="btn btn-primary btn-sm">시작하기</a>
+</div></header>
+
+<!-- 1. 히어로 -->
+<section class="hero">
+  <div class="wrap hero-inner">
+    <p class="eyebrow reveal">독서 기록 서비스, page0127.</p>
+    <h1 class="reveal d1">책장을 보면<br />그 사람의 <span class="roll"><span>취향이</span><span>계절이</span><span>마음이</span><span>취향이</span></span> 보인다</h1>
+    <p class="lead reveal d2">읽은 책을 꽂아 두기만 하세요.<br />쌓인 책장이 당신을 이야기해 줍니다.</p>
+    <div class="cta reveal d3"><a class="btn btn-primary">10초 만에 시작하기</a><a class="btn btn-soft" href="#steps">어떻게 쓰나요?</a></div>
+  </div>
+  <div class="stage-blue reveal d3">
+    <p class="live"><i></i>방금 page0127.에 꽂힌 책 <small>· 최근 등록 순</small></p>
+    <div class="rows"><div class="track-x" id="row1"></div><div class="track-x rev" id="row2"></div></div>
+  </div>
+</section>
+
+<!-- 2. 선언문 -->
+<section class="manifesto"><div class="wrap">
+  <p class="label reveal">왜 page0127.인가요</p>
+  <p class="big" id="manifesto">다 읽고 나면 기억은 흐려지고, 기록은 메모 앱에, SNS에, 사진첩에 흩어집니다. 그래서 <span>한곳에</span> <span>꽂아</span> <span>두기로</span> 했어요.</p>
+</div></section>
+
+<!-- 3. 세 걸음 -->
+<section class="steps" id="steps"><div class="wrap">
+  <div class="head">
+    <p class="label reveal">이용 방법</p>
+    <h2 class="title reveal d1">책장 하나가 자라는<br /><em>세 걸음.</em></h2>
+  </div>
+
+  <div class="tabs reveal d2">
+    <div class="tablist" role="tablist" aria-label="이용 방법 단계" id="tablist">
+      <button class="tab" role="tab" id="tab-0" aria-controls="stepPanel" data-i="0"><i class="fill"></i><span>1. 기록하기</span></button>
+      <button class="tab" role="tab" id="tab-1" aria-controls="stepPanel" data-i="1"><i class="fill"></i><span>2. 목표 정하기</span></button>
+      <button class="tab" role="tab" id="tab-2" aria-controls="stepPanel" data-i="2"><i class="fill"></i><span>3. 취향 분석</span></button>
+    </div>
+    <button class="play" id="play" aria-label="자동 재생 일시정지">❚❚</button>
+  </div>
+
+  <div role="tabpanel" id="stepPanel" aria-labelledby="tab-0">
+  <div class="media reveal d2" id="media">
+    <div class="browser">
+      <div class="b-bar"><i></i><i></i><i></i><span class="b-url">page0127.com/hyejin</span></div>
+      <div class="b-body">
+        <div class="owner"><div class="av">혜</div><b>혜진님의 서재</b><span class="count" id="count">1권</span></div>
+        <div class="grow-shelf" id="growShelf"></div>
+        <div class="scene">
+          <div class="card active" data-card="0">
+            <div style="display:flex;gap:16px">
+              <img class="bk" id="recCover" style="width:64px" alt="" />
+              <div><span class="chip">완독</span><p style="font-weight:700;color:var(--strong);margin-top:8px">쇼펜하우어 인생수업</p><p style="font-size:12px;color:var(--subtle);margin-top:2px">아르투어 쇼펜하우어 · 9월 14일 완독</p><p class="stars" id="stars">☆☆☆☆☆</p></div>
+            </div>
+            <p class="memo"><span id="memo" class="caret"></span></p>
+          </div>
+          <div class="card" data-card="1">
+            <div class="goal">
+              <div class="ring" id="ring"><div><span id="ringNum">0</span><small>/ 12권</small></div></div>
+              <div>
+                <p style="font-weight:700;color:var(--strong);margin-bottom:12px">2026년 독서 목표</p>
+                <div class="bars" id="bars"></div>
+                <div class="months"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="card" data-card="2">
+            <span class="chip">TASTE REPORT</span>
+            <p class="note-type">마음의 결을 읽는 사람</p>
+            <p class="note-body"><span id="note" class="caret"></span></p>
+            <div class="chips" id="chips"><span class="chip">심리</span><span class="chip">관계</span><span class="chip">성장</span><span class="chip">담담한 문체</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="caption" id="caption"></p>
+  </div>
+</div></section>
+
+<!-- 4. 일단 핵심부터 -->
+<section class="highlights">
+  <div class="wrap">
+  <div class="head">
+    <p class="label reveal">더 둘러보기</p>
+    <h2 class="title reveal d1">책장이 쌓이면<br />보이는 것들.</h2>
+  </div>
+  <div class="hl-grid">
+    <article class="hl blue">
+      <p><b>독서 궁합.</b> 다른 사람의 책장과 나란히 놓고, 겹치는 책과 취향을 확인해요.</p>
+      <div class="vis"><div class="match">
+        <div class="who"><i>나</i>×<i>혜</i></div>
+        <div class="pct">78%</div>
+        <div class="shared" data-covers="4" data-from="3"></div>
+        <small>함께 읽은 책 4권 · 둘 다 '관계'를 좋아해요</small>
+      </div></div>
+    </article>
+    <article class="hl">
+      <p><b>인생책.</b> 다시 꺼내 볼 한 권은 책등 대신 표지로 세워 둬요.</p>
+      <div class="vis"><div class="fan" data-covers="3" data-from="7"><span class="badge">★ 인생책 3권</span></div></div>
+    </article>
+    <article class="hl">
+      <p><b>공개 서재.</b> 주소 하나로 내 책장을 보여 줘요. 링크로 공유하면 이렇게 보여요.</p>
+      <div class="vis"><div class="og">
+        <div class="og-img" data-covers="6" data-from="10"></div>
+        <div class="og-meta"><b>혜진님의 서재</b><p>올해 23권 · 인생책 3권</p><small>page0127.com/hyejin</small></div>
+      </div></div>
+    </article>
+    <article class="hl">
+      <p><b>이번 주 많이 읽힌 책.</b> 리더들이 지금 무엇을 읽는지 매일 집계해요.</p>
+      <div class="vis"><ol class="rank" id="rank"></ol></div>
+    </article>
+    <article class="hl">
+      <p><b>피드.</b> 팔로우한 리더가 책을 꽂으면 바로 알 수 있어요.</p>
+      <div class="vis"><ul class="feed" id="feed"></ul></div>
+    </article>
+    <article class="hl">
+      <p><b>주간 회상.</b> 이번 주의 나를 한 장으로 돌아봐요.</p>
+      <div class="vis"><div class="recap">
+        <p class="k">이번 주 · 10월 첫째 주</p>
+        <p class="big">2권 <small>완독 · 312쪽</small></p>
+        <div class="week"><i style="height:30%"></i><i class="on" style="height:70%"></i><i style="height:20%"></i><i class="on" style="height:90%"></i><i style="height:45%"></i><i class="on" style="height:60%"></i><i style="height:15%"></i></div>
+        <div class="days"><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span>일</span></div>
+      </div></div>
+    </article>
+  </div>
+
+    <div class="nums">
+      <div class="reveal"><b data-count="1284" data-unit="권">0권</b><span>지금까지 기록된 책</span></div>
+      <div class="reveal d1"><b data-count="153" data-unit="명">0명</b><span>함께 읽는 리더</span></div>
+      <div class="reveal d2"><b data-count="412" data-unit="번">0번</b><span>맞춰 본 독서 궁합</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. 연혁 (최신순) -->
+<section class="history"><div class="wrap">
+  <div class="head">
+    <p class="label reveal">업데이트</p>
+    <h2 class="title reveal d1">계속 자라는 중.</h2>
+  </div>
+  <div class="tl">
+    <div class="tl-item now reveal"><time>2026.10</time><h4>YES24 도서 정보 · 첫 사용 가이드</h4><p>더 정확한 책 정보로 바꾸고, 처음 온 분께 다음 할 일을 짚어 드려요.</p></div>
+    <div class="tl-item reveal"><time>2026.08</time><h4>카카오 로그인</h4><p>카카오 계정으로도 10초 만에 시작해요.</p></div>
+    <div class="tl-item reveal"><time>2026.07</time><h4>독서 궁합 · 피드</h4><p>다른 리더의 책장과 나란히 놓아 볼 수 있게 됐어요.</p></div>
+    <div class="tl-item reveal"><time>2026.04</time><h4>AI 취향 분석</h4><p>완독 기록에서 반복되는 주제와 문체를 읽어 드려요.</p></div>
+    <div class="tl-item reveal"><time>2026.01</time><h4>첫 책장이 문을 열었어요</h4><p>읽은 책을 기록하고 별점과 메모를 남기는 것에서 시작했어요.</p></div>
+  </div>
+</div></section>
+
+<!-- 6. 마무리 -->
+<section class="final"><div class="final-inner reveal" id="final">
+  <div class="copy">
+    <h2>오늘 읽은 한 권부터<br />꽂아 보세요.</h2>
+    <p class="s">가입하면 서재에서 다음 할 일을 하나씩 알려 드려요.</p>
+    <div class="logins">
+      <button class="login kakao"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3C6.5 3 2 6.6 2 11c0 2.8 1.9 5.3 4.7 6.7l-1 3.6c-.1.3.3.6.6.4l4.2-2.8c.5.1 1 .1 1.5.1 5.5 0 10-3.6 10-8S17.5 3 12 3z"/></svg>카카오로 시작하기</button>
+      <button class="login google"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.5 30.2 0 24 0 14.6 0 6.6 5.4 2.7 13.2l7.8 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 7.1-10 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.8-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.8l7.8-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.8 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.8 6.1C6.6 42.6 14.6 48 24 48z"/></svg>구글로 시작하기</button>
+    </div>
+    <div class="checks"><span>무료</span><span>10초 가입</span><span>언제든 탈퇴</span></div>
+  </div>
+  <div class="preview" id="preview"><div class="pv" id="pv">
+    <div class="toast"><i>+1</i><div><b>방금 꽂았어요</b><small>혜진님의 서재 · 13번째 책</small></div></div>
+    <div class="pv-shelf" data-covers="4" data-from="14" data-drop="1"></div>
+  </div></div>
+</div></section>
+
+<script>
+  // 시안용 YES24 공개 표지 (실제: 최근 등록된 global_books 표지)
+  const GOODS = ['197068949','196265083','192474512','196557643','195842609','195265894','196784717','125085536','196260891','195613503','197289012','195028168',
+                 '161401496','195042981','167466420','168393009','167466432','69655504','195804438','196282065','193459475','189630591'];
+  const src = (id) => `https://image.yes24.com/goods/${id}/L`;
+  const COLORS = ['#3d6b5a','#14294e','#c9864a','#1e69cb','#7a5c99','#b5485d','#5f6f8f','#6c9a5b','#2b4f8f','#74b0ff'];
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v) => Math.min(1, Math.max(0, v));
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // 히어로 표지 두 줄 (끊김 없이 돌도록 두 번 이어 붙인다)
+  const img = (id) => `<img class="cover" alt="" loading="lazy" src="${src(id)}" onerror="this.remove()">`;
+  const loop = (ids) => { const h = ids.map(img).join(''); return h + h; };
+  $('row1').innerHTML = loop(GOODS.slice(0, 11));
+  $('row2').innerHTML = loop(GOODS.slice(11));
+
+  // 카드 안 표지 채우기
+  document.querySelectorAll('[data-covers]').forEach((el) => {
+    const n = +el.dataset.covers, from = +el.dataset.from;
+    const html = GOODS.slice(from, from + n).map((id, i) =>
+      `<img class="bk${el.dataset.drop && i === n - 1 ? ' drop' : ''}" alt="" src="${src(id)}" onerror="this.style.visibility='hidden'">`).join('');
+    el.insertAdjacentHTML('afterbegin', html);
+  });
+  $('recCover').src = src(GOODS[7]);
+  $('rank').innerHTML = [[4,'트렌드 코리아 2027','▲2'],[7,'쇼펜하우어 인생수업','–'],[9,'머니 트렌드 2027','▼1']].map(([g, t, d], i) =>
+    `<li><b class="n">${i + 1}</b><img class="bk" alt="" src="${src(GOODS[g])}"><span>${t}</span><em>${d}</em></li>`).join('');
+  $('feed').innerHTML = [['혜','#1e69cb','혜진','완독했어요','방금'],['준','#5f6f8f','준호','읽기 시작했어요','12분 전'],['서','#2b4f8f','서연','별점 ★5를 남겼어요','1시간 전']].map(([a, c, n, v, t], i) =>
+    `<li><span class="av" style="background:${c}">${a}</span><div><b>${n}</b>님이 ${v}<small>${t}</small></div><img class="bk" alt="" src="${src(GOODS[i + 15])}"></li>`).join('');
+
+  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+  // 선언문 — 단어 단위로 스크롤 진행도만큼 밝힌다
+  const m = $('manifesto');
+  const parts = [];
+  m.childNodes.forEach((n) => {
+    if (n.nodeType === 3) n.textContent.split(/(\s+)/).forEach((w) => parts.push(w.trim() ? `<span class="w">${w}</span>` : w));
+    else parts.push(`<span class="w key">${n.textContent}</span>`);
+  });
+  m.innerHTML = parts.join('');
+  const words = m.querySelectorAll('.w');
+  const lightUp = () => {
+    const r = m.getBoundingClientRect();
+    const p = clamp((innerHeight * 0.8 - r.top) / (r.height + innerHeight * 0.3));
+    words.forEach((w, i) => w.classList.toggle('lit', i < Math.round(p * words.length)));
+  };
+  addEventListener('scroll', lightUp, { passive: true }); lightUp();
+
+  // 세 걸음 — 탭이 진행 막대를 채우며 자동으로 넘어간다
+  const DURATION = 5200;
+  const CAPTIONS = [
+    '<b>읽은 책을 기록해요.</b> 책을 검색해 담고, 별점과 한 줄 메모를 남기면 책장에 한 권이 꽂혀요.',
+    '<b>올해 목표를 정해요.</b> 몇 권 읽을지 정하면 진행률과 달마다의 기록이 차곡차곡 쌓여요.',
+    '<b>취향 분석을 받아요.</b> 평가한 완독 책이 다섯 권 모이면, AI가 독서 취향을 노트로 써 드려요.',
+  ];
+  const SHELF = [72, 84, 66, 90, 78, 86, 70, 82, 74, 88, 68, 80];
+  const BOOKS_AT = [1, 7, 12];
+  const BARS = [.3, .55, 0, .7, .45, .15, .9, .4, .6];
+  const MEMO = '흔들릴 때마다 한 장씩 펼쳐 보게 되는 책.';
+  const NOTE = '책장에 사람의 마음을 들여다보는 책이 많습니다. 좋았던 한 권을 오래 곱씹는 분이에요.';
+  const growShelf = $('growShelf');
+  SHELF.forEach((h, i) => { const s = document.createElement('span'); s.style.cssText = `height:${h}px;background:${COLORS[(i * 7) % COLORS.length]}`; growShelf.appendChild(s); });
+  const bars = $('bars');
+  for (let i = 0; i < 12; i++) { const b = document.createElement('i'); if (i >= BARS.length) b.className = 'future'; bars.appendChild(b); }
+  const tabs = document.querySelectorAll('.tab');
+
+  const draw = (step, local) => {
+    const from = step === 0 ? 0 : BOOKS_AT[step - 1];
+    const books = Math.max(1, Math.round(from + (BOOKS_AT[step] - from) * clamp(local * 2.2)));
+    growShelf.querySelectorAll('span').forEach((s, i) => { s.classList.toggle('on', i < books); s.classList.toggle('new', i === books - 1); });
+    $('count').textContent = `${books}권`;
+    const stars = step > 0 ? 4 : Math.min(4, Math.floor(clamp(local * 3) * 4.99));
+    $('stars').textContent = '★'.repeat(stars) + '☆'.repeat(5 - stars);
+    $('memo').textContent = MEMO.slice(0, Math.round(MEMO.length * (step > 0 ? 1 : clamp((local - 0.2) / 0.4))));
+    const g = step > 1 ? 1 : step === 1 ? clamp(local * 2) : 0;
+    $('ring').style.setProperty('--g', (7 / 12) * g);
+    $('ringNum').textContent = Math.round(7 * g);
+    bars.querySelectorAll('i').forEach((b, i) => { if (i < BARS.length) b.style.height = `${BARS[i] * 100 * clamp(g * 1.6 - i * 0.07)}%`; });
+    const t = step === 2 ? clamp(local * 2) : 0;
+    $('note').textContent = NOTE.slice(0, Math.round(NOTE.length * t));
+    $('chips').querySelectorAll('.chip').forEach((c, i) => c.classList.toggle('on', t > 0.8 + i * 0.05));
+    tabs.forEach((tb, i) => { tb.querySelector('.fill').style.width = i < step ? '100%' : i === step ? `${local * 100}%` : '0'; });
+  };
+
+  let step = 0, t0 = 0, elapsed = 0, playing = !reduce, visible = false, hold = false;
+  const setPlayBtn = () => {
+    $('play').textContent = playing ? '❚❚' : '▶';
+    $('play').setAttribute('aria-label', playing ? '자동 재생 일시정지' : '자동 재생 시작');
+  };
+  const go = (n, focus) => {
+    step = n; elapsed = 0; t0 = performance.now();
+    tabs.forEach((tb, i) => { const on = i === n; tb.setAttribute('aria-selected', String(on)); tb.tabIndex = on ? 0 : -1; });
+    $('stepPanel').setAttribute('aria-labelledby', `tab-${n}`);
+    if (focus) tabs[n].focus();
+    document.querySelectorAll('.card').forEach((c) => c.classList.toggle('active', +c.dataset.card === n));
+    $('caption').innerHTML = CAPTIONS[n];
+    draw(n, playing ? 0 : 1);   // 멈춰 있으면 완성된 화면을 바로 보여 준다
+  };
+  // 사용자가 직접 고르면 자동 재생을 끈다 — 고른 단계를 빼앗지 않는다
+  const stopAuto = () => { playing = false; setPlayBtn(); };
+  const tick = (now) => {
+    if (playing && visible && !hold) {
+      const local = clamp((elapsed + now - t0) / DURATION);
+      draw(step, local);
+      if (local >= 1) go((step + 1) % 3);
+    } else { t0 = now; }
+    requestAnimationFrame(tick);
+  };
+  tabs.forEach((tb) => tb.addEventListener('click', () => { stopAuto(); go(+tb.dataset.i); }));
+  // 탭 키보드 조작 — 좌우 화살표 · Home · End
+  $('tablist').addEventListener('keydown', (e) => {
+    const keys = { ArrowRight: (step + 1) % 3, ArrowLeft: (step + 2) % 3, Home: 0, End: 2 };
+    if (!(e.key in keys)) return;
+    e.preventDefault(); stopAuto(); go(keys[e.key], true);
+  });
+  $('play').addEventListener('click', () => {
+    if (playing) { elapsed += performance.now() - t0; playing = false; }
+    else { playing = true; t0 = performance.now(); }
+    setPlayBtn();
+  });
+  // 키보드 포커스가 들어와 있는 동안만 잠시 멈춘다.
+  // 마우스 오버로는 멈추지 않는다 — 화면을 보는 동안 마우스는 대개 그 위에 있어서,
+  // 오버로 멈추면 '보고 있을 때 재생이 안 되는' 상태가 된다. 멈춤 수단은 버튼이 맡는다.
+  const area = $('steps');
+  area.addEventListener('focusin', () => { hold = true; });
+  area.addEventListener('focusout', () => { hold = false; });
+  // 처음 화면에 들어올 때 1단계부터 다시 시작 — 안 보이는 동안 혼자 진행되지 않게
+  let seen = false;
+  new IntersectionObserver((es) => es.forEach((e) => {
+    visible = e.isIntersecting;
+    if (visible && !seen) { seen = true; if (playing) go(0); }
+  }), { threshold: 0.4 }).observe($('media'));
+  setPlayBtn(); go(0); requestAnimationFrame(tick);
+
+  // 숫자 카운트업
+  const cio = new IntersectionObserver((es) => es.forEach((e) => {
+    if (!e.isIntersecting) return;
+    const el = e.target, to = +el.dataset.count, s = performance.now();
+    const f = (t) => { const k = Math.min(1, (t - s) / 1400); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))).toLocaleString() + (el.dataset.unit ?? ''); if (k < 1) requestAnimationFrame(f); };
+    requestAnimationFrame(f); cio.unobserve(el);
+  }), { threshold: 0.6 });
+  document.querySelectorAll('[data-count]').forEach((el) => cio.observe(el));
+
+</script>
+</body>
+</html>

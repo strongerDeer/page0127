@@ -1,0 +1,37 @@
+/* 마지막 한 권이 위에서 떨어져 꽂힌다 — 꽂힌 채로 머물다 사라지고 다시 떨어진다 */
+.drop {
+  animation: drop 3.2s cubic-bezier(0.2, 1.2, 0.4, 1) infinite;
+}
+
+.toast {
+  animation: bob 3.2s ease-in-out infinite;
+}
+
+@keyframes drop {
+  0% {
+    transform: translateY(-160px) rotate(-8deg);
+    opacity: 0;
+  }
+  25%,
+  85% {
+    transform: none;
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+    opacity: 0;
+  }
+}
+
+@keyframes bob {
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drop,
+  .toast {
+    animation: none;
+  }
+}
