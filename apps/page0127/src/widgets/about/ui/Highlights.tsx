@@ -161,10 +161,7 @@ export const Highlights = ({ books, top }: HighlightsProps) => {
         </Reveal>
 
         <Reveal>
-          <Card
-            lead='이번 주 많이 읽힌 책.'
-            rest='리더들이 지금 무엇을 읽는지 매일 집계해요.'
-          >
+          <Card lead='많이 읽힌 책.' rest='리더들이 가장 많이 완독한 책이에요.'>
             {top.length > 0 ? (
               <ol className='w-full space-y-3'>
                 {top.map((b, i) => (
