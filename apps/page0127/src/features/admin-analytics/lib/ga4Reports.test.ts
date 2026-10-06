@@ -20,7 +20,7 @@ describe('toRunReportRequest', () => {
     expect(req.orderBys).toEqual([
       { metric: { metricName: 'activeUsers' }, desc: true },
     ]);
-    expect(req.dimensions).toEqual([{ name: 'country' }]);
+    expect(req.dimensions).toEqual([{ name: 'countryId' }]);
   });
   it('요일은 차원 순(일→토)으로 정렬한다', () => {
     expect(toRunReportRequest(def('dayOfWeek')).orderBys).toEqual([
@@ -37,7 +37,19 @@ describe('parseReport', () => {
         metricValues: [{ value: '12' }, { value: '30' }],
       },
     ]);
-    expect(table.rows).toEqual([{ labels: ['일'], values: [12, 30] }]);
+    expect(table.rows).toEqual([
+      { labels: ['일'], raw: ['0'], values: [12, 30] },
+    ]);
+  });
+  it('도시는 도시 이름 + 한국어 국가명, 원본 코드는 raw 에 남긴다', () => {
+    const table = parseReport(def('city'), [
+      {
+        dimensionValues: [{ value: 'Boardman' }, { value: 'US' }],
+        metricValues: [{ value: '3' }],
+      },
+    ]);
+    expect(table.rows[0].labels).toEqual(['Boardman', '미국']);
+    expect(table.rows[0].raw).toEqual(['Boardman', 'US']);
   });
   it('rows 가 없으면(데이터 0) 빈 표', () => {
     expect(parseReport(def('gender')).rows).toEqual([]);
@@ -52,6 +64,17 @@ describe('translateDimension', () => {
     expect(translateDimension('deviceCategory', 'mobile')).toBe('모바일');
     expect(translateDimension('userGender', 'female')).toBe('여성');
     expect(translateDimension('browser', 'Chrome')).toBe('Chrome');
+  });
+  it('국가 코드 → 한국어 국가명, 사전에 없는 코드는 그대로', () => {
+    expect(translateDimension('countryId', 'KR')).toBe('대한민국');
+    expect(translateDimension('countryId', 'US')).toBe('미국');
+    expect(translateDimension('countryId', 'Q1')).toBe('Q1');
+  });
+  it('채널 그룹 → 한국어, 날짜 → MM/DD', () => {
+    expect(translateDimension('sessionDefaultChannelGroup', 'Direct')).toBe(
+      '직접 방문'
+    );
+    expect(translateDimension('date', '20261003')).toBe('10/03');
   });
 });
 

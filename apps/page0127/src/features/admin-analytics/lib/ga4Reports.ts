@@ -9,6 +9,7 @@
 
 export type ReportKey =
   | 'summary'
+  | 'daily'
   | 'channel'
   | 'sourceMedium'
   | 'country'
@@ -27,6 +28,8 @@ export type ReportDef = {
   key: ReportKey;
   title: string;
   dimensions: string[];
+  /** 표의 첫 열 머리글 — 없으면 '항목' */
+  columnLabel?: string;
   metrics: { name: string; label: string; format: MetricFormat }[];
   /** 정렬 기준 — 없으면 첫 측정항목 내림차순 */
   orderBy?: { dimension: string };
@@ -64,6 +67,14 @@ export const REPORTS: ReportDef[] = [
     limit: 1,
   },
   {
+    key: 'daily',
+    title: '일별 사용자',
+    dimensions: ['date'],
+    metrics: [users],
+    orderBy: { dimension: 'date' },
+    limit: 31,
+  },
+  {
     key: 'channel',
     title: '채널',
     dimensions: ['sessionDefaultChannelGroup'],
@@ -74,20 +85,23 @@ export const REPORTS: ReportDef[] = [
     key: 'sourceMedium',
     title: '소스 / 매체 / 캠페인',
     dimensions: ['sessionSource', 'sessionMedium', 'sessionCampaignName'],
+    columnLabel: '소스 / 매체 / 캠페인',
     metrics: [sessions, users],
     limit: 15,
   },
   {
+    // country(영문 이름) 대신 countryId(KR·US 같은 ISO 코드)를 받아 한국어 이름으로 바꾼다
     key: 'country',
     title: '국가',
-    dimensions: ['country'],
+    dimensions: ['countryId'],
     metrics: [users],
     limit: 10,
   },
   {
     key: 'city',
     title: '도시',
-    dimensions: ['city'],
+    dimensions: ['city', 'countryId'],
+    columnLabel: '도시 / 국가',
     metrics: [users],
     limit: 15,
     emptyHint: 'GA 는 시/군/구가 아니라 도시 단위까지만 줍니다(IP 기반 추정).',
@@ -191,21 +205,28 @@ export type GaRow = {
   metricValues?: { value?: string }[];
 };
 
-export type ReportTable = {
+export type ReportRow = {
   /** 차원 값 (화면 표기로 바꾼 뒤) */
-  rows: { labels: string[]; values: number[] }[];
+  labels: string[];
+  /** GA 원본 차원 값 — 해석 규칙은 번역 문구가 아니라 이 값('KR', 'Organic Search')을 본다 */
+  raw: string[];
+  values: number[];
 };
+
+export type ReportTable = { rows: ReportRow[] };
 
 export const parseReport = (
   def: ReportDef,
   gaRows: GaRow[] = []
 ): ReportTable => ({
-  rows: gaRows.map((r) => ({
-    labels: (r.dimensionValues ?? []).map((d, i) =>
-      translateDimension(def.dimensions[i], d.value ?? '')
-    ),
-    values: (r.metricValues ?? []).map((m) => Number(m.value ?? 0)),
-  })),
+  rows: gaRows.map((r) => {
+    const raw = (r.dimensionValues ?? []).map((d) => d.value ?? '');
+    return {
+      labels: raw.map((v, i) => translateDimension(def.dimensions[i], v)),
+      raw,
+      values: (r.metricValues ?? []).map((m) => Number(m.value ?? 0)),
+    };
+  }),
 });
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
@@ -220,6 +241,45 @@ const DEVICE: Record<string, string> = {
   tablet: '태블릿',
 };
 
+/**
+ * GA 기본 채널 그룹 → 한국어 이름과 풀이.
+ * GA 가 "이 방문은 어떤 길로 왔나"를 자동으로 묶은 것이다.
+ */
+export const CHANNELS: Record<string, { name: string; desc: string }> = {
+  Direct: {
+    name: '직접 방문',
+    desc: '주소를 직접 입력·북마크·카톡 링크 등 출처를 모르는 방문',
+  },
+  'Organic Search': {
+    name: '검색',
+    desc: '구글·네이버 검색 결과를 눌러 들어옴',
+  },
+  Referral: {
+    name: '다른 사이트',
+    desc: '블로그·커뮤니티 등 다른 사이트의 링크',
+  },
+  'Organic Social': { name: 'SNS', desc: '인스타그램·X·페이스북 등' },
+  'Paid Search': { name: '검색 광고', desc: '돈을 낸 검색 광고' },
+  'Paid Social': { name: 'SNS 광고', desc: '돈을 낸 SNS 광고' },
+  Email: { name: '이메일', desc: '메일 속 링크' },
+  Unassigned: {
+    name: '분류 안 됨',
+    desc: 'GA 가 길을 판단하지 못한 방문 — 봇·측정 도구가 흔히 여기에 잡힌다',
+  },
+};
+
+// 브라우저 내장 국가명 사전 — 'KR' → '대한민국'. 라이브러리 없이 된다.
+const regionNames = new Intl.DisplayNames(['ko'], { type: 'region' });
+
+const countryName = (code: string): string => {
+  try {
+    return regionNames.of(code) ?? code;
+  } catch {
+    // 'ZZ' 처럼 사전에 없는 코드는 of() 가 RangeError 를 던진다
+    return code;
+  }
+};
+
 /** GA 원본 값 → 사람이 읽는 값. 모르는 값은 그대로 둔다 */
 export const translateDimension = (
   dimension: string,
@@ -227,6 +287,13 @@ export const translateDimension = (
 ): string => {
   if (value === '(not set)' || value === '') return '(알 수 없음)';
   switch (dimension) {
+    case 'date':
+      // GA 는 'YYYYMMDD' 로 준다 → 차트 축에 쓰기 좋은 'MM/DD'
+      return `${value.slice(4, 6)}/${value.slice(6, 8)}`;
+    case 'countryId':
+      return countryName(value);
+    case 'sessionDefaultChannelGroup':
+      return CHANNELS[value]?.name ?? value;
     case 'dayOfWeek':
       // GA 는 0=일요일 … 6=토요일 문자열로 준다
       return DAY_NAMES[Number(value)] ?? value;

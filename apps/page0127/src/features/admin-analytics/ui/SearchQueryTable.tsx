@@ -6,7 +6,12 @@ type SearchQueryTableProps = { rows: SearchQueryRow[] };
 
 export const SearchQueryTable = ({ rows }: SearchQueryTableProps) => (
   <div className='rounded-lg border border-line p-4'>
-    <div className='mb-2 text-sm font-medium'>검색어 (클릭 순)</div>
+    <div className='text-sm font-medium'>검색어 (클릭 순)</div>
+    <p className='mb-2 mt-0.5 text-xs text-text-subtle'>
+      노출 = 검색 결과에 우리 페이지가 뜬 횟수 · 클릭률 = 노출 중 눌린 비율 ·
+      평균 순위 = 결과 목록에서 몇 번째였나(1이 맨 위). 노출은 많은데 클릭률이
+      낮으면 그 페이지 제목·설명을 다듬을 차례입니다.
+    </p>
     {rows.length === 0 ? (
       <p className='text-xs text-text-subtle'>
         데이터 없음 — 검색 노출이 적거나, 데이터가 2~3일 늦게 들어옵니다.
