@@ -1,7 +1,8 @@
-import { AboutHero, Manifesto } from '@/widgets/about';
+import { AboutHero, Manifesto, StepsShowcase } from '@/widgets/about';
 import { getRecentBooks } from '@/widgets/about/api/getRecentBooks';
 import { CHANGELOG, SITE_INFO } from '@/widgets/landing/model/siteInfo';
 import { DocSection } from '@/widgets/landing/ui/DocPage';
+import { TasteExampleCard } from '@/widgets/landing/ui/TasteExampleCard';
 
 import type { Metadata } from 'next';
 
@@ -22,21 +23,10 @@ const AboutPage = async () => {
     <div className='break-keep'>
       <AboutHero books={books} />
       <Manifesto />
+      <StepsShowcase books={books} tasteSlot={<TasteExampleCard />} />
       {/* 아래 섹션들은 다음 단계에서 하나씩 새 섹션으로 바뀐다.
           h1 은 히어로가 가지므로 DocPage(자체 h1) 대신 감싸기만 한다 */}
       <div className='mx-auto max-w-3xl space-y-10 px-4 py-16'>
-        <DocSection title='무엇을 할 수 있나요'>
-          <p>
-            읽은 책을 기록하고 별점과 메모를 남깁니다. 완독한 책이 다섯 권쯤
-            모이면 독서 성향을 읽어 드리고, 다음에 읽을 책까지 골라 드려요.
-          </p>
-          <p>
-            책장은 주소 하나로 공개할 수 있습니다. 다른 사람의 책장과 나란히
-            놓아 독서 궁합을 보고, 서로의 책장에서 건넬 책을 골라 볼 수도
-            있어요.
-          </p>
-        </DocSection>
-
         <DocSection title='누가 만들었나요'>
           <p>
             한 사람이 만들고 있는 개인 프로젝트입니다. {SITE_INFO.since}에
