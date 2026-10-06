@@ -1,5 +1,7 @@
 import { Suspense } from 'react';
 
+import Link from 'next/link';
+
 import { ErrorBoundary } from '@repo/ui';
 import { ArrowRight, BookOpen, ScanSearch, Sparkles } from 'lucide-react';
 
@@ -230,6 +232,14 @@ const Home = async () => {
             <div className='mt-2'>
               <StartCtaButton location='landing_bottom' variant='inverse' />
             </div>
+            {/* 가입을 망설이는 방문자에게 '어떻게 쓰는지'를 먼저 보여 준다 —
+                소개 페이지로 들어오는 길이 푸터·sitemap 뿐이었다 */}
+            <Link
+              href='/about#steps'
+              className='text-sm font-medium text-white/80 underline-offset-4 hover:text-white hover:underline'
+            >
+              처음이세요? 어떻게 쓰는지 보기
+            </Link>
           </section>
         )}
       </div>
