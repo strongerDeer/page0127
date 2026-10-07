@@ -31,6 +31,10 @@ export type {
 //       (클라이언트 컴포넌트가 이 배럴을 import 할 때 서버 모듈이 끌려가지 않도록 분리)
 export { bookApi } from './api/bookApi';
 
+// 표지 주소 — YES24 가 먼저, Storage 사본은 대체용
+export type { CoverSource } from './model/coverSource';
+export { toCoverSource } from './model/coverSource';
+
 // 재독 기록 합치기 — 같은 책의 회독이 책장에 여러 번 서지 않게 한다
 export { dedupeReadings } from './model/dedupeReadings';
 
