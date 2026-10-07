@@ -6,7 +6,12 @@ export type PublicShelfSummary = {
   totalBooks: number;
   /** 그중 인생책 권수 */
   lifeBooks: number;
+  /** 최근 완독한 책의 표지 URL — 최신순, 최대 COVER_LIMIT 장 */
+  covers: string[];
 };
+
+/** 공유 카드 상단에 세울 표지 수 (소개 페이지 '공개 서재' 카드와 같은 5장) */
+export const COVER_LIMIT = 5;
 
 /**
  * 공유 카드·메타데이터용 책장 요약 — 권수 두 개만 센다.
@@ -34,15 +39,18 @@ export const getPublicShelfSummary = async (
 
   // count 대신 id·isbn 을 받아 와서 '서로 다른 책' 수를 센다. 카드에 필요한 건
   // 숫자 두 개뿐이지만, 재독을 걸러내려면 어떤 책인지 알아야 한다.
-  // (한 사람 책장이라 수백 행이어도 짧은 문자열 두 개씩이라 부담이 없다)
+  // 표지도 같은 행에서 뽑는다 — 쿼리를 하나 더 보내지 않고, 숫자와 표지가
+  // **같은 공개 범위**에서 나오게 하기 위해서다(비공개 책 표지가 카드에 실리면 안 된다).
+  // (한 사람 책장이라 수백 행이어도 짧은 문자열 몇 개씩이라 부담이 없다)
   const publicCompleted = () =>
     supabase
       .from('books')
-      .select('id, isbn')
+      .select('id, isbn, cover_image')
       .eq('user_id', userId)
       .eq('status', 'completed')
       .not('completed_date', 'is', null)
-      .eq('is_public', true);
+      .eq('is_public', true)
+      .order('completed_date', { ascending: false });
 
   // ISBN 이 비어 있는 수기 등록 책은 서로 합쳐지면 안 된다 → id 로 갈라 센다.
   // (model/dedupeReadings.ts 의 그룹 키와 같은 규칙. 여기는 한 사람의
@@ -62,10 +70,19 @@ export const getPublicShelfSummary = async (
   // 총 권수를 못 세면 카드에 쓸 것이 없다 — 빈 선반으로 떨어진다
   if (totalResult.error) {
     console.error('공개 책장 권수 조회 실패:', totalResult.error.message);
-    return { totalBooks: 0, lifeBooks: 0 };
+    return { totalBooks: 0, lifeBooks: 0, covers: [] };
   }
 
   const totalBooks = countDistinctBooks(totalResult.data ?? []);
+
+  // 재독한 책은 같은 표지가 두 번 나온다 — Set 으로 걸러 서로 다른 표지만 세운다
+  const covers = [
+    ...new Set(
+      (totalResult.data ?? [])
+        .map((row) => row.cover_image)
+        .filter((url): url is string => Boolean(url))
+    ),
+  ].slice(0, COVER_LIMIT);
 
   // 인생책만 실패했으면 그 줄만 뺀다. 예전에는 둘 중 하나만 실패해도 0/0 을 돌려줬는데,
   // is_life_book 컬럼이 아직 없던 배포 직후 그 경로를 타면서 155권 읽은 책장이
@@ -73,8 +90,12 @@ export const getPublicShelfSummary = async (
   // 한쪽이 죽어도 살아 있는 숫자는 내보낸다.
   if (lifeResult.error) {
     console.error('인생책 권수 조회 실패:', lifeResult.error.message);
-    return { totalBooks, lifeBooks: 0 };
+    return { totalBooks, lifeBooks: 0, covers };
   }
 
-  return { totalBooks, lifeBooks: countDistinctBooks(lifeResult.data ?? []) };
+  return {
+    totalBooks,
+    lifeBooks: countDistinctBooks(lifeResult.data ?? []),
+    covers,
+  };
 };
