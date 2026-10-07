@@ -1,5 +1,7 @@
 // FSD: widgets는 app을 import할 수 없다 (역방향)
 // → @/app/api/_helpers/auth의 getSupabaseClient 대신 shared의 createClient 직접 사용
+import Link from 'next/link';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui';
 
 import { createClient } from '@/shared/config/supabase/server';
@@ -178,6 +180,14 @@ export const ReaderProfiles = async ({ isbn }: ReaderProfilesProps) => {
           )}
         </details>
       )}
+
+      {/* 책에서 만난 리더 → 더 많은 리더로 (비로그인이면 로그인 화면을 거친다) */}
+      <Link
+        href='/search'
+        className='inline-block text-sm text-primary hover:underline'
+      >
+        다른 리더 둘러보기 →
+      </Link>
     </section>
   );
 };

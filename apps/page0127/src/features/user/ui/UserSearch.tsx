@@ -22,9 +22,11 @@ import { UserCard } from '@/features/follow/ui/UserCard';
  */
 type UserSearchProps = {
   currentUserId?: string; // 현재 로그인한 사용자 ID
+  /** 검색어가 없을 때 빈 안내 대신 보여 줄 내용 (서버에서 그린 추천 리더) */
+  emptyState?: React.ReactNode;
 };
 
-export const UserSearch = ({ currentUserId }: UserSearchProps) => {
+export const UserSearch = ({ currentUserId, emptyState }: UserSearchProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeQuery, setActiveQuery] = useState('');
 
@@ -83,9 +85,7 @@ export const UserSearch = ({ currentUserId }: UserSearchProps) => {
       </div>
 
       {/* 로딩 상태 */}
-      {isLoading && (
-        <Spinner label='사용자를 찾는 중' className='py-8' />
-      )}
+      {isLoading && <Spinner label='사용자를 찾는 중' className='py-8' />}
 
       {/* 검색 결과 */}
       {!isLoading && activeQuery && (
@@ -112,8 +112,9 @@ export const UserSearch = ({ currentUserId }: UserSearchProps) => {
         </div>
       )}
 
-      {/* 초기 상태 */}
-      {!activeQuery && !isLoading && (
+      {/* 초기 상태 — 추천 리더가 있으면 그것을, 없으면 안내를 */}
+      {!activeQuery && !isLoading && emptyState}
+      {!activeQuery && !isLoading && !emptyState && (
         <div className='rounded-2xl bg-sunken py-12 text-center'>
           <Search className='mx-auto h-12 w-12 text-muted-foreground' />
           <p className='mt-4 text-muted-foreground'>
