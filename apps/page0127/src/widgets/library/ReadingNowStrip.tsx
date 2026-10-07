@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { BookCover } from '@repo/ui';
 import { BookOpen } from 'lucide-react';
 
+import { toCoverSource } from '@/entities/book';
+
 import type { Book } from '@/entities/book';
 
 type ReadingNowStripProps = {
@@ -42,10 +44,11 @@ export const ReadingNowStrip = ({ books, bookHref }: ReadingNowStripProps) => {
                   띄우지 않는다(07 §2.3). BookCover 로 바꾸며 도메인 셰이프로 통일했다 */}
               <div className='aspect-2/3 relative bg-muted'>
                 <BookCover
-                  src={book.cover_image}
+                  {...toCoverSource(book)}
                   title={book.title}
-          size='fill'
-        />
+                  size='fill'
+                  sizes='96px'
+                />
               </div>
               <p className='line-clamp-2 text-xs text-text-body group-hover:text-primary'>
                 {book.title}

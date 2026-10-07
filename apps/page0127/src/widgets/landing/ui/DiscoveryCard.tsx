@@ -5,6 +5,8 @@ import { Sparkles } from 'lucide-react';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { decodeHtmlEntities } from '@/shared/lib/htmlEntities';
+
+import { toCoverSource } from '@/entities/book';
 /**
  * "page0127의 발견" — 최근 등록된 책 한 권을 크게 보여주는 편집 카드
  *
@@ -23,6 +25,7 @@ type GlobalBookRow = {
   title: string;
   author: string | null;
   cover_image: string | null;
+  provider_item_id: string | null;
   description: string | null;
 };
 
@@ -68,7 +71,7 @@ export const DiscoveryCard = async () => {
   // 소개글이 있는 최근 등록 도서 1권 — 랭킹 1위와 겹치지 않는 "새로 들어온 책"
   const { data } = await supabase
     .from('global_books')
-    .select('id, title, author, cover_image, description')
+    .select('id, title, author, cover_image, provider_item_id, description')
     .not('description', 'is', null)
     .order('created_at', { ascending: false })
     .limit(1);
@@ -103,12 +106,12 @@ export const DiscoveryCard = async () => {
             레이어 밖이라 Tailwind 유틸을 이기므로 애초에 적용되지 않던 클래스다 */}
         {book.cover_image && (
           <BookCover
-            src={book.cover_image}
+            {...toCoverSource(book)}
             title={book.title}
             decorative
             className='-mb-5'
-          size='xl'
-        />
+            size='xl'
+          />
         )}
       </div>
 

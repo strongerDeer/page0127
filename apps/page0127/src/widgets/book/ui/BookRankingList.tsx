@@ -5,6 +5,8 @@ import { Check, Heart } from 'lucide-react';
 
 import { cn } from '@/shared/lib/utils';
 
+import { toCoverSource } from '@/entities/book';
+
 import { RankDeltaBadge } from './RankDeltaBadge';
 
 import type { BookRanking } from '@/entities/book';
@@ -99,11 +101,11 @@ export const BookRankingList = ({
 
                 {/* 표지 — 높이만 고정하고 판형(가로 비율)은 원본대로 둔다 */}
                 <BookCover
-                  src={book.cover_image}
+                  {...toCoverSource(book)}
                   title={book.title}
                   decorative
-          size='sm'
-        />
+                  size='sm'
+                />
 
                 <div className='min-w-0 flex-1'>
                   <p className='truncate text-base font-medium text-text-strong group-hover:underline'>
