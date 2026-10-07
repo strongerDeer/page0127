@@ -34,7 +34,7 @@ type PageProps = {
  * 공유했을 때 보이는 제목·설명.
  *
  * 이게 없으면 누구의 책장을 공유하든 카톡에 루트 레이아웃의 문구
- * ("page0127 - 책장을 보면, 그 사람이 보인다")가 똑같이 뜬다.
+ * ("page0127. - 책장을 보면, 그 사람이 보인다")가 똑같이 뜬다.
  * 링크를 받은 사람이 이게 누구 책장인지 알 수 없다는 뜻이다.
  *
  * 세션을 읽지 않는 조회를 쓰는 이유는 opengraph-image.tsx 와 같다 —
@@ -64,9 +64,14 @@ export const generateMetadata = async ({
   const title = `${name}님의 책장 | page0127.`;
   // 한줄 소개를 쓴 사람은 그게 자기소개다 — 우리가 만든 문장보다 앞세운다
   const bio = profile.bio?.trim();
+  // 0권이면 숫자를 쓰지 않는다 — "기록한 책 0권"은 초대가 아니라 빈 성적표로 읽힌다
+  const shelfLine =
+    totalBooks > 0
+      ? `${name}님이 기록한 책 ${totalBooks}권`
+      : `${name}님이 막 책장을 열었어요`;
   const description = bio
-    ? `${bio} — ${name}님이 기록한 책 ${totalBooks}권`
-    : `${name}님이 기록한 책 ${totalBooks}권. 책장을 보면, 그 사람이 보입니다.`;
+    ? `${bio} — ${shelfLine}`
+    : `${shelfLine}. 책장을 보면, 그 사람이 보입니다.`;
 
   return {
     title,

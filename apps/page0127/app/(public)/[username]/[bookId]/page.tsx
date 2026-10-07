@@ -69,17 +69,25 @@ export const generateMetadata = async ({
   }
 
   const name = toDisplayName(profile);
-  const title = `${book.title} | ${name}님의 책장`;
-  // 사용자가 쓴 문장이 있으면 그게 이 기록의 요약이다
-  const description =
-    book.one_line_review?.trim() ||
-    `${name}님이 읽은 ${book.title}${book.author ? ` (${book.author})` : ''}`;
+  // 부제(' - ' 뒤)는 뗀다 — 브런치북처럼 부제가 긴 책은 제목만 세 줄이 됐다
+  const bookTitle = book.title.split(' - ')[0];
+  const title = `${bookTitle} — ${name}님의 기록 | page0127.`;
+  const readLine = `${name}님이 읽은 ${bookTitle}${book.author ? ` (${book.author})` : ''}`;
+  // 검색 결과에는 사용자가 쓴 문장이 이 기록의 가장 좋은 요약이다
+  const description = book.one_line_review?.trim() || readLine;
+  // 카톡 미리보기에서는 한줄평이 이미지에 크게 실리므로(opengraph-image.tsx),
+  // 아래 설명까지 같은 문장을 반복하지 않는다
+  const shareDescription = readLine;
 
   return {
     title,
     description,
-    openGraph: { title, description, type: 'article' },
-    twitter: { card: 'summary_large_image', title, description },
+    openGraph: { title, description: shareDescription, type: 'article' },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: shareDescription,
+    },
   };
 };
 
