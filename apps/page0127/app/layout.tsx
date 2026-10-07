@@ -28,7 +28,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 // (한국 서비스인데 네이버에 등록하지 않으면 검색 유입이 구조적으로 0이다)
 const naverSiteVerification = process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION;
 
-const siteTitle = 'page0127 - 책장을 보면, 그 사람이 보인다';
+const siteTitle = 'page0127. - 책장을 보면, 그 사람이 보인다';
 const siteDescription =
   '읽은 책을 한 권씩 기록해 보세요. 책장이 쌓이면 AI가 나도 몰랐던 독서 취향을 들려주고, 다음에 읽을 책까지 건네드립니다.';
 

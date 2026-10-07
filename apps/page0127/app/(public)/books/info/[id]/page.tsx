@@ -55,9 +55,13 @@ export async function generateMetadata({
     ? `${book.title} - ${book.author} | page0127.`
     : `${book.title} | page0127.`;
   // 알라딘 소개글은 HTML 엔티티가 이스케이프돼 있다 — 메타에도 디코딩해 넣는다
+  // 소개글의 줄바꿈은 미리보기에서 빈 줄 덩어리가 된다 — 공백 하나로 접는다
   const description = book.description
-    ? decodeHtmlEntities(book.description).slice(0, 150)
-    : `${book.title}을(를) 읽은 사람들의 기록을 page0127에서 확인해 보세요.`;
+    ? decodeHtmlEntities(book.description)
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 150)
+    : `${book.title}을(를) 읽은 사람들의 기록을 page0127.에서 확인해 보세요.`;
 
   return {
     title,
@@ -66,7 +70,8 @@ export async function generateMetadata({
       title,
       description,
       type: 'book',
-      images: book.cover_image ? [{ url: book.cover_image }] : undefined,
+      // images 는 두지 않는다 — 같은 폴더의 opengraph-image.tsx 가 1.91:1 카드를 만든다.
+      // 표지 원본(세로)을 넘기면 카톡에서 위아래가 잘렸다.
     },
   };
 }
