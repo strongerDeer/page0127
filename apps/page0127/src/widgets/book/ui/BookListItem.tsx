@@ -1,7 +1,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { isPreOptimizedImageSrc } from '@repo/ui';
+import { CoverImage, isPreOptimizedImageSrc } from '@repo/ui';
+
+import { toCoverSource } from '@/entities/book';
 
 import { BookLikeButton } from './BookLikeButton';
 
@@ -37,6 +39,8 @@ type BookListItemCoverProps = {
   title: string;
   author: string | null;
   cover: string | null;
+  /** cover 를 불러오지 못했을 때 쓸 주소 (Storage 사본) */
+  coverFallback?: string | null;
   spine: string | null;
   description: string | null;
   publisher: string | null;
@@ -59,6 +63,7 @@ const BookListItemCover = ({
   title,
   author,
   cover,
+  coverFallback,
   spine,
   description,
   publisher,
@@ -88,20 +93,19 @@ const BookListItemCover = ({
 
           {/* 앞 표지 — 이미지가 없으면 제목·저자를 조판해 표지를 생성한다
               (기존에는 존재하지 않는 /images/placeholder-cover.png 를 가리켜 깨졌다) */}
-          {cover ? (
-            <Image
-              src={cover}
-              alt={title}
-              width='400'
-              height='400'
-              unoptimized={isPreOptimizedImageSrc(cover)}
-            />
-          ) : (
-            <div className={styles.fallback}>
-              <p className={styles.fallbackTitle}>{title}</p>
-              {author && <p className={styles.fallbackAuthor}>{author}</p>}
-            </div>
-          )}
+          <CoverImage
+            src={cover}
+            fallbackSrc={coverFallback}
+            alt={title}
+            width={400}
+            height={400}
+            fallback={
+              <div className={styles.fallback}>
+                <p className={styles.fallbackTitle}>{title}</p>
+                {author && <p className={styles.fallbackAuthor}>{author}</p>}
+              </div>
+            }
+          />
 
           {/* 읽음 뱃지 */}
           {isRead && (
@@ -171,6 +175,7 @@ export const BookListItem = ({
 }: BookItemProps) => {
   const isRead =
     isReadProp ?? ('status' in book && book.status === 'completed');
+  const cover = toCoverSource(book);
 
   return (
     <article className={styles.article}>
@@ -178,7 +183,8 @@ export const BookListItem = ({
         id={book.id}
         title={book.title}
         author={book.author}
-        cover={book.cover_image}
+        cover={cover.src}
+        coverFallback={cover.fallbackSrc}
         spine={book.spine_image}
         description={book.description}
         publisher={book.publisher}

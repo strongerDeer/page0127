@@ -5,9 +5,9 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { isPreOptimizedImageSrc, ReadCountBadge } from '@repo/ui';
+import { CoverImage, isPreOptimizedImageSrc, ReadCountBadge } from '@repo/ui';
 
-import { isTopRated } from '@/entities/book';
+import { isTopRated, toCoverSource } from '@/entities/book';
 import { spineWidthPx } from '@/entities/book/model/spineWidth';
 
 import type { Book } from '@/entities/book';
@@ -66,15 +66,34 @@ export const PublicBookShelf = ({
         {books.map((book) => {
           // 최고 평가(5점·인생책)만 표지를 크게 세우고 나머지는 책등으로 꽂는다
           const isCoverView = isTopRated(book.rating, book.is_life_book);
-          const imageUrl = isCoverView ? book.cover_image : book.spine_image;
-          // onError 로 대체된 뒤에는 로컬 이미지(no-book.jpg)가 들어온다.
-          // 최적화 여부 판정은 실제로 그릴 src 기준이어야 한다.
-          const renderedSrc = imgSrc[book.id] || imageUrl;
+          // 책등만 여기서 대체한다 — onError 로 대체된 뒤에는 로컬 이미지(no-book.jpg)가
+          // 들어온다. 최적화 여부 판정은 실제로 그릴 src 기준이어야 한다.
+          // 표지는 CoverImage 가 YES24 → Storage 사본 → 이미지 없음 순으로 대체한다.
+          const renderedSpine = imgSrc[book.id] || book.spine_image;
           // 여러 번 읽은 책은 조금 크게 — 뱃지가 잘 안 보이는 책등에서도
           // "이 책은 다르다"가 실루엣만으로 읽힌다
           const isReread = book.read_count > 1;
           // 이미지가 없는 책등만 두께로 폭을 만든다 (아래 Image 주석 참고)
           const spineWidth = spineWidthPx(book.thickness_mm);
+
+          const noImage = (
+            <div
+              className={`${styles.noImage} ${isCoverView ? styles.cover : styles.spine}`}
+              // 그릴 이미지가 없으니 늘어날 것도 없다 — 여기서는 두께를 폭으로 쓴다
+              style={isCoverView ? undefined : { width: `${spineWidth}px` }}
+            >
+              <p>{book.title}</p>
+            </div>
+          );
+
+          // width·height 속성은 로딩 전 자리 잡기용 비율 힌트일 뿐이다.
+          // 실제 크기는 CSS(`height: 240px; width: auto`)가 정한다 →
+          // 높이는 고정, 폭은 이미지 원본 비율을 따른다.
+          const imageBox = {
+            width: isCoverView ? 170 : 50,
+            height: 240,
+            sizes: '(max-width: 768px) 170px, 170px',
+          };
 
           return (
             <li key={book.id}>
@@ -82,17 +101,19 @@ export const PublicBookShelf = ({
                 href={getHref(book)}
                 className={isReread ? styles.reread : undefined}
               >
-                {renderedSrc ? (
-                  <Image
-                    src={renderedSrc}
+                {isCoverView ? (
+                  <CoverImage
+                    {...toCoverSource(book)}
+                    {...imageBox}
                     alt={book.title}
-                    // width·height 속성은 로딩 전 자리 잡기용 비율 힌트일 뿐이다.
-                    // 실제 크기는 CSS(`height: 240px; width: auto`)가 정한다 →
-                    // 높이는 고정, 폭은 이미지 원본 비율을 따른다.
-                    width={isCoverView ? 170 : 50}
-                    height={240}
-                    sizes='(max-width: 768px) 170px, 170px'
-                    unoptimized={isPreOptimizedImageSrc(renderedSrc)}
+                    fallback={noImage}
+                  />
+                ) : renderedSpine ? (
+                  <Image
+                    src={renderedSpine}
+                    {...imageBox}
+                    alt={book.title}
+                    unoptimized={isPreOptimizedImageSrc(renderedSpine)}
                     onError={() => onError(book.id)}
                     // ⚠️ 책등 이미지에 폭을 강제하지 않는다.
                     // 두께(thickness_mm)로 폭을 고정했던 적이 있다(2026-09-29). 박스가
@@ -101,13 +122,7 @@ export const PublicBookShelf = ({
                     // 폭을 이미지에 맡기는 것뿐이다.
                   />
                 ) : (
-                  <div
-                    className={`${styles.noImage} ${isCoverView ? styles.cover : styles.spine}`}
-                    // 그릴 이미지가 없으니 늘어날 것도 없다 — 여기서는 두께를 폭으로 쓴다
-                    style={isCoverView ? undefined : { width: `${spineWidth}px` }}
-                  >
-                    <p>{book.title}</p>
-                  </div>
+                  noImage
                 )}
 
                 {/* 회독 뱃지. 표지는 자리가 있어 "n회독"을 그대로 쓰고,
