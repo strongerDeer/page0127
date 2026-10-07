@@ -19,9 +19,18 @@ type RatingStarsProps = {
   /** 5점 만점 점수. entities/book 의 toScore() 로 변환해 넘긴다 */
   score: number;
   size?: number;
+  /** 채운 별 색. 파란 무대 위에서는 흰색으로 바꾼다(브랜드 블루는 묻힌다) */
+  onColor?: string;
+  /** 빈 별 색 */
+  offColor?: string;
 };
 
-export const RatingStars = ({ score, size = 40 }: RatingStarsProps) => (
+export const RatingStars = ({
+  score,
+  size = 40,
+  onColor = OG_COLORS.brand,
+  offColor = OG_COLORS.line,
+}: RatingStarsProps) => (
   <div style={{ display: 'flex', gap: 6 }}>
     {Array.from({ length: STAR_COUNT }, (_, index) => (
       <svg
@@ -35,7 +44,7 @@ export const RatingStars = ({ score, size = 40 }: RatingStarsProps) => (
         // 채운 별에 brand/accent(민트)가 아니라 primary(blue/600)를 쓰는 이유:
         // 별점은 브랜드 자산이 아니라 앱 UI 요소다. 브랜드 색을 바꿀 때
         // 평점 표시가 같이 흔들리면 안 된다.
-        fill={index < score ? OG_COLORS.brand : OG_COLORS.line}
+        fill={index < score ? onColor : offColor}
       >
         <path d={STAR_PATH} />
       </svg>
