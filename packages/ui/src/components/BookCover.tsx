@@ -11,6 +11,7 @@ import {
   parseYes24CoverItemId,
   toYes24CoverBase,
   yes24CoverLoader,
+  yes24LargeCoverLoader,
 } from '../lib/yes24CoverLoader';
 
 /**
@@ -84,6 +85,11 @@ type BookCoverProps = Omit<VariantProps<typeof coverVariants>, 'size'> & {
   decorative?: boolean;
   /** LCP 에 걸리는 큰 표지에만 (next/image 의 priority) */
   priority?: boolean;
+  /**
+   * 상세처럼 표지 한 장을 크게 놓는 자리. YES24 의 가장 큰 사본(XL, ~250KB)까지
+   * 허용한다. 목록·격자에서 켜면 고밀도 화면에서 표지마다 XL 을 받는다.
+   */
+  large?: boolean;
 };
 
 /**
@@ -104,6 +110,7 @@ export const BookCover = ({
   className,
   decorative,
   priority,
+  large = false,
 }: BookCoverProps) => {
   // className 은 shape 에 섞지 않고 각 분기의 **맨 뒤**로 넘긴다.
   // 여기서 합쳐 두면 뒤따라오는 기본 클래스(`text-xs` 등)가 호출부 지정을
@@ -120,7 +127,7 @@ export const BookCover = ({
 
   // 호출부가 신경 쓰지 않아도 되도록 최적화 경로를 여기서 정한다 — 이 컴포넌트가
   // 앱 15곳에서 쓰이는데, 그중 한 곳이라도 빠지면 그 화면만 조용히 한도를 태운다.
-  const imageProps = src ? toCoverImageProps(src) : null;
+  const imageProps = src ? toCoverImageProps(src, large) : null;
 
   if (size === 'fill' || size === 'full') {
     // fill: 부모가 크기를 정한다(부모에 relative + 크기 필요).
@@ -218,17 +225,21 @@ export const pickCoverSrc = (
 /**
  * 주소에 맞는 최적화 경로를 고른다.
  *
- * - YES24 앞표지 → 크기별 사본을 고르는 loader. 크기를 뗀 주소를 넘기는 이유는
- *   `toYes24CoverBase` 주석 참고.
+ * - YES24 앞표지 → 크기별 사본을 고르는 loader(큰 자리만 XL 허용). 크기를 뗀
+ *   주소를 넘기는 이유는 `toYes24CoverBase` 주석 참고.
  * - 이미 완성된 원격 이미지(Storage 사본 등) → Vercel 변환을 태우지 않는다(unoptimized).
  * - 그 밖(로컬 정적 이미지) → 기본 최적화.
  */
 const toCoverImageProps = (
-  src: string
+  src: string,
+  large: boolean
 ): Pick<ImageProps, 'src' | 'loader' | 'unoptimized'> => {
   const yes24ItemId = parseYes24CoverItemId(src);
   if (yes24ItemId) {
-    return { src: toYes24CoverBase(yes24ItemId), loader: yes24CoverLoader };
+    return {
+      src: toYes24CoverBase(yes24ItemId),
+      loader: large ? yes24LargeCoverLoader : yes24CoverLoader,
+    };
   }
   return { src, unoptimized: isPreOptimizedImageSrc(src) };
 };

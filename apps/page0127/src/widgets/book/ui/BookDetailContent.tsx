@@ -59,6 +59,7 @@ export const BookDetailContent = ({
                 // 부모 폭(w-56)을 알려 준다. 빼면 100vw 로 계산해 넓은 화면에서
                 // 필요 이상으로 큰 후보를 고른다.
                 sizes='224px'
+                large
               />
             </div>
 

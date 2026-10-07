@@ -18,11 +18,17 @@
 const COVER_PATH = /^\/goods\/(\d+)(?:\/(?:M|L|XL))?$/;
 const HOST = 'image.yes24.com';
 
-/** 각 크기가 실제로 가진 폭. 요청 폭이 이 값 이하이면 그 크기로 충분하다 */
-const SIZE_STEPS = [
-  { size: 'M', width: 151 },
-  { size: 'L', width: 275 },
-] as const;
+/** M 사본의 실제 폭. 요청 폭이 이 이하면 M 으로 충분하다 */
+const M_WIDTH = 151;
+
+/**
+ * 이 폭을 넘는 요청에만 XL 을 준다(큰 표지 자리에서만).
+ *
+ * next/image 의 srcset 은 정해진 폭 단계(…128, 256, 384, 640…)로만 요청하므로
+ * 384 까지는 L(275px)로 덮는다 — 최대 1.4배 확대라 표지에선 눈에 띄지 않는다.
+ * 그다음 단계(640)부터 XL 이다.
+ */
+const XL_FROM_WIDTH = 384;
 
 /**
  * YES24 앞표지 주소면 상품번호를, 아니면 null 을 돌려준다.
@@ -53,23 +59,39 @@ export const parseYes24CoverItemId = (src?: string | null): string | null => {
 export const toYes24CoverBase = (itemId: string): string =>
   `https://${HOST}/goods/${itemId}`;
 
-/** 요청 폭(px)을 덮는 가장 작은 크기를 고른다 */
-export const pickYes24CoverSize = (width: number): 'M' | 'L' | 'XL' =>
-  SIZE_STEPS.find((step) => width <= step.width)?.size ?? 'XL';
+/**
+ * 요청 폭(px)에 맞는 크기를 고른다.
+ *
+ * ⚠️ XL 은 `allowXL` 일 때만 준다. 3x 화면에서 격자 표지(CSS 130px)는 390px 이
+ * 필요해 srcset 이 640 단계로 올라가는데, 그대로 XL(249KB)을 주면 표지 열여덟 장에
+ * 4MB 가 넘는다. Storage 사본(폭 500px, 40~90KB)을 쓰던 때보다 무거워진다.
+ * 그래서 목록은 L 에서 멈추고, 상세처럼 표지 한 장을 크게 놓는 자리만 XL 을 연다.
+ */
+export const pickYes24CoverSize = (
+  width: number,
+  allowXL = false
+): 'M' | 'L' | 'XL' => {
+  if (width <= M_WIDTH) return 'M';
+  if (allowXL && width > XL_FROM_WIDTH) return 'XL';
+  return 'L';
+};
+
+type LoaderArgs = { src: string; width: number };
+
+const loadYes24Cover = ({ src, width }: LoaderArgs, allowXL: boolean) => {
+  const itemId = parseYes24CoverItemId(src);
+  if (!itemId) return src;
+  return `${toYes24CoverBase(itemId)}/${pickYes24CoverSize(width, allowXL)}`;
+};
 
 /**
- * next/image 의 `loader`. YES24 표지가 아닌 src 는 그대로 돌려준다.
+ * next/image 의 `loader` — 목록·카드용(최대 L). YES24 표지가 아니면 src 그대로.
  *
  * quality 는 쓰지 않는다 — YES24 가 정해 둔 JPEG 를 그대로 받기 때문이다.
  */
-export const yes24CoverLoader = ({
-  src,
-  width,
-}: {
-  src: string;
-  width: number;
-}): string => {
-  const itemId = parseYes24CoverItemId(src);
-  if (!itemId) return src;
-  return `${toYes24CoverBase(itemId)}/${pickYes24CoverSize(width)}`;
-};
+export const yes24CoverLoader = (args: LoaderArgs): string =>
+  loadYes24Cover(args, false);
+
+/** next/image 의 `loader` — 상세처럼 표지를 크게 놓는 자리용(XL 허용) */
+export const yes24LargeCoverLoader = (args: LoaderArgs): string =>
+  loadYes24Cover(args, true);

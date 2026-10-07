@@ -178,6 +178,7 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
             size='full'
             sizes='200px'
             priority
+            large
             decorative
             className='px-3 py-4 text-sm'
           />

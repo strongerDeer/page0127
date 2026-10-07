@@ -30,14 +30,26 @@ describe('BookCover 의 이미지 최적화 경로', () => {
     expect(html).not.toContain('/_next/image');
   });
 
-  it('상세처럼 큰 표지는 srcset 에 XL 을 포함한다', () => {
+  it('large 를 준 큰 표지만 srcset 에 XL 을 포함한다', () => {
     // CSS 폭 200px 이면 2x 화면에서 400px 이 필요하다 — L(275px)로는 흐리다.
-    const html = renderToStaticMarkup(
-      <BookCover src={YES24_COVER} title='어떤 책' size='full' sizes='200px' />
+    const large = renderToStaticMarkup(
+      <BookCover
+        src={YES24_COVER}
+        title='어떤 책'
+        size='full'
+        sizes='200px'
+        large
+      />
     );
+    expect(large).toContain('https://image.yes24.com/goods/13137546/XL 640w');
+    expect(large).not.toContain('/_next/image');
 
-    expect(html).toContain('https://image.yes24.com/goods/13137546/XL');
-    expect(html).not.toContain('/_next/image');
+    // 격자처럼 fill 로 깔리는 표지는 고밀도 화면에서도 L 에서 멈춘다
+    const grid = renderToStaticMarkup(
+      <BookCover src={YES24_COVER} title='어떤 책' size='fill' sizes='33vw' />
+    );
+    expect(grid).toContain('https://image.yes24.com/goods/13137546/L 640w');
+    expect(grid).not.toContain('/XL');
   });
 
   it('Supabase 업로드 이미지도 원본 URL 로 나간다', () => {
