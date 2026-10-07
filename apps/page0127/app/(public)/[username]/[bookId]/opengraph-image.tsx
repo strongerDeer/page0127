@@ -27,7 +27,7 @@ import { toDisplayName } from '@/entities/profile/model/displayName';
 // Vercel Hobby 의 Edge Function 1MB 한도를 넘겨 배포 단계에서만 실패한다.
 // 한글 폰트도 번들하지 않는다 — 자세한 이유는 shared/lib/og/theme.ts 상단 참조.
 
-export const alt = '책 기록 | page0127';
+export const alt = '책 기록 | page0127.';
 export const size = OG_SIZE;
 export const contentType = 'image/png';
 

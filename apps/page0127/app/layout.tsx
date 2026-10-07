@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'ko_KR',
     url: siteUrl,
-    siteName: 'page0127',
+    siteName: 'page0127.',
     title: siteTitle,
     description: siteDescription,
   },

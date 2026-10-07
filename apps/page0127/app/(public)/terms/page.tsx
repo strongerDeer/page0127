@@ -5,7 +5,7 @@ import { DocList, DocPage, DocSection } from '@/widgets/landing/ui/DocPage';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: '이용약관 | page0127',
+  title: '이용약관 | page0127.',
   description: 'page0127을 이용할 때의 약속을 안내합니다.',
 };
 

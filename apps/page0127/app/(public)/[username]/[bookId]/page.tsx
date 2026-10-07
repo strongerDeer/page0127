@@ -65,7 +65,7 @@ export const generateMetadata = async ({
       notFound();
     }
 
-    return { title: '기록을 찾을 수 없습니다 | page0127' };
+    return { title: '기록을 찾을 수 없습니다 | page0127.' };
   }
 
   const name = toDisplayName(profile);

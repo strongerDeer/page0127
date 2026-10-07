@@ -12,7 +12,7 @@ import type { Metadata } from 'next';
  * 처음 온 사람이 서비스 소개 대신 버튼만 있는 화면에 떨어진다.
  */
 export const metadata: Metadata = {
-  title: '로그인 | page0127',
+  title: '로그인 | page0127.',
   description: '구글 또는 카카오 계정으로 10초면 시작할 수 있어요.',
   alternates: { canonical: '/login' },
 };
