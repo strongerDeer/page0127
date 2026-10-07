@@ -3,6 +3,8 @@ export type ShelfBook = {
   id: string;
   title: string;
   coverImage: string | null;
+  /** coverImage(YES24)를 못 불러왔을 때 쓸 Storage 사본 */
+  coverFallback?: string | null;
   spineImage: string | null;
 };
 

@@ -15,6 +15,7 @@ const Row = ({ books, reverse }: RowProps) => (
       <li key={`${book.id}-${i}`} aria-hidden={i >= books.length || undefined}>
         <SafeCover
           src={book.coverImage!}
+          fallbackSrc={book.coverFallback}
           alt={i < books.length ? book.title : ''}
           width={116}
           height={174}
