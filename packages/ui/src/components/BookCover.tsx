@@ -1,8 +1,17 @@
+'use client';
+
+import { useState } from 'react';
+
 import { cva, type VariantProps } from 'class-variance-authority';
-import Image from 'next/image';
+import Image, { type ImageProps } from 'next/image';
 
 import { cn } from '../lib/cn';
 import { isPreOptimizedImageSrc } from '../lib/imageOptimization';
+import {
+  parseYes24CoverItemId,
+  toYes24CoverBase,
+  yes24CoverLoader,
+} from '../lib/yes24CoverLoader';
 
 /**
  * 표지 크기 계단.
@@ -48,6 +57,11 @@ const coverVariants = cva('book-cover', {
 type BookCoverProps = Omit<VariantProps<typeof coverVariants>, 'size'> & {
   /** 표지 이미지 URL. 없거나 빈 문자열이면 제목을 조판한다 */
   src?: string | null;
+  /**
+   * src 를 불러오지 못했을 때 대신 쓸 주소. 이것마저 실패하면 제목을 조판한다.
+   * 예: src 는 서점 CDN, fallbackSrc 는 우리 Storage 에 둔 사본.
+   */
+  fallbackSrc?: string | null;
   /** 대체 조판에 쓰이고 이미지의 alt 가 된다 */
   title: string;
   /**
@@ -81,7 +95,8 @@ type BookCoverProps = Omit<VariantProps<typeof coverVariants>, 'size'> & {
  * - 표지가 없으면 제목을 조판한다. 빈 상자보다 무슨 책인지 아는 편이 낫다.
  */
 export const BookCover = ({
-  src,
+  src: srcProp,
+  fallbackSrc,
   title,
   author,
   size = 'sm',
@@ -95,17 +110,25 @@ export const BookCover = ({
   // 이겨 버린다 — twMerge 는 나중에 온 것을 남기기 때문이다.
   const shape = coverVariants({ size });
 
-  // 알라딘 표지는 이미 완성된 JPG 라 Vercel 이미지 최적화를 태우지 않는다.
-  // 호출부가 신경 쓰지 않아도 되도록 여기서 판정한다 — 이 컴포넌트가 앱
-  // 15곳에서 쓰이는데, 그중 한 곳이라도 빠지면 그 화면만 조용히 한도를 태운다.
-  const unoptimized = isPreOptimizedImageSrc(src);
+  // 불러오다 실패한 주소들. 실패하면 다음 후보(fallbackSrc)로, 후보가 다 떨어지면
+  // 제목 조판으로 넘어간다. 주소 자체를 기억하므로 src 가 바뀌면 자연히 새로 시도한다.
+  const [failedSrcs, setFailedSrcs] = useState<string[]>([]);
+  const src = pickCoverSrc([srcProp, fallbackSrc], failedSrcs);
+  const handleError = () => {
+    if (src) setFailedSrcs((prev) => [...prev, src]);
+  };
+
+  // 호출부가 신경 쓰지 않아도 되도록 최적화 경로를 여기서 정한다 — 이 컴포넌트가
+  // 앱 15곳에서 쓰이는데, 그중 한 곳이라도 빠지면 그 화면만 조용히 한도를 태운다.
+  const imageProps = src ? toCoverImageProps(src) : null;
 
   if (size === 'fill' || size === 'full') {
     // fill: 부모가 크기를 정한다(부모에 relative + 크기 필요).
     // full: 컬럼 폭을 채우고 높이는 aspect-ratio 가 만든다.
-    return src ? (
+    return imageProps ? (
       <Image
-        src={src}
+        {...imageProps}
+        onError={handleError}
         alt={decorative ? '' : title}
         aria-hidden={decorative || undefined}
         {...(size === 'fill'
@@ -115,8 +138,12 @@ export const BookCover = ({
             { width: 400, height: 580 })}
         sizes={sizes}
         priority={priority}
-        unoptimized={unoptimized}
-        className={cn(shape, 'object-cover', size === 'full' && 'h-auto', className)}
+        className={cn(
+          shape,
+          'object-cover',
+          size === 'full' && 'h-auto',
+          className
+        )}
       />
     ) : (
       <FallbackCover
@@ -139,17 +166,17 @@ export const BookCover = ({
   // 화면 폭 기준으로 과하게 큰 이미지를 받아온다.
   const resolvedSizes = sizes ?? `${width}px`;
 
-  if (src) {
+  if (imageProps) {
     return (
       <Image
-        src={src}
+        {...imageProps}
+        onError={handleError}
         alt={decorative ? '' : title}
         aria-hidden={decorative || undefined}
         width={width}
         height={height}
         sizes={resolvedSizes}
         priority={priority}
-        unoptimized={unoptimized}
         // 높이 계단이 정한 상자를 이미지가 채운다. 판형이 다른 책이 섞여도
         // 목록의 표지 폭이 흔들리지 않는다.
         className={cn(shape, 'object-cover', className)}
@@ -169,6 +196,41 @@ export const BookCover = ({
       className={className}
     />
   );
+};
+
+/**
+ * 후보 주소 중 아직 실패하지 않은 첫 번째를 고른다. 없으면 null(→ 제목 조판).
+ *
+ * 빈 문자열·null 은 후보가 아니다. 같은 주소가 두 번 들어와도(src 와 fallbackSrc 가
+ * 같은 경우) 한 번 실패하면 둘 다 건너뛴다.
+ */
+export const pickCoverSrc = (
+  candidates: ReadonlyArray<string | null | undefined>,
+  failed: ReadonlyArray<string>
+): string | null =>
+  candidates.find(
+    (candidate): candidate is string =>
+      typeof candidate === 'string' &&
+      candidate !== '' &&
+      !failed.includes(candidate)
+  ) ?? null;
+
+/**
+ * 주소에 맞는 최적화 경로를 고른다.
+ *
+ * - YES24 앞표지 → 크기별 사본을 고르는 loader. 크기를 뗀 주소를 넘기는 이유는
+ *   `toYes24CoverBase` 주석 참고.
+ * - 이미 완성된 원격 이미지(Storage 사본 등) → Vercel 변환을 태우지 않는다(unoptimized).
+ * - 그 밖(로컬 정적 이미지) → 기본 최적화.
+ */
+const toCoverImageProps = (
+  src: string
+): Pick<ImageProps, 'src' | 'loader' | 'unoptimized'> => {
+  const yes24ItemId = parseYes24CoverItemId(src);
+  if (yes24ItemId) {
+    return { src: toYes24CoverBase(yes24ItemId), loader: yes24CoverLoader };
+  }
+  return { src, unoptimized: isPreOptimizedImageSrc(src) };
 };
 
 type FallbackCoverProps = {
