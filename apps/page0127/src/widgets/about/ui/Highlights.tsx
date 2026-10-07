@@ -7,16 +7,22 @@ import type { TopBook } from '../model/topBooks';
 
 type HighlightsProps = { books: ShelfBook[]; top: TopBook[] };
 
-type CoverProps = { src: string | null; className: string };
+type CoverProps = {
+  src: string | null;
+  /** src 를 못 불러왔을 때 쓸 Storage 사본 */
+  fallbackSrc?: string | null;
+  className: string;
+};
 
 /** 표지 한 장 — 없거나 못 불러오면 같은 크기의 빈 판형을 둔다(카드 구도가 무너지지 않게) */
-const Cover = ({ src, className }: CoverProps) => {
+const Cover = ({ src, fallbackSrc, className }: CoverProps) => {
   const blank = (
     <span className={`block aspect-[2/3] rounded-sm bg-line ${className}`} />
   );
   return src ? (
     <SafeCover
       src={src}
+      fallbackSrc={fallbackSrc}
       alt=''
       width={120}
       height={180}
@@ -170,7 +176,11 @@ export const Highlights = ({ books, top }: HighlightsProps) => {
                     className='flex items-center gap-3.5 rounded-xl bg-card px-3.5 py-2.5'
                   >
                     <b className='w-4 text-lg text-primary'>{i + 1}</b>
-                    <Cover src={b.cover} className='w-10 shadow-none' />
+                    <Cover
+                      src={b.cover}
+                      fallbackSrc={b.coverFallback}
+                      className='w-10 shadow-none'
+                    />
                     <span className='line-clamp-1 flex-1 text-sm font-bold text-text-strong'>
                       {b.title}
                     </span>

@@ -25,9 +25,30 @@ describe('toTopBooks', () => {
         isbn: '1',
         title: '책',
         cover: 'https://image.yes24.com/goods/1/L',
+        coverFallback: null,
         count: 5,
       },
     ]);
+  });
+
+  it('Storage 사본과 상품번호가 있으면 YES24 가 먼저, 사본은 대체용이다', () => {
+    const copy = `${STORAGE}/storage/v1/object/public/book-covers/1/cover.jpg`;
+    const [book] = toTopBooks(
+      [
+        {
+          isbn: '1',
+          count: 5,
+          book_info: {
+            title: '책',
+            cover_image: copy,
+            provider_item_id: '13137546',
+          },
+        },
+      ],
+      STORAGE
+    );
+    expect(book.cover).toBe('https://image.yes24.com/goods/13137546');
+    expect(book.coverFallback).toBe(copy);
   });
 
   it('그릴 수 없는 호스트의 표지는 비운다 — 랭킹 카드 하나로 페이지가 500 이 되지 않게', () => {
