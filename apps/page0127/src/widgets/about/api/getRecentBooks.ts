@@ -1,6 +1,6 @@
 import { createAnonClient } from '@/shared/config/supabase/anon';
+import { toRenderableSrc } from '@/shared/lib/imageHost';
 
-import { toRenderableSrc } from '../model/imageHost';
 import { cacheAbout } from './aboutCache';
 
 import type { ShelfBook } from '../model/coverRows';

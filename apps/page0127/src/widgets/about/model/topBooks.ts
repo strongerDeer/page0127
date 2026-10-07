@@ -1,4 +1,4 @@
-import { toRenderableSrc } from './imageHost';
+import { toRenderableSrc } from '@/shared/lib/imageHost';
 
 export type TopBook = {
   isbn: string;
