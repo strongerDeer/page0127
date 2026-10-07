@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server';
 
+import { toCoverSource } from '@/entities/book';
+
 import { getCurrentUser, getSupabaseClient } from '../../_helpers/auth';
 import { errorResponse, successResponse } from '../../_helpers/response';
 
@@ -57,7 +59,7 @@ export async function GET(request: NextRequest) {
     const { data: books, error } = await supabase
       .from('books')
       .select(
-        'id, title, author, cover_image, rating, is_life_book, completed_date, page_count'
+        'id, title, author, cover_image, provider_item_id, rating, is_life_book, completed_date, page_count'
       )
       .eq('user_id', user!.id)
       .eq('status', 'completed') // 완독한 책만
@@ -76,6 +78,7 @@ export async function GET(request: NextRequest) {
         title: string;
         author: string;
         cover: string | null;
+        coverFallback: string | null;
         rating: number | null;
         is_life_book: boolean;
       }>
@@ -87,11 +90,14 @@ export async function GET(request: NextRequest) {
       if (!booksByDate.has(date)) {
         booksByDate.set(date, []);
       }
+      // CalendarSection(첫 화면 서버 렌더)과 같은 규칙 — YES24 먼저, Storage 사본은 대체
+      const cover = toCoverSource(book);
       booksByDate.get(date)!.push({
         id: book.id,
         title: book.title,
         author: book.author,
-        cover: book.cover_image,
+        cover: cover.src,
+        coverFallback: cover.fallbackSrc,
         rating: book.rating,
         is_life_book: book.is_life_book,
       });

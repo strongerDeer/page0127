@@ -22,6 +22,8 @@ export type RawBook = {
   title: string;
   author: string;
   cover_image: string | null;
+  /** YES24 상품번호 — 표지를 YES24 에서 받는 데 쓴다(toCoverSource) */
+  provider_item_id?: string | null;
   status: string;
   rating: number | null;
   /** 인생책 여부. rating 과 별개 컬럼이다 */
@@ -129,6 +131,7 @@ export function buildActivityItems({
             title: book.title,
             author: book.author,
             cover_image: book.cover_image,
+            provider_item_id: book.provider_item_id ?? null,
             status: book.status,
             rating: book.rating,
             is_life_book: book.is_life_book,

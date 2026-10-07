@@ -1,10 +1,8 @@
-import Image from 'next/image';
-
-import { isPreOptimizedImageSrc } from '@repo/ui';
+import { CoverImage } from '@repo/ui';
 
 import { createClient } from '@/shared/config/supabase/server';
 
-import { isRated, RATING_MAX } from '@/entities/book';
+import { isRated, RATING_MAX, toCoverSource } from '@/entities/book';
 import { getRecapBooks, selectRecapCard } from '@/entities/recap';
 
 import type { RecapBook, RecapCard } from '@/entities/recap';
@@ -134,16 +132,14 @@ export const WeeklyRecapCard = async () => {
       </h2>
 
       <div className='mt-4 flex items-start gap-4'>
-        {card.lead.cover_image && (
-          <Image
-            src={card.lead.cover_image}
-            alt=''
-            width={120}
-            height={174}
-            unoptimized={isPreOptimizedImageSrc(card.lead.cover_image)}
-            className='book-cover h-28 w-auto shrink-0 rounded-md'
-          />
-        )}
+        {/* 표지를 끝내 못 불러오면 아무것도 그리지 않는다(fallback 기본값) */}
+        <CoverImage
+          {...toCoverSource(card.lead)}
+          alt=''
+          width={120}
+          height={174}
+          className='book-cover h-28 w-auto shrink-0 rounded-md'
+        />
 
         <div className='pt-1'>
           <p className='text-lg font-bold leading-snug text-text-strong'>
