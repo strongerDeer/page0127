@@ -12,6 +12,11 @@
 
 export { cn } from './lib/cn';
 export { isPreOptimizedImageSrc } from './lib/imageOptimization';
+export {
+  parseYes24CoverItemId,
+  toYes24CoverBase,
+  yes24CoverLoader,
+} from './lib/yes24CoverLoader';
 
 /* Action */
 export { Button, buttonVariants } from './components/button';
