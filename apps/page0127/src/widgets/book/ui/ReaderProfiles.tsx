@@ -1,20 +1,84 @@
 // FSD: widgets는 app을 import할 수 없다 (역방향)
 // → @/app/api/_helpers/auth의 getSupabaseClient 대신 shared의 createClient 직접 사용
+import Link from 'next/link';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui';
 
 import { createClient } from '@/shared/config/supabase/server';
 
-import { nameInitials } from '@/entities/profile/model/displayName';
+import {
+  nameInitials,
+  toDisplayName,
+} from '@/entities/profile/model/displayName';
 import { ProfileLink } from '@/entities/profile/ui/ProfileLink';
+
+import {
+  type BookReader,
+  type BookReaderRow,
+  pickBookReaders,
+} from '../model/bookReaders';
 
 type ReaderProfilesProps = {
   isbn: string;
 };
 
-// 아바타로 노출할 최대 독자 수
-const MAX_READERS = 10;
-// 같은 사람이 같은 책을 여러 번 완독(재독)했을 수 있어, 중복 제거를 감안해 넉넉히 받는다
+// 처음부터 펼쳐 보여 줄 리더 수 — 나머지는 "N명 더 보기"로 접는다
+const SHOWN_READERS = 5;
+// 접힌 목록까지 합쳐 그리는 최대 인원 (그 이상은 숫자로만 알린다)
+const MAX_READERS = 20;
+// 재독으로 한 사람이 여러 행을 가질 수 있어, 중복 제거를 감안해 넉넉히 받는다
 const FETCH_LIMIT = 60;
+
+const STATUS_LABEL: Record<BookReader['status'], string> = {
+  completed: '완독',
+  reading: '읽는 중',
+};
+
+type ReaderProfile = {
+  id: string;
+  username: string | null;
+  nickname: string | null;
+  photo_url: string | null;
+};
+
+type ReaderItemProps = {
+  profile: ReaderProfile;
+  status: BookReader['status'];
+};
+
+const ReaderItem = ({ profile, status }: ReaderItemProps) => {
+  const name = toDisplayName(profile);
+
+  return (
+    <li>
+      {/* username 이 없으면 ProfileLink 가 링크 없이 그대로 그린다 */}
+      <ProfileLink
+        username={profile.username}
+        className='flex items-center gap-3 rounded-lg py-1.5 transition-colors hover:bg-sunken'
+      >
+        <Avatar className='size-8'>
+          {/* 이름이 바로 옆에 텍스트로 있으므로 사진은 장식이다 → alt 비움 */}
+          <AvatarImage src={profile.photo_url ?? undefined} alt='' />
+          <AvatarFallback className='bg-primary/15 text-xs text-primary'>
+            {nameInitials(name, 2)}
+          </AvatarFallback>
+        </Avatar>
+        <span className='min-w-0 flex-1 truncate text-sm text-text-strong'>
+          {name}
+        </span>
+        <span
+          className={
+            status === 'completed'
+              ? 'shrink-0 rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-primary'
+              : 'shrink-0 rounded-full bg-sunken px-2 py-0.5 text-xs font-medium text-text-subtle'
+          }
+        >
+          {STATUS_LABEL[status]}
+        </span>
+      </ProfileLink>
+    </li>
+  );
+};
 
 export const ReaderProfiles = async ({ isbn }: ReaderProfilesProps) => {
   const supabase = await createClient();
@@ -24,37 +88,39 @@ export const ReaderProfiles = async ({ isbn }: ReaderProfilesProps) => {
   //   그래서 user_id 를 먼저 모으고 profiles 를 따로 조회하는 2단계 방식을 쓴다.
   const { data: readerRows, error: readerError } = await supabase
     .from('books')
-    .select('user_id')
+    .select('user_id, status')
     .eq('isbn', isbn)
-    .eq('status', 'completed')
+    .in('status', ['reading', 'completed'])
     // RLS 만 믿으면 로그인 사용자에게는 자기 비공개 기록까지 섞여 방문자와 목록이 달라진다.
-    // "이 책을 완독한 사람들"은 누가 보든 같아야 하므로 공개 기록으로 명시해 좁힌다.
+    // "이 책을 읽은 리더"는 누가 보든 같아야 하므로 공개 기록으로 명시해 좁힌다.
     .eq('is_public', true)
-    // 완독일이 비어 있는 기록을 앞에 세우지 않도록 nullsFirst 를 끈다
-    .order('completed_date', { ascending: false, nullsFirst: false })
+    // 최근에 기록을 만진 리더가 앞에 온다 — 지금 이 책과 함께 있는 사람
+    .order('updated_at', { ascending: false })
     .limit(FETCH_LIMIT);
 
-  // 에러를 버리면 "독자 없음"과 "쿼리가 깨졌음"이 구분되지 않는다.
-  // 앱이 Supabase 생성 타입(Database 제네릭) 없이 클라이언트를 만들기 때문에
-  // 없는 컬럼을 select 해도 tsc 가 못 잡는다 → 런타임 error 가 유일한 신호다.
-  // (avatar_url 오타가 운영에서 오래 살아남은 이유)
+  // 에러를 버리면 "리더 없음"과 "쿼리가 깨졌음"이 구분되지 않는다.
+  // 앱이 Supabase 생성 타입 없이 클라이언트를 만들어 런타임 error 가 유일한 신호다.
   if (readerError) {
     console.warn(
-      `[ReaderProfiles] 완독 독자 조회 실패 (isbn=${isbn}): ${readerError.message}`
+      `[ReaderProfiles] 리더 조회 실패 (isbn=${isbn}): ${readerError.message}`
     );
     return null;
   }
 
-  if (!readerRows || readerRows.length === 0) return null;
-
-  // 완독일 내림차순을 유지한 채 중복 user_id 제거 (Set 은 삽입 순서를 보존한다)
-  const uniqueUserIds = [...new Set(readerRows.map((row) => row.user_id))];
-  const visibleUserIds = uniqueUserIds.slice(0, MAX_READERS);
+  const { readers, total } = pickBookReaders(
+    (readerRows ?? []) as BookReaderRow[],
+    MAX_READERS
+  );
+  if (readers.length === 0) return null;
 
   const { data: profiles, error: profilesError } = await supabase
     .from('profiles')
+    // email 등 다른 컬럼은 받지 않는다 — 공개 화면에 필요한 것만
     .select('id, username, nickname, photo_url')
-    .in('id', visibleUserIds);
+    .in(
+      'id',
+      readers.map((reader) => reader.userId)
+    );
 
   if (profilesError) {
     console.warn(
@@ -63,46 +129,65 @@ export const ReaderProfiles = async ({ isbn }: ReaderProfilesProps) => {
     return null;
   }
 
-  if (!profiles || profiles.length === 0) return null;
+  // in() 결과 순서는 보장되지 않으므로 리더 순서대로 다시 맞춘다
+  const profileById = new Map(
+    ((profiles ?? []) as ReaderProfile[]).map((profile) => [
+      profile.id,
+      profile,
+    ])
+  );
+  const items = readers.flatMap((reader) => {
+    const profile = profileById.get(reader.userId);
+    return profile ? [{ profile, status: reader.status }] : [];
+  });
+  if (items.length === 0) return null;
 
-  // in() 결과 순서는 보장되지 않으므로 완독일 순서대로 다시 정렬한다
-  const profileById = new Map(profiles.map((profile) => [profile.id, profile]));
-  const orderedProfiles = visibleUserIds
-    .map((id) => profileById.get(id))
-    .filter((profile) => profile !== undefined);
-
-  if (orderedProfiles.length === 0) return null;
+  const shown = items.slice(0, SHOWN_READERS);
+  const folded = items.slice(SHOWN_READERS);
+  // MAX_READERS 를 넘는 인원은 목록에 없으므로 숫자로만 알린다
+  const unlisted = total - readers.length;
 
   return (
-    <div className='space-y-4 pt-4 border-t'>
-      <h3 className='text-lg font-medium'>이 책을 완독한 사람들</h3>
-      <div className='flex -space-x-3 overflow-hidden py-2'>
-        {orderedProfiles.map((profile) => {
-          // 닉네임 미설정 시 username 으로 대체 (익명 표기는 최후의 수단)
-          const name = profile.nickname || profile.username || '익명 유저';
+    <section
+      aria-labelledby='book-readers-title'
+      className='space-y-3 border-t pt-4'
+    >
+      <h2 id='book-readers-title' className='text-lg font-medium'>
+        이 책을 읽은 리더 <span className='text-text-subtle'>{total}명</span>
+      </h2>
 
-          return (
-            <div key={profile.id} className='relative group' title={name}>
-              {/* username 이 없으면 ProfileLink 가 링크 없이 그대로 그린다
-                  (갈 곳 없는 링크를 만들지 않는다 — ProfileLink 주석 참고) */}
-              <ProfileLink username={profile.username} className='block'>
-                <Avatar className='w-10 h-10 border-2 border-card cursor-pointer hover:z-10 hover:scale-110 transition-transform'>
-                  {/* 링크 안이 이미지뿐이면 스크린리더가 읽을 이름이 없다 → alt 로 이름을 준다 */}
-                  <AvatarImage src={profile.photo_url ?? undefined} alt={name} />
-                  <AvatarFallback className='bg-primary/15 text-primary text-xs'>
-                    {nameInitials(name, 2)}
-                  </AvatarFallback>
-                </Avatar>
-              </ProfileLink>
-            </div>
-          );
-        })}
-        {uniqueUserIds.length > MAX_READERS && (
-          <div className='flex h-10 w-10 items-center justify-center rounded-full border-2 border-card bg-muted text-xs font-medium text-muted-foreground hover:bg-accent'>
-            +
-          </div>
-        )}
-      </div>
-    </div>
+      <ul className='space-y-1'>
+        {shown.map(({ profile, status }) => (
+          <ReaderItem key={profile.id} profile={profile} status={status} />
+        ))}
+      </ul>
+
+      {/* JS 없이 동작하는 접기 — 서버 컴포넌트에 상태를 들이지 않는다 */}
+      {folded.length > 0 && (
+        <details>
+          <summary className='cursor-pointer text-sm text-text-subtle hover:text-text-strong'>
+            {folded.length}명 더 보기
+          </summary>
+          <ul className='mt-1 space-y-1'>
+            {folded.map(({ profile, status }) => (
+              <ReaderItem key={profile.id} profile={profile} status={status} />
+            ))}
+          </ul>
+          {unlisted > 0 && (
+            <p className='mt-2 text-xs text-text-subtle'>
+              외 {unlisted}명이 더 읽었어요
+            </p>
+          )}
+        </details>
+      )}
+
+      {/* 책에서 만난 리더 → 더 많은 리더로 (비로그인이면 로그인 화면을 거친다) */}
+      <Link
+        href='/search'
+        className='inline-block text-sm text-primary hover:underline'
+      >
+        다른 리더 둘러보기 →
+      </Link>
+    </section>
   );
 };

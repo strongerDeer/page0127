@@ -23,12 +23,13 @@ export const GnbNav = ({ isLoggedIn }: GnbNavProps) => {
   const links: GnbLink[] = [
     { href: '/', label: '홈', exact: true },
     { href: '/books/all', label: '전체 도서' },
-    // 피드·사용자 검색은 로그인해야 볼 수 있는 영역이라 비로그인 방문자에겐 노출하지 않는다.
-    // '사용자 검색'이라고 쓰는 이유: 바로 옆 GnbSearch는 책을 찾는 입력창이라 '검색'만으론 헷갈린다.
+    // 피드·리더 찾기는 로그인해야 볼 수 있는 영역이라 비로그인 방문자에겐 노출하지 않는다.
+    // '검색'이라 쓰지 않는 이유: 바로 옆 GnbSearch는 책을 찾는 입력창이라 헷갈린다.
+    // '리더 찾기'인 이유: 이제 검색어 없이도 추천 리더를 둘러볼 수 있다(검색은 그중 하나).
     ...(isLoggedIn
       ? [
           { href: '/feed', label: '피드' },
-          { href: '/search', label: '사용자 검색' },
+          { href: '/search', label: '리더 찾기' },
         ]
       : []),
   ];
