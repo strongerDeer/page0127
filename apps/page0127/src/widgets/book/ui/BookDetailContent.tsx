@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 import { BookCover, ReadCountBadge } from '@repo/ui';
 import { Globe, Lock, Star } from 'lucide-react';
 
-import { isRated } from '@/entities/book';
+import { isRated, toCoverSource } from '@/entities/book';
 import { BookSourceCredit } from '@/entities/book/ui/BookSourceCredit';
 
 import { BookStreamSection } from './BookStreamSection';
@@ -52,11 +52,14 @@ export const BookDetailContent = ({
                 표지를 크게 놓는 자리라 대체 조판의 글자도 키운다 */}
             <div className='relative h-80 w-56 flex-shrink-0'>
               <BookCover
-                src={book.cover_image}
+                {...toCoverSource(book)}
                 title={book.title}
                 author={book.author}
-          size='fill'
-        />
+                size='fill'
+                // 부모 폭(w-56)을 알려 준다. 빼면 100vw 로 계산해 넓은 화면에서
+                // 필요 이상으로 큰 후보를 고른다.
+                sizes='224px'
+              />
             </div>
 
             <div className='flex-1 space-y-4'>

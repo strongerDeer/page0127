@@ -8,7 +8,7 @@ import { ArrowLeft, Star } from 'lucide-react';
 import { createClient } from '@/shared/config/supabase/server';
 import { decodeHtmlEntities } from '@/shared/lib/htmlEntities';
 
-import { RATING_MAX, summarizeRatings } from '@/entities/book';
+import { RATING_MAX, summarizeRatings, toCoverSource } from '@/entities/book';
 import { BookSourceCredit } from '@/entities/book/ui/BookSourceCredit';
 
 import { AddToLibraryButton } from '@/widgets/book/ui/AddToLibraryButton';
@@ -172,7 +172,7 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
               글자만 키운다(기본 12px → 14px): 표지를 크게 놓는 자리라
               대체 조판도 그만큼 읽혀야 한다 */}
           <BookCover
-            src={book.cover_image}
+            {...toCoverSource(book)}
             title={book.title}
             author={book.author}
             size='full'
