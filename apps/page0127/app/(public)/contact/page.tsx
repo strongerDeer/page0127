@@ -4,7 +4,7 @@ import { DocList, DocPage, DocSection } from '@/widgets/landing/ui/DocPage';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: '문의 | page0127',
+  title: '문의 | page0127.',
   description:
     'page0127 이용 중 궁금하거나 불편한 점을 카카오톡으로 편하게 문의하세요.',
 };

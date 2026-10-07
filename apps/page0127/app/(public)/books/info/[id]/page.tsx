@@ -52,8 +52,8 @@ export async function generateMetadata({
   if (!book) notFound();
 
   const title = book.author
-    ? `${book.title} - ${book.author} | page0127`
-    : `${book.title} | page0127`;
+    ? `${book.title} - ${book.author} | page0127.`
+    : `${book.title} | page0127.`;
   // 알라딘 소개글은 HTML 엔티티가 이스케이프돼 있다 — 메타에도 디코딩해 넣는다
   const description = book.description
     ? decodeHtmlEntities(book.description).slice(0, 150)

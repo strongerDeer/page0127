@@ -22,12 +22,12 @@ import type { Metadata } from 'next';
  * 이 페이지는 로그인 없이 열리는 카탈로그라 SEO 자산 1순위다.
  */
 export const metadata: Metadata = {
-  title: '전체 도서 | page0127',
+  title: '전체 도서 | page0127.',
   description:
     'page0127에 기록된 책을 한눈에 둘러보세요. 누가 이 책을 읽었고 어떤 문장을 남겼는지 볼 수 있어요.',
   alternates: { canonical: '/books/all' },
   openGraph: {
-    title: '전체 도서 | page0127',
+    title: '전체 도서 | page0127.',
     description: 'page0127에 기록된 책을 한눈에 둘러보세요.',
     url: '/books/all',
   },

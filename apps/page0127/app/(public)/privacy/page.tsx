@@ -5,7 +5,7 @@ import { DocList, DocPage, DocSection } from '@/widgets/landing/ui/DocPage';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: '개인정보처리방침 | page0127',
+  title: '개인정보처리방침 | page0127.',
   description:
     'page0127이 수집하는 개인정보와 처리 방식, 이용자의 권리를 안내합니다.',
 };

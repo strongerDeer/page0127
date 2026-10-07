@@ -61,7 +61,7 @@ export const generateMetadata = async ({
   const name = toDisplayName(profile);
   const { totalBooks } = await getPublicShelfSummary(profile.id);
 
-  const title = `${name}님의 책장 | page0127`;
+  const title = `${name}님의 책장 | page0127.`;
   // 한줄 소개를 쓴 사람은 그게 자기소개다 — 우리가 만든 문장보다 앞세운다
   const bio = profile.bio?.trim();
   const description = bio

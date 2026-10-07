@@ -8,7 +8,6 @@ import {
   OG_SIZE,
   textWidth,
   titleFontSize,
-  truncate,
 } from '@/shared/lib/og/theme';
 
 import {
@@ -21,7 +20,7 @@ import { toDisplayName } from '@/entities/profile/model/displayName';
 // 공개 책장의 동적 OG 이미지 — "누구의 책장인가"를 카드가 말하게 한다.
 //
 // 소개 페이지(/about)의 '공개 서재' 카드와 같은 구도다 — 파란 무대 위에 최근 표지 5장을
-// 세우고, 아래 흰 띠에 이름·권수·주소를 둔다. 소개 페이지에서 "링크로 공유하면 이렇게
+// 세우고, 아래 흰 띠에 "구경하기" 한 줄을 둔다. 소개 페이지에서 "링크로 공유하면 이렇게
 // 보여요"라고 약속한 모습과 실제 미리보기가 달랐기 때문에 맞췄다(2026-10-06).
 // 이전 카드(흰 면 + 흐린 책등)는 숫자가 주인공이었지만, 표지가 있으면 "어떤 책을
 // 읽는 사람인가"가 숫자보다 먼저 읽힌다.
@@ -36,7 +35,7 @@ import { toDisplayName } from '@/entities/profile/model/displayName';
 // (index.node.js 의 loadDynamicAsset 은 console.error 만 하고 넘어간다),
 // 이름을 짧게 자르고 카드의 뼈대는 책등이 지도록 짰다.
 
-export const alt = '공개 책장 | page0127';
+export const alt = '공개 책장 | page0127.';
 export const size = OG_SIZE;
 export const contentType = 'image/png';
 
@@ -45,21 +44,26 @@ type Props = {
 };
 
 /**
- * 이름이 차지할 수 있는 최대 폭(한글 글자 수 기준).
- * 글자 수가 아니라 폭으로 재기 때문에 라틴 이름은 훨씬 많은 글자가 들어간다
- * (`stronger_deer` 는 13자지만 폭은 7.2 라 잘리지 않는다).
+ * 무대(파란 면) 높이 — 아래 흰 띠에는 문구 한 줄만 들어간다.
+ *
+ * 이름·권수·주소를 세 줄로 적었던 적이 있는데, 카톡은 이미지 바로 아래에
+ * 페이지 제목("…님의 책장")과 설명을 또 붙인다. 같은 말이 두 번 나와서
+ * 이미지 안 글자는 **눌러 보고 싶게 만드는 한 줄**로 줄이고 표지에 자리를 넘겼다.
  */
-const NAME_MAX_WIDTH = 16;
-
-/** 무대(파란 면) 높이 — 표지가 서고 남은 아래 띠에 글자 세 줄이 들어간다 */
-const STAGE_HEIGHT = 380;
+const STAGE_HEIGHT = 480;
 
 /**
- * 표지 한 장 크기 (2:3 판형). 5장 + 간격이 카드 폭의 85% 를 차지한다.
+ * 표지 한 장 크기 (2:3 판형). 5장 + 간격이 카드 폭의 90% 를 차지한다.
  * 카톡 미리보기처럼 작게 줄어도 표지가 알아보이는 크기다.
  */
-const COVER = { width: 180, height: 270 };
-const COVER_GAP = 24;
+const COVER = { width: 200, height: 300 };
+const COVER_GAP = 20;
+
+/** 표지 줄의 왼쪽 끝 — 아래 문구를 이 선에 맞춰 왼쪽 정렬한다 */
+const ROW_LEFT =
+  (OG_SIZE.width -
+    (COVER.width * COVER_LIMIT + COVER_GAP * (COVER_LIMIT - 1))) /
+  2;
 
 /**
  * 표지가 무대 바닥선 아래로 내려오는 깊이.
@@ -146,7 +150,6 @@ const Image = async ({ params }: Props) => {
   // (프로필이 없는 URL 로 크롤러가 들어오는 경우도 여기로 떨어진다)
   let name: string | null = null;
   let totalBooks = 0;
-  let lifeBooks = 0;
   let covers: string[] = [];
 
   try {
@@ -156,7 +159,6 @@ const Image = async ({ params }: Props) => {
       name = toDisplayName(profile);
       const summary = await getPublicShelfSummary(profile.id);
       totalBooks = summary.totalBooks;
-      lifeBooks = summary.lifeBooks;
       covers = summary.covers;
     }
   } catch (error) {
@@ -170,13 +172,10 @@ const Image = async ({ params }: Props) => {
     });
   }
 
+  // 권수는 아래 제목·설명에 없는 정보라 여기서만 말한다.
   // 0권이면 숫자를 세지 않는다 — "0권"은 초대가 아니라 빈 성적표로 읽힌다
-  const statLine =
-    totalBooks === 0
-      ? '한 권씩 채우면, 취향이 보입니다'
-      : lifeBooks > 0
-        ? `읽은 책 ${totalBooks}권 · 인생책 ${lifeBooks}권`
-        : `읽은 책 ${totalBooks}권`;
+  const cta =
+    totalBooks > 0 ? `${totalBooks}권이 꽂힌 책장 구경하기` : '책장 구경하기';
 
   // 표지가 모자라면 빈 판형으로 채워 늘 5칸을 유지한다
   const slots = Array.from(
@@ -225,53 +224,29 @@ const Image = async ({ params }: Props) => {
         </div>
       </div>
 
-      {/*
-        정보 띠 — 가운데 정렬. 일부 플랫폼이 1.91:1 카드를 정사각으로 잘라 쓰는데,
-        좌측 정렬이면 오른쪽이 잘려도 티가 안 나는 대신 가운데 정렬은 어느 쪽이 잘려도
-        이름과 숫자가 남는다(shared/lib/og/CardFrame.tsx 와 같은 이유).
-      */}
+      {/* 문구 띠 — 표지 줄의 왼쪽 끝에 맞춘 한 줄 */}
       <div
         style={{
           display: 'flex',
-          flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
           flex: 1,
           // 표지가 걸친 만큼 위를 띄운다
           paddingTop: COVER_OVERHANG,
+          paddingLeft: ROW_LEFT,
+          fontSize: 40,
+          fontWeight: 700,
         }}
       >
+        {cta}
+        {/* 화살표만 브랜드 블루 — "누르면 간다"가 색으로도 읽힌다 */}
         <div
           style={{
             display: 'flex',
-            fontSize: 50,
-            fontWeight: 700,
-            lineHeight: 1.3,
-          }}
-        >
-          {truncate(name, NAME_MAX_WIDTH)}님의 책장
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            marginTop: 6,
-            fontSize: 30,
-            color: OG_COLORS.inkSoft,
-          }}
-        >
-          {statLine}
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            marginTop: 10,
-            fontSize: 26,
-            fontWeight: 700,
+            marginLeft: 14,
             color: OG_COLORS.accentDeep,
           }}
         >
-          {/* 주소는 이름(표시명)이 아니라 URL 의 username 이다 — 실제로 눌러 갈 곳을 적는다 */}
-          {`page0127.com/${truncate(username, NAME_MAX_WIDTH)}`}
+          →
         </div>
       </div>
     </div>,
