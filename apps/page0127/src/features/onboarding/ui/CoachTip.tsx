@@ -23,6 +23,23 @@ const COACH_TIP_COPY: Record<CoachTipId, { title: string; body: string }> = {
 };
 
 /**
+ * 말풍선을 버튼의 어느 쪽에 띄울지.
+ *
+ * 'add-book' 은 상단 메뉴 오른쪽 끝의 "도서 추가"를 가리킨다. 아래로 띄우면 바로 밑에 있는
+ * 서재 카드의 버튼(취향 분석·프로필 편집·공유)을 덮는다 — 책이 0권인 첫 화면에서
+ * 하필 가장 먼저 눌러 볼 버튼들이다. 왼쪽에 위쪽을 맞춰 띄우면 상단 메뉴 줄 안에 머문다.
+ * (모바일 하단 메뉴처럼 왼쪽 자리가 없으면 Radix 가 알아서 반대쪽으로 뒤집는다.)
+ */
+const COACH_TIP_PLACEMENT: Record<
+  CoachTipId,
+  { side: 'bottom' | 'left'; align: 'start' | 'center' }
+> = {
+  'add-book': { side: 'left', align: 'start' },
+  'set-goal': { side: 'bottom', align: 'center' },
+  'taste-analysis': { side: 'bottom', align: 'center' },
+};
+
+/**
  * 같은 표시가 여러 곳에 있을 수 있다(데스크탑 상단 메뉴 / 모바일 하단 메뉴).
  * 지금 화면에 실제로 보이는 첫 번째를 고른다 — display:none 이면 사각형이 0개다.
  */
@@ -79,7 +96,7 @@ export const CoachTipHost = ({ userId, facts, actions }: CoachTipHostProps) => {
       {/* virtualRef: DOM 을 감싸지 않고 이미 있는 요소의 위치만 빌려 쓴다 */}
       <PopoverAnchor virtualRef={virtualRef} />
       <PopoverContent
-        side='bottom'
+        {...COACH_TIP_PLACEMENT[tip]}
         className='w-64 space-y-3'
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
