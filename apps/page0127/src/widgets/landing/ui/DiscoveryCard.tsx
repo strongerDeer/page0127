@@ -8,7 +8,7 @@ import { decodeHtmlEntities } from '@/shared/lib/htmlEntities';
 
 import { toCoverSource } from '@/entities/book';
 /**
- * "page0127의 발견" — 최근 등록된 책 한 권을 크게 보여주는 편집 카드
+ * "page0127.의 발견" — 최근 등록된 책 한 권을 크게 보여주는 편집 카드
  *
  * 디자인 (밀리 "밀리의 발견" 카드 문법):
  * - 투톤: 위쪽은 파스텔 틴트 면 + 표지, 아래쪽은 흰 면 + 화자 라벨 + 소개 발췌
@@ -119,7 +119,7 @@ export const DiscoveryCard = async () => {
       <div className='bg-card px-7 pb-7 pt-9'>
         <p className='flex items-center gap-1.5 text-sm font-bold text-text-strong'>
           <Sparkles aria-hidden='true' className='size-4 text-primary' />
-          page0127의 발견
+          page0127.의 발견
         </p>
         {book.description && (
           <p className='mt-2.5 line-clamp-2 break-keep text-base leading-relaxed text-text-body'>

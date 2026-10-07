@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
     await sendKakaoAlert(
       { config, load: loadKakaoTokens, save: saveKakaoTokens },
       {
-        text: '✅ page0127 에러 알림이 연결됐습니다.\n앞으로 운영 에러가 나면 이 채팅으로 알려 드립니다.',
+        text: '✅ page0127. 에러 알림이 연결됐습니다.\n앞으로 운영 에러가 나면 이 채팅으로 알려 드립니다.',
         linkUrl: new URL(KAKAO_ALERT_RETURN_PATH, request.nextUrl.origin).toString(),
         buttonTitle: '에러 화면 열기',
       }

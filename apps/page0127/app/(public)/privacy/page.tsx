@@ -34,7 +34,7 @@ const PrivacyPage = () => {
   return (
     <DocPage
       title='개인정보처리방침'
-      description='page0127이 어떤 정보를 왜 처리하고, 어떻게 보호하는지 안내합니다.'
+      description='page0127.이 어떤 정보를 왜 처리하고, 어떻게 보호하는지 안내합니다.'
       showUpdatedAt
     >
       <DocSection title='1. 수집하는 정보'>
@@ -96,7 +96,7 @@ const PrivacyPage = () => {
 
       <DocSection title='3. 외부 서비스에 맡기는 처리'>
         <p>
-          page0127은 아래 서비스의 힘을 빌려 동작합니다. 각 서비스에는 그 일에
+          page0127.은 아래 서비스의 힘을 빌려 동작합니다. 각 서비스에는 그 일에
           필요한 만큼의 정보만 전달됩니다.
         </p>
         <div className='mt-3 overflow-x-auto'>
@@ -274,7 +274,7 @@ const PrivacyPage = () => {
 
       <DocSection title='10. 개인정보 보호 담당 및 문의'>
         <p>
-          개인정보 보호업무 담당은 page0127 운영자입니다. 개인정보 처리에 관한
+          개인정보 보호업무 담당은 page0127. 운영자입니다. 개인정보 처리에 관한
           문의나 요청(열람·수정·삭제 등)은{' '}
           <Link href='/contact' className='underline'>
             문의 페이지
