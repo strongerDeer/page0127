@@ -11,6 +11,8 @@
  * 컴포넌트를 띄우지 않고 vitest 로 경우의 수를 다 확인하기 위해서다.
  */
 
+import { TASTE_ANALYSIS_MIN_BOOKS } from '@/entities/taste-analysis/model/analysisGate';
+
 /** 순서가 곧 우선순위다 — 앞에 있을수록 먼저 할 일 */
 export const COACH_TIP_IDS = [
   'add-book',
@@ -25,9 +27,6 @@ export type CoachTipId = (typeof COACH_TIP_IDS)[number];
  * 'use client' 가 없는 이 파일에 두는 이유: 서버 컴포넌트(Gnb)에서도 불러 써야 한다.
  */
 export const coachTarget = (id: CoachTipId) => ({ 'data-coach-target': id });
-
-/** 취향 분석 API 가 요구하는 최소 권수 (app/api/taste-analysis/analyze) */
-const TASTE_ANALYSIS_MIN_BOOKS = 5;
 
 /** 팁 판정에 쓰는 서재 상태 — 전부 서버 데이터에서 온다 */
 export type CoachTipFacts = {
