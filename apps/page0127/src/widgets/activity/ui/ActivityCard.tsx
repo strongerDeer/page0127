@@ -7,7 +7,7 @@ import { Star } from 'lucide-react';
 import { RelativeTime } from '@/shared/ui/RelativeTime';
 
 import { Activity } from '@/entities/activity';
-import { isRated } from '@/entities/book';
+import { isRated, toCoverSource } from '@/entities/book';
 import { ProfileLink } from '@/entities/profile/ui/ProfileLink';
 
 import { CommentSection } from '@/features/comment';
@@ -144,7 +144,7 @@ export const ActivityCard = ({
           bookId={activity.book.id}
         >
           <BookCover
-            src={activity.book.cover_image}
+            {...toCoverSource(activity.book)}
             title={activity.book.title}
             decorative
             size='md'

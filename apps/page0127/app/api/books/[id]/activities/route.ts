@@ -37,7 +37,7 @@ export async function GET(
     const { data: book } = await supabase
       .from('books')
       .select(
-        'id, user_id, is_public, title, author, cover_image, status, rating, is_life_book, one_line_review'
+        'id, user_id, is_public, title, author, cover_image, provider_item_id, status, rating, is_life_book, one_line_review'
       )
       .eq('id', bookId)
       .single();
@@ -83,6 +83,7 @@ export async function GET(
           title: book.title,
           author: book.author,
           cover_image: book.cover_image,
+          provider_item_id: book.provider_item_id,
           status: book.status,
           rating: book.rating,
           is_life_book: book.is_life_book,
