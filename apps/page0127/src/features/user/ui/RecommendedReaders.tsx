@@ -59,8 +59,8 @@ export const RecommendedReaders = ({ readers }: RecommendedReadersProps) => (
                 <span className='flex gap-2'>
                   {reader.covers.map((cover) => (
                     <BookCover
-                      key={cover}
-                      src={cover}
+                      key={cover.src}
+                      {...cover}
                       title=''
                       size='xs'
                       decorative

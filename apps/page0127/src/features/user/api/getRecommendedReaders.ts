@@ -2,6 +2,8 @@ import { FEATURED_READER_USERNAME } from '@/shared/config/featuredReader';
 import { createClient } from '@/shared/config/supabase/server';
 import { toRenderableSrc } from '@/shared/lib/imageHost';
 
+import { toCoverSource } from '@/entities/book';
+
 import {
   type CoverRow,
   orderRecommended,
@@ -28,13 +30,32 @@ type ProfileRow = {
   photo_url: string | null;
 };
 
-/** 그릴 수 없는 표지 호스트(알라딘 잔존 등)는 여기서 비운다 */
-const toCoverRows = (rows: CoverRow[] | null): CoverRow[] => {
+/** books 에서 받는 행 — 표지 주소를 정하기 전 모양 */
+type BookCoverRow = {
+  user_id: string;
+  cover_image: string | null;
+  provider_item_id: string | null;
+};
+
+const COVER_COLUMNS = 'user_id, cover_image, provider_item_id';
+
+/**
+ * 그릴 수 없는 표지 호스트(알라딘 잔존 등)는 여기서 비우고,
+ * 그릴 수 있는 사본이 있으면 YES24 를 먼저 세운다 (toCoverSource 주석 참고)
+ */
+const toCoverRows = (rows: BookCoverRow[] | null): CoverRow[] => {
   const storage = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
-  return (rows ?? []).map((row) => ({
-    user_id: row.user_id,
-    cover_image: toRenderableSrc(row.cover_image, storage),
-  }));
+  return (rows ?? []).map((row) => {
+    const cover = toCoverSource({
+      cover_image: toRenderableSrc(row.cover_image, storage),
+      provider_item_id: row.provider_item_id,
+    });
+    return {
+      user_id: row.user_id,
+      cover_image: cover.src,
+      cover_fallback: cover.fallbackSrc,
+    };
+  });
 };
 
 /**
@@ -57,7 +78,7 @@ export async function getRecommendedReaders(
       .maybeSingle(),
     supabase
       .from('books')
-      .select('user_id, cover_image')
+      .select(COVER_COLUMNS)
       .eq('is_public', true)
       .order('updated_at', { ascending: false })
       .limit(RECENT_ROWS),
@@ -77,7 +98,7 @@ export async function getRecommendedReaders(
   if (featuredId) {
     const { data, error } = await supabase
       .from('books')
-      .select('user_id, cover_image')
+      .select(COVER_COLUMNS)
       .eq('user_id', featuredId)
       .eq('is_public', true)
       .order('updated_at', { ascending: false })
@@ -87,11 +108,11 @@ export async function getRecommendedReaders(
         `[getRecommendedReaders] 제작자 표지 조회 실패: ${error.message}`
       );
     }
-    featuredRows = toCoverRows(data as CoverRow[] | null);
+    featuredRows = toCoverRows(data as BookCoverRow[] | null);
   }
 
   const readers = orderRecommended({
-    recentRows: toCoverRows(recentResult.data as CoverRow[] | null),
+    recentRows: toCoverRows(recentResult.data as BookCoverRow[] | null),
     featuredId,
     featuredRows,
     excludeId: currentUserId,
