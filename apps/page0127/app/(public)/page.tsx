@@ -40,7 +40,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
 // 검색엔진용 사이트 정보(JSON-LD). 사이트 전체를 대표하므로 홈에만 둔다.
 const webSiteJsonLd = buildWebSiteJsonLd({
-  name: 'page0127',
+  name: 'page0127.',
   url: siteUrl,
   description:
     '읽은 책을 한 권씩 기록하면 AI가 독서 취향을 분석하고 다음에 읽을 책을 추천해 주는 독서 기록 서비스',
@@ -97,7 +97,7 @@ const Home = async () => {
           페이지 제목이 달라진다. 그렇다고 h1 을 비워 두면 검색엔진이 "이 페이지가
           무엇인가" 를 판단할 첫 단서를 잃는다 — 실측 결과 랜딩의 h1 은 0개였다.
         */}
-        <h1 className='sr-only'>page0127 — 책장을 보면, 그 사람이 보인다</h1>
+        <h1 className='sr-only'>page0127. — 책장을 보면, 그 사람이 보인다</h1>
 
         {/* 히어로 배너 — 자동 롤링. 실제 책 표지가 들어간다 */}
         <ErrorBoundary fallback={<HeroBannerSkeleton />}>

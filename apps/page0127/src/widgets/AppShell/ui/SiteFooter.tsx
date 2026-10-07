@@ -28,7 +28,7 @@ export const SiteFooter = ({ className }: SiteFooterProps) => {
       <div className='mx-auto max-w-6xl px-4 py-10'>
         <div className='flex flex-col gap-6 md:flex-row md:items-start md:justify-between'>
           <div>
-            <p className='text-base font-bold text-primary'>page0127</p>
+            <p className='text-base font-bold text-primary'>page0127.</p>
             <p className='mt-2 text-sm text-text-subtle'>
               읽은 책이 모여 책장이 됩니다.
             </p>
@@ -59,14 +59,14 @@ export const SiteFooter = ({ className }: SiteFooterProps) => {
         */}
         <div className='mt-8 border-t border-line-soft pt-6'>
           <p className='text-xs text-text-subtle'>
-            page0127 은 지금 베타 서비스입니다. 기능과 화면이 예고 없이 바뀔 수
+            page0127.은 지금 베타 서비스입니다. 기능과 화면이 예고 없이 바뀔 수
             있어요. 이상한 점을 발견하면{' '}
             <Link href='/contact' className='underline hover:text-text-strong'>
               문의
             </Link>
             로 알려 주시면 큰 도움이 됩니다.
           </p>
-          <p className='mt-3 text-xs text-text-subtle'>© 2026 page0127</p>
+          <p className='mt-3 text-xs text-text-subtle'>© 2026 page0127.</p>
         </div>
       </div>
     </footer>

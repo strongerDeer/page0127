@@ -57,7 +57,7 @@ export const toAlertText = (payload: SentryEventAlertPayload): string => {
   const event = payload.data?.event ?? {};
   const level = event.level ?? 'error';
   const lines = [
-    `${LEVEL_ICON[level] ?? '🚨'} [page0127] ${level}${event.environment ? ` · ${event.environment}` : ''}`,
+    `${LEVEL_ICON[level] ?? '🚨'} [page0127.] ${level}${event.environment ? ` · ${event.environment}` : ''}`,
     event.title ?? '(제목 없음)',
     event.culprit ? `위치: ${event.culprit}` : null,
     payload.data?.triggered_rule ? `규칙: ${payload.data.triggered_rule}` : null,

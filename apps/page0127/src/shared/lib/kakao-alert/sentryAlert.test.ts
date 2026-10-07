@@ -53,7 +53,7 @@ describe('toAlertText', () => {
   it('수준·환경·제목·위치·규칙을 담는다', () => {
     expect(toAlertText(payload)).toBe(
       [
-        '🚨 [page0127] error · vercel-production',
+        '🚨 [page0127.] error · vercel-production',
         'TypeError: Cannot read properties of null',
         '위치: app/api/books/route.ts in GET',
         '규칙: 새 이슈 즉시 알림',
@@ -62,6 +62,6 @@ describe('toAlertText', () => {
   });
 
   it('비어 있는 항목은 줄째 뺀다', () => {
-    expect(toAlertText({ data: { event: { title: 'x' } } })).toBe('🚨 [page0127] error\nx');
+    expect(toAlertText({ data: { event: { title: 'x' } } })).toBe('🚨 [page0127.] error\nx');
   });
 });

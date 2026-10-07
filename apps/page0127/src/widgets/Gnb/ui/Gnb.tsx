@@ -41,7 +41,7 @@ export const Gnb = ({ user }: GnbProps) => {
         */}
         <div className='flex shrink-0 items-baseline gap-1.5'>
           <Link href='/' className='text-lg font-bold text-primary'>
-            page0127
+            page0127.
           </Link>
           <span className='rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-medium leading-none text-primary'>
             베타

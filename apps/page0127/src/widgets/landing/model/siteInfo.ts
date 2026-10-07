@@ -5,7 +5,7 @@
  * 푸터·contact 페이지·privacy 문의처가 모두 따라 바뀐다.
  */
 export const SITE_INFO = {
-  name: 'page0127',
+  name: 'page0127.',
   since: '2025년 11월',
   lastUpdated: '2026년 10월 1일',
   contact: {
@@ -77,6 +77,6 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     date: '2025.11.25',
-    title: 'page0127을 시작했어요',
+    title: 'page0127.을 시작했어요',
   },
 ];

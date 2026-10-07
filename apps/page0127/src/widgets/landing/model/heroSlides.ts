@@ -32,7 +32,7 @@ export type { HeroSlide };
 export const heroSlidesFor = (now: Date): HeroSlide[] => [
   {
     id: 'shelf',
-    eyebrow: 'page0127',
+    eyebrow: 'page0127.',
     lines: ['책장을 보면,', '그 사람이 보인다'],
     sub: '읽은 책을 한 권씩 기록하면, 몰랐던 취향이 보이기 시작합니다.',
     href: '/login',
