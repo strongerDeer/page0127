@@ -12,6 +12,7 @@ const book = (over: Partial<RecapBook> & { id: string }): RecapBook => ({
   title: '테스트 책',
   author: null,
   cover_image: null,
+  provider_item_id: null,
   status: 'completed',
   rating: null,
   is_life_book: false,
