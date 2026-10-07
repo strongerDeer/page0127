@@ -1,9 +1,9 @@
-import Image from 'next/image';
-
 import { Button } from '@repo/ui';
-import { isPreOptimizedImageSrc } from '@repo/ui';
+import { CoverImage } from '@repo/ui';
 import { Progress } from '@repo/ui';
 import { BookOpen, FileText, Pencil, Star, Trophy } from 'lucide-react';
+
+import { toCoverSource } from '@/entities/book';
 
 import type { Book } from '@/entities/book';
 
@@ -192,12 +192,11 @@ export const ReadingProgressOverview = ({
                     key={book.id}
                     className={`relative aspect-[2/3] h-40 overflow-hidden rounded-sm border border-white/80 bg-card shadow-[0_18px_36px_rgba(15,35,68,0.16)] sm:h-44 ${position}`}
                   >
-                    <Image
-                      src={book.cover_image!}
+                    <CoverImage
+                      {...toCoverSource(book)}
                       alt={book.title}
                       fill
                       sizes='120px'
-                      unoptimized={isPreOptimizedImageSrc(book.cover_image)}
                       className='object-cover'
                     />
                   </div>

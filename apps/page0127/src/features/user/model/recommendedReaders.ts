@@ -15,12 +15,16 @@ export type CoverRow = {
   user_id: string;
   /** 그릴 수 없는 호스트는 호출부에서 null 로 비워 둔다 */
   cover_image: string | null;
+  /** cover_image 를 못 불러왔을 때 쓸 주소 (YES24 를 먼저 쓸 때의 Storage 사본) */
+  cover_fallback?: string | null;
 };
+
+export type ReaderCover = { src: string; fallbackSrc: string | null };
 
 export type RecommendedReader = {
   userId: string;
   featured: boolean;
-  covers: string[];
+  covers: ReaderCover[];
 };
 
 type OrderInput = {
@@ -36,13 +40,15 @@ type OrderInput = {
 };
 
 /** 사람별 표지를 순서대로 모은다 — 빈 값·중복(재독)은 건너뛴다 */
-const collectCovers = (rows: CoverRow[]): Map<string, string[]> => {
-  const byUser = new Map<string, string[]>();
-  for (const { user_id, cover_image } of rows) {
+const collectCovers = (rows: CoverRow[]): Map<string, ReaderCover[]> => {
+  const byUser = new Map<string, ReaderCover[]>();
+  for (const { user_id, cover_image, cover_fallback } of rows) {
     const covers = byUser.get(user_id) ?? [];
     byUser.set(user_id, covers);
-    if (!cover_image || covers.includes(cover_image)) continue;
-    if (covers.length < COVERS_PER_READER) covers.push(cover_image);
+    if (!cover_image || covers.some((c) => c.src === cover_image)) continue;
+    if (covers.length < COVERS_PER_READER) {
+      covers.push({ src: cover_image, fallbackSrc: cover_fallback ?? null });
+    }
   }
   return byUser;
 };

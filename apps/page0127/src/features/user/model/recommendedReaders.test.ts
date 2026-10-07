@@ -68,7 +68,17 @@ describe('orderRecommended', () => {
       featuredRows: [],
       limit: 10,
     });
-    expect(reader.covers).toEqual(['p1', 'p2', 'p3']);
+    expect(reader.covers.map((c) => c.src)).toEqual(['p1', 'p2', 'p3']);
+  });
+
+  it('표지마다 대체 주소(Storage 사본)를 함께 넘긴다', () => {
+    const [reader] = orderRecommended({
+      recentRows: [{ user_id: 'a', cover_image: 'y1', cover_fallback: 's1' }],
+      featuredId: null,
+      featuredRows: [],
+      limit: 10,
+    });
+    expect(reader.covers).toEqual([{ src: 'y1', fallbackSrc: 's1' }]);
   });
 
   it('제작자 표지는 따로 받아 온 행에서 채운다', () => {
@@ -81,7 +91,10 @@ describe('orderRecommended', () => {
     expect(maker).toEqual({
       userId: 'maker',
       featured: true,
-      covers: ['m1', 'm2'],
+      covers: [
+        { src: 'm1', fallbackSrc: null },
+        { src: 'm2', fallbackSrc: null },
+      ],
     });
   });
 });

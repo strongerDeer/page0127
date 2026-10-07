@@ -2,6 +2,8 @@ import { BookCover } from '@repo/ui';
 import { Feather, Quote, Sparkles } from 'lucide-react';
 
 import { createClient } from '@/shared/config/supabase/server';
+
+import { toCoverSource } from '@/entities/book';
 /** 랜딩에서 보여주는 독서 취향 분석 결과 예시 */
 const EXAMPLE = {
   personalityType: '마음의 결을 읽는 사람',
@@ -17,20 +19,20 @@ const COVER_POSITIONS = [
   'left-[72px] top-4 rotate-6',
 ] as const;
 
-type CoverRow = { cover_image: string | null };
+type CoverRow = { cover_image: string | null; provider_item_id: string | null };
 
 export const TasteExampleCard = async () => {
   const supabase = await createClient();
   const { data } = await supabase
     .from('global_books')
-    .select('cover_image')
+    .select('cover_image, provider_item_id')
     .not('cover_image', 'is', null)
     .order('created_at', { ascending: false })
     .limit(3);
 
   const covers = ((data as CoverRow[] | null) ?? [])
-    .map((book) => book.cover_image)
-    .filter((cover): cover is string => Boolean(cover));
+    .map(toCoverSource)
+    .filter((cover) => cover.src !== null);
 
   return (
     <article className='relative overflow-hidden rounded-2xl border border-line-soft bg-card p-6 text-left md:p-8'>
@@ -59,8 +61,8 @@ export const TasteExampleCard = async () => {
                 도달하지 않는다. 이 쿼리는 제목을 가져오지 않으므로 title 이 비어 있다 */}
             {covers.map((cover, index) => (
               <BookCover
-                key={cover}
-                src={cover}
+                key={cover.src}
+                {...cover}
                 title=''
                 decorative
                 size='md'
