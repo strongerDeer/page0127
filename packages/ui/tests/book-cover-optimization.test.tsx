@@ -2,7 +2,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 import { describe, expect, it } from 'vitest';
 
-import { BookCover, pickCoverSrc } from '../src/components/BookCover';
+import { BookCover } from '../src/components/BookCover';
+import { pickCoverSrc } from '../src/components/CoverImage';
 
 const YES24_COVER = 'https://image.yes24.com/goods/13137546/XL';
 const SUPABASE_UPLOAD =
