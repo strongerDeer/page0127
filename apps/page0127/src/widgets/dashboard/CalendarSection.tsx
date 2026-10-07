@@ -1,5 +1,7 @@
 import { createClient } from '@/shared/config/supabase/server';
 
+import { toCoverSource } from '@/entities/book';
+
 import { CalendarBlock } from '@/widgets/dashboard/CalendarBlock';
 
 import type { CalendarData } from '@/widgets/dashboard/ReadingCalendar';
@@ -30,7 +32,7 @@ export const CalendarSection = async ({ userId }: CalendarSectionProps) => {
   const { data: calendarBooks } = await supabase
     .from('books')
     .select(
-      'id, title, author, cover_image, rating, is_life_book, completed_date, page_count'
+      'id, title, author, cover_image, provider_item_id, rating, is_life_book, completed_date, page_count'
     )
     .eq('user_id', userId)
     .eq('status', 'completed')
@@ -50,6 +52,7 @@ export const CalendarSection = async ({ userId }: CalendarSectionProps) => {
       title: string;
       author: string;
       cover: string;
+      coverFallback: string | null;
       rating: number;
       is_life_book: boolean;
     }>
@@ -59,11 +62,14 @@ export const CalendarSection = async ({ userId }: CalendarSectionProps) => {
   calendarBooks?.forEach((book) => {
     const date = book.completed_date;
     if (!booksByDate.has(date)) booksByDate.set(date, []);
+    // API 라우트(api/books/calendar)와 같은 규칙으로 — 월을 넘겨도 표지 출처가 같아야 한다
+    const cover = toCoverSource(book);
     booksByDate.get(date)!.push({
       id: book.id,
       title: book.title,
       author: book.author,
-      cover: book.cover_image ?? '',
+      cover: cover.src ?? '',
+      coverFallback: cover.fallbackSrc,
       rating: book.rating ?? 0,
       is_life_book: book.is_life_book,
     });

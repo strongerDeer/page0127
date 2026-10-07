@@ -28,6 +28,8 @@ type Book = {
   title: string;
   author: string;
   cover: string;
+  /** cover(YES24)를 못 불러왔을 때 쓸 Storage 사본 */
+  coverFallback?: string | null;
   rating: number;
   /** 인생책 여부. rating 과 별개 컬럼이다 */
   is_life_book: boolean;
@@ -248,10 +250,11 @@ export const ReadingCalendar = ({
                 {book.cover && (
                   <BookCover
                     src={book.cover}
+                    fallbackSrc={book.coverFallback}
                     title={book.title}
                     decorative
-          size='xs'
-        />
+                    size='xs'
+                  />
                 )}
                 <div className='min-w-0 flex-1'>
                   <h4 className='truncate text-sm font-medium text-text-strong'>
