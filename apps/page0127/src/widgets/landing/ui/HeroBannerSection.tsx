@@ -1,11 +1,18 @@
 import { createClient } from '@/shared/config/supabase/server';
 
 import { getActiveHeroSlides } from '@/entities/banner/api/getActiveHeroSlides';
+import { toCoverSource } from '@/entities/book';
 
 import { heroSlidesFor } from '@/widgets/landing/model/heroSlides';
 import { HeroBanner } from '@/widgets/landing/ui/HeroBanner';
 
-type RankingRow = { book_info: { cover_image: string | null } | null };
+// book_info 는 to_jsonb(global_books.*) 라 provider_item_id 도 함께 온다
+type RankingRow = {
+  book_info: {
+    cover_image: string | null;
+    provider_item_id: string | null;
+  } | null;
+};
 
 /**
  * 히어로 배너 Server Component
@@ -25,8 +32,8 @@ export const HeroBannerSection = async () => {
   });
 
   const covers = ((data as RankingRow[] | null) ?? [])
-    .map((row) => row.book_info?.cover_image)
-    .filter((url): url is string => Boolean(url));
+    .map((row) => toCoverSource(row.book_info ?? { cover_image: null }))
+    .filter((cover) => cover.src !== null);
 
   // 로그인 여부에 따라 보여줄 배너가 다르다 — "지금 가입하세요"를 이미 가입한
   // 사람에게 보여주면 그 배너는 틀린 말을 하고, 눌러도 로그인 페이지를 거쳐

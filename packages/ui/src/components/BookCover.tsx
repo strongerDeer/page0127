@@ -1,8 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority';
-import Image from 'next/image';
 
 import { cn } from '../lib/cn';
-import { isPreOptimizedImageSrc } from '../lib/imageOptimization';
+import { CoverImage } from './CoverImage';
 
 /**
  * 표지 크기 계단.
@@ -48,6 +47,11 @@ const coverVariants = cva('book-cover', {
 type BookCoverProps = Omit<VariantProps<typeof coverVariants>, 'size'> & {
   /** 표지 이미지 URL. 없거나 빈 문자열이면 제목을 조판한다 */
   src?: string | null;
+  /**
+   * src 를 불러오지 못했을 때 대신 쓸 주소. 이것마저 실패하면 제목을 조판한다.
+   * 예: src 는 서점 CDN, fallbackSrc 는 우리 Storage 에 둔 사본.
+   */
+  fallbackSrc?: string | null;
   /** 대체 조판에 쓰이고 이미지의 alt 가 된다 */
   title: string;
   /**
@@ -70,6 +74,11 @@ type BookCoverProps = Omit<VariantProps<typeof coverVariants>, 'size'> & {
   decorative?: boolean;
   /** LCP 에 걸리는 큰 표지에만 (next/image 의 priority) */
   priority?: boolean;
+  /**
+   * 상세처럼 표지 한 장을 크게 놓는 자리. YES24 의 가장 큰 사본(XL, ~250KB)까지
+   * 허용한다. 목록·격자에서 켜면 고밀도 화면에서 표지마다 XL 을 받는다.
+   */
+  large?: boolean;
 };
 
 /**
@@ -82,6 +91,7 @@ type BookCoverProps = Omit<VariantProps<typeof coverVariants>, 'size'> & {
  */
 export const BookCover = ({
   src,
+  fallbackSrc,
   title,
   author,
   size = 'sm',
@@ -89,42 +99,51 @@ export const BookCover = ({
   className,
   decorative,
   priority,
+  large = false,
 }: BookCoverProps) => {
   // className 은 shape 에 섞지 않고 각 분기의 **맨 뒤**로 넘긴다.
   // 여기서 합쳐 두면 뒤따라오는 기본 클래스(`text-xs` 등)가 호출부 지정을
   // 이겨 버린다 — twMerge 는 나중에 온 것을 남기기 때문이다.
   const shape = coverVariants({ size });
 
-  // 알라딘 표지는 이미 완성된 JPG 라 Vercel 이미지 최적화를 태우지 않는다.
-  // 호출부가 신경 쓰지 않아도 되도록 여기서 판정한다 — 이 컴포넌트가 앱
-  // 15곳에서 쓰이는데, 그중 한 곳이라도 빠지면 그 화면만 조용히 한도를 태운다.
-  const unoptimized = isPreOptimizedImageSrc(src);
+  // 최적화 경로와 실패 시 대체는 CoverImage 가 정한다 — 이 컴포넌트가 앱 15곳에서
+  // 쓰이는데, 그중 한 곳이라도 빠지면 그 화면만 조용히 한도를 태운다.
+  const common = {
+    src,
+    fallbackSrc,
+    large,
+    alt: decorative ? '' : title,
+    'aria-hidden': decorative || undefined,
+    priority,
+  };
 
   if (size === 'fill' || size === 'full') {
     // fill: 부모가 크기를 정한다(부모에 relative + 크기 필요).
     // full: 컬럼 폭을 채우고 높이는 aspect-ratio 가 만든다.
-    return src ? (
-      <Image
-        src={src}
-        alt={decorative ? '' : title}
-        aria-hidden={decorative || undefined}
+    return (
+      <CoverImage
+        {...common}
         {...(size === 'fill'
           ? { fill: true }
           : // full 은 레이아웃이 폭을 정하므로 고유 크기를 알 수 없다.
             // 판형 비율에 맞는 임의의 큰 값을 힌트로 주고 실제 크기는 CSS 가 정한다.
             { width: 400, height: 580 })}
         sizes={sizes}
-        priority={priority}
-        unoptimized={unoptimized}
-        className={cn(shape, 'object-cover', size === 'full' && 'h-auto', className)}
-      />
-    ) : (
-      <FallbackCover
-        shape={shape}
-        title={title}
-        author={author}
-        decorative={decorative}
-        className={className}
+        className={cn(
+          shape,
+          'object-cover',
+          size === 'full' && 'h-auto',
+          className
+        )}
+        fallback={
+          <FallbackCover
+            shape={shape}
+            title={title}
+            author={author}
+            decorative={decorative}
+            className={className}
+          />
+        }
       />
     );
   }
@@ -139,34 +158,27 @@ export const BookCover = ({
   // 화면 폭 기준으로 과하게 큰 이미지를 받아온다.
   const resolvedSizes = sizes ?? `${width}px`;
 
-  if (src) {
-    return (
-      <Image
-        src={src}
-        alt={decorative ? '' : title}
-        aria-hidden={decorative || undefined}
-        width={width}
-        height={height}
-        sizes={resolvedSizes}
-        priority={priority}
-        unoptimized={unoptimized}
-        // 높이 계단이 정한 상자를 이미지가 채운다. 판형이 다른 책이 섞여도
-        // 목록의 표지 폭이 흔들리지 않는다.
-        className={cn(shape, 'object-cover', className)}
-        style={{ height }}
-      />
-    );
-  }
-
   return (
-    <FallbackCover
-      shape={shape}
-      title={title}
-      author={author}
-      decorative={decorative}
-      height={height}
+    <CoverImage
+      {...common}
       width={width}
-      className={className}
+      height={height}
+      sizes={resolvedSizes}
+      // 높이 계단이 정한 상자를 이미지가 채운다. 판형이 다른 책이 섞여도
+      // 목록의 표지 폭이 흔들리지 않는다.
+      className={cn(shape, 'object-cover', className)}
+      style={{ height }}
+      fallback={
+        <FallbackCover
+          shape={shape}
+          title={title}
+          author={author}
+          decorative={decorative}
+          height={height}
+          width={width}
+          className={className}
+        />
+      }
     />
   );
 };

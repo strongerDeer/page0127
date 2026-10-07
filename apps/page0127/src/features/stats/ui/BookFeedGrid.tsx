@@ -1,7 +1,8 @@
-import Image from 'next/image';
 import Link from 'next/link';
 
-import { isPreOptimizedImageSrc } from '@repo/ui';
+import { CoverImage } from '@repo/ui';
+
+import { toCoverSource } from '@/entities/book';
 
 import type { Book } from '@/entities/book';
 
@@ -67,27 +68,25 @@ export const BookFeedGrid = ({
             {/* min-h-0: flex 자식이 내용 크기만큼 늘어나지 않고 남는 공간만 채우게 함
                 object-contain + 안쪽 padding: 표지를 배경 위에 중간 크기로 띄운다 (꽉 채우지 않음) */}
             <div className='relative min-h-0 flex-1 px-6 py-2'>
-              {book.cover_image ? (
-                <Image
-                  src={book.cover_image}
-                  alt={book.title}
-                  fill
-                  sizes='(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw'
-                  unoptimized={isPreOptimizedImageSrc(book.cover_image)}
-                  className='object-contain drop-shadow-md'
-                />
-              ) : (
-                <div className='flex h-full w-full flex-col justify-center gap-1 rounded-sm bg-card px-3 py-2.5 text-left shadow-sm'>
-                  <p className='line-clamp-4 break-keep text-xs font-bold leading-snug text-text-strong'>
-                    {book.title}
-                  </p>
-                  {book.author && (
-                    <p className='line-clamp-1 text-xs text-text-subtle'>
-                      {book.author}
+              <CoverImage
+                {...toCoverSource(book)}
+                alt={book.title}
+                fill
+                sizes='(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw'
+                className='object-contain drop-shadow-md'
+                fallback={
+                  <div className='flex h-full w-full flex-col justify-center gap-1 rounded-sm bg-card px-3 py-2.5 text-left shadow-sm'>
+                    <p className='line-clamp-4 break-keep text-xs font-bold leading-snug text-text-strong'>
+                      {book.title}
                     </p>
-                  )}
-                </div>
-              )}
+                    {book.author && (
+                      <p className='line-clamp-1 text-xs text-text-subtle'>
+                        {book.author}
+                      </p>
+                    )}
+                  </div>
+                }
+              />
             </div>
 
             {/* 선반 명패처럼 보이는 하단 워터마크 밴드 — 배경(bg-muted)보다 한 톤 더 짙게 */}

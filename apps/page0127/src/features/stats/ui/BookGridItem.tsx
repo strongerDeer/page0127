@@ -4,6 +4,8 @@ import Link from 'next/link';
 
 import { BookCover, ReadCountBadge } from '@repo/ui';
 
+import { toCoverSource } from '@/entities/book';
+
 import type { Book } from '@/entities/book';
 
 type BookGridItemProps = {
@@ -35,10 +37,12 @@ export const BookGridItem = ({ book, href }: BookGridItemProps) => {
       <div className='aspect-2/3 relative bg-muted'>
         {/* 표지가 없으면 제목·저자를 조판해 표지를 만든다 (BookCover 가 처리) */}
         <BookCover
-          src={book.cover_image}
+          {...toCoverSource(book)}
           title={book.title}
           author={book.author}
           size='fill'
+          // 서재 격자(3·4·5·6열)의 한 칸 폭. 빼면 100vw 로 계산해 칸마다 큰 후보를 고른다
+          sizes='(min-width: 1024px) 16vw, (min-width: 768px) 20vw, (min-width: 640px) 25vw, 33vw'
         />
         {book.read_count > 1 && (
           <div className='absolute right-2 top-2'>

@@ -2,10 +2,9 @@
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 
-import Image from 'next/image';
 import Link from 'next/link';
 
-import { isPreOptimizedImageSrc } from '@repo/ui';
+import { CoverImage } from '@repo/ui';
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
@@ -13,6 +12,7 @@ import { cn } from '@/shared/lib/utils';
 
 import { countBannerClick } from '@/entities/banner/api/countBannerClick';
 
+import type { CoverSource } from '@/entities/book';
 import type { HeroSlide } from '@/widgets/landing/model/heroSlides';
 
 const AUTOPLAY_MS = 6000;
@@ -32,8 +32,8 @@ const getMotionServerSnapshot = () => false;
 
 type HeroBannerProps = {
   slides: HeroSlide[];
-  /** 배너 우측에 세워둘 실제 책 표지 URL — 슬라이드마다 3권씩 나눠 쓴다 */
-  covers?: string[];
+  /** 배너 우측에 세워둘 실제 책 표지 — 슬라이드마다 3권씩 나눠 쓴다 */
+  covers?: CoverSource[];
 };
 
 /**
@@ -191,12 +191,11 @@ export const HeroBanner = ({ slides, covers = [] }: HeroBannerProps) => {
                           transform: ci === 1 ? 'translateY(-14px)' : undefined,
                         }}
                       >
-                        <Image
-                          src={cover}
+                        <CoverImage
+                          {...cover}
                           alt=''
                           width={300}
                           height={430}
-                          unoptimized={isPreOptimizedImageSrc(cover)}
                           sizes='(min-width: 1024px) 220px, (min-width: 768px) 180px, 100px'
                           // 첫 슬라이드의 표지는 폴드 위 LCP 요소다 — 지연 로딩하면 안 된다
                           priority={i === 0}
