@@ -16,6 +16,10 @@
   /* 책 낱권의 윤곽. 밝은 표지가 흰 배경에 묻히지 않게 두는 선이라 다크에서는 반대로 어두워야 한다 */
   --book-border: #eee;
   --book-border-empty: #ddd;
+  /* 표지·책등 이미지가 없는 책의 대체 상자. 테두리만 다크값이 있고 면·글자가
+     박혀 있어 다크에서 흰 상자가 책장에서 혼자 튀었다(2026-10-08 확인) */
+  --book-empty-bg: #f5f5f5;
+  --book-empty-text: #6b7280;
 
   margin-top: 2rem;
   background-color: transparent;
@@ -119,7 +123,7 @@
   border: 1px solid var(--book-border-empty);
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
   margin: 0 1px;
-  background-color: #f5f5f5;
+  background-color: var(--book-empty-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -136,7 +140,7 @@
 
 .noImage p {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--book-empty-text);
   text-align: center;
   word-break: break-word;
   overflow: hidden;
@@ -205,5 +209,9 @@
     --shelf-shadow-soft: rgba(0, 0, 0, 0.45);
     --book-border: #2e3136;
     --book-border-empty: #24262a;
+    /* 카드 면(ink/900)과 다크 text-subtle(ink/400) — 배경 ink/950 위에서 상자가
+       보이되 실제 표지보다 먼저 눈에 들어오지 않는 밝기 */
+    --book-empty-bg: #1a1c1f;
+    --book-empty-text: #9aa0a8;
   }
 }
