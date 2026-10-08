@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { after, NextRequest, NextResponse } from 'next/server';
 
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { createClient } from '@/shared/config/supabase/server';
@@ -9,6 +9,7 @@ import {
   reserveUsage,
   USAGE_LIMIT_EXCEEDED_ERROR,
 } from '@/shared/lib/aiUsage';
+import { notifyBudgetIfCrossed } from '@/shared/lib/kakao-alert/notifyBudget';
 import { AI_MODEL, MAX_TOKENS, openai, TEMPERATURE } from '@/shared/lib/openai';
 import { createCompatibilityPrompt } from '@/shared/lib/openai/prompts/compatibility';
 
@@ -208,6 +209,10 @@ export async function POST(request: NextRequest) {
     const typeBand = getCompatibilityTypeByScore(score);
 
     // 8. 분석 결과 저장
+    const costInCents = calculateCost(
+      completion.usage?.prompt_tokens || 0,
+      completion.usage?.completion_tokens || 0
+    );
     const { data: analysis, error: analysisError } = await supabase
       .from('compatibility_analyses')
       .insert({
@@ -220,10 +225,7 @@ export async function POST(request: NextRequest) {
         analyzed_books_count_1: Math.min(books1!.length, MAX_BOOKS_FOR_PROMPT),
         analyzed_books_count_2: Math.min(books2!.length, MAX_BOOKS_FOR_PROMPT),
         analysis_model: AI_MODEL,
-        cost_in_cents: calculateCost(
-          completion.usage?.prompt_tokens || 0,
-          completion.usage?.completion_tokens || 0
-        ),
+        cost_in_cents: costInCents,
       })
       .select()
       .single();
@@ -235,6 +237,15 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // 8-1. 이번 호출로 월 예산 80%·100% 를 건넜으면 운영자에게 카톡 — 응답 뒤에 처리한다
+    after(async () => {
+      try {
+        await notifyBudgetIfCrossed(costInCents, request.nextUrl.origin);
+      } catch (err: unknown) {
+        console.error('AI 예산 알림 발송 실패:', err);
+      }
+    });
 
     // 9. 상호 추천 도서 저장 — AI가 고른 제목을 실제 책 레코드와 매칭
     const recommendations = [
