@@ -9,6 +9,8 @@ import { createClient } from '@/shared/config/supabase/server';
 import { JsonLd } from '@/shared/lib/seo/JsonLd';
 import { buildWebSiteJsonLd } from '@/shared/lib/seo/structuredData';
 
+import { ShelfPreviewSection } from '@/features/shelf-preview/ui/ShelfPreviewSection';
+
 import { BookRankingError } from '@/widgets/book/ui/BookRankingError';
 import { BookRankingListSkeleton } from '@/widgets/book/ui/BookRankingListSkeleton';
 import { BookRankingSection } from '@/widgets/book/ui/BookRankingSection';
@@ -98,6 +100,19 @@ const Home = async () => {
           무엇인가" 를 판단할 첫 단서를 잃는다 — 실측 결과 랜딩의 h1 은 0개였다.
         */}
         <h1 className='sr-only'>page0127. — 책장을 보면, 그 사람이 보인다</h1>
+
+        {/* 책장 맛보기 — 처음 온 사람에게 가입할 이유를 "겪게" 한다 (설계: 2026-10-08-home-shelf-preview-design.md)
+            로그인한 사람에게 "읽은 책을 골라 보세요"는 맞지 않으므로 비로그인에게만.
+            조회가 실패해도 빈 그리드로 그려지고 검색·목표는 남는다 */}
+        {!user && (
+          <Suspense
+            fallback={
+              <div className='min-h-80 animate-pulse rounded-2xl border border-line-soft bg-sunken' />
+            }
+          >
+            <ShelfPreviewSection />
+          </Suspense>
+        )}
 
         {/* 히어로 배너 — 자동 롤링. 실제 책 표지가 들어간다 */}
         <ErrorBoundary fallback={<HeroBannerSkeleton />}>
