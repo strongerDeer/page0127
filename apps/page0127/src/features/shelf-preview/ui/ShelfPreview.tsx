@@ -1,16 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
 import { Button, CoverImage } from '@repo/ui';
-import { Check } from 'lucide-react';
+import { ArrowRight, Check, RotateCw } from 'lucide-react';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
-import { MAX_PENDING_BOOKS, writePendingShelf } from '../model/pendingShelf';
+import {
+  MAX_PENDING_BOOKS,
+  readPendingShelf,
+  writePendingShelf,
+} from '../model/pendingShelf';
+import { toPickPages } from '../model/pickPages';
 import { toShelfPreviewMessage } from '../model/previewMessage';
+import { restoreSelection } from '../model/restoreSelection';
 import { isSameBook, toggleSelection } from '../model/selection';
 import { GoalStarter } from './GoalStarter';
 import { PreviewShelf } from './PreviewShelf';
@@ -21,20 +27,43 @@ import type { ShelfPick } from '../model/types';
 type ShelfPreviewProps = { picks: ShelfPick[] };
 
 /**
- * 홈 '책장 맛보기' — 고르면 내 책장이 그려지고, 저장은 로그인으로 이어진다.
+ * 비로그인 홈의 히어로 — 서비스 문장 · 내 책장 · 고르기를 한 화면에.
  *
  * 학습 포인트:
  * - 가입을 "부탁"하지 않는다. 이미 만든 책장을 "저장"하려고 가입하게 한다.
- * - 보관에 실패해도(비공개 모드 등) 로그인은 진행한다 — 빈 서재로 시작할 뿐이다.
+ *   그래서 저장 버튼은 한 권이라도 고른 뒤에야 나타난다.
+ * - 배치는 grid-template-areas 하나로 두 모양을 만든다.
+ *   모바일: 문장 → 고르기 → 책장 / 데스크톱: 왼쪽(문장·책장) · 오른쪽(고르기)
  */
 export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
   const router = useRouter();
   const [selected, setSelected] = useState<ShelfPick[]>([]);
+  const [page, setPage] = useState(0);
 
+  const pages = toPickPages(picks);
+  const current = pages[page] ?? [];
   const isFull = selected.length >= MAX_PENDING_BOOKS;
   const message = toShelfPreviewMessage(selected.length);
   const isSelected = (pick: ShelfPick) =>
     selected.some((p) => isSameBook(p.book, pick.book));
+
+  // 다시 온 방문자: 고르고 로그인하지 않은 채 떠났다면 그 책장을 되살린다.
+  // 저장소는 브라우저에만 있어 서버 렌더 때는 읽을 수 없다 → 마운트 후 한 번.
+  const restored = useRef(false);
+  useEffect(() => {
+    if (restored.current) return;
+    restored.current = true;
+    const pending = readPendingShelf();
+    if (!pending || pending.books.length === 0) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 브라우저 저장소는 마운트 후에만 읽힌다
+    setSelected(
+      restoreSelection(
+        pending.books,
+        picks,
+        process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
+      )
+    );
+  }, [picks]);
 
   const handleToggle = (pick: ShelfPick, source: 'picks' | 'search') => {
     const next = toggleSelection(selected, pick, MAX_PENDING_BOOKS);
@@ -54,90 +83,139 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
   return (
     <section
       aria-labelledby='shelf-preview-title'
-      className='rounded-2xl border border-line-soft p-6 md:p-10'
+      className='tint-cool grid gap-x-16 gap-y-10 rounded-3xl px-5 py-8 [grid-template-areas:"intro"_"picks"_"shelf"] md:p-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:[grid-template-areas:"intro_picks"_"shelf_picks"]'
     >
-      <h2
-        id='shelf-preview-title'
-        className='heading-2 break-keep text-text-strong'
-      >
-        읽은 책을 골라 보세요.
-      </h2>
-      <p className='mt-2 break-keep text-sm text-text-subtle'>
-        고른 책이 내 책장에 꽂혀요. 한 권도 없어도 괜찮아요.
-      </p>
+      <div className='[grid-area:intro]'>
+        <h1
+          id='shelf-preview-title'
+          className='break-keep text-3xl font-extrabold leading-tight tracking-tight text-text-strong md:text-5xl'
+        >
+          책장을 보면,
+          <br />그 사람이 보인다.
+        </h1>
+        <p className='mt-4 break-keep text-base leading-relaxed text-text-body md:text-lg'>
+          읽은 책을 골라 책장을 채워주세요.
+          <br />
+          당신의 취향은 어떤가요?
+        </p>
+      </div>
 
-      {picks.length > 0 && (
-        <ul className='mt-6 grid grid-cols-5 gap-2 md:grid-cols-10 md:gap-3'>
-          {picks.map((pick) => {
-            const on = isSelected(pick);
-            return (
-              <li key={pick.book.isbn}>
-                <button
-                  type='button'
-                  aria-pressed={on}
-                  aria-label={pick.book.title}
-                  disabled={!on && isFull}
-                  onClick={() => handleToggle(pick, 'picks')}
-                  className={`relative block w-full overflow-hidden rounded-md transition focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-40 ${
-                    on ? 'ring-2 ring-primary' : 'hover:opacity-90'
-                  }`}
-                >
-                  <CoverImage
-                    src={pick.coverSrc}
-                    fallbackSrc={pick.coverFallback}
-                    alt=''
-                    width={96}
-                    height={144}
-                    fallback={
-                      <span className='flex aspect-2/3 items-center justify-center bg-sunken p-1 text-[10px] text-text-subtle'>
-                        {pick.book.title}
-                      </span>
-                    }
-                    className='aspect-2/3 h-auto w-full object-cover'
-                  />
-                  {on && (
-                    <span className='absolute right-1 top-1 rounded-full bg-primary p-0.5 text-primary-foreground'>
-                      <Check aria-hidden='true' className='size-3' />
-                    </span>
-                  )}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-
-      <ShelfSearch
-        isSelected={isSelected}
-        disabled={isFull}
-        onPick={(pick) => handleToggle(pick, 'search')}
-      />
-
-      <div className='mt-8'>
-        {selected.length > 0 ? (
-          <>
-            <h3 className='text-sm font-medium text-text-subtle'>내 책장</h3>
-            <div className='mt-2'>
-              <PreviewShelf picks={selected} />
-            </div>
-            <p
-              aria-live='polite'
-              className='mt-4 break-keep font-medium text-text-strong'
+      <div className='[grid-area:picks]'>
+        <div className='flex items-center justify-between gap-3'>
+          <h2 className='text-sm font-bold text-text-strong md:text-base'>
+            이 중에 읽은 책이 있나요?
+          </h2>
+          {pages.length > 1 && (
+            <Button
+              type='button'
+              variant='outline'
+              size='sm'
+              onClick={() => setPage((p) => (p + 1) % pages.length)}
+              className='gap-1.5 rounded-full'
             >
-              {message}
-            </p>
-            {isFull && (
-              <p className='mt-1 text-xs text-text-subtle'>
-                한 번에 {MAX_PENDING_BOOKS}권까지 꽂을 수 있어요.
-              </p>
-            )}
-            <Button size='lg' className='mt-4 px-8' onClick={handleSave}>
-              책장 저장하기
+              <RotateCw aria-hidden='true' className='size-3.5' />
+              다른 책 보기
+              <span className='font-normal text-text-subtle'>
+                {page + 1}/{pages.length}
+              </span>
             </Button>
-          </>
-        ) : (
-          <GoalStarter />
+          )}
+        </div>
+
+        {current.length > 0 && (
+          <ul className='mt-4 grid grid-cols-4 gap-3 md:mt-5 md:gap-5'>
+            {current.map((pick) => {
+              const on = isSelected(pick);
+              return (
+                <li key={pick.book.isbn}>
+                  <button
+                    type='button'
+                    aria-pressed={on}
+                    aria-label={pick.book.title}
+                    disabled={!on && isFull}
+                    onClick={() => handleToggle(pick, 'picks')}
+                    className={`relative block w-full rounded-md transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-40 motion-reduce:transition-none ${
+                      on
+                        ? '-translate-y-1 shadow-lg ring-3 ring-primary'
+                        : 'shadow-md ring-1 ring-text-strong/10 hover:-translate-y-1'
+                    }`}
+                  >
+                    <CoverImage
+                      src={pick.coverSrc}
+                      fallbackSrc={pick.coverFallback}
+                      alt=''
+                      width={120}
+                      height={180}
+                      fallback={
+                        <span className='flex aspect-2/3 items-center justify-center rounded-md bg-sunken p-1 text-[10px] text-text-subtle'>
+                          {pick.book.title}
+                        </span>
+                      }
+                      className='aspect-2/3 h-auto w-full rounded-md object-cover'
+                    />
+                    {on && (
+                      <span className='absolute -top-2 -right-2 flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow md:size-7'>
+                        <Check aria-hidden='true' className='size-3.5' />
+                      </span>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
         )}
+
+        <ShelfSearch
+          isSelected={isSelected}
+          disabled={isFull}
+          onPick={(pick) => handleToggle(pick, 'search')}
+        />
+      </div>
+
+      <div className='flex flex-col [grid-area:shelf]'>
+        <p className='text-xs font-bold text-text-subtle md:text-sm'>
+          내 책장 · {selected.length}권
+        </p>
+        <div className='mt-2'>
+          <PreviewShelf picks={selected} />
+        </div>
+
+        {/* 데스크톱에선 버튼이 나타날 자리를 미리 비워 둔다 — 고르는 순간 왼쪽 열이 늘면
+            가운데 정렬된 오른쪽 그리드까지 흔들린다. 모바일은 그리드가 위에 있어 밀릴 것이 없다 */}
+        <div className='mt-5 lg:min-h-36'>
+          {selected.length > 0 && (
+            <>
+              <p
+                aria-live='polite'
+                className='break-keep font-bold text-text-strong md:text-lg'
+              >
+                {message}
+              </p>
+              {isFull && (
+                <p className='mt-1 text-xs text-text-subtle'>
+                  한 번에 {MAX_PENDING_BOOKS}권까지 꽂을 수 있어요.
+                </p>
+              )}
+              <div className='mt-4 flex flex-wrap items-center gap-x-4 gap-y-2'>
+                <Button
+                  size='lg'
+                  onClick={handleSave}
+                  className='h-14 w-full gap-2 px-7 text-base font-bold shadow-lg shadow-primary/30 sm:w-auto'
+                >
+                  지금 책 저장하기
+                  <ArrowRight aria-hidden='true' className='size-5' />
+                </Button>
+                <span className='text-xs text-text-subtle'>
+                  무료 · 구글·카카오로 10초 가입
+                </span>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className='mt-auto pt-2'>
+          <GoalStarter />
+        </div>
       </div>
     </section>
   );
