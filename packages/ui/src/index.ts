@@ -32,7 +32,13 @@ export { Textarea } from './components/textarea';
 export * from './components/alert-dialog';
 export * from './components/dialog';
 export * from './components/dropdown-menu';
-export { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from './components/popover';
+export {
+  Popover,
+  PopoverAnchor,
+  PopoverArrow,
+  PopoverContent,
+  PopoverTrigger,
+} from './components/popover';
 
 /* Feedback */
 export { Progress } from './components/progress';

@@ -43,4 +43,27 @@ function PopoverAnchor({
   return <PopoverPrimitive.Anchor data-slot="popover-anchor" {...props} />
 }
 
-export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor }
+/**
+ * 말풍선이 무엇을 가리키는지 보여 주는 꼬리. PopoverContent 안에 둔다.
+ *
+ * 채움만 있으면 말풍선과 같은 색 바탕(흰 상단 메뉴 등) 위에서 꼬리가 사라진다 —
+ * 말풍선 테두리와 같은 색으로 외곽선을 그린다. (SVG 가 줄어 그려지므로 stroke-2 ≈ 1px)
+ */
+function PopoverArrow({
+  className,
+  width = 14,
+  height = 7,
+  ...props
+}: React.ComponentProps<typeof PopoverPrimitive.Arrow>) {
+  return (
+    <PopoverPrimitive.Arrow
+      data-slot="popover-arrow"
+      width={width}
+      height={height}
+      className={cn("fill-popover stroke-border stroke-2", className)}
+      {...props}
+    />
+  )
+}
+
+export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor, PopoverArrow }
