@@ -31,8 +31,16 @@ export function getAdminEmails(): string[] {
 /** USD → KRW 환산 근사 상수 (수동 갱신) */
 export const USD_TO_KRW = 1400;
 
-/** 월 예산 (원) */
-export const MONTHLY_BUDGET_KRW = 30000;
+/**
+ * 월 예산 (원) — 14,000원 = $10.
+ *
+ * OpenAI 프로젝트 월 한도($10, 2026-10-08 설정)와 맞춘다. 앱 상한이 그보다 높으면
+ * OpenAI 가 먼저 거절해 사용자는 "오류가 발생했습니다"를 본다. 같거나 낮으면 앱이
+ * 먼저 "이번 달 AI 분석이 모두 소진됐어요"로 막는다. cost_in_cents 는 호출마다 올림이라
+ * 실제 청구액보다 높게 쌓이므로, 같은 $10 이어도 앱이 먼저 닫힌다.
+ * ⚠️ OpenAI 한도를 바꾸면 이 값도 함께 바꾼다.
+ */
+export const MONTHLY_BUDGET_KRW = 14000;
 
 /**
  * 월 예산을 USD 센트로 환산한 값 — **유료 호출을 막는 실제 기준**이다.

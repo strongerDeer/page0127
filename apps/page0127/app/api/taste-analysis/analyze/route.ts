@@ -10,6 +10,7 @@ import {
   reserveUsage,
   USAGE_LIMIT_EXCEEDED_ERROR,
 } from '@/shared/lib/aiUsage';
+import { notifyBudgetIfCrossed } from '@/shared/lib/kakao-alert/notifyBudget';
 import { AI_MODEL, MAX_TOKENS, openai, TEMPERATURE } from '@/shared/lib/openai';
 import { createTasteAnalysisPrompt } from '@/shared/lib/openai/prompts/taste-analysis';
 
@@ -35,7 +36,7 @@ export const maxDuration = 60;
  *
  * POST /api/taste-analysis/analyze
  */
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   // 예약된 usage 행 id — 환불(삭제) 대상.
   let reservedUsageId: string | null = null;
   // OpenAI 요청을 시작하면 비용이 발생할 수 있으므로 이후 실패는 환불하지 않는다.
@@ -168,6 +169,10 @@ export async function POST(_request: NextRequest) {
     }
 
     // 5. 분석 결과 저장
+    const costInCents = calculateCost(
+      completion.usage?.prompt_tokens || 0,
+      completion.usage?.completion_tokens || 0
+    );
     const { data: analysis, error: analysisError } = await supabase
       .from('taste_analyses')
       .insert({
@@ -177,10 +182,7 @@ export async function POST(_request: NextRequest) {
         preference_profile: aiResponse.preference_profile,
         analyzed_books_count: books.length,
         analysis_model: AI_MODEL,
-        cost_in_cents: calculateCost(
-          completion.usage?.prompt_tokens || 0,
-          completion.usage?.completion_tokens || 0
-        ),
+        cost_in_cents: costInCents,
       })
       .select()
       .single();
@@ -192,6 +194,15 @@ export async function POST(_request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // 5-1. 이번 호출로 월 예산 80%·100% 를 건넜으면 운영자에게 카톡 — 응답 뒤에 처리한다
+    after(async () => {
+      try {
+        await notifyBudgetIfCrossed(costInCents, request.nextUrl.origin);
+      } catch (err: unknown) {
+        console.error('AI 예산 알림 발송 실패:', err);
+      }
+    });
 
     // 6. 추천 도서 저장
     if (aiResponse.recommendations && aiResponse.recommendations.length > 0) {
