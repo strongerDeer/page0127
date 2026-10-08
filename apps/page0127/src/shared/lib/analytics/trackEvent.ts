@@ -25,7 +25,7 @@ declare global {
  * 이 서비스의 활성화는 첫 책을 꽂고 완독을 찍는 순간인데, 그 두 지점이 계측
  * 밖에 있었다.
  *
- *   랜딩    cta_click · signup_start
+ *   랜딩    cta_click · signup_start · shelf_preview_pick → shelf_preview_save | shelf_preview_goal
  *   활성화  book_add → book_complete      ← 비어 있던 구간
  *   차별화  taste_analysis_run
  *   확산    share_click
@@ -34,6 +34,12 @@ declare global {
  */
 export type AnalyticsEvent =
   | 'cta_click'
+  /** 홈 맛보기에서 책을 골랐다. source: 'picks' | 'search', count: 고른 뒤 권수 */
+  | 'shelf_preview_pick'
+  /** 맛보기 [책장 저장하기] — 로그인으로 간다. count: 고른 권수 */
+  | 'shelf_preview_save'
+  /** 맛보기 0권 [목표 저장하기] — 로그인으로 간다. target: 목표 권수 */
+  | 'shelf_preview_goal'
   | 'scroll_depth'
   | 'signup_start'
   /** 책을 서재에 담았다. status 로 어떤 상태로 담았는지 함께 본다 */
