@@ -16,6 +16,11 @@ type ProviderMeta = {
   /** 버튼 스타일 — 브랜드가 규정하는 경우에만 색을 박는다 */
   className: string;
   mark: React.ReactNode;
+  /**
+   * 버튼 밖(설정의 연결된 계정 목록)에서 마크 뒤에 까는 면.
+   * 카카오 심볼은 검정 고정이라 노란 면 없이 두면 다크 배경에 묻힌다(2026-10-08 확인).
+   */
+  markBackdropClassName?: string;
 };
 
 // 구글 G 마크 — 4색 규정이라 currentColor 를 쓰지 않는다
@@ -59,11 +64,14 @@ export const OAUTH_PROVIDERS: Record<OAuthProvider, ProviderMeta> = {
     className:
       'border border-line bg-card text-text-body hover:bg-accent hover:text-accent-foreground',
     mark: GoogleMark,
+    // 카카오의 노란 면과 같은 여백을 줘서 두 줄의 글자 시작점을 맞춘다
+    markBackdropClassName: 'flex p-0.5',
   },
   kakao: {
     label: '카카오 로그인',
     className: 'bg-[#FEE500] text-[#191600] hover:brightness-95',
     mark: KakaoMark,
+    markBackdropClassName: 'flex rounded-md bg-[#FEE500] p-0.5',
   },
 };
 
