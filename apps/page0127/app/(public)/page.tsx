@@ -99,27 +99,35 @@ const Home = async () => {
           페이지 제목이 달라진다. 그렇다고 h1 을 비워 두면 검색엔진이 "이 페이지가
           무엇인가" 를 판단할 첫 단서를 잃는다 — 실측 결과 랜딩의 h1 은 0개였다.
         */}
-        <h1 className='sr-only'>page0127. — 책장을 보면, 그 사람이 보인다</h1>
+        {/* 비로그인이면 맛보기의 "책장을 보면, 그 사람이 보인다." 가 화면에 보이는 h1 이다.
+            여기서 또 그리면 h1 이 둘이 된다 */}
+        {user && (
+          <h1 className='sr-only'>page0127. — 책장을 보면, 그 사람이 보인다</h1>
+        )}
 
-        {/* 책장 맛보기 — 처음 온 사람에게 가입할 이유를 "겪게" 한다 (설계: 2026-10-08-home-shelf-preview-design.md)
+        {/* 책장 맛보기 = 비로그인 히어로 — 처음 온 사람에게 가입할 이유를 "겪게" 한다
+            (설계: 2026-10-08-home-shelf-preview-design.md)
             로그인한 사람에게 "읽은 책을 골라 보세요"는 맞지 않으므로 비로그인에게만.
-            조회가 실패해도 빈 그리드로 그려지고 검색·목표는 남는다 */}
+            자리 표시는 실제 높이에 가깝게 — 짧으면 도착하는 순간 아래가 밀린다(CLS) */}
         {!user && (
           <Suspense
             fallback={
-              <div className='min-h-80 animate-pulse rounded-2xl border border-line-soft bg-sunken' />
+              <div className='tint-cool min-h-176 animate-pulse rounded-3xl lg:min-h-140' />
             }
           >
             <ShelfPreviewSection />
           </Suspense>
         )}
 
-        {/* 히어로 배너 — 자동 롤링. 실제 책 표지가 들어간다 */}
-        <ErrorBoundary fallback={<HeroBannerSkeleton />}>
-          <Suspense fallback={<HeroBannerSkeleton />}>
-            <HeroBannerSection />
-          </Suspense>
-        </ErrorBoundary>
+        {/* 히어로 배너 — 자동 롤링. 로그인한 사람에게만.
+            비로그인은 맛보기가 히어로를 맡는다. 큰 면 두 개가 첫 화면을 다투면 둘 다 약해진다 */}
+        {user && (
+          <ErrorBoundary fallback={<HeroBannerSkeleton />}>
+            <Suspense fallback={<HeroBannerSkeleton />}>
+              <HeroBannerSection />
+            </Suspense>
+          </ErrorBoundary>
+        )}
 
         {/* 오늘의 기록 — 매일 바뀌는 문자열을 화면에 하나는 둔다.
             실패하거나 데이터가 없으면 조용히 사라진다(랜딩을 막지 않는다) */}
