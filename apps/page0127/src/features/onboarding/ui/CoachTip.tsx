@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { Button, Popover, PopoverAnchor, PopoverContent } from '@repo/ui';
 
@@ -9,8 +9,9 @@ import { useCoachTip } from '../model/useCoachTip';
 
 const COACH_TIP_COPY: Record<CoachTipId, { title: string; body: string }> = {
   'add-book': {
-    title: '첫 책은 여기서 추가해요',
-    body: '읽은 책도, 읽고 있는 책도 좋아요. 한 권이면 서재가 시작됩니다.',
+    title: '첫 책을 추가해 보세요',
+    // "여기서"만으로는 어디인지 모른다 — 버튼 이름을 직접 말한다(스크린리더에게도 통한다)
+    body: '오른쪽 위 "+ 도서 추가"를 누르면 돼요. 읽은 책도, 읽고 있는 책도 좋아요.',
   },
   'set-goal': {
     title: '올해 몇 권 읽어 볼까요?',
@@ -21,6 +22,36 @@ const COACH_TIP_COPY: Record<CoachTipId, { title: string; body: string }> = {
     body: '평가한 완독 책이 다섯 권 모였어요. 책장이 말해 주는 취향을 확인해 보세요.',
   },
 };
+
+/**
+ * 말풍선을 버튼의 어느 쪽에 띄울지.
+ *
+ * 'add-book' 은 상단 메뉴 오른쪽 끝의 "도서 추가"를 가리킨다. 아래로 띄우면 바로 밑에 있는
+ * 서재 카드의 버튼(취향 분석·프로필 편집·공유)을 덮는다 — 책이 0권인 첫 화면에서
+ * 하필 가장 먼저 눌러 볼 버튼들이다. 왼쪽에 위쪽을 맞춰 띄우면 상단 메뉴 줄 안에 머문다.
+ * (모바일 하단 메뉴처럼 왼쪽 자리가 없으면 Radix 가 알아서 반대쪽으로 뒤집는다.)
+ */
+const COACH_TIP_PLACEMENT: Record<
+  CoachTipId,
+  { side: 'bottom' | 'left'; align: 'start' | 'center' }
+> = {
+  'add-book': { side: 'left', align: 'start' },
+  'set-goal': { side: 'bottom', align: 'center' },
+  'taste-analysis': { side: 'bottom', align: 'center' },
+};
+
+/**
+ * 말풍선이 떠 있는 동안 가리키는 버튼에 두르는 테두리.
+ * 말풍선이 버튼 옆에 떠 있기만 하면 "이것"이 무엇인지 흐릿하다 — 대상 자체가 달라
+ * 보여야 한다. (꼬리 화살표도 붙여 봤지만 연회색 꼬리가 어색해 뺐다, 2026-10-08)
+ * 클래스 문자열을 여기 그대로 적어야 Tailwind 가 만든다.
+ */
+const TARGET_HIGHLIGHT = [
+  'ring-2',
+  'ring-ring',
+  'ring-offset-2',
+  'ring-offset-card',
+];
 
 /**
  * 같은 표시가 여러 곳에 있을 수 있다(데스크탑 상단 메뉴 / 모바일 하단 메뉴).
@@ -68,6 +99,14 @@ export const CoachTipHost = ({ userId, facts, actions }: CoachTipHostProps) => {
   // Radix 는 위치를 잴 대상을 ref 모양({ current })으로 받는다
   const virtualRef = useMemo(() => ({ current: anchor }), [anchor]);
 
+  // 말풍선이 떠 있는 동안만 대상 버튼에 테두리를 두른다. 이 컴포넌트가 버튼을
+  // 렌더하지 않으므로(가리키기만 한다) DOM 에 직접 붙였다가 닫히면 뗀다.
+  useEffect(() => {
+    if (!anchor) return;
+    anchor.classList.add(...TARGET_HIGHLIGHT);
+    return () => anchor.classList.remove(...TARGET_HIGHLIGHT);
+  }, [anchor]);
+
   // 가리킬 버튼이 이 화면에 없으면 허공에 띄우지 않는다
   if (!tip || !anchor) return null;
 
@@ -79,7 +118,7 @@ export const CoachTipHost = ({ userId, facts, actions }: CoachTipHostProps) => {
       {/* virtualRef: DOM 을 감싸지 않고 이미 있는 요소의 위치만 빌려 쓴다 */}
       <PopoverAnchor virtualRef={virtualRef} />
       <PopoverContent
-        side='bottom'
+        {...COACH_TIP_PLACEMENT[tip]}
         className='w-64 space-y-3'
         onOpenAutoFocus={(e) => e.preventDefault()}
       >

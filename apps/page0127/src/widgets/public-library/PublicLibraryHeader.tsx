@@ -28,6 +28,7 @@ import {
 } from '@/shared/lib/aiUsage';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
+import { TASTE_ANALYSIS_MIN_BOOKS } from '@/entities/taste-analysis/model/analysisGate';
 import { getPersonalityColor } from '@/entities/taste-analysis/model/personalityTypes';
 
 import { FollowButton, FollowListModal, FollowStats } from '@/features/follow';
@@ -79,8 +80,11 @@ export const PublicLibraryHeader = ({
   const [isAnalyzeDialogOpen, setIsAnalyzeDialogOpen] = useState(false);
   const displayName = profile.nickname || username;
 
+  const isTasteAnalysisUnlocked =
+    analyzableBookCount >= TASTE_ANALYSIS_MIN_BOOKS;
+
   const handleAnalyzeTaste = () => {
-    if (analyzableBookCount < 5) {
+    if (!isTasteAnalysisUnlocked) {
       // "필요합니다"(요건)가 아니라 "볼 수 있어요"(가까워진 보상)로 말한다.
       // 5권 게이트 자체는 AI 비용과 묶인 제품 결정이라 그대로 둔다.
       // "별점" 이 아니라 "평가" 라고 말하는 이유: 게이트가 세는 쿼리는
@@ -88,7 +92,7 @@ export const PublicLibraryHeader = ({
       // 평가 컨트롤을 건드려 고른 상태이므로 "평가를 남긴" 은 사실이지만,
       // "별점을 남긴" 은 쿼리가 세지 않는 것을 약속하게 된다.
       toast.info(
-        `평가를 남긴 완독 책이 ${5 - analyzableBookCount}권 더 모이면 취향 분석을 볼 수 있어요.`
+        `평가를 남긴 완독 책이 ${TASTE_ANALYSIS_MIN_BOOKS - analyzableBookCount}권 더 모이면 취향 분석을 볼 수 있어요.`
       );
       return;
     }
@@ -198,12 +202,18 @@ export const PublicLibraryHeader = ({
               <Button
                 onClick={handleAnalyzeTaste}
                 disabled={isAnalyzing}
+                // 아직 열리지 않은 기능은 한 단계 낮춰 보인다 — 누르면 몇 권 남았는지 안내한다
+                variant={isTasteAnalysisUnlocked ? 'default' : 'outline'}
+                className={isTasteAnalysisUnlocked ? undefined : 'shadow-none'}
                 {...coachTarget('taste-analysis')}
               >
                 {isAnalyzing && <Loader2 className='h-4 w-4 animate-spin' />}
                 {isAnalyzing
                   ? '분석 중… (최대 1분)'
-                  : `취향 분석 (${tasteAnalysisRemaining}/${MONTHLY_LIMIT} 남음)`}
+                  : isTasteAnalysisUnlocked
+                    ? `취향 분석 (${tasteAnalysisRemaining}/${MONTHLY_LIMIT} 남음)`
+                    : // 5권이 모이기 전에 "3/3 남음"을 보이면 지금 바로 쓸 수 있는 것처럼 읽힌다
+                      `취향 분석 (${analyzableBookCount}/${TASTE_ANALYSIS_MIN_BOOKS}권)`}
               </Button>
               <Button asChild variant='outline' className='shadow-none'>
                 <Link href='/settings'>프로필 편집</Link>

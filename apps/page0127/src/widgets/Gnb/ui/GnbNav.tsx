@@ -35,7 +35,13 @@ export const GnbNav = ({ isLoggedIn }: GnbNavProps) => {
   ];
 
   return (
-    <nav aria-label='주요 메뉴' className='hidden items-center gap-1 md:flex'>
+    // shrink-0 + whitespace-nowrap: 폭이 모자라면 메뉴가 아니라 검색창이 줄어든다.
+    // 한글은 글자 사이 어디서든 줄이 바뀌어서, 눌리면 "전/체/도/서"처럼 세로로 쪼개진다
+    // (768~1024px 에서 실제로 그랬다 — 메뉴가 넷으로 늘어난 2026-10-06 이후).
+    <nav
+      aria-label='주요 메뉴'
+      className='hidden shrink-0 items-center gap-1 md:flex'
+    >
       {links.map((link) => {
         const active = link.exact
           ? pathname === link.href
@@ -46,7 +52,7 @@ export const GnbNav = ({ isLoggedIn }: GnbNavProps) => {
             href={link.href}
             aria-current={active ? 'page' : undefined}
             className={cn(
-              'rounded-md px-3 py-2 text-sm font-medium transition-colors',
+              'whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-colors',
               active
                 ? 'text-text-strong'
                 : 'text-text-subtle hover:text-text-strong'

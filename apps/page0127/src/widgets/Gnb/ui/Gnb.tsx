@@ -51,7 +51,8 @@ export const Gnb = ({ user }: GnbProps) => {
         <GnbNav isLoggedIn={!!user} />
 
         {/* 검색 — 책 서비스의 GNB에서 검색창은 장식이 아니라 중심이다 */}
-        <div className='ml-auto hidden w-full max-w-xs sm:block lg:max-w-sm'>
+        {/* min-w-0: 폭이 모자랄 때 줄어드는 쪽은 검색창이다(메뉴는 shrink-0) */}
+        <div className='ml-auto hidden w-full min-w-0 max-w-xs sm:block lg:max-w-sm'>
           <GnbSearch />
         </div>
 

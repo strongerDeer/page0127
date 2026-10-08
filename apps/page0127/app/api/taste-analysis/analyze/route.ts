@@ -14,6 +14,7 @@ import { AI_MODEL, MAX_TOKENS, openai, TEMPERATURE } from '@/shared/lib/openai';
 import { createTasteAnalysisPrompt } from '@/shared/lib/openai/prompts/taste-analysis';
 
 import { isRated } from '@/entities/book';
+import { TASTE_ANALYSIS_MIN_BOOKS } from '@/entities/taste-analysis/model/analysisGate';
 import { READING_PERSONALITY_TYPES } from '@/entities/taste-analysis/model/personalityTypes';
 import { RECOMMENDATIONS_REQUEST_COUNT } from '@/entities/taste-analysis/model/recommendations';
 
@@ -76,9 +77,11 @@ export async function POST(_request: NextRequest) {
       );
     }
 
-    if (!books || books.length < 5) {
+    if (!books || books.length < TASTE_ANALYSIS_MIN_BOOKS) {
       return NextResponse.json(
-        { error: '분석을 위해 최소 5권의 완독한 책(별점 포함)이 필요합니다.' },
+        {
+          error: `분석을 위해 최소 ${TASTE_ANALYSIS_MIN_BOOKS}권의 완독한 책(별점 포함)이 필요합니다.`,
+        },
         { status: 400 }
       );
     }
