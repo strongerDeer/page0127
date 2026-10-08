@@ -6,6 +6,11 @@ export type ShellUser = {
   photoUrl: string | null;
   displayName: string;
   username: string | null;
+  /**
+   * 온보딩(아이디 정하기)을 마쳤는가. username 으로는 알 수 없다 —
+   * 가입할 때 자동 생성되어 온보딩 전에도 값이 있다.
+   */
+  onboarded: boolean;
 };
 
 // user.id로 프로필을 조회해 셸 props를 구성한다.
@@ -19,5 +24,6 @@ export const getShellUser = async (userId: string): Promise<ShellUser> => {
     // profiles.email 은 읽을 수 없다(profileColumns.ts). 닉네임이 없으면 아이디로 대신한다
     displayName: profile?.nickname || profile?.username || '사용자',
     username: profile?.username ?? null,
+    onboarded: Boolean(profile?.onboarded_at),
   };
 };
