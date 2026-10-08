@@ -72,7 +72,8 @@ export const LinkedAccountsSection = () => {
       ) : (
         <ul className='mt-4 space-y-2'>
           {rows.map(({ provider, isLinked, canUnlink }) => {
-            const { label, mark } = OAUTH_PROVIDERS[provider];
+            const { label, mark, markBackdropClassName } =
+              OAUTH_PROVIDERS[provider];
             const isPending = pendingProvider === provider;
 
             return (
@@ -81,7 +82,7 @@ export const LinkedAccountsSection = () => {
                 className='flex items-center justify-between gap-4'
               >
                 <span className='flex items-center gap-2 text-sm text-text-body'>
-                  {mark}
+                  <span className={markBackdropClassName}>{mark}</span>
                   {label}
                 </span>
 
