@@ -48,13 +48,16 @@ export const ShelfSearch = ({
 
   if (!open) {
     return (
-      <button
+      <Button
         type='button'
+        variant='outline'
+        size='lg'
         onClick={() => setOpen(true)}
-        className='mt-4 text-sm font-medium text-primary underline-offset-4 hover:underline'
+        className='mt-6 w-full gap-2'
       >
-        목록에 없나요? 다른 책 찾기
-      </button>
+        <Search aria-hidden='true' className='size-4' />
+        다른 책 찾아보기
+      </Button>
     );
   }
 
