@@ -97,7 +97,7 @@ export const Highlights = ({ books, top }: HighlightsProps) => {
         <Reveal>
           <Card
             blue
-            lead='독서 궁합.'
+            lead='독서 케미.'
             rest='다른 사람의 책장과 나란히 놓고, 겹치는 책과 취향을 확인해요.'
           >
             <div className='text-center'>

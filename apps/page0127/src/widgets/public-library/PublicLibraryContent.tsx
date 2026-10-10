@@ -22,6 +22,7 @@ import { PublicBookShelf } from '@/widgets/book/ui/PublicBookShelf';
 import { LibraryView } from '@/widgets/library/LibraryView';
 
 import { PublicLibraryHeader } from './PublicLibraryHeader';
+import { VisitorChemiCard, VisitorSignupBanner } from './VisitorCta';
 
 import type { Book } from '@/entities/book';
 import type { OverallStats } from '@/entities/book';
@@ -126,6 +127,10 @@ export const PublicLibraryContent = ({
     [currentYear, publicBooks, selectedPeriod]
   );
 
+  // 로그인하지 않은 방문자 — 가입 길(VisitorCta)을 보여 줄 대상
+  const isVisitor = !currentUserId;
+  const ownerName = profile.nickname || username;
+
   const readingGoal = profile.reading_goal;
   const goalTarget =
     readingGoal?.year === selectedYear
@@ -156,6 +161,9 @@ export const PublicLibraryContent = ({
         analysisHistory={analysisHistory}
         tasteAnalysisRemaining={tasteAnalysisRemaining}
       />
+
+      {/* 비로그인 방문자에게만 — 로그인한 다른 사용자는 이미 자기 책장이 있다 */}
+      {isVisitor && <VisitorChemiCard name={ownerName} />}
 
       <LibraryView
         overallStats={overallStats}
@@ -216,6 +224,8 @@ export const PublicLibraryContent = ({
           )}
         </div>
       )}
+
+      {isVisitor && <VisitorSignupBanner name={ownerName} />}
 
       {isOwnProfile && (
         <ReadingGoalDialog

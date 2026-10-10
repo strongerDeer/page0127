@@ -52,11 +52,11 @@ export const heroSlidesFor = (now: Date): HeroSlide[] => [
   },
   {
     id: 'compatibility',
-    eyebrow: '독서 궁합',
+    eyebrow: '독서 케미',
     lines: ['두 사람의 책장을', '나란히 놓아볼까요'],
     sub: '겹치는 관심사와 서로 다른 결을 찾아, 건네줄 책까지 고릅니다.',
     href: '/login',
-    cta: '궁합 분석하기',
+    cta: '케미 분석하기',
     // 코랄(포인트 컬러)의 딥 톤 — 블루 일색 배너 사이의 리듬
     bg: '#a63d10',
     fg: '#f4f8fd',
