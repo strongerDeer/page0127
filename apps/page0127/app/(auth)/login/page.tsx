@@ -1,8 +1,15 @@
 import Link from 'next/link';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/ui';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@repo/ui';
 
 import { OAuthLoginButtons } from '@/features/auth/ui/OAuthLoginButtons';
+import { PendingShelfNotice } from '@/features/shelf-preview/ui/PendingShelfNotice';
 
 import type { Metadata } from 'next';
 
@@ -45,9 +52,13 @@ const LoginPage = async ({ searchParams }: LoginPageProps) => {
           */}
           <h1 className='sr-only'>로그인</h1>
           <CardTitle className='heading-1'>page0127.</CardTitle>
-          <CardDescription>어서 오세요. 책장이 기다리고 있어요.</CardDescription>
+          <CardDescription>
+            어서 오세요. 책장이 기다리고 있어요.
+          </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* 홈 맛보기에서 "저장하기"를 누르고 왔다면 그 맥락을 잇는다 (없으면 안 보인다) */}
+          <PendingShelfNotice />
           <OAuthLoginButtons next={redirect} />
           {/* 약관 링크는 실제 페이지로 연결한다 (기존 href='#' 죽은 링크) */}
           <p className='mt-4 text-center text-sm text-text-subtle'>
