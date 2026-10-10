@@ -3,6 +3,7 @@ import { unstable_cache } from 'next/cache';
 import { createAnonClient } from '@/shared/config/supabase/anon';
 
 import { HOME_SHELF_PICK_ISBNS } from '../config/picks';
+import { toPicksCacheKey } from '../model/picksCacheKey';
 import { fromGlobalBookRow, orderByIsbnList } from '../model/toShelfPick';
 
 import type { PickRow } from '../model/toShelfPick';
@@ -32,9 +33,12 @@ const loadPicks = async (): Promise<ShelfPick[]> => {
   ).map((row) => fromGlobalBookRow(row, storage));
 };
 
-const cachedPicks = unstable_cache(loadPicks, ['shelf-preview', 'picks'], {
-  revalidate: 3600,
-});
+// 키에 목록을 넣는다 — 목록을 고쳐 배포하면 그 즉시 새 캐시를 쓴다(picksCacheKey.ts)
+const cachedPicks = unstable_cache(
+  loadPicks,
+  toPicksCacheKey(HOME_SHELF_PICK_ISBNS),
+  { revalidate: 3600 }
+);
 
 /** 그리드가 비어도 검색·목표로 이어지므로 실패는 빈 목록으로 삼킨다 */
 export const getShelfPicks = async (): Promise<ShelfPick[]> => {
