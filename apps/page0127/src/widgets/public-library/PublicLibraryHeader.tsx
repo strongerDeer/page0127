@@ -194,7 +194,7 @@ export const PublicLibraryHeader = ({
             <Button asChild variant='outline' className='shadow-none'>
               <Link href={`/${username}/compatibility`}>
                 <Sparkles className='h-4 w-4' />
-                독서 궁합
+                독서 케미
               </Link>
             </Button>
           ) : (

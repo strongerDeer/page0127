@@ -47,7 +47,7 @@ export function createCompatibilityPrompt({
       )
       .join('\n');
 
-  return `당신은 두 사람의 독서 취향을 비교 분석하는 전문가입니다. 두 사람의 완독 목록을 바탕으로 독서 궁합을 분석해주세요.
+  return `당신은 두 사람의 독서 취향을 비교 분석하는 전문가입니다. 두 사람의 완독 목록을 바탕으로 독서 케미(취향이 얼마나 잘 맞는지)를 분석해주세요. 결과 문장에서는 "궁합" 대신 "케미"라고 쓰세요.
 
 ## 분석 데이터
 
@@ -63,7 +63,7 @@ ${formatBooks(user2Books)}
 
 {
   "compatibility_score": 0-100 사이 정수,
-  "compatibility_description": "궁합에 대한 설명 (300-500자)",
+  "compatibility_description": "케미에 대한 설명 (300-500자)",
   "similarity_analysis": {
     "common_interests": ["공통 관심 주제 (최대 5개)"],
     "reading_patterns": {

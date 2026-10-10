@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     }
     if (targetUserId === user.id) {
       return NextResponse.json(
-        { error: '자기 자신과는 궁합을 볼 수 없습니다.' },
+        { error: '자기 자신과는 케미를 볼 수 없습니다.' },
         { status: 400 }
       );
     }
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
     if (!myBooks || myBooks.length < MIN_BOOKS) {
       return NextResponse.json(
         {
-          error: `궁합 분석을 위해 내 완독 책(별점 포함)이 ${MIN_BOOKS}권 이상 필요합니다.`,
+          error: `케미 분석을 위해 내 완독 책(별점 포함)이 ${MIN_BOOKS}권 이상 필요합니다.`,
         },
         { status: 400 }
       );
@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
         {
           role: 'system',
           content:
-            '당신은 독서 궁합 분석 전문가입니다. JSON 형식으로 응답하세요.',
+            '당신은 독서 케미(두 사람의 독서 취향이 얼마나 잘 맞는지) 분석 전문가입니다. JSON 형식으로 응답하세요.',
         },
         { role: 'user', content: prompt },
       ],
@@ -282,7 +282,7 @@ export async function POST(request: NextRequest) {
     console.error('궁합 분석 실패:', error);
     refundableRejection = isUnbilledOpenAiFailure(error);
     return NextResponse.json(
-      { error: '궁합 분석 중 오류가 발생했습니다.' },
+      { error: '케미 분석 중 오류가 발생했습니다.' },
       { status: 500 }
     );
   } finally {
