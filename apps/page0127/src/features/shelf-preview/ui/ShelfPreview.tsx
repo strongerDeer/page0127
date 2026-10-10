@@ -5,11 +5,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Button, CoverImage } from '@repo/ui';
-import { ArrowRight, Check, RotateCw } from 'lucide-react';
+import { ArrowRight, Check, RotateCcw, RotateCw } from 'lucide-react';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import {
+  clearPendingShelf,
   MAX_PENDING_BOOKS,
   readPendingShelf,
   writePendingShelf,
@@ -65,7 +66,16 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
     );
   }, [picks]);
 
-  const handleToggle = (pick: ShelfPick, source: 'picks' | 'search') => {
+  // 비울 땐 보관분도 지운다 — 남겨 두면 다시 왔을 때 비웠던 책장이 되살아난다
+  const handleReset = () => {
+    setSelected([]);
+    clearPendingShelf();
+  };
+
+  const handleToggle = (
+    pick: ShelfPick,
+    source: 'picks' | 'search' | 'shelf'
+  ) => {
     const next = toggleSelection(selected, pick, MAX_PENDING_BOOKS);
     // 해제는 세지 않는다 — "고르는 행동"이 일어났는지만 본다
     if (next.length > selected.length) {
@@ -173,12 +183,32 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
       </div>
 
       <div className='flex flex-col [grid-area:shelf]'>
-        <p className='text-xs font-bold text-text-subtle md:text-sm'>
-          내 책장 · {selected.length}권
-        </p>
-        <div className='mt-2'>
-          <PreviewShelf picks={selected} />
+        <div className='flex min-h-8 items-center justify-between gap-3'>
+          <p className='text-xs font-bold text-text-subtle md:text-sm'>
+            내 책장 · {selected.length}권
+          </p>
+          {selected.length > 0 && (
+            <button
+              type='button'
+              onClick={handleReset}
+              className='flex items-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium text-text-subtle hover:bg-primary/10 hover:text-text-strong md:text-sm'
+            >
+              <RotateCcw aria-hidden='true' className='size-3.5' />
+              모두 비우기
+            </button>
+          )}
         </div>
+        <div className='mt-2'>
+          <PreviewShelf
+            picks={selected}
+            onRemove={(pick) => handleToggle(pick, 'shelf')}
+          />
+        </div>
+        {selected.length > 0 && (
+          <p className='mt-2 text-xs text-text-subtle'>
+            꽂힌 책을 누르면 뺄 수 있어요.
+          </p>
+        )}
 
         {/* 데스크톱에선 버튼이 나타날 자리를 미리 비워 둔다 — 고르는 순간 왼쪽 열이 늘면
             가운데 정렬된 오른쪽 그리드까지 흔들린다. 모바일은 그리드가 위에 있어 밀릴 것이 없다 */}

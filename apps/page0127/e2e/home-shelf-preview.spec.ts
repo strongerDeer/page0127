@@ -98,6 +98,50 @@ test('다른 책 보기로 묶음을 넘겨도 고른 책은 책장에 남는다
   await expect(s.getByText('내 책장 · 1권')).toBeVisible();
 });
 
+test('책장에 꽂힌 책을 누르면 빠진다', async ({ page }) => {
+  await page.goto('/');
+  const s = section(page);
+  const picks = pickButtons(page);
+  test.skip(
+    (await picks.count()) < 2,
+    '이 DB 에는 맛보기 책이 없다(운영 데이터)'
+  );
+
+  await picks.nth(0).click();
+  await picks.nth(1).click();
+  await expect(s.getByText('내 책장 · 2권')).toBeVisible();
+
+  const firstTitle = await picks.nth(0).getAttribute('aria-label');
+  await s.getByRole('button', { name: `${firstTitle} 빼기` }).click();
+  await expect(s.getByText('내 책장 · 1권')).toBeVisible();
+  await expect(picks.nth(0)).toHaveAttribute('aria-pressed', 'false');
+});
+
+test('모두 비우기를 누르면 책장과 보관분이 비고 저장 버튼이 사라진다', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const s = section(page);
+  const picks = pickButtons(page);
+  test.skip(
+    (await picks.count()) < 2,
+    '이 DB 에는 맛보기 책이 없다(운영 데이터)'
+  );
+
+  const reset = s.getByRole('button', { name: '모두 비우기' });
+  await expect(reset).toHaveCount(0);
+
+  await picks.nth(0).click();
+  await picks.nth(1).click();
+  await reset.click();
+
+  await expect(s.getByText('내 책장 · 0권')).toBeVisible();
+  await expect(s.getByRole('button', { name: '지금 책 저장하기' })).toHaveCount(
+    0
+  );
+  expect(await readPending(page)).toBeNull();
+});
+
 test('고르고 떠났다가 다시 오면 책장이 되살아난다', async ({ page }) => {
   await page.goto('/');
   await page.evaluate((key) => {
