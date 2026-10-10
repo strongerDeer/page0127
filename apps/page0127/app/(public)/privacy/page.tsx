@@ -84,7 +84,7 @@ const PrivacyPage = () => {
           items={[
             '로그인과 본인 확인',
             '독서 기록을 저장하고 책장·통계로 보여 주기',
-            'AI 독서 취향 분석과 독서 궁합 분석',
+            'AI 독서 취향 분석과 독서 케미 분석',
             '팔로우한 사람의 활동 알림',
             '공개로 설정한 책장을 다른 사람에게 보여 주기',
             '신고된 댓글을 확인하고 조치하기',
@@ -123,7 +123,7 @@ const PrivacyPage = () => {
               </tr>
               <tr className='border-b border-line-soft'>
                 <td className='py-2.5 pr-4'>OpenAI</td>
-                <td className='py-2.5 pr-4'>독서 취향·궁합 분석</td>
+                <td className='py-2.5 pr-4'>독서 취향·케미 분석</td>
                 <td className='py-2.5'>
                   완독한 책의 제목·저자·분류·책 소개·목차와 별점
                   (이름·닉네임·이메일·메모는 보내지 않습니다)
@@ -184,7 +184,7 @@ const PrivacyPage = () => {
               <tr className='border-b border-line-soft'>
                 <td className='py-2.5 pr-4'>OpenAI (미국)</td>
                 <td className='py-2.5 pr-4'>완독한 책의 정보와 별점</td>
-                <td className='py-2.5'>독서 취향·궁합 분석</td>
+                <td className='py-2.5'>독서 취향·케미 분석</td>
               </tr>
               <tr className='border-b border-line-soft'>
                 <td className='py-2.5 pr-4'>Vercel (미국)</td>
