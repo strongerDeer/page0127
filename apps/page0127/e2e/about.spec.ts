@@ -95,3 +95,31 @@ test('랜딩 하단에서 소개 페이지의 이용 방법으로 갈 수 있다
   const link = page.getByRole('link', { name: /어떻게 쓰는지 보기/ });
   await expect(link).toHaveAttribute('href', '/about#steps');
 });
+
+test('상단 메뉴에서 소개로 갈 수 있다(데스크톱)', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/');
+  const nav = page.getByRole('navigation', { name: '주요 메뉴' });
+  await nav.getByRole('link', { name: '소개' }).click();
+  await expect(page).toHaveURL(/\/about$/);
+  await expect(nav.getByRole('link', { name: '소개' })).toHaveAttribute(
+    'aria-current',
+    'page'
+  );
+});
+
+test('소개 히어로는 홈과 다른 문장으로 시작하고, 첫 버튼은 홈의 체험으로 보낸다', async ({
+  page,
+}) => {
+  await page.goto('/about');
+  // 돌아가는 단어(aria-hidden)는 빼고, 스크린리더가 듣는 이름으로 확인한다
+  await expect(
+    page.getByRole('heading', {
+      level: 1,
+      name: /책장이\s*취향을\s*말해 줍니다/,
+    })
+  ).toBeVisible();
+  await expect(
+    page.getByRole('link', { name: '내 책장 만들어 보기' })
+  ).toHaveAttribute('href', '/');
+});

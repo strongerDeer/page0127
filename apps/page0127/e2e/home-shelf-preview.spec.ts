@@ -25,6 +25,19 @@ test('비로그인 홈의 h1 은 맛보기 제목 하나다', async ({ page }) =
   );
 });
 
+test('비로그인 홈은 맛보기 바로 다음에 취향 노트 예시를 보여 준다', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const top = async (name: RegExp) =>
+    (await page.getByRole('heading', { name }).first().boundingBox())?.y ?? 0;
+  const taste = await top(/취향의 문장이 됩니다/);
+  const ranking = await top(/이번 주 많이 읽힌 책/);
+  // 랭킹은 독자가 적은 지금 한 사람의 책장에 가깝다 — 방금 고른 책의 다음 보상을 먼저 보여 준다
+  expect(taste).toBeGreaterThan(0);
+  expect(taste).toBeLessThan(ranking);
+});
+
 test('0권이면 목표 링크를 펼쳐 저장하고, 로그인으로 가며 목표를 보관한다', async ({
   page,
 }) => {
@@ -42,6 +55,8 @@ test('0권이면 목표 링크를 펼쳐 저장하고, 로그인으로 가며 �
   await expect(page).toHaveURL(/\/login/);
   const stored = await readPending(page);
   expect(JSON.parse(stored ?? '{}').goal.target).toBe(13);
+  // 로그인 화면이 무엇을 하러 왔는지 이어서 말한다
+  await expect(page.getByText(/목표 13권이 저장돼요/)).toBeVisible();
 });
 
 test('고르기 전엔 저장 버튼이 없고, 고르면 나타나 남은 권수를 말하며, 저장하면 보관한다', async ({
@@ -76,6 +91,9 @@ test('고르기 전엔 저장 버튼이 없고, 고르면 나타나 남은 권�
   await expect(page).toHaveURL(/\/login/);
   const stored = await readPending(page);
   expect(JSON.parse(stored ?? '{}').books).toHaveLength(1);
+  await expect(
+    page.getByText('로그인하면 고른 1권이 내 서재에 바로 꽂혀요.')
+  ).toBeVisible();
 });
 
 test('다른 책 보기로 묶음을 넘겨도 고른 책은 책장에 남는다', async ({

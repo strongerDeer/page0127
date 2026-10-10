@@ -10,7 +10,9 @@ import styles from './AboutHero.module.css';
 
 type AboutHeroProps = { books: ShelfBook[] };
 
-const ROLLING_WORDS = ['취향이', '계절이', '마음이'] as const;
+// 홈 히어로("책장을 보면, 그 사람이 보인다.")와 겹치지 않게 문장을 바꾸고,
+// 돌아가는 단어 효과만 살렸다. 소개는 "체험"이 아니라 "이해"를 맡는다.
+const ROLLING_WORDS = ['취향을', '계절을', '마음을'] as const;
 
 export const AboutHero = ({ books }: AboutHeroProps) => {
   const rows = splitCoverRows(books);
@@ -22,8 +24,9 @@ export const AboutHero = ({ books }: AboutHeroProps) => {
           독서 기록 서비스, page0127.
         </p>
         <h1 id='about-title' className='display-xl mt-4 text-balance'>
-          책장을 보면
-          <br />그 사람의{' '}
+          읽은 책을 꽂아 두면,
+          <br />
+          책장이{' '}
           {/* 스크린리더·검색엔진은 고정 문장을 읽는다 — 계속 바뀌는 글자를 읽히면 혼란스럽다 */}
           <span className='sr-only'>{ROLLING_WORDS[0]}</span>
           <span aria-hidden='true' className={`${styles.roll} text-primary`}>
@@ -31,14 +34,15 @@ export const AboutHero = ({ books }: AboutHeroProps) => {
               <span key={i}>{w}</span>
             ))}
           </span>{' '}
-          보인다
+          말해 줍니다
         </h1>
         <p className='mx-auto mt-5 max-w-md text-balance text-base text-text-subtle'>
-          읽은 책을 꽂아 두기만 하세요. 쌓인 책장이 당신을 이야기해 줍니다.
+          한 권 꽂는 데 10초, 별점을 남긴 다섯 권이 모이면 취향 노트가 나와요.
         </p>
         <div className='mt-8 flex flex-wrap justify-center gap-2.5'>
+          {/* 로그인으로 바로 보내지 않는다 — 고르고 책장이 서는 체험은 홈에 있다 */}
           <Button asChild size='lg'>
-            <Link href='/login'>10초 만에 시작하기</Link>
+            <Link href='/'>내 책장 만들어 보기</Link>
           </Button>
           <Button asChild size='lg' variant='secondary'>
             <Link href='#steps'>어떻게 쓰나요?</Link>
