@@ -10,7 +10,7 @@ export const StatsRow = ({ stats }: StatsRowProps) => (
     {[
       { value: stats.books, unit: '권', label: '지금까지 기록된 책' },
       { value: stats.readers, unit: '명', label: '함께 읽는 리더' },
-      { value: stats.matches, unit: '번', label: '맞춰 본 독서 궁합' },
+      { value: stats.matches, unit: '번', label: '맞춰 본 독서 케미' },
     ].map((s) => (
       // 화면에는 숫자를 위에 두되, 읽는 순서(dt → dd)는 지킨다
       <div key={s.label} className='flex flex-col-reverse'>

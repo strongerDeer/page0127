@@ -6,7 +6,20 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@repo/ui';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@repo/ui';
 import { BookCover, PageContainer, PageHeader } from '@repo/ui';
 import {
   BookCopy,
@@ -91,11 +104,11 @@ export const CompatibilityView = ({
         targetUserId,
         force,
       });
-      toast.success('궁합 분석이 완료되었습니다!');
+      toast.success('케미 분석이 완료되었습니다!');
       router.refresh();
     } catch (error) {
       toast.error(
-        getApiErrorMessage(error, '궁합 분석 중 오류가 발생했습니다.')
+        getApiErrorMessage(error, '케미 분석 중 오류가 발생했습니다.')
       );
     } finally {
       setIsAnalyzing(false);
@@ -113,7 +126,7 @@ export const CompatibilityView = ({
             </Button>
           </Link>
         }
-        title='독서 궁합'
+        title='독서 케미'
         description={`${targetName} 님과 나, 얼마나 닮은 독서가일까요?`}
       />
 
@@ -145,9 +158,9 @@ export const CompatibilityView = ({
       <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>독서 궁합 분석</AlertDialogTitle>
+            <AlertDialogTitle>독서 케미 분석</AlertDialogTitle>
             <AlertDialogDescription>
-              AI가 두 분의 책장을 나란히 읽고 궁합을 분석해요. 약 30초 정도
+              AI가 두 분의 책장을 나란히 읽고 케미를 분석해요. 약 30초 정도
               걸려요. 시작할까요?
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -189,9 +202,7 @@ const CompatibilityIntro = ({
   <Card>
     <CardContent className='py-12 text-center'>
       <BookCopy className='mx-auto mb-4 h-9 w-9 text-text-subtle' />
-      <h2 className='mb-2 heading-2'>
-        두 사람의 책장을 나란히 놓아볼까요?
-      </h2>
+      <h2 className='mb-2 heading-2'>두 사람의 책장을 나란히 놓아볼까요?</h2>
       <p className='mb-8 text-sm text-text-body'>
         겹치는 관심사와 서로 다른 결을 찾아, 서로의 책장에서 건네줄 책까지 골라
         드려요.
@@ -220,7 +231,7 @@ const CompatibilityIntro = ({
         disabled={!canAnalyze || isAnalyzing}
         onClick={onAnalyze}
       >
-        {isAnalyzing ? '두 분의 책장을 나란히 읽는 중이에요…' : '궁합 분석하기'}
+        {isAnalyzing ? '두 분의 책장을 나란히 읽는 중이에요…' : '케미 분석하기'}
       </Button>
       {!hasEnoughBooks ? (
         <p className='mt-3 text-sm text-text-subtle'>
@@ -471,8 +482,8 @@ const RecommendationList = ({
                   src={rec.cover_image}
                   title={rec.title}
                   decorative
-          size='lg'
-        />
+                  size='lg'
+                />
               )}
               <div className='flex-1'>
                 <h4 className='font-medium text-text-strong'>{rec.title}</h4>

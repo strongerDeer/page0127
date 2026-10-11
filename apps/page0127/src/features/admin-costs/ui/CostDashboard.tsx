@@ -36,7 +36,7 @@ export const CostDashboard = ({ summary }: { summary: CostSummary }) => {
         {(['taste', 'compatibility'] as const).map((f) => (
           <div key={f} className='rounded border border-line p-4'>
             <div className='text-sm font-medium'>
-              {f === 'taste' ? '취향 분석' : '궁합 분석'}
+              {f === 'taste' ? '취향 분석' : '케미 분석'}
             </div>
             <div className='mt-1 text-sm text-text-subtle'>
               {summary.byFeature[f].count}회 ·{' '}

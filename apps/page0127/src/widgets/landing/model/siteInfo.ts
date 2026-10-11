@@ -7,7 +7,7 @@
 export const SITE_INFO = {
   name: 'page0127.',
   since: '2025년 11월',
-  lastUpdated: '2026년 10월 1일',
+  lastUpdated: '2026년 10월 10일',
   contact: {
     // 카카오톡 1:1 오픈채팅 — 방문자가 링크로 들어와 1:1 대화, 운영자는 카카오톡 알림으로 수신
     kakaoOpenChatUrl: 'https://open.kakao.com/o/scK1DkFi',
@@ -52,7 +52,7 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     date: '2026.07.09',
-    title: '독서 궁합이 생겼어요',
+    title: '독서 케미가 생겼어요',
     description:
       '두 사람의 책장을 나란히 놓고, 겹치는 관심사와 서로 다른 결을 찾아 서로에게 건넬 책을 골라 줍니다.',
   },

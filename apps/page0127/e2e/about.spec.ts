@@ -100,6 +100,8 @@ test('상단 메뉴에서 소개로 갈 수 있다(데스크톱)', async ({ page
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/');
   const nav = page.getByRole('navigation', { name: '주요 메뉴' });
+  // 소개는 홈 바로 다음 — 처음 온 사람의 눈이 가장 먼저 닿는 자리
+  await expect(nav.getByRole('link')).toHaveText(['홈', '소개', '전체 도서']);
   await nav.getByRole('link', { name: '소개' }).click();
   await expect(page).toHaveURL(/\/about$/);
   await expect(nav.getByRole('link', { name: '소개' })).toHaveAttribute(
