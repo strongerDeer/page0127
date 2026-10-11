@@ -1,33 +1,13 @@
-import { expect, type Page, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+
+import { findLibraryPath } from './helpers';
 
 /**
  * 공개 서재 — 비로그인 방문자에게 가입 길을 연다.
  * 공유 링크로 들어온 사람이 실제 유입인데, 예전엔 "나도 만들기" 류의 길이 하나도 없었다.
  *
- * 서재 아이디는 DB 마다 달라(로컬·개발·운영) 사이트맵에서 하나를 고른다.
+ * 서재 아이디는 DB 마다 달라(로컬·개발·운영) 사이트맵에서 하나를 고른다(helpers.ts).
  */
-
-/** 사이트맵의 고정 페이지 — 아이디가 아니다 */
-const STATIC_PATHS = new Set([
-  'about',
-  'login',
-  'terms',
-  'privacy',
-  'contact',
-  'books',
-  'search',
-  'feed',
-]);
-
-const findLibraryPath = async (page: Page): Promise<string | null> => {
-  const xml = await (await page.request.get('/sitemap.xml')).text();
-  const paths = [
-    ...xml.matchAll(/<loc>https?:\/\/[^/<]+\/([a-z0-9_]+)<\/loc>/g),
-  ]
-    .map((m) => m[1])
-    .filter((p) => !STATIC_PATHS.has(p));
-  return paths[0] ? `/${paths[0]}` : null;
-};
 
 test('비로그인 방문자에게 프로필 아래 케미 카드와 맨 끝 가입 배너를 보여 준다', async ({
   page,

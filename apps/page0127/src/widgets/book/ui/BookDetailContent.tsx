@@ -29,6 +29,11 @@ type BookDetailContentProps = {
    * (entities/book/model/numberReadings.ts). 없으면 저장값으로 떨어진다.
    */
   readCount?: number;
+  /**
+   * 남의 책을 볼 때 배지 아래에 놓는 행동("나도 읽었어요").
+   * 이 위젯은 표시만 맡고, 무엇을 할지는 페이지가 정해 넘긴다.
+   */
+  visitorAction?: React.ReactNode;
 };
 
 /**
@@ -42,32 +47,34 @@ export const BookDetailContent = ({
   book,
   isOwner = false,
   readCount = book.read_count,
+  visitorAction,
 }: BookDetailContentProps) => {
   return (
     <>
       <Card>
         <CardContent className='p-6'>
-          <div className='flex gap-6'>
+          {/* 모바일은 표지 위·글 아래로 쌓는다. 표지(224px 고정) 옆에 글을 두면
+              390px 화면에서 제목 칸이 70~150px 로 짓눌리고, 배지가 많은 책은
+              문서가 가로로 넘쳤다(2026-10-11 운영 449px). sm(640px)부터 나란히. */}
+          <div className='flex flex-col items-center gap-6 sm:flex-row sm:items-start'>
             {/* 셰이프가 없었다 — BookCover 로 바꾸며 도메인 셰이프를 입혔다.
                 표지를 크게 놓는 자리라 대체 조판의 글자도 키운다 */}
-            <div className='relative h-80 w-56 flex-shrink-0'>
+            <div className='relative h-72 w-48 flex-shrink-0 sm:h-80 sm:w-56'>
               <BookCover
                 {...toCoverSource(book)}
                 title={book.title}
                 author={book.author}
                 size='fill'
-                // 부모 폭(w-56)을 알려 준다. 빼면 100vw 로 계산해 넓은 화면에서
-                // 필요 이상으로 큰 후보를 고른다.
-                sizes='224px'
+                // 부모 폭(모바일 w-48, sm 부터 w-56)을 알려 준다. 빼면 100vw 로
+                // 계산해 넓은 화면에서 필요 이상으로 큰 후보를 고른다.
+                sizes='(min-width: 640px) 224px, 192px'
                 large
               />
             </div>
 
-            <div className='flex-1 space-y-4'>
+            <div className='w-full min-w-0 flex-1 space-y-4'>
               <div>
-                <h1 className='heading-1 mb-1'>
-                  {book.title}
-                </h1>
+                <h1 className='heading-1 mb-1'>{book.title}</h1>
                 {/* 부제는 제목보다 작게 — 제목 덩어리로 묶이되 저자 줄과 경쟁하지 않게 */}
                 {book.sub_title && (
                   <p className='mb-2 text-sm text-muted-foreground'>
@@ -78,9 +85,10 @@ export const BookDetailContent = ({
                 <p className='text-muted-foreground'>{book.publisher}</p>
               </div>
 
-              <div className='flex items-center gap-3'>
+              {/* 좁으면 배지가 찌그러지지 않고 다음 줄로 내려간다 */}
+              <div className='flex flex-wrap items-center gap-3'>
                 <span
-                  className={`inline-block rounded-full px-4 py-2 text-sm font-medium ${
+                  className={`inline-block whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ${
                     book.status === 'completed'
                       ? 'bg-chart-3/15 text-chart-3'
                       : book.status === 'reading'
@@ -117,6 +125,8 @@ export const BookDetailContent = ({
                   </span>
                 )}
               </div>
+
+              {visitorAction}
 
               <div className='space-y-1 text-sm text-muted-foreground'>
                 {book.page_count && <p>쪽수: {book.page_count}쪽</p>}
