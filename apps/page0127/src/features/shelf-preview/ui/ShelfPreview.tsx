@@ -215,17 +215,18 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
         <div className='mt-5 lg:min-h-36'>
           {selected.length > 0 && (
             <>
-              <p
-                aria-live='polite'
-                className='break-keep font-bold text-text-strong md:text-lg'
-              >
-                {message}
-              </p>
-              {isFull && (
-                <p className='mt-1 text-xs text-text-subtle'>
-                  한 번에 {MAX_PENDING_BOOKS}권까지 꽂을 수 있어요.
+              {/* 상한 안내도 같은 알림 영역 안에 둔다 — 버튼이 막힌 이유를
+                  스크린리더 사용자도 들어야 한다 */}
+              <div aria-live='polite'>
+                <p className='break-keep font-bold text-text-strong md:text-lg'>
+                  {message}
                 </p>
-              )}
+                {isFull && (
+                  <p className='mt-1 text-xs text-text-subtle'>
+                    한 번에 {MAX_PENDING_BOOKS}권까지 꽂을 수 있어요.
+                  </p>
+                )}
+              </div>
               <div className='mt-4 flex flex-wrap items-center gap-x-4 gap-y-2'>
                 <Button
                   size='lg'
