@@ -9,7 +9,12 @@ import { toast } from 'sonner';
 import { bookApi } from '@/entities/book';
 
 import { claimReadingGoalAction } from '../api/claimReadingGoalAction';
-import { claimPendingBooks, toBookInput, toClaimToast } from '../model/claim';
+import {
+  claimPendingBooks,
+  toBookInput,
+  toClaimFailureToast,
+  toClaimToast,
+} from '../model/claim';
 import { clearPendingShelf, readPendingShelf } from '../model/pendingShelf';
 
 /**
@@ -30,7 +35,7 @@ export const PendingShelfClaimer = () => {
     clearPendingShelf();
 
     const run = async () => {
-      const { added } = await claimPendingBooks(pending.books, {
+      const { added, failed } = await claimPendingBooks(pending.books, {
         findExisting: async (b) =>
           (await bookApi.getBookByISBN(b.isbn, b.provider_item_id)).length > 0,
         create: async (b) => {
@@ -43,6 +48,8 @@ export const PendingShelfClaimer = () => {
 
       const message = toClaimToast(added, goalSet);
       if (message) toast.success(message);
+      const failure = toClaimFailureToast(failed);
+      if (failure) toast.error(failure);
       if (added > 0 || goalSet) router.refresh();
     };
     void run();

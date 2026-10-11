@@ -76,6 +76,15 @@ export const toKstYear = (now: Date): number =>
 export const isCurrentYearGoal = (goal: PendingGoal, now: Date): boolean =>
   goal.year === toKstYear(now);
 
+/**
+ * 담지 못한 책 알림. 보관분은 담기 전에 지웠으므로(중복 담기 방지) 실패분은
+ * 다시 시도되지 않는다 — 말하지 않으면 사용자는 책이 사라진 줄도 모른다.
+ */
+export const toClaimFailureToast = (failed: number): string | null =>
+  failed > 0
+    ? `${failed}권은 담지 못했어요. 서재에서 직접 추가해 주세요.`
+    : null;
+
 export const toClaimToast = (
   added: number,
   goalSet: boolean

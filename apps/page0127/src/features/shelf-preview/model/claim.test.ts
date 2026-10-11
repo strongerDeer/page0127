@@ -5,6 +5,7 @@ import {
   isCurrentYearGoal,
   shouldClaimGoal,
   toBookInput,
+  toClaimFailureToast,
   toClaimToast,
   toKstYear,
 } from './claim';
@@ -106,6 +107,18 @@ describe('isCurrentYearGoal', () => {
     const now = new Date('2027-01-01T03:00:00Z'); // KST 2027-01-01 12:00
     expect(isCurrentYearGoal({ year: 2026, target: 12 }, now)).toBe(false);
     expect(isCurrentYearGoal({ year: 2027, target: 12 }, now)).toBe(true);
+  });
+});
+
+describe('toClaimFailureToast', () => {
+  it('실패가 없으면 말하지 않는다', () => {
+    expect(toClaimFailureToast(0)).toBeNull();
+  });
+
+  it('담지 못한 책이 있으면 몇 권인지와 다음 행동을 말한다 — 보관분은 이미 지웠다', () => {
+    expect(toClaimFailureToast(2)).toBe(
+      '2권은 담지 못했어요. 서재에서 직접 추가해 주세요.'
+    );
   });
 });
 
