@@ -115,6 +115,10 @@ export const ShelfSearch = ({
                     alt=''
                     width={36}
                     height={54}
+                    // 표지가 없거나 못 불러오면 같은 크기 자리를 남긴다 — 비면 행 정렬이 흔들린다
+                    fallback={
+                      <span className='block h-13.5 w-9 shrink-0 rounded-sm bg-sunken' />
+                    }
                     className='h-13.5 w-9 shrink-0 rounded-sm object-cover'
                   />
                   <span className='min-w-0 flex-1'>
