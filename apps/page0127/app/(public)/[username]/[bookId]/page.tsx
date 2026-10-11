@@ -15,6 +15,7 @@ import { toDisplayName } from '@/entities/profile/model/displayName';
 import { ArchiveToggleButton } from '@/features/book/ui/ArchiveToggleButton';
 import { DeleteBookButton } from '@/features/book/ui/DeleteBookButton';
 import { ShareButton } from '@/features/share';
+import { ReadTooButton } from '@/features/shelf-preview/ui/ReadTooButton';
 
 import { BookDetailContent } from '@/widgets/book/ui/BookDetailContent';
 import { BookReadingList } from '@/widgets/book/ui/BookReadingList';
@@ -173,7 +174,17 @@ const BookDetailPage = async ({ params }: PageProps) => {
         </div>
       </div>
 
-      <BookDetailContent book={book} isOwner={isOwner} readCount={readCount} />
+      <BookDetailContent
+        book={book}
+        isOwner={isOwner}
+        readCount={readCount}
+        visitorAction={
+          // 남의 책일 때만 — 아는 책을 만난 순간을 내 기록(또는 가입)으로 잇는다
+          isOwner ? undefined : (
+            <ReadTooButton book={book} isLoggedIn={!!currentUser} />
+          )
+        }
+      />
 
       <div className='mt-6'>
         <BookReadingList
