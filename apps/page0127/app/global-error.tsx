@@ -24,6 +24,15 @@ type GlobalErrorProps = {
  * 위치: app/global-error.tsx
  * 범위: Root Layout 포함 전체 (error.tsx 범위의 상위)
  */
+/**
+ * '홈으로'는 일부러 새로고침 이동이다 — 여기는 루트 레이아웃이 무너진 자리라
+ * 클라이언트 라우터를 믿을 수 없다. 페이지를 처음부터 다시 받아야 한다.
+ */
+const goHomeWithReload = () => {
+  // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- 위 사유
+  window.location.href = '/';
+};
+
 const GlobalError = ({ error, reset }: GlobalErrorProps) => {
   useEffect(() => {
     // layout 에러는 가장 치명적이라 반드시 Sentry로 전송 + 콘솔에도 남긴다
@@ -38,7 +47,7 @@ const GlobalError = ({ error, reset }: GlobalErrorProps) => {
           error={error}
           onRetry={() => reset()}
           secondaryLabel='홈으로'
-          onSecondary={() => (window.location.href = '/')}
+          onSecondary={goHomeWithReload}
         />
       </body>
     </html>
