@@ -6,6 +6,7 @@ import {
   toYes24CoverBase,
   yes24CoverLoader,
   yes24LargeCoverLoader,
+  yes24SmallCoverLoader,
 } from '../src/lib/yes24CoverLoader';
 
 /**
@@ -95,6 +96,15 @@ describe('yes24CoverLoader', () => {
     const base = toYes24CoverBase('13137546');
     expect(yes24LargeCoverLoader({ src: base, width: 256 })).toBe(`${base}/L`);
     expect(yes24LargeCoverLoader({ src: base, width: 640 })).toBe(`${base}/XL`);
+  });
+
+  it('작은 표지용 loader 는 어느 단계든 M 에서 멈춘다', () => {
+    // 소개 표지 띠(CSS 84px)는 1.75x 에서 147px 이 필요해 M(151px)이면 충분한데,
+    // srcset 계단이 128 다음 256 이라 기본 loader 는 L 을 준다(2026-10-12 about +313KB).
+    const base = toYes24CoverBase('13137546');
+    expect(yes24SmallCoverLoader({ src: base, width: 128 })).toBe(`${base}/M`);
+    expect(yes24SmallCoverLoader({ src: base, width: 256 })).toBe(`${base}/M`);
+    expect(yes24SmallCoverLoader({ src: base, width: 640 })).toBe(`${base}/M`);
   });
 
   it('loader 결과는 넘긴 src 와 달라야 한다 (next/image 개발 경고 조건)', () => {

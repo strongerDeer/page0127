@@ -95,3 +95,16 @@ export const yes24CoverLoader = (args: LoaderArgs): string =>
 /** next/image 의 `loader` — 상세처럼 표지를 크게 놓는 자리용(XL 허용) */
 export const yes24LargeCoverLoader = (args: LoaderArgs): string =>
   loadYes24Cover(args, true);
+
+/**
+ * next/image 의 `loader` — 작은 장식 표지용(항상 M).
+ *
+ * srcset 계단은 128 다음이 256 이라, CSS 폭이 65~128px 인 표지는 고밀도 화면에서
+ * 256 단계를 골라 L 을 받는다. 실제로 필요한 폭은 M(151px) 언저리인데도 그렇다.
+ * 소개 표지 띠(84px)가 그 경우였다 — L 열여섯 장, about 이미지 +313KB(2026-10-12).
+ * 표지를 크게 놓지 않는 자리에서만 쓴다.
+ */
+export const yes24SmallCoverLoader = ({ src }: LoaderArgs): string => {
+  const itemId = parseYes24CoverItemId(src);
+  return itemId ? `${toYes24CoverBase(itemId)}/M` : src;
+};

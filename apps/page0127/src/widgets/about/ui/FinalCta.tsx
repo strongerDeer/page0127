@@ -59,6 +59,7 @@ export const FinalCta = ({ covers }: FinalCtaProps) => (
                     alt=''
                     width={80}
                     height={120}
+                    small
                     fallback={<BlankCover />}
                     className='aspect-[2/3] w-20 rounded-sm object-cover shadow-xl'
                   />

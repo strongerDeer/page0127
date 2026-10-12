@@ -8,6 +8,8 @@ type SafeCoverProps = {
   width: number;
   height: number;
   className?: string;
+  /** CSS 폭이 128px 이하인 작은 표지 — 고밀도 화면에서도 YES24 M 만 받는다 (CoverImage 참고) */
+  small?: boolean;
   /** 못 불러왔을 때 대신 그릴 것 — 없으면 아무것도 그리지 않는다 */
   fallback?: React.ReactNode;
 };

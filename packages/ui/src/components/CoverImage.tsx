@@ -10,6 +10,7 @@ import {
   toYes24CoverBase,
   yes24CoverLoader,
   yes24LargeCoverLoader,
+  yes24SmallCoverLoader,
 } from '../lib/yes24CoverLoader';
 
 type CoverImageProps = Omit<
@@ -22,6 +23,11 @@ type CoverImageProps = Omit<
   fallbackSrc?: string | null;
   /** 상세처럼 표지 한 장을 크게 놓는 자리. YES24 XL(~250KB)까지 허용한다 */
   large?: boolean;
+  /**
+   * 띠·목록 썸네일처럼 표지를 작게(CSS 128px 이하) 놓는 자리. 고밀도 화면에서도 YES24 M 만 받는다.
+   * large 와 함께 주면 large 가 이긴다.
+   */
+  small?: boolean;
   /** 후보 주소가 모두 실패했을 때 그릴 것. 기본은 아무것도 그리지 않는다 */
   fallback?: ReactNode;
 };
@@ -41,6 +47,7 @@ export const CoverImage = ({
   src: srcProp,
   fallbackSrc,
   large = false,
+  small = false,
   fallback = null,
   alt,
   ...rest
@@ -54,7 +61,7 @@ export const CoverImage = ({
   return (
     <Image
       {...rest}
-      {...toCoverImageProps(src, large)}
+      {...toCoverImageProps(src, large ? 'large' : small ? 'small' : 'default')}
       alt={alt}
       onError={() => setFailedSrcs((prev) => [...prev, src])}
     />
@@ -78,23 +85,29 @@ export const pickCoverSrc = (
       !failed.includes(candidate)
   ) ?? null;
 
+const YES24_LOADERS = {
+  small: yes24SmallCoverLoader,
+  default: yes24CoverLoader,
+  large: yes24LargeCoverLoader,
+} as const;
+
 /**
  * 주소에 맞는 최적화 경로를 고른다.
  *
- * - YES24 앞표지 → 크기별 사본을 고르는 loader(큰 자리만 XL 허용). 크기를 뗀
- *   주소를 넘기는 이유는 `toYes24CoverBase` 주석 참고.
+ * - YES24 앞표지 → 크기별 사본을 고르는 loader(큰 자리만 XL, 작은 자리는 M 고정).
+ *   크기를 뗀 주소를 넘기는 이유는 `toYes24CoverBase` 주석 참고.
  * - 이미 완성된 원격 이미지(Storage 사본 등) → Vercel 변환을 태우지 않는다(unoptimized).
  * - 그 밖(로컬 정적 이미지) → 기본 최적화.
  */
 const toCoverImageProps = (
   src: string,
-  large: boolean
+  size: 'small' | 'default' | 'large'
 ): Pick<ImageProps, 'src' | 'loader' | 'unoptimized'> => {
   const yes24ItemId = parseYes24CoverItemId(src);
   if (yes24ItemId) {
     return {
       src: toYes24CoverBase(yes24ItemId),
-      loader: large ? yes24LargeCoverLoader : yes24CoverLoader,
+      loader: YES24_LOADERS[size],
     };
   }
   return { src, unoptimized: isPreOptimizedImageSrc(src) };
