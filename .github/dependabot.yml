@@ -39,14 +39,11 @@ updates:
       - dependency-name: "@vitest/*"
         update-types:
           - version-update:semver-major
+    # production/development 를 그룹 두 개로 나누면 매주 PR 이 2개 열리고, 둘 다
+    # package-lock.json 을 통째로 다시 써서 하나를 머지하면 나머지가 반드시 충돌했다
+    # (PR #184 머지 → #185 충돌). lockfile 이 하나인 이상 그룹도 하나로 둔다.
     groups:
-      production-minor-patch:
-        dependency-type: production
-        update-types:
-          - minor
-          - patch
-      development-minor-patch:
-        dependency-type: development
+      minor-patch:
         update-types:
           - minor
           - patch
