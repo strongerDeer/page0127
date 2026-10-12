@@ -19,6 +19,7 @@ const Row = ({ books, reverse }: RowProps) => (
           alt={i < books.length ? book.title : ''}
           width={116}
           height={174}
+          small
           className='aspect-[2/3] w-[84px] rounded-sm object-cover shadow-lg md:w-[116px]'
         />
       </li>

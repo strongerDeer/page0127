@@ -12,10 +12,12 @@ type CoverProps = {
   /** src 를 못 불러왔을 때 쓸 Storage 사본 */
   fallbackSrc?: string | null;
   className: string;
+  /** CSS 폭이 128px 이하인 자리 — YES24 M 만 받는다 */
+  small?: boolean;
 };
 
 /** 표지 한 장 — 없거나 못 불러오면 같은 크기의 빈 판형을 둔다(카드 구도가 무너지지 않게) */
-const Cover = ({ src, fallbackSrc, className }: CoverProps) => {
+const Cover = ({ src, fallbackSrc, className, small }: CoverProps) => {
   const blank = (
     <span className={`block aspect-[2/3] rounded-sm bg-line ${className}`} />
   );
@@ -23,6 +25,7 @@ const Cover = ({ src, fallbackSrc, className }: CoverProps) => {
     <SafeCover
       src={src}
       fallbackSrc={fallbackSrc}
+      small={small}
       alt=''
       width={120}
       height={180}
@@ -105,7 +108,7 @@ export const Highlights = ({ books, top }: HighlightsProps) => {
               <p className='text-6xl font-bold'>78%</p>
               <div className='mt-5 flex justify-center gap-2'>
                 {[0, 1, 2, 3].map((i) => (
-                  <Cover key={i} src={pick(i + 3)} className='w-12' />
+                  <Cover key={i} src={pick(i + 3)} className='w-12' small />
                 ))}
               </div>
               <p className='mt-3 text-xs text-white/75'>
@@ -148,7 +151,12 @@ export const Highlights = ({ books, top }: HighlightsProps) => {
             <div className='w-full overflow-hidden rounded-2xl bg-card shadow-lg'>
               <div className='stage-blue flex h-36 items-end gap-1.5 px-4'>
                 {[0, 1, 2, 3, 4].map((i) => (
-                  <Cover key={i} src={pick(i + 10)} className='-mb-1.5 w-11' />
+                  <Cover
+                    key={i}
+                    src={pick(i + 10)}
+                    className='-mb-1.5 w-11'
+                    small
+                  />
                 ))}
               </div>
               <div className='p-4'>
@@ -180,6 +188,7 @@ export const Highlights = ({ books, top }: HighlightsProps) => {
                       src={b.cover}
                       fallbackSrc={b.coverFallback}
                       className='w-10 shadow-none'
+                      small
                     />
                     <span className='line-clamp-1 flex-1 text-sm font-bold text-text-strong'>
                       {b.title}
@@ -213,7 +222,7 @@ export const Highlights = ({ books, top }: HighlightsProps) => {
                       {f.when}
                     </span>
                   </span>
-                  <Cover src={pick(i + 15)} className='w-7 shadow-none' />
+                  <Cover src={pick(i + 15)} className='w-7 shadow-none' small />
                 </li>
               ))}
             </ul>
