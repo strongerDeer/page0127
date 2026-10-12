@@ -20,6 +20,10 @@ import './globals.css';
 const PRETENDARD_CSS =
   'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css';
 
+// 스크립트로 넣은 스타일시트는 렌더링을 막지 않는다(파서가 기다리지 않는다).
+// CSP script-src 에 'unsafe-inline' 이 이미 있어 인라인 스크립트가 허용된다.
+const loadPretendardScript = `(function(){var l=document.createElement('link');l.rel='stylesheet';l.href=${JSON.stringify(PRETENDARD_CSS)};document.head.appendChild(l);})();`;
+
 // 사이트 절대 URL — sitemap/robots/OG 이미지가 절대 경로를 만들 때 공통으로 참조
 // (환경변수 미설정 시 로컬 기본값으로 폴백)
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
@@ -118,7 +122,14 @@ const RootLayout = ({
           href='https://cdn.jsdelivr.net'
           crossOrigin='anonymous'
         />
-        <link rel='stylesheet' href={PRETENDARD_CSS} />
+        {/* 폰트 CSS 는 화면 그리기를 막지 않게 스크립트로 붙인다.
+            <link rel='stylesheet'> 로 두면 이 CSS 를 다 받을 때까지 첫 글자가
+            안 뜬다(모바일 실측 0.8~0.9초). 어차피 font-display: swap 이라 폰트가
+            오기 전엔 시스템 글꼴로 보이므로, CSS 만 기다리게 할 이유가 없다. */}
+        <script dangerouslySetInnerHTML={{ __html: loadPretendardScript }} />
+        <noscript>
+          <link rel='stylesheet' href={PRETENDARD_CSS} />
+        </noscript>
       </head>
       <body className='antialiased'>
         {/* antialiased: 폰트 렌더링 최적화 */}
