@@ -58,3 +58,12 @@ export {
   RATING_MAX,
   summarizeRatings,
 } from './model/rating';
+
+// 목표 대비 속도 · 분야 균형 (서재 연도 뷰)
+export type { BalanceCategory, ReadingBalance } from './model/readingBalance';
+export {
+  BALANCE_CATEGORIES,
+  calculateReadingBalance,
+} from './model/readingBalance';
+export type { ReadingPace, ReadingPaceState } from './model/readingPace';
+export { getReadingPace } from './model/readingPace';
