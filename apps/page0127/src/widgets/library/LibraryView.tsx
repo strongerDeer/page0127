@@ -6,10 +6,13 @@ import dynamic from 'next/dynamic';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 
+import { calculateReadingBalance } from '@/entities/book';
+
 import { useLibraryFilters } from '@/features/stats/model/useLibraryFilters';
 import { CategoryRadarChart } from '@/features/stats/ui/CategoryRadarChart';
 import { DashboardBookList } from '@/features/stats/ui/DashboardBookList';
 import { OverallDistribution } from '@/features/stats/ui/OverallDistribution';
+import { ReadingBalanceCard } from '@/features/stats/ui/ReadingBalanceCard';
 import { YearlyTrendChart } from '@/features/stats/ui/YearlyTrendChart';
 import { YearSummary } from '@/features/stats/ui/YearSummary';
 
@@ -108,6 +111,9 @@ type LibraryViewProps = {
 
   /** 주인에게만 보이는 비공개 책 — 책장 맨 아래 펼치기로 노출 (방문자는 빈 배열) */
   privateBooks?: Book[];
+
+  /** 균형 계산용 — 선택 연도와 그 전 해의 공개 완독 책 */
+  balanceBooks?: { current: Book[]; previous: Book[] };
 };
 
 /**
@@ -143,6 +149,7 @@ export const LibraryView = ({
   isWishlistView = false,
   wishlistBooks = [],
   privateBooks = [],
+  balanceBooks = { current: [], previous: [] },
 }: LibraryViewProps) => {
   const filters = useLibraryFilters();
   const { selectedMonth, selectedCategories, selectedRating, searchQuery } =
@@ -344,6 +351,14 @@ export const LibraryView = ({
             />
 
             {bookShelf}
+
+            <ReadingBalanceCard
+              year={selectedYear}
+              balance={calculateReadingBalance(
+                balanceBooks.current,
+                balanceBooks.previous
+              )}
+            />
 
             <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
               <div className='space-y-6 lg:col-span-2'>

@@ -27,6 +27,8 @@ export type ReadingBalance = {
   ranked: { category: BalanceCategory; count: number; share: number }[];
   /** 기타 제외 완독 권수 */
   total: number;
+  /** 분류 불명(기타) 완독 권수 — 균형 계산에서 빠진 책 */
+  unclassified: number;
   /** 1권 이상 분야 수 */
   readCount: number;
   /** 상위 2개 분야 비율 0~100 정수 */
@@ -45,21 +47,25 @@ const countByCategory = (books: Book[]) => {
   const counts = new Map<BalanceCategory, number>(
     BALANCE_CATEGORIES.map((category) => [category, 0])
   );
+  let unclassified = 0;
   books
     .filter((book) => book.status === 'completed')
     .forEach((book) => {
       const category = mapToMainCategory(book.category);
-      if (category === '기타') return;
+      if (category === '기타') {
+        unclassified += 1;
+        return;
+      }
       counts.set(category, (counts.get(category) ?? 0) + 1);
     });
-  return counts;
+  return { counts, unclassified };
 };
 
 export const calculateReadingBalance = (
   books: Book[],
   prevYearBooks: Book[] = []
 ): ReadingBalance => {
-  const counts = countByCategory(books);
+  const { counts, unclassified } = countByCategory(books);
   const categories = BALANCE_CATEGORIES.map((category) => ({
     category,
     count: counts.get(category) ?? 0,
@@ -89,7 +95,7 @@ export const calculateReadingBalance = (
       ? null
       : Math.round((entropy / Math.log(BALANCE_CATEGORIES.length)) * 100);
 
-  const prevCounts = countByCategory(prevYearBooks);
+  const { counts: prevCounts } = countByCategory(prevYearBooks);
   const prevRead = BALANCE_CATEGORIES.filter(
     (category) => (prevCounts.get(category) ?? 0) > 0
   );
@@ -107,6 +113,7 @@ export const calculateReadingBalance = (
     categories,
     ranked,
     total,
+    unclassified,
     readCount,
     topShare,
     score,

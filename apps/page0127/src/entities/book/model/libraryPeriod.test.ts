@@ -264,3 +264,22 @@ describe('libraryPeriod', () => {
     expect(lifeBook?.count).toBe(1);
   });
 });
+
+describe('calculateBookStats 분야 채우기', () => {
+  it('빈 분야를 채울 때 실제 분류 이름(경제/경영)을 쓴다 — 경제경영·경제/경영이 따로 뜨지 않게', () => {
+    const stats = calculateBookStats(
+      [
+        createBook({
+          status: 'completed',
+          completed_date: '2026-03-01',
+          category: '국내도서>경제경영>마케팅',
+        }),
+      ],
+      2026,
+      2026
+    );
+    const names = stats.categoryReading.map(({ category }) => category);
+    expect(names).not.toContain('경제경영');
+    expect(names.filter((name) => name === '경제/경영')).toHaveLength(1);
+  });
+});

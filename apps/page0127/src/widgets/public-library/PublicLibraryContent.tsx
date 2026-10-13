@@ -131,6 +131,19 @@ export const PublicLibraryContent = ({
     [currentYear, publicBooks, selectedPeriod]
   );
 
+  // 균형 카드: 통계와 같은 집합(공개 책, 재독 합침)으로 올해와 작년을 센다
+  const balanceBooks = useMemo(
+    () => ({
+      current: dedupeReadings(
+        filterBooksByLibraryYear(publicBooks, selectedYear, currentYear)
+      ),
+      previous: dedupeReadings(
+        filterBooksByLibraryYear(publicBooks, selectedYear - 1, currentYear)
+      ),
+    }),
+    [publicBooks, selectedYear, currentYear]
+  );
+
   // 로그인하지 않은 방문자 — 가입 길(VisitorCta)을 보여 줄 대상
   const isVisitor = !currentUserId;
   const ownerName = profile.nickname || username;
@@ -198,6 +211,7 @@ export const PublicLibraryContent = ({
         isWishlistView={isWishlistView}
         wishlistBooks={wishlistBooks}
         privateBooks={isOwnProfile ? archivedBooks : []}
+        balanceBooks={balanceBooks}
       />
 
       {isVisitor && <VisitorSignupBanner name={ownerName} />}

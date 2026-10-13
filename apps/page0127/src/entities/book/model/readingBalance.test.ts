@@ -76,6 +76,8 @@ describe('calculateReadingBalance', () => {
       ...books('소설', 3),
     ]);
     expect(balance.total).toBe(3);
+    // 분류 불명 완독은 따로 센다 — "0권"과 "분야를 모르는 책"은 다른 말이다
+    expect(balance.unclassified).toBe(2);
   });
 
   it('작년 대비 — 분야 수 증감과 새로 읽은 분야', () => {

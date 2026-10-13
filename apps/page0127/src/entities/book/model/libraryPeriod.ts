@@ -113,7 +113,7 @@ const calculateCategoryReading = (books: Book[]): CategoryReadingData[] => {
     const result = [...nonEtcCategories];
     const dummyCategories = [
       '소설/시/희곡',
-      '경제경영',
+      '경제/경영',
       '자기계발',
       '인문학',
       '사회과학',
