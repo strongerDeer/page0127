@@ -42,8 +42,6 @@ type PublicLibraryContentProps = {
   newBooksSinceLastAnalysis: number | null;
   analysisHistory: TasteAnalysisSummary[];
   tasteAnalysisRemaining: number;
-  /** 소유자 모드에서만 주입되는 캘린더 슬롯 (방문자는 undefined) */
-  calendarSlot?: React.ReactNode;
 };
 
 /**
@@ -68,7 +66,6 @@ export const PublicLibraryContent = ({
   newBooksSinceLastAnalysis,
   analysisHistory,
   tasteAnalysisRemaining,
-  calendarSlot,
 }: PublicLibraryContentProps) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -130,6 +127,9 @@ export const PublicLibraryContent = ({
     () => calculateBookStats(publicBooks, selectedPeriod, currentYear),
     [currentYear, publicBooks, selectedPeriod]
   );
+
+  // 달력: 방문자는 공개만(books 가 이미 공개만 온다), 주인은 비공개까지 — 반투명으로 그린다
+  const calendarBooks = isOwnProfile ? books : publicBooks;
 
   // 균형 카드: 통계와 같은 집합(공개 책, 재독 합침)으로 올해와 작년을 센다
   const balanceBooks = useMemo(
@@ -205,7 +205,7 @@ export const PublicLibraryContent = ({
         }
         username={username}
         onSetGoal={isOwnProfile ? () => setIsGoalDialogOpen(true) : undefined}
-        calendarSlot={isOwnProfile ? calendarSlot : undefined}
+        calendarBooks={calendarBooks}
         showWishlist={isOwnProfile}
         isOwner={isOwnProfile}
         isWishlistView={isWishlistView}

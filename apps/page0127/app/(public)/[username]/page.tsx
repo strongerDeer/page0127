@@ -2,8 +2,6 @@ import { Suspense } from 'react';
 
 import { notFound } from 'next/navigation';
 
-import { ErrorBoundary } from '@repo/ui';
-
 import { createClient } from '@/shared/config/supabase/server';
 import { checkUsageLimit } from '@/shared/lib/aiUsage';
 
@@ -14,9 +12,6 @@ import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsernam
 import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProfileByUsername';
 import { toDisplayName } from '@/entities/profile/model/displayName';
 
-import { CalendarBlockError } from '@/widgets/dashboard/CalendarBlockError';
-import { CalendarBlockSkeleton } from '@/widgets/dashboard/CalendarBlockSkeleton';
-import { CalendarSection } from '@/widgets/dashboard/CalendarSection';
 import { PublicLibraryContent } from '@/widgets/public-library/PublicLibraryContent';
 import { PublicLibrarySkeleton } from '@/widgets/public-library/PublicLibrarySkeleton';
 
@@ -257,15 +252,6 @@ const LibraryContent = async ({
       newBooksSinceLastAnalysis={newBooksSinceLastAnalysis}
       analysisHistory={analysisHistory}
       tasteAnalysisRemaining={tasteAnalysisRemaining}
-      calendarSlot={
-        isOwnProfile ? (
-          <ErrorBoundary fallback={<CalendarBlockError />}>
-            <Suspense fallback={<CalendarBlockSkeleton />}>
-              <CalendarSection userId={profile.id} />
-            </Suspense>
-          </ErrorBoundary>
-        ) : undefined
-      }
     />
   );
 };

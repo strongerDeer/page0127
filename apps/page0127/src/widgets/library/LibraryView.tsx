@@ -2,8 +2,6 @@
 
 import { useTransition } from 'react';
 
-import dynamic from 'next/dynamic';
-
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 
 import { calculateReadingBalance } from '@/entities/book';
@@ -12,6 +10,7 @@ import { useLibraryFilters } from '@/features/stats/model/useLibraryFilters';
 import { CategoryRadarChart } from '@/features/stats/ui/CategoryRadarChart';
 import { DashboardBookList } from '@/features/stats/ui/DashboardBookList';
 import { OverallDistribution } from '@/features/stats/ui/OverallDistribution';
+import { RatingSummaryCard } from '@/features/stats/ui/RatingSummaryCard';
 import { ReadingBalanceCard } from '@/features/stats/ui/ReadingBalanceCard';
 import { YearlyTrendChart } from '@/features/stats/ui/YearlyTrendChart';
 import { YearSummary } from '@/features/stats/ui/YearSummary';
@@ -23,23 +22,9 @@ import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
 import { ViewTabs } from '@/widgets/dashboard/ViewTabs';
 
 import { PrivateBooksDisclosure } from './PrivateBooksDisclosure';
+import { ReadingCalendar } from './ReadingCalendar';
 import { ReadingNowStrip } from './ReadingNowStrip';
 import { WishlistShelf } from './WishlistShelf';
-
-// Recharts는 브라우저 measure가 필요한 클라이언트 전용 라이브러리
-// → next/dynamic + ssr:false 로 분리해서 초기 번들에서 제외
-const DashboardCharts = dynamic(
-  () =>
-    import('@/features/stats/ui/DashboardCharts').then(
-      (m) => m.DashboardCharts
-    ),
-  {
-    ssr: false,
-    loading: () => (
-      <div className='h-[700px] animate-pulse rounded-lg bg-muted' />
-    ),
-  }
-);
 
 import type { Book } from '@/entities/book';
 import type { BookStats, OverallStats } from '@/entities/book';
@@ -97,8 +82,8 @@ type LibraryViewProps = {
   /** 목표 설정 — 소유자에게만 전달 (없으면 버튼 자체가 안 보인다) */
   onSetGoal?: () => void;
 
-  /** 캘린더 슬롯 — 내 서재에서만 주입 */
-  calendarSlot?: React.ReactNode;
+  /** 달력에 그릴 책 — 방문자는 공개만, 주인은 비공개 포함(반투명) */
+  calendarBooks?: Book[];
 
   /** '읽고 싶어요' 탭 노출 여부 (내 서재에서만 true) */
   showWishlist?: boolean;
@@ -144,7 +129,7 @@ export const LibraryView = ({
   username,
   isOwner = false,
   onSetGoal,
-  calendarSlot,
+  calendarBooks = [],
   showWishlist = false,
   isWishlistView = false,
   wishlistBooks = [],
@@ -165,9 +150,6 @@ export const LibraryView = ({
 
   // 차트 클릭 → 목록 필터링은 급하지 않음 → 우선순위를 낮춰 입력 응답성을 지킨다
   const [isFilterPending, startFilterTransition] = useTransition();
-
-  const handleMonthClick = (month: number) =>
-    startFilterTransition(() => filters.toggleMonth(month));
 
   const handleRatingClick = (rating: RatingFilter) =>
     startFilterTransition(() => filters.toggleRating(rating));
@@ -360,18 +342,24 @@ export const LibraryView = ({
               )}
             />
 
-            <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
-              <div className='space-y-6 lg:col-span-2'>
-                <DashboardCharts
-                  monthlyReading={stats.monthlyReading}
-                  categoryReading={stats.categoryReading}
-                  ratingReading={stats.ratingReading}
-                  averageRating={stats.averageRating}
-                  onMonthClick={handleMonthClick}
-                  onRatingClick={handleRatingClick}
-                />
-              </div>
-              {calendarSlot && <div className='space-y-6'>{calendarSlot}</div>}
+            <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
+              <ReadingCalendar
+                key={selectedYear}
+                books={calendarBooks}
+                year={selectedYear}
+                today={today}
+                isOwner={isOwner}
+                bookHref={bookHref}
+              />
+              <RatingSummaryCard
+                year={selectedYear}
+                ratings={stats.ratingReading}
+                averageRating={stats.averageRating}
+                total={stats.totalCompletedBooks}
+                lifeBooks={completedBooks.filter((book) => book.is_life_book)}
+                bookHref={bookHref}
+                onRatingClick={handleRatingClick}
+              />
             </div>
           </div>
         )}
