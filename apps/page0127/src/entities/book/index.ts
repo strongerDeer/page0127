@@ -31,6 +31,19 @@ export type {
 //       (클라이언트 컴포넌트가 이 배럴을 import 할 때 서버 모듈이 끌려가지 않도록 분리)
 export { bookApi } from './api/bookApi';
 
+// 독서 달력 한 달치 (서재 연도 뷰)
+export type {
+  CalendarCompletion,
+  CalendarDay,
+  CalendarMonth,
+  CalendarRangeSegment,
+} from './model/calendarMonth';
+export {
+  buildCalendarMonth,
+  getInitialCalendarMonth,
+  MAX_LANES,
+} from './model/calendarMonth';
+
 // 표지 주소 — YES24 가 먼저, Storage 사본은 대체용
 export type { CoverSource } from './model/coverSource';
 export { toCoverSource } from './model/coverSource';
@@ -45,6 +58,8 @@ export {
   getBookLibraryYear,
   getCurrentLibraryYear,
   getLibraryYears,
+  getSeoulToday,
+  resolveDefaultLibraryYear,
 } from './model/libraryPeriod';
 
 // 평점 의미 (0 = 평가 안 함) — 판정과 평균 계산의 유일한 출처.
@@ -56,3 +71,12 @@ export {
   RATING_MAX,
   summarizeRatings,
 } from './model/rating';
+
+// 목표 대비 속도 · 분야 균형 (서재 연도 뷰)
+export type { BalanceCategory, ReadingBalance } from './model/readingBalance';
+export {
+  BALANCE_CATEGORIES,
+  calculateReadingBalance,
+} from './model/readingBalance';
+export type { ReadingPace, ReadingPaceState } from './model/readingPace';
+export { getReadingPace, resolveGoalTarget } from './model/readingPace';

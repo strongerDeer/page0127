@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 import { describe, expect, it } from 'vitest';
 
+import { createTestBook } from '@/entities/book/model/createTestBook';
 import { spineWidthPx } from '@/entities/book/model/spineWidth';
 
 import { PublicBookShelf } from './PublicBookShelf';
@@ -52,5 +53,50 @@ describe('PublicBookShelf 책등', () => {
     );
 
     expect(html).toContain(`width:${spineWidthPx(20)}px`);
+  });
+});
+
+// 위 makeBook 은 id 가 'b1' 고정이라 두 권 이상이면 key 가 겹친다 → 여기선 createTestBook
+describe('PublicBookShelf — 책장 강화', () => {
+  it('읽는 중인 책은 선반 끝에 책갈피와 함께, 접근명에 "읽는 중"', () => {
+    const done = createTestBook({ title: '다 읽은 책' });
+    const reading = createTestBook({
+      title: '읽고 있는 책',
+      status: 'reading',
+    });
+    const html = renderToStaticMarkup(
+      <PublicBookShelf
+        books={[done]}
+        readingBooks={[reading]}
+        username='me'
+        compact
+      />
+    );
+    expect(html.indexOf('다 읽은 책')).toBeLessThan(
+      html.indexOf('읽고 있는 책')
+    );
+    expect(html).toContain('data-bookmark');
+    expect(html).toContain('aria-label="읽고 있는 책 (읽는 중)"');
+  });
+
+  it('책마다 제목 말풍선, 명판은 장식', () => {
+    const html = renderToStaticMarkup(
+      <PublicBookShelf
+        books={[createTestBook({ title: '말풍선 책', rating: 3 })]}
+        plateLabel='2026'
+        username='me'
+        compact
+      />
+    );
+    expect(html).toContain('role="tooltip"');
+    expect(html).toContain('말풍선 책 · 3점');
+    expect(html).toMatch(/aria-hidden="true"[^>]*>2026</);
+  });
+
+  it('왼쪽부터 채운다 — 가운데 정렬로 몰지 않는다', () => {
+    const html = renderToStaticMarkup(
+      <PublicBookShelf books={[createTestBook()]} username='me' />
+    );
+    expect(html).toContain('data-align="start"');
   });
 });

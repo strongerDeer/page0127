@@ -2,16 +2,21 @@
 
 import { useTransition } from 'react';
 
-import dynamic from 'next/dynamic';
-
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 
-import { useLibraryFilters } from '@/features/stats/model/useLibraryFilters';
+import { calculateReadingBalance } from '@/entities/book';
+
+import {
+  hasActiveShelfFilter,
+  useLibraryFilters,
+} from '@/features/stats/model/useLibraryFilters';
 import { CategoryRadarChart } from '@/features/stats/ui/CategoryRadarChart';
 import { DashboardBookList } from '@/features/stats/ui/DashboardBookList';
 import { OverallDistribution } from '@/features/stats/ui/OverallDistribution';
-import { ReadingProgressOverview } from '@/features/stats/ui/ReadingProgressOverview';
+import { RatingSummaryCard } from '@/features/stats/ui/RatingSummaryCard';
+import { ReadingBalanceCard } from '@/features/stats/ui/ReadingBalanceCard';
 import { YearlyTrendChart } from '@/features/stats/ui/YearlyTrendChart';
+import { YearSummary } from '@/features/stats/ui/YearSummary';
 
 import { CategoryBookShelf } from '@/widgets/book/ui/CategoryBookShelf';
 import { LifeBooksShelf } from '@/widgets/book/ui/LifeBooksShelf';
@@ -19,23 +24,10 @@ import { PublicBookShelf } from '@/widgets/book/ui/PublicBookShelf';
 import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
 import { ViewTabs } from '@/widgets/dashboard/ViewTabs';
 
+import { PrivateBooksDisclosure } from './PrivateBooksDisclosure';
+import { ReadingCalendar } from './ReadingCalendar';
 import { ReadingNowStrip } from './ReadingNowStrip';
 import { WishlistShelf } from './WishlistShelf';
-
-// Recharts는 브라우저 measure가 필요한 클라이언트 전용 라이브러리
-// → next/dynamic + ssr:false 로 분리해서 초기 번들에서 제외
-const DashboardCharts = dynamic(
-  () =>
-    import('@/features/stats/ui/DashboardCharts').then(
-      (m) => m.DashboardCharts
-    ),
-  {
-    ssr: false,
-    loading: () => (
-      <div className='h-[700px] animate-pulse rounded-lg bg-muted' />
-    ),
-  }
-);
 
 import type { Book } from '@/entities/book';
 import type { BookStats, OverallStats } from '@/entities/book';
@@ -62,6 +54,9 @@ type LibraryViewProps = {
 
   /** 현재 연도 */
   currentYear: number;
+
+  /** 한국 시간 기준 오늘 'YYYY-MM-DD' — 속도 계산·달력의 기준 */
+  today: string;
 
   /** 해당 연도의 독서 목표 권수 (0이면 목표 없음) */
   goalTarget: number;
@@ -90,8 +85,8 @@ type LibraryViewProps = {
   /** 목표 설정 — 소유자에게만 전달 (없으면 버튼 자체가 안 보인다) */
   onSetGoal?: () => void;
 
-  /** 캘린더 슬롯 — 내 서재에서만 주입 */
-  calendarSlot?: React.ReactNode;
+  /** 달력에 그릴 책 — 방문자는 공개만, 주인은 비공개 포함(반투명) */
+  calendarBooks?: Book[];
 
   /** '읽고 싶어요' 탭 노출 여부 (내 서재에서만 true) */
   showWishlist?: boolean;
@@ -101,6 +96,12 @@ type LibraryViewProps = {
 
   /** 위시리스트 책 목록 — 연도와 무관한 전체 want_to_read (내 서재만 주입) */
   wishlistBooks?: Book[];
+
+  /** 주인에게만 보이는 비공개 책 — 책장 맨 아래 펼치기로 노출 (방문자는 빈 배열) */
+  privateBooks?: Book[];
+
+  /** 균형 계산용 — 선택 연도와 그 전 해의 공개 완독 책 */
+  balanceBooks?: { current: Book[]; previous: Book[] };
 };
 
 /**
@@ -123,6 +124,7 @@ export const LibraryView = ({
   selectedYear,
   isAllView,
   currentYear,
+  today,
   goalTarget,
   onViewChange,
   allShelfTitle = '서재 전체',
@@ -130,14 +132,15 @@ export const LibraryView = ({
   username,
   isOwner = false,
   onSetGoal,
-  calendarSlot,
+  calendarBooks = [],
   showWishlist = false,
   isWishlistView = false,
   wishlistBooks = [],
+  privateBooks = [],
+  balanceBooks = { current: [], previous: [] },
 }: LibraryViewProps) => {
   const filters = useLibraryFilters();
-  const { selectedMonth, selectedCategories, selectedRating, searchQuery } =
-    filters;
+  const { selectedCategories, selectedRating, searchQuery } = filters;
 
   // 링크 계산은 세 곳(읽는 중 스트립·완독 shelf·위시리스트)이 같은 규칙을 써야 한다
   const bookHref = (book: Book) =>
@@ -149,9 +152,6 @@ export const LibraryView = ({
 
   // 차트 클릭 → 목록 필터링은 급하지 않음 → 우선순위를 낮춰 입력 응답성을 지킨다
   const [isFilterPending, startFilterTransition] = useTransition();
-
-  const handleMonthClick = (month: number) =>
-    startFilterTransition(() => filters.toggleMonth(month));
 
   const handleRatingClick = (rating: RatingFilter) =>
     startFilterTransition(() => filters.toggleRating(rating));
@@ -174,12 +174,10 @@ export const LibraryView = ({
           title={shelfTitle}
           books={completedBooks}
           categories={stats.categoryReading}
-          selectedMonth={selectedMonth}
           selectedCategories={selectedCategories}
           selectedRating={selectedRating}
           searchQuery={searchQuery}
           onCategoriesChange={filters.setCategories}
-          onRemoveMonthFilter={filters.clearMonth}
           onRemoveRatingFilter={filters.clearRating}
           onSearchChange={filters.setSearch}
           onResetAll={filters.resetAll}
@@ -193,6 +191,9 @@ export const LibraryView = ({
             ) : (
               <PublicBookShelf
                 books={filteredBooks}
+                // 조건이 걸리면 읽는 중 책을 덧붙이지 않는다 — 조건을 거치지 않은 책이 섞인다
+                readingBooks={hasActiveShelfFilter(filters) ? [] : readingBooks}
+                plateLabel={String(selectedYear)}
                 username={username}
                 compact
               />
@@ -200,6 +201,10 @@ export const LibraryView = ({
           }
         />
       </section>
+
+      {username && (
+        <PrivateBooksDisclosure books={privateBooks} username={username} />
+      )}
     </div>
   );
 
@@ -311,19 +316,18 @@ export const LibraryView = ({
             </div>
           </div>
         ) : (
-          /* ── 연도 뷰 ── 그 해 읽은 책이 주인공이라 책장을 통계 위로 */
+          /* ── 연도 뷰 ── "올해 몇 권"이 첫인상, 바로 아래 책장이 주인공 */
           <div className='space-y-6'>
-            {bookShelf}
-
-            <ReadingProgressOverview
+            <YearSummary
               year={selectedYear}
-              currentYear={currentYear}
+              today={today}
               completed={stats.totalCompletedBooks}
               target={goalTarget}
               totalPages={stats.totalPages}
               averageRating={stats.averageRating}
-              favoriteBooks={stats.lifeBookCount}
-              books={books}
+              lifeBookCount={stats.lifeBookCount}
+              monthlyReading={stats.monthlyReading}
+              isOwner={isOwner}
               onSetGoal={
                 onSetGoal && selectedYear === currentYear
                   ? onSetGoal
@@ -331,18 +335,34 @@ export const LibraryView = ({
               }
             />
 
-            <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
-              <div className='space-y-6 lg:col-span-2'>
-                <DashboardCharts
-                  monthlyReading={stats.monthlyReading}
-                  categoryReading={stats.categoryReading}
-                  ratingReading={stats.ratingReading}
-                  averageRating={stats.averageRating}
-                  onMonthClick={handleMonthClick}
-                  onRatingClick={handleRatingClick}
-                />
-              </div>
-              {calendarSlot && <div className='space-y-6'>{calendarSlot}</div>}
+            {bookShelf}
+
+            <ReadingBalanceCard
+              year={selectedYear}
+              balance={calculateReadingBalance(
+                balanceBooks.current,
+                balanceBooks.previous
+              )}
+            />
+
+            <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
+              <ReadingCalendar
+                key={selectedYear}
+                books={calendarBooks}
+                year={selectedYear}
+                today={today}
+                isOwner={isOwner}
+                bookHref={bookHref}
+              />
+              <RatingSummaryCard
+                year={selectedYear}
+                ratings={stats.ratingReading}
+                averageRating={stats.averageRating}
+                total={stats.totalCompletedBooks}
+                lifeBooks={completedBooks.filter((book) => book.is_life_book)}
+                bookHref={bookHref}
+                onRatingClick={handleRatingClick}
+              />
             </div>
           </div>
         )}

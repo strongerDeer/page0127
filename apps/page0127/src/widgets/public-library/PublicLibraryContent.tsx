@@ -4,21 +4,20 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { Button } from '@repo/ui';
 import { PageContainer } from '@repo/ui';
-import { Archive, Library } from 'lucide-react';
 
 import {
   calculateBookStats,
   dedupeReadings,
   filterBooksByLibraryYear,
   getLibraryYears,
+  resolveDefaultLibraryYear,
+  resolveGoalTarget,
 } from '@/entities/book';
 
 import { CoachTipHost } from '@/features/onboarding';
 import { ReadingGoalDialog } from '@/features/profile/ui/ReadingGoalDialog';
 
-import { PublicBookShelf } from '@/widgets/book/ui/PublicBookShelf';
 import { LibraryView } from '@/widgets/library/LibraryView';
 
 import { PublicLibraryHeader } from './PublicLibraryHeader';
@@ -27,7 +26,7 @@ import { VisitorChemiCard, VisitorSignupBanner } from './VisitorCta';
 import type { Book } from '@/entities/book';
 import type { OverallStats } from '@/entities/book';
 import type { Profile } from '@/entities/profile/types';
-import type { TasteAnalysisSummary } from '@/entities/taste-analysis/types';
+import type { PublicTasteHistoryItem } from '@/entities/taste-analysis/types';
 
 type PublicLibraryContentProps = {
   profile: Profile;
@@ -37,13 +36,13 @@ type PublicLibraryContentProps = {
   books: Book[];
   overallStats: OverallStats;
   currentYear: number;
-  personalityType: string | null;
+  /** 한국 시간 기준 오늘 'YYYY-MM-DD' (서버에서 정한 값) */
+  today: string;
   analyzableBookCount: number;
   newBooksSinceLastAnalysis: number | null;
-  analysisHistory: TasteAnalysisSummary[];
+  /** 취향 이력(최신순 ≤10) — 방문자에게도 채워진다 */
+  analysisHistory: PublicTasteHistoryItem[];
   tasteAnalysisRemaining: number;
-  /** 소유자 모드에서만 주입되는 캘린더 슬롯 (방문자는 undefined) */
-  calendarSlot?: React.ReactNode;
 };
 
 /**
@@ -62,12 +61,11 @@ export const PublicLibraryContent = ({
   books,
   overallStats,
   currentYear,
-  personalityType,
+  today,
   analyzableBookCount,
   newBooksSinceLastAnalysis,
   analysisHistory,
   tasteAnalysisRemaining,
-  calendarSlot,
 }: PublicLibraryContentProps) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -77,15 +75,18 @@ export const PublicLibraryContent = ({
   // 위시리스트는 내 서재에서만, 연도와 무관한 별도 탭이다
   const isWishlistView = isOwnProfile && yearParam === 'wishlist';
   const parsedYear = yearParam ? Number(yearParam) : NaN;
-  const isAllView = !yearParam || yearParam === 'all' || isWishlistView;
+  // 기본은 올해(비었으면 가장 최근 해) — '전체'는 ?year=all 로만 들어간다
+  const isAllView = yearParam === 'all' || isWishlistView;
+  const defaultYear = useMemo(
+    () => resolveDefaultLibraryYear(books, currentYear),
+    [books, currentYear]
+  );
   const selectedYear =
-    !isAllView && Number.isInteger(parsedYear) ? parsedYear : currentYear;
+    !isAllView && Number.isInteger(parsedYear) ? parsedYear : defaultYear;
   const selectedPeriod = isAllView ? null : selectedYear;
 
   const handleGoalClose = useCallback(() => setIsGoalDialogOpen(false), []);
   const handleGoalSuccess = useCallback(() => router.refresh(), [router]);
-
-  const [showArchived, setShowArchived] = useState(false);
 
   const availableYears = useMemo(
     () => getLibraryYears(books, currentYear),
@@ -127,17 +128,29 @@ export const PublicLibraryContent = ({
     [currentYear, publicBooks, selectedPeriod]
   );
 
+  // 달력: 방문자는 공개만(books 가 이미 공개만 온다), 주인은 비공개까지 — 반투명으로 그린다
+  const calendarBooks = isOwnProfile ? books : publicBooks;
+
+  // 균형 카드: 통계와 같은 집합(공개 책, 재독 합침)으로 올해와 작년을 센다
+  const balanceBooks = useMemo(
+    () => ({
+      current: dedupeReadings(
+        filterBooksByLibraryYear(publicBooks, selectedYear, currentYear)
+      ),
+      previous: dedupeReadings(
+        filterBooksByLibraryYear(publicBooks, selectedYear - 1, currentYear)
+      ),
+    }),
+    [publicBooks, selectedYear, currentYear]
+  );
+
   // 로그인하지 않은 방문자 — 가입 길(VisitorCta)을 보여 줄 대상
   const isVisitor = !currentUserId;
   const ownerName = profile.nickname || username;
 
   const readingGoal = profile.reading_goal;
-  const goalTarget =
-    readingGoal?.year === selectedYear
-      ? readingGoal.target
-      : isOwnProfile
-        ? stats.yearlyGoal
-        : 0;
+  // 주인·방문자 모두 "그 해에 정한 목표"만 쓴다 — 없으면 0(목표 정하기)
+  const goalTarget = resolveGoalTarget(readingGoal, selectedYear);
 
   const handleViewChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -155,7 +168,6 @@ export const PublicLibraryContent = ({
         username={username}
         isOwnProfile={isOwnProfile}
         currentUserId={currentUserId}
-        personalityType={personalityType}
         analyzableBookCount={analyzableBookCount}
         newBooksSinceLastAnalysis={newBooksSinceLastAnalysis}
         analysisHistory={analysisHistory}
@@ -173,6 +185,7 @@ export const PublicLibraryContent = ({
         selectedYear={selectedYear}
         isAllView={isAllView}
         currentYear={currentYear}
+        today={today}
         goalTarget={goalTarget}
         onViewChange={handleViewChange}
         allShelfTitle={
@@ -187,43 +200,14 @@ export const PublicLibraryContent = ({
         }
         username={username}
         onSetGoal={isOwnProfile ? () => setIsGoalDialogOpen(true) : undefined}
-        calendarSlot={isOwnProfile ? calendarSlot : undefined}
+        calendarBooks={calendarBooks}
         showWishlist={isOwnProfile}
         isOwner={isOwnProfile}
         isWishlistView={isWishlistView}
         wishlistBooks={wishlistBooks}
+        privateBooks={isOwnProfile ? archivedBooks : []}
+        balanceBooks={balanceBooks}
       />
-
-      {!isWishlistView && isOwnProfile && archivedBooks.length > 0 && (
-        <div className='space-y-4'>
-          <div className='flex items-center gap-2'>
-            <Button
-              variant={showArchived ? 'outline' : 'secondary'}
-              size='sm'
-              onClick={() => setShowArchived(false)}
-            >
-              <Library className='h-4 w-4' />
-              책장
-            </Button>
-            <Button
-              variant={showArchived ? 'secondary' : 'outline'}
-              size='sm'
-              onClick={() => setShowArchived(true)}
-            >
-              <Archive className='h-4 w-4' />
-              보관 {archivedBooks.length}
-            </Button>
-          </div>
-
-          {showArchived && (
-            <PublicBookShelf
-              books={archivedBooks}
-              username={username}
-              bookHref={(book) => `/${username}/${book.id}`}
-            />
-          )}
-        </div>
-      )}
 
       {isVisitor && <VisitorSignupBanner name={ownerName} />}
 
@@ -247,7 +231,7 @@ export const PublicLibraryContent = ({
             // 지난해 목표만 있으면 올해 목표는 아직 없는 것이다
             hasReadingGoal: readingGoal?.year === currentYear,
             analyzableBookCount,
-            hasTasteAnalysis: personalityType !== null,
+            hasTasteAnalysis: analysisHistory.length > 0,
           }}
           actions={{
             'set-goal': {

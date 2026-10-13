@@ -2,27 +2,22 @@ import { Suspense } from 'react';
 
 import { notFound } from 'next/navigation';
 
-import { ErrorBoundary } from '@repo/ui';
-
 import { createClient } from '@/shared/config/supabase/server';
 import { checkUsageLimit } from '@/shared/lib/aiUsage';
 
-import { getCurrentLibraryYear } from '@/entities/book';
+import { getCurrentLibraryYear, getSeoulToday } from '@/entities/book';
 import { getPublicShelfSummary } from '@/entities/book/api/getPublicShelfSummary';
 import { getOverallStats } from '@/entities/book/server';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProfileByUsername';
 import { toDisplayName } from '@/entities/profile/model/displayName';
+import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTasteHistory';
 
-import { CalendarBlockError } from '@/widgets/dashboard/CalendarBlockError';
-import { CalendarBlockSkeleton } from '@/widgets/dashboard/CalendarBlockSkeleton';
-import { CalendarSection } from '@/widgets/dashboard/CalendarSection';
 import { PublicLibraryContent } from '@/widgets/public-library/PublicLibraryContent';
 import { PublicLibrarySkeleton } from '@/widgets/public-library/PublicLibrarySkeleton';
 
 import type { Book } from '@/entities/book';
 import type { Profile } from '@/entities/profile/types';
-import type { TasteAnalysisSummary } from '@/entities/taste-analysis/types';
 import type { User } from '@supabase/supabase-js';
 import type { Metadata } from 'next';
 
@@ -171,6 +166,8 @@ const LibraryContent = async ({
 }: LibraryContentProps) => {
   const supabase = await createClient();
   const currentYear = getCurrentLibraryYear();
+  // 속도 계산의 "오늘" — 서버에서 한 번 정해 내려야 SSR/CSR 결과가 같다
+  const today = getSeoulToday();
 
   const isOwnProfile = currentUser?.id === profile.id;
 
@@ -179,47 +176,35 @@ const LibraryContent = async ({
   // (책 목록 자체(allBooks)는 보관 탭에 써야 하니 소유자에게 전체를 내려준다)
   // 연도 탭은 이 전체 목록을 클라이언트에서 즉시 분류한다.
   // 따라서 탭을 바꿀 때 이 Server Component와 DB 쿼리가 다시 실행되지 않는다.
-  const [allBooks, overallStats, { data: latestAnalysis }] = await Promise.all([
+  // 취향 이력은 방문자도 본다 — 공개해도 되는 칸만 주는 RPC 라 주인·방문자가 같은 조회를 쓴다
+  const [allBooks, overallStats, tasteHistory] = await Promise.all([
     getBooks(profile.id, !isOwnProfile),
     getOverallStats(profile.id, true),
-    supabase
-      .from('taste_analyses')
-      .select('personality_type')
-      .eq('user_id', profile.id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+    getPublicTasteHistory(profile.id),
   ]);
 
   // 소유자 전용 데이터 — 방문자면 아예 조회하지 않는다
   let analyzableBookCount = 0;
   let newBooksSinceLastAnalysis: number | null = null;
-  let analysisHistory: TasteAnalysisSummary[] = [];
   let tasteAnalysisRemaining = 0;
 
   if (isOwnProfile && currentUser) {
-    const [{ count }, { data: history }, { remaining }] = await Promise.all([
+    const [{ count }, { remaining }] = await Promise.all([
       supabase
         .from('books')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', profile.id)
         .eq('status', 'completed')
         .not('rating', 'is', null),
-      supabase
-        .from('taste_analyses')
-        .select('id, personality_type, created_at, analyzed_books_count')
-        .eq('user_id', profile.id)
-        .order('created_at', { ascending: false })
-        .limit(10),
       checkUsageLimit(supabase, currentUser.id, 'taste_analysis'),
     ]);
 
     analyzableBookCount = count ?? 0;
-    analysisHistory = history ?? [];
     tasteAnalysisRemaining = remaining;
 
-    const lastAnalysis = analysisHistory[0] ?? null;
-    if (lastAnalysis) {
+    // RPC 는 주인에게만 권수를 채워 준다 — 여기는 주인 분기라 null 이면 RPC 가 세션을 못 본 것
+    const lastAnalyzedCount = tasteHistory[0]?.analyzed_books_count ?? null;
+    if (lastAnalyzedCount !== null) {
       // 이전에는 completed_date(date)를 created_at(timestamptz)와 직접 비교했다.
       // 타입이 어긋나는 데다, 과거에 읽은 책을 오늘 등록하면 새 기록으로 세지 않았다.
       // analyzed_books_count 는 분석 당시의 "완독 + 별점" 권수라 지금 값과 같은 집합이다.
@@ -235,7 +220,7 @@ const LibraryContent = async ({
       //     다음 분석을 한 번 하면 저장값이 현재 총량으로 맞춰져 스스로 회복된다.
       newBooksSinceLastAnalysis = Math.max(
         0,
-        analyzableBookCount - lastAnalysis.analyzed_books_count
+        analyzableBookCount - lastAnalyzedCount
       );
     }
   }
@@ -249,20 +234,11 @@ const LibraryContent = async ({
       books={allBooks}
       overallStats={overallStats}
       currentYear={currentYear}
-      personalityType={latestAnalysis?.personality_type ?? null}
+      today={today}
       analyzableBookCount={analyzableBookCount}
       newBooksSinceLastAnalysis={newBooksSinceLastAnalysis}
-      analysisHistory={analysisHistory}
+      analysisHistory={tasteHistory}
       tasteAnalysisRemaining={tasteAnalysisRemaining}
-      calendarSlot={
-        isOwnProfile ? (
-          <ErrorBoundary fallback={<CalendarBlockError />}>
-            <Suspense fallback={<CalendarBlockSkeleton />}>
-              <CalendarSection userId={profile.id} />
-            </Suspense>
-          </ErrorBoundary>
-        ) : undefined
-      }
     />
   );
 };

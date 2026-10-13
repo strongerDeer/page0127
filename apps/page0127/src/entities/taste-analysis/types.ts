@@ -132,6 +132,20 @@ export type TasteAnalysisSummary = Pick<
   'id' | 'personality_type' | 'created_at' | 'analyzed_books_count'
 >;
 
+/** 서재 페이지 공개 이력 — get_public_taste_history RPC 한 행 */
+export type PublicTasteHistoryItem = Omit<
+  TasteAnalysisSummary,
+  'analyzed_books_count'
+> & {
+  /**
+   * 분석 권수 — **주인에게만** 채워지고 방문자에게는 null.
+   * 분석은 비공개 책까지 넣어 돌리므로, 공개 책장보다 큰 숫자가 보이면 숨긴 책이 있다는 게 드러난다.
+   */
+  analyzed_books_count: number | null;
+  /** 최신 1건에만 채워진다 (preference_profile.liked.topics) */
+  liked_topics: string[] | null;
+};
+
 /**
  * 취향 분석 결과 + 추천 도서 (조회용)
  */

@@ -7,7 +7,7 @@ import Link from 'next/link';
 
 import { CoverImage, isPreOptimizedImageSrc, ReadCountBadge } from '@repo/ui';
 
-import { isTopRated, toCoverSource } from '@/entities/book';
+import { isRated, isTopRated, toCoverSource } from '@/entities/book';
 import { spineWidthPx } from '@/entities/book/model/spineWidth';
 
 import type { Book } from '@/entities/book';
@@ -24,6 +24,10 @@ type PublicBookShelfProps = {
   username?: string;
   /** 대시보드처럼 카드 안에 들어갈 때 사용하는 조밀한 선반 */
   compact?: boolean;
+  /** 선반 끝에 책갈피를 달고 꽂을 읽는 중인 책 */
+  readingBooks?: Book[];
+  /** 마지막 단 오른쪽 아래 연도 명판 (장식) */
+  plateLabel?: string;
 };
 
 /**
@@ -39,6 +43,8 @@ export const PublicBookShelf = ({
   bookHref,
   username,
   compact = false,
+  readingBooks = [],
+  plateLabel,
 }: PublicBookShelfProps) => {
   const [imgSrc, setImgSrc] = useState<Record<string, string>>({});
 
@@ -52,7 +58,7 @@ export const PublicBookShelf = ({
     setImgSrc((prev) => ({ ...prev, [bookId]: '/images/no-book.jpg' }));
   };
 
-  if (books.length === 0) {
+  if (books.length === 0 && readingBooks.length === 0) {
     return (
       <div className='rounded-2xl bg-sunken p-12 text-center'>
         <p className='text-text-body'>조건에 맞는 책이 없어요.</p>
@@ -60,10 +66,16 @@ export const PublicBookShelf = ({
     );
   }
 
+  // 읽는 중인 책은 선반 끝에 — 책장만 봐도 "지금 읽고 있는 책"이 보이게
+  const shelfItems = [
+    ...books.map((book) => ({ book, isReading: false })),
+    ...readingBooks.map((book) => ({ book, isReading: true })),
+  ];
+
   return (
     <div className={`${styles.shelf} ${compact ? styles.compact : ''}`}>
-      <ul className={styles.books}>
-        {books.map((book) => {
+      <ul className={styles.books} data-align='start'>
+        {shelfItems.map(({ book, isReading }) => {
           // 최고 평가(5점·인생책)만 표지를 크게 세우고 나머지는 책등으로 꽂는다
           const isCoverView = isTopRated(book.rating, book.is_life_book);
           // 책등만 여기서 대체한다 — onError 로 대체된 뒤에는 로컬 이미지(no-book.jpg)가
@@ -100,6 +112,8 @@ export const PublicBookShelf = ({
               <Link
                 href={getHref(book)}
                 className={isReread ? styles.reread : undefined}
+                aria-label={isReading ? `${book.title} (읽는 중)` : undefined}
+                aria-describedby={`shelf-tip-${book.id}`}
               >
                 {isCoverView ? (
                   <CoverImage
@@ -142,11 +156,34 @@ export const PublicBookShelf = ({
                       <span className='sr-only'>{book.read_count}회독</span>
                     </span>
                   ))}
+
+                {/* 꺼냈을 때(hover·focus) 보이는 제목 말풍선.
+                    aria-hidden 이어도 aria-describedby 로는 읽힌다 — 링크 이름(표지 alt)과
+                    말풍선 글자가 겹쳐 "제목 제목 · 3점"으로 두 번 읽히지 않게 한다 */}
+                <span
+                  id={`shelf-tip-${book.id}`}
+                  role='tooltip'
+                  aria-hidden='true'
+                  className={styles.tip}
+                >
+                  {book.title}
+                  {isRated(book.rating) &&
+                    ` · ${book.is_life_book ? '인생책' : `${book.rating}점`}`}
+                </span>
+                {isReading && (
+                  <span data-bookmark aria-hidden className={styles.bookmark} />
+                )}
               </Link>
             </li>
           );
         })}
       </ul>
+
+      {plateLabel && (
+        <span aria-hidden='true' className={styles.plate}>
+          {plateLabel}
+        </span>
+      )}
     </div>
   );
 };

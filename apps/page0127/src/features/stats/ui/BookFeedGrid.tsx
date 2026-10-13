@@ -53,6 +53,12 @@ export const BookFeedGrid = ({
             // 카드 전체를 정사각형(aspect-square)으로 고정한다. bg-muted가
             // 카드 전체의 "배경"이 되고, 표지는 그 위에 중간 크기로 얹힌 것처럼 보이게 한다
             className='group flex aspect-square flex-col overflow-hidden rounded-md border border-line-soft bg-muted transition-transform hover:-translate-y-0.5 hover:shadow-md'
+            // 인생책은 금빛(chart-4) 테두리 — 책등 보기에서 표지를 정면으로 세우는 것과 같은 위계
+            style={
+              book.is_life_book
+                ? { borderColor: 'var(--chart-4)', borderWidth: 2 }
+                : undefined
+            }
           >
             {rank !== undefined && (
               <div className='pt-3 text-center leading-none'>

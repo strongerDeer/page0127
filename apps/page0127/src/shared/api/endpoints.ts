@@ -31,8 +31,6 @@ export const bookEndpoints = {
   bookDetail: `${API_BASE}/books/detail`,
   // 통계
   stats: `${API_BASE}/books/stats`,
-  // 캘린더
-  calendar: `${API_BASE}/books/calendar`,
 } as const;
 
 /**
