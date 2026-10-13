@@ -15,7 +15,8 @@ export type TasteHistoryRun = {
  * 입력은 최신순(RPC 순서), 출력은 시간이 흐르는 방향(오래된 → 최신).
  */
 export const groupTasteHistory = (
-  items: TasteAnalysisSummary[]
+  // 묶는 데 필요한 칸만 받는다 — 방문자용 이력은 분석 권수가 null 이다
+  items: Pick<TasteAnalysisSummary, 'id' | 'personality_type' | 'created_at'>[]
 ): TasteHistoryRun[] =>
   [...items].reverse().reduce<TasteHistoryRun[]>((runs, item) => {
     const last = runs.at(-1);

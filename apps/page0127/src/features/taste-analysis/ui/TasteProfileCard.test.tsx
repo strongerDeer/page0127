@@ -46,17 +46,25 @@ describe('TasteProfileCard', () => {
     expect(html).toContain('#관계');
     expect(html).toContain('#에세이 톤');
     expect(html).not.toContain('#다섯째');
-    expect(html).toContain('책 100권 기준');
     expect(html).toContain('취향의 변화');
     expect(html).toContain('×2');
     // 방문자는 회차 상세로 가는 링크가 없다
     expect(html).not.toContain('/dashboard/taste-analysis/');
   });
 
-  it('주인은 뱃지·자세히가 회차 상세로 이어진다', () => {
+  it('주인은 뱃지·자세히가 회차 상세로 이어지고, 분석 권수를 본다', () => {
     const html = render({ isOwner: true });
     expect(html).toContain('href="/dashboard/taste-analysis/d"');
     expect(html).toContain('href="/dashboard/taste-analysis/b"');
+    expect(html).toContain('책 100권 기준');
+  });
+
+  it('방문자에게는 분석 권수를 보이지 않는다 — 비공개 책 수가 드러난다(RPC 도 null 로 준다)', () => {
+    const html = render({
+      history: HISTORY.map((h) => ({ ...h, analyzed_books_count: null })),
+    });
+    expect(html).not.toContain('권 기준');
+    expect(html).toContain('내일의 나를 준비하는 사람');
   });
 
   it('이력이 한 번뿐이면 변화 줄을 그리지 않는다', () => {

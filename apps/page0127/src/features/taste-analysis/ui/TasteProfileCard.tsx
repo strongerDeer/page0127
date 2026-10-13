@@ -76,8 +76,10 @@ export const TasteProfileCard = ({
       />
       <div className='flex items-start justify-between gap-2'>
         <p className='text-xs text-text-subtle'>
-          AI 독서 성향 · {formatDate(latest.created_at)} · 책{' '}
-          {latest.analyzed_books_count}권 기준
+          AI 독서 성향 · {formatDate(latest.created_at)}
+          {/* 방문자에게는 권수가 null — 비공개 책 수가 드러나지 않게 RPC 가 감춘다 */}
+          {latest.analyzed_books_count !== null &&
+            ` · 책 ${latest.analyzed_books_count}권 기준`}
         </p>
         {isOwner && (
           <Link

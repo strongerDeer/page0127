@@ -202,8 +202,9 @@ const LibraryContent = async ({
     analyzableBookCount = count ?? 0;
     tasteAnalysisRemaining = remaining;
 
-    const lastAnalysis = tasteHistory[0] ?? null;
-    if (lastAnalysis) {
+    // RPC 는 주인에게만 권수를 채워 준다 — 여기는 주인 분기라 null 이면 RPC 가 세션을 못 본 것
+    const lastAnalyzedCount = tasteHistory[0]?.analyzed_books_count ?? null;
+    if (lastAnalyzedCount !== null) {
       // 이전에는 completed_date(date)를 created_at(timestamptz)와 직접 비교했다.
       // 타입이 어긋나는 데다, 과거에 읽은 책을 오늘 등록하면 새 기록으로 세지 않았다.
       // analyzed_books_count 는 분석 당시의 "완독 + 별점" 권수라 지금 값과 같은 집합이다.
@@ -219,7 +220,7 @@ const LibraryContent = async ({
       //     다음 분석을 한 번 하면 저장값이 현재 총량으로 맞춰져 스스로 회복된다.
       newBooksSinceLastAnalysis = Math.max(
         0,
-        analyzableBookCount - lastAnalysis.analyzed_books_count
+        analyzableBookCount - lastAnalyzedCount
       );
     }
   }

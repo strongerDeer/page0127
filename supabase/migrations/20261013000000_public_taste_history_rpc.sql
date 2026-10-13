@@ -4,8 +4,11 @@
 -- 정책을 열면 긴 성향 설명·싫어하는 패턴·비용까지 통째로 나간다.
 -- SECURITY DEFINER 함수로 공개해도 되는 칸만 골라 낸다(get_about_stats 와 같은 방식).
 --
--- 공개 칸: id, personality_type, created_at, analyzed_books_count,
+-- 공개 칸: id, personality_type, created_at,
 --          liked_topics(최신 1건만 — preference_profile->liked->topics)
+-- 주인에게만: analyzed_books_count — 분석은 비공개 책까지 넣어 돌리므로, 공개 책장보다
+--          큰 숫자가 방문자에게 보이면 숨긴 책이 있다는 게 드러난다. 다른 사람에겐 NULL.
+--          (auth.uid() 는 SECURITY DEFINER 안에서도 호출자의 JWT 를 읽는다)
 -- 비공개 유지: personality_description, disliked, patterns, analysis_model, cost_in_cents
 CREATE OR REPLACE FUNCTION public.get_public_taste_history(p_user_id uuid)
 RETURNS TABLE (
@@ -24,7 +27,7 @@ AS $$
     t.id,
     t.personality_type,
     t.created_at,
-    t.analyzed_books_count,
+    CASE WHEN auth.uid() = p_user_id THEN t.analyzed_books_count END,
     CASE
       WHEN row_number() OVER (ORDER BY t.created_at DESC) = 1
         THEN ARRAY(
