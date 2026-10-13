@@ -25,7 +25,7 @@ import { VisitorChemiCard, VisitorSignupBanner } from './VisitorCta';
 import type { Book } from '@/entities/book';
 import type { OverallStats } from '@/entities/book';
 import type { Profile } from '@/entities/profile/types';
-import type { TasteAnalysisSummary } from '@/entities/taste-analysis/types';
+import type { PublicTasteHistoryItem } from '@/entities/taste-analysis/types';
 
 type PublicLibraryContentProps = {
   profile: Profile;
@@ -40,7 +40,8 @@ type PublicLibraryContentProps = {
   personalityType: string | null;
   analyzableBookCount: number;
   newBooksSinceLastAnalysis: number | null;
-  analysisHistory: TasteAnalysisSummary[];
+  /** 취향 이력(최신순 ≤10) — 방문자에게도 채워진다 */
+  analysisHistory: PublicTasteHistoryItem[];
   tasteAnalysisRemaining: number;
 };
 

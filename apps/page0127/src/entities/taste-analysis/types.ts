@@ -132,6 +132,12 @@ export type TasteAnalysisSummary = Pick<
   'id' | 'personality_type' | 'created_at' | 'analyzed_books_count'
 >;
 
+/** 서재 페이지 공개 이력 — get_public_taste_history RPC 한 행 */
+export type PublicTasteHistoryItem = TasteAnalysisSummary & {
+  /** 최신 1건에만 채워진다 (preference_profile.liked.topics) */
+  liked_topics: string[] | null;
+};
+
 /**
  * 취향 분석 결과 + 추천 도서 (조회용)
  */

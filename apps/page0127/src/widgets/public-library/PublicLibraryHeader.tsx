@@ -36,7 +36,7 @@ import { coachTarget } from '@/features/onboarding';
 import { ShareButton } from '@/features/share';
 import { TasteAnalysisHistoryCards } from '@/features/taste-analysis/ui/TasteAnalysisHistoryCards';
 
-import type { TasteAnalysisSummary } from '@/entities/taste-analysis/types';
+import type { PublicTasteHistoryItem } from '@/entities/taste-analysis/types';
 
 type Profile = {
   id: string;
@@ -56,8 +56,8 @@ type PublicLibraryHeaderProps = {
   analyzableBookCount: number;
   /** 마지막 분석 이후 새로 추가된 분석 가능 책 권수 — 분석 이력이 없으면 null */
   newBooksSinceLastAnalysis: number | null;
-  /** 취향 분석 이력 (최신순 최대 10건) — 소유자 전용, 방문자는 빈 배열 */
-  analysisHistory: TasteAnalysisSummary[];
+  /** 취향 분석 이력 (최신순 최대 10건) — 공개 칸만, 방문자에게도 채워진다 */
+  analysisHistory: PublicTasteHistoryItem[];
   /** 이번 달 취향분석 남은 횟수 (0~3) — 방문자는 항상 0 */
   tasteAnalysisRemaining: number;
 };

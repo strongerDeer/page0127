@@ -11,13 +11,13 @@ import { getOverallStats } from '@/entities/book/server';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProfileByUsername';
 import { toDisplayName } from '@/entities/profile/model/displayName';
+import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTasteHistory';
 
 import { PublicLibraryContent } from '@/widgets/public-library/PublicLibraryContent';
 import { PublicLibrarySkeleton } from '@/widgets/public-library/PublicLibrarySkeleton';
 
 import type { Book } from '@/entities/book';
 import type { Profile } from '@/entities/profile/types';
-import type { TasteAnalysisSummary } from '@/entities/taste-analysis/types';
 import type { User } from '@supabase/supabase-js';
 import type { Metadata } from 'next';
 
@@ -176,46 +176,33 @@ const LibraryContent = async ({
   // (책 목록 자체(allBooks)는 보관 탭에 써야 하니 소유자에게 전체를 내려준다)
   // 연도 탭은 이 전체 목록을 클라이언트에서 즉시 분류한다.
   // 따라서 탭을 바꿀 때 이 Server Component와 DB 쿼리가 다시 실행되지 않는다.
-  const [allBooks, overallStats, { data: latestAnalysis }] = await Promise.all([
+  // 취향 이력은 방문자도 본다 — 공개해도 되는 칸만 주는 RPC 라 주인·방문자가 같은 조회를 쓴다
+  const [allBooks, overallStats, tasteHistory] = await Promise.all([
     getBooks(profile.id, !isOwnProfile),
     getOverallStats(profile.id, true),
-    supabase
-      .from('taste_analyses')
-      .select('personality_type')
-      .eq('user_id', profile.id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+    getPublicTasteHistory(profile.id),
   ]);
 
   // 소유자 전용 데이터 — 방문자면 아예 조회하지 않는다
   let analyzableBookCount = 0;
   let newBooksSinceLastAnalysis: number | null = null;
-  let analysisHistory: TasteAnalysisSummary[] = [];
   let tasteAnalysisRemaining = 0;
 
   if (isOwnProfile && currentUser) {
-    const [{ count }, { data: history }, { remaining }] = await Promise.all([
+    const [{ count }, { remaining }] = await Promise.all([
       supabase
         .from('books')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', profile.id)
         .eq('status', 'completed')
         .not('rating', 'is', null),
-      supabase
-        .from('taste_analyses')
-        .select('id, personality_type, created_at, analyzed_books_count')
-        .eq('user_id', profile.id)
-        .order('created_at', { ascending: false })
-        .limit(10),
       checkUsageLimit(supabase, currentUser.id, 'taste_analysis'),
     ]);
 
     analyzableBookCount = count ?? 0;
-    analysisHistory = history ?? [];
     tasteAnalysisRemaining = remaining;
 
-    const lastAnalysis = analysisHistory[0] ?? null;
+    const lastAnalysis = tasteHistory[0] ?? null;
     if (lastAnalysis) {
       // 이전에는 completed_date(date)를 created_at(timestamptz)와 직접 비교했다.
       // 타입이 어긋나는 데다, 과거에 읽은 책을 오늘 등록하면 새 기록으로 세지 않았다.
@@ -247,10 +234,10 @@ const LibraryContent = async ({
       overallStats={overallStats}
       currentYear={currentYear}
       today={today}
-      personalityType={latestAnalysis?.personality_type ?? null}
+      personalityType={tasteHistory[0]?.personality_type ?? null}
       analyzableBookCount={analyzableBookCount}
       newBooksSinceLastAnalysis={newBooksSinceLastAnalysis}
-      analysisHistory={analysisHistory}
+      analysisHistory={tasteHistory}
       tasteAnalysisRemaining={tasteAnalysisRemaining}
     />
   );
