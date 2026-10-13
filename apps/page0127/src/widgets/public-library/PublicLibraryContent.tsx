@@ -35,6 +35,8 @@ type PublicLibraryContentProps = {
   books: Book[];
   overallStats: OverallStats;
   currentYear: number;
+  /** 한국 시간 기준 오늘 'YYYY-MM-DD' (서버에서 정한 값) */
+  today: string;
   personalityType: string | null;
   analyzableBookCount: number;
   newBooksSinceLastAnalysis: number | null;
@@ -60,6 +62,7 @@ export const PublicLibraryContent = ({
   books,
   overallStats,
   currentYear,
+  today,
   personalityType,
   analyzableBookCount,
   newBooksSinceLastAnalysis,
@@ -174,6 +177,7 @@ export const PublicLibraryContent = ({
         selectedYear={selectedYear}
         isAllView={isAllView}
         currentYear={currentYear}
+        today={today}
         goalTarget={goalTarget}
         onViewChange={handleViewChange}
         allShelfTitle={

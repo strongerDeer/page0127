@@ -10,8 +10,8 @@ import { useLibraryFilters } from '@/features/stats/model/useLibraryFilters';
 import { CategoryRadarChart } from '@/features/stats/ui/CategoryRadarChart';
 import { DashboardBookList } from '@/features/stats/ui/DashboardBookList';
 import { OverallDistribution } from '@/features/stats/ui/OverallDistribution';
-import { ReadingProgressOverview } from '@/features/stats/ui/ReadingProgressOverview';
 import { YearlyTrendChart } from '@/features/stats/ui/YearlyTrendChart';
+import { YearSummary } from '@/features/stats/ui/YearSummary';
 
 import { CategoryBookShelf } from '@/widgets/book/ui/CategoryBookShelf';
 import { LifeBooksShelf } from '@/widgets/book/ui/LifeBooksShelf';
@@ -63,6 +63,9 @@ type LibraryViewProps = {
 
   /** 현재 연도 */
   currentYear: number;
+
+  /** 한국 시간 기준 오늘 'YYYY-MM-DD' — 속도 계산·달력의 기준 */
+  today: string;
 
   /** 해당 연도의 독서 목표 권수 (0이면 목표 없음) */
   goalTarget: number;
@@ -127,6 +130,7 @@ export const LibraryView = ({
   selectedYear,
   isAllView,
   currentYear,
+  today,
   goalTarget,
   onViewChange,
   allShelfTitle = '서재 전체',
@@ -320,25 +324,26 @@ export const LibraryView = ({
             </div>
           </div>
         ) : (
-          /* ── 연도 뷰 ── 그 해 읽은 책이 주인공이라 책장을 통계 위로 */
+          /* ── 연도 뷰 ── "올해 몇 권"이 첫인상, 바로 아래 책장이 주인공 */
           <div className='space-y-6'>
-            {bookShelf}
-
-            <ReadingProgressOverview
+            <YearSummary
               year={selectedYear}
-              currentYear={currentYear}
+              today={today}
               completed={stats.totalCompletedBooks}
               target={goalTarget}
               totalPages={stats.totalPages}
               averageRating={stats.averageRating}
-              favoriteBooks={stats.lifeBookCount}
-              books={books}
+              lifeBookCount={stats.lifeBookCount}
+              monthlyReading={stats.monthlyReading}
+              isOwner={isOwner}
               onSetGoal={
                 onSetGoal && selectedYear === currentYear
                   ? onSetGoal
                   : undefined
               }
             />
+
+            {bookShelf}
 
             <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
               <div className='space-y-6 lg:col-span-2'>

@@ -7,7 +7,7 @@ import { ErrorBoundary } from '@repo/ui';
 import { createClient } from '@/shared/config/supabase/server';
 import { checkUsageLimit } from '@/shared/lib/aiUsage';
 
-import { getCurrentLibraryYear } from '@/entities/book';
+import { getCurrentLibraryYear, getSeoulToday } from '@/entities/book';
 import { getPublicShelfSummary } from '@/entities/book/api/getPublicShelfSummary';
 import { getOverallStats } from '@/entities/book/server';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
@@ -171,6 +171,8 @@ const LibraryContent = async ({
 }: LibraryContentProps) => {
   const supabase = await createClient();
   const currentYear = getCurrentLibraryYear();
+  // 속도 계산의 "오늘" — 서버에서 한 번 정해 내려야 SSR/CSR 결과가 같다
+  const today = getSeoulToday();
 
   const isOwnProfile = currentUser?.id === profile.id;
 
@@ -249,6 +251,7 @@ const LibraryContent = async ({
       books={allBooks}
       overallStats={overallStats}
       currentYear={currentYear}
+      today={today}
       personalityType={latestAnalysis?.personality_type ?? null}
       analyzableBookCount={analyzableBookCount}
       newBooksSinceLastAnalysis={newBooksSinceLastAnalysis}
