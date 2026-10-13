@@ -46,10 +46,22 @@ export const mapToMainCategory = (category: string | null): MainCategory => {
     lowerCategory.includes('컴퓨터') ||
     lowerCategory.includes('모바일') ||
     lowerCategory.includes('프로그래밍') ||
-    lowerCategory.includes('it') ||
+    // 'it'을 includes 로 찾으면 'literature'·'fitness' 같은 영단어에도 걸린다
+    /\bit\b/.test(lowerCategory) ||
     lowerCategory.includes('개발')
   ) {
     return '컴퓨터/모바일';
+  }
+
+  // 인문학 — 소설보다 먼저 본다. '인문학'이라는 글자 안에 '문학'이 들어 있어서
+  // 순서가 바뀌면 인문학 책이 전부 아래 소설 규칙(includes('문학'))에 걸린다.
+  if (
+    lowerCategory.includes('인문') ||
+    lowerCategory.includes('철학') ||
+    lowerCategory.includes('심리') ||
+    lowerCategory.includes('사회')
+  ) {
+    return '인문학';
   }
 
   // 소설/시/희곡
@@ -59,16 +71,6 @@ export const mapToMainCategory = (category: string | null): MainCategory => {
     lowerCategory.includes('문학')
   ) {
     return '소설/시/희곡';
-  }
-
-  // 인문학
-  if (
-    lowerCategory.includes('인문') ||
-    lowerCategory.includes('철학') ||
-    lowerCategory.includes('심리') ||
-    lowerCategory.includes('사회')
-  ) {
-    return '인문학';
   }
 
   // 에세이
