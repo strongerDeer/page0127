@@ -234,7 +234,6 @@ const LibraryContent = async ({
       overallStats={overallStats}
       currentYear={currentYear}
       today={today}
-      personalityType={tasteHistory[0]?.personality_type ?? null}
       analyzableBookCount={analyzableBookCount}
       newBooksSinceLastAnalysis={newBooksSinceLastAnalysis}
       analysisHistory={tasteHistory}

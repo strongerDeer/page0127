@@ -29,12 +29,11 @@ import {
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import { TASTE_ANALYSIS_MIN_BOOKS } from '@/entities/taste-analysis/model/analysisGate';
-import { getPersonalityColor } from '@/entities/taste-analysis/model/personalityTypes';
 
 import { FollowButton, FollowListModal, FollowStats } from '@/features/follow';
 import { coachTarget } from '@/features/onboarding';
 import { ShareButton } from '@/features/share';
-import { TasteAnalysisHistoryCards } from '@/features/taste-analysis/ui/TasteAnalysisHistoryCards';
+import { TasteProfileCard } from '@/features/taste-analysis/ui/TasteProfileCard';
 
 import type { PublicTasteHistoryItem } from '@/entities/taste-analysis/types';
 
@@ -50,8 +49,6 @@ type PublicLibraryHeaderProps = {
   username: string;
   isOwnProfile: boolean;
   currentUserId?: string;
-  /** 최신 취향 분석의 성향 타입 이름 — 분석 이력이 없으면 null */
-  personalityType: string | null;
   /** 취향 분석 가능한 책 권수 (평가를 남긴 완독 책) — 소유자 전용, 방문자는 0 */
   analyzableBookCount: number;
   /** 마지막 분석 이후 새로 추가된 분석 가능 책 권수 — 분석 이력이 없으면 null */
@@ -67,7 +64,6 @@ export const PublicLibraryHeader = ({
   username,
   isOwnProfile,
   currentUserId,
-  personalityType,
   analyzableBookCount,
   newBooksSinceLastAnalysis,
   analysisHistory,
@@ -134,10 +130,38 @@ export const PublicLibraryHeader = ({
     }
   };
 
+  // 분석 버튼은 취향 카드 안으로 들어간다 — 카드가 결과와 다음 행동을 같이 보여 준다
+  const analyzeButton = isOwnProfile ? (
+    <Button
+      onClick={handleAnalyzeTaste}
+      disabled={isAnalyzing}
+      size='sm'
+      // 아직 열리지 않은 기능은 한 단계 낮춰 보인다 — 누르면 몇 권 남았는지 안내한다
+      variant={isTasteAnalysisUnlocked ? 'default' : 'outline'}
+      className={isTasteAnalysisUnlocked ? undefined : 'shadow-none'}
+      {...coachTarget('taste-analysis')}
+    >
+      {isAnalyzing && <Loader2 className='h-4 w-4 animate-spin' />}
+      {isAnalyzing
+        ? '분석 중… (최대 1분)'
+        : isTasteAnalysisUnlocked
+          ? `${analysisHistory.length > 0 ? '다시 분석' : '취향 분석'} (${tasteAnalysisRemaining}/${MONTHLY_LIMIT} 남음)`
+          : // 5권이 모이기 전에 "3/3 남음"을 보이면 지금 바로 쓸 수 있는 것처럼 읽힌다
+            `취향 분석 (${analyzableBookCount}/${TASTE_ANALYSIS_MIN_BOOKS}권)`}
+    </Button>
+  ) : undefined;
+
+  // 방문자에게 분석 결과가 없으면 카드를 숨기고 프로필이 전체 폭을 쓴다
+  const hasTasteCard = isOwnProfile || analysisHistory.length > 0;
+
   return (
     <>
-      {/* 스카이 틴트 면 — 공개 서재의 '전시장 입구'. sunken 배경 위에서 얼굴이 된다 */}
-      <header className='flex flex-col gap-6 rounded-[28px] bg-accent p-6 sm:p-8 md:flex-row md:items-center md:justify-between'>
+      {/* 스카이 틴트 면 — 공개 서재의 '전시장 입구'. 왼쪽은 누구인지, 오른쪽은 어떤 독자인지 */}
+      <header
+        className={`grid gap-6 rounded-[28px] bg-accent p-6 sm:p-8 lg:items-center ${
+          hasTasteCard ? 'lg:grid-cols-[1fr_400px]' : ''
+        }`}
+      >
         <div className='flex min-w-0 items-center gap-5'>
           {profile.photo_url ? (
             <div className='relative size-20 shrink-0 overflow-hidden rounded-full bg-muted'>
@@ -167,70 +191,49 @@ export const PublicLibraryHeader = ({
                 onFollowersClick={() => setFollowersModalOpen(true)}
                 onFollowingClick={() => setFollowingModalOpen(true)}
               />
-              {personalityType && (
-                <span className='inline-flex items-center gap-1.5 rounded-full border border-line-soft bg-card px-3 py-1 text-xs font-medium text-text-body'>
-                  <span
-                    className='size-2 rounded-full'
-                    style={{
-                      backgroundColor: getPersonalityColor(personalityType),
-                    }}
-                  />
-                  {personalityType}
-                </span>
-              )}
             </div>
             {profile.bio && (
               <p className='mt-3 max-w-2xl break-keep text-sm leading-relaxed text-text-body'>
                 {profile.bio}
               </p>
             )}
+
+            <div className='mt-4 flex flex-wrap items-center gap-2'>
+              {!isOwnProfile && <FollowButton userId={profile.id} />}
+
+              {!isOwnProfile ? (
+                <Button asChild variant='outline' className='shadow-none'>
+                  <Link href={`/${username}/compatibility`}>
+                    <Sparkles className='h-4 w-4' />
+                    독서 케미
+                  </Link>
+                </Button>
+              ) : (
+                <Button asChild variant='outline' className='shadow-none'>
+                  <Link href='/settings'>프로필 편집</Link>
+                </Button>
+              )}
+
+              {/* 모바일에서는 네이티브 공유 시트로, 데스크톱에서는 주소 복사로 떨어진다 */}
+              <ShareButton
+                path={`/${username}`}
+                title={`${displayName}님의 책장`}
+                text='책장을 보면, 그 사람이 보입니다.'
+              />
+            </div>
           </div>
         </div>
 
-        <div className='flex shrink-0 flex-wrap items-center gap-2 md:justify-end'>
-          {!isOwnProfile && <FollowButton userId={profile.id} />}
-
-          {!isOwnProfile ? (
-            <Button asChild variant='outline' className='shadow-none'>
-              <Link href={`/${username}/compatibility`}>
-                <Sparkles className='h-4 w-4' />
-                독서 케미
-              </Link>
-            </Button>
-          ) : (
-            <>
-              <Button
-                onClick={handleAnalyzeTaste}
-                disabled={isAnalyzing}
-                // 아직 열리지 않은 기능은 한 단계 낮춰 보인다 — 누르면 몇 권 남았는지 안내한다
-                variant={isTasteAnalysisUnlocked ? 'default' : 'outline'}
-                className={isTasteAnalysisUnlocked ? undefined : 'shadow-none'}
-                {...coachTarget('taste-analysis')}
-              >
-                {isAnalyzing && <Loader2 className='h-4 w-4 animate-spin' />}
-                {isAnalyzing
-                  ? '분석 중… (최대 1분)'
-                  : isTasteAnalysisUnlocked
-                    ? `취향 분석 (${tasteAnalysisRemaining}/${MONTHLY_LIMIT} 남음)`
-                    : // 5권이 모이기 전에 "3/3 남음"을 보이면 지금 바로 쓸 수 있는 것처럼 읽힌다
-                      `취향 분석 (${analyzableBookCount}/${TASTE_ANALYSIS_MIN_BOOKS}권)`}
-              </Button>
-              <Button asChild variant='outline' className='shadow-none'>
-                <Link href='/settings'>프로필 편집</Link>
-              </Button>
-            </>
-          )}
-
-          {/* 모바일에서는 네이티브 공유 시트로, 데스크톱에서는 주소 복사로 떨어진다 */}
-          <ShareButton
-            path={`/${username}`}
-            title={`${displayName}님의 책장`}
-            text='책장을 보면, 그 사람이 보입니다.'
+        {hasTasteCard && (
+          <TasteProfileCard
+            history={analysisHistory}
+            isOwner={isOwnProfile}
+            action={analyzeButton}
+            analyzableBookCount={analyzableBookCount}
+            minBooks={TASTE_ANALYSIS_MIN_BOOKS}
           />
-        </div>
+        )}
       </header>
-
-      {isOwnProfile && <TasteAnalysisHistoryCards items={analysisHistory} />}
 
       {isOwnProfile && (
         <AlertDialog

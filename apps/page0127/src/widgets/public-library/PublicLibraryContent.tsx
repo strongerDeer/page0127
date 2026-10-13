@@ -37,7 +37,6 @@ type PublicLibraryContentProps = {
   currentYear: number;
   /** 한국 시간 기준 오늘 'YYYY-MM-DD' (서버에서 정한 값) */
   today: string;
-  personalityType: string | null;
   analyzableBookCount: number;
   newBooksSinceLastAnalysis: number | null;
   /** 취향 이력(최신순 ≤10) — 방문자에게도 채워진다 */
@@ -62,7 +61,6 @@ export const PublicLibraryContent = ({
   overallStats,
   currentYear,
   today,
-  personalityType,
   analyzableBookCount,
   newBooksSinceLastAnalysis,
   analysisHistory,
@@ -173,7 +171,6 @@ export const PublicLibraryContent = ({
         username={username}
         isOwnProfile={isOwnProfile}
         currentUserId={currentUserId}
-        personalityType={personalityType}
         analyzableBookCount={analyzableBookCount}
         newBooksSinceLastAnalysis={newBooksSinceLastAnalysis}
         analysisHistory={analysisHistory}
@@ -237,7 +234,7 @@ export const PublicLibraryContent = ({
             // 지난해 목표만 있으면 올해 목표는 아직 없는 것이다
             hasReadingGoal: readingGoal?.year === currentYear,
             analyzableBookCount,
-            hasTasteAnalysis: personalityType !== null,
+            hasTasteAnalysis: analysisHistory.length > 0,
           }}
           actions={{
             'set-goal': {
