@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import { getReadingPace } from './readingPace';
+import { getReadingPace, resolveGoalTarget } from './readingPace';
+
+describe('resolveGoalTarget', () => {
+  it('그 해에 정한 목표만 목표다 — 없으면 0(가짜 기본값을 만들지 않는다)', () => {
+    expect(resolveGoalTarget({ year: 2026, target: 40 }, 2026)).toBe(40);
+    // reading_goal 은 한 해만 저장된다 → 다른 해는 목표 없음
+    expect(resolveGoalTarget({ year: 2026, target: 40 }, 2025)).toBe(0);
+    expect(resolveGoalTarget(null, 2026)).toBe(0);
+  });
+});
 
 // 2026-10-13 = 286번째 날 / 365, 남은 79일
 const OCT13 = { year: 2026, today: '2026-10-13' };

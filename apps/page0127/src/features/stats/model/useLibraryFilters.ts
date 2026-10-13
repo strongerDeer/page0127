@@ -70,6 +70,21 @@ const filterReducer = (
   }
 };
 
+/**
+ * 책장에 조건(분야·평점·검색어)이 걸려 있는지.
+ * 읽는 중인 책은 이 조건들을 거치지 않으므로, 조건이 걸렸을 때 선반 끝에 덧붙이면
+ * "인생책만 보기"에 읽는 중 책이 섞인다 → 조건이 없을 때만 덧붙인다.
+ */
+export const hasActiveShelfFilter = (
+  state: Pick<
+    LibraryFilterState,
+    'selectedCategories' | 'selectedRating' | 'searchQuery'
+  >
+): boolean =>
+  state.selectedCategories.length > 0 ||
+  state.selectedRating !== null ||
+  state.searchQuery.trim() !== '';
+
 export const useLibraryFilters = () => {
   const [state, dispatch] = useReducer(filterReducer, INITIAL_FILTER_STATE);
 

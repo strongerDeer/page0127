@@ -23,6 +23,12 @@
 
   /* 연도 명판(.plate)의 기준점 */
   position: relative;
+  /*
+    줄 끝 책의 긴 말풍선(.tip)은 opacity 0 이어도 스크롤 영역에 잡혀 모바일에서 페이지가
+    가로로 밀렸다(375px 에서 53px 실측). hidden 은 세로까지 스크롤 상자로 만들어 위로 빠지는
+    책·말풍선을 자르므로, 스크롤 상자를 만들지 않는 clip 을 가로에만 쓴다.
+  */
+  overflow-x: clip;
   margin-top: 2rem;
   background-color: transparent;
   background-image: linear-gradient(

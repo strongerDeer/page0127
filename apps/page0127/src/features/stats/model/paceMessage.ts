@@ -44,13 +44,17 @@ export const getPaceMessage = ({
     case 'on_track':
       return {
         headline: `지금 페이스 그대로면 12월에 딱 ${target}권이에요 👌`,
-        detail: `${toGoal} — 일주일에 ${pace.perWeek}권씩이면 돼요.`,
+        detail: isOwner
+          ? `${toGoal} — 일주일에 ${pace.perWeek}권씩이면 돼요.`
+          : toGoal,
         suggestGoalEdit: false,
       };
     case 'behind':
       return {
         headline: `지금 속도면 올해 약 ${pace.projected}권 📚`,
-        detail: `${toGoal} — 남은 ${pace.weeksLeft}주 동안 일주일에 ${pace.perWeek}권이면 닿아요.`,
+        detail: isOwner
+          ? `${toGoal} — 남은 ${pace.weeksLeft}주 동안 일주일에 ${pace.perWeek}권이면 닿아요.`
+          : `${toGoal}, 남은 ${pace.weeksLeft}주`,
         suggestGoalEdit: false,
       };
     case 'far_behind':
@@ -64,7 +68,7 @@ export const getPaceMessage = ({
     case 'early':
       return {
         headline: `올해 목표 ${target}권, 이제 시작이에요`,
-        detail: `일주일에 ${pace.perWeek}권씩이면 닿아요.`,
+        detail: isOwner ? `일주일에 ${pace.perWeek}권씩이면 닿아요.` : null,
         suggestGoalEdit: false,
       };
     case 'past_met':

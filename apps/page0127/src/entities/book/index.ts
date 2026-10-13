@@ -79,4 +79,4 @@ export {
   calculateReadingBalance,
 } from './model/readingBalance';
 export type { ReadingPace, ReadingPaceState } from './model/readingPace';
-export { getReadingPace } from './model/readingPace';
+export { getReadingPace, resolveGoalTarget } from './model/readingPace';

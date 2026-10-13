@@ -12,6 +12,7 @@ import {
   filterBooksByLibraryYear,
   getLibraryYears,
   resolveDefaultLibraryYear,
+  resolveGoalTarget,
 } from '@/entities/book';
 
 import { CoachTipHost } from '@/features/onboarding';
@@ -148,12 +149,8 @@ export const PublicLibraryContent = ({
   const ownerName = profile.nickname || username;
 
   const readingGoal = profile.reading_goal;
-  const goalTarget =
-    readingGoal?.year === selectedYear
-      ? readingGoal.target
-      : isOwnProfile
-        ? stats.yearlyGoal
-        : 0;
+  // 주인·방문자 모두 "그 해에 정한 목표"만 쓴다 — 없으면 0(목표 정하기)
+  const goalTarget = resolveGoalTarget(readingGoal, selectedYear);
 
   const handleViewChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());

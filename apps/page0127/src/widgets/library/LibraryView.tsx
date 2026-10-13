@@ -6,7 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 
 import { calculateReadingBalance } from '@/entities/book';
 
-import { useLibraryFilters } from '@/features/stats/model/useLibraryFilters';
+import {
+  hasActiveShelfFilter,
+  useLibraryFilters,
+} from '@/features/stats/model/useLibraryFilters';
 import { CategoryRadarChart } from '@/features/stats/ui/CategoryRadarChart';
 import { DashboardBookList } from '@/features/stats/ui/DashboardBookList';
 import { OverallDistribution } from '@/features/stats/ui/OverallDistribution';
@@ -188,7 +191,8 @@ export const LibraryView = ({
             ) : (
               <PublicBookShelf
                 books={filteredBooks}
-                readingBooks={readingBooks}
+                // 조건이 걸리면 읽는 중 책을 덧붙이지 않는다 — 조건을 거치지 않은 책이 섞인다
+                readingBooks={hasActiveShelfFilter(filters) ? [] : readingBooks}
                 plateLabel={String(selectedYear)}
                 username={username}
                 compact

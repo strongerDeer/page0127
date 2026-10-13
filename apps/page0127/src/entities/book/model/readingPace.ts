@@ -45,6 +45,18 @@ type ReadingPaceInput = {
   today: string;
 };
 
+/**
+ * 그 해의 목표 권수 — 사용자가 그 해에 정한 목표가 없으면 0.
+ *
+ * 예전에는 주인에게 통계의 기본값(50)을 목표로 넣어 줬다. 그러면 목표를 정한 적 없는
+ * 새 사용자가 첫 화면에서 "목표 50권까지 50권 — 다시 정해 볼까요?"를 보게 된다.
+ * 0 이면 getReadingPace 가 'no_goal' 이 되어 "목표 정하기"가 나온다.
+ */
+export const resolveGoalTarget = (
+  goal: { year: number; target: number } | null | undefined,
+  year: number
+): number => (goal?.year === year ? goal.target : 0);
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 /** 이보다 이른 시점(1월 첫 2주 남짓)의 예상 권수는 한두 권에 크게 흔들린다 */
 const EARLY_ELAPSED = 0.04;

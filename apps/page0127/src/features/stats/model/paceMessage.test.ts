@@ -47,6 +47,19 @@ describe('getPaceMessage', () => {
     expect(msg(42, 40).detail).toBe('목표보다 2권 더 읽었어요.');
   });
 
+  it('방문자에게는 조언("~이면 닿아요/돼요") 없이 사실만', () => {
+    // 조금 뒤처짐(14) · 딱 맞음(31) · 연초(1, 1/7)
+    const visitor = [
+      msg(14, 40, false),
+      msg(31, 40, false),
+      msg(1, 40, false, '2026-01-07'),
+    ];
+    visitor.forEach((m) => {
+      expect(m.detail ?? '').not.toMatch(/닿아요|돼요|볼까요/);
+    });
+    expect(msg(14, 40, false).detail).toBe('목표 40권까지 26권, 남은 11.3주');
+  });
+
   it('목표 없음 — 월 평균', () => {
     expect(msg(14, 0).headline).toBe('한 달에 1.5권씩 읽고 있어요');
   });
