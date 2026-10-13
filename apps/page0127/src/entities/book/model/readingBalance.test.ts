@@ -47,19 +47,10 @@ describe('calculateReadingBalance', () => {
   });
 
   it('9개 분야를 한 권씩이면 100, 한 분야만이면 0', () => {
-    // '인문학' 문자열은 매퍼가 '문학'에 먼저 걸어 소설로 분류한다(기존 매퍼 동작) →
-    // 인문학 대표로 '철학' 경로를 쓴다
-    const even = [
-      '컴퓨터/모바일',
-      '소설/시/희곡',
-      '국내도서>철학',
-      '에세이',
-      '경제/경영',
-      '자기계발',
-      '과학',
-      '예술/대중문화',
-      '역사',
-    ].map((category) => createTestBook({ category }));
+    // 인문학이 소설로 잡히던 매퍼 규칙 순서는 #191 에서 고쳐졌다 → 분야 이름 그대로 넣는다
+    const even = BALANCE_CATEGORIES.map((category) =>
+      createTestBook({ category })
+    );
     expect(calculateReadingBalance(even).score).toBe(100);
     expect(calculateReadingBalance(books('소설', 5)).score).toBe(0);
   });
