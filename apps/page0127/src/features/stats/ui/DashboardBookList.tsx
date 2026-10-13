@@ -378,6 +378,8 @@ export const DashboardBookList = ({
             onClick={() => setViewMode('shelf')}
           >
             <Library className='h-4 w-4' />
+            {/* 아이콘만으로는 무엇이 바뀌는지 알기 어려웠다 */}
+            <span className='ml-1'>책등</span>
           </Button>
           <Button
             variant={viewMode === 'feed' ? 'secondary' : 'ghost'}
@@ -387,6 +389,7 @@ export const DashboardBookList = ({
             onClick={() => setViewMode('feed')}
           >
             <LayoutGrid className='h-4 w-4' />
+            <span className='ml-1'>표지</span>
           </Button>
         </div>
 

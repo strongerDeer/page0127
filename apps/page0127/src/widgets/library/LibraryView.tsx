@@ -191,6 +191,8 @@ export const LibraryView = ({
             ) : (
               <PublicBookShelf
                 books={filteredBooks}
+                readingBooks={readingBooks}
+                plateLabel={String(selectedYear)}
                 username={username}
                 compact
               />
