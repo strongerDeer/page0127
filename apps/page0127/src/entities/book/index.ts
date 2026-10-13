@@ -45,6 +45,8 @@ export {
   getBookLibraryYear,
   getCurrentLibraryYear,
   getLibraryYears,
+  getSeoulToday,
+  resolveDefaultLibraryYear,
 } from './model/libraryPeriod';
 
 // 평점 의미 (0 = 평가 안 함) — 판정과 평균 계산의 유일한 출처.

@@ -204,3 +204,33 @@ export const calculateBookStats = (
     lifeBookCount: completedBooks.filter((book) => book.is_life_book).length,
   };
 };
+
+/**
+ * 서재 첫 화면에 보일 연도.
+ *
+ * 올해 책장이 비어 있으면(1월 초처럼) 올해를 보여 주는 대신 기록이 있는 가장 최근 해를 연다.
+ * 읽고 싶어요는 세지 않는다 — 날짜가 없으면 getBookLibraryYear 가 항상 올해로 넣어서,
+ * 위시리스트만 있어도 "올해 책장"이 차 있다고 착각하게 된다.
+ */
+export const resolveDefaultLibraryYear = (
+  books: Book[],
+  currentYear: number
+): number => {
+  const shelfYears = books
+    .filter((book) => book.status !== 'want_to_read')
+    .map((book) => getBookLibraryYear(book, currentYear));
+
+  if (shelfYears.length === 0 || shelfYears.includes(currentYear)) {
+    return currentYear;
+  }
+  return Math.max(...shelfYears);
+};
+
+/** 한국 시간 기준 오늘 — 'YYYY-MM-DD' (en-CA 로케일이 이 형식을 준다) */
+export const getSeoulToday = (date: Date = new Date()): string =>
+  new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);

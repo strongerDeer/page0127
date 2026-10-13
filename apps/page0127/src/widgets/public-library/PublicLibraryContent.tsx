@@ -4,21 +4,19 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { Button } from '@repo/ui';
 import { PageContainer } from '@repo/ui';
-import { Archive, Library } from 'lucide-react';
 
 import {
   calculateBookStats,
   dedupeReadings,
   filterBooksByLibraryYear,
   getLibraryYears,
+  resolveDefaultLibraryYear,
 } from '@/entities/book';
 
 import { CoachTipHost } from '@/features/onboarding';
 import { ReadingGoalDialog } from '@/features/profile/ui/ReadingGoalDialog';
 
-import { PublicBookShelf } from '@/widgets/book/ui/PublicBookShelf';
 import { LibraryView } from '@/widgets/library/LibraryView';
 
 import { PublicLibraryHeader } from './PublicLibraryHeader';
@@ -77,15 +75,18 @@ export const PublicLibraryContent = ({
   // 위시리스트는 내 서재에서만, 연도와 무관한 별도 탭이다
   const isWishlistView = isOwnProfile && yearParam === 'wishlist';
   const parsedYear = yearParam ? Number(yearParam) : NaN;
-  const isAllView = !yearParam || yearParam === 'all' || isWishlistView;
+  // 기본은 올해(비었으면 가장 최근 해) — '전체'는 ?year=all 로만 들어간다
+  const isAllView = yearParam === 'all' || isWishlistView;
+  const defaultYear = useMemo(
+    () => resolveDefaultLibraryYear(books, currentYear),
+    [books, currentYear]
+  );
   const selectedYear =
-    !isAllView && Number.isInteger(parsedYear) ? parsedYear : currentYear;
+    !isAllView && Number.isInteger(parsedYear) ? parsedYear : defaultYear;
   const selectedPeriod = isAllView ? null : selectedYear;
 
   const handleGoalClose = useCallback(() => setIsGoalDialogOpen(false), []);
   const handleGoalSuccess = useCallback(() => router.refresh(), [router]);
-
-  const [showArchived, setShowArchived] = useState(false);
 
   const availableYears = useMemo(
     () => getLibraryYears(books, currentYear),
@@ -192,38 +193,8 @@ export const PublicLibraryContent = ({
         isOwner={isOwnProfile}
         isWishlistView={isWishlistView}
         wishlistBooks={wishlistBooks}
+        privateBooks={isOwnProfile ? archivedBooks : []}
       />
-
-      {!isWishlistView && isOwnProfile && archivedBooks.length > 0 && (
-        <div className='space-y-4'>
-          <div className='flex items-center gap-2'>
-            <Button
-              variant={showArchived ? 'outline' : 'secondary'}
-              size='sm'
-              onClick={() => setShowArchived(false)}
-            >
-              <Library className='h-4 w-4' />
-              책장
-            </Button>
-            <Button
-              variant={showArchived ? 'secondary' : 'outline'}
-              size='sm'
-              onClick={() => setShowArchived(true)}
-            >
-              <Archive className='h-4 w-4' />
-              보관 {archivedBooks.length}
-            </Button>
-          </div>
-
-          {showArchived && (
-            <PublicBookShelf
-              books={archivedBooks}
-              username={username}
-              bookHref={(book) => `/${username}/${book.id}`}
-            />
-          )}
-        </div>
-      )}
 
       {isVisitor && <VisitorSignupBanner name={ownerName} />}
 

@@ -19,6 +19,7 @@ import { PublicBookShelf } from '@/widgets/book/ui/PublicBookShelf';
 import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
 import { ViewTabs } from '@/widgets/dashboard/ViewTabs';
 
+import { PrivateBooksDisclosure } from './PrivateBooksDisclosure';
 import { ReadingNowStrip } from './ReadingNowStrip';
 import { WishlistShelf } from './WishlistShelf';
 
@@ -101,6 +102,9 @@ type LibraryViewProps = {
 
   /** 위시리스트 책 목록 — 연도와 무관한 전체 want_to_read (내 서재만 주입) */
   wishlistBooks?: Book[];
+
+  /** 주인에게만 보이는 비공개 책 — 책장 맨 아래 펼치기로 노출 (방문자는 빈 배열) */
+  privateBooks?: Book[];
 };
 
 /**
@@ -134,6 +138,7 @@ export const LibraryView = ({
   showWishlist = false,
   isWishlistView = false,
   wishlistBooks = [],
+  privateBooks = [],
 }: LibraryViewProps) => {
   const filters = useLibraryFilters();
   const { selectedMonth, selectedCategories, selectedRating, searchQuery } =
@@ -200,6 +205,10 @@ export const LibraryView = ({
           }
         />
       </section>
+
+      {username && (
+        <PrivateBooksDisclosure books={privateBooks} username={username} />
+      )}
     </div>
   );
 
