@@ -26,33 +26,40 @@ export const ReadingNowStrip = ({ books, bookHref }: ReadingNowStripProps) => {
   if (books.length === 0) return null;
 
   return (
-    <section className='rounded-2xl border border-primary/20 bg-primary/5 p-4'>
-      <div className='mb-3 flex items-center gap-2'>
-        <BookOpen className='h-4 w-4 text-primary' />
-        <h3 className='text-sm font-medium text-text-strong'>지금 읽는 중</h3>
-        <span className='text-sm text-text-subtle'>{books.length}권</span>
-      </div>
+    // 한 줄(높이 ~72px) — 살아 있는 책장이라는 신호이지 주인공은 아니라서 작게 둔다
+    <section className='flex items-center gap-4 overflow-x-auto rounded-2xl border border-primary/20 bg-primary/5 px-4 py-2.5'>
+      <h3 className='flex shrink-0 items-center gap-1.5 text-sm font-medium text-text-strong'>
+        <BookOpen className='size-4 text-primary' />
+        지금 읽는 중
+        <span className='font-normal text-text-subtle'>{books.length}권</span>
+      </h3>
 
-      <ul className='flex gap-4 overflow-x-auto pb-1'>
+      <ul className='flex gap-4'>
         {books.map((book) => (
           <li key={book.id} className='shrink-0'>
             <Link
               href={bookHref(book)}
-              className='group flex w-24 flex-col gap-2'
+              className='group flex items-center gap-2'
             >
-              {/* 대칭 rounded-md 와 shadow-sm 을 쓰고 있었다 — 표지는 그림자로
-                  띄우지 않는다(07 §2.3). BookCover 로 바꾸며 도메인 셰이프로 통일했다 */}
-              <div className='aspect-2/3 relative bg-muted'>
+              {/* 표지는 그림자로 띄우지 않는다(07 §2.3) — 도메인 셰이프는 BookCover 가 맡는다 */}
+              <span className='relative block h-12 w-8 bg-muted'>
                 <BookCover
                   {...toCoverSource(book)}
                   title={book.title}
                   size='fill'
-                  sizes='96px'
+                  sizes='32px'
+                  decorative
                 />
-              </div>
-              <p className='line-clamp-2 text-xs text-text-body group-hover:text-primary'>
+              </span>
+              <span className='max-w-40 truncate text-sm text-text-body group-hover:text-primary'>
                 {book.title}
-              </p>
+              </span>
+              {book.start_date && (
+                <span className='text-xs text-text-subtle'>
+                  {Number(book.start_date.slice(5, 7))}/
+                  {Number(book.start_date.slice(8, 10))}~
+                </span>
+              )}
             </Link>
           </li>
         ))}

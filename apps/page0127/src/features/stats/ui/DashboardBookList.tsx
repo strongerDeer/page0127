@@ -50,9 +50,6 @@ type DashboardBookListProps = {
   /** 책 클릭 시 이동할 URL 생성 함수 (기본값: /books/${id}) */
   bookHref?: (book: Book) => string;
 
-  /** 선택된 월 (1-12, null = 전체) — 차트 연동 없는 경우 생략 가능 */
-  selectedMonth?: number | null;
-
   /** 선택된 카테고리들 */
   selectedCategories: string[];
 
@@ -64,9 +61,6 @@ type DashboardBookListProps = {
 
   /** 카테고리 다중 선택 핸들러 */
   onCategoriesChange: (categories: string[]) => void;
-
-  /** 월 필터 제거 핸들러 — selectedMonth 사용 시 필수 */
-  onRemoveMonthFilter?: () => void;
 
   /** 평점 필터 제거 핸들러 — selectedRating 사용 시 필수 */
   onRemoveRatingFilter?: () => void;
@@ -90,7 +84,7 @@ type DashboardBookListProps = {
  * 대시보드 책 목록 섹션 (Client Component)
  *
  * 학습 포인트:
- * - 월별 + 카테고리 + 평점 + 검색어 복합 필터링
+ * - 카테고리 + 평점 + 검색어 복합 필터링
  * - 부모 컴포넌트에서 상태 관리 (lift state up)
  * - 필터 뱃지로 현재 필터 표시
  * - 책 표지 그리드 레이아웃
@@ -101,12 +95,10 @@ export const DashboardBookList = ({
   categories,
   title = '책',
   bookHref = (book) => `/books/${book.id}`,
-  selectedMonth = null,
   selectedCategories,
   selectedRating = null,
   searchQuery,
   onCategoriesChange,
-  onRemoveMonthFilter,
   onRemoveRatingFilter,
   onSearchChange,
   renderBooks,
@@ -175,20 +167,13 @@ export const DashboardBookList = ({
   // Compiler가 books·필터 조건 의존성을 자동 추적해 같은 입력이면 캐시 반환한다
   const filteredBooks = books
     .filter((book) => {
-      // 1. 월 필터 확인 (완독한 책만)
-      if (selectedMonth !== null && book.completed_date) {
-        const completedDate = new Date(book.completed_date);
-        const bookMonth = completedDate.getMonth() + 1; // 0-11 → 1-12
-        if (bookMonth !== selectedMonth) return false;
-      }
-
-      // 2. 카테고리 필터 확인
+      // 1. 카테고리 필터 확인
       if (selectedCategories.length > 0) {
         const mainCategory = mapToMainCategory(book.category);
         if (!selectedCategories.includes(mainCategory)) return false;
       }
 
-      // 3. 평점 필터 확인
+      // 2. 평점 필터 확인
       if (selectedRating !== null) {
         // 인생책 필터는 rating 이 아니라 플래그로 판정한다 — 인생책도 rating 이 5 라
         // 숫자 비교만 하면 평범한 5점 책까지 함께 걸린다
@@ -199,7 +184,7 @@ export const DashboardBookList = ({
         }
       }
 
-      // 4. 검색어 필터 확인 (제목 + 저자)
+      // 3. 검색어 필터 확인 (제목 + 저자)
       // deferredSearchQuery: 타이핑 중에는 이전 값 유지 → 목록 필터링이 input을 막지 않음
       if (deferredSearchQuery.trim()) {
         const query = deferredSearchQuery.toLowerCase();
@@ -257,11 +242,6 @@ export const DashboardBookList = ({
     startTabTransition(() => onCategoriesChange(categories));
   };
 
-  const handleRemoveMonthFilter = () => {
-    setCurrentPage(1);
-    onRemoveMonthFilter?.();
-  };
-
   const handleSortChange = (option: string) => {
     setCurrentPage(1);
     startTabTransition(() => setSortOption(option));
@@ -282,7 +262,6 @@ export const DashboardBookList = ({
   );
 
   const activeFilterCount = [
-    selectedMonth !== null,
     ...selectedCategories.map(() => true),
     selectedRating !== null,
   ].filter(Boolean).length;
@@ -423,14 +402,6 @@ export const DashboardBookList = ({
       {/* 적용된 조건만 한 줄로 남기고, 필터 목록은 감춘다. */}
       {(activeFilterCount > 0 || searchQuery !== '') && (
         <div className='mb-4 flex flex-wrap items-center gap-2'>
-          {selectedMonth !== null && (
-            <button
-              onClick={handleRemoveMonthFilter}
-              className='flex items-center gap-1 rounded-full bg-sunken px-3 py-1 text-sm text-text-body hover:text-text-strong'
-            >
-              {selectedMonth}월 <X className='h-3.5 w-3.5' />
-            </button>
-          )}
           {selectedCategories.length > 0 && (
             <button
               onClick={() => handleCategoriesChange([])}

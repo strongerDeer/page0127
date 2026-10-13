@@ -20,8 +20,8 @@ import type { BookStatus } from '@/entities/book';
 /** 선택된 평점 필터. 인생책은 rating 이 5 라 숫자만으로 구별되지 않아 별도 값을 쓴다 */
 export type RatingFilter = number | 'life';
 
+// 월 필터는 없앴다 — 진입점이던 월별 차트 클릭을 독서 달력의 월 칩이 대신한다
 export type LibraryFilterState = {
-  selectedMonth: number | null;
   selectedCategories: string[];
   selectedRating: RatingFilter | null;
   searchQuery: string;
@@ -30,8 +30,6 @@ export type LibraryFilterState = {
 };
 
 type FilterAction =
-  | { type: 'TOGGLE_MONTH'; month: number }
-  | { type: 'CLEAR_MONTH' }
   | { type: 'TOGGLE_RATING'; rating: RatingFilter }
   | { type: 'CLEAR_RATING' }
   | { type: 'SET_CATEGORIES'; categories: string[] }
@@ -40,7 +38,6 @@ type FilterAction =
   | { type: 'RESET_ALL' };
 
 const INITIAL_FILTER_STATE: LibraryFilterState = {
-  selectedMonth: null,
   selectedCategories: [],
   selectedRating: null,
   searchQuery: '',
@@ -52,14 +49,6 @@ const filterReducer = (
   action: FilterAction
 ): LibraryFilterState => {
   switch (action.type) {
-    case 'TOGGLE_MONTH':
-      return {
-        ...state,
-        selectedMonth:
-          state.selectedMonth === action.month ? null : action.month,
-      };
-    case 'CLEAR_MONTH':
-      return { ...state, selectedMonth: null };
     case 'TOGGLE_RATING':
       return {
         ...state,
@@ -87,8 +76,6 @@ export const useLibraryFilters = () => {
   // dispatch는 참조가 고정이므로 액션 묶음도 한 번만 만들어진다
   const actions = useMemo(
     () => ({
-      toggleMonth: (month: number) => dispatch({ type: 'TOGGLE_MONTH', month }),
-      clearMonth: () => dispatch({ type: 'CLEAR_MONTH' }),
       toggleRating: (rating: RatingFilter) =>
         dispatch({ type: 'TOGGLE_RATING', rating }),
       clearRating: () => dispatch({ type: 'CLEAR_RATING' }),

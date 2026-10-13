@@ -137,8 +137,7 @@ export const LibraryView = ({
   balanceBooks = { current: [], previous: [] },
 }: LibraryViewProps) => {
   const filters = useLibraryFilters();
-  const { selectedMonth, selectedCategories, selectedRating, searchQuery } =
-    filters;
+  const { selectedCategories, selectedRating, searchQuery } = filters;
 
   // 링크 계산은 세 곳(읽는 중 스트립·완독 shelf·위시리스트)이 같은 규칙을 써야 한다
   const bookHref = (book: Book) =>
@@ -172,12 +171,10 @@ export const LibraryView = ({
           title={shelfTitle}
           books={completedBooks}
           categories={stats.categoryReading}
-          selectedMonth={selectedMonth}
           selectedCategories={selectedCategories}
           selectedRating={selectedRating}
           searchQuery={searchQuery}
           onCategoriesChange={filters.setCategories}
-          onRemoveMonthFilter={filters.clearMonth}
           onRemoveRatingFilter={filters.clearRating}
           onSearchChange={filters.setSearch}
           onResetAll={filters.resetAll}

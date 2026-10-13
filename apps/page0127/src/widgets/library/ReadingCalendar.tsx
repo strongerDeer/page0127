@@ -144,7 +144,8 @@ export const ReadingCalendar = ({
         })}
       </div>
 
-      <div className='mt-3 grid grid-cols-7 text-center text-xs text-text-subtle'>
+      {/* 날짜 숫자가 칸 왼쪽 위에 있으므로 요일도 왼쪽에 맞춘다 (가운데면 열이 어긋나 보인다) */}
+      <div className='mt-3 grid grid-cols-7 px-1 text-left text-xs text-text-subtle'>
         {WEEKDAYS.map((d, i) => (
           <div
             key={d}

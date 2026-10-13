@@ -11,7 +11,7 @@ import {
 
 import type { ReadingBalance } from '@/entities/book';
 
-// 레이더는 recharts — 브라우저 측정이 필요해 초기 번들·SSR 에서 뺀다(DashboardCharts 와 같은 이유)
+// 레이더는 recharts — 브라우저 측정(ResponsiveContainer)이 필요해 초기 번들·SSR 에서 뺀다
 const CategoryRadarChart = dynamic(
   () => import('./CategoryRadarChart').then((m) => m.CategoryRadarChart),
   {
