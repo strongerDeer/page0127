@@ -42,6 +42,12 @@ describe('RatingSummaryCard', () => {
     expect(html).toContain('데이터 삽질 끝에 UX가 보였다');
   });
 
+  it('인생책 막대는 틸(chart-6) — 브랜드 블루와 어울리는 에메랄드 계열', () => {
+    const html = render([]);
+    expect(html).toContain('background-color:var(--chart-6)');
+    expect(html).not.toContain('var(--chart-4)');
+  });
+
   it('인생책이 없으면 그 칸을 그리지 않는다', () => {
     expect(render([])).not.toContain('2026 인생책');
   });

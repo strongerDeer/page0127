@@ -79,7 +79,7 @@ export const ReadingCalendar = ({
   });
   const [selected, setSelected] = useState<CalendarDay | null>(null);
 
-  const month = buildCalendarMonth(books, view.year, view.month, today);
+  const month = buildCalendarMonth(books, view.year, view.month);
   const { summary } = month;
 
   return (

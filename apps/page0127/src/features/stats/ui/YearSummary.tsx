@@ -134,7 +134,11 @@ export const YearSummary = ({
           </div>
         )}
 
-        <div className='mt-4 flex flex-wrap gap-2'>
+        {/* 같은 폭 격자 — 모바일 2열, 넓으면 칸 수만큼 한 줄을 등분(쪽수 0 으로 칸이 빠져도 등분) */}
+        <div
+          data-facts
+          className='mt-4 grid grid-cols-2 gap-2 sm:grid-flow-col sm:grid-cols-none sm:auto-cols-fr'
+        >
           {/* 쪽수를 모르는 책뿐이면 "0cm · 영화 0편"이 되어 의미가 없다 → 숨긴다 */}
           {totalPages > 0 && (
             <>
