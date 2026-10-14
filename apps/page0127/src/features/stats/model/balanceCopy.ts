@@ -47,6 +47,25 @@ export const getBalanceDelta = (balance: ReadingBalance): string | null => {
   return `작년엔 ${balance.readCount - readCountDelta}개 분야를 읽었어요`;
 };
 
+/** 레이더 축 상한 — 9축은 촘촘해서 라벨이 겹치고 모양이 안 읽혔다 */
+const MAX_RADAR_AXES = 8;
+/** 이보다 적으면 선·점이라 '모양'이 없다 */
+const MIN_RADAR_AXES = 3;
+
+/**
+ * 레이더에 그릴 축 — 내가 읽은 분야만, 많이 읽은 순으로 최대 8개.
+ * 안 읽은 분야는 축 대신 텍스트로 보여 준다(사람마다 축이 다르다).
+ * 3개 미만이면 빈 배열 — 그때는 레이더 없이 띠만 그린다.
+ */
+export const radarAxes = (
+  balance: ReadingBalance
+): { category: string; count: number }[] => {
+  const axes = balance.ranked
+    .slice(0, MAX_RADAR_AXES)
+    .map(({ category, count }) => ({ category, count }));
+  return axes.length < MIN_RADAR_AXES ? [] : axes;
+};
+
 /**
  * 차트 계열 토큰 7개. 이름을 템플릿(`--chart-${n}`)으로 만들면
  * app/token-usage.test.ts 가 정의 여부를 대조할 수 없다 → 글자 그대로 나열한다.
