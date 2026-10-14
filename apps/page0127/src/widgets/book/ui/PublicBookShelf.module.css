@@ -50,8 +50,8 @@
 .books {
   display: flex;
   flex-wrap: wrap;
-  /* 왼쪽부터 채운다 — 가운데로 몰면 14권이 한가운데 섬처럼 떠서 휑해 보였다 */
-  justify-content: flex-start;
+  /* 가운데 정렬 — 왼쪽 채우기를 써 봤지만 사용자 결정(2026-10-14)으로 되돌렸다 */
+  justify-content: center;
   /* 줄 반복 높이 = li 249 + gap 31 = 280 = background-size 높이 (오차 누적 없음) */
   gap: 31px 0;
 }
@@ -136,15 +136,31 @@
   }
 }
 
-/* 제목 말풍선 — 꺼냈을 때만 보인다 */
+/*
+  제목 말풍선 — 꺼냈을 때만 보인다.
+  긴 제목은 220px 에서 줄바꿈하고 3줄이 넘으면 말줄임(…). 줄 끝 책이면 띄울 때
+  위치를 재서(--tip-shift, tooltipShift) 책장 안쪽으로 민다 — 예전엔 한 줄로 길게 뻗어 잘렸다.
+*/
 .tip {
+  /* 띄울 때 JS(tooltipShift)가 인라인으로 덮어쓴다. 기본은 0 */
+  --tip-shift: 0px;
   position: absolute;
   bottom: calc(100% + 8px);
   left: 50%;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  padding: 4px 8px;
-  border-radius: 8px;
+  transform: translateX(calc(-50% + var(--tip-shift, 0px)));
+  width: max-content;
+  max-width: 220px;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-align: center;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  padding: 6px 10px;
+  border-radius: 10px;
   font-size: 0.75rem;
   background: var(--text-strong);
   color: var(--card);
@@ -237,7 +253,7 @@
 }
 
 .compact .books {
-  justify-content: flex-start;
+  justify-content: center;
   /* 줄 반복 = li 218 + gap 28 = 246 = compact background-size 높이 */
   gap: 28px 2px;
 }

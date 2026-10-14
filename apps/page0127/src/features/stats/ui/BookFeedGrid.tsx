@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { CoverImage } from '@repo/ui';
+import { Star } from 'lucide-react';
 
 import { toCoverSource } from '@/entities/book';
 
@@ -52,14 +53,24 @@ export const BookFeedGrid = ({
             title={book.title}
             // 카드 전체를 정사각형(aspect-square)으로 고정한다. bg-muted가
             // 카드 전체의 "배경"이 되고, 표지는 그 위에 중간 크기로 얹힌 것처럼 보이게 한다
-            className='group flex aspect-square flex-col overflow-hidden rounded-md border border-line-soft bg-muted transition-transform hover:-translate-y-0.5 hover:shadow-md'
-            // 인생책은 금빛(chart-4) 테두리 — 책등 보기에서 표지를 정면으로 세우는 것과 같은 위계
+            className='group relative flex aspect-square flex-col overflow-hidden rounded-md border border-line-soft bg-muted transition-transform hover:-translate-y-0.5 hover:shadow-md'
+            // 인생책은 틸(chart-6) 얇은 안쪽 테두리 + 뱃지. 예전 굵은 노란 테두리는 경고처럼 보였다
             style={
               book.is_life_book
-                ? { borderColor: 'var(--chart-4)', borderWidth: 2 }
+                ? { boxShadow: 'inset 0 0 0 2px var(--chart-6)' }
                 : undefined
             }
           >
+            {book.is_life_book && (
+              <span
+                data-life-badge
+                className='absolute left-2 top-2 z-10 inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-bold text-white'
+                style={{ backgroundColor: 'var(--chart-6)' }}
+              >
+                <Star aria-hidden className='size-3 fill-current' />
+                인생책
+              </span>
+            )}
             {rank !== undefined && (
               <div className='pt-3 text-center leading-none'>
                 <p className='text-xs font-bold tracking-[0.2em] text-text-subtle'>

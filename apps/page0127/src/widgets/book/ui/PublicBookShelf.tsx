@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -9,6 +9,8 @@ import { CoverImage, isPreOptimizedImageSrc, ReadCountBadge } from '@repo/ui';
 
 import { isRated, isTopRated, toCoverSource } from '@/entities/book';
 import { spineWidthPx } from '@/entities/book/model/spineWidth';
+
+import { tooltipShift } from '../model/tooltipShift';
 
 import type { Book } from '@/entities/book';
 
@@ -47,6 +49,7 @@ export const PublicBookShelf = ({
   plateLabel,
 }: PublicBookShelfProps) => {
   const [imgSrc, setImgSrc] = useState<Record<string, string>>({});
+  const shelfRef = useRef<HTMLDivElement>(null);
 
   const getHref = (book: Book) => {
     if (bookHref) return bookHref(book);
@@ -72,9 +75,26 @@ export const PublicBookShelf = ({
     ...readingBooks.map((book) => ({ book, isReading: true })),
   ];
 
+  // 말풍선을 띄울 때 실제 위치를 재서 책장 밖으로 나가는 만큼 안쪽으로 민다
+  const placeTip = (event: React.SyntheticEvent<HTMLElement>) => {
+    const tip =
+      event.currentTarget.querySelector<HTMLElement>('[role="tooltip"]');
+    const shelf = shelfRef.current;
+    if (!tip || !shelf) return;
+    tip.style.setProperty('--tip-shift', '0px');
+    const shift = tooltipShift(
+      tip.getBoundingClientRect(),
+      shelf.getBoundingClientRect()
+    );
+    tip.style.setProperty('--tip-shift', `${shift}px`);
+  };
+
   return (
-    <div className={`${styles.shelf} ${compact ? styles.compact : ''}`}>
-      <ul className={styles.books} data-align='start'>
+    <div
+      ref={shelfRef}
+      className={`${styles.shelf} ${compact ? styles.compact : ''}`}
+    >
+      <ul className={styles.books} data-align='center'>
         {shelfItems.map(({ book, isReading }) => {
           // 최고 평가(5점·인생책)만 표지를 크게 세우고 나머지는 책등으로 꽂는다
           const isCoverView = isTopRated(book.rating, book.is_life_book);
@@ -108,7 +128,7 @@ export const PublicBookShelf = ({
           };
 
           return (
-            <li key={book.id}>
+            <li key={book.id} onMouseEnter={placeTip} onFocus={placeTip}>
               <Link
                 href={getHref(book)}
                 className={isReread ? styles.reread : undefined}

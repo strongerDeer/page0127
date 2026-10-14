@@ -21,4 +21,25 @@ describe('DashboardBookList 보기 전환', () => {
     expect(html).toMatch(/aria-pressed="true"[^>]*>.*책등/);
     expect(html).toContain('표지</span>');
   });
+
+  it('선택된 쪽은 파란 면(bg-primary), 아닌 쪽은 아니다 — 무엇이 선택됐는지 보이게', () => {
+    const html = renderToStaticMarkup(
+      <DashboardBookList
+        books={[createTestBook({ completed_date: '2026-01-01' })]}
+        categories={[]}
+        selectedCategories={[]}
+        searchQuery=''
+        onCategoriesChange={() => {}}
+        onSearchChange={() => {}}
+      />
+    );
+    const buttons =
+      html.match(/<button[^>]*aria-pressed="(true|false)"[^>]*>/g) ?? [];
+    const pressed =
+      buttons.find((b) => b.includes('aria-pressed="true"')) ?? '';
+    const unpressed =
+      buttons.find((b) => b.includes('aria-pressed="false"')) ?? '';
+    expect(pressed).toContain('bg-primary');
+    expect(unpressed).not.toContain('bg-primary');
+  });
 });

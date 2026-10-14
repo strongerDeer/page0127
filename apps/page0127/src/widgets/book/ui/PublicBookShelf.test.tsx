@@ -93,10 +93,10 @@ describe('PublicBookShelf — 책장 강화', () => {
     expect(html).toMatch(/aria-hidden="true"[^>]*>2026</);
   });
 
-  it('왼쪽부터 채운다 — 가운데 정렬로 몰지 않는다', () => {
+  it('가운데 정렬 — 사용자 결정(2026-10-14)으로 왼쪽 채우기를 되돌린다', () => {
     const html = renderToStaticMarkup(
       <PublicBookShelf books={[createTestBook()]} username='me' />
     );
-    expect(html).toContain('data-align="start"');
+    expect(html).toContain('data-align="center"');
   });
 });
