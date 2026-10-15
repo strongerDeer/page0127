@@ -186,9 +186,18 @@ export const PublicBookShelf = ({
                   aria-hidden='true'
                   className={styles.tip}
                 >
-                  {book.title}
-                  {isRated(book.rating) &&
-                    ` · ${book.is_life_book ? '인생책' : `${book.rating}점`}`}
+                  {/* 3줄 자르기는 안쪽 칸에서 — 여백(padding)이 있는 칸에서 자르면
+                      4번째 줄이 아래 여백으로 비친다. 인생책은 화면엔 글자를 붙이지 않고(사용자 결정 10/15)
+                      화면낭독기에만 읽힌다 — 이 말풍선이 링크의 설명(aria-describedby)이다 */}
+                  <span data-tip-text className={styles.tipText}>
+                    {book.title}
+                    {isRated(book.rating) &&
+                      !book.is_life_book &&
+                      ` · ${book.rating}점`}
+                  </span>
+                  {book.is_life_book && (
+                    <span className='sr-only'> · 인생책</span>
+                  )}
                 </span>
                 {isReading && (
                   <span data-bookmark aria-hidden className={styles.bookmark} />

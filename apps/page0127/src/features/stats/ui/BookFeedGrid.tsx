@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
 import { CoverImage } from '@repo/ui';
-import { Star } from 'lucide-react';
 
 import { toCoverSource } from '@/entities/book';
 
@@ -64,6 +63,8 @@ export const BookFeedGrid = ({
                 className='pointer-events-none absolute inset-0 z-10 rounded-md border-2 border-[color:var(--chart-6)]'
               />
             )}
+            {/* 화면엔 테두리만, 화면낭독기에는 "인생책"이라고 읽힌다 — 색만으로 구분하지 않게 */}
+            {book.is_life_book && <span className='sr-only'>인생책</span>}
             {rank !== undefined && (
               <div className='pt-3 text-center leading-none'>
                 <p className='text-xs font-bold tracking-[0.2em] text-text-subtle'>
@@ -100,23 +101,12 @@ export const BookFeedGrid = ({
             </div>
 
             {/* 선반 명패처럼 보이는 하단 워터마크 밴드 — 배경(bg-muted)보다 한 톤 더 짙게.
-                인생책은 이 명패가 틸 "★ 인생책"으로 바뀐다 — 위쪽 번호(BOOK #001)와 겹치지 않는 자리.
-                글씨는 진한 남색: 틸 위 흰 글씨는 대비가 2.5:1 로 모자란다(남색은 약 5.8:1) */}
-            {book.is_life_book ? (
-              <div
-                data-life-badge
-                className='flex shrink-0 items-center justify-center gap-1 bg-[color:var(--chart-6)] px-2 py-1.5 text-xs font-bold text-[color:var(--navy-900)]'
-              >
-                <Star aria-hidden className='size-3 fill-current' />
-                인생책
-              </div>
-            ) : (
-              <div className='shrink-0 bg-line px-2 py-1.5 text-center'>
-                <p className='text-xs font-medium uppercase tracking-[0.2em] text-text-subtle'>
-                  page0127.
-                </p>
-              </div>
-            )}
+                인생책도 그대로 둔다 — "인생책" 글자는 붙이지 않는다(사용자 결정 10/15), 표시는 테두리만 */}
+            <div className='shrink-0 bg-line px-2 py-1.5 text-center'>
+              <p className='text-xs font-medium uppercase tracking-[0.2em] text-text-subtle'>
+                page0127.
+              </p>
+            </div>
           </Link>
         );
       })}

@@ -93,6 +93,34 @@ describe('PublicBookShelf — 책장 강화', () => {
     expect(html).toMatch(/aria-hidden="true"[^>]*>2026</);
   });
 
+  it('말풍선 글자는 안쪽 칸에서 3줄로 자른다 — 여백이 있는 바깥 칸에서 자르면 4번째 줄이 아래 여백으로 비친다', () => {
+    const html = renderToStaticMarkup(
+      <PublicBookShelf
+        books={[createTestBook({ title: '긴 제목', rating: 3 })]}
+        username='me'
+      />
+    );
+    expect(html).toMatch(
+      /role="tooltip"[^>]*><span data-tip-text[^>]*>긴 제목 · 3점</
+    );
+  });
+
+  it('인생책은 말풍선에 "인생책"을 보이지 않게 — 제목만. 화면낭독기에는 읽힌다(aria-describedby 가 말풍선을 읽는다)', () => {
+    const html = renderToStaticMarkup(
+      <PublicBookShelf
+        books={[
+          createTestBook({ title: '최고의 책', rating: 5, is_life_book: true }),
+        ]}
+        username='me'
+      />
+    );
+    expect(html).toMatch(/data-tip-text[^>]*>최고의 책</);
+    // 말풍선(링크의 설명) 안에 화면에는 안 보이는 "인생책"
+    expect(html).toMatch(
+      /role="tooltip"[\s\S]*?<span class="sr-only">[^<]*인생책<\/span>[\s\S]*?<\/span>/
+    );
+  });
+
   it('가운데 정렬 — 사용자 결정(2026-10-14)으로 왼쪽 채우기를 되돌린다', () => {
     const html = renderToStaticMarkup(
       <PublicBookShelf books={[createTestBook()]} username='me' />
