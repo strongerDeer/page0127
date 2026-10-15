@@ -2,8 +2,12 @@ import { RelativeTime } from '@/shared/ui/RelativeTime';
 
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-const ago = (seconds: number) =>
-  new Date(Date.now() - seconds * 1000).toISOString();
+// '지금'을 고정한다. 진짜 Date.now() 를 쓰면 7일 넘은 값이 날마다 다른 절대 날짜로
+// 찍혀 Chromatic 스냅샷이 매일 바뀐다. 아래 meta.beforeEach 가 컴포넌트 안의
+// Date.now() 도 이 값으로 바꿔 둔다 — 둘이 같은 기준을 봐야 "3시간 전"이 맞게 나온다.
+const NOW = new Date('2026-07-14T12:00:00+09:00').getTime();
+
+const ago = (seconds: number) => new Date(NOW - seconds * 1000).toISOString();
 
 const MIN = 60;
 const HOUR = MIN * 60;
@@ -70,6 +74,15 @@ const meta = {
     date: ago(3 * HOUR),
     className: 'text-sm text-text-subtle',
   },
+  // 스토리마다 렌더 전에 실행된다. 돌려주는 함수는 스토리가 끝날 때 불리는 정리 함수 —
+  // 원래 Date.now 를 되돌려 놓지 않으면 다른 스토리·테스트까지 시계가 멈춘다.
+  beforeEach: () => {
+    const realNow = Date.now;
+    Date.now = () => NOW;
+    return () => {
+      Date.now = realNow;
+    };
+  },
 } satisfies Meta<typeof RelativeTime>;
 
 export default meta;
@@ -133,7 +146,7 @@ export const LimitDays: Story = {
  * 미래 시각(서버-클라이언트 시계 오차)이 들어와도 "-3분 전"을 만들지 않는다.
  */
 export const FutureDate: Story = {
-  args: { date: new Date(Date.now() + 3 * MIN * 1000).toISOString() },
+  args: { date: ago(-3 * MIN) },
 };
 
 /**
