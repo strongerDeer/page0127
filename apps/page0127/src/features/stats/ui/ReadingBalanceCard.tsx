@@ -17,9 +17,7 @@ const CategoryRadarChart = dynamic(
   () => import('./CategoryRadarChart').then((m) => m.CategoryRadarChart),
   {
     ssr: false,
-    loading: () => (
-      <div className='h-[340px] animate-pulse rounded-lg bg-muted' />
-    ),
+    loading: () => <div className='h-full animate-pulse rounded-lg bg-muted' />,
   }
 );
 
@@ -48,7 +46,12 @@ export const ReadingBalanceCard = ({
         hasRadar ? 'md:grid-cols-[360px_1fr]' : ''
       }`}
     >
-      {hasRadar && <CategoryRadarChart data={axes} height={340} />}
+      {/* 모바일은 폭(라벨 여백 52px×2)이 레이더 크기를 정한다 — 높이를 폭에 맞춰(220) 줄여 위아래 빈 공간을 없앤다 */}
+      {hasRadar && (
+        <div className='h-[220px] md:h-[340px]'>
+          <CategoryRadarChart data={axes} height='100%' />
+        </div>
+      )}
 
       <div className='min-w-0'>
         <div className='flex items-baseline justify-between gap-2'>
@@ -80,7 +83,9 @@ export const ReadingBalanceCard = ({
               </span>
             </div>
 
-            {/* 식단 띠 — 100% 가로 막대. 칸마다 권수·비율은 툴팁, 화면낭독기는 아래 문장으로 */}
+            {/* 식단 띠 — 100% 가로 막대. 칸마다 권수·비율은 툴팁, 화면낭독기는 아래 문장으로.
+                폭은 권수로 나눈다(flex-grow) — 반올림한 %를 더하면 98%처럼 모자라 오른쪽 끝이 비었다.
+                min-w-0: 글자 폭보다 작게 줄어들 수 있어야 칸끼리 글자가 붙지 않는다 */}
             <div
               className='mt-4 flex h-9 overflow-hidden rounded-xl'
               aria-hidden
@@ -89,13 +94,20 @@ export const ReadingBalanceCard = ({
                 <div
                   key={category}
                   title={`${category} ${count}권 · ${share}%`}
-                  className='flex items-center justify-center truncate px-1 text-xs font-medium text-white'
+                  className='flex min-w-0 basis-0 items-center justify-center px-1 text-xs font-medium text-white'
                   style={{
-                    width: `${share}%`,
+                    flexGrow: count,
                     backgroundColor: categoryColor(rank),
                   }}
                 >
-                  {share >= 12 ? `${category.split('/')[0]} ${count}` : ''}
+                  {share >= 12 && (
+                    // 20% 미만 칸은 모바일 폭에선 이름이 들어가지 않는다 → sm 부터
+                    <span
+                      className={`truncate ${share < 20 ? 'hidden sm:inline' : ''}`}
+                    >
+                      {`${category.split('/')[0]} ${count}`}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>

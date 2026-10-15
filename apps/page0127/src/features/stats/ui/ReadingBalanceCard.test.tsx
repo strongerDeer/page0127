@@ -49,6 +49,45 @@ describe('ReadingBalanceCard', () => {
     expect(html).toContain('data-axes="3"');
   });
 
+  it('띠 칸 폭은 권수 비율(flex-grow) — 반올림한 %를 더하면 100%가 안 돼 오른쪽 끝이 비고 둥글지 않았다', () => {
+    const html = renderToStaticMarkup(
+      <ReadingBalanceCard
+        year={2026}
+        balance={calculateReadingBalance(THREE)}
+      />
+    );
+    expect(html).toMatch(/title="소설\/시\/희곡[^"]*"[^>]*flex-grow:5/);
+    expect(html).not.toMatch(/width:\d+%/);
+  });
+
+  it('좁은 칸(20% 미만)의 이름은 모바일에서 숨긴다 — 칸끼리 글자가 붙었다(컴퓨터 2인문학 2)', () => {
+    // 6 · 5 · 2 권 → 46% · 38% · 15%
+    const balance = calculateReadingBalance([
+      ...books('소설', 6),
+      ...books('자기계발', 5),
+      ...books('에세이', 2),
+    ]);
+    const html = renderToStaticMarkup(
+      <ReadingBalanceCard year={2026} balance={balance} />
+    );
+    expect(html).toMatch(/<span class="[^"]*hidden sm:inline[^"]*">에세이 2</);
+    expect(html).not.toMatch(
+      /<span class="[^"]*hidden sm:inline[^"]*">소설 6</
+    );
+  });
+
+  it('레이더는 모바일에서 낮게(220px) — 레이더 크기는 폭이 정해서 높이가 크면 위아래만 빈다', () => {
+    const html = renderToStaticMarkup(
+      <ReadingBalanceCard
+        year={2026}
+        balance={calculateReadingBalance(THREE)}
+      />
+    );
+    expect(html).toMatch(
+      /h-\[220px\] md:h-\[340px\][^>]*><div data-testid="radar"/
+    );
+  });
+
   it('순위 막대 목록은 띠와 겹쳐서 뺀다 — 숫자는 띠 칸의 접근명·툴팁으로', () => {
     const html = renderToStaticMarkup(
       <ReadingBalanceCard

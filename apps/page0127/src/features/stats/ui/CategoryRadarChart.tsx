@@ -16,8 +16,8 @@ import type { CategoryReadingData } from '@/entities/book';
 
 type CategoryRadarChartProps = {
   data: CategoryReadingData[];
-  /** 차트 높이(px) — 서재 균형 카드는 크게(340), 기본 300 */
-  height?: number;
+  /** 차트 높이(px) — 기본 300. '100%'면 감싼 칸의 높이를 따른다(균형 카드: 모바일 220 · md 340) */
+  height?: number | '100%';
 };
 
 /** 카테고리별 독서 취향을 한눈에 보여주는 레이더 차트 */
