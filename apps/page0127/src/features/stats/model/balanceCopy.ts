@@ -53,17 +53,22 @@ const MAX_RADAR_AXES = 8;
 const MIN_RADAR_AXES = 3;
 
 /**
- * 레이더에 그릴 축 — 내가 읽은 분야만, 많이 읽은 순으로 최대 8개.
+ * 레이더에 그릴 축 — 내가 읽은 분야만, 최대 8개.
+ * 고르는 건 많이 읽은 순, 그리는 순서는 고정 분야 순서(categories).
+ * 많이 읽은 순으로 돌리면 값이 계속 줄어들어 누구 레이더든 소용돌이 모양이 된다.
  * 안 읽은 분야는 축 대신 텍스트로 보여 준다(사람마다 축이 다르다).
  * 3개 미만이면 빈 배열 — 그때는 레이더 없이 띠만 그린다.
  */
 export const radarAxes = (
   balance: ReadingBalance
 ): { category: string; count: number }[] => {
-  const axes = balance.ranked
-    .slice(0, MAX_RADAR_AXES)
+  const picked = new Set(
+    balance.ranked.slice(0, MAX_RADAR_AXES).map(({ category }) => category)
+  );
+  if (picked.size < MIN_RADAR_AXES) return [];
+  return balance.categories
+    .filter(({ category }) => picked.has(category))
     .map(({ category, count }) => ({ category, count }));
-  return axes.length < MIN_RADAR_AXES ? [] : axes;
 };
 
 /**

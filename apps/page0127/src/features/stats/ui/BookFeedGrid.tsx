@@ -54,22 +54,15 @@ export const BookFeedGrid = ({
             // 카드 전체를 정사각형(aspect-square)으로 고정한다. bg-muted가
             // 카드 전체의 "배경"이 되고, 표지는 그 위에 중간 크기로 얹힌 것처럼 보이게 한다
             className='group relative flex aspect-square flex-col overflow-hidden rounded-md border border-line-soft bg-muted transition-transform hover:-translate-y-0.5 hover:shadow-md'
-            // 인생책은 틸(chart-6) 얇은 안쪽 테두리 + 뱃지. 예전 굵은 노란 테두리는 경고처럼 보였다
-            style={
-              book.is_life_book
-                ? { boxShadow: 'inset 0 0 0 2px var(--chart-6)' }
-                : undefined
-            }
           >
+            {/* 인생책 테두리 — 맨 위 겹침 층이라 아래 띠·표지에 가리지 않고, hover 그림자도 그대로 산다.
+                예전 굵은 노란 테두리는 경고처럼 보였다 → 틸(chart-6) 얇은 선 */}
             {book.is_life_book && (
               <span
-                data-life-badge
-                className='absolute left-2 top-2 z-10 inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-bold text-white'
-                style={{ backgroundColor: 'var(--chart-6)' }}
-              >
-                <Star aria-hidden className='size-3 fill-current' />
-                인생책
-              </span>
+                data-life-ring
+                aria-hidden
+                className='pointer-events-none absolute inset-0 z-10 rounded-md border-2 border-[color:var(--chart-6)]'
+              />
             )}
             {rank !== undefined && (
               <div className='pt-3 text-center leading-none'>
@@ -106,12 +99,24 @@ export const BookFeedGrid = ({
               />
             </div>
 
-            {/* 선반 명패처럼 보이는 하단 워터마크 밴드 — 배경(bg-muted)보다 한 톤 더 짙게 */}
-            <div className='shrink-0 bg-line px-2 py-1.5 text-center'>
-              <p className='text-xs font-medium uppercase tracking-[0.2em] text-text-subtle'>
-                page0127.
-              </p>
-            </div>
+            {/* 선반 명패처럼 보이는 하단 워터마크 밴드 — 배경(bg-muted)보다 한 톤 더 짙게.
+                인생책은 이 명패가 틸 "★ 인생책"으로 바뀐다 — 위쪽 번호(BOOK #001)와 겹치지 않는 자리.
+                글씨는 진한 남색: 틸 위 흰 글씨는 대비가 2.5:1 로 모자란다(남색은 약 5.8:1) */}
+            {book.is_life_book ? (
+              <div
+                data-life-badge
+                className='flex shrink-0 items-center justify-center gap-1 bg-[color:var(--chart-6)] px-2 py-1.5 text-xs font-bold text-[color:var(--navy-900)]'
+              >
+                <Star aria-hidden className='size-3 fill-current' />
+                인생책
+              </div>
+            ) : (
+              <div className='shrink-0 bg-line px-2 py-1.5 text-center'>
+                <p className='text-xs font-medium uppercase tracking-[0.2em] text-text-subtle'>
+                  page0127.
+                </p>
+              </div>
+            )}
           </Link>
         );
       })}

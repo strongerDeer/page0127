@@ -20,6 +20,7 @@ import { ReadingGoalDialog } from '@/features/profile/ui/ReadingGoalDialog';
 
 import { LibraryView } from '@/widgets/library/LibraryView';
 
+import { pickFanCovers } from './model/fanCovers';
 import { PublicLibraryHeader } from './PublicLibraryHeader';
 import { VisitorChemiCard, VisitorSignupBanner } from './VisitorCta';
 
@@ -129,21 +130,7 @@ export const PublicLibraryContent = ({
   );
 
   // 가입 배너의 부채꼴 — 주인의 공개 완독 책 중 가장 최근 3권(표지가 있는 것)
-  const recentCovers = useMemo(
-    () =>
-      publicBooks
-        .filter(
-          (book) =>
-            book.status === 'completed' &&
-            book.completed_date &&
-            (book.cover_image || book.provider_item_id)
-        )
-        .sort((a, b) =>
-          (b.completed_date ?? '').localeCompare(a.completed_date ?? '')
-        )
-        .slice(0, 3),
-    [publicBooks]
-  );
+  const recentCovers = useMemo(() => pickFanCovers(publicBooks), [publicBooks]);
 
   // 달력: 방문자는 공개만(books 가 이미 공개만 온다), 주인은 비공개까지 — 반투명으로 그린다
   const calendarBooks = isOwnProfile ? books : publicBooks;

@@ -40,6 +40,12 @@ describe('ReadingNowStrip', () => {
     expect((html.match(/~</g) ?? []).length).toBe(1);
   });
 
+  it('말풍선은 스트립 밖으로 나가지 않는다 — 가로만 잘라(clip) 페이지 가로 스크롤을 막고, 위치는 --tip-shift 로 안쪽에 밀어 넣는다', () => {
+    const html = render();
+    expect(html).toMatch(/<section[^>]*overflow-x-clip/);
+    expect(html).toMatch(/role="tooltip"[^>]*var\(--tip-shift\)/);
+  });
+
   it('제목이 화면에 상시 보이지 않아도 링크 이름으로는 읽힌다', () => {
     const html = render();
     expect(html).toContain('aria-label="대온실 수리 보고서, 10/2부터 읽는 중"');

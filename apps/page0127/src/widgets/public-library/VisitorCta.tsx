@@ -146,33 +146,37 @@ export const VisitorSignupBanner = ({
         </Button>
       </div>
 
+      {/* 좁은 화면(≤360px)에선 284px 부채꼴이 띠 안쪽(약 240px)보다 넓다 → 0.8배로.
+          scale 은 차지하는 칸을 줄이지 않으므로 바깥 칸(227×115)을 따로 잡는다 */}
       {fan.length > 0 && (
-        <div
-          aria-hidden
-          className='relative order-1 mx-auto h-36 w-[284px] md:order-2'
-        >
-          {fan.map((book, i) => (
-            <span
-              key={book.id}
-              data-fan-cover
-              className='absolute bottom-0 block h-[124px] w-[84px] border-2 border-white/90 shadow-[0_14px_28px_rgba(0,0,0,0.35)]'
-              style={{
-                left: FAN[i].left,
-                transform: `rotate(${FAN[i].rotate}deg)`,
-              }}
-            >
-              <BookCover
-                {...toCoverSource(book)}
-                title={book.title}
-                decorative
-                size='fill'
-                sizes='84px'
-              />
+        <div className='order-1 mx-auto h-[115px] w-[227px] sm:h-36 sm:w-[284px] md:order-2'>
+          <div
+            aria-hidden
+            className='relative h-36 w-[284px] origin-top-left scale-80 sm:scale-100'
+          >
+            {fan.map((book, i) => (
+              <span
+                key={book.id}
+                data-fan-cover
+                className='absolute bottom-0 block h-[124px] w-[84px] border-2 border-white/90 shadow-[0_14px_28px_rgba(0,0,0,0.35)]'
+                style={{
+                  left: FAN[i].left,
+                  transform: `rotate(${FAN[i].rotate}deg)`,
+                }}
+              >
+                <BookCover
+                  {...toCoverSource(book)}
+                  title={book.title}
+                  decorative
+                  size='fill'
+                  sizes='84px'
+                />
+              </span>
+            ))}
+            <span className='absolute bottom-0 right-0 flex h-[124px] w-[84px] flex-col items-center justify-center rounded-[3px_6px_6px_3px] border-2 border-dashed border-white/60 text-xs text-white/85'>
+              <span className='text-xl leading-none'>+</span>내 책
             </span>
-          ))}
-          <span className='absolute bottom-0 right-0 flex h-[124px] w-[84px] flex-col items-center justify-center rounded-[3px_6px_6px_3px] border-2 border-dashed border-white/60 text-xs text-white/85'>
-            <span className='text-xl leading-none'>+</span>내 책
-          </span>
+          </div>
         </div>
       )}
     </section>
