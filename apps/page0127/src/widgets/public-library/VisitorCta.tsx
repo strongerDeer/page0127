@@ -1,11 +1,16 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 
-import { Button } from '@repo/ui';
-import { ArrowRight, ChevronRight } from 'lucide-react';
+import { BookCover, Button, isPreOptimizedImageSrc } from '@repo/ui';
+import { ArrowRight } from 'lucide-react';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
+
+import { toCoverSource } from '@/entities/book';
+
+import type { Book } from '@/entities/book';
 
 /**
  * 남의 공개 서재에 들어온 비로그인 방문자를 위한 가입 길.
@@ -17,59 +22,163 @@ import { trackEvent } from '@/shared/lib/analytics/trackEvent';
  * 둘 다 로그인 대신 홈의 맛보기로 보낸다(고르고 → 저장 → 로그인 흐름이 거기 있다).
  */
 
-type VisitorCtaProps = {
+type VisitorChemiCardProps = {
   /** 서재 주인의 표시 이름 */
   name: string;
+  /** 주인 프로필 사진 — 없으면 이름 첫 글자 */
+  photoUrl: string | null;
 };
 
-export const VisitorChemiCard = ({ name }: VisitorCtaProps) => (
+/**
+ * 프로필 아래 케미 카드.
+ * 흰 줄 카드라 눈에 띄지 않았다 → 주인 얼굴과 "나(?)"를 겹쳐 그리고 파란 버튼으로 행동을 분명히.
+ */
+export const VisitorChemiCard = ({ name, photoUrl }: VisitorChemiCardProps) => (
   <Link
     href='/'
     onClick={() =>
       trackEvent('cta_click', { location: 'library_chemi', label: '독서 케미' })
     }
-    className='flex items-center gap-3 rounded-2xl border border-primary/25 bg-card px-5 py-4 transition hover:border-primary/50 hover:shadow-sm'
+    className='group flex flex-col gap-4 rounded-3xl border border-primary/25 bg-gradient-to-r from-card via-card to-accent px-5 py-5 transition hover:border-primary/50 hover:shadow-sm sm:flex-row sm:items-center sm:gap-5 sm:px-6'
   >
+    <span
+      data-chemi-duo
+      aria-hidden
+      className='relative block h-12 w-20 shrink-0'
+    >
+      <span
+        data-owner-avatar
+        className='absolute left-0 top-0 flex size-12 items-center justify-center overflow-hidden rounded-full border-[3px] border-card bg-primary/10 text-lg font-bold text-primary'
+      >
+        {photoUrl ? (
+          <Image
+            src={photoUrl}
+            alt=''
+            fill
+            sizes='48px'
+            className='object-cover'
+            unoptimized={isPreOptimizedImageSrc(photoUrl)}
+          />
+        ) : (
+          name.charAt(0).toUpperCase()
+        )}
+      </span>
+      <span className='absolute left-8 top-0 flex size-12 items-center justify-center rounded-full border-[3px] border-card bg-accent text-xl font-extrabold text-primary'>
+        ?
+      </span>
+    </span>
+
     <span className='min-w-0 flex-1'>
-      <span className='block break-keep font-bold text-text-strong'>
+      <span className='block break-keep text-lg font-bold text-text-strong'>
         {name}님과 나, 독서 케미는?
       </span>
       <span className='mt-0.5 block break-keep text-sm text-text-subtle'>
-        읽은 책을 골라 내 책장부터 만들어 보세요
+        읽은 책 몇 권만 골라도 둘의 취향이 얼마나 겹치는지 보여 줘요
       </span>
     </span>
-    <ChevronRight aria-hidden='true' className='size-5 shrink-0 text-primary' />
+
+    <span className='inline-flex shrink-0 items-center gap-1.5 self-start rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition group-hover:bg-primary/90 sm:self-auto'>
+      케미 알아보기
+      <ArrowRight aria-hidden className='size-4' />
+    </span>
   </Link>
 );
 
-export const VisitorSignupBanner = ({ name }: VisitorCtaProps) => (
-  <section
-    aria-labelledby='visitor-signup-title'
-    className='band-strong flex flex-col items-center gap-3 rounded-2xl px-6 py-10 text-center'
-  >
-    <h2 id='visitor-signup-title' className='heading-2 text-white'>
-      나도 내 책장 만들기
-    </h2>
-    <p className='break-keep text-sm text-white/75'>
-      {name}님처럼 읽은 책을 꽂아 두면 책장이 취향을 말해 줘요. 무료 · 30초
-    </p>
-    <Button
-      asChild
-      size='lg'
-      className='mt-2 gap-2 bg-white px-8 text-[color:var(--navy-900)] hover:bg-white/90'
+type VisitorSignupBannerProps = {
+  name: string;
+  /** 주인 책장의 최근 완독 표지 — 앞 3장만 그린다 */
+  covers: Book[];
+};
+
+/** 부채꼴 3장의 기울기·위치 (왼쪽부터) */
+const FAN = [
+  { left: 0, rotate: -8 },
+  { left: 56, rotate: -2 },
+  { left: 112, rotate: 4 },
+];
+
+/**
+ * 페이지 끝 가입 배너.
+ * 가운데 글자만 있던 남색 띠 → 왼쪽 문구·버튼, 오른쪽에 주인 책장의 표지 3장 + 점선 "내 책" 자리.
+ * "남의 책장 → 내 책장"이 그림으로 읽히게 한다.
+ */
+export const VisitorSignupBanner = ({
+  name,
+  covers,
+}: VisitorSignupBannerProps) => {
+  const fan = covers.slice(0, FAN.length);
+
+  return (
+    <section
+      aria-labelledby='visitor-signup-title'
+      className={`band-strong grid items-center gap-8 overflow-hidden rounded-3xl px-6 py-9 sm:px-10 ${
+        fan.length > 0 ? 'md:grid-cols-[1fr_300px]' : ''
+      }`}
     >
-      <Link
-        href='/'
-        onClick={() =>
-          trackEvent('cta_click', {
-            location: 'library_bottom',
-            label: '내 책장 만들기',
-          })
-        }
-      >
-        내 책장 만들기
-        <ArrowRight aria-hidden='true' className='size-4' />
-      </Link>
-    </Button>
-  </section>
-);
+      <div className='order-2 md:order-1'>
+        <p className='text-sm font-semibold text-white/60'>
+          책장을 보면, 그 사람이 보인다
+        </p>
+        <h2 id='visitor-signup-title' className='heading-2 mt-1 text-white'>
+          나도 내 책장 만들기
+        </h2>
+        <p className='mt-2 break-keep text-sm text-white/75'>
+          {name}님처럼 읽은 책을 꽂아 두면 책장이 취향을 말해 줘요. 무료 ·
+          30초면 첫 책장이 생겨요
+        </p>
+        <Button
+          asChild
+          size='lg'
+          className='mt-5 gap-2 bg-white px-7 text-[color:var(--navy-900)] hover:bg-white/90'
+        >
+          <Link
+            href='/'
+            onClick={() =>
+              trackEvent('cta_click', {
+                location: 'library_bottom',
+                label: '내 책장 만들기',
+              })
+            }
+          >
+            내 책장 만들기
+            <ArrowRight aria-hidden='true' className='size-4' />
+          </Link>
+        </Button>
+      </div>
+
+      {/* 좁은 화면(≤360px)에선 284px 부채꼴이 띠 안쪽(약 240px)보다 넓다 → 0.8배로.
+          scale 은 차지하는 칸을 줄이지 않으므로 바깥 칸(227×115)을 따로 잡는다 */}
+      {fan.length > 0 && (
+        <div className='order-1 mx-auto h-[115px] w-[227px] sm:h-36 sm:w-[284px] md:order-2'>
+          <div
+            aria-hidden
+            className='relative h-36 w-[284px] origin-top-left scale-80 sm:scale-100'
+          >
+            {fan.map((book, i) => (
+              <span
+                key={book.id}
+                data-fan-cover
+                className='absolute bottom-0 block h-[124px] w-[84px] border-2 border-white/90 shadow-[0_14px_28px_rgba(0,0,0,0.35)]'
+                style={{
+                  left: FAN[i].left,
+                  transform: `rotate(${FAN[i].rotate}deg)`,
+                }}
+              >
+                <BookCover
+                  {...toCoverSource(book)}
+                  title={book.title}
+                  decorative
+                  size='fill'
+                  sizes='84px'
+                />
+              </span>
+            ))}
+            <span className='absolute bottom-0 right-0 flex h-[124px] w-[84px] flex-col items-center justify-center rounded-[3px_6px_6px_3px] border-2 border-dashed border-white/60 text-xs text-white/85'>
+              <span className='text-xl leading-none'>+</span>내 책
+            </span>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+};

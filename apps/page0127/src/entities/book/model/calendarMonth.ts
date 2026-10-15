@@ -67,23 +67,22 @@ type Range = {
   colorIndex: number;
 };
 
-/** 이 달에 걸치는 기간(시작일이 있는 책만)과 줄 배정 */
+/**
+ * 이 달에 걸치는 기간과 줄 배정 — **완독한 책의 시작~완독만**.
+ *
+ * 읽는 중인 책을 오늘까지 이으면, 몇 달째 읽는 책 한 권이 매달 달력 전체를 줄로 채운다
+ * (2026-10-14 운영: 7/26 시작한 책이 8·9·10월을 덮었다). 읽는 중은 '지금 읽는 중'이 보여 준다.
+ */
 const layoutRanges = (
   books: Book[],
   monthStart: string,
-  monthEnd: string,
-  today: string
+  monthEnd: string
 ): Range[] => {
   const candidates = books
     .flatMap((book) => {
-      if (!book.start_date) return [];
-      const end =
-        book.status === 'completed'
-          ? book.completed_date
-          : book.status === 'reading'
-            ? today
-            : null;
-      // 읽고 싶어요·끝 날짜 없음·시작>끝(입력 실수)은 그리지 않는다
+      if (!book.start_date || book.status !== 'completed') return [];
+      const end = book.completed_date;
+      // 완독일 없음·시작>끝(입력 실수)은 그리지 않는다
       if (!end || book.start_date > end) return [];
       if (end < monthStart || book.start_date > monthEnd) return [];
       return [{ book, start: book.start_date, end }];
@@ -105,13 +104,12 @@ const layoutRanges = (
 export const buildCalendarMonth = (
   books: Book[],
   year: number,
-  month: number,
-  today: string
+  month: number
 ): CalendarMonth => {
   const total = daysInMonth(year, month);
   const monthStart = toDate(year, month, 1);
   const monthEnd = toDate(year, month, total);
-  const ranges = layoutRanges(books, monthStart, monthEnd, today);
+  const ranges = layoutRanges(books, monthStart, monthEnd);
   const colorOf = new Map(ranges.map((r) => [r.book.id, r.colorIndex]));
   const completed = books.filter(isCompleted);
 

@@ -38,6 +38,13 @@ describe('YearSummary', () => {
     expect(html).toContain('3.2점');
   });
 
+  it('환산 칸은 같은 폭 격자 — 글자 길이대로 들쭉날쭉하지 않게(모바일 2열, 넓으면 한 줄 등분)', () => {
+    const html = render();
+    expect(html).toContain('data-facts');
+    expect(html).toMatch(/data-facts[^>]*class="[^"]*grid grid-cols-2/);
+    expect(html).toMatch(/data-facts[^>]*class="[^"]*sm:auto-cols-fr/);
+  });
+
   it('목표가 있으면 진행률과 오늘 기준 눈금', () => {
     const html = render();
     expect(html).toContain('목표 40권 · 35%');

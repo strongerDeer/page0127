@@ -17,7 +17,7 @@ const findDay = (m: CalendarMonth, day: number) => {
 
 describe('buildCalendarMonth', () => {
   it('일요일 시작 주 배열 — 2026년 9월 1일은 화요일', () => {
-    const m = buildCalendarMonth([], 2026, 9, TODAY);
+    const m = buildCalendarMonth([], 2026, 9);
     expect(m.weeks[0].slice(0, 2)).toEqual([null, null]);
     expect(m.weeks[0][2]?.date).toBe('2026-09-01');
     expect(m.weeks.flat().filter(Boolean)).toHaveLength(30);
@@ -34,7 +34,7 @@ describe('buildCalendarMonth', () => {
       is_public: false,
       page_count: 200,
     });
-    const m = buildCalendarMonth([pub, priv], 2026, 9, TODAY);
+    const m = buildCalendarMonth([pub, priv], 2026, 9);
     expect(findDay(m, 5).completions.map((c) => c.book.id)).toEqual([
       pub.id,
       priv.id,
@@ -53,8 +53,7 @@ describe('buildCalendarMonth', () => {
         createTestBook({ completed_date: '2026-08-05' }),
       ],
       2026,
-      9,
-      TODAY
+      9
     );
     expect(findDay(m, 5).completions).toHaveLength(0);
   });
@@ -64,7 +63,7 @@ describe('buildCalendarMonth', () => {
       start_date: '2026-08-28',
       completed_date: '2026-09-03',
     });
-    const m = buildCalendarMonth([book], 2026, 9, TODAY);
+    const m = buildCalendarMonth([book], 2026, 9);
     expect(findDay(m, 1).ranges[0]).toMatchObject({
       lane: 0,
       isStart: false,
@@ -78,15 +77,13 @@ describe('buildCalendarMonth', () => {
     );
   });
 
-  it('읽는 중인 책은 오늘까지 이어진다', () => {
+  it('읽는 중인 책은 막대를 그리지 않는다 — 몇 달째 읽는 책이 매달 줄을 채웠다(2026-10-14)', () => {
     const book = createTestBook({
       status: 'reading',
-      start_date: '2026-10-02',
+      start_date: '2026-07-26',
     });
-    const m = buildCalendarMonth([book], 2026, 10, TODAY);
-    expect(findDay(m, 2).ranges[0].isStart).toBe(true);
-    expect(findDay(m, 13).ranges[0].isEnd).toBe(true);
-    expect(findDay(m, 14).ranges).toHaveLength(0);
+    const m = buildCalendarMonth([book], 2026, 10);
+    expect(m.weeks.flat().some((d) => (d?.ranges.length ?? 0) > 0)).toBe(false);
   });
 
   it('시작일이 없거나, 시작>완독이거나, 읽고 싶어요면 막대를 그리지 않는다', () => {
@@ -100,8 +97,7 @@ describe('buildCalendarMonth', () => {
         createTestBook({ status: 'want_to_read', start_date: '2026-09-01' }),
       ],
       2026,
-      9,
-      TODAY
+      9
     );
     expect(m.weeks.flat().some((d) => (d?.ranges.length ?? 0) > 0)).toBe(false);
     expect(findDay(m, 10).completions[0].colorIndex).toBeNull();
@@ -114,7 +110,7 @@ describe('buildCalendarMonth', () => {
         completed_date: `2026-09-1${n}`,
       })
     );
-    const m = buildCalendarMonth(books, 2026, 9, TODAY);
+    const m = buildCalendarMonth(books, 2026, 9);
     const day1 = findDay(m, 1);
     expect(day1.ranges.map((r) => r.lane)).toEqual([0, 1, 2]);
     expect(day1.overflow).toBe(1);
@@ -130,7 +126,7 @@ describe('buildCalendarMonth', () => {
       start_date: '2026-09-05',
       completed_date: '2026-09-07',
     });
-    const m = buildCalendarMonth([a, b], 2026, 9, TODAY);
+    const m = buildCalendarMonth([a, b], 2026, 9);
     expect(findDay(m, 5).ranges[0].lane).toBe(0);
   });
 
@@ -143,8 +139,7 @@ describe('buildCalendarMonth', () => {
         createTestBook({ completed_date: '2025-12-31' }),
       ],
       2026,
-      9,
-      TODAY
+      9
     );
     expect(m.activeMonths).toEqual([1, 5]);
   });

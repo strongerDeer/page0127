@@ -348,9 +348,10 @@ export const DashboardBookList = ({
           </PopoverContent>
         </Popover>
 
-        <div className='flex items-center gap-0.5 rounded-md border border-line-soft p-0.5'>
+        {/* 분절 버튼 — 고른 쪽은 파란 면(default). 연회색(secondary)은 무엇이 선택됐는지 안 보였다 */}
+        <div className='flex items-center gap-0.5 rounded-lg border border-line-soft bg-sunken p-0.5'>
           <Button
-            variant={viewMode === 'shelf' ? 'secondary' : 'ghost'}
+            variant={viewMode === 'shelf' ? 'default' : 'ghost'}
             size='sm'
             className='h-7 px-2'
             aria-pressed={viewMode === 'shelf'}
@@ -361,7 +362,7 @@ export const DashboardBookList = ({
             <span className='ml-1'>책등</span>
           </Button>
           <Button
-            variant={viewMode === 'feed' ? 'secondary' : 'ghost'}
+            variant={viewMode === 'feed' ? 'default' : 'ghost'}
             size='sm'
             className='h-7 px-2'
             aria-pressed={viewMode === 'feed'}

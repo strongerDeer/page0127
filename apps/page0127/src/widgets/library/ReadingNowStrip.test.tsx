@@ -15,8 +15,8 @@ describe('ReadingNowStrip', () => {
     ).toBe('');
   });
 
-  it('한 줄 — 제목 옆에 시작일(M/D~)', () => {
-    const html = renderToStaticMarkup(
+  const render = () =>
+    renderToStaticMarkup(
       <ReadingNowStrip
         books={[
           createTestBook({
@@ -29,9 +29,26 @@ describe('ReadingNowStrip', () => {
         bookHref={href}
       />
     );
+
+  it('표지를 크게(56×84), 제목은 말풍선으로만 — 시작일은 말풍선 안(M/D~)', () => {
+    const html = render();
     expect(html).toContain('지금 읽는 중');
-    expect(html).toContain('10/2~');
+    expect(html).toContain('h-21 w-14');
+    expect((html.match(/role="tooltip"/g) ?? []).length).toBe(2);
+    expect(html).toMatch(/role="tooltip"[^>]*>대온실 수리 보고서 · 10\/2~</);
     // 시작일이 없는 책은 날짜를 만들지 않는다
     expect((html.match(/~</g) ?? []).length).toBe(1);
+  });
+
+  it('말풍선은 스트립 밖으로 나가지 않는다 — 가로만 잘라(clip) 페이지 가로 스크롤을 막고, 위치는 --tip-shift 로 안쪽에 밀어 넣는다', () => {
+    const html = render();
+    expect(html).toMatch(/<section[^>]*overflow-x-clip/);
+    expect(html).toMatch(/role="tooltip"[^>]*var\(--tip-shift\)/);
+  });
+
+  it('제목이 화면에 상시 보이지 않아도 링크 이름으로는 읽힌다', () => {
+    const html = render();
+    expect(html).toContain('aria-label="대온실 수리 보고서, 10/2부터 읽는 중"');
+    expect(html).toContain('aria-label="손절사회, 읽는 중"');
   });
 });

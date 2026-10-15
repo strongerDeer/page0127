@@ -8,6 +8,7 @@ import {
   getBalanceDelta,
   getBalanceLabel,
   getBalanceSummary,
+  radarAxes,
 } from './balanceCopy';
 
 const books = (category: string, count: number) =>
@@ -72,6 +73,64 @@ describe('balanceCopy', () => {
     expect(
       getBalanceDelta(calculateReadingBalance(books('소설', 3)))
     ).toBeNull();
+  });
+
+  it('레이더 축 — 읽은 분야만, 그리는 순서는 고정 분야 순서(많이 읽은 순이면 누구든 소용돌이 모양이 된다)', () => {
+    const balance = calculateReadingBalance([
+      ...books('소설', 5),
+      ...books('자기계발', 4),
+      ...books('에세이', 2),
+      ...books('경제경영', 1),
+    ]);
+    // BALANCE_CATEGORIES 순서: 컴퓨터 · 소설 · 인문 · 에세이 · 경제 · 자기계발 · …
+    expect(radarAxes(balance)).toEqual([
+      { category: '소설/시/희곡', count: 5 },
+      { category: '에세이', count: 2 },
+      { category: '경제/경영', count: 1 },
+      { category: '자기계발', count: 4 },
+    ]);
+  });
+
+  it('9개를 다 읽으면 가장 적게 읽은 분야 하나를 뺀다(고르는 건 권수, 그리는 건 고정 순서)', () => {
+    const nine = [
+      '컴퓨터/모바일',
+      '소설/시/희곡',
+      '인문학',
+      '에세이',
+      '경제/경영',
+      '자기계발',
+      '과학',
+      '예술/대중문화',
+      '역사',
+    ].flatMap((category, i) => books(category, 9 - i));
+    const axes = radarAxes(calculateReadingBalance(nine)).map(
+      (a) => a.category
+    );
+    expect(axes).not.toContain('역사');
+    expect(axes[0]).toBe('컴퓨터/모바일');
+  });
+
+  it('레이더 축은 8개까지 — 9개를 다 읽어도 9번째는 뺀다', () => {
+    const nine = [
+      '컴퓨터/모바일',
+      '소설/시/희곡',
+      '인문학',
+      '에세이',
+      '경제/경영',
+      '자기계발',
+      '과학',
+      '예술/대중문화',
+      '역사',
+    ].flatMap((category, i) => books(category, 9 - i));
+    expect(radarAxes(calculateReadingBalance(nine))).toHaveLength(8);
+  });
+
+  it('읽은 분야가 3개 미만이면 레이더를 그리지 않는다(빈 배열) — 선 하나·점 하나는 모양이 아니다', () => {
+    const two = calculateReadingBalance([
+      ...books('소설', 3),
+      ...books('에세이', 1),
+    ]);
+    expect(radarAxes(two)).toEqual([]);
   });
 
   it('분야 색은 순위대로 chart-1~7, 8위부터 chart-5', () => {

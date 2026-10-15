@@ -60,8 +60,9 @@ export const RatingSummaryCard = ({
                     className='block h-full rounded-full'
                     style={{
                       width: `${(row.count / max) * 100}%`,
+                      // 인생책은 틸 — 브랜드 블루와 어울리는 에메랄드 계열(책장 표지 보기 뱃지와 같은 색)
                       backgroundColor: row.is_life_book
-                        ? 'var(--chart-4)'
+                        ? 'var(--chart-6)'
                         : 'var(--chart-1)',
                     }}
                   />
