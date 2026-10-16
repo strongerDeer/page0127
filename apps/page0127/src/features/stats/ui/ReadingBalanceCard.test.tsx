@@ -68,7 +68,7 @@ describe('ReadingBalanceCard', () => {
     expect(html).not.toMatch(/width:\d+%/);
   });
 
-  it('좁은 칸(20% 미만)의 이름은 모바일에서 숨긴다 — 칸끼리 글자가 붙었다(컴퓨터 2인문학 2)', () => {
+  it('좁은 칸(25% 미만)의 이름은 모바일에서 숨긴다 — 칸끼리 글자가 붙었다(컴퓨터 2인문학 2)', () => {
     // 6 · 5 · 2 권 → 46% · 38% · 15%
     const balance = calculateReadingBalance([
       ...books('소설', 6),
@@ -81,6 +81,24 @@ describe('ReadingBalanceCard', () => {
     expect(html).toMatch(/<span class="[^"]*hidden sm:inline[^"]*">에세이 2</);
     expect(html).not.toMatch(
       /<span class="[^"]*hidden sm:inline[^"]*">소설 6</
+    );
+  });
+
+  it('25% 미만도 모바일에선 숨긴다 — 운영 21% 칸이 "자기계…"로 잘렸다(375px 띠 277px × 21% ≈ 58px)', () => {
+    // 3 · 3 · 3 · 2 · 2 · 1 권(14권) → 21%(3권) 칸
+    const balance = calculateReadingBalance([
+      ...books('소설', 3),
+      ...books('에세이', 3),
+      ...books('자기계발', 3),
+      ...books('컴퓨터', 2),
+      ...books('인문학', 2),
+      ...books('경제경영', 1),
+    ]);
+    const html = renderToStaticMarkup(
+      <ReadingBalanceCard year={2026} balance={balance} />
+    );
+    expect(html).toMatch(
+      /<span class="[^"]*hidden sm:inline[^"]*">자기계발 3</
     );
   });
 

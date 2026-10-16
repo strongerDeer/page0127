@@ -39,7 +39,7 @@ export const VisitorChemiCard = ({ name, photoUrl }: VisitorChemiCardProps) => (
     onClick={() =>
       trackEvent('cta_click', { location: 'library_chemi', label: '독서 케미' })
     }
-    className='group flex flex-col gap-4 rounded-3xl border border-primary/25 bg-gradient-to-r from-card via-card to-accent px-5 py-5 transition hover:border-primary/50 hover:shadow-sm sm:flex-row sm:items-center sm:gap-5 sm:px-6'
+    className='group flex flex-col gap-4 rounded-3xl border border-primary/25 bg-linear-to-r from-card via-card to-accent px-5 py-5 transition hover:border-primary/50 hover:shadow-sm sm:flex-row sm:items-center sm:gap-5 sm:px-6'
   >
     <span
       data-chemi-duo
