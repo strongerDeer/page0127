@@ -103,9 +103,9 @@ export const ReadingBalanceCard = ({
                   }}
                 >
                   {share >= 12 && (
-                    // 20% 미만 칸은 모바일 폭에선 이름이 들어가지 않는다 → sm 부터
+                    // 25% 미만 칸은 모바일 폭(띠 약 280px)에선 이름이 다 안 들어간다(21% 칸이 '자기계…') → sm 부터
                     <span
-                      className={`truncate ${share < 20 ? 'hidden sm:inline' : ''}`}
+                      className={`truncate ${share < 25 ? 'hidden sm:inline' : ''}`}
                     >
                       {`${category.split('/')[0]} ${count}`}
                     </span>
