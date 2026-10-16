@@ -70,13 +70,16 @@ const messageOf = (issue: SentryIssue) => issue.metadata?.value ?? issue.title;
 /**
  * 이슈 하나에 등급을 매긴다. 위에서부터 순서대로 평가하고 처음 걸린 등급으로 확정한다.
  *
- * environment 필터(vercel-production)는 조회 URL에서 이미 처리되므로 여기서는 다루지 않는다.
+ * environment 필터(production)는 조회 URL에서 이미 처리되므로 여기서는 다루지 않는다.
  * 현재 시각을 인자로 받는 이유는 테스트에서 기준 시각을 고정하기 위해서다.
  */
 export const triage = (issue: SentryIssue, now: Date): Grade => {
   const message = messageOf(issue);
 
-  if (!NEVER_NOISE.test(message) && NOISE_PATTERNS.some((p) => p.test(message))) {
+  if (
+    !NEVER_NOISE.test(message) &&
+    NOISE_PATTERNS.some((p) => p.test(message))
+  ) {
     return 'noise';
   }
 
