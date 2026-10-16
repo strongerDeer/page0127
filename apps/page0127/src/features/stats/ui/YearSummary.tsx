@@ -22,10 +22,17 @@ type YearSummaryProps = {
   onSetGoal?: () => void;
 };
 
-type FactProps = { value: string; label: string };
+type FactProps = {
+  value: string;
+  label: string;
+  /** 모바일 2열에서 한 줄을 다 쓴다(넓으면 다시 한 칸) */
+  wide?: boolean;
+};
 
-const Fact = ({ value, label }: FactProps) => (
-  <div className='rounded-xl bg-sunken px-3 py-2'>
+const Fact = ({ value, label, wide = false }: FactProps) => (
+  <div
+    className={`rounded-xl bg-sunken px-3 py-2 ${wide ? 'col-span-2 sm:col-span-1' : ''}`}
+  >
     <p className='text-base font-bold text-text-strong'>{value}</p>
     <p className='text-xs text-text-subtle'>{label}</p>
   </div>
@@ -62,6 +69,34 @@ export const YearSummary = ({
     (top, m) => (m.count > top.count ? m : top),
     { month: 0, count: 0 }
   );
+
+  const facts: { value: string; label: string }[] = [
+    // 쪽수를 모르는 책뿐이면 "0cm · 영화 0편"이 되어 의미가 없다 → 숨긴다
+    ...(totalPages > 0
+      ? [
+          {
+            value: `${totalPages.toLocaleString()}쪽`,
+            label: `쌓으면 약 ${stackCm}cm`,
+          },
+          {
+            value: `약 ${hours}시간`,
+            label: `영화 ${Math.floor(hours / 2)}편 볼 시간`,
+          },
+        ]
+      : []),
+    ...(best.count > 0
+      ? [
+          {
+            value: `${best.month}월`,
+            label: `가장 많이 읽은 달 (${best.count}권)`,
+          },
+        ]
+      : []),
+    {
+      value: averageRating > 0 ? `${averageRating.toFixed(1)}점` : '—',
+      label: `평균 평점 · 인생책 ${lifeBookCount}권`,
+    },
+  ];
 
   return (
     <section className='grid gap-6 rounded-[28px] border border-line-soft bg-card p-6 sm:p-8 md:grid-cols-[200px_1fr] md:items-center'>
@@ -139,29 +174,14 @@ export const YearSummary = ({
           data-facts
           className='mt-4 grid grid-cols-2 gap-2 sm:grid-flow-col sm:grid-cols-none sm:auto-cols-fr'
         >
-          {/* 쪽수를 모르는 책뿐이면 "0cm · 영화 0편"이 되어 의미가 없다 → 숨긴다 */}
-          {totalPages > 0 && (
-            <>
-              <Fact
-                value={`${totalPages.toLocaleString()}쪽`}
-                label={`쌓으면 약 ${stackCm}cm`}
-              />
-              <Fact
-                value={`약 ${hours}시간`}
-                label={`영화 ${Math.floor(hours / 2)}편 볼 시간`}
-              />
-            </>
-          )}
-          {best.count > 0 && (
+          {facts.map((fact, i) => (
             <Fact
-              value={`${best.month}월`}
-              label={`가장 많이 읽은 달 (${best.count}권)`}
+              key={fact.label}
+              {...fact}
+              // 홀수 칸이면 마지막 칸이 모바일 2열에 혼자 반 칸으로 남는다 → 한 줄을 다 쓴다
+              wide={facts.length % 2 === 1 && i === facts.length - 1}
             />
-          )}
-          <Fact
-            value={averageRating > 0 ? `${averageRating.toFixed(1)}점` : '—'}
-            label={`평균 평점 · 인생책 ${lifeBookCount}권`}
-          />
+          ))}
         </div>
       </div>
     </section>
