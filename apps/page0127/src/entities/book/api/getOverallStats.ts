@@ -1,11 +1,9 @@
 import { createClient } from '@/shared/config/supabase/server';
-import { mapToMainCategory } from '@/shared/lib/categoryMapper';
 
 import { dedupeReadings } from '../model/dedupeReadings';
 
 import type { Book } from '../types';
 import type {
-  CategoryReadingData,
   OverallStats,
   RatingDistribution,
   ReadingJourney,
@@ -69,14 +67,12 @@ export const getOverallStats = async (
     // 3. 평점 분포 계산
     const ratingDistribution = calculateRatingDistribution(uniqueBooks);
 
-    // 4. 전체 카테고리 분포 계산
-    const categoryDistribution = calculateCategoryDistribution(uniqueBooks);
-
+    // 분야는 여기서 세지 않는다 — 전체 탭도 연도 탭과 같은 독서 균형 카드가
+    // 받은 책 목록으로 직접 센다(calculateReadingBalance)
     return {
       journey,
       yearlyTrend,
       ratingDistribution,
-      categoryDistribution,
     };
   } catch (error) {
     console.error('전체 통계 조회 실패:', error);
@@ -254,29 +250,6 @@ const calculateRatingDistribution = (books: Book[]): RatingDistribution[] => {
 };
 
 /**
- * 전체 카테고리 분포 계산
- *
- * 학습 포인트:
- * - 연도별(getBookStats)은 레이더 차트용이라 더미 축을 채우지만,
- *   전체 통계는 실제 데이터만 권수 많은 순으로 보여준다.
- * - 알라딘 세부 카테고리를 대분류로 매핑해 집계
- */
-const calculateCategoryDistribution = (
-  books: Book[]
-): CategoryReadingData[] => {
-  const categoryMap = new Map<string, number>();
-
-  books.forEach((book) => {
-    const mainCategory = mapToMainCategory(book.category);
-    categoryMap.set(mainCategory, (categoryMap.get(mainCategory) || 0) + 1);
-  });
-
-  return Array.from(categoryMap.entries())
-    .map(([category, count]) => ({ category, count }))
-    .sort((a, b) => b.count - a.count);
-};
-
-/**
  * 빈 통계 반환 (에러 또는 데이터 없을 때)
  */
 const getEmptyStats = (): OverallStats => {
@@ -294,6 +267,5 @@ const getEmptyStats = (): OverallStats => {
     },
     yearlyTrend: [],
     ratingDistribution: [],
-    categoryDistribution: [],
   };
 };
