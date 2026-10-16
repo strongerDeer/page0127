@@ -47,9 +47,10 @@ export const ReadingBalanceCard = ({
         hasRadar ? 'md:grid-cols-[360px_1fr]' : ''
       }`}
     >
-      {/* 모바일은 폭(라벨 여백 52px×2)이 레이더 크기를 정한다 — 높이를 폭에 맞춰(220) 줄여 위아래 빈 공간을 없앤다 */}
+      {/* 모바일은 짧은 라벨·좁은 여백(radarLayout)이라 폭이 남는다 — 높이 260 이면 폭과 비슷해져
+          레이더가 가장 크게 그려진다(220 이면 높이가 막아 지름 127px 에 머물렀다) */}
       {hasRadar && (
-        <div className='h-[220px] md:h-[340px]'>
+        <div className='h-[260px] md:h-[340px]'>
           <CategoryRadarChart data={axes} height='100%' />
         </div>
       )}

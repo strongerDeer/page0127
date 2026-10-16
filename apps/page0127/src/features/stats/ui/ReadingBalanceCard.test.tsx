@@ -84,7 +84,7 @@ describe('ReadingBalanceCard', () => {
     );
   });
 
-  it('레이더는 모바일에서 낮게(220px) — 레이더 크기는 폭이 정해서 높이가 크면 위아래만 빈다', () => {
+  it('레이더 칸은 모바일 260px — 짧은 라벨로 좌우 여백을 줄여(radarLayout) 폭이 남으니 높이가 크기를 막지 않게', () => {
     const html = renderToStaticMarkup(
       <ReadingBalanceCard
         year={2026}
@@ -92,7 +92,7 @@ describe('ReadingBalanceCard', () => {
       />
     );
     expect(html).toMatch(
-      /h-\[220px\] md:h-\[340px\][^>]*><div data-testid="radar"/
+      /h-\[260px\] md:h-\[340px\][^>]*><div data-testid="radar"/
     );
   });
 
