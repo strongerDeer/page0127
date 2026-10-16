@@ -39,6 +39,14 @@ describe('ReadingBalanceCard', () => {
     expect(html).not.toContain('기울');
   });
 
+  it('연도 없이 쓰면(전체 탭) "지금까지 독서 균형" — 작년 대비 문장은 없다', () => {
+    const html = renderToStaticMarkup(
+      <ReadingBalanceCard balance={calculateReadingBalance(THREE)} />
+    );
+    expect(html).toContain('지금까지 독서 균형');
+    expect(html).not.toContain('작년');
+  });
+
   it('레이더 축은 읽은 분야만 — 0권 분야는 축에 없다', () => {
     const html = renderToStaticMarkup(
       <ReadingBalanceCard

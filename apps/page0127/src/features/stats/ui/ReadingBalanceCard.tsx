@@ -22,7 +22,8 @@ const CategoryRadarChart = dynamic(
 );
 
 type ReadingBalanceCardProps = {
-  year: number;
+  /** 연도 탭의 해 — 없으면 전체 탭("지금까지", 작년 비교 없이) */
+  year?: number;
   balance: ReadingBalance;
 };
 
@@ -56,7 +57,7 @@ export const ReadingBalanceCard = ({
       <div className='min-w-0'>
         <div className='flex items-baseline justify-between gap-2'>
           <h3 className='text-base font-bold text-text-strong'>
-            {year} 독서 균형
+            {year ?? '지금까지'} 독서 균형
           </h3>
           <span className='text-xs text-text-subtle'>
             9개 분야 · 완독 {balance.total}권
