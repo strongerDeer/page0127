@@ -15,7 +15,9 @@ export type ReadingPaceState =
   | 'early'
   | 'no_goal'
   | 'past_met'
-  | 'past_missed';
+  | 'past_missed'
+  /** 목표 없이 지난 해 — 문구가 과거형("읽었어요")이라 올해의 no_goal 과 나눈다 */
+  | 'past_no_goal';
 
 export type ReadingPace = {
   state: ReadingPaceState;
@@ -105,7 +107,13 @@ export const getReadingPace = ({
     surplus,
   };
 
-  if (target <= 0) return { ...base, state: 'no_goal', projected: null };
+  if (target <= 0) {
+    return {
+      ...base,
+      state: isPast ? 'past_no_goal' : 'no_goal',
+      projected: null,
+    };
+  }
   if (isPast) {
     return {
       ...base,

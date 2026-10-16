@@ -15,7 +15,6 @@ const msg = (
     pace: getReadingPace({ completed, target, year, today }),
     completed,
     target,
-    year,
     isOwner,
   });
 
@@ -64,12 +63,25 @@ describe('getPaceMessage', () => {
     expect(msg(14, 0).headline).toBe('한 달에 1.5권씩 읽고 있어요');
   });
 
-  it('지난해는 결과 문장', () => {
-    expect(msg(36, 40, true, '2026-10-13', 2025).headline).toBe(
-      '2025년 목표 40권 중 36권, 4권이 모자랐어요'
+  it('지난해는 지난 일로 — 결과 + 한 달 평균(과거형)', () => {
+    const past = (completed: number, target: number) =>
+      msg(completed, target, true, '2026-10-13', 2025);
+
+    expect(past(41, 40).headline).toBe(
+      '목표를 달성했어요! 한 달에 3.4권씩 읽었어요 🎉'
     );
-    expect(msg(41, 40, true, '2026-10-13', 2025).headline).toBe(
-      '2025년 목표를 달성했어요 🎉'
+    expect(past(41, 40).detail).toBe('목표 40권보다 1권 더 읽었어요.');
+    expect(past(40, 40).detail).toBe('목표 40권을 딱 채웠어요.');
+
+    expect(past(36, 40).headline).toBe(
+      '목표엔 4권 모자랐지만, 한 달에 3권씩 읽었어요'
+    );
+    expect(past(36, 40).detail).toBe('목표 40권 중 36권을 읽었어요.');
+  });
+
+  it('지난해에 목표가 없었으면 "읽고 있어요"가 아니라 "읽었어요"', () => {
+    expect(msg(55, 0, true, '2026-10-13', 2024).headline).toBe(
+      '한 달에 4.6권씩 읽었어요'
     );
   });
 
