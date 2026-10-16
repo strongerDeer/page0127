@@ -10,7 +10,6 @@ import {
   hasActiveShelfFilter,
   useLibraryFilters,
 } from '@/features/stats/model/useLibraryFilters';
-import { CategoryRadarChart } from '@/features/stats/ui/CategoryRadarChart';
 import { DashboardBookList } from '@/features/stats/ui/DashboardBookList';
 import { OverallDistribution } from '@/features/stats/ui/OverallDistribution';
 import { RatingSummaryCard } from '@/features/stats/ui/RatingSummaryCard';
@@ -285,35 +284,24 @@ export const LibraryView = ({
               username={username}
             />
 
-            <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
-              <Card className='rounded-2xl bg-card py-6 shadow-none'>
-                <CardHeader className='pb-4'>
-                  <CardTitle>카테고리 취향</CardTitle>
-                  <p className='text-sm text-muted-foreground'>
-                    전체 완독 기준으로 정리했습니다
-                  </p>
-                </CardHeader>
-                <CardContent className='pb-6'>
-                  <CategoryRadarChart
-                    data={overallStats.categoryDistribution}
-                  />
-                </CardContent>
-              </Card>
+            {/* 연도 탭과 같은 균형 카드 — 읽은 분야만 레이더 + 띠 + 고른 정도 + 안 읽은 분야.
+                예전 '카테고리 취향'은 9축 고정 레이더라 연도 탭과 모양이 달랐다.
+                books 는 이미 공개 책·재독 합침이다(PublicLibraryContent 의 visibleBooks) */}
+            <ReadingBalanceCard balance={calculateReadingBalance(books)} />
 
-              <Card className='rounded-2xl bg-card py-6 shadow-none'>
-                <CardHeader className='pb-4'>
-                  <CardTitle>평점 분포</CardTitle>
-                  <p className='text-sm text-muted-foreground'>
-                    전체 완독 기준입니다
-                  </p>
-                </CardHeader>
-                <CardContent className='pb-6'>
-                  <OverallDistribution
-                    ratings={overallStats.ratingDistribution}
-                  />
-                </CardContent>
-              </Card>
-            </div>
+            <Card className='rounded-2xl bg-card py-6 shadow-none'>
+              <CardHeader className='pb-4'>
+                <CardTitle>평점 분포</CardTitle>
+                <p className='text-sm text-muted-foreground'>
+                  전체 완독 기준입니다
+                </p>
+              </CardHeader>
+              <CardContent className='pb-6'>
+                <OverallDistribution
+                  ratings={overallStats.ratingDistribution}
+                />
+              </CardContent>
+            </Card>
           </div>
         ) : (
           /* ── 연도 뷰 ── "올해 몇 권"이 첫인상, 바로 아래 책장이 주인공 */

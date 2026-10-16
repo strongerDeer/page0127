@@ -155,10 +155,6 @@
   overflow-wrap: anywhere;
   text-align: center;
   line-height: 1.45;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
   padding: 6px 10px;
   border-radius: 10px;
   font-size: 0.75rem;
@@ -168,6 +164,15 @@
   pointer-events: none;
   transition: opacity 0.15s;
   z-index: 2;
+}
+
+/* 자르기는 여백 없는 안쪽 칸에서 — 바깥(.tip)에서 자르면 overflow 경계가 padding 바깥이라
+   4번째 줄 윗부분이 아래 여백에 비친다 */
+.tipText {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .books li:hover .tip,

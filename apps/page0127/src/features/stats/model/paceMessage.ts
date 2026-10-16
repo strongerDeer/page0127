@@ -4,7 +4,6 @@ type PaceMessageInput = {
   pace: ReadingPace;
   completed: number;
   target: number;
-  year: number;
   /** 주인에게만 조언(목표 다시 정하기)을 붙인다 — 방문자에게는 사실만 */
   isOwner: boolean;
 };
@@ -16,12 +15,11 @@ export type PaceMessage = {
   suggestGoalEdit: boolean;
 };
 
-/** 문구는 진행형으로 — 판단("늦었다", "기울었다")은 쓰지 않는다 */
+/** 문구는 진행형으로(지난해는 과거형) — 판단("늦었다", "기울었다")은 쓰지 않는다 */
 export const getPaceMessage = ({
   pace,
   completed,
   target,
-  year,
   isOwner,
 }: PaceMessageInput): PaceMessage => {
   const remaining = Math.max(target - completed, 0);
@@ -71,15 +69,25 @@ export const getPaceMessage = ({
         detail: isOwner ? `일주일에 ${pace.perWeek}권씩이면 닿아요.` : null,
         suggestGoalEdit: false,
       };
+    // 지난해는 지난 일로 — 결과 한마디 + 한 달 평균(과거형). 연도는 카드 제목("2024년에 완독한 책")에 있다
     case 'past_met':
       return {
-        headline: `${year}년 목표를 달성했어요 🎉`,
-        detail: `목표 ${target}권 중 ${completed}권을 읽었어요.`,
+        headline: `목표를 달성했어요! 한 달에 ${pace.perMonth}권씩 읽었어요 🎉`,
+        detail:
+          pace.surplus > 0
+            ? `목표 ${target}권보다 ${pace.surplus}권 더 읽었어요.`
+            : `목표 ${target}권을 딱 채웠어요.`,
         suggestGoalEdit: false,
       };
     case 'past_missed':
       return {
-        headline: `${year}년 목표 ${target}권 중 ${completed}권, ${remaining}권이 모자랐어요`,
+        headline: `목표엔 ${remaining}권 모자랐지만, 한 달에 ${pace.perMonth}권씩 읽었어요`,
+        detail: `목표 ${target}권 중 ${completed}권을 읽었어요.`,
+        suggestGoalEdit: false,
+      };
+    case 'past_no_goal':
+      return {
+        headline: `한 달에 ${pace.perMonth}권씩 읽었어요`,
         detail: null,
         suggestGoalEdit: false,
       };

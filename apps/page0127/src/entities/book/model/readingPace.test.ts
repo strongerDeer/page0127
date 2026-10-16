@@ -105,5 +105,9 @@ describe('getReadingPace', () => {
     expect(getReadingPace({ completed: 12, target: 0, ...base }).perMonth).toBe(
       1
     );
+    // 목표 없이 지난 해 — 문구가 과거형이어야 해서 올해의 no_goal 과 나눈다
+    expect(getReadingPace({ completed: 12, target: 0, ...base }).state).toBe(
+      'past_no_goal'
+    );
   });
 });

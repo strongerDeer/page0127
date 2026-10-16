@@ -48,7 +48,7 @@ export const YearSummary = ({
   onSetGoal,
 }: YearSummaryProps) => {
   const pace = getReadingPace({ completed, target, year, today });
-  const message = getPaceMessage({ pace, completed, target, year, isOwner });
+  const message = getPaceMessage({ pace, completed, target, isOwner });
   const hasGoal = target > 0;
   const progress = hasGoal
     ? Math.min(Math.round((completed / target) * 100), 100)
