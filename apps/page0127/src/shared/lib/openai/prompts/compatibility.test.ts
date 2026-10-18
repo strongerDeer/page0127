@@ -51,4 +51,14 @@ describe('createCompatibilityPrompt', () => {
     // 옛 `/10` 척도가 되살아나지 않도록 잠근다
     expect(prompt).not.toContain('/10');
   });
+
+  it('받는 사람이 이미 읽은 책(두 목록에 다 있는 책)은 추천하지 말라고 한다', () => {
+    const prompt = createCompatibilityPrompt({
+      user1Books: [],
+      user2Books: [],
+    });
+    expect(prompt).toContain(
+      '두 사람의 목록에 모두 있는 책은 받는 사람이 이미 읽은 책이니 추천하지 마세요'
+    );
+  });
 });
