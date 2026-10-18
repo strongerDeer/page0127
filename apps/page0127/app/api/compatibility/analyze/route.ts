@@ -15,6 +15,7 @@ import { createCompatibilityPrompt } from '@/shared/lib/openai/prompts/compatibi
 
 import { isRated } from '@/entities/book';
 import { getCompatibilityTypeByScore } from '@/entities/compatibility/model/compatibilityTypes';
+import { mapRecommendations } from '@/entities/compatibility/model/mutualRecommendations';
 
 import type { Book } from '@/entities/book';
 
@@ -248,16 +249,32 @@ export async function POST(request: NextRequest) {
     });
 
     // 9. 상호 추천 도서 저장 — AI가 고른 제목을 실제 책 레코드와 매칭
+    //    받는 사람이 이미 가진 책(완독·읽는 중, 별점 유무 무관)은 뺀다.
+    //    분석에 쓴 목록(별점 있는 완독)만으로는 별점 없이 완독한 책·읽는 중인 책이 빠진다.
+    //    상대방 책은 RLS 가 공개 책만 준다 — 비공개로 읽은 책까지는 거를 수 없다.
+    const fetchShelf = (userId: string) =>
+      supabase
+        .from('books')
+        .select('title, isbn')
+        .eq('user_id', userId)
+        .in('status', ['completed', 'reading']);
+    const [{ data: shelf1 }, { data: shelf2 }] = await Promise.all([
+      fetchShelf(userId1),
+      fetchShelf(userId2),
+    ]);
+
     const recommendations = [
       // user1이 받는 추천 = user2의 책장에서 고른 책
       ...mapRecommendations(
         aiResponse.recommendations_for_user1,
         books2 as Book[],
+        shelf1 ?? [],
         { fromUserId: userId2, toUserId: userId1, analysisId: analysis.id }
       ),
       ...mapRecommendations(
         aiResponse.recommendations_for_user2,
         books1 as Book[],
+        shelf2 ?? [],
         { fromUserId: userId1, toUserId: userId2, analysisId: analysis.id }
       ),
     ];
@@ -299,60 +316,6 @@ export async function POST(request: NextRequest) {
       }
     }
   }
-}
-
-type AiRecommendation = {
-  title?: unknown;
-  author?: unknown;
-  reason?: unknown;
-};
-
-/**
- * AI 추천(제목/저자/이유)을 mutual_recommendations insert 행으로 변환
- * 제목을 원본 책 목록과 매칭해 표지·ISBN·출판사를 확보한다
- */
-function mapRecommendations(
-  aiRecs: unknown,
-  sourceBooks: Book[],
-  ids: { fromUserId: string; toUserId: string; analysisId: string }
-) {
-  if (!Array.isArray(aiRecs)) return [];
-
-  // 공백·문장부호를 제거한 소문자 비교로 표기 흔들림을 흡수
-  const normalize = (title: string) =>
-    title.toLowerCase().replace(/[\s\-–—:·,."'“”‘’()[\]]/g, '');
-
-  return aiRecs
-    .filter(
-      (rec): rec is AiRecommendation & { title: string; reason: string } =>
-        typeof (rec as AiRecommendation).title === 'string' &&
-        typeof (rec as AiRecommendation).reason === 'string'
-    )
-    .slice(0, 3)
-    .map((rec, idx) => {
-      const matched = sourceBooks.find(
-        (book) =>
-          normalize(book.title) === normalize(rec.title) ||
-          normalize(book.title).includes(normalize(rec.title)) ||
-          normalize(rec.title).includes(normalize(book.title))
-      );
-
-      return {
-        compatibility_analysis_id: ids.analysisId,
-        from_user_id: ids.fromUserId,
-        to_user_id: ids.toUserId,
-        isbn: matched?.isbn ?? null,
-        title: matched?.title ?? rec.title,
-        author:
-          matched?.author ??
-          (typeof rec.author === 'string' ? rec.author : null),
-        publisher: matched?.publisher ?? null,
-        cover_image: matched?.cover_image ?? null,
-        category: matched?.category ?? null,
-        reason: rec.reason,
-        display_order: idx + 1,
-      };
-    });
 }
 
 /**
