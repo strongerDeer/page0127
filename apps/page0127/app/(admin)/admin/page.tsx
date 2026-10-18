@@ -5,7 +5,11 @@ import { ErrorBoundary } from '@repo/ui';
 import { MONTHLY_BUDGET_KRW, USD_TO_KRW } from '@/shared/lib/admin/config';
 
 import { getCostSummary } from '@/features/admin-costs/api/getCostSummary';
-import { computeBudgetUsage } from '@/features/admin-costs/lib/cost';
+import { getOpenAiCosts } from '@/features/admin-costs/api/getOpenAiCosts';
+import {
+  budgetBasisCents,
+  computeBudgetUsage,
+} from '@/features/admin-costs/lib/cost';
 import { getOverview } from '@/features/admin-overview/api/getOverview';
 import { getTrends } from '@/features/admin-overview/api/getTrends';
 import { buildAttention } from '@/features/admin-overview/lib/attention';
@@ -24,7 +28,7 @@ export const dynamic = 'force-dynamic';
  * FSD 에서 feature 끼리는 서로 import 하지 않는다 — 조합은 위 계층의 몫이다.
  */
 const OverviewSection = async () => {
-  const [overview, regressions, cost] = await Promise.all([
+  const [overview, regressions, cost, actualCost] = await Promise.all([
     getOverview(),
     getLatestRegressionCount(),
     // AI 비용 조회가 실패해도 홈 전체가 죽지 않게 null 로 물러난다
@@ -32,16 +36,21 @@ const OverviewSection = async () => {
       console.error('[admin] 홈 AI 비용 조회 실패:', e);
       return null;
     }),
+    // 예산 경고는 AI 비용 화면과 같은 기준 — 실제 청구(로컬·테스트 포함)와 앱 기록 중 큰 쪽
+    getOpenAiCosts(),
   ]);
 
   const attention = buildAttention({
     pendingReports: overview.pendingReports,
     qualityRegressions: regressions,
     aiBudgetPercent: cost
-      ? computeBudgetUsage(cost.monthTotalCents, {
-          usdToKrw: USD_TO_KRW,
-          budgetKrw: MONTHLY_BUDGET_KRW,
-        }).percent
+      ? computeBudgetUsage(
+          budgetBasisCents(
+            cost.monthTotalCents,
+            actualCost.ok ? actualCost.costs.totalCents : null
+          ),
+          { usdToKrw: USD_TO_KRW, budgetKrw: MONTHLY_BUDGET_KRW }
+        ).percent
       : null,
   });
 
