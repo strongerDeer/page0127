@@ -14,7 +14,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.117.3",
+    "@supabase/supabase-js": "^2.118.0",
     "chrome-launcher": "^1.2.2",
     "lighthouse": "^13.5.0",
     "node-html-parser": "^9.0.4",
