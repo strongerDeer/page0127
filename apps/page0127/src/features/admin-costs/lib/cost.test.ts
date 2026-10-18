@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { computeBudgetUsage, formatKrw, formatUsd, sumCents } from './cost';
+import {
+  budgetBasisCents,
+  computeBudgetUsage,
+  formatKrw,
+  formatUsd,
+  sumCents,
+} from './cost';
 
 describe('sumCents', () => {
   it('null은 0으로 취급해 합산', () => {
@@ -38,5 +44,17 @@ describe('format', () => {
   });
   it('원은 천단위 콤마', () => {
     expect(formatKrw(11480)).toBe('₩11,480');
+  });
+});
+
+describe('budgetBasisCents', () => {
+  it('실제 청구액이 있으면 앱 기록보다 큰 쪽 — 로컬·테스트 비용이 더해진 실제 청구가 보통 더 크다', () => {
+    expect(budgetBasisCents(4, 10)).toBe(10);
+  });
+  it('실제 청구가 아직 덜 잡혔으면(반영 지연) 앱 기록 — 방금 쓴 운영 비용을 놓치지 않게', () => {
+    expect(budgetBasisCents(4, 1)).toBe(4);
+  });
+  it('실제 청구를 못 읽었으면(null) 앱 기록만', () => {
+    expect(budgetBasisCents(4, null)).toBe(4);
   });
 });
