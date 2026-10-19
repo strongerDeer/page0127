@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 
-import { createClient } from '@/shared/config/supabase/client';
 import { toSafeRedirect } from '@/shared/lib/auth/safeRedirect';
 
 import type { OAuthProvider } from '@/features/auth/model/providers';
@@ -36,7 +35,19 @@ export const useOAuthLogin = () => {
     setPendingProvider(provider);
     setError(null);
 
-    const supabase = createClient();
+    // Supabase SDK 는 버튼을 누른 뒤에 받는다. 로그인 버튼이 있는 소개·로그인
+    // 페이지의 첫 로드에서 SDK(gzip 약 85KB)를 빼기 위해서다. 위에서 스피너를
+    // 먼저 켜 두었으니 받는 동안에도 버튼은 눌린 상태로 보인다.
+    // 청크를 못 받으면(오프라인 등) 버튼이 스피너에 멈추지 않게 에러로 돌려준다.
+    let supabase;
+    try {
+      const { createClient } = await import('@/shared/config/supabase/client');
+      supabase = createClient();
+    } catch {
+      setError('로그인을 시작하지 못했어요. 잠시 후 다시 시도해 주세요.');
+      setPendingProvider(null);
+      return;
+    }
 
     // OAuth 리디렉션 URL 설정
     // - 항상 "지금 접속 중인 브라우저 도메인"(location.origin)을 우선한다.

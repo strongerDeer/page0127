@@ -2,7 +2,6 @@ import { useRouter } from 'next/navigation';
 
 import { useQueryClient } from '@tanstack/react-query';
 
-import { createClient } from '@/shared/config/supabase/client';
 import { isProtectedPath } from '@/shared/lib/auth/protectedRoutes';
 
 /**
@@ -25,6 +24,10 @@ export const useLogout = () => {
   const queryClient = useQueryClient();
 
   const logout = async () => {
+    // Supabase SDK 는 로그아웃을 누른 순간에만 받는다. 이 훅은 모든 페이지의
+    // GNB(프로필 메뉴)에 붙어 있어, 상단 import 로 두면 SDK 전체가 공통 JS 에
+    // 실려 첫 로드가 무거워진다. 로그아웃은 드물고 한 번 받으면 캐시된다.
+    const { createClient } = await import('@/shared/config/supabase/client');
     const supabase = createClient();
 
     // Supabase 로그아웃 처리
