@@ -81,7 +81,10 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '4.5mb',
     },
     // barrel(index) import를 개별 모듈 import로 변환해 tree-shaking 강화
-    optimizePackageImports: ['lucide-react'],
+    // @repo/ui: 루트 레이아웃이 `import { Toaster } from '@repo/ui'` 한 줄만 써도
+    // barrel 의 'use client' 컴포넌트(Select·DropdownMenu·Dialog·ScrollArea 등
+    // Radix 전부)가 클라이언트 진입점으로 잡혀 모든 페이지 공통 JS 에 실렸다.
+    optimizePackageImports: ['lucide-react', '@repo/ui'],
   },
   images: {
     remotePatterns: [
