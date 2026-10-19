@@ -273,6 +273,7 @@ export const ReadingCalendar = ({
                     title={book.title}
                     decorative
                     size='xs'
+                    small
                   />
                   <span className='min-w-0 flex-1'>
                     <span className='block truncate text-sm font-medium text-text-strong'>

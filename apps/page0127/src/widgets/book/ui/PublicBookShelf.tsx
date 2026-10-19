@@ -124,7 +124,6 @@ export const PublicBookShelf = ({
           const imageBox = {
             width: isCoverView ? 170 : 50,
             height: 240,
-            sizes: '(max-width: 768px) 170px, 170px',
           };
 
           return (
@@ -139,6 +138,9 @@ export const PublicBookShelf = ({
                   <CoverImage
                     {...toCoverSource(book)}
                     {...imageBox}
+                    // sizes 를 주지 않는다 — 폭이 고정이라 next/image 가 1x·2x 두 후보만 만든다.
+                    // sizes 를 주면 후보 15개(16~3840w)가 표지마다 HTML 에 실리는데,
+                    // YES24 loader 가 어차피 M·L 둘 중 하나로 접어서 고르는 결과는 같다.
                     alt={book.title}
                     fallback={noImage}
                   />
@@ -146,6 +148,9 @@ export const PublicBookShelf = ({
                   <Image
                     src={renderedSpine}
                     {...imageBox}
+                    // 원격 책등은 unoptimized 라 srcset 이 없다. 이 값은 onError 뒤의
+                    // no-book.jpg(로컬, 최적화됨)용이다 — 높이 240 이면 폭이 약 170px 로 그려진다.
+                    sizes='170px'
                     alt={book.title}
                     unoptimized={isPreOptimizedImageSrc(renderedSpine)}
                     onError={() => onError(book.id)}
