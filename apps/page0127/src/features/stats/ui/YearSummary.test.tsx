@@ -93,4 +93,16 @@ describe('YearSummary', () => {
     });
     expect(html).not.toContain('가장 많이 읽은 달');
   });
+
+  it('0권이면 "— · 인생책 0권" 칸을 그리지 않는다 — 빈 성적표가 된다', () => {
+    const html = render({
+      completed: 0,
+      totalPages: 0,
+      averageRating: 0,
+      lifeBookCount: 0,
+      monthlyReading: monthly.map((m) => ({ ...m, count: 0 })),
+    });
+    expect(html).not.toContain('평균 평점');
+    expect(html).not.toContain('data-facts');
+  });
 });
