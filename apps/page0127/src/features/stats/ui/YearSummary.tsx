@@ -92,10 +92,15 @@ export const YearSummary = ({
           },
         ]
       : []),
-    {
-      value: averageRating > 0 ? `${averageRating.toFixed(1)}점` : '—',
-      label: `평균 평점 · 인생책 ${lifeBookCount}권`,
-    },
+    // 평점도 인생책도 없으면 "— · 인생책 0권"만 남는다 → 0권 첫 화면에선 칸 자체를 숨긴다
+    ...(averageRating > 0 || lifeBookCount > 0
+      ? [
+          {
+            value: averageRating > 0 ? `${averageRating.toFixed(1)}점` : '—',
+            label: `평균 평점 · 인생책 ${lifeBookCount}권`,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -170,19 +175,21 @@ export const YearSummary = ({
         )}
 
         {/* 같은 폭 격자 — 모바일 2열, 넓으면 칸 수만큼 한 줄을 등분(쪽수 0 으로 칸이 빠져도 등분) */}
-        <div
-          data-facts
-          className='mt-4 grid grid-cols-2 gap-2 sm:grid-flow-col sm:grid-cols-none sm:auto-cols-fr'
-        >
-          {facts.map((fact, i) => (
-            <Fact
-              key={fact.label}
-              {...fact}
-              // 홀수 칸이면 마지막 칸이 모바일 2열에 혼자 반 칸으로 남는다 → 한 줄을 다 쓴다
-              wide={facts.length % 2 === 1 && i === facts.length - 1}
-            />
-          ))}
-        </div>
+        {facts.length > 0 && (
+          <div
+            data-facts
+            className='mt-4 grid grid-cols-2 gap-2 sm:grid-flow-col sm:grid-cols-none sm:auto-cols-fr'
+          >
+            {facts.map((fact, i) => (
+              <Fact
+                key={fact.label}
+                {...fact}
+                // 홀수 칸이면 마지막 칸이 모바일 2열에 혼자 반 칸으로 남는다 → 한 줄을 다 쓴다
+                wide={facts.length % 2 === 1 && i === facts.length - 1}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
