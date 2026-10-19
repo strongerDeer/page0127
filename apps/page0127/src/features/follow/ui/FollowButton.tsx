@@ -2,7 +2,7 @@
 
 import { Button } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { UserMinus, UserPlus } from 'lucide-react';
+import { Loader2, UserMinus, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
@@ -108,9 +108,15 @@ export const FollowButton = ({
 
   const isPending = followMutation.isPending || unfollowMutation.isPending;
 
+  // 로딩 중에도 완성된 버튼과 같은 폭(아이콘 + '팔로우')을 차지한다.
+  // 아이콘만 있는 좁은 버튼으로 두면 데이터가 온 뒤 폭이 늘어, 좁은 화면에서
+  // 옆 버튼이 다음 줄로 밀리며 헤더 아래 전체가 내려간다(모바일 프로필 CLS 0.11).
   if (isLoading) {
     return (
-      <Button variant={variant} size={size} loading aria-label='불러오는 중' />
+      <Button variant={variant} size={size} disabled aria-busy>
+        <Loader2 aria-hidden className='mr-2 h-4 w-4 animate-spin' />
+        팔로우
+      </Button>
     );
   }
 

@@ -2,7 +2,6 @@
 
 import { useEffect, useEffectEvent } from 'react';
 
-import { Spinner } from '@repo/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Users } from 'lucide-react';
 
@@ -50,20 +49,22 @@ export const FollowStats = ({
     return unsubscribe;
   }, []);
 
-  if (isLoading) {
-    return (
-      <Spinner label='팔로우 정보를 불러오는 중' size='sm' />
-    );
-  }
+  // 로딩 중에도 숫자 자리만 '–' 로 비운 같은 줄을 그린다.
+  // 스피너(16px)에서 글자 줄(20px)로 바뀌면 그 아래 내용이 데이터 도착 순간 밀린다.
+  const followers = isLoading ? '–' : stats?.followers_count || 0;
+  const following = isLoading ? '–' : stats?.following_count || 0;
 
   return (
-    <div className='flex items-center gap-4 text-sm'>
+    <div
+      className='flex items-center gap-4 text-sm'
+      aria-busy={isLoading || undefined}
+    >
       <button
         onClick={onFollowersClick}
         className='flex items-center gap-1 transition-colors hover:text-primary'
       >
         <Users className='h-4 w-4' />
-        <span className='font-medium'>{stats?.followers_count || 0}</span>
+        <span className='font-medium'>{followers}</span>
         <span className='text-muted-foreground'>팔로워</span>
       </button>
 
@@ -71,7 +72,7 @@ export const FollowStats = ({
         onClick={onFollowingClick}
         className='flex items-center gap-1 transition-colors hover:text-primary'
       >
-        <span className='font-medium'>{stats?.following_count || 0}</span>
+        <span className='font-medium'>{following}</span>
         <span className='text-muted-foreground'>팔로잉</span>
       </button>
     </div>
