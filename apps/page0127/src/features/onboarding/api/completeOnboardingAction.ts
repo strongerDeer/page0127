@@ -8,6 +8,8 @@ import { createClient } from '@/shared/config/supabase/server';
 
 import { validateUsername } from '@/entities/profile/model/username';
 
+import { toWelcomePath } from '../model/signupWelcome';
+
 /**
  * 첫 로그인 온보딩 완료 — 아이디와 닉네임을 확정한다.
  *
@@ -129,5 +131,7 @@ export const completeOnboardingAction = async (
   //
   // ⚠️ redirect 는 예외를 던져 흐름을 끊는다 — try/catch 로 감싸면 안 된다.
   //    그래서 실패 경로(위)를 모두 처리한 뒤 맨 마지막에 부른다.
-  redirect(`/${username}`);
+  //
+  // 주소의 ?welcome=<공급자> 는 도착한 서재가 GA4 sign_up 을 보내는 표시다(SignupTracker).
+  redirect(toWelcomePath(username, user.app_metadata.provider));
 };
