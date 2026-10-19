@@ -35,7 +35,7 @@ export const ReadingJourneyCard = ({ data }: Props) => {
         year: 'numeric',
         month: 'long',
       })
-    : '기록 시작 전';
+    : null;
 
   return (
     <div>
@@ -48,7 +48,10 @@ export const ReadingJourneyCard = ({ data }: Props) => {
               권
             </span>
           </p>
-          <p className='pb-1 text-xs text-text-subtle'>{readingSince}부터</p>
+          {/* 첫 완독 전엔 "기록 시작 전부터"처럼 어색해지므로 날짜가 있을 때만 */}
+          <p className='pb-1 text-xs text-text-subtle'>
+            {readingSince ? `${readingSince}부터` : '기록 시작 전'}
+          </p>
         </div>
       </div>
 
