@@ -15,6 +15,55 @@ export type PaceMessage = {
   suggestGoalEdit: boolean;
 };
 
+/**
+ * 완독 0권일 때의 문구 — 숫자 대신 "시작"을 말한다.
+ * 연초(early)는 원래 문구("이제 시작이에요")가 이미 0권에 맞으므로 null 을 돌려 그대로 쓴다.
+ */
+const getZeroMessage = (
+  pace: ReadingPace,
+  target: number,
+  isOwner: boolean
+): PaceMessage | null => {
+  switch (pace.state) {
+    case 'no_goal':
+      return {
+        headline: isOwner
+          ? '올해 첫 완독을 기록해 보세요 📖'
+          : '올해 완독한 책은 아직 없어요',
+        detail: null,
+        suggestGoalEdit: false,
+      };
+    case 'on_track':
+    case 'behind':
+    case 'far_behind': {
+      const isTight = pace.state === 'far_behind';
+      return {
+        headline: `올해 목표 ${target}권, 첫 책부터 시작해요`,
+        detail: isOwner
+          ? isTight
+            ? '남은 기간엔 빠듯한 속도예요. 목표를 다시 정해 볼까요?'
+            : `일주일에 ${pace.perWeek}권씩이면 닿아요.`
+          : null,
+        suggestGoalEdit: isOwner && isTight,
+      };
+    }
+    case 'past_no_goal':
+      return {
+        headline: '이 해에 완독한 책은 없어요',
+        detail: null,
+        suggestGoalEdit: false,
+      };
+    case 'past_missed':
+      return {
+        headline: `목표 ${target}권, 이 해엔 완독 기록이 없어요`,
+        detail: null,
+        suggestGoalEdit: false,
+      };
+    default:
+      return null;
+  }
+};
+
 /** 문구는 진행형으로(지난해는 과거형) — 판단("늦었다", "기울었다")은 쓰지 않는다 */
 export const getPaceMessage = ({
   pace,
@@ -24,6 +73,13 @@ export const getPaceMessage = ({
 }: PaceMessageInput): PaceMessage => {
   const remaining = Math.max(target - completed, 0);
   const toGoal = `목표 ${target}권까지 ${remaining}권`;
+
+  // 0권이면 속도·평균을 말하지 않는다 — "한 달에 0권씩", "올해 약 0권"은 빈 성적표다
+  // ('오늘 0권 완독' 금지 원칙, 00_docs/11_베타_점검_체크리스트.md 8번)
+  if (completed === 0) {
+    const zero = getZeroMessage(pace, target, isOwner);
+    if (zero) return zero;
+  }
 
   switch (pace.state) {
     case 'met':

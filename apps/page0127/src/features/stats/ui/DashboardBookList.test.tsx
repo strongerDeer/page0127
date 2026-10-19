@@ -43,3 +43,23 @@ describe('DashboardBookList 보기 전환', () => {
     expect(unpressed).not.toContain('bg-primary');
   });
 });
+
+describe('DashboardBookList 빈 책장', () => {
+  const render = (books: ReturnType<typeof createTestBook>[]) =>
+    renderToStaticMarkup(
+      <DashboardBookList
+        books={books}
+        categories={[]}
+        selectedCategories={[]}
+        searchQuery=''
+        onCategoriesChange={() => {}}
+        onSearchChange={() => {}}
+      />
+    );
+
+  it('책이 하나도 없으면 "조건에 맞는 책이 없어요"가 아니다 — 거른 게 아니라 아직 비었다', () => {
+    const html = render([]);
+    expect(html).not.toContain('조건에 맞는');
+    expect(html).toContain('아직 이곳에 꽂힌 완독 책이 없어요');
+  });
+});

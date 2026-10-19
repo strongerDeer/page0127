@@ -2,7 +2,10 @@
 
 import { useTransition } from 'react';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
+import Link from 'next/link';
+
+import { Button, Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
+import { Plus } from 'lucide-react';
 
 import { calculateReadingBalance } from '@/entities/book';
 
@@ -101,6 +104,14 @@ type LibraryViewProps = {
 
   /** 균형 계산용 — 선택 연도와 그 전 해의 공개 완독 책 */
   balanceBooks?: { current: Book[]; previous: Book[] };
+
+  /**
+   * 이 서재에 기록이 하나도 없는지 (주인=비공개·읽고 싶어요 포함 전체, 방문자=공개분).
+   *
+   * `books` 는 지금 탭(연도)의 공개 책이라 "그 해만 비었다"와 "처음 왔다"를 가리지 못한다.
+   * 비공개 책만 있는 주인에게 "첫 책을 기록해 보세요"를 보이면 사실과 다르다.
+   */
+  isLibraryEmpty?: boolean;
 };
 
 /**
@@ -137,6 +148,7 @@ export const LibraryView = ({
   wishlistBooks = [],
   privateBooks = [],
   balanceBooks = { current: [], previous: [] },
+  isLibraryEmpty = false,
 }: LibraryViewProps) => {
   const filters = useLibraryFilters();
   const { selectedCategories, selectedRating, searchQuery } = filters;
@@ -154,6 +166,46 @@ export const LibraryView = ({
 
   const handleRatingClick = (rating: RatingFilter) =>
     startFilterTransition(() => filters.toggleRating(rating));
+
+  /*
+    기록이 하나도 없을 때는 안내를 **통계보다 먼저** 보여준다 — 연도 뷰·전체 뷰 둘 다.
+
+    처음 가입한 사람이 가장 먼저 보는 건 연도 뷰(올해)다. 예전엔 이 안내가 전체 뷰에만
+    있어서, 첫 화면은 "0권" 큰 숫자와 "조건에 맞는 책이 없어요"로 시작했다.
+    숫자만 놓으면 초대가 아니라 **빈 성적표**로 읽힌다. 같은 이유로 공유
+    카드에서도 0권일 때는 숫자를 세지 않기로 했다
+    (app/(public)/[username]/opengraph-image.tsx).
+
+    통계 카드를 지우지는 않는다 — 한 권을 넣었을 때 어디가 채워지는지
+    미리 보이는 편이 낫다.
+
+    모바일 GNB 의 "도서 추가"는 + 아이콘뿐이라 "상단 도서 추가"라는 말만으로는
+    찾기 어렵다 → 주인에게는 여기서 바로 가는 버튼을 준다.
+  */
+  const emptyNotice = isLibraryEmpty && (
+    <Card className='rounded-2xl border-dashed bg-card py-6 shadow-none'>
+      <CardHeader>
+        <CardTitle>
+          {isOwner ? '첫 책을 기록해 보세요' : '아직 공개된 기록이 없어요'}
+        </CardTitle>
+        <p className='text-sm text-muted-foreground'>
+          {isOwner
+            ? '한 권을 넣으면 아래 통계가 채워지기 시작합니다. 한 권이면 충분해요.'
+            : '이 서재의 주인이 책을 공개하면 여기에 쌓입니다.'}
+        </p>
+      </CardHeader>
+      {isOwner && (
+        <CardContent>
+          <Button asChild size='sm'>
+            <Link href='/books/add'>
+              <Plus aria-hidden='true' />
+              도서 추가
+            </Link>
+          </Button>
+        </CardContent>
+      )}
+    </Card>
+  );
 
   // 책장 제목은 지금 보는 범위를 그대로 말한다
   const shelfTitle = isAllView ? allShelfTitle : `${selectedYear}년 서재`;
@@ -226,33 +278,7 @@ export const LibraryView = ({
         ) : isAllView ? (
           /* ── 전체(누적) 뷰 ── */
           <div className='space-y-6'>
-            {/*
-              기록이 하나도 없을 때는 안내를 **통계보다 먼저** 보여준다.
-
-              처음 가입한 사람에게 이 화면은 `0권 · 0쪽 · 0권` 세 숫자로 시작한다.
-              숫자만 놓으면 초대가 아니라 **빈 성적표**로 읽힌다. 같은 이유로 공유
-              카드에서도 0권일 때는 숫자를 세지 않기로 했다
-              (app/(public)/[username]/opengraph-image.tsx).
-
-              통계 카드를 지우지는 않는다 — 한 권을 넣었을 때 어디가 채워지는지
-              미리 보이는 편이 낫다.
-            */}
-            {books.length === 0 && (
-              <Card className='rounded-2xl border-dashed bg-card py-6 shadow-none'>
-                <CardHeader>
-                  <CardTitle>
-                    {isOwner
-                      ? '첫 책을 기록해 보세요'
-                      : '아직 공개된 기록이 없어요'}
-                  </CardTitle>
-                  <p className='text-sm text-muted-foreground'>
-                    {isOwner
-                      ? '상단 “도서 추가”로 한 권을 넣으면 아래 통계가 채워지기 시작합니다. 한 권이면 충분해요.'
-                      : '이 서재의 주인이 책을 공개하면 여기에 쌓입니다.'}
-                  </p>
-                </CardHeader>
-              </Card>
-            )}
+            {emptyNotice}
 
             <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
               <Card className='rounded-2xl bg-card py-6 shadow-none'>
@@ -306,6 +332,8 @@ export const LibraryView = ({
         ) : (
           /* ── 연도 뷰 ── "올해 몇 권"이 첫인상, 바로 아래 책장이 주인공 */
           <div className='space-y-6'>
+            {emptyNotice}
+
             <YearSummary
               year={selectedYear}
               today={today}

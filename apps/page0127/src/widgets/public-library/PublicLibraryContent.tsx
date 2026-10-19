@@ -213,6 +213,8 @@ export const PublicLibraryContent = ({
         wishlistBooks={wishlistBooks}
         privateBooks={isOwnProfile ? archivedBooks : []}
         balanceBooks={balanceBooks}
+        // books 는 주인이면 비공개·읽고 싶어요까지, 방문자면 공개분만 온다
+        isLibraryEmpty={books.length === 0}
       />
 
       {isVisitor && (

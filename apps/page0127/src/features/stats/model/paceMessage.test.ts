@@ -85,6 +85,28 @@ describe('getPaceMessage', () => {
     );
   });
 
+  it('0권이면 속도·평균을 말하지 않는다 — "한 달에 0권씩"은 빈 성적표다', () => {
+    const zero = [
+      msg(0, 0),
+      msg(0, 0, false),
+      msg(0, 10),
+      msg(0, 40),
+      msg(0, 40, false),
+      msg(0, 0, true, '2026-10-13', 2025),
+      msg(0, 40, true, '2026-10-13', 2025),
+    ];
+    zero.forEach((m) => {
+      expect(`${m.headline} ${m.detail ?? ''}`).not.toMatch(/0권씩|약 0권/);
+    });
+
+    expect(msg(0, 0).headline).toBe('올해 첫 완독을 기록해 보세요 📖');
+    expect(msg(0, 0, false).headline).toBe('올해 완독한 책은 아직 없어요');
+    expect(msg(0, 10).headline).toBe('올해 목표 10권, 첫 책부터 시작해요');
+    // 0권이어도 목표가 빠듯하면 주인에게는 다시 정하기를 권한다
+    expect(msg(0, 40).suggestGoalEdit).toBe(true);
+    expect(msg(0, 40, false).detail).toBeNull();
+  });
+
   it('연초 — 예상 대신 시작 문구', () => {
     expect(msg(1, 40, true, '2026-01-07').headline).toBe(
       '올해 목표 40권, 이제 시작이에요'

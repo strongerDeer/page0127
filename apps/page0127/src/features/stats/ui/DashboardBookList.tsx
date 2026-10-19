@@ -12,7 +12,16 @@ import {
 import Link from 'next/link';
 
 import { Button } from '@repo/ui';
-import { Popover, PopoverContent, PopoverTrigger, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/ui';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@repo/ui';
 import {
   LayoutGrid,
   Library,
@@ -510,12 +519,21 @@ export const DashboardBookList = ({
           </div>
         ) : (
           <div className='rounded-xl bg-card p-12 text-center'>
-            <SearchX className='mx-auto mb-2 h-8 w-8 text-text-subtle' />
-            <p className='text-sm text-text-body'>
-              {selectedCategories.length > 0
-                ? `선택한 카테고리에 해당하는 책이 없어요.`
-                : '조건에 맞는 책이 없어요.'}
-            </p>
+            {/* 거를 책이 애초에 없으면 '조건' 탓이 아니다 — 검색 실패 아이콘·문구를 쓰지 않는다 */}
+            {books.length === 0 ? (
+              <p className='text-sm text-text-body'>
+                아직 이곳에 꽂힌 완독 책이 없어요.
+              </p>
+            ) : (
+              <>
+                <SearchX className='mx-auto mb-2 h-8 w-8 text-text-subtle' />
+                <p className='text-sm text-text-body'>
+                  {selectedCategories.length > 0
+                    ? `선택한 카테고리에 해당하는 책이 없어요.`
+                    : '조건에 맞는 책이 없어요.'}
+                </p>
+              </>
+            )}
           </div>
         )}
       </div>
