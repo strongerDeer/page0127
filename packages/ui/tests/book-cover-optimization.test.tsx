@@ -53,6 +53,24 @@ describe('BookCover 의 이미지 최적화 경로', () => {
     expect(grid).not.toContain('/XL');
   });
 
+  it('small 을 준 작은 표지는 고밀도 화면에서도 M 만 받는다', () => {
+    // 서재의 읽는 중 띠(56px)·방문자 배너 부채꼴(84px)이 그 자리다.
+    // srcset 계단이 128 다음 256 이라 small 이 없으면 2x·3x 화면에서 L 을 고른다.
+    const html = renderToStaticMarkup(
+      <BookCover
+        src={YES24_COVER}
+        title='어떤 책'
+        size='fill'
+        sizes='84px'
+        small
+      />
+    );
+
+    expect(html).toContain('https://image.yes24.com/goods/13137546/M 256w');
+    expect(html).not.toContain('/L');
+    expect(html).not.toContain('/XL');
+  });
+
   it('Supabase 업로드 이미지도 원본 URL 로 나간다', () => {
     // 2026-08-25 방침 변경. 한도가 소진되면 캐시 없는 새 이미지는 402 로
     // 아예 사라진다 — 크게 나가더라도 보이는 편을 택했다.

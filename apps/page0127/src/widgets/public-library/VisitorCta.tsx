@@ -170,6 +170,8 @@ export const VisitorSignupBanner = ({
                   decorative
                   size='fill'
                   sizes='84px'
+                  // 84px 부채꼴 — 소개 페이지 표지 띠와 같은 폭이라 같은 이유로 M 고정
+                  small
                 />
               </span>
             ))}

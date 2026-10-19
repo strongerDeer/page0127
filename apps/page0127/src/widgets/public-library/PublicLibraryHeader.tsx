@@ -171,7 +171,10 @@ export const PublicLibraryHeader = ({
                 fill
                 sizes='80px'
                 className='object-cover'
-                priority
+                // 첫 화면에 보이니 lazy 로 미루지는 않되, preload 는 하지 않는다.
+                // 80px 사진은 LCP 후보가 아니라(제목 글자·표지가 더 크다) priority 의
+                // <link rel=preload> + 높은 우선순위가 폰트·CSS 와 대역폭만 다툰다.
+                loading='eager'
                 unoptimized={isPreOptimizedImageSrc(profile.photo_url)}
               />
             </div>

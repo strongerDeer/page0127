@@ -86,6 +86,8 @@ export const ReadingNowStrip = ({ books, bookHref }: ReadingNowStripProps) => {
                     title={book.title}
                     size='fill'
                     sizes='56px'
+                    // 56px 칸이라 3x 화면에서도 M 이면 충분하다(없으면 256 단계 → L)
+                    small
                     decorative
                   />
                 </span>

@@ -79,6 +79,12 @@ type BookCoverProps = Omit<VariantProps<typeof coverVariants>, 'size'> & {
    * 허용한다. 목록·격자에서 켜면 고밀도 화면에서 표지마다 XL 을 받는다.
    */
   large?: boolean;
+  /**
+   * CSS 폭 128px 이하로 작게 놓는 자리. 고밀도 화면에서도 YES24 M(151px)만 받는다.
+   * srcset 계단이 128 다음 256 이라, 이걸 안 주면 2x·3x 화면에서 L(275px)을 고른다.
+   * large 와 함께 주면 large 가 이긴다.
+   */
+  small?: boolean;
 };
 
 /**
@@ -100,6 +106,7 @@ export const BookCover = ({
   decorative,
   priority,
   large = false,
+  small = false,
 }: BookCoverProps) => {
   // className 은 shape 에 섞지 않고 각 분기의 **맨 뒤**로 넘긴다.
   // 여기서 합쳐 두면 뒤따라오는 기본 클래스(`text-xs` 등)가 호출부 지정을
@@ -112,6 +119,7 @@ export const BookCover = ({
     src,
     fallbackSrc,
     large,
+    small,
     alt: decorative ? '' : title,
     'aria-hidden': decorative || undefined,
     priority,
