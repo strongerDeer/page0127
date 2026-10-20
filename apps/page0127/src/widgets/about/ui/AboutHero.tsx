@@ -37,7 +37,8 @@ export const AboutHero = ({ books }: AboutHeroProps) => {
           말해 줍니다
         </h1>
         <p className='mx-auto mt-5 max-w-md text-balance text-base text-text-subtle'>
-          한 권 꽂는 데 10초, 별점을 남긴 다섯 권이 모이면 취향 노트가 나와요.
+          한 권 꽂는 데 10초, 평가한 완독 책 다섯 권이 모이면 취향 노트가
+          나와요.
         </p>
         <div className='mt-8 flex flex-wrap justify-center gap-2.5'>
           {/* 로그인으로 바로 보내지 않는다 — 고르고 책장이 서는 체험은 홈에 있다 */}

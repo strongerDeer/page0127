@@ -12,6 +12,11 @@
  * ⚠️ 이건 **폴백**이다. `hero_slides` 테이블에 켜진 슬라이드가 있으면 그쪽이 이긴다
  * (`entities/banner/api/getActiveHeroSlides`). DB 슬라이드의 카피는 어드민에서 고친다.
  */
+import {
+  TASTE_ANALYSIS_BOOK_LABEL,
+  TASTE_ANALYSIS_MIN_BOOKS,
+} from '@/entities/taste-analysis/model/analysisGate';
+
 import type { HeroSlide } from '@/entities/banner/types';
 
 // HeroSlide 타입은 entities/banner로 이동했다 (FSD: widget·feature가 공용으로 import).
@@ -42,7 +47,8 @@ export const heroSlidesFor = (now: Date): HeroSlide[] => [
   },
   {
     id: 'taste',
-    eyebrow: '완독 5권부터',
+    // 조건은 analysisGate 와 같은 말로 — "완독 5권"만 쓰면 평가 없는 완독도 세는 줄 안다
+    eyebrow: `${TASTE_ANALYSIS_BOOK_LABEL} ${TASTE_ANALYSIS_MIN_BOOKS}권부터`,
     lines: ['다섯 권이면 충분해요', '취향은 이미 쌓였습니다'],
     sub: '책장을 찬찬히 읽고, 다음에 읽을 책까지 골라 드립니다.',
     href: '/login',

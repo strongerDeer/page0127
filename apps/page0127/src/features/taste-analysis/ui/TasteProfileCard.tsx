@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { TASTE_ANALYSIS_BOOK_LABEL } from '@/entities/taste-analysis/model/analysisGate';
 import { groupTasteHistory } from '@/entities/taste-analysis/model/groupTasteHistory';
 import { getPersonalityColor } from '@/entities/taste-analysis/model/personalityTypes';
 
@@ -53,7 +54,7 @@ export const TasteProfileCard = ({
       <div className='rounded-2xl border border-dashed border-line-soft bg-card p-5'>
         <p className='text-xs text-text-subtle'>AI 독서 성향</p>
         <p className='mt-1 text-sm text-text-body'>
-          평가한 책 {analyzableBookCount}/{minBooks}권
+          {TASTE_ANALYSIS_BOOK_LABEL} {analyzableBookCount}/{minBooks}권
           {left > 0 && ` — ${left}권 더 모이면 AI가 성향을 알려줘요`}
         </p>
         {action && <div className='mt-3'>{action}</div>}

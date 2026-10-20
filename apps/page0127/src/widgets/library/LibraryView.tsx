@@ -1,11 +1,11 @@
 'use client';
 
-import { useTransition } from 'react';
+import { type ReactNode, useTransition } from 'react';
 
 import Link from 'next/link';
 
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
-import { Plus } from 'lucide-react';
+import { ChevronDown, Plus } from 'lucide-react';
 
 import { calculateReadingBalance } from '@/entities/book';
 
@@ -176,8 +176,9 @@ export const LibraryView = ({
     카드에서도 0권일 때는 숫자를 세지 않기로 했다
     (app/(public)/[username]/opengraph-image.tsx).
 
-    통계 카드를 지우지는 않는다 — 한 권을 넣었을 때 어디가 채워지는지
-    미리 보이는 편이 낫다.
+    통계 카드를 지우지는 않지만 **접어 둔다**. 다 펼쳐 두면 "올해 첫 완독", "꽂힌 책 없음",
+    "분야가 채워져요", 0 으로 찬 달력·평점까지 빈 안내가 줄줄이 반복돼 지쳐 보인다.
+    안내는 맨 위 하나로 충분하고, 어디가 채워지는지는 궁금한 사람만 펼쳐 본다.
 
     모바일 GNB 의 "도서 추가"는 + 아이콘뿐이라 "상단 도서 추가"라는 말만으로는
     찾기 어렵다 → 주인에게는 여기서 바로 가는 버튼을 준다.
@@ -195,17 +196,40 @@ export const LibraryView = ({
         </p>
       </CardHeader>
       {isOwner && (
-        <CardContent>
+        <CardContent className='flex flex-wrap gap-2'>
           <Button asChild size='sm'>
             <Link href='/books/add'>
               <Plus aria-hidden='true' />
               도서 추가
             </Link>
           </Button>
+          {/* 목표 버튼은 아래 접힌 올해 요약 안에도 있지만, 접혀 있으면 못 찾는다 */}
+          {onSetGoal && (
+            <Button variant='outline' size='sm' onClick={onSetGoal}>
+              올해 목표 정하기
+            </Button>
+          )}
         </CardContent>
       )}
     </Card>
   );
+
+  // 기록이 없을 때 통계·책장을 접어 두는 틀 — 기록이 있으면 그대로 펼쳐 둔다
+  const collapseWhenEmpty = (content: ReactNode) =>
+    isLibraryEmpty ? (
+      <details className='group rounded-2xl border border-line-soft bg-card'>
+        <summary className='flex cursor-pointer list-none items-center gap-1.5 px-5 py-4 text-sm text-text-body hover:text-text-strong [&::-webkit-details-marker]:hidden'>
+          <ChevronDown
+            aria-hidden='true'
+            className='size-4 transition-transform group-open:rotate-180'
+          />
+          책을 기록하면 채워질 통계 미리 보기
+        </summary>
+        <div className='space-y-6 border-t border-line-soft p-5'>{content}</div>
+      </details>
+    ) : (
+      content
+    );
 
   // 책장 제목은 지금 보는 범위를 그대로 말한다
   const shelfTitle = isAllView ? allShelfTitle : `${selectedYear}년 서재`;
@@ -280,112 +304,122 @@ export const LibraryView = ({
           <div className='space-y-6'>
             {emptyNotice}
 
-            <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
-              <Card className='rounded-2xl bg-card py-6 shadow-none'>
-                <CardHeader>
-                  <CardTitle>지금까지의 기록</CardTitle>
-                </CardHeader>
-                <CardContent className='space-y-4'>
-                  <ReadingJourneyCard data={overallStats.journey} />
-                </CardContent>
-              </Card>
+            {collapseWhenEmpty(
+              <>
+                <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
+                  <Card className='rounded-2xl bg-card py-6 shadow-none'>
+                    <CardHeader>
+                      <CardTitle>지금까지의 기록</CardTitle>
+                    </CardHeader>
+                    <CardContent className='space-y-4'>
+                      <ReadingJourneyCard data={overallStats.journey} />
+                    </CardContent>
+                  </Card>
 
-              <Card className='rounded-2xl bg-card py-6 shadow-none lg:col-span-2'>
-                <CardHeader className='pb-4'>
-                  <CardTitle>연도별 완독 추이</CardTitle>
-                  <p className='text-sm text-muted-foreground'>
-                    올해를 강조해 연도별 완독 권수를 비교합니다
-                  </p>
-                </CardHeader>
-                <CardContent className='pb-6'>
-                  <YearlyTrendChart data={overallStats.yearlyTrend} />
-                </CardContent>
-              </Card>
-            </div>
+                  <Card className='rounded-2xl bg-card py-6 shadow-none lg:col-span-2'>
+                    <CardHeader className='pb-4'>
+                      <CardTitle>연도별 완독 추이</CardTitle>
+                      <p className='text-sm text-muted-foreground'>
+                        올해를 강조해 연도별 완독 권수를 비교합니다
+                      </p>
+                    </CardHeader>
+                    <CardContent className='pb-6'>
+                      <YearlyTrendChart data={overallStats.yearlyTrend} />
+                    </CardContent>
+                  </Card>
+                </div>
 
-            {/* ── 인생책 (평점 10점) ── 서재 요약과 상세 통계 사이의 감정적 하이라이트 */}
-            <LifeBooksShelf
-              books={books}
-              title={lifeBooksTitle}
-              username={username}
-            />
+                {/* ── 인생책 (평점 10점) ── 서재 요약과 상세 통계 사이의 감정적 하이라이트 */}
+                <LifeBooksShelf
+                  books={books}
+                  title={lifeBooksTitle}
+                  username={username}
+                />
 
-            {/* 연도 탭과 같은 균형 카드 — 읽은 분야만 레이더 + 띠 + 고른 정도 + 안 읽은 분야.
+                {/* 연도 탭과 같은 균형 카드 — 읽은 분야만 레이더 + 띠 + 고른 정도 + 안 읽은 분야.
                 예전 '카테고리 취향'은 9축 고정 레이더라 연도 탭과 모양이 달랐다.
                 books 는 이미 공개 책·재독 합침이다(PublicLibraryContent 의 visibleBooks) */}
-            <ReadingBalanceCard balance={calculateReadingBalance(books)} />
+                <ReadingBalanceCard balance={calculateReadingBalance(books)} />
 
-            <Card className='rounded-2xl bg-card py-6 shadow-none'>
-              <CardHeader className='pb-4'>
-                <CardTitle>평점 분포</CardTitle>
-                <p className='text-sm text-muted-foreground'>
-                  전체 완독 기준입니다
-                </p>
-              </CardHeader>
-              <CardContent className='pb-6'>
-                <OverallDistribution
-                  ratings={overallStats.ratingDistribution}
-                />
-              </CardContent>
-            </Card>
+                <Card className='rounded-2xl bg-card py-6 shadow-none'>
+                  <CardHeader className='pb-4'>
+                    <CardTitle>평점 분포</CardTitle>
+                    <p className='text-sm text-muted-foreground'>
+                      전체 완독 기준입니다
+                    </p>
+                  </CardHeader>
+                  <CardContent className='pb-6'>
+                    <OverallDistribution
+                      ratings={overallStats.ratingDistribution}
+                    />
+                  </CardContent>
+                </Card>
+
+                {bookShelf}
+              </>
+            )}
           </div>
         ) : (
           /* ── 연도 뷰 ── "올해 몇 권"이 첫인상, 바로 아래 책장이 주인공 */
           <div className='space-y-6'>
             {emptyNotice}
 
-            <YearSummary
-              year={selectedYear}
-              today={today}
-              completed={stats.totalCompletedBooks}
-              target={goalTarget}
-              totalPages={stats.totalPages}
-              averageRating={stats.averageRating}
-              lifeBookCount={stats.lifeBookCount}
-              monthlyReading={stats.monthlyReading}
-              isOwner={isOwner}
-              onSetGoal={
-                onSetGoal && selectedYear === currentYear
-                  ? onSetGoal
-                  : undefined
-              }
-            />
+            {collapseWhenEmpty(
+              <>
+                <YearSummary
+                  year={selectedYear}
+                  today={today}
+                  completed={stats.totalCompletedBooks}
+                  target={goalTarget}
+                  totalPages={stats.totalPages}
+                  averageRating={stats.averageRating}
+                  lifeBookCount={stats.lifeBookCount}
+                  monthlyReading={stats.monthlyReading}
+                  isOwner={isOwner}
+                  onSetGoal={
+                    onSetGoal && selectedYear === currentYear
+                      ? onSetGoal
+                      : undefined
+                  }
+                />
 
-            {bookShelf}
+                {bookShelf}
 
-            <ReadingBalanceCard
-              year={selectedYear}
-              balance={calculateReadingBalance(
-                balanceBooks.current,
-                balanceBooks.previous
-              )}
-            />
+                <ReadingBalanceCard
+                  year={selectedYear}
+                  balance={calculateReadingBalance(
+                    balanceBooks.current,
+                    balanceBooks.previous
+                  )}
+                />
 
-            <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
-              <ReadingCalendar
-                key={selectedYear}
-                books={calendarBooks}
-                year={selectedYear}
-                today={today}
-                isOwner={isOwner}
-                bookHref={bookHref}
-              />
-              <RatingSummaryCard
-                year={selectedYear}
-                ratings={stats.ratingReading}
-                averageRating={stats.averageRating}
-                total={stats.totalCompletedBooks}
-                lifeBooks={completedBooks.filter((book) => book.is_life_book)}
-                bookHref={bookHref}
-                onRatingClick={handleRatingClick}
-              />
-            </div>
+                {/* items-start — 평점 카드가 달력 높이에 맞춰 늘어나면 아래가 텅 빈다 */}
+                <div className='grid grid-cols-1 items-start gap-6 lg:grid-cols-2'>
+                  <ReadingCalendar
+                    key={selectedYear}
+                    books={calendarBooks}
+                    year={selectedYear}
+                    today={today}
+                    isOwner={isOwner}
+                    bookHref={bookHref}
+                  />
+                  <RatingSummaryCard
+                    year={selectedYear}
+                    ratings={stats.ratingReading}
+                    averageRating={stats.averageRating}
+                    total={stats.totalCompletedBooks}
+                    lifeBooks={completedBooks.filter(
+                      (book) => book.is_life_book
+                    )}
+                    bookHref={bookHref}
+                    onRatingClick={handleRatingClick}
+                  />
+                </div>
+              </>
+            )}
           </div>
         )}
       </section>
-
-      {/* 전체 뷰는 통계가 주인공 → 책장을 맨 아래에 둔다 (위시리스트 뷰는 제외) */}
-      {!isWishlistView && isAllView && bookShelf}
     </>
   );
 };

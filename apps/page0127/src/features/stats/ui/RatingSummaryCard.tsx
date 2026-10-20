@@ -42,37 +42,46 @@ export const RatingSummaryCard = ({
         </span>
       </div>
 
-      <ul className='space-y-1.5 text-xs'>
-        {rows.map((row) => {
-          const label = row.is_life_book ? '인생책' : `${row.rating}점`;
-          return (
-            <li key={label}>
-              <button
-                type='button'
-                onClick={() =>
-                  onRatingClick(row.is_life_book ? 'life' : row.rating)
-                }
-                className='grid w-full grid-cols-[48px_1fr_20px] items-center gap-2 text-left hover:text-primary'
-              >
-                <span className='text-text-body'>{label}</span>
-                <span className='h-2 overflow-hidden rounded-full bg-sunken'>
-                  <span
-                    className='block h-full rounded-full'
-                    style={{
-                      width: `${(row.count / max) * 100}%`,
-                      // 인생책은 틸 — 브랜드 블루와 어울리는 에메랄드 계열(책장 표지 보기 뱃지와 같은 색)
-                      backgroundColor: row.is_life_book
-                        ? 'var(--chart-6)'
-                        : 'var(--chart-1)',
-                    }}
-                  />
-                </span>
-                <span className='text-right text-text-strong'>{row.count}</span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+      {/* 평가한 책이 없으면 0 막대 여섯 줄을 그리지 않는다 — 빈 성적표처럼 읽힌다 */}
+      {rows.every((row) => row.count === 0) ? (
+        <p className='rounded-xl bg-sunken px-4 py-6 text-center text-sm text-text-subtle'>
+          {year}년에 평가한 책이 생기면 분포가 그려져요
+        </p>
+      ) : (
+        <ul className='space-y-1.5 text-xs'>
+          {rows.map((row) => {
+            const label = row.is_life_book ? '인생책' : `${row.rating}점`;
+            return (
+              <li key={label}>
+                <button
+                  type='button'
+                  onClick={() =>
+                    onRatingClick(row.is_life_book ? 'life' : row.rating)
+                  }
+                  className='grid w-full grid-cols-[48px_1fr_20px] items-center gap-2 text-left hover:text-primary'
+                >
+                  <span className='text-text-body'>{label}</span>
+                  <span className='h-2 overflow-hidden rounded-full bg-sunken'>
+                    <span
+                      className='block h-full rounded-full'
+                      style={{
+                        width: `${(row.count / max) * 100}%`,
+                        // 인생책은 틸 — 브랜드 블루와 어울리는 에메랄드 계열(책장 표지 보기 뱃지와 같은 색)
+                        backgroundColor: row.is_life_book
+                          ? 'var(--chart-6)'
+                          : 'var(--chart-1)',
+                      }}
+                    />
+                  </span>
+                  <span className='text-right text-text-strong'>
+                    {row.count}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
 
       {lifeBooks.length > 0 && (
         <div className='rounded-xl bg-sunken p-3'>
