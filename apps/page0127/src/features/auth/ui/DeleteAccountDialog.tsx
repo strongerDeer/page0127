@@ -1,13 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@repo/ui';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Input } from '@repo/ui';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  Input,
+  Label,
+} from '@repo/ui';
 import { useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Info } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/client';
@@ -25,15 +37,14 @@ type DeleteAccountDialogProps = {
  * - 안전 장치: 잘못된 입력 시 삭제 불가
  * - 비동기 처리: API 호출 후 로그아웃 및 리다이렉트
  */
-export const DeleteAccountDialog = ({
-  username,
-}: DeleteAccountDialogProps) => {
+export const DeleteAccountDialog = ({ username }: DeleteAccountDialogProps) => {
   const router = useRouter();
   const queryClient = useQueryClient();
 
   // 확인 입력 상태
   const [confirmInput, setConfirmInput] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const inputId = useId();
 
   /*
     확인 문구를 이메일에서 아이디로 바꿨다.
@@ -66,7 +77,8 @@ export const DeleteAccountDialog = ({
         toast.success('계정이 삭제되었습니다.');
 
         // 로그아웃 처리 (Supabase Auth)
-        const { createClient } = await import('@/shared/config/supabase/client');
+        const { createClient } =
+          await import('@/shared/config/supabase/client');
         const supabase = createClient();
         await supabase.auth.signOut();
 
@@ -92,52 +104,73 @@ export const DeleteAccountDialog = ({
     <AlertDialog>
       <AlertDialogTrigger asChild>
         {/* 파괴적 액션은 화면에서 작게 — 강조는 확인 다이얼로그가 담당한다 */}
-        <Button variant='outline' size='sm' className='shrink-0 text-destructive'>
+        <Button
+          variant='outline'
+          size='sm'
+          className='shrink-0 text-destructive'
+        >
           계정 삭제
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
+      <AlertDialogContent className='max-h-[90dvh] overflow-y-auto break-keep'>
+        {/*
+          모바일에서도 왼쪽 정렬 — 공용 헤더는 짧은 확인용이라 모바일 가운데 정렬이 기본인데,
+          이 다이얼로그는 목록·입력창이 있는 긴 글이라 가운데로 두면 읽기 어렵다.
+        */}
+        <AlertDialogHeader className='text-left'>
           <AlertDialogTitle>정말로 계정을 삭제하시겠습니까?</AlertDialogTitle>
-          <AlertDialogDescription asChild>
-            <div className='space-y-4'>
-              <p className='flex items-center gap-1.5 font-medium text-destructive'>
-                <AlertTriangle className='h-4 w-4 shrink-0' />이 작업은 되돌릴
-                수 없습니다.
-              </p>
-              <p>계정을 삭제하면 다음 데이터가 영구적으로 삭제됩니다:</p>
-              <ul className='list-disc list-inside space-y-1 text-sm'>
-                <li>모든 독서 기록</li>
-                <li>내가 올린 피드 및 활동</li>
-                <li>AI 취향 분석 결과</li>
-                <li>추천 도서 목록</li>
-                <li>알림 내역</li>
-                <li>팔로우/팔로워 정보</li>
-                <li>프로필 정보 및 이미지</li>
-              </ul>
-              <p className='text-sm mt-3 text-muted-foreground'>
-                ℹ️ 다른 사람 글에 작성한 댓글은 &quot;탈퇴한 사용자&quot;로
-                표시되며 삭제되지 않습니다.
-              </p>
-              <div className='space-y-2 mt-4'>
-                <p className='text-sm font-medium'>
-                  계속하려면 아이디{' '}
-                  <span className='font-mono'>{username}</span> 를 입력하세요:
-                </p>
-                <Input
-                  type='text'
-                  autoComplete='off'
-                  autoCapitalize='none'
-                  spellCheck={false}
-                  placeholder={username ?? ''}
-                  value={confirmInput}
-                  onChange={(e) => setConfirmInput(e.target.value)}
-                  className='font-mono'
-                />
-              </div>
-            </div>
+          <AlertDialogDescription className='flex items-center gap-1.5 font-medium text-destructive'>
+            <AlertTriangle className='size-4 shrink-0' aria-hidden />이 작업은
+            되돌릴 수 없습니다.
           </AlertDialogDescription>
         </AlertDialogHeader>
+
+        <div className='space-y-4 text-sm'>
+          <div className='rounded-lg bg-muted/50 p-4'>
+            <p className='mb-2 font-medium'>
+              계정을 삭제하면 다음 데이터가 영구적으로 삭제됩니다.
+            </p>
+            <ul className='list-disc space-y-1 pl-5 text-muted-foreground'>
+              <li>모든 독서 기록</li>
+              <li>내가 올린 피드 및 활동</li>
+              <li>AI 취향 분석 결과</li>
+              <li>추천 도서 목록</li>
+              <li>알림 내역</li>
+              <li>팔로우/팔로워 정보</li>
+              <li>프로필 정보 및 이미지</li>
+            </ul>
+          </div>
+
+          <p className='flex gap-1.5 text-muted-foreground'>
+            <Info className='mt-0.5 size-4 shrink-0' aria-hidden />
+            <span className='text-pretty'>
+              다른 사람 글에 작성한 댓글은 &quot;탈퇴한 사용자&quot;로 표시되며
+              삭제되지 않습니다.
+            </span>
+          </p>
+
+          <div className='space-y-2'>
+            <Label htmlFor={inputId} className='block leading-normal'>
+              계속하려면 아이디{' '}
+              <span className='rounded bg-muted px-1.5 py-0.5 font-semibold'>
+                {username}
+              </span>{' '}
+              를 입력하세요.
+            </Label>
+            {/* 앱 글꼴 그대로 — 고정폭 글꼴은 한글 화면에서 혼자 튄다 */}
+            <Input
+              id={inputId}
+              type='text'
+              autoComplete='off'
+              autoCapitalize='none'
+              spellCheck={false}
+              placeholder={username ?? ''}
+              value={confirmInput}
+              onChange={(e) => setConfirmInput(e.target.value)}
+            />
+          </div>
+        </div>
+
         <AlertDialogFooter>
           <AlertDialogCancel onClick={() => setConfirmInput('')}>
             취소
