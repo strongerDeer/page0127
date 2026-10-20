@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { crossedBudgetThreshold, toBudgetAlertText } from './budgetAlert';
+import {
+  crossedBudgetThreshold,
+  toBillingAlertText,
+  toBudgetAlertText,
+} from './budgetAlert';
 
 // 예산 $10 = 1000센트
 const BUDGET = 1000;
@@ -85,5 +89,30 @@ describe('toBudgetAlertText', () => {
     });
     expect(text).toContain('100%');
     expect(text).toContain('닫혔');
+  });
+});
+
+describe('toBillingAlertText', () => {
+  it('실제 청구액이라는 것과 로컬·테스트 포함을 밝힌다', () => {
+    const text = toBillingAlertText({
+      threshold: 80,
+      spentCents: 812,
+      budgetCents: BUDGET,
+      usdToKrw: 1400,
+    });
+    expect(text).toContain('실제 청구액');
+    expect(text).toContain('$8.12 / $10.00');
+    expect(text).toContain('로컬·테스트 포함');
+  });
+
+  it('100% 여도 AI 분석이 닫혔다고 말하지 않는다 — 가드는 앱 기록을 본다', () => {
+    const text = toBillingAlertText({
+      threshold: 100,
+      spentCents: 1000,
+      budgetCents: BUDGET,
+      usdToKrw: 1400,
+    });
+    expect(text).toContain('100%');
+    expect(text).not.toContain('닫혔');
   });
 });
