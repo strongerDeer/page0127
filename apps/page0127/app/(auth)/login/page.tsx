@@ -39,7 +39,7 @@ const LoginPage = async ({ searchParams }: LoginPageProps) => {
   const { redirect } = await searchParams;
 
   return (
-    <div className='flex min-h-screen items-center justify-center'>
+    <div className='flex min-h-screen items-center justify-center px-4'>
       <Card className='w-full max-w-md shadow-none'>
         <CardHeader className='text-center'>
           {/*
@@ -61,7 +61,7 @@ const LoginPage = async ({ searchParams }: LoginPageProps) => {
           <PendingShelfNotice />
           <OAuthLoginButtons next={redirect} />
           {/* 약관 링크는 실제 페이지로 연결한다 (기존 href='#' 죽은 링크) */}
-          <p className='mt-4 text-center text-sm text-text-subtle'>
+          <p className='mt-4 text-center text-sm text-balance break-keep text-text-subtle'>
             로그인하면{' '}
             <Link href='/terms' className='underline'>
               서비스 약관
