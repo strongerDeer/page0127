@@ -26,6 +26,7 @@ declare global {
  * 밖에 있었다.
  *
  *   랜딩    cta_click · signup_start · shelf_preview_pick → shelf_preview_save | shelf_preview_goal
+ *   가입    sign_up                         ← signup_start 는 클릭일 뿐, 이건 온보딩 완료
  *   활성화  book_add → book_complete      ← 비어 있던 구간
  *   차별화  taste_analysis_run
  *   확산    share_click
@@ -42,6 +43,11 @@ export type AnalyticsEvent =
   | 'shelf_preview_goal'
   | 'scroll_depth'
   | 'signup_start'
+  /**
+   * 가입을 끝냈다(온보딩 완료). GA4 권장 이벤트 이름이다.
+   * method: 로그인 공급자(google·kakao). 보내는 곳은 SignupTracker
+   */
+  | 'sign_up'
   /** 책을 서재에 담았다. status 로 어떤 상태로 담았는지 함께 본다 */
   | 'book_add'
   /** 완독으로 **전환**됐다. 이미 완독인 책을 다시 저장한 것은 세지 않는다 */
