@@ -43,9 +43,14 @@ export const TasteExampleCard = async () => {
 
       <div className='flex items-start justify-between gap-5'>
         <div className='min-w-0'>
+          {/* "예시" 표시 — 로그인한 0권 사용자에게도 이 카드가 보인다.
+              표시가 없으면 내 분석 결과가 이미 나온 것처럼 읽힌다. */}
           <p className='flex items-center gap-1.5 text-xs font-medium text-primary'>
             <Sparkles aria-hidden='true' className='size-3.5' />
             TASTE NOTE 0127
+            <span className='ml-1 rounded-full border border-line-soft bg-sunken px-2 py-0.5 text-[11px] text-text-subtle'>
+              예시
+            </span>
           </p>
           <h3 className='mt-3 text-2xl font-bold leading-tight text-text-strong md:text-3xl'>
             {EXAMPLE.personalityType}
@@ -112,6 +117,10 @@ export const TasteExampleCard = async () => {
           </div>
         </div>
       </div>
+
+      <p className='mt-5 text-xs text-text-subtle'>
+        예시 결과예요. 내 취향 노트는 내 책장으로 만들어져요.
+      </p>
     </article>
   );
 };

@@ -78,7 +78,7 @@ describe('TasteProfileCard', () => {
       isOwner: true,
       analyzableBookCount: 3,
     });
-    expect(owner).toContain('평가한 책 3/5권');
+    expect(owner).toContain('평가한 완독 책 3/5권');
     expect(owner).toContain('2권 더 모이면');
   });
 });

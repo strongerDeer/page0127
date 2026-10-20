@@ -51,4 +51,23 @@ describe('RatingSummaryCard', () => {
   it('인생책이 없으면 그 칸을 그리지 않는다', () => {
     expect(render([])).not.toContain('2026 인생책');
   });
+
+  it('평가한 책이 없으면 0 막대 대신 한 줄 안내', () => {
+    const html = renderToStaticMarkup(
+      <RatingSummaryCard
+        year={2026}
+        ratings={[
+          { rating: 5, is_life_book: true, count: 0, fill: '' },
+          { rating: 5, is_life_book: false, count: 0, fill: '' },
+        ]}
+        averageRating={0}
+        total={0}
+        lifeBooks={[]}
+        bookHref={(b) => `/me/${b.id}`}
+        onRatingClick={() => {}}
+      />
+    );
+    expect(html).toContain('2026년에 평가한 책이 생기면 분포가 그려져요');
+    expect(html).not.toContain('<button');
+  });
 });

@@ -116,9 +116,14 @@ export const HeroBanner = ({ slides, covers = [] }: HeroBannerProps) => {
               aria-roledescription='슬라이드'
               aria-label={`${i + 1} / ${total}`}
               aria-hidden={!isActive}
+              // 크로스페이드가 아니라 "나간 뒤 들어온다". 둘이 동시에 500ms 씩 겹치면
+              // 중간 지점에서 두 슬라이드 카피가 반투명으로 포개져 글자가 뭉개져 보인다.
+              // 나가는 쪽은 200ms 에 빠지고, 들어오는 쪽은 그만큼 기다렸다 나타난다.
               className={cn(
-                'absolute inset-0 flex items-center transition-opacity duration-500',
-                isActive ? 'opacity-100' : 'pointer-events-none opacity-0'
+                'absolute inset-0 flex items-center transition-opacity',
+                isActive
+                  ? 'opacity-100 delay-200 duration-300'
+                  : 'pointer-events-none opacity-0 duration-200'
               )}
             >
               <div className='mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 md:gap-8 md:px-12'>

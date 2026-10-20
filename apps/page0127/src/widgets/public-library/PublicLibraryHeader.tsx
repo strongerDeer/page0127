@@ -28,7 +28,10 @@ import {
 } from '@/shared/lib/aiUsage';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
-import { TASTE_ANALYSIS_MIN_BOOKS } from '@/entities/taste-analysis/model/analysisGate';
+import {
+  TASTE_ANALYSIS_BOOK_LABEL,
+  TASTE_ANALYSIS_MIN_BOOKS,
+} from '@/entities/taste-analysis/model/analysisGate';
 
 import { FollowButton, FollowListModal, FollowStats } from '@/features/follow';
 import { coachTarget } from '@/features/onboarding';
@@ -88,7 +91,7 @@ export const PublicLibraryHeader = ({
       // 평가 컨트롤을 건드려 고른 상태이므로 "평가를 남긴" 은 사실이지만,
       // "별점을 남긴" 은 쿼리가 세지 않는 것을 약속하게 된다.
       toast.info(
-        `평가를 남긴 완독 책이 ${TASTE_ANALYSIS_MIN_BOOKS - analyzableBookCount}권 더 모이면 취향 분석을 볼 수 있어요.`
+        `${TASTE_ANALYSIS_BOOK_LABEL}이 ${TASTE_ANALYSIS_MIN_BOOKS - analyzableBookCount}권 더 모이면 취향 분석을 볼 수 있어요.`
       );
       return;
     }

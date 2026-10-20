@@ -2,6 +2,11 @@ import Link from 'next/link';
 
 import { BookMarked, Sparkles } from 'lucide-react';
 
+import {
+  TASTE_ANALYSIS_BOOK_LABEL,
+  TASTE_ANALYSIS_MIN_BOOKS,
+} from '@/entities/taste-analysis/model/analysisGate';
+
 /**
  * 프로모 카드 2장 — 비비드 단색 면 (밀리 "놓치기 아쉬운 소식" 문법)
  *
@@ -41,7 +46,8 @@ export const PromoCards = ({ isLoggedIn }: PromoCardsProps) => {
         className='promo-violet relative overflow-hidden rounded-2xl px-7 py-8 transition-transform hover:-translate-y-0.5'
       >
         <p className='text-lg font-bold leading-snug text-white'>
-          완독 5권이면 취향이 보여요
+          {TASTE_ANALYSIS_BOOK_LABEL} {TASTE_ANALYSIS_MIN_BOOKS}권이면 취향이
+          보여요
         </p>
         <p className='mt-1.5 text-sm text-white/90'>
           책장을 읽고 독서 성향을 알려 드립니다
