@@ -3,7 +3,7 @@
  *
  * 학습 포인트:
  * - 서버 사이드에서만 사용 (환경변수 OPENAI_API_KEY)
- * - GPT-4o-mini 모델 사용 (비용 효율적)
+ * - gpt-4o 모델 사용 (아래 AI_MODEL 참고)
  * - API Route에서만 사용할 것
  */
 
