@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildCostsUrl, parseCostBuckets } from './openAiCosts';
+import {
+  buildCostsUrl,
+  dayCrossingInput,
+  kstYesterday,
+  parseCostBuckets,
+} from './openAiCosts';
 
 // 2026-10-01 00:00 UTC, 10-02 00:00 UTC (Unix 초)
 const OCT1 = 1790812800;
@@ -72,5 +77,39 @@ describe('buildCostsUrl', () => {
   it('다음 쪽이 있으면 page 를 붙인다', () => {
     const url = buildCostsUrl(new Date('2026-10-18T03:00:00Z'), 'page_abc');
     expect(url.searchParams.get('page')).toBe('page_abc');
+  });
+});
+
+describe('kstYesterday', () => {
+  it('KST 기준 어제 날짜를 준다 — 매달 1일엔 지난달 말일', () => {
+    // 2026-11-01 09:30 KST
+    expect(kstYesterday(new Date('2026-11-01T00:30:00Z')).date).toBe(
+      '2026-10-31'
+    );
+  });
+});
+
+describe('dayCrossingInput', () => {
+  const costs = {
+    totalCents: 900,
+    daily: [
+      { date: '2026-10-01', cents: 300 },
+      { date: '2026-10-02', cents: 500 },
+      { date: '2026-10-03', cents: 100 },
+    ],
+  };
+
+  it('그날까지의 누적과, 그날을 빼기 직전의 누적을 준다', () => {
+    expect(dayCrossingInput(costs, '2026-10-02')).toEqual({
+      beforeCents: 300,
+      afterCents: 800,
+    });
+  });
+
+  it('그날 청구가 없으면 직전·직후가 같다 — 기준선을 건너지 않는다', () => {
+    expect(dayCrossingInput(costs, '2026-10-05')).toEqual({
+      beforeCents: 900,
+      afterCents: 900,
+    });
   });
 });

@@ -71,3 +71,26 @@ export const parseCostBuckets = (buckets: CostBucket[]): OpenAiCosts => {
     daily,
   };
 };
+
+/** `now` 기준 어제(KST)의 날짜와 24시간 전 시각 — 어제가 속한 달을 읽는 기준(1일엔 지난달) */
+export const kstYesterday = (now: Date): { date: string; at: Date } => {
+  const at = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  return { date: kstDate(at.getTime() / 1000), at };
+};
+
+/**
+ * 하루치 청구가 더해지기 직전·직후의 이달 누적액.
+ *
+ * 예산 알림의 "넘는 순간만 알리기"(crossedBudgetThreshold)를 청구액에도 쓰려고 만든다.
+ * 크론이 하루 한 번 **어제(끝난 날)** 만 보므로 같은 날을 두 번 세지 않고,
+ * 이미 보냈다는 기록을 따로 저장하지 않아도 된다.
+ */
+export const dayCrossingInput = (
+  costs: OpenAiCosts,
+  date: string
+): { beforeCents: number; afterCents: number } => {
+  const upTo = costs.daily.filter((day) => day.date <= date);
+  const afterCents = round2(upTo.reduce((sum, day) => sum + day.cents, 0));
+  const dayCents = upTo.find((day) => day.date === date)?.cents ?? 0;
+  return { beforeCents: round2(afterCents - dayCents), afterCents };
+};

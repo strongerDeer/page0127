@@ -9,6 +9,7 @@
  *
  * OpenAI 는 선불 잔액을 API 로 주지 않는다. 그래서 잔액이 아니라 앱이 기록하는
  * 이번 달 사용액(cost_in_cents)을 월 예산과 비교한다.
+ * 로컬·테스트까지 합친 실제 청구액은 하루 한 번 크론(check-ai-billing)이 따로 본다 — toBillingAlertText.
  */
 
 /** 알림을 보내는 기준선(%) — 높은 쪽이 먼저 오게 둔다 */
@@ -64,5 +65,29 @@ export const toBudgetAlertText = ({
     headline,
     `이번 달 사용 ${usd(spentCents)} / ${usd(budgetCents)} (약 ${krw}원)`,
     'OpenAI 선불 잔액도 Billing 에서 확인하세요.',
+  ].join('\n');
+};
+
+/**
+ * OpenAI **실제 청구액** 기준 알림 문구 — 하루 한 번 크론이 어제까지의 청구를 보고 보낸다.
+ *
+ * 위 toBudgetAlertText 와 다른 점: 앱 기록(운영 DB)이 아니라 로컬·테스트까지 합친 조직 전체다.
+ * 그래서 100% 여도 "AI 분석이 닫혔다"고 쓰지 않는다 — 분석을 닫는 가드(reserve_ai_usage)는
+ * 운영 DB 기록을 보므로, 청구액이 먼저 넘어도 분석은 계속 열려 있을 수 있다.
+ */
+export const toBillingAlertText = ({
+  threshold,
+  spentCents,
+  budgetCents,
+  usdToKrw,
+}: AlertTextInput): string => {
+  const krw = Math.round((spentCents / 100) * usdToKrw).toLocaleString('ko-KR');
+
+  return [
+    `${threshold >= 100 ? '🛑' : '⚠️'} [page0127.] OpenAI 실제 청구액이 월 예산 ${threshold}% 를 넘었습니다`,
+    `어제까지 청구 ${usd(spentCents)} / ${usd(budgetCents)} (약 ${krw}원, 로컬·테스트 포함)`,
+    threshold >= 100
+      ? '앱 기록 기준 가드는 아직 열려 있을 수 있어요 — 로컬 호출을 줄이거나 예산을 확인하세요.'
+      : 'OpenAI 선불 잔액도 Billing 에서 확인하세요.',
   ].join('\n');
 };

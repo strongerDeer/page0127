@@ -16,6 +16,10 @@
     {
       "path": "/api/cron/refresh-kakao-token",
       "schedule": "20 0 * * 1"
+    },
+    {
+      "path": "/api/cron/check-ai-billing",
+      "schedule": "30 0 * * *"
     }
   ]
 }
