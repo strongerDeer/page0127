@@ -11,16 +11,21 @@
 }
 
 .tilt {
-  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  /* 기본값 — 포인터가 올라오면 인라인 style 이 덮어쓴다 */
+  --rx: 0deg;
+  --ry: 0deg;
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
   transition: transform 0.25s ease-out;
   transform-style: preserve-3d;
   will-change: transform;
 }
 
 .shine {
+  /* 뱃지마다 인라인 style 로 엇갈린 값이 들어온다 */
+  --delay: 0s;
   transform: translateX(-80px) skewX(-18deg);
   animation: sweep 5.5s ease-in-out infinite;
-  animation-delay: var(--delay, 0s);
+  animation-delay: var(--delay);
 }
 
 @keyframes sweep {
