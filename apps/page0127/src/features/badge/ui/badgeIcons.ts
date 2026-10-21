@@ -1,0 +1,46 @@
+import {
+  BookMarked,
+  CalendarHeart,
+  Compass,
+  CopyCheck,
+  Dumbbell,
+  Feather,
+  Fingerprint,
+  Flame,
+  Gem,
+  Hourglass,
+  Library,
+  MessageSquareQuote,
+  PartyPopper,
+  Rocket,
+  RotateCcw,
+  Scale,
+  Sparkles,
+  Target,
+  Zap,
+} from 'lucide-react';
+
+import type { BadgeId } from '../model/badges';
+import type { LucideIcon } from 'lucide-react';
+
+export const BADGE_ICONS: Record<BadgeId, LucideIcon> = {
+  shelf: Library,
+  'wide-view': Compass,
+  'one-sitting': Zap,
+  brick: Dumbbell,
+  'author-fan': Feather,
+  finally: Hourglass,
+  reread: RotateCcw,
+  'life-book': Sparkles,
+  critic: MessageSquareQuote,
+  'goal-kept': Target,
+  'know-yourself': Fingerprint,
+  'day-0127': CalendarHeart,
+  'new-year': PartyPopper,
+  'double-finish': CopyCheck,
+  honest: Scale,
+  'thin-but-deep': Gem,
+  'new-release': Rocket,
+  'book-about-books': BookMarked,
+  'worn-out': Flame,
+};

@@ -1,0 +1,72 @@
+/*
+  뱃지 메달 인터랙션.
+  - 기울기: 포인터 위치(--rx, --ry)를 따라 3D 로 기운다 (마우스가 있을 때만)
+  - 반짝임: 받은 뱃지 위로 빛 띠가 가끔 스친다 (--delay 로 뱃지마다 엇갈림)
+  - 등장: 상세 화면에서 뒤집히며 나타난다
+  움직임 줄이기 설정이면 전부 끈다.
+*/
+
+.medal {
+  perspective: 600px;
+}
+
+.tilt {
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.25s ease-out;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.shine {
+  transform: translateX(-80px) skewX(-18deg);
+  animation: sweep 5.5s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+@keyframes sweep {
+  0%,
+  70% {
+    transform: translateX(-80px) skewX(-18deg);
+  }
+  100% {
+    transform: translateX(150px) skewX(-18deg);
+  }
+}
+
+.reveal {
+  animation: reveal 0.9s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+@keyframes reveal {
+  0% {
+    opacity: 0;
+    transform: rotateY(-200deg) scale(0.4);
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotateY(0deg) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tilt {
+    transition: none;
+    transform: none;
+  }
+  .shine {
+    animation: none;
+    opacity: 0;
+  }
+  .reveal {
+    animation: none;
+  }
+}
+
+/* 잠긴 은색 뱃지는 어두운 화면에서 받은 뱃지보다 더 밝게 튀므로 눌러 준다 */
+@media (prefers-color-scheme: dark) {
+  .locked {
+    opacity: 0.4;
+  }
+}

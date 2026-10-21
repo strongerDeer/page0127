@@ -2,71 +2,23 @@
 
 import { useMemo } from 'react';
 
-import { Popover, PopoverContent, PopoverTrigger, Progress } from '@repo/ui';
 import {
-  BookMarked,
-  CalendarHeart,
-  CircleHelp,
-  Compass,
-  CopyCheck,
-  Dumbbell,
-  Feather,
-  Fingerprint,
-  Flame,
-  Gem,
-  Hourglass,
-  Library,
-  MessageSquareQuote,
-  PartyPopper,
-  Rocket,
-  RotateCcw,
-  Scale,
-  Sparkles,
-  Target,
-  Zap,
-} from 'lucide-react';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+  Progress,
+} from '@repo/ui';
 
 import { formatDate } from '@/shared/lib/date';
 
 import { computeBadges } from '../model/badges';
+import { BadgeMedal } from './BadgeMedal';
 
-import type { Badge, BadgeId, BadgeInput, BadgeKind } from '../model/badges';
-import type { LucideIcon } from 'lucide-react';
+import type { Badge, BadgeInput } from '../model/badges';
 
-const ICONS: Record<BadgeId, LucideIcon> = {
-  shelf: Library,
-  'wide-view': Compass,
-  'one-sitting': Zap,
-  brick: Dumbbell,
-  'author-fan': Feather,
-  finally: Hourglass,
-  reread: RotateCcw,
-  'life-book': Sparkles,
-  critic: MessageSquareQuote,
-  'goal-kept': Target,
-  'know-yourself': Fingerprint,
-  'day-0127': CalendarHeart,
-  'new-year': PartyPopper,
-  'double-finish': CopyCheck,
-  honest: Scale,
-  'thin-but-deep': Gem,
-  'new-release': Rocket,
-  'book-about-books': BookMarked,
-  'worn-out': Flame,
-};
-
-/**
- * 받은 뱃지 색 — 종류별로 한 색을 꽉 채운다. 못 받은 건 전부 옅은 회색이라
- * 연한 틴트를 쓰면 받은 것과 못 받은 것이 구분되지 않았다(스크린샷 확인).
- * 아이콘은 배경색(text-background)이라 다크 모드에서도 대비가 뒤집혀 맞는다.
- */
-const EARNED_TONE: Record<BadgeKind, string> = {
-  growth: 'bg-chart-1 text-background',
-  story: 'bg-chart-6 text-background',
-  hidden: 'bg-chart-7 text-background',
-};
-
-/** 히든 뱃지는 받기 전까지 이름·조건·아이콘을 숨긴다 */
+/** 히든 뱃지는 받기 전까지 이름·조건·그림을 숨긴다 */
 const isSecret = (badge: Badge) => badge.kind === 'hidden' && !badge.earned;
 
 const earnedLine = (badge: Badge) => {
@@ -77,59 +29,63 @@ const earnedLine = (badge: Badge) => {
     : `${date}에 받았어요`;
 };
 
-type BadgeTileProps = { badge: Badge };
+type BadgeTileProps = { badge: Badge; index: number };
 
-const BadgeTile = ({ badge }: BadgeTileProps) => {
+/**
+ * 뱃지 한 칸. 누르면 크게 뒤집히며 나타나는 상세 창이 열린다.
+ * 상세 창은 닫히면 내용이 사라지므로(Radix 기본) 열 때마다 등장 연출이 다시 돈다.
+ */
+const BadgeTile = ({ badge, index }: BadgeTileProps) => {
   const secret = isSecret(badge);
-  const Icon = secret ? CircleHelp : ICONS[badge.id];
   const name = secret ? '???' : badge.name;
   const levelLabel =
     badge.kind === 'growth' && badge.level > 0 ? `Lv.${badge.level}` : null;
   const line = earnedLine(badge);
 
   return (
-    <Popover>
-      <PopoverTrigger
+    <Dialog>
+      <DialogTrigger
         className='group flex w-full flex-col items-center gap-1.5 rounded-xl p-1 text-center outline-none focus-visible:ring-2 focus-visible:ring-ring'
         aria-label={`${name}${badge.earned ? ' (받음)' : ' (아직 못 받음)'}`}
       >
-        <span
-          className={`relative flex size-12 items-center justify-center rounded-full transition-transform group-hover:scale-105 ${
-            badge.earned
-              ? EARNED_TONE[badge.kind]
-              : 'bg-muted text-text-subtle/60'
-          }`}
-        >
-          <Icon className='size-5' aria-hidden />
-          {levelLabel && (
-            <span className='absolute -right-1 -bottom-1 rounded-full bg-card px-1 text-[10px] font-bold text-text-strong shadow-sm ring-1 ring-line-soft'>
-              {levelLabel}
-            </span>
-          )}
-        </span>
+        <BadgeMedal
+          badge={badge}
+          // 반짝임이 한꺼번에 지나가지 않도록 칸마다 엇갈린다
+          shineDelay={(index % 7) * 0.7}
+          className='h-[70px] w-16 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:scale-105'
+        />
         <span
           className={`line-clamp-2 break-keep text-xs leading-tight ${
             badge.earned ? 'font-medium text-text-strong' : 'text-text-subtle'
           }`}
         >
+          {/* 단계는 표지 숫자가 이미 말한다 — 이름 옆 Lv 는 상세 창에만 */}
           {name}
         </span>
-      </PopoverTrigger>
-      <PopoverContent className='w-64 break-keep text-sm' align='center'>
-        <p className='font-bold text-text-strong'>
-          {name}
-          {levelLabel && (
-            <span className='ml-1.5 text-xs font-medium text-text-subtle'>
-              {levelLabel}
-            </span>
-          )}
-        </p>
-        <p className='mt-1 text-text-body'>
-          {secret ? '받기 전까지 조건은 비밀이에요 🤫' : badge.description}
-        </p>
-        {line && <p className='mt-2 text-xs text-text-subtle'>{line}</p>}
+      </DialogTrigger>
+      <DialogContent className='max-w-xs break-keep text-center'>
+        <BadgeMedal
+          badge={badge}
+          tiltable
+          reveal={badge.earned}
+          className='mx-auto mt-2 h-48 w-44'
+        />
+        <div>
+          <DialogTitle className='text-lg font-bold text-text-strong'>
+            {name}
+            {levelLabel && (
+              <span className='ml-1.5 text-sm font-medium text-text-subtle'>
+                {levelLabel}
+              </span>
+            )}
+          </DialogTitle>
+          <DialogDescription className='mt-1 text-sm text-text-body'>
+            {secret ? '받기 전까지 조건은 비밀이에요 🤫' : badge.description}
+          </DialogDescription>
+          {line && <p className='mt-3 text-xs text-text-subtle'>{line}</p>}
+        </div>
         {badge.progress && !secret && (
-          <div className='mt-3 space-y-1'>
+          <div className='space-y-1 text-left'>
             <Progress
               value={Math.min(
                 100,
@@ -142,8 +98,8 @@ const BadgeTile = ({ badge }: BadgeTileProps) => {
             </p>
           </div>
         )}
-      </PopoverContent>
-    </Popover>
+      </DialogContent>
+    </Dialog>
   );
 };
 
@@ -195,10 +151,10 @@ export const BadgeShelf = ({
           {isOwner ? `${earnedCount} / ${badges.length}` : `${earnedCount}개`}
         </span>
       </div>
-      <ul className='mt-5 grid grid-cols-4 gap-x-2 gap-y-4 sm:grid-cols-6 lg:grid-cols-10'>
-        {shown.map((badge) => (
+      <ul className='mt-5 grid grid-cols-4 gap-x-2 gap-y-5 sm:grid-cols-6 lg:grid-cols-10'>
+        {shown.map((badge, index) => (
           <li key={badge.id}>
-            <BadgeTile badge={badge} />
+            <BadgeTile badge={badge} index={index} />
           </li>
         ))}
       </ul>
