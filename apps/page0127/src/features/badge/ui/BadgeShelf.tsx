@@ -52,7 +52,8 @@ const BadgeTile = ({ badge, index }: BadgeTileProps) => {
           badge={badge}
           // 반짝임이 한꺼번에 지나가지 않도록 칸마다 엇갈린다
           shineDelay={(index % 7) * 0.7}
-          className='h-[70px] w-16 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:scale-105'
+          size={54}
+          className='transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:scale-105'
         />
         <span
           className={`line-clamp-2 break-keep text-xs leading-tight ${
@@ -68,7 +69,8 @@ const BadgeTile = ({ badge, index }: BadgeTileProps) => {
           badge={badge}
           tiltable
           reveal={badge.earned}
-          className='mx-auto mt-2 h-48 w-44'
+          size={144}
+          className='mx-auto mt-2'
         />
         <div>
           <DialogTitle className='text-lg font-bold text-text-strong'>

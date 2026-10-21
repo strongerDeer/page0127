@@ -20,21 +20,49 @@
   will-change: transform;
 }
 
+.art {
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* 성장 단계 숫자 — 어떤 그림 위에서도 읽히도록 짙은 테두리 */
+.level {
+  color: #fff;
+  -webkit-text-stroke: 0.08em rgb(0 0 0 / 0.55);
+  paint-order: stroke fill;
+  text-shadow: 0 0.04em 0.08em rgb(0 0 0 / 0.35);
+}
+
+.secret {
+  color: #fff;
+  text-shadow: 0 0.03em 0.06em rgb(0 0 0 / 0.25);
+}
+
 .shine {
   /* 뱃지마다 인라인 style 로 엇갈린 값이 들어온다 */
   --delay: 0s;
-  transform: translateX(-80px) skewX(-18deg);
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgb(255 255 255 / 0.5) 50%,
+    transparent 60%
+  );
+  background-size: 300% 100%;
+  background-position: 150% 0;
+  mask-size: 100% 100%;
   animation: sweep 5.5s ease-in-out infinite;
   animation-delay: var(--delay);
+  pointer-events: none;
 }
 
 @keyframes sweep {
   0%,
   70% {
-    transform: translateX(-80px) skewX(-18deg);
+    background-position: 150% 0;
   }
   100% {
-    transform: translateX(150px) skewX(-18deg);
+    background-position: -50% 0;
   }
 }
 
@@ -55,6 +83,16 @@
   }
 }
 
+/* 잠긴 뱃지 — 같은 그림을 흑백으로 */
+.locked .art {
+  filter: grayscale(1) contrast(0.85);
+  opacity: 0.55;
+}
+
+.locked .level {
+  opacity: 0.7;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tilt {
     transition: none;
@@ -69,9 +107,9 @@
   }
 }
 
-/* 잠긴 은색 뱃지는 어두운 화면에서 받은 뱃지보다 더 밝게 튀므로 눌러 준다 */
+/* 어두운 화면에서는 흑백 그림이 받은 뱃지보다 밝게 튀므로 더 눌러 준다 */
 @media (prefers-color-scheme: dark) {
-  .locked {
-    opacity: 0.4;
+  .locked .art {
+    opacity: 0.35;
   }
 }
