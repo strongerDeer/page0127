@@ -28,8 +28,15 @@ const levelValue = (badge: Badge) => {
   return levels[Math.max(0, badge.level - 1)] ?? levels[0];
 };
 
+/**
+ * 디자인 확정 전 임시 — 모든 뱃지를 빈 뱃지 하나로 보여 준다.
+ * 뱃지별 그림을 합성해 넣으면 이 값을 null 로 바꾼다.
+ */
+const PLACEHOLDER_SRC: string | null = '/badges/blank.webp';
+
 /** 뱃지 → 합성 이미지 경로 */
 export const badgeImageSrc = (badge: Badge) => {
+  if (PLACEHOLDER_SRC) return PLACEHOLDER_SRC;
   if (badge.kind === 'hidden' && !badge.earned)
     return '/badges/seal-locked.webp';
   if (badge.id === 'shelf') return `/badges/shelf-${levelValue(badge)}.webp`;
@@ -103,8 +110,11 @@ export const BadgeMedal = ({
 
         {badge.kind === 'growth' && (
           <span
-            className={`${styles.level} absolute inset-x-0 bottom-[17%] text-center font-extrabold leading-none`}
-            style={{ fontSize: size * 0.24 }}
+            className={`${styles.level} absolute inset-x-0 text-center font-extrabold leading-none ${
+              // 빈 뱃지일 땐 가운데, 그림이 들어가면 그림을 가리지 않게 아래로
+              PLACEHOLDER_SRC ? 'top-1/2 -translate-y-1/2' : 'bottom-[17%]'
+            }`}
+            style={{ fontSize: size * (PLACEHOLDER_SRC ? 0.3 : 0.24) }}
           >
             {levelValue(badge)}
           </span>
