@@ -5,6 +5,7 @@ import {
   buildCommentTree,
   classifyBookCommentError,
 } from '../../../_helpers/bookComments';
+import { schedulePush } from '../../../_helpers/push';
 import { errorResponse, successResponse } from '../../../_helpers/response';
 
 import type { CommentRow, ProfileRow } from '../../../_helpers/bookComments';
@@ -111,13 +112,18 @@ export async function POST(request: NextRequest, { params }: Params) {
       .single();
 
     if (book && book.user_id !== user!.id) {
-      await supabase.from('notifications').insert({
+      const notification = {
         user_id: book.user_id,
         type: 'comment',
         actor_id: user!.id,
         target_id: id,
         target_type: 'book',
-      });
+      } as const;
+      const { error: notifyError } = await supabase
+        .from('notifications')
+        .insert(notification);
+      // 종 아이콘에 들어간 알림만 푸시로도 보낸다 (응답 뒤에 돈다)
+      if (!notifyError) schedulePush([notification]);
     }
 
     // 대댓글이면 부모 댓글 작성자에게도 (중복·자기 자신 제외)
@@ -133,13 +139,18 @@ export async function POST(request: NextRequest, { params }: Params) {
         parent.user_id !== user!.id &&
         parent.user_id !== book?.user_id
       ) {
-        await supabase.from('notifications').insert({
+        const notification = {
           user_id: parent.user_id,
           type: 'comment',
           actor_id: user!.id,
           target_id: id,
           target_type: 'book',
-        });
+        } as const;
+        const { error: notifyError } = await supabase
+          .from('notifications')
+          .insert(notification);
+        // 종 아이콘에 들어간 알림만 푸시로도 보낸다 (응답 뒤에 돈다)
+        if (!notifyError) schedulePush([notification]);
       }
     }
 

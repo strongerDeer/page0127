@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 
 import { getCurrentUser, getSupabaseClient } from '../_helpers/auth';
+import { schedulePush } from '../_helpers/push';
 import { errorResponse, successResponse } from '../_helpers/response';
 
 /**
@@ -44,11 +45,16 @@ export async function POST(request: NextRequest) {
     }
 
     // 알림 생성 (팔로우 알림)
-    await supabase.from('notifications').insert({
+    const notification = {
       user_id: following_id, // 팔로우 당한 사람
       type: 'follow',
       actor_id: user!.id, // 팔로우한 사람
-    });
+    } as const;
+    const { error: notifyError } = await supabase
+      .from('notifications')
+      .insert(notification);
+    // 종 아이콘에 들어간 알림만 푸시로도 보낸다 (응답 뒤에 돈다)
+    if (!notifyError) schedulePush([notification]);
 
     return successResponse(data, 201);
   } catch {

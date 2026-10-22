@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ko-KR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1e69cb" />
+    <title>연결이 끊겼어요 · page0127.</title>
+    <!--
+      서비스워커(public/sw.js)가 미리 받아 두었다가 연결이 끊긴 페이지 이동에 대신 내준다.
+      오프라인에서는 다른 파일(CSS·폰트·스크립트)을 받을 수 없으므로 **이 파일 하나로 완결**돼야 한다.
+      색은 디자인 토큰(packages/design-tokens) 값을 그대로 옮겼다.
+    -->
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff; /* gray/0 */
+        --fg: #14294e; /* navy/900 */
+        --muted: #5f6f8f; /* navy/600 */
+        --brand: #1e69cb; /* blue/600 */
+        --on-brand: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f1012; /* ink/950 */
+          --fg: #ffffff;
+          --muted: #9aa0a8; /* ink/400 */
+          --brand: #74b0ff; /* blue/300 */
+          --on-brand: #0f1012;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 16px;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+        text-align: center;
+      }
+      main { max-width: 320px; }
+      .mark { font-weight: 700; color: var(--brand); letter-spacing: -0.02em; }
+      h1 { margin: 16px 0 8px; font-size: 20px; }
+      p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.6; }
+      button {
+        margin-top: 24px;
+        padding: 12px 20px;
+        border: 0;
+        border-radius: 12px;
+        background: var(--brand);
+        color: var(--on-brand);
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="mark">page0127.</div>
+      <h1>인터넷 연결이 끊겼어요</h1>
+      <p>연결이 돌아오면 자동으로 다시 불러와요.</p>
+      <button type="button" onclick="location.reload()">다시 시도</button>
+    </main>
+    <script>
+      // 연결이 돌아오면 저절로 다시 불러온다
+      window.addEventListener('online', function () { location.reload(); });
+    </script>
+  </body>
+</html>

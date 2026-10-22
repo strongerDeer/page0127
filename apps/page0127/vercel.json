@@ -1,5 +1,7 @@
 {
-  "regions": ["icn1"],
+  "regions": [
+    "icn1"
+  ],
   "crons": [
     {
       "path": "/api/cron/snapshot-rankings",
@@ -24,6 +26,10 @@
     {
       "path": "/api/cron/reading-reminders",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/weekly-recap",
+      "schedule": "0 11 * * 0"
     }
   ]
 }

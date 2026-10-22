@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 
 import { getCurrentUser, getSupabaseClient } from '@/app/api/_helpers/auth';
+import { schedulePush } from '@/app/api/_helpers/push';
 import { errorResponse, successResponse } from '@/app/api/_helpers/response';
 
 type Params = {
@@ -50,13 +51,18 @@ export async function POST(_request: NextRequest, { params }: Params) {
       .single();
 
     if (book && book.user_id !== user.id) {
-      await supabase.from('notifications').insert({
+      const notification = {
         user_id: book.user_id,
         type: 'like',
         actor_id: user.id,
         target_id: id,
         target_type: 'book', // 계획 1에서 알림 라우팅에 추가한 값
-      });
+      } as const;
+      const { error: notifyError } = await supabase
+        .from('notifications')
+        .insert(notification);
+      // 종 아이콘에 들어간 알림만 푸시로도 보낸다 (응답 뒤에 돈다)
+      if (!notifyError) schedulePush([notification]);
     }
 
     return successResponse({ message: '좋아요를 추가했습니다.' }, 201);
