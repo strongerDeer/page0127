@@ -27,6 +27,8 @@ const NOISE_PATTERNS = [
   /moz-extension:\/\//i,
   /NEXT_REDIRECT/,
   /NEXT_NOT_FOUND/,
+  // Next 15+ 의 notFound()·forbidden()·unauthorized() digest. NEXT_NOT_FOUND 의 새 이름이다
+  /NEXT_HTTP_ERROR_FALLBACK/,
   /Non-Error promise rejection captured/i,
 ];
 

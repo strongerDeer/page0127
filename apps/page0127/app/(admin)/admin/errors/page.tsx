@@ -1,6 +1,7 @@
 import { getSentryIssues } from '@/features/admin-errors/api/getSentryIssues';
 import { ErrorList } from '@/features/admin-errors/ui/ErrorList';
 import { KakaoAlertStatus } from '@/features/admin-errors/ui/KakaoAlertStatus';
+import { ResolutionLog } from '@/features/admin-errors/ui/ResolutionLog';
 
 export default async function AdminErrorsPage({
   searchParams,
@@ -27,6 +28,8 @@ export default async function AdminErrorsPage({
         missing={sp.missing}
       />
       <ErrorList result={result} now={now} />
+      {/* Sentry 조회 실패와 무관하게 보이도록 목록 밖에 둔다 */}
+      <ResolutionLog />
     </section>
   );
 }
