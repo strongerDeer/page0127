@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { Lock } from 'lucide-react';
 
-import { isRated } from '@/entities/book';
+import { formatCompletedWhen, isRated } from '@/entities/book';
 
 import type { BookReading } from '@/entities/book/api/getBookReadings';
 
@@ -61,7 +61,7 @@ export const BookReadingList = ({
               </span>
 
               <span className='text-sm text-text-body'>
-                {reading.completed_date ??
+                {formatCompletedWhen(reading) ??
                   (reading.status === 'reading' ? '읽는 중' : '날짜 없음')}
               </span>
 

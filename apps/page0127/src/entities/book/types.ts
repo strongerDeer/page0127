@@ -61,6 +61,8 @@ export type Book = {
   // 날짜 정보
   start_date: string | null;
   completed_date: string | null;
+  /** 완독 연도만 아는 경우. 날짜를 알면 null — model/completedWhen.ts 참고 */
+  completed_year: number | null;
 
   // 평가
   rating: BookRating | null;
@@ -152,7 +154,9 @@ export type BookInput = {
 
   // 날짜 정보
   start_date?: string;
-  completed_date?: string;
+  // 수정에서 "날짜 ↔ 연도만 ↔ 모름"을 바꾸면 반대쪽 값을 null 로 지워야 한다
+  completed_date?: string | null;
+  completed_year?: number | null;
 
   // 평가
   rating?: BookRating;

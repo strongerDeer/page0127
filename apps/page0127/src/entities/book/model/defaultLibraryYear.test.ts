@@ -36,6 +36,17 @@ describe('resolveDefaultLibraryYear', () => {
     expect(resolveDefaultLibraryYear(books, 2026)).toBe(2026);
   });
 
+  it('언제 읽었는지 모르는 완독만 있으면 올해 — 연도 후보로 세지 않는다', () => {
+    const books = [
+      createTestBook({ status: 'completed' }),
+      createTestBook({ completed_year: 2015 }),
+    ];
+    expect(resolveDefaultLibraryYear(books, 2026)).toBe(2015);
+    expect(
+      resolveDefaultLibraryYear([createTestBook({ status: 'completed' })], 2026)
+    ).toBe(2026);
+  });
+
   it('책이 하나도 없으면 올해', () => {
     expect(resolveDefaultLibraryYear([], 2026)).toBe(2026);
   });

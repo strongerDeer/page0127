@@ -1,5 +1,7 @@
 import { createClient } from '@/shared/config/supabase/server';
 
+import { getCompletedYear } from '../model/completedWhen';
+
 import type { Book } from '../types';
 
 /**
@@ -31,11 +33,12 @@ export const getMyBooks = async (
 
     // 연도 필터 적용
     if (year !== null) {
+      // 그 해 날짜로 완독했거나, 연도만 그 해로 기록한 책
       const startDate = `${year}-01-01`;
       const endDate = `${year}-12-31`;
-      query = query
-        .gte('completed_date', startDate)
-        .lte('completed_date', endDate);
+      query = query.or(
+        `and(completed_date.gte.${startDate},completed_date.lte.${endDate}),completed_year.eq.${year}`
+      );
     }
 
     const { data, error } = await query;
@@ -65,20 +68,17 @@ export const getAvailableYears = async (userId: string): Promise<number[]> => {
   try {
     const { data, error } = await supabase
       .from('books')
-      .select('completed_date')
+      .select('completed_date, completed_year')
       .eq('user_id', userId)
-      .eq('status', 'completed')
-      .not('completed_date', 'is', null);
+      .eq('status', 'completed');
 
     if (error) throw error;
 
     // 연도 추출 및 중복 제거
     const years = new Set<number>();
     data?.forEach((book) => {
-      if (book.completed_date) {
-        const year = new Date(book.completed_date).getFullYear();
-        years.add(year);
-      }
+      const year = getCompletedYear(book);
+      if (year !== null) years.add(year);
     });
 
     // 내림차순 정렬

@@ -35,6 +35,7 @@ const createBook = (overrides: Partial<Book> = {}): Book => ({
   read_count: 1,
   start_date: null,
   completed_date: null,
+  completed_year: null,
   rating: null,
   is_life_book: false,
   one_line_review: null,
@@ -81,6 +82,47 @@ describe('libraryPeriod', () => {
     expect(filterBooksByLibraryYear([undatedBook], 2027, 2027)).toEqual([
       undatedBook,
     ]);
+  });
+
+  it('연도만 기록한 완독은 그 연도 책장에 놓는다', () => {
+    const book = createBook({ status: 'completed', completed_year: 2015 });
+
+    expect(getBookLibraryYear(book, 2026)).toBe(2015);
+    expect(filterBooksByLibraryYear([book], 2015, 2026)).toEqual([book]);
+    expect(filterBooksByLibraryYear([book], 2026, 2026)).toEqual([]);
+  });
+
+  it('언제 읽었는지 모르는 완독은 어느 연도에도 없고 전체에만 보인다', () => {
+    // 시작일이 있어도 완독한 책은 시작 연도로 보내지 않는다
+    const unknownBook = createBook({ status: 'completed' });
+    const startedOnly = createBook({
+      status: 'completed',
+      start_date: '2024-02-01',
+    });
+
+    expect(getBookLibraryYear(unknownBook, 2026)).toBeNull();
+    expect(getBookLibraryYear(startedOnly, 2026)).toBeNull();
+    expect(filterBooksByLibraryYear([unknownBook], 2026, 2026)).toEqual([]);
+    expect(filterBooksByLibraryYear([unknownBook], null, 2026)).toEqual([
+      unknownBook,
+    ]);
+    expect(getLibraryYears([unknownBook], 2026)).toEqual([2026]);
+  });
+
+  it('완독 시점을 모르는 책도 전체 통계 권수에는 들어가고 월별 분포에서는 빠진다', () => {
+    const books = [
+      createBook({ status: 'completed', completed_date: '2026-03-01' }),
+      createBook({ status: 'completed', completed_year: 2015 }),
+      createBook({ status: 'completed', is_life_book: true, rating: 5 }),
+    ];
+
+    const all = calculateBookStats(books, null, 2026);
+    expect(all.totalCompletedBooks).toBe(3);
+    expect(all.lifeBookCount).toBe(1);
+    expect(all.monthlyReading.reduce((sum, m) => sum + m.count, 0)).toBe(1);
+
+    expect(calculateBookStats(books, 2026, 2026).totalCompletedBooks).toBe(1);
+    expect(calculateBookStats(books, 2015, 2026).totalCompletedBooks).toBe(1);
   });
 
   it('현재 연도와 책 기록 연도를 중복 없이 최신순으로 반환한다', () => {

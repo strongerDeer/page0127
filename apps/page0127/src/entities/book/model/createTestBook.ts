@@ -27,6 +27,7 @@ export const createTestBook = (overrides: Partial<Book> = {}): Book => ({
   read_count: 1,
   start_date: null,
   completed_date: null,
+  completed_year: null,
   rating: null,
   is_life_book: false,
   one_line_review: null,

@@ -1,4 +1,5 @@
 import { mapToMainCategory } from '../../../shared/lib/categoryMapper';
+import { getCompletedYear } from './completedWhen';
 import { dedupeReadings } from './dedupeReadings';
 import { averageScore } from './rating';
 
@@ -40,18 +41,28 @@ export const getCurrentLibraryYear = (date: Date = new Date()): number =>
 /**
  * 책을 어느 연도 책장에 놓을지 결정한다.
  *
- * - 완독일이 있으면 완독 연도
- * - 완독일이 없고 시작일이 있으면 시작 연도
+ * - 완독일(또는 완독 연도)이 있으면 완독 연도
+ * - 완독했는데 언제인지 모르면 null — 어느 연도에도 넣지 않고 '전체'에만 보인다
+ * - 완독 전이고 시작일이 있으면 시작 연도
  * - 날짜를 설정하지 않았으면 현재 연도
  *
  * 마지막 규칙 덕분에 날짜 없는 진행 중/읽고 싶은 책은 해가 바뀌면
- * 새 현재 연도 책장으로 자연스럽게 이동한다.
+ * 새 현재 연도 책장으로 자연스럽게 이동한다. 완독한 책에 이 규칙을 쓰면 안 된다 —
+ * 10년 전에 읽은 인생책이 "올해 읽은 책"으로 집계된다.
  */
 export const getBookLibraryYear = (
-  book: Pick<Book, 'completed_date' | 'start_date'>,
+  book: Pick<
+    Book,
+    'status' | 'completed_date' | 'completed_year' | 'start_date'
+  >,
   currentYear: number
-): number =>
-  getYear(book.completed_date) ?? getYear(book.start_date) ?? currentYear;
+): number | null => {
+  const completedYear = getCompletedYear(book);
+  if (completedYear !== null) return completedYear;
+  if (book.status === 'completed') return null;
+
+  return getYear(book.start_date) ?? currentYear;
+};
 
 export const filterBooksByLibraryYear = (
   books: Book[],
@@ -67,7 +78,9 @@ export const getLibraryYears = (books: Book[], currentYear: number): number[] =>
   Array.from(
     new Set([
       currentYear,
-      ...books.map((book) => getBookLibraryYear(book, currentYear)),
+      ...books
+        .map((book) => getBookLibraryYear(book, currentYear))
+        .filter((year): year is number => year !== null),
     ])
   ).sort((a, b) => b - a);
 
@@ -178,8 +191,11 @@ export const calculateBookStats = (
   const scopedBooks = dedupeReadings(
     filterBooksByLibraryYear(books, year, currentYear)
   );
+  // 완독 시점을 모르는 책도 완독은 완독이다 — '전체'에서는 센다.
+  // (연도 탭에서는 위 filterBooksByLibraryYear 가 이미 걸러 냈다)
+  // 월별 분포만 날짜가 필요해 calculateMonthlyReading 이 따로 거른다.
   const completedBooks = scopedBooks.filter(
-    (book) => book.status === 'completed' && book.completed_date
+    (book) => book.status === 'completed'
   );
   const totalPages = completedBooks.reduce(
     (sum, book) => sum + (book.page_count ?? 0),
@@ -218,7 +234,8 @@ export const resolveDefaultLibraryYear = (
 ): number => {
   const shelfYears = books
     .filter((book) => book.status !== 'want_to_read')
-    .map((book) => getBookLibraryYear(book, currentYear));
+    .map((book) => getBookLibraryYear(book, currentYear))
+    .filter((year): year is number => year !== null);
 
   if (shelfYears.length === 0 || shelfYears.includes(currentYear)) {
     return currentYear;

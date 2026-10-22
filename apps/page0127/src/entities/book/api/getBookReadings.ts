@@ -11,6 +11,7 @@ export type BookReading = Pick<
   | 'read_count'
   | 'status'
   | 'completed_date'
+  | 'completed_year'
   | 'created_at'
   | 'rating'
   | 'is_life_book'
@@ -54,7 +55,7 @@ export const getBookReadings = async (
   let query = supabase
     .from('books')
     .select(
-      'id, read_count, status, completed_date, created_at, rating, is_life_book, one_line_review, is_public'
+      'id, read_count, status, completed_date, completed_year, created_at, rating, is_life_book, one_line_review, is_public'
     )
     .eq('user_id', userId)
     .eq('isbn', isbn);

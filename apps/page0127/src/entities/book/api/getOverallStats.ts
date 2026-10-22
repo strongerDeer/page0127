@@ -1,5 +1,6 @@
 import { createClient } from '@/shared/config/supabase/server';
 
+import { getCompletedYear } from '../model/completedWhen';
 import { dedupeReadings } from '../model/dedupeReadings';
 
 import type { Book } from '../types';
@@ -36,8 +37,9 @@ export const getOverallStats = async (
       .select('*')
       .eq('user_id', userId)
       .eq('status', 'completed')
-      .not('completed_date', 'is', null)
-      .order('completed_date', { ascending: true });
+      // 완독 시점을 모르는 책(날짜·연도 모두 없음)도 전체 통계에는 센다.
+      // 연도별 추이에서만 빠진다 — model/completedWhen.ts 참고
+      .order('completed_date', { ascending: true, nullsFirst: false });
 
     // 공개 서재 경로에서는 RLS에만 기대지 않고 코드에서도 명시적으로 거른다
     if (publicOnly) {
@@ -108,9 +110,18 @@ const calculateReadingJourney = (
     0
   );
 
-  // 독서 시작일 (첫 완독일) — 합치기 전 목록이라야 옛 1회독 날짜가 살아 있다
-  const firstBook = allReadings[0]; // 이미 completed_date 오름차순 정렬됨
-  const readingSince = firstBook?.completed_date || new Date().toISOString();
+  // 독서 시작일 (첫 완독일) — 합치기 전 목록이라야 옛 1회독 날짜가 살아 있다.
+  // 연도만 아는 책은 그해 1월 1일로 본다. 모르는 책은 시작일 계산에서 빠진다.
+  // 'YYYY-MM-DD' 문자열은 사전순이 곧 날짜순이다.
+  const readingSince =
+    allReadings
+      .map(
+        (book) =>
+          book.completed_date ??
+          (book.completed_year ? `${book.completed_year}-01-01` : null)
+      )
+      .filter((date): date is string => date !== null)
+      .sort()[0] ?? new Date().toISOString();
 
   // 독서 년수 계산
   const firstDate = new Date(readingSince);
@@ -166,8 +177,9 @@ const calculateYearlyTrend = (allReadings: Book[]): YearlyTrend[] => {
   const readingsByYear = new Map<number, Book[]>();
 
   allReadings.forEach((book) => {
-    if (book.completed_date) {
-      const year = new Date(book.completed_date).getFullYear();
+    // 연도만 기록한 책도 그 해 막대에 들어간다. 모르는 책은 빠진다
+    const year = getCompletedYear(book);
+    if (year !== null) {
       readingsByYear.set(year, [...(readingsByYear.get(year) ?? []), book]);
     }
   });
