@@ -17,12 +17,14 @@ import {
   budgetBasisCents,
   computeBudgetUsage,
 } from '@/features/admin-costs/lib/cost';
+import { getFunnel } from '@/features/admin-overview/api/getFunnel';
 import { getOverview } from '@/features/admin-overview/api/getOverview';
 import { getRetention } from '@/features/admin-overview/api/getRetention';
 import { getTrends } from '@/features/admin-overview/api/getTrends';
 import { buildAttention } from '@/features/admin-overview/lib/attention';
 import { sumPoints } from '@/features/admin-overview/lib/trend';
 import { AttentionList } from '@/features/admin-overview/ui/AttentionList';
+import { FunnelPanel } from '@/features/admin-overview/ui/FunnelPanel';
 import { OverviewCards } from '@/features/admin-overview/ui/OverviewCards';
 import { RetentionPanel } from '@/features/admin-overview/ui/RetentionPanel';
 import { TrendBars } from '@/features/admin-overview/ui/TrendBars';
@@ -132,6 +134,19 @@ const RetentionSection = async ({ range }: RangeProps) => {
   return <RetentionPanel retention={retention} periodLabel={range.label} />;
 };
 
+const FunnelSection = async ({ range }: RangeProps) => {
+  const funnel = await getFunnel(range);
+  if (!funnel) {
+    return (
+      <p className='rounded-lg border border-line p-4 text-sm text-text-subtle'>
+        가입 퍼널을 불러오지 못했습니다. (전환 0% 와는 다른 상태입니다 — 서버
+        로그를 확인하세요.)
+      </p>
+    );
+  }
+  return <FunnelPanel funnel={funnel} periodLabel={range.label} />;
+};
+
 type SkeletonProps = { height: string };
 
 const Skeleton = ({ height }: SkeletonProps) => (
@@ -183,6 +198,12 @@ export default async function AdminHomePage({
         <ErrorBoundary fallback={<FailNotice />}>
           <Suspense key={rangeKey} fallback={<Skeleton height='h-56' />}>
             <RetentionSection range={range} />
+          </Suspense>
+        </ErrorBoundary>
+
+        <ErrorBoundary fallback={<FailNotice />}>
+          <Suspense key={rangeKey} fallback={<Skeleton height='h-40' />}>
+            <FunnelSection range={range} />
           </Suspense>
         </ErrorBoundary>
       </div>
