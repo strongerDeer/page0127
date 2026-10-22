@@ -24,6 +24,7 @@ import { getRetention } from '@/features/admin-overview/api/getRetention';
 import { getTrends } from '@/features/admin-overview/api/getTrends';
 import { buildAttention } from '@/features/admin-overview/lib/attention';
 import { sumPoints } from '@/features/admin-overview/lib/trend';
+import { peakHour } from '@/features/admin-overview/lib/visitHours';
 import { AttentionList } from '@/features/admin-overview/ui/AttentionList';
 import { FunnelPanel } from '@/features/admin-overview/ui/FunnelPanel';
 import { OverviewCards } from '@/features/admin-overview/ui/OverviewCards';
@@ -130,8 +131,8 @@ const TrendSection = async ({ range }: RangeProps) => {
 };
 
 const RetentionSection = async ({ range }: RangeProps) => {
-  const retention = await getRetention(range);
-  if (!retention) {
+  const data = await getRetention(range);
+  if (!data) {
     return (
       <p className='rounded-lg border border-line p-4 text-sm text-text-subtle'>
         재방문 지표를 불러오지 못했습니다. (재방문 0% 와는 다른 상태입니다 —
@@ -139,7 +140,23 @@ const RetentionSection = async ({ range }: RangeProps) => {
       </p>
     );
   }
-  return <RetentionPanel retention={retention} periodLabel={range.label} />;
+  const peak = peakHour(data.hours);
+  return (
+    <div className='space-y-3'>
+      <RetentionPanel retention={data.retention} periodLabel={range.label} />
+      {/* 푸시·알림 발송 시각을 정할 근거 — D-1 이 first_visit_at 을 남긴 이유 */}
+      <TrendBars
+        title='그날 첫 방문 시각 (KST)'
+        unit='명'
+        points={data.hours}
+        summary={
+          peak === null
+            ? '방문 없음'
+            : `가장 많은 시각 ${peak}시 · 알림 발송 시각 근거`
+        }
+      />
+    </div>
+  );
 };
 
 const FunnelSection = async ({ range }: RangeProps) => {
