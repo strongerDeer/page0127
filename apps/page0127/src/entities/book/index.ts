@@ -43,6 +43,12 @@ export {
   getInitialCalendarMonth,
   MAX_LANES,
 } from './model/calendarMonth';
+export type { DueReminder, ReminderCandidate } from './model/readingReminder';
+export {
+  isLongReading,
+  READING_REMINDER_DAYS,
+  selectDueReminders,
+} from './model/readingReminder';
 export { readingDayCount, readingSince } from './model/readingSince';
 
 // 표지 주소 — YES24 가 먼저, Storage 사본은 대체용
