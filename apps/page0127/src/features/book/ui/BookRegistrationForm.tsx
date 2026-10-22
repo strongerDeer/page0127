@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle, Input, Label, Select, SelectC
 import { BookCover } from '@repo/ui';
 import { RefreshCw } from 'lucide-react';
 
+import { toKstDateKey } from '@/shared/lib/date';
+
 import type { BookRating, BookStatus, ProviderBook } from '@/entities/book';
 
 type BookRegistrationFormProps = {
@@ -33,7 +35,7 @@ export type BookFormData = {
 
 // ─── State 타입 정의 ───────────────────────────────────────────────
 // 폼의 모든 입력 상태를 하나의 객체로 관리
-type FormState = {
+export type FormState = {
   status: BookStatus;
   completedDate: string;
   startDate: string;
@@ -56,7 +58,8 @@ type FormAction =
   | { type: 'SET_STATUS'; status: BookStatus }
   | { type: 'SET_COMPLETED_DATE'; date: string }
   | { type: 'SET_START_DATE'; date: string }
-  | { type: 'TOGGLE_START_DATE'; checked: boolean }
+  // today 를 액션에 실어 보내 reducer 를 순수하게 유지한다(안에서 new Date() 를 부르지 않는다)
+  | { type: 'TOGGLE_START_DATE'; checked: boolean; today: string }
   | { type: 'SET_RATING'; rating: BookRating | 'life' }
   | { type: 'SET_ONE_LINE_REVIEW'; value: string }
   | { type: 'SET_PERSONAL_MEMO'; value: string }
@@ -64,7 +67,10 @@ type FormAction =
   | { type: 'SET_TAG_ERROR'; error: string }
   | { type: 'SET_IS_PUBLIC'; isPublic: boolean };
 
-function formReducer(state: FormState, action: FormAction): FormState {
+export function formReducer(
+  state: FormState,
+  action: FormAction
+): FormState {
   switch (action.type) {
     case 'SET_STATUS':
       return {
@@ -80,7 +86,14 @@ function formReducer(state: FormState, action: FormAction): FormState {
     case 'SET_START_DATE':
       return { ...state, startDate: action.date };
     case 'TOGGLE_START_DATE':
-      return { ...state, showStartDate: action.checked };
+      // 켜는 순간 비어 있으면 오늘로 채운다 — 대부분 '오늘부터 읽기 시작'이라 날짜를 다시 고를 일이 없다.
+      // 이미 고른 날짜(수정 화면·껐다 켬)는 덮어쓰지 않는다
+      return {
+        ...state,
+        showStartDate: action.checked,
+        startDate:
+          action.checked && !state.startDate ? action.today : state.startDate,
+      };
     case 'SET_RATING':
       // 인생책 선택 = 최고점 + 플래그. 배타 선택이므로 다른 점수를 고르면 플래그가 풀린다
       return action.rating === 'life'
@@ -142,7 +155,7 @@ export const BookRegistrationForm = ({
   const [state, dispatch] = useReducer(formReducer, {
     status: initialData?.status || 'completed',
     completedDate:
-      initialData?.completed_date || new Date().toISOString().split('T')[0],
+      initialData?.completed_date || toKstDateKey(new Date()),
     startDate: initialData?.start_date || '',
     showStartDate: !!initialData?.start_date,
     rating: initialData?.rating,
@@ -200,7 +213,7 @@ export const BookRegistrationForm = ({
     // 기본값이 이미 오늘이므로 이 폴백은 사용자가 의도적으로 비운 경우에만 동작한다.
     if (status === 'completed') {
       formData.completed_date =
-        completedDate || new Date().toISOString().split('T')[0];
+        completedDate || toKstDateKey(new Date());
     }
 
     // 시작일 추가 (완독 or 읽는중)
@@ -435,6 +448,7 @@ export const BookRegistrationForm = ({
                         dispatch({
                           type: 'TOGGLE_START_DATE',
                           checked: e.target.checked,
+                          today: toKstDateKey(new Date()),
                         })
                       }
                       className='h-4 w-4'

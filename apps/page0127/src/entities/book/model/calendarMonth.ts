@@ -1,3 +1,5 @@
+import { readingSince } from './readingSince';
+
 import type { Book } from '../types';
 
 /**
@@ -33,6 +35,8 @@ export type CalendarDay = {
   date: string;
   day: number;
   completions: CalendarCompletion[];
+  /** 이 날 읽기 시작해 아직 읽는 중인 책 — 기간 막대 대신 시작일 칸에만 놓는다 */
+  readingStarts: Book[];
   /** 그릴 줄만 (lane < MAX_LANES) */
   ranges: CalendarRangeSegment[];
   /** 줄이 모자라 못 그린 기간 수 */
@@ -112,6 +116,10 @@ export const buildCalendarMonth = (
   const ranges = layoutRanges(books, monthStart, monthEnd);
   const colorOf = new Map(ranges.map((r) => [r.book.id, r.colorIndex]));
   const completed = books.filter(isCompleted);
+  // 읽는 중은 막대로 오늘까지 잇지 않는다(layoutRanges 주석) — 시작한 날 한 칸에만 둔다
+  const reading = books
+    .filter((book) => book.status === 'reading')
+    .map((book) => ({ book, since: readingSince(book) }));
 
   const days: CalendarDay[] = Array.from({ length: total }, (_, i) => {
     const date = toDate(year, month, i + 1);
@@ -122,6 +130,7 @@ export const buildCalendarMonth = (
       completions: completed
         .filter((book) => book.completed_date === date)
         .map((book) => ({ book, colorIndex: colorOf.get(book.id) ?? null })),
+      readingStarts: reading.filter((r) => r.since === date).map((r) => r.book),
       ranges: active
         .filter((r) => r.lane < MAX_LANES)
         .sort((a, b) => a.lane - b.lane)

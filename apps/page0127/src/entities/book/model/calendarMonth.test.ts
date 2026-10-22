@@ -159,3 +159,41 @@ describe('getInitialCalendarMonth', () => {
     expect(getInitialCalendarMonth([], 2024, TODAY)).toBe(12);
   });
 });
+
+describe('buildCalendarMonth · 읽는 중', () => {
+  it('시작일 칸에만 놓이고 기간 막대·완독 요약에는 들어가지 않는다', () => {
+    const book = createTestBook({
+      status: 'reading',
+      start_date: '2026-10-08',
+    });
+    const m = buildCalendarMonth([book], 2026, 10);
+    expect(findDay(m, 8).readingStarts.map((b) => b.id)).toEqual([book.id]);
+    expect(findDay(m, 9).readingStarts).toEqual([]);
+    expect(m.weeks.flat().every((d) => !d || d.ranges.length === 0)).toBe(true);
+    expect(m.summary.publicCount).toBe(0);
+  });
+
+  it('시작일이 없으면 담은 날(KST)에 놓는다', () => {
+    const book = createTestBook({
+      status: 'reading',
+      created_at: '2026-10-11T15:30:00Z',
+    });
+    const m = buildCalendarMonth([book], 2026, 10);
+    expect(findDay(m, 12).readingStarts.map((b) => b.id)).toEqual([book.id]);
+  });
+
+  it('완독·읽고 싶은 책은 읽기 시작으로 놓지 않는다', () => {
+    const m = buildCalendarMonth(
+      [
+        createTestBook({
+          start_date: '2026-10-08',
+          completed_date: '2026-10-10',
+        }),
+        createTestBook({ status: 'want_to_read', start_date: '2026-10-08' }),
+      ],
+      2026,
+      10
+    );
+    expect(findDay(m, 8).readingStarts).toEqual([]);
+  });
+});

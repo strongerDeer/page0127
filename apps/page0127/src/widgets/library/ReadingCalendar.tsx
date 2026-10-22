@@ -18,6 +18,7 @@ import {
   buildCalendarMonth,
   getInitialCalendarMonth,
   isRated,
+  readingDayCount,
   toCoverSource,
 } from '@/entities/book';
 
@@ -167,16 +168,35 @@ export const ReadingCalendar = ({
             );
           }
           const count = day.completions.length;
+          const startCount = day.readingStarts.length;
+          // 완독 표지 뒤에 읽기 시작한 책 표지를 이어 쌓는다(점선 테두리로 구분)
+          const covers = [
+            ...day.completions.map(({ book, colorIndex }) => ({
+              book,
+              outline:
+                colorIndex !== null
+                  ? `1.5px solid ${CHART_COLORS[colorIndex]}`
+                  : undefined,
+            })),
+            ...day.readingStarts.map((book) => ({
+              book,
+              outline: '1.5px dashed var(--primary)',
+            })),
+          ];
+          const label = [
+            count > 0 && `${count}권 완독`,
+            startCount > 0 && `${startCount}권 읽기 시작`,
+          ]
+            .filter(Boolean)
+            .join(', ');
           return (
             <button
               key={day.date}
               type='button'
-              disabled={count === 0}
+              disabled={covers.length === 0}
               onClick={() => setSelected(day)}
               aria-label={
-                count > 0
-                  ? `${view.month}월 ${day.day}일, ${count}권 완독`
-                  : undefined
+                label ? `${view.month}월 ${day.day}일, ${label}` : undefined
               }
               className='relative h-14 border-t border-line-soft px-1 pt-0.5 text-left text-xs text-text-subtle enabled:hover:bg-sunken'
             >
@@ -203,38 +223,29 @@ export const ReadingCalendar = ({
                 </span>
               )}
 
-              {/* 완독 표지 — 같은 날 여러 권이면 겹쳐 쌓고 +N */}
-              {count > 0 && (
+              {/* 완독·읽기 시작 표지 — 같은 날 여러 권이면 겹쳐 쌓고 +N */}
+              {covers.length > 0 && (
                 <span className='absolute bottom-1.5 right-1 flex'>
-                  {day.completions
-                    .slice(0, MAX_COVERS)
-                    .map(({ book, colorIndex }, i) => (
-                      <span
-                        key={book.id}
-                        className={`relative block ${i > 0 ? '-ml-4' : ''} ${
-                          book.is_public ? '' : 'opacity-50'
-                        }`}
-                        style={{
-                          width: 26,
-                          height: 38,
-                          outline:
-                            colorIndex !== null
-                              ? `1.5px solid ${CHART_COLORS[colorIndex]}`
-                              : undefined,
-                        }}
-                      >
-                        <BookCover
-                          {...toCoverSource(book)}
-                          title={book.title}
-                          decorative
-                          size='fill'
-                          sizes='26px'
-                        />
-                      </span>
-                    ))}
-                  {count > MAX_COVERS && (
+                  {covers.slice(0, MAX_COVERS).map(({ book, outline }, i) => (
+                    <span
+                      key={book.id}
+                      className={`relative block ${i > 0 ? '-ml-4' : ''} ${
+                        book.is_public ? '' : 'opacity-50'
+                      }`}
+                      style={{ width: 26, height: 38, outline }}
+                    >
+                      <BookCover
+                        {...toCoverSource(book)}
+                        title={book.title}
+                        decorative
+                        size='fill'
+                        sizes='26px'
+                      />
+                    </span>
+                  ))}
+                  {covers.length > MAX_COVERS && (
                     <span className='ml-0.5 self-end text-xs font-medium text-text-body'>
-                      +{count - MAX_COVERS}
+                      +{covers.length - MAX_COVERS}
                     </span>
                   )}
                 </span>
@@ -258,45 +269,92 @@ export const ReadingCalendar = ({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {selected && `${view.month}월 ${selected.day}일 완독한 책`}
+              {selected && `${view.month}월 ${selected.day}일`}
             </DialogTitle>
           </DialogHeader>
-          <ul className='divide-y divide-line-soft'>
-            {selected?.completions.map(({ book }) => (
-              <li key={book.id}>
-                <Link
-                  href={bookHref(book)}
-                  className='flex items-center gap-3 py-3 hover:text-primary'
-                >
-                  <BookCover
-                    {...toCoverSource(book)}
-                    title={book.title}
-                    decorative
-                    size='xs'
-                    small
-                  />
-                  <span className='min-w-0 flex-1'>
-                    <span className='block truncate text-sm font-medium text-text-strong'>
-                      {book.title}
-                    </span>
-                    <span className='block truncate text-sm text-text-subtle'>
-                      {book.author}
-                    </span>
-                  </span>
-                  {!book.is_public && (
-                    <span className='text-xs text-text-subtle'>비공개</span>
-                  )}
-                  {isRated(book.rating) && (
-                    <span className='text-sm font-medium text-text-body'>
-                      {book.is_life_book ? '인생책' : `${book.rating}점`}
-                    </span>
-                  )}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {selected && selected.completions.length > 0 && (
+            <CalendarBookList
+              heading='완독한 책'
+              books={selected.completions.map(({ book }) => book)}
+              bookHref={bookHref}
+              trailing={(book) =>
+                isRated(book.rating)
+                  ? book.is_life_book
+                    ? '인생책'
+                    : `${book.rating}점`
+                  : null
+              }
+            />
+          )}
+          {selected && selected.readingStarts.length > 0 && (
+            <CalendarBookList
+              heading='읽기 시작한 책'
+              books={selected.readingStarts}
+              bookHref={bookHref}
+              // 기간은 막대 대신 글로 — 오래 읽는 책이 달력을 덮지 않게
+              trailing={() =>
+                `읽는 중 · ${readingDayCount(selected.date, today)}일째`
+              }
+            />
+          )}
         </DialogContent>
       </Dialog>
     </section>
   );
 };
+
+type CalendarBookListProps = {
+  heading: string;
+  books: Book[];
+  bookHref: (book: Book) => string;
+  /** 줄 오른쪽 끝 — 점수·'N일째' 등 */
+  trailing: (book: Book) => string | null;
+};
+
+const CalendarBookList = ({
+  heading,
+  books,
+  bookHref,
+  trailing,
+}: CalendarBookListProps) => (
+  <div>
+    <h4 className='text-xs font-medium text-text-subtle'>{heading}</h4>
+    <ul className='divide-y divide-line-soft'>
+      {books.map((book) => {
+        const right = trailing(book);
+        return (
+          <li key={book.id}>
+            <Link
+              href={bookHref(book)}
+              className='flex items-center gap-3 py-3 hover:text-primary'
+            >
+              <BookCover
+                {...toCoverSource(book)}
+                title={book.title}
+                decorative
+                size='xs'
+                small
+              />
+              <span className='min-w-0 flex-1'>
+                <span className='block truncate text-sm font-medium text-text-strong'>
+                  {book.title}
+                </span>
+                <span className='block truncate text-sm text-text-subtle'>
+                  {book.author}
+                </span>
+              </span>
+              {!book.is_public && (
+                <span className='text-xs text-text-subtle'>비공개</span>
+              )}
+              {right && (
+                <span className='text-sm font-medium text-text-body'>
+                  {right}
+                </span>
+              )}
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  </div>
+);
