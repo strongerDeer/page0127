@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 import { BookCover, ReadCountBadge } from '@repo/ui';
 import { Globe, Lock, Star } from 'lucide-react';
 
-import { isRated, toCoverSource } from '@/entities/book';
+import { formatCompletedWhen, isRated, toCoverSource } from '@/entities/book';
 import { BookSourceCredit } from '@/entities/book/ui/BookSourceCredit';
 
 import { BookStreamSection } from './BookStreamSection';
@@ -131,7 +131,9 @@ export const BookDetailContent = ({
               <div className='space-y-1 text-sm text-muted-foreground'>
                 {book.page_count && <p>쪽수: {book.page_count}쪽</p>}
                 {book.start_date && <p>시작일: {book.start_date}</p>}
-                {book.completed_date && <p>완독일: {book.completed_date}</p>}
+                {formatCompletedWhen(book) && (
+                  <p>완독일: {formatCompletedWhen(book)}</p>
+                )}
                 {book.pub_date && <p>출간일: {book.pub_date}</p>}
                 {/* 출처 표기는 약관상 의무다 — 지우지 말 것 */}
                 <BookSourceCredit

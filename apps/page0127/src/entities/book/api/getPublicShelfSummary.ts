@@ -24,8 +24,9 @@ export const COVER_LIMIT = 5;
  *
  * 대신 **집계 술어는 getOverallStats 와 똑같이 맞춘다** — 카드에 "12권"이라 적혔는데
  * 링크를 눌러 들어간 화면의 통계가 9권이면 둘 중 하나는 거짓말이 된다.
- * 기준: status='completed' + completed_date 있음 + is_public=true
- * (완독일이 없는 책을 통계에서 빼는 것은 getOverallStats 41행의 규칙이다)
+ * 기준: status='completed' + is_public=true
+ * (완독 시점을 모르는 책도 센다 — getOverallStats 와 같은 규칙. 전에는 완독일 없는
+ *  책을 뺐지만, 날짜를 모르는 인생책도 '읽은 책'이라 20261022000001 부터 센다)
  * 그리고 **재독은 한 권으로 센다** — 서재 화면이 회독을 합쳐 보여주므로
  * count 로 row 를 세면 2회독한 책 때문에 카드 숫자만 커진다.
  *
@@ -48,9 +49,8 @@ export const getPublicShelfSummary = async (
       .select('id, isbn, cover_image')
       .eq('user_id', userId)
       .eq('status', 'completed')
-      .not('completed_date', 'is', null)
       .eq('is_public', true)
-      .order('completed_date', { ascending: false });
+      .order('completed_date', { ascending: false, nullsFirst: false });
 
   // ISBN 이 비어 있는 수기 등록 책은 서로 합쳐지면 안 된다 → id 로 갈라 센다.
   // (model/dedupeReadings.ts 의 그룹 키와 같은 규칙. 여기는 한 사람의

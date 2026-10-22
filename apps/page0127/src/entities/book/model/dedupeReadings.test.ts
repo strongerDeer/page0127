@@ -26,6 +26,7 @@ const createBook = (overrides: Partial<Book> = {}): Book => ({
   read_count: 1,
   start_date: null,
   completed_date: '2026-01-01',
+  completed_year: null,
   rating: 5,
   is_life_book: false,
   one_line_review: null,

@@ -307,6 +307,7 @@ export const BookEditPageClient = ({
           initialData={{
             status: book.status,
             completed_date: book.completed_date || undefined,
+            completed_year: book.completed_year ?? undefined,
             start_date: book.start_date || undefined,
             rating: book.rating || undefined,
             is_life_book: book.is_life_book,

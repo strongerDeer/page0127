@@ -9,7 +9,14 @@ import { RefreshCw } from 'lucide-react';
 
 import { toKstDateKey } from '@/shared/lib/date';
 
-import type { BookRating, BookStatus, ProviderBook } from '@/entities/book';
+import {
+  type BookRating,
+  type BookStatus,
+  type CompletedPrecision,
+  isValidCompletedYear,
+  MIN_COMPLETED_YEAR,
+  type ProviderBook,
+} from '@/entities/book';
 
 type BookRegistrationFormProps = {
   book: ProviderBook;
@@ -23,7 +30,9 @@ type BookRegistrationFormProps = {
 
 export type BookFormData = {
   status: BookStatus;
-  completed_date?: string;
+  // 날짜 / 연도만 / 모름 중 하나만 찬다. 수정에서 바꾸면 반대쪽을 null 로 지운다
+  completed_date?: string | null;
+  completed_year?: number | null;
   start_date?: string;
   rating?: BookRating;
   is_life_book?: boolean;
@@ -37,7 +46,12 @@ export type BookFormData = {
 // 폼의 모든 입력 상태를 하나의 객체로 관리
 export type FormState = {
   status: BookStatus;
+  // 완독 시점을 얼마나 아는가 — 인생책처럼 오래전에 읽은 책은 날짜를 모른다
+  completedPrecision: CompletedPrecision;
   completedDate: string;
+  // 입력 중인 값이라 문자열로 둔다. 제출할 때 숫자로 바꿔 검증한다
+  completedYear: string;
+  completedYearError: string;
   startDate: string;
   showStartDate: boolean;
   rating: BookRating | undefined;
@@ -56,7 +70,10 @@ export type FormState = {
 //   원자적으로 처리 → useState였다면 set 3번 필요
 type FormAction =
   | { type: 'SET_STATUS'; status: BookStatus }
+  | { type: 'SET_COMPLETED_PRECISION'; precision: CompletedPrecision }
   | { type: 'SET_COMPLETED_DATE'; date: string }
+  | { type: 'SET_COMPLETED_YEAR'; year: string }
+  | { type: 'SET_COMPLETED_YEAR_ERROR'; error: string }
   | { type: 'SET_START_DATE'; date: string }
   // today 를 액션에 실어 보내 reducer 를 순수하게 유지한다(안에서 new Date() 를 부르지 않는다)
   | { type: 'TOGGLE_START_DATE'; checked: boolean; today: string }
@@ -81,8 +98,20 @@ export function formReducer(
         showStartDate: false,
         startDate: '',
       };
+    case 'SET_COMPLETED_PRECISION':
+      // 다른 칸의 값은 지우지 않는다 — 눌러 보고 돌아왔을 때 입력이 남아 있어야 한다.
+      // 무엇을 저장할지는 제출할 때 정밀도 하나로 정한다(toCompletedFields)
+      return {
+        ...state,
+        completedPrecision: action.precision,
+        completedYearError: '',
+      };
     case 'SET_COMPLETED_DATE':
       return { ...state, completedDate: action.date };
+    case 'SET_COMPLETED_YEAR':
+      return { ...state, completedYear: action.year, completedYearError: '' };
+    case 'SET_COMPLETED_YEAR_ERROR':
+      return { ...state, completedYearError: action.error };
     case 'SET_START_DATE':
       return { ...state, startDate: action.date };
     case 'TOGGLE_START_DATE':
@@ -115,6 +144,59 @@ export function formReducer(
   }
 }
 
+const COMPLETED_PRECISION_OPTIONS: {
+  value: CompletedPrecision;
+  label: string;
+}[] = [
+  { value: 'date', label: '날짜' },
+  { value: 'year', label: '연도만' },
+  { value: 'unknown', label: '잘 모르겠어요' },
+];
+
+/**
+ * 수정 화면에서 열었을 때의 정밀도.
+ *
+ * 완독으로 저장된 책인데 날짜도 연도도 없으면 '모름'이다. 완독이 아닌 책을 열어
+ * 완독으로 바꾸는 경우에는 날짜가 없는 게 당연하므로 기본값(날짜)으로 둔다 —
+ * 그렇지 않으면 읽는 중이던 책을 완독 처리할 때 '모름'이 미리 골라져 있다.
+ */
+export const toInitialCompletedPrecision = (
+  initialData?: Partial<BookFormData>
+): CompletedPrecision => {
+  if (initialData?.completed_date) return 'date';
+  if (initialData?.completed_year) return 'year';
+  if (initialData?.status === 'completed') return 'unknown';
+  return 'date';
+};
+
+/**
+ * 정밀도에 맞춰 저장할 두 컬럼을 만든다. 고르지 않은 쪽은 null 로 보내야
+ * 수정에서 '날짜 → 모름'으로 바꿨을 때 옛 날짜가 남지 않는다(DB CHECK 도 둘 다 찬 값을 막는다).
+ *
+ * @returns 연도가 올바르지 않으면 null
+ */
+export const toCompletedFields = (
+  state: Pick<FormState, 'completedPrecision' | 'completedDate' | 'completedYear'>,
+  today: string
+): { completed_date: string | null; completed_year: number | null } | null => {
+  switch (state.completedPrecision) {
+    case 'date':
+      // 완독일은 '더 남기기' 안에 접혀 있어 required 를 걸 수 없다.
+      // 접힌 details 안의 빈 required 는 브라우저가 "not focusable" 로 제출을
+      // 조용히 막는다 — 화면엔 아무 에러도 안 뜬다.
+      // 기본값이 이미 오늘이므로 이 폴백은 사용자가 의도적으로 비운 경우에만 동작한다.
+      return { completed_date: state.completedDate || today, completed_year: null };
+    case 'year': {
+      const year = Number(state.completedYear);
+      const currentYear = Number(today.slice(0, 4));
+      if (!isValidCompletedYear(year, currentYear)) return null;
+      return { completed_date: null, completed_year: year };
+    }
+    case 'unknown':
+      return { completed_date: null, completed_year: null };
+  }
+};
+
 /**
  * 도서 등록 폼 컴포넌트
  *
@@ -143,7 +225,10 @@ export const BookRegistrationForm = ({
   const formId = useId();
   const ids = {
     status: `${formId}-status`,
+    completedWhen: `${formId}-completed-when`,
     completedDate: `${formId}-completed-date`,
+    completedYear: `${formId}-completed-year`,
+    completedYearError: `${formId}-completed-year-error`,
     rating: `${formId}-rating`,
     showStartDate: `${formId}-show-start-date`,
     oneLineReview: `${formId}-one-line-review`,
@@ -154,8 +239,13 @@ export const BookRegistrationForm = ({
 
   const [state, dispatch] = useReducer(formReducer, {
     status: initialData?.status || 'completed',
+    completedPrecision: toInitialCompletedPrecision(initialData),
     completedDate:
       initialData?.completed_date || toKstDateKey(new Date()),
+    completedYear: initialData?.completed_year
+      ? String(initialData.completed_year)
+      : '',
+    completedYearError: '',
     startDate: initialData?.start_date || '',
     showStartDate: !!initialData?.start_date,
     rating: initialData?.rating,
@@ -182,7 +272,10 @@ export const BookRegistrationForm = ({
 
   const {
     status,
+    completedPrecision,
     completedDate,
+    completedYear,
+    completedYearError,
     startDate,
     showStartDate,
     rating,
@@ -207,13 +300,20 @@ export const BookRegistrationForm = ({
       is_public: isPublic,
     };
 
-    // 완독일은 '더 남기기' 안에 접혀 있어 required 를 걸 수 없다.
-    // 접힌 details 안의 빈 required 는 브라우저가 "not focusable" 로 제출을
-    // 조용히 막는다 — 화면엔 아무 에러도 안 뜬다.
-    // 기본값이 이미 오늘이므로 이 폴백은 사용자가 의도적으로 비운 경우에만 동작한다.
     if (status === 'completed') {
-      formData.completed_date =
-        completedDate || toKstDateKey(new Date());
+      const today = toKstDateKey(new Date());
+      const completedFields = toCompletedFields(
+        { completedPrecision, completedDate, completedYear },
+        today
+      );
+      if (!completedFields) {
+        dispatch({
+          type: 'SET_COMPLETED_YEAR_ERROR',
+          error: `${MIN_COMPLETED_YEAR}년부터 ${today.slice(0, 4)}년 사이로 적어 주세요.`,
+        });
+        return;
+      }
+      Object.assign(formData, completedFields);
     }
 
     // 시작일 추가 (완독 or 읽는중)
@@ -398,6 +498,14 @@ export const BookRegistrationForm = ({
                   );
                 })}
               </div>
+              {/* 인생책은 오래전에 읽은 경우가 많다. 완독일은 접힌 '더 남기기' 안에 있어
+                  그대로 저장하면 오늘 날짜로 들어간다 — 고칠 수 있다는 걸 여기서 알린다 */}
+              {isLifeBook && completedPrecision === 'date' && !initialData && (
+                <p className='text-sm text-muted-foreground'>
+                  언제 읽었는지 기억나지 않으면 &apos;더 남기기&apos;에서 연도만
+                  남기거나 &apos;잘 모르겠어요&apos;를 고를 수 있어요.
+                </p>
+              )}
             </div>
           )}
 
@@ -415,24 +523,102 @@ export const BookRegistrationForm = ({
             </summary>
 
             <div className='mt-4 space-y-6'>
-              {/* 완독일 - 완독 상태일 때만 표시 */}
+              {/* 완독일 - 완독 상태일 때만 표시.
+                  인생책처럼 오래전에 읽은 책은 날짜를 모른다 → 연도만, 또는 모름 */}
               {status === 'completed' && (
                 <div className='space-y-2'>
-                  <Label htmlFor={ids.completedDate}>완독일</Label>
-                  <Input
-                    id={ids.completedDate}
-                    type='date'
-                    value={completedDate}
-                    onChange={(e) =>
-                      dispatch({
-                        type: 'SET_COMPLETED_DATE',
-                        date: e.target.value,
-                      })
-                    }
-                  />
-                  <p className='text-sm text-muted-foreground'>
-                    비워 두면 오늘로 기록해요.
-                  </p>
+                  <Label id={ids.completedWhen}>완독일</Label>
+                  <div
+                    role='group'
+                    aria-labelledby={ids.completedWhen}
+                    className='flex flex-wrap gap-2'
+                  >
+                    {COMPLETED_PRECISION_OPTIONS.map(({ value, label }) => {
+                      const selected = completedPrecision === value;
+                      return (
+                        <button
+                          key={value}
+                          type='button'
+                          aria-pressed={selected}
+                          onClick={() =>
+                            dispatch({
+                              type: 'SET_COMPLETED_PRECISION',
+                              precision: value,
+                            })
+                          }
+                          className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
+                            selected
+                              ? 'border-primary bg-primary text-primary-foreground'
+                              : 'border-border bg-card text-foreground hover:bg-accent'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {completedPrecision === 'date' && (
+                    <>
+                      <Input
+                        id={ids.completedDate}
+                        type='date'
+                        aria-label='완독 날짜'
+                        value={completedDate}
+                        onChange={(e) =>
+                          dispatch({
+                            type: 'SET_COMPLETED_DATE',
+                            date: e.target.value,
+                          })
+                        }
+                      />
+                      <p className='text-sm text-muted-foreground'>
+                        비워 두면 오늘로 기록해요.
+                      </p>
+                    </>
+                  )}
+
+                  {completedPrecision === 'year' && (
+                    <>
+                      <Input
+                        id={ids.completedYear}
+                        type='number'
+                        inputMode='numeric'
+                        aria-label='완독 연도'
+                        aria-invalid={!!completedYearError}
+                        aria-describedby={
+                          completedYearError ? ids.completedYearError : undefined
+                        }
+                        min={MIN_COMPLETED_YEAR}
+                        placeholder='예: 2015'
+                        value={completedYear}
+                        onChange={(e) =>
+                          dispatch({
+                            type: 'SET_COMPLETED_YEAR',
+                            year: e.target.value,
+                          })
+                        }
+                      />
+                      {completedYearError ? (
+                        <p
+                          id={ids.completedYearError}
+                          className='text-sm text-destructive'
+                        >
+                          {completedYearError}
+                        </p>
+                      ) : (
+                        <p className='text-sm text-muted-foreground'>
+                          그해 서재와 통계에 들어가요.
+                        </p>
+                      )}
+                    </>
+                  )}
+
+                  {completedPrecision === 'unknown' && (
+                    <p className='text-sm text-muted-foreground'>
+                      연도별 서재에는 보이지 않고, 전체 서재와 통계에만 들어가요.
+                    </p>
+                  )}
                 </div>
               )}
 
