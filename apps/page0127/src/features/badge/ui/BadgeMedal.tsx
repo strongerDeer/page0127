@@ -28,20 +28,35 @@ const levelValue = (badge: Badge) => {
   return levels[Math.max(0, badge.level - 1)] ?? levels[0];
 };
 
-/**
- * 디자인 확정 전 임시 — 모든 뱃지를 빈 뱃지 하나로 보여 준다.
- * 뱃지별 그림을 합성해 넣으면 이 값을 null 로 바꾼다.
- */
-const PLACEHOLDER_SRC: string | null = '/badges/blank.webp';
+/** 그림이 아직 없는 뱃지가 쓰는 빈 뱃지 */
+const BLANK_SRC = '/badges/blank.webp';
 
-/** 뱃지 → 합성 이미지 경로 */
+/**
+ * 합성을 마친 그림 — public/badges/<이름>.webp 가 있는 것만.
+ * 그림이 하루 10장씩 나와서 나머지는 빈 뱃지로 둔다. 합성하면 여기에 이름을 더한다.
+ */
+const READY_ASSETS = new Set([
+  'shelf-1',
+  'shelf-10',
+  'shelf-50',
+  'shelf-100',
+  'shelf-200',
+  'wide-3',
+  'wide-5',
+]);
+
+/** 뱃지 → 합성 그림 이름 (성장은 단계별 그림) */
+const assetName = (badge: Badge) => {
+  if (badge.kind === 'hidden' && !badge.earned) return 'seal-locked';
+  if (badge.id === 'shelf') return `shelf-${levelValue(badge)}`;
+  if (badge.id === 'wide-view') return `wide-${levelValue(badge)}`;
+  return badge.id;
+};
+
+/** 뱃지 → 이미지 경로. 그림이 아직 없으면 빈 뱃지 */
 export const badgeImageSrc = (badge: Badge) => {
-  if (PLACEHOLDER_SRC) return PLACEHOLDER_SRC;
-  if (badge.kind === 'hidden' && !badge.earned)
-    return '/badges/seal-locked.webp';
-  if (badge.id === 'shelf') return `/badges/shelf-${levelValue(badge)}.webp`;
-  if (badge.id === 'wide-view') return `/badges/wide-${levelValue(badge)}.webp`;
-  return `/badges/${badge.id}.webp`;
+  const name = assetName(badge);
+  return READY_ASSETS.has(name) ? `/badges/${name}.webp` : BLANK_SRC;
 };
 
 type BadgeMedalProps = {
@@ -70,6 +85,7 @@ export const BadgeMedal = ({
   const locked = !badge.earned;
   const secret = badge.kind === 'hidden' && locked;
   const src = badgeImageSrc(badge);
+  const blank = src === BLANK_SRC;
 
   const handleMove = (event: PointerEvent<HTMLDivElement>) => {
     if (!tiltable || event.pointerType === 'touch') return;
@@ -112,9 +128,9 @@ export const BadgeMedal = ({
           <span
             className={`${styles.level} absolute inset-x-0 text-center font-extrabold leading-none ${
               // 빈 뱃지일 땐 가운데, 그림이 들어가면 그림을 가리지 않게 아래로
-              PLACEHOLDER_SRC ? 'top-1/2 -translate-y-1/2' : 'bottom-[17%]'
+              blank ? 'top-1/2 -translate-y-1/2' : 'bottom-[17%]'
             }`}
-            style={{ fontSize: size * (PLACEHOLDER_SRC ? 0.3 : 0.24) }}
+            style={{ fontSize: size * (blank ? 0.3 : 0.24) }}
           >
             {levelValue(badge)}
           </span>
