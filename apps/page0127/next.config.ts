@@ -166,6 +166,21 @@ const nextConfig: NextConfig = {
 
     return [
       {
+        // 서비스워커 — 브라우저는 sw.js 가 바뀌었는지 매번 확인해야 새 버전이 퍼진다.
+        // CDN·브라우저 캐시에 오래 남으면 고친 워커가 며칠씩 늦게 깔린다.
+        source: '/sw.js',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+          {
+            key: 'Content-Type',
+            value: 'application/javascript; charset=utf-8',
+          },
+        ],
+      },
+      {
         // '/:path*' = 모든 경로에 동일 헤더 적용
         source: '/:path*',
         headers: [

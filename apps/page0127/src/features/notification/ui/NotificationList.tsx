@@ -17,13 +17,13 @@ import { Button } from '@repo/ui';
 import { ScrollArea } from '@repo/ui';
 
 import {
+  notificationHref,
   type NotificationWithActor,
   useDeleteNotification,
   useMarkAllAsRead,
   useMarkAsRead,
   useNotifications,
 } from '@/entities/notification';
-import { profileHref } from '@/entities/profile/model/displayName';
 
 import { NotificationItem } from './NotificationItem';
 
@@ -121,21 +121,9 @@ export const NotificationList = ({
       await markAsReadMutation.mutateAsync(notification.id);
     }
 
-    if (notification.type === 'follow') {
-      // actor_id(uuid)로 보내면 /[username] 조회에 걸리지 않아 404가 된다 → 이동하지 않는다
-      const href = profileHref(notification.actor.username);
-      if (href) router.push(href);
-      // 책 스레드 알림 — 소유자든 방문자든 내 서재 경로로 보내면
-      // 소유자가 아닐 때 404가 나므로, 공개 상세 경로로 보낸다.
-    } else if (notification.target_type === 'book' && notification.target_id) {
-      router.push(`/books/${notification.target_id}`);
-      // 전역 책 스레드 — 공개 책 소개 페이지로 보낸다
-    } else if (
-      notification.target_type === 'global_book' &&
-      notification.target_id
-    ) {
-      router.push(`/books/info/${notification.target_id}`);
-    }
+    // 알림 타입별 페이지 이동 — 갈 곳은 notificationHref 한 곳에서 정한다(푸시 클릭과 공유)
+    const href = notificationHref(notification, notification.actor.username);
+    if (href) router.push(href);
 
     onClose?.();
   };

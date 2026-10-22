@@ -3,6 +3,7 @@ import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 import { GoogleAnalytics } from '@/shared/lib/analytics/GoogleAnalytics';
+import { ServiceWorkerRegistrar } from '@/shared/lib/pwa/ServiceWorkerRegistrar';
 import { WebVitalsReporter } from '@/shared/lib/rum/WebVitalsReporter';
 import { QueryProvider } from '@/shared/providers/QueryProvider';
 
@@ -84,6 +85,13 @@ export const metadata: Metadata = {
   // languages(hreflang): 한국어 판 하나뿐이라 자기 자신만 가리킨다. 다국어 사이트용
   // 신호지만, 선언해 두면 "이 페이지는 ko-KR 판"이라는 뜻이 명시된다. 판이 늘면 여기에 추가.
   alternates: { canonical: '/', languages: { 'ko-KR': '/' } },
+  // iOS 홈 화면 앱 — 이 값이 있어야 사파리가 "웹 앱"으로 띄운다(웹푸시는 그 안에서만 된다).
+  // 홈 화면 아이콘 아래 이름도 이 title 을 쓴다. (manifest.ts 의 display: 'standalone' 과 짝)
+  appleWebApp: {
+    capable: true,
+    title: 'page0127.',
+    statusBarStyle: 'default',
+  },
   // 검색엔진 소유권 확인 — 모든 페이지 <head> 에 메타 태그로 자동 삽입된다.
   //
   // 네이버는 값을 코드에 박지 않고 환경변수로 받는다. 구글 것은 이미 박혀 있지만,
@@ -93,7 +101,9 @@ export const metadata: Metadata = {
   // 값이 없으면 태그 자체가 안 나가므로 지금 머지해도 안전하다.
   verification: {
     google: 'S1f6m1CJ5CxxM962yAvh8gvAErhndacXCGb1R1R0-JU',
-    ...(naverSiteVerification ? { other: { 'naver-site-verification': naverSiteVerification } } : {}),
+    ...(naverSiteVerification
+      ? { other: { 'naver-site-verification': naverSiteVerification } }
+      : {}),
   },
 };
 
@@ -150,6 +160,8 @@ const RootLayout = ({
             대시보드에서 랩 수치와 나란히 본다. CrUX는 트래픽 임계 미달로 비어 있다.
             → apps/page0127/docs/rum-field-metrics.md */}
         <WebVitalsReporter />
+        {/* 서비스워커 — 웹푸시 수신 + 홈 화면 앱의 오프라인 안내 (public/sw.js) */}
+        <ServiceWorkerRegistrar />
         {/* Vercel Speed Insights — 같은 지표를 Vercel 대시보드로도 보낸다.
             조회 API가 없어 우리 DB로 못 가져오지만, 자체 RUM 수치를 대조할
             기준선으로 남겨 둔다(둘이 크게 어긋나면 우리 계측을 의심한다). */}

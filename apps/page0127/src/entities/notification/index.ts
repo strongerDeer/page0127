@@ -9,5 +9,7 @@ export * from './lib/hooks/useMarkAsRead';
 export * from './lib/hooks/useNotificationRealtime';
 export * from './lib/hooks/useNotifications';
 export * from './lib/hooks/useUnreadCount';
+export * from './lib/notificationHref';
+export * from './lib/pushPayload';
 export * from './model/queryKeys';
 export * from './model/types';

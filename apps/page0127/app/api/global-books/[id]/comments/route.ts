@@ -5,6 +5,7 @@ import {
   buildCommentTree,
   classifyBookCommentError,
 } from '../../../_helpers/bookComments';
+import { schedulePush } from '../../../_helpers/push';
 import { errorResponse, successResponse } from '../../../_helpers/response';
 
 import type { CommentRow, ProfileRow } from '../../../_helpers/bookComments';
@@ -117,13 +118,18 @@ export async function POST(request: NextRequest, { params }: Params) {
         .single();
 
       if (parent?.user_id && parent.user_id !== user!.id) {
-        await supabase.from('notifications').insert({
+        const notification = {
           user_id: parent.user_id,
           type: 'comment',
           actor_id: user!.id,
           target_id: id,
           target_type: 'global_book',
-        });
+        } as const;
+        const { error: notifyError } = await supabase
+          .from('notifications')
+          .insert(notification);
+        // 종 아이콘에 들어간 알림만 푸시로도 보낸다 (응답 뒤에 돈다)
+        if (!notifyError) schedulePush([notification]);
       }
     }
 

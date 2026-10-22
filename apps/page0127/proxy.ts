@@ -37,8 +37,10 @@ export const config = {
      * - _next/image (이미지 최적화)
      * - favicon.ico (파비콘)
      * - monitoring (Sentry 터널 라우트 — 인증/세션 로직을 우회해야 에러 전송이 막히지 않음)
+     * - sw.js · offline.html · icons/ (서비스워커·PWA 정적 자원 — 세션을 읽을 이유가 없다.
+     *   sw.js 는 브라우저가 수시로 갱신 확인을 해서, 태우면 그때마다 Supabase 인증 호출이 나간다)
      * - public 폴더의 파일들 (.svg, .png 등)
      */
-    '/((?!_next/static|_next/image|favicon.ico|monitoring|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|monitoring|sw\\.js|offline\\.html|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

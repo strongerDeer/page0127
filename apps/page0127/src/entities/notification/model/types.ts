@@ -9,9 +9,16 @@
  * - comment: 댓글 알림
  * - like: 좋아요 알림
  * - reading_reminder: 2주 넘게 읽는 중인 책 (나에게 오는 알림, actor = 본인)
+ * - weekly_recap: 주간 회상 (나에게 오는 알림, actor = 본인, 대상 없음 → 홈)
  */
 export type NotificationType =
-  'follow' | 'comment' | 'like' | 'reading_reminder';
+  'follow' | 'comment' | 'like' | 'reading_reminder' | 'weekly_recap';
+
+/** 다른 사람이 아니라 서비스가 '나'에게 보내는 알림 — 크론이 문장을 message 에 적어 둔다 */
+export const SELF_NOTICE_TYPES: readonly NotificationType[] = [
+  'reading_reminder',
+  'weekly_recap',
+];
 
 /**
  * 알림 대상 타입
