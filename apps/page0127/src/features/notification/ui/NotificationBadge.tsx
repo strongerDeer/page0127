@@ -11,6 +11,7 @@
  */
 
 import {
+  useAppBadge,
   useNotificationRealtime,
   useUnreadCount,
 } from '@/entities/notification';
@@ -24,6 +25,8 @@ export const NotificationBadge = ({ userId }: NotificationBadgeProps) => {
 
   // Realtime 구독 — notifications 테이블 변경 시 캐시 무효화 후 자동 갱신
   useNotificationRealtime(userId);
+  // 설치한 앱의 아이콘 숫자도 같은 값으로 맞춘다
+  useAppBadge(unreadCount?.count);
 
   // 읽지 않은 알림이 없으면 뱃지를 렌더하지 않는다
   if (!unreadCount || unreadCount.count <= 0) {

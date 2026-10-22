@@ -62,20 +62,40 @@ export function useNotificationRealtime(userId: string | undefined) {
             });
           }
         )
-        .subscribe();
-      // 구독 상태(SUBSCRIBED / TIMED_OUT / CHANNEL_ERROR)는 필요 시 콜백에서
-      // console.warn 으로 출력해 디버깅한다. (no-console: log 금지)
+        .subscribe((status, err) => {
+          // 연결이 실패하면 새로고침 전까지 종 숫자가 멈춘다 — 조용히 넘기지 않고
+          // console.error 로 남겨 Sentry 이슈가 되게 한다(captureConsoleIntegration).
+          // 숫자는 useUnreadCount 의 폴링·포커스 재조회가 대신 따라잡는다.
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            console.error('[notifications] Realtime 구독 실패:', status, err);
+          }
+        });
 
       cleanup = () => {
         supabase.removeChannel(channel);
       };
     });
 
+    // 서비스워커가 푸시를 받으면 열린 탭에 알려 준다(public/sw.js notifyOpenTabs).
+    // Realtime 이 끊긴 탭도 이 경로로는 바로 갱신된다.
+    const handleWorkerMessage = (event: MessageEvent) => {
+      if (event.data?.type !== 'page0127:notification') return;
+      queryClient.invalidateQueries({
+        queryKey: notificationKeys.unreadCount(),
+      });
+      queryClient.invalidateQueries({ queryKey: notificationKeys.lists() });
+    };
+    navigator.serviceWorker?.addEventListener('message', handleWorkerMessage);
+
     // 클린업: 컴포넌트 언마운트 시 WebSocket 구독 해제
     // 이게 없으면 페이지를 벗어나도 연결이 계속 살아있다
     return () => {
       cancelled = true;
       cleanup?.();
+      navigator.serviceWorker?.removeEventListener(
+        'message',
+        handleWorkerMessage
+      );
     };
   }, [userId, queryClient]);
 }
