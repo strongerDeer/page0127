@@ -12,7 +12,14 @@
 
 import { Button } from '@repo/ui';
 import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui';
-import { Check, Heart, MessageCircle, UserPlus, X } from 'lucide-react';
+import {
+  BookOpen,
+  Check,
+  Heart,
+  MessageCircle,
+  UserPlus,
+  X,
+} from 'lucide-react';
 
 import { RelativeTime } from '@/shared/ui/RelativeTime';
 
@@ -34,6 +41,8 @@ export const NotificationItem = ({
   onMarkAsRead,
 }: NotificationItemProps) => {
   const { type, actor, is_read, created_at } = notification;
+  // 나에게 오는 알림 — "OO님이 …" 대신 크론이 적어 둔 문장을 그대로 보여 준다
+  const isSelfNotice = type === 'reading_reminder';
 
   // 알림 타입별 메시지 및 아이콘
   const getNotificationContent = () => {
@@ -54,6 +63,11 @@ export const NotificationItem = ({
           icon: <Heart className='h-4 w-4 text-chart-5' />,
           message: '님이 좋아요를 눌렀습니다',
         };
+      case 'reading_reminder':
+        return {
+          icon: <BookOpen className='h-4 w-4 shrink-0 text-primary' />,
+          message: notification.message ?? '오래 읽고 있는 책이 있어요',
+        };
       default:
         return {
           icon: null,
@@ -72,18 +86,24 @@ export const NotificationItem = ({
         !is_read ? 'bg-accent' : ''
       }`}
     >
-      {/* 프로필 이미지 */}
-      <Avatar className='h-10 w-10'>
-        <AvatarImage src={actor.photo_url || undefined} alt={actorName} />
-        <AvatarFallback>{toInitial(actor)}</AvatarFallback>
-      </Avatar>
+      {/* 프로필 이미지 — 나에게 오는 알림은 내 얼굴 대신 책 아이콘 */}
+      {isSelfNotice ? (
+        <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10'>
+          <BookOpen className='h-5 w-5 text-primary' />
+        </span>
+      ) : (
+        <Avatar className='h-10 w-10'>
+          <AvatarImage src={actor.photo_url || undefined} alt={actorName} />
+          <AvatarFallback>{toInitial(actor)}</AvatarFallback>
+        </Avatar>
+      )}
 
       {/* 알림 내용 - 클릭 가능 영역 */}
       <button onClick={onClick} className='flex-1 space-y-1 text-left'>
         <div className='flex items-center gap-2'>
           {icon}
           <p className='text-sm'>
-            <span className='font-medium'>{actorName}</span>
+            {!isSelfNotice && <span className='font-medium'>{actorName}</span>}
             {message}
           </p>
         </div>

@@ -237,7 +237,11 @@ export const LibraryView = ({
   const bookShelf = (
     <div className='space-y-6 py-6'>
       {/* 읽는 중은 필터와 무관하게 항상 앞세운다 → 필터 dimming 밖에 둔다 */}
-      <ReadingNowStrip books={readingBooks} bookHref={bookHref} />
+      <ReadingNowStrip
+        books={readingBooks}
+        bookHref={bookHref}
+        nudgeToday={isOwner ? today : undefined}
+      />
 
       <section
         style={{

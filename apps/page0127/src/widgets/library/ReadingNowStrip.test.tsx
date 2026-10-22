@@ -52,3 +52,26 @@ describe('ReadingNowStrip', () => {
     expect(html).toContain('aria-label="손절사회, 읽는 중"');
   });
 });
+
+describe('ReadingNowStrip · 2주 넘게 읽는 중 넛지', () => {
+  const books = [
+    createTestBook({ status: 'reading', start_date: '2026-10-08' }), // 15일째
+    createTestBook({ status: 'reading', start_date: '2026-10-09' }), // 14일째
+  ];
+
+  it('주인 화면에서 15일째부터 N일째를 붙인다', () => {
+    const html = renderToStaticMarkup(
+      <ReadingNowStrip books={books} bookHref={href} nudgeToday='2026-10-22' />
+    );
+    expect((html.match(/data-reading-nudge/g) ?? []).length).toBe(1);
+    expect(html).toContain('15일째');
+    expect(html).toContain('읽는 중, 15일째"');
+  });
+
+  it('방문자 화면(nudgeToday 없음)에는 붙이지 않는다', () => {
+    const html = renderToStaticMarkup(
+      <ReadingNowStrip books={books} bookHref={href} />
+    );
+    expect(html).not.toContain('data-reading-nudge');
+  });
+});

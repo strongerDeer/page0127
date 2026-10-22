@@ -7,7 +7,12 @@ import Link from 'next/link';
 import { BookCover } from '@repo/ui';
 import { BookOpen } from 'lucide-react';
 
-import { toCoverSource } from '@/entities/book';
+import {
+  isLongReading,
+  readingDayCount,
+  readingSince,
+  toCoverSource,
+} from '@/entities/book';
 
 import { tooltipShift } from '@/widgets/book/model/tooltipShift';
 
@@ -18,6 +23,11 @@ type ReadingNowStripProps = {
   books: Book[];
   /** 책 클릭 시 이동할 URL 생성 함수 */
   bookHref: (book: Book) => string;
+  /**
+   * 한국 시간 기준 오늘 'YYYY-MM-DD' — 주인 화면에서만 넘긴다.
+   * 있으면 2주 넘게 읽는 책에 'N일째' 넛지를 붙인다(방문자에게 재촉할 이유는 없다).
+   */
+  nudgeToday?: string;
 };
 
 /**
@@ -32,7 +42,11 @@ type ReadingNowStripProps = {
  *   숨어 있어도(opacity 0) 페이지 폭을 늘리므로 가로만 잘라(overflow-x: clip — 위로 뜨는 건 그대로)
  *   두고, 보일 때 재서 안쪽으로 민다(PublicBookShelf 와 같은 방식).
  */
-export const ReadingNowStrip = ({ books, bookHref }: ReadingNowStripProps) => {
+export const ReadingNowStrip = ({
+  books,
+  bookHref,
+  nudgeToday,
+}: ReadingNowStripProps) => {
   const stripRef = useRef<HTMLElement>(null);
 
   if (books.length === 0) return null;
@@ -66,6 +80,10 @@ export const ReadingNowStrip = ({ books, bookHref }: ReadingNowStripProps) => {
           const since = book.start_date
             ? `${Number(book.start_date.slice(5, 7))}/${Number(book.start_date.slice(8, 10))}`
             : null;
+          const dayCount = nudgeToday
+            ? readingDayCount(readingSince(book), nudgeToday)
+            : null;
+          const isLong = dayCount !== null && isLongReading(dayCount);
           return (
             <li
               key={book.id}
@@ -76,7 +94,9 @@ export const ReadingNowStrip = ({ books, bookHref }: ReadingNowStripProps) => {
               <Link
                 href={bookHref(book)}
                 // 제목이 화면에 상시 보이지 않으므로 링크 이름에 담는다
-                aria-label={`${book.title}, ${since ? `${since}부터 ` : ''}읽는 중`}
+                aria-label={`${book.title}, ${since ? `${since}부터 ` : ''}읽는 중${
+                  isLong ? `, ${dayCount}일째` : ''
+                }`}
                 className='block transition-transform group-hover:-translate-y-0.5 focus-visible:-translate-y-0.5'
               >
                 {/* 표지는 그림자로 띄우지 않는다(07 §2.3) — 도메인 셰이프는 BookCover 가 맡는다 */}
@@ -90,6 +110,16 @@ export const ReadingNowStrip = ({ books, bookHref }: ReadingNowStripProps) => {
                     small
                     decorative
                   />
+                  {/* 2주 넘게 읽는 중 — 완독·중단을 정리하라는 가벼운 넛지 */}
+                  {isLong && (
+                    <span
+                      aria-hidden
+                      data-reading-nudge
+                      className='absolute inset-x-0 bottom-0 bg-text-strong/80 py-0.5 text-center text-[10px] font-medium text-card'
+                    >
+                      {dayCount}일째
+                    </span>
+                  )}
                 </span>
               </Link>
               {/* 마우스를 올리거나 키보드로 이동했을 때만 보이는 제목 — 읽는 건 링크 이름이 한다 */}
