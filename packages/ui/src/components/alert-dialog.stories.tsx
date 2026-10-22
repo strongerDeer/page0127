@@ -88,7 +88,7 @@ export const Default: Story = {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>취소</AlertDialogCancel>
-          <AlertDialogAction className='bg-destructive hover:bg-destructive/90'>
+          <AlertDialogAction variant='destructive'>
             삭제
           </AlertDialogAction>
         </AlertDialogFooter>
@@ -110,7 +110,7 @@ export const Opened: Story = {
         </AlertDialogDescription>
         <AlertDialogFooter>
           <AlertDialogCancel>취소</AlertDialogCancel>
-          <AlertDialogAction className='bg-destructive hover:bg-destructive/90'>
+          <AlertDialogAction variant='destructive'>
             삭제
           </AlertDialogAction>
         </AlertDialogFooter>

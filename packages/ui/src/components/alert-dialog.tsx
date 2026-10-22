@@ -1,5 +1,6 @@
 import * as React from "react"
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
+import type { VariantProps } from "class-variance-authority"
 
 import { cn } from "../lib/cn"
 import { buttonVariants } from "./button"
@@ -116,13 +117,17 @@ function AlertDialogDescription({
   )
 }
 
+// 삭제·탈퇴 확인은 variant="destructive" 로 쓴다.
+// className 으로 bg-destructive 를 덮으면 글자색 토큰을 놓치기 쉽다 (없는 text-destructive-foreground 를 쓰면 글자가 검게 나온다)
 function AlertDialogAction({
   className,
+  variant,
   ...props
-}: React.ComponentProps<typeof AlertDialogPrimitive.Action>) {
+}: React.ComponentProps<typeof AlertDialogPrimitive.Action> &
+  Pick<VariantProps<typeof buttonVariants>, "variant">) {
   return (
     <AlertDialogPrimitive.Action
-      className={cn(buttonVariants(), className)}
+      className={cn(buttonVariants({ variant }), className)}
       {...props}
     />
   )

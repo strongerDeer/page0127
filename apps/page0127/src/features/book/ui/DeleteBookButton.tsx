@@ -55,7 +55,7 @@ export const DeleteBookButton = ({
             <AlertDialogCancel>취소</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirm}
-              className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+              variant='destructive'
             >
               삭제
             </AlertDialogAction>
