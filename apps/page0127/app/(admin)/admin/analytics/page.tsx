@@ -4,8 +4,10 @@ import {
   type RangeSearchParams,
 } from '@/shared/lib/admin/dateRange';
 
+import { getGaEvents } from '@/features/admin-analytics/api/getGaEvents';
 import { getGaReports } from '@/features/admin-analytics/api/getGaReports';
 import { getSearchQueries } from '@/features/admin-analytics/api/getSearchQueries';
+import { EventFunnelPanel } from '@/features/admin-analytics/ui/EventFunnelPanel';
 import {
   GaInsightsView,
   Section,
@@ -27,9 +29,10 @@ export default async function AdminAnalyticsPage({
   const range = parseDateRange(await searchParams, now);
 
   // 두 연동은 서로 독립 — 하나가 실패해도 다른 하나는 보여 준다
-  const [ga, search] = await Promise.all([
+  const [ga, search, events] = await Promise.all([
     getGaReports(range),
     getSearchQueries(range),
+    getGaEvents(range),
   ]);
 
   return (
@@ -65,6 +68,26 @@ export default async function AdminAnalyticsPage({
           error={ga.status === 'error' ? ga.message : undefined}
         />
       )}
+
+      <Section title='가입 유도가 효과 있나?' cols={1}>
+        {events.status === 'ok' ? (
+          <EventFunnelPanel
+            range={range}
+            previous={events.previous}
+            events={events.events}
+            ctaLocations={events.ctaLocations}
+            dbSignups={events.dbSignups}
+          />
+        ) : (
+          <SetupNotice
+            source='GA4'
+            missing={
+              events.status === 'unconfigured' ? events.missing : undefined
+            }
+            error={events.status === 'error' ? events.message : undefined}
+          />
+        )}
+      </Section>
 
       <Section title='무엇을 검색해서 오나?' cols={1}>
         {search.status === 'ok' ? (

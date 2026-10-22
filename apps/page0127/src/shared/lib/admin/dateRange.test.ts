@@ -2,11 +2,14 @@ import { describe, expect, it } from 'vitest';
 
 import {
   addDays,
+  changeRate,
   daysBetween,
   listDateKeys,
   MAX_RANGE_DAYS,
   parseDateRange,
+  previousRange,
   toRangeQuery,
+  toUtcBounds,
 } from './dateRange';
 
 // KST 10/22 정오 → 어제 = 10/21
@@ -117,5 +120,29 @@ describe('날짜 계산', () => {
         )
       )
     ).toBe('range=custom&from=2026-10-01&to=2026-10-15');
+  });
+});
+
+describe('previousRange', () => {
+  it('바로 앞의 같은 길이 기간', () => {
+    const p = previousRange(parseDateRange({ range: '7d' }, now));
+    expect([p.from, p.to, p.days]).toEqual(['2026-10-08', '2026-10-14', 7]);
+  });
+  it('증감률 — 앞 기간이 0 이면 null', () => {
+    expect(changeRate(15, 10)).toBeCloseTo(0.5);
+    expect(changeRate(3, 0)).toBeNull();
+  });
+});
+
+describe('toUtcBounds', () => {
+  it('KST 자정 기준 [시작, 다음 날 시작)', () => {
+    const r = parseDateRange(
+      { range: 'custom', from: '2026-10-01', to: '2026-10-02' },
+      now
+    );
+    expect(toUtcBounds(r)).toEqual({
+      gte: '2026-09-30T15:00:00.000Z',
+      lt: '2026-10-02T15:00:00.000Z',
+    });
   });
 });

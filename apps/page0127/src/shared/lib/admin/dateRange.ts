@@ -145,3 +145,35 @@ export const toRangeQuery = (r: DateRange): string =>
   r.preset === 'custom'
     ? `range=custom&from=${r.from}&to=${r.to}`
     : `range=${r.preset}`;
+
+/**
+ * 바로 앞의 같은 길이 기간 — "1주를 고르면 그 전 1주"와 비교하려고 쓴다.
+ * 길이가 같아야 비교가 공정하다(30일 합계를 7일 합계와 견주면 무조건 늘어 보인다).
+ */
+export const previousRange = (r: DateRange): DateRange => {
+  const to = addDays(r.from, -1);
+  const from = addDays(to, -(r.days - 1));
+  return {
+    preset: 'custom',
+    from,
+    to,
+    days: r.days,
+    label: `${shortDate(from)} ~ ${shortDate(to)}`,
+  };
+};
+
+/**
+ * 증감률 (cur / prev - 1). 앞 기간이 0 이면 비교할 수 없어 null —
+ * 0 → 3 을 "+∞%"나 "+300%"로 쓰면 작은 숫자에서 과장이 된다.
+ */
+export const changeRate = (cur: number, prev: number): number | null =>
+  prev === 0 ? null : cur / prev - 1;
+
+/**
+ * 기간 → timestamptz 범위 [gte, lt) (UTC ISO). created_at 같은 컬럼을 KST 날짜로 거를 때 쓴다.
+ * 문자열 날짜로 비교하면 UTC 기준이 되어 KST 오전 9시 이전 것이 전날로 샌다.
+ */
+export const toUtcBounds = (r: DateRange): { gte: string; lt: string } => ({
+  gte: new Date(`${r.from}T00:00:00+09:00`).toISOString(),
+  lt: new Date(`${addDays(r.to, 1)}T00:00:00+09:00`).toISOString(),
+});
