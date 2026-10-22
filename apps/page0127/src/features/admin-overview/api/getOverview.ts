@@ -1,4 +1,8 @@
 import { createAdminClient } from '@/shared/config/supabase/admin';
+import {
+  getAdminUserIds,
+  toInFilter,
+} from '@/shared/lib/admin/getAdminUserIds';
 
 import {
   kstDateToUtcEnd,
@@ -27,7 +31,7 @@ export type AdminOverview = {
   members: { total: number; yesterday: number };
   books: { total: number; yesterday: number };
   completions: { yesterday: number };
-  /** 방문자 — user_daily_visits 는 하루 한 사람 한 줄이라 그대로 세면 DAU 다 */
+  /** 방문자 — user_daily_visits 는 하루 한 사람 한 줄이라 그대로 세면 DAU 다. 관리자 제외 */
   visitors: { yesterday: number; last7Days: number; today: number };
 };
 
@@ -51,6 +55,17 @@ export const getOverview = async (): Promise<AdminOverview> => {
 
   const yStart = kstDateToUtcStart(yesterday);
   const yEnd = kstDateToUtcEnd(yesterday);
+
+  // 방문 지표는 관리자 본인을 뺀다 — 추이·재방문과 같은 사람들을 세야 숫자가 맞는다
+  const adminIds = await getAdminUserIds();
+  const visits = () => {
+    const q = supabase
+      .from('user_daily_visits')
+      .select('user_id', { count: 'exact', head: true });
+    return adminIds.length > 0
+      ? q.not('user_id', 'in', toInFilter(adminIds))
+      : q;
+  };
 
   const [
     pendingReports,
@@ -98,27 +113,13 @@ export const getOverview = async (): Promise<AdminOverview> => {
         .eq('status', 'completed')
         .eq('completed_date', yesterday)
     ),
-    countRows(() =>
-      supabase
-        .from('user_daily_visits')
-        .select('user_id', { count: 'exact', head: true })
-        .eq('visit_date', yesterday)
-    ),
+    countRows(() => visits().eq('visit_date', yesterday)),
     // 최근 7일은 **연인원**이다(같은 사람이 3일 오면 3). 순 방문자가 아니라는
     // 것을 화면 문구로도 밝힌다 — 둘을 헷갈리면 재방문율을 잘못 읽는다.
     countRows(() =>
-      supabase
-        .from('user_daily_visits')
-        .select('user_id', { count: 'exact', head: true })
-        .gte('visit_date', weekStart)
-        .lte('visit_date', yesterday)
+      visits().gte('visit_date', weekStart).lte('visit_date', yesterday)
     ),
-    countRows(() =>
-      supabase
-        .from('user_daily_visits')
-        .select('user_id', { count: 'exact', head: true })
-        .eq('visit_date', today)
-    ),
+    countRows(() => visits().eq('visit_date', today)),
   ]);
 
   return {

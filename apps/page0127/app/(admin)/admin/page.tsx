@@ -3,6 +3,13 @@ import { Suspense } from 'react';
 import { ErrorBoundary } from '@repo/ui';
 
 import { MONTHLY_BUDGET_KRW, USD_TO_KRW } from '@/shared/lib/admin/config';
+import {
+  type DateRange,
+  kstYesterday,
+  parseDateRange,
+  type RangeSearchParams,
+  toRangeQuery,
+} from '@/shared/lib/admin/dateRange';
 
 import { getCostSummary } from '@/features/admin-costs/api/getCostSummary';
 import { getOpenAiCosts } from '@/features/admin-costs/api/getOpenAiCosts';
@@ -11,13 +18,17 @@ import {
   computeBudgetUsage,
 } from '@/features/admin-costs/lib/cost';
 import { getOverview } from '@/features/admin-overview/api/getOverview';
+import { getRetention } from '@/features/admin-overview/api/getRetention';
 import { getTrends } from '@/features/admin-overview/api/getTrends';
 import { buildAttention } from '@/features/admin-overview/lib/attention';
 import { sumPoints } from '@/features/admin-overview/lib/trend';
 import { AttentionList } from '@/features/admin-overview/ui/AttentionList';
 import { OverviewCards } from '@/features/admin-overview/ui/OverviewCards';
+import { RetentionPanel } from '@/features/admin-overview/ui/RetentionPanel';
 import { TrendBars } from '@/features/admin-overview/ui/TrendBars';
 import { getLatestRegressionCount } from '@/features/admin-quality/api/getLatestRegressionCount';
+
+import { PeriodPicker } from '@/widgets/admin/ui/PeriodPicker';
 
 // 지표는 매번 새로 읽는다. 어드민은 방금 일어난 일을 보러 오는 화면이라
 // 캐시된 숫자를 보여주면 "왜 안 늘지"로 시간을 쓴다.
@@ -62,10 +73,12 @@ const OverviewSection = async () => {
   );
 };
 
-const TrendSection = async () => {
-  const trends = await getTrends();
+type RangeProps = { range: DateRange };
+
+const TrendSection = async ({ range }: RangeProps) => {
+  const trends = await getTrends(range);
   if (!trends) {
-    // null = 조회 실패. "30일 동안 0건"으로 보이면 안 된다
+    // null = 조회 실패. "그 기간 동안 0건"으로 보이면 안 된다
     return (
       <p className='rounded-lg border border-line p-4 text-sm text-text-subtle'>
         추이를 불러오지 못했습니다. (데이터가 없는 것과는 다른 상태입니다 — 서버
@@ -77,15 +90,17 @@ const TrendSection = async () => {
   return (
     <section>
       <h2 className='mb-3 text-sm font-medium'>
-        최근 30일{' '}
-        <span className='font-normal text-text-subtle'>(어제까지)</span>
+        추이{' '}
+        <span className='font-normal text-text-subtle'>
+          ({range.label} · {range.from} ~ {range.to})
+        </span>
       </h2>
       <div className='grid gap-3 lg:grid-cols-3'>
         <TrendBars
           title='방문자'
           unit='명'
           points={trends.visitors}
-          summary={`하루 평균 ${avgVisitors.toFixed(1)}명`}
+          summary={`하루 평균 ${avgVisitors.toFixed(1)}명 · 운영자 제외`}
         />
         <TrendBars
           title='가입'
@@ -104,6 +119,19 @@ const TrendSection = async () => {
   );
 };
 
+const RetentionSection = async ({ range }: RangeProps) => {
+  const retention = await getRetention(range);
+  if (!retention) {
+    return (
+      <p className='rounded-lg border border-line p-4 text-sm text-text-subtle'>
+        재방문 지표를 불러오지 못했습니다. (재방문 0% 와는 다른 상태입니다 —
+        서버 로그를 확인하세요.)
+      </p>
+    );
+  }
+  return <RetentionPanel retention={retention} periodLabel={range.label} />;
+};
+
 type SkeletonProps = { height: string };
 
 const Skeleton = ({ height }: SkeletonProps) => (
@@ -118,9 +146,19 @@ const FailNotice = () => (
   </p>
 );
 
-export default function AdminHomePage() {
-  // 두 구역은 따로 실패한다 — 추이 조회가 죽어도 "오늘 볼 것"은 보여야 한다.
+type AdminHomePageProps = { searchParams: Promise<RangeSearchParams> };
+
+export default async function AdminHomePage({
+  searchParams,
+}: AdminHomePageProps) {
+  const now = new Date();
+  const range = parseDateRange(await searchParams, now);
+  // 기간을 바꾸면 이전 기간 숫자가 남아 있지 않게 스켈레톤부터 다시 보인다
+  const rangeKey = toRangeQuery(range);
+
+  // 구역마다 따로 실패한다 — 추이 조회가 죽어도 "오늘 볼 것"은 보여야 한다.
   // 다른 화면으로의 이동은 왼쪽 메뉴가 맡아서, 홈에 바로가기 카드를 따로 두지 않는다.
+  // 위 "어제·누적"은 매일 아침 보는 고정 숫자라 기간 선택과 무관하고, 기간은 아래 구역만 바꾼다.
   return (
     <div className='space-y-8'>
       <ErrorBoundary fallback={<FailNotice />}>
@@ -129,11 +167,25 @@ export default function AdminHomePage() {
         </Suspense>
       </ErrorBoundary>
 
-      <ErrorBoundary fallback={<FailNotice />}>
-        <Suspense fallback={<Skeleton height='h-40' />}>
-          <TrendSection />
-        </Suspense>
-      </ErrorBoundary>
+      <div className='space-y-6 border-t border-line pt-6'>
+        <PeriodPicker
+          basePath='/admin'
+          range={range}
+          maxDate={kstYesterday(now)}
+        />
+
+        <ErrorBoundary fallback={<FailNotice />}>
+          <Suspense key={rangeKey} fallback={<Skeleton height='h-40' />}>
+            <TrendSection range={range} />
+          </Suspense>
+        </ErrorBoundary>
+
+        <ErrorBoundary fallback={<FailNotice />}>
+          <Suspense key={rangeKey} fallback={<Skeleton height='h-56' />}>
+            <RetentionSection range={range} />
+          </Suspense>
+        </ErrorBoundary>
+      </div>
     </div>
   );
 }

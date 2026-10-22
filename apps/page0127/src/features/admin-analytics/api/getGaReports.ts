@@ -13,6 +13,8 @@ import {
   toRunReportRequest,
 } from '../lib/ga4Reports';
 
+import type { DateRange } from '@/shared/lib/admin/dateRange';
+
 const GA_SCOPE = 'https://www.googleapis.com/auth/analytics.readonly';
 
 // batchRunReports 는 한 번에 최대 5개 보고서까지 받는다
@@ -30,7 +32,7 @@ export type GaResult =
  * 14개를 따로 부르면 GA 의 "속성당 동시 요청 10개" 한도에 걸릴 수 있어
  * 5개씩 묶은 batch 요청 3번으로 보낸다.
  */
-export async function getGaReports(): Promise<GaResult> {
+export async function getGaReports(range: DateRange): Promise<GaResult> {
   await assertAdmin();
 
   const propertyId = process.env.GA4_PROPERTY_ID;
@@ -54,7 +56,9 @@ export async function getGaReports(): Promise<GaResult> {
               Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ requests: defs.map(toRunReportRequest) }),
+            body: JSON.stringify({
+              requests: defs.map((d) => toRunReportRequest(d, range)),
+            }),
             cache: 'no-store',
           }
         );

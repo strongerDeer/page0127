@@ -1,3 +1,9 @@
+import {
+  kstYesterday,
+  parseDateRange,
+  type RangeSearchParams,
+} from '@/shared/lib/admin/dateRange';
+
 import { getGaReports } from '@/features/admin-analytics/api/getGaReports';
 import { getSearchQueries } from '@/features/admin-analytics/api/getSearchQueries';
 import {
@@ -7,19 +13,32 @@ import {
 import { SearchQueryTable } from '@/features/admin-analytics/ui/SearchQueryTable';
 import { SetupNotice } from '@/features/admin-analytics/ui/SetupNotice';
 
+import { PeriodPicker } from '@/widgets/admin/ui/PeriodPicker';
+
 // 매 요청마다 GA 를 새로 조회한다 — 관리자만 보는 화면이라 호출 수가 적다
 export const dynamic = 'force-dynamic';
 
-export default async function AdminAnalyticsPage() {
+type AdminAnalyticsPageProps = { searchParams: Promise<RangeSearchParams> };
+
+export default async function AdminAnalyticsPage({
+  searchParams,
+}: AdminAnalyticsPageProps) {
+  const now = new Date();
+  const range = parseDateRange(await searchParams, now);
+
   // 두 연동은 서로 독립 — 하나가 실패해도 다른 하나는 보여 준다
-  const [ga, search] = await Promise.all([getGaReports(), getSearchQueries()]);
+  const [ga, search] = await Promise.all([
+    getGaReports(range),
+    getSearchQueries(range),
+  ]);
 
   return (
     <section className='space-y-6'>
       <div>
         <h1 className='text-base font-medium'>유입분석</h1>
         <p className='mt-1 text-sm text-text-subtle'>
-          최근 28일(어제까지) · GA4 · Search Console.{' '}
+          {range.label}({range.from} ~ {range.to}) · GA4 · Search Console.
+          검색어는 2~3일 늦게 들어와 마지막 며칠이 비는 게 정상입니다.{' '}
           <a
             href='https://analytics.google.com/'
             target='_blank'
@@ -31,8 +50,14 @@ export default async function AdminAnalyticsPage() {
         </p>
       </div>
 
+      <PeriodPicker
+        basePath='/admin/analytics'
+        range={range}
+        maxDate={kstYesterday(now)}
+      />
+
       {ga.status === 'ok' ? (
-        <GaInsightsView reports={ga.reports} now={new Date()} />
+        <GaInsightsView reports={ga.reports} range={range} />
       ) : (
         <SetupNotice
           source='GA4'

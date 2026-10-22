@@ -18,9 +18,10 @@ import { InsightList } from './InsightList';
 import { ReportTableCard } from './ReportTableCard';
 import { type ShareBarItem, ShareBars } from './ShareBars';
 
+import type { DateRange } from '@/shared/lib/admin/dateRange';
 import type { ReactNode } from 'react';
 
-type GaInsightsViewProps = { reports: Reports; now: Date };
+type GaInsightsViewProps = { reports: Reports; range: DateRange };
 
 const defOf = (key: ReportKey) => {
   const def = REPORTS.find((r) => r.key === key);
@@ -40,8 +41,8 @@ const toBars = (t: ReportTable): ShareBarItem[] =>
  * 유입분석 본문 — 표 14장 대신 **질문 4개**로 묶는다.
  * 결론(볼 것) → 핵심 숫자 → 질문별 차트 → 세부 표(접힘) 순서. 숫자를 읽기 전에 결론부터 본다.
  */
-export const GaInsightsView = ({ reports, now }: GaInsightsViewProps) => {
-  const daily = fillDaily(reports.daily, now);
+export const GaInsightsView = ({ reports, range }: GaInsightsViewProps) => {
+  const daily = fillDaily(reports.daily, range);
   const wow = weekOverWeek(daily);
   const h = buildHeadline(reports);
   const summary = reports.summary.rows[0]?.values ?? [];
@@ -50,7 +51,7 @@ export const GaInsightsView = ({ reports, now }: GaInsightsViewProps) => {
     {
       label: '사용자',
       value: formatMetric(h.users, 'int'),
-      hint: '28일 동안 들어온 사람 수',
+      hint: `${range.label} 동안 들어온 사람 수`,
     },
     {
       label: '한국에서',
@@ -76,7 +77,7 @@ export const GaInsightsView = ({ reports, now }: GaInsightsViewProps) => {
 
   return (
     <>
-      <InsightList insights={buildInsights(reports, daily)} />
+      <InsightList insights={buildInsights(reports, daily, range.label)} />
 
       <dl className='grid grid-cols-2 gap-3 sm:grid-cols-5'>
         {tiles.map((t) => (

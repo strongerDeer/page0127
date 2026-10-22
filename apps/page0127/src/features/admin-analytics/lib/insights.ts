@@ -1,4 +1,8 @@
-import { toKstDateKey } from '@/shared/lib/date';
+import {
+  type DateRange,
+  listDateKeys,
+  shortDate,
+} from '@/shared/lib/admin/dateRange';
 
 import type { ReportKey, ReportTable } from './ga4Reports';
 
@@ -101,27 +105,15 @@ export type DailyPoint = { date: string; label: string; users: number };
  * 이어 붙고 추이가 왜곡된다 — 기간 전체 날짜를 깔고 없는 날은 0 으로 채운다.
  * GA 속성 시간대가 KST 라는 전제(page0127 속성 설정)로 KST 날짜를 쓴다.
  */
-export const fillDaily = (
-  t: ReportTable,
-  now: Date,
-  days = 28
-): DailyPoint[] => {
+export const fillDaily = (t: ReportTable, range: DateRange): DailyPoint[] => {
   const byDate = new Map(t.rows.map((r) => [r.raw[0], r.values[0]]));
-  const points: DailyPoint[] = [];
-  // 어제부터 days 일 전까지 (오늘은 집계 중이라 GA_DATE_RANGE 와 같이 뺀다)
-  for (let i = days; i >= 1; i--) {
-    const key = toKstDateKey(new Date(now.getTime() - i * 86_400_000));
+  return listDateKeys(range).map((key) => {
     const date = key.replaceAll('-', '');
-    points.push({
-      date,
-      label: `${key.slice(5, 7)}/${key.slice(8, 10)}`,
-      users: byDate.get(date) ?? 0,
-    });
-  }
-  return points;
+    return { date, label: shortDate(key), users: byDate.get(date) ?? 0 };
+  });
 };
 
-/** 최근 7일 평균 / 그 전 7일 평균 - 1. 앞 주가 0 이면 비교 불가(null) */
+/** 기간 마지막 7일 / 그 전 7일 - 1. 기간이 14일 미만이거나 앞 주가 0 이면 비교 불가(null) */
 export const weekOverWeek = (points: DailyPoint[]): number | null => {
   if (points.length < 14) return null;
   const last = sum(points.slice(-7).map((p) => p.users));
@@ -129,14 +121,21 @@ export const weekOverWeek = (points: DailyPoint[]): number | null => {
   return prev === 0 ? null : last / prev - 1;
 };
 
-export const buildInsights = (r: Reports, daily: DailyPoint[]): Insight[] => {
+/**
+ * @param periodLabel 화면 기간 표기('최근 30일', '10/01 ~ 10/15') — 문구에 그대로 넣는다
+ */
+export const buildInsights = (
+  r: Reports,
+  daily: DailyPoint[],
+  periodLabel: string
+): Insight[] => {
   const h = buildHeadline(r);
 
   if (h.users < MIN_USERS_FOR_INSIGHT) {
     return [
       {
         tone: 'info',
-        title: `최근 28일 사용자 ${h.users}명 — 아직 비율을 해석하기엔 적습니다`,
+        title: `${periodLabel} 사용자 ${h.users}명 — 아직 비율을 해석하기엔 적습니다`,
         action: `${MIN_USERS_FOR_INSIGHT}명이 넘으면 유입 경로·이탈 해석을 보여 드립니다. 지금은 아래 표의 개별 숫자만 참고하세요.`,
       },
     ];
@@ -150,13 +149,13 @@ export const buildInsights = (r: Reports, daily: DailyPoint[]): Insight[] => {
       wow > 0
         ? {
             tone: 'good',
-            title: `지난주보다 방문이 ${pct(wow)} 늘었습니다`,
+            title: `마지막 7일 방문이 그 전 7일보다 ${pct(wow)} 늘었습니다`,
             action:
               '무엇이 효과였는지(공유·글·기능 출시) 기록해 두면 다음에 반복할 수 있습니다.',
           }
         : {
             tone: 'warn',
-            title: `지난주보다 방문이 ${pct(-wow)} 줄었습니다`,
+            title: `마지막 7일 방문이 그 전 7일보다 ${pct(-wow)} 줄었습니다`,
             action:
               '배포로 막힌 화면이 없는지(에러 탭), 유입 채널 중 어느 쪽이 줄었는지 먼저 봅니다.',
           }

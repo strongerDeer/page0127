@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { parseDateRange } from '@/shared/lib/admin/dateRange';
+
 import {
   formatMetric,
   parseReport,
@@ -14,16 +16,26 @@ const def = (key: string) => {
   return d;
 };
 
+const range = parseDateRange(
+  { range: 'custom', from: '2026-10-01', to: '2026-10-15' },
+  new Date('2026-10-22T03:00:00Z')
+);
+
 describe('toRunReportRequest', () => {
+  it('고른 기간을 KST 날짜 그대로 넘긴다', () => {
+    expect(toRunReportRequest(def('summary'), range).dateRanges).toEqual([
+      { startDate: '2026-10-01', endDate: '2026-10-15' },
+    ]);
+  });
   it('정렬 지정이 없으면 첫 측정항목 내림차순', () => {
-    const req = toRunReportRequest(def('country'));
+    const req = toRunReportRequest(def('country'), range);
     expect(req.orderBys).toEqual([
       { metric: { metricName: 'activeUsers' }, desc: true },
     ]);
     expect(req.dimensions).toEqual([{ name: 'countryId' }]);
   });
   it('요일은 차원 순(일→토)으로 정렬한다', () => {
-    expect(toRunReportRequest(def('dayOfWeek')).orderBys).toEqual([
+    expect(toRunReportRequest(def('dayOfWeek'), range).orderBys).toEqual([
       { dimension: { dimensionName: 'dayOfWeek' } },
     ]);
   });
