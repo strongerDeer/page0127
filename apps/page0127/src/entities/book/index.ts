@@ -43,6 +43,7 @@ export {
   getInitialCalendarMonth,
   MAX_LANES,
 } from './model/calendarMonth';
+export { readingDayCount, readingSince } from './model/readingSince';
 
 // 표지 주소 — YES24 가 먼저, Storage 사본은 대체용
 export type { CoverSource } from './model/coverSource';

@@ -73,3 +73,21 @@ describe('ReadingCalendar', () => {
     expect(html).toContain('2025년 11월');
   });
 });
+
+describe('ReadingCalendar · 읽는 중', () => {
+  it('시작일 칸에 표지를 점선으로 놓고 읽기 시작으로 읽어 준다', () => {
+    const html = renderToStaticMarkup(
+      <ReadingCalendar
+        books={[
+          createTestBook({ status: 'reading', start_date: '2026-10-08' }),
+        ]}
+        year={2026}
+        today='2026-10-22'
+        isOwner={false}
+        bookHref={href}
+      />
+    );
+    expect(html).toContain('aria-label="10월 8일, 1권 읽기 시작"');
+    expect(html).toContain('dashed');
+  });
+});
