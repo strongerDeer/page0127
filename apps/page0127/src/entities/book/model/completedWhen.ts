@@ -7,7 +7,7 @@ import type { Book } from '../types';
  * - year    연도만 안다 (completed_year) — 인생책처럼 오래전에 읽은 책
  * - unknown 언제 읽었는지 모른다 — 전체 통계에만 들어간다
  *
- * 두 컬럼은 DB CHECK 로 함께 찰 수 없다(20261022000001). 그래도 날짜를 먼저 본다.
+ * 두 컬럼은 DB CHECK 로 함께 찰 수 없다(20261022000002). 그래도 날짜를 먼저 본다.
  */
 export type CompletedPrecision = 'date' | 'year' | 'unknown';
 
