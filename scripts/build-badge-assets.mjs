@@ -60,7 +60,9 @@ const frameOf = (name) => {
 /** 배경과 이 거리(RGB 합) 이상 다르면 뱃지로 본다 — 옅은 그림자는 배경 쪽으로 */
 const BG_TOLERANCE = 60;
 
-const isMagenta = (r, g, b) => r > 170 && b > 170 && g < 110 && r - g > 90;
+// 창 안쪽 그림자로 어두워진 마젠타까지 잡는다 — 빨강·파랑이 비슷하고 초록만 낮은 색
+const isMagenta = (r, g, b) =>
+  r > 90 && b > 90 && Math.abs(r - b) < 80 && g < Math.min(r, b) * 0.55;
 
 const args = process.argv.slice(2);
 const argValue = (flag) => {
@@ -150,7 +152,10 @@ const loadFrame = async (file, shape) => {
   return raw(sharp(await fitted.png().toBuffer()));
 };
 
-/** 마젠타 창 마스크 — 테두리와 섞인 가장자리를 덮도록 1px 넓힌다 */
+/** 창 가장자리에서 테두리와 섞인 분홍빛이 남지 않도록 넓히는 폭(px, 600×800 기준) */
+const MASK_GROW = 3;
+
+/** 마젠타 창 마스크 — 테두리와 섞인 가장자리를 덮도록 MASK_GROW 만큼 넓힌다 */
 const windowMask = ({ data, width, height }) => {
   const mask = new Uint8Array(width * height);
   for (let p = 0; p < width * height; p++) {
@@ -159,13 +164,17 @@ const windowMask = ({ data, width, height }) => {
       mask[p] = 1;
     }
   }
-  const grown = mask.slice();
-  for (let y = 1; y < height - 1; y++) {
-    for (let x = 1; x < width - 1; x++) {
-      const p = y * width + x;
-      if (mask[p]) continue;
-      if (mask[p - 1] || mask[p + 1] || mask[p - width] || mask[p + width]) {
-        grown[p] = 1;
+  let grown = mask;
+  for (let step = 0; step < MASK_GROW; step++) {
+    const prev = grown;
+    grown = prev.slice();
+    for (let y = 1; y < height - 1; y++) {
+      for (let x = 1; x < width - 1; x++) {
+        const p = y * width + x;
+        if (prev[p]) continue;
+        if (prev[p - 1] || prev[p + 1] || prev[p - width] || prev[p + width]) {
+          grown[p] = 1;
+        }
       }
     }
   }

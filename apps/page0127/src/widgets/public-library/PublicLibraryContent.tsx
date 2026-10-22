@@ -15,7 +15,7 @@ import {
   resolveGoalTarget,
 } from '@/entities/book';
 
-import { BadgeShelf } from '@/features/badge';
+import { BadgeSummary } from '@/features/badge';
 import { CoachTipHost } from '@/features/onboarding';
 import { ReadingGoalDialog } from '@/features/profile/ui/ReadingGoalDialog';
 
@@ -179,6 +179,17 @@ export const PublicLibraryContent = ({
         tasteAnalysisRemaining={tasteAnalysisRemaining}
       />
 
+      {/* 뱃지 — 통계와 같은 공개 책으로 계산해 주인·방문자가 같은 뱃지를 본다.
+          프로필 바로 아래에 둬서 "어떤 독자인지"를 먼저 보여 준다. 전부는 상세 페이지에서 */}
+      <BadgeSummary
+        username={username}
+        isOwner={isOwnProfile}
+        books={publicBooks}
+        readingGoal={readingGoal ?? null}
+        // 이력은 최신순 10건까지라 마지막 것이 가장 오래된 분석이다
+        firstTasteAnalysisAt={analysisHistory.at(-1)?.created_at ?? null}
+      />
+
       {/* 비로그인 방문자에게만 — 로그인한 다른 사용자는 이미 자기 책장이 있다 */}
       {isVisitor && (
         <VisitorChemiCard name={ownerName} photoUrl={profile.photo_url} />
@@ -216,15 +227,6 @@ export const PublicLibraryContent = ({
         balanceBooks={balanceBooks}
         // books 는 주인이면 비공개·읽고 싶어요까지, 방문자면 공개분만 온다
         isLibraryEmpty={books.length === 0}
-      />
-
-      {/* 뱃지 — 통계와 같은 공개 책으로 계산해 주인·방문자가 같은 뱃지를 본다 */}
-      <BadgeShelf
-        isOwner={isOwnProfile}
-        books={publicBooks}
-        readingGoal={readingGoal ?? null}
-        // 이력은 최신순 10건까지라 마지막 것이 가장 오래된 분석이다
-        firstTasteAnalysisAt={analysisHistory.at(-1)?.created_at ?? null}
       />
 
       {isVisitor && (
