@@ -54,12 +54,12 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     }
 
     const profiles = comment.user_id
-      ? ((
+      ? (
           await supabase
             .from('profiles')
             .select('id, nickname, username, photo_url')
             .in('id', [comment.user_id])
-        ).data ?? [])
+        ).data ?? []
       : [];
 
     const [node] = buildCommentTree([comment], profiles);
