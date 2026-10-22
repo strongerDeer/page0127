@@ -108,15 +108,35 @@ export const sendPushForNotifications = async (
     data?.forEach((actor) => actors.set(actor.id, actor));
   }
 
+  // 받는 사람별 읽지 않은 알림 수 — 서비스워커가 앱 아이콘 뱃지 숫자로 쓴다.
+  // 사람 수만큼 count 쿼리가 나가지만, 한 번에 받는 사람이 많은 건 크론뿐이고
+  // 그것도 구독한 사람(위 subscriptions)으로 좁힌 뒤다.
+  const subscribedUserIds = [...new Set(subscriptions.map((s) => s.user_id))];
+  const unreadCounts = new Map<string, number>();
+  await Promise.all(
+    subscribedUserIds.map(async (userId) => {
+      const { count } = await admin
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('is_read', false);
+      if (typeof count === 'number') unreadCounts.set(userId, count);
+    })
+  );
+
   const expired: string[] = [];
   let sent = 0;
 
   const jobs = notifications.flatMap((notification) => {
-    const payload = buildPushPayload(
+    const built = buildPushPayload(
       notification,
       actors.get(notification.actor_id) ?? null
     );
-    if (!payload) return [];
+    if (!built) return [];
+    const payload = {
+      ...built,
+      badge: unreadCounts.get(notification.user_id),
+    };
 
     return subscriptions
       .filter((sub) => sub.user_id === notification.user_id)

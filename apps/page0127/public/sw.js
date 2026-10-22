@@ -13,7 +13,7 @@
   ⚠️ 푸시 내용의 모양(title·body·url)은 entities/notification/lib/pushPayload.ts 와 짝이다.
 */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const OFFLINE_CACHE = `page0127-offline-${CACHE_VERSION}`;
 const OFFLINE_URL = '/offline.html';
 const ICON_URL = '/icons/192';
@@ -70,7 +70,7 @@ self.addEventListener('fetch', (event) => {
 });
 
 self.addEventListener('push', (event) => {
-  /** @type {{ title?: string; body?: string; url?: string }} */
+  /** @type {{ title?: string; body?: string; url?: string; badge?: number }} */
   let payload = {};
   try {
     payload = event.data ? event.data.json() : {};
@@ -80,15 +80,48 @@ self.addEventListener('push', (event) => {
 
   // iOS 는 푸시를 받고도 알림을 띄우지 않으면 구독을 끊는다 — 내용이 비어도 반드시 띄운다
   event.waitUntil(
-    self.registration.showNotification(payload.title || 'page0127.', {
-      body: payload.body || '새 알림이 도착했어요',
-      icon: ICON_URL,
-      badge: ICON_URL,
-      lang: 'ko-KR',
-      data: { url: payload.url || '/notifications' },
-    })
+    Promise.all([
+      self.registration.showNotification(payload.title || 'page0127.', {
+        body: payload.body || '새 알림이 도착했어요',
+        icon: ICON_URL,
+        badge: ICON_URL,
+        lang: 'ko-KR',
+        data: { url: payload.url || '/notifications' },
+      }),
+      updateAppBadge(payload.badge),
+      notifyOpenTabs(),
+    ])
   );
 });
+
+/**
+ * 앱 아이콘 숫자 (Badging API). 설치한 앱(데스크톱 크롬 '앱 설치', iOS 홈 화면 앱)에서만
+ * 보이고, 지원하지 않는 브라우저에서는 조용히 넘어간다. 숫자는 서버가 센 '읽지 않은 알림 수'.
+ */
+async function updateAppBadge(count) {
+  if (typeof count !== 'number' || !('setAppBadge' in self.navigator)) return;
+  try {
+    if (count > 0) await self.navigator.setAppBadge(count);
+    else await self.navigator.clearAppBadge();
+  } catch {
+    // 권한이 없거나 설치 앱이 아니면 실패한다 — 알림 자체와는 상관없다
+  }
+}
+
+/**
+ * 열려 있는 탭에 "새 알림"을 알린다 → 탭이 종 아이콘 숫자를 다시 읽는다.
+ * Realtime 연결이 끊긴 탭도 푸시는 받으므로, 이 경로가 실시간 갱신의 두 번째 안전망이 된다.
+ * (받는 쪽: entities/notification/lib/hooks/useNotificationRealtime.ts)
+ */
+async function notifyOpenTabs() {
+  const windows = await self.clients.matchAll({
+    type: 'window',
+    includeUncontrolled: true,
+  });
+  windows.forEach((client) =>
+    client.postMessage({ type: 'page0127:notification' })
+  );
+}
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();

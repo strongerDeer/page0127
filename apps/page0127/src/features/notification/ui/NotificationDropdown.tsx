@@ -17,6 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@repo/ui';
 import { Bell } from 'lucide-react';
 
 import {
+  useAppBadge,
   useNotificationRealtime,
   useUnreadCount,
 } from '@/entities/notification';
@@ -33,6 +34,8 @@ export const NotificationDropdown = ({ userId }: NotificationDropdownProps) => {
 
   // Supabase Realtime 구독 — notifications 테이블 변경 시 자동으로 캐시 무효화
   useNotificationRealtime(userId);
+  // 설치한 앱의 아이콘 숫자도 같은 값으로 맞춘다
+  useAppBadge(unreadCount?.count);
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>

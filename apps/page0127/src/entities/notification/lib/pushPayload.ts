@@ -14,6 +14,8 @@ export type PushPayload = {
   body: string;
   /** 알림을 누르면 열 경로. 없으면 알림 페이지로 */
   url: string;
+  /** 받는 사람의 읽지 않은 알림 수 — 앱 아이콘 뱃지. 못 셌으면 없다 */
+  badge?: number;
 };
 
 /** 푸시를 만드는 데 필요한 알림 칸 — 삽입하는 행 그대로 넘길 수 있다 */
