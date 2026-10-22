@@ -60,7 +60,11 @@ export default async function AdminAnalyticsPage({
       />
 
       {ga.status === 'ok' ? (
-        <GaInsightsView reports={ga.reports} range={range} />
+        <GaInsightsView
+          reports={ga.reports}
+          range={range}
+          previousSummary={ga.previousSummary}
+        />
       ) : (
         <SetupNotice
           source='GA4'

@@ -1,3 +1,5 @@
+import { changeRate, type DateRange } from '@/shared/lib/admin/dateRange';
+
 import {
   CHANNELS,
   formatMetric,
@@ -18,10 +20,31 @@ import { InsightList } from './InsightList';
 import { ReportTableCard } from './ReportTableCard';
 import { type ShareBarItem, ShareBars } from './ShareBars';
 
-import type { DateRange } from '@/shared/lib/admin/dateRange';
 import type { ReactNode } from 'react';
 
-type GaInsightsViewProps = { reports: Reports; range: DateRange };
+type GaInsightsViewProps = {
+  reports: Reports;
+  range: DateRange;
+  /** 바로 앞 같은 길이 기간의 요약 — 타일 증감 */
+  previousSummary: ReportTable;
+};
+
+/** 증감 표기 — 비율 지표는 %p(포인트), 개수는 % */
+const changeText = (
+  cur: number,
+  prev: number,
+  kind: 'count' | 'ratio'
+): string | undefined => {
+  if (kind === 'ratio') {
+    if (prev === 0 && cur === 0) return undefined;
+    const p = Math.round((cur - prev) * 1000) / 10;
+    return `앞 기간 대비 ${p > 0 ? '+' : p < 0 ? '−' : '±'}${Math.abs(p)}%p`;
+  }
+  const r = changeRate(cur, prev);
+  if (r === null) return undefined;
+  const p = Math.round(r * 100);
+  return `앞 기간 대비 ${p > 0 ? '+' : p < 0 ? '−' : '±'}${Math.abs(p)}%`;
+};
 
 const defOf = (key: ReportKey) => {
   const def = REPORTS.find((r) => r.key === key);
@@ -41,17 +64,23 @@ const toBars = (t: ReportTable): ShareBarItem[] =>
  * 유입분석 본문 — 표 14장 대신 **질문 4개**로 묶는다.
  * 결론(볼 것) → 핵심 숫자 → 질문별 차트 → 세부 표(접힘) 순서. 숫자를 읽기 전에 결론부터 본다.
  */
-export const GaInsightsView = ({ reports, range }: GaInsightsViewProps) => {
+export const GaInsightsView = ({
+  reports,
+  range,
+  previousSummary,
+}: GaInsightsViewProps) => {
   const daily = fillDaily(reports.daily, range);
   const wow = weekOverWeek(daily);
   const h = buildHeadline(reports);
   const summary = reports.summary.rows[0]?.values ?? [];
+  const prev = previousSummary.rows[0]?.values ?? [];
 
   const tiles = [
     {
       label: '사용자',
       value: formatMetric(h.users, 'int'),
       hint: `${range.label} 동안 들어온 사람 수`,
+      change: changeText(h.users, prev[0] ?? 0, 'count'),
     },
     {
       label: '한국에서',
@@ -72,6 +101,7 @@ export const GaInsightsView = ({ reports, range }: GaInsightsViewProps) => {
       label: '참여율',
       value: formatMetric(summary[3] ?? 0, 'percent'),
       hint: '10초 이상 머물거나 2쪽 이상 본 방문',
+      change: changeText(summary[3] ?? 0, prev[3] ?? 0, 'ratio'),
     },
   ];
 
@@ -85,6 +115,11 @@ export const GaInsightsView = ({ reports, range }: GaInsightsViewProps) => {
             <dt className='text-xs text-text-subtle'>{t.label}</dt>
             <dd className='mt-1 text-lg font-medium tabular-nums'>{t.value}</dd>
             <dd className='mt-0.5 text-[11px] text-text-subtle'>{t.hint}</dd>
+            {'change' in t && t.change && (
+              <dd className='mt-0.5 text-[11px] font-medium text-text-strong'>
+                {t.change}
+              </dd>
+            )}
           </div>
         ))}
       </dl>

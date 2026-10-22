@@ -1,4 +1,5 @@
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
+import { type DateRange, previousRange } from '@/shared/lib/admin/dateRange';
 import {
   getGoogleAccessToken,
   missingGoogleConfig,
@@ -7,13 +8,12 @@ import {
 import {
   type GaRow,
   parseReport,
+  type ReportDef,
   type ReportKey,
   REPORTS,
   type ReportTable,
   toRunReportRequest,
 } from '../lib/ga4Reports';
-
-import type { DateRange } from '@/shared/lib/admin/dateRange';
 
 const GA_SCOPE = 'https://www.googleapis.com/auth/analytics.readonly';
 
@@ -21,7 +21,13 @@ const GA_SCOPE = 'https://www.googleapis.com/auth/analytics.readonly';
 const BATCH_SIZE = 5;
 
 export type GaResult =
-  | { status: 'ok'; reports: Record<ReportKey, ReportTable> }
+  | {
+      status: 'ok';
+      reports: Record<ReportKey, ReportTable>;
+      /** 바로 앞 같은 길이 기간의 요약 — 타일의 증감 표시용 */
+      previousSummary: ReportTable;
+      previous: DateRange;
+    }
   /** 설정이 비었다 — 화면이 빠진 변수 이름을 보여 준다 */
   | { status: 'unconfigured'; missing: string[] }
   | { status: 'error'; message: string };
@@ -29,8 +35,8 @@ export type GaResult =
 /**
  * GA4 Data API 로 유입분석 보고서를 한꺼번에 받는다.
  *
- * 14개를 따로 부르면 GA 의 "속성당 동시 요청 10개" 한도에 걸릴 수 있어
- * 5개씩 묶은 batch 요청 3번으로 보낸다.
+ * 15개(+ 앞 기간 요약 1개)를 따로 부르면 GA 의 "속성당 동시 요청 10개" 한도에 걸릴 수 있어
+ * 5개씩 묶은 batch 요청으로 보낸다.
  */
 export async function getGaReports(range: DateRange): Promise<GaResult> {
   await assertAdmin();
@@ -39,15 +45,27 @@ export async function getGaReports(range: DateRange): Promise<GaResult> {
   const missing = missingGoogleConfig(propertyId ? [] : ['GA4_PROPERTY_ID']);
   if (missing.length > 0) return { status: 'unconfigured', missing };
 
-  const batches: (typeof REPORTS)[] = [];
-  for (let i = 0; i < REPORTS.length; i += BATCH_SIZE) {
-    batches.push(REPORTS.slice(i, i + BATCH_SIZE));
+  const previous = previousRange(range);
+  const summaryDef = REPORTS.find((d) => d.key === 'summary');
+  // 키 'previousSummary' 는 앞 기간 요약 — 나머지는 고른 기간의 보고서
+  type Job = {
+    key: ReportKey | 'previousSummary';
+    def: ReportDef;
+    range: DateRange;
+  };
+  const jobs: Job[] = REPORTS.map((def) => ({ key: def.key, def, range }));
+  if (summaryDef)
+    jobs.push({ key: 'previousSummary', def: summaryDef, range: previous });
+
+  const batches: Job[][] = [];
+  for (let i = 0; i < jobs.length; i += BATCH_SIZE) {
+    batches.push(jobs.slice(i, i + BATCH_SIZE));
   }
 
   try {
     const token = await getGoogleAccessToken([GA_SCOPE]);
     const responses = await Promise.all(
-      batches.map(async (defs) => {
+      batches.map(async (batch) => {
         const res = await fetch(
           `https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:batchRunReports`,
           {
@@ -57,7 +75,7 @@ export async function getGaReports(range: DateRange): Promise<GaResult> {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              requests: defs.map((d) => toRunReportRequest(d, range)),
+              requests: batch.map((j) => toRunReportRequest(j.def, j.range)),
             }),
             cache: 'no-store',
           }
@@ -67,18 +85,20 @@ export async function getGaReports(range: DateRange): Promise<GaResult> {
           throw new Error(`GA4 조회 실패 (${res.status}): ${await res.text()}`);
         }
         const json = (await res.json()) as { reports?: { rows?: GaRow[] }[] };
-        return defs.map(
-          (def, i) =>
-            [def.key, parseReport(def, json.reports?.[i]?.rows)] as const
+        return batch.map(
+          (j, i) =>
+            [j.key, parseReport(j.def, json.reports?.[i]?.rows)] as const
         );
       })
     );
+    const { previousSummary, ...reports } = Object.fromEntries(
+      responses.flat()
+    ) as Record<ReportKey | 'previousSummary', ReportTable>;
     return {
       status: 'ok',
-      reports: Object.fromEntries(responses.flat()) as Record<
-        ReportKey,
-        ReportTable
-      >,
+      reports,
+      previousSummary: previousSummary ?? { rows: [] },
+      previous,
     };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
