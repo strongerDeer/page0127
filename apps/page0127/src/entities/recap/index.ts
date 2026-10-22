@@ -4,4 +4,5 @@
 
 export { getRecapBooks } from './api/getRecapBooks';
 export { selectRecapCard } from './lib/selectRecapCard';
+export { toRecapNotice } from './lib/toRecapNotice';
 export type { RecapBook, RecapCard } from './model/types';

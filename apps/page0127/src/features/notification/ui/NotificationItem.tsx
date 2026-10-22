@@ -17,15 +17,18 @@ import {
   Check,
   Heart,
   MessageCircle,
+  Sparkles,
   UserPlus,
   X,
 } from 'lucide-react';
 
 import { RelativeTime } from '@/shared/ui/RelativeTime';
 
+import {
+  type NotificationWithActor,
+  SELF_NOTICE_TYPES,
+} from '@/entities/notification';
 import { toDisplayName, toInitial } from '@/entities/profile/model/displayName';
-
-import type { NotificationWithActor } from '@/entities/notification';
 
 type NotificationItemProps = {
   notification: NotificationWithActor;
@@ -42,7 +45,7 @@ export const NotificationItem = ({
 }: NotificationItemProps) => {
   const { type, actor, is_read, created_at } = notification;
   // 나에게 오는 알림 — "OO님이 …" 대신 크론이 적어 둔 문장을 그대로 보여 준다
-  const isSelfNotice = type === 'reading_reminder';
+  const isSelfNotice = SELF_NOTICE_TYPES.includes(type);
 
   // 알림 타입별 메시지 및 아이콘
   const getNotificationContent = () => {
@@ -67,6 +70,11 @@ export const NotificationItem = ({
         return {
           icon: <BookOpen className='h-4 w-4 shrink-0 text-primary' />,
           message: notification.message ?? '오래 읽고 있는 책이 있어요',
+        };
+      case 'weekly_recap':
+        return {
+          icon: <Sparkles className='h-4 w-4 shrink-0 text-primary' />,
+          message: notification.message ?? '이번 주 회상이 도착했어요',
         };
       default:
         return {

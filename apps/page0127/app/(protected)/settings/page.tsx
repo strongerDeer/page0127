@@ -8,6 +8,7 @@ import { getProfile } from '@/entities/profile/api/getProfile';
 
 import { LinkedAccountsSection } from '@/features/auth/ui/LinkedAccountsSection';
 import { ProfileSettingsForm } from '@/features/profile/ui/ProfileSettingsForm';
+import { PushNotificationSection } from '@/features/push';
 
 /**
  * 프로필 설정 페이지
@@ -49,6 +50,8 @@ export default async function SettingsPage() {
             연결/해제 직후 값이 어긋난다.
             위치는 '내 계정' 아래, '계정 삭제' 위다 (ProfileSettingsForm 참조) */}
         <LinkedAccountsSection />
+        {/* 이 기기에서 잠금화면 알림 받기 — 기기마다 따로 켠다 */}
+        <PushNotificationSection />
       </ProfileSettingsForm>
     </PageContainer>
   );

@@ -1,6 +1,9 @@
 import { refreshAndSave } from '@/shared/lib/kakao-alert/kakaoAlertSender';
 import { getKakaoAlertConfig } from '@/shared/lib/kakao-alert/kakaoApi';
-import { loadKakaoTokens, saveKakaoTokens } from '@/shared/lib/kakao-alert/tokenStore';
+import {
+  loadKakaoTokens,
+  saveKakaoTokens,
+} from '@/shared/lib/kakao-alert/tokenStore';
 
 import { cronAuthResult } from '../../_helpers/cron-auth';
 import { errorResponse, successResponse } from '../../_helpers/response';
@@ -33,7 +36,11 @@ export async function GET(request: Request) {
     }
 
     const next = await refreshAndSave(
-      { config: getKakaoAlertConfig(), load: loadKakaoTokens, save: saveKakaoTokens },
+      {
+        config: getKakaoAlertConfig(),
+        load: loadKakaoTokens,
+        save: saveKakaoTokens,
+      },
       current
     );
     return successResponse({

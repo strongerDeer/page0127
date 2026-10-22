@@ -14,10 +14,7 @@ import {
 import type { NotificationWithActor } from '../model/types';
 import type { InfiniteData } from '@tanstack/react-query';
 
-const noti = (
-  id: string,
-  is_read = false
-): NotificationWithActor =>
+const noti = (id: string, is_read = false): NotificationWithActor =>
   ({
     id,
     user_id: 'me',
@@ -125,7 +122,9 @@ describe('알림 캐시 낙관적 조작', () => {
     restoreNotificationCache(queryClient, snapshot);
 
     expect(
-      queryClient.getQueryData<NotificationWithActor[]>(listKey)?.map((n) => n.id)
+      queryClient
+        .getQueryData<NotificationWithActor[]>(listKey)
+        ?.map((n) => n.id)
     ).toEqual(['a', 'b']);
     expect(
       queryClient.getQueryData<{ count: number }>(

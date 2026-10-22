@@ -12,7 +12,10 @@
 
 import { notificationKeys } from '../model/queryKeys';
 
-import type { NotificationWithActor, UnreadCountResponse } from '../model/types';
+import type {
+  NotificationWithActor,
+  UnreadCountResponse,
+} from '../model/types';
 import type { InfiniteData, QueryClient } from '@tanstack/react-query';
 
 /** 알림 하나를 어떻게 바꿀지. null을 반환하면 목록에서 제거한다. */
