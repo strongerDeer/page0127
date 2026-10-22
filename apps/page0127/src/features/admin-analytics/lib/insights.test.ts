@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { parseDateRange } from '@/shared/lib/admin/dateRange';
+
 import {
   buildHeadline,
   buildInsights,
@@ -42,7 +44,7 @@ const reports = (over: Partial<Reports>): Reports => ({
 });
 
 const titles = (r: Reports, daily: DailyPoint[] = []) =>
-  buildInsights(r, daily).map((i) => i.title);
+  buildInsights(r, daily, '최근 30일').map((i) => i.title);
 
 describe('buildHeadline', () => {
   it('국내·검색·모바일·데이터센터 비율을 원본 값으로 센다', () => {
@@ -82,12 +84,13 @@ describe('isDatacenterCity', () => {
 });
 
 describe('fillDaily', () => {
-  it('GA 가 빼먹은 0명인 날을 채우고, 어제까지 28칸을 만든다', () => {
+  it('GA 가 빼먹은 0명인 날을 채우고, 기간 전체 칸을 만든다', () => {
     const points = fillDaily(
       table(['20261004', 5]),
-      new Date('2026-10-06T03:00:00Z') // KST 10/6 정오 → 어제 = 10/5
+      // KST 10/6 정오 → 어제 = 10/5
+      parseDateRange({ range: '30d' }, new Date('2026-10-06T03:00:00Z'))
     );
-    expect(points).toHaveLength(28);
+    expect(points).toHaveLength(30);
     expect(points.at(-1)).toEqual({
       date: '20261005',
       label: '10/05',
@@ -118,9 +121,15 @@ describe('weekOverWeek', () => {
 
 describe('buildInsights', () => {
   it('사용자가 적으면 해석을 보류한다고만 말한다', () => {
-    const out = buildInsights(reports({ summary: table(['', 3]) }), []);
+    const out = buildInsights(
+      reports({ summary: table(['', 3]) }),
+      [],
+      '최근 7일'
+    );
     expect(out).toHaveLength(1);
     expect(out[0].title).toContain('3명');
+    // 고른 기간이 문구에 그대로 들어간다
+    expect(out[0].title).toContain('최근 7일');
   });
 
   it('데이터센터 도시가 많으면 봇 섞임을 경고한다', () => {
@@ -148,7 +157,7 @@ describe('buildInsights', () => {
     expect(bounce).toEqual(['/b 로 들어온 사람의 90%가 바로 떠났습니다']);
   });
 
-  it('지난주 대비 20% 이상 변하면 알린다', () => {
+  it('마지막 7일이 그 전 7일보다 20% 이상 변하면 알린다', () => {
     const daily = Array.from({ length: 14 }, (_, i) => ({
       date: String(i),
       label: String(i),

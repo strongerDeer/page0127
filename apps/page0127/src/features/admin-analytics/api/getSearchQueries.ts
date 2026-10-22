@@ -1,12 +1,12 @@
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
-import { toKstDateKey } from '@/shared/lib/date';
 import {
   getGoogleAccessToken,
   missingGoogleConfig,
 } from '@/shared/lib/google/serviceAccount';
 
+import type { DateRange } from '@/shared/lib/admin/dateRange';
+
 const SC_SCOPE = 'https://www.googleapis.com/auth/webmasters.readonly';
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 export type SearchQueryRow = {
   query: string;
@@ -24,14 +24,16 @@ export type SearchResult =
   | { status: 'error'; message: string };
 
 /**
- * Search Console 검색어별 노출·클릭 (최근 28일).
+ * Search Console 검색어별 노출·클릭 (화면에서 고른 기간).
  *
  * SEARCH_CONSOLE_SITE_URL 은 콘솔에 등록한 속성 이름 그대로 넣는다.
  *   URL 접두어 속성 → 'https://page0127.com/'  (끝 슬래시까지 같아야 한다)
  *   도메인 속성     → 'sc-domain:page0127.com'
  * 서비스 계정은 Search Console 설정 > 사용자 및 권한 에 "제한됨" 이상으로 추가해야 읽힌다.
  */
-export async function getSearchQueries(): Promise<SearchResult> {
+export async function getSearchQueries(
+  range: DateRange
+): Promise<SearchResult> {
   await assertAdmin();
 
   const siteUrl = process.env.SEARCH_CONSOLE_SITE_URL;
@@ -42,9 +44,7 @@ export async function getSearchQueries(): Promise<SearchResult> {
     return { status: 'unconfigured', missing };
 
   // 검색 데이터는 2~3일 늦게 들어온다 — 어제까지 요청해도 마지막 며칠은 비어 있는 게 정상이다
-  const now = Date.now();
-  const endDate = toKstDateKey(new Date(now - DAY_MS));
-  const startDate = toKstDateKey(new Date(now - 28 * DAY_MS));
+  const { from: startDate, to: endDate } = range;
 
   try {
     const token = await getGoogleAccessToken([SC_SCOPE]);

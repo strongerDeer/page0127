@@ -45,4 +45,6 @@ export const kstDateToUtcStart = (dateKey: string): string =>
 
 /** 그 날의 끝(다음 날 00:00 KST) — 범위 조회의 상한으로 쓴다 */
 export const kstDateToUtcEnd = (dateKey: string): string =>
-  new Date(new Date(`${dateKey}T00:00:00+09:00`).getTime() + DAY_MS).toISOString();
+  new Date(
+    new Date(`${dateKey}T00:00:00+09:00`).getTime() + DAY_MS
+  ).toISOString();

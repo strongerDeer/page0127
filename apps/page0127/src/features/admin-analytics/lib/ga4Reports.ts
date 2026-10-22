@@ -1,3 +1,5 @@
+import { type DateRange, MAX_RANGE_DAYS } from '@/shared/lib/admin/dateRange';
+
 /**
  * 유입분석 화면이 GA4 에 물어볼 질문 목록과, 대답을 표로 바꾸는 순수 함수.
  *
@@ -72,7 +74,8 @@ export const REPORTS: ReportDef[] = [
     dimensions: ['date'],
     metrics: [users],
     orderBy: { dimension: 'date' },
-    limit: 31,
+    // 사용자 지정 기간 최대 길이만큼 — 하루 한 줄이라 기간이 길면 줄도 늘어난다
+    limit: MAX_RANGE_DAYS,
   },
   {
     key: 'channel',
@@ -183,12 +186,13 @@ export const REPORTS: ReportDef[] = [
   },
 ];
 
-/** 조회 기간 — 오늘은 아직 집계 중이라 어제까지 끊는다 */
-export const GA_DATE_RANGE = { startDate: '28daysAgo', endDate: 'yesterday' };
-
-/** runReport 요청 본문 */
-export const toRunReportRequest = (def: ReportDef) => ({
-  dateRanges: [GA_DATE_RANGE],
+/**
+ * runReport 요청 본문.
+ * 기간은 화면에서 고른 KST 날짜 그대로 넘긴다 — GA 는 'YYYY-MM-DD' 를 속성 시간대(KST)로
+ * 해석한다. 끝은 parseDateRange 가 이미 어제 이하로 잘라 둔다(오늘은 집계 중).
+ */
+export const toRunReportRequest = (def: ReportDef, range: DateRange) => ({
+  dateRanges: [{ startDate: range.from, endDate: range.to }],
   dimensions: def.dimensions.map((name) => ({ name })),
   metrics: def.metrics.map(({ name }) => ({ name })),
   orderBys: [

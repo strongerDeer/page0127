@@ -25,12 +25,13 @@ const NAV = [
 
 export const AdminNav = () => {
   return (
-    <nav className='flex flex-col gap-1 p-4'>
+    // 모바일은 가로로 스크롤되는 한 줄, md 이상은 세로 목록
+    <nav className='flex gap-1 overflow-x-auto p-2 md:flex-col md:overflow-visible md:p-4'>
       {NAV.map(({ href, label, icon: Icon }) => (
         <Link
           key={href}
           href={href}
-          className='flex items-center gap-2 rounded px-3 py-2 text-sm hover:bg-accent'
+          className='flex shrink-0 items-center gap-2 whitespace-nowrap rounded px-3 py-2 text-sm hover:bg-accent'
         >
           <Icon className='h-4 w-4' aria-hidden />
           {label}

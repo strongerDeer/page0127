@@ -16,7 +16,7 @@ import type { DailyPoint } from '../lib/insights';
 
 type DailyUsersChartProps = {
   points: DailyPoint[];
-  /** 지난주 대비 변화율 — 제목 옆 요약 */
+  /** 마지막 7일 vs 그 전 7일 변화율 — 제목 옆 요약 */
   weekOverWeek: number | null;
 };
 
@@ -33,7 +33,7 @@ export const DailyUsersChart = ({
       <div className='text-sm font-medium'>일별 사용자</div>
       {weekOverWeek !== null && (
         <span className='text-xs text-text-subtle'>
-          최근 7일 · 지난주 대비{' '}
+          마지막 7일 · 그 전 7일 대비{' '}
           <span className='font-medium text-text-strong'>
             {weekOverWeek >= 0 ? '+' : ''}
             {Math.round(weekOverWeek * 100)}%
