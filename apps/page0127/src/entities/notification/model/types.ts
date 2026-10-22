@@ -8,8 +8,10 @@
  * - follow: 팔로우 알림
  * - comment: 댓글 알림
  * - like: 좋아요 알림
+ * - reading_reminder: 2주 넘게 읽는 중인 책 (나에게 오는 알림, actor = 본인)
  */
-export type NotificationType = 'follow' | 'comment' | 'like';
+export type NotificationType =
+  'follow' | 'comment' | 'like' | 'reading_reminder';
 
 /**
  * 알림 대상 타입
