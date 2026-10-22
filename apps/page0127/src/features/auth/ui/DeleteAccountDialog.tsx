@@ -178,7 +178,7 @@ export const DeleteAccountDialog = ({ username }: DeleteAccountDialogProps) => {
           <AlertDialogAction
             onClick={handleDeleteAccount}
             disabled={!isConfirmed || isDeleting}
-            className='bg-destructive hover:bg-destructive/90 focus:ring-destructive'
+            variant='destructive'
           >
             {isDeleting ? '삭제 중...' : '계정 삭제'}
           </AlertDialogAction>
