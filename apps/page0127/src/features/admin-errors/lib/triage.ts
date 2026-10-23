@@ -30,6 +30,9 @@ const NOISE_PATTERNS = [
   // Next 15+ 의 notFound()·forbidden()·unauthorized() digest. NEXT_NOT_FOUND 의 새 이름이다
   /NEXT_HTTP_ERROR_FALLBACK/,
   /Non-Error promise rejection captured/i,
+  // Node 의 폐기 예정 경고(DEP0xxx) — 크래시가 아니라 라이브러리가 낡은 API 를 쓴다는 알림이다.
+  // 예: web-push 3.6.7 의 url.parse() → DEP0169 (댓글·팔로우 푸시 발송 때 프로세스당 한 번)
+  /\[DEP\d+\] DeprecationWarning/,
 ];
 
 // 하이드레이션 불일치는 화면이 실제로 깨지는 버그다. 다른 노이즈 문구가
