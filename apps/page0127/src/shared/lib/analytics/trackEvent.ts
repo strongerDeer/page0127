@@ -1,12 +1,17 @@
 // GA4 커스텀 이벤트 추적 유틸
 // - window.gtag 를 타입 안전하게 감싼다 (GA 미로드/서버 환경이면 조용히 무시)
 
+import { readHeroVariantFromCookieString } from '@/shared/lib/experiment/heroVariant';
+
 // gtag 는 GoogleAnalytics.tsx 가 전역에 심는 함수
-type GtagFn = (
-  command: 'event',
-  eventName: string,
-  params?: Record<string, unknown>
-) => void;
+type GtagFn = {
+  (command: 'event', eventName: string, params?: Record<string, unknown>): void;
+  (
+    command: 'set',
+    target: 'user_properties',
+    params: Record<string, unknown>
+  ): void;
+};
 
 // window.gtag 타입 확장 (any 대신 명시적 타입)
 // - 전역 Window 확장은 선언 병합이 필요해 interface 가 필수 (type 으로 불가)
@@ -68,6 +73,26 @@ export type AnalyticsEvent =
   /** 공유를 눌렀다. method 로 네이티브 공유/링크 복사를 구분한다 */
   | 'share_click';
 
+// 사용자 속성은 페이지(문서)마다 한 번만 설정하면 이후 이벤트에 붙는다
+let experimentPropertiesSet = false;
+
+/**
+ * 실험 그룹을 GA 사용자 속성으로 남긴다 — 첫 이벤트를 보내기 **직전에**.
+ *
+ * 레이아웃의 컴포넌트에서 따로 설정하면 늦는다: React 는 자식 effect 를 부모보다 먼저
+ * 돌려서, 페이지 안의 shelf_preview_view 가 그룹 없이("(not set)") 먼저 나간다.
+ * 그룹을 비교할 이벤트 대부분(login_start·sign_up·shelf_preview_claim)이 홈이 아닌
+ * 로그인·온보딩·서재에서 나므로, 이벤트 파라미터가 아니라 사용자 속성으로 둔다.
+ */
+const setExperimentProperties = (gtag: GtagFn) => {
+  if (experimentPropertiesSet) return;
+  experimentPropertiesSet = true;
+  const heroVariant = readHeroVariantFromCookieString(document.cookie);
+  if (heroVariant) {
+    gtag('set', 'user_properties', { hero_variant: heroVariant });
+  }
+};
+
 export const trackEvent = (
   event: AnalyticsEvent,
   params?: Record<string, unknown>
@@ -76,5 +101,6 @@ export const trackEvent = (
   if (typeof window === 'undefined' || typeof window.gtag !== 'function') {
     return;
   }
+  setExperimentProperties(window.gtag);
   window.gtag('event', event, params);
 };
