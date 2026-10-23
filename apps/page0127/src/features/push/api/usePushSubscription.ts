@@ -13,7 +13,8 @@ import {
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? '';
 
-const SUBSCRIPTIONS_URL = '/api/push/subscriptions';
+// apiClient 의 baseURL 이 '/api' 라 여기서는 붙이지 않는다 (붙이면 /api/api/... 로 404)
+const SUBSCRIPTIONS_URL = '/push/subscriptions';
 
 const readSupport = (): PushSupport =>
   detectPushSupport({
