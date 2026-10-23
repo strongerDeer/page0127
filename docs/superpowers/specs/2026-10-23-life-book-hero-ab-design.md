@@ -42,7 +42,7 @@
 | 항목      | 정한 것                                                                           |
 | --------- | --------------------------------------------------------------------------------- |
 | 쿠키      | `hero_variant` = `a` \| `b`, 90일, `SameSite=Lax`, **httpOnly 아님**(7절 참고)    |
-| 배정 시점 | `proxy.ts` — 쿠키가 없고, 로그인하지 않았고, 경로가 `/` 일 때만                   |
+| 배정 시점 | `proxy.ts` — 쿠키가 없고, 로그인한 적 없고(인증 쿠키 없음), 경로가 `/` 일 때만    |
 | 비율      | 50:50 (`Math.random() < 0.5`)                                                     |
 | 스위치    | 서버 환경 변수 `HERO_AB=on`. 그 밖의 값이면 배정하지 않고 모두 A                  |
 | 렌더      | 홈 서버 컴포넌트가 쿠키를 읽어 A 면 `ShelfPreview`, B 면 `LifeBookHero` 를 그린다 |
@@ -51,7 +51,11 @@
   새로고침마다 그룹이 바뀌어 측정이 안 된다.
 - **같은 요청에서 보이게**: 응답 쿠키만 심으면 그 요청의 서버 컴포넌트는 쿠키를 못 본다.
   `updateSession` 전에 `request.cookies.set` 으로 요청에도 넣는다.
-- **스위치를 끄면** 이미 받은 쿠키가 남아 있어도 A 로 그린다(쿠키보다 스위치가 먼저).
+- **스위치를 끄면** 이미 받은 쿠키가 남아 있어도 A 로 그리고(쿠키보다 스위치가 먼저), proxy 가 다음
+  요청에서 그룹 쿠키를 지운다 — 그래야 GA 사용자 속성도 더 이상 보내지 않는다.
+- **로그인 여부는 인증 쿠키 이름으로 본다**(`sb-<ref>-auth-token`, 나뉜 `.0`·`.1` 포함). 그룹은 세션
+  확인(`getUser`) 전에 정해야 같은 요청에 반영되기 때문이다. 이 브라우저에서 로그인한 적 있는 사람은
+  빠지는데, 실험 대상이 "처음 온 사람"이라 오히려 맞다.
 - 경로를 `/` 로 좁힌 이유: 공개 서재·책 상세로 들어온 사람은 홈에 올 때 배정된다. 모든 경로에서
   배정하면 홈을 보지도 않은 사람이 그룹 수에 섞인다.
 
@@ -168,10 +172,12 @@ type PendingShelf = {
 
 **그룹은 사용자 속성으로 남긴다**
 
-- `gtag('set', 'user_properties', { hero_variant })` 를 **모든 페이지**에서 쿠키를 읽어 보낸다
-  (`HeroVariantTracker`, 루트 레이아웃의 `GoogleAnalytics` 옆).
+- `trackEvent` 가 **그 페이지의 첫 이벤트를 보내기 직전에** 쿠키를 읽어
+  `gtag('set', 'user_properties', { hero_variant })` 를 한 번 부른다.
+- 레이아웃에 따로 컴포넌트(`HeroVariantTracker`)를 두는 안은 버렸다(구현 중 바꿈): React 는 자식
+  effect 를 부모보다 먼저 돌려서, 페이지 안의 `shelf_preview_view` 가 그룹 없이 먼저 나간다.
 - 이유: 4~6 이 홈이 아닌 로그인·온보딩·서재에서 난다. 쿠키가 httpOnly 가 아닌 이유도 이것이다.
-- 스위치가 꺼져 있거나 쿠키가 없으면 보내지 않는다.
+- 쿠키가 없으면 보내지 않는다(스위치를 끄면 proxy 가 쿠키를 지우므로 함께 멈춘다).
 
 **⚠️ 배포 전에 GA 에 등록한다 (원칙 ④)**
 
@@ -194,20 +200,24 @@ metrics: [{ name: "totalUsers" }];
 
 ## 9. 구조 (FSD)
 
-| 위치                                                       | 내용                                       |
-| ---------------------------------------------------------- | ------------------------------------------ |
-| `shared/lib/experiment/heroVariant.ts`                     | 쿠키 이름·값 검사·배정·스위치 판정 (순수)  |
-| `proxy.ts`                                                 | 배정 호출                                  |
-| `shared/lib/analytics/HeroVariantTracker.tsx`              | 사용자 속성 보내기 (client)                |
-| `shared/lib/analytics/trackEvent.ts`                       | 새 이벤트 3개 타입                         |
-| `features/shelf-preview/api/getLeaderLifeBooks.ts`         | 리더 인생책 5권 (server-only, 캐시)        |
-| `features/shelf-preview/model/pendingShelf.ts`             | `lifeBookIsbn` 읽기·쓰기·검증              |
-| `features/shelf-preview/model/claim.ts`                    | 인생책 `toBookInput`                       |
-| `features/shelf-preview/ui/LifeBookHero.tsx`               | B 화면 (client)                            |
-| `features/shelf-preview/ui/ShelfPreviewSection.tsx`        | 그룹에 따라 A/B 선택, `shelf_preview_view` |
-| `features/shelf-preview/ui/PendingShelfClaimer.tsx`        | `shelf_preview_claim`                      |
-| 로그인 버튼                                                | `login_start`                              |
-| `features/admin-analytics/lib/gaEvents.ts` + 유입분석 화면 | A/B 깔때기 요청·파서·표                    |
+| 위치                                                       | 내용                                         |
+| ---------------------------------------------------------- | -------------------------------------------- |
+| `shared/lib/experiment/heroVariant.ts`                     | 쿠키 이름·값 검사·배정·스위치 판정 (순수)    |
+| `proxy.ts`                                                 | 배정 호출                                    |
+| `shared/lib/analytics/trackEvent.ts`                       | 새 이벤트 3개 타입, 첫 이벤트 전 사용자 속성 |
+| `shared/lib/analytics/TrackOnMount.tsx`                    | 마운트 시 이벤트 한 번(`shelf_preview_view`) |
+| `features/shelf-preview/model/lifeBook.ts`                 | `withLifeBook` — B 저장 입력                 |
+| `features/shelf-preview/model/leaderLifeBooks.ts`          | 리더 인생책 행 → 표지, 3권 미만 숨김         |
+| `features/shelf-preview/ui/ShelfSearch.tsx`                | 선택 속성 `defaultOpen`·`placeholder`        |
+| `features/admin-analytics/ui/HeroAbPanel.tsx`              | A/B 카드                                     |
+| `features/shelf-preview/api/getLeaderLifeBooks.ts`         | 리더 인생책 5권 (server-only, 캐시)          |
+| `features/shelf-preview/model/pendingShelf.ts`             | `lifeBookIsbn` 읽기·쓰기·검증                |
+| `features/shelf-preview/model/claim.ts`                    | 인생책 `toBookInput`                         |
+| `features/shelf-preview/ui/LifeBookHero.tsx`               | B 화면 (client)                              |
+| `features/shelf-preview/ui/ShelfPreviewSection.tsx`        | 그룹에 따라 A/B 선택, `shelf_preview_view`   |
+| `features/shelf-preview/ui/PendingShelfClaimer.tsx`        | `shelf_preview_claim`                        |
+| 로그인 버튼                                                | `login_start`                                |
+| `features/admin-analytics/lib/gaEvents.ts` + 유입분석 화면 | A/B 깔때기 요청·파서·표                      |
 
 ## 10. 테스트
 
@@ -227,12 +237,14 @@ metrics: [{ name: "totalUsers" }];
 ## 11. 작업 단위 (커밋 하나 = diff 100~200줄)
 
 1. 빠진 퍼널 이벤트: `shelf_preview_view`·`login_start`·`shelf_preview_claim` (A/B 와 무관하게 바로 쓸모 있음)
-2. `heroVariant` + `proxy.ts` 배정 + 스위치 + `HeroVariantTracker`
+2. `heroVariant` + `proxy.ts` 배정 + 스위치 + `trackEvent` 사용자 속성
 3. `pendingShelf` 의 `lifeBookIsbn` + 인생책 `toBookInput` + 테스트
 4. 리더 인생책 5권 조회
 5. `LifeBookHero` + 홈에서 A/B 선택
 6. 어드민 A/B 깔때기
 7. 문서: 남은 작업 목록 갱신
+
+진행: 1번은 PR #234 로 머지·배포(10/23, GA 실시간에서 세 이벤트 수신 확인). 2~7번은 다음 PR.
 
 PR 은 하나로 올리되 커밋을 위 순서로 나눈다. **스위치 off 로 머지·배포**하고, 10/26 측정을 본 뒤
 Vercel 환경 변수 `HERO_AB=on` → 재배포로 켠다.
