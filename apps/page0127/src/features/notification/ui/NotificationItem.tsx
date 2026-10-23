@@ -16,6 +16,7 @@ import {
   BookOpen,
   Check,
   Heart,
+  type LucideIcon,
   MessageCircle,
   Sparkles,
   UserPlus,
@@ -48,43 +49,55 @@ export const NotificationItem = ({
   const isSelfNotice = SELF_NOTICE_TYPES.includes(type);
 
   // 알림 타입별 메시지 및 아이콘
-  const getNotificationContent = () => {
+  const getNotificationContent = (): {
+    Icon: LucideIcon | null;
+    iconColor: string;
+    message: string;
+  } => {
     // 알림 타입별 의미 색은 차트 팔레트로 (인디고 베이스 + 보조 파스텔)
     switch (type) {
       case 'follow':
         return {
-          icon: <UserPlus className='h-4 w-4 text-chart-1' />,
+          Icon: UserPlus,
+          iconColor: 'text-chart-1',
           message: '님이 팔로우했습니다',
         };
       case 'comment':
         return {
-          icon: <MessageCircle className='h-4 w-4 text-chart-3' />,
+          Icon: MessageCircle,
+          iconColor: 'text-chart-3',
           message: '님이 댓글을 남겼습니다',
         };
       case 'like':
         return {
-          icon: <Heart className='h-4 w-4 text-chart-5' />,
+          Icon: Heart,
+          iconColor: 'text-chart-5',
           message: '님이 좋아요를 눌렀습니다',
         };
       case 'reading_reminder':
         return {
-          icon: <BookOpen className='h-4 w-4 shrink-0 text-primary' />,
+          Icon: BookOpen,
+          iconColor: 'text-primary',
           message: notification.message ?? '오래 읽고 있는 책이 있어요',
         };
       case 'weekly_recap':
         return {
-          icon: <Sparkles className='h-4 w-4 shrink-0 text-primary' />,
+          Icon: Sparkles,
+          iconColor: 'text-primary',
           message: notification.message ?? '이번 주 회상이 도착했어요',
         };
       default:
         return {
-          icon: null,
+          Icon: null,
+          iconColor: '',
           message: '',
         };
     }
   };
 
-  const { icon, message } = getNotificationContent();
+  const { Icon, iconColor, message } = getNotificationContent();
+  // 나에게 오는 알림은 프로필 자리에 타입 아이콘을 크게 두므로 본문 앞 아이콘은 생략한다
+  const SelfNoticeIcon = Icon ?? BookOpen;
   // nickname은 미설정이면 null이라 그대로 쓰면 "님이 팔로우했습니다"처럼 이름이 빈다
   const actorName = toDisplayName(actor);
 
@@ -94,10 +107,10 @@ export const NotificationItem = ({
         !is_read ? 'bg-accent' : ''
       }`}
     >
-      {/* 프로필 이미지 — 나에게 오는 알림은 내 얼굴 대신 책 아이콘 */}
+      {/* 프로필 이미지 — 나에게 오는 알림은 내 얼굴 대신 알림 타입 아이콘 */}
       {isSelfNotice ? (
         <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10'>
-          <BookOpen className='h-5 w-5 text-primary' />
+          <SelfNoticeIcon className='h-5 w-5 text-primary' />
         </span>
       ) : (
         <Avatar className='h-10 w-10'>
@@ -109,7 +122,9 @@ export const NotificationItem = ({
       {/* 알림 내용 - 클릭 가능 영역 */}
       <button onClick={onClick} className='flex-1 space-y-1 text-left'>
         <div className='flex items-center gap-2'>
-          {icon}
+          {!isSelfNotice && Icon && (
+            <Icon className={`h-4 w-4 shrink-0 ${iconColor}`} />
+          )}
           <p className='text-sm'>
             {!isSelfNotice && <span className='font-medium'>{actorName}</span>}
             {message}
