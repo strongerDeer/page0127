@@ -4,9 +4,12 @@ import { parseDateRange, previousRange } from '@/shared/lib/admin/dateRange';
 
 import {
   FUNNEL_EVENTS,
+  HERO_AB_STEPS,
   parseCtaLocations,
   parseEvents,
+  parseHeroAb,
   toEventsRequest,
+  toHeroAbRequest,
 } from './gaEvents';
 
 const row = (dims: string[], metrics: number[]) => ({
@@ -57,5 +60,50 @@ describe('parseCtaLocations', () => {
       '(알 수 없음)',
     ]);
     expect(out[0].count).toEqual({ current: 5, previous: 2 });
+  });
+});
+
+describe('toHeroAbRequest', () => {
+  it('같은 기간 하나만 묻고, 이벤트 × 사용자 속성 hero_variant 로 나눈다', () => {
+    const r = parseDateRange({ range: '7d' }, new Date('2026-10-22T03:00:00Z'));
+    const req = toHeroAbRequest(r);
+    expect(req.dateRanges).toEqual([
+      { startDate: '2026-10-15', endDate: '2026-10-21' },
+    ]);
+    expect(req.dimensions).toEqual([
+      { name: 'eventName' },
+      { name: 'customUser:hero_variant' },
+    ]);
+  });
+});
+
+describe('parseHeroAb', () => {
+  it('단계 순서대로 A·B 사용자 수를 돌려주고, 빠진 단계는 0', () => {
+    const out = parseHeroAb([
+      row(['shelf_preview_view', 'a'], [40]),
+      row(['shelf_preview_view', 'b'], [38]),
+      row(['shelf_preview_save', 'b'], [9]),
+    ]);
+    expect(out.map((s) => s.name)).toEqual(HERO_AB_STEPS.map((s) => s.name));
+    expect(out[0]).toMatchObject({ a: 40, b: 38 });
+    expect(out.find((s) => s.name === 'shelf_preview_save')).toMatchObject({
+      a: 0,
+      b: 9,
+    });
+  });
+
+  it('그룹이 없는 사용자((not set) — 실험 밖)는 세지 않는다', () => {
+    const out = parseHeroAb([
+      row(['login_start', '(not set)'], [100]),
+      row(['login_start', 'a'], [3]),
+    ]);
+    expect(out.find((s) => s.name === 'login_start')).toMatchObject({
+      a: 3,
+      b: 0,
+    });
+  });
+
+  it('응답이 비면 모두 0', () => {
+    expect(parseHeroAb([]).every((s) => s.a === 0 && s.b === 0)).toBe(true);
   });
 });

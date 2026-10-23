@@ -12,6 +12,7 @@ import {
   GaInsightsView,
   Section,
 } from '@/features/admin-analytics/ui/GaInsightsView';
+import { HeroAbPanel } from '@/features/admin-analytics/ui/HeroAbPanel';
 import { SearchQueryTable } from '@/features/admin-analytics/ui/SearchQueryTable';
 import { SetupNotice } from '@/features/admin-analytics/ui/SetupNotice';
 
@@ -75,13 +76,16 @@ export default async function AdminAnalyticsPage({
 
       <Section title='가입 유도가 효과 있나?' cols={1}>
         {events.status === 'ok' ? (
-          <EventFunnelPanel
-            range={range}
-            previous={events.previous}
-            events={events.events}
-            ctaLocations={events.ctaLocations}
-            dbSignups={events.dbSignups}
-          />
+          <div className='space-y-3'>
+            <EventFunnelPanel
+              range={range}
+              previous={events.previous}
+              events={events.events}
+              ctaLocations={events.ctaLocations}
+              dbSignups={events.dbSignups}
+            />
+            <HeroAbPanel range={range} rows={events.heroAb} />
+          </div>
         ) : (
           <SetupNotice
             source='GA4'
