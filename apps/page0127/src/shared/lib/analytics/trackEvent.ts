@@ -56,7 +56,8 @@ export type AnalyticsEvent =
   | 'login_start'
   /**
    * 로그인 뒤 맛보기 보관분이 서재에 담겼다(PendingShelfClaimer).
-   * added·skipped·failed: 권수, goal_set: 올해 목표를 정했는지
+   * added·skipped·failed: 권수, goal_set: 올해 목표를 정했는지,
+   * life_book: 히어로 B 에서 찾은 인생책이 들어 있었는지
    */
   | 'shelf_preview_claim'
   /**

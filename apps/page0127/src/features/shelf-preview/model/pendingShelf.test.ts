@@ -152,3 +152,44 @@ describe('read/write/clear', () => {
     expect(() => clearPendingShelf()).not.toThrow();
   });
 });
+
+describe('lifeBookIsbn (히어로 B 의 인생책)', () => {
+  it('보관분 안의 책을 가리키면 그대로 읽는다', () => {
+    const raw = {
+      v: 1,
+      savedAt: NOW,
+      books: [book('1'), book('2')],
+      goal: null,
+      lifeBookIsbn: '1',
+    };
+    expect(parsePendingShelf(raw, NOW)?.lifeBookIsbn).toBe('1');
+  });
+
+  it('없는 책이나 문자열이 아닌 값이면 인생책 표시만 버리고 보관분은 살린다', () => {
+    const base = { v: 1, savedAt: NOW, books: [book('1')], goal: null };
+    const missing = parsePendingShelf({ ...base, lifeBookIsbn: '9' }, NOW);
+    const wrongType = parsePendingShelf({ ...base, lifeBookIsbn: 1 }, NOW);
+
+    expect(missing?.books).toHaveLength(1);
+    expect(missing && 'lifeBookIsbn' in missing).toBe(false);
+    expect(wrongType?.books).toHaveLength(1);
+    expect(wrongType && 'lifeBookIsbn' in wrongType).toBe(false);
+  });
+
+  it('쓸 때도 상한으로 잘려 나간 책을 가리키면 남기지 않는다', () => {
+    const storage = memoryStorage();
+    vi.stubGlobal('localStorage', storage);
+    const books = Array.from({ length: MAX_PENDING_BOOKS + 1 }, (_, i) =>
+      book(String(i))
+    );
+
+    writePendingShelf(
+      { books, goal: null, lifeBookIsbn: String(MAX_PENDING_BOOKS) },
+      NOW
+    );
+    const saved = JSON.parse(storage.getItem(PENDING_SHELF_KEY) ?? '{}');
+
+    expect(saved.books).toHaveLength(MAX_PENDING_BOOKS);
+    expect('lifeBookIsbn' in saved).toBe(false);
+  });
+});

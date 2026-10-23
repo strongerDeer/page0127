@@ -41,7 +41,9 @@ export const PendingShelfClaimer = () => {
         findExisting: async (b) =>
           (await bookApi.getBookByISBN(b.isbn, b.provider_item_id)).length > 0,
         create: async (b) => {
-          await bookApi.createBook(toBookInput(b));
+          await bookApi.createBook(
+            toBookInput(b, b.isbn === pending.lifeBookIsbn)
+          );
         },
       });
       const { added, failed } = result;
@@ -49,7 +51,11 @@ export const PendingShelfClaimer = () => {
         ? await claimReadingGoalAction(pending.goal)
         : false;
       // 맛보기 깔때기의 끝 — book_add 는 /books/add 에서만 나가서 여기서 따로 센다
-      trackEvent('shelf_preview_claim', { ...result, goal_set: goalSet });
+      trackEvent('shelf_preview_claim', {
+        ...result,
+        goal_set: goalSet,
+        life_book: Boolean(pending.lifeBookIsbn),
+      });
 
       const message = toClaimToast(added, goalSet);
       if (message) toast.success(message);

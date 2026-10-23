@@ -46,6 +46,21 @@ describe('toBookInput', () => {
       status: 'completed',
     });
   });
+
+  it('인생책은 평점 5 + is_life_book 으로 담고, 완독일은 비운다(모름)', () => {
+    const input = toBookInput(book('1'), true);
+    expect(input.rating).toBe(5);
+    expect(input.is_life_book).toBe(true);
+    expect(input.status).toBe('completed');
+    expect(input.completed_date).toBeUndefined();
+    expect(input.completed_year).toBeUndefined();
+  });
+
+  it('인생책이 아니면 평점·인생책 필드를 넣지 않는다', () => {
+    const input = toBookInput(book('1'), false);
+    expect('rating' in input).toBe(false);
+    expect('is_life_book' in input).toBe(false);
+  });
 });
 
 describe('claimPendingBooks', () => {
