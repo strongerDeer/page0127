@@ -23,6 +23,7 @@ import {
   useMarkAllAsRead,
   useMarkAsRead,
   useNotifications,
+  useUnreadCount,
 } from '@/entities/notification';
 
 import { NotificationItem } from './NotificationItem';
@@ -75,7 +76,8 @@ const NotificationListBody = ({
   onDelete,
   onMarkAsRead,
 }: NotificationListBodyProps) => (
-  <ScrollArea className='h-96'>
+  // 높이를 고정하면 알림이 한두 개일 때 아래가 크게 빈다 — 최대 높이만 두고 넘치면 스크롤
+  <ScrollArea className='[&_[data-slot=scroll-area-viewport]]:max-h-96'>
     <div className='flex flex-col'>
       {notifications.map((notification) => (
         <NotificationItem
@@ -105,11 +107,14 @@ export const NotificationList = ({
   onClose,
 }: NotificationListProps) => {
   const router = useRouter();
+  // 읽은 알림도 함께 보여 준다 — 읽지 않은 것만 두면 하나 읽는 순간 드롭다운이 비어 버린다.
+  // 읽음 여부는 NotificationItem 이 배경색으로 구분한다
   const { data: notifications, isLoading } = useNotifications({
     userId,
-    limit: 5,
-    is_read: false, // 드롭다운에서는 읽지 않은 알림만 표시
+    limit: 8,
   });
+  // "모두 읽음"은 보이는 8개가 아니라 전체 기준 — 9번째 이후에 안 읽은 알림이 있어도 버튼이 떠야 한다
+  const { data: unreadCount } = useUnreadCount(userId);
   const markAsReadMutation = useMarkAsRead();
   const markAllAsReadMutation = useMarkAllAsRead();
   const deleteNotificationMutation = useDeleteNotification();
@@ -140,25 +145,36 @@ export const NotificationList = ({
     await markAsReadMutation.mutateAsync(notificationId);
   };
 
-  if (isLoading) {
-    return (
-      <div className='flex h-64 items-center justify-center'>
-        <p className='text-sm text-muted-foreground'>로딩 중...</p>
-      </div>
-    );
-  }
+  const hasUnread = (unreadCount?.count ?? 0) > 0;
 
-  if (!notifications || notifications.length === 0) {
+  // 로딩·빈 상태에도 헤더와 "모든 알림 보기"는 남긴다.
+  // 본문만 바꾸지 않으면 알림이 없을 때 데스크톱에서 알림 페이지로 갈 길이 사라진다
+  const renderBody = () => {
+    if (isLoading) {
+      return (
+        <div className='flex h-40 items-center justify-center'>
+          <p className='text-sm text-muted-foreground'>로딩 중...</p>
+        </div>
+      );
+    }
+    if (!notifications || notifications.length === 0) {
+      return (
+        <div className='flex h-40 items-center justify-center'>
+          <p className='text-sm text-muted-foreground'>
+            아직 받은 알림이 없어요
+          </p>
+        </div>
+      );
+    }
     return (
-      <div className='flex h-64 flex-col items-center justify-center gap-2'>
-        <p className='text-sm text-muted-foreground'>
-          읽지 않은 알림이 없습니다
-        </p>
-      </div>
+      <NotificationList.Body
+        notifications={notifications}
+        onNotificationClick={handleNotificationClick}
+        onDelete={handleDelete}
+        onMarkAsRead={handleMarkAsReadSingle}
+      />
     );
-  }
-
-  const hasUnread = notifications.some((n) => !n.is_read);
+  };
 
   return (
     <div className='flex flex-col'>
@@ -168,12 +184,7 @@ export const NotificationList = ({
         onMarkAllAsRead={handleMarkAllAsRead}
       />
 
-      <NotificationList.Body
-        notifications={notifications}
-        onNotificationClick={handleNotificationClick}
-        onDelete={handleDelete}
-        onMarkAsRead={handleMarkAsReadSingle}
-      />
+      {renderBody()}
 
       <NotificationList.Footer onClose={onClose} />
     </div>
