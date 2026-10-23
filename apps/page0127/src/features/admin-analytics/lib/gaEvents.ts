@@ -11,12 +11,15 @@ import type { DateRange } from '@/shared/lib/admin/dateRange';
  * "개편 뒤 2주 vs 앞 2주"를 기간 선택 하나로 본다.
  */
 export const FUNNEL_EVENTS = [
+  { name: 'shelf_preview_view', label: '맛보기 히어로 봄' },
   { name: 'shelf_preview_pick', label: '맛보기에서 책 고름' },
   { name: 'shelf_preview_save', label: '맛보기 책장 저장' },
   { name: 'shelf_preview_goal', label: '맛보기 목표 저장 (0권)' },
   { name: 'cta_click', label: 'CTA 클릭' },
   { name: 'signup_start', label: '가입 버튼' },
+  { name: 'login_start', label: '로그인 버튼 (구글·카카오)' },
   { name: 'sign_up', label: '가입 완료 (온보딩)' },
+  { name: 'shelf_preview_claim', label: '맛보기 책 서재에 담김' },
   { name: 'book_add', label: '책 담기' },
   { name: 'book_complete', label: '완독 전환' },
 ] as const;

@@ -25,8 +25,10 @@ declare global {
  * 이 서비스의 활성화는 첫 책을 꽂고 완독을 찍는 순간인데, 그 두 지점이 계측
  * 밖에 있었다.
  *
- *   랜딩    cta_click · signup_start · shelf_preview_pick → shelf_preview_save | shelf_preview_goal
+ *   랜딩    cta_click · signup_start · shelf_preview_view → shelf_preview_pick → shelf_preview_save | shelf_preview_goal
+ *   로그인  login_start                     ← 맛보기 저장 뒤 로그인 화면에서 떠났는지 가른다
  *   가입    sign_up                         ← signup_start 는 클릭일 뿐, 이건 온보딩 완료
+ *   담기    shelf_preview_claim             ← 맛보기 보관분이 서재에 들어갔다 (book_add 는 /books/add 에서만 나간다)
  *   활성화  book_add → book_complete      ← 비어 있던 구간
  *   차별화  taste_analysis_run
  *   확산    share_click
@@ -35,6 +37,8 @@ declare global {
  */
 export type AnalyticsEvent =
   | 'cta_click'
+  /** 홈 맛보기 히어로를 봤다(마운트 한 번) — 맛보기 깔때기의 분모 */
+  | 'shelf_preview_view'
   /** 홈 맛보기에서 책을 골랐다. source: 'picks' | 'search', count: 고른 뒤 권수 */
   | 'shelf_preview_pick'
   /** 맛보기 [책장 저장하기] — 로그인으로 간다. count: 고른 권수 */
@@ -43,6 +47,13 @@ export type AnalyticsEvent =
   | 'shelf_preview_goal'
   | 'scroll_depth'
   | 'signup_start'
+  /** 로그인 화면에서 소셜 로그인 버튼을 눌렀다. method: 공급자(google·kakao) */
+  | 'login_start'
+  /**
+   * 로그인 뒤 맛보기 보관분이 서재에 담겼다(PendingShelfClaimer).
+   * added·skipped·failed: 권수, goal_set: 올해 목표를 정했는지
+   */
+  | 'shelf_preview_claim'
   /**
    * 가입을 끝냈다(온보딩 완료). GA4 권장 이벤트 이름이다.
    * method: 로그인 공급자(google·kakao). 보내는 곳은 SignupTracker

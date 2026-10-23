@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 
 import { toast } from 'sonner';
 
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
+
 import { bookApi } from '@/entities/book';
 
 import { claimReadingGoalAction } from '../api/claimReadingGoalAction';
@@ -35,16 +37,19 @@ export const PendingShelfClaimer = () => {
     clearPendingShelf();
 
     const run = async () => {
-      const { added, failed } = await claimPendingBooks(pending.books, {
+      const result = await claimPendingBooks(pending.books, {
         findExisting: async (b) =>
           (await bookApi.getBookByISBN(b.isbn, b.provider_item_id)).length > 0,
         create: async (b) => {
           await bookApi.createBook(toBookInput(b));
         },
       });
+      const { added, failed } = result;
       const goalSet = pending.goal
         ? await claimReadingGoalAction(pending.goal)
         : false;
+      // 맛보기 깔때기의 끝 — book_add 는 /books/add 에서만 나가서 여기서 따로 센다
+      trackEvent('shelf_preview_claim', { ...result, goal_set: goalSet });
 
       const message = toClaimToast(added, goalSet);
       if (message) toast.success(message);
