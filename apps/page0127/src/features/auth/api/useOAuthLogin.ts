@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { toSafeRedirect } from '@/shared/lib/auth/safeRedirect';
 
 import type { OAuthProvider } from '@/features/auth/model/providers';
@@ -34,6 +35,8 @@ export const useOAuthLogin = () => {
   const login = async (provider: OAuthProvider, next?: string | null) => {
     setPendingProvider(provider);
     setError(null);
+    // 외부 로그인 페이지로 떠나기 전에 보낸다 — 맛보기 저장 뒤 로그인 화면에서 떠난 사람과 가른다
+    trackEvent('login_start', { method: provider });
 
     // Supabase SDK 는 버튼을 누른 뒤에 받는다. 로그인 버튼이 있는 소개·로그인
     // 페이지의 첫 로드에서 SDK(gzip 약 85KB)를 빼기 위해서다. 위에서 스피너를
