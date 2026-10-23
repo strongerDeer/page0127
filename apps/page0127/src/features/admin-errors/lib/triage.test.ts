@@ -54,6 +54,7 @@ describe('triage', () => {
     'NEXT_REDIRECT',
     'NEXT_HTTP_ERROR_FALLBACK;404',
     'Non-Error promise rejection captured with value: undefined',
+    '(node:7) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized',
   ])('노이즈 패턴은 무시: %s', (value) => {
     expect(triage(issue({ metadata: { value } }), at('2026-07-25T00:00:00Z'))).toBe('noise');
   });
