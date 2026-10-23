@@ -21,7 +21,21 @@ export type PendingShelf = {
   savedAt: number;
   books: PendingBook[];
   goal: PendingGoal | null;
+  /**
+   * 홈 히어로 B("당신의 인생책은?")에서 찾은 인생책. books 안에 있는 isbn 이다.
+   * 버전을 올리지 않고 선택 필드로 더했다 — 올리면 배포 순간 남아 있던 보관분이 전부 깨진다.
+   */
+  lifeBookIsbn?: string;
 };
+
+/** 인생책 표시는 그 책이 보관분 안에 있을 때만 남긴다 — 없는 책을 가리키면 버린다 */
+const pickLifeBookIsbn = (
+  value: unknown,
+  books: PendingBook[]
+): { lifeBookIsbn?: string } =>
+  typeof value === 'string' && books.some((b) => b.isbn === value)
+    ? { lifeBookIsbn: value }
+    : {};
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null;
@@ -74,6 +88,8 @@ export const parsePendingShelf = (
     savedAt: raw.savedAt,
     books: raw.books,
     goal: raw.goal,
+    // 이상한 값이어도 보관분 전체를 버리지 않는다 — 인생책 표시만 떨군다
+    ...pickLifeBookIsbn(raw.lifeBookIsbn, raw.books),
   };
 };
 
@@ -105,15 +121,23 @@ export const readPendingShelf = (now = Date.now()): PendingShelf | null => {
   return parsed;
 };
 
+export type PendingShelfInput = {
+  books: PendingBook[];
+  goal: PendingGoal | null;
+  lifeBookIsbn?: string;
+};
+
 export const writePendingShelf = (
-  input: { books: PendingBook[]; goal: PendingGoal | null },
+  input: PendingShelfInput,
   now = Date.now()
 ): boolean => {
+  const books = input.books.slice(0, MAX_PENDING_BOOKS);
   const value: PendingShelf = {
     v: 1,
     savedAt: now,
-    books: input.books.slice(0, MAX_PENDING_BOOKS),
+    books,
     goal: input.goal,
+    ...pickLifeBookIsbn(input.lifeBookIsbn, books),
   };
   try {
     localStorage.setItem(PENDING_SHELF_KEY, JSON.stringify(value));

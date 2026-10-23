@@ -10,11 +10,14 @@ export type ClaimDeps = {
 export type ClaimResult = { added: number; skipped: number; failed: number };
 
 /**
- * 완독으로 담는다. 완독일은 모르므로 비워 둔다(지어내지 않는다).
+ * 완독으로 담는다. 완독일은 모르므로 비워 둔다(지어내지 않는다) — 날짜도 연도도 없으면 "모름"이다.
  * BookInput 의 선택 필드는 `string | undefined` 라 null 을 undefined 로 바꾼다.
  * spine_image 만은 null 을 받는다(명시적으로 비우는 값).
+ *
+ * 인생책(히어로 B 에서 찾은 한 권)은 평점 5 + is_life_book 으로 담는다 — 등록 폼과 같은 규칙이다
+ * (인생책은 최고점의 별칭이다).
  */
-export const toBookInput = (p: PendingBook): BookInput => ({
+export const toBookInput = (p: PendingBook, isLifeBook = false): BookInput => ({
   isbn: p.isbn,
   title: p.title,
   provider_item_id: p.provider_item_id,
@@ -26,6 +29,7 @@ export const toBookInput = (p: PendingBook): BookInput => ({
   pub_date: p.pub_date ?? undefined,
   category: p.category ?? undefined,
   status: 'completed',
+  ...(isLifeBook && { rating: 5, is_life_book: true }),
 });
 
 /**
