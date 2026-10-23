@@ -17,6 +17,12 @@ type ShelfSearchProps = {
   /** 상한에 닿았으면 새로 고를 수 없다(이미 고른 책 빼기는 된다) */
   disabled: boolean;
   onPick: (pick: ShelfPick) => void;
+  /**
+   * 처음부터 입력칸을 펼친다 — 히어로 B 처럼 검색이 주 행동인 화면용.
+   * 기본값(false)은 "다른 책 찾아보기" 버튼으로 접어 둔다(맛보기 A).
+   */
+  defaultOpen?: boolean;
+  placeholder?: string;
 };
 
 type Status = 'idle' | 'loading' | 'done' | 'error';
@@ -26,8 +32,10 @@ export const ShelfSearch = ({
   isSelected,
   disabled,
   onPick,
+  defaultOpen = false,
+  placeholder = '책 제목이나 저자',
 }: ShelfSearchProps) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<Status>('idle');
   const [results, setResults] = useState<ShelfPick[]>([]);
@@ -70,10 +78,12 @@ export const ShelfSearch = ({
       >
         <Input
           aria-label='책 제목이나 저자'
-          placeholder='책 제목이나 저자'
+          placeholder={placeholder}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          autoFocus
+          // 버튼을 눌러 연 경우에만 바로 입력하게 한다 — 처음부터 펼친 화면에서
+          // 자동 포커스를 주면 페이지를 열자마자 포커스가 히어로 중간으로 뛴다
+          autoFocus={!defaultOpen}
         />
         <Button type='submit' variant='outline' disabled={status === 'loading'}>
           <Search aria-hidden='true' className='size-4' />
