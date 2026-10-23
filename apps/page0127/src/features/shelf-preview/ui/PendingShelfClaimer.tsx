@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -18,9 +18,11 @@ import {
   toClaimToast,
 } from '../model/claim';
 import { clearPendingShelf, readPendingShelf } from '../model/pendingShelf';
+import { type ClaimedBook, CompletedYearDialog } from './CompletedYearDialog';
 
 /**
- * 로그인 후, 맛보기에서 들고 온 책·목표를 서재에 담는다. 화면에는 아무것도 그리지 않는다.
+ * 로그인 후, 맛보기에서 들고 온 책·목표를 서재에 담는다. 새로 담긴 책이 있으면 완독 연도를
+ * 한 번 묻는다(CompletedYearDialog) — 맛보기는 완독일을 비워 담아 그해 책장에 잡히지 않기 때문이다.
  *
  * 학습 포인트:
  * - 읽자마자 **먼저 지운다**. React StrictMode 는 개발에서 effect 를 두 번 돌리고,
@@ -30,6 +32,8 @@ import { clearPendingShelf, readPendingShelf } from '../model/pendingShelf';
  */
 export const PendingShelfClaimer = () => {
   const router = useRouter();
+  // 방금 새로 담긴 책 — 건너뛴(이미 있던) 책과 실패한 책은 묻지 않는다
+  const [claimed, setClaimed] = useState<ClaimedBook[]>([]);
 
   useEffect(() => {
     const pending = readPendingShelf();
@@ -37,13 +41,14 @@ export const PendingShelfClaimer = () => {
     clearPendingShelf();
 
     const run = async () => {
+      const created: ClaimedBook[] = [];
       const result = await claimPendingBooks(pending.books, {
         findExisting: async (b) =>
           (await bookApi.getBookByISBN(b.isbn, b.provider_item_id)).length > 0,
         create: async (b) => {
-          await bookApi.createBook(
-            toBookInput(b, b.isbn === pending.lifeBookIsbn)
-          );
+          const isLifeBook = b.isbn === pending.lifeBookIsbn;
+          const book = await bookApi.createBook(toBookInput(b, isLifeBook));
+          created.push({ id: book.id, title: book.title, isLifeBook });
         },
       });
       const { added, failed } = result;
@@ -62,9 +67,11 @@ export const PendingShelfClaimer = () => {
       const failure = toClaimFailureToast(failed);
       if (failure) toast.error(failure);
       if (added > 0 || goalSet) router.refresh();
+      if (created.length > 0) setClaimed(created);
     };
     void run();
   }, [router]);
 
-  return null;
+  if (claimed.length === 0) return null;
+  return <CompletedYearDialog books={claimed} onClose={() => setClaimed([])} />;
 };
