@@ -1,4 +1,4 @@
-import { isValidCompletedYear } from '@/entities/book';
+import { isValidCompletedYear, MIN_COMPLETED_YEAR } from '@/entities/book';
 
 import type { BookInput, BookRating } from '@/entities/book';
 
@@ -32,6 +32,19 @@ export const toCompletedYear = (
     return isValidCompletedYear(year, currentYear) ? year : null;
   }
   return null;
+};
+
+/** ‘모름’과 잘못된 직접 입력을 구분해, 별점만 조용히 저장되는 것을 막는다. */
+export const getCompletedYearError = (
+  choice: YearChoice,
+  customInput: string,
+  currentYear: number
+): string | null => {
+  if (choice !== 'custom') return null;
+  if (!customInput.trim()) return '연도를 입력하거나 모름을 선택해 주세요.';
+  return toCompletedYear(choice, customInput, currentYear) === null
+    ? `${MIN_COMPLETED_YEAR}년부터 ${currentYear}년 사이의 연도를 정수로 입력해 주세요.`
+    : null;
 };
 
 /**

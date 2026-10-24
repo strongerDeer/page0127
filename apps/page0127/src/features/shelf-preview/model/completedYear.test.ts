@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { toClaimedBookUpdate, toCompletedYear } from './completedYear';
+import {
+  getCompletedYearError,
+  toClaimedBookUpdate,
+  toCompletedYear,
+} from './completedYear';
 
 describe('toCompletedYear', () => {
   it('올해·작년은 기준 연도로 계산한다', () => {
@@ -48,5 +52,33 @@ describe('toClaimedBookUpdate', () => {
       completed_date: null,
       rating: 5,
     });
+  });
+});
+
+describe('getCompletedYearError', () => {
+  it.each(['1800', '2027', '2015.5', '이천십오'])(
+    '잘못된 직접 입력 %s에는 범위를 안내한다',
+    (input) => {
+      expect(getCompletedYearError('custom', input, 2026)).toContain(
+        '1900년부터 2026년'
+      );
+    }
+  );
+
+  it('직접 입력을 비웠으면 모름 선택으로 빠져나갈 수 있게 안내한다', () => {
+    expect(getCompletedYearError('custom', '  ', 2026)).toContain('모름');
+  });
+
+  it.each(['1900', '2026', ' 2015 '])(
+    '정상 연도 %s는 저장할 수 있다',
+    (input) => {
+      expect(getCompletedYearError('custom', input, 2026)).toBeNull();
+    }
+  );
+
+  it('모름·올해·작년으로 바꾸면 남아 있는 잘못된 직접 입력은 막지 않는다', () => {
+    for (const choice of ['unknown', 'this', 'last'] as const) {
+      expect(getCompletedYearError(choice, '1800', 2026)).toBeNull();
+    }
   });
 });

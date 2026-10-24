@@ -24,6 +24,7 @@ import { StarRatingInput } from '@/entities/book/ui/StarRatingInput';
 
 import { toKstYear } from '../model/claim';
 import {
+  getCompletedYearError,
   toClaimedBookUpdate,
   toCompletedYear,
   YEAR_CHOICES,
@@ -70,6 +71,10 @@ export const CompletedYearDialog = ({
   const setRow = (id: string, next: Partial<RowState>) =>
     setRows((prev) => ({ ...prev, [id]: { ...prev[id], ...next } }));
 
+  const hasInvalidYear = books.some((b) =>
+    getCompletedYearError(rows[b.id].choice, rows[b.id].custom, currentYear)
+  );
+
   const answers = books.flatMap((b) => {
     const row = rows[b.id];
     const update = toClaimedBookUpdate(
@@ -89,6 +94,7 @@ export const CompletedYearDialog = ({
   };
 
   const handleSave = async () => {
+    if (isSaving || hasInvalidYear) return;
     // 전부 "모름"·별점 없음이면 보낼 게 없다 — 닫기만 한다 (예전엔 버튼이 꺼져 있어 못 닫았다)
     if (answers.length === 0) {
       handleSkip();
@@ -141,6 +147,11 @@ export const CompletedYearDialog = ({
         <ul className='max-h-[50vh] space-y-4 overflow-y-auto pr-1'>
           {books.map((book) => {
             const row = rows[book.id];
+            const yearError = getCompletedYearError(
+              row.choice,
+              row.custom,
+              currentYear
+            );
             return (
               <li key={book.id}>
                 <p
@@ -183,12 +194,25 @@ export const CompletedYearDialog = ({
                     max={currentYear}
                     placeholder={`예: ${currentYear - 5}`}
                     aria-label={`${book.title} 완독 연도`}
+                    aria-invalid={Boolean(yearError)}
+                    aria-describedby={
+                      yearError ? `year-error-${book.id}` : undefined
+                    }
                     value={row.custom}
                     onChange={(e) =>
                       setRow(book.id, { custom: e.target.value })
                     }
                     className='mt-2 w-32'
                   />
+                )}
+                {yearError && (
+                  <p
+                    id={`year-error-${book.id}`}
+                    role='alert'
+                    className='mt-1 text-xs text-destructive'
+                  >
+                    {yearError}
+                  </p>
                 )}
                 {book.isLifeBook ? (
                   <p className='mt-2 text-xs text-text-subtle'>
@@ -212,7 +236,7 @@ export const CompletedYearDialog = ({
           <Button variant='ghost' onClick={handleSkip} disabled={isSaving}>
             나중에 할게요
           </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
+          <Button onClick={handleSave} disabled={isSaving || hasInvalidYear}>
             {answers.length > 0 ? `${answers.length}권 저장` : '저장'}
           </Button>
         </DialogFooter>
