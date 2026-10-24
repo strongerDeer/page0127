@@ -1,115 +1,639 @@
-/*
-  뱃지 메달 인터랙션.
-  - 기울기: 포인터 위치(--rx, --ry)를 따라 3D 로 기운다 (마우스가 있을 때만)
-  - 반짝임: 받은 뱃지 위로 빛 띠가 가끔 스친다 (--delay 로 뱃지마다 엇갈림)
-  - 등장: 상세 화면에서 뒤집히며 나타난다
-  움직임 줄이기 설정이면 전부 끈다.
-*/
-
-.medal {
-  perspective: 600px;
+/* 표지 글꼴은 제목에 필요한 글자만 담아 자체 호스팅한다. */
+@font-face {
+  font-family: "Page0127 Cover Sans";
+  src: url("/badges/editorial/cover-sans.woff2") format("woff2");
+  font-weight: 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Page0127 Cover Serif";
+  src: url("/badges/editorial/cover-serif.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
 }
 
-.tilt {
-  /* 기본값 — 포인터가 올라오면 인라인 style 이 덮어쓴다 */
-  --rx: 0deg;
-  --ry: 0deg;
-  transform: rotateX(var(--rx)) rotateY(var(--ry));
-  transition: transform 0.25s ease-out;
-  transform-style: preserve-3d;
-  will-change: transform;
+.book {
+  --paper: #f3ecd9;
+  --ink: #242525;
+  --accent: #c84336;
+  --binding: #b7ac91;
+  --book-width: 84px;
+  --display-width: var(--book-width);
+  position: relative;
+  isolation: isolate;
+  width: var(--display-width);
+  max-width: 100%;
+  aspect-ratio: 3 / 4;
+  flex-shrink: 0;
+  perspective: 700px;
+  border-radius: 4% 6% 6% 4%;
+  background: var(--binding);
+  box-shadow: 2px 5px 7px rgb(20 41 78 / 15%);
+  transition:
+    transform 220ms ease-out,
+    box-shadow 220ms ease-out;
 }
-
-.art {
-  object-fit: contain;
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-/* 성장 단계 숫자 — 어떤 그림 위에서도 읽히도록 짙은 테두리 */
-.level {
-  color: #fff;
-  -webkit-text-stroke: 0.08em rgb(0 0 0 / 0.55);
-  paint-order: stroke fill;
-  text-shadow: 0 0.04em 0.08em rgb(0 0 0 / 0.35);
-}
-
-.secret {
-  color: #fff;
-  text-shadow: 0 0.03em 0.06em rgb(0 0 0 / 0.25);
-}
-
-.shine {
-  /* 뱃지마다 인라인 style 로 엇갈린 값이 들어온다 */
-  --delay: 0s;
-  background: linear-gradient(
-    105deg,
-    transparent 40%,
-    rgb(255 255 255 / 0.5) 50%,
-    transparent 60%
+.pages {
+  position: absolute;
+  inset: 3% -2% -1% 5%;
+  display: grid;
+  place-items: center;
+  border-radius: 2% 5% 5% 2%;
+  background: repeating-linear-gradient(
+    to bottom,
+    #f5f0e7 0 2px,
+    #d6d3ca 2px 3px
   );
-  background-size: 300% 100%;
-  background-position: 150% 0;
-  mask-size: 100% 100%;
-  animation: sweep 5.5s ease-in-out infinite;
-  animation-delay: var(--delay);
+  box-shadow: 1px 1px 1px rgb(20 41 78 / 15%);
+}
+.inside {
+  color: #53615a;
+  font-size: calc(var(--book-width) * 0.09);
+  line-height: 1.8;
+  text-align: center;
+}
+.cover {
+  container-type: inline-size;
+  position: absolute;
+  inset: 0 0 2%;
+  overflow: hidden;
+  border-radius: inherit;
+  background: var(--paper);
+  color: var(--ink);
+  transform-origin: 4% 50%;
+  transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow:
+    inset 1px 1px 1px rgb(255 255 255 / 35%),
+    inset -1px -1px 1px rgb(0 0 0 / 12%);
+  backface-visibility: hidden;
+}
+.cover::before {
+  content: "";
+  position: absolute;
+  z-index: 5;
+  inset: 0 auto 0 4%;
+  width: 3%;
+  background: linear-gradient(
+    90deg,
+    rgb(0 0 0 / 12%),
+    rgb(255 255 255 / 20%),
+    transparent
+  );
+}
+.art {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.title {
+  position: absolute;
+  z-index: 2;
+  top: 11%;
+  left: 13%;
+  right: 7%;
+  font-family: "Page0127 Cover Sans", Pretendard, sans-serif;
+  font-size: 25cqw;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.06em;
+}
+.title > span {
+  display: block;
+  white-space: nowrap;
+}
+.literary {
+  font-family: "Page0127 Cover Serif", Batang, serif;
+  font-weight: 700;
+}
+.imprint {
+  position: absolute;
+  z-index: 4;
+  left: 11%;
+  right: 7%;
+  bottom: 5%;
+  font-family: sans-serif;
+  font-size: 6cqw;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  text-align: center;
+}
+.ribbon {
+  position: absolute;
+  z-index: 6;
+  top: 0;
+  right: 10%;
+  width: 7%;
+  height: 9%;
+  background: #84cfbc;
+  opacity: 0.7;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
+}
+.grain {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  opacity: 0.22;
+  background: url("/badges/editorial/print-grain.svg");
+  background-size: 140px 140px;
+  mix-blend-mode: multiply;
   pointer-events: none;
 }
-
-@keyframes sweep {
-  0%,
-  70% {
-    background-position: 150% 0;
-  }
-  100% {
-    background-position: -50% 0;
-  }
+.spineTitle {
+  display: none;
+}
+.volume {
+  position: absolute;
+  z-index: 2;
+  bottom: 13%;
+  left: 10%;
+  font-family: "Page0127 Cover Sans", sans-serif;
+  font-weight: 900;
+  font-size: 53cqw;
+  line-height: 1;
+  letter-spacing: -0.13em;
 }
 
+/* 표지 아트의 색은 인쇄물 자체의 색이므로 테마와 무관하게 보존한다. */
+.book[data-cover="shelf"] {
+  --paper: #d9ed69;
+  --ink: #28291e;
+  --binding: #97a641;
+}
+.book[data-cover="shelf"] .art {
+  left: 83%;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 3px,
+    #28291e55 3px 4px
+  );
+}
+.book[data-cover="wide-view"] {
+  --paper: #83c7ed;
+  --ink: #163647;
+  --binding: #528bad;
+}
+.book[data-cover="wide-view"] .art > span {
+  position: absolute;
+  width: 150%;
+  height: 110%;
+  top: 42%;
+  left: 27%;
+  border: 14cqw solid #e8673b;
+  border-radius: 50%;
+}
+.book[data-cover="wide-view"] .art > span:nth-child(2) {
+  width: 110%;
+  height: 81%;
+  top: 57%;
+  left: 47%;
+  border-color: #fff0d7;
+}
+.book[data-cover="wide-view"] .art > span:nth-child(3) {
+  display: none;
+}
+.book[data-cover="wide-view"] .volume {
+  font-size: 21cqw;
+  top: 12%;
+  bottom: auto;
+  left: auto;
+  right: 14%;
+}
+.book[data-cover="one-sitting"] {
+  --paper: #fa8136;
+  --ink: #152c85;
+  --binding: #be5821;
+}
+.book[data-cover="one-sitting"] .title {
+  top: 9%;
+  left: 8%;
+  font-size: 43cqw;
+  line-height: 1.02;
+  transform: skewY(-10deg);
+  letter-spacing: -0.1em;
+}
+.book[data-cover="one-sitting"] .art {
+  background: repeating-linear-gradient(
+    -12deg,
+    transparent 0 16%,
+    #172d851a 16% 17%,
+    transparent 17% 20%
+  );
+}
+.book[data-cover="brick"] {
+  --paper: #f6e7b7;
+  --ink: #c43229;
+  --binding: #b98c5f;
+}
+.book[data-cover="brick"] .title {
+  top: 8%;
+  left: 8%;
+  font-size: 28cqw;
+  line-height: 1.16;
+}
+.book[data-cover="brick"] .art {
+  background: linear-gradient(160deg, transparent 68%, #c43229 68%);
+}
+.book[data-cover="author-fan"] {
+  --paper: #d8c3e8;
+  --ink: #45204c;
+  --binding: #94719e;
+}
+.book[data-cover="author-fan"] .title {
+  font-size: 38cqw;
+  left: 13%;
+  top: 8%;
+}
+.book[data-cover="author-fan"] .art {
+  background: radial-gradient(
+    ellipse at 115% 113%,
+    #45204c 0 31%,
+    transparent 32%
+  );
+}
+.signature {
+  position: absolute;
+  z-index: 3;
+  width: 120%;
+  height: 18%;
+  left: -2%;
+  top: 50%;
+  border: 1.6cqw solid #c8df43;
+  border-radius: 50%;
+  transform: rotate(-28deg);
+}
+.book[data-cover="finally"] {
+  --paper: #6d1c30;
+  --ink: #f7e6bc;
+  --binding: #4b1521;
+}
+.book[data-cover="finally"] .title {
+  font-size: 31cqw;
+  top: 9%;
+  line-height: 1.25;
+}
+.book[data-cover="finally"] .art {
+  background: #f7e6bc;
+  clip-path: polygon(
+    8% 77%,
+    21% 73%,
+    27% 66%,
+    43% 69%,
+    54% 61%,
+    72% 58%,
+    88% 49%,
+    100% 52%,
+    100% 87%,
+    66% 82%,
+    39% 85%
+  );
+}
+.book[data-cover="reread"] {
+  --paper: #3ed3d8;
+  --ink: #142e34;
+  --binding: #268d98;
+}
+.book[data-cover="reread"] .title {
+  top: 9%;
+  left: 8%;
+  font-size: 31cqw;
+  line-height: 1.1;
+}
+.book[data-cover="reread"] .art {
+  background: linear-gradient(
+    90deg,
+    transparent 53%,
+    #e8a26b 53% 56%,
+    #122c35 56%
+  );
+}
+.book[data-cover="reread"] .art::after {
+  content: "다시\a펼친\a책";
+  white-space: pre;
+  position: absolute;
+  left: 58%;
+  top: 9%;
+  color: #3ed3d8;
+  opacity: 0.35;
+  font:
+    900 31cqw/1.1 "Page0127 Cover Sans",
+    sans-serif;
+  letter-spacing: -0.1em;
+}
+.book[data-cover="life-book"] {
+  --paper: #f3c3c8;
+  --ink: #154432;
+  --binding: #b98b92;
+}
+.book[data-cover="life-book"] .title {
+  top: 10%;
+  font-size: 27cqw;
+  line-height: 1.2;
+}
+.book[data-cover="life-book"] .art {
+  background: #154432;
+  clip-path: polygon(
+    0 61%,
+    26% 65%,
+    51% 75%,
+    72% 59%,
+    100% 50%,
+    100% 100%,
+    0 100%
+  );
+}
+.book[data-cover="life-book"] .cover::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  right: 24%;
+  top: 53%;
+  width: 7%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #d74d35;
+}
+.book[data-cover="life-book"] .imprint {
+  color: #f8edcd;
+}
+.book[data-cover="critic"] {
+  --paper: #f3ecd9;
+  --ink: #212524;
+  --binding: #b6ae99;
+}
+.quotation {
+  position: absolute;
+  top: -10%;
+  left: 9%;
+  font:
+    900 136cqw/1 Georgia,
+    serif;
+  letter-spacing: -0.2em;
+}
+.book[data-cover="critic"] .title {
+  top: 55%;
+  left: 10%;
+  font-size: 24cqw;
+  line-height: 1.12;
+}
+.book[data-cover="critic"] .art {
+  background: linear-gradient(
+    transparent 83%,
+    #c54939 83% 85%,
+    transparent 85%
+  );
+}
+.book[data-cover="goal-kept"] {
+  --paper: #173e33;
+  --ink: #d9e84b;
+  --binding: #0f2922;
+}
+.book[data-cover="goal-kept"] .title {
+  top: 10%;
+  font-size: 39cqw;
+  left: 10%;
+  transform: skewY(-8deg);
+}
+.book[data-cover="goal-kept"] .art {
+  background: linear-gradient(
+    145deg,
+    transparent 62%,
+    #d9e84b 62% 78%,
+    #f0c6a9 78% 87%,
+    transparent 87%
+  );
+}
+.book[data-cover="know-yourself"] {
+  --paper: #f375a9;
+  --ink: #fff0c5;
+  --binding: #b64679;
+}
+.book[data-cover="know-yourself"] .title {
+  top: 9%;
+  font-size: 38cqw;
+  left: 9%;
+  transform: skewY(-7deg);
+}
+.book[data-cover="know-yourself"] .art {
+  background:
+    radial-gradient(ellipse at 90% 75%, #33379f 0 26%, transparent 27%),
+    radial-gradient(ellipse at 18% 80%, #33379f 0 21%, transparent 22%),
+    linear-gradient(60deg, transparent 64%, #ffedce 64% 75%, transparent 75%);
+}
+.book[data-cover="day-0127"] {
+  --paper: #362747;
+  --ink: #f5ca60;
+  --binding: #231931;
+}
+.book[data-cover="day-0127"] .title {
+  font-size: 42cqw;
+  line-height: 0.98;
+  top: 16%;
+}
+.book[data-cover="day-0127"] .art {
+  background: linear-gradient(
+    transparent 72%,
+    #d77973 72% 74%,
+    transparent 74%
+  );
+}
+.book[data-cover="new-year"] {
+  --paper: #f3d27f;
+  --ink: #743c32;
+  --binding: #b89141;
+}
+.book[data-cover="new-year"] .title {
+  font-size: 30cqw;
+}
+.book[data-cover="new-year"] .art {
+  background: radial-gradient(
+    ellipse at 50% 108%,
+    #d97d54 0 52%,
+    transparent 53%
+  );
+}
+.book[data-cover="double-finish"] {
+  --paper: #657e65;
+  --ink: #fff0c5;
+  --binding: #435641;
+}
+.book[data-cover="double-finish"] .art {
+  top: 55%;
+  bottom: 14%;
+  background: linear-gradient(
+    90deg,
+    transparent 13%,
+    #f0d89e 13% 47%,
+    transparent 47% 55%,
+    #e99e7e 55% 89%,
+    transparent 89%
+  );
+}
+.book[data-cover="honest"] {
+  --paper: #edbd7f;
+  --ink: #71372c;
+  --binding: #b18653;
+}
+.book[data-cover="honest"] .art {
+  background: linear-gradient(
+    160deg,
+    transparent 56%,
+    #a74a38 56% 58%,
+    transparent 58%
+  );
+}
+.book[data-cover="thin-but-deep"] {
+  --paper: #c3d7d3;
+  --ink: #26494c;
+  --binding: #849c99;
+}
+.book[data-cover="thin-but-deep"] .art {
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0 16%,
+    #26494c33 16% 17%
+  );
+  top: 55%;
+}
+.book[data-cover="new-release"] {
+  --paper: #daec6c;
+  --ink: #3e3529;
+  --binding: #9eae42;
+}
+.book[data-cover="new-release"] .art {
+  background: linear-gradient(
+    40deg,
+    transparent 54%,
+    #bb5542 54% 67%,
+    transparent 67%
+  );
+}
+.book[data-cover="book-about-books"] {
+  --paper: #f1ddc7;
+  --ink: #5d416e;
+  --binding: #baa08d;
+}
+.book[data-cover="book-about-books"] .art {
+  inset: 46% 13% 15%;
+  border: 2cqw solid #5d416e;
+  box-shadow:
+    inset 0 0 0 4cqw #f1ddc7,
+    inset 0 0 0 5cqw #5d416e;
+}
+.book[data-cover="worn-out"] {
+  --paper: #bb684e;
+  --ink: #fff0cf;
+  --binding: #86432f;
+}
+.book[data-cover="worn-out"] .art {
+  background: linear-gradient(
+    90deg,
+    transparent 20%,
+    #fff0cf55 20% 23%,
+    transparent 23% 48%,
+    #fff0cf55 48% 51%,
+    transparent 51% 76%,
+    #fff0cf55 76% 79%,
+    transparent 79%
+  );
+  top: 61%;
+  bottom: 14%;
+}
+.book[data-cover="unwritten"] {
+  --paper: #dce2e6;
+  --ink: #526170;
+  --binding: #bac4ce;
+}
+.book[data-cover="unwritten"] .title {
+  font-family: Pretendard, sans-serif;
+  font-size: 14cqw;
+  font-weight: 500;
+  top: 31%;
+  line-height: 1.7;
+  letter-spacing: -0.04em;
+}
+.book[data-locked] .cover {
+  filter: grayscale(0.95);
+}
+.book[data-locked] .ribbon {
+  background: #b9c4ce;
+}
+.book[data-open] .cover {
+  transform: rotateY(-56deg);
+}
+.book[data-view="spine"] {
+  width: calc(var(--display-width) * 0.36);
+  height: calc(var(--display-width) * 4 / 3);
+  aspect-ratio: auto;
+}
+.book[data-view="spine"] .title,
+.book[data-view="spine"] .art,
+.book[data-view="spine"] .volume,
+.book[data-view="spine"] .signature,
+.book[data-view="spine"] .quotation,
+.book[data-view="spine"] .imprint,
+.book[data-view="spine"] .ribbon {
+  display: none;
+}
+.book[data-view="spine"] .spineTitle {
+  display: block;
+  position: absolute;
+  inset: 11% 20%;
+  writing-mode: vertical-rl;
+  text-align: left;
+  font-size: calc(var(--display-width) * 0.14);
+  font-weight: 700;
+  line-height: 1.2;
+}
 .reveal {
-  animation: reveal 0.9s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  animation: take-out 450ms ease-out both;
 }
-
-@keyframes reveal {
-  0% {
-    opacity: 0;
-    transform: rotateY(-200deg) scale(0.4);
+@keyframes take-out {
+  from {
+    opacity: 0.5;
+    translate: 0 8px;
   }
-  60% {
+  to {
     opacity: 1;
-  }
-  100% {
-    transform: rotateY(0deg) scale(1);
+    translate: 0 0;
   }
 }
-
-/* 잠긴 뱃지 — 같은 그림을 흑백으로 */
-.locked .art {
-  filter: grayscale(1) contrast(0.85);
-  opacity: 0.55;
-}
-
-.locked .level {
-  opacity: 0.7;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .tilt {
+  .book,
+  .cover {
     transition: none;
-    transform: none;
-  }
-  .shine {
-    animation: none;
-    opacity: 0;
   }
   .reveal {
     animation: none;
   }
 }
 
-/* 어두운 화면에서는 흑백 그림이 받은 뱃지보다 밝게 튀므로 더 눌러 준다 */
-@media (prefers-color-scheme: dark) {
-  .locked .art {
-    opacity: 0.35;
-  }
+/* 큰 표지와 작은 선반에서 제목·단계 숫자의 영역을 분리한다. */
+.book[data-cover="wide-view"] .volume {
+  top: auto;
+  bottom: 13%;
+  right: 13%;
+}
+.book[data-cover="critic"] .title {
+  top: 53%;
+  font-size: 21cqw;
+  line-height: 1.05;
+}
+.book[data-cover="critic"] .art {
+  background: linear-gradient(
+    transparent 88%,
+    #c54939 88% 90%,
+    transparent 90%
+  );
+}
+.book[data-cover="reread"] .title {
+  font-size: 23cqw;
+}
+.book[data-cover="reread"] .art::after {
+  font-size: 21cqw;
+}
+.inside {
+  position: absolute;
+  right: 7%;
+  top: 36%;
+  font-size: calc(var(--book-width) * 0.075);
 }
