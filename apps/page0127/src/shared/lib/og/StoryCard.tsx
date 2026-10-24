@@ -16,9 +16,10 @@ export type { StoryShelfItem } from './storyShelfLayout';
  * 인스타 스토리가 위·아래를 덮는 높이 — 위는 프로필 줄, 아래는 답장 입력창.
  * 중요한 것은 이 둘 사이에만 둔다(인스타 권장 안전 영역 ≈ 위아래 250px).
  */
-const STORY_SAFE_Y = 250;
-const STORY_GUTTER = 88;
-const CONTENT_WIDTH = STORY_SIZE.width - STORY_GUTTER * 2;
+export const STORY_SAFE_Y = 250;
+export const STORY_GUTTER = 88;
+export const STORY_CONTENT_WIDTH = STORY_SIZE.width - STORY_GUTTER * 2;
+const CONTENT_WIDTH = STORY_CONTENT_WIDTH;
 
 const HEADLINE_SIZE = 92;
 const HEADLINE_MAX_WIDTH = 18;
@@ -38,7 +39,7 @@ const ROW_COVER = { width: 168, height: 252 } as const;
 const ROW_COVER_GAP = 16;
 
 /** 흰 면 위로 올라온 카드의 둥근 위 모서리 */
-const PANEL_RADIUS = 56;
+export const PANEL_RADIUS = 56;
 /**
  * 파랑·흰 면의 경계 — 고정이다. 성향 이름이 한 줄이든 두 줄이든 경계가 같은 자리에 서야
  * 누구의 서재든 같은 틀로 읽힌다. 위 면에서 가장 긴 경우(이름 두 줄 + 태그)가 ≈800px 에서 끝난다.
@@ -109,6 +110,48 @@ const Avatar = ({ src, name }: { src: string | null; name: string }) =>
       {[...name][0] ?? ''}
     </div>
   );
+
+/**
+ * 맨 위 프로필 줄 — 사진·이름·주소, 오른쪽 끝은 브랜드 심볼. 파란 면 위에 흰 글자.
+ * 서재·책 스토리 이미지가 같은 줄로 시작해야 같은 서비스의 이미지로 읽힌다.
+ */
+export const StoryProfile = ({
+  photoUrl,
+  name,
+  address,
+}: {
+  photoUrl: string | null;
+  name: string;
+  address: string;
+}) => (
+  <div style={{ display: 'flex', alignItems: 'center', color: '#ffffff' }}>
+    <Avatar src={photoUrl} name={name} />
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        flex: 1,
+        marginLeft: 28,
+      }}
+    >
+      <div style={{ display: 'flex', fontSize: 46, fontWeight: 800 }}>
+        {truncate(name, NAME_MAX_WIDTH)}
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          marginTop: 4,
+          fontSize: 30,
+          fontWeight: 500,
+          color: STAGE_TEXT_SOFT,
+        }}
+      >
+        {truncate(address, ADDRESS_MAX_WIDTH)}
+      </div>
+    </div>
+    <BrandSymbol size={64} />
+  </div>
+);
 
 /** 제목을 세로로 쌓는다 — satori 는 writing-mode 를 모른다. 한글은 원래 글자를 쌓는 세로쓰기다 */
 const StackedTitle = ({
@@ -285,33 +328,7 @@ export const StoryCard = ({
         }}
       >
         {/* 누구의 서재인지 — 사진·이름·주소. 오른쪽 끝은 브랜드 심볼 */}
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Avatar src={photoUrl} name={name} />
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              flex: 1,
-              marginLeft: 28,
-            }}
-          >
-            <div style={{ display: 'flex', fontSize: 46, fontWeight: 800 }}>
-              {truncate(name, NAME_MAX_WIDTH)}
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                marginTop: 4,
-                fontSize: 30,
-                fontWeight: 500,
-                color: STAGE_TEXT_SOFT,
-              }}
-            >
-              {truncate(address, ADDRESS_MAX_WIDTH)}
-            </div>
-          </div>
-          <BrandSymbol size={64} />
-        </div>
+        <StoryProfile photoUrl={photoUrl} name={name} address={address} />
 
         {/* 라벨은 흰 칩 — 성향 색은 대부분 파란 계열이라 파란 바탕에 점만 두면 속 빈 테두리로 보인다 */}
         {label && (
