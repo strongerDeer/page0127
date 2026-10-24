@@ -1,4 +1,8 @@
-import { getPublicShelfSummary } from '@/entities/book/api/getPublicShelfSummary';
+import { getCurrentLibraryYear } from '@/entities/book';
+import {
+  getPublicShelfSummary,
+  type PublicShelfBook,
+} from '@/entities/book/api/getPublicShelfSummary';
 import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProfileByUsername';
 import { toDisplayName } from '@/entities/profile/model/displayName';
 import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTasteHistory';
@@ -7,9 +11,16 @@ import { type ReaderCard, toReaderCard } from '../model/readerCard';
 
 export type ReaderShareData = {
   displayName: string;
+  photoUrl: string | null;
+  /** 최신 AI 분석의 주제 태그 — 분석 전이면 빈 배열 */
+  topics: string[];
+  year: number;
+  yearBooks: number;
   totalBooks: number;
   /** 최근 완독 표지 — 최신순, 최대 COVER_LIMIT 장 */
   covers: string[];
+  /** 서로 다른 공개 완독 책, 최신순 — 스토리 책장용 */
+  books: PublicShelfBook[];
   card: ReaderCard;
 };
 
@@ -30,13 +41,20 @@ export const getReaderShareData = async (
     getPublicShelfSummary(profile.id),
     getPublicTasteHistory(profile.id),
   ]);
+  const latest = history[0];
 
   return {
     displayName: toDisplayName(profile),
+    photoUrl: profile.photo_url,
+    topics: latest?.liked_topics ?? [],
+    // 요약이 올해 권수를 센 해와 같은 해 — 둘 다 서울 기준 오늘이다
+    year: getCurrentLibraryYear(),
+    yearBooks: summary.yearBooks,
     totalBooks: summary.totalBooks,
     covers: summary.covers,
+    books: summary.books,
     card: toReaderCard({
-      latestType: history[0]?.personality_type,
+      latestType: latest?.personality_type,
       categories: summary.categories,
       yearBooks: summary.yearBooks,
       totalBooks: summary.totalBooks,
