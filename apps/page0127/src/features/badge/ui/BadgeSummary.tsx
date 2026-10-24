@@ -59,7 +59,7 @@ export const BadgeSummary = ({
         <ul className={styles.summaryShelf}>
           {earned.slice(0, 5).map((badge) => (
             <li key={badge.id} className={styles.shelfItem}>
-              <BadgeTile badge={badge} username={username} size={64} />
+              <BadgeTile badge={badge} username={username} size={76} />
             </li>
           ))}
         </ul>

@@ -47,7 +47,7 @@
 }
 .shelf,
 .summaryShelf {
-  --shelf-book-width: 72px;
+  --shelf-book-width: 84px;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: start;
@@ -116,7 +116,7 @@
   font-variant-numeric: tabular-nums;
 }
 .summaryShelf {
-  --shelf-book-width: 56px;
+  --shelf-book-width: 64px;
   margin-top: 20px;
 }
 .summaryShelf .shelfItem:nth-child(n + 4) {
@@ -163,12 +163,12 @@
     padding: 28px 32px 24px;
   }
   .shelf {
-    --shelf-book-width: 84px;
+    --shelf-book-width: 112px;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     row-gap: 32px;
   }
   .summaryShelf {
-    --shelf-book-width: 64px;
+    --shelf-book-width: 76px;
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
   .summaryShelf .shelfItem:nth-child(n + 4) {
@@ -180,7 +180,7 @@
 .shelf,
 .summaryShelf {
   --book-height: calc(var(--shelf-book-width) * 4 / 3);
-  --row-height: calc(var(--book-height) + 72px);
+  --row-height: calc(var(--book-height) + 56px);
   --row-gap: 28px;
   grid-auto-rows: var(--row-height);
   row-gap: var(--row-gap);
@@ -205,7 +205,7 @@
 }
 @media (max-width: 359px) {
   .shelf {
-    --shelf-book-width: 64px;
+    --shelf-book-width: 72px;
   }
 }
 
@@ -215,4 +215,11 @@
 .tile [data-badge-book][data-view="spine"] {
   width: calc(var(--shelf-book-width) * 0.36);
   height: calc(var(--shelf-book-width) * 4 / 3);
+}
+
+@media (max-width: 639px) {
+  .section {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
 }

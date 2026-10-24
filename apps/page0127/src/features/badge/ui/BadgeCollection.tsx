@@ -96,7 +96,7 @@ export const BadgeCollection = ({
                 <BadgeTile
                   badge={badge}
                   username={username}
-                  size={84}
+                  size={112}
                   showProgress
                   view={view}
                 />

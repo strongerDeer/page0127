@@ -87,6 +87,8 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['lucide-react', '@repo/ui'],
   },
   images: {
+    // 표지 아트의 글자와 질감을 보존하는 품질. 일반 이미지 기본값은 75다.
+    qualities: [75, 85],
     remotePatterns: [
       // 도서 표지·책등(검색 결과). 등록된 책의 이미지는 백필로 Supabase Storage 로 옮겼다.
       { protocol: 'https', hostname: 'image.yes24.com' },
