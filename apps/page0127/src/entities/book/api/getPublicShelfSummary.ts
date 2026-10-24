@@ -1,10 +1,33 @@
 import { createAnonClient } from '@/shared/config/supabase/anon';
 
 import { getCurrentLibraryYear } from '../model/libraryPeriod';
-import { countShelf, type ShelfCounts } from '../model/shelfCounts';
+import {
+  countShelf,
+  type ShelfCounts,
+  toShelfBookKey,
+} from '../model/shelfCounts';
+
+import type { Book } from '../types';
+
+/** 공유 이미지의 책장에 세울 한 권 — 서재 책장과 같은 칸(표지·책등·두께·인생책·별점) */
+export type PublicShelfBook = Pick<
+  Book,
+  | 'id'
+  | 'isbn'
+  | 'title'
+  | 'cover_image'
+  | 'spine_image'
+  | 'thickness_mm'
+  | 'is_life_book'
+  | 'rating'
+  | 'completed_date'
+  | 'completed_year'
+>;
 
 /** 공유 카드에 들어가는 책장 요약 */
 export type PublicShelfSummary = ShelfCounts & {
+  /** 서로 다른 공개 완독 책 — 최근 완독 먼저(재독은 가장 최근 회독 하나) */
+  books: PublicShelfBook[];
   /** 그중 인생책 권수 */
   lifeBooks: number;
   /** 최근 완독한 책의 표지 URL — 최신순, 최대 COVER_LIMIT 장 */
@@ -44,11 +67,14 @@ export const getPublicShelfSummary = async (
   // 표지도 같은 행에서 뽑는다 — 쿼리를 하나 더 보내지 않고, 숫자와 표지가
   // **같은 공개 범위**에서 나오게 하기 위해서다(비공개 책 표지가 카드에 실리면 안 된다).
   // (한 사람 책장이라 수백 행이어도 짧은 문자열 몇 개씩이라 부담이 없다)
-  // 분류·완독 시점은 명함(성향 첫인상·올해 권수)용 — 서재 화면과 같은 countShelf 로 센다
+  // 분류·완독 시점은 명함(성향 첫인상·올해 권수)용 — 서재 화면과 같은 countShelf 로 센다.
+  // 제목·책등·두께·인생책·별점은 스토리 이미지의 책장용 — 서재 책장과 같은 규칙으로 세운다
   const publicCompleted = () =>
     supabase
       .from('books')
-      .select('id, isbn, cover_image, category, completed_date, completed_year')
+      .select(
+        'id, isbn, title, cover_image, spine_image, thickness_mm, is_life_book, rating, category, completed_date, completed_year'
+      )
       .eq('user_id', userId)
       .eq('status', 'completed')
       .eq('is_public', true)
@@ -73,12 +99,23 @@ export const getPublicShelfSummary = async (
       totalBooks: 0,
       yearBooks: 0,
       categories: [],
+      books: [],
       lifeBooks: 0,
       covers: [],
     };
   }
 
   const counts = countShelf(totalResult.data ?? [], currentYear);
+
+  // 재독은 한 권 — 최신순이라 처음 만난 행이 가장 최근 회독이다
+  const seen = new Set<string>();
+  const books: PublicShelfBook[] = [];
+  for (const row of totalResult.data ?? []) {
+    const key = toShelfBookKey(row);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    books.push(row);
+  }
 
   // 재독한 책은 같은 표지가 두 번 나온다 — Set 으로 걸러 서로 다른 표지만 세운다
   const covers = [
@@ -95,11 +132,12 @@ export const getPublicShelfSummary = async (
   // 한쪽이 죽어도 살아 있는 숫자는 내보낸다.
   if (lifeResult.error) {
     console.error('인생책 권수 조회 실패:', lifeResult.error.message);
-    return { ...counts, lifeBooks: 0, covers };
+    return { ...counts, books, lifeBooks: 0, covers };
   }
 
   return {
     ...counts,
+    books,
     lifeBooks: countShelf(lifeResult.data ?? [], currentYear).totalBooks,
     covers,
   };

@@ -2,14 +2,9 @@ import { renderOg } from '@/shared/lib/og/render';
 import { BrandStage, CoverRow, StageCard } from '@/shared/lib/og/StageCard';
 import { OG_COLORS, OG_SIZE, truncate } from '@/shared/lib/og/theme';
 
-import { getPublicShelfSummary } from '@/entities/book/api/getPublicShelfSummary';
-import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProfileByUsername';
-import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTasteHistory';
+import { getReaderShareData } from '@/widgets/public-library/api/getReaderShareData';
 
-import {
-  type ReaderCard,
-  toReaderCard,
-} from '@/widgets/public-library/model/readerCard';
+import type { ReaderCard } from '@/widgets/public-library/model/readerCard';
 
 // 공개 책장의 동적 OG 이미지 — 파란 무대에 최근 표지를 세우고 흰 띠에 한 줄을 둔다.
 //
@@ -90,23 +85,12 @@ const Image = async ({ params }: Props) => {
   let card: ReaderCard = { identity: null, stat: null };
 
   try {
-    const profile = await getPublicProfileByUsername(username);
+    // 서재 상단 명함과 같은 규칙 — 미리보기와 눌러 들어간 화면이 같은 사람을 말해야 한다
+    const data = await getReaderShareData(username);
 
-    if (profile) {
+    if (data) {
       found = true;
-      const [summary, history] = await Promise.all([
-        getPublicShelfSummary(profile.id),
-        getPublicTasteHistory(profile.id),
-      ]);
-      totalBooks = summary.totalBooks;
-      covers = summary.covers;
-      // 서재 상단 명함과 같은 규칙 — 미리보기와 눌러 들어간 화면이 같은 사람을 말해야 한다
-      card = toReaderCard({
-        latestType: history[0]?.personality_type,
-        categories: summary.categories,
-        yearBooks: summary.yearBooks,
-        totalBooks: summary.totalBooks,
-      });
+      ({ totalBooks, covers, card } = data);
     }
   } catch (error) {
     console.error('책장 OG 조회 실패:', error);

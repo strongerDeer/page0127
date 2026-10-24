@@ -72,11 +72,15 @@ const loadFonts = async (): Promise<OgFont[]> => {
   }
 };
 
-export const renderOg = async (element: React.ReactElement) => {
+export const renderOg = async (
+  element: React.ReactElement,
+  // 공유 카드는 OG 크기, 스토리 이미지는 STORY_SIZE — 폰트·캐시 규칙은 같다
+  size: { width: number; height: number } = OG_SIZE
+) => {
   const fonts = await loadFonts();
 
   return new ImageResponse(element, {
-    ...OG_SIZE,
+    ...size,
     // 빈 배열을 넘기면 기본 폰트까지 사라진다 — 없을 때는 옵션 자체를 뺀다
     ...(fonts.length > 0 ? { fonts } : {}),
     // next/og 기본값은 max-age=0 이라 크롤러가 부를 때마다 다시 그린다

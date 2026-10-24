@@ -3,3 +3,4 @@
  */
 
 export { ShareButton } from './ui/ShareButton';
+export { ShareSheetButton } from './ui/ShareSheetButton';
