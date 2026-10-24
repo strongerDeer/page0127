@@ -14,14 +14,17 @@ const NOISE_PATTERNS: RegExp[] = [
   // Node 실험 기능 경고. next/og(satori)가 OG 이미지를 그릴 때 띄운다.
   // 오류가 아니라 경고이고, 런타임을 우리가 고를 수 없어 없앨 방법이 없다.
   /ExperimentalWarning/,
+  // Node 의 폐기 예정 경고(DEP0xxx). web-push 3.6.7 이 url.parse() 를 써서 푸시를 보낼 때마다
+  // DEP0169 가 뜬다. 라이브러리 안쪽이라 고칠 수 없고 동작에는 영향이 없다.
+  // /admin/errors 의 분류(triage.ts)도 같은 패턴을 노이즈로 둔다.
+  /\[DEP\d+\] DeprecationWarning/,
 ];
 
 /** 이벤트에서 판별에 쓸 문자열을 뽑는다 (콘솔 캡처는 message, 예외는 exception에 담긴다) */
 export const extractEventText = (event: {
   message?: string;
   exception?: { values?: { value?: string }[] };
-}): string =>
-  event.message ?? event.exception?.values?.[0]?.value ?? '';
+}): string => event.message ?? event.exception?.values?.[0]?.value ?? '';
 
 export const isNoiseEvent = (text: string): boolean =>
   text.length > 0 && NOISE_PATTERNS.some((pattern) => pattern.test(text));

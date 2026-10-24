@@ -31,7 +31,12 @@ type BookGridItemProps = {
  */
 export const BookGridItem = ({ book, href }: BookGridItemProps) => {
   return (
-    <Link href={href} className='group transition-transform hover:scale-105'>
+    <Link
+      // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
+      prefetch={false}
+      href={href}
+      className='group transition-transform hover:scale-105'
+    >
       {/* 대칭 rounded-lg 를 쓰고 있었다 — BookCover 로 바꾸며 도메인 셰이프
           (왼쪽은 책등이라 각지고 오른쪽만 둥근 비대칭)로 통일했다 */}
       <div className='aspect-2/3 relative bg-muted'>

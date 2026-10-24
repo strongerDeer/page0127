@@ -1,5 +1,6 @@
 import { createClient } from '@/shared/config/supabase/server';
 
+import { toRankingTitle } from '@/widgets/book/model/rankingTitle';
 import { BookRankingList } from '@/widgets/book/ui/BookRankingList';
 
 import type { BookRanking, GlobalBook } from '@/entities/book';
@@ -21,7 +22,6 @@ import type { BookRanking, GlobalBook } from '@/entities/book';
 
 type BookRankingSectionProps = {
   type: 'best' | 'most';
-  title: string;
   /** 집계 기준일 등 — 제목 우측 메타 */
   meta?: string;
   myReadIsbns?: string[];
@@ -101,7 +101,6 @@ const fetchRanking = async (
 
 export const BookRankingSection = async ({
   type,
-  title,
   meta,
   myReadIsbns,
 }: BookRankingSectionProps) => {
@@ -114,7 +113,8 @@ export const BookRankingSection = async ({
 
   return (
     <BookRankingList
-      title={title}
+      // 제목은 데이터가 정한다 — 1위 인원이 적으면 규모를 주장하지 않는다(rankingTitle.ts)
+      title={toRankingTitle(type, books)}
       meta={meta}
       books={books}
       type={type}

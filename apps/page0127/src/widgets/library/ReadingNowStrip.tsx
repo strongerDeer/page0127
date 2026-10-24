@@ -92,6 +92,8 @@ export const ReadingNowStrip = ({
               onFocus={placeTip}
             >
               <Link
+                // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
+                prefetch={false}
                 href={bookHref(book)}
                 // 제목이 화면에 상시 보이지 않으므로 링크 이름에 담는다
                 aria-label={`${book.title}, ${since ? `${since}부터 ` : ''}읽는 중${

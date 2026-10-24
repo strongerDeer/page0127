@@ -44,8 +44,9 @@ export const COVER_OVERHANG = 14;
  * - 오른쪽 위: 옅은 파랑 — 책 무리 뒤를 받친다
  * - 오른쪽 아래: 짙은 남색 — 바닥을 눌러 책이 "놓인" 느낌을 준다
  * 뒤에 적은 것이 아래에 깔린다(CSS 다중 배경 규칙).
+ * 서재 스토리 이미지(StoryCard)도 같은 바탕을 쓴다.
  */
-const STAGE_BACKGROUND = [
+export const STAGE_BACKGROUND = [
   'radial-gradient(60% 75% at 8% 0%, rgba(147, 192, 251, 0.75) 0%, rgba(147, 192, 251, 0) 100%)',
   'radial-gradient(55% 70% at 92% 10%, rgba(91, 159, 245, 0.7) 0%, rgba(91, 159, 245, 0) 100%)',
   'radial-gradient(60% 70% at 100% 100%, rgba(10, 47, 110, 0.85) 0%, rgba(10, 47, 110, 0) 100%)',
@@ -78,8 +79,11 @@ const BrandMark = () => (
 type StageCardProps = {
   /** 무대 위에 세울 것. 무대는 position: relative 라 absolute 배치도 된다 */
   children: React.ReactNode;
-  /** 흰 띠 왼쪽 한 줄 — "누르면 무엇을 보게 되는지" */
-  cta: string;
+  /**
+   * 흰 띠 왼쪽 — "누르면 무엇을 보게 되는지". 보통 한 줄 문자열이고,
+   * 공개 서재처럼 두 줄(독서 명함)을 세울 때는 노드를 넘긴다(글자 크기 38 · 굵게를 물려받는다).
+   */
+  cta: React.ReactNode;
 };
 
 export const StageCard = ({ children, cta }: StageCardProps) => (

@@ -46,7 +46,7 @@ export type AnalyticsEvent =
   | 'shelf_preview_view'
   /** 홈 맛보기에서 책을 골랐다. source: 'picks' | 'search', count: 고른 뒤 권수 */
   | 'shelf_preview_pick'
-  /** 맛보기 [책장 저장하기] — 로그인으로 간다. count: 고른 권수 */
+  /** 맛보기 [책장 저장하기] — 로그인으로 간다. count: 고른 권수, source: shelf(책장 아래 버튼)·bar(모바일 하단 바) */
   | 'shelf_preview_save'
   /** 맛보기 0권 [목표 저장하기] — 로그인으로 간다. target: 목표 권수 */
   | 'shelf_preview_goal'

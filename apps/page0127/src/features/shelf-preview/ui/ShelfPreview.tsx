@@ -9,6 +9,8 @@ import { ArrowRight, Check, RotateCcw, RotateCw } from 'lucide-react';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
+import { toFirstImpression } from '@/entities/taste-analysis/model/firstImpression';
+
 import { toPendingLoginPath } from '../model/loginTransfer';
 import {
   clearPendingShelf,
@@ -20,8 +22,11 @@ import { toPickPages } from '../model/pickPages';
 import { toShelfPreviewMessage } from '../model/previewMessage';
 import { restoreSelection } from '../model/restoreSelection';
 import { isSameBook, toggleSelection } from '../model/selection';
+import { FirstImpressionCard } from './FirstImpressionCard';
 import { GoalStarter } from './GoalStarter';
+import { HeroEyebrow } from './HeroEyebrow';
 import { PreviewShelf } from './PreviewShelf';
+import { ShelfBar } from './ShelfBar';
 import { ShelfSearch } from './ShelfSearch';
 
 import type { ShelfPick } from '../model/types';
@@ -46,6 +51,7 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
   const current = pages[page] ?? [];
   const isFull = selected.length >= MAX_PENDING_BOOKS;
   const message = toShelfPreviewMessage(selected.length);
+  const impression = toFirstImpression(selected.map((p) => p.book.category));
   const isSelected = (pick: ShelfPick) =>
     selected.some((p) => isSameBook(p.book, pick.book));
 
@@ -85,8 +91,35 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
     setSelected(next);
   };
 
-  const handleSave = () => {
-    trackEvent('shelf_preview_save', { count: selected.length });
+  // 첫인상·저장 버튼 영역이 아직 화면 아래에 있는가 — 모바일 하단 바를 띄울지 정한다.
+  // 위로 지나간 경우(이미 본 것)는 띄우지 않는다. 60% 이상 보여야 '본 것'으로 친다.
+  const nextStepRef = useRef<HTMLDivElement>(null);
+  const [nextStepBelow, setNextStepBelow] = useState(false);
+  useEffect(() => {
+    const el = nextStepRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      ([entry]) =>
+        setNextStepBelow(
+          entry.intersectionRatio < 0.6 && entry.boundingClientRect.top > 0
+        ),
+      { threshold: [0, 0.6, 1] }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const handleJump = () => {
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    nextStepRef.current?.scrollIntoView({
+      behavior: reduce ? 'auto' : 'smooth',
+      block: 'center',
+    });
+  };
+
+  // source — 하단 바가 저장을 얼마나 끌어오는지 따로 본다
+  const handleSave = (source: 'shelf' | 'bar') => {
+    trackEvent('shelf_preview_save', { count: selected.length, source });
     const pending = { books: selected.map((p) => p.book), goal: null };
     writePendingShelf(pending);
     router.push(toPendingLoginPath(pending));
@@ -98,6 +131,7 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
       className='tint-cool grid gap-x-16 gap-y-10 rounded-3xl px-5 py-8 [grid-template-areas:"intro"_"picks"_"shelf"] md:p-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:[grid-template-areas:"intro_picks"_"shelf_picks"]'
     >
       <div className='[grid-area:intro]'>
+        <HeroEyebrow />
         <h1
           id='shelf-preview-title'
           className='break-keep text-3xl font-extrabold leading-tight tracking-tight text-text-strong md:text-5xl'
@@ -105,10 +139,11 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
           책장을 보면,
           <br />그 사람이 보인다.
         </h1>
+        {/* 할 일(지시)이 아니라 약속 — 노력(세 권)과 보상(취향)을 한 번에 말한다 */}
         <p className='mt-4 break-keep text-base leading-relaxed text-text-body md:text-lg'>
-          읽은 책을 골라 책장을 채워주세요.
+          기억나는 책 세 권을 골라보세요.
           <br />
-          당신의 취향은 어떤가요?
+          당신의 취향을 알려드릴게요!
         </p>
       </div>
 
@@ -214,12 +249,21 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
 
         {/* 데스크톱에선 버튼이 나타날 자리를 미리 비워 둔다 — 고르는 순간 왼쪽 열이 늘면
             가운데 정렬된 오른쪽 그리드까지 흔들린다. 모바일은 그리드가 위에 있어 밀릴 것이 없다 */}
-        <div className='mt-5 lg:min-h-36'>
+        <div ref={nextStepRef} className='mt-5 lg:min-h-36'>
+          {/* 0권이면 같은 자리에 목표 링크를 둔다. 예전엔 맨 아래(mt-auto)에 붙어
+              데스크톱에서 빈 책장과 링크 사이가 크게 비었고, 책을 고른 뒤에도
+              "아직 읽은 책이 없나요?"가 남아 있었다(2026-10-24 운영 점검) */}
+          {selected.length === 0 && <GoalStarter />}
           {selected.length > 0 && (
             <>
               {/* 상한 안내도 같은 알림 영역 안에 둔다 — 버튼이 막힌 이유를
                   스크린리더 사용자도 들어야 한다 */}
               <div aria-live='polite'>
+                {impression && (
+                  <div className='mb-4'>
+                    <FirstImpressionCard type={impression} />
+                  </div>
+                )}
                 <p className='break-keep font-bold text-text-strong md:text-lg'>
                   {message}
                 </p>
@@ -232,7 +276,7 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
               <div className='mt-4 flex flex-wrap items-center gap-x-4 gap-y-2'>
                 <Button
                   size='lg'
-                  onClick={handleSave}
+                  onClick={() => handleSave('shelf')}
                   className='h-14 w-full gap-2 px-7 text-base font-bold shadow-lg shadow-primary/30 sm:w-auto'
                 >
                   지금 책 저장하기
@@ -245,10 +289,18 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
             </>
           )}
         </div>
+      </div>
 
-        <div className='mt-auto pt-2'>
-          <GoalStarter />
-        </div>
+      {/* 모바일 전용 — 데스크톱은 책장·저장 버튼이 첫 화면에 함께 보인다.
+          contents: 감싼 상자가 그리드 칸을 차지하지 않게(바는 fixed 라 칸 밖이다) */}
+      <div className='contents lg:hidden'>
+        <ShelfBar
+          count={selected.length}
+          impression={impression}
+          visible={selected.length > 0 && nextStepBelow}
+          onJump={handleJump}
+          onSave={() => handleSave('bar')}
+        />
       </div>
     </section>
   );

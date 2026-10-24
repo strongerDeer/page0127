@@ -22,10 +22,17 @@ export type PublicBookRecord = {
  * 그래서 세션을 읽지 않는 익명 클라이언트를 쓰고, is_public 도 직접 명시한다
  * (RLS 는 익명 방문자만 걸러주므로 조건을 생략하면 세션 유무로 결과가 갈린다).
  */
+/** books.id 는 uuid 다. 아닌 값을 넘기면 DB 가 형식 오류(22P02)를 낸다 */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const getPublicBookRecord = async (
   userId: string,
   bookId: string
 ): Promise<PublicBookRecord | null> => {
+  // /{username}/{bookId} 자리에 아무 글자나 올 수 있다(크롤러가 붙인 경로 등).
+  // 어차피 없는 기록이므로 묻지 않고 null — 오류 로그가 Sentry 이슈로 쌓이지 않게 한다(PAGE0127-1W)
+  if (!UUID.test(bookId)) return null;
+
   const supabase = createAnonClient();
 
   const { data, error } = await supabase

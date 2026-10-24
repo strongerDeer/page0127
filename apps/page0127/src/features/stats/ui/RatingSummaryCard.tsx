@@ -90,6 +90,8 @@ export const RatingSummaryCard = ({
             {lifeBooks.slice(0, 3).map((book) => (
               <li key={book.id} className='min-w-0 flex-1'>
                 <Link
+                  // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
+                  prefetch={false}
                   href={bookHref(book)}
                   className='flex items-center gap-2 hover:text-primary'
                 >

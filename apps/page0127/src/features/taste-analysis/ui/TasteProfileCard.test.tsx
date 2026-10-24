@@ -67,6 +67,13 @@ describe('TasteProfileCard', () => {
     expect(html).toContain('내일의 나를 준비하는 사람');
   });
 
+  it('명함이 이름을 말하고 있으면(showType=false) 이름 없이 근거만 보인다', () => {
+    const html = render({ history: [HISTORY[0]], showType: false });
+    expect(html).not.toContain('내일의 나를 준비하는 사람');
+    expect(html).toContain('AI 독서 성향');
+    expect(html).toContain('#관계');
+  });
+
   it('이력이 한 번뿐이면 변화 줄을 그리지 않는다', () => {
     expect(render({ history: [HISTORY[0]] })).not.toContain('취향의 변화');
   });

@@ -36,8 +36,10 @@ import {
 import { FollowButton, FollowListModal, FollowStats } from '@/features/follow';
 import { coachTarget } from '@/features/onboarding';
 import { toLockedAnalysisMessage } from '@/features/rating-nudge';
-import { ShareButton } from '@/features/share';
+import { ShareSheetButton } from '@/features/share';
 import { TasteProfileCard } from '@/features/taste-analysis/ui/TasteProfileCard';
+
+import { type ReaderCard, toIdentityLabel } from './model/readerCard';
 
 import type { PublicTasteHistoryItem } from '@/entities/taste-analysis/types';
 import type { RatingNudge } from '@/features/rating-nudge';
@@ -64,6 +66,8 @@ type PublicLibraryHeaderProps = {
   tasteAnalysisRemaining: number;
   /** 별점만 남기면 취향 분석이 열리는 책이 있을 때 — 소유자 전용, 없으면 null */
   ratingNudge: RatingNudge | null;
+  /** 독서 명함 — 성향 이름(주인공)과 숫자 한 줄. 공유 카드(OG)와 같은 규칙 */
+  readerCard: ReaderCard;
 };
 
 export const PublicLibraryHeader = ({
@@ -76,6 +80,7 @@ export const PublicLibraryHeader = ({
   analysisHistory,
   tasteAnalysisRemaining,
   ratingNudge,
+  readerCard,
 }: PublicLibraryHeaderProps) => {
   const router = useRouter();
   const [followersModalOpen, setFollowersModalOpen] = useState(false);
@@ -165,6 +170,7 @@ export const PublicLibraryHeader = ({
 
   // 방문자에게 분석 결과가 없으면 카드를 숨기고 프로필이 전체 폭을 쓴다
   const hasTasteCard = isOwnProfile || analysisHistory.length > 0;
+  const { identity } = readerCard;
 
   return (
     <>
@@ -174,7 +180,8 @@ export const PublicLibraryHeader = ({
           hasTasteCard ? 'lg:grid-cols-[1fr_400px]' : ''
         }`}
       >
-        <div className='flex min-w-0 items-center gap-5'>
+        {/* 모바일은 사진을 위로 — 옆에 두면 성향 이름이 190px 칸에서 세 줄로 쪼개진다 */}
+        <div className='flex min-w-0 flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-5'>
           {profile.photo_url ? (
             <div className='relative size-20 shrink-0 overflow-hidden rounded-full bg-muted'>
               <Image
@@ -197,8 +204,51 @@ export const PublicLibraryHeader = ({
           )}
 
           <div className='min-w-0'>
-            <p className='mb-1 text-sm font-medium text-primary'>공개 서재</p>
-            <h1 className='heading-1 truncate'>{displayName}님의 서재</h1>
+            {/*
+              독서 명함 — 주인공은 "어떤 독자인가"(성향), 이름과 숫자는 그 아래 한 줄.
+              h1 은 이름 그대로 둔다: 성향은 분석할 때마다 바뀌고, 페이지 제목·검색 노출도 이름이다.
+              이름은 자르지 않고 줄을 바꾼다 — truncate 였을 때 모바일에서 'stronger_khj…' 만 남고
+              '님의 서재' 까지 잘렸다. 밑줄 섞인 아이디는 단어 경계가 없어 anywhere 로 꺾는다.
+            */}
+            {identity ? (
+              <>
+                <p className='mb-1 flex items-center gap-1.5 text-sm font-medium text-primary'>
+                  <span
+                    aria-hidden
+                    className='size-2 rounded-full'
+                    style={{ backgroundColor: identity.color }}
+                  />
+                  {toIdentityLabel(identity)}
+                </p>
+                <p className='heading-1 break-keep text-balance'>
+                  {identity.name}
+                </p>
+                <div className='mt-1 flex flex-wrap items-baseline gap-x-2'>
+                  <h1 className='text-base font-bold text-text-strong [overflow-wrap:anywhere] md:text-lg'>
+                    {displayName}님의 서재
+                  </h1>
+                  {readerCard.stat && (
+                    <p className='text-sm text-text-subtle'>
+                      {readerCard.stat}
+                    </p>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <p className='mb-1 text-sm font-medium text-primary'>
+                  공개 서재
+                </p>
+                <h1 className='heading-1 [overflow-wrap:anywhere]'>
+                  {displayName}님의 서재
+                </h1>
+                {readerCard.stat && (
+                  <p className='mt-1 text-sm text-text-subtle'>
+                    {readerCard.stat}
+                  </p>
+                )}
+              </>
+            )}
             <div className='mt-2 flex flex-wrap items-center gap-x-4 gap-y-2'>
               <span className='text-sm text-text-subtle'>@{username}</span>
               <FollowStats
@@ -229,10 +279,13 @@ export const PublicLibraryHeader = ({
                 </Button>
               )}
 
-              {/* 모바일에서는 네이티브 공유 시트로, 데스크톱에서는 주소 복사로 떨어진다 */}
-              <ShareButton
+              {/* 공유 버튼 하나 → 시트에서 스토리 이미지 또는 링크 (인스타·카톡 구분은 휴대폰 공유 시트가 한다) */}
+              <ShareSheetButton
                 path={`/${username}`}
+                imagePath={`/${username}/story-image`}
+                fileName={`page0127-${username}.png`}
                 title={`${displayName}님의 책장`}
+                sheetTitle='서재 공유하기'
                 text='책장을 보면, 그 사람이 보입니다.'
               />
             </div>
@@ -242,6 +295,8 @@ export const PublicLibraryHeader = ({
         {hasTasteCard && (
           <TasteProfileCard
             history={analysisHistory}
+            // 명함이 이미 AI 성향 이름을 크게 말한다 — 카드는 근거(주제·변화)만 보여 준다
+            showType={identity?.source !== 'analysis'}
             isOwner={isOwnProfile}
             action={analyzeButton}
             analyzableBookCount={analyzableBookCount}

@@ -7,6 +7,7 @@ import { cn } from '@/shared/lib/utils';
 
 import { toCoverSource } from '@/entities/book';
 
+import { isCrowdCount } from '../model/rankingTitle';
 import { RankDeltaBadge } from './RankDeltaBadge';
 
 import type { BookRanking } from '@/entities/book';
@@ -22,8 +23,9 @@ import type { BookRanking } from '@/entities/book';
  *   "매일 집계가 돌고 있다"는 증거 (RankDeltaBadge 참조)
  * - 좋아요 버튼은 여기 두지 않는다 — 비교·행동은 책 정보 페이지의 일이다.
  */
-/**
- * 근거 수치를 화면에 적는 최소 인원.
+/*
+ * 근거 수치("12명이 완독")는 제목이 "많이"로 돌아가는 기준과 같은 인원부터 적는다
+ * (isCrowdCount — rankingTitle.ts).
  *
  * 왜 감추나: 1~2명일 때 "1명이 완독"을 그대로 박으면, 처음 온 사람은 랭킹이 아니라
  * **아무도 안 쓰는 서비스**를 본다. 순위 자체는 여전히 맞다 — 적은 표본을 크게 말하지
@@ -32,7 +34,6 @@ import type { BookRanking } from '@/entities/book';
  * 이 값 아래에서는 줄을 통째로 지운다. 표지·순위·제목·저자 네 필드가 남아
  * 발견 면의 밀도는 그대로다(00_docs/07 §6-9).
  */
-const MIN_COUNT_TO_SHOW = 3;
 
 type BookRankingListProps = {
   title: string;
@@ -77,6 +78,8 @@ export const BookRankingList = ({
           return (
             <li key={item.isbn}>
               <Link
+                // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
+                prefetch={false}
                 href={`/books/info/${book.id}`}
                 className='group flex items-center gap-4 py-3.5'
               >
@@ -117,8 +120,8 @@ export const BookRankingList = ({
                     </p>
                   )}
                   {/* 랭킹 근거 수치 — 발견 면의 마지막 필드.
-                      표본이 얇으면 적지 않는다(MIN_COUNT_TO_SHOW 참조) */}
-                  {item.count >= MIN_COUNT_TO_SHOW && (
+                      표본이 얇으면 적지 않는다(isCrowdCount 참조) */}
+                  {isCrowdCount(item.count) && (
                     <p className='mt-1 flex items-center gap-1 text-xs text-text-subtle'>
                       {type === 'best' && (
                         <Heart

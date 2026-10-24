@@ -3,6 +3,13 @@
 // 내부 폴더 구조(model/, lib/, api/)는 외부에 노출하지 않는다
 
 export { getRecapBooks } from './api/getRecapBooks';
+export {
+  buildRecapArchive,
+  RECAP_ARCHIVE_WEEKS,
+  type RecapWeek,
+  toWeekRangeLabel,
+  toWeeksAgoLabel,
+} from './lib/buildRecapArchive';
 export { selectRecapCard } from './lib/selectRecapCard';
 export { toRecapNotice } from './lib/toRecapNotice';
 export type { RecapBook, RecapCard } from './model/types';

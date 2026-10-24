@@ -17,6 +17,7 @@ import { buildWebSiteJsonLd } from '@/shared/lib/seo/structuredData';
 
 import { ShelfPreviewSection } from '@/features/shelf-preview/ui/ShelfPreviewSection';
 
+import { rankingFallbackTitle } from '@/widgets/book/model/rankingTitle';
 import { BookRankingError } from '@/widgets/book/ui/BookRankingError';
 import { BookRankingListSkeleton } from '@/widgets/book/ui/BookRankingListSkeleton';
 import { BookRankingSection } from '@/widgets/book/ui/BookRankingSection';
@@ -170,12 +171,11 @@ const Home = async () => {
           </ErrorBoundary>
 
           <ErrorBoundary
-            fallback={<BookRankingError title='이번 주 많이 읽힌 책' />}
+            fallback={<BookRankingError title={rankingFallbackTitle('most')} />}
           >
             <Suspense fallback={<BookRankingListSkeleton />}>
               <BookRankingSection
                 type='most'
-                title='이번 주 많이 읽힌 책'
                 meta={`${aggregatedDate} 기준`}
                 myReadIsbns={myReadIsbns}
               />
@@ -188,12 +188,11 @@ const Home = async () => {
 
         {/* 인생책 랭킹 — 데이터가 쌓이면 나타난다 */}
         <ErrorBoundary
-          fallback={<BookRankingError title='가장 많은 사람의 인생책' />}
+          fallback={<BookRankingError title={rankingFallbackTitle('best')} />}
         >
           <Suspense fallback={null}>
             <BookRankingSection
               type='best'
-              title='가장 많은 사람의 인생책'
               meta={`${aggregatedDate} 기준`}
               myReadIsbns={myReadIsbns}
             />
@@ -212,7 +211,7 @@ const Home = async () => {
               책장은 한 권부터 시작합니다
             </h2>
             <p className='text-sm text-white/70'>
-              구글 계정으로 10초면 시작할 수 있어요.
+              구글·카카오로 10초면 시작할 수 있어요.
             </p>
             {/* GA4 이벤트 추적을 위해 Client 컴포넌트로 분리된 CTA */}
             <div className='mt-2'>

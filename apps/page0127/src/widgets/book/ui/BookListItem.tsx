@@ -137,7 +137,12 @@ const BookListItemCover = ({
   );
 
   return (
-    <Link href={`/books/info/${id}`} title={`${title} 상세 내용 보기`}>
+    <Link
+      // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
+      prefetch={false}
+      href={`/books/info/${id}`}
+      title={`${title} 상세 내용 보기`}
+    >
       {inner}
     </Link>
   );
@@ -152,10 +157,16 @@ const BookListItemContent = ({
 }: BookListItemContentProps) => (
   <div className={styles.content}>
     <h3 className={styles.title}>
-      <Link href={`/books/info/${id}`}>{title}</Link>
+      <Link
+        // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
+        prefetch={false}
+        href={`/books/info/${id}`}
+      >
+        {title}
+      </Link>
     </h3>
     <p className={styles.author}>{author}</p>
-    <div className='mt-2 text-center'>
+    <div className={styles.like}>
       <BookLikeButton
         bookId={id}
         initialLiked={isLiked}
