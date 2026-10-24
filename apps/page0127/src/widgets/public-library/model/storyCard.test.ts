@@ -83,7 +83,7 @@ describe('toStoryCardProps', () => {
   it('성향이 없으면 라벨 없이 슬로건이 가장 큰 줄이다 — 이름은 프로필 줄이 말한다', () => {
     const props = toStoryCardProps(data(), 'hyejin', undefined);
     expect(props.label).toBeNull();
-    expect(props.headline).toBe('책장을 보면, 그 사람이 보인다.');
+    expect(props.headline).toBe('책장을 보면,\n그 사람이 보인다.');
   });
 
   it('권수는 올해 3권 이상이면 올해, 아니면 전체, 둘 다 적으면 없다', () => {

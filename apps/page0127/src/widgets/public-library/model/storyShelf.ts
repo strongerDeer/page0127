@@ -38,19 +38,19 @@ export const toStoryShelf = (
         src: book.cover_image,
       };
     }
+    // 두께 폭 — 책등 이미지가 없거나 받지 못했을 때 글자 책등으로 세우는 폭
+    const width = spineWidthPx(book.thickness_mm);
     if (book.spine_image) {
       return {
         kind: 'spine',
         key: book.id,
         title: book.title,
         src: book.spine_image,
+        // 실제 비율은 라우트가 이미지를 받아 채운다(resolveStoryShelf)
+        ratio: null,
+        fallbackWidth: width,
       };
     }
-    return {
-      kind: 'plain',
-      key: book.id,
-      title: book.title,
-      width: spineWidthPx(book.thickness_mm),
-    };
+    return { kind: 'plain', key: book.id, title: book.title, width };
   });
 };

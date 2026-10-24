@@ -220,7 +220,9 @@ export const PublicLibraryHeader = ({
                   />
                   {toIdentityLabel(identity)}
                 </p>
-                <p className='heading-1 break-keep'>{identity.name}</p>
+                <p className='heading-1 break-keep text-balance'>
+                  {identity.name}
+                </p>
                 <div className='mt-1 flex flex-wrap items-baseline gap-x-2'>
                   <h1 className='text-base font-bold text-text-strong [overflow-wrap:anywhere] md:text-lg'>
                     {displayName}님의 서재
