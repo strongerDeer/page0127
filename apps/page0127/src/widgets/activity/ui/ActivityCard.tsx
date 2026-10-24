@@ -67,6 +67,8 @@ const BookAttachmentLink = ({
 
   return (
     <Link
+      // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
+      prefetch={false}
       href={`/${username}/${bookId}`}
       className={`${className} transition-colors hover:bg-sunken`}
     >

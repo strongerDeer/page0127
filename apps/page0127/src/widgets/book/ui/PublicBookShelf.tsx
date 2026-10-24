@@ -129,6 +129,8 @@ export const PublicBookShelf = ({
           return (
             <li key={book.id} onMouseEnter={placeTip} onFocus={placeTip}>
               <Link
+                // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
+                prefetch={false}
                 href={getHref(book)}
                 className={isReread ? styles.reread : undefined}
                 aria-label={isReading ? `${book.title} (읽는 중)` : undefined}
