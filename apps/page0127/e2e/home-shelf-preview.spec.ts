@@ -94,7 +94,8 @@ test('비로그인 홈은 맛보기 바로 다음에 취향 노트 예시를 보
   const top = async (name: RegExp) =>
     (await page.getByRole('heading', { name }).first().boundingBox())?.y ?? 0;
   const taste = await top(/취향의 문장이 됩니다/);
-  const ranking = await top(/이번 주 많이 읽힌 책/);
+  // 제목은 표본 크기에 따라 바뀐다(rankingTitle.ts) — 두 제목 모두 잡는다
+  const ranking = await top(/리더들이 완독한 책|많이 읽힌 책/);
   // 랭킹은 독자가 적은 지금 한 사람의 책장에 가깝다 — 방금 고른 책의 다음 보상을 먼저 보여 준다
   expect(taste).toBeGreaterThan(0);
   expect(taste).toBeLessThan(ranking);
