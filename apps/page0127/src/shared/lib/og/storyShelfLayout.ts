@@ -36,8 +36,8 @@ export const SHELF_BOOK_GAP = 3;
 const MIN_ONE_ROW = 170;
 /** 책이 적어도 이보다 높이지 않는다 — 표지 한 장이 화면을 덮는다 */
 const MAX_ONE_ROW = 380;
-/** 두 단일 때 한 단의 최대 높이 — 두 단과 숫자가 아래 흰 면에 함께 들어가는 높이 */
-const MAX_TWO_ROW = 210;
+/** 두 단일 때 한 단의 최대 높이 — 두 단과 숫자가 아래 흰 면(경계 고정, ≈700px)에 함께 들어가는 높이 */
+const MAX_TWO_ROW = 190;
 
 /** 높이 1 일 때의 폭 */
 const unitWidth = (item: StoryShelfItem): number =>

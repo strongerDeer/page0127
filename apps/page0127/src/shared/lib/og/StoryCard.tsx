@@ -39,6 +39,11 @@ const ROW_COVER_GAP = 16;
 
 /** 흰 면 위로 올라온 카드의 둥근 위 모서리 */
 const PANEL_RADIUS = 56;
+/**
+ * 파랑·흰 면의 경계 — 고정이다. 성향 이름이 한 줄이든 두 줄이든 경계가 같은 자리에 서야
+ * 누구의 서재든 같은 틀로 읽힌다. 위 면에서 가장 긴 경우(이름 두 줄 + 태그)가 ≈800px 에서 끝난다.
+ */
+const PANEL_TOP = 900;
 
 /**
  * 책등 이미지가 없는 책의 색 — 흰 면 위라 흰색은 쓰지 않는다. 남색·브랜드 파랑·옅은 파랑을 번갈아 세운다
@@ -268,12 +273,14 @@ export const StoryCard = ({
         backgroundImage: STAGE_BACKGROUND,
       }}
     >
-      {/* 위 — 파란 면 */}
+      {/* 위 — 파란 면. 높이가 고정이라 내용이 짧으면 아래가 숨을 쉰다 */}
       <div
         style={{
           display: 'flex',
           flexDirection: 'column',
-          padding: `${STORY_SAFE_Y}px ${STORY_GUTTER}px ${72 + PANEL_RADIUS}px`,
+          flexShrink: 0,
+          height: PANEL_TOP + PANEL_RADIUS,
+          padding: `${STORY_SAFE_Y}px ${STORY_GUTTER}px 0`,
           color: '#ffffff',
         }}
       >
@@ -378,12 +385,17 @@ export const StoryCard = ({
         )}
       </div>
 
-      {/* 아래 — 흰 면. 위 모서리를 둥글게 해 파란 무대 위로 올라온 카드처럼 */}
+      {/*
+        아래 — 흰 면. 위 모서리를 둥글게 해 파란 무대 위로 올라온 카드처럼.
+        책장과 권수는 한 덩어리(책장 + 캡션)라 둘 다 가운데 — 책만 가운데고 숫자가 왼쪽이면 어긋나 보인다.
+        세로도 가운데: 아래 250px(인스타 답장창 자리)을 뺀 남은 칸의 한가운데
+      */}
       <div
         style={{
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
+          alignItems: 'center',
           flex: 1,
           marginTop: -PANEL_RADIUS,
           padding: `64px ${STORY_GUTTER}px ${STORY_SAFE_Y}px`,
@@ -414,7 +426,12 @@ export const StoryCard = ({
         {/* 숫자는 권수 하나만 크게 — 서재 통계 카드와 같은 문법(큰 숫자 + 작은 단위) */}
         {count && (
           <div
-            style={{ display: 'flex', flexDirection: 'column', marginTop: 56 }}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              marginTop: 56,
+            }}
           >
             <div
               style={{
@@ -430,7 +447,7 @@ export const StoryCard = ({
               <div
                 style={{
                   display: 'flex',
-                  fontSize: 168,
+                  fontSize: 140,
                   fontWeight: 800,
                   lineHeight: 1,
                   letterSpacing: -4,
@@ -441,8 +458,8 @@ export const StoryCard = ({
               <div
                 style={{
                   display: 'flex',
-                  marginLeft: 12,
-                  fontSize: 56,
+                  marginLeft: 10,
+                  fontSize: 48,
                   fontWeight: 700,
                   color: OG_COLORS.inkSoft,
                 }}

@@ -61,7 +61,7 @@ describe('toShelfLayout', () => {
     expect(Math.max(a, b)).toBeLessThanOrEqual(WIDTH);
     // 한 단에 몇 권만 남는 모양이 아니다
     expect(Math.min(a, b) / Math.max(a, b)).toBeGreaterThan(0.8);
-    expect(layout.bookHeight).toBeLessThanOrEqual(210);
+    expect(layout.bookHeight).toBeLessThanOrEqual(190);
   });
 
   it('비율을 모르는 책등도 추정으로 세운다', () => {
