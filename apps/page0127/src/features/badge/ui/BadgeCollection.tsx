@@ -30,11 +30,7 @@ export const BadgeCollection = ({
 }: BadgeCollectionProps) => {
   const [view, setView] = useState<'cover' | 'spine'>('cover');
   const badges = useMemo(
-    () =>
-      computeBadges(
-        { books, readingGoal, firstTasteAnalysisAt },
-        { includeGrowthSteps: true }
-      ),
+    () => computeBadges({ books, readingGoal, firstTasteAnalysisAt }),
     [books, readingGoal, firstTasteAnalysisAt]
   );
   const earnedCount = badges.filter((badge) => badge.earned).length;

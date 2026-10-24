@@ -178,14 +178,14 @@ export const MilestonesAndReread: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(
-      canvas.getByRole('button', { name: '책장 · 1권 (획득)' })
-    ).toBeVisible();
+      canvas.queryByRole('button', { name: '책장 · 1권 (획득)' })
+    ).not.toBeInTheDocument();
     await expect(
       canvas.getByRole('button', { name: '책장 · 10권 (획득)' })
     ).toBeVisible();
     await expect(
-      canvas.getByRole('button', { name: '책장 · 50권 (미획득)' })
-    ).toBeVisible();
+      canvas.queryByRole('button', { name: '책장 · 50권 (미획득)' })
+    ).not.toBeInTheDocument();
     await expect(
       canvas.getByRole('button', { name: '다시 펼친 책 (획득)' })
     ).toBeVisible();

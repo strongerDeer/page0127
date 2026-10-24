@@ -15,7 +15,7 @@ import styles from './BadgeShelf.module.css';
 
 type BadgeSummaryProps = BadgeInput & { username: string; isOwner: boolean };
 
-/** 받은 모든 단계의 배지를 나란히 놓고, 넘치면 가로로 탐색한다. */
+/** 받은 배지를 나란히 놓고, 넘치면 가로로 탐색한다. */
 export const BadgeSummary = ({
   username,
   isOwner,
@@ -24,11 +24,7 @@ export const BadgeSummary = ({
   firstTasteAnalysisAt,
 }: BadgeSummaryProps) => {
   const badges = useMemo(
-    () =>
-      computeBadges(
-        { books, readingGoal, firstTasteAnalysisAt },
-        { includeGrowthSteps: true }
-      ),
+    () => computeBadges({ books, readingGoal, firstTasteAnalysisAt }),
     [books, readingGoal, firstTasteAnalysisAt]
   );
   const earned = badges

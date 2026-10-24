@@ -256,45 +256,27 @@ describe('회독과 성장 단계 회귀', () => {
       ).earned
     ).toBe(false);
   });
-  it('전체 책장은 25칸이고 과거 단계마다 실제 달성일과 근거를 보존한다', () => {
+  it('성장은 최고 달성 단계 하나와 다음 단계 진행도를 표시한다', () => {
     const books = Array.from({ length: 12 }, (_, i) =>
       done(`2026-01-${String(i + 1).padStart(2, '0')}`, {
         id: `b${i}`,
         isbn: `isbn${i}`,
       })
     );
-    const badges = computeBadges(
-      { books, readingGoal: null, firstTasteAnalysisAt: null },
-      { includeGrowthSteps: true }
-    );
-    expect(badges).toHaveLength(25);
-    const shelf = badges.filter((b) => b.id === 'shelf');
-    expect(shelf.map((b) => b.earned)).toEqual([
-      true,
-      true,
-      false,
-      false,
-      false,
-    ]);
-    expect(shelf[0]).toMatchObject({
-      level: 1,
-      earnedAt: '2026-01-01',
-      book: { id: 'b0' },
-      progress: null,
+    const badges = computeBadges({
+      books,
+      readingGoal: null,
+      firstTasteAnalysisAt: null,
     });
-    expect(shelf[1]).toMatchObject({
+    expect(badges).toHaveLength(19);
+    const shelf = badges.filter((b) => b.id === 'shelf');
+    expect(shelf).toHaveLength(1);
+    expect(shelf[0]).toMatchObject({
       level: 2,
+      earned: true,
       earnedAt: '2026-01-10',
       book: { id: 'b9' },
-      progress: null,
-    });
-    expect(shelf[2]).toMatchObject({
-      level: 3,
-      earnedAt: null,
       progress: { current: 12, target: 50 },
     });
-    expect(
-      computeBadges({ books, readingGoal: null, firstTasteAnalysisAt: null })
-    ).toHaveLength(19);
   });
 });

@@ -150,10 +150,11 @@ const badge = (
   progress: extra.progress ?? null,
 });
 
-export const computeBadges = (
-  { books, readingGoal, firstTasteAnalysisAt }: BadgeInput,
-  { includeGrowthSteps = false } = {}
-): Badge[] => {
+export const computeBadges = ({
+  books,
+  readingGoal,
+  firstTasteAnalysisAt,
+}: BadgeInput): Badge[] => {
   const completed = books
     .filter((book) => book.status === 'completed')
     .sort(byReadOrder);
@@ -234,7 +235,7 @@ export const computeBadges = (
     return null;
   })();
 
-  const result = [
+  return [
     badge(
       {
         id: 'shelf',
@@ -437,21 +438,4 @@ export const computeBadges = (
       readingHit(3)
     ),
   ];
-  if (!includeGrowthSteps) return result;
-  return result.flatMap((item) => {
-    if (item.kind !== 'growth') return [item];
-    const levels = item.id === 'shelf' ? SHELF_LEVELS : WIDE_VIEW_LEVELS;
-    const current =
-      item.id === 'shelf' ? countDistinct(completed) : categoryOrder.length;
-    return levels.map((target, index) => {
-      const hit =
-        item.id === 'shelf'
-          ? nthDistinct(completed, target)
-          : hitOf(categoryOrder[target - 1]);
-      return badge(item, hit, {
-        level: index + 1,
-        progress: hit ? null : { current, target },
-      });
-    });
-  });
 };
