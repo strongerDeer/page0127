@@ -28,11 +28,21 @@ describe('isNoiseEvent', () => {
     ).toBe(true);
   });
 
+  it('Node 폐기 예정 경고는 걸러낸다', () => {
+    expect(
+      isNoiseEvent(
+        '(node:7) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized'
+      )
+    ).toBe(true);
+  });
+
   it('일반 오류는 통과시킨다 — 필터가 진짜 오류를 삼키면 안 된다', () => {
     expect(isNoiseEvent('취향 분석 실패: 401 Incorrect API key')).toBe(false);
     expect(isNoiseEvent('공개 책 기록 조회 실패')).toBe(false);
     expect(
-      isNoiseEvent('[health] 마이그레이션 미적용: 코드는 20260729000002 를 기대한다')
+      isNoiseEvent(
+        '[health] 마이그레이션 미적용: 코드는 20260729000002 를 기대한다'
+      )
     ).toBe(false);
   });
 
