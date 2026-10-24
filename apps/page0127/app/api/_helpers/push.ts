@@ -9,6 +9,8 @@ import {
   type PushableNotification,
 } from '@/entities/notification';
 
+import { loadNotificationTargets } from './notificationTargets';
+
 import 'server-only';
 
 /**
@@ -108,6 +110,9 @@ export const sendPushForNotifications = async (
     data?.forEach((actor) => actors.set(actor.id, actor));
   }
 
+  // 알림이 가리키는 책 제목·답글 여부 — 목록과 같은 문장을 만든다
+  const targetOf = await loadNotificationTargets(admin, notifications);
+
   // 받는 사람별 읽지 않은 알림 수 — 서비스워커가 앱 아이콘 뱃지 숫자로 쓴다.
   // 사람 수만큼 count 쿼리가 나가지만, 한 번에 받는 사람이 많은 건 크론뿐이고
   // 그것도 구독한 사람(위 subscriptions)으로 좁힌 뒤다.
@@ -130,7 +135,8 @@ export const sendPushForNotifications = async (
   const jobs = notifications.flatMap((notification) => {
     const built = buildPushPayload(
       notification,
-      actors.get(notification.actor_id) ?? null
+      actors.get(notification.actor_id) ?? null,
+      targetOf(notification)
     );
     if (!built) return [];
     const payload = {

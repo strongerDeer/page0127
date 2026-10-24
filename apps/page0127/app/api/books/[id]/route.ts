@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server';
 
+import { createAdminClient } from '@/shared/config/supabase/admin';
+
 import { bookSelect, withPersonalMemo } from '@/entities/book/api/bookMemo';
 import { isNewlyCompleted } from '@/entities/book/model/completion';
 
@@ -135,6 +137,18 @@ export async function DELETE(request: NextRequest, { params }: Params) {
 
     if (error) return errorResponse(error.message);
     if (!data || data.length === 0) return notFoundResponse('책');
+
+    // 이 책을 가리키는 알림(좋아요·댓글·답글)도 지운다 — 남겨 두면 누를 때 404 다.
+    // 답글 알림은 다른 사람(부모 댓글 작성자)에게 간 것이라 RLS 로는 못 지운다 → 관리자 클라이언트.
+    // 책은 이미 지워졌으므로 실패해도 응답은 성공으로 둔다(알림만 남는다).
+    const { error: notifyError } = await createAdminClient()
+      .from('notifications')
+      .delete()
+      .eq('target_type', 'book')
+      .eq('target_id', id);
+    if (notifyError) {
+      console.error('삭제한 책의 알림 정리 실패:', notifyError.message);
+    }
 
     return successResponse({ message: '삭제되었습니다.' });
   } catch {

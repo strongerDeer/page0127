@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 
 import { getCurrentUser, getSupabaseClient } from '../_helpers/auth';
+import { loadNotificationTargets } from '../_helpers/notificationTargets';
 import { errorResponse, successResponse } from '../_helpers/response';
 
 /**
@@ -58,10 +59,15 @@ export async function GET(request: NextRequest) {
 
     // actor 프로필 정보 조회 (별도로)
     const actorIds = [...new Set(notifications.map((n) => n.actor_id))];
-    const { data: profiles, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, nickname, photo_url, username')
-      .in('id', actorIds);
+    // 알림이 가리키는 책 제목·답글 여부 — 프로필과 함께 읽는다
+    const [{ data: profiles, error: profileError }, targetOf] =
+      await Promise.all([
+        supabase
+          .from('profiles')
+          .select('id, nickname, photo_url, username')
+          .in('id', actorIds),
+        loadNotificationTargets(supabase, notifications),
+      ]);
 
     if (profileError) {
       console.error('프로필 조회 에러:', profileError);
@@ -72,6 +78,7 @@ export async function GET(request: NextRequest) {
 
     const notificationsWithActor = notifications.map((notification) => ({
       ...notification,
+      target: targetOf(notification),
       actor: profileMap.get(notification.actor_id) || {
         id: notification.actor_id,
         nickname: '알 수 없음',
