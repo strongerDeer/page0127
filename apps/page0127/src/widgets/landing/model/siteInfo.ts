@@ -7,10 +7,19 @@
 export const SITE_INFO = {
   name: 'page0127.',
   since: '2025년 11월',
-  lastUpdated: '2026년 10월 10일',
+  lastUpdated: '2026년 10월 23일',
   contact: {
     // 카카오톡 1:1 오픈채팅 — 방문자가 링크로 들어와 1:1 대화, 운영자는 카카오톡 알림으로 수신
     kakaoOpenChatUrl: 'https://open.kakao.com/o/scK1DkFi',
+  },
+  /**
+   * 개인정보 보호책임자 — 개인정보보호법 제30조가 처리방침에 성명(또는 부서)과 연락처를
+   * 적게 한다. 비어 있으면 개인정보처리방침에 그 줄이 나오지 않는다.
+   * ⚠️ 운영자가 직접 채울 값이다(공개 페이지에 실리는 실명·이메일이라 임의로 넣지 않았다).
+   */
+  privacyOfficer: {
+    name: '' as string,
+    email: '' as string,
   },
 } as const;
 

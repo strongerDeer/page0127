@@ -80,6 +80,8 @@ export const CommentForm = ({
         onChange={(e) => setContent(e.target.value)}
         placeholder={placeholder}
         rows={3}
+        // 서버 COMMENT_MAX_LENGTH(api/_helpers/bookComments)와 같은 값
+        maxLength={2000}
         disabled={createMutation.isPending}
         className='resize-none'
       />

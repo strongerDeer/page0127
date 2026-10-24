@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { SITE_INFO } from '@/widgets/landing/model/siteInfo';
 import { DocList, DocPage, DocSection } from '@/widgets/landing/ui/DocPage';
 
 import type { Metadata } from 'next';
@@ -72,10 +73,13 @@ const PrivacyPage = () => {
             '서비스에 접속한 날짜와 그날 첫 접속 시각',
             '화면이 뜨는 속도 같은 성능 측정값 (페이지 주소, 모바일·데스크톱 구분, 브라우저 종류)',
             '오류가 났을 때의 오류 내용, 발생한 페이지 주소, 브라우저 정보',
+            '알림을 켠 경우 — 이 기기로 알림을 보내기 위한 푸시 구독 정보(구독 주소·암호화 키)와 브라우저 종류',
           ]}
         />
         <p className='mt-4 text-sm text-text-subtle'>
-          주민등록번호, 결제 정보, 위치 정보는 받지 않습니다.
+          주민등록번호, 결제 정보, 위치 정보는 받지 않습니다. 만 14세 미만은
+          가입할 수 없어 아동의 개인정보는 받지 않으며, 만 14세 미만으로
+          확인되면 계정과 기록을 바로 삭제합니다.
         </p>
       </DocSection>
 
@@ -85,7 +89,7 @@ const PrivacyPage = () => {
             '로그인과 본인 확인',
             '독서 기록을 저장하고 책장·통계로 보여 주기',
             'AI 독서 취향 분석과 독서 케미 분석',
-            '팔로우한 사람의 활동 알림',
+            '알림 보내기 — 팔로우·좋아요·댓글, 오래 읽고 있는 책, 주간 회상 (알림을 켜면 기기 푸시로도)',
             '공개로 설정한 책장을 다른 사람에게 보여 주기',
             '신고된 댓글을 확인하고 조치하기',
             '서비스 개선 (어떤 기능이 쓰이는지 이용 통계로 확인)',
@@ -148,6 +152,18 @@ const PrivacyPage = () => {
                   페이지 조회, 기기·브라우저 및 성능 정보
                 </td>
               </tr>
+              <tr className='border-b border-line-soft'>
+                <td className='py-2.5 pr-4'>
+                  브라우저 푸시 서비스 (Google·Apple·Mozilla 등, 쓰는 브라우저에
+                  따라)
+                </td>
+                <td className='py-2.5 pr-4'>
+                  푸시 알림 전달 (알림을 켠 경우만)
+                </td>
+                <td className='py-2.5'>
+                  푸시 구독 주소, 알림 문구 (내용은 암호화되어 전달됩니다)
+                </td>
+              </tr>
               <tr>
                 <td className='py-2.5 pr-4'>Sentry</td>
                 <td className='py-2.5 pr-4'>오류 감지</td>
@@ -198,6 +214,13 @@ const PrivacyPage = () => {
                 <td className='py-2.5 pr-4'>페이지 조회, 기기·브라우저 정보</td>
                 <td className='py-2.5'>이용 통계</td>
               </tr>
+              <tr className='border-b border-line-soft'>
+                <td className='py-2.5 pr-4'>브라우저 푸시 서비스 (미국 등)</td>
+                <td className='py-2.5 pr-4'>
+                  푸시 구독 주소, 암호화된 알림 문구
+                </td>
+                <td className='py-2.5'>푸시 알림 전달 (알림을 켠 경우만)</td>
+              </tr>
               <tr>
                 <td className='py-2.5 pr-4'>Sentry (미국)</td>
                 <td className='py-2.5 pr-4'>
@@ -212,7 +235,7 @@ const PrivacyPage = () => {
           items={[
             '언제, 어떻게 — 서비스를 이용할 때마다 암호화된 인터넷 통신으로 전송됩니다.',
             '얼마나 보관 — 각 회사의 보관 정책에 따른 기간 동안 보관된 뒤 삭제됩니다.',
-            '거부하려면 — AI 분석을 쓰지 않으면 OpenAI로는 아무것도 전송되지 않습니다. 나머지는 서비스 운영에 꼭 필요한 처리라 거부하려면 서비스 이용을 멈추고 탈퇴해야 합니다. 브라우저 설정으로 통계 쿠키는 막을 수 있습니다.',
+            '거부하려면 — AI 분석을 쓰지 않으면 OpenAI로는, 알림을 끄면 푸시 서비스로는 아무것도 전송되지 않습니다. 나머지는 서비스 운영에 꼭 필요한 처리라 거부하려면 서비스 이용을 멈추고 탈퇴해야 합니다. 브라우저 설정으로 통계 쿠키는 막을 수 있습니다.',
           ]}
         />
       </DocSection>
@@ -272,7 +295,21 @@ const PrivacyPage = () => {
         </p>
       </DocSection>
 
-      <DocSection title='10. 개인정보 보호 담당 및 문의'>
+      <DocSection title='10. 개인정보 보호책임자 및 문의'>
+        {(SITE_INFO.privacyOfficer.name || SITE_INFO.privacyOfficer.email) && (
+          <DocList
+            items={[
+              ...(SITE_INFO.privacyOfficer.name
+                ? [
+                    `개인정보 보호책임자 — ${SITE_INFO.privacyOfficer.name} (page0127. 운영자)`,
+                  ]
+                : []),
+              ...(SITE_INFO.privacyOfficer.email
+                ? [`이메일 — ${SITE_INFO.privacyOfficer.email}`]
+                : []),
+            ]}
+          />
+        )}
         <p>
           개인정보 보호업무 담당은 page0127. 운영자입니다. 개인정보 처리에 관한
           문의나 요청(열람·수정·삭제 등)은{' '}
@@ -281,6 +318,21 @@ const PrivacyPage = () => {
           </Link>
           의 카카오톡 창구로 연락 주세요.
         </p>
+      </DocSection>
+
+      <DocSection title='11. 권익 침해 구제 방법'>
+        <p>
+          개인정보 침해에 대한 신고나 상담이 필요하면 아래 기관에 문의할 수
+          있습니다.
+        </p>
+        <DocList
+          items={[
+            '개인정보분쟁조정위원회 — 1833-6972 (www.kopico.go.kr)',
+            '개인정보침해신고센터 — 118 (privacy.kisa.or.kr)',
+            '대검찰청 — 1301 (www.spo.go.kr)',
+            '경찰청 — 182 (ecrm.police.go.kr)',
+          ]}
+        />
       </DocSection>
     </DocPage>
   );

@@ -2,6 +2,8 @@
 
 import { useActionState, useEffect, useId, useState } from 'react';
 
+import Link from 'next/link';
+
 import { Button, Input, Label } from '@repo/ui';
 import { toast } from 'sonner';
 
@@ -53,10 +55,12 @@ export const OnboardingForm = ({
   const ids = {
     username: `${formId}-username`,
     nickname: `${formId}-nickname`,
+    agreement: `${formId}-agreement`,
   };
 
   const [username, setUsername] = useState(initialUsername);
   const [nickname, setNickname] = useState(initialNickname);
+  const [agreed, setAgreed] = useState(false);
 
   // 어떤 값을 확인한 결과인지 함께 들고 있어야, 입력이 더 진행된 뒤 도착한
   // 낡은 응답을 화면에 쓰지 않는다.
@@ -117,7 +121,10 @@ export const OnboardingForm = ({
         : { kind: 'taken', message: checked.message };
 
   const canSubmit =
-    field.kind === 'available' && nickname.trim().length > 0 && !isPending;
+    field.kind === 'available' &&
+    nickname.trim().length > 0 &&
+    agreed &&
+    !isPending;
 
   return (
     <form action={formAction} className='space-y-6'>
@@ -169,6 +176,33 @@ export const OnboardingForm = ({
         <p className='text-xs text-text-subtle'>
           피드와 댓글에 이 이름으로 보입니다. 나중에 바꿀 수 있어요.
         </p>
+      </div>
+
+      {/* 만 14세 미만은 법정대리인 동의가 필요하다(개인정보보호법 제22조의2).
+          그 절차를 두지 않는 대신 가입 대상에서 뺀다 — 약관 2조와 짝이다. */}
+      <div className='flex items-start gap-2'>
+        <input
+          type='checkbox'
+          id={ids.agreement}
+          name='agreement'
+          checked={agreed}
+          onChange={(e) => setAgreed(e.target.checked)}
+          className='mt-0.5 h-4 w-4 shrink-0'
+        />
+        <Label
+          htmlFor={ids.agreement}
+          className='text-sm leading-relaxed font-normal break-keep'
+        >
+          만 14세 이상이며,{' '}
+          <Link href='/terms' target='_blank' className='underline'>
+            이용약관
+          </Link>
+          과{' '}
+          <Link href='/privacy' target='_blank' className='underline'>
+            개인정보처리방침
+          </Link>
+          을 확인했어요.
+        </Label>
       </div>
 
       <Button type='submit' size='lg' className='w-full' disabled={!canSubmit}>

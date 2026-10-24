@@ -6,6 +6,10 @@ import { PageContainer } from '@repo/ui';
 
 import { createClient } from '@/shared/config/supabase/server';
 
+import {
+  BOOK_WITH_MEMO_SELECT,
+  withPersonalMemo,
+} from '@/entities/book/api/bookMemo';
 import { getBookReadings } from '@/entities/book/api/getBookReadings';
 import { getPublicBookRecord } from '@/entities/book/api/getPublicBookRecord';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
@@ -15,6 +19,7 @@ import { toDisplayName } from '@/entities/profile/model/displayName';
 import { ArchiveToggleButton } from '@/features/book/ui/ArchiveToggleButton';
 import { DeleteBookButton } from '@/features/book/ui/DeleteBookButton';
 import { ShareButton } from '@/features/share';
+import { toPendingBook } from '@/features/shelf-preview/model/toPendingBook';
 import { ReadTooButton } from '@/features/shelf-preview/ui/ReadTooButton';
 
 import { BookDetailContent } from '@/widgets/book/ui/BookDetailContent';
@@ -121,7 +126,8 @@ const BookDetailPage = async ({ params }: PageProps) => {
 
   let bookQuery = supabase
     .from('books')
-    .select('*')
+    // 메모는 RLS 가 주인에게만 붙인다 — 방문자에게는 null
+    .select(BOOK_WITH_MEMO_SELECT)
     .eq('id', bookId)
     .eq('user_id', profile.id);
 
@@ -129,11 +135,13 @@ const BookDetailPage = async ({ params }: PageProps) => {
     bookQuery = bookQuery.eq('is_public', true);
   }
 
-  const { data: book } = await bookQuery.single<Book>();
+  const { data: row } = await bookQuery.maybeSingle();
 
-  if (!book) {
+  if (!row) {
     notFound();
   }
+
+  const book: Book = withPersonalMemo(row);
 
   // 책장은 회독을 한 권으로 합쳐 최신 회독만 링크한다 → 옛 회독으로 가는 길을
   // 여기서 되돌려 준다. 방문자에게는 공개된 회독만 보인다.
@@ -181,7 +189,10 @@ const BookDetailPage = async ({ params }: PageProps) => {
         visitorAction={
           // 남의 책일 때만 — 아는 책을 만난 순간을 내 기록(또는 가입)으로 잇는다
           isOwner ? undefined : (
-            <ReadTooButton book={book} isLoggedIn={!!currentUser} />
+            <ReadTooButton
+              book={toPendingBook(book)}
+              isLoggedIn={!!currentUser}
+            />
           )
         }
       />

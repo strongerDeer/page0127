@@ -4,6 +4,7 @@ import { getCurrentUser, getSupabaseClient } from '../../../_helpers/auth';
 import {
   buildCommentTree,
   classifyBookCommentError,
+  COMMENT_MAX_LENGTH,
 } from '../../../_helpers/bookComments';
 import { schedulePush } from '../../../_helpers/push';
 import { errorResponse, successResponse } from '../../../_helpers/response';
@@ -88,6 +89,12 @@ export async function POST(request: NextRequest, { params }: Params) {
 
     if (!content?.trim()) {
       return errorResponse('댓글 내용을 입력해주세요.', 400);
+    }
+    if (content.trim().length > COMMENT_MAX_LENGTH) {
+      return errorResponse(
+        `댓글은 ${COMMENT_MAX_LENGTH}자까지 쓸 수 있어요.`,
+        400
+      );
     }
 
     const { data: comment, error } = await supabase

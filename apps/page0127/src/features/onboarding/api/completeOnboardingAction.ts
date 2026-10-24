@@ -57,6 +57,14 @@ export const completeOnboardingAction = async (
     return { status: 'error', message: '로그인이 필요합니다.' };
   }
 
+  // 화면의 체크박스를 서버에서 한 번 더 본다 — 버튼 비활성화는 우회할 수 있다
+  if (formData.get('agreement') !== 'on') {
+    return {
+      status: 'error',
+      message: '만 14세 이상인지와 약관 확인에 체크해 주세요.',
+    };
+  }
+
   const check = validateUsername((formData.get('username') as string) ?? '');
   if (!check.ok) {
     return { status: 'error', message: check.message };
