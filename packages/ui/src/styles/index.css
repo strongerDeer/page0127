@@ -433,5 +433,31 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    /* 한국어는 어절 단위로 줄을 바꾼다. 기본값(normal)은 글자 사이에서도 끊어서
+       "시작합니 / 다."처럼 한 글자만 아랫줄로 떨어졌다(2026-10-24 운영 점검). */
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+  /* 제목은 줄 길이를 고르게, 본문은 마지막 줄에 한 어절만 남지 않게.
+     둘 다 지원 안 하는 브라우저에서는 그냥 무시된다. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    text-wrap: balance;
+  }
+  p,
+  li,
+  figcaption,
+  blockquote {
+    text-wrap: pretty;
+  }
+  /* 가운데 정렬 문단은 두 줄 길이를 맞춘다 — pretty 를 아직 모르는
+     iOS 사파리에서도 한 어절만 아랫줄에 남지 않게 */
+  :where(.text-center) :where(p),
+  :where(p.text-center) {
+    text-wrap: balance;
   }
 }

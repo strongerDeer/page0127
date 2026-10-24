@@ -166,7 +166,7 @@ const BookListItemContent = ({
       </Link>
     </h3>
     <p className={styles.author}>{author}</p>
-    <div className='mt-2 text-center'>
+    <div className={styles.like}>
       <BookLikeButton
         bookId={id}
         initialLiked={isLiked}
