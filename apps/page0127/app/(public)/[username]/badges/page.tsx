@@ -24,7 +24,7 @@ export const generateMetadata = async ({
   const { username } = await params;
   const profile = await getProfileByUsername(username);
   if (!profile) notFound();
-  return { title: `${toDisplayName(profile)}님의 뱃지 | page0127.` };
+  return { title: `${toDisplayName(profile)}님의 배지 책장 | page0127.` };
 };
 
 /**
@@ -66,7 +66,7 @@ const BadgesPage = async ({ params }: PageProps) => {
   }
 
   const isOwner = user?.id === profile.id;
-  const name = isOwner ? '내' : `${toDisplayName(profile)}님의`;
+  const name = isOwner ? '나의' : `${toDisplayName(profile)}님의`;
 
   return (
     <PageContainer width='content' bg='sunken' className='space-y-6'>
@@ -79,10 +79,14 @@ const BadgesPage = async ({ params }: PageProps) => {
           서재로
         </Link>
         <h1 className='mt-2 text-2xl font-bold text-text-strong'>
-          {name} 뱃지
+          {name} 배지 책장
         </h1>
+        <p className='mt-2 text-sm text-text-subtle'>
+          독서의 순간을 한 권씩 모아요
+        </p>
       </div>
       <BadgeCollection
+        username={username}
         isOwner={isOwner}
         books={books ?? []}
         readingGoal={profile.reading_goal ?? null}

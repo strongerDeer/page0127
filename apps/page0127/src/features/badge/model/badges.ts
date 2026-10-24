@@ -258,7 +258,7 @@ export const computeBadges = ({
       {
         id: 'brick',
         kind: 'story',
-        name: '벽돌책 정복',
+        name: '벽돌책 완독',
         description: `${BRICK_PAGES}쪽 넘는 책 완독`,
       },
       first((book) => (book.page_count ?? 0) > BRICK_PAGES)
@@ -281,7 +281,7 @@ export const computeBadges = ({
       {
         id: 'finally',
         kind: 'story',
-        name: '드디어!',
+        name: '마침내 완독',
         description: '등록하고 1년이 지나서 완독',
       },
       first(
@@ -303,7 +303,7 @@ export const computeBadges = ({
       {
         id: 'life-book',
         kind: 'story',
-        name: '인생책을 만나다',
+        name: '인생책 발견',
         description: '인생책 지정',
       },
       first((book) => book.is_life_book)
@@ -336,7 +336,7 @@ export const computeBadges = ({
       {
         id: 'know-yourself',
         kind: 'story',
-        name: '나를 알다',
+        name: '취향 발견',
         description: '첫 AI 취향 분석',
       },
       firstTasteAnalysisAt ? { book: null, at: firstTasteAnalysisAt } : null
@@ -345,7 +345,7 @@ export const computeBadges = ({
       {
         id: 'day-0127',
         kind: 'hidden',
-        name: '0127',
+        name: '0127의 날',
         description: '1월 27일에 완독 — page0127의 날',
       },
       first((book) => book.completed_date?.endsWith('-01-27') ?? false)
@@ -363,7 +363,7 @@ export const computeBadges = ({
       {
         id: 'double-finish',
         kind: 'hidden',
-        name: '더블 피니시',
+        name: '하루 두 권',
         description: '같은 날 두 권 완독',
       },
       doubleFinish
@@ -396,7 +396,7 @@ export const computeBadges = ({
       {
         id: 'new-release',
         kind: 'hidden',
-        name: '신간 사냥꾼',
+        name: '신간 발견',
         description: '출간 한 달 안에 완독',
       },
       first((book) => {
@@ -418,7 +418,7 @@ export const computeBadges = ({
       {
         id: 'worn-out',
         kind: 'hidden',
-        name: '닳도록',
+        name: '세 번째 만남',
         description: '같은 책을 세 번 완독',
       },
       first((book) => book.read_count >= 3)
