@@ -33,7 +33,7 @@ const BLANK_SRC = '/badges/seal-locked.webp';
 
 /**
  * 합성을 마친 그림 — public/badges/<이름>.webp 가 있는 것만.
- * 아직 그림이 없는 히든 8개는 빈 봉인으로 둔다. 합성하면 여기에 이름을 더한다.
+ * 새 뱃지를 더하면 그림을 합성하기 전까지 빈 봉인으로 보인다. 합성하면 여기에 이름을 더한다.
  */
 const READY_ASSETS = new Set([
   'shelf-1',
@@ -53,6 +53,14 @@ const READY_ASSETS = new Set([
   'critic',
   'goal-kept',
   'know-yourself',
+  'day-0127',
+  'new-year',
+  'double-finish',
+  'honest',
+  'thin-but-deep',
+  'new-release',
+  'book-about-books',
+  'worn-out',
   'seal-locked',
 ]);
 
