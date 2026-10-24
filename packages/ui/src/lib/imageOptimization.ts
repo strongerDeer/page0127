@@ -23,9 +23,7 @@
  * 백필이 표지를 우리 Storage(`.supabase.co`, 아래 접미사 목록)로 옮기면서
  * 리사이즈하므로 이 경로는 그때까지의 임시 상태다.
  */
-const PRE_OPTIMIZED_EXACT_HOSTS = new Set([
-  'image.yes24.com',
-]);
+const PRE_OPTIMIZED_EXACT_HOSTS = new Set(['image.yes24.com']);
 
 /**
  * 서브도메인 번호가 바뀌어 정확히 못 적는 것 — 접미사로 판정한다.
@@ -59,7 +57,17 @@ export const isPreOptimizedImageSrc = (src?: string | null): boolean => {
   if (!src) return false;
 
   try {
-    const { hostname } = new URL(src);
+    const { hostname, protocol, port, pathname } = new URL(src);
+
+    // 로컬 공개 Storage는 브라우저가 직접 읽는다. 이미지 최적화 서버의
+    // 사설 IP 접근 제한을 완화하지 않고 책등·프로필 표시를 유지한다.
+    if (
+      protocol === 'http:' &&
+      ['127.0.0.1', 'localhost', '[::1]'].includes(hostname) &&
+      port === '54321' &&
+      pathname.startsWith('/storage/v1/object/public/')
+    )
+      return true;
 
     if (PRE_OPTIMIZED_EXACT_HOSTS.has(hostname)) return true;
 

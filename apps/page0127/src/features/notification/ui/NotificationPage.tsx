@@ -20,6 +20,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 
 import { apiClient } from '@/shared/api/client';
 import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
+import { QueryErrorState } from '@/shared/ui/QueryErrorState';
 
 import {
   notificationHref,
@@ -48,37 +49,46 @@ export const NotificationPage = () => {
   const deleteNotificationMutation = useDeleteNotification();
 
   // 무한 스크롤 쿼리
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useInfiniteQuery({
-      queryKey: notificationKeys.infinite(filter),
-      queryFn: async ({ pageParam = 0 }) => {
-        const params = new URLSearchParams({
-          limit: '20',
-          offset: String(pageParam),
-        });
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    isFetchNextPageError,
+    isFetching,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: notificationKeys.infinite(filter),
+    queryFn: async ({ pageParam = 0 }) => {
+      const params = new URLSearchParams({
+        limit: '20',
+        offset: String(pageParam),
+      });
 
-        if (filter === 'unread') {
-          params.append('is_read', 'false');
-        }
+      if (filter === 'unread') {
+        params.append('is_read', 'false');
+      }
 
-        const { data } = await apiClient.get<NotificationWithActor[]>(
-          `/notifications?${params.toString()}`
-        );
-        return data;
-      },
-      getNextPageParam: (lastPage, allPages) => {
-        if (lastPage.length < 20) return undefined;
-        return allPages.flat().length;
-      },
-      initialPageParam: 0,
-      enabled: !!currentUser,
-    });
+      const { data } = await apiClient.get<NotificationWithActor[]>(
+        `/notifications?${params.toString()}`
+      );
+      return data;
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length < 20) return undefined;
+      return allPages.flat().length;
+    },
+    initialPageParam: 0,
+    enabled: !!currentUser,
+  });
 
   // useEffectEvent: 교차 시점 콜백을 분리한다.
   // fetchNextPage·isFetchingNextPage를 deps에 두면 값이 바뀔 때마다 observer가
   // 재생성된다. effect event로 빼면 최신 값을 읽으면서도 재생성을 막는다.
   const onIntersect = useEffectEvent(() => {
-    if (hasNextPage && !isFetchingNextPage) {
+    if (hasNextPage && !isFetchingNextPage && !isFetchNextPageError) {
       fetchNextPage();
     }
   });
@@ -167,14 +177,25 @@ export const NotificationPage = () => {
       </div>
 
       {/* 알림 목록 */}
+      {isError && (
+        <QueryErrorState
+          message='알림을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.'
+          onRetry={() =>
+            void (isFetchNextPageError ? fetchNextPage() : refetch())
+          }
+          isRetrying={isFetching}
+        />
+      )}
       {notifications.length === 0 ? (
-        <div className='rounded-2xl bg-sunken py-12 text-center'>
-          <p className='text-muted-foreground'>
-            {filter === 'unread'
-              ? '읽지 않은 알림이 없습니다'
-              : '알림이 없습니다'}
-          </p>
-        </div>
+        !isError && (
+          <div className='rounded-2xl bg-sunken py-12 text-center'>
+            <p className='text-muted-foreground'>
+              {filter === 'unread'
+                ? '읽지 않은 알림이 없습니다'
+                : '알림이 없습니다'}
+            </p>
+          </div>
+        )
       ) : (
         <div className='rounded-2xl bg-sunken'>
           {notifications.map((notification) => (

@@ -5,6 +5,8 @@ import { useEffect, useEffectEvent, useRef } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 
+import { QueryErrorState } from '@/shared/ui/QueryErrorState';
+
 import { ActivityCard } from './ActivityCard';
 
 import type { Activity } from '@/entities/activity';
@@ -32,18 +34,28 @@ export const ActivityList = ({
 }: ActivityListProps) => {
   const observerRef = useRef<HTMLDivElement>(null);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useInfiniteQuery({
-      queryKey,
-      queryFn: ({ pageParam = 0 }) =>
-        queryFn({ limit: PAGE_SIZE, offset: pageParam }),
-      getNextPageParam: (lastPage, allPages) =>
-        lastPage.length < PAGE_SIZE ? undefined : allPages.flat().length,
-      initialPageParam: 0,
-    });
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    isFetchNextPageError,
+    isFetching,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey,
+    queryFn: ({ pageParam = 0 }) =>
+      queryFn({ limit: PAGE_SIZE, offset: pageParam }),
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length < PAGE_SIZE ? undefined : allPages.flat().length,
+    initialPageParam: 0,
+  });
 
   const onIntersect = useEffectEvent(() => {
-    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+    if (hasNextPage && !isFetchingNextPage && !isFetchNextPageError)
+      fetchNextPage();
   });
 
   useEffect(() => {
@@ -66,9 +78,16 @@ export const ActivityList = ({
   }
 
   const activities = data?.pages.flat() || [];
+  const errorState = isError ? (
+    <QueryErrorState
+      message='독서 기록을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.'
+      onRetry={() => void (isFetchNextPageError ? fetchNextPage() : refetch())}
+      isRetrying={isFetching}
+    />
+  ) : null;
 
   if (activities.length === 0) {
-    return <>{emptyState ?? null}</>;
+    return <>{errorState ?? emptyState ?? null}</>;
   }
 
   return (
@@ -83,6 +102,7 @@ export const ActivityList = ({
           />
         ))}
       </div>
+      {errorState}
       <div ref={observerRef} className='py-4'>
         {isFetchingNextPage && (
           <div className='flex items-center justify-center'>
@@ -90,7 +110,7 @@ export const ActivityList = ({
           </div>
         )}
       </div>
-      {!hasNextPage && activities.length > 0 && (
+      {!isError && !hasNextPage && activities.length > 0 && (
         <p className='py-4 text-center text-sm text-muted-foreground'>
           모든 활동을 불러왔습니다
         </p>

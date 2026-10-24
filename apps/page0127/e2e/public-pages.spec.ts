@@ -37,3 +37,20 @@ test('문의 페이지에 카카오톡 문의 링크가 보인다', async ({ pag
   await expect(kakaoLink).toBeVisible();
   await expect(kakaoLink).toHaveAttribute('href', /open\.kakao\.com/);
 });
+
+test('모바일에서 긴 검색어의 빈 결과가 가로로 넘치지 않는다', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const query = 'qa_no_such_book_20261024'.repeat(3);
+  await page.goto(`/books/all?q=${encodeURIComponent(query)}`);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(query);
+  await expect(page.getByText('0권을 찾았어요.')).toBeVisible();
+  await expect(page.getByText(/다른 검색어로 다시 찾아보세요/)).toBeVisible();
+  expect(
+    await page.evaluate(() => ({
+      scroll: document.documentElement.scrollWidth,
+      client: document.documentElement.clientWidth,
+    }))
+  ).toEqual({ scroll: 390, client: 390 });
+});
