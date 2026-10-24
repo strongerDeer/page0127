@@ -11,11 +11,20 @@ import {
   USAGE_LIMIT_EXCEEDED_ERROR,
 } from '@/shared/lib/aiUsage';
 import { notifyBudgetIfCrossed } from '@/shared/lib/kakao-alert/notifyBudget';
-import { AI_MODEL, MAX_TOKENS, openai, TEMPERATURE } from '@/shared/lib/openai';
+import {
+  AI_MODEL,
+  openai,
+  TASTE_ANALYSIS_MAX_TOKENS,
+  TEMPERATURE,
+} from '@/shared/lib/openai';
 import { createTasteAnalysisPrompt } from '@/shared/lib/openai/prompts/taste-analysis';
 
 import { isRated } from '@/entities/book';
 import { TASTE_ANALYSIS_MIN_BOOKS } from '@/entities/taste-analysis/model/analysisGate';
+import {
+  toBookKey,
+  toTasteEvidence,
+} from '@/entities/taste-analysis/model/evidence';
 import { READING_PERSONALITY_TYPES } from '@/entities/taste-analysis/model/personalityTypes';
 import { RECOMMENDATIONS_REQUEST_COUNT } from '@/entities/taste-analysis/model/recommendations';
 
@@ -109,7 +118,9 @@ export async function POST(request: NextRequest) {
     //    0("평가 안 함")은 점수가 아니므로 null 로 프롬프트에 넘긴다.
     //    인생책은 별도 컬럼(is_life_book)이라 여기서는 rating 그대로 쓴다.
     const prompt = createTasteAnalysisPrompt(
-      (books as Book[]).map((book) => ({
+      // key: 응답이 근거 책을 번호로 고르게 한다 — 지어낸 책이 근거로 들어오지 않는다
+      (books as Book[]).map((book, index) => ({
+        key: toBookKey(index),
         title: book.title,
         author: book.author,
         category: book.category,
@@ -135,7 +146,7 @@ export async function POST(request: NextRequest) {
           content: prompt,
         },
       ],
-      max_tokens: MAX_TOKENS,
+      max_tokens: TASTE_ANALYSIS_MAX_TOKENS,
       temperature: TEMPERATURE,
       response_format: { type: 'json_object' }, // JSON 모드
     });
@@ -168,6 +179,21 @@ export async function POST(request: NextRequest) {
       console.warn('AI 전체 응답:', JSON.stringify(aiResponse, null, 2));
     }
 
+    // 4-1. 근거 책 — 번호를 실제 책과 맞추고, 못 맞춘 것(지어낸 책)은 버린다.
+    //      preference_profile 안에 둔다(JSONB) — 마이그레이션 없이 옛 분석과 나란히 산다
+    const evidence = toTasteEvidence(
+      aiResponse.evidence,
+      (books as Book[]).map((book) => ({
+        id: book.id,
+        title: book.title,
+        cover_image: book.cover_image,
+      })),
+      aiResponse.preference_profile?.liked?.topics ?? []
+    );
+    const preferenceProfile = aiResponse.preference_profile
+      ? { ...aiResponse.preference_profile, evidence }
+      : aiResponse.preference_profile;
+
     // 5. 분석 결과 저장
     const costInCents = calculateCost(
       completion.usage?.prompt_tokens || 0,
@@ -179,7 +205,7 @@ export async function POST(request: NextRequest) {
         user_id: user.id,
         personality_type: aiResponse.personality_type,
         personality_description: aiResponse.personality_description,
-        preference_profile: aiResponse.preference_profile,
+        preference_profile: preferenceProfile,
         analyzed_books_count: books.length,
         analysis_model: AI_MODEL,
         cost_in_cents: costInCents,
@@ -326,7 +352,9 @@ async function enrichRecommendationsWithProviderData(
   const provider = getBookProvider();
 
   /** 공급자 검색 1회 — 결과가 없으면 null */
-  const searchProvider = async (query: string): Promise<ProviderBook | null> => {
+  const searchProvider = async (
+    query: string
+  ): Promise<ProviderBook | null> => {
     try {
       const result = await provider.search(query, { maxResults: 3 });
       // 검색 결과에서 첫 번째 책 사용 (제목이 가장 유사)

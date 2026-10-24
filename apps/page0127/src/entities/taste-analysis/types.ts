@@ -16,6 +16,22 @@
 export type RecommendationType = 'match' | 'expand' | 'challenge';
 
 /**
+ * 취향 노트의 근거 한 권 — "이 책을 보고 이렇게 읽었다".
+ * AI 가 고른 책을 분석에 넣은 실제 책과 맞춘 뒤에만 남긴다(model/evidence.ts).
+ * 표지·제목은 분석 당시 값으로 함께 저장한다 — 화면이 책 테이블을 다시 조회하지 않게.
+ */
+export type TasteEvidence = {
+  /** books.id — 공개 여부를 거르는 기준(get_public_taste_history) */
+  book_id: string;
+  title: string;
+  cover_image: string | null;
+  /** 이 책에서 본 결 (한 줄) */
+  reason: string;
+  /** 이 책이 근거가 된 좋아하는 주제 — preference_profile.liked.topics 의 부분집합 */
+  topics: string[];
+};
+
+/**
  * 선호도 프로필
  * JSONB 타입으로 저장되는 구조화된 데이터
  */
@@ -44,6 +60,8 @@ export type PreferenceProfile = {
     /** 선호 출판 시기 (예: "2000-2010") */
     publication_period: string;
   };
+  /** 근거 책 — 2026-10-25 이전 분석에는 없다 */
+  evidence?: TasteEvidence[];
 };
 
 /**
@@ -147,6 +165,11 @@ export type PublicTasteHistoryItem = Omit<
   analyzed_books_count: number | null;
   /** 최신 1건에만 채워진다 (preference_profile.liked.topics) */
   liked_topics: string[] | null;
+  /**
+   * 최신 1건의 근거 책 — 방문자에게는 **공개 책만** 온다(분석엔 비공개 책도 들어간다).
+   * 마이그레이션(20261025000000) 전이거나 근거 없는 옛 분석이면 없다.
+   */
+  evidence?: TasteEvidence[] | null;
 };
 
 /**

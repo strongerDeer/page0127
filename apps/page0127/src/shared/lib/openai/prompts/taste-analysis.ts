@@ -16,6 +16,11 @@
  *   모르므로 성향 타입과 같은 방식으로 **호출부에서 변환해 주입받는다.**
  */
 type BookForAnalysis = {
+  /**
+   * 응답이 근거 책을 가리키는 번호(예: "B3") — 호출부가 붙인다(entities/taste-analysis/model/evidence).
+   * 제목 대신 번호로 고르게 해야 지어낸 책이 근거로 들어오지 않는다.
+   */
+  key: string;
   title: string;
   author: string | null;
   category: string | null;
@@ -61,7 +66,7 @@ export function createTasteAnalysisPrompt(
     bookList
       .map(
         (book, idx) =>
-          `${idx + 1}. "${book.title}" - ${book.author}\n   카테고리: ${book.category}\n   별점: ${book.score}/${SCORE_MAX}\n   소개: ${book.description?.substring(0, 200)}...\n   목차: ${book.toc?.substring(0, 300) || '정보 없음'}...`
+          `${idx + 1}. [${book.key}] "${book.title}" - ${book.author}\n   카테고리: ${book.category}\n   별점: ${book.score}/${SCORE_MAX}\n   소개: ${book.description?.substring(0, 200)}...\n   목차: ${book.toc?.substring(0, 300) || '정보 없음'}...`
       )
       .join('\n\n');
 
@@ -104,6 +109,14 @@ ${formatBooks(lowRatedBooks)}
       "publication_period": "선호 출판 시기"
     }
   },
+  "evidence": [
+    {
+      "book": "B3",
+      "reason": "이 책에서 읽어 낸 취향의 결 한 줄",
+      "topics": ["liked.topics 중 이 책이 근거가 된 주제"]
+    }
+    // ... 3~5권
+  ],
   "recommendations": [
     {
       "type": "match",
@@ -130,6 +143,15 @@ ${formatBooks(lowRatedBooks)}
   추천한 책은 실제 서점 데이터로 대조하므로, 지어낸 제목은 그대로 탈락합니다.
 - **제목은 표지에 적힌 그대로**: 부제·시리즈명·번역서 원제를 임의로 덧붙이거나 줄이지 마세요.
 - 최신간을 억지로 고르지 마세요. 지금도 서점에서 구할 수 있는 책이면 출간 연도는 상관없습니다.
+
+## 근거 책(evidence) 지침 ⚠️ 매우 중요
+- 성향과 좋아하는 주제를 그렇게 판단한 **근거가 된 책 3~5권**을 고르세요
+- book 에는 위 분석 데이터에 적힌 **책 번호(예: "B3")를 그대로** 쓰세요. 목록에 없는 책은 쓰지 마세요
+- 가능하면 높은 점수를 준 책에서 고르세요
+- reason 은 그 책에서 읽어 낸 취향을 **40자 이내 한 줄**로, 명사형으로 끝내세요
+  (예: "일의 현장에서 바로 쓰는 실전 지식을 찾는 시선")
+- topics 에는 이 책이 근거가 된 주제를 liked.topics 에 쓴 이름 **그대로** 1~2개 넣으세요
+- 근거 책들이 liked.topics 의 주제를 고르게 덮도록 고르세요
 
 ## 성향 타입 목록 ⚠️ 매우 중요
 personality_type은 반드시 아래 목록 중 하나를 **이름 그대로(글자 하나 바꾸지 말 것)** 선택하세요:

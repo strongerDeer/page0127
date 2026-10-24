@@ -36,6 +36,12 @@ export const AI_MODEL = 'gpt-4o' as const;
 export const MAX_TOKENS = 4000;
 
 /**
+ * 취향 분석 전용 상한 — 근거 책(evidence, 최대 5권 × 한 줄)이 더해져 응답이 300~400 토큰 길다.
+ * 잘리면 JSON 이 깨져 분석 자체가 실패한다. 비용은 상한이 아니라 실제로 만든 토큰만큼 나간다.
+ */
+export const TASTE_ANALYSIS_MAX_TOKENS = 4800;
+
+/**
  * Temperature (0-2, 낮을수록 일관적, 높을수록 창의적)
  */
 export const TEMPERATURE = 0.7;
