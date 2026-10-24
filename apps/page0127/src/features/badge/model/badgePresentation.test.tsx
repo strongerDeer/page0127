@@ -83,7 +83,7 @@ describe('배지 표지와 공개 범위', () => {
     expect(visitor).not.toContain('data-badge-book');
     expect(visitor).not.toContain('비밀의 책');
     const owner = renderToStaticMarkup(<BadgeCollection {...input} isOwner />);
-    expect(owner.match(/data-badge-book="true"/g)).toHaveLength(19);
+    expect(owner.match(/data-badge-book="true"/g)).toHaveLength(25);
     expect(owner.match(/data-cover="unwritten"/g)).toHaveLength(8);
     const earnedVisitor = renderToStaticMarkup(
       <BadgeCollection
