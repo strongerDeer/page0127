@@ -107,6 +107,7 @@ export const ShareSheetButton = ({
 }: ShareSheetButtonProps) => {
   const [open, setOpen] = useState(false);
   const [image, setImage] = useState<ImageState>({ status: 'loading' });
+  const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -146,27 +147,40 @@ export const ShareSheetButton = ({
     Boolean(navigator.canShare?.({ files: [image.file] }));
 
   const handleImage = async () => {
-    if (image.status !== 'ready') return;
+    if (image.status !== 'ready' || isSharing) return;
+    setIsSharing(true);
 
-    if (canShareFile) {
-      try {
-        // 파일만 보낸다 — 링크를 같이 넣으면 앱마다 하나를 버린다(인스타는 링크, 어떤 앱은 이미지)
-        await navigator.share({ files: [image.file], title });
-        trackEvent('share_click', { method: 'image_share', path });
-      } catch (error) {
-        // 시트를 닫은 것은 실패가 아니다
-        if (error instanceof DOMException && error.name === 'AbortError')
+    try {
+      if (canShareFile) {
+        try {
+          // 파일만 보낸다 — 링크를 같이 넣으면 앱마다 하나를 버린다.
+          await navigator.share({ files: [image.file], title });
+          trackEvent('share_click', { method: 'image_share', path });
           return;
-        toast.error('이미지를 공유하지 못했어요.');
+        } catch (error) {
+          // 취소는 존중한다. 권한·플랫폼 오류일 때만 저장으로 이어간다.
+          if (error instanceof DOMException && error.name === 'AbortError') {
+            return;
+          }
+        }
       }
-      return;
-    }
 
-    const link = document.createElement('a');
-    link.href = image.url;
-    link.download = fileName;
-    link.click();
-    trackEvent('share_click', { method: 'image_download', path });
+      const link = document.createElement('a');
+      link.href = image.url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      try {
+        link.click();
+      } finally {
+        link.remove();
+      }
+      trackEvent('share_click', { method: 'image_download', path });
+      toast.success('이미지를 저장했어요. 저장한 이미지를 공유해 주세요.');
+    } catch {
+      toast.error('이미지를 저장하지 못했어요. 링크로 공유해 주세요.');
+    } finally {
+      setIsSharing(false);
+    }
   };
 
   return (
@@ -217,6 +231,7 @@ export const ShareSheetButton = ({
             <Button
               onClick={handleImage}
               disabled={image.status !== 'ready'}
+              loading={isSharing}
               className='w-full gap-2'
             >
               {image.status === 'loading' ? (

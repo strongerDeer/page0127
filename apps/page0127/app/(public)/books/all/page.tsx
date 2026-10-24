@@ -109,8 +109,9 @@ export default async function GlobalBooksPage(props: {
 
   return (
     <PageContainer width='wide'>
-      <div className='mb-8 flex items-center justify-between'>
+      <div className='mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
         <PageHeader
+          className='min-w-0 flex-1 [overflow-wrap:anywhere]'
           title={q ? `'${q}' 검색 결과` : '전체 도서'}
           description={
             q
@@ -122,7 +123,7 @@ export default async function GlobalBooksPage(props: {
         />
 
         {/* 정렬 옵션 (간단하게 구현) */}
-        <div className='flex gap-2'>
+        <div className='flex shrink-0 gap-2'>
           <Link href={`?sort=created_at&order=desc${qParam}`}>
             <Button
               variant={sort === 'created_at' ? 'secondary' : 'ghost'}
@@ -144,7 +145,7 @@ export default async function GlobalBooksPage(props: {
 
       {/* 검색 결과 없음 — 빈 화면은 다음 행동을 안내한다 */}
       {q && books.length === 0 && (
-        <p className='rounded-lg border border-line bg-card px-6 py-16 text-center text-sm text-text-subtle'>
+        <p className='rounded-lg border border-line bg-card px-6 py-16 text-center text-sm text-text-subtle [overflow-wrap:anywhere]'>
           {`'${q}'와 겹치는 제목이나 저자가 없어요. 다른 검색어로 다시 찾아보세요.`}
         </p>
       )}

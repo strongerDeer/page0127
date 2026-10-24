@@ -17,9 +17,9 @@ describe('isPreOptimizedImageSrc', () => {
   it('YES24 표지·책등·뒷표지는 최적화를 건너뛴다', () => {
     // 현재 공급자다. 표지는 이 앱에서 가장 많이 그려지는 이미지라, 최적화 한도가
     // 소진되면 서재·검색·랭킹이 한꺼번에 빈 칸이 된다.
-    expect(isPreOptimizedImageSrc('https://image.yes24.com/goods/13137546/XL')).toBe(
-      true
-    );
+    expect(
+      isPreOptimizedImageSrc('https://image.yes24.com/goods/13137546/XL')
+    ).toBe(true);
     expect(
       isPreOptimizedImageSrc('https://image.yes24.com/goods/13137546/SIDE/XL')
     ).toBe(true);
@@ -29,16 +29,18 @@ describe('isPreOptimizedImageSrc', () => {
   });
 
   it('이름만 흉내 낸 YES24 도메인은 통과시키지 않는다', () => {
-    expect(isPreOptimizedImageSrc('https://image.yes24.com.evil.com/a.jpg')).toBe(
-      false
-    );
+    expect(
+      isPreOptimizedImageSrc('https://image.yes24.com.evil.com/a.jpg')
+    ).toBe(false);
   });
 
   it('소셜 로그인 프로필 사진은 최적화를 건너뛴다', () => {
     // 구글·카카오는 서브도메인 번호가 바뀌므로 접미사로 판정한다.
     // 두 CDN 모두 이미 작은 썸네일을 주기 때문에 변환 이득이 없다.
     expect(
-      isPreOptimizedImageSrc('https://lh3.googleusercontent.com/a/AAcHTtd=s96-c')
+      isPreOptimizedImageSrc(
+        'https://lh3.googleusercontent.com/a/AAcHTtd=s96-c'
+      )
     ).toBe(true);
     expect(
       isPreOptimizedImageSrc('https://k.kakaocdn.net/dn/abc/img_640x640.jpg')
@@ -59,13 +61,27 @@ describe('isPreOptimizedImageSrc', () => {
     ).toBe(true);
   });
 
-  it('로컬 Supabase(127.0.0.1)는 최적화를 유지한다', () => {
-    // 로컬 개발에는 변환 한도가 없다. 굳이 규칙을 넓힐 이유가 없다.
+  it('로컬 Supabase 공개 Storage는 브라우저에서 직접 읽는다', () => {
     expect(
       isPreOptimizedImageSrc(
         'http://127.0.0.1:54321/storage/v1/object/public/profiles/avatars/a_1.jpg'
       )
-    ).toBe(false);
+    ).toBe(true);
+    expect(
+      isPreOptimizedImageSrc(
+        'http://localhost:54321/storage/v1/object/public/book-covers/1/spine.jpg'
+      )
+    ).toBe(true);
+  });
+
+  it('다른 로컬 서비스·비공개 Storage·호스트 이름 흉내는 예외가 아니다', () => {
+    for (const src of [
+      'http://127.0.0.1:3000/storage/v1/object/public/a.jpg',
+      'http://127.0.0.1:54321/storage/v1/object/authenticated/a.jpg',
+      'http://127.0.0.1:54321/rest/v1/a.jpg',
+      'http://localhost.evil.com:54321/storage/v1/object/public/a.jpg',
+    ])
+      expect(isPreOptimizedImageSrc(src)).toBe(false);
   });
 
   it('로컬 정적 이미지·상대 경로는 최적화를 유지한다', () => {
@@ -92,7 +108,9 @@ describe('isPreOptimizedImageSrc', () => {
   it('접미사 판정이 점 앞을 통째로 삼키지 않는다', () => {
     // 접미사를 '.supabase.co' 가 아니라 'supabase.co' 로 적으면
     // 아래 도메인들이 전부 통과한다. 점으로 시작해야 하는 이유.
-    expect(isPreOptimizedImageSrc('https://evil-supabase.co/a.jpg')).toBe(false);
+    expect(isPreOptimizedImageSrc('https://evil-supabase.co/a.jpg')).toBe(
+      false
+    );
     expect(isPreOptimizedImageSrc('https://notkakaocdn.net/a.jpg')).toBe(false);
     expect(
       isPreOptimizedImageSrc('https://fakegoogleusercontent.com/a.jpg')
