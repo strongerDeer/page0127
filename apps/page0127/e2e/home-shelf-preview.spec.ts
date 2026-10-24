@@ -140,13 +140,13 @@ test('고르기 전엔 저장 버튼이 없고, 고르면 나타나 남은 권�
   await picks.nth(1).click();
   await expect(picks.nth(0)).toHaveAttribute('aria-pressed', 'true');
   await expect(
-    s.getByText('3권만 더 모이면 취향 노트를 받아 볼 수 있어요.')
+    s.getByText('1권만 더 고르면 첫인상을 알려드릴게요.')
   ).toBeVisible();
 
   // 같은 책을 다시 누르면 빠진다
   await picks.nth(1).click();
   await expect(
-    s.getByText('4권만 더 모이면 취향 노트를 받아 볼 수 있어요.')
+    s.getByText('2권만 더 고르면 첫인상을 알려드릴게요.')
   ).toBeVisible();
 
   await save.click();

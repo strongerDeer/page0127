@@ -9,6 +9,7 @@ import { ArrowRight, Check, RotateCcw, RotateCw } from 'lucide-react';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
+import { toFirstImpression } from '../model/firstImpression';
 import { toPendingLoginPath } from '../model/loginTransfer';
 import {
   clearPendingShelf,
@@ -20,6 +21,7 @@ import { toPickPages } from '../model/pickPages';
 import { toShelfPreviewMessage } from '../model/previewMessage';
 import { restoreSelection } from '../model/restoreSelection';
 import { isSameBook, toggleSelection } from '../model/selection';
+import { FirstImpressionCard } from './FirstImpressionCard';
 import { GoalStarter } from './GoalStarter';
 import { HeroEyebrow } from './HeroEyebrow';
 import { PreviewShelf } from './PreviewShelf';
@@ -47,6 +49,7 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
   const current = pages[page] ?? [];
   const isFull = selected.length >= MAX_PENDING_BOOKS;
   const message = toShelfPreviewMessage(selected.length);
+  const impression = toFirstImpression(selected.map((p) => p.book.category));
   const isSelected = (pick: ShelfPick) =>
     selected.some((p) => isSameBook(p.book, pick.book));
 
@@ -223,6 +226,11 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
               {/* 상한 안내도 같은 알림 영역 안에 둔다 — 버튼이 막힌 이유를
                   스크린리더 사용자도 들어야 한다 */}
               <div aria-live='polite'>
+                {impression && (
+                  <div className='mb-4'>
+                    <FirstImpressionCard type={impression} />
+                  </div>
+                )}
                 <p className='break-keep font-bold text-text-strong md:text-lg'>
                   {message}
                 </p>
