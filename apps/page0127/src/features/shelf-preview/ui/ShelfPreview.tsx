@@ -9,6 +9,7 @@ import { ArrowRight, Check, RotateCcw, RotateCw } from 'lucide-react';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
+import { toPendingLoginPath } from '../model/loginTransfer';
 import {
   clearPendingShelf,
   MAX_PENDING_BOOKS,
@@ -86,8 +87,9 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
 
   const handleSave = () => {
     trackEvent('shelf_preview_save', { count: selected.length });
-    writePendingShelf({ books: selected.map((p) => p.book), goal: null });
-    router.push('/login');
+    const pending = { books: selected.map((p) => p.book), goal: null };
+    writePendingShelf(pending);
+    router.push(toPendingLoginPath(pending));
   };
 
   return (

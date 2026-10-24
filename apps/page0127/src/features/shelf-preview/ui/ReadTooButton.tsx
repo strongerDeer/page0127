@@ -14,6 +14,7 @@ import { bookApi } from '@/entities/book';
 
 import { addPendingBook } from '../model/addPendingBook';
 import { claimPendingBooks, toBookInput } from '../model/claim';
+import { toPendingLoginPath } from '../model/loginTransfer';
 import { readPendingShelf, writePendingShelf } from '../model/pendingShelf';
 
 import type { PendingBook } from '../model/types';
@@ -47,8 +48,12 @@ export const ReadTooButton = ({ book, isLoggedIn }: ReadTooButtonProps) => {
       location: 'book_read_too',
       label: '나도 읽었어요',
     });
-    writePendingShelf(addPendingBook(readPendingShelf(), book));
-    router.push('/login');
+    const pending = addPendingBook(readPendingShelf(), {
+      ...book,
+      status: 'completed',
+    });
+    writePendingShelf(pending);
+    router.push(toPendingLoginPath(pending, window.location.pathname));
   };
 
   const handleMember = async () => {

@@ -1,5 +1,6 @@
 import { headers } from 'next/headers';
 import Link from 'next/link';
+import { redirect as navigate } from 'next/navigation';
 
 import {
   Card,
@@ -9,10 +10,16 @@ import {
   CardTitle,
 } from '@repo/ui';
 
+import { createClient } from '@/shared/config/supabase/server';
 import { detectInAppBrowser } from '@/shared/lib/auth/inAppBrowser';
+import { toPostLoginPath } from '@/shared/lib/auth/onboardingRedirect';
+
+import { ensureProfile } from '@/entities/profile/api/getProfile';
 
 import { OAuthLoginButtons } from '@/features/auth/ui/OAuthLoginButtons';
+import { restoreLoginShelf } from '@/features/shelf-preview/api/restoreLoginShelf';
 import { PendingShelfNotice } from '@/features/shelf-preview/ui/PendingShelfNotice';
+import { ResumeLogin } from '@/features/shelf-preview/ui/ResumeLogin';
 
 import type { Metadata } from 'next';
 
@@ -28,7 +35,7 @@ export const metadata: Metadata = {
 };
 
 type LoginPageProps = {
-  searchParams: Promise<{ redirect?: string }>;
+  searchParams: Promise<{ redirect?: string; shelf?: string }>;
 };
 
 /**
@@ -39,7 +46,27 @@ type LoginPageProps = {
  * 페이지가 이미 서버에서 파라미터를 받을 수 있으므로 그럴 이유가 없다.
  */
 const LoginPage = async ({ searchParams }: LoginPageProps) => {
-  const { redirect } = await searchParams;
+  const { redirect, shelf } = await searchParams;
+  const transfer = await restoreLoginShelf(shelf);
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) {
+    const profile = await ensureProfile(
+      user.id,
+      user.email ?? null,
+      user.user_metadata
+    );
+    const destination = toPostLoginPath({
+      username: profile.username,
+      onboardedAt: profile.onboarded_at,
+      next: redirect ?? null,
+    });
+    if (transfer)
+      return <ResumeLogin transfer={transfer} destination={destination} />;
+    navigate(destination);
+  }
   // 앱 안 브라우저 판정은 서버에서 한다 — 클라이언트에서 하면 안내가 늦게 튀어나와
   // 그 사이에 구글 버튼을 누를 수 있다(그리고 화면이 한 번 밀린다)
   const inAppBrowser = detectInAppBrowser((await headers()).get('user-agent'));
@@ -64,7 +91,7 @@ const LoginPage = async ({ searchParams }: LoginPageProps) => {
         </CardHeader>
         <CardContent>
           {/* 홈 맛보기에서 "저장하기"를 누르고 왔다면 그 맥락을 잇는다 (없으면 안 보인다) */}
-          <PendingShelfNotice />
+          <PendingShelfNotice transfer={transfer} />
           <OAuthLoginButtons next={redirect} inAppBrowser={inAppBrowser} />
           {/* 약관 링크는 실제 페이지로 연결한다 (기존 href='#' 죽은 링크) */}
           <p className='mt-4 text-center text-sm text-balance break-keep text-text-subtle'>

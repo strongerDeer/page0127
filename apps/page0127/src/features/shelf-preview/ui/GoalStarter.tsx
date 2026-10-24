@@ -9,6 +9,7 @@ import { Minus, Plus } from 'lucide-react';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
+import { toPendingLoginPath } from '../model/loginTransfer';
 import { GOAL_MAX, GOAL_MIN, writePendingShelf } from '../model/pendingShelf';
 
 /** 한 달에 한 권 — 처음 정하는 사람에게 부담 없는 기본값 */
@@ -29,8 +30,9 @@ export const GoalStarter = () => {
 
   const handleSave = () => {
     trackEvent('shelf_preview_goal', { target });
-    writePendingShelf({ books: [], goal: { year, target } });
-    router.push('/login');
+    const pending = { books: [], goal: { year, target } };
+    writePendingShelf(pending);
+    router.push(toPendingLoginPath(pending));
   };
 
   return (

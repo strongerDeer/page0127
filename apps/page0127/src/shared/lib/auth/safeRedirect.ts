@@ -20,16 +20,33 @@
 export function toSafeRedirect(
   value: string | null | undefined
 ): string | null {
-  if (!value) return null;
+  if (typeof value !== 'string' || !value) return null;
 
   // 공백을 남겨두면 ' //evil.com' 이 아래 검사를 통과한다
   const path = value.trim();
 
   if (!path.startsWith('/')) return null;
   // '//' 와 '/\' 는 둘 다 외부로 나가는 문이다
-  if (path.startsWith('//') || path.startsWith('/\\')) return null;
+  if (
+    path.startsWith('//') ||
+    path.includes('\\') ||
+    [...path].some((c) => c.charCodeAt(0) < 32 || c.charCodeAt(0) === 127)
+  )
+    return null;
   // 로그인 페이지로 되돌리면 로그인 → 로그인 왕복이 된다
-  if (path === '/login' || path.startsWith('/login?')) return null;
+  try {
+    const url = new URL(path, 'https://internal.invalid');
+    if (url.origin !== 'https://internal.invalid') return null;
+    const pathname = decodeURIComponent(url.pathname);
+    if (
+      pathname.startsWith('//') ||
+      pathname.includes('\\') ||
+      /^\/(login|onboarding|auth|api)(\/|$)/.test(pathname)
+    )
+      return null;
+  } catch {
+    return null;
+  }
 
   return path;
 }

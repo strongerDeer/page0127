@@ -19,7 +19,17 @@ export const addPendingBook = (
   const life = current?.lifeBookIsbn
     ? { lifeBookIsbn: current.lifeBookIsbn }
     : {};
-  if (books.some((b) => isSameBook(b, book))) return { books, goal, ...life };
+  if (books.some((b) => isSameBook(b, book)))
+    return {
+      books:
+        book.status === 'completed'
+          ? books.map((b) =>
+              isSameBook(b, book) ? { ...b, status: 'completed' } : b
+            )
+          : books,
+      goal,
+      ...life,
+    };
   if (books.length >= MAX_PENDING_BOOKS) return { books, goal, ...life };
   return { books: [...books, book], goal, ...life };
 };

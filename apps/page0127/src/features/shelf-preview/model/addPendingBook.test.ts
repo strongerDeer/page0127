@@ -28,6 +28,16 @@ const shelf = (over: Partial<PendingShelf>): PendingShelf => ({
 });
 
 describe('addPendingBook', () => {
+  it('읽고 싶은 책에 나도 읽었어요를 누르면 완독으로 바꾸고, 일반 담기는 완독을 내리지 않는다', () => {
+    const wish = { ...book('a'), status: 'want_to_read' as const };
+    const completed = { ...book('a'), status: 'completed' as const };
+    expect(
+      addPendingBook(shelf({ books: [wish] }), completed).books[0].status
+    ).toBe('completed');
+    expect(
+      addPendingBook(shelf({ books: [completed] }), wish).books[0].status
+    ).toBe('completed');
+  });
   it('보관분이 없으면 그 책 한 권으로 시작한다', () => {
     expect(addPendingBook(null, book('a'))).toEqual({
       books: [book('a')],

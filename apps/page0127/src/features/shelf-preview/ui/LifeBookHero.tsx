@@ -10,6 +10,7 @@ import { ArrowRight, BookOpen, Crown } from 'lucide-react';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import { withLifeBook } from '../model/lifeBook';
+import { toPendingLoginPath } from '../model/loginTransfer';
 import { readPendingShelf, writePendingShelf } from '../model/pendingShelf';
 import { restoreSelection } from '../model/restoreSelection';
 import { isSameBook } from '../model/selection';
@@ -66,8 +67,9 @@ export const LifeBookHero = ({ leaders }: LifeBookHeroProps) => {
   const handleSave = () => {
     if (!chosen) return;
     trackEvent('shelf_preview_save', { count: 1, life: true });
-    writePendingShelf(withLifeBook(readPendingShelf(), chosen.book));
-    router.push('/login');
+    const pending = withLifeBook(readPendingShelf(), chosen.book);
+    writePendingShelf(pending);
+    router.push(toPendingLoginPath(pending));
   };
 
   return (

@@ -29,6 +29,7 @@ type FieldState =
   | { kind: 'taken'; message: string };
 
 type OnboardingFormProps = {
+  next?: string | null;
   /** 가입할 때 자동으로 만들어진 아이디 — 그대로 둬도 된다 */
   initialUsername: string;
   /** 공급자가 준 닉네임. 없으면 빈 값으로 시작한다 */
@@ -48,6 +49,7 @@ const initialState: OnboardingActionState = { status: 'idle', message: '' };
  * 대신 자동 생성된 값이 미리 채워져 있어 그대로 두고 넘어갈 수 있다.
  */
 export const OnboardingForm = ({
+  next,
   initialUsername,
   initialNickname,
 }: OnboardingFormProps) => {
@@ -128,6 +130,7 @@ export const OnboardingForm = ({
 
   return (
     <form action={formAction} className='space-y-6'>
+      <input type='hidden' name='next' value={next ?? ''} />
       <div className='space-y-2'>
         <Label htmlFor={ids.username}>아이디</Label>
         <Input

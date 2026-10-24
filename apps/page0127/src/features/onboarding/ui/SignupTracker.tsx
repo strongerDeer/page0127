@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { usePathname, useSearchParams } from 'next/navigation';
 
@@ -20,9 +20,11 @@ export const SignupTracker = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const method = readSignupMethod(searchParams.get(SIGNUP_WELCOME_PARAM));
+  const sent = useRef(false);
 
   useEffect(() => {
-    if (method === null) return;
+    if (method === null || sent.current) return;
+    sent.current = true;
 
     trackEvent('sign_up', { method });
 

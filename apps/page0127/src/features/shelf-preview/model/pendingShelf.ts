@@ -59,6 +59,9 @@ const isPendingBook = (v: unknown): v is PendingBook =>
   typeof v.isbn === 'string' &&
   v.isbn.length > 0 &&
   typeof v.title === 'string' &&
+  (v.status === undefined ||
+    v.status === 'completed' ||
+    v.status === 'want_to_read') &&
   NULLABLE_BOOK_FIELDS.every((key) => isNullableString(v[key]));
 
 export const isValidGoal = (v: unknown): v is PendingGoal =>

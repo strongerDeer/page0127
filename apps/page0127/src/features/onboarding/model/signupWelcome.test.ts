@@ -3,6 +3,14 @@ import { describe, expect, it } from 'vitest';
 import { readSignupMethod, toWelcomePath } from './signupWelcome';
 
 describe('toWelcomePath', () => {
+  it('온보딩 뒤 원래 목적지의 쿼리·해시와 가입 완료 표시를 함께 유지한다', () => {
+    expect(
+      toWelcomePath('bookworm', 'google', '/books/info/abc?tab=reviews#comment')
+    ).toBe('/books/info/abc?tab=reviews&welcome=google#comment');
+    expect(toWelcomePath('bookworm', 'google', '//evil.test')).toBe(
+      '/bookworm?welcome=google'
+    );
+  });
   it('서재 주소에 로그인 공급자를 붙인다', () => {
     expect(toWelcomePath('bookworm', 'kakao')).toBe('/bookworm?welcome=kakao');
   });
