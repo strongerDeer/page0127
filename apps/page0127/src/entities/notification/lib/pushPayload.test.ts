@@ -23,6 +23,16 @@ describe('buildPushPayload', () => {
     });
   });
 
+  it('책 제목을 알면 넣고, 답글은 답글이라고 말한다', () => {
+    expect(
+      buildPushPayload(
+        { ...base, type: 'comment', target_id: 'b1', target_type: 'book' },
+        { nickname: '책벌레', username: 'reader' },
+        { title: '데미안', isReply: true }
+      )?.body
+    ).toBe('책벌레님이 『데미안』에서 내 댓글에 답글을 남겼습니다');
+  });
+
   it('보낸 사람 프로필을 못 읽었으면 이름을 비우지 않고 "누군가"로 쓴다', () => {
     expect(buildPushPayload({ ...base, type: 'follow' }, null)).toEqual({
       title: 'page0127.',

@@ -48,9 +48,18 @@ export type Notification = {
 };
 
 /**
+ * 알림이 가리키는 책 — 문장에 제목을 넣고 답글인지 가르는 데 쓴다(서버가 붙인다).
+ * - title: 받는 사람이 읽을 수 없는 책(비공개)이면 null
+ * - isReply: 받는 사람이 책 주인이 아니면 답글 알림이다(전역 책 알림은 늘 답글)
+ */
+export type NotificationTarget = { title: string | null; isReply: boolean };
+
+/**
  * 알림 조회 응답 (프로필 정보 포함)
  */
 export type NotificationWithActor = {
+  /** 좋아요·댓글 알림에만. 없으면 예전 문장을 쓴다 */
+  target?: NotificationTarget | null;
   actor: {
     id: string;
     // 사용자가 프로필 설정에서 직접 넣기 전까지 null이다.

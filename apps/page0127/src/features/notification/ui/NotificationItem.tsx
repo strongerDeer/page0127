@@ -28,6 +28,7 @@ import { RelativeTime } from '@/shared/ui/RelativeTime';
 import {
   type NotificationWithActor,
   SELF_NOTICE_TYPES,
+  toActorSentence,
 } from '@/entities/notification';
 import { toDisplayName, toInitial } from '@/entities/profile/model/displayName';
 
@@ -48,6 +49,9 @@ export const NotificationItem = ({
   // 나에게 오는 알림 — "OO님이 …" 대신 크론이 적어 둔 문장을 그대로 보여 준다
   const isSelfNotice = SELF_NOTICE_TYPES.includes(type);
 
+  // 다른 사람이 보낸 알림의 문장 — 책 제목·답글 여부를 넣는다(푸시와 같은 문장)
+  const actorSentence = toActorSentence(type, notification.target) ?? '';
+
   // 알림 타입별 메시지 및 아이콘
   const getNotificationContent = (): {
     Icon: LucideIcon | null;
@@ -60,19 +64,19 @@ export const NotificationItem = ({
         return {
           Icon: UserPlus,
           iconColor: 'text-chart-1',
-          message: '님이 팔로우했습니다',
+          message: actorSentence,
         };
       case 'comment':
         return {
           Icon: MessageCircle,
           iconColor: 'text-chart-3',
-          message: '님이 댓글을 남겼습니다',
+          message: actorSentence,
         };
       case 'like':
         return {
           Icon: Heart,
           iconColor: 'text-chart-5',
-          message: '님이 좋아요를 눌렀습니다',
+          message: actorSentence,
         };
       case 'reading_reminder':
         return {

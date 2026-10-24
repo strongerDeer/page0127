@@ -4,6 +4,7 @@
  */
 
 export * from './api/notificationApi';
+export * from './lib/actorSentence';
 export * from './lib/hooks/useAppBadge';
 export * from './lib/hooks/useDeleteNotification';
 export * from './lib/hooks/useMarkAsRead';
