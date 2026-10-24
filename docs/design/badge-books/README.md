@@ -75,4 +75,4 @@
 - [2026년 9월 출판 표지 사례 / SPINE](https://spinemagazine.co/articles/university-press-coverage-september-2026)
 - [2026년 표지의 회화·강한 색·이미지 소재 사례 / Goodreads](https://www.goodreads.com/blog/show/3096-judge-a-book-by-its-cover-6-cover-art-trends-we-re-spotting-this-year)
 
-검증: 단위 테스트 1,089개, Storybook 브라우저·접근성 113개, 린트·타입 검사·프로덕션 빌드 통과. 모바일 넘침 없음, 아트 로딩·표지/책등·상세 열기·닫기 확인. 기존 독서 기록 기반 획득 계산과 공개 범위를 유지한다.
+검증: 단위 테스트 1,163개, Storybook 브라우저·접근성 120개, 린트·타입 검사·프로덕션 빌드 통과. 모바일 넘침 없음, 아트 로딩·표지/책등·상세 열기·닫기 확인. 기존 독서 기록 기반 획득 계산과 공개 범위를 유지한다.

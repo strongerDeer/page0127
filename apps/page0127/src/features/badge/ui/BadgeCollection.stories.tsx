@@ -198,9 +198,11 @@ export const MilestonesAndReread: Story = {
     const dialog = within(
       within(canvasElement.ownerDocument.body).getByRole('dialog')
     );
-    await expect(
-      dialog.getByRole('heading', { name: '한 줄 평론가' })
-    ).toBeVisible();
+    await waitFor(() =>
+      expect(
+        dialog.getByRole('heading', { name: '한 줄 평론가' })
+      ).toBeVisible()
+    );
     await waitFor(() =>
       expect(
         dialog
