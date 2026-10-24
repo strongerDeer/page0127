@@ -1,9 +1,10 @@
 import { createAnonClient } from '@/shared/config/supabase/anon';
 
+import { getCurrentLibraryYear } from '../model/libraryPeriod';
+import { countShelf, type ShelfCounts } from '../model/shelfCounts';
+
 /** 공유 카드에 들어가는 책장 요약 */
-export type PublicShelfSummary = {
-  /** 공개된 완독 권수 */
-  totalBooks: number;
+export type PublicShelfSummary = ShelfCounts & {
   /** 그중 인생책 권수 */
   lifeBooks: number;
   /** 최근 완독한 책의 표지 URL — 최신순, 최대 COVER_LIMIT 장 */
@@ -14,7 +15,7 @@ export type PublicShelfSummary = {
 export const COVER_LIMIT = 5;
 
 /**
- * 공유 카드·메타데이터용 책장 요약 — 권수 두 개만 센다.
+ * 공유 카드·메타데이터용 책장 요약 — 권수(전체·올해·인생책)와 명함용 분류만 센다.
  *
  * getOverallStats 를 쓰지 않는 이유는 두 가지다.
  * 1. 그쪽은 책 row 를 통째로 select 해 연도별·카테고리별 분포까지 계산한다.
@@ -43,21 +44,19 @@ export const getPublicShelfSummary = async (
   // 표지도 같은 행에서 뽑는다 — 쿼리를 하나 더 보내지 않고, 숫자와 표지가
   // **같은 공개 범위**에서 나오게 하기 위해서다(비공개 책 표지가 카드에 실리면 안 된다).
   // (한 사람 책장이라 수백 행이어도 짧은 문자열 몇 개씩이라 부담이 없다)
+  // 분류·완독 시점은 명함(성향 첫인상·올해 권수)용 — 서재 화면과 같은 countShelf 로 센다
   const publicCompleted = () =>
     supabase
       .from('books')
-      .select('id, isbn, cover_image')
+      .select('id, isbn, cover_image, category, completed_date, completed_year')
       .eq('user_id', userId)
       .eq('status', 'completed')
       .eq('is_public', true)
       .order('completed_date', { ascending: false, nullsFirst: false });
 
-  // ISBN 이 비어 있는 수기 등록 책은 서로 합쳐지면 안 된다 → id 로 갈라 센다.
-  // (model/dedupeReadings.ts 의 그룹 키와 같은 규칙. 여기는 한 사람의
-  //  완독 목록만 다루므로 user_id·status 는 이미 쿼리에서 고정돼 있다)
-  const countDistinctBooks = (rows: { id: string; isbn: string | null }[]) =>
-    new Set(rows.map((row) => (row.isbn ? `isbn:${row.isbn}` : `id:${row.id}`)))
-      .size;
+  // 같은 책 판정(ISBN, 없으면 id)과 올해 권수는 countShelf 가 한다.
+  // 여기는 한 사람의 완독 목록만 다루므로 user_id·status 는 이미 쿼리에서 고정돼 있다.
+  const currentYear = getCurrentLibraryYear();
 
   const [totalResult, lifeResult] = await Promise.all([
     publicCompleted(),
@@ -70,10 +69,16 @@ export const getPublicShelfSummary = async (
   // 총 권수를 못 세면 카드에 쓸 것이 없다 — 빈 선반으로 떨어진다
   if (totalResult.error) {
     console.error('공개 책장 권수 조회 실패:', totalResult.error.message);
-    return { totalBooks: 0, lifeBooks: 0, covers: [] };
+    return {
+      totalBooks: 0,
+      yearBooks: 0,
+      categories: [],
+      lifeBooks: 0,
+      covers: [],
+    };
   }
 
-  const totalBooks = countDistinctBooks(totalResult.data ?? []);
+  const counts = countShelf(totalResult.data ?? [], currentYear);
 
   // 재독한 책은 같은 표지가 두 번 나온다 — Set 으로 걸러 서로 다른 표지만 세운다
   const covers = [
@@ -90,12 +95,12 @@ export const getPublicShelfSummary = async (
   // 한쪽이 죽어도 살아 있는 숫자는 내보낸다.
   if (lifeResult.error) {
     console.error('인생책 권수 조회 실패:', lifeResult.error.message);
-    return { totalBooks, lifeBooks: 0, covers };
+    return { ...counts, lifeBooks: 0, covers };
   }
 
   return {
-    totalBooks,
-    lifeBooks: countDistinctBooks(lifeResult.data ?? []),
+    ...counts,
+    lifeBooks: countShelf(lifeResult.data ?? [], currentYear).totalBooks,
     covers,
   };
 };

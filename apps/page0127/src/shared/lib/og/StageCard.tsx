@@ -78,8 +78,11 @@ const BrandMark = () => (
 type StageCardProps = {
   /** 무대 위에 세울 것. 무대는 position: relative 라 absolute 배치도 된다 */
   children: React.ReactNode;
-  /** 흰 띠 왼쪽 한 줄 — "누르면 무엇을 보게 되는지" */
-  cta: string;
+  /**
+   * 흰 띠 왼쪽 — "누르면 무엇을 보게 되는지". 보통 한 줄 문자열이고,
+   * 공개 서재처럼 두 줄(독서 명함)을 세울 때는 노드를 넘긴다(글자 크기 38 · 굵게를 물려받는다).
+   */
+  cta: React.ReactNode;
 };
 
 export const StageCard = ({ children, cta }: StageCardProps) => (

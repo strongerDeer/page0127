@@ -14,6 +14,7 @@ import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProf
 import { toDisplayName } from '@/entities/profile/model/displayName';
 import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTasteHistory';
 
+import { toReaderCard } from '@/widgets/public-library/model/readerCard';
 import { PublicLibraryContent } from '@/widgets/public-library/PublicLibraryContent';
 import { PublicLibrarySkeleton } from '@/widgets/public-library/PublicLibrarySkeleton';
 
@@ -55,9 +56,22 @@ export const generateMetadata = async ({
   }
 
   const name = toDisplayName(profile);
-  const { totalBooks } = await getPublicShelfSummary(profile.id);
+  const [summary, tasteHistory] = await Promise.all([
+    getPublicShelfSummary(profile.id),
+    getPublicTasteHistory(profile.id),
+  ]);
+  const { totalBooks } = summary;
+  const { identity } = toReaderCard({
+    latestType: tasteHistory[0]?.personality_type,
+    categories: summary.categories,
+    yearBooks: summary.yearBooks,
+    totalBooks,
+  });
 
   const title = `${name}님의 책장 | page0127.`;
+  // 공유 미리보기의 굵은 줄은 "어떤 독자인가"부터 — 카드 이미지의 명함과 같은 이름.
+  // 페이지 제목(<title>)은 이름 그대로 둔다: 성향은 분석마다 바뀌어 검색 노출 제목이 흔들린다
+  const shareTitle = identity ? `‘${identity.name}’ ${name}님의 책장` : title;
   // 한줄 소개를 쓴 사람은 그게 자기소개다 — 우리가 만든 문장보다 앞세운다
   const bio = profile.bio?.trim();
   // 0권이면 숫자를 쓰지 않는다 — "기록한 책 0권"은 초대가 아니라 빈 성적표로 읽힌다
@@ -72,8 +86,8 @@ export const generateMetadata = async ({
   return {
     title,
     description,
-    openGraph: { title, description, type: 'profile' },
-    twitter: { card: 'summary_large_image', title, description },
+    openGraph: { title: shareTitle, description, type: 'profile' },
+    twitter: { card: 'summary_large_image', title: shareTitle, description },
   };
 };
 

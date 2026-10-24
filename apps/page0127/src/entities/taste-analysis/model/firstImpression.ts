@@ -6,7 +6,7 @@ import {
 import {
   READING_PERSONALITY_TYPES,
   type ReadingPersonalityType,
-} from '@/entities/taste-analysis/model/personalityTypes';
+} from './personalityTypes';
 
 /** 홈 부제의 약속 — "기억나는 책 세 권을 골라보세요" */
 export const FIRST_IMPRESSION_MIN_BOOKS = 3;
