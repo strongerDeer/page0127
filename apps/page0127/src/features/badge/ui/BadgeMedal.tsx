@@ -17,6 +17,7 @@ type BadgeMedalProps = {
   view?: 'cover' | 'spine';
   opened?: boolean;
   reveal?: boolean;
+  preview?: boolean;
 };
 
 /** 표지 아트의 실제 타이포·회화·사진을 보존하고, 제본과 펼치기만 CSS로 만든다. */
@@ -27,6 +28,7 @@ export const BadgeMedal = ({
   view = 'cover',
   opened = false,
   reveal = false,
+  preview = false,
 }: BadgeMedalProps) => {
   const { title, cover, levelValue } = badgePresentation(badge);
   const art = badgeCoverArt(cover);
@@ -35,6 +37,7 @@ export const BadgeMedal = ({
       aria-hidden='true'
       data-badge-book
       data-cover={cover}
+      data-preview={preview || undefined}
       data-view={view}
       data-locked={!badge.earned || undefined}
       data-open={(opened && badge.earned) || undefined}
@@ -57,7 +60,7 @@ export const BadgeMedal = ({
         </span>
       </div>
       <div className={styles.cover}>
-        <span className={styles.artwork}>
+        <span className={styles.artwork} data-badge-artwork>
           <Image
             src={art.src}
             alt=''
@@ -80,6 +83,11 @@ export const BadgeMedal = ({
             className={`${styles.volume} ${cover === 'wide-view' ? styles.fieldVolume : ''}`}
           >
             {levelValue}
+          </span>
+        )}
+        {!badge.earned && (
+          <span className={styles.emptyState}>
+            <span>{badge.kind === 'hidden' ? '?' : '+'}</span>미획득
           </span>
         )}
         <span className={styles.spineTitle}>{title}</span>

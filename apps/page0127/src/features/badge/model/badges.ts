@@ -150,16 +150,29 @@ const badge = (
   progress: extra.progress ?? null,
 });
 
-export const computeBadges = ({
-  books,
-  readingGoal,
-  firstTasteAnalysisAt,
-}: BadgeInput): Badge[] => {
+export const computeBadges = (
+  { books, readingGoal, firstTasteAnalysisAt }: BadgeInput,
+  { includeGrowthSteps = false } = {}
+): Badge[] => {
   const completed = books
     .filter((book) => book.status === 'completed')
     .sort(byReadOrder);
   const first = (predicate: (book: Book) => boolean) =>
     hitOf(completed.find(predicate));
+
+  // 서재와 동일하게 저장 회독 수와 실제 완독 행 수 중 큰 값을 사용한다.
+  // 읽는 중인 재독, 중복 전달된 같은 행, ISBN 없는 다른 책은 합산하지 않는다.
+  const readingHit = (target: number): Hit => {
+    const groups = new Map<string, Set<string>>();
+    for (const book of completed) {
+      const key = `${book.user_id}:${bookKey(book)}`;
+      const ids = groups.get(key) ?? new Set<string>();
+      ids.add(book.id);
+      groups.set(key, ids);
+      if (Math.max(book.read_count, ids.size) >= target) return hitOf(book);
+    }
+    return null;
+  };
 
   // ── 성장 ────────────────────────────────────────────
   const shelf = levelOf(countDistinct(completed), SHELF_LEVELS, (target) =>
@@ -221,7 +234,7 @@ export const computeBadges = ({
     return null;
   })();
 
-  return [
+  const result = [
     badge(
       {
         id: 'shelf',
@@ -297,7 +310,7 @@ export const computeBadges = ({
         name: '다시 펼친 책',
         description: '같은 책을 두 번 완독',
       },
-      first((book) => book.read_count >= 2)
+      readingHit(2)
     ),
     badge(
       {
@@ -421,7 +434,24 @@ export const computeBadges = ({
         name: '세 번째 만남',
         description: '같은 책을 세 번 완독',
       },
-      first((book) => book.read_count >= 3)
+      readingHit(3)
     ),
   ];
+  if (!includeGrowthSteps) return result;
+  return result.flatMap((item) => {
+    if (item.kind !== 'growth') return [item];
+    const levels = item.id === 'shelf' ? SHELF_LEVELS : WIDE_VIEW_LEVELS;
+    const current =
+      item.id === 'shelf' ? countDistinct(completed) : categoryOrder.length;
+    return levels.map((target, index) => {
+      const hit =
+        item.id === 'shelf'
+          ? nthDistinct(completed, target)
+          : hitOf(categoryOrder[target - 1]);
+      return badge(item, hit, {
+        level: index + 1,
+        progress: hit ? null : { current, target },
+      });
+    });
+  });
 };

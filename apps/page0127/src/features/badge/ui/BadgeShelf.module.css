@@ -119,9 +119,7 @@
   --shelf-book-width: 64px;
   margin-top: 20px;
 }
-.summaryShelf .shelfItem:nth-child(n + 4) {
-  display: none;
-}
+
 .summaryShelf .name {
   font-size: 11px;
 }
@@ -171,9 +169,6 @@
     --shelf-book-width: 76px;
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
-  .summaryShelf .shelfItem:nth-child(n + 4) {
-    display: block;
-  }
 }
 
 /* 빈 칸이 있어도 선반은 한 줄 전체를 이어 준다. */
@@ -222,4 +217,59 @@
     padding-left: 16px;
     padding-right: 16px;
   }
+}
+
+.lockedLabel {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  font-weight: 500;
+}
+/* 모든 소장 배지를 한 줄에 겹쳐 놓는다. 포커스한 책을 앞으로 꺼낸다. */
+.summaryShelf {
+  --shelf-book-width: 76px;
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  padding: 14px 8px 32px;
+  margin-top: 8px;
+  background: linear-gradient(to bottom, var(--line-soft), transparent) 0
+    120px / 100% 7px no-repeat;
+  scrollbar-width: thin;
+}
+.summaryShelf .shelfItem {
+  flex: 0 0 clamp(36px, 5vw, 64px);
+  min-height: 132px;
+  width: 76px;
+}
+.summaryShelf .shelfItem:last-child {
+  flex-basis: 84px;
+}
+.summaryShelf .tile {
+  width: 76px;
+}
+.summaryShelf .name {
+  position: absolute;
+  top: 108px;
+  left: -24px;
+  width: 124px;
+  max-width: none;
+  margin-top: 0;
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: var(--card);
+  box-shadow: 0 2px 8px rgb(20 41 78 / 10%);
+  opacity: 0;
+  pointer-events: none;
+}
+.summaryShelf .shelfItem:is(:hover, :focus-within) {
+  z-index: 10;
+}
+.summaryShelf .tile:is(:hover, :focus-visible) .name {
+  opacity: 1;
+}
+.summaryShelf .tile:focus-visible {
+  outline-offset: 2px;
 }

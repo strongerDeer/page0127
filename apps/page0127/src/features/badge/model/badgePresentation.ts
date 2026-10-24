@@ -21,7 +21,10 @@ export const badgePresentation = (badge: Badge) => {
     };
   }
   return {
-    title: badge.name,
+    title:
+      badge.kind === 'growth'
+        ? `${badge.name} · ${badgeLevelValue(badge)}${badge.id === 'shelf' ? '권' : '분야'}`
+        : badge.name,
     cover: badge.id,
     levelValue: badgeLevelValue(badge),
   };
