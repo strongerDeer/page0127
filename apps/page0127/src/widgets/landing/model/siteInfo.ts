@@ -18,8 +18,8 @@ export const SITE_INFO = {
    * ⚠️ 운영자가 직접 채울 값이다(공개 페이지에 실리는 실명·이메일이라 임의로 넣지 않았다).
    */
   privacyOfficer: {
-    name: '' as string,
-    email: '' as string,
+    name: '강혜진' as string,
+    email: 'stronger_deer@naver.com' as string,
   },
 } as const;
 
