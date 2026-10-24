@@ -6,10 +6,7 @@ import { PageContainer } from '@repo/ui';
 
 import { createClient } from '@/shared/config/supabase/server';
 
-import {
-  BOOK_WITH_MEMO_SELECT,
-  withPersonalMemo,
-} from '@/entities/book/api/bookMemo';
+import { bookSelect, withPersonalMemo } from '@/entities/book/api/bookMemo';
 import { getBookReadings } from '@/entities/book/api/getBookReadings';
 import { getPublicBookRecord } from '@/entities/book/api/getPublicBookRecord';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
@@ -126,8 +123,8 @@ const BookDetailPage = async ({ params }: PageProps) => {
 
   let bookQuery = supabase
     .from('books')
-    // 메모는 RLS 가 주인에게만 붙인다 — 방문자에게는 null
-    .select(BOOK_WITH_MEMO_SELECT)
+    // 메모는 주인일 때만 붙인다 — 비로그인 방문자가 메모까지 조회하면 404 가 된다
+    .select(bookSelect(isOwner))
     .eq('id', bookId)
     .eq('user_id', profile.id);
 

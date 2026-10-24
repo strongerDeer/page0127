@@ -32,7 +32,11 @@ export type {
 export { bookApi } from './api/bookApi';
 
 // 나만의 메모(book_memos) 임베드 — 주인만 읽힌다
-export { BOOK_WITH_MEMO_SELECT, withPersonalMemo } from './api/bookMemo';
+export {
+  BOOK_WITH_MEMO_SELECT,
+  bookSelect,
+  withPersonalMemo,
+} from './api/bookMemo';
 
 // 독서 달력 한 달치 (서재 연도 뷰)
 export type {

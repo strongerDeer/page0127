@@ -1,9 +1,6 @@
 import { NextRequest } from 'next/server';
 
-import {
-  BOOK_WITH_MEMO_SELECT,
-  withPersonalMemo,
-} from '@/entities/book/api/bookMemo';
+import { bookSelect, withPersonalMemo } from '@/entities/book/api/bookMemo';
 import { isNewlyCompleted } from '@/entities/book/model/completion';
 
 import { createActivity } from '../../_helpers/activity';
@@ -33,7 +30,8 @@ export async function GET(request: NextRequest, { params }: Params) {
 
     const { data, error } = await supabase
       .from('books')
-      .select(BOOK_WITH_MEMO_SELECT)
+      // 비로그인이면 메모를 붙이지 않는다(book_memos 는 anon 권한이 없다)
+      .select(bookSelect(!!user))
       .eq('id', id)
       .single();
 
@@ -43,7 +41,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       return notFoundResponse('책');
     }
 
-    // 메모는 RLS 가 주인에게만 붙여 준다 — 남의 공개 책이면 null 이다
+    // 메모는 RLS 가 주인에게만 붙여 준다 — 남의 공개 책이거나 비로그인이면 null 이다
     return successResponse(withPersonalMemo(data));
   } catch {
     return errorResponse('책 조회에 실패했습니다.');
