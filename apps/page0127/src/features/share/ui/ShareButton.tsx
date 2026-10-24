@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { Button } from '@repo/ui';
+import { Button, cn } from '@repo/ui';
 import { Link2, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -17,6 +17,7 @@ type ShareButtonProps = {
   text?: string;
   /** 버튼에 보일 문구. 없으면 아이콘만 (아이콘 버튼) */
   label?: string;
+  className?: string;
 };
 
 /**
@@ -27,7 +28,13 @@ type ShareButtonProps = {
  * (이 서비스에서 공유가 실제로 일어나는 곳). 다만 데스크톱 브라우저 상당수와
  * 비보안 컨텍스트에서는 없으므로, 그때는 기존 방식대로 주소를 복사한다.
  */
-export const ShareButton = ({ path, title, text, label }: ShareButtonProps) => {
+export const ShareButton = ({
+  path,
+  title,
+  text,
+  label,
+  className,
+}: ShareButtonProps) => {
   const [isSharing, setIsSharing] = useState(false);
 
   const handleShare = async () => {
@@ -70,7 +77,7 @@ export const ShareButton = ({ path, title, text, label }: ShareButtonProps) => {
     <Button
       variant='outline'
       size={label ? 'md' : 'icon-md'}
-      className='shadow-none'
+      className={cn('shadow-none', className)}
       onClick={handleShare}
       title={title}
     >

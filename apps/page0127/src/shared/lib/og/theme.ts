@@ -15,6 +15,9 @@
 /** OG 표준 크기 (1.91:1) — 카톡·트위터·슬랙이 공통으로 쓰는 비율 */
 export const OG_SIZE = { width: 1200, height: 630 } as const;
 
+/** 인스타 스토리 크기 (9:16) — 서재 공유 시트의 "이미지 공유하기" */
+export const STORY_SIZE = { width: 1080, height: 1920 } as const;
+
 /**
  * 팔레트 — 디자인 시스템의 시맨틱 토큰을 그대로 가져온다.
  *

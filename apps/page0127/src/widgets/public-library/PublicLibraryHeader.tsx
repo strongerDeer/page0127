@@ -36,7 +36,7 @@ import {
 import { FollowButton, FollowListModal, FollowStats } from '@/features/follow';
 import { coachTarget } from '@/features/onboarding';
 import { toLockedAnalysisMessage } from '@/features/rating-nudge';
-import { ShareButton } from '@/features/share';
+import { ShareSheetButton } from '@/features/share';
 import { TasteProfileCard } from '@/features/taste-analysis/ui/TasteProfileCard';
 
 import { type ReaderCard, toIdentityLabel } from './model/readerCard';
@@ -277,10 +277,13 @@ export const PublicLibraryHeader = ({
                 </Button>
               )}
 
-              {/* 모바일에서는 네이티브 공유 시트로, 데스크톱에서는 주소 복사로 떨어진다 */}
-              <ShareButton
+              {/* 공유 버튼 하나 → 시트에서 스토리 이미지 또는 링크 (인스타·카톡 구분은 휴대폰 공유 시트가 한다) */}
+              <ShareSheetButton
                 path={`/${username}`}
+                imagePath={`/${username}/story-image`}
+                fileName={`page0127-${username}.png`}
                 title={`${displayName}님의 책장`}
+                sheetTitle='서재 공유하기'
                 text='책장을 보면, 그 사람이 보입니다.'
               />
             </div>
