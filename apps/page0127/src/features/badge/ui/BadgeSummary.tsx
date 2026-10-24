@@ -15,7 +15,7 @@ import styles from './BadgeShelf.module.css';
 
 type BadgeSummaryProps = BadgeInput & { username: string; isOwner: boolean };
 
-/** 받은 모든 단계의 배지를 겹쳐 놓고, 넘치면 가로로 탐색한다. */
+/** 받은 모든 단계의 배지를 나란히 놓고, 넘치면 가로로 탐색한다. */
 export const BadgeSummary = ({
   username,
   isOwner,
@@ -60,7 +60,7 @@ export const BadgeSummary = ({
         </Link>
       </div>
       <p className='mt-2 text-xs text-text-subtle'>
-        겹쳐진 배지를 선택해 보세요. 옆으로 넘기면 모두 볼 수 있어요.
+        옆으로 넘기면 모은 배지를 모두 볼 수 있어요.
       </p>
       {earned.length ? (
         <ul className={styles.summaryShelf} aria-label='획득한 배지 책장'>

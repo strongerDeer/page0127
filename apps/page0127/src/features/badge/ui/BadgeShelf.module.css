@@ -225,50 +225,31 @@
   font-size: 10px;
   font-weight: 500;
 }
-/* 모든 소장 배지를 한 줄에 겹쳐 놓는다. 포커스한 책을 앞으로 꺼낸다. */
+/* 표지와 이름을 모두 보이게 나란히 놓고, 넘치는 배지만 가로로 탐색한다. */
 .summaryShelf {
   --shelf-book-width: 76px;
   display: flex;
   align-items: flex-start;
-  gap: 0;
+  gap: 16px;
   overflow-x: auto;
   overscroll-behavior-x: contain;
-  padding: 14px 8px 32px;
+  padding: 14px 8px 12px;
   margin-top: 8px;
   background: linear-gradient(to bottom, var(--line-soft), transparent) 0
     120px / 100% 7px no-repeat;
   scrollbar-width: thin;
 }
 .summaryShelf .shelfItem {
-  flex: 0 0 clamp(36px, 5vw, 64px);
-  min-height: 132px;
+  flex: 0 0 76px;
+  min-height: 150px;
   width: 76px;
-}
-.summaryShelf .shelfItem:last-child {
-  flex-basis: 84px;
 }
 .summaryShelf .tile {
   width: 76px;
 }
 .summaryShelf .name {
-  position: absolute;
-  top: 108px;
-  left: -24px;
-  width: 124px;
-  max-width: none;
-  margin-top: 0;
-  padding: 4px 6px;
-  border-radius: 6px;
-  background: var(--card);
-  box-shadow: 0 2px 8px rgb(20 41 78 / 10%);
-  opacity: 0;
-  pointer-events: none;
-}
-.summaryShelf .shelfItem:is(:hover, :focus-within) {
-  z-index: 10;
-}
-.summaryShelf .tile:is(:hover, :focus-visible) .name {
-  opacity: 1;
+  margin-top: 17px;
+  font-size: 11px;
 }
 .summaryShelf .tile:focus-visible {
   outline-offset: 2px;
