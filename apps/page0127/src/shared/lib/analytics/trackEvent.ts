@@ -61,8 +61,9 @@ export type AnalyticsEvent =
    */
   | 'shelf_preview_claim'
   /**
-   * 담기 직후 "언제 읽으셨나요?"에 답했다(CompletedYearDialog).
-   * asked: 물어본 권수, answered: 완독 연도를 남긴 권수(건너뛰면 0)
+   * 담기 직후 "언제 읽고 어땠나요?"에 답했다(CompletedYearDialog).
+   * asked: 물어본 권수, answered: 연도나 별점을 하나라도 남긴 권수(건너뛰면 0),
+   * rated: 그중 별점을 남긴 권수
    */
   | 'shelf_preview_years'
   /**
