@@ -71,6 +71,11 @@ export type Book = {
 
   // 사용자 입력
   one_line_review: string | null;
+  /**
+   * 나만의 메모 — DB 에서는 books 가 아니라 주인만 읽는 book_memos 에 있다.
+   * books.personal_memo 컬럼은 저장 창구일 뿐 늘 NULL 이다(트리거가 옮긴다).
+   * 읽을 때는 BOOK_WITH_MEMO_SELECT 로 조회하고 withPersonalMemo 로 펼친다.
+   */
   personal_memo: string | null;
   tags: string[] | null;
 

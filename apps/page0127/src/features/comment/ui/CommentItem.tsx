@@ -199,6 +199,8 @@ export const CommentItem = ({
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
                 rows={3}
+                // 서버 COMMENT_MAX_LENGTH(api/_helpers/bookComments)와 같은 값
+                maxLength={2000}
                 disabled={updateMutation.isPending}
                 className='resize-none'
               />

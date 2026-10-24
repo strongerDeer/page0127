@@ -20,6 +20,16 @@
  * 크론(admin.ts)은 배치라 오래 걸리는 게 정상이므로 제외한다.
  */
 
+/**
+ * 상한에 걸려 끊었다는 표식. 에러 메시지에 실려 Sentry·/admin/errors 까지 간다.
+ *
+ * 왜: 그냥 abort() 하면 메시지가 "This operation was aborted" 라, 사용자가 창을 닫아
+ * 끊긴 요청과 **DB 가 5초 넘게 안 돌아온 것**이 구분되지 않는다. /admin/errors 는
+ * AbortError 를 노이즈로 묻으므로(triage.ts) DB 가 느려져도 화면에 안 보였다.
+ * 영어로 쓰는 이유: triage 는 한글 메시지를 "우리가 남긴 로그"로 낮춘다.
+ */
+export const DB_TIMEOUT_MARKER = '[db-timeout]';
+
 /** 사용자 대면 조회 상한. 정상 응답은 서울 리전 기준 0.1~0.4초다. */
 export const DB_TIMEOUT_MS = 5_000;
 
@@ -45,13 +55,25 @@ const isAuthRequest = (input: RequestInfo | URL): boolean => {
   return url.includes('/auth/v1/');
 };
 
-export const createTimeoutFetch = (
-  { dbMs = DB_TIMEOUT_MS, authMs = AUTH_TIMEOUT_MS } = {}
-): typeof fetch => {
+export const createTimeoutFetch = ({
+  dbMs = DB_TIMEOUT_MS,
+  authMs = AUTH_TIMEOUT_MS,
+} = {}): typeof fetch => {
   return async (input, init) => {
     const timeoutMs = isAuthRequest(input) ? authMs : dbMs;
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    // 이유(reason)는 이름이 AbortError 인 DOMException 이어야 한다 — postgrest-js 의
+    // 재시도 가드가 name === 'AbortError' 로 판정한다(위 ⚠️). 메시지만 바꾼다.
+    const timer = setTimeout(
+      () =>
+        controller.abort(
+          new DOMException(
+            `Supabase did not respond within ${timeoutMs}ms ${DB_TIMEOUT_MARKER}`,
+            'AbortError'
+          )
+        ),
+      timeoutMs
+    );
 
     // 호출자가 이미 signal 을 넘겼다면(supabase-js 의 .abortSignal() 등)
     // 둘 중 먼저 끊기는 쪽을 따른다 — 남의 취소를 덮어쓰지 않는다.

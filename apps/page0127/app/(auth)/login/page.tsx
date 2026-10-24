@@ -1,3 +1,4 @@
+import { headers } from 'next/headers';
 import Link from 'next/link';
 
 import {
@@ -7,6 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@repo/ui';
+
+import { detectInAppBrowser } from '@/shared/lib/auth/inAppBrowser';
 
 import { OAuthLoginButtons } from '@/features/auth/ui/OAuthLoginButtons';
 import { PendingShelfNotice } from '@/features/shelf-preview/ui/PendingShelfNotice';
@@ -37,6 +40,9 @@ type LoginPageProps = {
  */
 const LoginPage = async ({ searchParams }: LoginPageProps) => {
   const { redirect } = await searchParams;
+  // 앱 안 브라우저 판정은 서버에서 한다 — 클라이언트에서 하면 안내가 늦게 튀어나와
+  // 그 사이에 구글 버튼을 누를 수 있다(그리고 화면이 한 번 밀린다)
+  const inAppBrowser = detectInAppBrowser((await headers()).get('user-agent'));
 
   return (
     <div className='flex min-h-screen items-center justify-center px-4'>
@@ -59,7 +65,7 @@ const LoginPage = async ({ searchParams }: LoginPageProps) => {
         <CardContent>
           {/* 홈 맛보기에서 "저장하기"를 누르고 왔다면 그 맥락을 잇는다 (없으면 안 보인다) */}
           <PendingShelfNotice />
-          <OAuthLoginButtons next={redirect} />
+          <OAuthLoginButtons next={redirect} inAppBrowser={inAppBrowser} />
           {/* 약관 링크는 실제 페이지로 연결한다 (기존 href='#' 죽은 링크) */}
           <p className='mt-4 text-center text-sm text-balance break-keep text-text-subtle'>
             로그인하면{' '}

@@ -296,7 +296,9 @@ export const BookRegistrationForm = ({
       rating,
       is_life_book: isLifeBook,
       one_line_review: oneLineReview || undefined,
-      personal_memo: personalMemo || undefined,
+      // 빈 문자열도 그대로 보낸다 — 서버(트리거)가 '' 를 "메모 지우기"로 처리한다.
+      // undefined 로 빼면 수정 화면에서 메모를 비워도 예전 메모가 남는다.
+      personal_memo: personalMemo,
       is_public: isPublic,
     };
 
@@ -677,7 +679,15 @@ export const BookRegistrationForm = ({
                   }
                   placeholder='개인적인 생각이나 메모를 자유롭게 작성하세요'
                   rows={4}
+                  maxLength={10000}
+                  aria-describedby={`${ids.personalMemo}-hint`}
                 />
+                <p
+                  id={`${ids.personalMemo}-hint`}
+                  className='text-sm text-muted-foreground'
+                >
+                  책을 공개해도 메모는 나에게만 보여요.
+                </p>
               </div>
 
               {/* 태그 */}

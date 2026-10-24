@@ -37,7 +37,12 @@ const NOISE_PATTERNS = [
 
 // 하이드레이션 불일치는 화면이 실제로 깨지는 버그다. 다른 노이즈 문구가
 // 섞여 있더라도 절대 묻으면 안 되므로 먼저 걸러낸다.
-const NEVER_NOISE = /Text content does not match/i;
+const NEVER_NOISE = /Text content does not match|\[db-timeout\]/i;
+
+// 사용자 대면 Supabase 조회가 상한(5초)에 걸려 끊긴 것 — shared/config/supabase/timeout.ts 의
+// DB_TIMEOUT_MARKER. 이름은 AbortError 지만 "사용자가 취소"가 아니라 DB 가 느린 것이라
+// 노이즈로도, 한글 로그로도 내리지 않는다(호출부 로그가 한글 접두어를 붙여도).
+const DB_TIMEOUT = /\[db-timeout\]/;
 
 // 이 프로젝트의 console.error 메시지는 대부분 한글이고(95곳 중 84곳),
 // 런타임·라이브러리가 내는 진짜 크래시 메시지는 전부 영어다.
@@ -90,7 +95,12 @@ export const triage = (issue: SentryIssue, now: Date): Grade => {
 
   // 한글 규칙보다 크론이 우선한다 — 같은 크론 실패인데 메시지가 한글이냐
   // 영어냐로 등급이 갈리던 것을 막는다(실제로 랭킹 스냅샷만 묻혔다).
-  if (!isCronFailure(issue) && HANGUL.test(message)) return 'log';
+  if (
+    !isCronFailure(issue) &&
+    !DB_TIMEOUT.test(message) &&
+    HANGUL.test(message)
+  )
+    return 'log';
 
   const firstSeen = new Date(issue.firstSeen).getTime();
   const lastSeen = new Date(issue.lastSeen).getTime();

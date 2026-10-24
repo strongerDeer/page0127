@@ -64,6 +64,13 @@ describe('triage', () => {
     expect(triage(issue({ metadata: { value } }), at('2026-07-25T00:00:00Z'))).not.toBe('noise');
   });
 
+  it('DB 상한(5초)에 걸려 끊긴 것은 AbortError 여도 노이즈·로그로 내리지 않는다', () => {
+    const value =
+      '[MyBookMemo] 내 기록 조회 실패: AbortError: Supabase did not respond within 5000ms [db-timeout]';
+    expect(triage(issue({ metadata: { value } }), at('2026-07-25T00:00:00Z'))).not.toBe('noise');
+    expect(triage(issue({ metadata: { value } }), at('2026-07-25T00:00:00Z'))).not.toBe('log');
+  });
+
   it('한글이 섞인 메시지는 우리가 남긴 로그', () => {
     expect(
       triage(issue({ metadata: { value: '도서 검색 실패: timeout' } }), at('2026-07-25T00:00:00Z'))

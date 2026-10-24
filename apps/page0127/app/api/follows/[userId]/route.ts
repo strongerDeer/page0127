@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 
 import { getCurrentUser, getSupabaseClient } from '../../_helpers/auth';
 import { errorResponse, successResponse } from '../../_helpers/response';
+import { retractUnreadNotifications } from '../../_helpers/retractNotification';
 
 /**
  * DELETE /api/follows/:userId
@@ -33,14 +34,12 @@ export async function DELETE(
 
     if (error) return errorResponse(error.message);
 
-    // 읽지 않은 팔로우 알림 삭제
-    await supabase
-      .from('notifications')
-      .delete()
-      .eq('type', 'follow')
-      .eq('actor_id', user!.id)
-      .eq('user_id', userId)
-      .eq('is_read', false);
+    // 상대가 아직 안 읽은 팔로우 알림은 거둔다
+    await retractUnreadNotifications(supabase, {
+      actorId: user!.id,
+      type: 'follow',
+      userId,
+    });
 
     return successResponse({ message: '언팔로우했습니다.' });
   } catch {

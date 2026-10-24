@@ -5,7 +5,11 @@ import { Star } from 'lucide-react';
 // → shared의 createClient를 직접 호출하고, user 조회는 인라인으로 처리
 import { createClient } from '@/shared/config/supabase/server';
 
-import { Book, isRated } from '@/entities/book';
+import {
+  BOOK_WITH_MEMO_SELECT,
+  isRated,
+  withPersonalMemo,
+} from '@/entities/book';
 
 type MyBookMemoProps = {
   isbn: string;
@@ -26,7 +30,7 @@ export const MyBookMemo = async ({ isbn }: MyBookMemoProps) => {
   // 조용히 사라진다. 그래서 에러는 남기고 화면만 안전하게 접는다.
   const { data: book, error } = await supabase
     .from('books')
-    .select('*')
+    .select(BOOK_WITH_MEMO_SELECT)
     .eq('user_id', user.id)
     .eq('isbn', isbn)
     .maybeSingle();
@@ -40,7 +44,7 @@ export const MyBookMemo = async ({ isbn }: MyBookMemoProps) => {
 
   if (!book) return null; // Not in library, nothing to show
 
-  const myBook = book as Book;
+  const myBook = withPersonalMemo(book);
 
   return (
     <section>

@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server';
 import { getCurrentUser, getSupabaseClient } from '@/app/api/_helpers/auth';
 import { schedulePush } from '@/app/api/_helpers/push';
 import { errorResponse, successResponse } from '@/app/api/_helpers/response';
+import { retractUnreadNotifications } from '@/app/api/_helpers/retractNotification';
 
 type Params = {
   params: Promise<{ id: string }>;
@@ -91,6 +92,13 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
       .eq('user_id', user.id);
 
     if (error) return errorResponse(error.message);
+
+    // 책 주인이 아직 안 읽은 좋아요 알림은 거둔다
+    await retractUnreadNotifications(supabase, {
+      actorId: user.id,
+      type: 'like',
+      targetId: id,
+    });
 
     return successResponse({ message: '좋아요를 취소했습니다.' });
   } catch (error) {

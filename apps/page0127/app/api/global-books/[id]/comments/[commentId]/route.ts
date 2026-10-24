@@ -4,8 +4,10 @@ import { getCurrentUser, getSupabaseClient } from '../../../../_helpers/auth';
 import {
   buildCommentTree,
   classifyBookCommentError,
+  COMMENT_MAX_LENGTH,
 } from '../../../../_helpers/bookComments';
 import { errorResponse, successResponse } from '../../../../_helpers/response';
+import { retractUnreadNotifications } from '../../../../_helpers/retractNotification';
 
 import type { CommentRow, ProfileRow } from '../../../../_helpers/bookComments';
 
@@ -35,6 +37,12 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     const { content } = await request.json();
     if (!content?.trim()) {
       return errorResponse('댓글 내용을 입력해주세요.', 400);
+    }
+    if (content.trim().length > COMMENT_MAX_LENGTH) {
+      return errorResponse(
+        `댓글은 ${COMMENT_MAX_LENGTH}자까지 쓸 수 있어요.`,
+        400
+      );
     }
 
     const { data, error } = await supabase
@@ -74,7 +82,7 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
   try {
     const supabase = await getSupabaseClient();
     const { id, commentId } = await params;
-    const { error: authError } = await getCurrentUser();
+    const { user, error: authError } = await getCurrentUser();
     if (authError) return authError;
 
     const { error } = await supabase
@@ -86,6 +94,22 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
     if (error) {
       const { message, status } = classifyBookCommentError(error);
       return errorResponse(message, status);
+    }
+
+    // 이 책에 남은 내 댓글이 없을 때만 댓글 알림을 거둔다.
+    // 알림의 target_id 는 댓글이 아니라 책이라, 댓글이 하나라도 남아 있으면
+    // 그 알림은 여전히 사실이다.
+    const { count: remaining } = await supabase
+      .from('book_comments')
+      .select('id', { count: 'exact', head: true })
+      .eq('global_book_id', id)
+      .eq('user_id', user!.id);
+    if (remaining === 0) {
+      await retractUnreadNotifications(supabase, {
+        actorId: user!.id,
+        type: 'comment',
+        targetId: id,
+      });
     }
 
     return successResponse({ message: '댓글이 삭제되었습니다.' });

@@ -17,28 +17,18 @@ import { claimPendingBooks, toBookInput } from '../model/claim';
 import { readPendingShelf, writePendingShelf } from '../model/pendingShelf';
 
 import type { PendingBook } from '../model/types';
-import type { Book } from '@/entities/book';
 
 type ReadTooButtonProps = {
-  book: Book;
+  /**
+   * 책 정보만 받는다 — 페이지에서 `toPendingBook` 으로 떼어 넘긴다.
+   * 클라이언트 컴포넌트의 props 는 HTML(RSC 페이로드)에 그대로 실려 방문자에게
+   * 보이므로, 책 기록 전체(Book)를 넘기면 그 사람의 별점·메모까지 함께 노출된다.
+   */
+  book: PendingBook;
   isLoggedIn: boolean;
 };
 
 type Status = 'idle' | 'saving' | 'done';
-
-/** 남의 기록에서 책 정보만 떼어 낸다 — 별점·메모 같은 그 사람의 기록은 가져가지 않는다 */
-const toPendingBook = (book: Book): PendingBook => ({
-  isbn: book.isbn,
-  provider_item_id: book.provider_item_id,
-  title: book.title,
-  author: book.author,
-  publisher: book.publisher,
-  cover_image: book.cover_image,
-  spine_image: book.spine_image,
-  pub_date: book.pub_date,
-  category: book.category,
-  source: book.source,
-});
 
 /**
  * 남의 책 상세의 "나도 읽었어요" — 아는 책을 만난 순간을 가입·기록으로 잇는다.
@@ -57,13 +47,13 @@ export const ReadTooButton = ({ book, isLoggedIn }: ReadTooButtonProps) => {
       location: 'book_read_too',
       label: '나도 읽었어요',
     });
-    writePendingShelf(addPendingBook(readPendingShelf(), toPendingBook(book)));
+    writePendingShelf(addPendingBook(readPendingShelf(), book));
     router.push('/login');
   };
 
   const handleMember = async () => {
     setStatus('saving');
-    const { added, skipped } = await claimPendingBooks([toPendingBook(book)], {
+    const { added, skipped } = await claimPendingBooks([book], {
       findExisting: async (b) =>
         (await bookApi.getBookByISBN(b.isbn, b.provider_item_id)).length > 0,
       create: async (b) => {

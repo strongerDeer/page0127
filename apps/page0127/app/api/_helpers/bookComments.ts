@@ -77,6 +77,12 @@ const byCreatedAt = (a: { createdAt: string }, b: { createdAt: string }) =>
   compareIsoTime(a.createdAt, b.createdAt);
 
 /** DB 에러를 클라이언트가 이해할 수 있는 상태코드로 분류한 결과 */
+/**
+ * 댓글 길이 상한. DB 의 book_comments_content_length(2000) 와 같아야 한다.
+ * 화면에서 막고(maxLength) 서버에서 한 번 더 막는다 — DB 는 마지막 안전망이다.
+ */
+export const COMMENT_MAX_LENGTH = 2000;
+
 export type ClassifiedError = { message: string; status: number };
 
 /**
