@@ -22,6 +22,7 @@ const makeRecommendation = (
   author: '테스트 저자',
   publisher: null,
   cover_image: 'https://image.aladin.co.kr/cover.jpg',
+  provider_item_id: null,
   category: null,
   reason: '추천 이유',
   created_at: '2026-07-29T00:00:00.000Z',
