@@ -29,10 +29,7 @@ const SCAN_DIRS = ['src', 'app'];
  * 이미지는 변환을 거쳐도 한도를 태우는 원격 소스가 아니다.
  * **원격 URL(표지·프로필 사진)을 하나라도 그린다면 넣지 말 것.**
  */
-const EXEMPT_FILES: string[] = [
-  // 합성해 둔 public/badges/*.webp 만 그린다
-  'src/features/badge/ui/BadgeMedal.tsx',
-];
+const EXEMPT_FILES: string[] = [];
 
 const collectFiles = (dir: string): string[] => {
   const out: string[] = [];
