@@ -22,10 +22,7 @@ export async function GET(_request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json(
-        { error: '로그인이 필요합니다.' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: '로그인이 필요합니다.' }, { status: 401 });
     }
 
     // 2. 최신 분석 결과 조회
@@ -43,10 +40,7 @@ export async function GET(_request: NextRequest) {
         return NextResponse.json({ analysis: null });
       }
       console.error('분석 결과 조회 실패:', analysisError);
-      return NextResponse.json(
-        { error: '분석 결과를 불러올 수 없습니다.' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: '분석 결과를 불러올 수 없습니다.' }, { status: 500 });
     }
 
     // 3. 추천 도서 조회
@@ -59,10 +53,7 @@ export async function GET(_request: NextRequest) {
 
     if (recError) {
       console.error('추천 도서 조회 실패:', recError);
-      return NextResponse.json(
-        { error: '추천 도서를 불러올 수 없습니다.' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: '추천 도서를 불러올 수 없습니다.' }, { status: 500 });
     }
 
     // 4. 타입별로 그룹화 (노출 상한까지만 — 화면 3곳이 같은 규칙을 쓴다)
