@@ -48,7 +48,8 @@ export const PendingShelfClaimer = () => {
         create: async (b) => {
           const isLifeBook = b.isbn === pending.lifeBookIsbn;
           const book = await bookApi.createBook(toBookInput(b, isLifeBook));
-          created.push({ id: book.id, title: book.title, isLifeBook });
+          if (book.status === 'completed')
+            created.push({ id: book.id, title: book.title, isLifeBook });
         },
       });
       const { added, failed } = result;

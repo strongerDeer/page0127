@@ -25,11 +25,15 @@ describe('toPostLoginPath', () => {
 
   it('온보딩 미완료면 온보딩으로 보낸다', () => {
     expect(
-      toPostLoginPath({ username: 'reader_a1b2c3', onboardedAt: null, next: null })
+      toPostLoginPath({
+        username: 'reader_a1b2c3',
+        onboardedAt: null,
+        next: null,
+      })
     ).toBe(ONBOARDING_PATH);
   });
 
-  it('온보딩 미완료면 next 가 있어도 온보딩이 먼저다', () => {
+  it('온보딩 미완료면 목적지를 보관한 채 온보딩부터 진행한다', () => {
     // 아이디가 정해지기 전에 서재로 보내면 자동 생성된 주소가 굳어 버린다
     expect(
       toPostLoginPath({
@@ -37,7 +41,7 @@ describe('toPostLoginPath', () => {
         onboardedAt: null,
         next: '/feed',
       })
-    ).toBe(ONBOARDING_PATH);
+    ).toBe(`${ONBOARDING_PATH}?next=%2Ffeed`);
   });
 
   it('외부 주소는 버리고 본인 서재로 보낸다', () => {

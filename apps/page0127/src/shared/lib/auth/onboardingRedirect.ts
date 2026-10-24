@@ -31,7 +31,12 @@ export function toPostLoginPath({
   //
   // username 이 없을 때도 여기로 보낸다. 아이디 없이 `/${username}` 을 만들면
   // `/` 로 튕겨 사용자는 로그인이 실패한 것처럼 느낀다.
-  if (!onboardedAt || !username) return ONBOARDING_PATH;
+  if (!onboardedAt || !username) {
+    const safeNext = toSafeRedirect(next);
+    return safeNext
+      ? `${ONBOARDING_PATH}?next=${encodeURIComponent(safeNext)}`
+      : ONBOARDING_PATH;
+  }
 
   // next 는 사용자가 만들어 열 수 있다 — 외부 URL 이면 버린다
   return toSafeRedirect(next) ?? `/${username}`;

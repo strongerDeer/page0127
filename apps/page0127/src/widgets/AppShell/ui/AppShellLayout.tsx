@@ -1,3 +1,6 @@
+import { Suspense } from 'react';
+
+import { SignupTracker } from '@/features/onboarding';
 import { PendingShelfClaimer } from '@/features/shelf-preview/ui/PendingShelfClaimer';
 
 import { Gnb } from '@/widgets/Gnb';
@@ -48,7 +51,14 @@ export const AppShellLayout = ({ user, children }: AppShellLayoutProps) => {
       {user && <BottomTabBar username={user.username} />}
       {/* 홈 맛보기에서 고른 책·목표를 로그인 직후 서재에 담는다 (보관분이 없으면 아무 일도 안 한다).
           온보딩을 마친 뒤에만 — 온보딩 중 주소창으로 홈에 와도 미리 담기지 않게 한다 */}
-      {user?.onboarded && <PendingShelfClaimer />}
+      {user?.onboarded && (
+        <>
+          <Suspense fallback={null}>
+            <SignupTracker />
+          </Suspense>
+          <PendingShelfClaimer />
+        </>
+      )}
     </div>
   );
 };

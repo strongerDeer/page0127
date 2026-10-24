@@ -9,6 +9,8 @@
  * GA4 에서 공급자별 가입 수를 나눠 볼 수 있게 한다.
  */
 
+import { toSafeRedirect } from '@/shared/lib/auth/safeRedirect';
+
 export const SIGNUP_WELCOME_PARAM = 'welcome';
 
 /** 주소에 그대로 실리는 값이라 짧은 소문자만 받는다. 그 밖은 'other' 로 뭉갠다 */
@@ -20,9 +22,16 @@ const toMethod = (provider: string | null | undefined): string =>
 /** 온보딩 완료 후 이동할 주소. 예: `/bookworm?welcome=kakao` */
 export const toWelcomePath = (
   username: string,
-  provider: string | null | undefined
-): string =>
-  `/${username}?${SIGNUP_WELCOME_PARAM}=${encodeURIComponent(toMethod(provider))}`;
+  provider: string | null | undefined,
+  next?: string | null
+): string => {
+  const url = new URL(
+    toSafeRedirect(next) ?? `/${username}`,
+    'https://internal.invalid'
+  );
+  url.searchParams.set(SIGNUP_WELCOME_PARAM, toMethod(provider));
+  return `${url.pathname}${url.search}${url.hash}`;
+};
 
 /**
  * 도착한 주소에서 가입 공급자를 읽는다.
