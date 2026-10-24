@@ -211,7 +211,7 @@ const Home = async () => {
               책장은 한 권부터 시작합니다
             </h2>
             <p className='text-sm text-white/70'>
-              구글 계정으로 10초면 시작할 수 있어요.
+              구글·카카오로 10초면 시작할 수 있어요.
             </p>
             {/* GA4 이벤트 추적을 위해 Client 컴포넌트로 분리된 CTA */}
             <div className='mt-2'>

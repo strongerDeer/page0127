@@ -222,6 +222,10 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
         {/* 데스크톱에선 버튼이 나타날 자리를 미리 비워 둔다 — 고르는 순간 왼쪽 열이 늘면
             가운데 정렬된 오른쪽 그리드까지 흔들린다. 모바일은 그리드가 위에 있어 밀릴 것이 없다 */}
         <div className='mt-5 lg:min-h-36'>
+          {/* 0권이면 같은 자리에 목표 링크를 둔다. 예전엔 맨 아래(mt-auto)에 붙어
+              데스크톱에서 빈 책장과 링크 사이가 크게 비었고, 책을 고른 뒤에도
+              "아직 읽은 책이 없나요?"가 남아 있었다(2026-10-24 운영 점검) */}
+          {selected.length === 0 && <GoalStarter />}
           {selected.length > 0 && (
             <>
               {/* 상한 안내도 같은 알림 영역 안에 둔다 — 버튼이 막힌 이유를
@@ -258,9 +262,6 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
           )}
         </div>
 
-        <div className='mt-auto pt-2'>
-          <GoalStarter />
-        </div>
       </div>
     </section>
   );

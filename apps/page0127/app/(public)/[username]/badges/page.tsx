@@ -25,7 +25,18 @@ export const generateMetadata = async ({
   const { username } = await params;
   const profile = await getProfileByUsername(username);
   if (!profile) notFound();
-  return { title: `${toDisplayName(profile)}님의 배지 책장 | page0127.` };
+  const name = toDisplayName(profile);
+  const title = `${name}님의 배지 책장 | page0127.`;
+  const shareTitle = `${name}님의 배지 책장`;
+  const description = `${name}님이 책을 읽으며 모은 배지예요. 독서의 순간을 한 권씩 모아요.`;
+  // openGraph 를 안 적으면 루트 레이아웃의 홈 문구가 그대로 공유 카드에 실린다
+  // (그림은 상위 [username]/opengraph-image 를 물려받는다)
+  return {
+    title,
+    description,
+    openGraph: { title: shareTitle, description, type: 'profile' },
+    twitter: { card: 'summary_large_image', title: shareTitle, description },
+  };
 };
 
 /**

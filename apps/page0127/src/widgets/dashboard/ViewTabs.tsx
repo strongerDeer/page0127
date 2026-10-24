@@ -1,5 +1,13 @@
 'use client';
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@repo/ui';
+
 import { coachTarget } from '@/features/onboarding';
 
 /**
@@ -9,7 +17,12 @@ import { coachTarget } from '@/features/onboarding';
  * - '전체'(누적)를 연도들과 구분선으로 나눠 "누적 vs 특정 해" 위계를 탭 바에 새긴다.
  * - 활성 탭은 primary 배경으로 강조 → 지금 어느 뷰를 보는지 한눈에.
  * - 셀렉트박스 + 차트 내 '월별/연도별' 탭 두 개를 이 하나로 대체한다.
+ * - 연도는 모바일에서 늘 셀렉트로 접는다. 390px 에서 탭이 넷을 넘으면 한 해만
+ *   아랫줄로 떨어졌다(2026-10-24 운영 점검). 데스크탑도 연도가
+ *   MAX_YEAR_TABS 를 넘으면 셀렉트로 접는다 — 기록이 쌓일수록 탭 바가 길어지므로.
  */
+const MAX_YEAR_TABS = 5;
+
 type ViewTabsProps = {
   /** 기록이 있는 연도 목록 (내림차순) */
   years: number[];
@@ -42,6 +55,8 @@ export const ViewTabs = ({
         ? 'bg-primary text-white'
         : 'text-text-subtle hover:text-text-strong'
     }`;
+  const yearActive = !isAllView && !isWishlistView;
+  const collapseAlways = years.length > MAX_YEAR_TABS;
 
   return (
     <div
@@ -63,22 +78,56 @@ export const ViewTabs = ({
 
       <span className='mx-1 h-4 w-px bg-line-soft' aria-hidden />
 
-      {years.map((year) => {
-        const active = !isAllView && !isWishlistView && year === selectedYear;
-        return (
-          <button
-            key={year}
-            type='button'
-            role='tab'
-            aria-selected={active}
-            onClick={() => onChange(year.toString())}
-            className={tabClass(active)}
-            {...(year === goalYear ? coachTarget('set-goal') : {})}
+      {/* 연도 — 모바일(또는 연도가 많을 때)은 셀렉트, 그 밖엔 탭.
+          둘 다 그려 두고 CSS 로 하나만 보인다. 코치 팁은 보이는 쪽을 찾아 붙는다. */}
+      {years.length > 0 && (
+        <Select
+          value={yearActive ? selectedYear.toString() : ''}
+          onValueChange={onChange}
+        >
+          <SelectTrigger
+            size='sm'
+            aria-label='연도 선택'
+            className={`rounded-full border-0 px-4 font-medium shadow-none ${
+              collapseAlways ? '' : 'sm:hidden'
+            } ${
+              yearActive
+                ? 'bg-primary text-white [&_svg]:!text-white'
+                : 'text-text-subtle hover:text-text-strong'
+            }`}
+            {...(goalYear !== undefined && years.includes(goalYear)
+              ? coachTarget('set-goal')
+              : {})}
           >
-            {year}
-          </button>
-        );
-      })}
+            <SelectValue placeholder='연도별' />
+          </SelectTrigger>
+          <SelectContent>
+            {years.map((year) => (
+              <SelectItem key={year} value={year.toString()}>
+                {year}년
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
+      {!collapseAlways &&
+        years.map((year) => {
+          const active = yearActive && year === selectedYear;
+          return (
+            <button
+              key={year}
+              type='button'
+              role='tab'
+              aria-selected={active}
+              onClick={() => onChange(year.toString())}
+              className={`hidden sm:inline-flex ${tabClass(active)}`}
+              {...(year === goalYear ? coachTarget('set-goal') : {})}
+            >
+              {year}
+            </button>
+          );
+        })}
 
       {/* 읽고 싶어요(위시리스트) — 서재(완독·읽는 중)와 성격이 달라 구분선 뒤로 뺀다 */}
       {showWishlist && (
