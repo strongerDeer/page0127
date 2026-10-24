@@ -9,7 +9,8 @@ import { ArrowRight, Check, RotateCcw, RotateCw } from 'lucide-react';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
-import { toFirstImpression } from '../model/firstImpression';
+import { toFirstImpression } from '@/entities/taste-analysis/model/firstImpression';
+
 import { toPendingLoginPath } from '../model/loginTransfer';
 import {
   clearPendingShelf,

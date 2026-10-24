@@ -1,6 +1,5 @@
 import { TASTE_ANALYSIS_MIN_BOOKS } from '@/entities/taste-analysis/model/analysisGate';
-
-import { FIRST_IMPRESSION_MIN_BOOKS } from './firstImpression';
+import { FIRST_IMPRESSION_MIN_BOOKS } from '@/entities/taste-analysis/model/firstImpression';
 
 /**
  * 책장 아래 한 줄 — 판단("~쪽으로 기울어 있다")이 아니라 다음 단계를 말한다.

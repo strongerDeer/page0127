@@ -8,6 +8,7 @@ import { PageContainer } from '@repo/ui';
 
 import {
   calculateBookStats,
+  countShelf,
   dedupeReadings,
   filterBooksByLibraryYear,
   getLibraryYears,
@@ -28,6 +29,7 @@ import {
 import { LibraryView } from '@/widgets/library/LibraryView';
 
 import { pickFanCovers } from './model/fanCovers';
+import { toReaderCard } from './model/readerCard';
 import { PublicLibraryHeader } from './PublicLibraryHeader';
 import { VisitorChemiCard, VisitorSignupBanner } from './VisitorCta';
 
@@ -136,6 +138,23 @@ export const PublicLibraryContent = ({
     [currentYear, publicBooks, selectedPeriod]
   );
 
+  // 독서 명함 — 공유 카드(OG)와 같은 규칙: 공개 완독 책만, 같은 countShelf 로 센다.
+  // 순서도 OG 조회와 맞춘다(최근 완독 먼저, 날짜 모르는 책은 뒤) — 첫인상 동률 판정이 순서를 탄다
+  const readerCard = useMemo(() => {
+    const completed = publicBooks
+      .filter((book) => book.status === 'completed')
+      .sort((a, b) =>
+        (b.completed_date ?? '').localeCompare(a.completed_date ?? '')
+      );
+    const counts = countShelf(completed, currentYear);
+    return toReaderCard({
+      latestType: analysisHistory[0]?.personality_type,
+      categories: counts.categories,
+      yearBooks: counts.yearBooks,
+      totalBooks: counts.totalBooks,
+    });
+  }, [analysisHistory, currentYear, publicBooks]);
+
   // 가입 배너의 부채꼴 — 주인의 공개 완독 책 중 가장 최근 3권(표지가 있는 것)
   const recentCovers = useMemo(() => pickFanCovers(publicBooks), [publicBooks]);
 
@@ -197,6 +216,7 @@ export const PublicLibraryContent = ({
         analysisHistory={analysisHistory}
         tasteAnalysisRemaining={tasteAnalysisRemaining}
         ratingNudge={ratingNudge}
+        readerCard={readerCard}
       />
 
       {ratingNudge && (

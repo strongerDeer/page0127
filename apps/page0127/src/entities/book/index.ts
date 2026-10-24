@@ -75,6 +75,10 @@ export {
   MIN_COMPLETED_YEAR,
 } from './model/completedWhen';
 
+// 책장 숫자 — 공유 카드와 서재 명함이 같은 규칙으로 센다
+export type { ShelfCounts } from './model/shelfCounts';
+export { countShelf, toShelfBookKey } from './model/shelfCounts';
+
 // 서재 기간 분류·통계 (서버에서 받은 책 목록을 클라이언트에서도 재사용)
 export {
   calculateBookStats,

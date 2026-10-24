@@ -14,6 +14,8 @@ type TasteProfileCardProps = {
   action?: React.ReactNode;
   analyzableBookCount: number;
   minBooks: number;
+  /** 최신 성향 이름을 카드 안에 크게 쓸지 — 서재 명함이 이미 쓰고 있으면 false */
+  showType?: boolean;
 };
 
 const formatDate = (iso: string) =>
@@ -44,6 +46,7 @@ export const TasteProfileCard = ({
   action,
   analyzableBookCount,
   minBooks,
+  showType = true,
 }: TasteProfileCardProps) => {
   const latest = history[0];
 
@@ -91,7 +94,9 @@ export const TasteProfileCard = ({
           </Link>
         )}
       </div>
-      <p className='heading-2 mt-1 break-keep'>{latest.personality_type}</p>
+      {showType && (
+        <p className='heading-2 mt-1 break-keep'>{latest.personality_type}</p>
+      )}
 
       {topics.length > 0 && (
         <ul className='mt-2 flex flex-wrap gap-1'>

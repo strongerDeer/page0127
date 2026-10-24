@@ -1,9 +1,15 @@
 import { renderOg } from '@/shared/lib/og/render';
 import { BrandStage, CoverRow, StageCard } from '@/shared/lib/og/StageCard';
-import { OG_SIZE } from '@/shared/lib/og/theme';
+import { OG_COLORS, OG_SIZE, truncate } from '@/shared/lib/og/theme';
 
 import { getPublicShelfSummary } from '@/entities/book/api/getPublicShelfSummary';
 import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProfileByUsername';
+import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTasteHistory';
+
+import {
+  type ReaderCard,
+  toReaderCard,
+} from '@/widgets/public-library/model/readerCard';
 
 // 공개 책장의 동적 OG 이미지 — 파란 무대에 최근 표지를 세우고 흰 띠에 한 줄을 둔다.
 //
@@ -27,6 +33,52 @@ type Props = {
   params: Promise<{ username: string }>;
 };
 
+/**
+ * 성향 이름 최대 폭(한글 글자 수 기준). 카탈로그에서 가장 긴 이름이 15자 남짓이고,
+ * 띠 폭(1200 − 여백 − 워드마크)에 38px 로 들어가는 한계다. AI 가 카탈로그 밖의 긴 이름을 내도 넘치지 않게 자른다.
+ */
+const IDENTITY_MAX_WIDTH = 17;
+
+/**
+ * 흰 띠의 독서 명함 두 줄 — 위: 성향 이름(색 막대), 아래: 숫자 한 줄 · 구경하기.
+ * 서재 상단 명함과 같은 순서다. 링크를 받은 사람이 누르기 전에 "어떤 독자인지"부터 본다.
+ */
+const ReaderBand = ({
+  identity,
+  stat,
+}: {
+  identity: NonNullable<ReaderCard['identity']>;
+  stat: string | null;
+}) => (
+  <div style={{ display: 'flex', flexDirection: 'column' }}>
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      <div
+        style={{
+          display: 'flex',
+          width: 8,
+          height: 34,
+          marginRight: 16,
+          borderRadius: 4,
+          background: identity.color,
+        }}
+      />
+      {truncate(identity.name, IDENTITY_MAX_WIDTH)}
+    </div>
+    <div
+      style={{
+        display: 'flex',
+        marginTop: 6,
+        marginLeft: 24,
+        fontSize: 26,
+        fontWeight: 500,
+        color: OG_COLORS.inkSoft,
+      }}
+    >
+      {stat ? `${stat} · 책장 구경하기` : '책장 구경하기'}
+    </div>
+  </div>
+);
+
 const Image = async ({ params }: Props) => {
   const { username } = await params;
 
@@ -35,15 +87,26 @@ const Image = async ({ params }: Props) => {
   let found = false;
   let totalBooks = 0;
   let covers: string[] = [];
+  let card: ReaderCard = { identity: null, stat: null };
 
   try {
     const profile = await getPublicProfileByUsername(username);
 
     if (profile) {
       found = true;
-      const summary = await getPublicShelfSummary(profile.id);
+      const [summary, history] = await Promise.all([
+        getPublicShelfSummary(profile.id),
+        getPublicTasteHistory(profile.id),
+      ]);
       totalBooks = summary.totalBooks;
       covers = summary.covers;
+      // 서재 상단 명함과 같은 규칙 — 미리보기와 눌러 들어간 화면이 같은 사람을 말해야 한다
+      card = toReaderCard({
+        latestType: history[0]?.personality_type,
+        categories: summary.categories,
+        yearBooks: summary.yearBooks,
+        totalBooks: summary.totalBooks,
+      });
     }
   } catch (error) {
     console.error('책장 OG 조회 실패:', error);
@@ -58,8 +121,16 @@ const Image = async ({ params }: Props) => {
   }
 
   return renderOg(
-    // 권수는 "눌러 볼 이유"가 되는 숫자라 한 줄에 넣는다 — 이름은 아래 제목이 말한다
-    <StageCard cta={`${totalBooks}권이 꽂힌 책장 구경하기`}>
+    // 성향이 있으면 독서 명함 두 줄, 없으면 예전처럼 권수 한 줄 — 이름은 아래 제목이 말한다
+    <StageCard
+      cta={
+        card.identity ? (
+          <ReaderBand identity={card.identity} stat={card.stat} />
+        ) : (
+          `${totalBooks}권이 꽂힌 책장 구경하기`
+        )
+      }
+    >
       <CoverRow covers={covers} />
     </StageCard>
   );
