@@ -65,7 +65,7 @@ const fillHeight = (items: StoryShelfItem[], width: number) => {
  * 책장 모양 — 최대 2단, 둘째 단이 안 찰 거면 1단.
  *
  * 1. 한 단으로 선반 폭을 채우는 높이가 MIN_ONE_ROW 이상이면 1단 (책이 적으면 MAX_ONE_ROW 에서 멈추고 가운데에 선다)
- * 2. 아니면 2단 — 두 단의 폭이 가장 비슷해지는 곳에서 나누고, 넓은 쪽이 선반에 맞는 높이로 세운다
+ * 2. 아니면 2단 — 두 단의 실제 폭(책 + 틈)이 가장 비슷해지는 곳에서 나누고, 넓은 쪽이 선반에 맞는 높이로 세운다
  *    (한 단이 꽉 차고 둘째 단에 몇 권만 남는 모양을 피한다)
  */
 export const toShelfLayout = (
@@ -80,15 +80,19 @@ export const toShelfLayout = (
     };
   }
 
-  const total = sumUnits(items);
+  // 두 단의 실제 폭(책 + 틈)이 가장 비슷해지는 곳에서 나눈다. 책 폭만 보면 얇은 책등이 몰린 단이
+  // 틈(3px × 권수)만큼 더 넓어져 한쪽이 기운다
+  const widthAt = (row: StoryShelfItem[]) =>
+    sumUnits(row) * MAX_TWO_ROW + SHELF_BOOK_GAP * Math.max(row.length - 1, 0);
   let split = 1;
-  let bestGap = Infinity;
-  let running = 0;
+  let narrowest = Infinity;
   for (let i = 1; i < items.length; i += 1) {
-    running += unitWidth(items[i - 1]);
-    const gap = Math.abs(total - running * 2);
-    if (gap < bestGap) {
-      bestGap = gap;
+    const widest = Math.max(
+      widthAt(items.slice(0, i)),
+      widthAt(items.slice(i))
+    );
+    if (widest < narrowest) {
+      narrowest = widest;
       split = i;
     }
   }
