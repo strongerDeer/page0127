@@ -2,7 +2,8 @@ import { redirect } from 'next/navigation';
 
 import { PageContainer } from '@repo/ui';
 
-import { createClient } from '@/shared/config/supabase/server';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
+import { toSafeRedirect } from '@/shared/lib/auth/safeRedirect';
 
 import { getProfile } from '@/entities/profile/api/getProfile';
 
@@ -16,19 +17,24 @@ import { OnboardingForm } from '@/features/onboarding/ui/OnboardingForm';
  * 안 그러면 온보딩을 다시 타서 아이디를 또 정할 수 있다.
  * (서버 액션도 같은 검사를 한다. 여기 검사는 화면을 안 보여 주기 위한 것이다)
  */
-const OnboardingPage = async () => {
-  const supabase = await createClient();
+const OnboardingPage = async ({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) => {
+  const next = toSafeRedirect((await searchParams).next);
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect('/login');
+  const user = await getCurrentUser();
+  const loginPath = next
+    ? `/login?redirect=${encodeURIComponent(next)}`
+    : '/login';
+  if (!user) redirect(loginPath);
 
   const profile = await getProfile(user.id);
-  if (!profile) redirect('/login');
+  if (!profile) redirect(loginPath);
 
   if (profile.onboarded_at) {
-    redirect(`/${profile.username}`);
+    redirect(next ?? `/${profile.username}`);
   }
 
   return (
@@ -40,6 +46,7 @@ const OnboardingPage = async () => {
         </p>
 
         <OnboardingForm
+          next={next}
           // 가입할 때 자동으로 만들어진 값들. 그대로 두고 넘어가도 된다.
           initialUsername={profile.username ?? ''}
           initialNickname={profile.nickname ?? ''}

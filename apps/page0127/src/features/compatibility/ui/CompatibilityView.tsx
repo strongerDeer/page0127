@@ -39,6 +39,7 @@ import {
   USAGE_LIMIT_EXCEEDED_MESSAGE,
 } from '@/shared/lib/aiUsage';
 
+import { toCoverSource } from '@/entities/book';
 import { replaceUserLabels } from '@/entities/compatibility/lib/replaceUserLabels';
 import { getCompatibilityTypeByScore } from '@/entities/compatibility/model/compatibilityTypes';
 
@@ -479,7 +480,7 @@ const RecommendationList = ({
               {rec.cover_image && (
                 // 판형을 크롭하지 않는다 — 높이만 고정하고 너비는 원본 비율대로
                 <BookCover
-                  src={rec.cover_image}
+                  {...toCoverSource(rec)}
                   title={rec.title}
                   decorative
                   size='lg'

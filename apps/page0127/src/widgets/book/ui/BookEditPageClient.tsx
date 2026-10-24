@@ -15,6 +15,7 @@ import { resolveSpineImageUrl } from '@/shared/lib/spineImage';
 
 import { isNewlyCompleted } from '@/entities/book/model/completion';
 
+import { notifyNewBadges } from '@/features/badge';
 import { useBookCRUD } from '@/features/book/api/useBookCRUD';
 import { useBookSearch } from '@/features/book/api/useBookSearch';
 import {
@@ -53,7 +54,9 @@ export const BookEditPageClient = ({
   // "책 선택부터 다시" — 검색으로 다른 책을 골라 현재 기록에 덮어씌운다.
   // reselectedBook이 있으면 폼 미리보기·저장 시 원래 book 대신 이 책 정보를 쓴다.
   const [isReselecting, setIsReselecting] = useState(false);
-  const [reselectedBook, setReselectedBook] = useState<ProviderBook | null>(null);
+  const [reselectedBook, setReselectedBook] = useState<ProviderBook | null>(
+    null
+  );
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const {
     books: searchResults,
@@ -120,7 +123,11 @@ export const BookEditPageClient = ({
     const result = await updateBook(id, updates);
 
     if (result) {
-      if (justCompleted) trackEvent('book_complete', { from: 'edit' });
+      if (justCompleted) {
+        trackEvent('book_complete', { from: 'edit' });
+        // 이 완독으로 새 뱃지를 받았으면 축하 토스트 — 이동을 막지 않도록 기다리지 않는다
+        void notifyNewBadges(id, router.push);
+      }
 
       toast.success('도서 정보가 수정되었습니다!');
       router.push(`/${username}/${id}`); // 수정한 책 상세로 이동

@@ -14,6 +14,7 @@ import { resolveSpineImageUrl } from '@/shared/lib/spineImage';
 import { bookApi } from '@/entities/book';
 import { BookSourceCredit } from '@/entities/book/ui/BookSourceCredit';
 
+import { notifyNewBadges } from '@/features/badge';
 import { useBookCRUD } from '@/features/book/api/useBookCRUD';
 import { useBookSearch } from '@/features/book/api/useBookSearch';
 import { resolveReadCount } from '@/features/book/lib/resolveReadCount';
@@ -194,7 +195,10 @@ const AddBookPage = () => {
       // 활성화 계측 — 가입 다음 단계가 "첫 책을 꽂았다"이다.
       // 등록하면서 바로 완독으로 담는 경우가 흔한데, 그 흐름은 편집 화면을 거치지
       // 않으므로 여기서 세지 않으면 그 완독은 통째로 누락된다.
-      trackEvent('book_add', { status: formData.status, read_count: readCount });
+      trackEvent('book_add', {
+        status: formData.status,
+        read_count: readCount,
+      });
       if (formData.status === 'completed') {
         trackEvent('book_complete', { from: 'register' });
       }
@@ -240,6 +244,8 @@ const AddBookPage = () => {
       }
 
       setSaved({ book: result, completedCount, readCount });
+      // 이 완독으로 새 뱃지를 받았으면 결과 카드 위로 축하 토스트 — 기다리지 않는다
+      void notifyNewBadges(result.id, router.push);
       // 같은 배치에서 풀어야 한다 — setSaved 로 폼이 언마운트되는 렌더에 함께 커밋되므로
       // 버튼이 되살아나 보이는 중간 렌더가 없다. 반대로 여기서 풀지 않으면
       // `한 권 더 기록` 으로 돌아온 다음 폼의 등록 버튼이 죽은 채로 남는다.

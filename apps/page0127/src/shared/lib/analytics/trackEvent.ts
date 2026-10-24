@@ -57,14 +57,26 @@ export type AnalyticsEvent =
   /**
    * 로그인 뒤 맛보기 보관분이 서재에 담겼다(PendingShelfClaimer).
    * added·skipped·failed: 권수, goal_set: 올해 목표를 정했는지,
-   * life_book: 히어로 B 에서 찾은 인생책이 들어 있었는지
+   * life_book: 히어로 B 에서 찾은 인생책이 들어 있었는지,
+   * asked: 바로 이어진 로그인이 아니라 "담을까요?"를 물은 뒤 담았는지
    */
   | 'shelf_preview_claim'
   /**
-   * 담기 직후 "언제 읽으셨나요?"에 답했다(CompletedYearDialog).
-   * asked: 물어본 권수, answered: 완독 연도를 남긴 권수(건너뛰면 0)
+   * 로그인 뒤 "로그인 전에 고른 책을 담을까요?"에서 담지 않았다(공용 PC 대비 확인).
+   * count: 보관분 권수, goal: 목표가 들어 있었는지
+   */
+  | 'shelf_preview_decline'
+  /**
+   * 담기 직후 "언제 읽고 어땠나요?"에 답했다(CompletedYearDialog).
+   * asked: 물어본 권수, answered: 연도나 별점을 하나라도 남긴 권수(건너뛰면 0),
+   * rated: 그중 별점을 남긴 권수
    */
   | 'shelf_preview_years'
+  /**
+   * 서재의 "별점만 남기면 취향 분석" 창에서 저장했다(QuickRatingDialog).
+   * asked: 보여 준 권수, rated: 별점을 남긴 권수
+   */
+  | 'rating_nudge_save'
   /**
    * 가입을 끝냈다(온보딩 완료). GA4 권장 이벤트 이름이다.
    * method: 로그인 공급자(google·kakao). 보내는 곳은 SignupTracker

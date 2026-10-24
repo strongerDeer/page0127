@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@repo/ui';
@@ -10,6 +9,15 @@ import { toast } from 'sonner';
 
 import { bookApi } from '@/entities/book';
 import { GlobalBook } from '@/entities/book';
+
+import { addPendingBook } from '@/features/shelf-preview/model/addPendingBook';
+import { toPendingLoginPath } from '@/features/shelf-preview/model/loginTransfer';
+import {
+  readPendingShelf,
+  writePendingShelf,
+} from '@/features/shelf-preview/model/pendingShelf';
+
+import type { PendingBook } from '@/features/shelf-preview/model/types';
 
 type AddToLibraryButtonProps = {
   book: GlobalBook;
@@ -31,6 +39,8 @@ export const AddToLibraryButton = ({
     mutationFn: () =>
       bookApi.createBook({
         isbn: book.isbn,
+        provider_item_id: book.provider_item_id,
+        source: book.source,
         title: book.title,
         author: book.author ?? undefined,
         publisher: book.publisher ?? undefined,
@@ -52,13 +62,28 @@ export const AddToLibraryButton = ({
 
   // 비로그인 방문자 — API를 호출하면 401로 실패한다. 로그인으로 보낸다.
   if (!isLoggedIn) {
+    const handleGuest = () => {
+      const selected: PendingBook = {
+        isbn: book.isbn,
+        provider_item_id: book.provider_item_id,
+        title: book.title,
+        author: book.author,
+        publisher: book.publisher,
+        cover_image: book.cover_image,
+        spine_image: book.spine_image,
+        pub_date: book.pub_date,
+        category: book.category,
+        source: book.source,
+        status: 'want_to_read',
+      };
+      const pending = addPendingBook(readPendingShelf(), selected);
+      writePendingShelf(pending);
+      router.push(toPendingLoginPath(pending, window.location.pathname));
+    };
     return (
-      <Link href='/login'>
-        <Button className={`gap-2 ${className}`}>
-          <Plus size={16} />
-          내 책장에 담기
-        </Button>
-      </Link>
+      <Button className={`gap-2 ${className}`} onClick={handleGuest}>
+        <Plus size={16} />내 책장에 담기
+      </Button>
     );
   }
 

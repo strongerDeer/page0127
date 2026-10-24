@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 
-import { createClient } from '@/shared/config/supabase/server';
 import { getAdminEmails, isAdminEmail } from '@/shared/lib/admin/config';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import type { User } from '@supabase/supabase-js';
 
@@ -11,7 +11,8 @@ import type { User } from '@supabase/supabase-js';
  * 진짜 보안 경계 — admin 레이아웃과 모든 admin 서버액션 첫 줄에서 호출한다.
  * 관리자가 아니면(비로그인 포함) notFound()로 404 → admin 존재 자체를 숨긴다.
  *
- * 여기서는 신원 확인만 하므로 일반 createClient(쿠키 세션)로 충분하다.
+ * 여기서는 신원 확인만 하므로 쿠키 세션 유저(getCurrentUser)로 충분하다 — 같은 렌더에서
+ * 여러 번 불려도(레이아웃+조회 함수마다) Auth 서버 왕복은 한 번이다.
  * 실제 데이터 조회는 호출부에서 createAdminClient(RLS 우회)를 쓴다.
  */
 export async function assertAdmin(): Promise<User> {
@@ -31,10 +32,7 @@ export async function assertAdmin(): Promise<User> {
  * 직접 404 응답을 만든다(어드민 존재를 숨긴다는 원칙은 같다).
  */
 export async function getAdminUser(): Promise<User | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   return user && isAdminEmail(user.email, getAdminEmails()) ? user : null;
 }

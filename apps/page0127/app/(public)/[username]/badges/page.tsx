@@ -5,6 +5,7 @@ import { PageContainer } from '@repo/ui';
 import { ChevronLeft } from 'lucide-react';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 import { toDisplayName } from '@/entities/profile/model/displayName';
@@ -38,14 +39,9 @@ const BadgesPage = async ({ params }: PageProps) => {
   const { username } = await params;
   const supabase = await createClient();
 
-  const [
-    profile,
-    {
-      data: { user },
-    },
-  ] = await Promise.all([
+  const [profile, user] = await Promise.all([
     getProfileByUsername(username),
-    supabase.auth.getUser(),
+    getCurrentUser(),
   ]);
 
   if (!profile) {

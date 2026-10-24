@@ -14,6 +14,7 @@ import {
   Target,
 } from 'lucide-react';
 
+import { toCoverSource } from '@/entities/book';
 import { getPersonalityColor } from '@/entities/taste-analysis/model/personalityTypes';
 
 import type { TasteAnalysisWithRecommendations } from '@/entities/taste-analysis/types';
@@ -209,6 +210,7 @@ type RecommendationSectionProps = {
     title: string;
     author: string | null;
     cover_image: string | null;
+    provider_item_id?: string | null;
     isbn: string | null;
     reason: string;
   }>;
@@ -242,11 +244,11 @@ const RecommendationSection = ({
                 {book.cover_image && (
                   // 판형을 크롭하지 않는다 — 높이만 고정하고 너비는 원본 비율대로
                   <BookCover
-                    src={book.cover_image}
+                    {...toCoverSource(book)}
                     title={book.title}
                     decorative
-          size='lg'
-        />
+                    size='lg'
+                  />
                 )}
                 <div className='flex-1'>
                   <h4 className='font-medium text-text-strong'>{book.title}</h4>

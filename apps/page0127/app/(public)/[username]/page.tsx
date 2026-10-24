@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { checkUsageLimit } from '@/shared/lib/aiUsage';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { getCurrentLibraryYear, getSeoulToday } from '@/entities/book';
 import { getPublicShelfSummary } from '@/entities/book/api/getPublicShelfSummary';
@@ -12,8 +13,6 @@ import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsernam
 import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProfileByUsername';
 import { toDisplayName } from '@/entities/profile/model/displayName';
 import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTasteHistory';
-
-import { SignupTracker } from '@/features/onboarding';
 
 import { PublicLibraryContent } from '@/widgets/public-library/PublicLibraryContent';
 import { PublicLibrarySkeleton } from '@/widgets/public-library/PublicLibrarySkeleton';
@@ -124,16 +123,9 @@ const getBooks = async (
 const LibraryPage = async ({ params }: PageProps) => {
   const { username } = await params;
 
-  const supabase = await createClient();
-
-  const [
-    profile,
-    {
-      data: { user: currentUser },
-    },
-  ] = await Promise.all([
+  const [profile, currentUser] = await Promise.all([
     getProfileByUsername(username),
-    supabase.auth.getUser(),
+    getCurrentUser(),
   ]);
 
   if (!profile) {
@@ -142,10 +134,6 @@ const LibraryPage = async ({ params }: PageProps) => {
 
   return (
     <>
-      {/* useSearchParams 를 쓰므로 자기 경계를 둔다 — 서재 본문 스트리밍과 엮이지 않게 */}
-      <Suspense fallback={null}>
-        <SignupTracker />
-      </Suspense>
       <Suspense fallback={<PublicLibrarySkeleton />}>
         <LibraryContent
           profile={profile}

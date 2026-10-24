@@ -141,5 +141,12 @@ export const completeOnboardingAction = async (
   //    그래서 실패 경로(위)를 모두 처리한 뒤 맨 마지막에 부른다.
   //
   // 주소의 ?welcome=<공급자> 는 도착한 서재가 GA4 sign_up 을 보내는 표시다(SignupTracker).
-  redirect(toWelcomePath(username, user.app_metadata.provider));
+  const next = formData.get('next');
+  redirect(
+    toWelcomePath(
+      username,
+      user.app_metadata.provider,
+      typeof next === 'string' ? next : null
+    )
+  );
 };

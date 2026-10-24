@@ -1,6 +1,7 @@
 import { notFound, redirect } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { getProfile } from '@/entities/profile/api/getProfile';
 import { groupRecommendationsByType } from '@/entities/taste-analysis/model/recommendations';
@@ -22,9 +23,7 @@ const TasteAnalysisDetailPage = async ({ params }: PageProps) => {
   const { id } = await params;
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) {
     redirect('/login');

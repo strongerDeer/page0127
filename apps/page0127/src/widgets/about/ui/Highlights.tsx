@@ -1,3 +1,5 @@
+import { type Badge, BadgeMedal } from '@/features/badge';
+
 import { Reveal } from './Reveal';
 import { SafeCover } from './SafeCover';
 import { SectionHead } from './SectionHead';
@@ -41,15 +43,17 @@ type CardProps = {
   lead: string;
   rest: string;
   blue?: boolean;
+  /** 한 줄을 다 쓰는 카드 — 세로를 줄인다 */
+  wide?: boolean;
   children: React.ReactNode;
 };
 
 /** 카드 하나에 메시지 하나 — 굵은 리드 문장으로 시작한다(애플 '핵심부터' 문법) */
-const Card = ({ lead, rest, blue, children }: CardProps) => (
+const Card = ({ lead, rest, blue, wide, children }: CardProps) => (
   <article
-    className={`flex h-full min-h-[440px] flex-col rounded-3xl p-7 md:min-h-[480px] md:p-8 ${
-      blue ? 'stage-blue text-white' : 'bg-sunken'
-    }`}
+    className={`flex h-full flex-col rounded-3xl p-7 md:p-8 ${
+      wide ? 'min-h-[360px]' : 'min-h-[440px] md:min-h-[480px]'
+    } ${blue ? 'stage-blue text-white' : 'bg-sunken'}`}
   >
     <p
       className={`text-balance text-lg font-medium ${blue ? 'text-white/80' : 'text-text-subtle'}`}
@@ -70,6 +74,33 @@ const FEED = [
   { who: '혜진', avatar: '혜', verb: '완독했어요', when: '방금' },
   { who: '준호', avatar: '준', verb: '읽기 시작했어요', when: '12분 전' },
   { who: '서연', avatar: '서', verb: '별점 ★5를 남겼어요', when: '1시간 전' },
+] as const;
+
+/** 배지 카드의 데모 — 받은 배지 넷과 아직 열리지 않은 히든 배지 하나 */
+const demoBadge = (
+  id: Badge['id'],
+  kind: Badge['kind'],
+  name: string,
+  earned = true,
+  level = 0
+): Badge => ({
+  id,
+  kind,
+  name,
+  description: '',
+  earned,
+  earnedAt: null,
+  book: null,
+  level,
+  progress: null,
+});
+
+const BADGES = [
+  demoBadge('shelf', 'growth', '책장', true, 2),
+  demoBadge('one-sitting', 'story', '단숨에'),
+  demoBadge('brick', 'story', '벽돌책 완독'),
+  demoBadge('life-book', 'story', '인생책 발견'),
+  demoBadge('day-0127', 'hidden', '0127의 날', false),
 ] as const;
 
 const WEEK = [0.3, 0.7, 0.2, 0.9, 0.45, 0.6, 0.15] as const;
@@ -97,6 +128,31 @@ export const Highlights = ({ books, top }: HighlightsProps) => {
         }
       />
       <div className='mt-14 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3'>
+        {/* 넓은 카드 하나 + 여섯 장 — md(2열)·lg(3열) 어디서도 빈칸이 남지 않는다 */}
+        <Reveal className='md:col-span-2 lg:col-span-3'>
+          <Card
+            wide
+            lead='배지.'
+            rest='책을 기록할수록 성장·이야기·히든 배지 19종이 작은 전집처럼 모여요. 이미 기록한 책으로도 바로 받아요.'
+          >
+            <div className='flex w-full flex-col items-center'>
+              <ul className='flex flex-wrap items-end justify-center gap-4 md:gap-6'>
+                {BADGES.map((b) => (
+                  <li key={b.id}>
+                    <BadgeMedal badge={b} size={88} />
+                  </li>
+                ))}
+              </ul>
+              <p className='mt-6 rounded-full bg-card px-3.5 py-2 text-sm font-bold text-text-strong shadow-lg'>
+                🎉 새 배지를 받았어요{' '}
+                <span className='font-normal text-text-subtle'>
+                  · 완독을 저장하면 바로 축하해 드려요
+                </span>
+              </p>
+            </div>
+          </Card>
+        </Reveal>
+
         <Reveal>
           <Card
             blue
@@ -230,7 +286,10 @@ export const Highlights = ({ books, top }: HighlightsProps) => {
         </Reveal>
 
         <Reveal delay={2}>
-          <Card lead='주간 회상.' rest='이번 주의 나를 한 장으로 돌아봐요.'>
+          <Card
+            lead='주간 회상.'
+            rest='이번 주의 나를 한 장으로 돌아봐요. 앱으로 설치하면 알림으로 받아요.'
+          >
             <div className='w-full rounded-2xl bg-card p-5 shadow-lg'>
               <p className='text-xs text-text-subtle'>이번 주</p>
               <p className='text-4xl font-bold text-text-strong'>

@@ -16,6 +16,68 @@ const pickButtons = (page: Page) =>
 const readPending = (page: Page) =>
   page.evaluate((key) => localStorage.getItem(key), PENDING_KEY);
 
+test('저장소가 없는 다른 브라우저에서도 로그인 링크로 목표를 이어받는다', async ({
+  page,
+  browser,
+}) => {
+  await page.goto('/');
+  const s = section(page);
+  await s
+    .getByRole('button', {
+      name: '아직 읽은 책이 없나요? 올해 목표부터 같이 세워봐요!',
+    })
+    .click();
+  await s.getByRole('button', { name: '목표 저장하기' }).click();
+  await expect(page).toHaveURL(/\/login\?shelf=/);
+  const fresh = await browser.newContext();
+  try {
+    const external = await fresh.newPage();
+    await external.goto(page.url());
+    await expect(external.getByText(/목표 12권이 저장돼요/)).toBeVisible();
+    await expect
+      .poll(
+        async () =>
+          JSON.parse((await readPending(external)) ?? '{}').goal?.target
+      )
+      .toBe(12);
+  } finally {
+    await fresh.close();
+  }
+});
+
+test('다른 브라우저에서 선택한 책 복원 후에도 원래 책 정보로 돌아갈 목적지를 유지한다', async ({
+  page,
+  browser,
+}) => {
+  await page.goto('/');
+  const link = page.locator('a[href^="/books/info/"]').first();
+  await expect(link).toBeVisible();
+  const path = await link.getAttribute('href');
+  await page.goto(path!);
+  await page
+    .getByRole('button', { name: '내 책장에 담기', exact: true })
+    .click();
+  await expect(page).toHaveURL(/\/login\?shelf=/);
+  expect(new URL(page.url()).searchParams.get('redirect')).toBe(path);
+  const fresh = await browser.newContext();
+  try {
+    const external = await fresh.newPage();
+    await external.goto(page.url());
+    await expect(
+      external.getByText(/고른 1권이 내 서재에 바로 꽂혀요/)
+    ).toBeVisible();
+    await expect
+      .poll(
+        async () =>
+          JSON.parse((await readPending(external)) ?? '{}').books?.[0]?.status
+      )
+      .toBe('want_to_read');
+    expect(new URL(external.url()).searchParams.get('redirect')).toBe(path);
+  } finally {
+    await fresh.close();
+  }
+});
+
 test('비로그인 홈의 h1 은 맛보기 제목 하나다', async ({ page }) => {
   await page.goto('/');
   await expect(section(page)).toBeVisible();

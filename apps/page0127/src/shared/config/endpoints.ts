@@ -22,6 +22,7 @@ export const API_ENDPOINTS = {
     stream: (bookId: string) => `/books/${bookId}/stream`, // GET: 활동+댓글 병합 스트림
     likes: (bookId: string) => `/books/${bookId}/likes`, // POST/DELETE: 개인 책 좋아요
     threadRead: (bookId: string) => `/books/${bookId}/thread-read`, // POST: 열람 시각 기록
+    newBadges: (bookId: string) => `/books/${bookId}/new-badges`, // GET: 이 책으로 새로 받은 뱃지
   },
   globalBooks: {
     comments: (id: string) => `/global-books/${id}/comments`, // GET/POST: 전역 책 스레드

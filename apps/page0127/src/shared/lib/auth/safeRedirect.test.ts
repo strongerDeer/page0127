@@ -3,6 +3,20 @@ import { describe, expect, it } from 'vitest';
 import { toSafeRedirect } from './safeRedirect';
 
 describe('toSafeRedirect', () => {
+  it('인증 왕복·제어문자·잘못 인코딩된 복귀 주소는 버린다', () => {
+    for (const path of [
+      '/onboarding?next=/feed',
+      '/login#top',
+      '/auth/callback',
+      '/api/books',
+      '/%6cogin',
+      '/%zz',
+      '/\n/evil.test',
+      '/%2f%2fevil.test',
+    ]) {
+      expect(toSafeRedirect(path), path).toBeNull();
+    }
+  });
   it('내부 경로는 그대로 통과시킨다', () => {
     expect(toSafeRedirect('/books/info/abc')).toBe('/books/info/abc');
     expect(toSafeRedirect('/dreamfulbud/book-id')).toBe('/dreamfulbud/book-id');

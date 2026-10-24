@@ -28,7 +28,7 @@ export const toBookInput = (p: PendingBook, isLifeBook = false): BookInput => ({
   spine_image: p.spine_image,
   pub_date: p.pub_date ?? undefined,
   category: p.category ?? undefined,
-  status: 'completed',
+  status: isLifeBook ? 'completed' : (p.status ?? 'completed'),
   ...(isLifeBook && { rating: 5, is_life_book: true }),
 });
 

@@ -20,6 +20,10 @@ export const FUNNEL_EVENTS = [
   { name: 'login_start', label: '로그인 버튼 (구글·카카오)' },
   { name: 'sign_up', label: '가입 완료 (온보딩)' },
   { name: 'shelf_preview_claim', label: '맛보기 책 서재에 담김' },
+  {
+    name: 'shelf_preview_decline',
+    label: '맛보기 책 담기 거절 (공용 PC 확인)',
+  },
   { name: 'book_add', label: '책 담기' },
   { name: 'book_complete', label: '완독 전환' },
 ] as const;

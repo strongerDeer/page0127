@@ -1,43 +1,10 @@
-import { redirect } from 'next/navigation';
-
-import { createClient } from '@/shared/config/supabase/server';
-import { toPostLoginPath } from '@/shared/lib/auth/onboardingRedirect';
-
-import { ensureProfile } from '@/entities/profile/api/getProfile';
-
 /**
- * 인증 페이지 레이아웃 (로그인, 회원가입 등)
- *
- * 학습 포인트:
- * - Route Group의 layout.tsx에서 접근 제어 처리
- * - 이미 로그인한 사용자는 본인 서재로 리디렉션
- * - 하위 모든 페이지에 자동 적용 (login, signup 등)
+ * 로그인 페이지의 공통 레이아웃.
+ * 목적지와 선택 전달값을 함께 판단해야 하므로 인증 게이트는 페이지가 맡는다.
  */
-const AuthLayout = async ({ children }: { children: React.ReactNode }) => {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // 이미 로그인한 사용자는 되돌려 보낸다.
-  // 어디로 갈지는 콜백과 **같은 판정**을 쓴다 — 온보딩을 안 마쳤으면
-  // 여기서도 서재가 아니라 온보딩으로 가야 한다. 두 곳이 다르게 판단하면
-  // 로그인 화면을 새로고침하는 것만으로 온보딩을 건너뛸 수 있다.
-  if (user) {
-    const profile = await ensureProfile(
-      user.id,
-      user.email ?? null,
-      user.user_metadata
-    );
-    redirect(
-      toPostLoginPath({
-        username: profile.username,
-        onboardedAt: profile.onboarded_at,
-        next: null,
-      })
-    );
-  }
-
+const AuthLayout = ({ children }: { children: React.ReactNode }) => {
+  // 인증 판정은 searchParams를 읽을 수 있는 login/page.tsx에서 한다.
+  // 여기서 먼저 보내면 이미 로그인된 외부 브라우저에서 선택 복원이 실행되지 않는다.
   return <>{children}</>;
 };
 
