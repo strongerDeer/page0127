@@ -61,6 +61,11 @@ export type AnalyticsEvent =
    */
   | 'shelf_preview_claim'
   /**
+   * 담기 직후 "언제 읽으셨나요?"에 답했다(CompletedYearDialog).
+   * asked: 물어본 권수, answered: 완독 연도를 남긴 권수(건너뛰면 0)
+   */
+  | 'shelf_preview_years'
+  /**
    * 가입을 끝냈다(온보딩 완료). GA4 권장 이벤트 이름이다.
    * method: 로그인 공급자(google·kakao). 보내는 곳은 SignupTracker
    */
