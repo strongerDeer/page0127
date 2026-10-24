@@ -35,10 +35,12 @@ import {
 
 import { FollowButton, FollowListModal, FollowStats } from '@/features/follow';
 import { coachTarget } from '@/features/onboarding';
+import { toLockedAnalysisMessage } from '@/features/rating-nudge';
 import { ShareButton } from '@/features/share';
 import { TasteProfileCard } from '@/features/taste-analysis/ui/TasteProfileCard';
 
 import type { PublicTasteHistoryItem } from '@/entities/taste-analysis/types';
+import type { RatingNudge } from '@/features/rating-nudge';
 
 type Profile = {
   id: string;
@@ -60,6 +62,8 @@ type PublicLibraryHeaderProps = {
   analysisHistory: PublicTasteHistoryItem[];
   /** 이번 달 취향분석 남은 횟수 (0~3) — 방문자는 항상 0 */
   tasteAnalysisRemaining: number;
+  /** 별점만 남기면 취향 분석이 열리는 책이 있을 때 — 소유자 전용, 없으면 null */
+  ratingNudge: RatingNudge | null;
 };
 
 export const PublicLibraryHeader = ({
@@ -71,6 +75,7 @@ export const PublicLibraryHeader = ({
   newBooksSinceLastAnalysis,
   analysisHistory,
   tasteAnalysisRemaining,
+  ratingNudge,
 }: PublicLibraryHeaderProps) => {
   const router = useRouter();
   const [followersModalOpen, setFollowersModalOpen] = useState(false);
@@ -90,8 +95,12 @@ export const PublicLibraryHeader = ({
       // .not('rating','is',null) 이라 0점("평가 안 함")도 센다. 0점은 사용자가
       // 평가 컨트롤을 건드려 고른 상태이므로 "평가를 남긴" 은 사실이지만,
       // "별점을 남긴" 은 쿼리가 세지 않는 것을 약속하게 된다.
+      // 별점만 남기면 되는 완독 책이 있으면 그 길을 먼저 말한다 — "더 모이면"만 들으면 책을 더 읽어야 하는 줄 안다
       toast.info(
-        `${TASTE_ANALYSIS_BOOK_LABEL}이 ${TASTE_ANALYSIS_MIN_BOOKS - analyzableBookCount}권 더 모이면 취향 분석을 볼 수 있어요.`
+        toLockedAnalysisMessage(
+          ratingNudge,
+          `${TASTE_ANALYSIS_BOOK_LABEL}이 ${TASTE_ANALYSIS_MIN_BOOKS - analyzableBookCount}권 더 모이면 취향 분석을 볼 수 있어요.`
+        )
       );
       return;
     }

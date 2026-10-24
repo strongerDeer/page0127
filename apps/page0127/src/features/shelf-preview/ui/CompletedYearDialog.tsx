@@ -14,16 +14,16 @@ import {
   DialogTitle,
   Input,
 } from '@repo/ui';
-import { Crown, Star } from 'lucide-react';
+import { Crown } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import { bookApi, type BookRating } from '@/entities/book';
+import { StarRatingInput } from '@/entities/book/ui/StarRatingInput';
 
 import { toKstYear } from '../model/claim';
 import {
-  RATING_CHOICES,
   toClaimedBookUpdate,
   toCompletedYear,
   YEAR_CHOICES,
@@ -195,37 +195,12 @@ export const CompletedYearDialog = ({
                     인생책은 별점 5점으로 담았어요.
                   </p>
                 ) : (
-                  <div
-                    role='group'
-                    aria-label={`${book.title} 별점`}
-                    className='mt-2 flex items-center gap-0.5'
-                  >
-                    {RATING_CHOICES.map((score) => {
-                      const filled = row.rating !== null && score <= row.rating;
-                      return (
-                        <button
-                          key={score}
-                          type='button'
-                          aria-pressed={row.rating === score}
-                          aria-label={`${score}점`}
-                          // 같은 별을 다시 누르면 지운다 — 잘못 누른 별점을 되돌릴 길이 있어야 한다
-                          onClick={() =>
-                            setRow(book.id, {
-                              rating: row.rating === score ? null : score,
-                            })
-                          }
-                          className='rounded-sm p-1 text-chart-6 transition-transform hover:scale-110'
-                        >
-                          <Star
-                            aria-hidden
-                            className={`size-6 ${filled ? 'fill-current' : 'text-line'}`}
-                          />
-                        </button>
-                      );
-                    })}
-                    <span className='ml-2 text-xs text-text-subtle'>
-                      {row.rating === null ? '별점 안 고름' : `${row.rating}점`}
-                    </span>
+                  <div className='mt-2'>
+                    <StarRatingInput
+                      label={`${book.title} 별점`}
+                      value={row.rating}
+                      onChange={(rating) => setRow(book.id, { rating })}
+                    />
                   </div>
                 )}
               </li>
