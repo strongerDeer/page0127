@@ -21,6 +21,7 @@ import { toShelfPreviewMessage } from '../model/previewMessage';
 import { restoreSelection } from '../model/restoreSelection';
 import { isSameBook, toggleSelection } from '../model/selection';
 import { GoalStarter } from './GoalStarter';
+import { HeroEyebrow } from './HeroEyebrow';
 import { PreviewShelf } from './PreviewShelf';
 import { ShelfSearch } from './ShelfSearch';
 
@@ -98,6 +99,7 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
       className='tint-cool grid gap-x-16 gap-y-10 rounded-3xl px-5 py-8 [grid-template-areas:"intro"_"picks"_"shelf"] md:p-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:[grid-template-areas:"intro_picks"_"shelf_picks"]'
     >
       <div className='[grid-area:intro]'>
+        <HeroEyebrow />
         <h1
           id='shelf-preview-title'
           className='break-keep text-3xl font-extrabold leading-tight tracking-tight text-text-strong md:text-5xl'
@@ -105,10 +107,11 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
           책장을 보면,
           <br />그 사람이 보인다.
         </h1>
+        {/* 할 일(지시)이 아니라 약속 — 노력(세 권)과 보상(취향)을 한 번에 말한다 */}
         <p className='mt-4 break-keep text-base leading-relaxed text-text-body md:text-lg'>
-          읽은 책을 골라 책장을 채워주세요.
+          기억나는 책 세 권을 골라보세요.
           <br />
-          당신의 취향은 어떤가요?
+          당신의 취향을 알려드릴게요!
         </p>
       </div>
 
