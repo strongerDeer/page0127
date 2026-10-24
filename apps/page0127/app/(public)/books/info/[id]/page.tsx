@@ -214,16 +214,24 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
 
             {/* 통계 — 큰 카드 대신 제목 아래 한 줄 (교보의 별점 줄 문법) */}
             <p className='mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm'>
-              <span className='flex items-center gap-1 font-medium text-text-strong'>
-                <Star
-                  aria-hidden='true'
-                  className='size-4 fill-chart-4 text-chart-4'
-                />
-                {stats.avgRating.toFixed(1)}
-                <span className='font-normal text-text-subtle'>
-                  / {RATING_MAX} ({stats.ratingCount})
+              {/* 평가가 하나도 없으면 "0.0 / 5 (0)"이 0점짜리 책처럼 읽힌다 */}
+              {stats.ratingCount > 0 ? (
+                <span className='flex items-center gap-1 font-medium text-text-strong'>
+                  <Star
+                    aria-hidden='true'
+                    className='size-4 fill-chart-4 text-chart-4'
+                  />
+                  {stats.avgRating.toFixed(1)}
+                  <span className='font-normal text-text-subtle'>
+                    / {RATING_MAX} ({stats.ratingCount})
+                  </span>
                 </span>
-              </span>
+              ) : (
+                <span className='flex items-center gap-1 text-text-subtle'>
+                  <Star aria-hidden='true' className='size-4 text-line' />
+                  아직 별점이 없어요
+                </span>
+              )}
               <span aria-hidden='true' className='text-text-subtle'>
                 ·
               </span>
