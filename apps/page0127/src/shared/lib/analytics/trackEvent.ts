@@ -67,6 +67,11 @@ export type AnalyticsEvent =
    */
   | 'shelf_preview_years'
   /**
+   * 서재의 "별점만 남기면 취향 분석" 창에서 저장했다(QuickRatingDialog).
+   * asked: 보여 준 권수, rated: 별점을 남긴 권수
+   */
+  | 'rating_nudge_save'
+  /**
    * 가입을 끝냈다(온보딩 완료). GA4 권장 이벤트 이름이다.
    * method: 로그인 공급자(google·kakao). 보내는 곳은 SignupTracker
    */

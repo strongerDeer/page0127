@@ -14,10 +14,16 @@ import {
   resolveDefaultLibraryYear,
   resolveGoalTarget,
 } from '@/entities/book';
+import { TASTE_ANALYSIS_MIN_BOOKS } from '@/entities/taste-analysis/model/analysisGate';
 
 import { BadgeSummary } from '@/features/badge';
 import { CoachTipHost } from '@/features/onboarding';
 import { ReadingGoalDialog } from '@/features/profile/ui/ReadingGoalDialog';
+import {
+  pickUnratedCompleted,
+  RatingNudgeCard,
+  toRatingNudge,
+} from '@/features/rating-nudge';
 
 import { LibraryView } from '@/widgets/library/LibraryView';
 
@@ -157,6 +163,19 @@ export const PublicLibraryContent = ({
   // 주인·방문자 모두 "그 해에 정한 목표"만 쓴다 — 없으면 0(목표 정하기)
   const goalTarget = resolveGoalTarget(readingGoal, selectedYear);
 
+  // 주인에게만 — 별점만 남기면 취향 분석이 열리는 책이 있는지 (주인은 books 에 비공개 책까지 받는다)
+  const unratedBooks = useMemo(
+    () => (isOwnProfile ? pickUnratedCompleted(books) : []),
+    [isOwnProfile, books]
+  );
+  const ratingNudge = isOwnProfile
+    ? toRatingNudge({
+        analyzableCount: analyzableBookCount,
+        unratedCount: unratedBooks.length,
+        minBooks: TASTE_ANALYSIS_MIN_BOOKS,
+      })
+    : null;
+
   const handleViewChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('year', value);
@@ -177,7 +196,16 @@ export const PublicLibraryContent = ({
         newBooksSinceLastAnalysis={newBooksSinceLastAnalysis}
         analysisHistory={analysisHistory}
         tasteAnalysisRemaining={tasteAnalysisRemaining}
+        ratingNudge={ratingNudge}
       />
+
+      {ratingNudge && (
+        <RatingNudgeCard
+          nudge={ratingNudge}
+          books={unratedBooks}
+          onSaved={() => router.refresh()}
+        />
+      )}
 
       {/* 뱃지 — 통계와 같은 공개 책으로 계산해 주인·방문자가 같은 뱃지를 본다.
           프로필 바로 아래에 둬서 "어떤 독자인지"를 먼저 보여 준다. 전부는 상세 페이지에서 */}
