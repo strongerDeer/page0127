@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { computeBadges } from '../model/badges';
 import { BadgeTile } from './BadgeTile';
@@ -28,9 +28,12 @@ export const BadgeCollection = ({
   readingGoal,
   firstTasteAnalysisAt,
 }: BadgeCollectionProps) => {
-  const [view, setView] = useState<'cover' | 'spine'>('cover');
   const badges = useMemo(
-    () => computeBadges({ books, readingGoal, firstTasteAnalysisAt }),
+    () =>
+      computeBadges(
+        { books, readingGoal, firstTasteAnalysisAt },
+        { includeGrowthSteps: true }
+      ),
     [books, readingGoal, firstTasteAnalysisAt]
   );
   const earnedCount = badges.filter((badge) => badge.earned).length;
@@ -53,25 +56,9 @@ export const BadgeCollection = ({
       <div className={styles.toolbar}>
         <p className='text-sm text-text-subtle'>
           {isOwner
-            ? `${badges.length}권의 이야기 중 ${earnedCount}권을 모았어요`
-            : `${earnedCount}권의 이야기를 모았어요`}
+            ? `${badges.length}개의 배지 중 ${earnedCount}개를 모았어요 · 성장 단계 포함`
+            : `${earnedCount}개의 배지를 모았어요 · 성장 단계 포함`}
         </p>
-        <div className={styles.switch} role='group' aria-label='배지 보기 방식'>
-          <button
-            type='button'
-            aria-pressed={view === 'cover'}
-            onClick={() => setView('cover')}
-          >
-            표지로 보기
-          </button>
-          <button
-            type='button'
-            aria-pressed={view === 'spine'}
-            onClick={() => setView('spine')}
-          >
-            책등으로 보기
-          </button>
-        </div>
       </div>
       <p className='text-xs text-text-subtle'>
         점선은 아직 받지 않은 배지예요. 올리거나 선택하면 표지를 미리 볼 수
@@ -92,9 +79,7 @@ export const BadgeCollection = ({
             </h2>
             <span className='text-xs text-text-subtle'>{section.hint}</span>
           </div>
-          <ul
-            className={`${styles.shelf} ${view === 'spine' ? styles.spineShelf : ''}`}
-          >
+          <ul className={styles.shelf}>
             {section.badges.map((badge) => (
               <li
                 key={`${badge.id}-${badge.level}`}
@@ -105,7 +90,6 @@ export const BadgeCollection = ({
                   username={username}
                   size={112}
                   showProgress
-                  view={view}
                 />
               </li>
             ))}

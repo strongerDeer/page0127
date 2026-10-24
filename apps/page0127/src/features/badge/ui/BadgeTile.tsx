@@ -33,7 +33,6 @@ type BadgeTileProps = {
   size?: number;
   showProgress?: boolean;
   username?: string;
-  view?: 'cover' | 'spine';
 };
 
 /** 목록은 정면에 고정하고, 상세에서 선택한 책의 표지만 펼친다. */
@@ -42,7 +41,6 @@ export const BadgeTile = ({
   size = 112,
   showProgress = false,
   username,
-  view = 'cover',
 }: BadgeTileProps) => {
   const [opened, setOpened] = useState(false);
   const { title } = badgePresentation(badge);
@@ -60,7 +58,7 @@ export const BadgeTile = ({
         className={styles.tile}
         aria-label={`${title} (${badge.earned ? '획득' : '미획득'})`}
       >
-        <BadgeMedal badge={badge} size={size} view={view} />
+        <BadgeMedal badge={badge} size={size} />
         <span
           className={`${styles.name} ${badge.earned ? '' : styles.unearned}`}
         >

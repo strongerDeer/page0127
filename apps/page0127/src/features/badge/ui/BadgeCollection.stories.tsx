@@ -47,6 +47,20 @@ export const EmptyOwner: Story = {
 };
 export const LibrarySummary: Story = {
   render: (args) => <BadgeSummary {...args} username='stronger_khj' />,
+  play: async ({ canvasElement }) => {
+    const shelf = within(canvasElement).getByRole('list', {
+      name: '획득한 배지 책장',
+    });
+    const visible = within(shelf).getAllByRole('button');
+    await expect(visible[0]).toHaveAccessibleName('취향 발견 (획득)');
+    await expect(shelf.scrollWidth).toBeLessThanOrEqual(shelf.clientWidth);
+    const bounds = shelf.getBoundingClientRect();
+    for (const button of visible) {
+      const rect = button.getBoundingClientRect();
+      await expect(rect.left).toBeGreaterThanOrEqual(bounds.left);
+      await expect(rect.right).toBeLessThanOrEqual(bounds.right + 0.5);
+    }
+  },
 };
 
 export const Covers: Story = {
@@ -110,12 +124,9 @@ export const OpenAndCloseBook: Story = {
       dialog.getByRole('button', { name: '책 펼쳐보기' })
     ).toHaveAttribute('aria-pressed', 'false');
     await userEvent.keyboard('{Escape}');
-    await userEvent.click(
-      await canvas.findByRole('button', { name: '책등으로 보기' })
-    );
     await expect(
-      canvas.getByRole('button', { name: '책등으로 보기' })
-    ).toHaveAttribute('aria-pressed', 'true');
+      canvas.queryByRole('button', { name: '책등으로 보기' })
+    ).not.toBeInTheDocument();
   },
 };
 
@@ -178,14 +189,14 @@ export const MilestonesAndReread: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(
-      canvas.queryByRole('button', { name: '책장 · 1권 (획득)' })
-    ).not.toBeInTheDocument();
+      canvas.getByRole('button', { name: '책장 · 1권 (획득)' })
+    ).toBeVisible();
     await expect(
       canvas.getByRole('button', { name: '책장 · 10권 (획득)' })
     ).toBeVisible();
     await expect(
-      canvas.queryByRole('button', { name: '책장 · 50권 (미획득)' })
-    ).not.toBeInTheDocument();
+      canvas.getByRole('button', { name: '책장 · 50권 (미획득)' })
+    ).toBeVisible();
     await expect(
       canvas.getByRole('button', { name: '다시 펼친 책 (획득)' })
     ).toBeVisible();
@@ -212,5 +223,37 @@ export const MilestonesAndReread: Story = {
       ).toHaveStyle({ opacity: '0.85' })
     );
     await userEvent.keyboard('{Escape}');
+  },
+};
+
+export const IdleShine: Story = {
+  render: () => (
+    <BadgeMedal
+      badge={{
+        ...computeBadges({
+          books: [],
+          readingGoal: null,
+          firstTasteAnalysisAt: null,
+        }).find((b) => b.id === 'life-book')!,
+        earned: true,
+      }}
+      size={192}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const cover = canvasElement.querySelector(
+      '[data-badge-book] > div:last-child'
+    )!;
+    const frame = getComputedStyle(cover, '::before');
+    await expect(
+      parseFloat(frame.left) + parseFloat(frame.borderLeftWidth)
+    ).toBeLessThanOrEqual(0);
+    const shine = getComputedStyle(cover, '::after');
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      await expect(shine.animationIterationCount).toBe('infinite');
+      await expect(shine.animationDuration).toBe('7s');
+    } else {
+      await expect(shine.animationName).toBe('none');
+    }
   },
 };

@@ -280,3 +280,33 @@ describe('회독과 성장 단계 회귀', () => {
     });
   });
 });
+
+it('배지 페이지는 과거 성장 단계의 획득일과 근거를 각각 보존한다', () => {
+  const books = Array.from({ length: 12 }, (_, i) =>
+    done(`2026-01-${String(i + 1).padStart(2, '0')}`, {
+      id: `g${i}`,
+      isbn: `g${i}`,
+    })
+  );
+  const input = { books, readingGoal: null, firstTasteAnalysisAt: null };
+  const all = computeBadges(input, { includeGrowthSteps: true });
+  expect(all).toHaveLength(25);
+  const shelf = all.filter((b) => b.id === 'shelf');
+  expect(shelf.map((b) => b.earned)).toEqual([true, true, false, false, false]);
+  expect(shelf[0]).toMatchObject({
+    level: 1,
+    earnedAt: '2026-01-01',
+    book: { id: 'g0' },
+  });
+  expect(shelf[1]).toMatchObject({
+    level: 2,
+    earnedAt: '2026-01-10',
+    book: { id: 'g9' },
+  });
+  expect(shelf[2]).toMatchObject({
+    level: 3,
+    earnedAt: null,
+    progress: { current: 12, target: 50 },
+  });
+  expect(computeBadges(input).filter((b) => b.id === 'shelf')).toHaveLength(1);
+});
