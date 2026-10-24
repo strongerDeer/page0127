@@ -37,6 +37,18 @@ export type ChangelogEntry = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    date: '2026.10.24',
+    title: '서재에 배지가 생겼어요',
+    description:
+      '성장·이야기·히든 배지 19종이 작은 전집처럼 서재에 꽂혀요. 다 읽은 책을 저장하면 새로 받은 배지를 바로 축하해 드려요.',
+  },
+  {
+    date: '2026.10.22',
+    title: '앱처럼 설치하고 알림을 받을 수 있어요',
+    description:
+      '홈 화면에 추가하면 앱처럼 열리고, 팔로우·댓글과 주간 회상을 푸시 알림으로 받을 수 있어요. 2주 넘게 읽는 중인 책도 알려 드려요.',
+  },
+  {
     date: '2026.09.29',
     title: '책 정보를 YES24에서 가져와요',
     description:
