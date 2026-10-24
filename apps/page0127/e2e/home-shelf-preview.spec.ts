@@ -94,7 +94,8 @@ test('비로그인 홈은 맛보기 바로 다음에 취향 노트 예시를 보
   const top = async (name: RegExp) =>
     (await page.getByRole('heading', { name }).first().boundingBox())?.y ?? 0;
   const taste = await top(/취향의 문장이 됩니다/);
-  const ranking = await top(/이번 주 많이 읽힌 책/);
+  // 제목은 표본 크기에 따라 바뀐다(rankingTitle.ts) — 두 제목 모두 잡는다
+  const ranking = await top(/리더들이 완독한 책|많이 읽힌 책/);
   // 랭킹은 독자가 적은 지금 한 사람의 책장에 가깝다 — 방금 고른 책의 다음 보상을 먼저 보여 준다
   expect(taste).toBeGreaterThan(0);
   expect(taste).toBeLessThan(ranking);
@@ -140,13 +141,13 @@ test('고르기 전엔 저장 버튼이 없고, 고르면 나타나 남은 권�
   await picks.nth(1).click();
   await expect(picks.nth(0)).toHaveAttribute('aria-pressed', 'true');
   await expect(
-    s.getByText('3권만 더 모이면 취향 노트를 받아 볼 수 있어요.')
+    s.getByText('1권만 더 고르면 첫인상을 알려드릴게요.')
   ).toBeVisible();
 
   // 같은 책을 다시 누르면 빠진다
   await picks.nth(1).click();
   await expect(
-    s.getByText('4권만 더 모이면 취향 노트를 받아 볼 수 있어요.')
+    s.getByText('2권만 더 고르면 첫인상을 알려드릴게요.')
   ).toBeVisible();
 
   await save.click();

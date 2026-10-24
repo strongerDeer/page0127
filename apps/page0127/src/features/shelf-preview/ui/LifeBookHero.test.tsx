@@ -16,11 +16,12 @@ const leader = (isbn: string): LeaderLifeBook => ({
 });
 
 describe('LifeBookHero', () => {
-  it('h1 은 A 와 같고, 소개 문장 없이 질문을 크게 묻는다', () => {
+  it('공감 문장·h1 은 A 와 같고, A 의 부제 없이 질문을 크게 묻는다', () => {
     const html = renderToStaticMarkup(<LifeBookHero leaders={[]} />);
+    expect(html).toContain('기록은 여기저기 흩어져요');
     expect(html).toContain('책장을 보면,');
     expect(html).toContain('당신의 인생책은?');
-    expect(html).not.toContain('읽은 책을 골라 책장을 채워주세요');
+    expect(html).not.toContain('기억나는 책 세 권을 골라보세요');
   });
 
   it('처음에는 빈 실루엣과 펼친 검색칸이 있고, 등록 버튼은 없다', () => {
