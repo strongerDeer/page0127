@@ -28,12 +28,12 @@ const levelValue = (badge: Badge) => {
   return levels[Math.max(0, badge.level - 1)] ?? levels[0];
 };
 
-/** 그림이 아직 없는 뱃지가 쓰는 빈 뱃지 */
-const BLANK_SRC = '/badges/blank.webp';
+/** 그림이 아직 없는 뱃지가 쓰는 빈 봉인 (잠긴 히든과 같은 틀) */
+const BLANK_SRC = '/badges/seal-locked.webp';
 
 /**
  * 합성을 마친 그림 — public/badges/<이름>.webp 가 있는 것만.
- * 그림이 하루 10장씩 나와서 나머지는 빈 뱃지로 둔다. 합성하면 여기에 이름을 더한다.
+ * 아직 그림이 없는 히든 8개는 빈 봉인으로 둔다. 합성하면 여기에 이름을 더한다.
  */
 const READY_ASSETS = new Set([
   'shelf-1',
@@ -43,6 +43,17 @@ const READY_ASSETS = new Set([
   'shelf-200',
   'wide-3',
   'wide-5',
+  'wide-9',
+  'one-sitting',
+  'brick',
+  'author-fan',
+  'finally',
+  'reread',
+  'life-book',
+  'critic',
+  'goal-kept',
+  'know-yourself',
+  'seal-locked',
 ]);
 
 /** 뱃지 → 합성 그림 이름 (성장은 단계별 그림) */
