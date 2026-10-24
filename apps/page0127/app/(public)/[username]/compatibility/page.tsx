@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { checkUsageLimit } from '@/shared/lib/aiUsage';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 
@@ -27,9 +28,7 @@ const CompatibilityPage = async ({ params }: PageProps) => {
   const supabase = await createClient();
 
   // 1. 로그인 필수 — 궁합은 "나"와 상대의 비교이므로
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   // 공개 서재의 "독서 케미"를 누르고 온 방문자가 가입을 마치면 이 화면으로 돌아오게
   // 목적지를 남긴다 (안 남기면 가입 후 본인 서재로만 가서 케미를 보러 온 맥락을 잃는다)

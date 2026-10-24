@@ -1,10 +1,18 @@
 import Link from 'next/link';
 
 import { Button } from '@repo/ui';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@repo/ui';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@repo/ui';
 import { PageContainer, PageHeader } from '@repo/ui';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
 
 import { BookListItem } from '@/widgets/book/ui/BookListItem';
@@ -55,9 +63,7 @@ export default async function GlobalBooksPage(props: {
   const to = from + limit - 1;
 
   // Fetch User Data for UI states (Read/Liked) - Cached per request
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   // global_books 목록은 user와 무관 → user별 쿼리(로그인 시에만)와 함께 병렬 페치
   let booksQuery = supabase.from('global_books').select('*', {
@@ -66,7 +72,9 @@ export default async function GlobalBooksPage(props: {
   if (q) {
     // 제목 또는 저자에 검색어가 포함된 책 (대소문자 무시)
     const pattern = quotePostgrestValue(`%${q}%`);
-    booksQuery = booksQuery.or(`title.ilike.${pattern},author.ilike.${pattern}`);
+    booksQuery = booksQuery.or(
+      `title.ilike.${pattern},author.ilike.${pattern}`
+    );
   }
   booksQuery = booksQuery
     .order(sort, { ascending: order === 'asc' })

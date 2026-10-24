@@ -6,6 +6,7 @@ import { BookCover, PageContainer } from '@repo/ui';
 import { ArrowLeft, Star } from 'lucide-react';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 import { decodeHtmlEntities } from '@/shared/lib/htmlEntities';
 
 import { RATING_MAX, summarizeRatings, toCoverSource } from '@/entities/book';
@@ -133,12 +134,10 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
 
   // stats(book.isbn 의존)와 현재 사용자 조회는 서로 독립 → 병렬
   const supabase = await createClient();
-  const [
-    stats,
-    {
-      data: { user },
-    },
-  ] = await Promise.all([getBookStats(book.isbn), supabase.auth.getUser()]);
+  const [stats, user] = await Promise.all([
+    getBookStats(book.isbn),
+    getCurrentUser(),
+  ]);
 
   // 라이브러리 포함 여부는 user + book.isbn 둘 다 필요 → user 확정 후 조회
   let isInLibrary = false;

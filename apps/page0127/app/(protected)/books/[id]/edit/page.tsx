@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import { createClient } from '@/shared/config/supabase/server';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { getProfile } from '@/entities/profile/api/getProfile';
 
@@ -14,11 +14,8 @@ type PageProps = {
  */
 const LegacyBookEditRedirect = async ({ params }: PageProps) => {
   const { id } = await params;
-  const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   const profile = await getProfile(user!.id);
 

@@ -5,6 +5,7 @@ import { Button } from '@repo/ui';
 import { PageContainer } from '@repo/ui';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { bookSelect, withPersonalMemo } from '@/entities/book/api/bookMemo';
 import { getBookReadings } from '@/entities/book/api/getBookReadings';
@@ -59,10 +60,7 @@ export const generateMetadata = async ({
     // 자기 비공개 기록을 보여주기 때문이다(아래 isOwner 분기). 그래서
     // 소유자일 때만 통과시키고, 그 밖(없는 id·남의 비공개)은 404 로 닫는다.
     // 검색 크롤러는 항상 비로그인이라 SEO 목적은 이걸로 온전히 달성된다.
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
 
     if (user?.id !== profile.id) {
       notFound();
@@ -105,14 +103,9 @@ const BookDetailPage = async ({ params }: PageProps) => {
   const { username, bookId } = await params;
 
   const supabase = await createClient();
-  const [
-    profile,
-    {
-      data: { user: currentUser },
-    },
-  ] = await Promise.all([
+  const [profile, currentUser] = await Promise.all([
     getProfileByUsername(username),
-    supabase.auth.getUser(),
+    getCurrentUser(),
   ]);
 
   if (!profile) {

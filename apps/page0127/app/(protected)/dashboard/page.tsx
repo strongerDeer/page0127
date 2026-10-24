@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import { createClient } from '@/shared/config/supabase/server';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { getProfile } from '@/entities/profile/api/getProfile';
 
@@ -9,10 +9,7 @@ import { getProfile } from '@/entities/profile/api/getProfile';
  * (protected)/layout.tsx가 로그인은 이미 보장하므로 여기선 프로필만 조회한다.
  */
 const LegacyDashboardRedirect = async () => {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   const profile = await getProfile(user!.id);
 
