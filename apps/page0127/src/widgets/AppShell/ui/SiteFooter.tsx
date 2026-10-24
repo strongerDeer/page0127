@@ -41,6 +41,8 @@ export const SiteFooter = ({ className }: SiteFooterProps) => {
           >
             {footerLinks.map((link) => (
               <Link
+                // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
+                prefetch={false}
                 key={link.href}
                 href={link.href}
                 className='transition-colors hover:text-text-strong'
@@ -61,7 +63,12 @@ export const SiteFooter = ({ className }: SiteFooterProps) => {
           <p className='text-xs text-text-subtle'>
             page0127.은 지금 베타 서비스입니다. 기능과 화면이 예고 없이 바뀔 수
             있어요. 이상한 점을 발견하면{' '}
-            <Link href='/contact' className='underline hover:text-text-strong'>
+            <Link
+              // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
+              prefetch={false}
+              href='/contact'
+              className='underline hover:text-text-strong'
+            >
               문의
             </Link>
             로 알려 주시면 큰 도움이 됩니다.

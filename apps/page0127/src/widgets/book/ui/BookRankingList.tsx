@@ -78,6 +78,8 @@ export const BookRankingList = ({
           return (
             <li key={item.isbn}>
               <Link
+                // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
+                prefetch={false}
                 href={`/books/info/${book.id}`}
                 className='group flex items-center gap-4 py-3.5'
               >
