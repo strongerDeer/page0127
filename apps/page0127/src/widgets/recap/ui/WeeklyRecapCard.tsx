@@ -1,6 +1,6 @@
 import { CoverImage } from '@repo/ui';
 
-import { createClient } from '@/shared/config/supabase/server';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { isRated, RATING_MAX, toCoverSource } from '@/entities/book';
 import { getRecapBooks, selectRecapCard } from '@/entities/recap';
@@ -103,10 +103,7 @@ const RecapRating = ({
 };
 
 export const WeeklyRecapCard = async () => {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   // 회상은 내 기록을 되돌아보는 자리라 로그인 사용자에게만 보인다
   if (!user) return null;

@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from '@repo/ui';
 
-import { createClient } from '@/shared/config/supabase/server';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 import { detectInAppBrowser } from '@/shared/lib/auth/inAppBrowser';
 import { toPostLoginPath } from '@/shared/lib/auth/onboardingRedirect';
 
@@ -48,10 +48,7 @@ type LoginPageProps = {
 const LoginPage = async ({ searchParams }: LoginPageProps) => {
   const { redirect, shelf } = await searchParams;
   const transfer = await restoreLoginShelf(shelf);
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (user) {
     const profile = await ensureProfile(
       user.id,

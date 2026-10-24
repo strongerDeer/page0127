@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ErrorBoundary } from '@repo/ui';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 import {
   HERO_VARIANT_COOKIE,
   isHeroAbOn,
@@ -65,9 +66,7 @@ const Home = async () => {
   const supabase = await createClient();
 
   // User-specific UI 상태만 페이지에서 직접 fetch (랭킹 RPC와 무관)
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   const myReadIsbns: string[] = [];
 

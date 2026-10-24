@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import { createClient } from '@/shared/config/supabase/server';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { getProfile } from '@/entities/profile/api/getProfile';
 
@@ -10,10 +10,7 @@ import { getProfile } from '@/entities/profile/api/getProfile';
  * /dashboard를 거치지 않고 바로 최종 목적지로 보내 리다이렉트를 한 번으로 줄인다.
  */
 const BooksPage = async () => {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   const profile = await getProfile(user!.id);
 

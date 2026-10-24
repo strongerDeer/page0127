@@ -1,4 +1,4 @@
-import { createClient } from '@/shared/config/supabase/server';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { AppShellLayout, getShellUser } from '@/widgets/AppShell';
 
@@ -10,10 +10,7 @@ import { AppShellLayout, getShellUser } from '@/widgets/AppShell';
  * - 로그인 전/후 셸이 같아야 서비스가 하나의 화면 언어를 갖는다
  */
 const PublicLayout = async ({ children }: { children: React.ReactNode }) => {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   const shellUser = user ? await getShellUser(user.id) : null;
 

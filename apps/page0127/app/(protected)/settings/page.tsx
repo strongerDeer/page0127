@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { PageContainer } from '@repo/ui';
 
-import { createClient } from '@/shared/config/supabase/server';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { getProfile } from '@/entities/profile/api/getProfile';
 
@@ -19,12 +19,8 @@ import { PushNotificationSection } from '@/features/push';
  * - 프로필 정보 불러오기
  */
 export default async function SettingsPage() {
-  const supabase = await createClient();
-
   // 1. 사용자 인증 체크
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) {
     redirect('/login');
