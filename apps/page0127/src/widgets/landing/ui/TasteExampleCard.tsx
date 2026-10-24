@@ -1,9 +1,11 @@
-import { BookCover } from '@repo/ui';
 import { Feather, Quote, Sparkles } from 'lucide-react';
 
 import { createClient } from '@/shared/config/supabase/server';
 
-import { toCoverSource } from '@/entities/book';
+import { TasteEvidenceList } from '@/features/taste-analysis/ui/TasteEvidenceList';
+
+import type { TasteEvidence } from '@/entities/taste-analysis/types';
+
 /** 랜딩에서 보여주는 독서 취향 분석 결과 예시 */
 const EXAMPLE = {
   personalityType: '마음의 결을 읽는 사람',
@@ -13,26 +15,59 @@ const EXAMPLE = {
   likedStyles: ['담담한 문체', '긴 호흡의 이야기'],
 } as const;
 
-const COVER_POSITIONS = [
-  'left-0 top-3 -rotate-6',
-  'left-9 top-0 z-10 rotate-1',
-  'left-[72px] top-4 rotate-6',
+/**
+ * 예시의 근거 책 — 실제 분석 결과처럼 "이 책들에서 이렇게 읽었다"를 보여 준다.
+ * 근거 없는 성향 문장은 누구에게나 맞는 말(바넘 효과)로 읽힌다. 예시부터 근거가 있어야
+ * "내 책장으로 만들어진다"는 말이 믿긴다.
+ * 예시 성향(심리·관계·성장)과 맞는 책을 홈 맛보기 목록(shelf-preview/config/picks)에서 골랐다 —
+ * 표지 데이터가 global_books 에 있다.
+ */
+const EXAMPLE_EVIDENCE = [
+  {
+    isbn: '8936434594',
+    title: '채식주의자',
+    reason: '말해지지 않은 마음을 끝까지 따라가는 시선',
+    topics: ['심리', '관계'],
+  },
+  {
+    isbn: '9791160946918',
+    title: '어린이라는 세계',
+    reason: '작은 존재의 감정을 오래 들여다보는 다정함',
+    topics: ['관계', '성장'],
+  },
+  {
+    isbn: '9788936812621',
+    title: '빅터 프랭클의 죽음의 수용소에서',
+    reason: '고통 속에서도 삶의 의미를 붙드는 마음',
+    topics: ['심리', '성장'],
+  },
 ] as const;
 
-type CoverRow = { cover_image: string | null; provider_item_id: string | null };
+type CoverRow = { isbn: string; cover_image: string | null };
 
 export const TasteExampleCard = async () => {
+  // 표지만 DB 에서 — 못 받아도 근거는 그대로 선다(BookCover 가 제목을 조판한다)
   const supabase = await createClient();
   const { data } = await supabase
     .from('global_books')
-    .select('cover_image, provider_item_id')
-    .not('cover_image', 'is', null)
-    .order('created_at', { ascending: false })
-    .limit(3);
-
-  const covers = ((data as CoverRow[] | null) ?? [])
-    .map(toCoverSource)
-    .filter((cover) => cover.src !== null);
+    .select('isbn, cover_image')
+    .in(
+      'isbn',
+      EXAMPLE_EVIDENCE.map((book) => book.isbn)
+    );
+  const coverByIsbn = new Map(
+    ((data as CoverRow[] | null) ?? []).map((row) => [
+      row.isbn,
+      row.cover_image,
+    ])
+  );
+  const evidence: TasteEvidence[] = EXAMPLE_EVIDENCE.map((book) => ({
+    book_id: book.isbn,
+    title: book.title,
+    cover_image: coverByIsbn.get(book.isbn) ?? null,
+    reason: book.reason,
+    topics: [...book.topics],
+  }));
 
   return (
     <article className='relative overflow-hidden rounded-2xl border border-line-soft bg-card p-6 text-left md:p-8'>
@@ -56,31 +91,15 @@ export const TasteExampleCard = async () => {
             {EXAMPLE.personalityType}
           </h3>
         </div>
-
-        {covers.length > 0 && (
-          <div
-            aria-hidden='true'
-            className='relative hidden h-28 w-36 shrink-0 sm:block'
-          >
-            {/* covers 는 cover_image 가 있는 것만 걸러진 목록이라 대체 조판은
-                도달하지 않는다. 이 쿼리는 제목을 가져오지 않으므로 title 이 비어 있다 */}
-            {covers.map((cover, index) => (
-              <BookCover
-                key={cover.src}
-                {...cover}
-                title=''
-                decorative
-                size='md'
-                className={`absolute border-2 border-white ${COVER_POSITIONS[index]}`}
-              />
-            ))}
-          </div>
-        )}
       </div>
 
       <p className='mt-5 max-w-2xl break-keep text-base leading-[1.8] text-text-body'>
         {EXAMPLE.description}
       </p>
+
+      <div className='mt-6 border-t border-line-soft pt-5'>
+        <TasteEvidenceList evidence={evidence} variant='full' />
+      </div>
 
       <div className='mt-7 grid gap-5 border-t border-line-soft pt-5 sm:grid-cols-2'>
         <div>

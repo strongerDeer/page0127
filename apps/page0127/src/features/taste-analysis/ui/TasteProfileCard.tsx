@@ -4,6 +4,8 @@ import { TASTE_ANALYSIS_BOOK_LABEL } from '@/entities/taste-analysis/model/analy
 import { groupTasteHistory } from '@/entities/taste-analysis/model/groupTasteHistory';
 import { getPersonalityColor } from '@/entities/taste-analysis/model/personalityTypes';
 
+import { TasteEvidenceList } from './TasteEvidenceList';
+
 import type { PublicTasteHistoryItem } from '@/entities/taste-analysis/types';
 
 type TasteProfileCardProps = {
@@ -16,6 +18,8 @@ type TasteProfileCardProps = {
   minBooks: number;
   /** 최신 성향 이름을 카드 안에 크게 쓸지 — 서재 명함이 이미 쓰고 있으면 false */
   showType?: boolean;
+  /** 서재 주인 아이디 — 근거 책 표지를 그 책 기록(/{username}/{bookId})으로 잇는다 */
+  username?: string;
 };
 
 const formatDate = (iso: string) =>
@@ -47,6 +51,7 @@ export const TasteProfileCard = ({
   analyzableBookCount,
   minBooks,
   showType = true,
+  username,
 }: TasteProfileCardProps) => {
   const latest = history[0];
 
@@ -67,6 +72,8 @@ export const TasteProfileCard = ({
 
   const runs = groupTasteHistory(history);
   const topics = (latest.liked_topics ?? []).slice(0, 4);
+  // 방문자에게는 공개 책만 온다(RPC 가 거른다). 마이그레이션 전·옛 분석이면 없다
+  const evidence = latest.evidence ?? [];
 
   return (
     <div className='relative overflow-hidden rounded-2xl bg-card p-5 pl-6'>
@@ -109,6 +116,16 @@ export const TasteProfileCard = ({
             </li>
           ))}
         </ul>
+      )}
+
+      {evidence.length > 0 && (
+        <div className='mt-3'>
+          <TasteEvidenceList
+            evidence={evidence}
+            variant='compact'
+            bookHref={username ? (id) => `/${username}/${id}` : undefined}
+          />
+        </div>
       )}
 
       {runs.length > 1 && (

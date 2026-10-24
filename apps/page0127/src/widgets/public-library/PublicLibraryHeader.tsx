@@ -297,6 +297,7 @@ export const PublicLibraryHeader = ({
             history={analysisHistory}
             // 명함이 이미 AI 성향 이름을 크게 말한다 — 카드는 근거(주제·변화)만 보여 준다
             showType={identity?.source !== 'analysis'}
+            username={username}
             isOwner={isOwnProfile}
             action={analyzeButton}
             analyzableBookCount={analyzableBookCount}

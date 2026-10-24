@@ -74,6 +74,34 @@ describe('TasteProfileCard', () => {
     expect(html).toContain('#관계');
   });
 
+  it('근거 책이 있으면 표지를 그 책 기록으로 잇는다', () => {
+    const html = render({
+      username: 'hyejin',
+      history: [
+        {
+          ...HISTORY[0],
+          evidence: [
+            {
+              book_id: 'book-1',
+              title: '모순',
+              cover_image: 'https://image.yes24.com/goods/1/XL',
+              reason: '결',
+              topics: ['관계'],
+            },
+          ],
+        },
+      ],
+    });
+    expect(html).toContain('이 책들에서 읽었어요');
+    expect(html).toContain('href="/hyejin/book-1"');
+  });
+
+  it('근거가 없으면(옛 분석·마이그레이션 전) 근거 줄을 그리지 않는다', () => {
+    expect(render({ history: [HISTORY[0]] })).not.toContain(
+      '이 책들에서 읽었어요'
+    );
+  });
+
   it('이력이 한 번뿐이면 변화 줄을 그리지 않는다', () => {
     expect(render({ history: [HISTORY[0]] })).not.toContain('취향의 변화');
   });

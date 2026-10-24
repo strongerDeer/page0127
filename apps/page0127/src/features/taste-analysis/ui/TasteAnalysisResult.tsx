@@ -17,6 +17,8 @@ import {
 import { toCoverSource } from '@/entities/book';
 import { getPersonalityColor } from '@/entities/taste-analysis/model/personalityTypes';
 
+import { TasteEvidenceList } from './TasteEvidenceList';
+
 import type { TasteAnalysisWithRecommendations } from '@/entities/taste-analysis/types';
 
 type TasteAnalysisResultProps = {
@@ -45,6 +47,15 @@ export const TasteAnalysisResult = ({
     preference_profile,
     recommendations,
   } = analysis;
+  // 근거 없는 옛 분석(2026-10-25 이전)은 빈 배열 — 근거 영역이 통째로 빠진다
+  const evidence = preference_profile.evidence ?? [];
+  // 주제마다 근거가 된 책 수 — 태그와 근거 책이 서로 이어지게
+  const topicCounts = evidence
+    .flatMap((item) => item.topics)
+    .reduce<Record<string, number>>(
+      (counts, topic) => ({ ...counts, [topic]: (counts[topic] ?? 0) + 1 }),
+      {}
+    );
 
   return (
     <PageContainer width='content'>
@@ -84,6 +95,11 @@ export const TasteAnalysisResult = ({
           <p className='whitespace-pre-wrap leading-relaxed text-text-body'>
             {personality_description}
           </p>
+          {evidence.length > 0 && (
+            <div className='mt-6 border-t border-line-soft pt-5'>
+              <TasteEvidenceList evidence={evidence} variant='full' />
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -103,7 +119,11 @@ export const TasteAnalysisResult = ({
               좋아하는 것
             </h3>
             <div className='space-y-3'>
-              <TagRow label='주제' tags={preference_profile.liked.topics} />
+              <TagRow
+                label='주제'
+                tags={preference_profile.liked.topics}
+                counts={topicCounts}
+              />
               <TagRow label='스타일' tags={preference_profile.liked.styles} />
               <TagRow label='구조' tags={preference_profile.liked.structures} />
             </div>
@@ -176,9 +196,11 @@ type TagRowProps = {
   label: string;
   tags: string[];
   muted?: boolean;
+  /** 태그마다 근거가 된 책 수 — 있으면 "관계 · 2권" */
+  counts?: Record<string, number>;
 };
 
-const TagRow = ({ label, tags, muted }: TagRowProps) => {
+const TagRow = ({ label, tags, muted, counts }: TagRowProps) => {
   if (!tags || tags.length === 0) return null;
 
   return (
@@ -193,6 +215,9 @@ const TagRow = ({ label, tags, muted }: TagRowProps) => {
             }`}
           >
             {tag}
+            {counts?.[tag] ? (
+              <span className='text-text-subtle'> · {counts[tag]}권</span>
+            ) : null}
           </span>
         ))}
       </div>
