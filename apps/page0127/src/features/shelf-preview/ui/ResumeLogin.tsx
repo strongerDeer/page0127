@@ -7,7 +7,11 @@ import { useRouter } from 'next/navigation';
 
 import { Button } from '@repo/ui';
 
-import { readPendingShelf, writePendingShelf } from '../model/pendingShelf';
+import {
+  clearPendingShelf,
+  readPendingShelf,
+  writePendingShelf,
+} from '../model/pendingShelf';
 import {
   preferLocalSelection,
   type TransferResult,
@@ -38,6 +42,12 @@ export const ResumeLogin = ({
     router.replace(destination);
   };
   const pending = result.pending;
+  const handleCancel = () => {
+    const local = readPendingShelf();
+    // 이 선택과 일치하는 보관분만 버린다. 홈으로 간 뒤 자동 담기가 실행되지 않게 한다.
+    if (local && preferLocalSelection(transfer, local).pending === local)
+      clearPendingShelf();
+  };
   const failed = storageFailed || result.failed > 0 || !pending;
   return (
     <div className='mx-auto max-w-md space-y-4 px-4 py-16'>
@@ -54,7 +64,11 @@ export const ResumeLogin = ({
               : '일부 선택을 불러오지 못했어요. 다시 시도하거나 홈에서 책을 확인해 주세요.'}
           </p>
           <Button onClick={() => window.location.reload()}>다시 시도</Button>
-          <Link href='/' className='ml-4 text-sm underline'>
+          <Link
+            href='/'
+            onClick={handleCancel}
+            className='ml-4 text-sm underline'
+          >
             홈으로
           </Link>
         </>
@@ -80,7 +94,11 @@ export const ResumeLogin = ({
               </p>
             )}
             <Button onClick={handleContinue}>내 서재에 저장하기</Button>
-            <Link href='/' className='ml-4 text-sm underline'>
+            <Link
+              href='/'
+              onClick={handleCancel}
+              className='ml-4 text-sm underline'
+            >
               취소
             </Link>
           </>
