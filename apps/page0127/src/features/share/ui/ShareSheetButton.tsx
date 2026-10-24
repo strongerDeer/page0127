@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@repo/ui';
-import { Download, Share2 } from 'lucide-react';
+import { Download, Loader2, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
@@ -30,6 +30,41 @@ type ShareSheetButtonProps = {
   sheetTitle: string;
   /** 링크 공유 본문 */
   text?: string;
+};
+
+/** 이보다 오래 걸리면 문구를 바꿔 "멈춘 게 아니다"를 알린다 */
+const SLOW_LOADING_MS = 3000;
+
+/**
+ * 이미지를 그리는 동안의 자리 — 서버가 책등을 하나씩 받아 그려서 몇 초 걸린다.
+ * 회색 칸만 깜빡이면 기다려도 되는지 알 수 없다. 무엇을 하는 중인지 말하고, 길어지면 말을 바꾼다.
+ */
+const ImageLoading = () => {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setSlow(true), SLOW_LOADING_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div
+      role='status'
+      className='flex h-full w-full flex-col items-center justify-center gap-3 bg-sunken px-4 text-center'
+    >
+      <Loader2
+        aria-hidden='true'
+        className='size-7 animate-spin text-primary motion-reduce:animate-none'
+      />
+      <p className='break-keep text-sm font-medium text-text-body'>
+        서재 이미지를 그리고 있어요
+      </p>
+      <p className='break-keep text-xs text-text-subtle'>
+        {slow
+          ? '책을 한 권씩 꽂는 중이에요. 조금만 기다려 주세요.'
+          : '책장을 펼치는 중…'}
+      </p>
+    </div>
+  );
 };
 
 type ImageState =
@@ -150,7 +185,7 @@ export const ShareSheetButton = ({
               <img
                 src={image.url}
                 alt={`${title} 미리보기`}
-                className='h-full w-full object-contain'
+                className='h-full w-full animate-in object-contain fade-in duration-300 motion-reduce:animate-none'
               />
             ) : image.status === 'error' ? (
               <p className='break-keep px-4 text-center text-sm text-text-subtle'>
@@ -159,7 +194,7 @@ export const ShareSheetButton = ({
                 링크로는 공유할 수 있어요.
               </p>
             ) : (
-              <span className='h-full w-full animate-pulse bg-sunken' />
+              <ImageLoading />
             )}
           </div>
 
@@ -169,12 +204,24 @@ export const ShareSheetButton = ({
               disabled={image.status !== 'ready'}
               className='w-full gap-2'
             >
-              {canShareFile ? (
-                <Share2 aria-hidden='true' className='h-4 w-4' />
+              {image.status === 'loading' ? (
+                <>
+                  <Loader2
+                    aria-hidden='true'
+                    className='h-4 w-4 animate-spin motion-reduce:animate-none'
+                  />
+                  이미지 준비 중…
+                </>
               ) : (
-                <Download aria-hidden='true' className='h-4 w-4' />
+                <>
+                  {canShareFile ? (
+                    <Share2 aria-hidden='true' className='h-4 w-4' />
+                  ) : (
+                    <Download aria-hidden='true' className='h-4 w-4' />
+                  )}
+                  {canShareFile ? '이미지 공유하기' : '이미지 저장하기'}
+                </>
               )}
-              {canShareFile ? '이미지 공유하기' : '이미지 저장하기'}
             </Button>
             <ShareButton
               path={path}

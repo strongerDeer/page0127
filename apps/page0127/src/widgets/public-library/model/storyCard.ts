@@ -10,8 +10,8 @@ const FALLBACK_HOST = 'page0127.com';
 /** 성향 이름 아래 태그 수 — 한 줄에 들어가는 만큼 */
 const STORY_TOPIC_LIMIT = 3;
 
-/** 성향이 없을 때 가장 큰 줄 — 이름은 위 프로필 줄이 이미 말한다 */
-const STORY_SLOGAN = '책장을 보면, 그 사람이 보인다.';
+/** 성향이 없을 때 가장 큰 줄 — 이름은 위 프로필 줄이 말한다. 줄바꿈 자리는 정해 둔다(balanceLines) */
+const STORY_SLOGAN = '책장을 보면,\n그 사람이 보인다.';
 
 /** 이미지에 적을 주소 — 프로토콜·끝 슬래시를 뗀다. localhost 는 운영 주소로 바꾼다 */
 export const toStoryAddress = (

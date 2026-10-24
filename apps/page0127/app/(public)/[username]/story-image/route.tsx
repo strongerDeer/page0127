@@ -3,6 +3,7 @@ import { StoryCard } from '@/shared/lib/og/StoryCard';
 import { STORY_SIZE } from '@/shared/lib/og/theme';
 
 import { getReaderShareData } from '@/widgets/public-library/api/getReaderShareData';
+import { resolveStoryShelf } from '@/widgets/public-library/api/resolveStoryShelf';
 import { toStoryCardProps } from '@/widgets/public-library/model/storyCard';
 
 // 서재 스토리 이미지 (1080×1920) — 서재 공유 시트의 "이미지 공유하기"가 받아 간다.
@@ -26,10 +27,13 @@ export const GET = async (_request: Request, { params }: Context) => {
   }
   if (!data) return new Response('없는 서재', { status: 404 });
 
-  return renderOg(
-    <StoryCard
-      {...toStoryCardProps(data, username, process.env.NEXT_PUBLIC_SITE_URL)}
-    />,
-    STORY_SIZE
+  const props = toStoryCardProps(
+    data,
+    username,
+    process.env.NEXT_PUBLIC_SITE_URL
   );
+  // 책등을 미리 받아 실제 폭으로 단을 나눈다 — 추정으로 나누면 빈 둘째 단이 섰다
+  const shelf = props.shelf && (await resolveStoryShelf(props.shelf));
+
+  return renderOg(<StoryCard {...props} shelf={shelf} />, STORY_SIZE);
 };
