@@ -55,7 +55,11 @@ export const UpdatesTimeline = ({ limit = 5 }: UpdatesTimelineProps) => {
       />
       <ol className={`${LINE} mt-14`}>
         {recent.map((entry, i) => (
-          <Entry key={entry.date} entry={entry} latest={i === 0} />
+          <Entry
+            key={`${entry.date}-${entry.title}`}
+            entry={entry}
+            latest={i === 0}
+          />
         ))}
       </ol>
       {older.length > 0 && (
@@ -68,7 +72,7 @@ export const UpdatesTimeline = ({ limit = 5 }: UpdatesTimelineProps) => {
           </summary>
           <ol className={`${LINE} mt-6`}>
             {older.map((entry) => (
-              <Entry key={entry.date} entry={entry} />
+              <Entry key={`${entry.date}-${entry.title}`} entry={entry} />
             ))}
           </ol>
         </details>
