@@ -11,9 +11,15 @@ name: Chromatic
 #   1. PR   — 스냅샷을 이전 baseline 과 비교해 바뀐 스토리를 보여준다.
 #             의도한 변경이면 Chromatic UI 에서 승인하면 baseline 이 갱신된다.
 #   2. main — 병합된 상태를 새 baseline 으로 삼고, 그 빌드를 공개 URL 로 배포한다.
+#
+# PR 은 `visual` 라벨이 붙었을 때만 돈다 (2026-10 HJ 결정).
+# 무료 스냅샷 한도가 매달 월 중순에 차서, 그 뒤로는 Chromatic 이 빌드를 건너뛰는데도
+# 체크는 초록으로 남았다. 큰 UI 변경 PR 에만 라벨을 붙여 한도를 아낀다.
 on:
   pull_request:
     branches: [main]
+    # labeled — 라벨을 나중에 붙여도 바로 돌도록
+    types: [opened, synchronize, reopened, labeled]
   push:
     branches: [main]
 
@@ -37,7 +43,8 @@ jobs:
     if: >
       github.event_name == 'push' ||
       (github.event.pull_request.head.repo.full_name == github.repository &&
-       github.event.pull_request.user.login != 'dependabot[bot]')
+       github.event.pull_request.user.login != 'dependabot[bot]' &&
+       contains(github.event.pull_request.labels.*.name, 'visual'))
 
     steps:
       - name: Checkout
