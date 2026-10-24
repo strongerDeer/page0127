@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { checkUsageLimit } from '@/shared/lib/aiUsage';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { getCurrentLibraryYear, getSeoulToday } from '@/entities/book';
 import { getPublicShelfSummary } from '@/entities/book/api/getPublicShelfSummary';
@@ -122,16 +123,9 @@ const getBooks = async (
 const LibraryPage = async ({ params }: PageProps) => {
   const { username } = await params;
 
-  const supabase = await createClient();
-
-  const [
-    profile,
-    {
-      data: { user: currentUser },
-    },
-  ] = await Promise.all([
+  const [profile, currentUser] = await Promise.all([
     getProfileByUsername(username),
-    supabase.auth.getUser(),
+    getCurrentUser(),
   ]);
 
   if (!profile) {

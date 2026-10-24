@@ -2,8 +2,9 @@ import { Star } from 'lucide-react';
 
 // FSD: widgets는 app을 import할 수 없다 (역방향)
 // → app/api/_helpers의 헬퍼는 NextResponse 의존(=route 전용)이라 widget에서 부적합
-// → shared의 createClient를 직접 호출하고, user 조회는 인라인으로 처리
+// → shared의 createClient·getCurrentUser 를 직접 쓴다
 import { createClient } from '@/shared/config/supabase/server';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import {
   BOOK_WITH_MEMO_SELECT,
@@ -17,10 +18,8 @@ type MyBookMemoProps = {
 
 export const MyBookMemo = async ({ isbn }: MyBookMemoProps) => {
   const supabase = await createClient();
-  // route handler용 NextResponse 분기가 필요 없으므로 supabase.auth를 직접 사용
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // 같은 화면의 다른 서버 컴포넌트와 Auth 조회를 나눠 쓴다 → getCurrentUser
+  const user = await getCurrentUser();
 
   if (!user) return null;
 

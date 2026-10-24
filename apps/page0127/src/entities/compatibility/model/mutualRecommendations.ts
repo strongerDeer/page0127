@@ -70,6 +70,7 @@ export function mapRecommendations(
           (typeof rec.author === 'string' ? rec.author : null),
         publisher: matched?.publisher ?? null,
         cover_image: matched?.cover_image ?? null,
+        provider_item_id: matched?.provider_item_id ?? null,
         category: matched?.category ?? null,
         reason: rec.reason,
         display_order: idx + 1,

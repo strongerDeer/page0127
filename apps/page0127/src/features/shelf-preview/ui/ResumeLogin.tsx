@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 
 import { Button } from '@repo/ui';
 
+import { markLoginStart } from '@/shared/lib/auth/loginStart';
+
 import {
   clearPendingShelf,
   readPendingShelf,
@@ -35,10 +37,12 @@ export const ResumeLogin = ({
 
   const handleContinue = () => {
     if (!result.pending || result.failed > 0) return;
-    if (!writePendingShelf(result.pending, result.pending.savedAt)) {
+    // 이 화면에서 직접 확인했다 → 지금 고른 것으로 다시 적어 서재에서 또 묻지 않게 한다
+    if (!writePendingShelf(result.pending)) {
       setStorageFailed(true);
       return;
     }
+    markLoginStart();
     router.replace(destination);
   };
   const pending = result.pending;

@@ -107,6 +107,9 @@ export type MutualRecommendation = {
   /** 표지 이미지 URL */
   cover_image: string | null;
 
+  /** YES24 상품번호 — 표지를 YES24 에서 받는 데 쓴다(toCoverSource) */
+  provider_item_id: string | null;
+
   /** 카테고리 */
   category: string | null;
 

@@ -361,6 +361,7 @@ async function enrichRecommendationsWithProviderData(
             title: matchedBook.title,
             author: matchedBook.author,
             cover_image: matchedBook.coverImage || null,
+            provider_item_id: matchedBook.providerItemId,
             publisher: matchedBook.publisher,
             category: matchedBook.category,
           })

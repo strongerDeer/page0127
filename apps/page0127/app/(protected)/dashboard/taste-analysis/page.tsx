@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { getProfile } from '@/entities/profile/api/getProfile';
 import { groupRecommendationsByType } from '@/entities/taste-analysis/model/recommendations';
@@ -18,9 +19,7 @@ const TasteAnalysisPage = async () => {
   const supabase = await createClient();
 
   // 현재 로그인한 사용자 정보 조회
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) {
     redirect('/login');

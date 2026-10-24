@@ -13,6 +13,7 @@ const source = [
     title: '소년이 온다',
     isbn: '9790000000001',
     cover_image: 'https://x.test/1.jpg',
+    provider_item_id: '13137546',
   }),
   createTestBook({ title: '사피엔스', isbn: '9790000000002' }),
   createTestBook({ title: '코스모스', isbn: '9790000000003' }),
@@ -21,11 +22,12 @@ const source = [
 ];
 
 describe('mapRecommendations', () => {
-  it('제목을 원본 책과 맞춰 ISBN·표지를 붙인다', () => {
+  it('제목을 원본 책과 맞춰 ISBN·표지·YES24 상품번호를 붙인다', () => {
     const [row] = mapRecommendations([rec('소년이 온다')], source, [], ids);
     expect(row).toMatchObject({
       isbn: '9790000000001',
       cover_image: 'https://x.test/1.jpg',
+      provider_item_id: '13137546',
       from_user_id: 'u2',
       to_user_id: 'u1',
       display_order: 1,

@@ -1,4 +1,5 @@
 import { createClient } from '@/shared/config/supabase/server';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { getActiveHeroSlides } from '@/entities/banner/api/getActiveHeroSlides';
 import { toCoverSource } from '@/entities/book';
@@ -38,9 +39,7 @@ export const HeroBannerSection = async () => {
   // 로그인 여부에 따라 보여줄 배너가 다르다 — "지금 가입하세요"를 이미 가입한
   // 사람에게 보여주면 그 배너는 틀린 말을 하고, 눌러도 로그인 페이지를 거쳐
   // 제자리로 돌아온다(운영 배너 4개가 전부 그 상태였다).
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   // 켜진 슬라이드를 DB에서, 비면 코드 폴백.
   // 폴백을 요청 시점으로 만드는 이유: eyebrow 의 연도가 해가 바뀌어도 따라가야 한다
