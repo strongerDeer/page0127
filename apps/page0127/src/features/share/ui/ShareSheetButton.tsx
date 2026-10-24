@@ -30,6 +30,22 @@ type ShareSheetButtonProps = {
   sheetTitle: string;
   /** 링크 공유 본문 */
   text?: string;
+  /** 이미지를 그리는 동안의 문구 — 기본은 서재(책장) 문구 */
+  loadingMessages?: LoadingMessages;
+};
+
+type LoadingMessages = {
+  title: string;
+  /** 처음 몇 초 */
+  wait: string;
+  /** SLOW_LOADING_MS 가 지나도 안 끝났을 때 */
+  slow: string;
+};
+
+const SHELF_LOADING: LoadingMessages = {
+  title: '서재 이미지를 그리고 있어요',
+  wait: '책장을 펼치는 중…',
+  slow: '책을 한 권씩 꽂는 중이에요. 조금만 기다려 주세요.',
 };
 
 /** 이보다 오래 걸리면 문구를 바꿔 "멈춘 게 아니다"를 알린다 */
@@ -39,7 +55,7 @@ const SLOW_LOADING_MS = 3000;
  * 이미지를 그리는 동안의 자리 — 서버가 책등을 하나씩 받아 그려서 몇 초 걸린다.
  * 회색 칸만 깜빡이면 기다려도 되는지 알 수 없다. 무엇을 하는 중인지 말하고, 길어지면 말을 바꾼다.
  */
-const ImageLoading = () => {
+const ImageLoading = ({ messages }: { messages: LoadingMessages }) => {
   const [slow, setSlow] = useState(false);
   useEffect(() => {
     const timer = setTimeout(() => setSlow(true), SLOW_LOADING_MS);
@@ -56,12 +72,10 @@ const ImageLoading = () => {
         className='size-7 animate-spin text-primary motion-reduce:animate-none'
       />
       <p className='break-keep text-sm font-medium text-text-body'>
-        서재 이미지를 그리고 있어요
+        {messages.title}
       </p>
       <p className='break-keep text-xs text-text-subtle'>
-        {slow
-          ? '책을 한 권씩 꽂는 중이에요. 조금만 기다려 주세요.'
-          : '책장을 펼치는 중…'}
+        {slow ? messages.slow : messages.wait}
       </p>
     </div>
   );
@@ -89,6 +103,7 @@ export const ShareSheetButton = ({
   title,
   sheetTitle,
   text,
+  loadingMessages = SHELF_LOADING,
 }: ShareSheetButtonProps) => {
   const [open, setOpen] = useState(false);
   const [image, setImage] = useState<ImageState>({ status: 'loading' });
@@ -194,7 +209,7 @@ export const ShareSheetButton = ({
                 링크로는 공유할 수 있어요.
               </p>
             ) : (
-              <ImageLoading />
+              <ImageLoading messages={loadingMessages} />
             )}
           </div>
 

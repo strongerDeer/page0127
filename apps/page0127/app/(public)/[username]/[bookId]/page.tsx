@@ -16,7 +16,7 @@ import { toDisplayName } from '@/entities/profile/model/displayName';
 
 import { ArchiveToggleButton } from '@/features/book/ui/ArchiveToggleButton';
 import { DeleteBookButton } from '@/features/book/ui/DeleteBookButton';
-import { ShareButton } from '@/features/share';
+import { ShareSheetButton } from '@/features/share';
 import { toPendingBook } from '@/features/shelf-preview/model/toPendingBook';
 import { ReadTooButton } from '@/features/shelf-preview/ui/ReadTooButton';
 
@@ -25,6 +25,13 @@ import { BookReadingList } from '@/widgets/book/ui/BookReadingList';
 
 import type { Book } from '@/entities/book';
 import type { Metadata } from 'next';
+
+/** 책 스토리 이미지는 표지 한 장이라 서재보다 빨리 나온다 — 문구도 책 한 권 기준 */
+const BOOK_STORY_LOADING = {
+  title: '기록 이미지를 그리고 있어요',
+  wait: '표지를 펼치는 중…',
+  slow: '한줄평을 옮겨 적는 중이에요. 조금만 기다려 주세요.',
+};
 
 type PageProps = {
   params: Promise<{ username: string; bookId: string }>;
@@ -151,12 +158,17 @@ const BookDetailPage = async ({ params }: PageProps) => {
         </Link>
 
         <div className='flex gap-2'>
-          {/* 공개된 기록만 공유한다 — 비공개 링크는 남이 열면 404 라 공유해도 소용없다 */}
+          {/* 공개된 기록만 공유한다 — 비공개 링크는 남이 열면 404 라 공유해도 소용없다.
+              버튼 하나 → 시트에서 스토리 이미지(한줄평) 또는 링크 (서재 공유와 같은 시트) */}
           {book.is_public && (
-            <ShareButton
+            <ShareSheetButton
               path={`/${username}/${book.id}`}
+              imagePath={`/${username}/${book.id}/story-image`}
+              fileName={`page0127-${username}-book.png`}
               title={book.title}
+              sheetTitle='기록 공유하기'
               text={book.one_line_review ?? undefined}
+              loadingMessages={BOOK_STORY_LOADING}
             />
           )}
 
