@@ -73,6 +73,10 @@ export const BadgeCollection = ({
           </button>
         </div>
       </div>
+      <p className='text-xs text-text-subtle'>
+        점선은 아직 받지 않은 배지예요. 올리거나 선택하면 표지를 미리 볼 수
+        있어요.
+      </p>
       {sections.map((section) => (
         <section
           key={section.kind}
@@ -92,7 +96,10 @@ export const BadgeCollection = ({
             className={`${styles.shelf} ${view === 'spine' ? styles.spineShelf : ''}`}
           >
             {section.badges.map((badge) => (
-              <li key={badge.id} className={styles.shelfItem}>
+              <li
+                key={`${badge.id}-${badge.level}`}
+                className={styles.shelfItem}
+              >
                 <BadgeTile
                   badge={badge}
                   username={username}

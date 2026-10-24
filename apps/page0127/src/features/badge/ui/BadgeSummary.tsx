@@ -15,7 +15,7 @@ import styles from './BadgeShelf.module.css';
 
 type BadgeSummaryProps = BadgeInput & { username: string; isOwner: boolean };
 
-/** 서재에서는 최근 받은 표지를 3권(모바일)·5권(데스크톱)까지 선반에 놓는다. */
+/** 받은 배지를 나란히 놓고, 넘치면 가로로 탐색한다. */
 export const BadgeSummary = ({
   username,
   isOwner,
@@ -55,10 +55,13 @@ export const BadgeSummary = ({
           <ChevronRight className='size-3.5' aria-hidden />
         </Link>
       </div>
+      <p className='mt-2 text-xs text-text-subtle'>
+        옆으로 넘기면 모은 배지를 모두 볼 수 있어요.
+      </p>
       {earned.length ? (
-        <ul className={styles.summaryShelf}>
-          {earned.slice(0, 5).map((badge) => (
-            <li key={badge.id} className={styles.shelfItem}>
+        <ul className={styles.summaryShelf} aria-label='획득한 배지 책장'>
+          {earned.map((badge) => (
+            <li key={`${badge.id}-${badge.level}`} className={styles.shelfItem}>
               <BadgeTile badge={badge} username={username} size={76} />
             </li>
           ))}

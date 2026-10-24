@@ -65,6 +65,7 @@ export const BadgeTile = ({
           className={`${styles.name} ${badge.earned ? '' : styles.unearned}`}
         >
           {title}
+          {!badge.earned && <span className={styles.lockedLabel}>미획득</span>}
         </span>
         {showProgress && progress && (
           <span className={styles.progress}>
@@ -84,6 +85,7 @@ export const BadgeTile = ({
             size={192}
             opened={opened}
             reveal={badge.earned}
+            preview={!badge.earned}
           />
         </div>
         <div>
@@ -149,9 +151,7 @@ export const BadgeTile = ({
           </div>
         )}
         {badge.kind === 'growth' && badge.earned && !progress && (
-          <p className='text-xs text-text-subtle'>
-            마지막 단계까지 모두 채웠어요
-          </p>
+          <p className='text-xs text-text-subtle'>이 성장 단계를 달성했어요</p>
         )}
       </DialogContent>
     </Dialog>

@@ -194,3 +194,89 @@ describe('normalizeAuthor', () => {
     expect(normalizeAuthor(null)).toBeNull();
   });
 });
+
+describe('회독과 성장 단계 회귀', () => {
+  it('저장 회독 수가 모두 1이어도 두 번째 완독에서 재독 배지를 받는다', () => {
+    const books = [
+      done('2025-01-01', { id: 'first', isbn: 'same', read_count: 1 }),
+      done('2026-01-01', { id: 'second', isbn: 'same', read_count: 1 }),
+    ];
+    expect(find(books, 'reread')).toMatchObject({
+      earned: true,
+      earnedAt: '2026-01-01',
+      book: { id: 'second' },
+    });
+    expect(find(books, 'worn-out').earned).toBe(false);
+    expect(
+      find(
+        [
+          ...books,
+          done('2026-02-01', { id: 'third', isbn: 'same', read_count: 1 }),
+        ],
+        'worn-out'
+      )
+    ).toMatchObject({ earned: true, book: { id: 'third' } });
+  });
+  it('읽는 중인 재독이나 같은 행의 중복 입력을 완독 횟수에 더하지 않는다', () => {
+    const first = done('2026-01-01', {
+      id: 'first',
+      isbn: 'same',
+      read_count: 1,
+    });
+    expect(find([first, first], 'reread').earned).toBe(false);
+    expect(
+      find(
+        [
+          first,
+          createTestBook({
+            id: 'reading',
+            isbn: 'same',
+            read_count: 2,
+            status: 'reading',
+          }),
+        ],
+        'reread'
+      ).earned
+    ).toBe(false);
+  });
+  it('ISBN 없는 서로 다른 책과 다른 사람의 기록을 재독으로 합치지 않는다', () => {
+    expect(
+      find(
+        [done('2026-01-01', { isbn: '' }), done('2026-02-01', { isbn: '' })],
+        'reread'
+      ).earned
+    ).toBe(false);
+    expect(
+      find(
+        [
+          done('2026-01-01', { isbn: 'same', user_id: 'a' }),
+          done('2026-02-01', { isbn: 'same', user_id: 'b' }),
+        ],
+        'reread'
+      ).earned
+    ).toBe(false);
+  });
+  it('성장은 최고 달성 단계 하나와 다음 단계 진행도를 표시한다', () => {
+    const books = Array.from({ length: 12 }, (_, i) =>
+      done(`2026-01-${String(i + 1).padStart(2, '0')}`, {
+        id: `b${i}`,
+        isbn: `isbn${i}`,
+      })
+    );
+    const badges = computeBadges({
+      books,
+      readingGoal: null,
+      firstTasteAnalysisAt: null,
+    });
+    expect(badges).toHaveLength(19);
+    const shelf = badges.filter((b) => b.id === 'shelf');
+    expect(shelf).toHaveLength(1);
+    expect(shelf[0]).toMatchObject({
+      level: 2,
+      earned: true,
+      earnedAt: '2026-01-10',
+      book: { id: 'b9' },
+      progress: { current: 12, target: 50 },
+    });
+  });
+});

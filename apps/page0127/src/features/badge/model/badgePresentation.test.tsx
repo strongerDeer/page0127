@@ -35,7 +35,7 @@ describe('배지 표지와 공개 범위', () => {
     for (const badge of badges) {
       const earned = { ...badge, earned: true, level: 1 };
       expect(badgePresentation(earned).cover).toBe(badge.id);
-      expect(badgePresentation(earned).title).toBe(badge.name);
+      expect(badgePresentation(earned).title).toContain(badge.name);
       expect(
         renderToStaticMarkup(<BadgeMedal badge={earned} size={84} />)
       ).toContain(`data-cover="${badge.id}"`);

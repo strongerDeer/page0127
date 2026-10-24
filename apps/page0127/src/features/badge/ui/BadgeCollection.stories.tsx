@@ -162,3 +162,55 @@ export const StoryCoverArtwork: Story = {
     );
   },
 };
+
+export const MilestonesAndReread: Story = {
+  args: {
+    books: [
+      ...books.map((b) => ({ ...b, read_count: 1 })),
+      createTestBook({
+        id: 'second-reading',
+        isbn: books[0]!.isbn,
+        completed_date: '2026-02-01',
+        read_count: 1,
+      }),
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(
+      canvas.queryByRole('button', { name: '책장 · 1권 (획득)' })
+    ).not.toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: '책장 · 10권 (획득)' })
+    ).toBeVisible();
+    await expect(
+      canvas.queryByRole('button', { name: '책장 · 50권 (미획득)' })
+    ).not.toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: '다시 펼친 책 (획득)' })
+    ).toBeVisible();
+    const locked = canvas.getByRole('button', {
+      name: '한 줄 평론가 (미획득)',
+    });
+    const artwork = locked.querySelector('[data-badge-artwork]')!;
+    await expect(artwork).toHaveStyle({ opacity: '0' });
+    await userEvent.click(locked);
+    const dialog = within(
+      within(canvasElement.ownerDocument.body).getByRole('dialog')
+    );
+    await waitFor(() =>
+      expect(
+        dialog.getByRole('heading', { name: '한 줄 평론가' })
+      ).toBeVisible()
+    );
+    await waitFor(() =>
+      expect(
+        dialog
+          .getByRole('heading', { name: '한 줄 평론가' })
+          .closest('[role=dialog]')!
+          .querySelector('[data-badge-artwork]')
+      ).toHaveStyle({ opacity: '0.85' })
+    );
+    await userEvent.keyboard('{Escape}');
+  },
+};
