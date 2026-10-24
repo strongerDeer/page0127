@@ -39,7 +39,7 @@ type BadgeTileProps = {
 /** 목록은 정면에 고정하고, 상세에서 선택한 책의 표지만 펼친다. */
 export const BadgeTile = ({
   badge,
-  size = 84,
+  size = 112,
   showProgress = false,
   username,
   view = 'cover',
@@ -81,7 +81,7 @@ export const BadgeTile = ({
         <div className={styles.detailStage}>
           <BadgeMedal
             badge={badge}
-            size={168}
+            size={192}
             opened={opened}
             reveal={badge.earned}
           />

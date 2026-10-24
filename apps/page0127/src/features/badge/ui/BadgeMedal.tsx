@@ -1,5 +1,8 @@
 'use client';
 
+import Image from 'next/image';
+
+import { badgeCoverArt } from '../model/badgeCoverArt';
 import { badgePresentation } from '../model/badgePresentation';
 
 import type { Badge } from '../model/badges';
@@ -16,7 +19,7 @@ type BadgeMedalProps = {
   reveal?: boolean;
 };
 
-/** 같은 제본에 서로 다른 인쇄 표지. 목록은 정면, 상세에서 표지만 열린다. */
+/** 표지 아트의 실제 타이포·회화·사진을 보존하고, 제본과 펼치기만 CSS로 만든다. */
 export const BadgeMedal = ({
   badge,
   size,
@@ -25,15 +28,8 @@ export const BadgeMedal = ({
   opened = false,
   reveal = false,
 }: BadgeMedalProps) => {
-  const { title, cover, lines, levelValue } = badgePresentation(badge);
-  const literary = [
-    'author-fan',
-    'finally',
-    'life-book',
-    'new-year',
-    'thin-but-deep',
-    'worn-out',
-  ].includes(cover);
+  const { title, cover, levelValue } = badgePresentation(badge);
+  const art = badgeCoverArt(cover);
   return (
     <div
       aria-hidden='true'
@@ -43,7 +39,13 @@ export const BadgeMedal = ({
       data-locked={!badge.earned || undefined}
       data-open={(opened && badge.earned) || undefined}
       className={`${styles.book} ${reveal ? styles.reveal : ''} ${className ?? ''}`}
-      style={{ '--book-width': `${size}px` } as CSSProperties}
+      style={
+        {
+          '--book-width': `${size}px`,
+          '--jacket-paper': art.paper,
+          '--jacket-ink': art.ink,
+        } as CSSProperties
+      }
     >
       <div className={styles.pages}>
         <span className={styles.inside}>
@@ -55,24 +57,31 @@ export const BadgeMedal = ({
         </span>
       </div>
       <div className={styles.cover}>
-        <span className={styles.art}>
-          <span />
-          <span />
-          <span />
-        </span>
-        {cover === 'author-fan' && <span className={styles.signature} />}
-        {cover === 'critic' && <span className={styles.quotation}>“</span>}
-        <span className={`${styles.title} ${literary ? styles.literary : ''}`}>
-          {lines.map((line, i) => (
-            <span key={i}>{line}</span>
-          ))}
+        <span className={styles.artwork}>
+          <Image
+            src={art.src}
+            alt=''
+            width={art.width}
+            height={art.height}
+            sizes={`${size * art.columns}px`}
+            quality={85}
+            className={styles.atlas}
+            draggable={false}
+            style={{
+              width: `${art.columns * 100}%`,
+              height: `${art.rows * 100}%`,
+              left: `${-art.column * 100}%`,
+              top: `${-art.row * 100}%`,
+            }}
+          />
         </span>
         {levelValue !== null && (
-          <span className={styles.volume}>{levelValue}</span>
+          <span
+            className={`${styles.volume} ${cover === 'wide-view' ? styles.fieldVolume : ''}`}
+          >
+            {levelValue}
+          </span>
         )}
-        <span className={styles.grain} />
-        <span className={styles.imprint}>page0127</span>
-        <span className={styles.ribbon} />
         <span className={styles.spineTitle}>{title}</span>
       </div>
     </div>

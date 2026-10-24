@@ -139,3 +139,26 @@ export const SecretBook: Story = {
     await userEvent.keyboard('{Escape}');
   },
 };
+
+/** 실제 컴포넌트에서 아트 원본과 같은 크기로 비교하는 9종 검수 화면. */
+export const StoryCoverArtwork: Story = {
+  render: () => {
+    const badges = computeBadges({
+      books: [],
+      readingGoal: null,
+      firstTasteAnalysisAt: null,
+    });
+    return (
+      <div className='grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-3'>
+        {badges
+          .filter((b) => b.kind === 'story')
+          .map((b) => (
+            <div key={b.id} className='flex flex-col items-center gap-3'>
+              <BadgeMedal badge={{ ...b, earned: true }} size={220} />
+              <span className='text-sm text-text-strong'>{b.name}</span>
+            </div>
+          ))}
+      </div>
+    );
+  },
+};

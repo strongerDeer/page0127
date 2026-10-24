@@ -1,16 +1,13 @@
-# 표지 전용 Noto 서브셋
+# 표지 아트와 단계 숫자 글꼴
 
-- `cover-sans.woff2`: Noto Sans KR, weight 900, 8,296 bytes
-- `cover-serif.woff2`: Noto Serif KR, weight 700, 16,932 bytes
-- `NotoSansKR-OFL.txt`, `NotoSerifKR-OFL.txt`: 원본 SIL Open Font License
-- `print-grain.svg`: 직접 작성한 타일형 인쇄 질감
+- `story-art-v2.png`: 이야기 9종의 완성 표지, 1086×1448, 3열×3행
+- `companion-art-v2.png`: 성장 2종·비밀 8종·공통 미획득 표지, 941×1672, 3열×4행. 마지막 셀은 미사용
+- `cover-sans.woff2`: 성장 단계 숫자용 Noto Sans KR 900 서브셋, 8,296 bytes
+- `NotoSansKR-OFL.txt`: SIL Open Font License
 
-원본: https://fonts.google.com/specimen/Noto+Sans+KR / https://fonts.google.com/specimen/Noto+Serif+KR
+아트는 내장 image_gen으로 제작했다. 글자·그림·질감을 이미지 그대로 보존하며, 실제 앱에서는 Next의
+로컬 이미지 최적화가 품질 85로 제공한다. 셀 매핑과 원본 해상도는 `badgeCoverArt.ts`에 기록한다. 단계
+숫자와 책등 이름은 UI에서 표시한다. 접근 가능한 이름은 이미지 밖의 실제 텍스트와 버튼 이름으로
+제공한다.
 
-Google Fonts CSS2 API의 `text` 옵션으로 배지 제목의 글자와 숫자를 포함해 내려받은 서브셋이다. 파일은 외부 CDN을 참조하지 않고 앱이 직접 제공한다. 표지 제목을 추가하거나 바꾸면 해당 글자가 있는지 확인하고 필요 시 서브셋을 다시 생성한다. 생성 시 브라우저 User-Agent로 CSS2 API를 요청하고 반환된 URL의 바이너리가 `wOF2` 헤더인지 확인한다.
-
-초기 요청 문자:
-
-```text
-책장넓은시야단숨에벽돌완독작가덕질마침내다시펼친인생발견한줄평론약속지킴취향0127의날새해첫하루두권솔직독자얇지만깊신간관세번째만남아쓰이않은기미편집기록1234567890·page
-```
+생성 프롬프트와 제목별 의미는 `docs/design/badge-books/`에 보관했다.
