@@ -1,10 +1,16 @@
 import { Suspense } from 'react';
 
+import { cookies } from 'next/headers';
 import Link from 'next/link';
 
 import { ErrorBoundary } from '@repo/ui';
 
 import { createClient } from '@/shared/config/supabase/server';
+import {
+  HERO_VARIANT_COOKIE,
+  isHeroAbOn,
+  resolveHeroVariant,
+} from '@/shared/lib/experiment/heroVariant';
 import { JsonLd } from '@/shared/lib/seo/JsonLd';
 import { buildWebSiteJsonLd } from '@/shared/lib/seo/structuredData';
 
@@ -78,6 +84,12 @@ const Home = async () => {
 
   const aggregatedDate = getAggregatedDate();
 
+  // 홈 히어로 A/B — proxy.ts 가 정한 그룹. 스위치(HERO_AB)가 꺼져 있으면 언제나 A
+  const heroVariant = resolveHeroVariant(
+    (await cookies()).get(HERO_VARIANT_COOKIE)?.value,
+    isHeroAbOn(process.env.HERO_AB)
+  );
+
   return (
     <div className='min-h-screen bg-background'>
       <JsonLd data={webSiteJsonLd} />
@@ -114,7 +126,7 @@ const Home = async () => {
               <div className='tint-cool min-h-176 animate-pulse rounded-3xl lg:min-h-140' />
             }
           >
-            <ShelfPreviewSection />
+            <ShelfPreviewSection variant={heroVariant} />
           </Suspense>
         )}
 

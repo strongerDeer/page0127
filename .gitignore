@@ -45,7 +45,9 @@ AGENTS.md
 
 # AI 도구 로컬 파일
 CLAUDE.md
-.claude/
+# .claude/ 는 로컬 전용 — 단, 모든 세션(클라우드 포함)에 같이 적용할 settings.json 만 올린다
+.claude/*
+!.claude/settings.json
 .playwright-mcp/
 
 # Supabase Studio 로컬 스크래치 쿼리 (정식 변경은 migrations/에)

@@ -62,3 +62,14 @@ describe('addPendingBook', () => {
     ).toHaveLength(MAX_PENDING_BOOKS);
   });
 });
+
+describe('addPendingBook — 히어로 B 의 인생책', () => {
+  it('"나도 읽었어요"로 책을 더해도 인생책 표시를 잃지 않는다', () => {
+    const result = addPendingBook(
+      shelf({ books: [book('life')], lifeBookIsbn: 'life' }),
+      book('b')
+    );
+    expect(result.lifeBookIsbn).toBe('life');
+    expect(result.books.map((b) => b.isbn)).toEqual(['life', 'b']);
+  });
+});

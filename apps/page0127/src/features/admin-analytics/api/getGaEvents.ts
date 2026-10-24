@@ -17,11 +17,14 @@ import {
 import {
   type CtaLocationRow,
   type EventRow,
+  type HeroAbRow,
   parseCtaLocations,
   parseEvents,
+  parseHeroAb,
   type PeriodPair,
   toCtaLocationRequest,
   toEventsRequest,
+  toHeroAbRequest,
 } from '../lib/gaEvents';
 
 import type { GaRow } from '../lib/ga4Reports';
@@ -35,6 +38,8 @@ export type GaEventsResult =
       events: EventRow[];
       /** null = GA 에 location 맞춤 측정기준이 없어 못 받음 */
       ctaLocations: CtaLocationRow[] | null;
+      /** 홈 히어로 A/B. null = GA 에 사용자 범위 측정기준 hero_variant 가 없어 못 받음 */
+      heroAb: HeroAbRow[] | null;
       /** DB 가입(프로필 생성) 수 — GA sign_up 과 나란히 본다. null = 조회 실패 */
       dbSignups: PeriodPair | null;
     }
@@ -86,8 +91,8 @@ const countSignups = async (
 };
 
 /**
- * 가입 유도 이벤트 깔때기 + CTA 위치 + DB 가입 수. 현재 기간과 바로 앞 같은 길이 기간을 함께 본다.
- * CTA 위치는 맞춤 측정기준이 없으면 실패하므로 따로 보내고, 실패해도 나머지는 보여 준다.
+ * 가입 유도 이벤트 깔때기 + CTA 위치 + 히어로 A/B + DB 가입 수. 현재 기간과 바로 앞 같은 길이 기간을 함께 본다.
+ * CTA 위치·히어로 A/B 는 맞춤 측정기준이 없으면 실패하므로 따로 보내고, 실패해도 나머지는 보여 준다.
  */
 export async function getGaEvents(range: DateRange): Promise<GaEventsResult> {
   await assertAdmin();
@@ -101,25 +106,38 @@ export async function getGaEvents(range: DateRange): Promise<GaEventsResult> {
   try {
     const token = await getGoogleAccessToken([GA_SCOPE]);
     const adminIds = await getAdminUserIds();
-    const [eventRows, ctaRows, curSignups, prevSignups] = await Promise.all([
-      runReport(propertyId, token, toEventsRequest(range, previous)),
-      runReport(propertyId, token, toCtaLocationRequest(range, previous)).catch(
-        (e: unknown) => {
+    const [eventRows, ctaRows, heroAbRows, curSignups, prevSignups] =
+      await Promise.all([
+        runReport(propertyId, token, toEventsRequest(range, previous)),
+        runReport(
+          propertyId,
+          token,
+          toCtaLocationRequest(range, previous)
+        ).catch((e: unknown) => {
           console.error(
             '[admin] CTA 위치 조회 실패(맞춤 측정기준 location 확인):',
             e instanceof Error ? e.message : e
           );
           return null;
-        }
-      ),
-      countSignups(range, adminIds),
-      countSignups(previous, adminIds),
-    ]);
+        }),
+        runReport(propertyId, token, toHeroAbRequest(range)).catch(
+          (e: unknown) => {
+            console.error(
+              '[admin] 히어로 A/B 조회 실패(사용자 범위 측정기준 hero_variant 확인):',
+              e instanceof Error ? e.message : e
+            );
+            return null;
+          }
+        ),
+        countSignups(range, adminIds),
+        countSignups(previous, adminIds),
+      ]);
     return {
       status: 'ok',
       previous,
       events: parseEvents(eventRows),
       ctaLocations: ctaRows ? parseCtaLocations(ctaRows) : null,
+      heroAb: heroAbRows ? parseHeroAb(heroAbRows) : null,
       dbSignups:
         curSignups === null || prevSignups === null
           ? null

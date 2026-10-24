@@ -12,6 +12,7 @@ import {
   GaInsightsView,
   Section,
 } from '@/features/admin-analytics/ui/GaInsightsView';
+import { HeroAbPanel } from '@/features/admin-analytics/ui/HeroAbPanel';
 import { SearchQueryTable } from '@/features/admin-analytics/ui/SearchQueryTable';
 import { SetupNotice } from '@/features/admin-analytics/ui/SetupNotice';
 
@@ -28,11 +29,15 @@ export default async function AdminAnalyticsPage({
   const now = new Date();
   const range = parseDateRange(await searchParams, now);
 
-  // 두 연동은 서로 독립 — 하나가 실패해도 다른 하나는 보여 준다
-  const [ga, search, events] = await Promise.all([
-    getGaReports(range),
+  // 두 연동은 서로 독립 — 하나가 실패해도 다른 하나는 보여 준다.
+  // GA 두 조회는 차례로 보낸다: 동시에 보내면 보고서 배치 4개 + 이벤트 3개가 한꺼번에 나가
+  // GA 속성의 동시 요청 한도에 걸린다(429 Exhausted concurrent requests quota, 2026-10-23).
+  // Search Console 은 GA 한도와 무관해서 나란히 둔다
+  const [[ga, events], search] = await Promise.all([
+    getGaReports(range).then(
+      async (reports) => [reports, await getGaEvents(range)] as const
+    ),
     getSearchQueries(range),
-    getGaEvents(range),
   ]);
 
   return (
@@ -75,13 +80,16 @@ export default async function AdminAnalyticsPage({
 
       <Section title='가입 유도가 효과 있나?' cols={1}>
         {events.status === 'ok' ? (
-          <EventFunnelPanel
-            range={range}
-            previous={events.previous}
-            events={events.events}
-            ctaLocations={events.ctaLocations}
-            dbSignups={events.dbSignups}
-          />
+          <div className='space-y-3'>
+            <EventFunnelPanel
+              range={range}
+              previous={events.previous}
+              events={events.events}
+              ctaLocations={events.ctaLocations}
+              dbSignups={events.dbSignups}
+            />
+            <HeroAbPanel range={range} rows={events.heroAb} />
+          </div>
         ) : (
           <SetupNotice
             source='GA4'

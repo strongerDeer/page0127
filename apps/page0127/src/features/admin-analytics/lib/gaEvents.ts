@@ -11,12 +11,15 @@ import type { DateRange } from '@/shared/lib/admin/dateRange';
  * "개편 뒤 2주 vs 앞 2주"를 기간 선택 하나로 본다.
  */
 export const FUNNEL_EVENTS = [
+  { name: 'shelf_preview_view', label: '맛보기 히어로 봄' },
   { name: 'shelf_preview_pick', label: '맛보기에서 책 고름' },
   { name: 'shelf_preview_save', label: '맛보기 책장 저장' },
   { name: 'shelf_preview_goal', label: '맛보기 목표 저장 (0권)' },
   { name: 'cta_click', label: 'CTA 클릭' },
   { name: 'signup_start', label: '가입 버튼' },
+  { name: 'login_start', label: '로그인 버튼 (구글·카카오)' },
   { name: 'sign_up', label: '가입 완료 (온보딩)' },
+  { name: 'shelf_preview_claim', label: '맛보기 책 서재에 담김' },
   { name: 'book_add', label: '책 담기' },
   { name: 'book_complete', label: '완독 전환' },
 ] as const;
@@ -123,3 +126,59 @@ export const parseCtaLocations = (rows?: GaRow[]): CtaLocationRow[] =>
       count: { current: v.current[0] ?? 0, previous: v.previous[0] ?? 0 },
     }))
     .sort((a, b) => b.count.current - a.count.current);
+
+/**
+ * 홈 히어로 A/B 깔때기 단계 — docs/superpowers/specs/2026-10-23-life-book-hero-ab-design.md 7절.
+ * 기존 회원은 sign_up 없이 login_start → shelf_preview_claim 으로 간다(그래서 "신규만").
+ */
+export const HERO_AB_STEPS = [
+  { name: 'shelf_preview_view', label: '히어로 봄' },
+  { name: 'shelf_preview_pick', label: '고름 (B: 찾음)' },
+  { name: 'shelf_preview_save', label: '저장 (B: 등록하기)' },
+  { name: 'login_start', label: '로그인 버튼' },
+  { name: 'sign_up', label: '가입 완료 (신규만)' },
+  { name: 'shelf_preview_claim', label: '서재에 담김' },
+] as const;
+
+/** 한쪽이라도 첫 단계 사용자가 이보다 적으면 비교를 미룬다 */
+export const HERO_AB_MIN_USERS = 30;
+
+/**
+ * 단계 × 그룹별 사용자 수. 그룹은 GA 사용자 속성 hero_variant(사용자 범위 맞춤 측정기준).
+ * ⚠️ 측정기준이 등록되기 전에는 GA 가 400 을 주므로 다른 보고서와 묶지 않는다.
+ * 실험은 같은 기간 안에서 A·B 를 비교한다 — 앞 기간은 요청하지 않는다.
+ */
+export const toHeroAbRequest = (range: DateRange) => ({
+  dateRanges: [{ startDate: range.from, endDate: range.to }],
+  dimensions: [{ name: 'eventName' }, { name: 'customUser:hero_variant' }],
+  metrics: [{ name: 'totalUsers' }],
+  dimensionFilter: {
+    filter: {
+      fieldName: 'eventName',
+      inListFilter: { values: HERO_AB_STEPS.map((s) => s.name) },
+    },
+  },
+  limit: 50,
+});
+
+export type HeroAbRow = { name: string; label: string; a: number; b: number };
+
+/** 그룹이 없는 사용자("(not set)" — 실험 밖)는 세지 않는다 */
+export const parseHeroAb = (rows: GaRow[] = []): HeroAbRow[] => {
+  const users = new Map<string, { a: number; b: number }>();
+  for (const r of rows) {
+    const [name = '', variant = ''] = (r.dimensionValues ?? []).map(
+      (d) => d.value ?? ''
+    );
+    if (variant !== 'a' && variant !== 'b') continue;
+    const entry = users.get(name) ?? { a: 0, b: 0 };
+    entry[variant] += Number(r.metricValues?.[0]?.value ?? 0);
+    users.set(name, entry);
+  }
+  return HERO_AB_STEPS.map(({ name, label }) => ({
+    name,
+    label,
+    a: users.get(name)?.a ?? 0,
+    b: users.get(name)?.b ?? 0,
+  }));
+};

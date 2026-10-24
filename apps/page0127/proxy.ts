@@ -1,6 +1,13 @@
 import { type NextRequest } from 'next/server';
 
 import { updateSession } from '@/shared/config/supabase/middleware';
+import {
+  HERO_VARIANT_COOKIE,
+  HERO_VARIANT_MAX_AGE_SEC,
+  isHeroAbOn,
+  pickHeroVariant,
+  shouldAssignHeroVariant,
+} from '@/shared/lib/experiment/heroVariant';
 import { checkApiRateLimit } from '@/shared/lib/rate-limit';
 
 /**
@@ -17,7 +24,38 @@ import { checkApiRateLimit } from '@/shared/lib/rate-limit';
  * - matcher로 실행할 경로 지정 (성능 최적화)
  */
 export async function proxy(request: NextRequest) {
+  // 홈 히어로 A/B — 홈에 처음 온 비로그인 방문자에게 그룹을 정한다(shared/lib/experiment/heroVariant)
+  const abOn = isHeroAbOn(process.env.HERO_AB);
+  const currentVariant = request.cookies.get(HERO_VARIANT_COOKIE)?.value;
+  const assignedVariant = shouldAssignHeroVariant({
+    abOn,
+    pathname: request.nextUrl.pathname,
+    cookieNames: request.cookies.getAll().map((c) => c.name),
+    current: currentVariant,
+  })
+    ? pickHeroVariant()
+    : null;
+  // updateSession 이 응답을 만들 때 요청 쿠키를 그대로 넘긴다 → 그 전에 요청에도 넣어야
+  // 같은 요청의 홈이 이 그룹으로 그려진다(응답 쿠키만 심으면 다음 요청부터 보인다)
+  if (assignedVariant) {
+    request.cookies.set(HERO_VARIANT_COOKIE, assignedVariant);
+  }
+
   const { response, user } = await updateSession(request);
+
+  if (assignedVariant) {
+    response.cookies.set(HERO_VARIANT_COOKIE, assignedVariant, {
+      path: '/',
+      maxAge: HERO_VARIANT_MAX_AGE_SEC,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      // GA 사용자 속성으로 보내려면 브라우저가 읽어야 한다 — 그룹 이름 외엔 아무것도 담지 않는다
+      httpOnly: false,
+    });
+  } else if (!abOn && currentVariant) {
+    // 스위치를 끄면 남은 그룹을 지운다 — 그래야 GA 사용자 속성도 더 이상 보내지 않는다
+    response.cookies.delete(HERO_VARIANT_COOKIE);
+  }
 
   if (request.nextUrl.pathname.startsWith('/api/')) {
     const rateLimitResponse = await checkApiRateLimit(request, user);
