@@ -26,11 +26,13 @@ export const ShelfShowcaseSection = async () => {
   const shelfHref = `/${SHOWCASE_USERNAME}`;
 
   return (
+    // minmax(0,…) 로 트랙 하한을 0 으로 — 기본값 auto 면 아래 truncate 한 줄(nowrap)의
+    // 길이가 트랙 폭이 되어 모바일에서 페이지가 가로로 밀렸다(390 화면에 473).
     <section
       aria-labelledby='shelf-showcase-heading'
-      className='grid items-center gap-10 rounded-2xl border border-line-soft p-7 md:p-10 lg:grid-cols-[7fr_5fr] lg:gap-14'
+      className='grid grid-cols-[minmax(0,1fr)] items-center gap-10 rounded-2xl border border-line-soft p-7 md:p-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-14'
     >
-      <div className='max-w-md'>
+      <div className='min-w-0 max-w-md'>
         <p className='text-xs font-medium text-primary'>
           이런 책장이 만들어져요
         </p>
