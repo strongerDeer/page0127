@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@repo/ui';
-import { Minus, Plus } from 'lucide-react';
+import { Minus, Plus, Target } from 'lucide-react';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
@@ -16,8 +16,9 @@ import { GOAL_MAX, GOAL_MIN, writePendingShelf } from '../model/pendingShelf';
 const DEFAULT_GOAL = 12;
 
 /**
- * 0권인 방문자의 다음 행동. 주 경로(책 고르기)와 다투지 않게 링크 한 줄로 두고,
+ * 0권인 방문자의 다음 행동. 주 경로(책 고르기)와 다투지 않게 보조(outline) 버튼으로 두고,
  * 누르면 그때 목표 스테퍼를 펼친다.
+ * 예전엔 문장 전체가 밑줄 없는 링크라 그냥 안내문처럼 보였다 — 누를 곳을 버튼으로 보여 준다(2026-10-25 HJ).
  */
 export const GoalStarter = () => {
   const router = useRouter();
@@ -37,14 +38,19 @@ export const GoalStarter = () => {
 
   return (
     <div>
-      <button
+      <p className='break-keep text-sm font-medium text-text-body md:text-base'>
+        아직 읽은 책이 없나요? 올해 목표부터 같이 세워봐요!
+      </p>
+      <Button
         type='button'
+        variant='outline'
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className='break-keep text-left text-sm font-medium text-text-body underline-offset-4 hover:text-text-strong hover:underline'
+        className='mt-3 gap-1.5'
       >
-        아직 읽은 책이 없나요? 올해 목표부터 같이 세워봐요!
-      </button>
+        <Target aria-hidden='true' className='size-4' />
+        {year}년 목표 세우기
+      </Button>
       {open && (
         <div className='mt-3 flex flex-wrap items-center gap-3'>
           <span className='text-sm text-text-subtle'>{year}년 목표</span>

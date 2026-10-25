@@ -258,22 +258,9 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
             {selected.length === 0 && <GoalStarter />}
             {selected.length > 0 && (
               <>
-                {/* 상한 안내도 같은 알림 영역 안에 둔다 — 버튼이 막힌 이유를
-                  스크린리더 사용자도 들어야 한다 */}
-                <div aria-live='polite' className='space-y-3'>
-                  {impression && <FirstImpressionCard type={impression} />}
-                  {message && (
-                    <p className='break-keep font-bold text-text-strong md:text-lg'>
-                      {message}
-                    </p>
-                  )}
-                  {isFull && (
-                    <p className='mt-1 text-xs text-text-subtle'>
-                      한 번에 {MAX_PENDING_BOOKS}권까지 꽂을 수 있어요.
-                    </p>
-                  )}
-                </div>
-                <div className='mt-4 flex flex-wrap items-center gap-x-4 gap-y-2'>
+                {/* 저장 버튼을 맨 위에 고정한다 — 아래 첫인상 카드·남은 권수 문구는 고른 권수에 따라
+                  나타났다 사라지는데, 버튼이 그 아래에 있으면 책을 고를 때마다 위아래로 움직였다(2026-10-25 HJ) */}
+                <div className='flex flex-wrap items-center gap-x-4 gap-y-2'>
                   <Button
                     size='lg'
                     onClick={() => handleSave('shelf')}
@@ -285,6 +272,21 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
                   <span className='text-xs text-text-subtle'>
                     무료 · 구글·카카오로 10초 가입
                   </span>
+                </div>
+                {/* 상한 안내도 같은 알림 영역 안에 둔다 — 버튼이 막힌 이유를
+                  스크린리더 사용자도 들어야 한다 */}
+                <div aria-live='polite' className='mt-5 space-y-3'>
+                  {message && (
+                    <p className='break-keep font-bold text-text-strong md:text-lg'>
+                      {message}
+                    </p>
+                  )}
+                  {impression && <FirstImpressionCard type={impression} />}
+                  {isFull && (
+                    <p className='mt-1 text-xs text-text-subtle'>
+                      한 번에 {MAX_PENDING_BOOKS}권까지 꽂을 수 있어요.
+                    </p>
+                  )}
                 </div>
               </>
             )}

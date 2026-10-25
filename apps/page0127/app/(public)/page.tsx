@@ -111,9 +111,15 @@ const Home = async () => {
           이미 서재가 있는 사람에겐 체험할 이유가 없어 숨긴다.
           자리 표시는 실제 높이에 가깝게 — 짧으면 도착하는 순간 아래가 밀린다(CLS) */}
       {!member && (
-        <Suspense fallback={<div className='min-h-176 lg:min-h-140' />}>
-          <ShelfPreviewSection variant={heroVariant} />
-        </Suspense>
+        <>
+          <Suspense fallback={<div className='min-h-176 lg:min-h-140' />}>
+            <ShelfPreviewSection variant={heroVariant} />
+          </Suspense>
+          {/* 맛보기와 '보이는 것들'은 둘 다 흰 바탕이라 한 섹션처럼 이어 보였다 — 구분선 한 줄로 나눈다 */}
+          <div className='mx-auto max-w-6xl px-4'>
+            <hr className='border-line' />
+          </div>
+        </>
       )}
 
       <Highlights books={books} />
