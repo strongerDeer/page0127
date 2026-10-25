@@ -25,7 +25,7 @@ const story = (index: number, paper: string, ink: string): CoverArt => ({
   ink,
 });
 const companion = (index: number, paper: string, ink: string): CoverArt => ({
-  src: '/badges/editorial/companion-art-v5.png',
+  src: '/badges/editorial/companion-art-v6.png',
   width: 941,
   height: 1672,
   columns: 3,
@@ -37,7 +37,7 @@ const companion = (index: number, paper: string, ink: string): CoverArt => ({
 });
 
 const expansion = (index: number, paper: string, ink: string): CoverArt => ({
-  src: '/badges/editorial/expansion-art-v4.png',
+  src: '/badges/editorial/expansion-art-v5.png',
   width: 941,
   height: 1672,
   columns: 3,
@@ -75,7 +75,7 @@ const COVER_ART: Record<CoverId, CoverArt> = {
   'know-yourself': story(8, '#e8dfd4', '#142a45'),
   'day-0127': companion(2, '#f4efde', '#231e1b'),
   'new-year': companion(3, '#d0dce2', '#1f3b65'),
-  'double-finish': companion(4, '#f1ead8', '#98442a'),
+  'double-finish': companion(4, '#f2ead8', '#0e4288'),
   honest: companion(5, '#f3f0e5', '#1d201e'),
   'thin-but-deep': companion(6, '#d9d9d0', '#243e60'),
   'new-release': companion(7, '#f66626', '#151715'),

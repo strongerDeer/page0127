@@ -168,13 +168,13 @@ export const MilestonesAndReread: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(
-      canvas.queryByRole('button', { name: '책장 · 1권 (획득)' })
+      canvas.queryByRole('button', { name: '쌓이는 이야기 · 1권 (획득)' })
     ).not.toBeInTheDocument();
     await expect(
-      canvas.getByRole('button', { name: '책장 · 10권 (획득)' })
+      canvas.getByRole('button', { name: '쌓이는 이야기 · 10권 (획득)' })
     ).toBeVisible();
     await expect(
-      canvas.queryByRole('button', { name: '책장 · 50권 (미획득)' })
+      canvas.queryByRole('button', { name: '쌓이는 이야기 · 50권 (미획득)' })
     ).not.toBeInTheDocument();
     await expect(
       canvas.getByRole('button', { name: '다시 펼친 책 (획득)' })
@@ -231,7 +231,7 @@ export const ExpandedGrowth: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(
-      canvas.getByRole('button', { name: '책장 · 100권 (획득)' })
+      canvas.getByRole('button', { name: '쌓이는 이야기 · 100권 (획득)' })
     );
     const dialog = within(
       within(canvasElement.ownerDocument.body).getByRole('dialog')
@@ -248,3 +248,21 @@ export const ExpandedGrowth: Story = {
 
 /** 상호작용 없이 전체 확장 상태를 확인하는 검수 화면. */
 export const GrowthPreview: Story = { args: ExpandedGrowth.args };
+
+/** 획득 여부와 무관하게 실제 31종 표지를 한 번씩 비교하는 디자인 검수 화면. */
+export const AllBadgeCovers: Story = {
+  render: () => (
+    <div className='grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4 lg:grid-cols-5'>
+      {computeBadges({
+        books: [],
+        readingGoal: null,
+        firstTasteAnalysisAt: null,
+      }).map((badge) => (
+        <div key={badge.id} className='flex flex-col items-center gap-3'>
+          <BadgeMedal badge={{ ...badge, earned: true, level: 1 }} size={180} />
+          <span className='text-sm text-text-strong'>{badge.name}</span>
+        </div>
+      ))}
+    </div>
+  ),
+};

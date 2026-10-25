@@ -337,7 +337,7 @@ export const computeBadges = ({
       {
         id: 'shelf',
         kind: 'growth',
-        name: '책장',
+        name: '쌓이는 이야기',
         description: `서로 다른 책 ${SHELF_LEVELS.join('·')}권 완독`,
       },
       shelf.hit,
