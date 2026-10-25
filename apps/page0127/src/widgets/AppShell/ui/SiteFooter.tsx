@@ -11,7 +11,7 @@ import { cn } from '@repo/ui';
  */
 const footerLinks = [
   { href: '/books/all', label: '전체 도서' },
-  { href: '/about', label: '소개' },
+  { href: '/updates', label: '공지·업데이트' },
   { href: '/contact', label: '문의' },
   { href: '/privacy', label: '개인정보처리방침' },
   { href: '/terms', label: '이용약관' },

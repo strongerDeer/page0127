@@ -26,7 +26,7 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
       priority: 0.8,
     },
     {
-      url: `${siteUrl}/about`,
+      url: `${siteUrl}/updates`,
       lastModified,
       changeFrequency: 'monthly',
       priority: 0.5,

@@ -6,7 +6,11 @@ import {
 import { Reveal } from './Reveal';
 import { SectionHead } from './SectionHead';
 
-type UpdatesTimelineProps = { limit?: number };
+type UpdatesTimelineProps = {
+  limit?: number;
+  /** 페이지 첫 제목으로 쓸 때 h1 */
+  headingAs?: 'h1' | 'h2';
+};
 
 /** 세로 선 — 두 목록(처음 보이는 것·접힌 것)이 같은 선 위에 이어져 보이게 */
 const LINE =
@@ -39,10 +43,13 @@ const Entry = ({ entry, latest }: EntryProps) => (
 
 /**
  * 업데이트 — 날짜를 지어내지 않는다. CHANGELOG(실제 배포만 기록, 최신순)를 그대로 쓴다.
- * 처음엔 최근 limit 개만 보이고, 나머지는 '전체 이력 보기'로 접어 둔다 —
- * 설득 페이지의 흐름은 짧게, 이력은 사이트 어딘가에 남겨 둔다(여기가 유일한 자리다).
+ * 처음엔 최근 limit 개만 보이고, 나머지는 '전체 이력 보기'로 접어 둔다.
+ * 소개 페이지가 홈에 합쳐진 뒤(2026-10-25) 공지·업데이트 페이지(/updates)의 본문이다.
  */
-export const UpdatesTimeline = ({ limit = 5 }: UpdatesTimelineProps) => {
+export const UpdatesTimeline = ({
+  limit = 5,
+  headingAs = 'h2',
+}: UpdatesTimelineProps) => {
   const recent = CHANGELOG.slice(0, limit);
   const older = CHANGELOG.slice(limit);
 
@@ -50,7 +57,8 @@ export const UpdatesTimeline = ({ limit = 5 }: UpdatesTimelineProps) => {
     <section aria-labelledby='updates-title' className='bg-sunken px-4 py-32'>
       <SectionHead
         id='updates-title'
-        label='업데이트'
+        as={headingAs}
+        label='공지·업데이트'
         title='계속 자라는 중.'
       />
       <ol className={`${LINE} mt-14`}>
