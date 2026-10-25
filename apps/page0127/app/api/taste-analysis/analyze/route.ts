@@ -35,6 +35,12 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 // 배포 플랫폼 기본 함수 타임아웃(짧으면 10초)에 걸려 강제 종료되는 것을 방지
 export const maxDuration = 60;
 
+/** 추천 도서 표지 보강을 응답 전에 기다리는 최대 시간 */
+const ENRICH_WAIT_MS = 8_000;
+
+/** 공급자 API 동시 호출 수 — 표지를 빨리 채우되 한 번에 몰아 보내지 않는다 */
+const ENRICH_CONCURRENCY = 3;
+
 /**
  * 독서 취향 분석 API
  *
@@ -265,23 +271,29 @@ export async function POST(request: NextRequest) {
         }
 
         // 7. 도서 공급자로 표지 이미지 업데이트
-        // after()로 감싸서 응답을 먼저 보낸 뒤 백그라운드에서 처리한다.
-        // 추천 도서 수만큼 공급자 API를 순차 호출(rate limit 방지용 딜레이 포함)하기 때문에
-        // 응답 전에 기다리면 사용자 체감 대기 시간이 그만큼 늘어난다.
-        after(async () => {
-          try {
-            await enrichRecommendationsWithProviderData(
-              supabase,
-              aiResponse.recommendations,
-              analysis.id
-            );
+        // 응답 전에 기다린다 — 응답을 받자마자 결과 페이지로 이동하므로, 백그라운드로
+        // 돌리면 페이지가 표지 없는 행을 먼저 읽어 새로고침해야 표지가 보인다.
+        // 대신 병렬로 돌리고 상한(ENRICH_WAIT_MS)을 둬서 공급자가 느려도 응답이
+        // 붙잡히지 않게 한다. 상한을 넘기면 남은 작업은 after()가 끝까지 마친다.
+        const enrichment = enrichRecommendationsWithProviderData(
+          supabase,
+          aiResponse.recommendations,
+          analysis.id
+        ).then(
+          () => {
             if (process.env.NODE_ENV === 'development') {
               console.warn('공급자 데이터 업데이트 완료');
             }
-          } catch (err: unknown) {
+          },
+          (err: unknown) => {
             console.error('공급자 데이터 업데이트 실패:', err);
           }
-        });
+        );
+        after(enrichment);
+        await Promise.race([
+          enrichment,
+          new Promise((resolve) => setTimeout(resolve, ENRICH_WAIT_MS)),
+        ]);
       }
     } else {
       console.warn('AI 응답에 추천 도서가 없습니다.');
@@ -365,7 +377,7 @@ async function enrichRecommendationsWithProviderData(
     }
   };
 
-  for (const rec of recommendations) {
+  const enrichOne = async (rec: (typeof recommendations)[number]) => {
     try {
       // 1차: 제목만으로 검색. 실패하면 저자를 붙여 한 번 더 시도한다.
       //   AI가 부제를 붙이거나 띄어쓰기를 다르게 쓰면 0건이 나오는데,
@@ -421,11 +433,20 @@ async function enrichRecommendationsWithProviderData(
           console.warn(`❌ ${rec.title} - 공급자에서 찾을 수 없어 삭제`);
         }
       }
-
-      // API 요청 간 간격 (Rate Limiting 방지)
-      await new Promise((resolve) => setTimeout(resolve, 200));
     } catch (error) {
       console.error(`공급자 API 오류 (${rec.title}):`, error);
     }
-  }
+  };
+
+  // 작업 큐를 ENRICH_CONCURRENCY 개의 일꾼이 나눠 처리한다.
+  // 순차(권당 ~0.5초 × 12권)면 6초 남짓, 3개씩이면 2초 안팎이다.
+  const queue = [...recommendations];
+  const worker = async () => {
+    for (let rec = queue.shift(); rec; rec = queue.shift()) {
+      await enrichOne(rec);
+    }
+  };
+  await Promise.all(
+    Array.from({ length: Math.min(ENRICH_CONCURRENCY, queue.length) }, worker)
+  );
 }
