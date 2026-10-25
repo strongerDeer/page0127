@@ -15,7 +15,7 @@ const reader = (id: string, books: number, pages: number): LeagueReader => ({
 });
 
 describe('리그 순위와 배틀 비율', () => {
-  it('선택한 지표만으로 공동 순위 1,1,3을 매기고 0에는 순위를 붙이지 않는다', () => {
+  it('0을 포함해 같은 지표는 공동 순위 1,1,3으로 비교한다', () => {
     const readers = [
       reader('가', 3, 100),
       reader('나', 3, 200),
@@ -23,18 +23,15 @@ describe('리그 순위와 배틀 비율', () => {
       reader('라', 0, 0),
     ];
     expect(rankReaders(readers, 'books').map((r) => r.rank)).toEqual([
-      1,
-      1,
-      3,
-      null,
+      1, 1, 3, 4,
     ]);
     expect(
       rankReaders(readers, 'pages').map((r) => [r.userId, r.rank])
     ).toEqual([
       ['나', 1],
       ['가', 2],
-      ['다', null],
-      ['라', null],
+      ['다', 3],
+      ['라', 3],
     ]);
     expect(readers[0].userId).toBe('가');
   });

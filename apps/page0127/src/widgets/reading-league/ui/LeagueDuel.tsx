@@ -35,7 +35,7 @@ export const LeagueDuel = ({
       ? '분류가 확인된 기록을 기다려요'
       : '올해의 첫 기록을 기다려요'
     : other.completedBooks === 0
-      ? '상대의 올해 공개 기록을 기다려요'
+      ? '콕 찌르기'
       : match.tied
         ? '동점'
         : match.close
@@ -80,8 +80,8 @@ export const LeagueDuel = ({
                 </span>
               </ProfileLink>
               <div className={styles.playerName}>
-                {action}
                 <ProfileLink username={other.username}>{otherName}</ProfileLink>
+                {other.completedBooks > 0 && action}
               </div>
             </div>
             <p className={styles.score} data-pages={unit === '쪽'}>
@@ -114,7 +114,11 @@ export const LeagueDuel = ({
           </div>
         </div>
         <div className={styles.result} aria-live='polite'>
-          <span className={styles.resultBadge}>{label}</span>
+          {other.completedBooks === 0 && action ? (
+            action
+          ) : (
+            <span className={styles.resultBadge}>{label}</span>
+          )}
           {empty && missing && <p>쪽수 정보를 등록하면 비교할 수 있어요.</p>}
           {!empty && !match.tied && other.completedBooks > 0 && (
             <p>

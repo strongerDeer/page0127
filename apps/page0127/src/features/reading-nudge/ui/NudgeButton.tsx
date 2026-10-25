@@ -80,7 +80,7 @@ export const NudgeButton = ({
           setOpen(true);
         }}
         disabled={sentOn === today}
-        className={iconOnly ? 'shrink-0 rounded-full' : 'min-w-0 flex-1'}
+        className={iconOnly ? 'shrink-0 rounded-full' : 'min-w-0'}
       >
         <Pointer size={16} aria-hidden='true' />
         {!iconOnly && (sentOn === today ? '오늘 콕 찌름' : '콕 찌르기')}

@@ -9,6 +9,7 @@ import { toDisplayName } from '@/entities/profile/model/displayName';
 import { rankReaders } from '../model/readingLeague';
 import { LeagueAvatar } from './LeagueAvatar';
 import { LeagueDuel } from './LeagueDuel';
+import { LeagueInfo } from './LeagueInfo';
 import { LeaguePodium } from './LeaguePodium';
 
 import type {
@@ -26,7 +27,11 @@ export type ReadingLeagueProps = {
   year: number;
   /** 추천 리더는 페이지에서 조립한다. 사용자 검색 feature를 위젯 안에 묶지 않는다. */
   discovery?: ReactNode;
-  actions?: (other: RankedReader, mine: RankedReader) => ReactNode;
+  actions?: (
+    other: RankedReader,
+    mine: RankedReader,
+    appearance?: 'icon' | 'label'
+  ) => ReactNode;
 };
 
 export const ReadingLeague = ({
@@ -88,38 +93,56 @@ export const ReadingLeague = ({
         }}
       >
         <header className={styles.header}>
-          <p className={styles.overline}>{year} READING LEAGUE</p>
-          <div className={styles.headingRow}>
-            <h2 id={titleId}>
-              {solo
-                ? '나의 첫 번째 라이벌은?'
-                : metric === 'genres'
-                  ? '장르 문어발 배틀'
-                  : readers.length === 2
-                    ? '올해의 독서 배틀'
-                    : '올해의 리더보드'}
-            </h2>
-            <div
-              className={styles.metricButtons}
-              role='group'
-              aria-label='독서 지표'
-            >
-              {(['books', 'pages', 'genres'] as const).map((value) => (
-                <button
-                  key={value}
-                  type='button'
-                  aria-pressed={metric === value}
-                  disabled={value === 'genres' && !genresReady}
-                  onClick={() => setMetric(value)}
-                >
-                  {value === 'books'
-                    ? '권수'
-                    : value === 'pages'
-                      ? '쪽수'
-                      : '장르 문어발'}
-                </button>
-              ))}
+          <div className={styles.battleBanner}>
+            <div>
+              <p className={styles.overline}>{year} READING LEAGUE</p>
+              <div className={styles.bannerTitle}>
+                <h2 id={titleId}>
+                  {solo
+                    ? '나의 첫 번째 라이벌은?'
+                    : metric === 'genres'
+                      ? '장르 문어발 배틀'
+                      : readers.length === 2
+                        ? '올해의 독서 배틀'
+                        : '올해의 리더보드'}
+                </h2>
+                <LeagueInfo
+                  year={year}
+                  metric={metric}
+                  missingPages={ranked
+                    .filter((reader) => reader.missingPageBooks > 0)
+                    .map(
+                      (reader) =>
+                        `${reader.userId === currentUserId ? '나' : toDisplayName(reader)}: 쪽수 미등록 ${reader.missingPageBooks}권`
+                    )
+                    .join(' · ')}
+                />
+              </div>
             </div>
+            <span className={styles.bannerVersus} aria-hidden='true'>
+              VS
+            </span>
+          </div>
+          <div
+            className={styles.metricButtons}
+            role='group'
+            aria-label='독서 지표'
+          >
+            {(['books', 'pages', 'genres'] as const).map((value) => (
+              <button
+                key={value}
+                type='button'
+                aria-pressed={metric === value}
+                disabled={value === 'genres' && !genresReady}
+                onClick={() => setMetric(value)}
+              >
+                {value === 'books'
+                  ? '권수'
+                  : value === 'pages'
+                    ? '쪽수'
+                    : '장르 문어발'}
+              </button>
+            ))}
           </div>
         </header>
         {solo ? (
@@ -161,7 +184,11 @@ export const ReadingLeague = ({
             mine={mine}
             other={other}
             unit={unit}
-            action={actions?.(other, mine)}
+            action={actions?.(
+              other,
+              mine,
+              other.completedBooks === 0 ? 'label' : 'icon'
+            )}
           />
         ) : (
           <LeaguePodium
@@ -172,38 +199,7 @@ export const ReadingLeague = ({
             actions={actions ? (reader) => actions(reader, mine) : undefined}
           />
         )}
-        {metric === 'genres' && (
-          <div className='px-5 pb-4 text-xs leading-relaxed text-text-subtle'>
-            {ranked.map((reader) => (
-              <p key={reader.userId}>
-                {reader.userId === currentUserId ? '나' : toDisplayName(reader)}
-                :{' '}
-                {reader.genres?.join(' · ') ||
-                  '올해 분류가 확인된 공개 완독 기록 없음'}
-              </p>
-            ))}
-          </div>
-        )}
       </section>
-      <div className={styles.privacy}>
-        <p>올해 공개 완독 기준 · 재독은 한 권</p>
-        {metric === 'pages' && (
-          <p>완독한 책의 쪽수 합계 · 쪽수 미등록 책 제외</p>
-        )}
-        {metric === 'genres' && <p>서재 대분류 기준 · 기타·분류 미상 제외</p>}
-      </div>
-      {metric === 'pages' &&
-        ranked.some((reader) => reader.missingPageBooks > 0) && (
-          <p className={styles.missingPages} role='status'>
-            {ranked
-              .filter((reader) => reader.missingPageBooks > 0)
-              .map(
-                (reader) =>
-                  `${reader.userId === currentUserId ? '나' : toDisplayName(reader)}: 쪽수 미등록 ${reader.missingPageBooks}권`
-              )
-              .join(' · ')}
-          </p>
-        )}
       {readers.length <= 3 && discovery}
     </div>
   );
