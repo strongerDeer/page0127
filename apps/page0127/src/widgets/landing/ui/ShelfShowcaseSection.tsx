@@ -1,6 +1,8 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
-import { ArrowRight } from 'lucide-react';
+import { isPreOptimizedImageSrc } from '@repo/ui';
+import { ArrowRight, Link2 } from 'lucide-react';
 
 import { getReaderShareData } from '@/widgets/public-library/api/getReaderShareData';
 
@@ -24,6 +26,7 @@ export const ShelfShowcaseSection = async () => {
 
   const { card, displayName, totalBooks } = data;
   const shelfHref = `/${SHOWCASE_USERNAME}`;
+  const storyImageSrc = `${shelfHref}/story-image`;
 
   return (
     // minmax(0,…) 로 트랙 하한을 0 으로 — 기본값 auto 면 아래 truncate 한 줄(nowrap)의
@@ -33,7 +36,8 @@ export const ShelfShowcaseSection = async () => {
       className='grid grid-cols-[minmax(0,1fr)] items-center gap-10 rounded-2xl border border-line-soft p-7 md:p-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-14'
     >
       <div className='min-w-0 max-w-md'>
-        <p className='text-xs font-medium text-primary'>
+        <p className='flex items-center gap-1.5 text-sm font-medium text-primary'>
+          <Link2 aria-hidden='true' className='size-4' />
           이런 책장이 만들어져요
         </p>
         <h2
@@ -54,7 +58,8 @@ export const ShelfShowcaseSection = async () => {
           href={shelfHref}
           // 랜딩에서 한 번 보이는 링크라 미리 불러오지 않는다 (Vercel CPU)
           prefetch={false}
-          className='group mt-8 flex items-center justify-between gap-4 rounded-xl border border-line bg-card px-5 py-4 transition-colors hover:border-primary/30'
+          // 모바일에선 "구경하기"를 아랫줄로 — 한 줄에 두면 성향 이름과 주소가 잘려 명함이 명함 노릇을 못 한다
+          className='group mt-8 flex flex-col gap-3 rounded-xl border border-line bg-card px-5 py-4 transition-colors hover:border-primary/30 sm:flex-row sm:items-center sm:justify-between sm:gap-4'
         >
           <div className='min-w-0'>
             <p className='text-xs text-text-subtle'>
@@ -67,10 +72,10 @@ export const ShelfShowcaseSection = async () => {
                   className='size-2.5 shrink-0 rounded-full'
                   style={{ backgroundColor: card.identity.color }}
                 />
-                <span className='truncate'>{card.identity.name}</span>
+                <span className='break-keep'>{card.identity.name}</span>
               </p>
             )}
-            <p className='mt-1 truncate text-sm text-text-subtle'>
+            <p className='mt-1 break-all text-sm text-text-subtle'>
               page0127.com/{SHOWCASE_USERNAME}
               {totalBooks > 0 && ` · 기록한 책 ${totalBooks}권`}
             </p>
@@ -86,15 +91,15 @@ export const ShelfShowcaseSection = async () => {
       </div>
 
       {/* 실제 공유 이미지(서재 스토리, 1080×1920) — 서재 공유 시트가 받아 가는 그 이미지다.
-          서버가 그린 PNG 를 그대로 쓴다. 폴드 아래라 lazy 로 늦게 받는다 */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={`${shelfHref}/story-image`}
+          원본 PNG 는 약 700KB 라 next/image 로 화면 폭(224~256px)에 맞춰 줄여 받는다.
+          같은 출처의 경로라 원격 호스트 설정이 필요 없고, 폴드 아래라 lazy 가 기본이다 */}
+      <Image
+        src={storyImageSrc}
+        unoptimized={isPreOptimizedImageSrc(storyImageSrc)}
         alt={`${displayName}님의 서재 스토리 이미지`}
         width={1080}
         height={1920}
-        loading='lazy'
-        decoding='async'
+        sizes='(min-width: 768px) 256px, 224px'
         className='mx-auto aspect-9/16 h-auto w-56 rounded-2xl border border-line-soft md:w-64'
       />
     </section>

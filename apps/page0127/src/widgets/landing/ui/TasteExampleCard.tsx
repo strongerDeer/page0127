@@ -97,7 +97,9 @@ export const TasteExampleCard = async () => {
         {EXAMPLE.description}
       </p>
 
-      <div className='mt-6 border-t border-line-soft pt-5'>
+      {/* 모바일에서는 근거 책을 2권까지만 — 3권이면 이 카드 하나가 한 화면을 넘는다.
+          근거라는 문법은 2권으로도 읽힌다. 바깥 목록의 li 만 고르고 안쪽 주제 태그 li 는 건드리지 않는다 */}
+      <div className='mt-6 border-t border-line-soft pt-5 max-sm:[&>section>ul>li:nth-child(n+3)]:hidden'>
         <TasteEvidenceList evidence={evidence} variant='full' />
       </div>
 

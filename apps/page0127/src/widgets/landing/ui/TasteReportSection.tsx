@@ -16,9 +16,10 @@ export const TasteReportSection = () => (
   <section className='tint-editorial overflow-hidden rounded-2xl border border-line-soft p-7 md:p-10'>
     <div className='grid items-center gap-10 lg:grid-cols-[5fr_7fr] lg:gap-14'>
       <div className='max-w-md'>
-        <p className='flex items-center gap-2 text-xs font-medium text-primary'>
+        {/* 섹션 머리말은 홈 전체가 같은 모양(아이콘 + 한글)을 쓴다 — ShelfShowcaseSection 과 짝 */}
+        <p className='flex items-center gap-1.5 text-sm font-medium text-primary'>
           <Sparkles aria-hidden='true' className='size-4' />
-          PAGE0127 TASTE REPORT
+          취향 노트
         </p>
         <h2 className='mt-4 text-[28px] font-bold leading-[1.3] text-text-strong md:text-4xl'>
           다섯 권의 책이
@@ -30,7 +31,8 @@ export const TasteReportSection = () => (
           노트로 정리해 드려요.
         </p>
 
-        <div className='mt-8 flex flex-wrap items-center gap-2 text-xs font-medium text-text-subtle'>
+        {/* 과정 칩은 데스크톱에서만 — 모바일에선 세 칩이 두 줄로 꺾여 화살표가 줄 끝에 매달렸다 */}
+        <div className='mt-8 hidden flex-wrap items-center gap-2 text-xs font-medium text-text-subtle sm:flex'>
           <span className='tint-chip flex items-center gap-1.5 rounded-full px-3 py-2'>
             <BookOpen aria-hidden='true' className='size-3.5' />
             완독 기록
