@@ -300,6 +300,12 @@ export const ClassicEvidence: Story = {
         dialog.getByRole('heading', { name: '집계된 고전 · 6권' })
       ).toBeVisible()
     );
+    await expect(
+      dialog.getByRole('list', { name: '집계된 고전', hidden: true })
+    ).not.toBeVisible();
+    await userEvent.click(
+      dialog.getByRole('heading', { name: '집계된 고전 · 6권' })
+    );
     const list = within(dialog.getByRole('list', { name: '집계된 고전' }));
     await expect(list.getAllByRole('listitem')).toHaveLength(6);
     await expect(list.getByRole('link', { name: '이방인' })).toHaveAttribute(
@@ -310,6 +316,12 @@ export const ClassicEvidence: Story = {
     await expect(
       dialog.getByRole('button', { name: '책 펼쳐보기' })
     ).toHaveAttribute('aria-pressed', 'false');
+    await userEvent.click(
+      dialog.getByRole('heading', { name: '집계된 고전 · 6권' })
+    );
+    await expect(
+      dialog.getByRole('list', { name: '집계된 고전', hidden: true })
+    ).not.toBeVisible();
     await userEvent.keyboard('{Escape}');
   },
 };

@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 
 import { Button } from '@repo/ui';
+import { ChevronDown } from 'lucide-react';
 
 import { formatDate } from '@/shared/lib/date';
 
@@ -25,11 +26,17 @@ export const BadgeEvidenceBooks = ({
   const { books, milestone } = evidence;
   const remaining = books.length - visibleCount;
   return (
-    <section className={styles.evidence} aria-label='배지 집계 근거'>
-      <h3 className='text-sm font-bold text-text-strong'>
-        {evidence.title} · {books.length}
-        {evidence.unit}
-      </h3>
+    <details className={`${styles.evidence} group`} aria-label='배지 집계 근거'>
+      <summary className='flex cursor-pointer list-none items-center justify-between gap-3 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary [&::-webkit-details-marker]:hidden'>
+        <h3 className='text-sm font-bold text-text-strong'>
+          {evidence.title} · {books.length}
+          {evidence.unit}
+        </h3>
+        <ChevronDown
+          className='h-4 w-4 shrink-0 text-text-subtle group-open:rotate-180'
+          aria-hidden
+        />
+      </summary>
       {milestone && (
         <p className='mt-1 text-xs leading-relaxed text-text-subtle'>
           1~{milestone.count}번 기록이 {milestone.label} 달성에 포함됐어요.
@@ -87,6 +94,6 @@ export const BadgeEvidenceBooks = ({
           {evidence.unit} 더 보기 · {visibleCount} / {books.length}
         </Button>
       )}
-    </section>
+    </details>
   );
 };
