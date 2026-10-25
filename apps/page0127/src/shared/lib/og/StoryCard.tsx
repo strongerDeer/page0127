@@ -74,6 +74,8 @@ export type StoryCardProps = {
   covers: string[];
   /** 크게 보일 권수 하나 */
   count: { label: string; value: number } | null;
+  /** 권수 아래 한 줄 ("목표 20권 · 10월 12일 달성") — 권수가 있을 때만 */
+  note?: string | null;
 };
 
 const Avatar = ({ src, name }: { src: string | null; name: string }) =>
@@ -299,6 +301,7 @@ export const StoryCard = ({
   shelf,
   covers,
   count,
+  note = null,
 }: StoryCardProps) => {
   const headlineSize = label ? HEADLINE_SIZE : 76;
   const headlineLines = balanceLines(
@@ -484,6 +487,22 @@ export const StoryCard = ({
                 권
               </div>
             </div>
+            {note && (
+              <div
+                style={{
+                  display: 'flex',
+                  marginTop: 20,
+                  padding: '10px 28px',
+                  borderRadius: 40,
+                  // brand/accent — 이미지에서 유일한 비(非)블루라 "해냈다"가 색으로 읽힌다
+                  background: OG_COLORS.mint,
+                  fontSize: 32,
+                  fontWeight: 700,
+                }}
+              >
+                {note}
+              </div>
+            )}
           </div>
         )}
       </div>

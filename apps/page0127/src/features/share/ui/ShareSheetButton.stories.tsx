@@ -65,3 +65,23 @@ export const ImageFailed: Story = {
     ).toBeEnabled();
   },
 };
+
+/** 글자를 붙인 버튼 — 올해 요약 카드의 "달성 공유하기"처럼 무엇을 공유하는지 말해야 하는 자리 */
+export const LabeledTrigger: Story = {
+  name: '글자 버튼',
+  args: {
+    imagePath: '/images/no-book.jpg',
+    title: '2026 독서 목표 달성',
+    sheetTitle: '목표 달성 공유하기',
+    triggerLabel: '달성 공유하기',
+  },
+  play: async ({ canvasElement }) => {
+    await userEvent.click(
+      within(canvasElement).getByRole('button', { name: '달성 공유하기' })
+    );
+    const dialog = within(await screen.findByRole('dialog'));
+    await expect(
+      dialog.getByRole('heading', { name: '목표 달성 공유하기' })
+    ).toBeInTheDocument();
+  },
+};
