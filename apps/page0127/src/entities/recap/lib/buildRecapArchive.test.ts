@@ -25,7 +25,7 @@ const book = (over: Partial<RecapBook> & { id: string }): RecapBook => ({
 });
 
 describe('buildRecapArchive', () => {
-  it('지난주부터 센다 — 이번 주는 홈 회상 카드가 맡는다', () => {
+  it('지난주부터 센다 — 이번 주는 서재 회상 카드가 맡는다', () => {
     const archive = buildRecapArchive(
       [
         book({ id: 'this-week', completed_date: '2026-07-27' }),

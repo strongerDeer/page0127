@@ -38,6 +38,7 @@ import type { OverallStats } from '@/entities/book';
 import type { Profile } from '@/entities/profile/types';
 import type { PublicTasteHistoryItem } from '@/entities/taste-analysis/types';
 import type { BadgeActivity } from '@/features/badge/model/badges';
+import type { ReactNode } from 'react';
 
 type PublicLibraryContentProps = {
   profile: Profile;
@@ -55,6 +56,8 @@ type PublicLibraryContentProps = {
   analysisHistory: PublicTasteHistoryItem[];
   tasteAnalysisRemaining: number;
   badgeActivity?: BadgeActivity;
+  /** 주인에게만 넣는 주간 회상 카드 — 서버 컴포넌트라 페이지가 그려서 넘긴다 */
+  recapSlot?: ReactNode;
 };
 
 /**
@@ -79,6 +82,7 @@ export const PublicLibraryContent = ({
   analysisHistory,
   tasteAnalysisRemaining,
   badgeActivity,
+  recapSlot,
 }: PublicLibraryContentProps) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -229,6 +233,8 @@ export const PublicLibraryContent = ({
           onSaved={() => router.refresh()}
         />
       )}
+
+      {recapSlot}
 
       {/* 뱃지 — 통계와 같은 공개 책으로 계산해 주인·방문자가 같은 뱃지를 본다.
           프로필 바로 아래에 둬서 "어떤 독자인지"를 먼저 보여 준다. 전부는 상세 페이지에서 */}

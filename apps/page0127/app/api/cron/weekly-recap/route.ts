@@ -14,7 +14,7 @@ import { errorResponse, successResponse } from '../../_helpers/response';
  * GET /api/cron/weekly-recap
  * 한 주를 마무리하는 시각에 주간 회상을 알림으로 건넨다. (매주 일요일 KST 20:00)
  *
- * 홈의 회상 카드(selectRecapCard)와 **같은 함수로** 고른다 — 알림을 눌러 홈에 왔는데
+ * 내 서재의 회상 카드(selectRecapCard)와 **같은 함수로** 고른다 — 알림을 눌러 서재에 왔는데
  * 다른 카드가 떠 있으면 안 된다. 일요일 저녁이면 이번 주(월~일)가 거의 다 찼다.
  *
  * 흐름:

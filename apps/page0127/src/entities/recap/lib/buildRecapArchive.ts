@@ -5,7 +5,7 @@ import { isWithinWeek, toKstWeekRange } from './kstWeek';
 import type { RecapBook } from '../model/types';
 import type { KstWeekRange } from './kstWeek';
 
-/** 아카이브가 거슬러 보는 주 수. 이번 주는 홈 회상 카드가 맡으므로 지난주부터 센다 */
+/** 아카이브가 거슬러 보는 주 수. 이번 주는 서재 회상 카드가 맡으므로 지난주부터 센다 */
 export const RECAP_ARCHIVE_WEEKS = 12;
 
 const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;

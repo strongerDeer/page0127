@@ -2,6 +2,8 @@ import { Suspense } from 'react';
 
 import { notFound } from 'next/navigation';
 
+import { ErrorBoundary } from '@repo/ui';
+
 import { createClient } from '@/shared/config/supabase/server';
 import { checkUsageLimit } from '@/shared/lib/aiUsage';
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
@@ -19,6 +21,7 @@ import { getBadgeActivity } from '@/features/badge/api/getBadgeActivity';
 import { toReaderCard } from '@/widgets/public-library/model/readerCard';
 import { PublicLibraryContent } from '@/widgets/public-library/PublicLibraryContent';
 import { PublicLibrarySkeleton } from '@/widgets/public-library/PublicLibrarySkeleton';
+import { WeeklyRecapCard } from '@/widgets/recap/ui/WeeklyRecapCard';
 
 import type { Book } from '@/entities/book';
 import type { Profile } from '@/entities/profile/types';
@@ -254,6 +257,17 @@ const LibraryContent = async ({
       analysisHistory={tasteHistory}
       tasteAnalysisRemaining={tasteAnalysisRemaining}
       badgeActivity={badgeActivity}
+      // 주간 회상 — 홈이 비로그인 랜딩 전용이 되면서 로그인 사용자가 매일 오는 이 자리로 옮겼다.
+      // 내 기록을 되돌아보는 카드라 주인에게만. 실패하거나 할 말이 없으면 조용히 사라진다
+      recapSlot={
+        isOwnProfile ? (
+          <ErrorBoundary fallback={null}>
+            <Suspense fallback={null}>
+              <WeeklyRecapCard />
+            </Suspense>
+          </ErrorBoundary>
+        ) : null
+      }
     />
   );
 };
