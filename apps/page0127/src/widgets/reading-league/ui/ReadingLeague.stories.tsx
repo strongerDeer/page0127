@@ -1,3 +1,5 @@
+import { Button } from '@repo/ui';
+import { Pointer } from 'lucide-react';
 import { expect, userEvent, within } from 'storybook/test';
 
 import { ReadingLeague } from './ReadingLeague';
@@ -228,6 +230,37 @@ export const Loading: Story = {
 export const RetryableError: Story = {
   name: '조회 실패 · 다시 시도',
   render: () => <ReadingLeagueError onRetry={() => {}} isRetrying={false} />,
+};
+
+export const OneActiveReader: Story = {
+  name: '여러 명 · 공개 기록 한 명 · 간결한 순위',
+  args: {
+    readers: [me, zero, { ...zero, userId: 'another', nickname: '다른 리더' }],
+    actions: (reader) => (
+      <Button
+        size='icon-sm'
+        variant='outline'
+        className='rounded-full'
+        aria-label={`${reader.nickname}님 콕 찌르기`}
+      >
+        <Pointer size={16} aria-hidden='true' />
+      </Button>
+    ),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.queryByLabelText('상위 세 명')).not.toBeInTheDocument();
+    await expect(
+      canvas.getAllByRole('button', { name: /님 콕 찌르기/ })
+    ).toHaveLength(2);
+    await expect(canvas.queryByRole('combobox')).not.toBeInTheDocument();
+    await expect(
+      within(canvas.getByRole('list', { name: '전체 독서 순위' })).getAllByRole(
+        'listitem'
+      )
+    ).toHaveLength(3);
+    await expect(canvas.queryByText(/선두 기록 대비/)).not.toBeInTheDocument();
+  },
 };
 
 export const Genres: Story = {

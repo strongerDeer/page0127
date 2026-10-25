@@ -9,7 +9,7 @@ import { battleState } from '../model/readingLeague';
 import { LeagueAvatar } from './LeagueAvatar';
 
 import type { RankedReader } from '../model/readingLeague';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 import styles from './ReadingLeague.module.css';
 
@@ -17,10 +17,12 @@ export const LeagueDuel = ({
   mine,
   other,
   unit,
+  action,
 }: {
   mine: RankedReader;
   other: RankedReader;
   unit: string;
+  action?: ReactNode;
 }) => {
   const [replay, setReplay] = useState(0);
   const match = battleState(mine.value, other.value);
@@ -32,13 +34,15 @@ export const LeagueDuel = ({
     ? unit === '분야'
       ? '분류가 확인된 기록을 기다려요'
       : '올해의 첫 기록을 기다려요'
-    : match.tied
-      ? '동점'
-      : match.close
-        ? '접전'
-        : match.leading === 'me'
-          ? '내가 앞서는 중'
-          : `${otherName}님이 앞서는 중`;
+    : other.completedBooks === 0
+      ? '상대의 올해 공개 기록을 기다려요'
+      : match.tied
+        ? '동점'
+        : match.close
+          ? '접전'
+          : match.leading === 'me'
+            ? '내가 앞서는 중'
+            : `${otherName}님이 앞서는 중`;
 
   return (
     <>
@@ -66,15 +70,20 @@ export const LeagueDuel = ({
             VS
           </span>
           <div className={`${styles.player} ${styles.rival}`}>
-            <ProfileLink
-              username={other.username}
-              className={styles.playerLink}
-            >
-              <span className={styles.avatarRing}>
-                <LeagueAvatar reader={other} large />
-              </span>
-              <span className={styles.playerName}>{otherName}</span>
-            </ProfileLink>
+            <div className={styles.rivalIdentity}>
+              <ProfileLink
+                username={other.username}
+                className={styles.playerLink}
+              >
+                <span className={styles.avatarRing}>
+                  <LeagueAvatar reader={other} large />
+                </span>
+              </ProfileLink>
+              <div className={styles.playerName}>
+                {action}
+                <ProfileLink username={other.username}>{otherName}</ProfileLink>
+              </div>
+            </div>
             <p className={styles.score} data-pages={unit === '쪽'}>
               {other.value.toLocaleString('ko-KR')}
               <small>{unit}</small>
@@ -106,32 +115,13 @@ export const LeagueDuel = ({
         </div>
         <div className={styles.result} aria-live='polite'>
           <span className={styles.resultBadge}>{label}</span>
-          <p>
-            {empty ? (
-              unit === '분야' ? (
-                '올해 분류가 확인된 공개 완독 책이 아직 없어요.'
-              ) : missing ? (
-                '쪽수 정보를 등록하면 비교할 수 있어요.'
-              ) : (
-                '올해 첫 공개 완독의 주인공은?'
-              )
-            ) : other.completedBooks === 0 ? (
-              <>{otherName}님께 같이 읽자고 콕 찔러보세요.</>
-            ) : match.tied ? (
-              <>
-                팽팽해요. <strong>다음 한 권</strong>의 주인공은?
-              </>
-            ) : (
-              <>
-                {match.leading === 'me' ? '내가' : `${otherName}님이`}{' '}
-                <strong>
-                  {match.gap.toLocaleString('ko-KR')}
-                  {unit}
-                </strong>{' '}
-                앞서고 있어요.
-              </>
-            )}
-          </p>
+          {empty && missing && <p>쪽수 정보를 등록하면 비교할 수 있어요.</p>}
+          {!empty && !match.tied && other.completedBooks > 0 && (
+            <p>
+              {match.gap.toLocaleString('ko-KR')}
+              {unit} 차이
+            </p>
+          )}
           <button
             type='button'
             className={styles.replay}
@@ -143,7 +133,6 @@ export const LeagueDuel = ({
         </div>
       </div>
       <div className={styles.cardFooter}>
-        <span>다음 한 권, 상대의 책장에서 찾아볼까요?</span>
         <ProfileLink username={other.username} className={styles.shelfLink}>
           {otherName}님 서재 보기 ↗
         </ProfileLink>

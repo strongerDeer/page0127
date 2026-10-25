@@ -1,3 +1,6 @@
+import { Button } from '@repo/ui';
+import { Pointer } from 'lucide-react';
+
 import { TasteClashCard } from '@/features/taste-clash';
 
 import { ReadingLeague } from '@/widgets/reading-league/ui/ReadingLeague';
@@ -46,12 +49,14 @@ const meta = {
             },
           ]}
           actions={() => (
-            <button
-              type='button'
-              className='rounded-lg border border-line p-3 text-sm'
+            <Button
+              variant='outline'
+              size='icon-sm'
+              className='rounded-full'
+              aria-label='지수님 콕 찌르기'
             >
-              같이 읽자고 콕 찌르기
-            </button>
+              <Pointer size={16} aria-hidden='true' />
+            </Button>
           )}
         />
         <TasteClashCard clash={null} />

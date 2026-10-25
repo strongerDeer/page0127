@@ -131,6 +131,13 @@
   color: inherit;
   text-decoration: none;
 }
+.rivalIdentity {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
 .avatarRing {
   display: flex;
   width: 85px;
@@ -188,6 +195,7 @@
 }
 .playerName {
   display: flex;
+  min-height: 32px;
   justify-content: center;
   align-items: center;
   gap: 5px;
@@ -343,7 +351,12 @@
 }
 .result {
   position: relative;
-  padding: 22px 18px 24px;
+  padding: 16px 18px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   text-align: center;
 }
 .resultBadge {
@@ -351,7 +364,7 @@
   align-items: center;
   gap: 5px;
   max-width: 100%;
-  margin: 0 0 9px;
+  margin: 0;
   border-radius: 5px;
   padding: 5px 8px;
   background: color-mix(in srgb, var(--league-mint) 10%, var(--card));
@@ -420,11 +433,8 @@
   line-height: 1.8;
   color: var(--text-subtle);
 }
-.privacy summary {
-  cursor: pointer;
-}
 .privacy p {
-  margin: 8px 0 0;
+  margin: 3px 0 0;
 }
 .missingPages {
   font-size: 12px;
@@ -472,8 +482,8 @@
   align-items: flex-end;
   justify-content: center;
   gap: 13px;
-  padding: 36px 2px 0;
-  min-height: 330px;
+  padding: 28px 2px 0;
+  min-height: 240px;
 }
 .podiumPerson {
   flex: 1;
@@ -490,8 +500,8 @@
 }
 .podiumAvatar {
   position: relative;
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: 50%;
@@ -506,8 +516,8 @@
   font-size: 23px;
 }
 .podiumBody[data-rank="1"] .podiumAvatar {
-  width: 74px;
-  height: 74px;
+  width: 60px;
+  height: 60px;
   border: 0;
   background: conic-gradient(
     from -20deg,
@@ -550,7 +560,7 @@
   --league-step-height: 80px;
   position: relative;
   isolation: isolate;
-  margin-top: 24px;
+  margin-top: 14px;
   width: 100%;
   height: var(--league-step-height);
   display: flex;
@@ -660,15 +670,25 @@
 }
 .readerRow {
   display: grid;
-  grid-template-columns: 18px 30px minmax(0, 1fr) auto;
+  grid-template-columns: 18px auto minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
-  padding: 13px 15px;
+  padding: 10px 15px;
   border-top: 1px solid var(--line-soft);
   font-size: 13px;
 }
 .readerRow[data-me="true"] {
   background: var(--accent);
+}
+.readerProfile {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.nudgeSlot {
+  display: block;
+  width: 32px;
+  flex-shrink: 0;
 }
 .rank {
   font-style: italic;
@@ -700,7 +720,7 @@
 }
 .ownSummary {
   margin: 5px 17px 16px;
-  padding: 13px 11px;
+  padding: 8px 11px;
   border-radius: 9px;
   background: var(--accent);
   font-size: 12px;
@@ -825,12 +845,12 @@
     gap: 7px;
   }
   .podiumAvatar {
-    width: 53px;
-    height: 53px;
+    width: 46px;
+    height: 46px;
   }
   .podiumBody[data-rank="1"] .podiumAvatar {
-    width: 65px;
-    height: 65px;
+    width: 56px;
+    height: 56px;
   }
   .podiumName {
     font-size: 12px;

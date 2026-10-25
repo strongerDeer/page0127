@@ -5,7 +5,7 @@ import { BookOpen } from 'lucide-react';
 export const ReadingPrompt = () => (
   <div className='mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-line bg-accent/40 p-4'>
     <BookOpen className='shrink-0 text-primary' size={24} aria-hidden='true' />
-    <div className='min-w-0 flex-1'>
+    <div className='min-w-36 flex-1'>
       <h3 className='text-sm font-semibold text-text-strong'>
         다음 한 권, 이미 시작했나요?
       </h3>

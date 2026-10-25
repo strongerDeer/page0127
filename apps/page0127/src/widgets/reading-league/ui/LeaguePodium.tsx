@@ -6,7 +6,7 @@ import { ProfileLink } from '@/entities/profile/ui/ProfileLink';
 import { LeagueAvatar } from './LeagueAvatar';
 
 import type { RankedReader } from '../model/readingLeague';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 import styles from './ReadingLeague.module.css';
 
@@ -14,10 +14,12 @@ export const LeaguePodium = ({
   readers,
   currentUserId,
   unit,
+  actions,
 }: {
   readers: RankedReader[];
   currentUserId: string;
   unit: string;
+  actions?: (reader: RankedReader) => ReactNode;
 }) => {
   const [first, second, third] = readers.filter((reader) => reader.value > 0);
   const winners = [second, first, third].filter(
@@ -33,9 +35,11 @@ export const LeaguePodium = ({
       <div className={styles.board}>
         <div className={styles.boardMeta}>
           <span>나와 팔로잉 {readers.length - 1}명</span>
-          <span>올해의 현재 순위</span>
+          <span>
+            {first && !second ? '다음 라이벌을 기다려요' : '올해의 현재 순위'}
+          </span>
         </div>
-        {first ? (
+        {first && second ? (
           <div className={styles.podium} aria-label='상위 세 명'>
             {winners.map((reader) => (
               <ProfileLink
@@ -71,7 +75,7 @@ export const LeaguePodium = ({
                     className={styles.step}
                     style={
                       {
-                        '--league-step-height': `${reader.rank === 1 ? 155 : reader.rank === 2 ? 113 : 80}px`,
+                        '--league-step-height': `${reader.rank === 1 ? 100 : reader.rank === 2 ? 72 : 48}px`,
                       } as CSSProperties
                     }
                   >
@@ -81,7 +85,7 @@ export const LeaguePodium = ({
               </ProfileLink>
             ))}
           </div>
-        ) : (
+        ) : !first ? (
           <p className={styles.noRecords}>
             아직 순위가 없어요.
             <br />
@@ -92,7 +96,7 @@ export const LeaguePodium = ({
                 ? '분류가 확인된 올해 공개 완독 기록을 기다리고 있어요.'
                 : '올해 첫 공개 완독 기록을 기다리고 있어요.'}
           </p>
-        )}
+        ) : null}
       </div>
       <ol className={styles.readerList} aria-label='전체 독서 순위'>
         {readers.map((reader) => (
@@ -107,7 +111,14 @@ export const LeaguePodium = ({
             >
               {reader.rank ?? '—'}
             </span>
-            <LeagueAvatar reader={reader} />
+            <div className={styles.readerProfile}>
+              {actions && (
+                <span className={styles.nudgeSlot}>
+                  {reader.userId !== currentUserId && actions(reader)}
+                </span>
+              )}
+              <LeagueAvatar reader={reader} />
+            </div>
             <div className={styles.readerInfo}>
               <ProfileLink
                 username={reader.username}
@@ -132,29 +143,11 @@ export const LeaguePodium = ({
           </li>
         ))}
       </ol>
-      {mine && (
+      {mine?.rank && ahead && (
         <p className={styles.ownSummary}>
-          {mine.rank ? (
-            <>
-              현재 {mine.rank}위
-              {ahead && (
-                <>
-                  {' '}
-                  · {toDisplayName(ahead)}님과{' '}
-                  {(ahead.value - mine.value).toLocaleString('ko-KR')}
-                  {unit} 차이예요.
-                </>
-              )}
-            </>
-          ) : unit === '쪽' && mine.missingPageBooks > 0 ? (
-            '쪽수 정보를 등록하면 순위를 비교할 수 있어요.'
-          ) : unit === '분야' ? (
-            '책의 분야가 확인되면 순위를 비교할 수 있어요.'
-          ) : (
-            '나의 올해 첫 기록을 기다리고 있어요.'
-          )}
-          <br />
-          다음 한 권을 기록해 볼까요?
+          {toDisplayName(ahead)}님과{' '}
+          {(ahead.value - mine.value).toLocaleString('ko-KR')}
+          {unit} 차이
         </p>
       )}
     </>
