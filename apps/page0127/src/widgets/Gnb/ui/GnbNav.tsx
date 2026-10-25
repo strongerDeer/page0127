@@ -13,16 +13,13 @@ type GnbNavProps = {
 type GnbLink = {
   href: string;
   label: string;
-  /** true면 pathname이 정확히 일치할 때만 활성 (예: '/') */
-  exact?: boolean;
 };
 
 export const GnbNav = ({ isLoggedIn }: GnbNavProps) => {
   const pathname = usePathname();
 
   const links: GnbLink[] = [
-    // 홈은 로그인 여부와 상관없이 모두 같은 화면이다(2026-10-25) — 모두에게 보인다
-    { href: '/', label: '홈', exact: true },
+    // '홈'은 두지 않는다 — 로고가 언제나 홈으로 간다(2026-10-25 HJ)
     // 소개는 홈에 합쳐졌다(2026-10-25). 남은 공지·업데이트 이력은 푸터에서만 닿는다.
     { href: '/books/all', label: '전체 도서' },
     // 라운지·리더 찾기는 로그인해야 볼 수 있는 영역이라 비로그인 방문자에겐 노출하지 않는다.
@@ -45,9 +42,8 @@ export const GnbNav = ({ isLoggedIn }: GnbNavProps) => {
       className='hidden shrink-0 items-center gap-1 md:flex'
     >
       {links.map((link) => {
-        const active = link.exact
-          ? pathname === link.href
-          : pathname === link.href || pathname.startsWith(`${link.href}/`);
+        const active =
+          pathname === link.href || pathname.startsWith(`${link.href}/`);
         return (
           <Link
             key={link.href}

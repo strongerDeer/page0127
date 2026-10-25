@@ -90,8 +90,9 @@ export const AboutHero = ({
       </div>
 
       {rows && (
-        <Reveal delay={2}>
-          <div className='stage-blue mx-4 mt-16 overflow-hidden rounded-3xl py-12 shadow-xl md:mx-auto md:max-w-6xl'>
+        // 바깥 px 가 좌우 여백을 맡는다 — 안쪽에 max-w 만 두면 화면 폭이 6xl 근처일 때 띠가 화면 끝에 붙었다
+        <Reveal delay={2} className='mx-auto mt-16 max-w-6xl px-4 md:px-6'>
+          <div className='stage-blue overflow-hidden rounded-3xl py-12 shadow-xl'>
             <p className='mb-9 flex items-center justify-center gap-2.5 text-sm font-bold text-white'>
               <span
                 aria-hidden='true'
