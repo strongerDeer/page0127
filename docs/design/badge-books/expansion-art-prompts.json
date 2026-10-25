@@ -1,0 +1,9 @@
+{
+  "tool": "built-in image_gen",
+  "asset": "apps/page0127/public/badges/editorial/expansion-art-v1.png",
+  "references": [
+    "story-art-v2.png",
+    "companion-art-v2.png"
+  ],
+  "direction": "Same real publishing cover aesthetic: painting, engraving, photographs, collage, varied Korean literary typography; 3x4 atlas of classics, regular, fiction, humanities, essays, business, self-growth, science, arts, history, technology, compatibility. No outline icon placeholders."
+}

@@ -36,17 +36,17 @@ describe('computeBadges', () => {
   });
 
   describe('책장 (성장)', () => {
-    it('10권째 완독에서 2단계가 되고, 그 10번째 책으로 받는다', () => {
+    it('10권째 완독에서 3단계가 되고, 그 10번째 책으로 받는다', () => {
       const books = Array.from({ length: 12 }, (_, i) =>
         done(`2026-01-${String(i + 1).padStart(2, '0')}`, {
           title: `책${i + 1}`,
         })
       );
       const shelf = find(books, 'shelf');
-      expect(shelf.level).toBe(2);
+      expect(shelf.level).toBe(3);
       expect(shelf.book?.title).toBe('책10');
       expect(shelf.earnedAt).toBe('2026-01-10');
-      expect(shelf.progress).toEqual({ current: 12, target: 50 });
+      expect(shelf.progress).toEqual({ current: 12, target: 25 });
     });
 
     it('재독은 한 권으로 센다', () => {
@@ -55,7 +55,7 @@ describe('computeBadges', () => {
         done('2026-01-01', { isbn }),
         done('2026-02-01', { isbn, read_count: 2 }),
       ];
-      expect(find(books, 'shelf').progress).toEqual({ current: 1, target: 10 });
+      expect(find(books, 'shelf').progress).toEqual({ current: 1, target: 5 });
     });
 
     it('읽는 중·읽고 싶은 책은 세지 않는다', () => {
@@ -78,7 +78,7 @@ describe('computeBadges', () => {
       }),
     ];
     const wide = find(books, 'wide-view');
-    expect(wide.level).toBe(1);
+    expect(wide.level).toBe(2);
     expect(wide.book?.title).toBe('세 번째');
   });
 
@@ -155,6 +155,7 @@ describe('computeBadges', () => {
     expect(earned).toEqual(
       new Set([
         'shelf',
+        'fiction',
         'day-0127',
         'new-year',
         'double-finish',
@@ -268,15 +269,141 @@ describe('회독과 성장 단계 회귀', () => {
       readingGoal: null,
       firstTasteAnalysisAt: null,
     });
-    expect(badges).toHaveLength(19);
+    expect(badges).toHaveLength(31);
     const shelf = badges.filter((b) => b.id === 'shelf');
     expect(shelf).toHaveLength(1);
     expect(shelf[0]).toMatchObject({
-      level: 2,
+      level: 3,
       earned: true,
       earnedAt: '2026-01-10',
       book: { id: 'b9' },
-      progress: { current: 12, target: 50 },
+      progress: { current: 12, target: 25 },
     });
+  });
+});
+
+describe('확장 배지 조건', () => {
+  it('분야는 완독한 서로 다른 책만 세고, 재독·미분류는 깊이와 넓이에 중복 합산하지 않는다', () => {
+    const books = [
+      done('2026-01-01', { isbn: 'a', category: '과학' }),
+      done('2026-01-02', { isbn: 'a', category: '과학' }),
+      done('2026-01-03', { isbn: 'b', category: '과학' }),
+      done('2026-01-04', { isbn: 'c', category: '과학', status: 'reading' }),
+      done('2026-01-05', { category: null }),
+    ];
+    expect(find(books, 'science')).toMatchObject({
+      earned: false,
+      progress: { current: 2, target: 3 },
+    });
+    const next = [
+      ...books,
+      done('2026-02-01', { isbn: 'c', category: '과학' }),
+    ];
+    expect(find(next, 'science')).toMatchObject({
+      earned: true,
+      earnedAt: '2026-02-01',
+      level: 1,
+    });
+    expect(find(next, 'wide-view')).toMatchObject({
+      earned: false,
+      progress: { current: 1, target: 2 },
+    });
+  });
+
+  it('고전은 분류 경로만 사용하고 제목·오래된 출간일로 추측하지 않는다', () => {
+    expect(
+      find(
+        [
+          done('2026-01-01', {
+            title: '고전 읽기',
+            category: '에세이',
+            pub_date: '1900-01-01',
+          }),
+        ],
+        'classics'
+      ).earned
+    ).toBe(false);
+    const classics = Array.from({ length: 5 }, (_, i) =>
+      done(`2026-02-0${i + 1}`, {
+        category: '국내도서>고전>서양고전문학',
+        isbn: `classic-${i}`,
+      })
+    );
+    const result = find(
+      [...classics, { ...classics[0]!, id: 'reread' }],
+      'classics'
+    );
+    expect(result).toMatchObject({
+      earned: true,
+      level: 2,
+      earnedAt: '2026-02-05',
+      progress: { current: 5, target: 10 },
+    });
+    expect(result.stages?.map((stage) => stage.earnedAt)).toEqual([
+      '2026-02-01',
+      '2026-02-05',
+      null,
+      null,
+      null,
+    ]);
+  });
+
+  it('케미는 완료된 분석 근거가 있을 때만 받고 책 근거를 만들지 않는다', () => {
+    expect(find([], 'compatibility').earned).toBe(false);
+    expect(
+      find([], 'compatibility', {
+        activity: {
+          firstTasteAnalysisAt: null,
+          firstCompatibilityAt: '2026-10-25T00:00:00Z',
+          visitCount: 0,
+          visitMilestones: [],
+        },
+      })
+    ).toMatchObject({
+      earned: true,
+      earnedAt: '2026-10-25T00:00:00Z',
+      book: null,
+    });
+  });
+
+  it('방문 단계는 서버가 계산한 누적일과 획득일을 사용하고 방문자는 진행률을 노출하지 않는다', () => {
+    const activity = {
+      firstTasteAnalysisAt: null,
+      firstCompatibilityAt: null,
+      visitCount: 32,
+      visitMilestones: [
+        { target: 7, at: '2026-08-03' },
+        { target: 30, at: '2026-10-24' },
+      ],
+    };
+    const owner = find([], 'regular', { activity });
+    const visitor = find([], 'regular', {
+      activity: { ...activity, visitCount: null },
+    });
+    expect(owner).toMatchObject({
+      earned: true,
+      level: 2,
+      earnedAt: '2026-10-24',
+      progress: { current: 32, target: 100 },
+    });
+    expect(visitor).toMatchObject({
+      earned: true,
+      level: 2,
+      earnedAt: owner.earnedAt,
+      progress: null,
+    });
+    expect(visitor.stages).toEqual(owner.stages);
+  });
+
+  it('최고 단계에서 다음 진행률을 없애고 전체 단계의 획득 근거를 보존한다', () => {
+    const books = Array.from({ length: 1000 }, (_, i) =>
+      done('2026-10-25', { isbn: `book-${i}` })
+    );
+    const shelf = find(books, 'shelf');
+    expect(shelf).toMatchObject({ level: 10, earned: true, progress: null });
+    expect(shelf.stages).toHaveLength(10);
+    expect(
+      shelf.stages?.every((stage) => stage.earnedAt === '2026-10-25')
+    ).toBe(true);
   });
 });

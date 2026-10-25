@@ -133,7 +133,7 @@ export const Highlights = ({ books, top }: HighlightsProps) => {
           <Card
             wide
             lead='배지.'
-            rest='책을 기록할수록 성장·이야기·히든 배지 19종이 작은 전집처럼 모여요. 이미 기록한 책으로도 바로 받아요.'
+            rest='책을 기록할수록 성장·분야·이야기·히든 배지 31종이 작은 전집처럼 모여요. 이미 기록한 책으로도 바로 받아요.'
           >
             <div className='flex w-full flex-col items-center'>
               <ul className='flex flex-wrap items-end justify-center gap-4 md:gap-6'>

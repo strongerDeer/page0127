@@ -11,6 +11,7 @@ import styles from './BadgeShelf.module.css';
 
 const SECTIONS: { kind: BadgeKind; title: string; hint: string }[] = [
   { kind: 'growth', title: '성장', hint: '읽을수록 깊어지는 기록' },
+  { kind: 'category', title: '깊이 읽기', hint: '좋아하는 분야에 쌓이는 깊이' },
   { kind: 'story', title: '이야기', hint: '독서가 남긴 특별한 순간' },
   { kind: 'hidden', title: '비밀', hint: '뜻밖의 순간에 만나는 책' },
 ];
@@ -27,11 +28,12 @@ export const BadgeCollection = ({
   books,
   readingGoal,
   firstTasteAnalysisAt,
+  activity,
 }: BadgeCollectionProps) => {
   const [view, setView] = useState<'cover' | 'spine'>('cover');
   const badges = useMemo(
-    () => computeBadges({ books, readingGoal, firstTasteAnalysisAt }),
-    [books, readingGoal, firstTasteAnalysisAt]
+    () => computeBadges({ books, readingGoal, firstTasteAnalysisAt, activity }),
+    [books, readingGoal, firstTasteAnalysisAt, activity]
   );
   const earnedCount = badges.filter((badge) => badge.earned).length;
   const sections = SECTIONS.map((section) => ({
@@ -53,8 +55,8 @@ export const BadgeCollection = ({
       <div className={styles.toolbar}>
         <p className='text-sm text-text-subtle'>
           {isOwner
-            ? `${badges.length}권의 이야기 중 ${earnedCount}권을 모았어요`
-            : `${earnedCount}권의 이야기를 모았어요`}
+            ? `전체 ${badges.length}종 중 ${earnedCount}종 획득`
+            : `배지 ${earnedCount}종 획득`}
         </p>
         <div className={styles.switch} role='group' aria-label='배지 보기 방식'>
           <button

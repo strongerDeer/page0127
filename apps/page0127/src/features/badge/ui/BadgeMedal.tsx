@@ -3,7 +3,7 @@
 import Image from 'next/image';
 
 import { badgeCoverArt } from '../model/badgeCoverArt';
-import { badgePresentation } from '../model/badgePresentation';
+import { badgeLevelColor, badgePresentation } from '../model/badgePresentation';
 
 import type { Badge } from '../model/badges';
 import type { CSSProperties } from 'react';
@@ -32,10 +32,12 @@ export const BadgeMedal = ({
 }: BadgeMedalProps) => {
   const { title, cover, levelValue } = badgePresentation(badge);
   const art = badgeCoverArt(cover);
+  const color = badgeLevelColor(badge.id, badge.level);
   return (
     <div
       aria-hidden='true'
       data-badge-book
+      data-growth={color ? true : undefined}
       data-cover={cover}
       data-preview={preview || undefined}
       data-view={view}
@@ -45,7 +47,10 @@ export const BadgeMedal = ({
       style={
         {
           '--book-width': `${size}px`,
-          '--jacket-paper': art.paper,
+          '--jacket-paper': color?.paper ?? art.paper,
+          '--level-paper': color?.paper,
+          '--level-ink': color?.ink,
+          '--level-edge': color?.edge,
           '--jacket-ink': art.ink,
         } as CSSProperties
       }
@@ -80,9 +85,9 @@ export const BadgeMedal = ({
         </span>
         {levelValue !== null && (
           <span
-            className={`${styles.volume} ${cover === 'wide-view' ? styles.fieldVolume : ''}`}
+            className={`${styles.volume} ${cover !== 'shelf' ? styles.fieldVolume : ''}`}
           >
-            {levelValue}
+            {levelValue.toLocaleString('en-US')}
           </span>
         )}
         {!badge.earned && (

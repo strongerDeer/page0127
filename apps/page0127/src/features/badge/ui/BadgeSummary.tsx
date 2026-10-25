@@ -22,10 +22,11 @@ export const BadgeSummary = ({
   books,
   readingGoal,
   firstTasteAnalysisAt,
+  activity,
 }: BadgeSummaryProps) => {
   const badges = useMemo(
-    () => computeBadges({ books, readingGoal, firstTasteAnalysisAt }),
-    [books, readingGoal, firstTasteAnalysisAt]
+    () => computeBadges({ books, readingGoal, firstTasteAnalysisAt, activity }),
+    [books, readingGoal, firstTasteAnalysisAt, activity]
   );
   const earned = badges
     .filter((badge) => badge.earned)
@@ -44,7 +45,9 @@ export const BadgeSummary = ({
         >
           배지 책장{' '}
           <span className='ml-1 font-medium text-text-subtle'>
-            {isOwner ? `${earned.length} / ${badges.length}` : earned.length}
+            {isOwner
+              ? `${earned.length} / ${badges.length}종`
+              : `${earned.length}종`}
           </span>
         </h3>
         <Link

@@ -36,8 +36,32 @@ const companion = (index: number, paper: string, ink: string): CoverArt => ({
   ink,
 });
 
+const expansion = (index: number, paper: string, ink: string): CoverArt => ({
+  src: '/badges/editorial/expansion-art-v1.png',
+  width: 941,
+  height: 1672,
+  columns: 3,
+  rows: 4,
+  column: index % 3,
+  row: Math.floor(index / 3),
+  paper,
+  ink,
+});
+
 /** 완성된 표지 아트를 같은 크기의 셀로 보여준다. 표지 글자와 질감을 코드로 다시 그리지 않는다. */
 const COVER_ART: Record<CoverId, CoverArt> = {
+  classics: expansion(0, '#f0e4cc', '#5a3e30'),
+  regular: expansion(1, '#d8e8df', '#25574a'),
+  compatibility: expansion(11, '#e0deef', '#4c3d74'),
+  fiction: expansion(2, '#d9e4ef', '#223c62'),
+  humanities: expansion(3, '#ece2d0', '#5c4a35'),
+  essays: expansion(4, '#f1dfd7', '#704735'),
+  business: expansion(5, '#dae7e4', '#315c53'),
+  'self-growth': expansion(6, '#e8e7cd', '#52602d'),
+  science: expansion(7, '#dce5ef', '#2a476d'),
+  arts: expansion(8, '#ecdee9', '#693e61'),
+  history: expansion(9, '#eadccf', '#744a30'),
+  technology: expansion(10, '#d8e8ed', '#25546a'),
   shelf: companion(0, '#f4ecd5', '#29261e'),
   'wide-view': companion(1, '#b5d9e9', '#17365b'),
   'one-sitting': story(0, '#f87920', '#172981'),

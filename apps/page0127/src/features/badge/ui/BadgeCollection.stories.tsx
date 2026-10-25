@@ -2,7 +2,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { createTestBook } from '@/entities/book/model/createTestBook';
 
-import { computeBadges, SHELF_LEVELS, WIDE_VIEW_LEVELS } from '../model/badges';
+import { badgeLevels, CATEGORY_BADGES, computeBadges } from '../model/badges';
 import { BadgeCollection } from './BadgeCollection';
 import { BadgeMedal } from './BadgeMedal';
 import { BadgeSummary } from './BadgeSummary';
@@ -57,12 +57,8 @@ export const Covers: Story = {
       firstTasteAnalysisAt: null,
     });
     const variants = badges.flatMap((badge) => {
-      const levels =
-        badge.id === 'shelf'
-          ? SHELF_LEVELS
-          : badge.id === 'wide-view'
-            ? WIDE_VIEW_LEVELS
-            : [null];
+      const stages = badgeLevels(badge.id);
+      const levels = stages.length ? stages : [null];
       return levels.map((_, i) => ({ ...badge, earned: true, level: i + 1 }));
     });
     return (
@@ -214,3 +210,47 @@ export const MilestonesAndReread: Story = {
     await userEvent.keyboard('{Escape}');
   },
 };
+
+export const ExpandedGrowth: Story = {
+  args: {
+    books: Array.from({ length: 157 }, (_, i) =>
+      createTestBook({
+        id: `expanded-${i}`,
+        isbn: `expanded-${i}`,
+        category:
+          i % 10 === 0
+            ? '국내도서>고전>서양고전문학'
+            : CATEGORY_BADGES[i % CATEGORY_BADGES.length]!.category,
+        completed_date: `2026-${String(Math.floor(i / 28) + 1).padStart(2, '0')}-${String((i % 28) + 1).padStart(2, '0')}`,
+      })
+    ),
+    activity: {
+      firstTasteAnalysisAt: '2026-01-15T00:00:00Z',
+      firstCompatibilityAt: '2026-10-24T00:00:00Z',
+      visitCount: 32,
+      visitMilestones: [
+        { target: 7, at: '2026-08-01' },
+        { target: 30, at: '2026-10-23' },
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(
+      canvas.getByRole('button', { name: '책장 · 100권 (획득)' })
+    );
+    const dialog = within(
+      within(canvasElement.ownerDocument.body).getByRole('dialog')
+    );
+    await waitFor(() =>
+      expect(
+        dialog.getByRole('list', { name: '성장 단계별 획득 기록' })
+      ).toBeVisible()
+    );
+    await expect(dialog.getByText('1,000권', { exact: true })).toBeVisible();
+    await userEvent.keyboard('{Escape}');
+  },
+};
+
+/** 상호작용 없이 전체 확장 상태를 확인하는 검수 화면. */
+export const GrowthPreview: Story = { args: ExpandedGrowth.args };
