@@ -260,7 +260,7 @@ export const Highlights = ({ books, top }: HighlightsProps) => {
 
         <Reveal delay={1}>
           <Card
-            lead='피드.'
+            lead='라운지.'
             rest='팔로우한 리더가 책을 꽂으면 바로 알 수 있어요.'
           >
             <ul className='w-full space-y-2.5'>

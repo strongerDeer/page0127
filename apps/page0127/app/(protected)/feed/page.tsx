@@ -1,24 +1,52 @@
-import { PageContainer, PageHeader } from '@repo/ui';
+import { Suspense } from 'react';
+
+import { redirect } from 'next/navigation';
+
+import { ErrorBoundary, PageContainer, PageHeader } from '@repo/ui';
+
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { ActivityFeed } from '@/widgets/activity';
+import {
+  ReadingLeagueLoading,
+  ReadingLeagueSection,
+} from '@/widgets/reading-league';
 
-/**
- * 활동 피드 페이지
- * 경로: /feed
- *
- * 학습 포인트:
- * - 팔로잉한 사용자들의 활동 타임라인
- * - 무한 스크롤로 과거 활동 로드
- */
-export default function FeedPage() {
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = { title: '라운지 | page0127.' };
+
+/** 기존 피드 주소를 유지해 알림과 저장된 링크가 계속 연결되게 한다. */
+export default async function LoungePage() {
+  const user = await getCurrentUser();
+  if (!user) redirect('/login?redirect=%2Ffeed');
+
   return (
-    <PageContainer width='content' className='space-y-8'>
+    <PageContainer width='narrow' className='space-y-8'>
       <PageHeader
-        title='피드'
-        description='함께 읽는 사람들의 새로운 독서 기록을 만나보세요.'
+        title='라운지'
+        description='서로의 책장이, 다음 한 권의 자극이 되도록.'
       />
-
-      <ActivityFeed />
+      <ErrorBoundary
+        fallback={
+          <p className='text-sm text-text-subtle'>
+            리그를 표시하지 못했어요. 잠시 후 새로고침해 주세요.
+          </p>
+        }
+      >
+        <Suspense fallback={<ReadingLeagueLoading />}>
+          <ReadingLeagueSection currentUserId={user.id} />
+        </Suspense>
+      </ErrorBoundary>
+      <section aria-labelledby='lounge-activity-heading' className='space-y-4'>
+        <h2
+          id='lounge-activity-heading'
+          className='text-lg font-semibold text-text-strong'
+        >
+          새로운 기록
+        </h2>
+        <ActivityFeed />
+      </section>
     </PageContainer>
   );
 }
