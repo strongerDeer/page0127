@@ -1,7 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { isPreOptimizedImageSrc } from '@repo/ui';
 import { ArrowRight, Link2 } from 'lucide-react';
 
 import { getReaderShareData } from '@/widgets/public-library/api/getReaderShareData';
@@ -31,9 +30,11 @@ export const ShelfShowcaseSection = async () => {
   return (
     // minmax(0,…) 로 트랙 하한을 0 으로 — 기본값 auto 면 아래 truncate 한 줄(nowrap)의
     // 길이가 트랙 폭이 되어 모바일에서 페이지가 가로로 밀렸다(390 화면에 473).
+    // PC 는 글(최대 28rem)과 이미지를 한 덩어리로 가운데 모은다 — 7fr/5fr 로 나누면
+    // 글은 max-w 에 막혀 왼쪽에, 이미지는 오른쪽 끝에 붙어 가운데가 휑하게 비었다.
     <section
       aria-labelledby='shelf-showcase-heading'
-      className='grid grid-cols-[minmax(0,1fr)] items-center gap-10 rounded-2xl border border-line-soft p-7 md:p-10 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-14'
+      className='grid grid-cols-[minmax(0,1fr)] items-center gap-10 rounded-2xl border border-line-soft p-7 md:p-10 lg:grid-cols-[minmax(0,28rem)_auto] lg:justify-center lg:gap-20'
     >
       <div className='min-w-0 max-w-md'>
         <p className='flex items-center gap-1.5 text-sm font-medium text-primary'>
@@ -91,11 +92,14 @@ export const ShelfShowcaseSection = async () => {
       </div>
 
       {/* 실제 공유 이미지(서재 스토리, 1080×1920) — 서재 공유 시트가 받아 가는 그 이미지다.
-          원본 PNG 는 약 700KB 라 next/image 로 화면 폭(224~256px)에 맞춰 줄여 받는다.
-          같은 출처의 경로라 원격 호스트 설정이 필요 없고, 폴드 아래라 lazy 가 기본이다 */}
+          unoptimized 인 이유: 이 경로는 정적 파일이 아니라 동적 라우트([username]/story-image)라,
+          Vercel 이미지 최적화가 원본을 가져올 때 라우트를 못 찾고(MODULE_NOT_FOUND
+          './.next/server/pages/_next/image.js') 400 을 돌려줬다. CDN 에 원본이 캐시돼 있을 때만
+          우연히 됐고, 캐시가 빈 시간(1시간 주기)엔 깨진 이미지가 보였다(2026-10-25).
+          원본(약 700KB)을 그대로 받되 폴드 아래라 lazy 로 늦게 받는다 */}
       <Image
         src={storyImageSrc}
-        unoptimized={isPreOptimizedImageSrc(storyImageSrc)}
+        unoptimized
         alt={`${displayName}님의 서재 스토리 이미지`}
         width={1080}
         height={1920}
