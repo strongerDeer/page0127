@@ -8,7 +8,6 @@ import {
   UpdatesTimeline,
 } from '@/widgets/about';
 import { getAboutStats } from '@/widgets/about/api/getAboutStats';
-import { getMostRead } from '@/widgets/about/api/getMostRead';
 import { getRecentBooks } from '@/widgets/about/api/getRecentBooks';
 import { shouldShowStats } from '@/widgets/about/model/aboutStats';
 import { TasteExampleCard } from '@/widgets/landing/ui/TasteExampleCard';
@@ -30,11 +29,7 @@ export const metadata: Metadata = {
  * 설계: docs/superpowers/specs/2026-10-04-about-page-renewal-design.md
  */
 const AboutPage = async () => {
-  const [books, top, stats] = await Promise.all([
-    getRecentBooks(),
-    getMostRead(),
-    getAboutStats(),
-  ]);
+  const [books, stats] = await Promise.all([getRecentBooks(), getAboutStats()]);
 
   return (
     // break-keep: 한국어를 단어 단위로 줄바꿈한다 — 없으면 '쌓/인'처럼 단어 중간에서 끊긴다
@@ -42,7 +37,7 @@ const AboutPage = async () => {
       <AboutHero books={books} />
       <Manifesto />
       <StepsShowcase books={books} tasteSlot={<TasteExampleCard />} />
-      <Highlights books={books} top={top} />
+      <Highlights books={books} />
       {stats && shouldShowStats(stats) && <StatsRow stats={stats} />}
       <UpdatesTimeline />
       {/* 표지가 있는 책 중에서 고른다 — 그냥 마지막 4권이면 표지 없는 칸만 설 수 있다 */}
