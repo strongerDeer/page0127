@@ -11,8 +11,11 @@ test('랜딩 페이지가 로드된다', async ({ page }) => {
   await page.goto('/');
 
   // 랭킹 등 일부 섹션은 데이터/외부 API에 의존하지만,
-  // 취향 리포트 섹션의 라벨은 항상 렌더되므로 안정적인 앵커로 쓴다.
-  await expect(page.getByText('PAGE0127 TASTE REPORT')).toBeVisible();
+  // 취향 노트 섹션의 제목은 데이터 없이 항상 렌더되므로 안정적인 앵커로 쓴다.
+  // (머리말 "취향 노트"는 예시 카드 문장에도 들어 있어 제목으로 찾는다)
+  await expect(
+    page.getByRole('heading', { name: /취향의 문장/ })
+  ).toBeVisible();
 });
 
 test('로그인 페이지에 소셜 로그인 버튼이 모두 보인다', async ({ page }) => {
