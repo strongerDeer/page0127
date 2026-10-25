@@ -23,11 +23,13 @@ export const NudgeButton = ({
   recipientId,
   recipientName,
   context,
+  iconOnly = false,
 }: {
   currentUserId: string;
   recipientId: string;
   recipientName: string;
   context: 'ahead' | 'behind' | 'tied';
+  iconOnly?: boolean;
 }) => {
   const [open, setOpen] = useState(false);
   const [sentOn, setSentOn] = useState<string | null>(null);
@@ -66,15 +68,22 @@ export const NudgeButton = ({
       <Button
         type='button'
         variant='outline'
+        size={iconOnly ? 'icon-sm' : 'md'}
+        aria-label={
+          iconOnly
+            ? `${recipientName}님 ${sentOn === today ? '오늘 콕 찌름' : '콕 찌르기'}`
+            : undefined
+        }
+        title={`${recipientName}님 ${sentOn === today ? '오늘 콕 찌름' : '콕 찌르기'}`}
         onClick={() => {
           mutation.reset();
           setOpen(true);
         }}
         disabled={sentOn === today}
-        className='min-w-0 flex-1'
+        className={iconOnly ? 'shrink-0 rounded-full' : 'min-w-0 flex-1'}
       >
         <Pointer size={16} aria-hidden='true' />
-        {sentOn === today ? '오늘 콕 찌름' : '콕 찌르기'}
+        {!iconOnly && (sentOn === today ? '오늘 콕 찌름' : '콕 찌르기')}
       </Button>
       <NudgeDialog
         key={context}

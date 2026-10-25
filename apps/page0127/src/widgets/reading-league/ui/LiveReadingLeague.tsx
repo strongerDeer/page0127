@@ -2,8 +2,6 @@
 
 import { useEffect, useId, useState } from 'react';
 
-import Link from 'next/link';
-
 import { useQuery } from '@tanstack/react-query';
 
 import { createClient } from '@/shared/config/supabase/client';
@@ -140,6 +138,7 @@ export const LiveReadingLeague = ({
           actions={(recipient, self) => (
             <>
               <NudgeButton
+                iconOnly
                 key={recipient.userId}
                 currentUserId={currentUserId}
                 recipientId={recipient.userId}
@@ -152,12 +151,6 @@ export const LiveReadingLeague = ({
                       : 'behind'
                 }
               />
-              <Link
-                href='/books/add?status=reading'
-                className='flex min-w-0 flex-1 items-center justify-center rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground'
-              >
-                읽는 중 등록
-              </Link>
             </>
           )}
           discovery={

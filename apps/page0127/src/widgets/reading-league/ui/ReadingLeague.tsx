@@ -37,17 +37,14 @@ export const ReadingLeague = ({
   actions,
 }: ReadingLeagueProps) => {
   const [metric, setMetric] = useState<LeagueMetric>('books');
-  const [opponentId, setOpponentId] = useState('');
   const titleId = useId();
   const ranked = rankReaders(readers, metric);
   const mine = ranked.find((reader) => reader.userId === currentUserId);
   const opponents = ranked.filter((reader) => reader.userId !== currentUserId);
   const other =
-    opponents.find((reader) => reader.userId === opponentId) ??
     (mine
       ? opponents.filter((reader) => reader.value > mine.value).at(-1)
-      : undefined) ??
-    opponents[0];
+      : undefined) ?? opponents[0];
   const solo = readers.length === 1;
   const unit = metric === 'books' ? '권' : metric === 'pages' ? '쪽' : '분야';
   const genresReady = readers.every((reader) => Array.isArray(reader.genres));
@@ -159,13 +156,20 @@ export const ReadingLeague = ({
             )}
           </div>
         ) : readers.length === 2 && other ? (
-          <LeagueDuel key={metric} mine={mine} other={other} unit={unit} />
+          <LeagueDuel
+            key={metric}
+            mine={mine}
+            other={other}
+            unit={unit}
+            action={actions?.(other, mine)}
+          />
         ) : (
           <LeaguePodium
             key={metric}
             readers={ranked}
             currentUserId={currentUserId}
             unit={unit}
+            actions={actions ? (reader) => actions(reader, mine) : undefined}
           />
         )}
         {metric === 'genres' && (
@@ -180,48 +184,14 @@ export const ReadingLeague = ({
             ))}
           </div>
         )}
-        {actions && other && (
-          <div className='border-t border-line-soft p-4'>
-            {opponents.length > 1 && (
-              <label className='mb-3 block text-sm text-text-subtle'>
-                콕 찌를 상대
-                <select
-                  className='ml-2 rounded border border-line bg-card p-2 text-text-strong'
-                  value={other.userId}
-                  onChange={(e) => setOpponentId(e.target.value)}
-                >
-                  {opponents.map((reader) => (
-                    <option key={reader.userId} value={reader.userId}>
-                      {toDisplayName(reader)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-            <div className='flex flex-wrap gap-2'>{actions(other, mine)}</div>
-          </div>
-        )}
       </section>
-      <details className={styles.privacy}>
-        <summary>공개 완독 기록 기준 · 재독은 한 권</summary>
-        <p>
-          나를 포함해 공개한 완독 기록만 비교해요. 비공개 기록은 포함하지
-          않아요. 서울 기준 {year}년 기록이며, 완독 날짜가 없으면 완독 연도를
-          사용해요.
-        </p>
-        <p>
-          쪽수는 올해 완독한 서로 다른 책의 쪽수 합계예요. 쪽수 정보가 없는 책은
-          합계에서 제외해요. 재독은 올해의 대표 회독 한 번만 합산해요.
-        </p>
-        <p>
-          장르 문어발은 서재와 같은 대분류로 비교하고 분류 미상·기타는 제외해요.
-        </p>
-        <p>
-          배틀 게이지는 두 사람 합계에서 각 기록이 차지하는 비율이에요. 선두
-          기록 대비 격차 20% 이내는 접전으로 표시해요. 동점은 공동 순위이며,
-          0에는 순위를 붙이지 않아요.
-        </p>
-      </details>
+      <div className={styles.privacy}>
+        <p>올해 공개 완독 기준 · 재독은 한 권</p>
+        {metric === 'pages' && (
+          <p>완독한 책의 쪽수 합계 · 쪽수 미등록 책 제외</p>
+        )}
+        {metric === 'genres' && <p>서재 대분류 기준 · 기타·분류 미상 제외</p>}
+      </div>
       {metric === 'pages' &&
         ranked.some((reader) => reader.missingPageBooks > 0) && (
           <p className={styles.missingPages} role='status'>
