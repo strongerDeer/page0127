@@ -35,24 +35,26 @@ export type { HeroSlide };
  * 따라가므로 손대지 않아도 맞고, "올해 목표"라는 맥락은 그대로 산다.
  */
 export const heroSlidesFor = (now: Date): HeroSlide[] => [
+  // 2026-10-25 홈 재검토: 배너가 비로그인 랜딩으로 옮겨 왔다. 그래서 모든 슬라이드가 가입으로 이어지고,
+  // 카피는 "혼자 쌓는 기록"이 아니라 "보여 주는 기록"(주소·스토리·케미)을 앞세운다.
+  // "책장을 보면, 그 사람이 보인다"는 바로 위 맛보기의 h1 이라 여기서 되풀이하지 않는다.
   {
-    id: 'shelf',
-    eyebrow: 'page0127.',
-    lines: ['책장을 보면,', '그 사람이 보인다'],
-    sub: '읽은 책을 한 권씩 기록하면, 몰랐던 취향이 보이기 시작합니다.',
+    id: 'link',
+    eyebrow: '내 서재 주소',
+    lines: ['책장은 주소가 됩니다', '링크 하나면 충분해요'],
+    sub: 'page0127.com/아이디 하나로 읽은 책을 통째로 건네세요.',
     href: '/login',
-    cta: '내 책장 만들기',
+    cta: '내 주소 만들기',
     bg: '#14294e',
     fg: '#f4f8fd',
   },
   {
-    id: 'taste',
-    // 조건은 analysisGate 와 같은 말로 — "완독 5권"만 쓰면 평가 없는 완독도 세는 줄 안다
-    eyebrow: `${TASTE_ANALYSIS_BOOK_LABEL} ${TASTE_ANALYSIS_MIN_BOOKS}권부터`,
-    lines: ['다섯 권이면 충분해요', '취향은 이미 쌓였습니다'],
-    sub: '책장을 찬찬히 읽고, 다음에 읽을 책까지 골라 드립니다.',
+    id: 'story',
+    eyebrow: '인스타 스토리 공유',
+    lines: ['읽은 책을', '한 장으로 자랑하세요'],
+    sub: '서재도, 한 권의 한줄평도 스토리 이미지로 바로 만들어요.',
     href: '/login',
-    cta: '취향 분석 보기',
+    cta: '스토리 만들기',
     bg: '#1e69cb',
     fg: '#f4f8fd',
   },
@@ -68,10 +70,21 @@ export const heroSlidesFor = (now: Date): HeroSlide[] => [
     fg: '#f4f8fd',
   },
   {
+    id: 'taste',
+    // 조건은 analysisGate 와 같은 말로 — "완독 5권"만 쓰면 평가 없는 완독도 세는 줄 안다
+    eyebrow: `${TASTE_ANALYSIS_BOOK_LABEL} ${TASTE_ANALYSIS_MIN_BOOKS}권부터`,
+    lines: ['다섯 권이면', '어떤 독자인지 보여요'],
+    sub: '책장을 읽고 독서 성향에 이름을 붙여, 명함 맨 위에 올려 드려요.',
+    href: '/login',
+    cta: '취향 분석 보기',
+    bg: '#5b3fb8',
+    fg: '#f4f8fd',
+  },
+  {
     id: 'goal',
     eyebrow: `${now.getFullYear()}년 독서 목표`,
     lines: ['한 해의 목표를', '숫자로 세워 보세요'],
-    sub: '연간 목표를 세우고, 달력에 완독의 흔적을 남겨 보세요.',
+    sub: '목표를 채우면 달성 이미지로 한 해를 자랑할 수 있어요.',
     href: '/login',
     cta: '목표 세우기',
     bg: '#31405f',
