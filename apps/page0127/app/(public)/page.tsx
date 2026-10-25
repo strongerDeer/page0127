@@ -20,7 +20,6 @@ import { getProfile } from '@/entities/profile/api/getProfile';
 import { ShelfPreviewSection } from '@/features/shelf-preview/ui/ShelfPreviewSection';
 
 import { AboutHero, FinalCta, Highlights, Manifesto } from '@/widgets/about';
-import { getMostRead } from '@/widgets/about/api/getMostRead';
 import { getRecentBooks } from '@/widgets/about/api/getRecentBooks';
 import { HeroBannerSection } from '@/widgets/landing/ui/HeroBannerSection';
 
@@ -66,8 +65,8 @@ const Home = async () => {
     );
   }
 
-  // 표지·랭킹은 소개 페이지와 같은 조회라 1시간 캐시를 함께 쓴다(widgets/about/api/aboutCache.ts)
-  const [books, top] = await Promise.all([getRecentBooks(), getMostRead()]);
+  // 표지는 소개 페이지와 같은 조회라 1시간 캐시를 함께 쓴다(widgets/about/api/aboutCache.ts)
+  const books = await getRecentBooks();
 
   const heroVariant = resolveHeroVariant(
     (await cookies()).get(HERO_VARIANT_COOKIE)?.value,
@@ -105,7 +104,7 @@ const Home = async () => {
         <ShelfPreviewSection variant={heroVariant} />
       </Suspense>
 
-      <Highlights books={books} top={top} />
+      <Highlights books={books} />
 
       {/* 표지가 있는 책 중에서 고른다 — 그냥 마지막 4권이면 표지 없는 칸만 설 수 있다 */}
       <FinalCta
