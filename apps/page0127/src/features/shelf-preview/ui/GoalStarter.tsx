@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@repo/ui';
-import { Minus, Plus, Target } from 'lucide-react';
+import { Flag, Minus, Plus } from 'lucide-react';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
@@ -48,7 +48,7 @@ export const GoalStarter = () => {
         onClick={() => setOpen((o) => !o)}
         className='mt-3 gap-1.5'
       >
-        <Target aria-hidden='true' className='size-4' />
+        <Flag aria-hidden='true' className='size-4' />
         {year}년 목표 세우기
       </Button>
       {open && (
