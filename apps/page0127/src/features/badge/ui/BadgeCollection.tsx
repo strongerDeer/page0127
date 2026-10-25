@@ -3,12 +3,7 @@
 import { useMemo } from 'react';
 
 import { getBadgeEvidence } from '../model/badgeEvidence';
-import {
-  badgeLevels,
-  badgeUnit,
-  CATEGORY_LEVELS,
-  computeBadges,
-} from '../model/badges';
+import { computeBadges } from '../model/badges';
 import { BadgeTile } from './BadgeTile';
 
 import type { BadgeInput, BadgeKind } from '../model/badges';
@@ -83,40 +78,6 @@ export const BadgeCollection = ({
             </h2>
             <span className='text-xs text-text-subtle'>{section.hint}</span>
           </div>
-          {section.kind === 'growth' && (
-            <dl
-              className='mt-4 grid gap-3 sm:grid-cols-2'
-              aria-label='성장 배지 전체 단계'
-            >
-              {section.badges.map((badge) => {
-                const levels = badgeLevels(badge.id);
-                return (
-                  <div key={badge.id}>
-                    <dt className='text-xs font-medium text-text-subtle'>
-                      {badge.name}
-                    </dt>
-                    <dd className='mt-1 flex flex-wrap gap-x-1.5 text-sm font-medium leading-relaxed text-text-body tabular-nums'>
-                      {levels.map((level, index) => (
-                        <span key={level} className='whitespace-nowrap'>
-                          {index > 0 && ' → '}
-                          {level}
-                          {index === levels.length - 1 && badgeUnit(badge.id)}
-                        </span>
-                      ))}
-                    </dd>
-                  </div>
-                );
-              })}
-            </dl>
-          )}
-          {section.kind === 'category' && (
-            <p className='mt-3 text-sm leading-relaxed text-text-body'>
-              <span className='mr-2 text-xs text-text-subtle'>분야별 완독 단계</span>
-              <span className='inline-block font-medium tabular-nums'>
-                {CATEGORY_LEVELS.join(' → ')}권
-              </span>
-            </p>
-          )}
           <ul className={styles.shelf}>
             {section.badges.map((badge) => (
               <li
