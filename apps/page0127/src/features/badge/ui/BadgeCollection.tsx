@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 
 import { getBadgeEvidence } from '../model/badgeEvidence';
-import { computeBadges } from '../model/badges';
+import { CATEGORY_LEVELS, computeBadges } from '../model/badges';
 import { BadgeTile } from './BadgeTile';
 
 import type { BadgeInput, BadgeKind } from '../model/badges';
@@ -78,6 +78,14 @@ export const BadgeCollection = ({
             </h2>
             <span className='text-xs text-text-subtle'>{section.hint}</span>
           </div>
+          {section.kind === 'category' && (
+            <p className='mt-3 text-sm leading-relaxed text-text-body'>
+              <span className='mr-2 text-xs text-text-subtle'>분야별 완독 단계</span>
+              <span className='inline-block font-medium tabular-nums'>
+                {CATEGORY_LEVELS.join(' → ')}권
+              </span>
+            </p>
+          )}
           <ul className={styles.shelf}>
             {section.badges.map((badge) => (
               <li
