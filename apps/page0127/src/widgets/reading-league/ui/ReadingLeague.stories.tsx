@@ -229,3 +229,42 @@ export const RetryableError: Story = {
   name: '조회 실패 · 다시 시도',
   render: () => <ReadingLeagueError onRetry={() => {}} isRetrying={false} />,
 };
+
+export const Genres: Story = {
+  name: '장르 문어발 · 대분류 비교',
+  args: {
+    readers: [
+      { ...me, genres: ['인문학', '과학'] },
+      { ...jisu, genres: ['소설/시/희곡'] },
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole('button', { name: '장르 문어발' }));
+    await expect(
+      canvas.getByRole('img', { name: /나 2분야, 지수 1분야/ })
+    ).toBeVisible();
+  },
+};
+export const GenresTied: Story = {
+  args: {
+    readers: [
+      { ...me, genres: ['인문학'] },
+      { ...jisu, genres: ['과학'] },
+      { ...minho, genres: [] },
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    await userEvent.click(
+      within(canvasElement).getByRole('button', { name: '장르 문어발' })
+    );
+  },
+};
+export const GenresAlone: Story = {
+  args: { readers: [{ ...me, genres: [] }] },
+  play: async ({ canvasElement }) => {
+    await userEvent.click(
+      within(canvasElement).getByRole('button', { name: '장르 문어발' })
+    );
+  },
+};

@@ -3,7 +3,21 @@
 import { useEffect, useId, useReducer, useRef } from 'react';
 
 import { Button } from '@repo/ui';
-import { Card, CardContent, CardHeader, CardTitle, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, Textarea } from '@repo/ui';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Switch,
+  Textarea,
+} from '@repo/ui';
 import { BookCover } from '@repo/ui';
 import { RefreshCw } from 'lucide-react';
 
@@ -24,6 +38,7 @@ type BookRegistrationFormProps = {
   onCancel: () => void;
   isLoading?: boolean;
   initialData?: Partial<BookFormData>;
+  initialStatus?: BookStatus;
   // 수정 모드에서만 전달 — 있을 때만 "책 선택부터 다시" 버튼을 보여준다
   onReselectBook?: () => void;
 };
@@ -84,10 +99,7 @@ type FormAction =
   | { type: 'SET_TAG_ERROR'; error: string }
   | { type: 'SET_IS_PUBLIC'; isPublic: boolean };
 
-export function formReducer(
-  state: FormState,
-  action: FormAction
-): FormState {
+export function formReducer(state: FormState, action: FormAction): FormState {
   switch (action.type) {
     case 'SET_STATUS':
       return {
@@ -176,7 +188,10 @@ export const toInitialCompletedPrecision = (
  * @returns 연도가 올바르지 않으면 null
  */
 export const toCompletedFields = (
-  state: Pick<FormState, 'completedPrecision' | 'completedDate' | 'completedYear'>,
+  state: Pick<
+    FormState,
+    'completedPrecision' | 'completedDate' | 'completedYear'
+  >,
   today: string
 ): { completed_date: string | null; completed_year: number | null } | null => {
   switch (state.completedPrecision) {
@@ -185,7 +200,10 @@ export const toCompletedFields = (
       // 접힌 details 안의 빈 required 는 브라우저가 "not focusable" 로 제출을
       // 조용히 막는다 — 화면엔 아무 에러도 안 뜬다.
       // 기본값이 이미 오늘이므로 이 폴백은 사용자가 의도적으로 비운 경우에만 동작한다.
-      return { completed_date: state.completedDate || today, completed_year: null };
+      return {
+        completed_date: state.completedDate || today,
+        completed_year: null,
+      };
     case 'year': {
       const year = Number(state.completedYear);
       const currentYear = Number(today.slice(0, 4));
@@ -219,9 +237,9 @@ export const BookRegistrationForm = ({
   onCancel,
   isLoading = false,
   initialData,
+  initialStatus = 'completed',
   onReselectBook,
 }: BookRegistrationFormProps) => {
-
   const formId = useId();
   const ids = {
     status: `${formId}-status`,
@@ -238,10 +256,9 @@ export const BookRegistrationForm = ({
   };
 
   const [state, dispatch] = useReducer(formReducer, {
-    status: initialData?.status || 'completed',
+    status: initialData?.status || initialStatus,
     completedPrecision: toInitialCompletedPrecision(initialData),
-    completedDate:
-      initialData?.completed_date || toKstDateKey(new Date()),
+    completedDate: initialData?.completed_date || toKstDateKey(new Date()),
     completedYear: initialData?.completed_year
       ? String(initialData.completed_year)
       : '',
@@ -367,8 +384,8 @@ export const BookRegistrationForm = ({
                 <BookCover
                   src={book.coverImage}
                   title={book.title}
-          size='fill'
-        />
+                  size='fill'
+                />
               </div>
               <div>
                 <h4 className='font-medium'>{book.title}</h4>
@@ -383,9 +400,7 @@ export const BookRegistrationForm = ({
                 </p>
                 {/* 좌변을 boolean 으로 좁힌다 — 쪽수가 0이면 화면에 "0"이 찍힌다 */}
                 {book.page !== null && book.page > 0 && (
-                  <p className='text-sm text-muted-foreground'>
-                    {book.page}쪽
-                  </p>
+                  <p className='text-sm text-muted-foreground'>{book.page}쪽</p>
                 )}
               </div>
             </div>
@@ -589,7 +604,9 @@ export const BookRegistrationForm = ({
                         aria-label='완독 연도'
                         aria-invalid={!!completedYearError}
                         aria-describedby={
-                          completedYearError ? ids.completedYearError : undefined
+                          completedYearError
+                            ? ids.completedYearError
+                            : undefined
                         }
                         min={MIN_COMPLETED_YEAR}
                         placeholder='예: 2015'
@@ -618,7 +635,8 @@ export const BookRegistrationForm = ({
 
                   {completedPrecision === 'unknown' && (
                     <p className='text-sm text-muted-foreground'>
-                      연도별 서재에는 보이지 않고, 전체 서재와 통계에만 들어가요.
+                      연도별 서재에는 보이지 않고, 전체 서재와 통계에만
+                      들어가요.
                     </p>
                   )}
                 </div>

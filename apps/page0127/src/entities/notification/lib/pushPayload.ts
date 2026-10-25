@@ -40,6 +40,8 @@ export const buildPushPayload = (
   actor: (NameSource & { username: string | null }) | null,
   target: NotificationTarget | null = null
 ): PushPayload | null => {
+  // 콕 찌르기는 앱 안의 가벼운 초대다. 잠금화면 푸시로 확대하지 않는다.
+  if (notification.type === 'reading_nudge') return null;
   const url =
     notificationHref(
       {

@@ -77,10 +77,10 @@ const BookAttachmentLink = ({
   );
 };
 
-const getActivityText = (type: Activity['activity_type']) => {
+const getActivityText = (type: Activity['activity_type'], status?: string) => {
   switch (type) {
     case 'book_added':
-      return '책장에 담았어요';
+      return status === 'reading' ? '읽고 있어요' : '책장에 담았어요';
     case 'book_completed':
       return '완독했어요';
     case 'review_added':
@@ -127,7 +127,7 @@ export const ActivityCard = ({
             {activity.user.nickname || '익명'}
           </ProfileLink>
           <span className='ml-1.5 text-text-subtle'>
-            {getActivityText(activity.activity_type)}
+            {getActivityText(activity.activity_type, activity.book?.status)}
           </span>
         </p>
 

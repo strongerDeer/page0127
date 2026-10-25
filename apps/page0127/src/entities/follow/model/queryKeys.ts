@@ -6,6 +6,8 @@
 export const followKeys = {
   // 모든 팔로우 관련 쿼리의 기본 키
   all: ['follows'] as const,
+  readingSocial: (currentUserId: string) =>
+    [...followKeys.all, 'reading-social', currentUserId] as const,
 
   readingLeague: (currentUserId: string) =>
     [...followKeys.all, 'reading-league', currentUserId] as const,

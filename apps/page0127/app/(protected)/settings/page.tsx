@@ -9,6 +9,7 @@ import { getProfile } from '@/entities/profile/api/getProfile';
 import { LinkedAccountsSection } from '@/features/auth/ui/LinkedAccountsSection';
 import { ProfileSettingsForm } from '@/features/profile/ui/ProfileSettingsForm';
 import { PushNotificationSection } from '@/features/push';
+import { NudgeSettings } from '@/features/reading-nudge';
 
 /**
  * 프로필 설정 페이지
@@ -48,6 +49,7 @@ export default async function SettingsPage() {
         <LinkedAccountsSection />
         {/* 이 기기에서 잠금화면 알림 받기 — 기기마다 따로 켠다 */}
         <PushNotificationSection />
+        <NudgeSettings userId={user.id} />
       </ProfileSettingsForm>
     </PageContainer>
   );

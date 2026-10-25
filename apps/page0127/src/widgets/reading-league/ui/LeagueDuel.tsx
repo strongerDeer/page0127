@@ -29,7 +29,9 @@ export const LeagueDuel = ({
   const missing =
     unit === '쪽' && (mine.missingPageBooks > 0 || other.missingPageBooks > 0);
   const label = empty
-    ? '올해의 첫 기록을 기다려요'
+    ? unit === '분야'
+      ? '분류가 확인된 기록을 기다려요'
+      : '올해의 첫 기록을 기다려요'
     : match.tied
       ? '동점'
       : match.close
@@ -106,11 +108,15 @@ export const LeagueDuel = ({
           <span className={styles.resultBadge}>{label}</span>
           <p>
             {empty ? (
-              missing ? (
+              unit === '분야' ? (
+                '올해 분류가 확인된 공개 완독 책이 아직 없어요.'
+              ) : missing ? (
                 '쪽수 정보를 등록하면 비교할 수 있어요.'
               ) : (
                 '올해 첫 공개 완독의 주인공은?'
               )
+            ) : other.completedBooks === 0 ? (
+              <>{otherName}님께 같이 읽자고 콕 찔러보세요.</>
             ) : match.tied ? (
               <>
                 팽팽해요. <strong>다음 한 권</strong>의 주인공은?

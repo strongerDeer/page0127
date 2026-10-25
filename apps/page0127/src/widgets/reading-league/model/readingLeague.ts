@@ -1,6 +1,6 @@
 import type { FollowingLeagueReader } from '@/entities/follow';
 
-export type LeagueMetric = 'books' | 'pages';
+export type LeagueMetric = 'books' | 'pages' | 'genres';
 export type LeagueReader = FollowingLeagueReader;
 
 export type RankedReader = LeagueReader & {
@@ -11,7 +11,12 @@ export type RankedReader = LeagueReader & {
 export const metricValue = (
   reader: LeagueReader,
   metric: LeagueMetric
-): number => (metric === 'books' ? reader.completedBooks : reader.totalPages);
+): number =>
+  metric === 'books'
+    ? reader.completedBooks
+    : metric === 'pages'
+      ? reader.totalPages
+      : (reader.genres?.length ?? 0);
 
 export const rankReaders = (
   readers: LeagueReader[],

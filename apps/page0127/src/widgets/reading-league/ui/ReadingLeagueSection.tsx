@@ -1,12 +1,12 @@
 import { createClient } from '@/shared/config/supabase/server';
 
-import { getFollowingLeague } from '@/entities/follow';
+import { getFollowingLeague, getReadingSocial } from '@/entities/follow';
 
 import { getRecommendedReaders } from '@/features/user/api/getRecommendedReaders';
 
 import { LiveReadingLeague } from './LiveReadingLeague';
 
-import type { FollowingLeague } from '@/entities/follow';
+import type { FollowingLeague, ReadingSocial } from '@/entities/follow';
 
 export const ReadingLeagueSection = async ({
   currentUserId,
@@ -14,6 +14,7 @@ export const ReadingLeagueSection = async ({
   currentUserId: string;
 }) => {
   let initialData: FollowingLeague | undefined;
+  let initialSocial: ReadingSocial | undefined;
   try {
     initialData = await getFollowingLeague(await createClient(), currentUserId);
   } catch {
@@ -21,6 +22,11 @@ export const ReadingLeagueSection = async ({
     console.warn(
       '[reading-league] 집계 조회 실패. 마이그레이션 반영 여부와 DB 연결을 확인해 주세요.'
     );
+  }
+  try {
+    initialSocial = await getReadingSocial(await createClient(), currentUserId);
+  } catch {
+    console.warn('[reading-social] 장르·취향 집계 조회 실패');
   }
   const recommendedReaders =
     initialData && initialData.readers.length <= 3
@@ -30,6 +36,7 @@ export const ReadingLeagueSection = async ({
     <LiveReadingLeague
       currentUserId={currentUserId}
       initialData={initialData}
+      initialSocial={initialSocial}
       recommendedReaders={recommendedReaders}
     />
   );
