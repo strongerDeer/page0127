@@ -6,6 +6,7 @@ export type FollowingLeagueReader = {
   completedBooks: number;
   totalPages: number;
   missingPageBooks: number;
+  genres?: string[];
 };
 
 export type FollowingLeague = {

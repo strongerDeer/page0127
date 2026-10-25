@@ -17,10 +17,12 @@ export type {
 // API
 export { followApi } from './api/followApi';
 export { getFollowingLeague } from './api/getFollowingLeague';
+export { getReadingSocial } from './api/getReadingSocial';
 export type {
   FollowingLeague,
   FollowingLeagueReader,
 } from './model/readingLeague';
+export type { ReadingSocial, TasteClash } from './model/readingSocial';
 
 // Query Keys
 export { followKeys } from './model/queryKeys';

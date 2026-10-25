@@ -1,0 +1,30 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: stretch;
+}
+.feed {
+  min-width: 0;
+  order: 2;
+}
+.battle {
+  min-width: 0;
+  order: 1;
+}
+@media (min-width: 1024px) {
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 2rem;
+    align-items: start;
+  }
+  .feed {
+    order: 0;
+  }
+  .battle {
+    order: 0;
+    position: sticky;
+    top: 6rem;
+  }
+}

@@ -23,7 +23,11 @@ export const toNotificationTarget = (
   globalBooks: Map<string, GlobalBookRow>
 ): NotificationTarget | null => {
   const { type, target_id, target_type } = notification;
-  if ((type !== 'comment' && type !== 'like') || !target_id) return null;
+  if (
+    (type !== 'comment' && type !== 'like' && type !== 'reading_nudge') ||
+    !target_id
+  )
+    return null;
 
   if (target_type === 'global_book') {
     const globalBook = globalBooks.get(target_id);

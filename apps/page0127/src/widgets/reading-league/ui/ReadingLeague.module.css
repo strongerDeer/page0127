@@ -631,7 +631,7 @@
 .podiumBody[data-rank="1"] .step > span {
   color: var(--gray-0);
 }
-.podiumBody[data-rank="3"] .step {
+.podiumBody[data-rank="2"] .step {
   background: linear-gradient(
     100deg,
     color-mix(in srgb, var(--league-mint) 50%, var(--card)),
@@ -639,7 +639,7 @@
     color-mix(in srgb, var(--league-mint) 37%, var(--card))
   );
 }
-.podiumBody[data-rank="3"] .step::before {
+.podiumBody[data-rank="2"] .step::before {
   background: linear-gradient(
     110deg,
     color-mix(in srgb, var(--league-mint) 35%, var(--card)),
@@ -647,7 +647,7 @@
     color-mix(in srgb, var(--league-mint) 50%, var(--card))
   );
 }
-.podiumBody[data-rank="3"] .step > span {
+.podiumBody[data-rank="2"] .step > span {
   color: var(--league-rival-text);
 }
 .podiumBody[data-rank] .step {

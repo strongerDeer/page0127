@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { ErrorBoundary, PageContainer } from '@repo/ui';
 import { toast } from 'sonner';
@@ -40,6 +40,9 @@ import type { Book, ProviderBook } from '@/entities/book';
  * - Error Boundary로 에러 처리
  */
 const AddBookPage = () => {
+  const searchParams = useSearchParams();
+  const initialStatus =
+    searchParams.get('status') === 'reading' ? 'reading' : 'completed';
   const router = useRouter();
   const {
     books,
@@ -352,6 +355,7 @@ const AddBookPage = () => {
             ) : (
               <BookRegistrationForm
                 book={selectedBook}
+                initialStatus={initialStatus}
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
                 isLoading={isCreating || isFinishing}
@@ -376,4 +380,13 @@ const AddBookPage = () => {
   );
 };
 
-export default AddBookPage;
+const AddBookRoute = () => (
+  <Suspense
+    fallback={
+      <p className='p-6 text-text-subtle'>책 검색을 준비하고 있어요…</p>
+    }
+  >
+    <AddBookPage />
+  </Suspense>
+);
+export default AddBookRoute;

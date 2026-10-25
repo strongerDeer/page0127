@@ -10,6 +10,14 @@ const base = {
 } as const;
 
 describe('buildPushPayload', () => {
+  it('콕 찌르기는 앱 안에서만 전달한다', () => {
+    expect(
+      buildPushPayload(
+        { ...base, type: 'reading_nudge', message: '같이 한 권 읽자 👀' },
+        null
+      )
+    ).toBeNull();
+  });
   it('다른 사람이 보낸 알림은 "이름 + 문장"으로 만든다', () => {
     expect(
       buildPushPayload(

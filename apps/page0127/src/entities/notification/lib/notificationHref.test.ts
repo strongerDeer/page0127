@@ -3,6 +3,20 @@ import { describe, expect, it } from 'vitest';
 import { notificationHref } from './notificationHref';
 
 describe('notificationHref', () => {
+  it('콕 찌르기는 보낸 사람 서재 또는 첨부한 책으로 연결한다', () => {
+    expect(
+      notificationHref(
+        { type: 'reading_nudge', target_id: null, target_type: null },
+        'reader'
+      )
+    ).toBe('/reader');
+    expect(
+      notificationHref(
+        { type: 'reading_nudge', target_id: 'book', target_type: 'book' },
+        'reader'
+      )
+    ).toBe('/books/book');
+  });
   it('팔로우는 보낸 사람 서재로, username 이 없으면 이동하지 않는다', () => {
     const follow = {
       type: 'follow',

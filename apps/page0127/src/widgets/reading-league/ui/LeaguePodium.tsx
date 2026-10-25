@@ -88,7 +88,9 @@ export const LeaguePodium = ({
             {unit === '쪽' &&
             readers.some((reader) => reader.missingPageBooks > 0)
               ? '쪽수 정보를 등록하면 비교할 수 있어요.'
-              : '올해 첫 공개 완독 기록을 기다리고 있어요.'}
+              : unit === '분야'
+                ? '분류가 확인된 올해 공개 완독 기록을 기다리고 있어요.'
+                : '올해 첫 공개 완독 기록을 기다리고 있어요.'}
           </p>
         )}
       </div>
@@ -146,6 +148,8 @@ export const LeaguePodium = ({
             </>
           ) : unit === '쪽' && mine.missingPageBooks > 0 ? (
             '쪽수 정보를 등록하면 순위를 비교할 수 있어요.'
+          ) : unit === '분야' ? (
+            '책의 분야가 확인되면 순위를 비교할 수 있어요.'
           ) : (
             '나의 올해 첫 기록을 기다리고 있어요.'
           )}

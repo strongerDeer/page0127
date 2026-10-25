@@ -18,6 +18,7 @@ import {
   Heart,
   type LucideIcon,
   MessageCircle,
+  Pointer,
   Sparkles,
   UserPlus,
   X,
@@ -60,6 +61,12 @@ export const NotificationItem = ({
   } => {
     // 알림 타입별 의미 색은 차트 팔레트로 (인디고 베이스 + 보조 파스텔)
     switch (type) {
+      case 'reading_nudge':
+        return {
+          Icon: Pointer,
+          iconColor: 'text-primary',
+          message: `${actorSentence}${notification.message ? ` · “${notification.message}”` : ''}${notification.target?.title ? ` · 『${notification.target.title}』` : ''}`,
+        };
       case 'follow':
         return {
           Icon: UserPlus,
