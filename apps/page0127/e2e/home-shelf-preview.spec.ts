@@ -49,7 +49,8 @@ test('다른 브라우저에서 선택한 책 복원 후에도 원래 책 정보
   page,
   browser,
 }) => {
-  await page.goto('/');
+  // 홈에서 랭킹이 빠져(2026-10-25 홈 개편) 책 정보 링크는 전체 도서에서 찾는다
+  await page.goto('/books/all');
   const link = page.locator('a[href^="/books/info/"]').first();
   await expect(link).toBeVisible();
   const path = await link.getAttribute('href');
