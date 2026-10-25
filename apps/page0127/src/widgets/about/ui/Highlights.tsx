@@ -68,11 +68,11 @@ const Card = ({ lead, rest, blue, wide, children }: CardProps) => (
   </article>
 );
 
-/** 피드 카드의 데모 활동 — 실제 사용자 이름·활동은 싣지 않는다 */
-const FEED = [
-  { who: '혜진', avatar: '혜', verb: '완독했어요', when: '방금' },
-  { who: '준호', avatar: '준', verb: '읽기 시작했어요', when: '12분 전' },
-  { who: '서연', avatar: '서', verb: '별점 ★5를 남겼어요', when: '1시간 전' },
+/** 라운지 카드의 데모 리그 — 실제 사용자 이름·기록은 싣지 않는다. 시상대 순서(2·1·3위)로 둔다 */
+const LEAGUE = [
+  { who: '준호', avatar: '준', books: 18, rank: 2, height: 'h-16' },
+  { who: '나', avatar: '나', books: 23, rank: 1, height: 'h-24' },
+  { who: '서연', avatar: '서', books: 12, rank: 3, height: 'h-10' },
 ] as const;
 
 /** 배지 카드의 데모 — 받은 배지 넷과 아직 열리지 않은 히든 배지 하나 */
@@ -129,8 +129,9 @@ export const Highlights = ({ books }: HighlightsProps) => {
         }
       />
       {/* 차별점(보여 주고 공유하는 독서 명함)을 크게, 기본 기능은 작게 (2026-10-25 홈 개편).
-          lg(3열): [공유 2칸][케미] / [피드][주간 회상][인생책] / [배지 3칸]
-          md(2열): [공유 2칸] / [케미][피드] / [주간 회상][인생책] / [배지 2칸] — 어디서도 빈칸이 없다 */}
+          배지는 첫 줄 바로 아래로 올렸다 — 기록할수록 모이는 보상이라 공유·케미 다음으로 중요하다(2026-10-25 HJ).
+          lg(3열): [공유 2칸][케미] / [배지 3칸] / [라운지][주간 회상][인생책]
+          md(2열): [공유 2칸] / [케미 2칸] / [배지 2칸] / [라운지][주간 회상] / [인생책 2칸] — 어디서도 빈칸이 없다 */}
       <div className='mt-14 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3'>
         <Reveal className='md:col-span-2'>
           <Card
@@ -162,34 +163,45 @@ export const Highlights = ({ books }: HighlightsProps) => {
                   </p>
                 </div>
               </div>
-              {/* 스토리 이미지(9:16) — 실제 공유 시트가 만드는 이미지의 구도를 줄여 그린다 */}
+              {/* 스토리 이미지(9:16) — 실제 공유 시트가 만드는 이미지(/{username}/story-image)의 구도를 줄여 그린다.
+                  위: 파란 머리말(이름·AI 독서 성향·태그) / 아래: 흰 바탕에 책장 한 줄과 올해 권수 */}
               <div className='hidden aspect-9/16 w-36 shrink-0 flex-col overflow-hidden rounded-2xl bg-card shadow-xl sm:flex'>
-                <div className='bg-primary px-3 pt-4 pb-3 text-white'>
-                  <p className='text-[10px] text-white/80'>AI 독서 성향</p>
-                  <p className='mt-0.5 text-sm font-bold leading-tight'>
-                    이야기에 사는 사람
+                <div className='stage-blue px-3 pt-5 pb-4 text-white'>
+                  <p className='text-[9px] font-bold'>hyejin</p>
+                  <p className='mt-2 inline-block rounded-full bg-white/20 px-1.5 py-0.5 text-[8px] font-bold'>
+                    AI 독서 성향
+                  </p>
+                  <p className='mt-1 text-sm font-bold leading-tight'>
+                    이야기에
+                    <br />
+                    사는 사람
+                  </p>
+                  <p className='mt-1.5 text-[8px] text-white/80'>
+                    #소설 #에세이
                   </p>
                 </div>
-                <div className='flex flex-1 flex-col items-center justify-center gap-2'>
-                  <div className='flex gap-1'>
-                    {[0, 1, 2].map((i) => (
+                <div className='flex flex-1 flex-col items-center justify-center gap-1.5 px-2'>
+                  <div className='flex items-end gap-0.5'>
+                    {[0, 1, 2, 3].map((i) => (
                       <Cover
                         key={i}
                         src={pick(i + 20)}
-                        className='w-7 shadow-none'
+                        className='w-6 shadow-none'
                         small
                       />
                     ))}
                   </div>
-                  <p className='text-[10px] text-text-subtle'>올해 완독한 책</p>
-                  <p className='text-2xl font-bold text-text-strong'>23권</p>
+                  <p className='text-[9px] text-text-subtle'>올해 완독한 책</p>
+                  <p className='text-2xl font-bold leading-none text-text-strong'>
+                    23<span className='text-xs'>권</span>
+                  </p>
                 </div>
               </div>
             </div>
           </Card>
         </Reveal>
 
-        <Reveal delay={1}>
+        <Reveal delay={1} className='md:col-span-2 lg:col-span-1'>
           <Card
             blue
             lead='독서 케미.'
@@ -210,30 +222,69 @@ export const Highlights = ({ books }: HighlightsProps) => {
           </Card>
         </Reveal>
 
+        <Reveal className='md:col-span-2 lg:col-span-3'>
+          <Card
+            wide
+            lead='배지.'
+            rest='책을 기록할수록 성장·분야·이야기·히든 배지 31종이 작은 전집처럼 모여요. 이미 기록한 책으로도 바로 받아요.'
+          >
+            <div className='flex w-full flex-col items-center'>
+              <ul className='flex flex-wrap items-end justify-center gap-4 md:gap-6'>
+                {BADGES.map((b) => (
+                  <li key={b.id}>
+                    <BadgeMedal badge={b} size={88} />
+                  </li>
+                ))}
+              </ul>
+              <p className='mt-6 rounded-full bg-card px-3.5 py-2 text-sm font-bold text-text-strong shadow-lg'>
+                🎉 새 배지를 받았어요{' '}
+                <span className='font-normal text-text-subtle'>
+                  · 완독을 저장하면 바로 축하해 드려요
+                </span>
+              </p>
+            </div>
+          </Card>
+        </Reveal>
+
         <Reveal>
           <Card
             lead='라운지.'
-            rest='팔로우한 리더가 책을 꽂으면 바로 알 수 있어요.'
+            rest='팔로우한 리더와 올해 몇 권 읽었는지 겨루고, 새로 꽂은 책도 바로 봐요.'
           >
-            <ul className='w-full space-y-2.5'>
-              {FEED.map((f, i) => (
-                <li
-                  key={f.who}
-                  className='flex items-center gap-3 rounded-xl bg-card px-3.5 py-3 text-sm'
-                >
-                  <span className='grid size-8 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground'>
-                    {f.avatar}
-                  </span>
-                  <span className='flex-1'>
-                    <b className='text-text-strong'>{f.who}</b>님이 {f.verb}
-                    <span className='block text-xs text-text-subtle'>
-                      {f.when}
+            <div className='w-full'>
+              <p className='text-center text-xs font-bold tracking-wide text-text-subtle'>
+                올해의 리더보드
+              </p>
+              <ol className='mt-4 flex items-end justify-center gap-3'>
+                {LEAGUE.map((r) => (
+                  <li key={r.who} className='flex w-20 flex-col items-center'>
+                    <span
+                      className={`grid size-10 place-items-center rounded-full text-sm font-bold ${
+                        r.rank === 1
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-card text-text-strong shadow'
+                      }`}
+                    >
+                      {r.avatar}
                     </span>
-                  </span>
-                  <Cover src={pick(i + 15)} className='w-7 shadow-none' small />
-                </li>
-              ))}
-            </ul>
+                    <span className='mt-1.5 text-sm font-bold text-text-strong'>
+                      {r.books}권
+                    </span>
+                    <span
+                      className={`mt-1.5 grid w-full place-items-center rounded-t-lg bg-card text-sm font-bold text-text-subtle ${r.height}`}
+                    >
+                      {r.rank}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+              <p className='mt-4 flex items-center gap-2 rounded-xl bg-card px-3.5 py-3 text-sm'>
+                <Cover src={pick(15)} className='w-6 shadow-none' small />
+                <span>
+                  <b className='text-text-strong'>준호</b>님이 방금 완독했어요
+                </span>
+              </p>
+            </div>
           </Card>
         </Reveal>
 
@@ -267,7 +318,7 @@ export const Highlights = ({ books }: HighlightsProps) => {
           </Card>
         </Reveal>
 
-        <Reveal delay={2}>
+        <Reveal delay={2} className='md:col-span-2 lg:col-span-1'>
           <Card
             lead='인생책.'
             rest='다시 꺼내 볼 한 권은 책등 대신 표지로 세워 둬요.'
@@ -288,30 +339,6 @@ export const Highlights = ({ books }: HighlightsProps) => {
               <span className='absolute -bottom-2 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap rounded-full bg-card px-3.5 py-2 text-sm font-bold text-primary shadow-lg'>
                 ★ 인생책 3권
               </span>
-            </div>
-          </Card>
-        </Reveal>
-
-        <Reveal className='md:col-span-2 lg:col-span-3'>
-          <Card
-            wide
-            lead='배지.'
-            rest='책을 기록할수록 성장·분야·이야기·히든 배지 31종이 작은 전집처럼 모여요. 이미 기록한 책으로도 바로 받아요.'
-          >
-            <div className='flex w-full flex-col items-center'>
-              <ul className='flex flex-wrap items-end justify-center gap-4 md:gap-6'>
-                {BADGES.map((b) => (
-                  <li key={b.id}>
-                    <BadgeMedal badge={b} size={88} />
-                  </li>
-                ))}
-              </ul>
-              <p className='mt-6 rounded-full bg-card px-3.5 py-2 text-sm font-bold text-text-strong shadow-lg'>
-                🎉 새 배지를 받았어요{' '}
-                <span className='font-normal text-text-subtle'>
-                  · 완독을 저장하면 바로 축하해 드려요
-                </span>
-              </p>
             </div>
           </Card>
         </Reveal>

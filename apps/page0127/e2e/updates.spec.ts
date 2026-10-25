@@ -45,11 +45,13 @@ test('홈 표지 띠에 깨진 이미지가 보이지 않는다', async ({ page 
   expect(broken).toBe(0);
 });
 
-test('상단 메뉴에는 소개가 없다(데스크톱)', async ({ page }) => {
+test('상단 메뉴에는 홈·소개가 없다 — 로고가 홈이다(데스크톱)', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/');
   const nav = page.getByRole('navigation', { name: '주요 메뉴' });
-  await expect(nav.getByRole('link')).toHaveText(['홈', '전체 도서']);
+  await expect(nav.getByRole('link')).toHaveText(['전체 도서']);
 });
 
 test('푸터에서 공지·업데이트로 갈 수 있다', async ({ page }) => {

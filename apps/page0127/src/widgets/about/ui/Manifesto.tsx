@@ -45,8 +45,9 @@ export const Manifesto = () => {
   return (
     <section
       aria-label='왜 page0127.인가요'
-      // 홈에 들어오며 위아래를 줄였다 — py-40/48 이면 문단 하나에 화면 한 장이 비었다(2026-10-25 "여백이 많아")
-      className='px-4 py-24 text-center md:py-32'
+      // 홈에 들어오며 위아래를 줄였다 — py-40/48 이면 문단 하나에 화면 한 장이 비었다(2026-10-25 "여백이 많아").
+      // 옅은 배경을 화면 끝까지 깔아 위(표지 띠)·아래(맛보기) 섹션과 구획을 나눈다
+      className='bg-sunken px-4 py-24 text-center md:py-32'
     >
       <p className='text-sm font-bold text-primary'>왜 page0127.인가요</p>
       <p ref={ref} className='display-xl mx-auto mt-6 max-w-4xl text-balance'>
