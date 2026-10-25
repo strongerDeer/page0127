@@ -1,3 +1,5 @@
+import { Crown } from 'lucide-react';
+
 import { type Badge, BadgeMedal } from '@/features/badge';
 
 import { Reveal } from './Reveal';
@@ -5,6 +7,8 @@ import { SafeCover } from './SafeCover';
 import { SectionHead } from './SectionHead';
 
 import type { ShelfBook } from '../model/coverRows';
+
+import league from './LeagueDemo.module.css';
 
 type HighlightsProps = { books: ShelfBook[] };
 
@@ -82,9 +86,9 @@ const Card = ({ lead, rest, tone, wide, children }: CardProps) => (
 
 /** 라운지 카드의 데모 리그 — 실제 사용자 이름·기록은 싣지 않는다. 시상대 순서(2·1·3위)로 둔다 */
 const LEAGUE = [
-  { who: '준호', avatar: '준', books: 18, rank: 2, height: 'h-16' },
-  { who: '나', avatar: '나', books: 23, rank: 1, height: 'h-24' },
-  { who: '서연', avatar: '서', books: 12, rank: 3, height: 'h-10' },
+  { who: '준호', avatar: '준', books: 18, rank: 2 },
+  { who: '나', avatar: '나', books: 23, rank: 1 },
+  { who: '서연', avatar: '서', books: 12, rank: 3 },
 ] as const;
 
 /** 배지 카드의 데모 — 받은 배지 넷과 아직 열리지 않은 히든 배지 하나 */
@@ -269,30 +273,24 @@ export const Highlights = ({ books }: HighlightsProps) => {
               <p className='text-center text-xs font-bold tracking-wide text-text-subtle'>
                 올해의 리더보드
               </p>
-              <ol className='mt-4 flex items-end justify-center gap-3'>
+              <ol className={league.podium}>
                 {LEAGUE.map((r) => (
-                  <li key={r.who} className='flex w-20 flex-col items-center'>
-                    <span
-                      className={`grid size-10 place-items-center rounded-full text-sm font-bold ${
-                        r.rank === 1
-                          ? 'bg-primary text-primary-foreground ring-3 ring-mint'
-                          : 'bg-card text-text-strong shadow'
-                      }`}
-                    >
-                      {r.avatar}
+                  <li key={r.who} className={league.person} data-rank={r.rank}>
+                    <span className={league.avatar}>
+                      {r.rank === 1 && (
+                        <Crown
+                          aria-hidden='true'
+                          className={league.crown}
+                          size={18}
+                          fill='currentColor'
+                        />
+                      )}
+                      <span>{r.avatar}</span>
                     </span>
-                    <span className='mt-1.5 text-sm font-bold text-text-strong'>
-                      {r.books}권
-                    </span>
-                    {/* 단상에 색을 입힌다 — 1등은 진한 파란 무대, 나머지는 옅은 파랑(2026-10-25 HJ "여기도 컬러") */}
-                    <span
-                      className={`mt-1.5 grid w-full place-items-center rounded-t-lg text-sm font-bold ${r.height} ${
-                        r.rank === 1
-                          ? 'stage-blue text-white'
-                          : 'bg-primary/15 text-primary'
-                      }`}
-                    >
-                      {r.rank}
+                    <span className={league.name}>{r.who}</span>
+                    <span className={league.value}>{r.books}권</span>
+                    <span className={league.step}>
+                      <span>{r.rank}</span>
                     </span>
                   </li>
                 ))}
