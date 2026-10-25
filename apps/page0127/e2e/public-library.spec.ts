@@ -9,22 +9,34 @@ import { findLibraryPath } from './helpers';
  * 서재 아이디는 DB 마다 달라(로컬·개발·운영) 사이트맵에서 하나를 고른다(helpers.ts).
  */
 
-test('비로그인 방문자에게 프로필 아래 케미 카드와 맨 끝 가입 배너를 보여 준다', async ({
+test('비로그인 케미 안내는 조건을 채운 서재에서만 보이고 로그인 목적지를 유지한다', async ({
   page,
 }) => {
   const path = await findLibraryPath(page);
   test.skip(!path, '이 DB 에는 공개 서재가 없다');
   await page.goto(path!);
 
-  // 기능 이름은 '독서 케미'
-  await expect(
-    page.getByRole('link', { name: '독서 케미', exact: true })
-  ).toBeVisible();
-
-  // 케미 문구는 한 번만 — 프로필 바로 아래
+  // 서재 본문이 준비된 뒤, 케미가 열리는 서재에서만 안내를 확인한다.
+  await page.getByRole('region', { name: '나도 내 책장 만들기' }).waitFor();
   const chemi = page.getByRole('link', { name: /독서 케미는\?/ });
-  await expect(chemi).toHaveCount(1);
-  await expect(chemi).toHaveAttribute('href', '/');
+  const headerChemi = page.getByRole('link', {
+    name: '독서 케미',
+    exact: true,
+  });
+  if (await chemi.count()) {
+    await expect(chemi).toHaveCount(1);
+    await expect(headerChemi).toBeVisible();
+    await expect(chemi).toHaveAttribute('href', `${path}/compatibility`);
+    await chemi.click();
+    await expect(page).toHaveURL(
+      new RegExp(
+        `/login\\?redirect=${encodeURIComponent(`${path}/compatibility`)}`
+      )
+    );
+    await page.goBack();
+  } else {
+    await expect(headerChemi).toHaveCount(0);
+  }
 
   // 페이지 끝 배너
   const banner = page.getByRole('region', { name: '나도 내 책장 만들기' });

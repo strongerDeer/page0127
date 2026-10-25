@@ -7,12 +7,31 @@ import { createTestBook } from '@/entities/book/model/createTestBook';
 import { VisitorChemiCard, VisitorSignupBanner } from './VisitorCta';
 
 describe('VisitorChemiCard', () => {
-  it('주인 아바타와 "나(?)"가 겹친 그림 + 파란 버튼, 문구·링크는 그대로', () => {
+  it('책이 없거나 5권 미만인 서재는 케미 초대를 숨긴다', () => {
+    for (const eligibleBookCount of [0, 4]) {
+      expect(
+        renderToStaticMarkup(
+          <VisitorChemiCard
+            name='reader'
+            username='reader'
+            photoUrl={null}
+            eligibleBookCount={eligibleBookCount}
+          />
+        )
+      ).toBe('');
+    }
+  });
+  it('주인 아바타와 "나(?)"가 겹친 그림 + 파란 버튼, 케미 페이지로 연결', () => {
     const html = renderToStaticMarkup(
-      <VisitorChemiCard name='stronger_khj' photoUrl={null} />
+      <VisitorChemiCard
+        name='stronger_khj'
+        username='stronger_khj'
+        eligibleBookCount={5}
+        photoUrl={null}
+      />
     );
     expect(html).toContain('stronger_khj님과 나, 독서 케미는?');
-    expect(html).toContain('href="/"');
+    expect(html).toContain('href="/stronger_khj/compatibility"');
     expect(html).toContain('data-chemi-duo');
     // 사진이 없으면 이름 첫 글자
     expect(html).toMatch(/data-owner-avatar[^>]*>S</);

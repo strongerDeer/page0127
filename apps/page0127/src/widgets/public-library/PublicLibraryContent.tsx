@@ -15,6 +15,7 @@ import {
   resolveDefaultLibraryYear,
   resolveGoalTarget,
 } from '@/entities/book';
+import { countPublicCompatibilityBooks } from '@/entities/compatibility/model/analysisGate';
 import { TASTE_ANALYSIS_MIN_BOOKS } from '@/entities/taste-analysis/model/analysisGate';
 
 import { BadgeSummary } from '@/features/badge';
@@ -133,6 +134,8 @@ export const PublicLibraryContent = ({
     [books]
   );
 
+  const compatibilityBookCount = countPublicCompatibilityBooks(publicBooks);
+
   // 위시리스트는 내 개인 목록이라 연도·공개여부와 무관하게 전부 모은다
   const wishlistBooks = useMemo(
     () =>
@@ -214,6 +217,7 @@ export const PublicLibraryContent = ({
   return (
     <PageContainer width='wide' bg='sunken' className='space-y-10'>
       <PublicLibraryHeader
+        compatibilityBookCount={compatibilityBookCount}
         profile={profile}
         username={username}
         isOwnProfile={isOwnProfile}
@@ -250,7 +254,12 @@ export const PublicLibraryContent = ({
 
       {/* 비로그인 방문자에게만 — 로그인한 다른 사용자는 이미 자기 책장이 있다 */}
       {isVisitor && (
-        <VisitorChemiCard name={ownerName} photoUrl={profile.photo_url} />
+        <VisitorChemiCard
+          name={ownerName}
+          username={username}
+          eligibleBookCount={compatibilityBookCount}
+          photoUrl={profile.photo_url}
+        />
       )}
 
       <LibraryView

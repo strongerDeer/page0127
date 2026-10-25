@@ -41,6 +41,7 @@ import {
 
 import { toCoverSource } from '@/entities/book';
 import { replaceUserLabels } from '@/entities/compatibility/lib/replaceUserLabels';
+import { COMPATIBILITY_MIN_BOOKS as MIN_BOOKS } from '@/entities/compatibility/model/analysisGate';
 import { getCompatibilityTypeByScore } from '@/entities/compatibility/model/compatibilityTypes';
 
 import type {
@@ -67,8 +68,6 @@ type CompatibilityViewProps = {
   /** 이번 달 궁합분석 남은 횟수 (0~3) */
   compatibilityRemaining: number;
 };
-
-const MIN_BOOKS = 5;
 
 /**
  * 독서 궁합 화면 (Client Component)

@@ -14,6 +14,7 @@ import { AI_MODEL, MAX_TOKENS, openai, TEMPERATURE } from '@/shared/lib/openai';
 import { createCompatibilityPrompt } from '@/shared/lib/openai/prompts/compatibility';
 
 import { isRated } from '@/entities/book';
+import { COMPATIBILITY_MIN_BOOKS as MIN_BOOKS } from '@/entities/compatibility/model/analysisGate';
 import { getCompatibilityTypeByScore } from '@/entities/compatibility/model/compatibilityTypes';
 import { mapRecommendations } from '@/entities/compatibility/model/mutualRecommendations';
 
@@ -123,7 +124,6 @@ export async function POST(request: NextRequest) {
       fetchCompletedBooks(userId2),
     ]);
 
-    const MIN_BOOKS = 5;
     const myBooks = user.id === userId1 ? books1 : books2;
     const targetBooks = user.id === userId1 ? books2 : books1;
 
