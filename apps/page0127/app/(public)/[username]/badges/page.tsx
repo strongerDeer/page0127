@@ -12,6 +12,7 @@ import { toDisplayName } from '@/entities/profile/model/displayName';
 import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTasteHistory';
 
 import { BadgeCollection } from '@/features/badge';
+import { getBadgeActivity } from '@/features/badge/api/getBadgeActivity';
 
 import type { Metadata } from 'next';
 
@@ -59,14 +60,16 @@ const BadgesPage = async ({ params }: PageProps) => {
     notFound();
   }
 
-  const [{ data: books, error }, tasteHistory] = await Promise.all([
-    supabase
-      .from('books')
-      .select('*')
-      .eq('user_id', profile.id)
-      .eq('is_public', true),
-    getPublicTasteHistory(profile.id),
-  ]);
+  const [{ data: books, error }, tasteHistory, badgeActivity] =
+    await Promise.all([
+      supabase
+        .from('books')
+        .select('*')
+        .eq('user_id', profile.id)
+        .eq('is_public', true),
+      getPublicTasteHistory(profile.id),
+      getBadgeActivity(profile.id),
+    ]);
 
   if (error) {
     console.error('뱃지용 책 목록 조회 실패:', error.message);
@@ -93,6 +96,7 @@ const BadgesPage = async ({ params }: PageProps) => {
         </p>
       </div>
       <BadgeCollection
+        activity={badgeActivity}
         username={username}
         isOwner={isOwner}
         books={books ?? []}

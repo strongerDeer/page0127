@@ -22,10 +22,11 @@ export const BadgeSummary = ({
   books,
   readingGoal,
   firstTasteAnalysisAt,
+  activity,
 }: BadgeSummaryProps) => {
   const badges = useMemo(
-    () => computeBadges({ books, readingGoal, firstTasteAnalysisAt }),
-    [books, readingGoal, firstTasteAnalysisAt]
+    () => computeBadges({ books, readingGoal, firstTasteAnalysisAt, activity }),
+    [books, readingGoal, firstTasteAnalysisAt, activity]
   );
   const earned = badges
     .filter((badge) => badge.earned)
@@ -44,7 +45,9 @@ export const BadgeSummary = ({
         >
           배지 책장{' '}
           <span className='ml-1 font-medium text-text-subtle'>
-            {isOwner ? `${earned.length} / ${badges.length}` : earned.length}
+            {isOwner
+              ? `${earned.length} / ${badges.length}종`
+              : `${earned.length}종`}
           </span>
         </h3>
         <Link
@@ -55,9 +58,6 @@ export const BadgeSummary = ({
           <ChevronRight className='size-3.5' aria-hidden />
         </Link>
       </div>
-      <p className='mt-2 text-xs text-text-subtle'>
-        최근에 받은 배지부터 보여드려요.
-      </p>
       {earned.length ? (
         <ul className={styles.summaryShelf} aria-label='획득한 배지 책장'>
           {earned.map((badge) => (

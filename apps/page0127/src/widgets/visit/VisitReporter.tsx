@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 
+import { useRouter } from 'next/navigation';
+
 import { toKstDateKey } from '@/shared/lib/date';
 
 import { useCurrentUserContext } from '@/entities/user';
@@ -29,6 +31,7 @@ const ENDPOINT = '/api/visit';
 const storageKey = (userId: string) => `visit-reported-date:${userId}`;
 
 export const VisitReporter = () => {
+  const router = useRouter();
   const { currentUser } = useCurrentUserContext();
   const userId = currentUser?.id;
 
@@ -70,11 +73,13 @@ export const VisitReporter = () => {
         } catch {
           // 저장 실패는 무시 — 오늘 한 번 더 보낼 뿐이고 서버가 중복을 흡수한다.
         }
+        // 최초 렌더 뒤에 오늘 방문이 기록된다. 새 방문일 배지를 바로 반영한다.
+        router.refresh();
       })
       .catch(() => {
         // 수집 실패가 사용자 경험을 건드리면 안 된다 — 조용히 포기한다.
       });
-  }, [userId]);
+  }, [userId, router]);
 
   return null;
 };

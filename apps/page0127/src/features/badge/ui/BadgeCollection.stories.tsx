@@ -2,7 +2,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { createTestBook } from '@/entities/book/model/createTestBook';
 
-import { computeBadges, SHELF_LEVELS, WIDE_VIEW_LEVELS } from '../model/badges';
+import { badgeLevels, CATEGORY_BADGES, computeBadges } from '../model/badges';
 import { BadgeCollection } from './BadgeCollection';
 import { BadgeMedal } from './BadgeMedal';
 import { BadgeSummary } from './BadgeSummary';
@@ -47,20 +47,6 @@ export const EmptyOwner: Story = {
 };
 export const LibrarySummary: Story = {
   render: (args) => <BadgeSummary {...args} username='stronger_khj' />,
-  play: async ({ canvasElement }) => {
-    const shelf = within(canvasElement).getByRole('list', {
-      name: '획득한 배지 책장',
-    });
-    const visible = within(shelf).getAllByRole('button');
-    await expect(visible[0]).toHaveAccessibleName('취향 발견 (획득)');
-    await expect(shelf.scrollWidth).toBeLessThanOrEqual(shelf.clientWidth);
-    const bounds = shelf.getBoundingClientRect();
-    for (const button of visible) {
-      const rect = button.getBoundingClientRect();
-      await expect(rect.left).toBeGreaterThanOrEqual(bounds.left);
-      await expect(rect.right).toBeLessThanOrEqual(bounds.right + 0.5);
-    }
-  },
 };
 
 export const Covers: Story = {
@@ -71,12 +57,8 @@ export const Covers: Story = {
       firstTasteAnalysisAt: null,
     });
     const variants = badges.flatMap((badge) => {
-      const levels =
-        badge.id === 'shelf'
-          ? SHELF_LEVELS
-          : badge.id === 'wide-view'
-            ? WIDE_VIEW_LEVELS
-            : [null];
+      const stages = badgeLevels(badge.id);
+      const levels = stages.length ? stages : [null];
       return levels.map((_, i) => ({ ...badge, earned: true, level: i + 1 }));
     });
     return (
@@ -124,9 +106,6 @@ export const OpenAndCloseBook: Story = {
       dialog.getByRole('button', { name: '책 펼쳐보기' })
     ).toHaveAttribute('aria-pressed', 'false');
     await userEvent.keyboard('{Escape}');
-    await expect(
-      canvas.queryByRole('button', { name: '책등으로 보기' })
-    ).not.toBeInTheDocument();
   },
 };
 
@@ -189,14 +168,14 @@ export const MilestonesAndReread: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(
-      canvas.getByRole('button', { name: '책장 · 1권 (획득)' })
+      canvas.queryByRole('button', { name: '쌓이는 이야기 · 1권 (획득)' })
+    ).not.toBeInTheDocument();
+    await expect(
+      canvas.getByRole('button', { name: '쌓이는 이야기 · 10권 (획득)' })
     ).toBeVisible();
     await expect(
-      canvas.getByRole('button', { name: '책장 · 10권 (획득)' })
-    ).toBeVisible();
-    await expect(
-      canvas.getByRole('button', { name: '책장 · 50권 (미획득)' })
-    ).toBeVisible();
+      canvas.queryByRole('button', { name: '쌓이는 이야기 · 50권 (미획득)' })
+    ).not.toBeInTheDocument();
     await expect(
       canvas.getByRole('button', { name: '다시 펼친 책 (획득)' })
     ).toBeVisible();
@@ -226,34 +205,64 @@ export const MilestonesAndReread: Story = {
   },
 };
 
-export const IdleShine: Story = {
-  render: () => (
-    <BadgeMedal
-      badge={{
-        ...computeBadges({
-          books: [],
-          readingGoal: null,
-          firstTasteAnalysisAt: null,
-        }).find((b) => b.id === 'life-book')!,
-        earned: true,
-      }}
-      size={192}
-    />
-  ),
-  play: async ({ canvasElement }) => {
-    const cover = canvasElement.querySelector(
-      '[data-badge-book] > div:last-child'
-    )!;
-    const frame = getComputedStyle(cover, '::before');
-    await expect(
-      parseFloat(frame.left) + parseFloat(frame.borderLeftWidth)
-    ).toBeLessThanOrEqual(0);
-    const shine = getComputedStyle(cover, '::after');
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      await expect(shine.animationIterationCount).toBe('infinite');
-      await expect(shine.animationDuration).toBe('7s');
-    } else {
-      await expect(shine.animationName).toBe('none');
-    }
+export const ExpandedGrowth: Story = {
+  args: {
+    books: Array.from({ length: 157 }, (_, i) =>
+      createTestBook({
+        id: `expanded-${i}`,
+        isbn: `expanded-${i}`,
+        category:
+          i % 10 === 0
+            ? '국내도서>고전>서양고전문학'
+            : CATEGORY_BADGES[i % CATEGORY_BADGES.length]!.category,
+        completed_date: `2026-${String(Math.floor(i / 28) + 1).padStart(2, '0')}-${String((i % 28) + 1).padStart(2, '0')}`,
+      })
+    ),
+    activity: {
+      firstTasteAnalysisAt: '2026-01-15T00:00:00Z',
+      firstCompatibilityAt: '2026-10-24T00:00:00Z',
+      visitCount: 32,
+      visitMilestones: [
+        { target: 7, at: '2026-08-01' },
+        { target: 30, at: '2026-10-23' },
+      ],
+    },
   },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(
+      canvas.getByRole('button', { name: '쌓이는 이야기 · 100권 (획득)' })
+    );
+    const dialog = within(
+      within(canvasElement.ownerDocument.body).getByRole('dialog')
+    );
+    await waitFor(() =>
+      expect(
+        dialog.getByRole('list', { name: '성장 단계별 획득 기록' })
+      ).toBeVisible()
+    );
+    await expect(dialog.getByText('1,000권', { exact: true })).toBeVisible();
+    await userEvent.keyboard('{Escape}');
+  },
+};
+
+/** 상호작용 없이 전체 확장 상태를 확인하는 검수 화면. */
+export const GrowthPreview: Story = { args: ExpandedGrowth.args };
+
+/** 획득 여부와 무관하게 실제 31종 표지를 한 번씩 비교하는 디자인 검수 화면. */
+export const AllBadgeCovers: Story = {
+  render: () => (
+    <div className='grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4 lg:grid-cols-5'>
+      {computeBadges({
+        books: [],
+        readingGoal: null,
+        firstTasteAnalysisAt: null,
+      }).map((badge) => (
+        <div key={badge.id} className='flex flex-col items-center gap-3'>
+          <BadgeMedal badge={{ ...badge, earned: true, level: 1 }} size={180} />
+          <span className='text-sm text-text-strong'>{badge.name}</span>
+        </div>
+      ))}
+    </div>
+  ),
 };

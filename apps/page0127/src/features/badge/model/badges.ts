@@ -4,10 +4,10 @@ import type { Book } from '@/entities/book';
 import type { ReadingGoal } from '@/entities/profile/types';
 
 /**
- * 뱃지/업적 — **저장하지 않고 책 기록에서 계산한다.**
+ * 뱃지/업적 — **원본 활동 기록에서 계산한다.**
  *
- * 조건이 전부 books 행으로 셀 수 있어서 user_badges 테이블을 두지 않았다.
- * - 마이그레이션·트리거·동기화 버그가 없다
+ * 책·분석·일별 방문 기록에서 계산하므로 user_badges 테이블을 두지 않았다.
+ * - 별도 배지 저장 테이블·트리거 동기화가 필요 없다
  * - 기존 사용자도 소급해서 바로 받는다
  * - "어떤 책으로 받았는지"를 그대로 보여 줄 수 있다 (획득일 = 그 책의 완독일)
  * 대신 책을 지우면 그 책으로 받은 뱃지도 사라진다 — 기록이 곧 근거라 받아들였다.
@@ -16,9 +16,21 @@ import type { ReadingGoal } from '@/entities/profile/types';
  * 같은 뱃지를 본다 (보관한 책이 뱃지로 새어 나가지 않는다).
  */
 
-export type BadgeKind = 'growth' | 'story' | 'hidden';
+export type BadgeKind = 'growth' | 'category' | 'story' | 'hidden';
 
 export type BadgeId =
+  | 'classics'
+  | 'compatibility'
+  | 'regular'
+  | 'fiction'
+  | 'humanities'
+  | 'essays'
+  | 'business'
+  | 'self-growth'
+  | 'science'
+  | 'arts'
+  | 'history'
+  | 'technology'
   | 'shelf'
   | 'wide-view'
   | 'one-sitting'
@@ -39,6 +51,20 @@ export type BadgeId =
   | 'book-about-books'
   | 'worn-out';
 
+export type BadgeStage = {
+  value: number;
+  earnedAt: string | null;
+  book: Pick<Book, 'id' | 'title'> | null;
+};
+
+export type BadgeActivity = {
+  firstTasteAnalysisAt: string | null;
+  firstCompatibilityAt: string | null;
+  /** 누적 방문일은 본인에게만 공개한다. 방문자는 달성 단계만 받는다. */
+  visitCount: number | null;
+  visitMilestones: { target: number; at: string }[];
+};
+
 export type Badge = {
   id: BadgeId;
   kind: BadgeKind;
@@ -52,6 +78,7 @@ export type Badge = {
   book: Pick<Book, 'id' | 'title'> | null;
   /** 성장 뱃지 단계. 1부터, 아직 못 받았으면 0 */
   level: number;
+  stages?: BadgeStage[];
   /** 다음 단계(또는 첫 획득)까지 — 다 채웠으면 null */
   progress: { current: number; target: number } | null;
 };
@@ -62,10 +89,56 @@ export type BadgeInput = {
   readingGoal: ReadingGoal | null;
   /** 첫 취향 분석 시각 — 분석한 적 없으면 null */
   firstTasteAnalysisAt: string | null;
+  activity?: BadgeActivity;
 };
 
-export const SHELF_LEVELS = [1, 10, 50, 100, 200] as const;
-export const WIDE_VIEW_LEVELS = [3, 5, 9] as const;
+export const SHELF_LEVELS = [
+  1, 5, 10, 25, 50, 100, 200, 300, 500, 1000,
+] as const;
+export const WIDE_VIEW_LEVELS = [2, 3, 5, 7, 9] as const;
+export const CATEGORY_LEVELS = [3, 10, 30, 50, 100] as const;
+export const CLASSIC_LEVELS = [1, 5, 10, 25, 50] as const;
+export const VISIT_LEVELS = [7, 30, 100] as const;
+
+export const CATEGORY_BADGES = [
+  { id: 'fiction', category: '소설/시/희곡', name: '이야기 수집가' },
+  { id: 'humanities', category: '인문학', name: '사유의 깊이' },
+  { id: 'essays', category: '에세이', name: '타인의 마음' },
+  { id: 'business', category: '경제/경영', name: '세상을 읽는 눈' },
+  { id: 'self-growth', category: '자기계발', name: '어제보다 한 걸음' },
+  { id: 'science', category: '과학', name: '호기심의 궤도' },
+  { id: 'arts', category: '예술/대중문화', name: '감각의 발견' },
+  { id: 'history', category: '역사', name: '시간 여행자' },
+  { id: 'technology', category: '컴퓨터/모바일', name: '새로운 언어' },
+] as const;
+
+export const badgeLevels = (id: BadgeId): readonly number[] => {
+  if (id === 'shelf') return SHELF_LEVELS;
+  if (id === 'wide-view') return WIDE_VIEW_LEVELS;
+  if (id === 'classics') return CLASSIC_LEVELS;
+  if (id === 'regular') return VISIT_LEVELS;
+  if (CATEGORY_BADGES.some((item) => item.id === id)) return CATEGORY_LEVELS;
+  return [];
+};
+
+export const badgeUnit = (id: BadgeId) =>
+  id === 'wide-view'
+    ? '분야'
+    : id === 'regular'
+      ? '일'
+      : id === 'critic'
+        ? '개'
+        : '권';
+
+/** 고전은 도서 공급자의 분류 경로로만 판정한다. 제목·출간연도로 추측하지 않는다. */
+export const isClassicCategory = (category: string | null) =>
+  (category ?? '')
+    .split('>')
+    .some((part) =>
+      /^(?:(?:한국|동양|서양|세계)?고전(?:문학|소설)?|classics)$/i.test(
+        part.trim()
+      )
+    );
 
 const BRICK_PAGES = 500;
 const THIN_PAGES = 150;
@@ -134,13 +207,21 @@ const levelOf = (
     level,
     hit: level > 0 ? hitAt(levels[level - 1]!) : null,
     progress: next === undefined ? null : { current, target: next },
+    stages: levels.map((value) => {
+      const hit = current >= value ? hitAt(value) : null;
+      return {
+        value,
+        earnedAt: hit?.at ?? null,
+        book: hit?.book ? { id: hit.book.id, title: hit.book.title } : null,
+      };
+    }),
   };
 };
 
 const badge = (
   base: Pick<Badge, 'id' | 'kind' | 'name' | 'description'>,
   hit: Hit,
-  extra: Partial<Pick<Badge, 'level' | 'progress'>> = {}
+  extra: Partial<Pick<Badge, 'level' | 'progress' | 'stages'>> = {}
 ): Badge => ({
   ...base,
   earned: hit !== null,
@@ -148,12 +229,15 @@ const badge = (
   book: hit?.book ? { id: hit.book.id, title: hit.book.title } : null,
   level: extra.level ?? (hit ? 1 : 0),
   progress: extra.progress ?? null,
+  stages: extra.stages,
 });
 
-export const computeBadges = (
-  { books, readingGoal, firstTasteAnalysisAt }: BadgeInput,
-  { includeGrowthSteps = false } = {}
-): Badge[] => {
+export const computeBadges = ({
+  books,
+  readingGoal,
+  firstTasteAnalysisAt,
+  activity,
+}: BadgeInput): Badge[] => {
   const completed = books
     .filter((book) => book.status === 'completed')
     .sort(byReadOrder);
@@ -191,6 +275,20 @@ export const computeBadges = (
   const wideView = levelOf(categoryOrder.length, WIDE_VIEW_LEVELS, (target) =>
     hitOf(categoryOrder[target - 1])
   );
+
+  const classics = completed.filter((book) => isClassicCategory(book.category));
+  const classicLevel = levelOf(
+    countDistinct(classics),
+    CLASSIC_LEVELS,
+    (target) => nthDistinct(classics, target)
+  );
+  const visits = activity?.visitMilestones ?? [];
+  const visitCount =
+    activity?.visitCount ?? Math.max(0, ...visits.map((item) => item.target));
+  const regular = levelOf(visitCount, VISIT_LEVELS, (target) => {
+    const milestone = visits.find((item) => item.target === target);
+    return milestone ? { book: null, at: milestone.at } : null;
+  });
 
   // ── 이야기 ──────────────────────────────────────────
   const authorCounts = new Map<string, Set<string>>();
@@ -234,26 +332,94 @@ export const computeBadges = (
     return null;
   })();
 
-  const result = [
+  return [
     badge(
       {
         id: 'shelf',
         kind: 'growth',
-        name: '책장',
-        description: '완독한 책이 1·10·50·100·200권이 될 때마다 자라요',
+        name: '쌓이는 이야기',
+        description: `서로 다른 책 ${SHELF_LEVELS.join('·')}권 완독`,
       },
       shelf.hit,
-      { level: shelf.level, progress: shelf.progress }
+      { level: shelf.level, progress: shelf.progress, stages: shelf.stages }
     ),
     badge(
       {
         id: 'wide-view',
         kind: 'growth',
         name: '넓은 시야',
-        description: '완독한 분야가 3·5·9개가 될 때마다 자라요',
+        description: `${WIDE_VIEW_LEVELS.join('·')}개 분야 완독`,
       },
       wideView.hit,
-      { level: wideView.level, progress: wideView.progress }
+      {
+        level: wideView.level,
+        progress: wideView.progress,
+        stages: wideView.stages,
+      }
+    ),
+    badge(
+      {
+        id: 'classics',
+        kind: 'growth',
+        name: '시간을 건너온 책',
+        description: `고전 분류의 서로 다른 책 ${CLASSIC_LEVELS.join('·')}권 완독`,
+      },
+      classicLevel.hit,
+      {
+        level: classicLevel.level,
+        progress: classicLevel.progress,
+        stages: classicLevel.stages,
+      }
+    ),
+    badge(
+      {
+        id: 'regular',
+        kind: 'growth',
+        name: '서재 단골',
+        description: `누적 ${VISIT_LEVELS.join('·')}일 방문 · 한국 시간 기준 하루 한 번, 연속 방문이 아니어도 괜찮아요`,
+      },
+      regular.hit,
+      {
+        level: regular.level,
+        progress: activity?.visitCount == null ? null : regular.progress,
+        stages: regular.stages,
+      }
+    ),
+    ...CATEGORY_BADGES.map(({ id, category, name }) => {
+      const categoryBooks = completed.filter(
+        (book) => mapToMainCategory(book.category) === category
+      );
+      const result = levelOf(
+        countDistinct(categoryBooks),
+        CATEGORY_LEVELS,
+        (target) => nthDistinct(categoryBooks, target)
+      );
+      return badge(
+        {
+          id,
+          kind: 'category',
+          name,
+          description: `${category} 분야의 서로 다른 책 ${CATEGORY_LEVELS.join('·')}권 완독`,
+        },
+        result.hit,
+        {
+          level: result.level,
+          progress: result.progress,
+          stages: result.stages,
+        }
+      );
+    }),
+    badge(
+      {
+        id: 'compatibility',
+        kind: 'story',
+        name: '취향의 교집합',
+        description:
+          '다른 독자와 첫 독서 케미 분석 완료 · 분석에 참여한 두 독자가 함께 받아요',
+      },
+      activity?.firstCompatibilityAt
+        ? { book: null, at: activity.firstCompatibilityAt }
+        : null
     ),
     badge(
       {
@@ -352,7 +518,12 @@ export const computeBadges = (
         name: '취향 발견',
         description: '첫 AI 취향 분석',
       },
-      firstTasteAnalysisAt ? { book: null, at: firstTasteAnalysisAt } : null
+      (activity?.firstTasteAnalysisAt ?? firstTasteAnalysisAt)
+        ? {
+            book: null,
+            at: (activity?.firstTasteAnalysisAt ?? firstTasteAnalysisAt)!,
+          }
+        : null
     ),
     badge(
       {
@@ -437,21 +608,4 @@ export const computeBadges = (
       readingHit(3)
     ),
   ];
-  if (!includeGrowthSteps) return result;
-  return result.flatMap((item) => {
-    if (item.kind !== 'growth') return [item];
-    const levels = item.id === 'shelf' ? SHELF_LEVELS : WIDE_VIEW_LEVELS;
-    const current =
-      item.id === 'shelf' ? countDistinct(completed) : categoryOrder.length;
-    return levels.map((target, index) => {
-      const hit =
-        item.id === 'shelf'
-          ? nthDistinct(completed, target)
-          : hitOf(categoryOrder[target - 1]);
-      return badge(item, hit, {
-        level: index + 1,
-        progress: hit ? null : { current, target },
-      });
-    });
-  });
 };

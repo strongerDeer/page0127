@@ -14,7 +14,7 @@ const badges = computeBadges({
 });
 
 describe('배지 표지 아트', () => {
-  it('19종과 비밀 표지가 실제 PNG 안의 서로 다른 유효 셀을 사용한다', () => {
+  it('31종과 비밀 표지가 서로 다른 유효한 그림을 사용한다', () => {
     const cells = new Set<string>();
     for (const badge of [
       ...badges.map((b) => ({ ...b, earned: true })),
@@ -30,8 +30,16 @@ describe('배지 표지 아트', () => {
       expect(bytes.subarray(1, 4).toString()).toBe('PNG');
       expect(bytes.readUInt32BE(16)).toBe(art.width);
       expect(bytes.readUInt32BE(20)).toBe(art.height);
+      if (art.crop) {
+        expect(art.crop.x).toBeGreaterThanOrEqual(0);
+        expect(art.crop.y).toBeGreaterThanOrEqual(0);
+        expect(art.crop.width).toBeGreaterThan(0);
+        expect(art.crop.height).toBeGreaterThan(0);
+        expect(art.crop.x + art.crop.width).toBeLessThanOrEqual(art.width);
+        expect(art.crop.y + art.crop.height).toBeLessThanOrEqual(art.height);
+      }
       cells.add(`${art.src}:${art.row}:${art.column}`);
     }
-    expect(cells.size).toBe(20);
+    expect(cells.size).toBe(32);
   });
 });

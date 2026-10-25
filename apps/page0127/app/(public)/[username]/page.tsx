@@ -14,6 +14,8 @@ import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProf
 import { toDisplayName } from '@/entities/profile/model/displayName';
 import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTasteHistory';
 
+import { getBadgeActivity } from '@/features/badge/api/getBadgeActivity';
+
 import { toReaderCard } from '@/widgets/public-library/model/readerCard';
 import { PublicLibraryContent } from '@/widgets/public-library/PublicLibraryContent';
 import { PublicLibrarySkeleton } from '@/widgets/public-library/PublicLibrarySkeleton';
@@ -187,11 +189,13 @@ const LibraryContent = async ({
   // 연도 탭은 이 전체 목록을 클라이언트에서 즉시 분류한다.
   // 따라서 탭을 바꿀 때 이 Server Component와 DB 쿼리가 다시 실행되지 않는다.
   // 취향 이력은 방문자도 본다 — 공개해도 되는 칸만 주는 RPC 라 주인·방문자가 같은 조회를 쓴다
-  const [allBooks, overallStats, tasteHistory] = await Promise.all([
-    getBooks(profile.id, !isOwnProfile),
-    getOverallStats(profile.id, true),
-    getPublicTasteHistory(profile.id),
-  ]);
+  const [allBooks, overallStats, tasteHistory, badgeActivity] =
+    await Promise.all([
+      getBooks(profile.id, !isOwnProfile),
+      getOverallStats(profile.id, true),
+      getPublicTasteHistory(profile.id),
+      getBadgeActivity(profile.id),
+    ]);
 
   // 소유자 전용 데이터 — 방문자면 아예 조회하지 않는다
   let analyzableBookCount = 0;
@@ -249,6 +253,7 @@ const LibraryContent = async ({
       newBooksSinceLastAnalysis={newBooksSinceLastAnalysis}
       analysisHistory={tasteHistory}
       tasteAnalysisRemaining={tasteAnalysisRemaining}
+      badgeActivity={badgeActivity}
     />
   );
 };

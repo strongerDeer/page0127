@@ -22,7 +22,9 @@ import {
   badgeProgressPercent,
   isSecretBadge,
 } from '../model/badgePresentation';
+import { badgeUnit } from '../model/badges';
 import { BadgeMedal } from './BadgeMedal';
+import { BadgeStack } from './BadgeStack';
 
 import type { Badge } from '../model/badges';
 
@@ -43,7 +45,7 @@ export const BadgeTile = ({
   username,
 }: BadgeTileProps) => {
   const [opened, setOpened] = useState(false);
-  const { title } = badgePresentation(badge);
+  const { title, hint } = badgePresentation(badge);
   const secret = isSecretBadge(badge);
   const progressLabel = badgeProgressLabel(badge);
   const progress = secret ? null : badge.progress;
@@ -58,11 +60,16 @@ export const BadgeTile = ({
         className={styles.tile}
         aria-label={`${title} (${badge.earned ? '획득' : '미획득'})`}
       >
-        <BadgeMedal badge={badge} size={size} />
+        <BadgeStack badge={badge} size={size} />
         <span
           className={`${styles.name} ${badge.earned ? '' : styles.unearned}`}
         >
           {title}
+          {hint && (
+            <span className='mt-1 block text-xs text-text-subtle'>
+              힌트 · {hint}
+            </span>
+          )}
           {!badge.earned && <span className={styles.lockedLabel}>미획득</span>}
         </span>
         {showProgress && progress && (
@@ -95,7 +102,7 @@ export const BadgeTile = ({
           </DialogTitle>
           <DialogDescription className='mt-2 text-sm text-text-body'>
             {secret
-              ? '읽다 보면 뜻밖에 만나게 될 책이에요. 이름과 조건은 받기 전까지 비밀이에요.'
+              ? `힌트 · ${hint}. 이름과 정확한 조건은 받기 전까지 비밀이에요.`
               : badge.description}
           </DialogDescription>
         </div>
@@ -148,7 +155,24 @@ export const BadgeTile = ({
             </p>
           </div>
         )}
-        {badge.kind === 'growth' && badge.earned && !progress && (
+        {!!badge.stages?.length && (
+          <ol className={styles.stageList} aria-label='성장 단계별 획득 기록'>
+            {badge.stages.map((stage) => (
+              <li key={stage.value} data-earned={!!stage.earnedAt}>
+                <span>
+                  {stage.value.toLocaleString('en-US')}
+                  {badgeUnit(badge.id)}
+                </span>
+                <span>
+                  {stage.earnedAt
+                    ? `${formatDate(stage.earnedAt)} 획득`
+                    : '미획득'}
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
+        {!!badge.stages?.length && badge.earned && !progress && (
           <p className='text-xs text-text-subtle'>이 성장 단계를 달성했어요</p>
         )}
       </DialogContent>

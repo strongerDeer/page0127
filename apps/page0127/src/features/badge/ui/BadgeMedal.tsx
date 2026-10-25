@@ -3,7 +3,11 @@
 import Image from 'next/image';
 
 import { badgeCoverArt } from '../model/badgeCoverArt';
-import { badgePresentation } from '../model/badgePresentation';
+import {
+  badgeLevelColor,
+  badgeNoteColor,
+  badgePresentation,
+} from '../model/badgePresentation';
 
 import type { Badge } from '../model/badges';
 import type { CSSProperties } from 'react';
@@ -30,10 +34,12 @@ export const BadgeMedal = ({
 }: BadgeMedalProps) => {
   const { cover, levelValue } = badgePresentation(badge);
   const art = badgeCoverArt(cover);
+  const color = badgeLevelColor(badge.id, badge.level);
   return (
     <div
       aria-hidden='true'
       data-badge-book
+      data-growth={color ? true : undefined}
       data-cover={cover}
       data-preview={preview || undefined}
       data-locked={!badge.earned || undefined}
@@ -42,8 +48,12 @@ export const BadgeMedal = ({
       style={
         {
           '--book-width': `${size}px`,
+          '--note-paper': badgeNoteColor(badge.id),
           '--shine-delay': `${(art.row * art.columns + art.column + (art.rows === 4 ? 9 : 0)) * 300 + Math.max(1, badge.level) * 50}ms`,
-          '--jacket-paper': art.paper,
+          '--jacket-paper': color?.paper ?? art.paper,
+          '--level-paper': color?.paper,
+          '--level-ink': color?.ink,
+          '--level-edge': color?.edge,
           '--jacket-ink': art.ink,
         } as CSSProperties
       }
@@ -69,18 +79,19 @@ export const BadgeMedal = ({
             className={styles.atlas}
             draggable={false}
             style={{
-              width: `${art.columns * 100}%`,
-              height: `${art.rows * 100}%`,
-              left: `${-art.column * 100}%`,
-              top: `${-art.row * 100}%`,
+              width: `${art.crop ? (art.width / art.crop.width) * 100 : art.columns * 100}%`,
+              height: `${art.crop ? (art.height / art.crop.height) * 100 : art.rows * 100}%`,
+              left: `${art.crop ? -(art.crop.x / art.crop.width) * 100 : -art.column * 100}%`,
+              top: `${art.crop ? -(art.crop.y / art.crop.height) * 100 : -art.row * 100}%`,
             }}
           />
         </span>
         {levelValue !== null && (
           <span
-            className={`${styles.volume} ${cover === 'wide-view' ? styles.fieldVolume : ''}`}
+            className={styles.volume}
+            data-digits={String(levelValue).length}
           >
-            {levelValue}
+            <span className={styles.noteValue}>{levelValue}</span>
           </span>
         )}
         {!badge.earned && (

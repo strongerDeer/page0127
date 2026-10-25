@@ -4,6 +4,7 @@ import { getProfile } from '@/entities/profile/api/getProfile';
 import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTasteHistory';
 
 import { computeBadges } from '@/features/badge';
+import { getBadgeActivity } from '@/features/badge/api/getBadgeActivity';
 import { newlyEarnedBadges } from '@/features/badge/model/newlyEarned';
 
 import { getCurrentUser, getSupabaseClient } from '@/app/api/_helpers/auth';
@@ -30,20 +31,23 @@ export async function GET(_request: NextRequest, { params }: Params) {
     const { id } = await params;
     const supabase = await getSupabaseClient();
 
-    const [profile, { data: books, error }, tasteHistory] = await Promise.all([
-      getProfile(user!.id),
-      supabase
-        .from('books')
-        .select('*')
-        .eq('user_id', user!.id)
-        .eq('is_public', true),
-      getPublicTasteHistory(user!.id),
-    ]);
+    const [profile, { data: books, error }, tasteHistory, activity] =
+      await Promise.all([
+        getProfile(user!.id),
+        supabase
+          .from('books')
+          .select('*')
+          .eq('user_id', user!.id)
+          .eq('is_public', true),
+        getPublicTasteHistory(user!.id),
+        getBadgeActivity(user!.id),
+      ]);
 
     if (error) return errorResponse(error.message);
     if (!profile) return successResponse({ username: null, badges: [] });
 
     const input = {
+      activity,
       readingGoal: profile.reading_goal ?? null,
       // 이력은 최신순이라 마지막 것이 첫 분석이다
       firstTasteAnalysisAt: tasteHistory.at(-1)?.created_at ?? null,

@@ -8,6 +8,10 @@
 
 .book {
   --book-width: 112px;
+  --note-paper: #ffe181;
+  --level-paper: #f1ead8;
+  --level-ink: #51452f;
+  --level-edge: #b8a47d;
   --shine-delay: 0ms;
   --jacket-paper: #f0ebdc;
   --jacket-ink: #243441;
@@ -75,26 +79,53 @@
 }
 .volume {
   position: absolute;
-  left: 12%;
-  right: 12%;
-  bottom: 9%;
+  isolation: isolate;
+  right: 6%;
+  bottom: 6%;
+  left: auto;
+  display: grid;
+  place-items: center;
+  width: 38%;
+  aspect-ratio: 1;
+  color: #213654;
+  background: none;
+  transform: rotate(-4deg);
   text-align: center;
   font-family: "Page0127 Cover Sans", sans-serif;
   font-weight: 900;
-  font-size: 26cqw;
+  font-size: 19cqw;
   line-height: 1;
-  letter-spacing: -0.09em;
-  color: #29261e;
+  letter-spacing: -0.06em;
 }
-.fieldVolume {
-  left: auto;
-  right: 10%;
-  bottom: 10%;
-  padding: 2% 4%;
-  font-size: 18cqw;
-  letter-spacing: -0.04em;
-  color: #17365b;
-  background: #f4efdfeb;
+.volume::before,
+.volume::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.volume::before {
+  z-index: -1;
+  background: var(--note-paper);
+  mask: url("/badges/editorial/note-paper.webp") center / 100% 100% no-repeat;
+}
+.volume::after {
+  z-index: 0;
+  background: url("/badges/editorial/note-paper.webp") center / 100% 100%
+    no-repeat;
+  mix-blend-mode: multiply;
+}
+.noteValue {
+  position: relative;
+  z-index: 1;
+  display: block;
+  padding-top: 3%;
+}
+.volume[data-digits="3"] {
+  font-size: 16cqw;
+}
+.volume[data-digits="4"] {
+  font-size: 12cqw;
 }
 .book[data-locked] .cover {
   filter: grayscale(0.95);
@@ -166,7 +197,7 @@
   align-items: center;
   justify-content: center;
   gap: 7px;
-  color: var(--text-subtle);
+  color: var(--text-strong);
   font-size: 11px;
   font-weight: 500;
   transition: opacity 180ms ease;
@@ -256,4 +287,10 @@ button:is(:hover, :focus-visible) .book[data-locked] .emptyState {
     transparent
   );
   pointer-events: none;
+}
+
+/* 메모 색은 계열을 구분하고, 제본 색은 성장 단계를 구분한다. */
+.book[data-growth]:not([data-locked]) .cover::before {
+  border-color: var(--level-edge);
+  box-shadow: inset 1px 1px 0 rgb(255 255 255 / 40%);
 }

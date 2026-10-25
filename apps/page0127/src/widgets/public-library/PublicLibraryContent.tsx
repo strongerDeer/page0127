@@ -37,6 +37,7 @@ import type { Book } from '@/entities/book';
 import type { OverallStats } from '@/entities/book';
 import type { Profile } from '@/entities/profile/types';
 import type { PublicTasteHistoryItem } from '@/entities/taste-analysis/types';
+import type { BadgeActivity } from '@/features/badge/model/badges';
 
 type PublicLibraryContentProps = {
   profile: Profile;
@@ -53,6 +54,7 @@ type PublicLibraryContentProps = {
   /** 취향 이력(최신순 ≤10) — 방문자에게도 채워진다 */
   analysisHistory: PublicTasteHistoryItem[];
   tasteAnalysisRemaining: number;
+  badgeActivity?: BadgeActivity;
 };
 
 /**
@@ -76,6 +78,7 @@ export const PublicLibraryContent = ({
   newBooksSinceLastAnalysis,
   analysisHistory,
   tasteAnalysisRemaining,
+  badgeActivity,
 }: PublicLibraryContentProps) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -230,6 +233,7 @@ export const PublicLibraryContent = ({
       {/* 뱃지 — 통계와 같은 공개 책으로 계산해 주인·방문자가 같은 뱃지를 본다.
           프로필 바로 아래에 둬서 "어떤 독자인지"를 먼저 보여 준다. 전부는 상세 페이지에서 */}
       <BadgeSummary
+        activity={badgeActivity}
         username={username}
         isOwner={isOwnProfile}
         books={publicBooks}
