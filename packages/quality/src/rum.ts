@@ -7,14 +7,20 @@
 // 이 파일에 런타임 의존성을 두지 않는다(타입 import만). 브라우저 번들·라우트 핸들러·
 // 대시보드 서버 컴포넌트가 모두 이 파일을 가져다 쓰기 때문이다.
 
-import type { FormFactor } from './types.ts';
+import type { FormFactor } from "./types.ts";
 
-export type RumMetricName = 'lcp' | 'inp' | 'cls' | 'fcp' | 'ttfb';
-export type RumRating = 'good' | 'needs-improvement' | 'poor';
-export type RumBrowser = 'chrome' | 'safari' | 'firefox' | 'edge' | 'other';
-export type RumEnv = 'production' | 'preview' | 'development';
+export type RumMetricName = "lcp" | "inp" | "cls" | "fcp" | "ttfb";
+export type RumRating = "good" | "needs-improvement" | "poor";
+export type RumBrowser = "chrome" | "safari" | "firefox" | "edge" | "other";
+export type RumEnv = "production" | "preview" | "development";
 
-export const RUM_METRICS: RumMetricName[] = ['lcp', 'inp', 'cls', 'fcp', 'ttfb'];
+export const RUM_METRICS: RumMetricName[] = [
+  "lcp",
+  "inp",
+  "cls",
+  "fcp",
+  "ttfb",
+];
 
 /** 브라우저가 보내는 샘플 하나. DB 컬럼과 1:1 (snake_case 변환은 라우트 핸들러가 한다). */
 export type RumSample = {
@@ -43,41 +49,42 @@ export type RumSample = {
 // 새 라우트가 생기면 여기서 누락돼 `[id]`로 접힐 뿐, 카디널리티가 터지지 않는다.
 
 const ROOT_ROUTES = new Set([
-  'about',
-  'admin',
-  'auth',
-  'books',
-  'contact',
-  'dashboard',
-  'feed',
-  'login',
-  'notifications',
-  'privacy',
-  'search',
-  'settings',
-  'terms',
+  "about",
+  "admin",
+  "auth",
+  "books",
+  "contact",
+  "dashboard",
+  "feed",
+  "login",
+  "notifications",
+  "privacy",
+  "search",
+  "settings",
+  "terms",
+  "updates",
 ]);
 
 /** 부모 세그먼트 → 그 아래 허용되는 정적 자식들. */
 const CHILD_ROUTES: Record<string, Set<string>> = {
   admin: new Set([
-    'analytics',
-    'banners',
-    'costs',
-    'errors',
-    'members',
-    'quality',
+    "analytics",
+    "banners",
+    "costs",
+    "errors",
+    "members",
+    "quality",
   ]),
-  auth: new Set(['auth-code-error', 'callback', 'suspended']),
-  books: new Set(['add', 'all', 'info']),
-  dashboard: new Set(['taste-analysis']),
+  auth: new Set(["auth-code-error", "callback", "suspended"]),
+  books: new Set(["add", "all", "info"]),
+  dashboard: new Set(["taste-analysis"]),
 };
 
 /** 부모 세그먼트 → 그 아래 동적 세그먼트에 붙일 이름. 없으면 '[id]'. */
 const DYNAMIC_LABEL: Record<string, string> = {
-  books: '[id]',
-  feed: '[activityId]',
-  members: '[id]',
+  books: "[id]",
+  feed: "[activityId]",
+  members: "[id]",
 };
 
 /**
@@ -85,7 +92,7 @@ const DYNAMIC_LABEL: Record<string, string> = {
  * 못 잡는다. 접어 버리면 편집 화면이 상세 화면과 같은 그룹이 되어 "어느 화면이 느린가"가
  * 흐려진다(실제 라우트 트리 확인: /books/[id]/edit · /[username]/[bookId]/edit).
  */
-const ACTION_SEGMENTS = new Set(['edit']);
+const ACTION_SEGMENTS = new Set(["edit"]);
 
 // 더 깊은 경로는 잘라낸다. 실제 라우트 트리 최대 깊이가 3이라 4면 충분하고,
 // 이상한 요청이 와도 결과 문자열 길이가 유계로 유지된다.
@@ -98,20 +105,20 @@ const MAX_SEGMENTS = 4;
  * 이건 앱의 라우트 구조 그대로다 — `app/(public)/[username]/`가 최상위 캐치올이다.
  */
 export const normalizeRoute = (pathname: string): string => {
-  const path = pathname.split('?')[0]?.split('#')[0] ?? '';
-  const segments = path.split('/').filter(Boolean).slice(0, MAX_SEGMENTS);
+  const path = pathname.split("?")[0]?.split("#")[0] ?? "";
+  const segments = path.split("/").filter(Boolean).slice(0, MAX_SEGMENTS);
 
   const first = segments[0];
-  if (!first) return '/';
+  if (!first) return "/";
 
   // `/[username]` 이하 — 프로필, 궁합, 책 상세와 그 편집만 존재한다.
   if (!ROOT_ROUTES.has(first)) {
     const second = segments[1];
-    if (!second) return '/[username]';
-    if (second === 'compatibility') return '/[username]/compatibility';
-    return segments[2] === 'edit'
-      ? '/[username]/[bookId]/edit'
-      : '/[username]/[bookId]';
+    if (!second) return "/[username]";
+    if (second === "compatibility") return "/[username]/compatibility";
+    return segments[2] === "edit"
+      ? "/[username]/[bookId]/edit"
+      : "/[username]/[bookId]";
   }
 
   const out = [first];
@@ -122,10 +129,10 @@ export const normalizeRoute = (pathname: string): string => {
       parent = segment;
       continue;
     }
-    out.push(DYNAMIC_LABEL[parent] ?? '[id]');
+    out.push(DYNAMIC_LABEL[parent] ?? "[id]");
     parent = segment;
   }
-  return `/${out.join('/')}`;
+  return `/${out.join("/")}`;
 };
 
 // ── 집계 ────────────────────────────────────────────────────────────────
@@ -137,10 +144,7 @@ export const normalizeRoute = (pathname: string): string => {
  * 표본이 없으면 **undefined**를 돌려준다. 0이 아니다 — "데이터 없음"과 "값 0"을
  * 섞으면 결측이 완벽한 성능으로 둔갑한다(crux.ts의 `Number(null) === 0` 전례).
  */
-export const percentile = (
-  values: number[],
-  p: number
-): number | undefined => {
+export const percentile = (values: number[], p: number): number | undefined => {
   if (values.length === 0) return undefined;
   const sorted = [...values].sort((a, b) => a - b);
   const rank = Math.ceil((p / 100) * sorted.length) - 1;
@@ -160,12 +164,12 @@ export const RUM_THRESHOLDS: Record<RumMetricName, [number, number]> = {
 
 export const rateRumValue = (
   metric: RumMetricName,
-  value: number
+  value: number,
 ): RumRating => {
   const [good, poor] = RUM_THRESHOLDS[metric];
-  if (value <= good) return 'good';
-  if (value <= poor) return 'needs-improvement';
-  return 'poor';
+  if (value <= good) return "good";
+  if (value <= poor) return "needs-improvement";
+  return "poor";
 };
 
 // 표본 수에 따른 신뢰도. 샘플 5건의 p75는 숫자일 뿐 지표가 아니다.
@@ -174,13 +178,13 @@ export const rateRumValue = (
 export const RUM_MIN_SAMPLES = { value: 10, verdict: 30 } as const;
 
 /** 'none' 표본 0 · 'too-few' 값 숨김 · 'low' 값 표시하되 판정 보류 · 'ok' 판정 가능 */
-export type RumConfidence = 'none' | 'too-few' | 'low' | 'ok';
+export type RumConfidence = "none" | "too-few" | "low" | "ok";
 
 export const rumConfidence = (count: number): RumConfidence => {
-  if (count <= 0) return 'none';
-  if (count < RUM_MIN_SAMPLES.value) return 'too-few';
-  if (count < RUM_MIN_SAMPLES.verdict) return 'low';
-  return 'ok';
+  if (count <= 0) return "none";
+  if (count < RUM_MIN_SAMPLES.value) return "too-few";
+  if (count < RUM_MIN_SAMPLES.verdict) return "low";
+  return "ok";
 };
 
 export type RumMetricSummary = {
@@ -222,8 +226,8 @@ export const summarizeRum = (rows: RumValueRow[]): RumMetricSummary[] => {
     let needsImprovement = 0;
     for (const value of values) {
       const rating = rateRumValue(metric, value);
-      if (rating === 'good') good += 1;
-      else if (rating === 'needs-improvement') needsImprovement += 1;
+      if (rating === "good") good += 1;
+      else if (rating === "needs-improvement") needsImprovement += 1;
     }
     const count = values.length;
     summaries.push({
@@ -252,7 +256,7 @@ type RumTimedRow = RumValueRow & { receivedAt: string };
  */
 export const summarizeRumByDay = (
   rows: RumTimedRow[],
-  metric: RumMetricName
+  metric: RumMetricName,
 ): RumDailyPoint[] => {
   const byDay = new Map<string, number[]>();
   for (const row of rows) {

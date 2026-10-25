@@ -1,29 +1,30 @@
-import type { FormFactor } from './types.ts';
+import type { FormFactor } from "./types.ts";
 
 export type PageAnchor = { name: string; path: string };
 
 // 측정 대상 배포 URL. CI에서 QUALITY_TARGET_URL로 주입.
 // 로컬 검증 시엔 로컬 개발 서버(예: http://localhost:3000)를 넣는다.
-const TARGET_URL = process.env.QUALITY_TARGET_URL ?? 'http://localhost:3000';
+const TARGET_URL = process.env.QUALITY_TARGET_URL ?? "http://localhost:3000";
 
 // 측정 앵커는 "인기 페이지"가 아니라 **회귀 감지용 고정 URL**이다.
 // 같은 URL을 계속 재야 코드 변경 영향을 주차 간 비교로 잡는다.
 // 실사용자 대표성은 CrUX(record.field, origin 집계)가 담당한다.
 export const APP = {
-  name: 'page0127',
-  env: 'production' as const,
+  name: "page0127",
+  env: "production" as const,
   targetUrl: TARGET_URL,
   pages: [
-    { name: 'home', path: '/' },
-    { name: 'about', path: '/about' },
-    { name: 'library', path: '/books/all' },
+    { name: "home", path: "/" },
+    // 소개는 홈에 합쳐지고 /about 은 /updates 로 영구 이동한다(2026-10-25) — 리다이렉트를 재면 의미가 없다
+    { name: "updates", path: "/updates" },
+    { name: "library", path: "/books/all" },
     // profile: 동적 사용자 페이지. 소유자 계정이라 삭제 위험은 없지만
     // **사용자명이 바뀌면 404가 되어 점수가 0으로 찍힌다**(2026-10-05 dreamfulbud→stronger_khj).
-    { name: 'profile', path: '/stronger_khj' },
+    { name: "profile", path: "/stronger_khj" },
     // detail: 무거운 동적 상세. 고정 bookId로 시계열을 유지한다(삭제되면 config에서 교체).
     {
-      name: 'detail',
-      path: '/stronger_khj/80a21270-ed22-4e3a-a1e9-17f65b361c54',
+      name: "detail",
+      path: "/stronger_khj/80a21270-ed22-4e3a-a1e9-17f65b361c54",
     },
   ] satisfies PageAnchor[],
 };
@@ -33,13 +34,15 @@ export const LIGHTHOUSE_RUNS = Math.max(1, Number(process.env.LH_RUNS ?? 3));
 
 // 측정 폼팩터. 기본 둘 다 → 측정 시간 약 2배. LH_FORM_FACTORS로 조정.
 const parseFormFactors = (raw: string | undefined): FormFactor[] => {
-  if (!raw) return ['mobile', 'desktop'];
+  if (!raw) return ["mobile", "desktop"];
   const parsed = raw
-    .split(',')
+    .split(",")
     .map((s) => s.trim())
-    .filter((s): s is FormFactor => s === 'mobile' || s === 'desktop');
+    .filter((s): s is FormFactor => s === "mobile" || s === "desktop");
   if (parsed.length === 0) {
-    throw new Error(`LH_FORM_FACTORS 값이 잘못됨: '${raw}' (허용: mobile, desktop)`);
+    throw new Error(
+      `LH_FORM_FACTORS 값이 잘못됨: '${raw}' (허용: mobile, desktop)`,
+    );
   }
   return [...new Set(parsed)];
 };
@@ -67,5 +70,6 @@ export const DESKTOP_REGRESSION = {
 };
 
 // 로컬 JSON 검증 단계(Task 7/8)에서만 쓰는 경로. Supabase 전환(Task 10) 후엔 미사용.
-export const DATA_PATH = 'packages/quality/.data/quality-metrics.json';
-export const FIELD_HISTORY_PATH = 'packages/quality/.data/quality-field-history.json';
+export const DATA_PATH = "packages/quality/.data/quality-metrics.json";
+export const FIELD_HISTORY_PATH =
+  "packages/quality/.data/quality-field-history.json";

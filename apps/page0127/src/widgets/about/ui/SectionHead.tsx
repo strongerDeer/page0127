@@ -4,6 +4,8 @@ type SectionHeadProps = {
   description?: React.ReactNode;
   /** aria-labelledby 로 섹션과 잇는 제목 id */
   id?: string;
+  /** 페이지의 첫 제목일 때 h1 — 공지·업데이트 페이지는 이 머리 하나로 시작한다 */
+  as?: 'h1' | 'h2';
 };
 
 /**
@@ -15,12 +17,13 @@ export const SectionHead = ({
   title,
   description,
   id,
+  as: Heading = 'h2',
 }: SectionHeadProps) => (
   <div className='text-center'>
     <p className='text-sm font-bold text-primary'>{label}</p>
-    <h2 id={id} className='display-xl mt-2 text-balance'>
+    <Heading id={id} className='display-xl mt-2 text-balance'>
       {title}
-    </h2>
+    </Heading>
     {description && (
       <p className='mx-auto mt-4 max-w-xl text-balance text-base text-text-subtle'>
         {description}

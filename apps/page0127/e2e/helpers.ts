@@ -7,6 +7,7 @@ import type { Page } from '@playwright/test';
 /** 사이트맵의 고정 페이지 — 아이디가 아니다 */
 const STATIC_PATHS = new Set([
   'about',
+  'updates',
   'login',
   'terms',
   'privacy',
