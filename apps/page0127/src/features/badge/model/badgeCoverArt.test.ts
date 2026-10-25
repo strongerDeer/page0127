@@ -30,6 +30,14 @@ describe('배지 표지 아트', () => {
       expect(bytes.subarray(1, 4).toString()).toBe('PNG');
       expect(bytes.readUInt32BE(16)).toBe(art.width);
       expect(bytes.readUInt32BE(20)).toBe(art.height);
+      if (art.crop) {
+        expect(art.crop.x).toBeGreaterThanOrEqual(0);
+        expect(art.crop.y).toBeGreaterThanOrEqual(0);
+        expect(art.crop.width).toBeGreaterThan(0);
+        expect(art.crop.height).toBeGreaterThan(0);
+        expect(art.crop.x + art.crop.width).toBeLessThanOrEqual(art.width);
+        expect(art.crop.y + art.crop.height).toBeLessThanOrEqual(art.height);
+      }
       cells.add(`${art.src}:${art.row}:${art.column}`);
     }
     expect(cells.size).toBe(32);

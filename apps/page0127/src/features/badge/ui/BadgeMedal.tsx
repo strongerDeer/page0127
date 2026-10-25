@@ -79,10 +79,10 @@ export const BadgeMedal = ({
             className={styles.atlas}
             draggable={false}
             style={{
-              width: `${art.columns * 100}%`,
-              height: `${art.rows * 100}%`,
-              left: `${-art.column * 100}%`,
-              top: `${-art.row * 100}%`,
+              width: `${art.crop ? (art.width / art.crop.width) * 100 : art.columns * 100}%`,
+              height: `${art.crop ? (art.height / art.crop.height) * 100 : art.rows * 100}%`,
+              left: `${art.crop ? -(art.crop.x / art.crop.width) * 100 : -art.column * 100}%`,
+              top: `${art.crop ? -(art.crop.y / art.crop.height) * 100 : -art.row * 100}%`,
             }}
           />
         </span>
@@ -91,7 +91,7 @@ export const BadgeMedal = ({
             className={styles.volume}
             data-digits={String(levelValue).length}
           >
-            {levelValue}
+            <span className={styles.noteValue}>{levelValue}</span>
           </span>
         )}
         {!badge.earned && (

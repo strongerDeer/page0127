@@ -3,6 +3,7 @@ import type { BadgeId } from './badges';
 type CoverId = BadgeId | 'unwritten';
 type CoverArt = {
   src: string;
+  crop?: { x: number; y: number; width: number; height: number };
   width: number;
   height: number;
   columns: number;
@@ -13,8 +14,21 @@ type CoverArt = {
   ink: string;
 };
 
+/** 생성 시트의 실제 셀 경계를 사용해 이웃 표지의 가장자리가 섞이지 않게 한다. */
+const cellCrop = (index: number, xs: number[], ys: number[]) => {
+  const col = index % 3;
+  const row = Math.floor(index / 3);
+  return {
+    x: xs[col]! + 1,
+    y: ys[row]! + 1,
+    width: xs[col + 1]! - xs[col]! - 2,
+    height: ys[row + 1]! - ys[row]! - 2,
+  };
+};
+
 const story = (index: number, paper: string, ink: string): CoverArt => ({
   src: '/badges/editorial/story-art-v3.png',
+  crop: cellCrop(index, [0, 362, 724, 1086], [0, 482, 960, 1448]),
   width: 1086,
   height: 1448,
   columns: 3,
@@ -26,6 +40,7 @@ const story = (index: number, paper: string, ink: string): CoverArt => ({
 });
 const companion = (index: number, paper: string, ink: string): CoverArt => ({
   src: '/badges/editorial/companion-art-v7.png',
+  crop: cellCrop(index, [0, 313, 627, 941], [0, 437, 866, 1265, 1672]),
   width: 941,
   height: 1672,
   columns: 3,
@@ -38,6 +53,7 @@ const companion = (index: number, paper: string, ink: string): CoverArt => ({
 
 const expansion = (index: number, paper: string, ink: string): CoverArt => ({
   src: '/badges/editorial/expansion-art-v5.png',
+  crop: cellCrop(index, [0, 315, 627, 941], [0, 422, 836, 1242, 1672]),
   width: 941,
   height: 1672,
   columns: 3,
@@ -84,6 +100,7 @@ const COVER_ART: Record<CoverId, CoverArt> = {
   unwritten: {
     ...companion(10, '#c9c8c1', '#35434a'),
     src: '/badges/editorial/companion-art-v2.png',
+    crop: undefined,
     width: 941,
     height: 1672,
   },

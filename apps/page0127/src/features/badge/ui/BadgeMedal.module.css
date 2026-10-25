@@ -79,50 +79,53 @@
 }
 .volume {
   position: absolute;
-  right: 8%;
-  bottom: 8%;
+  isolation: isolate;
+  right: 6%;
+  bottom: 6%;
   left: auto;
   display: grid;
   place-items: center;
-  width: 36%;
+  width: 38%;
   aspect-ratio: 1;
-  padding: 2%;
-  color: #14294e;
-  background: linear-gradient(
-    165deg,
-    color-mix(in srgb, var(--note-paper), white 12%),
-    var(--note-paper)
-  );
-  border-radius: 0;
-  box-shadow:
-    1px 3px 3px rgb(20 41 78 / 20%),
-    inset 0 1px 0 rgb(255 255 255 / 45%);
+  color: #213654;
+  background: none;
   transform: rotate(-4deg);
   text-align: center;
   font-family: "Page0127 Cover Sans", sans-serif;
   font-weight: 900;
-  font-size: 22cqw;
+  font-size: 19cqw;
   line-height: 1;
   letter-spacing: -0.06em;
 }
+.volume::before,
 .volume::after {
   content: "";
   position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 16%;
-  aspect-ratio: 1;
-  background: linear-gradient(
-    135deg,
-    transparent 49%,
-    rgb(255 255 255 / 60%) 50%
-  );
+  inset: 0;
+  pointer-events: none;
+}
+.volume::before {
+  z-index: -1;
+  background: var(--note-paper);
+  mask: url("/badges/editorial/note-paper.webp") center / 100% 100% no-repeat;
+}
+.volume::after {
+  z-index: 0;
+  background: url("/badges/editorial/note-paper.webp") center / 100% 100%
+    no-repeat;
+  mix-blend-mode: multiply;
+}
+.noteValue {
+  position: relative;
+  z-index: 1;
+  display: block;
+  padding-top: 3%;
 }
 .volume[data-digits="3"] {
-  font-size: 17cqw;
+  font-size: 16cqw;
 }
 .volume[data-digits="4"] {
-  font-size: 13cqw;
+  font-size: 12cqw;
 }
 .book[data-locked] .cover {
   filter: grayscale(0.95);

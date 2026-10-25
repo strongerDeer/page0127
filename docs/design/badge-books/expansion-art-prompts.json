@@ -3,7 +3,8 @@
   "finalAssets": [
     "story-art-v3.png",
     "companion-art-v7.png",
-    "expansion-art-v5.png"
+    "expansion-art-v5.png",
+    "note-paper.webp"
   ],
   "layout": "Typography/whitespace inside the artworks only. No CSS inset, mat, or artwork shrinking. Original unwritten cover unchanged.",
   "prompts": [
@@ -58,6 +59,10 @@
     {
       "key": "companion-v7",
       "prompt": "Precise edit of THIS 3column x4row Korean book-cover atlas. Keep exactgrid,eachcell3:4,edge-to-edge,no gutters,frames,mockup. ALL UNMENTIONED cells unchanged. Large readable titleand12%safemargin, noCSSmat/shrinking. CHANGES ONLY: R1C1 '쌓이는 이야기': CHANGE TITLE FONT fromheavyGothicsans to elegant KOREAN MYEONGJO / MINCHO SERIF withvisible triangularserifsandstrokecontrast. Navyink, mediumbold enough toread, two centeredlines '쌓이는'/'이야기', generous12%top/leftsafeinset. Keep simpleillustratedbookshelf below, noothertext/numbers. R1C3 '0127의 날': make a LITTLE CUTER while retaining date01/27 clearly. Friendly SOFT ROUNDED large numerals01 over27, buttercream and softskyblue accents, small mintbookmark withtinyfriendlyface or a tiny handdrawn readinghorse inlowerquietarea. Lightwarmhandmade childrens-publishingcharm, not3D, no shinymaximalistAIscene. '의 날' in small friendlyhandlettering beside27, clear breathingroom. Noextratitle/numerals. R3C2 '신간 발견': KEEP original strong blackcondensedGothictype onorange, rightverticalblackstripes andsinglecreamrippedwrapper. LEFTALIGN both titlelines '신간'/'발견' at SAME PRECISE x-coordinate as bottomLEFTparallelverticalstripegroup and anyshortseparatorline. The leftedgeoftypeanddecorativeline/stripegroupmustlineup, unifiededitorialalignment. Keepconfidentfontscale but at least10%leftsafeinset,12%topbreathingroom. Don'tcenter thetitle orshrinktoasmallblock. R4C1 '세 번째 만남': REDESIGN completely into the SAME BOLD GRAPHIC TYPOGRAPHIC publisherfamily as '하루 두 권'(R2C2) and '신간 발견'(R3C2). No photograph/no wornbookrealism. Cleanwarmivory/FORESTGREEN/blackcover, heavyweightcondensedKoreanGothic title '세 번째' above '만남', safelyinset12%, strongreadability. THREE simplegeometricbook/pageblock silhouettes or threeparallelbookmarkbands asgraphicloweraccent communicatingthreeencounters; controlledverticalprintlines andsinglepapertearoptional. Distinctcolormakesfamilyrecognizablebutnotidentical. R3C3 '책에 관한 책': preserveoriginalredfine recursivebookdiagramCENTER, '책에' TOP and '관한 책' BOTTOM. BOTH titleblocks MUSTuseEXACTSAMEFONTSIZE andfontfamily: refineKoreanredMyeongjotype, reducebottom'관한 책' noticeably to MATCH top'책에'. Both horizontallyCENTERALIGNED within cover, notleftaligned. ComfortableTOPandBOTTOMblankmargins12%, delicateredbookdiagramnotcrowded. Noextra prose. R2C2 하루두권, R1C2넓은시야,R2C1새해첫책,R2C3솔직한독자,R3C1얇지만깊은,R4C2graysecretcover,R3C2otherart andR4C3blankotherwiseunchanged. Finishedatlasonly."
+    },
+    {
+      "key": "note-paper",
+      "prompt": "Create ONE production UI texture asset: a SINGLE BLANK premium paper sticky note, almost square, viewed EXACTLY straight on / orthographic front, no perspective tilt, no text, no numbers, no symbols. Genuine thin matte off-white / very pale warm-gray stationery paper with subtle microscopic fibers, realistic paper thickness, a calm horizontal adhesive band across upper12% very slightly flatter/darker, extremely subtle natural waviness, a gently lifting LOWER EDGE and tiny right-bottom corner curl (NOT a large triangular folded dog-ear), soft physically plausible contact shadow immediately behind lower edge. The note fills about90%ofcanvas with narrow transparent area around for shadow. Outside note MUST genuinely TRANSPARENT alpha, no background table, no scene, no other objects. Restrained photographic product rendering, elegant tactile paper, no cartoon, no shiny sticker/plastic, no thick bevel, no harshblackshadow, no overdramaticcurl. Light from upperleft. Keep paper itself neutral nearlywhite so CSS can tint it to pastel yellow/mint/pink/blue later while retaining paper shading. No frame/margininsidepaper. Output reusable transparent raster texture only."
     }
   ]
 }
