@@ -6,6 +6,7 @@ import Link from 'next/link';
 
 import { ChevronRight } from 'lucide-react';
 
+import { getBadgeEvidence } from '../model/badgeEvidence';
 import { computeBadges } from '../model/badges';
 import { BadgeTile } from './BadgeTile';
 
@@ -62,7 +63,12 @@ export const BadgeSummary = ({
         <ul className={styles.summaryShelf} aria-label='획득한 배지 책장'>
           {earned.map((badge) => (
             <li key={`${badge.id}-${badge.level}`} className={styles.shelfItem}>
-              <BadgeTile badge={badge} username={username} size={76} />
+              <BadgeTile
+                evidence={getBadgeEvidence(badge, { books, readingGoal })}
+                badge={badge}
+                username={username}
+                size={76}
+              />
             </li>
           ))}
         </ul>

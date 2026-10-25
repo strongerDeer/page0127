@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 
+import { getBadgeEvidence } from '../model/badgeEvidence';
 import { computeBadges } from '../model/badges';
 import { BadgeTile } from './BadgeTile';
 
@@ -84,6 +85,7 @@ export const BadgeCollection = ({
                 className={styles.shelfItem}
               >
                 <BadgeTile
+                  evidence={getBadgeEvidence(badge, { books, readingGoal })}
                   badge={badge}
                   username={username}
                   size={112}

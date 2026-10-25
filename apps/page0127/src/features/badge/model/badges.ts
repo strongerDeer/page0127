@@ -141,13 +141,13 @@ const NEW_RELEASE_DAYS = 31;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** 완독 기록을 읽은 순서(오래된 것부터)로 — 동률은 등록 순 */
-const byReadOrder = (a: Book, b: Book) =>
+export const byReadOrder = (a: Book, b: Book) =>
   (a.completed_date ?? a.created_at).localeCompare(
     b.completed_date ?? b.created_at
   ) || a.created_at.localeCompare(b.created_at);
 
 /** 같은 책의 회독을 한 권으로 세기 위한 키 (dedupeReadings 와 같은 기준) */
-const bookKey = (book: Book) =>
+export const bookKey = (book: Book) =>
   book.isbn ? `isbn:${book.isbn}` : `id:${book.id}`;
 
 const readAt = (book: Book) => book.completed_date ?? book.created_at;

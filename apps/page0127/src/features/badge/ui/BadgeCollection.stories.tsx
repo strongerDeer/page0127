@@ -266,3 +266,50 @@ export const AllBadgeCovers: Story = {
     </div>
   ),
 };
+
+export const ClassicEvidence: Story = {
+  args: {
+    books: Array.from({ length: 6 }, (_, index) =>
+      createTestBook({
+        id: `evidence-${index + 1}`,
+        isbn: `evidence-${index + 1}`,
+        title: [
+          '이방인',
+          '페스트',
+          '호밀밭의 파수꾼',
+          '동물농장',
+          '변신',
+          '데미안',
+        ][index]!,
+        author: '검수 작가',
+        category: '고전',
+        completed_date: `2024-01-0${index + 1}`,
+      })
+    ),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(
+      canvas.getByRole('button', { name: '시간을 건너온 책 · 5권 (획득)' })
+    );
+    const dialog = within(
+      within(canvasElement.ownerDocument.body).getByRole('dialog')
+    );
+    await waitFor(() =>
+      expect(
+        dialog.getByRole('heading', { name: '집계된 고전 · 6권' })
+      ).toBeVisible()
+    );
+    const list = within(dialog.getByRole('list', { name: '집계된 고전' }));
+    await expect(list.getAllByRole('listitem')).toHaveLength(6);
+    await expect(list.getByRole('link', { name: '이방인' })).toHaveAttribute(
+      'href',
+      '/stronger_khj/evidence-1'
+    );
+    await expect(list.getByText('5권 달성', { exact: true })).toBeVisible();
+    await expect(
+      dialog.getByRole('button', { name: '책 펼쳐보기' })
+    ).toHaveAttribute('aria-pressed', 'false');
+    await userEvent.keyboard('{Escape}');
+  },
+};

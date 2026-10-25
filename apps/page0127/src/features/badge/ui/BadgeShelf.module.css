@@ -369,3 +369,35 @@
 .summaryShelf .shelfItem {
   min-height: 170px;
 }
+
+.evidence {
+  padding: 16px;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: var(--card);
+  text-align: left;
+}
+.evidenceList {
+  padding: 0;
+  list-style: none;
+  max-height: 320px;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  margin-top: 12px;
+}
+.evidenceList li {
+  display: flex;
+  gap: 10px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line-soft);
+}
+.evidenceNumber {
+  flex: 0 0 20px;
+  color: var(--text-subtle);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.evidenceList a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

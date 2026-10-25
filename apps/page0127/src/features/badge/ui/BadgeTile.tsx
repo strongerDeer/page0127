@@ -23,15 +23,18 @@ import {
   isSecretBadge,
 } from '../model/badgePresentation';
 import { badgeUnit } from '../model/badges';
+import { BadgeEvidenceBooks } from './BadgeEvidenceBooks';
 import { BadgeMedal } from './BadgeMedal';
 import { BadgeStack } from './BadgeStack';
 
+import type { BadgeEvidence } from '../model/badgeEvidence';
 import type { Badge } from '../model/badges';
 
 import styles from './BadgeShelf.module.css';
 
 type BadgeTileProps = {
   badge: Badge;
+  evidence?: BadgeEvidence;
   size?: number;
   showProgress?: boolean;
   username?: string;
@@ -40,6 +43,7 @@ type BadgeTileProps = {
 /** 목록은 정면에 고정하고, 상세에서 선택한 책의 표지만 펼친다. */
 export const BadgeTile = ({
   badge,
+  evidence,
   size = 112,
   showProgress = false,
   username,
@@ -116,7 +120,7 @@ export const BadgeTile = ({
             {opened ? '책장에 꽂기' : '책 펼쳐보기'}
           </Button>
         )}
-        {opened && badge.earned && (badge.book || earnedDate) && (
+        {!evidence && opened && badge.earned && (badge.book || earnedDate) && (
           <div className={styles.record}>
             <p className='mb-1 text-xs text-text-subtle'>이 배지를 만든 기록</p>
             {badge.book && (
@@ -154,6 +158,13 @@ export const BadgeTile = ({
               {progressLabel}
             </p>
           </div>
+        )}
+        {!secret && evidence && (
+          <BadgeEvidenceBooks
+            key={badge.id}
+            evidence={evidence}
+            username={username}
+          />
         )}
         {!!badge.stages?.length && (
           <ol className={styles.stageList} aria-label='성장 단계별 획득 기록'>
