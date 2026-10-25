@@ -32,8 +32,6 @@ const SCAN_DIRS = ['src', 'app'];
 const EXEMPT_FILES: string[] = [
   // public/badges/editorial/ 의 로컬 표지 아트만 그린다
   'src/features/badge/ui/BadgeMedal.tsx',
-  // 같은 출처의 동적 라우트(/{username}/story-image)만 그리고, 최적화를 일부러 끈다(unoptimized)
-  'src/widgets/landing/ui/ShelfShowcaseSection.tsx',
 ];
 
 const collectFiles = (dir: string): string[] => {

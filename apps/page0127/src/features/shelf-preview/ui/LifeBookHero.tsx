@@ -79,19 +79,19 @@ export const LifeBookHero = ({ leaders }: LifeBookHeroProps) => {
       className='tint-cool grid gap-x-16 gap-y-10 rounded-3xl px-5 py-8 md:p-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]'
     >
       <div>
-        {/* 공감 문장·h1 은 A 와 같다 — 검색 노출 문장을 실험으로 흔들지 않는다 */}
+        {/* 공감 문장·제목은 예전 A 안과 같다. 홈의 h1 은 첫 화면이 맡아 여기는 h2 다(2026-10-25) */}
         <HeroEyebrow />
-        <h1
+        <h2
           id='shelf-preview-title'
           className='break-keep text-3xl font-extrabold leading-tight tracking-tight text-text-strong md:text-5xl'
         >
           책장을 보면,
           <br />그 사람이 보인다.
-        </h1>
-
-        <h2 className='mt-8 text-2xl font-extrabold text-text-strong md:mt-10 md:text-4xl'>
-          당신의 인생책은?
         </h2>
+
+        <h3 className='mt-8 text-2xl font-extrabold text-text-strong md:mt-10 md:text-4xl'>
+          당신의 인생책은?
+        </h3>
 
         <div className='mt-5 flex flex-col gap-5 sm:flex-row sm:items-end md:mt-6'>
           {chosen ? (

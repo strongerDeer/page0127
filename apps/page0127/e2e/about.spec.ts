@@ -88,12 +88,17 @@ test('표지 띠에 깨진 이미지가 보이지 않는다', async ({ page }) =
   expect(broken).toBe(0);
 });
 
-test('랜딩 하단에서 소개 페이지의 이용 방법으로 갈 수 있다', async ({
+test('홈 첫 화면 버튼은 같은 페이지의 맛보기·둘러보기로 내려간다', async ({
   page,
 }) => {
+  // 소개 페이지가 홈에 합쳐졌다(2026-10-25) — 버튼이 다른 페이지로 나가지 않는다
   await page.goto('/');
-  const link = page.getByRole('link', { name: /어떻게 쓰는지 보기/ });
-  await expect(link).toHaveAttribute('href', '/about#steps');
+  await expect(
+    page.getByRole('link', { name: '내 책장 만들어 보기' })
+  ).toHaveAttribute('href', '#first-impression');
+  await expect(
+    page.getByRole('link', { name: '어떻게 쓰나요?' })
+  ).toHaveAttribute('href', '#highlights');
 });
 
 test('상단 메뉴에서 소개로 갈 수 있다(데스크톱)', async ({ page }) => {

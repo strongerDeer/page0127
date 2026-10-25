@@ -10,12 +10,11 @@ import { expect, test } from '@playwright/test';
 test('랜딩 페이지가 로드된다', async ({ page }) => {
   await page.goto('/');
 
-  // 랭킹 등 일부 섹션은 데이터/외부 API에 의존하지만,
-  // 취향 노트 섹션의 제목은 데이터 없이 항상 렌더되므로 안정적인 앵커로 쓴다.
-  // (머리말 "취향 노트"는 예시 카드 문장에도 들어 있어 제목으로 찾는다)
-  await expect(
-    page.getByRole('heading', { name: /취향의 문장/ })
-  ).toBeVisible();
+  // 표지·맛보기 등 일부 섹션은 데이터에 의존하지만,
+  // 첫 화면 제목(h1)은 데이터 없이 항상 렌더되므로 안정적인 앵커로 쓴다.
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(
+    '읽은 책을 꽂아 두면'
+  );
 });
 
 test('로그인 페이지에 소셜 로그인 버튼이 모두 보인다', async ({ page }) => {

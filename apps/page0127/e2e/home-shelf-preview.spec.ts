@@ -8,7 +8,7 @@ import { expect, type Page, test } from '@playwright/test';
 const PENDING_KEY = 'page0127:pending-shelf';
 
 const section = (page: Page) =>
-  page.getByRole('region', { name: /책장을 보면/ });
+  page.getByRole('region', { name: /당신의 첫인상/ });
 
 const pickButtons = (page: Page) =>
   section(page).getByRole('list').first().getByRole('button');
@@ -49,7 +49,8 @@ test('다른 브라우저에서 선택한 책 복원 후에도 원래 책 정보
   page,
   browser,
 }) => {
-  await page.goto('/');
+  // 홈에서 랭킹이 빠져(2026-10-25 홈 개편) 책 정보 링크는 전체 도서에서 찾는다
+  await page.goto('/books/all');
   const link = page.locator('a[href^="/books/info/"]').first();
   await expect(link).toBeVisible();
   const path = await link.getAttribute('href');
@@ -78,27 +79,28 @@ test('다른 브라우저에서 선택한 책 복원 후에도 원래 책 정보
   }
 });
 
-test('비로그인 홈의 h1 은 맛보기 제목 하나다', async ({ page }) => {
+test('비로그인 홈의 h1 은 첫 화면 제목 하나다', async ({ page }) => {
   await page.goto('/');
   await expect(section(page)).toBeVisible();
   await expect(page.locator('h1')).toHaveCount(1);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    /책장을 보면/
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(
+    '읽은 책을 꽂아 두면'
   );
 });
 
-test('비로그인 홈은 맛보기 바로 다음에 취향 노트 예시를 보여 준다', async ({
+test('비로그인 홈은 왜 page0127.인가요 → 맛보기 → 보이는 것들 순서다', async ({
   page,
 }) => {
   await page.goto('/');
   const top = async (name: RegExp) =>
-    (await page.getByRole('heading', { name }).first().boundingBox())?.y ?? 0;
-  const taste = await top(/취향의 문장이 됩니다/);
-  // 제목은 표본 크기에 따라 바뀐다(rankingTitle.ts) — 두 제목 모두 잡는다
-  const ranking = await top(/리더들이 완독한 책|많이 읽힌 책/);
-  // 랭킹은 독자가 적은 지금 한 사람의 책장에 가깝다 — 방금 고른 책의 다음 보상을 먼저 보여 준다
-  expect(taste).toBeGreaterThan(0);
-  expect(taste).toBeLessThan(ranking);
+    (await page.getByRole('region', { name }).first().boundingBox())?.y ?? 0;
+  const why = await top(/왜 page0127/);
+  const preview = await top(/당신의 첫인상/);
+  const highlights = await top(/보이는 것들/);
+  // 설명(왜) → 체험(맛보기) → 그다음 보상(쌓이면 보이는 것들) 순으로 읽힌다(2026-10-25 홈 개편)
+  expect(why).toBeGreaterThan(0);
+  expect(why).toBeLessThan(preview);
+  expect(preview).toBeLessThan(highlights);
 });
 
 test('0권이면 목표 링크를 펼쳐 저장하고, 로그인으로 가며 목표를 보관한다', async ({

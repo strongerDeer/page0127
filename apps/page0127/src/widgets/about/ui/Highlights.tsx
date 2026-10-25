@@ -112,9 +112,11 @@ export const Highlights = ({ books, top }: HighlightsProps) => {
     covers.length ? covers[i % covers.length] : null;
 
   return (
+    // id: 홈 첫 화면의 "어떻게 쓰나요?"가 여기로 내려온다
     <section
+      id='highlights'
       aria-labelledby='highlights-title'
-      className='mx-auto max-w-6xl px-4 py-32'
+      className='mx-auto max-w-6xl scroll-mt-20 px-4 py-24 md:py-32'
     >
       <SectionHead
         id='highlights-title'
