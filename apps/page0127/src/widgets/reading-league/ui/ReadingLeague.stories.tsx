@@ -1,6 +1,6 @@
 import { Button } from '@repo/ui';
 import { Pointer } from 'lucide-react';
-import { expect, userEvent, within } from 'storybook/test';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 
 import { ReadingLeague } from './ReadingLeague';
 import {
@@ -176,10 +176,8 @@ export const NoPublicRecords: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(
-      canvas.getByText('아직 순위가 없어요.', { exact: false })
-    ).toBeVisible();
-    await expect(canvas.getAllByLabelText('순위 없음')).toHaveLength(3);
+    const list = within(canvas.getByRole('list', { name: '전체 독서 순위' }));
+    await expect(list.getAllByLabelText('1위')).toHaveLength(3);
   },
 };
 
@@ -197,9 +195,12 @@ export const MissingPages: Story = {
     await expect(
       canvas.getByText('쪽수 정보를 등록하면 비교할 수 있어요.')
     ).toBeVisible();
-    await expect(canvas.getByRole('status')).toHaveTextContent(
-      '나: 쪽수 미등록 12권'
+    await userEvent.click(
+      canvas.getByRole('button', { name: '독서 배틀 집계 기준' })
     );
+    await expect(
+      within(canvasElement.ownerDocument.body).getByRole('status')
+    ).toHaveTextContent('나: 쪽수 미등록 12권');
   },
 };
 
@@ -233,7 +234,7 @@ export const RetryableError: Story = {
 };
 
 export const OneActiveReader: Story = {
-  name: '여러 명 · 공개 기록 한 명 · 간결한 순위',
+  name: '여러 명 · 0권도 공동 순위와 작은 시상대',
   args: {
     readers: [me, zero, { ...zero, userId: 'another', nickname: '다른 리더' }],
     actions: (reader) => (
@@ -249,7 +250,7 @@ export const OneActiveReader: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await expect(canvas.queryByLabelText('상위 세 명')).not.toBeInTheDocument();
+    await expect(canvas.getByLabelText('상위 세 명')).toBeVisible();
     await expect(
       canvas.getAllByRole('button', { name: /님 콕 찌르기/ })
     ).toHaveLength(2);
@@ -259,7 +260,61 @@ export const OneActiveReader: Story = {
         'listitem'
       )
     ).toHaveLength(3);
+    await expect(
+      within(
+        canvas.getByRole('list', { name: '전체 독서 순위' })
+      ).getAllByLabelText('2위')
+    ).toHaveLength(2);
     await expect(canvas.queryByText(/선두 기록 대비/)).not.toBeInTheDocument();
+  },
+};
+
+export const NudgeInsteadOfWaiting: Story = {
+  name: '상대 0권 · 대기 문구 대신 콕 찌르기',
+  args: {
+    readers: [me, zero],
+    actions: (_reader, _mine, appearance) => (
+      <Button
+        variant='outline'
+        size={appearance === 'label' ? 'md' : 'icon-sm'}
+        aria-label='호님 콕 찌르기'
+      >
+        <Pointer size={16} aria-hidden='true' />
+        {appearance === 'label' && '콕 찌르기'}
+      </Button>
+    ),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(
+      canvas.getByRole('button', { name: '호님 콕 찌르기' })
+    ).toHaveTextContent('콕 찌르기');
+    await expect(
+      canvas.queryByText('상대의 올해 공개 기록을 기다려요')
+    ).not.toBeInTheDocument();
+  },
+};
+
+export const HelpOnDemand: Story = {
+  name: '집계 기준 · 아이콘을 눌러 확인',
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const page = within(canvasElement.ownerDocument.body);
+    await expect(
+      page.queryByText(/서울 기준 2026년 공개 완독/)
+    ).not.toBeInTheDocument();
+    await userEvent.click(
+      canvas.getByRole('button', { name: '독서 배틀 집계 기준' })
+    );
+    await waitFor(() =>
+      expect(page.getByText(/서울 기준 2026년 공개 완독/)).toBeVisible()
+    );
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() =>
+      expect(
+        page.queryByText(/서울 기준 2026년 공개 완독/)
+      ).not.toBeInTheDocument()
+    );
   },
 };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useState } from 'react';
+import { useEffect } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 
@@ -38,8 +38,6 @@ export const LiveReadingLeague = ({
   initialSocial?: ReadingSocial;
   recommendedReaders?: RecommendedReaderCard[];
 }) => {
-  const [expanded, setExpanded] = useState(false);
-  const contentId = useId();
   const { data, isPending, isError, isFetching, refetch } = useQuery({
     queryKey: followKeys.readingLeague(currentUserId),
     queryFn: () => getFollowingLeague(createClient(), currentUserId),
@@ -104,27 +102,7 @@ export const LiveReadingLeague = ({
 
   return (
     <div className='space-y-4'>
-      <button
-        type='button'
-        className='flex w-full items-center justify-between gap-3 rounded-xl border border-line bg-card p-4 text-left lg:hidden'
-        aria-expanded={expanded}
-        aria-controls={contentId}
-        onClick={() => setExpanded((v) => !v)}
-      >
-        <span>
-          <strong className='block text-sm'>올해의 독서 배틀</strong>
-          <span className='mt-1 block text-xs text-text-subtle'>
-            나 {mine?.completedBooks ?? 0}권 · 팔로잉 {readers.length - 1}명
-          </span>
-        </span>
-        <span className='text-sm text-primary'>
-          {expanded ? '접기' : '펼쳐 보기'}
-        </span>
-      </button>
-      <div
-        id={contentId}
-        className={`${expanded ? 'block' : 'hidden'} space-y-4 lg:block`}
-      >
+      <div className='space-y-4'>
         {isError && (
           <ReadingLeagueError
             onRetry={() => void refetch()}
@@ -135,10 +113,10 @@ export const LiveReadingLeague = ({
           currentUserId={currentUserId}
           year={data.year}
           readers={readers}
-          actions={(recipient, self) => (
+          actions={(recipient, self, appearance = 'icon') => (
             <>
               <NudgeButton
-                iconOnly
+                iconOnly={appearance === 'icon'}
                 key={recipient.userId}
                 currentUserId={currentUserId}
                 recipientId={recipient.userId}

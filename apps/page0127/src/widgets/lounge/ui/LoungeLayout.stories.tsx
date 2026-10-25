@@ -1,5 +1,6 @@
 import { Button } from '@repo/ui';
 import { Pointer } from 'lucide-react';
+import { expect, userEvent, within } from 'storybook/test';
 
 import { TasteClashCard } from '@/features/taste-clash';
 
@@ -66,4 +67,27 @@ const meta = {
 } satisfies Meta<typeof LoungeLayout>;
 export default meta;
 type Story = StoryObj<typeof meta>;
-export const TwoColumns: Story = {};
+export const TwoColumns: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    if (window.innerWidth < 1024) {
+      await expect(
+        canvas.getByRole('tabpanel', { name: '피드' })
+      ).toBeVisible();
+      await userEvent.click(canvas.getByRole('tab', { name: '배틀' }));
+      await expect(
+        canvas.getByRole('tabpanel', { name: '배틀' })
+      ).toBeVisible();
+      await expect(
+        canvas.queryByRole('tabpanel', { name: '피드' })
+      ).not.toBeInTheDocument();
+    } else {
+      await expect(
+        canvas.getByRole('tabpanel', { name: '피드' })
+      ).toBeVisible();
+      await expect(
+        canvas.getByRole('tabpanel', { name: '배틀' })
+      ).toBeVisible();
+    }
+  },
+};

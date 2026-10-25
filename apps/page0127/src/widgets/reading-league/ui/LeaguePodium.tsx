@@ -21,7 +21,7 @@ export const LeaguePodium = ({
   unit: string;
   actions?: (reader: RankedReader) => ReactNode;
 }) => {
-  const [first, second, third] = readers.filter((reader) => reader.value > 0);
+  const [first, second, third] = readers;
   const winners = [second, first, third].filter(
     (reader): reader is RankedReader => Boolean(reader)
   );
@@ -35,11 +35,9 @@ export const LeaguePodium = ({
       <div className={styles.board}>
         <div className={styles.boardMeta}>
           <span>나와 팔로잉 {readers.length - 1}명</span>
-          <span>
-            {first && !second ? '다음 라이벌을 기다려요' : '올해의 현재 순위'}
-          </span>
+          <span>올해의 현재 순위</span>
         </div>
-        {first && second ? (
+        {first ? (
           <div className={styles.podium} aria-label='상위 세 명'>
             {winners.map((reader) => (
               <ProfileLink
@@ -49,7 +47,7 @@ export const LeaguePodium = ({
               >
                 <div className={styles.podiumBody} data-rank={reader.rank}>
                   <span className={styles.podiumAvatar}>
-                    {reader.rank === 1 && (
+                    {reader.rank === 1 && reader.value > 0 && (
                       <Crown
                         className={styles.crown}
                         size={22}
@@ -75,7 +73,7 @@ export const LeaguePodium = ({
                     className={styles.step}
                     style={
                       {
-                        '--league-step-height': `${reader.rank === 1 ? 100 : reader.rank === 2 ? 72 : 48}px`,
+                        '--league-step-height': `${reader.rank === 1 ? 80 : reader.rank === 2 ? 64 : 52}px`,
                       } as CSSProperties
                     }
                   >
@@ -104,6 +102,7 @@ export const LeaguePodium = ({
             key={reader.userId}
             className={styles.readerRow}
             data-me={reader.userId === currentUserId}
+            data-actions={Boolean(actions)}
           >
             <span
               className={styles.rank}
@@ -111,14 +110,7 @@ export const LeaguePodium = ({
             >
               {reader.rank ?? '—'}
             </span>
-            <div className={styles.readerProfile}>
-              {actions && (
-                <span className={styles.nudgeSlot}>
-                  {reader.userId !== currentUserId && actions(reader)}
-                </span>
-              )}
-              <LeagueAvatar reader={reader} />
-            </div>
+            <LeagueAvatar reader={reader} />
             <div className={styles.readerInfo}>
               <ProfileLink
                 username={reader.username}
@@ -140,6 +132,11 @@ export const LeaguePodium = ({
               {reader.value.toLocaleString('ko-KR')}
               {unit}
             </strong>
+            {actions && (
+              <span className={styles.nudgeSlot}>
+                {reader.userId !== currentUserId && actions(reader)}
+              </span>
+            )}
           </li>
         ))}
       </ol>

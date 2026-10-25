@@ -37,7 +37,7 @@ export const rankReaders = (
     if (index === 0 || value !== metricValue(sorted[index - 1], metric)) {
       rank = index + 1;
     }
-    return { ...reader, value, rank: value > 0 ? rank : null };
+    return { ...reader, value, rank };
   });
 };
 

@@ -46,7 +46,38 @@
 }
 
 .header {
-  padding: 22px 20px 0;
+  padding: 18px 16px 12px;
+  border-bottom: 1px solid var(--line-soft);
+  background: linear-gradient(
+    115deg,
+    color-mix(in srgb, var(--primary) 10%, var(--card)) 58%,
+    color-mix(in srgb, var(--league-mint) 14%, var(--card)) 58.3%
+  );
+}
+.battleBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.battleBanner > div {
+  min-width: 0;
+}
+.bannerTitle {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.bannerVersus {
+  flex-shrink: 0;
+  font-size: 44px;
+  font-style: italic;
+  font-weight: 950;
+  line-height: 1;
+  letter-spacing: -5px;
+  padding-right: 4px;
+  color: var(--primary);
+  text-shadow: 3px 3px 0 var(--card);
 }
 .overline {
   margin: 0 0 9px;
@@ -62,7 +93,7 @@
   gap: 10px;
   flex-wrap: wrap;
 }
-.headingRow h2 {
+.bannerTitle h2 {
   margin: 0;
   font-size: 21px;
   font-weight: 750;
@@ -70,6 +101,9 @@
 }
 .metricButtons {
   display: flex;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 10px;
   padding: 3px;
   gap: 2px;
   border-radius: 9px;
@@ -483,7 +517,7 @@
   justify-content: center;
   gap: 13px;
   padding: 28px 2px 0;
-  min-height: 240px;
+  min-height: 215px;
 }
 .podiumPerson {
   flex: 1;
@@ -567,7 +601,7 @@
   align-items: flex-start;
   justify-content: center;
   border-top: 14px solid transparent;
-  padding-top: 12px;
+  padding-top: 4px;
   background: linear-gradient(
     100deg,
     color-mix(in srgb, var(--primary) 20%, var(--card)),
@@ -616,7 +650,7 @@
 .step > span {
   position: relative;
   z-index: 2;
-  font-size: 44px;
+  font-size: 28px;
   font-weight: 800;
   letter-spacing: -2px;
   color: var(--primary);
@@ -670,7 +704,7 @@
 }
 .readerRow {
   display: grid;
-  grid-template-columns: 18px auto minmax(0, 1fr) auto;
+  grid-template-columns: 18px 30px minmax(0, 1fr) auto;
   gap: 10px;
   align-items: center;
   padding: 10px 15px;
@@ -680,10 +714,8 @@
 .readerRow[data-me="true"] {
   background: var(--accent);
 }
-.readerProfile {
-  display: flex;
-  align-items: center;
-  gap: 7px;
+.readerRow[data-actions="true"] {
+  grid-template-columns: 18px 30px minmax(0, 1fr) auto 32px;
 }
 .nudgeSlot {
   display: block;
@@ -825,7 +857,7 @@
   .header {
     padding: 18px 14px 0;
   }
-  .headingRow h2 {
+  .bannerTitle h2 {
     font-size: 19px;
   }
   .duel {
