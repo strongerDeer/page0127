@@ -1,5 +1,7 @@
 import { mapToMainCategory } from '@/shared/lib/categoryMapper';
 
+import { isClassicBook } from './isClassicBook';
+
 import type { Book } from '@/entities/book';
 import type { ReadingGoal } from '@/entities/profile/types';
 
@@ -129,16 +131,6 @@ export const badgeUnit = (id: BadgeId) =>
       : id === 'critic'
         ? '개'
         : '권';
-
-/** 고전은 도서 공급자의 분류 경로로만 판정한다. 제목·출간연도로 추측하지 않는다. */
-export const isClassicCategory = (category: string | null) =>
-  (category ?? '')
-    .split('>')
-    .some((part) =>
-      /^(?:(?:한국|동양|서양|세계)?고전(?:문학|소설)?|classics)$/i.test(
-        part.trim()
-      )
-    );
 
 const BRICK_PAGES = 500;
 const THIN_PAGES = 150;
@@ -276,7 +268,7 @@ export const computeBadges = ({
     hitOf(categoryOrder[target - 1])
   );
 
-  const classics = completed.filter((book) => isClassicCategory(book.category));
+  const classics = completed.filter(isClassicBook);
   const classicLevel = levelOf(
     countDistinct(classics),
     CLASSIC_LEVELS,
@@ -362,7 +354,7 @@ export const computeBadges = ({
         id: 'classics',
         kind: 'growth',
         name: '시간을 건너온 책',
-        description: `고전 분류의 서로 다른 책 ${CLASSIC_LEVELS.join('·')}권 완독`,
+        description: `고전으로 확인된 서로 다른 책 ${CLASSIC_LEVELS.join('·')}권 완독`,
       },
       classicLevel.hit,
       {

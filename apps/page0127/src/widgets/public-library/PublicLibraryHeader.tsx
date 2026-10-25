@@ -28,6 +28,7 @@ import {
 } from '@/shared/lib/aiUsage';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
+import { COMPATIBILITY_MIN_BOOKS } from '@/entities/compatibility/model/analysisGate';
 import {
   TASTE_ANALYSIS_BOOK_LABEL,
   TASTE_ANALYSIS_MIN_BOOKS,
@@ -55,6 +56,7 @@ type PublicLibraryHeaderProps = {
   profile: Profile;
   username: string;
   isOwnProfile: boolean;
+  compatibilityBookCount: number;
   currentUserId?: string;
   /** 취향 분석 가능한 책 권수 (평가를 남긴 완독 책) — 소유자 전용, 방문자는 0 */
   analyzableBookCount: number;
@@ -74,6 +76,7 @@ export const PublicLibraryHeader = ({
   profile,
   username,
   isOwnProfile,
+  compatibilityBookCount,
   currentUserId,
   analyzableBookCount,
   newBooksSinceLastAnalysis,
@@ -266,14 +269,16 @@ export const PublicLibraryHeader = ({
             <div className='mt-4 flex flex-wrap items-center gap-2'>
               {!isOwnProfile && <FollowButton userId={profile.id} />}
 
-              {!isOwnProfile ? (
-                <Button asChild variant='outline' className='shadow-none'>
-                  <Link href={`/${username}/compatibility`}>
-                    <Sparkles className='h-4 w-4' />
-                    독서 케미
-                  </Link>
-                </Button>
-              ) : (
+              {!isOwnProfile &&
+                compatibilityBookCount >= COMPATIBILITY_MIN_BOOKS && (
+                  <Button asChild variant='outline' className='shadow-none'>
+                    <Link href={`/${username}/compatibility`}>
+                      <Sparkles className='h-4 w-4' />
+                      독서 케미
+                    </Link>
+                  </Button>
+                )}
+              {isOwnProfile && (
                 <Button asChild variant='outline' className='shadow-none'>
                   <Link href='/settings'>프로필 편집</Link>
                 </Button>
