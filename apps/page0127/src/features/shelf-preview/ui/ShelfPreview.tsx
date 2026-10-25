@@ -221,7 +221,8 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
           />
         </div>
 
-        <div className='flex flex-col [grid-area:shelf]'>
+        {/* 책장·다음 행동을 옅은 파란 판 하나로 묶는다 — 흰 바탕에 떠 있던 요소들이 흩어져 허전해 보였다(2026-10-25 HJ) */}
+        <div className='tint-blue flex flex-col self-start rounded-3xl p-5 md:p-7 [grid-area:shelf]'>
           <div className='flex min-h-8 items-center justify-between gap-3'>
             <p className='text-xs font-bold text-text-subtle md:text-sm'>
               내 책장 · {selected.length}권
