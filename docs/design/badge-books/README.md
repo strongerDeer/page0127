@@ -15,7 +15,7 @@
 
 성장 배지는 최고 달성 단계 하나와 이전 두 단계 표지를 포개어 보여 준다. 단계에 따라 제본과 숫자 색이 달라지고, 상세에서 단계별 획득 날짜를 확인할 수 있다. 히든은 이름과 조건을 가리되 짧은 힌트를 표시한다.
 
-표지는 `story-art-v3.png`, `companion-art-v6.png`, `expansion-art-v5.png`를 사용한다. 회색 공통 비밀 표지는 기존 `companion-art-v2.png`를 그대로 유지한다. 제목·여백·서체는 아트 자체에서 조정하며 **CSS로 표지를 축소하거나 안쪽 여백을 추가하지 않는다**. 새 표지의 최종 편집 프롬프트는 [expansion-art-prompts.json](expansion-art-prompts.json)에 보관한다.
+표지는 `story-art-v3.png`, `companion-art-v7.png`, `expansion-art-v5.png`를 사용한다. 회색 공통 비밀 표지는 기존 `companion-art-v2.png`를 그대로 유지한다. 제목·여백·서체는 아트 자체에서 조정하며 **CSS로 표지를 축소하거나 안쪽 여백을 추가하지 않는다**. 새 표지의 최종 편집 프롬프트는 [expansion-art-prompts.json](expansion-art-prompts.json)에 보관한다.
 
 아래 표와 검수 이미지는 확장 전 디자인의 기록이다.
 

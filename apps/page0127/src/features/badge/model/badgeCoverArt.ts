@@ -25,7 +25,7 @@ const story = (index: number, paper: string, ink: string): CoverArt => ({
   ink,
 });
 const companion = (index: number, paper: string, ink: string): CoverArt => ({
-  src: '/badges/editorial/companion-art-v6.png',
+  src: '/badges/editorial/companion-art-v7.png',
   width: 941,
   height: 1672,
   columns: 3,
@@ -80,7 +80,7 @@ const COVER_ART: Record<CoverId, CoverArt> = {
   'thin-but-deep': companion(6, '#d9d9d0', '#243e60'),
   'new-release': companion(7, '#f66626', '#151715'),
   'book-about-books': companion(8, '#f2eee5', '#bc2526'),
-  'worn-out': companion(9, '#ecdfc2', '#714125'),
+  'worn-out': companion(9, '#f0ead7', '#123e2d'),
   unwritten: {
     ...companion(10, '#c9c8c1', '#35434a'),
     src: '/badges/editorial/companion-art-v2.png',
