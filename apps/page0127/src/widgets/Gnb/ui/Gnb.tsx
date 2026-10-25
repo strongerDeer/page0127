@@ -40,11 +40,8 @@ export const Gnb = ({ user }: GnbProps) => {
           정식 오픈 때 이 span 하나만 지우면 된다.
         */}
         <div className='flex shrink-0 items-baseline gap-1.5'>
-          {/* 로그인했으면 내 서재로 바로 — / 는 어차피 서재로 다시 보내므로 한 번 덜 돈다 */}
-          <Link
-            href={user?.username ? `/${user.username}` : '/'}
-            className='text-lg font-bold text-primary'
-          >
+          {/* 로고는 언제나 홈 — 내 서재는 메뉴·프로필에서 간다 */}
+          <Link href='/' className='text-lg font-bold text-primary'>
             page0127.
           </Link>
           <span className='rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-medium leading-none text-primary'>

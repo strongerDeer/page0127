@@ -2,9 +2,13 @@ import Link from 'next/link';
 
 import { Button } from '@repo/ui';
 
+import { ShareSheetButton } from '@/features/share';
+
 import { type ShelfBook, splitCoverRows } from '../model/coverRows';
 import { CoverMarquee } from './CoverMarquee';
 import { Reveal } from './Reveal';
+
+import type { HomeMember } from '../model/member';
 
 import styles from './AboutHero.module.css';
 
@@ -14,6 +18,8 @@ type AboutHeroProps = {
   startHref?: string;
   /** "어떻게 쓰나요?"가 갈 곳 */
   guideHref?: string;
+  /** 로그인 사용자 — 있으면 버튼이 "내 서재로·서재 공유하기"로 바뀐다 */
+  member?: HomeMember | null;
 };
 
 // 홈 히어로("책장을 보면, 그 사람이 보인다.")와 겹치지 않게 문장을 바꾸고,
@@ -24,6 +30,7 @@ export const AboutHero = ({
   books,
   startHref = '/',
   guideHref = '#steps',
+  member = null,
 }: AboutHeroProps) => {
   const rows = splitCoverRows(books);
 
@@ -51,13 +58,34 @@ export const AboutHero = ({
           나와요.
         </p>
         <div className='mt-8 flex flex-wrap justify-center gap-2.5'>
-          {/* 로그인으로 바로 보내지 않는다 — 고르고 책장이 서는 체험은 홈에 있다 */}
-          <Button asChild size='lg'>
-            <Link href={startHref}>내 책장 만들어 보기</Link>
-          </Button>
-          <Button asChild size='lg' variant='secondary'>
-            <Link href={guideHref}>어떻게 쓰나요?</Link>
-          </Button>
+          {member ? (
+            // 이미 서재가 있는 사람 — 체험 대신 자기 책장으로, 그리고 자랑하러
+            <>
+              <Button asChild size='lg'>
+                <Link href={`/${member.username}`}>내 서재로</Link>
+              </Button>
+              <ShareSheetButton
+                path={`/${member.username}`}
+                imagePath={`/${member.username}/story-image`}
+                fileName={`page0127-${member.username}.png`}
+                title={`${member.displayName}님의 책장`}
+                sheetTitle='서재 공유하기'
+                text='책장을 보면, 그 사람이 보입니다.'
+                triggerLabel='서재 공유하기'
+                prominent
+              />
+            </>
+          ) : (
+            <>
+              {/* 로그인으로 바로 보내지 않는다 — 고르고 책장이 서는 체험은 홈에 있다 */}
+              <Button asChild size='lg'>
+                <Link href={startHref}>내 책장 만들어 보기</Link>
+              </Button>
+              <Button asChild size='lg' variant='secondary'>
+                <Link href={guideHref}>어떻게 쓰나요?</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
 

@@ -21,9 +21,8 @@ export const GnbNav = ({ isLoggedIn }: GnbNavProps) => {
   const pathname = usePathname();
 
   const links: GnbLink[] = [
-    // 홈은 비로그인 랜딩 전용이다 — 로그인한 사람이 / 로 오면 내 서재로 보낸다.
-    // 그래서 로그인 메뉴에 '홈'을 두면 '내 서재'와 같은 곳을 가리키는 메뉴가 된다.
-    ...(isLoggedIn ? [] : [{ href: '/', label: '홈', exact: true }]),
+    // 홈은 로그인 여부와 상관없이 모두 같은 화면이다(2026-10-25) — 모두에게 보인다
+    { href: '/', label: '홈', exact: true },
     // 소개는 홈에 합쳐졌다(2026-10-25). 남은 공지·업데이트 이력은 푸터에서만 닿는다.
     { href: '/books/all', label: '전체 도서' },
     // 라운지·리더 찾기는 로그인해야 볼 수 있는 영역이라 비로그인 방문자에겐 노출하지 않는다.
