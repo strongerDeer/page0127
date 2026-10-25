@@ -6,6 +6,7 @@ import { ChevronLeft } from 'lucide-react';
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 import { toKstDateKey } from '@/shared/lib/date';
 
+import { getProfile } from '@/entities/profile/api/getProfile';
 import {
   buildRecapArchive,
   getRecapBooks,
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
 };
 
 /**
- * 지난 회상 — 홈 회상 카드의 "지난 회상 보기"로 들어온다.
+ * 지난 회상 — 내 서재 회상 카드의 "지난 회상 보기"로 들어온다.
  *
  * 왜 /books 아래인가: 최상위(/recap)는 /{username} 과 겹쳐 'recap' 이라는 아이디를 쓰는
  * 사람의 서재를 가린다. /books 는 이미 로그인 전용이고(protectedRoutes), 정적 세그먼트라
@@ -35,17 +36,21 @@ const RecapArchivePage = async () => {
   const user = await getCurrentUser();
   const now = new Date();
 
-  const weeks = buildRecapArchive(await getRecapBooks(user!.id), now);
+  const [recapBooks, profile] = await Promise.all([
+    getRecapBooks(user!.id),
+    getProfile(user!.id),
+  ]);
+  const weeks = buildRecapArchive(recapBooks, now);
 
   return (
     <PageContainer width='narrow' className='space-y-6'>
       <div>
         <Link
-          href='/'
+          // 회상 카드가 있는 내 서재로 돌아간다. 아이디가 없으면 / 가 알맞은 곳으로 보낸다
+          href={profile?.username ? `/${profile.username}` : '/'}
           className='inline-flex items-center gap-0.5 text-sm text-text-subtle hover:text-text-strong'
         >
-          <ChevronLeft className='size-4' aria-hidden />
-          홈으로
+          <ChevronLeft className='size-4' aria-hidden />내 서재로
         </Link>
         <h1 className='mt-2 text-2xl font-bold text-text-strong'>지난 회상</h1>
         <p className='mt-2 text-sm text-text-subtle'>

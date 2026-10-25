@@ -2,11 +2,12 @@ import { Suspense } from 'react';
 
 import { cookies } from 'next/headers';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
 import { ErrorBoundary } from '@repo/ui';
 
-import { createClient } from '@/shared/config/supabase/server';
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
+import { toPostLoginPath } from '@/shared/lib/auth/onboardingRedirect';
 import {
   HERO_VARIANT_COOKIE,
   isHeroAbOn,
@@ -15,6 +16,8 @@ import {
 import { JsonLd } from '@/shared/lib/seo/JsonLd';
 import { buildWebSiteJsonLd } from '@/shared/lib/seo/structuredData';
 
+import { getProfile } from '@/entities/profile/api/getProfile';
+
 import { ShelfPreviewSection } from '@/features/shelf-preview/ui/ShelfPreviewSection';
 
 import { rankingFallbackTitle } from '@/widgets/book/model/rankingTitle';
@@ -22,16 +25,18 @@ import { BookRankingError } from '@/widgets/book/ui/BookRankingError';
 import { BookRankingListSkeleton } from '@/widgets/book/ui/BookRankingListSkeleton';
 import { BookRankingSection } from '@/widgets/book/ui/BookRankingSection';
 import { DiscoveryCard } from '@/widgets/landing/ui/DiscoveryCard';
-import { HeroBannerSection } from '@/widgets/landing/ui/HeroBannerSection';
-import { HeroBannerSkeleton } from '@/widgets/landing/ui/HeroBannerSkeleton';
 import { PromoCards } from '@/widgets/landing/ui/PromoCards';
 import { StartCtaButton } from '@/widgets/landing/ui/StartCtaButton';
 import { TasteReportSection } from '@/widgets/landing/ui/TasteReportSection';
 import { TodayStrip } from '@/widgets/landing/ui/TodayStrip';
-import { WeeklyRecapCard } from '@/widgets/recap/ui/WeeklyRecapCard';
 
 /**
- * 메인 랜딩 페이지
+ * 메인 랜딩 페이지 — 비로그인 방문자 전용
+ *
+ * 로그인한 사람은 내 서재로 보낸다 (2026-10-25 홈 역할 재검토).
+ * 이 서비스의 중심은 "독서 명함"이라 로그인 사용자가 매일 볼 화면은 자기 서재다.
+ * 실제로도 로그인 직후 도착지는 이미 서재였고(toPostLoginPath), 모바일 탭에는 홈이 없어
+ * 로고를 눌러야만 오던 곳이었다. 와서 보는 것도 비로그인과 같은 큐레이션뿐이었다.
  *
  * 구성 원칙 (00_docs/07 참조)
  * - 폴드 안에 책이 보여야 한다. 기존 히어로는 50px 텍스트 + 버튼뿐이라
@@ -41,8 +46,7 @@ import { WeeklyRecapCard } from '@/widgets/recap/ui/WeeklyRecapCard';
  * - 집계 화면에는 기준일을 박는다.
  *
  * 학습 포인트:
- * - Suspense & Streaming — 배너·두 랭킹이 각각 독립적으로 도착
- * - user-specific 데이터(읽음/좋아요)는 가벼우므로 페이지에서 한 번만 fetch
+ * - Suspense & Streaming — 두 랭킹이 각각 독립적으로 도착
  */
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
@@ -64,22 +68,19 @@ const getAggregatedDate = () => {
 };
 
 const Home = async () => {
-  const supabase = await createClient();
-
-  // User-specific UI 상태만 페이지에서 직접 fetch (랭킹 RPC와 무관)
   const user = await getCurrentUser();
 
-  const myReadIsbns: string[] = [];
-
+  // 로그인했으면 내 서재로. 아이디·온보딩이 아직이면 로그인 직후와 같은 곳(온보딩)으로 보낸다 —
+  // 같은 판단을 두 군데서 따로 하면 언젠가 갈린다
   if (user) {
-    const { data: myBooks } = await supabase
-      .from('books')
-      .select('isbn')
-      .eq('user_id', user.id)
-      .eq('status', 'completed');
-    myBooks?.forEach((b: { isbn: string | null }) => {
-      if (b.isbn) myReadIsbns.push(b.isbn);
-    });
+    const profile = await getProfile(user.id);
+    redirect(
+      toPostLoginPath({
+        username: profile?.username ?? null,
+        onboardedAt: profile?.onboarded_at ?? null,
+        next: null,
+      })
+    );
   }
 
   const aggregatedDate = getAggregatedDate();
@@ -94,55 +95,21 @@ const Home = async () => {
     <div className='min-h-screen bg-background'>
       <JsonLd data={webSiteJsonLd} />
       <div className='container mx-auto max-w-6xl space-y-12 px-4 py-6 md:py-8'>
-        {/* 주간 회상 — 로그인 사용자에게만, 이번 주에 할 말이 있을 때만 나온다.
-            실패하거나 할 말이 없으면 조용히 사라진다(랜딩을 막지 않는다) */}
-        <ErrorBoundary fallback={null}>
-          <Suspense fallback={null}>
-            <WeeklyRecapCard />
-          </Suspense>
-        </ErrorBoundary>
-
-        {/*
-          페이지 대표 제목 — 화면에는 안 보이고 검색엔진과 스크린리더만 읽는다.
-
-          시각적 제목 역할은 히어로 배너가 하지만 h1 으로 삼을 수 없다. 배너 문구는
-          슬라이드마다 바뀌고 DB(hero_slides)에서 오기도 해서, 크롤러가 올 때마다
-          페이지 제목이 달라진다. 그렇다고 h1 을 비워 두면 검색엔진이 "이 페이지가
-          무엇인가" 를 판단할 첫 단서를 잃는다 — 실측 결과 랜딩의 h1 은 0개였다.
-        */}
-        {/* 비로그인이면 맛보기의 "책장을 보면, 그 사람이 보인다." 가 화면에 보이는 h1 이다.
-            여기서 또 그리면 h1 이 둘이 된다 */}
-        {user && (
-          <h1 className='sr-only'>page0127. — 책장을 보면, 그 사람이 보인다</h1>
-        )}
-
-        {/* 책장 맛보기 = 비로그인 히어로 — 처음 온 사람에게 가입할 이유를 "겪게" 한다
+        {/* 책장 맛보기 = 히어로 — 처음 온 사람에게 가입할 이유를 "겪게" 한다
             (설계: 2026-10-08-home-shelf-preview-design.md)
-            로그인한 사람에게 "읽은 책을 골라 보세요"는 맞지 않으므로 비로그인에게만.
+            맛보기의 "책장을 보면, 그 사람이 보인다." 가 이 페이지의 h1 이다.
             자리 표시는 실제 높이에 가깝게 — 짧으면 도착하는 순간 아래가 밀린다(CLS) */}
-        {!user && (
-          <Suspense
-            fallback={
-              <div className='tint-cool min-h-176 animate-pulse rounded-3xl lg:min-h-140' />
-            }
-          >
-            <ShelfPreviewSection variant={heroVariant} />
-          </Suspense>
-        )}
+        <Suspense
+          fallback={
+            <div className='tint-cool min-h-176 animate-pulse rounded-3xl lg:min-h-140' />
+          }
+        >
+          <ShelfPreviewSection variant={heroVariant} />
+        </Suspense>
 
-        {/* 비로그인: 맛보기 바로 다음에 "5권이면 받는 것"을 보여 준다 — 방금 고른 책의 다음 보상.
+        {/* 맛보기 바로 다음에 "5권이면 받는 것"을 보여 준다 — 방금 고른 책의 다음 보상.
             랭킹은 독자가 적은 지금 한 사람의 책장에 가까워 그 아래로 둔다 */}
-        {!user && <TasteReportSection />}
-
-        {/* 히어로 배너 — 자동 롤링. 로그인한 사람에게만.
-            비로그인은 맛보기가 히어로를 맡는다. 큰 면 두 개가 첫 화면을 다투면 둘 다 약해진다 */}
-        {user && (
-          <ErrorBoundary fallback={<HeroBannerSkeleton />}>
-            <Suspense fallback={<HeroBannerSkeleton />}>
-              <HeroBannerSection />
-            </Suspense>
-          </ErrorBoundary>
-        )}
+        <TasteReportSection />
 
         {/* 오늘의 기록 — 매일 바뀌는 문자열을 화면에 하나는 둔다.
             실패하거나 데이터가 없으면 조용히 사라진다(랜딩을 막지 않는다) */}
@@ -174,59 +141,44 @@ const Home = async () => {
             fallback={<BookRankingError title={rankingFallbackTitle('most')} />}
           >
             <Suspense fallback={<BookRankingListSkeleton />}>
-              <BookRankingSection
-                type='most'
-                meta={`${aggregatedDate} 기준`}
-                myReadIsbns={myReadIsbns}
-              />
+              <BookRankingSection type='most' meta={`${aggregatedDate} 기준`} />
             </Suspense>
           </ErrorBoundary>
         </div>
 
         {/* 프로모 카드 — 실제 기능으로 연결되는 비비드 면 2장 */}
-        <PromoCards isLoggedIn={!!user} />
+        <PromoCards isLoggedIn={false} />
 
         {/* 인생책 랭킹 — 데이터가 쌓이면 나타난다 */}
         <ErrorBoundary
           fallback={<BookRankingError title={rankingFallbackTitle('best')} />}
         >
           <Suspense fallback={null}>
-            <BookRankingSection
-              type='best'
-              meta={`${aggregatedDate} 기준`}
-              myReadIsbns={myReadIsbns}
-            />
+            <BookRankingSection type='best' meta={`${aggregatedDate} 기준`} />
           </Suspense>
         </ErrorBoundary>
-
-        {/* 취향 노트 예시 — 로그인 사용자에겐 랭킹 아래(비로그인은 맛보기 바로 아래에 있다) */}
-        {user && <TasteReportSection />}
 
         {/* 시작하기 — 흰 카드 대신 네이비 밴드. 페이지 끝을 무겁게 닫는다.
             색은 시스템이 갖는다(band-strong) — 여기 박혀 있던 #14294e 는
             **다크 모드의 background 와 같은 색**이라 밴드가 배경에 녹았다. */}
-        {!user && (
-          <section className='band-strong flex flex-col items-center gap-4 rounded-2xl px-6 py-12 text-center'>
-            <h2 className='heading-2 text-white'>
-              책장은 한 권부터 시작합니다
-            </h2>
-            <p className='text-sm text-white/70'>
-              구글·카카오로 10초면 시작할 수 있어요.
-            </p>
-            {/* GA4 이벤트 추적을 위해 Client 컴포넌트로 분리된 CTA */}
-            <div className='mt-2'>
-              <StartCtaButton location='landing_bottom' variant='inverse' />
-            </div>
-            {/* 가입을 망설이는 방문자에게 '어떻게 쓰는지'를 먼저 보여 준다 —
+        <section className='band-strong flex flex-col items-center gap-4 rounded-2xl px-6 py-12 text-center'>
+          <h2 className='heading-2 text-white'>책장은 한 권부터 시작합니다</h2>
+          <p className='text-sm text-white/70'>
+            구글·카카오로 10초면 시작할 수 있어요.
+          </p>
+          {/* GA4 이벤트 추적을 위해 Client 컴포넌트로 분리된 CTA */}
+          <div className='mt-2'>
+            <StartCtaButton location='landing_bottom' variant='inverse' />
+          </div>
+          {/* 가입을 망설이는 방문자에게 '어떻게 쓰는지'를 먼저 보여 준다 —
                 소개 페이지로 들어오는 길이 푸터·sitemap 뿐이었다 */}
-            <Link
-              href='/about#steps'
-              className='text-sm font-medium text-white/80 underline-offset-4 hover:text-white hover:underline'
-            >
-              처음이세요? 어떻게 쓰는지 보기
-            </Link>
-          </section>
-        )}
+          <Link
+            href='/about#steps'
+            className='text-sm font-medium text-white/80 underline-offset-4 hover:text-white hover:underline'
+          >
+            처음이세요? 어떻게 쓰는지 보기
+          </Link>
+        </section>
       </div>
     </div>
   );

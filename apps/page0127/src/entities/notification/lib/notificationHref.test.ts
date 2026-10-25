@@ -28,7 +28,16 @@ describe('notificationHref', () => {
     ).toBe('/books/info/g1');
   });
 
-  it('주간 회상은 대상이 없어도 홈으로 보낸다', () => {
+  it('주간 회상은 회상 카드가 있는 내 서재로 보낸다', () => {
+    expect(
+      notificationHref(
+        { type: 'weekly_recap', target_id: null, target_type: null },
+        'me'
+      )
+    ).toBe('/me');
+  });
+
+  it('주간 회상은 아이디를 모르면 / 로 보낸다(서재로 다시 보내진다)', () => {
     expect(
       notificationHref(
         { type: 'weekly_recap', target_id: null, target_type: null },

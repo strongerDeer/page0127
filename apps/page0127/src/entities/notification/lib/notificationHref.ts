@@ -15,8 +15,10 @@ export const notificationHref = (
   // actor_id(uuid)로 보내면 /[username] 조회에 걸리지 않아 404가 된다 → username 이 없으면 이동하지 않는다
   if (notification.type === 'follow') return profileHref(actorUsername);
 
-  // 주간 회상 카드는 홈에 있다
-  if (notification.type === 'weekly_recap') return '/';
+  // 주간 회상 카드는 내 서재에 있다. 회상의 actor 는 본인이라 actorUsername 이 곧 내 아이디다.
+  // 아이디를 모르면 / 로 — 로그인 사용자를 서재(또는 온보딩)로 다시 보낸다
+  if (notification.type === 'weekly_recap')
+    return profileHref(actorUsername) ?? '/';
 
   if (!notification.target_id) return null;
 

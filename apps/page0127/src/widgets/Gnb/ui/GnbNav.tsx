@@ -21,10 +21,10 @@ export const GnbNav = ({ isLoggedIn }: GnbNavProps) => {
   const pathname = usePathname();
 
   const links: GnbLink[] = [
-    { href: '/', label: '홈', exact: true },
-    // 소개는 로그인 여부와 상관없이 늘 같은(두 번째) 자리에 둔다 — 공통 메뉴 뒤에
-    // 로그인 전용 메뉴가 붙는 구조라, 여기 두면 로그인해도 위치가 바뀌지 않는다.
-    // 홈 바로 다음인 이유: 소개가 가장 필요한 처음 온 사람의 눈이 먼저 닿는 자리다.
+    // 홈은 비로그인 랜딩 전용이다 — 로그인한 사람이 / 로 오면 내 서재로 보낸다.
+    // 그래서 로그인 메뉴에 '홈'을 두면 '내 서재'와 같은 곳을 가리키는 메뉴가 된다.
+    ...(isLoggedIn ? [] : [{ href: '/', label: '홈', exact: true }]),
+    // 소개는 처음 온 사람의 눈이 먼저 닿는 앞자리에 둔다.
     // (푸터에만 있을 땐 "이게 뭐지?"를 풀 곳을 못 찾았다)
     { href: '/about', label: '소개' },
     { href: '/books/all', label: '전체 도서' },
