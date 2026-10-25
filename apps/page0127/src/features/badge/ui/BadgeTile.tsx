@@ -13,6 +13,7 @@ import {
   DialogTrigger,
   Progress,
 } from '@repo/ui';
+import { ChevronDown } from 'lucide-react';
 
 import { formatDate } from '@/shared/lib/date';
 
@@ -167,21 +168,30 @@ export const BadgeTile = ({
           />
         )}
         {!!badge.stages?.length && (
-          <ol className={styles.stageList} aria-label='성장 단계별 획득 기록'>
-            {badge.stages.map((stage) => (
-              <li key={stage.value} data-earned={!!stage.earnedAt}>
-                <span>
-                  {stage.value.toLocaleString('en-US')}
-                  {badgeUnit(badge.id)}
-                </span>
-                <span>
-                  {stage.earnedAt
-                    ? `${formatDate(stage.earnedAt)} 획득`
-                    : '미획득'}
-                </span>
-              </li>
-            ))}
-          </ol>
+          <details className={`${styles.stageDisclosure} group`}>
+            <summary className='flex cursor-pointer list-none items-center justify-between gap-3 rounded-sm text-sm font-bold text-text-strong focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary [&::-webkit-details-marker]:hidden'>
+              단계별 획득 기록
+              <ChevronDown
+                className='h-4 w-4 shrink-0 text-text-subtle group-open:rotate-180'
+                aria-hidden
+              />
+            </summary>
+            <ol className={styles.stageList} aria-label='성장 단계별 획득 기록'>
+              {badge.stages.map((stage) => (
+                <li key={stage.value} data-earned={!!stage.earnedAt}>
+                  <span>
+                    {stage.value.toLocaleString('en-US')}
+                    {badgeUnit(badge.id)}
+                  </span>
+                  <span>
+                    {stage.earnedAt
+                      ? `${formatDate(stage.earnedAt)} 획득`
+                      : '미획득'}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </details>
         )}
         {!!badge.stages?.length && badge.earned && !progress && (
           <p className='text-xs text-text-subtle'>이 성장 단계를 달성했어요</p>

@@ -236,12 +236,20 @@ export const ExpandedGrowth: Story = {
     const dialog = within(
       within(canvasElement.ownerDocument.body).getByRole('dialog')
     );
+    await expect(
+      dialog.getByRole('list', { name: '성장 단계별 획득 기록', hidden: true })
+    ).not.toBeVisible();
+    await userEvent.click(dialog.getByText('단계별 획득 기록', { exact: true }));
     await waitFor(() =>
       expect(
         dialog.getByRole('list', { name: '성장 단계별 획득 기록' })
       ).toBeVisible()
     );
     await expect(dialog.getByText('1,000권', { exact: true })).toBeVisible();
+    await userEvent.click(dialog.getByText('단계별 획득 기록', { exact: true }));
+    await expect(
+      dialog.getByRole('list', { name: '성장 단계별 획득 기록', hidden: true })
+    ).not.toBeVisible();
     await userEvent.keyboard('{Escape}');
   },
 };
