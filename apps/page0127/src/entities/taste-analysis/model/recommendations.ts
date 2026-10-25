@@ -23,9 +23,9 @@ export const RECOMMENDATIONS_REQUEST_COUNT = RECOMMENDATIONS_DISPLAY_LIMIT + 1;
 /**
  * 추천 도서를 타입별로 그룹화하고 노출 상한까지 자른다.
  *
- * 표지(cover_image) 유무로 거르지 않는다. 표지는 분석 응답을 보낸 뒤
- * 백그라운드에서 채워지므로, 여기서 걸러내면 분석 직후에 들어온 사용자에게는
- * 섹션이 통째로 비어 보인다.
+ * 표지(cover_image) 유무로 거르지 않는다. 표지는 보통 분석 응답 전에 채워지지만
+ * 공급자가 느리면 응답 뒤 백그라운드에서 마저 채워지므로, 여기서 걸러내면
+ * 분석 직후에 들어온 사용자에게는 섹션이 통째로 비어 보일 수 있다.
  */
 export function groupRecommendationsByType(
   recommendations: BookRecommendation[] | null
