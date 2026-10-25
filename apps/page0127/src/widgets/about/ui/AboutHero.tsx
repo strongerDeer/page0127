@@ -35,7 +35,11 @@ export const AboutHero = ({
   const rows = splitCoverRows(books);
 
   return (
-    <section aria-labelledby='about-title' className='pt-24 md:pt-28'>
+    // pb: 아래 '왜' 섹션이 회색 면이라, 띠가 바로 붙으면 두 면이 맞닿아 답답하다 — 흰 여백을 둔다
+    <section
+      aria-labelledby='about-title'
+      className='pt-24 pb-16 md:pt-28 md:pb-20'
+    >
       <div className='mx-auto max-w-6xl px-4 text-center'>
         <p className='text-sm font-bold text-primary'>
           독서 기록 서비스, page0127.
