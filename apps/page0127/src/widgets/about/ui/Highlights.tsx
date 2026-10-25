@@ -87,6 +87,12 @@ const LEAGUE = [
   { who: '서연', avatar: '서', books: 12, rank: 3, height: 'h-10' },
 ] as const;
 
+const STEP_COLOR = {
+  1: 'stage-blue text-white',
+  2: 'stage-mint text-on-mint',
+  3: 'bg-primary/15 text-primary',
+} as const;
+
 /** 배지 카드의 데모 — 받은 배지 넷과 아직 열리지 않은 히든 배지 하나 */
 const demoBadge = (
   id: Badge['id'],
@@ -275,7 +281,7 @@ export const Highlights = ({ books }: HighlightsProps) => {
                     <span
                       className={`grid size-10 place-items-center rounded-full text-sm font-bold ${
                         r.rank === 1
-                          ? 'bg-primary text-primary-foreground ring-3 ring-mint'
+                          ? 'bg-primary text-primary-foreground'
                           : 'bg-card text-text-strong shadow'
                       }`}
                     >
@@ -284,13 +290,9 @@ export const Highlights = ({ books }: HighlightsProps) => {
                     <span className='mt-1.5 text-sm font-bold text-text-strong'>
                       {r.books}권
                     </span>
-                    {/* 단상에 색을 입힌다 — 1등은 진한 파란 무대, 나머지는 옅은 파랑(2026-10-25 HJ "여기도 컬러") */}
+                    {/* 색은 실제 라운지 시상대를 따른다 — 1등 파랑, 2등 민트(서브 컬러가 눈에 띄어 2등), 3등 연한 파랑(2026-10-25 HJ) */}
                     <span
-                      className={`mt-1.5 grid w-full place-items-center rounded-t-lg text-sm font-bold ${r.height} ${
-                        r.rank === 1
-                          ? 'stage-blue text-white'
-                          : 'bg-primary/15 text-primary'
-                      }`}
+                      className={`mt-1.5 grid w-full place-items-center rounded-t-lg text-sm font-bold ${r.height} ${STEP_COLOR[r.rank]}`}
                     >
                       {r.rank}
                     </span>
