@@ -13,7 +13,7 @@ import type { Book } from '../types';
  * 2026년 뷰라면 2026년에 읽은 기록끼리만 합쳐진다.
  *
  * 합칠 때 남기는 값:
- * - 대표 = 가장 최근에 읽은 회독 (완독일 없으면 등록 시각, 그마저 같으면 회독 수)
+ * - 대표 = 가장 최근에 읽은 회독 (완독일 없으면 등록 시각, 같으면 회독 수·id 순)
  * - `is_life_book` = 회독 중 하나라도 인생책이면 true
  *   (1회독 때만 인생책으로 꼽았어도 '내 인생책'에서 사라지면 안 된다)
  * - `read_count` = 저장된 최대값과 '합쳐진 기록 수' 중 큰 쪽
@@ -29,9 +29,7 @@ export const dedupeReadings = (books: Book[]): Book[] => {
   // 둘을 합치면 책이 '읽는 중' 칸으로 옮겨가면서 완독 책장에서 사라진다.
   // 같은 책이라도 놓이는 칸이 다르면 별개 항목으로 둔다.
   const groupKey = (book: Book) =>
-    book.isbn
-      ? `${book.user_id}:${book.status}:${book.isbn}`
-      : `id:${book.id}`;
+    book.isbn ? `${book.user_id}:${book.status}:${book.isbn}` : `id:${book.id}`;
 
   // 최신 회독 판정용 시각. 완독일이 없는 기록은 등록 시각으로 대신한다.
   const readAt = (book: Book) =>
@@ -39,28 +37,40 @@ export const dedupeReadings = (books: Book[]): Book[] => {
 
   const isNewerReading = (candidate: Book, current: Book) => {
     const diff = readAt(candidate) - readAt(current);
-    return diff !== 0 ? diff > 0 : candidate.read_count > current.read_count;
+    if (diff !== 0) return diff > 0;
+    if (candidate.read_count !== current.read_count) {
+      return candidate.read_count > current.read_count;
+    }
+    // 같은 시각 회독도 입력 순서에 흔들리지 않아야 SQL 집계와 쪽수가 같다.
+    return candidate.id > current.id;
   };
 
   // 그룹별 대표를 고르면서, 어느 자리에 놓을지(원래 순서)와
   // 몇 개가 합쳐졌는지(= 몇 회독인지)도 함께 기억한다
-  const groups = new Map<string, { order: number; count: number; book: Book }>();
+  const groups = new Map<
+    string,
+    { order: number; count: number; book: Book; representative: Book }
+  >();
 
   books.forEach((book, index) => {
     const key = groupKey(book);
     const group = groups.get(key);
 
     if (!group) {
-      groups.set(key, { order: index, count: 1, book });
+      groups.set(key, { order: index, count: 1, book, representative: book });
       return;
     }
 
-    const merged: Book = isNewerReading(book, group.book) ? book : group.book;
+    // 합산된 read_count를 비교하면 오래된 회독의 값이 대표 선택에 끼어든다.
+    const merged: Book = isNewerReading(book, group.representative)
+      ? book
+      : group.representative;
     const count = group.count + 1;
 
     groups.set(key, {
       order: group.order,
       count,
+      representative: merged,
       book: {
         ...merged,
         is_life_book: group.book.is_life_book || book.is_life_book,

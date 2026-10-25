@@ -28,12 +28,12 @@ export const GnbNav = ({ isLoggedIn }: GnbNavProps) => {
     // (푸터에만 있을 땐 "이게 뭐지?"를 풀 곳을 못 찾았다)
     { href: '/about', label: '소개' },
     { href: '/books/all', label: '전체 도서' },
-    // 피드·리더 찾기는 로그인해야 볼 수 있는 영역이라 비로그인 방문자에겐 노출하지 않는다.
+    // 라운지·리더 찾기는 로그인해야 볼 수 있는 영역이라 비로그인 방문자에겐 노출하지 않는다.
     // '검색'이라 쓰지 않는 이유: 바로 옆 GnbSearch는 책을 찾는 입력창이라 헷갈린다.
     // '리더 찾기'인 이유: 이제 검색어 없이도 추천 리더를 둘러볼 수 있다(검색은 그중 하나).
     ...(isLoggedIn
       ? [
-          { href: '/feed', label: '피드' },
+          { href: '/feed', label: '라운지' },
           { href: '/search', label: '리더 찾기' },
         ]
       : []),

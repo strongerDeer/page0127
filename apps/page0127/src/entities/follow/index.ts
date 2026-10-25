@@ -16,6 +16,11 @@ export type {
 
 // API
 export { followApi } from './api/followApi';
+export { getFollowingLeague } from './api/getFollowingLeague';
+export type {
+  FollowingLeague,
+  FollowingLeagueReader,
+} from './model/readingLeague';
 
 // Query Keys
 export { followKeys } from './model/queryKeys';

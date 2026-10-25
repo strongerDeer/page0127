@@ -7,6 +7,9 @@ export const followKeys = {
   // 모든 팔로우 관련 쿼리의 기본 키
   all: ['follows'] as const,
 
+  readingLeague: (currentUserId: string) =>
+    [...followKeys.all, 'reading-league', currentUserId] as const,
+
   // 팔로우 여부 확인
   isFollowing: (userId: string) =>
     [...followKeys.all, 'is-following', userId] as const,
