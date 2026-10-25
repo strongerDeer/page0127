@@ -41,7 +41,7 @@ const Cover = ({ src, fallbackSrc, className, small }: CoverProps) => {
 type CardProps = {
   lead: string;
   rest: string;
-  /** 강조 카드의 옅은 면 — 없으면 중립 면(sunken). 파랑은 브랜드, 민트는 서브 컬러 */
+  /** 강조 카드의 면 — 없으면 중립 면(sunken). mint 는 쨍한 민트 무대(남색 글자) */
   tone?: 'blue' | 'mint';
   /** 한 줄을 다 쓰는 카드 — 세로를 줄인다 */
   wide?: boolean;
@@ -50,13 +50,13 @@ type CardProps = {
 
 const TONE_BG = {
   blue: 'tint-blue',
-  mint: 'tint-mint',
+  mint: 'stage-mint text-on-mint',
 } as const;
 
 /**
  * 카드 하나에 메시지 하나 — 굵은 리드 문장으로 시작한다(애플 '핵심부터' 문법).
- * 강조 카드도 진한 파란 면 대신 옅은 면 + 남색 글자다(2026-10-25 색 정리 B안) —
- * 홈에 진한 파란 덩어리가 넷이라 어디가 중요한지 흐려졌다. 진한 파랑은 마무리 카드에만 남긴다.
+ * 공유 카드는 옅은 파란 면 + 남색 글자(2026-10-25 색 정리 B안), 케미 카드는 쨍한 민트 무대 —
+ * 옅은 민트 면은 탁해 보였다(HJ "배경이 쨍한 게 예뻤다").
  */
 const Card = ({ lead, rest, tone, wide, children }: CardProps) => (
   <article
@@ -64,8 +64,15 @@ const Card = ({ lead, rest, tone, wide, children }: CardProps) => (
       wide ? 'min-h-[360px]' : 'min-h-[440px] md:min-h-[480px]'
     } ${tone ? TONE_BG[tone] : 'bg-sunken'}`}
   >
-    <p className='text-balance text-lg font-medium text-text-subtle'>
-      <b className='font-bold text-text-strong'>{lead}</b> {rest}
+    <p
+      className={`text-balance text-lg font-medium ${tone === 'mint' ? 'text-on-mint/75' : 'text-text-subtle'}`}
+    >
+      <b
+        className={`font-bold ${tone === 'mint' ? 'text-on-mint' : 'text-text-strong'}`}
+      >
+        {lead}
+      </b>{' '}
+      {rest}
     </p>
     <div className='mt-4 flex flex-1 items-center justify-center'>
       {children}
@@ -144,9 +151,11 @@ export const Highlights = ({ books }: HighlightsProps) => {
             lead='공개 서재와 공유.'
             rest='주소 하나로 내 책장을 보여 주고, 인스타 스토리에 올릴 이미지도 바로 만들어요.'
           >
-            <div className='flex w-full items-end justify-center gap-5 md:gap-8'>
-              <div className='w-full max-w-xs overflow-hidden rounded-2xl bg-card shadow-xl'>
-                <div className='flex h-32 items-end gap-1.5 bg-primary/15 px-4'>
+            {/* items-stretch: 링크 미리보기 카드와 스토리 이미지의 높이를 맞춘다 — 끝이 어긋나 보였다(2026-10-25 HJ) */}
+            <div className='flex w-full items-stretch justify-center gap-5 md:gap-8'>
+              <div className='flex w-full max-w-xs flex-col overflow-hidden rounded-2xl bg-card shadow-xl'>
+                {/* 실제 공개 서재·링크 미리보기처럼 윗부분은 진한 파랑 */}
+                <div className='stage-blue flex min-h-32 flex-1 items-end gap-1.5 px-4'>
                   {[0, 1, 2, 3, 4].map((i) => (
                     <Cover
                       key={i}
@@ -213,14 +222,14 @@ export const Highlights = ({ books }: HighlightsProps) => {
             rest='다른 사람의 책장과 나란히 놓고, 겹치는 책과 취향을 확인해요.'
           >
             <div className='text-center'>
-              <p className='text-sm text-text-subtle'>나 × 혜진</p>
-              <p className='text-6xl font-bold text-mint-ink'>78%</p>
+              <p className='text-sm text-on-mint/75'>나 × 혜진</p>
+              <p className='text-6xl font-bold'>78%</p>
               <div className='mt-5 flex justify-center gap-2'>
                 {[0, 1, 2, 3].map((i) => (
                   <Cover key={i} src={pick(i + 3)} className='w-12' small />
                 ))}
               </div>
-              <p className='mt-3 text-xs text-text-subtle'>
+              <p className='mt-3 text-xs text-on-mint/75'>
                 함께 읽은 책 4권 · 둘 다 &lsquo;관계&rsquo;를 좋아해요
               </p>
             </div>
@@ -266,7 +275,7 @@ export const Highlights = ({ books }: HighlightsProps) => {
                     <span
                       className={`grid size-10 place-items-center rounded-full text-sm font-bold ${
                         r.rank === 1
-                          ? 'bg-primary text-primary-foreground'
+                          ? 'bg-primary text-primary-foreground ring-3 ring-mint'
                           : 'bg-card text-text-strong shadow'
                       }`}
                     >
@@ -275,8 +284,13 @@ export const Highlights = ({ books }: HighlightsProps) => {
                     <span className='mt-1.5 text-sm font-bold text-text-strong'>
                       {r.books}권
                     </span>
+                    {/* 단상에 색을 입힌다 — 1등은 진한 파란 무대, 나머지는 옅은 파랑(2026-10-25 HJ "여기도 컬러") */}
                     <span
-                      className={`mt-1.5 grid w-full place-items-center rounded-t-lg bg-card text-sm font-bold text-text-subtle ${r.height}`}
+                      className={`mt-1.5 grid w-full place-items-center rounded-t-lg text-sm font-bold ${r.height} ${
+                        r.rank === 1
+                          ? 'stage-blue text-white'
+                          : 'bg-primary/15 text-primary'
+                      }`}
                     >
                       {r.rank}
                     </span>

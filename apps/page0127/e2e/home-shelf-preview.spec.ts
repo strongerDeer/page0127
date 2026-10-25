@@ -22,11 +22,7 @@ test('저장소가 없는 다른 브라우저에서도 로그인 링크로 목�
 }) => {
   await page.goto('/');
   const s = section(page);
-  await s
-    .getByRole('button', {
-      name: '아직 읽은 책이 없나요? 올해 목표부터 같이 세워봐요!',
-    })
-    .click();
+  await s.getByRole('button', { name: /년 목표 세우기$/ }).click();
   await s.getByRole('button', { name: '목표 저장하기' }).click();
   await expect(page).toHaveURL(/\/login\?shelf=/);
   const fresh = await browser.newContext();
@@ -103,16 +99,12 @@ test('비로그인 홈은 왜 page0127.인가요 → 맛보기 → 보이는 것
   expect(preview).toBeLessThan(highlights);
 });
 
-test('0권이면 목표 링크를 펼쳐 저장하고, 로그인으로 가며 목표를 보관한다', async ({
+test('0권이면 목표 버튼을 펼쳐 저장하고, 로그인으로 가며 목표를 보관한다', async ({
   page,
 }) => {
   await page.goto('/');
   const s = section(page);
-  await s
-    .getByRole('button', {
-      name: '아직 읽은 책이 없나요? 올해 목표부터 같이 세워봐요!',
-    })
-    .click();
+  await s.getByRole('button', { name: /년 목표 세우기$/ }).click();
   await s.getByRole('button', { name: '목표 한 권 늘리기' }).click();
   await expect(s.getByText('13권')).toBeVisible();
 
