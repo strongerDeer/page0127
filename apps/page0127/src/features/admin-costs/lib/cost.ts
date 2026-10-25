@@ -43,3 +43,42 @@ export function formatUsd(usd: number): string {
 export function formatKrw(krw: number): string {
   return `₩${krw.toLocaleString('ko-KR')}`;
 }
+
+export type DailyCostRow = {
+  date: string;
+  /** 운영 앱 기록(USD 센트) — 그날 운영 DB 에 남은 분석 비용 */
+  appCents: number;
+  /** OpenAI 실제 청구(USD 센트). null = 청구액을 못 읽음 */
+  actualCents: number | null;
+};
+
+/**
+ * 일별 추이 — 앱 기록과 실제 청구를 날짜별로 나란히 합친다.
+ *
+ * 실제 청구만 보여 주면 오늘처럼 청구 반영이 늦은 날은 운영에서 돌린 분석이 통째로 안 보인다
+ * (2026-10-25: 오늘 돌린 취향 분석이 일별 목록에 없었다). 둘 중 한쪽에만 있는 날도 남긴다.
+ * 실제 청구 버킷은 UTC 하루 단위라 날짜 경계가 KST 와 9시간 어긋날 수 있다 — 하루 단위 추이로만 본다.
+ */
+export function mergeDailyCosts(
+  app: { date: string; cents: number }[],
+  actual: { date: string; cents: number }[] | null
+): DailyCostRow[] {
+  const rows = new Map<string, DailyCostRow>();
+  const row = (date: string) => {
+    const existing = rows.get(date);
+    if (existing) return existing;
+    const created: DailyCostRow = {
+      date,
+      appCents: 0,
+      actualCents: actual === null ? null : 0,
+    };
+    rows.set(date, created);
+    return created;
+  };
+  for (const d of app) row(d.date).appCents += d.cents;
+  for (const d of actual ?? []) {
+    const r = row(d.date);
+    r.actualCents = (r.actualCents ?? 0) + d.cents;
+  }
+  return [...rows.values()].sort((a, b) => a.date.localeCompare(b.date));
+}

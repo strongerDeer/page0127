@@ -5,6 +5,7 @@ import {
   computeBudgetUsage,
   formatKrw,
   formatUsd,
+  mergeDailyCosts,
   sumCents,
 } from './cost';
 
@@ -56,5 +57,32 @@ describe('budgetBasisCents', () => {
   });
   it('실제 청구를 못 읽었으면(null) 앱 기록만', () => {
     expect(budgetBasisCents(4, null)).toBe(4);
+  });
+});
+
+describe('mergeDailyCosts', () => {
+  it('실제 청구에 아직 없는 오늘의 운영 기록도 남긴다', () => {
+    expect(
+      mergeDailyCosts(
+        [
+          { date: '2026-10-07', cents: 4 },
+          { date: '2026-10-25', cents: 4 },
+        ],
+        [
+          { date: '2026-10-07', cents: 3 },
+          { date: '2026-10-18', cents: 2 },
+        ]
+      )
+    ).toEqual([
+      { date: '2026-10-07', appCents: 4, actualCents: 3 },
+      { date: '2026-10-18', appCents: 0, actualCents: 2 },
+      { date: '2026-10-25', appCents: 4, actualCents: 0 },
+    ]);
+  });
+
+  it('실제 청구를 못 읽으면 actualCents 는 null', () => {
+    expect(mergeDailyCosts([{ date: '2026-10-25', cents: 4 }], null)).toEqual([
+      { date: '2026-10-25', appCents: 4, actualCents: null },
+    ]);
   });
 });

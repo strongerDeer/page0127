@@ -10,7 +10,7 @@ import {
   toInFilter,
 } from '@/shared/lib/admin/getAdminUserIds';
 import {
-  getGoogleAccessToken,
+  getCachedGoogleAccessToken,
   missingGoogleConfig,
 } from '@/shared/lib/google/serviceAccount';
 
@@ -104,8 +104,11 @@ export async function getGaEvents(range: DateRange): Promise<GaEventsResult> {
 
   const previous = previousRange(range);
   try {
-    const token = await getGoogleAccessToken([GA_SCOPE]);
-    const adminIds = await getAdminUserIds();
+    // 서로 기다릴 이유가 없다 — 토큰 발급과 운영자 id 조회를 함께 보낸다
+    const [token, adminIds] = await Promise.all([
+      getCachedGoogleAccessToken([GA_SCOPE]),
+      getAdminUserIds(),
+    ]);
     const [eventRows, ctaRows, heroAbRows, curSignups, prevSignups] =
       await Promise.all([
         runReport(propertyId, token, toEventsRequest(range, previous)),
