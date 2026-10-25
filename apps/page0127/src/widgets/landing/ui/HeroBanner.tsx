@@ -12,8 +12,8 @@ import { cn } from '@/shared/lib/utils';
 
 import { countBannerClick } from '@/entities/banner/api/countBannerClick';
 
+import type { HeroSlide } from '@/entities/banner/types';
 import type { CoverSource } from '@/entities/book';
-import type { HeroSlide } from '@/widgets/landing/model/heroSlides';
 
 const AUTOPLAY_MS = 6000;
 

@@ -8,13 +8,23 @@ import { Reveal } from './Reveal';
 
 import styles from './AboutHero.module.css';
 
-type AboutHeroProps = { books: ShelfBook[] };
+type AboutHeroProps = {
+  books: ShelfBook[];
+  /** "내 책장 만들어 보기"가 갈 곳 — 홈에선 같은 페이지의 맛보기 섹션(#first-impression) */
+  startHref?: string;
+  /** "어떻게 쓰나요?"가 갈 곳 */
+  guideHref?: string;
+};
 
 // 홈 히어로("책장을 보면, 그 사람이 보인다.")와 겹치지 않게 문장을 바꾸고,
 // 돌아가는 단어 효과만 살렸다. 소개는 "체험"이 아니라 "이해"를 맡는다.
 const ROLLING_WORDS = ['취향을', '계절을', '마음을'] as const;
 
-export const AboutHero = ({ books }: AboutHeroProps) => {
+export const AboutHero = ({
+  books,
+  startHref = '/',
+  guideHref = '#steps',
+}: AboutHeroProps) => {
   const rows = splitCoverRows(books);
 
   return (
@@ -43,10 +53,10 @@ export const AboutHero = ({ books }: AboutHeroProps) => {
         <div className='mt-8 flex flex-wrap justify-center gap-2.5'>
           {/* 로그인으로 바로 보내지 않는다 — 고르고 책장이 서는 체험은 홈에 있다 */}
           <Button asChild size='lg'>
-            <Link href='/'>내 책장 만들어 보기</Link>
+            <Link href={startHref}>내 책장 만들어 보기</Link>
           </Button>
           <Button asChild size='lg' variant='secondary'>
-            <Link href='#steps'>어떻게 쓰나요?</Link>
+            <Link href={guideHref}>어떻게 쓰나요?</Link>
           </Button>
         </div>
       </div>

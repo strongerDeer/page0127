@@ -25,12 +25,8 @@ describe('toShelfPreviewMessage', () => {
     );
   });
 
-  it('5권 이상은 별점만 남았다고 말한다 — 고르기만 한 책엔 별점이 없다', () => {
-    expect(toShelfPreviewMessage(5)).toBe(
-      '별점만 매기면 바로 취향 노트를 받아 볼 수 있어요.'
-    );
-    expect(toShelfPreviewMessage(20)).toBe(
-      '별점만 매기면 바로 취향 노트를 받아 볼 수 있어요.'
-    );
+  it('5권 이상은 아무 말도 하지 않는다 — 저장 버튼이 다음 할 일이다', () => {
+    expect(toShelfPreviewMessage(5)).toBeNull();
+    expect(toShelfPreviewMessage(20)).toBeNull();
   });
 });
