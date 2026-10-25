@@ -92,11 +92,12 @@ export const AboutHero = ({
       {rows && (
         // 바깥 px 가 좌우 여백을 맡는다 — 안쪽에 max-w 만 두면 화면 폭이 6xl 근처일 때 띠가 화면 끝에 붙었다
         <Reveal delay={2} className='mx-auto mt-16 max-w-6xl px-4 md:px-6'>
-          <div className='stage-blue overflow-hidden rounded-3xl py-12 shadow-xl'>
+          {/* 진한 남색 띠 — 파란 면 위에서는 파란 표지가 묻혔다. 홈의 진한 파랑은 마무리 카드에만 둔다(2026-10-25 B안) */}
+          <div className='band-strong overflow-hidden rounded-3xl py-12 shadow-xl'>
             <p className='mb-9 flex items-center justify-center gap-2.5 text-sm font-bold text-white'>
               <span
                 aria-hidden='true'
-                className='size-2 animate-pulse rounded-full bg-white motion-reduce:animate-none'
+                className='size-2 animate-pulse rounded-full bg-mint motion-reduce:animate-none'
               />
               방금 page0127.에 꽂힌 책
               <span className='font-normal text-white/70'>· 최근 등록 순</span>
