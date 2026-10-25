@@ -41,26 +41,31 @@ const Cover = ({ src, fallbackSrc, className, small }: CoverProps) => {
 type CardProps = {
   lead: string;
   rest: string;
-  blue?: boolean;
+  /** 강조 카드의 옅은 면 — 없으면 중립 면(sunken). 파랑은 브랜드, 민트는 서브 컬러 */
+  tone?: 'blue' | 'mint';
   /** 한 줄을 다 쓰는 카드 — 세로를 줄인다 */
   wide?: boolean;
   children: React.ReactNode;
 };
 
-/** 카드 하나에 메시지 하나 — 굵은 리드 문장으로 시작한다(애플 '핵심부터' 문법) */
-const Card = ({ lead, rest, blue, wide, children }: CardProps) => (
+const TONE_BG = {
+  blue: 'tint-blue',
+  mint: 'tint-mint',
+} as const;
+
+/**
+ * 카드 하나에 메시지 하나 — 굵은 리드 문장으로 시작한다(애플 '핵심부터' 문법).
+ * 강조 카드도 진한 파란 면 대신 옅은 면 + 남색 글자다(2026-10-25 색 정리 B안) —
+ * 홈에 진한 파란 덩어리가 넷이라 어디가 중요한지 흐려졌다. 진한 파랑은 마무리 카드에만 남긴다.
+ */
+const Card = ({ lead, rest, tone, wide, children }: CardProps) => (
   <article
     className={`flex h-full flex-col rounded-3xl p-7 md:p-8 ${
       wide ? 'min-h-[360px]' : 'min-h-[440px] md:min-h-[480px]'
-    } ${blue ? 'stage-blue text-white' : 'bg-sunken'}`}
+    } ${tone ? TONE_BG[tone] : 'bg-sunken'}`}
   >
-    <p
-      className={`text-balance text-lg font-medium ${blue ? 'text-white/80' : 'text-text-subtle'}`}
-    >
-      <b className={`font-bold ${blue ? 'text-white' : 'text-text-strong'}`}>
-        {lead}
-      </b>{' '}
-      {rest}
+    <p className='text-balance text-lg font-medium text-text-subtle'>
+      <b className='font-bold text-text-strong'>{lead}</b> {rest}
     </p>
     <div className='mt-4 flex flex-1 items-center justify-center'>
       {children}
@@ -135,7 +140,7 @@ export const Highlights = ({ books }: HighlightsProps) => {
       <div className='mt-14 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3'>
         <Reveal className='md:col-span-2'>
           <Card
-            blue
+            tone='blue'
             lead='공개 서재와 공유.'
             rest='주소 하나로 내 책장을 보여 주고, 인스타 스토리에 올릴 이미지도 바로 만들어요.'
           >
@@ -203,19 +208,19 @@ export const Highlights = ({ books }: HighlightsProps) => {
 
         <Reveal delay={1} className='md:col-span-2 lg:col-span-1'>
           <Card
-            blue
+            tone='mint'
             lead='독서 케미.'
             rest='다른 사람의 책장과 나란히 놓고, 겹치는 책과 취향을 확인해요.'
           >
             <div className='text-center'>
-              <p className='text-sm'>나 × 혜진</p>
-              <p className='text-6xl font-bold'>78%</p>
+              <p className='text-sm text-text-subtle'>나 × 혜진</p>
+              <p className='text-6xl font-bold text-mint-ink'>78%</p>
               <div className='mt-5 flex justify-center gap-2'>
                 {[0, 1, 2, 3].map((i) => (
                   <Cover key={i} src={pick(i + 3)} className='w-12' small />
                 ))}
               </div>
-              <p className='mt-3 text-xs text-white/75'>
+              <p className='mt-3 text-xs text-text-subtle'>
                 함께 읽은 책 4권 · 둘 다 &lsquo;관계&rsquo;를 좋아해요
               </p>
             </div>
