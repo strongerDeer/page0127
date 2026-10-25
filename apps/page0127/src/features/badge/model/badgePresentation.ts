@@ -81,3 +81,23 @@ export const badgeLevelColor = (id: Badge['id'], level: number) => {
         );
   return colors[Math.min(colors.length - 1, index)]!;
 };
+
+/** 같은 계열의 단계는 같은 메모 색으로 묶고, 서로 다른 표지는 색으로 구분한다. */
+export const badgeNoteColor = (id: Badge['id']) => {
+  const colors: Partial<Record<Badge['id'], string>> = {
+    shelf: '#ffe181',
+    'wide-view': '#cceaa1',
+    classics: '#f8c6ab',
+    regular: '#b9e8cd',
+    fiction: '#d6c9fa',
+    humanities: '#eed4a5',
+    essays: '#f8c4d5',
+    business: '#abe0da',
+    'self-growth': '#d8eda6',
+    science: '#b7ddf5',
+    arts: '#fac4ae',
+    history: '#f4d68a',
+    technology: '#bfd1ff',
+  };
+  return colors[id] ?? '#ffe181';
+};

@@ -8,6 +8,7 @@
 
 .book {
   --book-width: 112px;
+  --note-paper: #ffe181;
   --level-paper: #f1ead8;
   --level-ink: #51452f;
   --level-edge: #b8a47d;
@@ -78,26 +79,50 @@
 }
 .volume {
   position: absolute;
-  left: 12%;
-  right: 12%;
-  bottom: 9%;
+  right: 8%;
+  bottom: 8%;
+  left: auto;
+  display: grid;
+  place-items: center;
+  width: 36%;
+  aspect-ratio: 1;
+  padding: 2%;
+  color: #14294e;
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--note-paper), white 12%),
+    var(--note-paper)
+  );
+  border-radius: 0;
+  box-shadow:
+    1px 3px 3px rgb(20 41 78 / 20%),
+    inset 0 1px 0 rgb(255 255 255 / 45%);
+  transform: rotate(-4deg);
   text-align: center;
   font-family: "Page0127 Cover Sans", sans-serif;
   font-weight: 900;
-  font-size: 26cqw;
+  font-size: 22cqw;
   line-height: 1;
-  letter-spacing: -0.09em;
-  color: #29261e;
+  letter-spacing: -0.06em;
 }
-.fieldVolume {
-  left: auto;
-  right: 10%;
-  bottom: 10%;
-  padding: 2% 4%;
-  font-size: 18cqw;
-  letter-spacing: -0.04em;
-  color: #17365b;
-  background: #f4efdfeb;
+.volume::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 16%;
+  aspect-ratio: 1;
+  background: linear-gradient(
+    135deg,
+    transparent 49%,
+    rgb(255 255 255 / 60%) 50%
+  );
+}
+.volume[data-digits="3"] {
+  font-size: 17cqw;
+}
+.volume[data-digits="4"] {
+  font-size: 13cqw;
 }
 .book[data-locked] .cover {
   filter: grayscale(0.95);
@@ -261,20 +286,8 @@ button:is(:hover, :focus-visible) .book[data-locked] .emptyState {
   pointer-events: none;
 }
 
-/* 성장 단계는 기존 그림을 보존하고 제본과 숫자 색으로 구분한다. */
-.book[data-growth] .volume {
-  color: var(--level-ink);
-  background: var(--level-paper);
-  border-radius: 3px;
-  padding: 3% 2%;
-  font-size: 22cqw;
-  letter-spacing: -0.06em;
-}
+/* 메모 색은 계열을 구분하고, 제본 색은 성장 단계를 구분한다. */
 .book[data-growth]:not([data-locked]) .cover::before {
   border-color: var(--level-edge);
   box-shadow: inset 1px 1px 0 rgb(255 255 255 / 40%);
-}
-.book[data-growth] .fieldVolume {
-  font-size: 18cqw;
-  padding: 2% 4%;
 }

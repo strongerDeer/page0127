@@ -3,7 +3,11 @@
 import Image from 'next/image';
 
 import { badgeCoverArt } from '../model/badgeCoverArt';
-import { badgeLevelColor, badgePresentation } from '../model/badgePresentation';
+import {
+  badgeLevelColor,
+  badgeNoteColor,
+  badgePresentation,
+} from '../model/badgePresentation';
 
 import type { Badge } from '../model/badges';
 import type { CSSProperties } from 'react';
@@ -44,6 +48,7 @@ export const BadgeMedal = ({
       style={
         {
           '--book-width': `${size}px`,
+          '--note-paper': badgeNoteColor(badge.id),
           '--shine-delay': `${(art.row * art.columns + art.column + (art.rows === 4 ? 9 : 0)) * 300 + Math.max(1, badge.level) * 50}ms`,
           '--jacket-paper': color?.paper ?? art.paper,
           '--level-paper': color?.paper,
@@ -83,9 +88,10 @@ export const BadgeMedal = ({
         </span>
         {levelValue !== null && (
           <span
-            className={`${styles.volume} ${cover !== 'shelf' ? styles.fieldVolume : ''}`}
+            className={styles.volume}
+            data-digits={String(levelValue).length}
           >
-            {levelValue.toLocaleString('en-US')}
+            {levelValue}
           </span>
         )}
         {!badge.earned && (
