@@ -1,6 +1,6 @@
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 import {
-  getGoogleAccessToken,
+  getCachedGoogleAccessToken,
   missingGoogleConfig,
 } from '@/shared/lib/google/serviceAccount';
 
@@ -47,7 +47,7 @@ export async function getSearchQueries(
   const { from: startDate, to: endDate } = range;
 
   try {
-    const token = await getGoogleAccessToken([SC_SCOPE]);
+    const token = await getCachedGoogleAccessToken([SC_SCOPE]);
     const res = await fetch(
       `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(siteUrl)}/searchAnalytics/query`,
       {

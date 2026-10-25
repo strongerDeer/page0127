@@ -39,8 +39,22 @@ describe('CostDashboard', () => {
     // 앱 기록과 차이를 나눠 보여 준다
     expect(html).toContain('운영 앱 기록 $0.04');
     expect(html).toContain('그 밖(로컬·테스트 등) $0.03');
-    // 일별도 실제 청구 기준 — 10/18 로컬 테스트일이 보인다
+    // 일별은 둘을 나란히 — 10/18 로컬 테스트일(실제 청구만)과 10/05 운영 기록이 함께 보인다
     expect(html).toContain('2026-10-18');
+    expect(html).toContain('운영 앱 기록</th>');
+  });
+
+  it('실제 청구에 아직 없는 날의 운영 기록도 일별에 보인다', () => {
+    const html = renderToStaticMarkup(
+      <CostDashboard
+        summary={{
+          ...summary,
+          daily: [...summary.daily, { date: '2026-10-25', cents: 4 }],
+        }}
+        actual={actual(7)}
+      />
+    );
+    expect(html).toContain('2026-10-25');
   });
 
   it('관리자 키가 없으면 앱 기록만, 무엇이 빠졌는지 알린다', () => {

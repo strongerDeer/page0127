@@ -5,6 +5,7 @@ import {
   computeBudgetUsage,
   formatKrw,
   formatUsd,
+  mergeDailyCosts,
 } from '@/features/admin-costs/lib/cost';
 
 import type { CostSummary } from '@/features/admin-costs/api/getCostSummary';
@@ -40,8 +41,12 @@ export const CostDashboard = ({ summary, actual }: CostDashboardProps) => {
     actualCents === null
       ? 0
       : Math.max(actualCents - summary.monthTotalCents, 0);
-  // 일별도 실제 청구가 있으면 그것으로 — 운영 밖에서 쓴 날이 보인다
-  const daily = actual.ok ? actual.costs.daily : summary.daily;
+  // 일별은 앱 기록과 실제 청구를 나란히 — 실제 청구는 반영이 늦어 오늘 운영 사용이 빠지고,
+  // 앱 기록만으로는 운영 밖에서 쓴 날이 안 보인다
+  const daily = mergeDailyCosts(
+    summary.daily,
+    actual.ok ? actual.costs.daily : null
+  );
 
   return (
     <div className='flex flex-col gap-6'>
@@ -85,22 +90,42 @@ export const CostDashboard = ({ summary, actual }: CostDashboardProps) => {
 
       {/* 일별 추이 */}
       <section className='rounded border border-line p-4'>
-        <div className='text-sm font-medium'>
-          일별 추이 (이번 달 · {actual.ok ? '실제 청구' : '운영 앱 기록'})
-        </div>
+        <div className='text-sm font-medium'>일별 추이 (이번 달)</div>
         {daily.length === 0 ? (
           <p className='mt-2 text-sm text-text-subtle'>
             아직 이번 달 사용 내역이 없습니다.
           </p>
         ) : (
-          <ul className='mt-2 flex flex-col gap-1 text-sm'>
-            {daily.map((d) => (
-              <li key={d.date} className='flex justify-between'>
-                <span className='text-text-subtle'>{d.date}</span>
-                <span>{formatUsd(d.cents / 100)}</span>
-              </li>
-            ))}
-          </ul>
+          <table className='mt-2 w-full text-sm'>
+            <thead>
+              <tr className='text-xs text-text-subtle'>
+                <th className='text-left font-normal'>날짜</th>
+                <th className='text-right font-normal'>운영 앱 기록</th>
+                {actual.ok && (
+                  <th className='text-right font-normal'>실제 청구</th>
+                )}
+              </tr>
+            </thead>
+            <tbody>
+              {daily.map((d) => (
+                <tr key={d.date}>
+                  <td className='py-0.5 text-text-subtle'>{d.date}</td>
+                  <td className='text-right'>{formatUsd(d.appCents / 100)}</td>
+                  {d.actualCents !== null && (
+                    <td className='text-right'>
+                      {formatUsd(d.actualCents / 100)}
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        {actual.ok && (
+          <p className='mt-2 text-xs text-text-subtle'>
+            실제 청구는 몇 시간~하루 늦게 들어오고 UTC 하루 단위라, 방금 돌린
+            분석은 운영 앱 기록에 먼저 보여요.
+          </p>
         )}
       </section>
 

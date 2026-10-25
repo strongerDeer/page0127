@@ -1,7 +1,7 @@
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 import { type DateRange, previousRange } from '@/shared/lib/admin/dateRange';
 import {
-  getGoogleAccessToken,
+  getCachedGoogleAccessToken,
   missingGoogleConfig,
 } from '@/shared/lib/google/serviceAccount';
 
@@ -63,7 +63,7 @@ export async function getGaReports(range: DateRange): Promise<GaResult> {
   }
 
   try {
-    const token = await getGoogleAccessToken([GA_SCOPE]);
+    const token = await getCachedGoogleAccessToken([GA_SCOPE]);
     const responses = await Promise.all(
       batches.map(async (batch) => {
         const res = await fetch(
