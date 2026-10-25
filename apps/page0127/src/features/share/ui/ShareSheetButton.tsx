@@ -34,6 +34,8 @@ type ShareSheetButtonProps = {
   loadingMessages?: LoadingMessages;
   /** 있으면 아이콘 옆에 글자를 붙인 버튼 — 없으면 아이콘만(헤더처럼 자리가 좁은 곳) */
   triggerLabel?: string;
+  /** true면 글자 버튼을 큰 보조 버튼으로 — 홈 첫 화면처럼 큰 버튼 옆에 나란히 설 때 */
+  prominent?: boolean;
 };
 
 type LoadingMessages = {
@@ -107,6 +109,7 @@ export const ShareSheetButton = ({
   text,
   loadingMessages = SHELF_LOADING,
   triggerLabel,
+  prominent = false,
 }: ShareSheetButtonProps) => {
   const [open, setOpen] = useState(false);
   const [image, setImage] = useState<ImageState>({ status: 'loading' });
@@ -190,12 +193,15 @@ export const ShareSheetButton = ({
     <>
       {triggerLabel ? (
         <Button
-          variant='outline'
-          size='sm'
+          variant={prominent ? 'secondary' : 'outline'}
+          size={prominent ? 'lg' : 'sm'}
           className='gap-1.5 shadow-none'
           onClick={() => setOpen(true)}
         >
-          <Share2 aria-hidden='true' className='size-3.5' />
+          <Share2
+            aria-hidden='true'
+            className={prominent ? 'size-4' : 'size-3.5'}
+          />
           {triggerLabel}
         </Button>
       ) : (
