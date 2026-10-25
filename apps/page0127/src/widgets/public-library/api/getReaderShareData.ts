@@ -9,9 +9,13 @@ import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTa
 
 import { type ReaderCard, toReaderCard } from '../model/readerCard';
 
+import type { ReadingGoal } from '@/entities/profile/types';
+
 export type ReaderShareData = {
   displayName: string;
   photoUrl: string | null;
+  /** 연간 독서 목표 — 목표 달성 스토리용. 정한 적 없으면 null */
+  readingGoal: ReadingGoal | null;
   /** 최신 AI 분석의 주제 태그 — 분석 전이면 빈 배열 */
   topics: string[];
   year: number;
@@ -46,6 +50,7 @@ export const getReaderShareData = async (
   return {
     displayName: toDisplayName(profile),
     photoUrl: profile.photo_url,
+    readingGoal: profile.reading_goal ?? null,
     topics: latest?.liked_topics ?? [],
     // 요약이 올해 권수를 센 해와 같은 해 — 둘 다 서울 기준 오늘이다
     year: getCurrentLibraryYear(),

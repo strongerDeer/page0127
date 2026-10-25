@@ -32,6 +32,8 @@ type ShareSheetButtonProps = {
   text?: string;
   /** 이미지를 그리는 동안의 문구 — 기본은 서재(책장) 문구 */
   loadingMessages?: LoadingMessages;
+  /** 있으면 아이콘 옆에 글자를 붙인 버튼 — 없으면 아이콘만(헤더처럼 자리가 좁은 곳) */
+  triggerLabel?: string;
 };
 
 type LoadingMessages = {
@@ -104,6 +106,7 @@ export const ShareSheetButton = ({
   sheetTitle,
   text,
   loadingMessages = SHELF_LOADING,
+  triggerLabel,
 }: ShareSheetButtonProps) => {
   const [open, setOpen] = useState(false);
   const [image, setImage] = useState<ImageState>({ status: 'loading' });
@@ -185,17 +188,29 @@ export const ShareSheetButton = ({
 
   return (
     <>
-      <Button
-        variant='outline'
-        size='icon-md'
-        className='shadow-none'
-        onClick={() => setOpen(true)}
-        title={sheetTitle}
-      >
-        {/* 아이콘만 있는 버튼은 스크린리더가 읽을 이름이 없다 */}
-        <span className='sr-only'>{sheetTitle}</span>
-        <Share2 className='h-4 w-4' />
-      </Button>
+      {triggerLabel ? (
+        <Button
+          variant='outline'
+          size='sm'
+          className='gap-1.5 shadow-none'
+          onClick={() => setOpen(true)}
+        >
+          <Share2 aria-hidden='true' className='size-3.5' />
+          {triggerLabel}
+        </Button>
+      ) : (
+        <Button
+          variant='outline'
+          size='icon-md'
+          className='shadow-none'
+          onClick={() => setOpen(true)}
+          title={sheetTitle}
+        >
+          {/* 아이콘만 있는 버튼은 스크린리더가 읽을 이름이 없다 */}
+          <span className='sr-only'>{sheetTitle}</span>
+          <Share2 className='h-4 w-4' />
+        </Button>
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className='sm:max-w-sm'>
