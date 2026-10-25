@@ -362,6 +362,16 @@
 .stageList li[data-earned="true"] {
   color: var(--text-strong);
 }
+.stageDisclosure {
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--muted);
+  text-align: left;
+}
+.stageDisclosure .stageList {
+  margin-top: 12px;
+  padding: 0;
+}
 /* 긴 이름·힌트·진행률이 다음 줄에 겹치지 않게 여백을 둔다. */
 .shelf {
   --row-height: calc(var(--book-height) + 100px);
