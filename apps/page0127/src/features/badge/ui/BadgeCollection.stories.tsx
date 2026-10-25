@@ -106,12 +106,6 @@ export const OpenAndCloseBook: Story = {
       dialog.getByRole('button', { name: '책 펼쳐보기' })
     ).toHaveAttribute('aria-pressed', 'false');
     await userEvent.keyboard('{Escape}');
-    await userEvent.click(
-      await canvas.findByRole('button', { name: '책등으로 보기' })
-    );
-    await expect(
-      canvas.getByRole('button', { name: '책등으로 보기' })
-    ).toHaveAttribute('aria-pressed', 'true');
   },
 };
 

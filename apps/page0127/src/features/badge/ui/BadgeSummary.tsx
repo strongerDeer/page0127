@@ -15,7 +15,7 @@ import styles from './BadgeShelf.module.css';
 
 type BadgeSummaryProps = BadgeInput & { username: string; isOwner: boolean };
 
-/** 받은 배지를 나란히 놓고, 넘치면 가로로 탐색한다. */
+/** 최신 획득순으로 정렬하고 실제 카드 폭에 온전히 들어가는 배지만 보여 준다. */
 export const BadgeSummary = ({
   username,
   isOwner,
@@ -36,7 +36,7 @@ export const BadgeSummary = ({
   return (
     <section
       aria-labelledby='badge-summary-title'
-      className='rounded-2xl border border-line-soft bg-card px-5 py-5 sm:px-6'
+      className={`${styles.summary} rounded-2xl border border-line-soft bg-card px-5 py-5 sm:px-6`}
     >
       <div className='flex items-center justify-between gap-2'>
         <h3
@@ -58,9 +58,6 @@ export const BadgeSummary = ({
           <ChevronRight className='size-3.5' aria-hidden />
         </Link>
       </div>
-      <p className='mt-2 text-xs text-text-subtle'>
-        옆으로 넘기면 모은 배지를 모두 볼 수 있어요.
-      </p>
       {earned.length ? (
         <ul className={styles.summaryShelf} aria-label='획득한 배지 책장'>
           {earned.map((badge) => (

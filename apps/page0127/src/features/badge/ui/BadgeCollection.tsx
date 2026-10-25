@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { computeBadges } from '../model/badges';
 import { BadgeTile } from './BadgeTile';
@@ -30,7 +30,6 @@ export const BadgeCollection = ({
   firstTasteAnalysisAt,
   activity,
 }: BadgeCollectionProps) => {
-  const [view, setView] = useState<'cover' | 'spine'>('cover');
   const badges = useMemo(
     () => computeBadges({ books, readingGoal, firstTasteAnalysisAt, activity }),
     [books, readingGoal, firstTasteAnalysisAt, activity]
@@ -58,22 +57,6 @@ export const BadgeCollection = ({
             ? `전체 ${badges.length}종 중 ${earnedCount}종 획득`
             : `배지 ${earnedCount}종 획득`}
         </p>
-        <div className={styles.switch} role='group' aria-label='배지 보기 방식'>
-          <button
-            type='button'
-            aria-pressed={view === 'cover'}
-            onClick={() => setView('cover')}
-          >
-            표지로 보기
-          </button>
-          <button
-            type='button'
-            aria-pressed={view === 'spine'}
-            onClick={() => setView('spine')}
-          >
-            책등으로 보기
-          </button>
-        </div>
       </div>
       <p className='text-xs text-text-subtle'>
         점선은 아직 받지 않은 배지예요. 올리거나 선택하면 표지를 미리 볼 수
@@ -94,9 +77,7 @@ export const BadgeCollection = ({
             </h2>
             <span className='text-xs text-text-subtle'>{section.hint}</span>
           </div>
-          <ul
-            className={`${styles.shelf} ${view === 'spine' ? styles.spineShelf : ''}`}
-          >
+          <ul className={styles.shelf}>
             {section.badges.map((badge) => (
               <li
                 key={`${badge.id}-${badge.level}`}
@@ -107,7 +88,6 @@ export const BadgeCollection = ({
                   username={username}
                   size={112}
                   showProgress
-                  view={view}
                 />
               </li>
             ))}

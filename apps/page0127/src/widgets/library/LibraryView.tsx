@@ -9,6 +9,7 @@ import { ChevronDown, Plus } from 'lucide-react';
 
 import { calculateReadingBalance } from '@/entities/book';
 
+import { ShareSheetButton } from '@/features/share';
 import {
   hasActiveShelfFilter,
   useLibraryFilters,
@@ -34,6 +35,13 @@ import { WishlistShelf } from './WishlistShelf';
 import type { Book } from '@/entities/book';
 import type { BookStats, OverallStats } from '@/entities/book';
 import type { RatingFilter } from '@/features/stats/model/useLibraryFilters';
+
+/** 목표 달성 이미지를 그리는 동안의 문구 — 서재 스토리와 같은 책장을 세운다 */
+const GOAL_STORY_LOADING = {
+  title: '달성 이미지를 그리고 있어요',
+  wait: '올해 책장을 펼치는 중…',
+  slow: '올해 읽은 책을 한 권씩 꽂는 중이에요. 조금만 기다려 주세요.',
+};
 
 type LibraryViewProps = {
   /** 전체 독서 통계 (연도 무관) */
@@ -384,6 +392,20 @@ export const LibraryView = ({
                     onSetGoal && selectedYear === currentYear
                       ? onSetGoal
                       : undefined
+                  }
+                  goalShare={
+                    // 자랑은 주인이 한다. 이미지는 올해 목표만 그린다(goal-story 라우트)
+                    isOwner && username && selectedYear === currentYear ? (
+                      <ShareSheetButton
+                        path={`/${username}`}
+                        imagePath={`/${username}/goal-story`}
+                        fileName={`page0127-${username}-goal.png`}
+                        title={`${currentYear} 독서 목표 달성`}
+                        sheetTitle='목표 달성 공유하기'
+                        triggerLabel='달성 공유하기'
+                        loadingMessages={GOAL_STORY_LOADING}
+                      />
+                    ) : undefined
                   }
                 />
 

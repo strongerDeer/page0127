@@ -105,4 +105,18 @@ describe('YearSummary', () => {
     expect(html).not.toContain('평균 평점');
     expect(html).not.toContain('data-facts');
   });
+
+  it('달성 공유 버튼은 올해 목표를 채웠을 때만 보인다', () => {
+    const share = <button type='button'>달성 공유하기</button>;
+    // 14/40 — 아직
+    expect(render({ goalShare: share })).not.toContain('달성 공유하기');
+    // 40/40 — 달성
+    expect(render({ goalShare: share, completed: 40 })).toContain(
+      '달성 공유하기'
+    );
+    // 지난해 달성은 그리지 않는다 — 이미지는 올해 목표만 그린다
+    expect(
+      render({ goalShare: share, completed: 40, year: 2025 })
+    ).not.toContain('달성 공유하기');
+  });
 });

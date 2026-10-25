@@ -110,3 +110,33 @@ export const getGoogleAccessToken = async (
   }
   return json.access_token;
 };
+
+/** 캐시한 토큰을 이만큼만 쓴다 — 구글 토큰은 1시간짜리라 끝나기 전에 넉넉히 새로 받는다 */
+const TOKEN_REUSE_MS = 50 * 60 * 1000;
+
+const tokenCache = new Map<
+  string,
+  { token: Promise<string>; expiresAt: number }
+>();
+
+/**
+ * getGoogleAccessToken 에 캐시를 씌운다 — 같은 서버 인스턴스에서 50분 동안 토큰을 다시 쓴다.
+ *
+ * 유입분석 한 번 열 때 GA 보고서·GA 이벤트·Search Console 이 각자 토큰을 받으면
+ * JWT 서명 + 구글 왕복이 매번 2~3번 늘어난다. 진행 중인 요청(Promise)째 담아 두어
+ * 동시에 부른 쪽도 한 번의 발급을 같이 기다린다. 실패하면 바로 비워 다음 요청이 다시 받는다.
+ */
+export const getCachedGoogleAccessToken = (
+  scopes: string[]
+): Promise<string> => {
+  const key = scopes.join(' ');
+  const cached = tokenCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) return cached.token;
+
+  const token = getGoogleAccessToken(scopes);
+  tokenCache.set(key, { token, expiresAt: Date.now() + TOKEN_REUSE_MS });
+  token.catch(() => {
+    if (tokenCache.get(key)?.token === token) tokenCache.delete(key);
+  });
+  return token;
+};

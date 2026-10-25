@@ -14,7 +14,6 @@ type BadgeMedalProps = {
   badge: Badge;
   size: number;
   className?: string;
-  view?: 'cover' | 'spine';
   opened?: boolean;
   reveal?: boolean;
   preview?: boolean;
@@ -25,12 +24,11 @@ export const BadgeMedal = ({
   badge,
   size,
   className,
-  view = 'cover',
   opened = false,
   reveal = false,
   preview = false,
 }: BadgeMedalProps) => {
-  const { title, cover, levelValue } = badgePresentation(badge);
+  const { cover, levelValue } = badgePresentation(badge);
   const art = badgeCoverArt(cover);
   const color = badgeLevelColor(badge.id, badge.level);
   return (
@@ -40,13 +38,13 @@ export const BadgeMedal = ({
       data-growth={color ? true : undefined}
       data-cover={cover}
       data-preview={preview || undefined}
-      data-view={view}
       data-locked={!badge.earned || undefined}
       data-open={(opened && badge.earned) || undefined}
       className={`${styles.book} ${reveal ? styles.reveal : ''} ${className ?? ''}`}
       style={
         {
           '--book-width': `${size}px`,
+          '--shine-delay': `${(art.row * art.columns + art.column + (art.rows === 4 ? 9 : 0)) * 300 + Math.max(1, badge.level) * 50}ms`,
           '--jacket-paper': color?.paper ?? art.paper,
           '--level-paper': color?.paper,
           '--level-ink': color?.ink,
@@ -95,7 +93,6 @@ export const BadgeMedal = ({
             <span>{badge.kind === 'hidden' ? '?' : '+'}</span>미획득
           </span>
         )}
-        <span className={styles.spineTitle}>{title}</span>
       </div>
     </div>
   );

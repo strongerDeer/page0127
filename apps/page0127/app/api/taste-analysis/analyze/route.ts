@@ -11,11 +11,20 @@ import {
   USAGE_LIMIT_EXCEEDED_ERROR,
 } from '@/shared/lib/aiUsage';
 import { notifyBudgetIfCrossed } from '@/shared/lib/kakao-alert/notifyBudget';
-import { AI_MODEL, MAX_TOKENS, openai, TEMPERATURE } from '@/shared/lib/openai';
+import {
+  AI_MODEL,
+  openai,
+  TASTE_ANALYSIS_MAX_TOKENS,
+  TEMPERATURE,
+} from '@/shared/lib/openai';
 import { createTasteAnalysisPrompt } from '@/shared/lib/openai/prompts/taste-analysis';
 
 import { isRated } from '@/entities/book';
 import { TASTE_ANALYSIS_MIN_BOOKS } from '@/entities/taste-analysis/model/analysisGate';
+import {
+  toBookKey,
+  toTasteEvidence,
+} from '@/entities/taste-analysis/model/evidence';
 import { READING_PERSONALITY_TYPES } from '@/entities/taste-analysis/model/personalityTypes';
 import { RECOMMENDATIONS_REQUEST_COUNT } from '@/entities/taste-analysis/model/recommendations';
 
@@ -25,6 +34,12 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 // gpt-4o + max_tokens 4000 응답은 경우에 따라 수십 초가 걸릴 수 있어
 // 배포 플랫폼 기본 함수 타임아웃(짧으면 10초)에 걸려 강제 종료되는 것을 방지
 export const maxDuration = 60;
+
+/** 추천 도서 표지 보강을 응답 전에 기다리는 최대 시간 */
+const ENRICH_WAIT_MS = 8_000;
+
+/** 공급자 API 동시 호출 수 — 표지를 빨리 채우되 한 번에 몰아 보내지 않는다 */
+const ENRICH_CONCURRENCY = 3;
 
 /**
  * 독서 취향 분석 API
@@ -109,7 +124,9 @@ export async function POST(request: NextRequest) {
     //    0("평가 안 함")은 점수가 아니므로 null 로 프롬프트에 넘긴다.
     //    인생책은 별도 컬럼(is_life_book)이라 여기서는 rating 그대로 쓴다.
     const prompt = createTasteAnalysisPrompt(
-      (books as Book[]).map((book) => ({
+      // key: 응답이 근거 책을 번호로 고르게 한다 — 지어낸 책이 근거로 들어오지 않는다
+      (books as Book[]).map((book, index) => ({
+        key: toBookKey(index),
         title: book.title,
         author: book.author,
         category: book.category,
@@ -135,7 +152,7 @@ export async function POST(request: NextRequest) {
           content: prompt,
         },
       ],
-      max_tokens: MAX_TOKENS,
+      max_tokens: TASTE_ANALYSIS_MAX_TOKENS,
       temperature: TEMPERATURE,
       response_format: { type: 'json_object' }, // JSON 모드
     });
@@ -168,6 +185,21 @@ export async function POST(request: NextRequest) {
       console.warn('AI 전체 응답:', JSON.stringify(aiResponse, null, 2));
     }
 
+    // 4-1. 근거 책 — 번호를 실제 책과 맞추고, 못 맞춘 것(지어낸 책)은 버린다.
+    //      preference_profile 안에 둔다(JSONB) — 마이그레이션 없이 옛 분석과 나란히 산다
+    const evidence = toTasteEvidence(
+      aiResponse.evidence,
+      (books as Book[]).map((book) => ({
+        id: book.id,
+        title: book.title,
+        cover_image: book.cover_image,
+      })),
+      aiResponse.preference_profile?.liked?.topics ?? []
+    );
+    const preferenceProfile = aiResponse.preference_profile
+      ? { ...aiResponse.preference_profile, evidence }
+      : aiResponse.preference_profile;
+
     // 5. 분석 결과 저장
     const costInCents = calculateCost(
       completion.usage?.prompt_tokens || 0,
@@ -179,7 +211,7 @@ export async function POST(request: NextRequest) {
         user_id: user.id,
         personality_type: aiResponse.personality_type,
         personality_description: aiResponse.personality_description,
-        preference_profile: aiResponse.preference_profile,
+        preference_profile: preferenceProfile,
         analyzed_books_count: books.length,
         analysis_model: AI_MODEL,
         cost_in_cents: costInCents,
@@ -239,23 +271,29 @@ export async function POST(request: NextRequest) {
         }
 
         // 7. 도서 공급자로 표지 이미지 업데이트
-        // after()로 감싸서 응답을 먼저 보낸 뒤 백그라운드에서 처리한다.
-        // 추천 도서 수만큼 공급자 API를 순차 호출(rate limit 방지용 딜레이 포함)하기 때문에
-        // 응답 전에 기다리면 사용자 체감 대기 시간이 그만큼 늘어난다.
-        after(async () => {
-          try {
-            await enrichRecommendationsWithProviderData(
-              supabase,
-              aiResponse.recommendations,
-              analysis.id
-            );
+        // 응답 전에 기다린다 — 응답을 받자마자 결과 페이지로 이동하므로, 백그라운드로
+        // 돌리면 페이지가 표지 없는 행을 먼저 읽어 새로고침해야 표지가 보인다.
+        // 대신 병렬로 돌리고 상한(ENRICH_WAIT_MS)을 둬서 공급자가 느려도 응답이
+        // 붙잡히지 않게 한다. 상한을 넘기면 남은 작업은 after()가 끝까지 마친다.
+        const enrichment = enrichRecommendationsWithProviderData(
+          supabase,
+          aiResponse.recommendations,
+          analysis.id
+        ).then(
+          () => {
             if (process.env.NODE_ENV === 'development') {
               console.warn('공급자 데이터 업데이트 완료');
             }
-          } catch (err: unknown) {
+          },
+          (err: unknown) => {
             console.error('공급자 데이터 업데이트 실패:', err);
           }
-        });
+        );
+        after(enrichment);
+        await Promise.race([
+          enrichment,
+          new Promise((resolve) => setTimeout(resolve, ENRICH_WAIT_MS)),
+        ]);
       }
     } else {
       console.warn('AI 응답에 추천 도서가 없습니다.');
@@ -326,7 +364,9 @@ async function enrichRecommendationsWithProviderData(
   const provider = getBookProvider();
 
   /** 공급자 검색 1회 — 결과가 없으면 null */
-  const searchProvider = async (query: string): Promise<ProviderBook | null> => {
+  const searchProvider = async (
+    query: string
+  ): Promise<ProviderBook | null> => {
     try {
       const result = await provider.search(query, { maxResults: 3 });
       // 검색 결과에서 첫 번째 책 사용 (제목이 가장 유사)
@@ -337,7 +377,7 @@ async function enrichRecommendationsWithProviderData(
     }
   };
 
-  for (const rec of recommendations) {
+  const enrichOne = async (rec: (typeof recommendations)[number]) => {
     try {
       // 1차: 제목만으로 검색. 실패하면 저자를 붙여 한 번 더 시도한다.
       //   AI가 부제를 붙이거나 띄어쓰기를 다르게 쓰면 0건이 나오는데,
@@ -393,11 +433,20 @@ async function enrichRecommendationsWithProviderData(
           console.warn(`❌ ${rec.title} - 공급자에서 찾을 수 없어 삭제`);
         }
       }
-
-      // API 요청 간 간격 (Rate Limiting 방지)
-      await new Promise((resolve) => setTimeout(resolve, 200));
     } catch (error) {
       console.error(`공급자 API 오류 (${rec.title}):`, error);
     }
-  }
+  };
+
+  // 작업 큐를 ENRICH_CONCURRENCY 개의 일꾼이 나눠 처리한다.
+  // 순차(권당 ~0.5초 × 12권)면 6초 남짓, 3개씩이면 2초 안팎이다.
+  const queue = [...recommendations];
+  const worker = async () => {
+    for (let rec = queue.shift(); rec; rec = queue.shift()) {
+      await enrichOne(rec);
+    }
+  };
+  await Promise.all(
+    Array.from({ length: Math.min(ENRICH_CONCURRENCY, queue.length) }, worker)
+  );
 }

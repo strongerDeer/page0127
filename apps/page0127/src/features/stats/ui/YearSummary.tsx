@@ -6,6 +6,7 @@ import { getReadingPace } from '@/entities/book';
 import { getPaceMessage } from '../model/paceMessage';
 
 import type { MonthlyReadingData } from '@/entities/book';
+import type { ReactNode } from 'react';
 
 type YearSummaryProps = {
   year: number;
@@ -20,6 +21,11 @@ type YearSummaryProps = {
   isOwner: boolean;
   /** 주인 + 올해일 때만 넘어온다 */
   onSetGoal?: () => void;
+  /**
+   * 목표 달성 공유 버튼 — 올해 목표를 채웠을 때만 보인다.
+   * 공유 시트는 features/share 의 것이라 여기서 만들지 않고 위젯이 넣어 준다(features 끼리 import 하지 않는다)
+   */
+  goalShare?: ReactNode;
 };
 
 type FactProps = {
@@ -53,6 +59,7 @@ export const YearSummary = ({
   monthlyReading,
   isOwner,
   onSetGoal,
+  goalShare,
 }: YearSummaryProps) => {
   const pace = getReadingPace({ completed, target, year, today });
   const message = getPaceMessage({ pace, completed, target, isOwner });
@@ -61,6 +68,8 @@ export const YearSummary = ({
     ? Math.min(Math.round((completed / target) * 100), 100)
     : 0;
   const isPast = pace.state === 'past_met' || pace.state === 'past_missed';
+  // 자랑할 순간은 올해 목표를 채운 뒤뿐이다
+  const showGoalShare = Boolean(goalShare) && pace.state === 'met';
 
   // 환산은 계산할 수 있는 것만 — 종이 한 장(2쪽) 0.1mm, 1분/쪽(기존 독서 시간 규칙)
   const stackCm = Math.round(totalPages / 200);
@@ -125,16 +134,22 @@ export const YearSummary = ({
               </p>
             )}
           </div>
-          {onSetGoal && (
-            <Button
-              variant={message.suggestGoalEdit ? 'outline' : 'ghost'}
-              size='sm'
-              className='shrink-0 text-text-subtle'
-              onClick={onSetGoal}
-            >
-              <Pencil className='size-3.5' />
-              {hasGoal ? '목표 수정' : '목표 정하기'}
-            </Button>
+          {/* 둘 다 없으면 칸을 만들지 않는다 — 빈 칸이 줄바꿈 자리를 먹는다 */}
+          {(showGoalShare || onSetGoal) && (
+            <div className='flex shrink-0 items-center gap-1'>
+              {showGoalShare && goalShare}
+              {onSetGoal && (
+                <Button
+                  variant={message.suggestGoalEdit ? 'outline' : 'ghost'}
+                  size='sm'
+                  className='text-text-subtle'
+                  onClick={onSetGoal}
+                >
+                  <Pencil className='size-3.5' />
+                  {hasGoal ? '목표 수정' : '목표 정하기'}
+                </Button>
+              )}
+            </div>
           )}
         </div>
 

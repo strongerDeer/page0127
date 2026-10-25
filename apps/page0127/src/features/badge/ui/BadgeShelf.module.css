@@ -9,29 +9,6 @@
   justify-content: space-between;
   gap: 1rem;
 }
-.switch {
-  display: inline-flex;
-  gap: 2px;
-  padding: 3px;
-  border-radius: 10px;
-  background: var(--muted);
-}
-.switch button {
-  padding: 6px 12px;
-  border: 0;
-  border-radius: 7px;
-  font-size: 12px;
-  color: var(--text-subtle);
-}
-.switch button[aria-pressed="true"] {
-  background: var(--card);
-  color: var(--text-strong);
-  box-shadow: 0 1px 3px rgb(20 41 78 / 10%);
-}
-.switch button:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}
 .section {
   min-width: 0;
   padding: 24px 20px 18px;
@@ -123,14 +100,6 @@
 .summaryShelf .name {
   font-size: 11px;
 }
-.spineShelf {
-  display: flex;
-  flex-wrap: wrap;
-  column-gap: 12px;
-}
-.spineShelf .shelfItem {
-  width: 60px;
-}
 .detailStage {
   display: flex;
   justify-content: center;
@@ -207,10 +176,6 @@
 .tile [data-badge-book] {
   max-width: min(100%, var(--shelf-book-width));
 }
-.tile [data-badge-book][data-view="spine"] {
-  width: calc(var(--shelf-book-width) * 0.36);
-  height: calc(var(--shelf-book-width) * 4 / 3);
-}
 
 @media (max-width: 639px) {
   .section {
@@ -225,21 +190,24 @@
   font-size: 10px;
   font-weight: 500;
 }
-/* 표지와 이름을 모두 보이게 나란히 놓고, 넘치는 배지만 가로로 탐색한다. */
+/* 컨테이너 폭에 온전히 들어가는 최신 배지만 한 줄로 표시한다. */
+.summary {
+  container: badge-summary / inline-size;
+}
 .summaryShelf {
   --shelf-book-width: 76px;
   display: flex;
   align-items: flex-start;
   gap: 16px;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
+  justify-content: space-between;
+  overflow: visible;
   padding: 14px 8px 12px;
   margin-top: 8px;
   background: linear-gradient(to bottom, var(--line-soft), transparent) 0
     120px / 100% 7px no-repeat;
-  scrollbar-width: thin;
 }
 .summaryShelf .shelfItem {
+  display: none;
   flex: 0 0 76px;
   min-height: 150px;
   width: 76px;
@@ -255,8 +223,103 @@
   outline-offset: 2px;
 }
 
+.summaryShelf .shelfItem:first-child {
+  display: block;
+}
+@container badge-summary (min-width: 184px) {
+  .summaryShelf .shelfItem:nth-child(-n + 2) {
+    display: block;
+  }
+}
+@container badge-summary (min-width: 276px) {
+  .summaryShelf .shelfItem:nth-child(-n + 3) {
+    display: block;
+  }
+}
+@container badge-summary (min-width: 368px) {
+  .summaryShelf .shelfItem:nth-child(-n + 4) {
+    display: block;
+  }
+}
+@container badge-summary (min-width: 460px) {
+  .summaryShelf .shelfItem:nth-child(-n + 5) {
+    display: block;
+  }
+}
+@container badge-summary (min-width: 552px) {
+  .summaryShelf .shelfItem:nth-child(-n + 6) {
+    display: block;
+  }
+}
+@container badge-summary (min-width: 644px) {
+  .summaryShelf .shelfItem:nth-child(-n + 7) {
+    display: block;
+  }
+}
+@container badge-summary (min-width: 736px) {
+  .summaryShelf .shelfItem:nth-child(-n + 8) {
+    display: block;
+  }
+}
+@container badge-summary (min-width: 828px) {
+  .summaryShelf .shelfItem:nth-child(-n + 9) {
+    display: block;
+  }
+}
+@container badge-summary (min-width: 920px) {
+  .summaryShelf .shelfItem:nth-child(-n + 10) {
+    display: block;
+  }
+}
+@container badge-summary (min-width: 1012px) {
+  .summaryShelf .shelfItem:nth-child(-n + 11) {
+    display: block;
+  }
+}
+@container badge-summary (min-width: 1104px) {
+  .summaryShelf .shelfItem:nth-child(-n + 12) {
+    display: block;
+  }
+}
+@container badge-summary (min-width: 1196px) {
+  .summaryShelf .shelfItem:nth-child(-n + 13) {
+    display: block;
+  }
+}
+@container badge-summary (min-width: 1288px) {
+  .summaryShelf .shelfItem:nth-child(-n + 14) {
+    display: block;
+  }
+}
+@container badge-summary (min-width: 1380px) {
+  .summaryShelf .shelfItem:nth-child(-n + 15) {
+    display: block;
+  }
+}
+@container badge-summary (min-width: 1472px) {
+  .summaryShelf .shelfItem:nth-child(-n + 16) {
+    display: block;
+  }
+}
+@container badge-summary (min-width: 1564px) {
+  .summaryShelf .shelfItem:nth-child(-n + 17) {
+    display: block;
+  }
+}
+@container badge-summary (min-width: 1656px) {
+  .summaryShelf .shelfItem:nth-child(-n + 18) {
+    display: block;
+  }
+}
+@container badge-summary (min-width: 1748px) {
+  .summaryShelf .shelfItem:nth-child(-n + 19) {
+    display: block;
+  }
+}
+
 /* 단계가 늘어도 목록에서는 계열당 한 묶음만 센다. */
 .stack {
+  --stack-width: 112px;
   position: relative;
   display: block;
   width: min(var(--stack-width), var(--shelf-book-width));
@@ -268,6 +331,7 @@
   display: block;
 }
 .stackBack {
+  --stack-offset: 1;
   position: absolute;
   inset: 0;
   display: block;
@@ -279,9 +343,6 @@
 }
 .stackBack [data-badge-book] {
   box-shadow: 1px 2px 3px rgb(20 41 78 / 12%);
-}
-.spineShelf .stack {
-  width: calc(var(--shelf-book-width) * 0.36);
 }
 .stageList {
   display: grid;

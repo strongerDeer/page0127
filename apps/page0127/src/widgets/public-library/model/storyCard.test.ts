@@ -21,6 +21,7 @@ const book = (id: string, completed_date: string): PublicShelfBook => ({
 const data = (over: Partial<ReaderShareData> = {}): ReaderShareData => ({
   displayName: '혜진',
   photoUrl: null,
+  readingGoal: null,
   topics: ['관계', '심리', '일상의 철학', '넷째'],
   year: 2026,
   yearBooks: 0,
