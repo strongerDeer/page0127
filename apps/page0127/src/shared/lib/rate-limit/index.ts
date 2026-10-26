@@ -15,6 +15,10 @@ const STRICT_PATHS = [
 // strict보다 여유 있게, standard보다는 낮게 별도 등급을 둔다.
 const SEARCH_PATHS = ['/api/books/search'];
 
+// 일괄 등록 — 요청 한 번이 공급자를 최대 20번(매칭)·100번(등록) 부른다. 정상 사용은
+// 100권 기준 매칭 5번 + 등록 1번이라 분당 10회면 넉넉하고, 그 이상은 일 20,000건 한도를 태운다.
+const IMPORT_PATHS = ['/api/books/import/match', '/api/books/import'];
+
 // 자체 RUM 비콘 — 페이지 이동마다 자동 발사되므로 사람이 누르는 API와 성격이 다르다.
 // standard(60회/분)를 함께 쓰게 두면 비콘이 예산을 먹어 **정작 사용자의 진짜 API 호출이
 // 429를 맞는다**. 등급을 따로 둬 카운터를 분리한다(등급이 식별자 앞에 붙는다 — 아래 참고).
@@ -22,6 +26,7 @@ const BEACON_PATHS = ['/api/rum'];
 
 const STRICT_LIMIT = 5;
 const SEARCH_LIMIT = 20;
+const IMPORT_LIMIT = 10;
 const STANDARD_LIMIT = 60;
 const BEACON_LIMIT = 120;
 const WINDOW_MS = 60_000; // 1분
@@ -29,11 +34,12 @@ const WINDOW_MS = 60_000; // 1분
 // Vercel Cron이 호출하는 라우트 — CRON_SECRET으로 이미 보호되는 서버 간 호출이라 제외
 const EXCLUDED_PREFIXES = ['/api/cron'];
 
-type Tier = 'strict' | 'search' | 'beacon' | 'standard';
+type Tier = 'strict' | 'search' | 'import' | 'beacon' | 'standard';
 
 const TIER_LIMITS: Record<Tier, number> = {
   strict: STRICT_LIMIT,
   search: SEARCH_LIMIT,
+  import: IMPORT_LIMIT,
   beacon: BEACON_LIMIT,
   standard: STANDARD_LIMIT,
 };
@@ -45,6 +51,7 @@ function getTier(pathname: string): Tier | null {
   }
   if (STRICT_PATHS.includes(pathname)) return 'strict';
   if (SEARCH_PATHS.includes(pathname)) return 'search';
+  if (IMPORT_PATHS.includes(pathname)) return 'import';
   if (BEACON_PATHS.includes(pathname)) return 'beacon';
   return 'standard';
 }
@@ -58,7 +65,11 @@ function getTier(pathname: string): Tier | null {
  * 공유하게 되어, 한 등급을 몇 번 쓰기만 해도 다른 등급 예산이 같이 줄어든다.
  * 등급별로 완전히 독립된 카운터를 쓰기 위해 붙인다.
  */
-function getIdentifier(request: NextRequest, user: User | null, tier: Tier): string {
+function getIdentifier(
+  request: NextRequest,
+  user: User | null,
+  tier: Tier
+): string {
   const base = user
     ? `user:${user.id}`
     : `ip:${request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'}`;
