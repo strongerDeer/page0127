@@ -16,6 +16,8 @@ analysis-screenshots/
 analysis-data.json
 search-result.png
 *.png
+!apps/page0127/app/icon.png
+!apps/page0127/public/brand/page0127-symbol.png
 
 # OS files
 .DS_Store
