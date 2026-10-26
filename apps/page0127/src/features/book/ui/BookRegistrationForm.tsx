@@ -19,7 +19,18 @@ import {
   Textarea,
 } from '@repo/ui';
 import { BookCover } from '@repo/ui';
-import { RefreshCw } from 'lucide-react';
+import {
+  BookOpen,
+  CalendarCheck,
+  CalendarPlus,
+  Globe,
+  Lock,
+  NotebookPen,
+  Quote,
+  RefreshCw,
+  Star,
+  Tag,
+} from 'lucide-react';
 
 import { toKstDateKey } from '@/shared/lib/date';
 
@@ -31,6 +42,8 @@ import {
   MIN_COMPLETED_YEAR,
   type ProviderBook,
 } from '@/entities/book';
+
+import { RatingPicker } from './RatingPicker';
 
 type BookRegistrationFormProps = {
   book: ProviderBook;
@@ -165,6 +178,21 @@ const COMPLETED_PRECISION_OPTIONS: {
   { value: 'unknown', label: '잘 모르겠어요' },
 ];
 
+const COMPLETED_PRECISION_HINT: Record<CompletedPrecision, string> = {
+  date: '비워 두면 오늘로 기록해요.',
+  year: '그해 서재와 통계에 들어가요.',
+  unknown: '연도별 서재에는 보이지 않고, 전체 서재와 통계에만 들어가요.',
+};
+
+// 라벨 앞 아이콘 — 글자보다 한 톤 옅게 두어 라벨 글자가 먼저 읽히게 한다
+const ICON_CLASS = 'h-4 w-4 shrink-0 text-muted-foreground';
+
+const RequiredBadge = () => (
+  <span className='rounded bg-primary/10 px-1.5 py-0.5 text-[11px] font-medium leading-none text-primary'>
+    필수
+  </span>
+);
+
 /**
  * 수정 화면에서 열었을 때의 정밀도.
  *
@@ -196,9 +224,7 @@ export const toCompletedFields = (
 ): { completed_date: string | null; completed_year: number | null } | null => {
   switch (state.completedPrecision) {
     case 'date':
-      // 완독일은 '더 남기기' 안에 접혀 있어 required 를 걸 수 없다.
-      // 접힌 details 안의 빈 required 는 브라우저가 "not focusable" 로 제출을
-      // 조용히 막는다 — 화면엔 아무 에러도 안 뜬다.
+      // 완독일은 선택 항목이라 required 를 걸지 않는다.
       // 기본값이 이미 오늘이므로 이 폴백은 사용자가 의도적으로 비운 경우에만 동작한다.
       return {
         completed_date: state.completedDate || today,
@@ -224,12 +250,12 @@ export const toCompletedFields = (
  * - 상태별 조건부 필드 표시 (UX 개선)
  *
  * UX 개선 (완독 기록을 한 문장 중심으로):
- * - 완독일 때 한줄평과 평가 점수를 맨 위에 두어 바로 손이 가게 한다.
- * - 완독일·시작일·메모·태그는 '더 남기기'로 접는다 (기본값이 이미 옳아
- *   필수 입력이 아니다). 완독일을 비우면 제출 시 오늘로 채워진다.
- * - 공개 설정은 접지 않는다: 기본값이 공개(true)라 방금 쓴 문장이 공개 서재에
- *   게시되는데, 접어 두면 사용자가 '공개'라는 단어를 한 번도 못 보고 저장한다.
- *   편리한 기본값과 주의가 필요 없는 결정은 다르다.
+ * - 필수는 독서 상태 하나다. 나머지는 구분선 아래 '선택'으로 모으고 접지 않는다
+ *   (예전 '더 남기기' 접힘은 완독일·메모를 찾으려면 한 번 더 눌러야 했다).
+ * - 선택 항목 중 한줄평과 평가 점수를 맨 위에 두어 바로 손이 가게 한다.
+ * - 완독일은 [날짜 ▾] 선택과 입력칸을 한 줄에 둔다. 비우면 오늘로 채워진다.
+ * - 공개 설정은 저장 버튼 바로 위에 둔다: 기본값이 공개(true)라 방금 쓴 문장이
+ *   공개 서재에 게시된다. 편리한 기본값과 주의가 필요 없는 결정은 다르다.
  */
 export const BookRegistrationForm = ({
   book,
@@ -417,7 +443,7 @@ export const BookRegistrationForm = ({
             )}
           </div>
 
-          {/* 독서 상태 */}
+          {/* ── 필수 ── 저장에 꼭 필요한 건 독서 상태 하나뿐이다 */}
           <div className='space-y-2'>
             {/* 같은 폼의 Label·Input·Switch 와 같은 자리에서 나온 컨트롤이라
                 디자인 시스템 Select 를 쓴다. 네이티브 <select> 였을 때는 높이·테두리를
@@ -429,7 +455,11 @@ export const BookRegistrationForm = ({
                 required 는 뺐다. status 는 reducer 초기값이 있어 빈 값이 될 수 없으므로
                 브라우저 검증이 발동할 일이 없고, Radix 에서는 hidden input 을 통해
                 다르게 동작한다. */}
-            <Label htmlFor={ids.status}>독서 상태 *</Label>
+            <Label htmlFor={ids.status}>
+              <BookOpen className={ICON_CLASS} aria-hidden />
+              독서 상태
+              <RequiredBadge />
+            </Label>
             <Select
               value={status}
               onValueChange={(value) =>
@@ -450,11 +480,22 @@ export const BookRegistrationForm = ({
             </Select>
           </div>
 
-          {/* 이 책을 한 문장으로 — 완독 기록의 핵심이라 가장 위에 둔다 */}
+          {/* ── 선택 ── 접지 않고 다 보여 준다. 대신 "비워 둬도 된다"를 구분선에서 한 번 말한다.
+              예전 '더 남기기' 접힘은 완독일·메모를 찾으려면 한 번 더 눌러야 했다 */}
+          <div className='flex items-center gap-3'>
+            <span className='h-px flex-1 bg-border' />
+            <span className='text-xs text-muted-foreground'>
+              여기부터는 선택 · 비워 둬도 저장돼요
+            </span>
+            <span className='h-px flex-1 bg-border' />
+          </div>
+
+          {/* 이 책을 한 문장으로 — 완독 기록의 핵심이라 선택 항목 중 가장 위에 둔다 */}
           {status === 'completed' && (
             <div className='space-y-2'>
               <Label htmlFor={ids.oneLineReview}>
-                이 책을 한 문장으로 남긴다면?
+                <Quote className={ICON_CLASS} aria-hidden />이 책을 한 문장으로
+                남긴다면?
               </Label>
               <Input
                 id={ids.oneLineReview}
@@ -476,290 +517,242 @@ export const BookRegistrationForm = ({
           {/* 평가 점수 - 완독일 때만 표시 */}
           {status === 'completed' && (
             <div className='space-y-2'>
-              <Label id={ids.rating}>평가 점수</Label>
-              {/* role='group' + aria-labelledby: 흩어진 점수 버튼들을 "평가 점수" 그룹으로 묶어 읽히게 함 */}
-              <div
-                role='group'
-                aria-labelledby={ids.rating}
-                className='flex flex-wrap gap-2'
-              >
-                {/* 인생책은 11번째 점수가 아니라 최고점의 별칭이다 — 저장할 때 rating=5 + 플래그로 나뉜다 */}
-                {([0, 1, 2, 3, 4, 5, 'life'] as const).map((score) => {
-                  const label = score === 'life' ? '인생책' : `${score}점`;
-                  const selected =
-                    score === 'life'
-                      ? isLifeBook
-                      : !isLifeBook && rating === score;
-
-                  return (
-                    <button
-                      key={score}
-                      type='button'
-                      // aria-pressed: 어떤 점수가 선택됐는지 스크린 리더에 전달
-                      aria-pressed={selected}
-                      aria-label={label}
-                      onClick={() =>
-                        dispatch({
-                          type: 'SET_RATING',
-                          rating: score,
-                        })
-                      }
-                      className={`rounded-md border px-4 py-2 transition-colors ${
-                        selected
-                          ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-border bg-card text-foreground hover:bg-accent'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-              {/* 인생책은 오래전에 읽은 경우가 많다. 완독일은 접힌 '더 남기기' 안에 있어
-                  그대로 저장하면 오늘 날짜로 들어간다 — 고칠 수 있다는 걸 여기서 알린다 */}
+              <Label id={ids.rating}>
+                <Star className={ICON_CLASS} aria-hidden />
+                평가 점수
+              </Label>
+              <RatingPicker
+                rating={rating}
+                isLifeBook={isLifeBook}
+                labelledBy={ids.rating}
+                onChange={(score) =>
+                  dispatch({ type: 'SET_RATING', rating: score })
+                }
+              />
+              {/* 인생책은 오래전에 읽은 경우가 많다. 그대로 저장하면 오늘 날짜로 들어간다 —
+                  바로 아래 완독일에서 고칠 수 있다는 걸 여기서 알린다 */}
               {isLifeBook && completedPrecision === 'date' && !initialData && (
                 <p className='text-sm text-muted-foreground'>
-                  언제 읽었는지 기억나지 않으면 &apos;더 남기기&apos;에서 연도만
-                  남기거나 &apos;잘 모르겠어요&apos;를 고를 수 있어요.
+                  언제 읽었는지 기억나지 않으면 아래 완독일에서
+                  &apos;연도만&apos;이나 &apos;잘 모르겠어요&apos;를 고를 수
+                  있어요.
                 </p>
               )}
             </div>
           )}
 
-          {/* 선택 항목은 접어 둔다 — 완독 기록에 필요한 입력은 사실 0개다
-              (상태·완독일 모두 기본값이 옳다). 공개 설정은 여기 넣지 않는다 */}
-          <details
-            open={!!initialData}
-            className='rounded-lg border border-line p-4'
-          >
-            {/* summary 자체에 flex 를 주면 펼침 삼각형 마커가 사라진다. 안쪽 span 으로 정렬한다 */}
-            <summary className='cursor-pointer text-sm font-medium'>
-              <span className='inline-flex items-center align-middle'>
-                더 남기기
-              </span>
-            </summary>
-
-            <div className='mt-4 space-y-6'>
-              {/* 완독일 - 완독 상태일 때만 표시.
-                  인생책처럼 오래전에 읽은 책은 날짜를 모른다 → 연도만, 또는 모름 */}
-              {status === 'completed' && (
-                <div className='space-y-2'>
-                  <Label id={ids.completedWhen}>완독일</Label>
-                  <div
-                    role='group'
-                    aria-labelledby={ids.completedWhen}
-                    className='flex flex-wrap gap-2'
-                  >
-                    {COMPLETED_PRECISION_OPTIONS.map(({ value, label }) => {
-                      const selected = completedPrecision === value;
-                      return (
-                        <button
-                          key={value}
-                          type='button'
-                          aria-pressed={selected}
-                          onClick={() =>
-                            dispatch({
-                              type: 'SET_COMPLETED_PRECISION',
-                              precision: value,
-                            })
-                          }
-                          className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
-                            selected
-                              ? 'border-primary bg-primary text-primary-foreground'
-                              : 'border-border bg-card text-foreground hover:bg-accent'
-                          }`}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {completedPrecision === 'date' && (
-                    <>
-                      <Input
-                        id={ids.completedDate}
-                        type='date'
-                        aria-label='완독 날짜'
-                        value={completedDate}
-                        onChange={(e) =>
-                          dispatch({
-                            type: 'SET_COMPLETED_DATE',
-                            date: e.target.value,
-                          })
-                        }
-                      />
-                      <p className='text-sm text-muted-foreground'>
-                        비워 두면 오늘로 기록해요.
-                      </p>
-                    </>
-                  )}
-
-                  {completedPrecision === 'year' && (
-                    <>
-                      <Input
-                        id={ids.completedYear}
-                        type='number'
-                        inputMode='numeric'
-                        aria-label='완독 연도'
-                        aria-invalid={!!completedYearError}
-                        aria-describedby={
-                          completedYearError
-                            ? ids.completedYearError
-                            : undefined
-                        }
-                        min={MIN_COMPLETED_YEAR}
-                        placeholder='예: 2015'
-                        value={completedYear}
-                        onChange={(e) =>
-                          dispatch({
-                            type: 'SET_COMPLETED_YEAR',
-                            year: e.target.value,
-                          })
-                        }
-                      />
-                      {completedYearError ? (
-                        <p
-                          id={ids.completedYearError}
-                          className='text-sm text-destructive'
-                        >
-                          {completedYearError}
-                        </p>
-                      ) : (
-                        <p className='text-sm text-muted-foreground'>
-                          그해 서재와 통계에 들어가요.
-                        </p>
-                      )}
-                    </>
-                  )}
-
-                  {completedPrecision === 'unknown' && (
-                    <p className='text-sm text-muted-foreground'>
-                      연도별 서재에는 보이지 않고, 전체 서재와 통계에만
-                      들어가요.
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* 시작일 - 완독 or 읽는중일 때만 표시 */}
-              {(status === 'completed' || status === 'reading') && (
-                <div className='space-y-2'>
-                  <div className='flex items-center gap-2'>
-                    <input
-                      type='checkbox'
-                      id={ids.showStartDate}
-                      checked={showStartDate}
-                      onChange={(e) =>
-                        dispatch({
-                          type: 'TOGGLE_START_DATE',
-                          checked: e.target.checked,
-                          today: toKstDateKey(new Date()),
-                        })
-                      }
-                      className='h-4 w-4'
-                    />
-                    <Label
-                      htmlFor={ids.showStartDate}
-                      className='cursor-pointer'
-                    >
-                      시작일 추가 (옵션)
-                    </Label>
-                  </div>
-
-                  {showStartDate && (
-                    <Input
-                      type='date'
-                      value={startDate}
-                      onChange={(e) =>
-                        dispatch({
-                          type: 'SET_START_DATE',
-                          date: e.target.value,
-                        })
-                      }
-                      placeholder='시작일'
-                    />
-                  )}
-                </div>
-              )}
-
-              {/* 나만의 메모 */}
-              <div className='space-y-2'>
-                <Label htmlFor={ids.personalMemo}>나만의 메모</Label>
-                <Textarea
-                  id={ids.personalMemo}
-                  value={personalMemo}
-                  onChange={(e) =>
+          {/* 완독일 - 완독 상태일 때만 표시.
+              인생책처럼 오래전에 읽은 책은 날짜를 모른다 → 연도만, 또는 모름.
+              [날짜 ▾] 선택과 입력칸을 한 줄에 둔다 — 고르는 것과 적는 것이 한 동작으로 읽힌다 */}
+          {status === 'completed' && (
+            <div className='space-y-2'>
+              <Label id={ids.completedWhen}>
+                <CalendarCheck className={ICON_CLASS} aria-hidden />
+                완독일
+              </Label>
+              <div className='flex items-center gap-2'>
+                {/* 버튼 3개(날짜·연도만·잘 모르겠어요)는 390px 에서 입력칸과 한 줄에 못 들어가
+                    두 줄로 밀렸다. 고르는 칸을 작은 Select 로 줄여 입력칸 자리를 남긴다 */}
+                <Select
+                  value={completedPrecision}
+                  onValueChange={(value) =>
                     dispatch({
-                      type: 'SET_PERSONAL_MEMO',
-                      value: e.target.value,
+                      type: 'SET_COMPLETED_PRECISION',
+                      precision: value as CompletedPrecision,
                     })
                   }
-                  placeholder='개인적인 생각이나 메모를 자유롭게 작성하세요'
-                  rows={4}
-                  maxLength={10000}
-                  aria-describedby={`${ids.personalMemo}-hint`}
-                />
-                <p
-                  id={`${ids.personalMemo}-hint`}
-                  className='text-sm text-muted-foreground'
                 >
-                  책을 공개해도 메모는 나에게만 보여요.
-                </p>
-              </div>
+                  <SelectTrigger
+                    aria-label='완독일 기록 방식'
+                    className='w-auto shrink-0'
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COMPLETED_PRECISION_OPTIONS.map(({ value, label }) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-              {/* 태그 */}
-              <div className='space-y-2'>
-                <Label htmlFor={ids.tags}>태그 (쉼표로 구분)</Label>
-                <Input
-                  id={ids.tags}
-                  type='text'
-                  value={tagsInput}
-                  onChange={(e) =>
-                    dispatch({ type: 'SET_TAGS_INPUT', value: e.target.value })
-                  }
-                  placeholder='예: 자기계발, 경영, 추천도서'
-                  className={tagError ? 'border-destructive' : ''}
-                />
-                {tagError ? (
-                  <p className='text-sm text-destructive'>{tagError}</p>
-                ) : (
-                  <p className='text-sm text-muted-foreground'>
-                    쉼표(,)로 구분하여 최대 10개까지 입력할 수 있습니다. 중복된
-                    태그는 자동으로 제거됩니다.
-                  </p>
+                {completedPrecision === 'date' && (
+                  <Input
+                    id={ids.completedDate}
+                    type='date'
+                    aria-label='완독 날짜'
+                    value={completedDate}
+                    onChange={(e) =>
+                      dispatch({
+                        type: 'SET_COMPLETED_DATE',
+                        date: e.target.value,
+                      })
+                    }
+                    className='w-auto min-w-0 flex-1'
+                  />
+                )}
+
+                {completedPrecision === 'year' && (
+                  <Input
+                    id={ids.completedYear}
+                    type='number'
+                    inputMode='numeric'
+                    aria-label='완독 연도'
+                    aria-invalid={!!completedYearError}
+                    aria-describedby={
+                      completedYearError ? ids.completedYearError : undefined
+                    }
+                    min={MIN_COMPLETED_YEAR}
+                    placeholder='예: 2015'
+                    value={completedYear}
+                    onChange={(e) =>
+                      dispatch({
+                        type: 'SET_COMPLETED_YEAR',
+                        year: e.target.value,
+                      })
+                    }
+                    className='w-auto min-w-0 flex-1'
+                  />
                 )}
               </div>
-            </div>
-          </details>
 
-          {/* 접기 밖에 둔다 — isPublic 기본값이 true 라, 접어 두면 처음 쓰는 사용자가
-              사적인 생각을 적고 섹션을 한 번도 열지 않고 '공개'라는 단어를 못 본 채
-              공개 서재에 게시한다. 스위치와 설명 문구는 저장 시점에 화면에 있어야 한다. */}
-          {/* 공개/비공개 설정 */}
-          <div className='space-y-2'>
-            <div className='flex items-center justify-between rounded-lg border p-4'>
-              <div className='space-y-0.5'>
-                <Label htmlFor={ids.isPublic} className='text-base'>
-                  공개 설정
-                </Label>
-                <p className='text-sm text-muted-foreground'>
-                  {isPublic
-                    ? '다른 사람들이 이 책을 볼 수 있습니다.'
-                    : '나만 볼 수 있습니다. (비공개)'}
+              {completedYearError && completedPrecision === 'year' ? (
+                <p
+                  id={ids.completedYearError}
+                  className='text-sm text-destructive'
+                >
+                  {completedYearError}
                 </p>
+              ) : (
                 <p className='text-xs text-muted-foreground'>
-                  나중에 서재에서 보관으로 옮길 수 있어요.
+                  {COMPLETED_PRECISION_HINT[completedPrecision]}
                 </p>
-              </div>
+              )}
+            </div>
+          )}
+
+          {/* 시작일 - 완독 or 읽는중일 때만 표시.
+              라벨·스위치·날짜를 한 줄에 둔다. 체크박스였을 때는 다른 칸과 모양이 달라 튀었다 */}
+          {(status === 'completed' || status === 'reading') && (
+            <div className='flex min-h-9 flex-wrap items-center gap-x-3 gap-y-2'>
+              <Label htmlFor={ids.showStartDate} className='cursor-pointer'>
+                <CalendarPlus className={ICON_CLASS} aria-hidden />
+                시작일
+              </Label>
               <Switch
-                id={ids.isPublic}
-                checked={isPublic}
+                id={ids.showStartDate}
+                checked={showStartDate}
                 onCheckedChange={(checked) =>
-                  dispatch({ type: 'SET_IS_PUBLIC', isPublic: checked })
+                  dispatch({
+                    type: 'TOGGLE_START_DATE',
+                    checked,
+                    today: toKstDateKey(new Date()),
+                  })
                 }
               />
+              {showStartDate && (
+                <Input
+                  type='date'
+                  aria-label='시작 날짜'
+                  value={startDate}
+                  onChange={(e) =>
+                    dispatch({
+                      type: 'SET_START_DATE',
+                      date: e.target.value,
+                    })
+                  }
+                  className='w-auto min-w-[9rem] flex-1'
+                />
+              )}
             </div>
+          )}
+
+          {/* 나만의 메모 */}
+          <div className='space-y-2'>
+            {/* '나만 보기'는 라벨 밖에 둔다 — 안에 넣으면 입력칸 이름이 "나만의 메모 나만 보기"가 된다 */}
+            <div className='flex items-center gap-2'>
+              <Label htmlFor={ids.personalMemo}>
+                <NotebookPen className={ICON_CLASS} aria-hidden />
+                나만의 메모
+              </Label>
+              <span
+                id={`${ids.personalMemo}-hint`}
+                className='inline-flex items-center gap-1 text-xs text-muted-foreground'
+              >
+                <Lock className='h-3 w-3' aria-hidden />
+                나만 보기
+              </span>
+            </div>
+            <Textarea
+              id={ids.personalMemo}
+              value={personalMemo}
+              onChange={(e) =>
+                dispatch({
+                  type: 'SET_PERSONAL_MEMO',
+                  value: e.target.value,
+                })
+              }
+              placeholder='책을 공개해도 메모는 나에게만 보여요'
+              rows={3}
+              maxLength={10000}
+              aria-describedby={`${ids.personalMemo}-hint`}
+            />
+          </div>
+
+          {/* 태그 */}
+          <div className='space-y-2'>
+            <Label htmlFor={ids.tags}>
+              <Tag className={ICON_CLASS} aria-hidden />
+              태그
+            </Label>
+            <Input
+              id={ids.tags}
+              type='text'
+              value={tagsInput}
+              onChange={(e) =>
+                dispatch({ type: 'SET_TAGS_INPUT', value: e.target.value })
+              }
+              placeholder='예: 자기계발, 경영, 추천도서'
+              className={tagError ? 'border-destructive' : ''}
+            />
+            {tagError ? (
+              <p className='text-sm text-destructive'>{tagError}</p>
+            ) : (
+              <p className='text-xs text-muted-foreground'>
+                쉼표(,)로 나눠 최대 10개까지 적을 수 있어요.
+              </p>
+            )}
+          </div>
+
+          {/* 공개 설정 — isPublic 기본값이 true 라 저장 버튼 바로 위, 눈에 띄는 카드로 둔다.
+              사적인 생각을 적은 사용자가 '공개'라는 단어를 못 본 채 공개 서재에 게시하면 안 된다 */}
+          <div className='flex items-center justify-between gap-4 rounded-lg border p-4'>
+            <div className='space-y-1'>
+              <Label htmlFor={ids.isPublic}>
+                {isPublic ? (
+                  <Globe className={ICON_CLASS} aria-hidden />
+                ) : (
+                  <Lock className={ICON_CLASS} aria-hidden />
+                )}
+                공개 설정
+              </Label>
+              <p className='text-sm text-muted-foreground'>
+                {isPublic
+                  ? '다른 사람들이 이 책을 볼 수 있습니다.'
+                  : '나만 볼 수 있습니다. (비공개)'}
+              </p>
+              <p className='text-xs text-muted-foreground'>
+                나중에 서재에서 보관으로 옮길 수 있어요.
+              </p>
+            </div>
+            <Switch
+              id={ids.isPublic}
+              checked={isPublic}
+              onCheckedChange={(checked) =>
+                dispatch({ type: 'SET_IS_PUBLIC', isPublic: checked })
+              }
+            />
           </div>
 
           {/* 버튼 */}
