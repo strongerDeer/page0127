@@ -18,6 +18,7 @@ import { notifyNewBadges } from '@/features/badge';
 import { useBookCRUD } from '@/features/book/api/useBookCRUD';
 import { useBookSearch } from '@/features/book/api/useBookSearch';
 import { resolveReadCount } from '@/features/book/lib/resolveReadCount';
+import { BarcodeScanDialog } from '@/features/book/ui/BarcodeScanDialog';
 import {
   type BookFormData,
   BookRegistrationForm,
@@ -141,6 +142,22 @@ const AddBookPage = () => {
     }
 
     await loadBookDetail(book);
+  };
+
+  // 바코드로 읽은 ISBN — 검색 목록을 거치지 않고 그 책으로 바로 넘어간다.
+  // 중복 확인·상세 보강은 목록에서 고른 것과 같은 길(handleSelectBook)을 탄다.
+  const [isScanOpen, setIsScanOpen] = useState(false);
+  const handleScanned = async (isbn: string, source: 'camera' | 'photo') => {
+    setIsScanOpen(false);
+    const book = await getBookDetail(isbn).catch(() => null);
+    trackEvent('book_barcode_scan', { source, found: !!book });
+    if (!book) {
+      toast.error(
+        `바코드(ISBN ${isbn})로 책을 찾지 못했어요. 제목으로 검색해 주세요.`
+      );
+      return;
+    }
+    await handleSelectBook(book);
   };
 
   // 재독 선택 시 - 등록 폼 표시
@@ -291,6 +308,7 @@ const AddBookPage = () => {
               ref={searchInputRef}
               onSearch={search}
               isLoading={isSearching}
+              onScanClick={() => setIsScanOpen(true)}
             />
 
             {/* 로딩 상태 */}
@@ -364,6 +382,12 @@ const AddBookPage = () => {
           </>
         )}
       </PageContainer>
+
+      <BarcodeScanDialog
+        open={isScanOpen}
+        onOpenChange={setIsScanOpen}
+        onDetected={handleScanned}
+      />
 
       {/* 중복 책 발견 모달 */}
       {existingBook && pendingBook && (
