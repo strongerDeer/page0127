@@ -177,138 +177,148 @@ export const PublicLibraryHeader = ({
 
   return (
     <>
-      {/* 스카이 틴트 면 — 공개 서재의 '전시장 입구'. 왼쪽은 누구인지, 오른쪽은 어떤 독자인지 */}
-      <header
-        className={`grid gap-6 rounded-[28px] bg-accent p-6 sm:p-8 lg:items-center ${
-          hasTasteCard ? 'lg:grid-cols-[1fr_400px]' : ''
-        }`}
-      >
-        {/* 모바일은 사진을 위로 — 옆에 두면 성향 이름이 190px 칸에서 세 줄로 쪼개진다 */}
-        <div className='flex min-w-0 flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-5'>
-          {profile.photo_url ? (
-            <div className='relative size-20 shrink-0 overflow-hidden rounded-full bg-muted'>
-              <Image
-                src={profile.photo_url}
-                alt={`${displayName} 프로필`}
-                fill
-                sizes='80px'
-                className='object-cover'
-                // 첫 화면에 보이니 lazy 로 미루지는 않되, preload 는 하지 않는다.
-                // 80px 사진은 LCP 후보가 아니라(제목 글자·표지가 더 크다) priority 의
-                // <link rel=preload> + 높은 우선순위가 폰트·CSS 와 대역폭만 다툰다.
-                loading='eager'
-                unoptimized={isPreOptimizedImageSrc(profile.photo_url)}
-              />
+      {/* 스카이 틴트 띠 — 공개 서재의 '전시장 입구'. 화면 끝까지 꽉 채운다(둥근 카드로 띄우지 않는다).
+          왼쪽은 누구인지, 오른쪽은 어떤 독자인지 */}
+      <header className='bg-accent'>
+        <div
+          className={`mx-auto grid max-w-7xl gap-6 px-6 py-8 md:px-10 md:py-10 lg:items-center ${
+            hasTasteCard ? 'lg:grid-cols-[1fr_400px]' : ''
+          }`}
+        >
+          {/* 사진 위, 정보 아래. 한줄 소개는 사진 옆 말풍선으로 — 주인이 직접 건네는 말처럼 읽힌다 */}
+          <div className='flex min-w-0 flex-col items-start gap-4'>
+            <div className='flex w-full items-center gap-4'>
+              {profile.photo_url ? (
+                <div className='relative size-20 shrink-0 overflow-hidden rounded-full bg-muted'>
+                  <Image
+                    src={profile.photo_url}
+                    alt={`${displayName} 프로필`}
+                    fill
+                    sizes='80px'
+                    className='object-cover'
+                    // 첫 화면에 보이니 lazy 로 미루지는 않되, preload 는 하지 않는다.
+                    // 80px 사진은 LCP 후보가 아니라(제목 글자·표지가 더 크다) priority 의
+                    // <link rel=preload> + 높은 우선순위가 폰트·CSS 와 대역폭만 다툰다.
+                    loading='eager'
+                    unoptimized={isPreOptimizedImageSrc(profile.photo_url)}
+                  />
+                </div>
+              ) : (
+                <div className='flex size-20 shrink-0 items-center justify-center rounded-full bg-primary/10 text-2xl font-bold text-primary'>
+                  {displayName.charAt(0).toUpperCase()}
+                </div>
+              )}
+              {profile.bio && (
+                <p className='relative max-w-md break-keep rounded-2xl bg-card px-4 py-3 text-sm leading-relaxed text-text-body shadow-sm'>
+                  {/* 말풍선 꼬리 — 사진 쪽을 가리킨다 */}
+                  <span
+                    aria-hidden
+                    className='absolute -left-1.5 top-1/2 size-3 -translate-y-1/2 rotate-45 bg-card'
+                  />
+                  <span className='relative'>{profile.bio}</span>
+                </p>
+              )}
             </div>
-          ) : (
-            <div className='flex size-20 shrink-0 items-center justify-center rounded-full bg-primary/10 text-2xl font-bold text-primary'>
-              {displayName.charAt(0).toUpperCase()}
-            </div>
-          )}
 
-          <div className='min-w-0'>
-            {/*
+            <div className='min-w-0'>
+              {/*
               독서 명함 — 주인공은 "어떤 독자인가"(성향), 이름과 숫자는 그 아래 한 줄.
               h1 은 이름 그대로 둔다: 성향은 분석할 때마다 바뀌고, 페이지 제목·검색 노출도 이름이다.
               이름은 자르지 않고 줄을 바꾼다 — truncate 였을 때 모바일에서 'stronger_khj…' 만 남고
               '님의 서재' 까지 잘렸다. 밑줄 섞인 아이디는 단어 경계가 없어 anywhere 로 꺾는다.
             */}
-            {identity ? (
-              <>
-                <p className='mb-1 flex items-center gap-1.5 text-sm font-medium text-primary'>
-                  <span
-                    aria-hidden
-                    className='size-2 rounded-full'
-                    style={{ backgroundColor: identity.color }}
-                  />
-                  {toIdentityLabel(identity)}
-                </p>
-                <p className='heading-1 break-keep text-balance'>
-                  {identity.name}
-                </p>
-                <div className='mt-1 flex flex-wrap items-baseline gap-x-2'>
-                  <h1 className='text-base font-bold text-text-strong [overflow-wrap:anywhere] md:text-lg'>
+              {identity ? (
+                <>
+                  <p className='mb-1 flex items-center gap-1.5 text-sm font-medium text-primary'>
+                    <span
+                      aria-hidden
+                      className='size-2 rounded-full'
+                      style={{ backgroundColor: identity.color }}
+                    />
+                    {toIdentityLabel(identity)}
+                  </p>
+                  <p className='heading-1 break-keep text-balance'>
+                    {identity.name}
+                  </p>
+                  <div className='mt-1 flex flex-wrap items-baseline gap-x-2'>
+                    <h1 className='text-base font-bold text-text-strong [overflow-wrap:anywhere] md:text-lg'>
+                      {displayName}님의 서재
+                    </h1>
+                    {readerCard.stat && (
+                      <p className='text-sm text-text-subtle'>
+                        {readerCard.stat}
+                      </p>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className='mb-1 text-sm font-medium text-primary'>
+                    공개 서재
+                  </p>
+                  <h1 className='heading-1 [overflow-wrap:anywhere]'>
                     {displayName}님의 서재
                   </h1>
                   {readerCard.stat && (
-                    <p className='text-sm text-text-subtle'>
+                    <p className='mt-1 text-sm text-text-subtle'>
                       {readerCard.stat}
                     </p>
                   )}
-                </div>
-              </>
-            ) : (
-              <>
-                <p className='mb-1 text-sm font-medium text-primary'>
-                  공개 서재
-                </p>
-                <h1 className='heading-1 [overflow-wrap:anywhere]'>
-                  {displayName}님의 서재
-                </h1>
-                {readerCard.stat && (
-                  <p className='mt-1 text-sm text-text-subtle'>
-                    {readerCard.stat}
-                  </p>
-                )}
-              </>
-            )}
-            <div className='mt-2 flex flex-wrap items-center gap-x-4 gap-y-2'>
-              <span className='text-sm text-text-subtle'>@{username}</span>
-              <FollowStats
-                userId={profile.id}
-                onFollowersClick={() => setFollowersModalOpen(true)}
-                onFollowingClick={() => setFollowingModalOpen(true)}
-              />
-            </div>
-            {profile.bio && (
-              <p className='mt-3 max-w-2xl break-keep text-sm leading-relaxed text-text-body'>
-                {profile.bio}
-              </p>
-            )}
+                </>
+              )}
+              <div className='mt-2 flex flex-wrap items-center gap-x-4 gap-y-2'>
+                <span className='text-sm text-text-subtle'>@{username}</span>
+                <FollowStats
+                  userId={profile.id}
+                  onFollowersClick={() => setFollowersModalOpen(true)}
+                  onFollowingClick={() => setFollowingModalOpen(true)}
+                />
+              </div>
 
-            <div className='mt-4 flex flex-wrap items-center gap-2'>
-              {!isOwnProfile && <FollowButton userId={profile.id} />}
+              <div className='mt-4 flex flex-wrap items-center gap-2'>
+                {!isOwnProfile && <FollowButton userId={profile.id} />}
 
-              {!isOwnProfile &&
-                compatibilityBookCount >= COMPATIBILITY_MIN_BOOKS && (
+                {!isOwnProfile &&
+                  compatibilityBookCount >= COMPATIBILITY_MIN_BOOKS && (
+                    <Button asChild variant='outline' className='shadow-none'>
+                      <Link href={`/${username}/compatibility`}>
+                        <Sparkles className='h-4 w-4' />
+                        독서 케미
+                      </Link>
+                    </Button>
+                  )}
+                {isOwnProfile && (
                   <Button asChild variant='outline' className='shadow-none'>
-                    <Link href={`/${username}/compatibility`}>
-                      <Sparkles className='h-4 w-4' />
-                      독서 케미
-                    </Link>
+                    <Link href='/settings'>프로필 편집</Link>
                   </Button>
                 )}
-              {isOwnProfile && (
-                <Button asChild variant='outline' className='shadow-none'>
-                  <Link href='/settings'>프로필 편집</Link>
-                </Button>
-              )}
 
-              {/* 공유 버튼 하나 → 시트에서 스토리 이미지 또는 링크 (인스타·카톡 구분은 휴대폰 공유 시트가 한다) */}
-              <ShareSheetButton
-                path={`/${username}`}
-                imagePath={`/${username}/story-image`}
-                fileName={`page0127-${username}.png`}
-                title={`${displayName}님의 책장`}
-                sheetTitle='서재 공유하기'
-                text='책장을 보면, 그 사람이 보입니다.'
-              />
+                {/* 공유 버튼 하나 → 시트에서 스토리 이미지 또는 링크 (인스타·카톡 구분은 휴대폰 공유 시트가 한다) */}
+                <ShareSheetButton
+                  path={`/${username}`}
+                  imagePath={`/${username}/story-image`}
+                  fileName={`page0127-${username}.png`}
+                  title={`${displayName}님의 책장`}
+                  sheetTitle='서재 공유하기'
+                  text='책장을 보면, 그 사람이 보입니다.'
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        {hasTasteCard && (
-          <TasteProfileCard
-            history={analysisHistory}
-            // 명함이 이미 AI 성향 이름을 크게 말한다 — 카드는 근거(주제·변화)만 보여 준다
-            showType={identity?.source !== 'analysis'}
-            username={username}
-            isOwner={isOwnProfile}
-            action={analyzeButton}
-            analyzableBookCount={analyzableBookCount}
-            minBooks={TASTE_ANALYSIS_MIN_BOOKS}
-          />
-        )}
+          {hasTasteCard && (
+            <TasteProfileCard
+              history={analysisHistory}
+              // 명함이 이미 AI 성향 이름을 크게 말한다 — 카드는 근거(주제·변화)만 보여 준다
+              showType={identity?.source !== 'analysis'}
+              username={username}
+              isOwner={isOwnProfile}
+              action={analyzeButton}
+              analyzableBookCount={analyzableBookCount}
+              minBooks={TASTE_ANALYSIS_MIN_BOOKS}
+            />
+          )}
+        </div>
       </header>
 
       {isOwnProfile && (

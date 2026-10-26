@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
 import { TASTE_ANALYSIS_BOOK_LABEL } from '@/entities/taste-analysis/model/analysisGate';
-import { groupTasteHistory } from '@/entities/taste-analysis/model/groupTasteHistory';
 import { getPersonalityColor } from '@/entities/taste-analysis/model/personalityTypes';
 
 import { TasteEvidenceList } from './TasteEvidenceList';
@@ -29,20 +28,12 @@ const formatDate = (iso: string) =>
     timeZone: 'Asia/Seoul',
   });
 
-const formatMonth = (iso: string) =>
-  new Date(iso).toLocaleDateString('ko-KR', {
-    month: 'long',
-    timeZone: 'Asia/Seoul',
-  });
-
 const detailHref = (id: string) => `/dashboard/taste-analysis/${id}`;
-
-const BADGE_CLASS =
-  'inline-flex items-center gap-1 rounded-full border border-line-soft bg-sunken px-2 py-0.5 text-text-body';
 
 /**
  * ① 헤더 오른쪽 취향 카드.
- * 최신 결과 하나를 크게, 지난 결과는 "변해 온 길"로 — 같은 성향이 연달아 나오면 한 뱃지 + ×N.
+ * 최신 결과 하나만 보여 준다. 지난 결과(취향의 변화)는 '자세히' 화면에서 본다 —
+ * 서재 명함이 이미 "어떤 독자인가"를 말하므로 여기서 변화까지 늘어놓으면 카드가 길어진다.
  */
 export const TasteProfileCard = ({
   history,
@@ -70,7 +61,6 @@ export const TasteProfileCard = ({
     );
   }
 
-  const runs = groupTasteHistory(history);
   const topics = (latest.liked_topics ?? []).slice(0, 4);
   // 방문자에게는 공개 책만 온다(RPC 가 거른다). 마이그레이션 전·옛 분석이면 없다
   const evidence = latest.evidence ?? [];
@@ -125,48 +115,6 @@ export const TasteProfileCard = ({
             variant='compact'
             bookHref={username ? (id) => `/${username}/${id}` : undefined}
           />
-        </div>
-      )}
-
-      {runs.length > 1 && (
-        <div className='mt-3 flex flex-wrap items-center gap-1 border-t border-line-soft pt-3 text-xs text-text-subtle'>
-          <span className='mr-1'>취향의 변화</span>
-          {runs.map((run, index) => {
-            const badge = (
-              <>
-                <span
-                  aria-hidden
-                  className='size-1.5 rounded-full'
-                  style={{
-                    backgroundColor: getPersonalityColor(run.personalityType),
-                  }}
-                />
-                {run.personalityType}
-                {run.count > 1 && ` ×${run.count}`}
-                <span className='text-text-subtle'>
-                  {formatMonth(run.startedAt)}
-                </span>
-              </>
-            );
-            return (
-              <span
-                key={run.latestId}
-                className='inline-flex items-center gap-1'
-              >
-                {index > 0 && <span aria-hidden>→</span>}
-                {isOwner ? (
-                  <Link
-                    href={detailHref(run.latestId)}
-                    className={`${BADGE_CLASS} hover:border-line-strong`}
-                  >
-                    {badge}
-                  </Link>
-                ) : (
-                  <span className={BADGE_CLASS}>{badge}</span>
-                )}
-              </span>
-            );
-          })}
         </div>
       )}
 

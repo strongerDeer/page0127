@@ -28,7 +28,7 @@ const CAPTION: Record<BookRating, string> = {
 };
 
 /**
- * 평가 점수 고르기 — 별 5개 + 0점·인생책 칩.
+ * 평가 점수 고르기 — 별 5개 + 평가 안 함·인생책 칩.
  *
  * - 별에 마우스를 올리면 그 별까지 미리 채워 보여 준다(hover 가능한 기기만).
  * - 고르면 채워진 별이 왼쪽부터 차례로 통통 튄다. 같은 점수를 다시 눌러도 튀도록
@@ -62,9 +62,11 @@ export const RatingPicker = ({
     ? `${hovered}점 · ${CAPTION[hovered as BookRating]}`
     : isLifeBook
       ? '인생책 · 오래 곁에 둘 책이에요'
-      : rating !== undefined
-        ? `${rating}점 · ${CAPTION[rating]}`
-        : '별을 눌러 점수를 남겨 보세요';
+      : rating === 0
+        ? `평가 안 함 · ${CAPTION[0]}`
+        : rating !== undefined
+          ? `${rating}점 · ${CAPTION[rating]}`
+          : '별을 눌러 점수를 남겨 보세요';
 
   const starColor =
     isLifeBook && !previewing
@@ -117,7 +119,6 @@ export const RatingPicker = ({
         <div className='flex items-center gap-2'>
           <button
             type='button'
-            aria-label='0점'
             aria-pressed={!isLifeBook && rating === 0}
             onClick={() => select(0)}
             className={`h-8 rounded-full border px-3 text-sm transition-colors motion-safe:active:scale-95 ${
@@ -126,7 +127,7 @@ export const RatingPicker = ({
                 : 'border-border bg-card text-muted-foreground hover:bg-accent'
             }`}
           >
-            0점
+            평가 안 함
           </button>
           <button
             type='button'

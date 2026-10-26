@@ -18,12 +18,16 @@ import { toCoverSource } from '@/entities/book';
 import { getPersonalityColor } from '@/entities/taste-analysis/model/personalityTypes';
 
 import { TasteEvidenceList } from './TasteEvidenceList';
+import { TasteHistoryTrail } from './TasteHistoryTrail';
 
 import type { TasteAnalysisWithRecommendations } from '@/entities/taste-analysis/types';
+import type { ComponentProps } from 'react';
 
 type TasteAnalysisResultProps = {
   analysis: TasteAnalysisWithRecommendations;
   username: string;
+  /** 내 분석 이력(최신순) — 두 가지 이상 성향이 나왔으면 '취향의 변화'를 보여 준다 */
+  history?: ComponentProps<typeof TasteHistoryTrail>['history'];
 };
 
 /**
@@ -40,6 +44,7 @@ type TasteAnalysisResultProps = {
 export const TasteAnalysisResult = ({
   analysis,
   username,
+  history = [],
 }: TasteAnalysisResultProps) => {
   const {
     personality_type,
@@ -95,6 +100,13 @@ export const TasteAnalysisResult = ({
           <p className='whitespace-pre-wrap leading-relaxed text-text-body'>
             {personality_description}
           </p>
+          {/* 취향의 변화 — 서재 머리 카드에서 옮겨 왔다(명함은 지금 성향만 말한다) */}
+          {new Set(history.map((item) => item.personality_type)).size > 1 && (
+            <div className='mt-6 border-t border-line-soft pt-5'>
+              <p className='mb-2 text-sm text-text-subtle'>취향의 변화</p>
+              <TasteHistoryTrail history={history} currentId={analysis.id} />
+            </div>
+          )}
           {evidence.length > 0 && (
             <div className='mt-6 border-t border-line-soft pt-5'>
               <TasteEvidenceList evidence={evidence} variant='full' />

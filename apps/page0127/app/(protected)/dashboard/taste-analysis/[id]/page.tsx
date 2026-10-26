@@ -54,6 +54,13 @@ const TasteAnalysisDetailPage = async ({ params }: PageProps) => {
     .order('recommendation_type')
     .order('display_order');
 
+  // 성향 이력 — 상세 화면의 '취향의 변화' (서재 머리 카드에서 옮겨 왔다)
+  const { data: history } = await supabase
+    .from('taste_analyses')
+    .select('id, personality_type, created_at')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
   // 타입별로 그룹화 (노출 상한까지만)
   const groupedRecommendations = groupRecommendationsByType(recommendations);
 
@@ -66,6 +73,7 @@ const TasteAnalysisDetailPage = async ({ params }: PageProps) => {
     <TasteAnalysisResult
       analysis={analysisWithRecommendations}
       username={profile.username}
+      history={history ?? []}
     />
   );
 };

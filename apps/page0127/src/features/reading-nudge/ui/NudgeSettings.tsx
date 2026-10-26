@@ -23,15 +23,20 @@ export const NudgeSettings = ({ userId }: { userId: string }) => {
     onSuccess: () => cache.invalidateQueries({ queryKey }),
   });
   return (
+    // 설정의 다른 섹션(연결된 계정·푸시 알림)과 같은 모양 — 테두리 대신 옅은 바탕, 위 간격 mt-6.
+    // 예전엔 혼자 테두리 박스에 간격이 없어 위 섹션에 붙어 보였다
     <section
-      className='rounded-xl border border-line p-5'
+      className='mt-6 rounded-2xl bg-sunken px-5 py-4'
       aria-labelledby='nudge-preference-title'
     >
       <div className='flex items-center justify-between gap-4'>
         <div>
-          <h3 id='nudge-preference-title' className='font-semibold'>
+          <h2
+            id='nudge-preference-title'
+            className='text-sm font-medium text-text-strong'
+          >
             콕 찌르기 알림
-          </h3>
+          </h2>
           <p className='mt-1 text-sm text-text-subtle'>
             함께 읽자는 앱 내 초대를 받을 수 있어요.
           </p>

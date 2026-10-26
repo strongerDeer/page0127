@@ -40,22 +40,20 @@ const render = (props: Partial<Parameters<typeof TasteProfileCard>[0]> = {}) =>
   );
 
 describe('TasteProfileCard', () => {
-  it('최신 성향 크게 + 키워드 4개 + 변화 뱃지(묶음)', () => {
+  it('최신 성향 크게 + 키워드 4개, 취향의 변화는 자세히 화면으로 뺀다', () => {
     const html = render();
     expect(html).toContain('내일의 나를 준비하는 사람');
     expect(html).toContain('#관계');
     expect(html).toContain('#에세이 톤');
     expect(html).not.toContain('#다섯째');
-    expect(html).toContain('취향의 변화');
-    expect(html).toContain('×2');
+    expect(html).not.toContain('취향의 변화');
     // 방문자는 회차 상세로 가는 링크가 없다
     expect(html).not.toContain('/dashboard/taste-analysis/');
   });
 
-  it('주인은 뱃지·자세히가 회차 상세로 이어지고, 분석 권수를 본다', () => {
+  it('주인은 자세히가 최신 회차 상세로 이어지고, 분석 권수를 본다', () => {
     const html = render({ isOwner: true });
     expect(html).toContain('href="/dashboard/taste-analysis/d"');
-    expect(html).toContain('href="/dashboard/taste-analysis/b"');
     expect(html).toContain('책 100권 기준');
   });
 
@@ -100,10 +98,6 @@ describe('TasteProfileCard', () => {
     expect(render({ history: [HISTORY[0]] })).not.toContain(
       '이 책들에서 읽었어요'
     );
-  });
-
-  it('이력이 한 번뿐이면 변화 줄을 그리지 않는다', () => {
-    expect(render({ history: [HISTORY[0]] })).not.toContain('취향의 변화');
   });
 
   it('분석이 없으면 방문자에겐 아무것도, 주인에겐 남은 권수 자리표시', () => {

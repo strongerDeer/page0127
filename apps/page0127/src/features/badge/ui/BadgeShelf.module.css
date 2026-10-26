@@ -203,8 +203,10 @@
   overflow: visible;
   padding: 14px 8px 12px;
   margin-top: 8px;
+  /* 선반은 책 바로 밑에 — 책 폭은 76px 칸에서 묶음 여백 12px 를 뺀 64px, 높이는 4/3 배.
+     예전엔 120px 에 고정돼 책보다 20px 아래, 배지 이름 글자 위를 지나갔다 */
   background: linear-gradient(to bottom, var(--line-soft), transparent) 0
-    120px / 100% 7px no-repeat;
+    calc(14px + 64px * 4 / 3) / 100% 7px no-repeat;
 }
 .summaryShelf .shelfItem {
   display: none;
@@ -377,7 +379,8 @@
   --row-height: calc(var(--book-height) + 100px);
 }
 .summaryShelf .shelfItem {
-  min-height: 170px;
+  /* 책 + 두 줄 이름까지만 — 170px 였을 때 카드 아래가 휑하게 비었다 */
+  min-height: 150px;
 }
 
 .evidence {
