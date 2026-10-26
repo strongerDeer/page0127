@@ -392,7 +392,6 @@ test('검색·등록·수정한 기록은 새로고침 후 유지되고 보관�
   await page
     .getByLabel('이 책을 한 문장으로 남긴다면?')
     .fill('처음 남긴 독서 기록');
-  await page.getByText('더 남기기', { exact: true }).click();
   await page
     .getByLabel('나만의 메모', { exact: true })
     .fill('주인만 읽는 테스트 메모');

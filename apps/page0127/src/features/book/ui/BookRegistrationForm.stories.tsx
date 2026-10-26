@@ -56,3 +56,18 @@ export const EditingWins: Story = {
     );
   },
 };
+export const Completed: Story = {
+  name: '완독 등록 — 필수/선택 구분',
+  args: { initialStatus: 'completed' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText('필수')).toBeInTheDocument();
+    // 접힘 없이 선택 항목이 바로 보인다
+    await expect(canvas.getByLabelText('나만의 메모')).toBeVisible();
+    // 완독일은 [날짜 ▾] 선택과 날짜 입력칸이 한 줄
+    await expect(canvas.getByLabelText('완독일 기록 방식')).toHaveTextContent(
+      '날짜'
+    );
+    await expect(canvas.getByLabelText('완독 날짜')).toBeVisible();
+  },
+};
