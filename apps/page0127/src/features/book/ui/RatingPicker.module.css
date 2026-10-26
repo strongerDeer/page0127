@@ -1,7 +1,6 @@
-/* 고른 별이 왼쪽부터 차례로 통통 튄다 — 지연은 인라인 --i 로 받는다 */
+/* 고른 별이 왼쪽부터 차례로 통통 튄다 — 별마다 지연은 인라인 animation-delay 로 받는다 */
 .pop {
   animation: pop 360ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  animation-delay: calc(var(--i, 0) * 45ms);
 }
 
 @keyframes pop {

@@ -102,7 +102,7 @@ export const RatingPicker = ({
                   key={filled && !previewing ? `pop-${popKey}` : 'idle'}
                   aria-hidden
                   strokeWidth={1.75}
-                  style={{ '--i': score - 1 } as React.CSSProperties}
+                  style={{ animationDelay: `${(score - 1) * 45}ms` }}
                   className={`h-8 w-8 transition-colors ${
                     filled
                       ? starColor
