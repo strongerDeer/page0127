@@ -43,6 +43,8 @@ import {
   type ProviderBook,
 } from '@/entities/book';
 
+import { RatingPicker } from './RatingPicker';
+
 type BookRegistrationFormProps = {
   book: ProviderBook;
   onSubmit: (formData: BookFormData) => void;
@@ -519,44 +521,14 @@ export const BookRegistrationForm = ({
                 <Star className={ICON_CLASS} aria-hidden />
                 평가 점수
               </Label>
-              {/* role='group' + aria-labelledby: 흩어진 점수 버튼들을 "평가 점수" 그룹으로 묶어 읽히게 함 */}
-              <div
-                role='group'
-                aria-labelledby={ids.rating}
-                className='flex flex-wrap gap-2'
-              >
-                {/* 인생책은 11번째 점수가 아니라 최고점의 별칭이다 — 저장할 때 rating=5 + 플래그로 나뉜다 */}
-                {([0, 1, 2, 3, 4, 5, 'life'] as const).map((score) => {
-                  const label = score === 'life' ? '인생책' : `${score}점`;
-                  const selected =
-                    score === 'life'
-                      ? isLifeBook
-                      : !isLifeBook && rating === score;
-
-                  return (
-                    <button
-                      key={score}
-                      type='button'
-                      // aria-pressed: 어떤 점수가 선택됐는지 스크린 리더에 전달
-                      aria-pressed={selected}
-                      aria-label={label}
-                      onClick={() =>
-                        dispatch({
-                          type: 'SET_RATING',
-                          rating: score,
-                        })
-                      }
-                      className={`rounded-md border px-4 py-2 transition-colors ${
-                        selected
-                          ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-border bg-card text-foreground hover:bg-accent'
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
+              <RatingPicker
+                rating={rating}
+                isLifeBook={isLifeBook}
+                labelledBy={ids.rating}
+                onChange={(score) =>
+                  dispatch({ type: 'SET_RATING', rating: score })
+                }
+              />
               {/* 인생책은 오래전에 읽은 경우가 많다. 그대로 저장하면 오늘 날짜로 들어간다 —
                   바로 아래 완독일에서 고칠 수 있다는 걸 여기서 알린다 */}
               {isLifeBook && completedPrecision === 'date' && !initialData && (
