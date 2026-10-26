@@ -56,3 +56,27 @@ test('모바일에서 긴 검색어의 빈 결과가 가로로 넘치지 않는�
     }))
   ).toEqual({ scroll: 390, client: 390 });
 });
+
+test('모바일 헤더에서 책 검색창을 열고 검색할 수 있다', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+
+  const trigger = page.getByRole('button', { name: '도서 검색', exact: true });
+  await trigger.click();
+  const search = page.getByRole('dialog', { name: '도서 검색' });
+  const input = search.getByRole('searchbox', { name: '도서 검색' });
+  await expect(input).toBeFocused();
+  await expect(page).toHaveURL('/');
+
+  await page.keyboard.press('Escape');
+  await expect(search).not.toBeVisible();
+  await expect(trigger).toBeFocused();
+
+  await trigger.click();
+  const query = '모바일 검색 확인 20261026';
+  await input.fill(query);
+  await search.getByRole('button', { name: '검색', exact: true }).click();
+  await expect(page).toHaveURL(/\/books\/all\?q=/);
+  expect(new URL(page.url()).searchParams.get('q')).toBe(query);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(query);
+});

@@ -1,4 +1,10 @@
-import { Bell, BookOpen, PlusCircle, Users, UsersRound } from 'lucide-react';
+import {
+  Bell,
+  BookOpen,
+  PlusCircle,
+  UserRoundSearch,
+  UsersRound,
+} from 'lucide-react';
 
 import type { LucideIcon } from 'lucide-react';
 
@@ -17,8 +23,8 @@ export const navItems: NavItem[] = [
   { label: '내 서재', icon: BookOpen, primary: true, isMyLibrary: true },
   { href: '/feed', label: '라운지', icon: UsersRound, primary: true },
   { href: '/books/add', label: '도서 추가', icon: PlusCircle },
-  // 헤더의 돋보기(책 검색)와 헷갈리지 않게 사람 아이콘 — 검색어 없이도 추천 리더를 본다
-  { href: '/search', label: '리더 찾기', icon: Users, primary: true },
+  // 라운지의 사람들 아이콘과 구분되도록 사람 + 돋보기로 리더 탐색을 표현한다.
+  { href: '/search', label: '리더 찾기', icon: UserRoundSearch, primary: true },
   { href: '/notifications', label: '알림', icon: Bell, primary: true },
 ];
 
