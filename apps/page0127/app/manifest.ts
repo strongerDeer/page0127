@@ -30,8 +30,9 @@ const manifest = (): MetadataRoute.Manifest => ({
   theme_color: '#1e69cb',
   icons: [
     {
-      // 확정한 A 시안 원본 — 질감과 얕은 음각을 PNG로 보존한다
-      src: '/brand/page0127-symbol.png',
+      // 투명 바탕 + 책 몸통 정가운데 사본. 심볼 원본(page0127-symbol.png)은 흰 바탕이
+      // 들어 있어 Dock 에 흰 판이 생긴다
+      src: '/brand/app-icon.png',
       sizes: '512x512',
       type: 'image/png',
     },

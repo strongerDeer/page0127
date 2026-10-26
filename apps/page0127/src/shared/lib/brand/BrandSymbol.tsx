@@ -20,13 +20,17 @@ export const BRAND_SYMBOL = {
  *   이미지를 실제로 그리는 라우트에는 next.config 의 outputFileTracingIncludes 로
  *   원본을 함께 싣는다.
  */
-let symbolSource: string | undefined;
+const sources = new Map<string, string>();
 
-const getSymbolSource = () => {
-  symbolSource ??= `data:image/png;base64,${readFileSync(
-    join(process.cwd(), 'public/brand/page0127-symbol.png')
-  ).toString('base64')}`;
-  return symbolSource;
+const readPng = (file: string) => {
+  let source = sources.get(file);
+  if (!source) {
+    source = `data:image/png;base64,${readFileSync(
+      join(process.cwd(), 'public/brand', file)
+    ).toString('base64')}`;
+    sources.set(file, source);
+  }
+  return source;
 };
 
 type BrandSymbolProps = {
@@ -36,5 +40,30 @@ type BrandSymbolProps = {
 export const BrandSymbol = ({ size }: BrandSymbolProps) => (
   // Satori는 next/image 대신 원본 img의 data URI를 렌더링한다.
   // eslint-disable-next-line @next/next/no-img-element
-  <img src={getSymbolSource()} alt='page0127.' width={size} height={size} />
+  <img
+    src={readPng('page0127-symbol.png')}
+    alt='page0127.'
+    width={size}
+    height={size}
+  />
+);
+
+type AppIconProps = {
+  size: number;
+};
+
+/**
+ * 설치형 앱 아이콘. 심볼 원본은 연한 흰 바탕이 들어 있어서 그대로 쓰면 맥 Dock 에
+ * 흰 판이 생긴다(2026-10-26). 그래서 바탕을 투명하게 걷어 내고, 북마크가 위로
+ * 튀어나온 만큼을 감안해 책 몸통이 캔버스 정가운데(긴 변 80%)에 오도록 맞춘
+ * 사본(app-icon.png)을 쓴다.
+ */
+export const AppIcon = ({ size }: AppIconProps) => (
+  // eslint-disable-next-line @next/next/no-img-element
+  <img
+    src={readPng('app-icon.png')}
+    alt='page0127.'
+    width={size}
+    height={size}
+  />
 );
