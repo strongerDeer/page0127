@@ -91,6 +91,11 @@ export type AnalyticsEvent =
    * found: 읽은 ISBN 으로 책 정보를 찾았는지
    */
   | 'book_barcode_scan'
+  /**
+   * 표·CSV 로 여러 권을 한 번에 담았다(/books/import). source: 'paste' | 'file',
+   * rows: 읽은 줄 수, selected: 담기로 고른 수, added·skipped·failed: 서버 결과
+   */
+  | 'book_import'
   /** AI 취향 분석을 실행했다 */
   | 'taste_analysis_run'
   /** 공유를 눌렀다. method 로 네이티브 공유/링크 복사를 구분한다 */

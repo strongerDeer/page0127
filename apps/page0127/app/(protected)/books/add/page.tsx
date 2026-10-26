@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from 'react';
 
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import { ErrorBoundary, PageContainer } from '@repo/ui';
@@ -298,7 +299,16 @@ const AddBookPage = () => {
   return (
     <ErrorBoundary>
       <PageContainer width='content'>
-        <h1 className='heading-1 mb-6'>도서 추가</h1>
+        <div className='mb-6 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1'>
+          <h1 className='heading-1'>도서 추가</h1>
+          {/* 다른 앱·엑셀에서 옮겨 오는 사람은 한 권씩 찾을 이유가 없다 */}
+          <Link
+            href='/books/import'
+            className='text-sm text-text-subtle underline underline-offset-4'
+          >
+            여러 권 한 번에 담기
+          </Link>
+        </div>
 
         {saved ? (
           <BookSavedCard
