@@ -37,7 +37,7 @@ import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
 import {
   MONTHLY_LIMIT,
   USAGE_LIMIT_EXCEEDED_MESSAGE,
-} from '@/shared/lib/aiUsage';
+} from '@/shared/lib/aiUsageMessages';
 
 import { toCoverSource } from '@/entities/book';
 import { replaceUserLabels } from '@/entities/compatibility/lib/replaceUserLabels';

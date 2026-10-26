@@ -25,7 +25,7 @@ import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
 import {
   MONTHLY_LIMIT,
   USAGE_LIMIT_EXCEEDED_MESSAGE,
-} from '@/shared/lib/aiUsage';
+} from '@/shared/lib/aiUsageMessages';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import { COMPATIBILITY_MIN_BOOKS } from '@/entities/compatibility/model/analysisGate';

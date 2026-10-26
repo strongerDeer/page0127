@@ -2,6 +2,7 @@
 
 import { type ReactNode, useTransition } from 'react';
 
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
@@ -18,7 +19,6 @@ import { DashboardBookList } from '@/features/stats/ui/DashboardBookList';
 import { OverallDistribution } from '@/features/stats/ui/OverallDistribution';
 import { RatingSummaryCard } from '@/features/stats/ui/RatingSummaryCard';
 import { ReadingBalanceCard } from '@/features/stats/ui/ReadingBalanceCard';
-import { YearlyTrendChart } from '@/features/stats/ui/YearlyTrendChart';
 import { YearSummary } from '@/features/stats/ui/YearSummary';
 
 import { CategoryBookShelf } from '@/widgets/book/ui/CategoryBookShelf';
@@ -35,6 +35,21 @@ import { WishlistShelf } from './WishlistShelf';
 import type { Book } from '@/entities/book';
 import type { BookStats, OverallStats } from '@/entities/book';
 import type { RatingFilter } from '@/features/stats/model/useLibraryFilters';
+
+// 연도별 추이는 recharts(압축 약 90KB) — 프로필 첫 화면 JS 에 실리지 않게 나중에 불러온다.
+// 브라우저 측정(ResponsiveContainer)이 필요해 SSR 에서도 뺀다. 자리는 차트 높이(300px)만큼 잡아 둔다(CLS)
+const YearlyTrendChart = dynamic(
+  () =>
+    import('@/features/stats/ui/YearlyTrendChart').then(
+      (m) => m.YearlyTrendChart
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className='h-[300px] animate-pulse rounded-lg bg-muted' />
+    ),
+  }
+);
 
 /** 목표 달성 이미지를 그리는 동안의 문구 — 서재 스토리와 같은 책장을 세운다 */
 const GOAL_STORY_LOADING = {
