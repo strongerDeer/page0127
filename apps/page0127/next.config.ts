@@ -70,6 +70,14 @@ const nextConfig: NextConfig = {
     '@repo/quality',
     '@repo/ui',
   ],
+  // 아이콘·공유 카드(Satori)가 렌더할 때 fs 로 읽는 브랜드 심볼 원본.
+  // Vercel 서버 함수 번들에는 public/ 이 자동으로 실리지 않는다(CDN 이 서빙).
+  // 동적 공유 카드([username]/opengraph-image·story-image 등)가 런타임에 읽을 수
+  // 있게 함께 싣는다. 메타데이터 이미지 라우트 이름이 해시 접미사를 가질 수 있어
+  // 라우트를 하나씩 적지 않고 전체에 싣는다(약 300KB).
+  outputFileTracingIncludes: {
+    '/**/*': ['./public/brand/page0127-symbol.png'],
+  },
   experimental: {
     // 프로필 이미지 한도는 4MB(MAX_PROFILE_IMAGE_BYTES). multipart 메타데이터와
     // 나머지 폼 필드 여유를 더해 4.5mb로 둔다.
