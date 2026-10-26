@@ -30,6 +30,13 @@ export type {
 // 주의: next/headers 에 의존하는 서버 전용 함수는 './server' 에서 별도로 export 한다.
 //       (클라이언트 컴포넌트가 이 배럴을 import 할 때 서버 모듈이 끌려가지 않도록 분리)
 export { bookApi } from './api/bookApi';
+export { getPastSelfHistory } from './api/getPastSelfHistory';
+export type {
+  PastSelfHistory,
+  PastSelfPeriod,
+  PastSelfStats,
+} from './model/pastSelfBattle';
+export { getDefaultPastSelfPeriod } from './model/pastSelfBattle';
 
 // 나만의 메모(book_memos) 임베드 — 주인만 읽힌다
 export {

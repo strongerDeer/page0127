@@ -1,0 +1,119 @@
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.controls select {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-height: 40px;
+  padding: 8px 10px;
+  max-width: 100%;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--card);
+  color: var(--text-strong);
+}
+.controls > div {
+  margin-top: 0;
+}
+.arena {
+  padding-top: 15px;
+  container-type: inline-size;
+}
+.arena p[data-pages="true"] {
+  font-size: clamp(20px, 8cqw, 32px);
+  white-space: nowrap;
+}
+.avatar {
+  margin-inline: auto;
+}
+.scope {
+  font-size: 11px;
+  color: var(--text-subtle);
+  margin: 0 0 24px;
+}
+.name {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 15px 0 0;
+  line-height: 1.5;
+}
+.date {
+  font-size: 11px;
+  color: var(--text-subtle);
+  text-wrap: balance;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  margin: 6px 0 0;
+}
+.arena span.pastAvatar {
+  outline: 2px dashed var(--teal-500);
+  outline-offset: 2px;
+  background: var(--card);
+  box-shadow: none;
+}
+.outcome {
+  padding: 18px 0 20px;
+  text-align: center;
+}
+.outcome p {
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 8px 0 0;
+}
+.cta {
+  border-top: 1px solid var(--line-soft);
+  padding: 15px 18px 18px;
+  text-align: center;
+}
+.cta p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-subtle);
+  margin: 0 0 10px;
+}
+.empty {
+  padding: 27px 20px 24px;
+  text-align: center;
+}
+.empty h3 {
+  font-size: 16px;
+  margin: 22px 0 10px;
+  font-weight: 650;
+}
+.empty p {
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--text-subtle);
+  margin: 0;
+}
+.ownRecord {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  background: var(--sunken);
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 20px;
+  font-size: 12px;
+}
+.ownRecord strong {
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+}
+.ownRecord small {
+  font-size: 12px;
+  font-weight: 400;
+  margin-left: 4px;
+}
+@media (pointer: coarse) {
+  .controls select {
+    min-height: 44px;
+  }
+}

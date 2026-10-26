@@ -21,21 +21,33 @@ import type { Book } from '../types';
  *
  * 입력 순서는 그대로 지킨다. 정렬은 호출부가 이미 끝낸 상태로 들어온다.
  */
-export const dedupeReadings = (books: Book[]): Book[] => {
+type ReadingRow = Pick<
+  Book,
+  | 'id'
+  | 'isbn'
+  | 'user_id'
+  | 'status'
+  | 'completed_date'
+  | 'created_at'
+  | 'read_count'
+  | 'is_life_book'
+>;
+
+export const dedupeReadings = <T extends ReadingRow>(books: T[]): T[] => {
   // ISBN 이 비어 있으면(수기 등록 등) 키가 겹쳐 엉뚱한 책끼리 합쳐진다 → id 로 갈라둔다.
   // 여러 사람의 책이 섞인 목록에도 쓰일 수 있어 user_id 를 키에 포함한다.
   //
   // status 도 키다. 재독 중이면 '1회독 완독'과 '2회독 읽는 중'이 동시에 있는데,
   // 둘을 합치면 책이 '읽는 중' 칸으로 옮겨가면서 완독 책장에서 사라진다.
   // 같은 책이라도 놓이는 칸이 다르면 별개 항목으로 둔다.
-  const groupKey = (book: Book) =>
+  const groupKey = (book: T) =>
     book.isbn ? `${book.user_id}:${book.status}:${book.isbn}` : `id:${book.id}`;
 
   // 최신 회독 판정용 시각. 완독일이 없는 기록은 등록 시각으로 대신한다.
-  const readAt = (book: Book) =>
+  const readAt = (book: T) =>
     new Date(book.completed_date ?? book.created_at).getTime();
 
-  const isNewerReading = (candidate: Book, current: Book) => {
+  const isNewerReading = (candidate: T, current: T) => {
     const diff = readAt(candidate) - readAt(current);
     if (diff !== 0) return diff > 0;
     if (candidate.read_count !== current.read_count) {
@@ -49,7 +61,7 @@ export const dedupeReadings = (books: Book[]): Book[] => {
   // 몇 개가 합쳐졌는지(= 몇 회독인지)도 함께 기억한다
   const groups = new Map<
     string,
-    { order: number; count: number; book: Book; representative: Book }
+    { order: number; count: number; book: T; representative: T }
   >();
 
   books.forEach((book, index) => {
@@ -62,7 +74,7 @@ export const dedupeReadings = (books: Book[]): Book[] => {
     }
 
     // 합산된 read_count를 비교하면 오래된 회독의 값이 대표 선택에 끼어든다.
-    const merged: Book = isNewerReading(book, group.representative)
+    const merged: T = isNewerReading(book, group.representative)
       ? book
       : group.representative;
     const count = group.count + 1;

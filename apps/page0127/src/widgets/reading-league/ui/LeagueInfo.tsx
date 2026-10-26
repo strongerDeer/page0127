@@ -6,16 +6,19 @@ import { Popover, PopoverContent, PopoverTrigger } from '@repo/ui';
 import { Info } from 'lucide-react';
 
 import type { LeagueMetric } from '../model/readingLeague';
+import type { ReactNode } from 'react';
 
 /** 클릭·포커스도 지원해 터치 환경에서 비교 기준이 사라지지 않게 한다. */
 export const LeagueInfo = ({
   year,
   metric,
   missingPages,
+  children,
 }: {
   year: number;
   metric: LeagueMetric;
   missingPages?: string;
+  children?: ReactNode;
 }) => {
   const [open, setOpen] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -60,14 +63,20 @@ export const LeagueInfo = ({
         onMouseEnter={enter}
         onMouseLeave={leave}
       >
-        <p>서울 기준 {year}년 공개 완독 · 재독은 한 권</p>
-        <p>동점은 공동 순위예요.</p>
-        {metric === 'pages' && (
-          <p>완독한 책의 쪽수 합계 · 쪽수 미등록 책 제외</p>
-        )}
-        {metric === 'genres' && <p>서재 대분류 기준 · 기타·분류 미상 제외</p>}
-        {metric === 'pages' && missingPages && (
-          <p role='status'>{missingPages}</p>
+        {children ?? (
+          <>
+            <p>서울 기준 {year}년 공개 완독 · 재독은 한 권</p>
+            <p>동점은 공동 순위예요.</p>
+            {metric === 'pages' && (
+              <p>완독한 책의 쪽수 합계 · 쪽수 미등록 책 제외</p>
+            )}
+            {metric === 'genres' && (
+              <p>서재 대분류 기준 · 기타·분류 미상 제외</p>
+            )}
+            {metric === 'pages' && missingPages && (
+              <p role='status'>{missingPages}</p>
+            )}
+          </>
         )}
       </PopoverContent>
     </Popover>
