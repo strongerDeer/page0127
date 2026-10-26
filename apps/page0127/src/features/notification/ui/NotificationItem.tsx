@@ -17,6 +17,7 @@ import {
   Check,
   Heart,
   type LucideIcon,
+  Mail,
   MessageCircle,
   Pointer,
   Sparkles,
@@ -31,6 +32,7 @@ import {
   SELF_NOTICE_TYPES,
   toActorSentence,
 } from '@/entities/notification';
+import { BookEnvelopeArtwork } from '@/entities/notification/ui/BookEnvelopeArtwork';
 import { toDisplayName, toInitial } from '@/entities/profile/model/displayName';
 
 type NotificationItemProps = {
@@ -111,6 +113,61 @@ export const NotificationItem = ({
   const SelfNoticeIcon = Icon ?? BookOpen;
   // nickname은 미설정이면 null이라 그대로 쓰면 "님이 팔로우했습니다"처럼 이름이 빈다
   const actorName = toDisplayName(actor);
+
+  if (type === 'reading_nudge') {
+    return (
+      <div
+        className={`flex w-full gap-2 border-b p-3 ${!is_read ? 'bg-accent' : ''}`}
+      >
+        <button
+          onClick={onClick}
+          className='flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left'
+        >
+          <span className='shrink-0' aria-hidden='true'>
+            <BookEnvelopeArtwork compact />
+          </span>
+          <span className='min-w-0 space-y-1'>
+            <span className='flex items-center gap-1.5 text-xs font-medium text-primary'>
+              <Mail size={14} aria-hidden='true' />
+              {is_read ? '열어본 책 봉투' : '책 봉투가 도착했어요'}
+            </span>
+            <span className='block break-all text-sm font-medium'>
+              {actorName}님이 보내셨습니다.
+            </span>
+            <span className='block text-xs text-text-subtle'>
+              봉투 열어보기 ↗
+            </span>
+            <RelativeTime
+              date={created_at}
+              className='block text-xs text-text-subtle'
+            />
+          </span>
+        </button>
+        <div className='flex shrink-0 flex-col items-center gap-1'>
+          {!is_read && onMarkAsRead && (
+            <Button
+              variant='ghost'
+              size='icon-sm'
+              aria-label='읽음 처리'
+              onClick={() => onMarkAsRead(notification.id)}
+            >
+              <Check size={16} />
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              variant='ghost'
+              size='icon-sm'
+              aria-label='삭제'
+              onClick={() => onDelete(notification.id)}
+            >
+              <X size={16} />
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

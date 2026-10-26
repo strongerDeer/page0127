@@ -57,7 +57,12 @@ export type Notification = {
  * - title: 받는 사람이 읽을 수 없는 책(비공개)이면 null
  * - isReply: 받는 사람이 책 주인이 아니면 답글 알림이다(전역 책 알림은 늘 답글)
  */
-export type NotificationTarget = { title: string | null; isReply: boolean };
+export type NotificationTarget = {
+  title: string | null;
+  isReply: boolean;
+  cover_image?: string | null;
+  author?: string | null;
+};
 
 /**
  * 알림 조회 응답 (프로필 정보 포함)

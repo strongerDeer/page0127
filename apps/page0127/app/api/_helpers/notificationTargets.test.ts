@@ -20,6 +20,43 @@ const noti = (
 });
 
 describe('toNotificationTarget', () => {
+  it('책 봉투에는 읽을 수 있는 책의 표지와 저자를 함께 담는다', () => {
+    const visibleBooks = new Map([
+      [
+        'book-1',
+        {
+          id: 'book-1',
+          title: '데미안',
+          user_id: 'sender',
+          cover_image: 'https://example.com/cover.jpg',
+          author: '헤르만 헤세',
+        },
+      ],
+    ]);
+    expect(
+      toNotificationTarget(
+        noti({ type: 'reading_nudge' }),
+        visibleBooks,
+        globalBooks
+      )
+    ).toEqual({
+      title: '데미안',
+      isReply: false,
+      cover_image: 'https://example.com/cover.jpg',
+      author: '헤르만 헤세',
+    });
+  });
+
+  it('삭제·비공개 책의 표지와 저자는 봉투에도 노출하지 않는다', () => {
+    expect(
+      toNotificationTarget(
+        noti({ type: 'reading_nudge', target_id: 'hidden' }),
+        books,
+        globalBooks
+      )
+    ).toBeNull();
+  });
+
   it('책 주인이 받은 댓글 알림은 댓글이다', () => {
     expect(toNotificationTarget(noti({}), books, globalBooks)).toEqual({
       title: '데미안',

@@ -10,7 +10,7 @@
  * - 전체 읽음 처리
  */
 
-import { useEffect, useEffectEvent, useRef } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
@@ -33,11 +33,13 @@ import {
 import { useCurrentUser } from '@/entities/user';
 
 import { NotificationItem } from './NotificationItem';
+import { ReadingEnvelopeDialog } from './ReadingEnvelopeDialog';
 
 export const NotificationPage = () => {
   const router = useRouter();
   const { data: currentUser } = useCurrentUser();
   const observerRef = useRef<HTMLDivElement>(null);
+  const [envelope, setEnvelope] = useState<NotificationWithActor | null>(null);
   // 마지막 선택 필터 복원 — useLocalStorage로 SSR 안전하게 처리
   const [filter, setFilter] = useLocalStorage<'all' | 'unread'>(
     'notification-filter',
@@ -202,7 +204,11 @@ export const NotificationPage = () => {
             <NotificationItem
               key={notification.id}
               notification={notification}
-              onClick={() => handleNotificationClick(notification)}
+              onClick={() =>
+                notification.type === 'reading_nudge'
+                  ? setEnvelope(notification)
+                  : handleNotificationClick(notification)
+              }
               onDelete={handleDelete}
               onMarkAsRead={handleMarkAsReadSingle}
             />
@@ -215,6 +221,22 @@ export const NotificationPage = () => {
             </div>
           )}
         </div>
+      )}
+      {envelope && (
+        <ReadingEnvelopeDialog
+          key={envelope.id}
+          notification={envelope}
+          onClose={() => setEnvelope(null)}
+          onRead={() =>
+            envelope.is_read
+              ? undefined
+              : markAsReadMutation.mutateAsync(envelope.id)
+          }
+          onVisit={async (notification) => {
+            await handleNotificationClick({ ...notification, is_read: true });
+            setEnvelope(null);
+          }}
+        />
       )}
     </div>
   );

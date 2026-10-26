@@ -29,7 +29,10 @@ const SCAN_DIRS = ['src', 'app'];
  * 이미지는 변환을 거쳐도 한도를 태우는 원격 소스가 아니다.
  * **원격 URL(표지·프로필 사진)을 하나라도 그린다면 넣지 말 것.**
  */
-const EXEMPT_FILES: string[] = [];
+const EXEMPT_FILES: string[] = [
+  // 승인한 고정 봉투 아트만 그리며 원격 표지 URL은 받지 않는다
+  'src/entities/notification/ui/BookEnvelopeArtwork.tsx',
+];
 
 const collectFiles = (dir: string): string[] => {
   const out: string[] = [];
