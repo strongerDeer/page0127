@@ -129,6 +129,9 @@ const nextConfig: NextConfig = {
       "'self'",
       "'unsafe-inline'", // GA init·Next 인라인 하이드레이션 스크립트
       ...(isDev ? ["'unsafe-eval'"] : []),
+      // 바코드 인식(ZXing WebAssembly)이 WASM 을 컴파일하려면 필요하다.
+      // 'unsafe-eval' 과 달리 문자열 eval 은 여전히 막힌다.
+      "'wasm-unsafe-eval'",
       'https://www.googletagmanager.com',
       // Vercel Web Analytics·Speed Insights 로더.
       // 프로덕션(Vercel)에선 대개 동일 출처(/_vercel/…)로 프록시되지만,

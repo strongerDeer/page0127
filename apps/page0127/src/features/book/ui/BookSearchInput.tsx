@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { Button } from '@repo/ui';
 import { Input } from '@repo/ui';
+import { ScanBarcode } from 'lucide-react';
 
 import { useDebounce } from '@/shared/lib/hooks/useDebounce';
 import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
@@ -17,6 +18,8 @@ import {
 type BookSearchInputProps = {
   onSearch: (query: string) => void;
   isLoading?: boolean;
+  /** 있으면 검색창 옆에 바코드 버튼을 보여 준다 */
+  onScanClick?: () => void;
   // React 19: ref가 일반 prop으로 승격 — forwardRef 래핑 불필요
   ref?: React.Ref<HTMLInputElement>;
 };
@@ -34,6 +37,7 @@ const MAX_RECENT = 5;
 export const BookSearchInput = ({
   onSearch,
   isLoading = false,
+  onScanClick,
   ref,
 }: BookSearchInputProps) => {
   const [query, setQuery] = useState('');
@@ -77,8 +81,7 @@ export const BookSearchInput = ({
     setIsFocused(false);
   };
 
-  const showRecent =
-    isFocused && !query && recentSearches.length > 0;
+  const showRecent = isFocused && !query && recentSearches.length > 0;
 
   // 검색창 힌트가 회전한다 — 교보문고처럼 실제 책 제목이 돈다.
   // 사용자가 입력하려고 포커스한 동안에는 멈춘다(방해가 되므로).
@@ -107,6 +110,18 @@ export const BookSearchInput = ({
           onBlur={() => setTimeout(() => setIsFocused(false), 150)}
           className='flex-1'
         />
+        {onScanClick && (
+          <Button
+            type='button'
+            variant='outline'
+            size='icon-md'
+            onClick={onScanClick}
+            aria-label='바코드로 책 찾기'
+            title='바코드로 책 찾기'
+          >
+            <ScanBarcode aria-hidden />
+          </Button>
+        )}
         <Button type='submit' disabled={isLoading || !query.trim()}>
           {isLoading ? '검색 중...' : '검색'}
         </Button>

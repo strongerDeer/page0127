@@ -2,7 +2,9 @@
 
 import { useCallback, useReducer, useRef } from 'react';
 
-import { searchBooks } from '@/shared/api/book';
+import { getBookDetail, searchBooks } from '@/shared/api/book';
+
+import { parseIsbn } from '@/features/book/lib/parseIsbn';
 
 import type { ProviderBook } from '@/entities/book';
 
@@ -110,6 +112,18 @@ export const useBookSearch = () => {
     dispatch({ type: 'SEARCH_START', query, page });
 
     try {
+      // ISBN(바코드 리더기·숫자 입력)이면 제목 검색 대신 상세 조회로 그 한 권을 바로 띄운다.
+      // 공급자에 상세가 없거나(null) 조회가 실패하면 아래 일반 검색으로 한 번 더 찾아본다.
+      const isbn = page === 1 ? parseIsbn(query) : null;
+      if (isbn) {
+        const book = await getBookDetail(isbn).catch(() => null);
+        if (requestId !== requestIdRef.current) return;
+        if (book) {
+          dispatch({ type: 'SEARCH_SUCCESS', books: [book], totalResults: 1 });
+          return;
+        }
+      }
+
       const response = await searchBooks(query, {
         page,
         maxResults: ITEMS_PER_PAGE,

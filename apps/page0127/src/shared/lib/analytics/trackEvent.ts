@@ -74,6 +74,11 @@ export type AnalyticsEvent =
   | 'book_add'
   /** 완독으로 **전환**됐다. 이미 완독인 책을 다시 저장한 것은 세지 않는다 */
   | 'book_complete'
+  /**
+   * 바코드로 책을 찾았다(도서 추가 화면). source: 'camera' | 'photo',
+   * found: 읽은 ISBN 으로 책 정보를 찾았는지
+   */
+  | 'book_barcode_scan'
   /** AI 취향 분석을 실행했다 */
   | 'taste_analysis_run'
   /** 공유를 눌렀다. method 로 네이티브 공유/링크 복사를 구분한다 */

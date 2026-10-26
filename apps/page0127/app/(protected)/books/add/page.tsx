@@ -17,6 +17,7 @@ import { BookSourceCredit } from '@/entities/book/ui/BookSourceCredit';
 import { useBookCRUD } from '@/features/book/api/useBookCRUD';
 import { useBookSearch } from '@/features/book/api/useBookSearch';
 import { resolveReadCount } from '@/features/book/lib/resolveReadCount';
+import { BarcodeScanDialog } from '@/features/book/ui/BarcodeScanDialog';
 import {
   type BookFormData,
   BookRegistrationForm,
@@ -139,6 +140,22 @@ const AddBookPage = () => {
     await loadBookDetail(book);
   };
 
+  // 바코드로 읽은 ISBN — 검색 목록을 거치지 않고 그 책으로 바로 넘어간다.
+  // 중복 확인·상세 보강은 목록에서 고른 것과 같은 길(handleSelectBook)을 탄다.
+  const [isScanOpen, setIsScanOpen] = useState(false);
+  const handleScanned = async (isbn: string, source: 'camera' | 'photo') => {
+    setIsScanOpen(false);
+    const book = await getBookDetail(isbn).catch(() => null);
+    trackEvent('book_barcode_scan', { source, found: !!book });
+    if (!book) {
+      toast.error(
+        `바코드(ISBN ${isbn})로 책을 찾지 못했어요. 제목으로 검색해 주세요.`
+      );
+      return;
+    }
+    await handleSelectBook(book);
+  };
+
   // 재독 선택 시 - 등록 폼 표시
   const handleReread = async () => {
     if (!pendingBook) return;
@@ -194,7 +211,10 @@ const AddBookPage = () => {
       // 활성화 계측 — 가입 다음 단계가 "첫 책을 꽂았다"이다.
       // 등록하면서 바로 완독으로 담는 경우가 흔한데, 그 흐름은 편집 화면을 거치지
       // 않으므로 여기서 세지 않으면 그 완독은 통째로 누락된다.
-      trackEvent('book_add', { status: formData.status, read_count: readCount });
+      trackEvent('book_add', {
+        status: formData.status,
+        read_count: readCount,
+      });
       if (formData.status === 'completed') {
         trackEvent('book_complete', { from: 'register' });
       }
@@ -282,6 +302,7 @@ const AddBookPage = () => {
               ref={searchInputRef}
               onSearch={search}
               isLoading={isSearching}
+              onScanClick={() => setIsScanOpen(true)}
             />
 
             {/* 로딩 상태 */}
@@ -354,6 +375,12 @@ const AddBookPage = () => {
           </>
         )}
       </PageContainer>
+
+      <BarcodeScanDialog
+        open={isScanOpen}
+        onOpenChange={setIsScanOpen}
+        onDetected={handleScanned}
+      />
 
       {/* 중복 책 발견 모달 */}
       {existingBook && pendingBook && (
