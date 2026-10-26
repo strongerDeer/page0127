@@ -22,9 +22,7 @@ export const Together: Story = {
   play: async ({ canvasElement, args }) => {
     const page = within(canvasElement.ownerDocument.body);
     await userEvent.selectOptions(page.getByRole('combobox'), 'book');
-    await userEvent.click(
-      page.getByRole('button', { name: '콕 찌르기 보내기' })
-    );
+    await userEvent.click(page.getByRole('button', { name: '책 봉투 보내기' }));
     await expect(args.onSend).toHaveBeenCalledWith('together', 'book');
   },
 };

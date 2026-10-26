@@ -31,6 +31,7 @@ import { NotificationItem } from './NotificationItem';
 type NotificationListProps = {
   userId: string;
   onClose?: () => void;
+  onOpenEnvelope: (notification: NotificationWithActor) => void;
 };
 
 type NotificationListHeaderProps = {
@@ -105,6 +106,7 @@ const NotificationListFooter = ({ onClose }: NotificationListFooterProps) => (
 export const NotificationList = ({
   userId,
   onClose,
+  onOpenEnvelope,
 }: NotificationListProps) => {
   const router = useRouter();
   // 읽은 알림도 함께 보여 준다 — 읽지 않은 것만 두면 하나 읽는 순간 드롭다운이 비어 버린다.
@@ -122,6 +124,11 @@ export const NotificationList = ({
   const handleNotificationClick = async (
     notification: NotificationWithActor
   ) => {
+    if (notification.type === 'reading_nudge') {
+      onOpenEnvelope(notification);
+      onClose?.();
+      return;
+    }
     if (!notification.is_read) {
       await markAsReadMutation.mutateAsync(notification.id);
     }

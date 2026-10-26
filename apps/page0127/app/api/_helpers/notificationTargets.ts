@@ -5,7 +5,13 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 type TargetNotification = Pick<Notification, 'user_id' | 'type'> &
   Partial<Pick<Notification, 'target_id' | 'target_type'>>;
 
-type BookRow = { id: string; title: string; user_id: string };
+type BookRow = {
+  id: string;
+  title: string;
+  user_id: string;
+  cover_image?: string | null;
+  author?: string | null;
+};
 type GlobalBookRow = { id: string; title: string };
 
 /**
@@ -40,6 +46,9 @@ export const toNotificationTarget = (
   return {
     title: book.title,
     isReply: type === 'comment' && book.user_id !== notification.user_id,
+    ...(type === 'reading_nudge'
+      ? { cover_image: book.cover_image ?? null, author: book.author ?? null }
+      : {}),
   };
 };
 
@@ -71,7 +80,7 @@ export const loadNotificationTargets = async (
     bookIds.length > 0
       ? supabase
           .from('books')
-          .select('id, title, user_id')
+          .select('id, title, user_id, cover_image, author')
           .in('id', bookIds)
           .returns<BookRow[]>()
       : null,

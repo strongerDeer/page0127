@@ -12,6 +12,7 @@ import {
 } from '@repo/ui';
 
 import { READING_NUDGE_MESSAGES } from '@/entities/notification/model/readingNudge';
+import { BookEnvelopeArtwork } from '@/entities/notification/ui/BookEnvelopeArtwork';
 
 import type {
   NudgeBook,
@@ -58,12 +59,21 @@ export const NudgeDialog = ({
         if (!sending) onOpenChange(value);
       }}
     >
-      <DialogContent className='max-w-md'>
+      <DialogContent className='max-h-[calc(100dvh-2rem)] max-w-md overflow-y-auto rounded-3xl'>
         <DialogHeader>
-          <DialogTitle>{recipientName}님을 콕 찌르기</DialogTitle>
-          <DialogDescription>
-            가볍게 한마디. 같이 읽을 핑계를 만들어볼까요?
-          </DialogDescription>
+          <div className='flex items-center gap-4 pr-4 text-left'>
+            <span className='shrink-0'>
+              <BookEnvelopeArtwork compact />
+            </span>
+            <div className='min-w-0 space-y-2'>
+              <DialogTitle className='break-all leading-snug'>
+                {recipientName}님께 책 봉투
+              </DialogTitle>
+              <DialogDescription>
+                책 한 권과 한마디를 정성껏 전해드릴게요.
+              </DialogDescription>
+            </div>
+          </div>
         </DialogHeader>
         <form
           className='space-y-5'
@@ -118,6 +128,11 @@ export const NudgeDialog = ({
                 </option>
               ))}
             </select>
+            {bookId && (
+              <p className='mt-2 rounded-lg bg-accent px-3 py-2 text-sm text-text-body'>
+                함께 보낼 책 · {books.find((book) => book.id === bookId)?.title}
+              </p>
+            )}
             <p className='mt-2 text-xs text-text-subtle'>
               내 공개 기록 중 읽는 중·완독 책을 첨부할 수 있어요.
             </p>
@@ -148,7 +163,7 @@ export const NudgeDialog = ({
             disabled={loading || sent || loadFailed}
             loading={sending}
           >
-            콕 찌르기 보내기
+            {bookId ? '책 봉투 보내기' : '콕 찌르기 보내기'}
           </Button>
           <p className='text-xs leading-relaxed text-text-subtle'>
             앱 내 알림으로 전달 · 같은 상대에게 서울 기준 하루 한 번<br />
