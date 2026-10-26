@@ -16,7 +16,7 @@ import { useRouter } from 'next/navigation';
 
 import { Button } from '@repo/ui';
 import { Spinner } from '@repo/ui';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 import { apiClient } from '@/shared/api/client';
 import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
@@ -32,14 +32,38 @@ import {
 } from '@/entities/notification';
 import { useCurrentUser } from '@/entities/user';
 
+import { LiveReadingEnvelopeDialog } from './LiveReadingEnvelopeDialog';
 import { NotificationItem } from './NotificationItem';
-import { ReadingEnvelopeDialog } from './ReadingEnvelopeDialog';
 
-export const NotificationPage = () => {
+export const NotificationPage = ({
+  initialEnvelopeId,
+}: {
+  initialEnvelopeId?: string;
+}) => {
   const router = useRouter();
   const { data: currentUser } = useCurrentUser();
   const observerRef = useRef<HTMLDivElement>(null);
   const [envelope, setEnvelope] = useState<NotificationWithActor | null>(null);
+  const [dismissedInitial, setDismissedInitial] = useState(false);
+  const initialEnvelope = useQuery({
+    queryKey: ['notification-envelope', currentUser?.id, initialEnvelopeId],
+    queryFn: async () =>
+      (
+        await apiClient.get<NotificationWithActor[]>(
+          `/notifications?envelope=${initialEnvelopeId}`
+        )
+      ).data[0] ?? null,
+    enabled: Boolean(currentUser && initialEnvelopeId),
+  });
+  const selectedEnvelope =
+    envelope ??
+    (!dismissedInitial && initialEnvelope.data?.type === 'reading_nudge'
+      ? initialEnvelope.data
+      : null);
+  const closeEnvelope = () => {
+    setEnvelope(null);
+    setDismissedInitial(true);
+  };
   // 마지막 선택 필터 복원 — useLocalStorage로 SSR 안전하게 처리
   const [filter, setFilter] = useLocalStorage<'all' | 'unread'>(
     'notification-filter',
@@ -147,6 +171,20 @@ export const NotificationPage = () => {
 
   return (
     <div className='space-y-4'>
+      {initialEnvelopeId && initialEnvelope.isError && (
+        <QueryErrorState
+          message='메시지를 불러오지 못했어요.'
+          onRetry={() => void initialEnvelope.refetch()}
+          isRetrying={initialEnvelope.isFetching}
+        />
+      )}
+      {initialEnvelopeId &&
+        initialEnvelope.isSuccess &&
+        !initialEnvelope.data && (
+          <p role='status' className='text-sm text-text-subtle'>
+            삭제되었거나 볼 수 없는 메시지예요.
+          </p>
+        )}
       {/* 필터 및 액션 */}
       <div className='flex items-center justify-between rounded-2xl bg-sunken p-4'>
         <div className='flex gap-2'>
@@ -222,19 +260,19 @@ export const NotificationPage = () => {
           )}
         </div>
       )}
-      {envelope && (
-        <ReadingEnvelopeDialog
-          key={envelope.id}
-          notification={envelope}
-          onClose={() => setEnvelope(null)}
+      {selectedEnvelope && (
+        <LiveReadingEnvelopeDialog
+          key={selectedEnvelope.id}
+          notification={selectedEnvelope}
+          onClose={closeEnvelope}
           onRead={() =>
-            envelope.is_read
+            selectedEnvelope.is_read
               ? undefined
-              : markAsReadMutation.mutateAsync(envelope.id)
+              : markAsReadMutation.mutateAsync(selectedEnvelope.id)
           }
           onVisit={async (notification) => {
             await handleNotificationClick({ ...notification, is_read: true });
-            setEnvelope(null);
+            closeEnvelope();
           }}
         />
       )}

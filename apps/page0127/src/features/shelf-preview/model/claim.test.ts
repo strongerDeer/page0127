@@ -147,3 +147,24 @@ describe('toClaimToast', () => {
     expect(toClaimToast(0, false)).toBeNull();
   });
 });
+
+it('완독 입력에서 받은 날짜·별점·공개 범위를 로그인 후에도 사용한다', () => {
+  expect(
+    toBookInput(
+      book('1', {
+        completion: {
+          completedDate: null,
+          completedYear: 2024,
+          rating: 4,
+          isPublic: false,
+        },
+      })
+    )
+  ).toMatchObject({
+    status: 'completed',
+    completed_date: null,
+    completed_year: 2024,
+    rating: 4,
+    is_public: false,
+  });
+});

@@ -24,6 +24,12 @@ const notification: NotificationWithActor = {
     cover_image: exampleCover,
     author: '헤르만 헤세',
   },
+  envelope: {
+    kind: 'recommendation',
+    saved_book_id: null,
+    saved_at: null,
+    accepted_at: null,
+  },
   message: '같이 한 권 읽자 👀',
   is_read: false,
   created_at: '2026-10-26T01:00:00Z',
@@ -59,7 +65,7 @@ export const OpenLetter: Story = {
       expect(page.getByText('데미안', { selector: 'p' })).toBeVisible()
     );
     await userEvent.click(
-      await page.findByRole('button', { name: '책 보러 가기' })
+      await page.findByRole('button', { name: /책 보러 가기/ })
     );
     await expect(args.onVisit).toHaveBeenCalledWith(notification);
   },
@@ -78,7 +84,7 @@ export const JustAMessage: Story = {
     await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
     await waitFor(() =>
       expect(
-        page.getByRole('button', { name: '보낸 사람 서재 보기' })
+        page.getByRole('button', { name: /보낸 사람 서재 보기/ })
       ).toBeVisible()
     );
   },
@@ -92,7 +98,7 @@ export const UnavailableBook: Story = {
       expect(page.getByText('지금은 첨부한 책을 볼 수 없어요.')).toBeVisible()
     );
     await userEvent.click(
-      await page.findByRole('button', { name: '보낸 사람 서재 보기' })
+      await page.findByRole('button', { name: /보낸 사람 서재 보기/ })
     );
     await expect(args.onVisit).toHaveBeenCalledWith(
       expect.objectContaining({ target_id: null, target_type: null })
@@ -159,15 +165,121 @@ export const NotificationToLetter: Story = {
   },
   play: async ({ canvasElement }) => {
     const page = within(canvasElement.ownerDocument.body);
-    await userEvent.click(
-      page.getByRole('button', { name: /책 봉투가 도착했어요/ })
-    );
+    await userEvent.click(page.getByRole('button', { name: /책 추천/ }));
     await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
     await waitFor(() =>
       expect(page.getByText('데미안', { selector: 'p' })).toBeVisible()
     );
     await userEvent.keyboard('{Escape}');
     await expect(page.queryByRole('dialog')).not.toBeInTheDocument();
-    await expect(page.getByText('열어본 책 봉투')).toBeVisible();
+    await expect(page.getByText('책 추천')).toBeVisible();
+  },
+};
+
+const response = {
+  book_id: 'my-book',
+  status: 'want_to_read' as const,
+  outcome: 'created' as const,
+  saved_at: '2026-10-26T00:00:00Z',
+  accepted_at: null,
+};
+export const SaveRecommendation: Story = {
+  args: { onRespond: fn(async () => response) },
+  play: async ({ canvasElement, args }) => {
+    const page = within(canvasElement.ownerDocument.body);
+    await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
+    await userEvent.click(
+      await page.findByRole('button', { name: '읽고 싶어요에 담기' })
+    );
+    await expect(args.onRespond).toHaveBeenCalledWith({
+      action: 'save',
+      isPublic: true,
+    });
+    await expect(await page.findByRole('status')).toHaveTextContent(
+      '읽고 싶어요에 담았어요.'
+    );
+  },
+};
+export const Invitation: Story = {
+  args: {
+    notification: {
+      ...notification,
+      envelope: {
+        kind: 'invitation',
+        saved_book_id: null,
+        saved_at: null,
+        accepted_at: null,
+      },
+    },
+    onRespond: fn(async () => ({
+      ...response,
+      status: 'reading' as const,
+      accepted_at: '2026-10-26T00:00:00Z',
+    })),
+  },
+  play: async ({ canvasElement, args }) => {
+    const page = within(canvasElement.ownerDocument.body);
+    await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
+    await userEvent.click(
+      await page.findByRole('button', { name: '같이 읽기 수락' })
+    );
+    await expect(args.onRespond).not.toHaveBeenCalled();
+    await userEvent.click(
+      page.getByRole('button', { name: '읽는 중으로 등록' })
+    );
+    await expect(args.onRespond).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'accept', isPublic: true })
+    );
+    await expect(await page.findByRole('status')).toHaveTextContent(
+      '함께 읽고 있어요'
+    );
+  },
+};
+export const Note: Story = {
+  args: {
+    notification: {
+      ...notification,
+      target_id: null,
+      target_type: null,
+      target: null,
+      envelope: {
+        kind: 'note',
+        saved_book_id: null,
+        saved_at: null,
+        accepted_at: null,
+      },
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const page = within(canvasElement.ownerDocument.body);
+    await userEvent.click(page.getByRole('button', { name: '쪽지 읽기' }));
+    await waitFor(() =>
+      expect(page.getByText('같이 한 권 읽자 👀')).toBeVisible()
+    );
+  },
+};
+export const CompleteAfterConfirmation: Story = {
+  args: {
+    onRespond: fn(async () => ({ ...response, status: 'completed' as const })),
+  },
+  play: async ({ canvasElement, args }) => {
+    const page = within(canvasElement.ownerDocument.body);
+    await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
+    await userEvent.click(
+      await page.findByRole('button', { name: '이미 읽었어요' })
+    );
+    await expect(args.onRespond).not.toHaveBeenCalled();
+    await userEvent.click(page.getByRole('button', { name: '연도만' }));
+    await userEvent.clear(page.getByLabelText('완독 연도'));
+    await userEvent.type(page.getByLabelText('완독 연도'), '2024');
+    await userEvent.click(page.getByRole('button', { name: '4점' }));
+    await userEvent.click(page.getByRole('button', { name: '완독 기록 저장' }));
+    await expect(args.onRespond).toHaveBeenCalledWith({
+      action: 'complete',
+      completedDate: null,
+      completedYear: 2024,
+      rating: 4,
+      isPublic: true,
+    });
   },
 };

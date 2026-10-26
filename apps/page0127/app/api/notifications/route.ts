@@ -40,6 +40,13 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
+    const envelopeId = searchParams.get('envelope');
+    if (envelopeId) {
+      if (!/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(envelopeId))
+        return errorResponse('메시지 주소를 확인해 주세요.', 400);
+      query = query.eq('id', envelopeId);
+    }
+
     // is_read 필터 (선택적)
     if (is_read !== null) {
       query = query.eq('is_read', is_read === 'true');
@@ -73,12 +80,27 @@ export async function GET(request: NextRequest) {
       console.error('프로필 조회 에러:', profileError);
     }
 
+    const envelopeIds = notifications
+      .filter((n) => n.type === 'reading_nudge')
+      .map((n) => n.id);
+    const { data: envelopes, error: envelopeError } = envelopeIds.length
+      ? await supabase
+          .from('reading_envelopes')
+          .select('notification_id, kind, saved_book_id, saved_at, accepted_at')
+          .in('notification_id', envelopeIds)
+          .eq('user_id', user!.id)
+      : { data: [], error: null };
+    if (envelopeError) return errorResponse('책 메시지를 불러오지 못했어요.');
+    const envelopeMap = new Map(
+      (envelopes ?? []).map((e) => [e.notification_id, e])
+    );
     // 프로필 정보 매핑
     const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
 
     const notificationsWithActor = notifications.map((notification) => ({
       ...notification,
       target: targetOf(notification),
+      envelope: envelopeMap.get(notification.id) ?? null,
       actor: profileMap.get(notification.actor_id) || {
         id: notification.actor_id,
         nickname: '알 수 없음',

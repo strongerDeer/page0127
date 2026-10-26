@@ -96,6 +96,7 @@ export const BookDetailContent = ({
                         : 'bg-muted text-muted-foreground'
                   }`}
                 >
+                  {!isOwner && '책장 주인의 기록 · '}
                   {STATUS_TEXT[book.status]}
                 </span>
 
