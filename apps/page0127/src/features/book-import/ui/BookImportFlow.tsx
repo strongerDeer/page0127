@@ -417,7 +417,7 @@ const ReviewRow = ({
         />
       )}
 
-      <div className={`min-w-0 flex-1 space-y-1 ${ready ? '' : 'opacity-80'}`}>
+      <div className='min-w-0 flex-1 space-y-1'>
         <label htmlFor={checkId} className='block'>
           <span className='block truncate text-sm font-medium text-text-strong'>
             {book?.title ?? typed}
@@ -433,7 +433,7 @@ const ReviewRow = ({
         </p>
         {state !== 'ready' && (
           <p
-            className={`text-xs ${state === 'choose' ? 'font-medium text-primary' : 'text-text-subtle'}`}
+            className={`text-xs ${state === 'choose' ? 'font-medium text-text-strong' : 'text-text-subtle'}`}
           >
             {STATE_LABEL[state]}
             {state === 'notFound' && ' — 도서 추가에서 직접 검색해 주세요.'}
