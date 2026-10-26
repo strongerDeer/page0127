@@ -18,11 +18,16 @@ import { buildWebSiteJsonLd } from '@/shared/lib/seo/structuredData';
 import { getProfile } from '@/entities/profile/api/getProfile';
 import { toDisplayName } from '@/entities/profile/model/displayName';
 
+import { getLeaderLifeBooks } from '@/features/shelf-preview/api/getLeaderLifeBooks';
+import { getShelfPicks } from '@/features/shelf-preview/api/getShelfPicks';
 import { ShelfPreviewSection } from '@/features/shelf-preview/ui/ShelfPreviewSection';
 
 import { AboutHero, FinalCta, Highlights, Manifesto } from '@/widgets/about';
 import { getRecentBooks } from '@/widgets/about/api/getRecentBooks';
 import { HeroBannerSection } from '@/widgets/landing/ui/HeroBannerSection';
+
+import type { ShelfPreviewData } from '@/features/shelf-preview/ui/ShelfPreviewSection';
+import type { HeroVariant } from '@/shared/lib/experiment/heroVariant';
 
 /**
  * 메인 홈 — 로그인 여부와 상관없이 모두 같은 홈을 본다
@@ -54,6 +59,15 @@ const webSiteJsonLd = buildWebSiteJsonLd({
     '읽은 책을 한 권씩 기록하면 AI가 독서 취향을 분석하고 다음에 읽을 책을 추천해 주는 독서 기록 서비스',
 });
 
+/** 맛보기 책 목록 — 그룹에 맞는 것만 읽는다. null 이면 맛보기를 숨긴다(로그인한 사람) */
+const loadShelfPreview = async (
+  variant: HeroVariant | null
+): Promise<ShelfPreviewData | null> => {
+  if (!variant) return null;
+  if (variant === 'b') return { variant, leaders: await getLeaderLifeBooks() };
+  return { variant, picks: await getShelfPicks() };
+};
+
 const Home = async () => {
   const user = await getCurrentUser();
   const profile = user ? await getProfile(user.id) : null;
@@ -73,13 +87,18 @@ const Home = async () => {
     ? { username: profile.username, displayName: toDisplayName(profile) }
     : null;
 
-  // 표지는 소개 페이지와 같은 조회라 1시간 캐시를 함께 쓴다(widgets/about/api/aboutCache.ts)
-  const books = await getRecentBooks();
-
   const heroVariant = resolveHeroVariant(
     (await cookies()).get(HERO_VARIANT_COOKIE)?.value,
     isHeroAbOn(process.env.HERO_AB)
   );
+
+  // 캐시한 조회는 모두 첫 화면(셸) 전에 읽는다 — Suspense 안에서 읽으면 캐시 배경 갱신이
+  // waitUntil 에 실리지 않아 [db-timeout] 으로 끊긴다(ShelfPreviewSection 주석).
+  // 표지는 소개 페이지와 같은 조회라 1시간 캐시를 함께 쓴다(widgets/about/api/aboutCache.ts)
+  const [books, preview] = await Promise.all([
+    getRecentBooks(),
+    loadShelfPreview(member ? null : heroVariant),
+  ]);
 
   return (
     // break-keep: 한국어를 단어 단위로 줄바꿈한다 — 없으면 '쌓/인'처럼 단어 중간에서 끊긴다
@@ -108,13 +127,8 @@ const Home = async () => {
 
       {/* 책장 맛보기(당신의 첫인상.) — 고르기·책장 2단, 저장하려고 가입하게 한다
           (설계: 2026-10-08-home-shelf-preview-design.md).
-          이미 서재가 있는 사람에겐 체험할 이유가 없어 숨긴다.
-          자리 표시는 실제 높이에 가깝게 — 짧으면 도착하는 순간 아래가 밀린다(CLS) */}
-      {!member && (
-        <Suspense fallback={<div className='min-h-176 lg:min-h-140' />}>
-          <ShelfPreviewSection variant={heroVariant} />
-        </Suspense>
-      )}
+          이미 서재가 있는 사람에겐 체험할 이유가 없어 숨긴다(preview 가 null) */}
+      {preview && <ShelfPreviewSection {...preview} />}
 
       <Highlights books={books} />
 
