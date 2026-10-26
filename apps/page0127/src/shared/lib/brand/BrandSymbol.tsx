@@ -11,7 +11,9 @@ export const BRAND_SYMBOL = {
 /**
  * Satori 전용 심볼. 확정한 A 시안의 종이 질감과 얕은 음각을 PNG로 보존한다.
  * 로컬 원본을 data URI로 읽어 아이콘·공유 카드 생성 시 외부 요청을 피한다.
- * app/icon.png는 같은 원본을 64px로 축소한 브라우저 탭용 이미지다.
+ * 원본(page0127-symbol.png)은 연한 흰 바탕이 칠해져 있어 파란 카드 위에서 흰 네모로
+ * 보인다. 그래서 바탕을 걷어 낸 투명 사본(app-icon.png)을 그린다.
+ * app/icon.png는 같은 투명 사본을 64px로 축소한 브라우저 탭용 이미지다.
  *
  * ⚠️ 모듈 최상단에서 읽지 말 것 — 처음 렌더할 때 읽는다.
  *   모든 페이지가 메타데이터(size·contentType)를 얻으려고 app/apple-icon.tsx 를
@@ -41,7 +43,7 @@ export const BrandSymbol = ({ size }: BrandSymbolProps) => (
   // Satori는 next/image 대신 원본 img의 data URI를 렌더링한다.
   // eslint-disable-next-line @next/next/no-img-element
   <img
-    src={readPng('page0127-symbol.png')}
+    src={readPng('app-icon.png')}
     alt='page0127.'
     width={size}
     height={size}
