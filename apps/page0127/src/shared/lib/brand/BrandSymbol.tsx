@@ -50,18 +50,23 @@ export const BrandSymbol = ({ size }: BrandSymbolProps) => (
 
 type AppIconProps = {
   size: number;
+  /** true 면 표지 파랑이 사각형을 꽉 채운 사본(OS 가 모양대로 잘라 쓴다) */
+  fullBleed?: boolean;
 };
 
 /**
- * 설치형 앱 아이콘. 심볼 원본은 연한 흰 바탕이 들어 있어서 그대로 쓰면 맥 Dock 에
- * 흰 판이 생긴다(2026-10-26). 그래서 바탕을 투명하게 걷어 내고, 북마크가 위로
- * 튀어나온 만큼을 감안해 책 몸통이 캔버스 정가운데(긴 변 80%)에 오도록 맞춘
- * 사본(app-icon.png)을 쓴다.
+ * 설치형 앱·홈 화면 아이콘. 심볼 원본은 연한 흰 바탕이 들어 있어서 그대로 쓰면
+ * 맥 Dock·iOS 홈 화면에 흰 판이 생긴다(2026-10-26).
+ * - app-icon.png: 바탕을 투명하게 걷어 내고, 북마크가 튀어나온 만큼 위아래 여백을
+ *   두어 책 몸통이 정가운데에 오게 꽉 채운 사본.
+ * - app-icon-maskable.png: 책 표지를 정사각으로 잘라 사각형을 꽉 채운 사본.
+ *   macOS 26 은 사각형을 꽉 채우지 않은 아이콘을 회색 판에 넣고 줄이고, iOS 는
+ *   투명한 곳을 검게 채운다. 그래서 manifest 의 maskable·apple-icon 은 이걸 쓴다.
  */
-export const AppIcon = ({ size }: AppIconProps) => (
+export const AppIcon = ({ size, fullBleed = false }: AppIconProps) => (
   // eslint-disable-next-line @next/next/no-img-element
   <img
-    src={readPng('app-icon.png')}
+    src={readPng(fullBleed ? 'app-icon-maskable.png' : 'app-icon.png')}
     alt='page0127.'
     width={size}
     height={size}
