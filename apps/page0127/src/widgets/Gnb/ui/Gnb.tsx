@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 import { Button } from '@repo/ui';
-import { Plus, Search } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 import { NotificationDropdown } from '@/features/notification';
 import { coachTarget } from '@/features/onboarding';
@@ -9,6 +9,7 @@ import { ProfileDropdown } from '@/features/profile';
 
 import { GnbNav } from './GnbNav';
 import { GnbSearch } from './GnbSearch';
+import { MobileBookSearch } from './MobileBookSearch';
 
 /**
  * 통합 GNB — 로그인 전/후 모두 같은 상단 바를 쓴다.
@@ -59,13 +60,7 @@ export const Gnb = ({ user }: GnbProps) => {
 
         <div className='flex shrink-0 items-center gap-1.5 sm:ml-0 ml-auto'>
           {/* 모바일에선 검색창 대신 아이콘으로 진입 */}
-          <Link
-            href='/books/all'
-            aria-label='도서 검색'
-            className='flex size-9 items-center justify-center rounded-full text-text-subtle transition-colors hover:bg-sunken hover:text-text-strong sm:hidden'
-          >
-            <Search className='size-5' />
-          </Link>
+          <MobileBookSearch />
 
           {user ? (
             <>
