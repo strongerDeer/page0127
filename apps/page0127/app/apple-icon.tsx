@@ -1,11 +1,13 @@
 import { ImageResponse } from 'next/og';
 
-import { BrandSymbol } from '@/shared/lib/brand/BrandSymbol';
+import { AppIcon } from '@/shared/lib/brand/BrandSymbol';
 
-// iOS 홈 화면은 PNG를 사용한다. PWA·공유 카드와 같은 확정 원본으로 생성한다.
+// iOS 홈 화면은 PNG를 쓰고, 투명한 곳을 검게 채운 뒤 모서리를 직접 깎는다.
+// 그래서 표지가 사각형을 꽉 채운 사본을 쓴다(AppIcon 주석 참조).
 export const size = { width: 180, height: 180 };
 export const contentType = 'image/png';
 
-const Icon = () => new ImageResponse(<BrandSymbol size={size.width} />, size);
+const Icon = () =>
+  new ImageResponse(<AppIcon size={size.width} fullBleed />, size);
 
 export default Icon;

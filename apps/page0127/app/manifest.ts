@@ -37,6 +37,14 @@ const manifest = (): MetadataRoute.Manifest => ({
       type: 'image/png',
     },
     {
+      // 표지가 사각형을 꽉 채운 사본. OS 가 원·둥근 사각형으로 잘라 쓴다.
+      // 없으면 macOS 26 은 투명 아이콘을 회색 판에 넣어 다른 앱보다 작아 보인다
+      src: '/brand/app-icon-maskable.png',
+      sizes: '512x512',
+      type: 'image/png',
+      purpose: 'maskable',
+    },
+    {
       // app/icons/[size]/route.tsx — 크롬 설치 판정(192)·시작 화면(512)용 PNG
       src: '/icons/192',
       sizes: '192x192',
