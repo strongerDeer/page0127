@@ -76,7 +76,7 @@ const nextConfig: NextConfig = {
   // 있게 함께 싣는다. 메타데이터 이미지 라우트 이름이 해시 접미사를 가질 수 있어
   // 라우트를 하나씩 적지 않고 전체에 싣는다(약 300KB).
   outputFileTracingIncludes: {
-    '/**/*': ['./public/brand/page0127-symbol.png'],
+    '/**/*': ['./public/brand/*.png'],
   },
   experimental: {
     // 프로필 이미지 한도는 4MB(MAX_PROFILE_IMAGE_BYTES). multipart 메타데이터와
