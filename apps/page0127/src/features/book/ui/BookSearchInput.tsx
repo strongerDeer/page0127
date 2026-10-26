@@ -20,6 +20,8 @@ type BookSearchInputProps = {
   isLoading?: boolean;
   /** 있으면 검색창 옆에 바코드 버튼을 보여 준다 */
   onScanClick?: () => void;
+  /** 처음 채워 둘 검색어 — 바코드로 읽은 ISBN 을 보여 줄 때 쓴다(바꾸려면 key 로 다시 마운트) */
+  initialQuery?: string;
   // React 19: ref가 일반 prop으로 승격 — forwardRef 래핑 불필요
   ref?: React.Ref<HTMLInputElement>;
 };
@@ -38,9 +40,10 @@ export const BookSearchInput = ({
   onSearch,
   isLoading = false,
   onScanClick,
+  initialQuery = '',
   ref,
 }: BookSearchInputProps) => {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(initialQuery);
   const [isFocused, setIsFocused] = useState(false);
 
   // 최근 검색어: localStorage의 'book-recent-searches' 키에 저장

@@ -147,17 +147,28 @@ const AddBookPage = () => {
   // 바코드로 읽은 ISBN — 검색 목록을 거치지 않고 그 책으로 바로 넘어간다.
   // 중복 확인·상세 보강은 목록에서 고른 것과 같은 길(handleSelectBook)을 탄다.
   const [isScanOpen, setIsScanOpen] = useState(false);
+  // 읽은 ISBN 을 검색창에 채워 둔다. 비워 두면 책을 불러오는 동안 검색창에
+  // 돌아가는 예시 제목(placeholder)이 보여서 다른 책이 찍힌 것처럼 보인다.
+  const [scannedIsbn, setScannedIsbn] = useState<string | null>(null);
+  const [isScanLookup, setIsScanLookup] = useState(false);
   const handleScanned = async (isbn: string, source: 'camera' | 'photo') => {
     setIsScanOpen(false);
-    const book = await getBookDetail(isbn).catch(() => null);
-    trackEvent('book_barcode_scan', { source, found: !!book });
-    if (!book) {
-      toast.error(
-        `바코드(ISBN ${isbn})로 책을 찾지 못했어요. 제목으로 검색해 주세요.`
-      );
-      return;
+    setScannedIsbn(isbn);
+    setIsScanLookup(true);
+    try {
+      const book = await getBookDetail(isbn).catch(() => null);
+      trackEvent('book_barcode_scan', { source, found: !!book });
+      if (!book) {
+        // 검색창에 ISBN 이 들어가 있으니 일반 검색 결과는 그대로 아래에 뜬다
+        toast.error(
+          `바코드(ISBN ${isbn})로 책을 찾지 못했어요. 제목으로 검색해 주세요.`
+        );
+        return;
+      }
+      await handleSelectBook(book);
+    } finally {
+      setIsScanLookup(false);
     }
-    await handleSelectBook(book);
   };
 
   // 재독 선택 시 - 등록 폼 표시
@@ -305,6 +316,9 @@ const AddBookPage = () => {
           <div className='space-y-6'>
             {/* 검색 입력 */}
             <BookSearchInput
+              // 스캔할 때마다 ISBN 을 채운 새 검색창으로 다시 마운트한다
+              key={scannedIsbn ?? 'search'}
+              initialQuery={scannedIsbn ?? undefined}
               ref={searchInputRef}
               onSearch={search}
               isLoading={isSearching}
@@ -312,12 +326,18 @@ const AddBookPage = () => {
             />
 
             {/* 로딩 상태 */}
-            {isSearching && (
-              <p className='text-center text-muted-foreground'>검색 중...</p>
+            {isScanLookup ? (
+              <p className='text-center text-muted-foreground'>
+                바코드로 찾은 책을 불러오는 중...
+              </p>
+            ) : (
+              isSearching && (
+                <p className='text-center text-muted-foreground'>검색 중...</p>
+              )
             )}
 
             {/* 검색 결과 — 행 리스트를 카드 하나에 담는다 */}
-            {!isSearching && books.length > 0 && (
+            {!isSearching && !isScanLookup && books.length > 0 && (
               <div className='space-y-3'>
                 <div className='flex flex-wrap items-baseline justify-between gap-x-3'>
                   <p className='text-sm text-text-subtle'>
@@ -357,7 +377,7 @@ const AddBookPage = () => {
             )}
 
             {/* 검색 결과 없음 */}
-            {!isSearching && books.length === 0 && (
+            {!isSearching && !isScanLookup && books.length === 0 && (
               <p className='text-center text-muted-foreground'>
                 도서 제목을 검색해주세요
               </p>
