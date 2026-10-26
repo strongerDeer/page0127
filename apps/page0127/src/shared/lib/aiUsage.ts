@@ -2,29 +2,19 @@ import { APIError } from 'openai';
 
 import { MONTHLY_BUDGET_CENTS } from '@/shared/lib/admin/config';
 
+import { MONTHLY_LIMIT } from './aiUsageMessages';
+
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-/** 무료 사용자 월별 허용 횟수 (기능별 독립 카운트) */
-export const MONTHLY_LIMIT = 3;
-
-/** API 에러 응답용 — 두 라우트가 동일한 문구를 쓰도록 한 곳에서 관리한다 */
-export const USAGE_LIMIT_EXCEEDED_ERROR = `이번 달 무료 분석 횟수(${MONTHLY_LIMIT}회)를 모두 사용했습니다. 다음 달 1일에 초기화됩니다.`;
-
-/** UI 안내용 (토스트/캡션) — 여러 컴포넌트가 동일한 문구를 쓰도록 한 곳에서 관리한다 */
-export const USAGE_LIMIT_EXCEEDED_MESSAGE = `이번 달 무료 분석 횟수(${MONTHLY_LIMIT}회)를 모두 사용했어요. 다음 달 1일에 초기화돼요.`;
-
-/**
- * 전역 예산이 바닥났을 때의 문구.
- *
- * 개인 한도 초과와 **다른 말을 해야 한다.** 횟수가 남아 있는데 "횟수를 다
- * 썼다"고 하면 사용자는 자기 화면(3/3 남음)과 어긋난 말을 듣고 고장으로 읽는다.
- * 서비스 사정이라는 것을 밝히되, 운영자의 지갑 사정까지 설명할 필요는 없다.
- */
-export const BUDGET_EXCEEDED_ERROR =
-  '이번 달 AI 분석이 모두 소진됐습니다. 다음 달 1일에 다시 열립니다.';
-
-export const BUDGET_EXCEEDED_MESSAGE =
-  '이번 달 AI 분석이 모두 소진됐어요. 다음 달 1일에 다시 열려요.';
+// 문구·한도 상수는 클라이언트 컴포넌트도 쓰므로 openai 를 import 하지 않는 파일에 따로 둔다.
+// 여기서 그대로 꺼내 쓰던 서버 코드를 위해 다시 내보낸다.
+export {
+  BUDGET_EXCEEDED_ERROR,
+  BUDGET_EXCEEDED_MESSAGE,
+  MONTHLY_LIMIT,
+  USAGE_LIMIT_EXCEEDED_ERROR,
+  USAGE_LIMIT_EXCEEDED_MESSAGE,
+} from './aiUsageMessages';
 
 export type AiUsageFeature = 'taste_analysis' | 'compatibility';
 
