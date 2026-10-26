@@ -30,10 +30,10 @@ const manifest = (): MetadataRoute.Manifest => ({
   theme_color: '#1e69cb',
   icons: [
     {
-      // app/icon.svg — 벡터라 어떤 크기로 늘려도 선명하다
-      src: '/icon.svg',
-      sizes: 'any',
-      type: 'image/svg+xml',
+      // 확정한 A 시안 원본 — 질감과 얕은 음각을 PNG로 보존한다
+      src: '/brand/page0127-symbol.png',
+      sizes: '512x512',
+      type: 'image/png',
     },
     {
       // app/icons/[size]/route.tsx — 크롬 설치 판정(192)·시작 화면(512)용 PNG
