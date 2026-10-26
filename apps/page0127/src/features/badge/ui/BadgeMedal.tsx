@@ -1,8 +1,10 @@
 'use client';
 
-import Image from 'next/image';
-
-import { badgeCoverArt } from '../model/badgeCoverArt';
+import {
+  badgeArtFallbackSrc,
+  badgeArtSrcSet,
+  badgeCoverArt,
+} from '../model/badgeCoverArt';
 import {
   badgeLevelColor,
   badgeNoteColor,
@@ -35,6 +37,8 @@ export const BadgeMedal = ({
   const { cover, levelValue } = badgePresentation(badge);
   const art = badgeCoverArt(cover);
   const color = badgeLevelColor(badge.id, badge.level);
+  // 시트는 3열이라 한 칸 폭의 3배로 그린다
+  const sizes = `${size * art.columns}px`;
   return (
     <div
       aria-hidden='true'
@@ -69,22 +73,33 @@ export const BadgeMedal = ({
       </div>
       <div className={styles.cover}>
         <span className={styles.artwork} data-badge-artwork>
-          <Image
-            src={art.src}
-            alt=''
-            width={art.width}
-            height={art.height}
-            sizes={`${size * art.columns}px`}
-            quality={85}
-            className={styles.atlas}
-            draggable={false}
-            style={{
-              width: `${art.crop ? (art.width / art.crop.width) * 100 : art.columns * 100}%`,
-              height: `${art.crop ? (art.height / art.crop.height) * 100 : art.rows * 100}%`,
-              left: `${art.crop ? -(art.crop.x / art.crop.width) * 100 : -art.column * 100}%`,
-              top: `${art.crop ? -(art.crop.y / art.crop.height) * 100 : -art.row * 100}%`,
-            }}
-          />
+          {/* 표지 시트는 미리 만든 AVIF·WebP 사본을 직접 고른다(scripts/build-badge-art.mjs).
+              Next 이미지 최적화를 거치면 WebP q85 시트 한 장이 100KB 를 넘었다 */}
+          <picture>
+            <source
+              type='image/avif'
+              srcSet={badgeArtSrcSet(art.src, 'avif')}
+              sizes={sizes}
+            />
+            <img
+              src={badgeArtFallbackSrc(art.src)}
+              srcSet={badgeArtSrcSet(art.src, 'webp')}
+              sizes={sizes}
+              alt=''
+              width={art.width}
+              height={art.height}
+              loading='lazy'
+              decoding='async'
+              className={styles.atlas}
+              draggable={false}
+              style={{
+                width: `${art.crop ? (art.width / art.crop.width) * 100 : art.columns * 100}%`,
+                height: `${art.crop ? (art.height / art.crop.height) * 100 : art.rows * 100}%`,
+                left: `${art.crop ? -(art.crop.x / art.crop.width) * 100 : -art.column * 100}%`,
+                top: `${art.crop ? -(art.crop.y / art.crop.height) * 100 : -art.row * 100}%`,
+              }}
+            />
+          </picture>
         </span>
         {levelValue !== null && (
           <span

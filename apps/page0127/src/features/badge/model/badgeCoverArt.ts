@@ -107,3 +107,29 @@ const COVER_ART: Record<CoverId, CoverArt> = {
 };
 
 export const badgeCoverArt = (cover: CoverId) => COVER_ART[cover];
+
+/**
+ * 화면에 싣는 시트 사본의 폭(px). scripts/build-badge-art.mjs 의 WIDTHS 와 같아야 한다.
+ * 배지 한 칸이 76~88px 이고 시트는 3열이라 CSS 폭 228~264px —
+ * 데스크탑(1x)은 384, Lighthouse 모바일(1.75x)은 480, 3x 폰은 800 을 고른다.
+ */
+export const BADGE_ART_WIDTHS = [384, 480, 640, 800] as const;
+
+/**
+ * 원본 PNG 경로를 미리 만든 AVIF·WebP 사본의 srcSet 으로 바꾼다.
+ * 원본 2MB PNG 를 Next 이미지 최적화로 줄이면 640px 한 장이 100~170KB 라
+ * 홈·프로필 이미지 전송량이 400KB 넘게 늘었다(2026-10-26 주간 품질 회귀).
+ */
+const sizedBase = (src: string) =>
+  src
+    .replace('/badges/editorial/', '/badges/editorial/sized/')
+    .replace(/\.png$/, '');
+
+export const badgeArtSrcSet = (src: string, format: 'avif' | 'webp') =>
+  BADGE_ART_WIDTHS.map((w) => `${sizedBase(src)}-${w}.${format} ${w}w`).join(
+    ', '
+  );
+
+/** srcSet 을 모르는 브라우저용 — 모바일에서 가장 많이 고르는 480 WebP */
+export const badgeArtFallbackSrc = (src: string) =>
+  `${sizedBase(src)}-480.webp`;

@@ -186,6 +186,17 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // 배지 표지 시트 사본(scripts/build-badge-art.mjs) — public 파일 기본값은 max-age=0 이라
+        // 다시 올 때마다 확인 요청이 간다. 그림을 바꾸면 파일 이름의 버전(-v3 등)이 바뀌므로 일주일 둔다
+        source: '/badges/editorial/sized/:file*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=604800, stale-while-revalidate=86400',
+          },
+        ],
+      },
+      {
         // '/:path*' = 모든 경로에 동일 헤더 적용
         source: '/:path*',
         headers: [
