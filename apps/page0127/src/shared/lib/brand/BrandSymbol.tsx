@@ -12,10 +12,22 @@ export const BRAND_SYMBOL = {
  * Satori 전용 심볼. 확정한 A 시안의 종이 질감과 얕은 음각을 PNG로 보존한다.
  * 로컬 원본을 data URI로 읽어 아이콘·공유 카드 생성 시 외부 요청을 피한다.
  * app/icon.png는 같은 원본을 64px로 축소한 브라우저 탭용 이미지다.
+ *
+ * ⚠️ 모듈 최상단에서 읽지 말 것 — 처음 렌더할 때 읽는다.
+ *   모든 페이지가 메타데이터(size·contentType)를 얻으려고 app/apple-icon.tsx 를
+ *   import 한다. 페이지 서버 함수 번들에는 public/ 파일이 실리지 않아서, import
+ *   순간 읽으면 ENOENT 로 홈·로그인 등 페이지 전체가 에러 화면이 된다(2026-10-26).
+ *   이미지를 실제로 그리는 라우트에는 next.config 의 outputFileTracingIncludes 로
+ *   원본을 함께 싣는다.
  */
-const symbolSource = `data:image/png;base64,${readFileSync(
-  join(process.cwd(), 'public/brand/page0127-symbol.png')
-).toString('base64')}`;
+let symbolSource: string | undefined;
+
+const getSymbolSource = () => {
+  symbolSource ??= `data:image/png;base64,${readFileSync(
+    join(process.cwd(), 'public/brand/page0127-symbol.png')
+  ).toString('base64')}`;
+  return symbolSource;
+};
 
 type BrandSymbolProps = {
   size: number;
@@ -24,5 +36,5 @@ type BrandSymbolProps = {
 export const BrandSymbol = ({ size }: BrandSymbolProps) => (
   // Satori는 next/image 대신 원본 img의 data URI를 렌더링한다.
   // eslint-disable-next-line @next/next/no-img-element
-  <img src={symbolSource} alt='page0127.' width={size} height={size} />
+  <img src={getSymbolSource()} alt='page0127.' width={size} height={size} />
 );
