@@ -9,6 +9,7 @@
 
 표지의 글자·그림·여백은 완성된 아트 안에 포함한다. CSS로 그림 전체를 축소하거나 안쪽 프레임을 추가하지 않는다. 단계 숫자와 제본 색만 코드로 표시한다.
 
-내장 image_gen으로 제작했으며 최종 편집 프롬프트는 `docs/design/badge-books/expansion-art-prompts.json`에 보관한다. 원본 PNG는 그대로 보존하고 앱에서는 Next 로컬 이미지 최적화를 사용한다.
+내장 image_gen으로 제작했으며 최종 편집 프롬프트는 `docs/design/badge-books/expansion-art-prompts.json`에 보관한다. 원본 PNG는 그대로 보존하고, 앱은 `sized/` 의 AVIF·WebP 사본(폭 384·480·640·800)을 `<picture>` 로 고른다. 원본을 바꾸면 `node scripts/build-badge-art.mjs` 로 사본을 다시 만들어 함께 커밋한다.
+(Next 이미지 최적화로는 WebP q85 시트 한 장이 100~170KB 라 홈·프로필 이미지가 400KB 넘게 늘었다 — 2026-10-26 주간 품질 회귀.)
 
 시트의 실제 셀 경계는 `badgeCoverArt.ts`의 crop 좌표로 지정한다. 생성된 칸의 높이가 조금 달라도 이웃 표지의 가장자리가 섞이지 않는다.
