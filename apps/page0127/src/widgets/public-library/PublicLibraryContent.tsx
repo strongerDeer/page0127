@@ -215,7 +215,8 @@ export const PublicLibraryContent = ({
   };
 
   return (
-    <PageContainer width='wide' bg='sunken' className='space-y-10'>
+    <>
+      {/* 머리 띠는 페이지 여백 밖 — 화면 끝까지 꽉 채운다 */}
       <PublicLibraryHeader
         compatibilityBookCount={compatibilityBookCount}
         profile={profile}
@@ -229,107 +230,108 @@ export const PublicLibraryContent = ({
         ratingNudge={ratingNudge}
         readerCard={readerCard}
       />
+      <PageContainer width='wide' bg='sunken' className='space-y-10'>
+        {ratingNudge && (
+          <RatingNudgeCard
+            nudge={ratingNudge}
+            books={unratedBooks}
+            onSaved={() => router.refresh()}
+          />
+        )}
 
-      {ratingNudge && (
-        <RatingNudgeCard
-          nudge={ratingNudge}
-          books={unratedBooks}
-          onSaved={() => router.refresh()}
-        />
-      )}
+        {recapSlot}
 
-      {recapSlot}
-
-      {/* 뱃지 — 통계와 같은 공개 책으로 계산해 주인·방문자가 같은 뱃지를 본다.
+        {/* 뱃지 — 통계와 같은 공개 책으로 계산해 주인·방문자가 같은 뱃지를 본다.
           프로필 바로 아래에 둬서 "어떤 독자인지"를 먼저 보여 준다. 전부는 상세 페이지에서 */}
-      <BadgeSummary
-        activity={badgeActivity}
-        username={username}
-        isOwner={isOwnProfile}
-        books={publicBooks}
-        readingGoal={readingGoal ?? null}
-        // 이력은 최신순 10건까지라 마지막 것이 가장 오래된 분석이다
-        firstTasteAnalysisAt={analysisHistory.at(-1)?.created_at ?? null}
-      />
-
-      {/* 비로그인 방문자에게만 — 로그인한 다른 사용자는 이미 자기 책장이 있다 */}
-      {isVisitor && (
-        <VisitorChemiCard
-          name={ownerName}
+        <BadgeSummary
+          activity={badgeActivity}
           username={username}
-          eligibleBookCount={compatibilityBookCount}
-          photoUrl={profile.photo_url}
+          isOwner={isOwnProfile}
+          books={publicBooks}
+          readingGoal={readingGoal ?? null}
+          // 이력은 최신순 10건까지라 마지막 것이 가장 오래된 분석이다
+          firstTasteAnalysisAt={analysisHistory.at(-1)?.created_at ?? null}
         />
-      )}
 
-      <LibraryView
-        overallStats={overallStats}
-        stats={stats}
-        books={visibleBooks}
-        availableYears={availableYears}
-        selectedYear={selectedYear}
-        isAllView={isAllView}
-        currentYear={currentYear}
-        today={today}
-        goalTarget={goalTarget}
-        onViewChange={handleViewChange}
-        allShelfTitle={
-          isOwnProfile
-            ? '내 서재 전체'
-            : `${profile.nickname || username}님의 서재 전체`
-        }
-        lifeBooksTitle={
-          isOwnProfile
-            ? '내 인생책'
-            : `${profile.nickname || username}의 인생책이에요!`
-        }
-        username={username}
-        onSetGoal={isOwnProfile ? () => setIsGoalDialogOpen(true) : undefined}
-        calendarBooks={calendarBooks}
-        showWishlist={isOwnProfile}
-        isOwner={isOwnProfile}
-        isWishlistView={isWishlistView}
-        wishlistBooks={wishlistBooks}
-        privateBooks={isOwnProfile ? archivedBooks : []}
-        balanceBooks={balanceBooks}
-        // books 는 주인이면 비공개·읽고 싶어요까지, 방문자면 공개분만 온다
-        isLibraryEmpty={books.length === 0}
-      />
+        {/* 비로그인 방문자에게만 — 로그인한 다른 사용자는 이미 자기 책장이 있다 */}
+        {isVisitor && (
+          <VisitorChemiCard
+            name={ownerName}
+            username={username}
+            eligibleBookCount={compatibilityBookCount}
+            photoUrl={profile.photo_url}
+          />
+        )}
 
-      {isVisitor && (
-        <VisitorSignupBanner name={ownerName} covers={recentCovers} />
-      )}
-
-      {isOwnProfile && (
-        <ReadingGoalDialog
-          isOpen={isGoalDialogOpen}
-          onClose={handleGoalClose}
+        <LibraryView
+          overallStats={overallStats}
+          stats={stats}
+          books={visibleBooks}
+          availableYears={availableYears}
+          selectedYear={selectedYear}
+          isAllView={isAllView}
           currentYear={currentYear}
-          currentGoal={readingGoal ?? null}
-          onSuccess={handleGoalSuccess}
+          today={today}
+          goalTarget={goalTarget}
+          onViewChange={handleViewChange}
+          allShelfTitle={
+            isOwnProfile
+              ? '내 서재 전체'
+              : `${profile.nickname || username}님의 서재 전체`
+          }
+          lifeBooksTitle={
+            isOwnProfile
+              ? '내 인생책'
+              : `${profile.nickname || username}의 인생책이에요!`
+          }
+          username={username}
+          onSetGoal={isOwnProfile ? () => setIsGoalDialogOpen(true) : undefined}
+          calendarBooks={calendarBooks}
+          showWishlist={isOwnProfile}
+          isOwner={isOwnProfile}
+          isWishlistView={isWishlistView}
+          wishlistBooks={wishlistBooks}
+          privateBooks={isOwnProfile ? archivedBooks : []}
+          balanceBooks={balanceBooks}
+          // books 는 주인이면 비공개·읽고 싶어요까지, 방문자면 공개분만 온다
+          isLibraryEmpty={books.length === 0}
         />
-      )}
 
-      {/* 첫 사용 가이드 — 지금 남은 일 하나만 말풍선으로 짚어 준다 */}
-      {isOwnProfile && currentUserId && (
-        <CoachTipHost
-          userId={currentUserId}
-          facts={{
-            isOwner: isOwnProfile,
-            bookCount: books.length,
-            // 지난해 목표만 있으면 올해 목표는 아직 없는 것이다
-            hasReadingGoal: readingGoal?.year === currentYear,
-            analyzableBookCount,
-            hasTasteAnalysis: analysisHistory.length > 0,
-          }}
-          actions={{
-            'set-goal': {
-              label: '목표 정하기',
-              onClick: () => setIsGoalDialogOpen(true),
-            },
-          }}
-        />
-      )}
-    </PageContainer>
+        {isVisitor && (
+          <VisitorSignupBanner name={ownerName} covers={recentCovers} />
+        )}
+
+        {isOwnProfile && (
+          <ReadingGoalDialog
+            isOpen={isGoalDialogOpen}
+            onClose={handleGoalClose}
+            currentYear={currentYear}
+            currentGoal={readingGoal ?? null}
+            onSuccess={handleGoalSuccess}
+          />
+        )}
+
+        {/* 첫 사용 가이드 — 지금 남은 일 하나만 말풍선으로 짚어 준다 */}
+        {isOwnProfile && currentUserId && (
+          <CoachTipHost
+            userId={currentUserId}
+            facts={{
+              isOwner: isOwnProfile,
+              bookCount: books.length,
+              // 지난해 목표만 있으면 올해 목표는 아직 없는 것이다
+              hasReadingGoal: readingGoal?.year === currentYear,
+              analyzableBookCount,
+              hasTasteAnalysis: analysisHistory.length > 0,
+            }}
+            actions={{
+              'set-goal': {
+                label: '목표 정하기',
+                onClick: () => setIsGoalDialogOpen(true),
+              },
+            }}
+          />
+        )}
+      </PageContainer>
+    </>
   );
 };

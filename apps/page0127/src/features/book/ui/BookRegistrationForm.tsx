@@ -250,7 +250,7 @@ export const toCompletedFields = (
  * - 상태별 조건부 필드 표시 (UX 개선)
  *
  * UX 개선 (완독 기록을 한 문장 중심으로):
- * - 필수는 독서 상태 하나다. 나머지는 구분선 아래 '선택'으로 모으고 접지 않는다
+ * - 필수는 독서 상태 하나다(필수 배지). 나머지는 선택이며 접지 않는다
  *   (예전 '더 남기기' 접힘은 완독일·메모를 찾으려면 한 번 더 눌러야 했다).
  * - 선택 항목 중 한줄평과 평가 점수를 맨 위에 두어 바로 손이 가게 한다.
  * - 완독일은 [날짜 ▾] 선택과 입력칸을 한 줄에 둔다. 비우면 오늘로 채워진다.
@@ -402,7 +402,7 @@ export const BookRegistrationForm = ({
       </CardHeader>
 
       <CardContent>
-        <form onSubmit={handleSubmit} className='space-y-6'>
+        <form onSubmit={handleSubmit} className='space-y-8'>
           {/* 책 정보 미리보기 */}
           <div className='flex items-start justify-between gap-4 rounded-lg bg-muted/50 p-4'>
             <div className='flex gap-4'>
@@ -443,8 +443,9 @@ export const BookRegistrationForm = ({
             )}
           </div>
 
-          {/* ── 필수 ── 저장에 꼭 필요한 건 독서 상태 하나뿐이다 */}
-          <div className='space-y-2'>
+          {/* 필수는 독서 상태 하나뿐이라 여기에만 배지를 단다. 나머지는 표시 없이 선택이다
+              (구분선을 두었다가 뺐다 — 선 하나가 화면을 오히려 빽빽해 보이게 했다) */}
+          <div className='space-y-3'>
             {/* 같은 폼의 Label·Input·Switch 와 같은 자리에서 나온 컨트롤이라
                 디자인 시스템 Select 를 쓴다. 네이티브 <select> 였을 때는 높이·테두리를
                 손으로 맞췄고 focus-visible 링이 없었다.
@@ -480,19 +481,9 @@ export const BookRegistrationForm = ({
             </Select>
           </div>
 
-          {/* ── 선택 ── 접지 않고 다 보여 준다. 대신 "비워 둬도 된다"를 구분선에서 한 번 말한다.
-              예전 '더 남기기' 접힘은 완독일·메모를 찾으려면 한 번 더 눌러야 했다 */}
-          <div className='flex items-center gap-3'>
-            <span className='h-px flex-1 bg-border' />
-            <span className='text-xs text-muted-foreground'>
-              여기부터는 선택 · 비워 둬도 저장돼요
-            </span>
-            <span className='h-px flex-1 bg-border' />
-          </div>
-
           {/* 이 책을 한 문장으로 — 완독 기록의 핵심이라 선택 항목 중 가장 위에 둔다 */}
           {status === 'completed' && (
-            <div className='space-y-2'>
+            <div className='space-y-3'>
               <Label htmlFor={ids.oneLineReview}>
                 <Quote className={ICON_CLASS} aria-hidden />이 책을 한 문장으로
                 남긴다면?
@@ -516,7 +507,7 @@ export const BookRegistrationForm = ({
 
           {/* 평가 점수 - 완독일 때만 표시 */}
           {status === 'completed' && (
-            <div className='space-y-2'>
+            <div className='space-y-3'>
               <Label id={ids.rating}>
                 <Star className={ICON_CLASS} aria-hidden />
                 평가 점수
@@ -545,7 +536,7 @@ export const BookRegistrationForm = ({
               인생책처럼 오래전에 읽은 책은 날짜를 모른다 → 연도만, 또는 모름.
               [날짜 ▾] 선택과 입력칸을 한 줄에 둔다 — 고르는 것과 적는 것이 한 동작으로 읽힌다 */}
           {status === 'completed' && (
-            <div className='space-y-2'>
+            <div className='space-y-3'>
               <Label id={ids.completedWhen}>
                 <CalendarCheck className={ICON_CLASS} aria-hidden />
                 완독일
@@ -669,7 +660,7 @@ export const BookRegistrationForm = ({
           )}
 
           {/* 나만의 메모 */}
-          <div className='space-y-2'>
+          <div className='space-y-3'>
             {/* '나만 보기'는 라벨 밖에 둔다 — 안에 넣으면 입력칸 이름이 "나만의 메모 나만 보기"가 된다 */}
             <div className='flex items-center gap-2'>
               <Label htmlFor={ids.personalMemo}>
@@ -701,7 +692,7 @@ export const BookRegistrationForm = ({
           </div>
 
           {/* 태그 */}
-          <div className='space-y-2'>
+          <div className='space-y-3'>
             <Label htmlFor={ids.tags}>
               <Tag className={ICON_CLASS} aria-hidden />
               태그
@@ -727,7 +718,7 @@ export const BookRegistrationForm = ({
 
           {/* 공개 설정 — isPublic 기본값이 true 라 저장 버튼 바로 위, 눈에 띄는 카드로 둔다.
               사적인 생각을 적은 사용자가 '공개'라는 단어를 못 본 채 공개 서재에 게시하면 안 된다 */}
-          <div className='flex items-center justify-between gap-4 rounded-lg border p-4'>
+          <div className='flex items-center justify-between gap-4 rounded-2xl bg-sunken px-5 py-4'>
             <div className='space-y-1'>
               <Label htmlFor={ids.isPublic}>
                 {isPublic ? (

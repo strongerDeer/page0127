@@ -28,9 +28,14 @@ const BlankCover = () => (
  * 이미 가입한 사람에겐 같은 문장 아래 "오늘 한 권 꽂기"로 다음 할 일을 건넨다.
  */
 export const FinalCta = ({ covers, member = null }: FinalCtaProps) => (
-  <section aria-labelledby='final-title' className='px-4 py-28'>
+  // 화면 끝까지 닿는 띠배너 — 바깥 여백·둥근 모서리·그림자 없이 바탕색이 섹션 전체를 채운다.
+  // 예전엔 위아래 py-28 흰 여백 속에 떠 있는 카드라 푸터 앞이 비어 보였다
+  <section
+    aria-labelledby='final-title'
+    className='stage-blue overflow-hidden text-white'
+  >
     <Reveal>
-      <div className='stage-blue mx-auto grid max-w-6xl items-center gap-10 overflow-hidden rounded-3xl px-6 py-12 text-white shadow-xl md:grid-cols-2 md:px-16 md:py-16'>
+      <div className='mx-auto grid max-w-6xl items-center gap-10 px-6 py-14 md:grid-cols-2 md:px-8 md:py-20'>
         <div>
           <h2 id='final-title' className='display-xl text-balance text-white'>
             오늘 읽은 한 권부터 꽂아 보세요.
