@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { SITE_INFO } from '@/widgets/landing/model/siteInfo';
 import { DocList, DocPage, DocSection } from '@/widgets/landing/ui/DocPage';
 
 import type { Metadata } from 'next';
@@ -93,10 +94,18 @@ const TermsPage = () => {
         </p>
       </DocSection>
 
-      <DocSection title='7. 약관이 바뀌면'>
+      <DocSection title='7. 서비스를 끝내야 할 때'>
         <p>
-          약관이 바뀌면 이 페이지를 고치고 최종 수정일을 갱신합니다. 중요한
-          변경은 서비스 안에서 따로 알려 드릴게요.
+          서비스를 종료하게 되면 최소 30일 전에 서비스 안에서 알려 드립니다. 그
+          기간 동안 내 독서 기록을 파일로 받아 둘 수 있게 하겠습니다.
+        </p>
+      </DocSection>
+
+      <DocSection title='8. 약관이 바뀌면'>
+        <p>
+          이 약관은 {SITE_INFO.lastUpdated}부터 적용됩니다. 약관이 바뀌면 이
+          페이지를 고치고 최종 수정일을 갱신합니다. 중요한 변경은 적용 7일
+          전부터 서비스 안에서 따로 알려 드릴게요.
         </p>
       </DocSection>
     </DocPage>
