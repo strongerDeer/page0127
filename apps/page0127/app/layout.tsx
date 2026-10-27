@@ -29,9 +29,9 @@ const loadPretendardScript = `(function(){var l=document.createElement('link');l
 // (환경변수 미설정 시 로컬 기본값으로 폴백)
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
-// 네이버 서치어드바이저 소유권 확인 코드. 없으면 메타 태그를 내보내지 않는다.
+// 네이버 서치어드바이저 소유권 확인 코드. 구글 코드처럼 공개값이라 코드에 둔다.
 // (한국 서비스인데 네이버에 등록하지 않으면 검색 유입이 구조적으로 0이다)
-const naverSiteVerification = process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION;
+const naverSiteVerification = 'bc5b7246d5e207d26d0b8a16cf699841c49c82e2';
 
 const siteTitle = 'page0127. - 책장을 보면, 그 사람이 보인다';
 const siteDescription =
@@ -94,16 +94,10 @@ export const metadata: Metadata = {
   },
   // 검색엔진 소유권 확인 — 모든 페이지 <head> 에 메타 태그로 자동 삽입된다.
   //
-  // 네이버는 값을 코드에 박지 않고 환경변수로 받는다. 구글 것은 이미 박혀 있지만,
-  // 새로 넣는 쪽은 **값을 받는 시점과 배포 시점을 떼어놓는 게** 낫다 —
-  // 네이버 서치어드바이저에서 코드를 받아 Vercel 환경변수에 넣으면 재배포만으로
-  // 끝나고, 코드 리뷰를 한 번 더 돌 필요가 없다.
-  // 값이 없으면 태그 자체가 안 나가므로 지금 머지해도 안전하다.
+  // 구글·네이버 소유확인 코드는 공개값이라 코드에 둔다.
   verification: {
     google: 'S1f6m1CJ5CxxM962yAvh8gvAErhndacXCGb1R1R0-JU',
-    ...(naverSiteVerification
-      ? { other: { 'naver-site-verification': naverSiteVerification } }
-      : {}),
+    other: { 'naver-site-verification': naverSiteVerification },
   },
 };
 
