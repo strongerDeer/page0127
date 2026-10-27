@@ -23,6 +23,11 @@ const runGaInit = (opts: {
   storage: unknown;
   webdriver?: boolean;
   href?: string;
+  standalone?: boolean;
+  session?: {
+    getItem: (k: string) => string | null;
+    setItem: (k: string, v: string) => void;
+  };
 }) => {
   vi.stubEnv('NEXT_PUBLIC_GA_ID', GA_ID);
   const fragment = GoogleAnalytics() as ReactElement<{
@@ -37,6 +42,9 @@ const runGaInit = (opts: {
     localStorage: opts.storage,
     location: { href: opts.href ?? 'https://page0127.com/' },
     URL,
+    matchMedia: () => ({ matches: opts.standalone === true }),
+    sessionStorage: opts.session ?? { getItem: () => null, setItem: () => {} },
+    addEventListener: () => {},
   };
   window.window = window;
   runInNewContext(initScript, window);
@@ -125,6 +133,45 @@ describe('공유 링크 출처', () => {
         href: 'https://page0127.com/?utm_source=instagram_bio',
       })?.page_location
     ).toBeUndefined();
+  });
+});
+
+describe('홈 화면 앱 사용', () => {
+  /** gtag('event', 이름) 으로 쌓인 이벤트 이름들 */
+  const events = (opts: Parameters<typeof runGaInit>[0]) =>
+    (runGaInit(opts).dataLayer as ArrayLike<unknown>[])
+      .filter((args) => args[0] === 'event')
+      .map((args) => args[1]);
+
+  const memorySession = () => {
+    const m = new Map<string, string>();
+    return {
+      getItem: (k: string) => m.get(k) ?? null,
+      setItem: (k: string, v: string) => void m.set(k, v),
+    };
+  };
+
+  it('설치한 앱으로 열면 세션마다 한 번 app_open 을 보낸다', () => {
+    const session = memorySession();
+    const opts = {
+      userAgent: DESKTOP_CHROME,
+      storage: storageWith(null),
+      standalone: true,
+      session,
+    };
+    expect(events(opts)).toEqual(['app_open']);
+    // 같은 세션에서 다른 페이지를 열어도 다시 세지 않는다
+    expect(events(opts)).toEqual([]);
+  });
+
+  it('브라우저 탭에서는 보내지 않는다', () => {
+    expect(
+      events({
+        userAgent: DESKTOP_CHROME,
+        storage: storageWith(null),
+        session: memorySession(),
+      })
+    ).toEqual([]);
   });
 });
 

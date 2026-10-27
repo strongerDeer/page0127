@@ -29,6 +29,7 @@ const reports = (over: Partial<Reports>): Reports => ({
   humanSummary: table(['', 80]),
   humanDaily: empty,
   shares: empty,
+  appUsage: empty,
   daily: empty,
   channel: empty,
   sourceMedium: empty,

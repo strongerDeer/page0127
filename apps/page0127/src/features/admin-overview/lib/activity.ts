@@ -53,15 +53,19 @@ export type BetaStatus = {
   withBooks: number;
   /** 최근 3일(오늘 포함) 한 번도 안 온 회원 — 가입 3일이 안 된 사람은 빼고 센다 */
   idle: number;
+  /** 알림(웹푸시)을 켠 회원 — 아이폰은 홈 화면에 설치해야만 켤 수 있어 설치의 신호이기도 하다 */
+  withPush: number;
 };
 
 export const summarizeBeta = (
   members: { id: string; createdAt: string }[],
   bookOwnerIds: string[],
   visits: Visit[],
-  p: { today: string; recentStart: string }
+  p: { today: string; recentStart: string },
+  pushUserIds: string[] = []
 ): BetaStatus => {
   const owners = new Set(bookOwnerIds);
+  const pushUsers = new Set(pushUserIds);
   const recent = uniqueUsers(visits, p.recentStart, p.today);
   return {
     members: members.length,
@@ -70,5 +74,7 @@ export const summarizeBeta = (
     idle: members.filter(
       (m) => m.createdAt < p.recentStart && !recent.has(m.id)
     ).length,
+    // 한 사람이 폰·노트북에서 켜면 구독이 둘이라 회원 기준으로 센다
+    withPush: members.filter((m) => pushUsers.has(m.id)).length,
   };
 };

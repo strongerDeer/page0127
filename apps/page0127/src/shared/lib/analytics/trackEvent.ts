@@ -99,7 +99,11 @@ export type AnalyticsEvent =
   /** AI 취향 분석을 실행했다 */
   | 'taste_analysis_run'
   /** 공유를 눌렀다. method 로 네이티브 공유/링크 복사를 구분한다 */
-  | 'share_click';
+  | 'share_click'
+  /** 홈 화면에 설치한 앱으로 열었다(세션당 한 번). ⚠️ GoogleAnalytics 의 ga-init 이 직접 보낸다 */
+  | 'app_open'
+  /** 홈 화면에 설치했다(안드로이드·PC 크롬만 알려 준다). ⚠️ ga-init 이 직접 보낸다 */
+  | 'app_install';
 
 // 사용자 속성은 페이지(문서)마다 한 번만 설정하면 이후 이벤트에 붙는다
 let experimentPropertiesSet = false;

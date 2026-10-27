@@ -179,6 +179,10 @@ export const GaInsightsView = ({
         />
       </Section>
 
+      <Section title='홈 화면 앱으로 쓰나?' cols={1}>
+        <AppUsageTiles table={reports.appUsage} />
+      </Section>
+
       <Section title='어디서 접속하나?'>
         <ShareBars
           title='국가'
@@ -243,6 +247,40 @@ export const GaInsightsView = ({
         </div>
       </details>
     </>
+  );
+};
+
+/** 이벤트 이름 → [횟수, 사용자]. 없으면 0 */
+const eventValues = (t: ReportTable, name: string): [number, number] => {
+  const row = t.rows.find((r) => r.raw[0] === name);
+  return [row?.values[0] ?? 0, row?.values[1] ?? 0];
+};
+
+const AppUsageTiles = ({ table }: { table: ReportTable }) => {
+  const [opens, openUsers] = eventValues(table, 'app_open');
+  const [installs] = eventValues(table, 'app_install');
+  const tiles = [
+    {
+      label: '앱으로 연 사람',
+      value: `${openUsers.toLocaleString('ko-KR')}명`,
+      hint: `홈 화면 아이콘으로 연 방문 ${opens.toLocaleString('ko-KR')}번 (세션 기준)`,
+    },
+    {
+      label: '새로 설치',
+      value: `${installs.toLocaleString('ko-KR')}번`,
+      hint: '안드로이드·PC 크롬만 알려 줘요. 아이폰 설치는 위 "앱으로 연 사람"으로 봅니다',
+    },
+  ];
+  return (
+    <dl className='grid gap-3 sm:grid-cols-2'>
+      {tiles.map((t) => (
+        <div key={t.label} className='rounded-lg border border-line p-3'>
+          <dt className='text-xs text-text-subtle'>{t.label}</dt>
+          <dd className='mt-1 text-lg font-medium tabular-nums'>{t.value}</dd>
+          <dd className='mt-0.5 text-[11px] text-text-subtle'>{t.hint}</dd>
+        </div>
+      ))}
+    </dl>
   );
 };
 
