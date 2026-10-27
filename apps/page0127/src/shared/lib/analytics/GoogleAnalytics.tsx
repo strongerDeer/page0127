@@ -28,6 +28,9 @@ const SHARE_APP_PATTERNS_JS = `[${APP_PATTERNS.filter(
   .map(([app, pattern]) => `['${app}', ${pattern}]`)
   .join(', ')}]`;
 
+/** 홈 화면 앱으로 연 것을 이 세션에 이미 보냈는지 — 페이지를 옮길 때마다 세지 않게 */
+const APP_OPEN_KEY = 'page0127:app-open-sent';
+
 /** /admin 을 연 브라우저에 남기는 표시(MarkAdminDevice) — 있으면 GA 전송을 끈다 */
 export const ADMIN_DEVICE_KEY = 'page0127:admin-device';
 
@@ -40,6 +43,9 @@ export const GoogleAnalytics = () => {
 
   if (!gaId || isNonProductionEnv(process.env)) return null;
 
+  // 홈 화면에 설치한 앱(standalone)으로 열었으면 세션마다 한 번 app_open, 설치 순간엔 app_install.
+  // 여기(ga-init)서 보내는 이유: 컴포넌트 effect 는 GA 스크립트(afterInteractive)보다 먼저 돌 수 있어
+  // trackEvent 가 gtag 없이 조용히 버려진다. appinstalled 는 안드로이드·PC 크롬만 알려 준다(iOS 없음).
   // 공유 링크로 들어왔으면 utm_source=share 를 연 앱 이름(kakaotalk·instagram …)으로 바꿔 보낸다.
   // 주소창은 그대로 두고 GA 에 보내는 page_location 만 바꾼다 — GA 는 세션 출처를 이 값에서 읽는다.
   // 측정 도구(매주 품질 측정·PageSpeed)·자동화 브라우저와 관리자 기기의 방문은 GA 로 보내지 않는다 — 유입분석에 섞인다.
@@ -85,6 +91,18 @@ export const GoogleAnalytics = () => {
             }
           } catch (e) {}
           gtag('config', '${gaId}', pageLocation ? { page_location: pageLocation } : {});
+          try {
+            var standalone =
+              window.matchMedia('(display-mode: standalone)').matches ||
+              navigator.standalone === true;
+            if (standalone && !sessionStorage.getItem('${APP_OPEN_KEY}')) {
+              sessionStorage.setItem('${APP_OPEN_KEY}', '1');
+              gtag('event', 'app_open');
+            }
+            window.addEventListener('appinstalled', function () {
+              gtag('event', 'app_install');
+            });
+          } catch (e) {}
         `}
       </Script>
     </>

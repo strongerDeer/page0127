@@ -90,7 +90,7 @@ export const OverviewCards = ({ overview }: OverviewCardsProps) => {
           베타 현황
           <SourceTag>운영자 제외</SourceTag>
         </h2>
-        <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-4'>
+        <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-5'>
           <Metric
             label='회원'
             value={beta?.members ?? null}
@@ -105,6 +105,11 @@ export const OverviewCards = ({ overview }: OverviewCardsProps) => {
             label='최근 3일 안 온 회원'
             value={beta ? `${beta.idle}명` : null}
             hint='가입 3일 지난 사람 중 · 회원 화면에서 누군지 확인'
+          />
+          <Metric
+            label='알림 켠 회원'
+            value={beta ? `${beta.withPush} / ${beta.members}명` : null}
+            hint='아이폰은 홈 화면에 설치해야 켤 수 있어요'
           />
           <Metric
             label='등록된 책'

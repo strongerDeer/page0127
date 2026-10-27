@@ -37,7 +37,7 @@ describe('summarizeActivity', () => {
 });
 
 describe('summarizeBeta', () => {
-  it('책 넣은 회원과 최근 3일 안 온 회원을 센다', () => {
+  it('책 넣은 회원·최근 3일 안 온 회원·알림 켠 회원을 센다', () => {
     const members = [
       { id: 'a', createdAt: '2026-10-01' },
       { id: 'b', createdAt: '2026-10-01' },
@@ -48,8 +48,10 @@ describe('summarizeBeta', () => {
       members,
       ['a', 'a', 'x'],
       v('a', '2026-10-27'),
-      period
+      period,
+      // 같은 회원의 기기 두 대는 한 명, 운영자 구독은 회원 목록에 없어 빠진다
+      ['b', 'b', 'admin']
     );
-    expect(s).toEqual({ members: 3, withBooks: 1, idle: 1 });
+    expect(s).toEqual({ members: 3, withBooks: 1, idle: 1, withPush: 1 });
   });
 });

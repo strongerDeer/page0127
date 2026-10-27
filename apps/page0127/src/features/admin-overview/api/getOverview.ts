@@ -98,6 +98,7 @@ export const getOverview = async (): Promise<AdminOverview> => {
     visits,
     memberRows,
     bookOwners,
+    pushOwners,
   ] = await Promise.all([
     countRows(() =>
       supabase
@@ -136,6 +137,11 @@ export const getOverview = async (): Promise<AdminOverview> => {
       if (notAdmin) q = q.not('user_id', 'in', notAdmin);
       return q.order('id').range(from, to);
     }, 'overview-book-owners'),
+    fetchAll<{ user_id: string }>((from, to) => {
+      let q = supabase.from('push_subscriptions').select('user_id');
+      if (notAdmin) q = q.not('user_id', 'in', notAdmin);
+      return q.order('id').range(from, to);
+    }, 'overview-push'),
   ]);
 
   return {
@@ -152,7 +158,9 @@ export const getOverview = async (): Promise<AdminOverview> => {
             })),
             bookOwners.map((b) => b.user_id),
             visits,
-            period
+            period,
+            // 푸시 조회만 실패하면 0 으로 — 나머지 현황까지 가리지 않는다
+            (pushOwners ?? []).map((p) => p.user_id)
           )
         : null,
     members: { yesterday: membersYesterday },

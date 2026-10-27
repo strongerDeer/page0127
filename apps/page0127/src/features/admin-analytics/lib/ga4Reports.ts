@@ -27,7 +27,8 @@ export type ReportKey =
   | 'age'
   | 'humanSummary'
   | 'humanDaily'
-  | 'shares';
+  | 'shares'
+  | 'appUsage';
 
 export type ReportDef = {
   key: ReportKey;
@@ -240,6 +241,23 @@ export const REPORTS: ReportDef[] = [
     metrics: [sessions, users],
     limit: 20,
     dimensionFilter: SHARE_FILTER,
+  },
+  {
+    // 홈 화면 앱 — GoogleAnalytics 의 ga-init 이 보내는 이벤트(2026-10-27 부터 쌓임)
+    key: 'appUsage',
+    title: '홈 화면 앱',
+    dimensions: ['eventName'],
+    metrics: [
+      { name: 'eventCount', label: '횟수', format: 'int' },
+      { name: 'totalUsers', label: '사용자', format: 'int' },
+    ],
+    limit: 5,
+    dimensionFilter: {
+      filter: {
+        fieldName: 'eventName',
+        inListFilter: { values: ['app_open', 'app_install'] },
+      },
+    },
   },
 ];
 
