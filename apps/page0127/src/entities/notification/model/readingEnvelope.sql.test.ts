@@ -69,7 +69,7 @@ beforeAll(async () => {
     CREATE TABLE books(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid,isbn text,title text,
       sub_title text,author text,publisher text,cover_image text,spine_image text,description text,pub_date text,
       category text,page_count int,source text,provider_item_id text,status text,is_public boolean DEFAULT true,
-      rating int,read_count int DEFAULT 1,start_date date,completed_date date,completed_year int,
+      rating int,is_life_book boolean DEFAULT false,read_count int DEFAULT 1,start_date date,completed_date date,completed_year int,
       one_line_review text,personal_memo text,created_at timestamptz DEFAULT now(),updated_at timestamptz DEFAULT now());
     CREATE TABLE global_books(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),isbn text UNIQUE,title text,author text,cover_image text,source text,provider_item_id text);
     CREATE TABLE activities(id uuid DEFAULT gen_random_uuid(),user_id uuid,book_id uuid,activity_type text);
@@ -83,6 +83,7 @@ beforeAll(async () => {
   for (const name of [
     '20261025000003_lounge_social_battles.sql',
     '20261026000000_reading_envelope_actions.sql',
+    '20261027000001_envelope_life_book_completion.sql',
   ]) {
     await db.exec(
       readFileSync(
@@ -377,7 +378,7 @@ describe('검색한 책과 직접 작성한 메시지', () => {
           "SELECT respond_reading_envelope($1,'complete',true,$2,$3,$4)",
           [id, date, year, rating]
         )
-      ).rejects.toThrow('날짜와 별점');
+      ).rejects.toThrow('별점');
     }
     expect(
       (await db.query('SELECT * FROM books WHERE user_id=$1', [receiver])).rows
@@ -397,5 +398,78 @@ describe('검색한 책과 직접 작성한 메시지', () => {
         receiver,
       ])
     ).rejects.toThrow('팔로우');
+  });
+});
+
+describe('편지에서 인생책 완독 등록', () => {
+  it('인생책은 별점 5점과 함께 원자적으로 저장한다', async () => {
+    const id = await send(await addBook());
+    const reply = (
+      await db.query<{ value: Response }>(
+        "SELECT respond_reading_envelope($1,'complete',false,NULL,2024,3,NULL,true) AS value",
+        [id]
+      )
+    ).rows[0].value;
+    expect(
+      (
+        await db.query(
+          'SELECT rating,is_life_book,status,is_public FROM books WHERE id=$1',
+          [reply.book_id]
+        )
+      ).rows[0]
+    ).toEqual({
+      rating: 5,
+      is_life_book: true,
+      status: 'completed',
+      is_public: false,
+    });
+  });
+  it('평가 안 함은 0점으로 저장하고 인생책 표시는 하지 않는다', async () => {
+    const id = await send(await addBook());
+    const reply = (
+      await db.query<{ value: Response }>(
+        "SELECT respond_reading_envelope($1,'complete',true,NULL,NULL,0,NULL,false) AS value",
+        [id]
+      )
+    ).rows[0].value;
+    expect(
+      (
+        await db.query('SELECT rating,is_life_book FROM books WHERE id=$1', [
+          reply.book_id,
+        ])
+      ).rows[0]
+    ).toEqual({ rating: 0, is_life_book: false });
+  });
+  it('기존 완독의 인생책·별점은 다른 초대로 덮어쓰지 않는다', async () => {
+    const own = await addBook({
+      user_id: receiver,
+      rating: 4,
+      is_life_book: false,
+    });
+    const id = await send(await addBook());
+    await db.query(
+      "SELECT respond_reading_envelope($1,'complete',true,NULL,NULL,5,NULL,true)",
+      [id]
+    );
+    expect(
+      (
+        await db.query('SELECT rating,is_life_book FROM books WHERE id=$1', [
+          own,
+        ])
+      ).rows[0]
+    ).toEqual({ rating: 4, is_life_book: false });
+  });
+  it('공통 등록과 같은 연도 하한을 적용하고 내부 함수는 직접 실행할 수 없다', async () => {
+    const id = await send(await addBook());
+    await expect(
+      db.query(
+        "SELECT respond_reading_envelope($1,'complete',true,NULL,1899,3,NULL,false)",
+        [id]
+      )
+    ).rejects.toThrow('완독 시점');
+    await db.exec('SET ROLE authenticated');
+    await expect(
+      db.query("SELECT respond_reading_envelope_base($1,'save')", [id])
+    ).rejects.toThrow('permission denied');
   });
 });

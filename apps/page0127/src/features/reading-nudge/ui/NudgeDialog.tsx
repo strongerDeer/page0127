@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   Input,
+  Textarea,
 } from '@repo/ui';
 import { Search, X } from 'lucide-react';
 
@@ -113,19 +114,19 @@ export const NudgeDialog = ({
         if (!sending) onOpenChange(value);
       }}
     >
-      <DialogContent className='max-h-[calc(100dvh-2rem)] max-w-md overflow-y-auto rounded-3xl'>
+      <DialogContent className='max-h-[calc(100dvh-2rem)] max-w-md overflow-y-auto'>
         <DialogHeader>
           <DialogTitle className='pr-6 text-left break-all'>
-            {recipientName}님께 메시지
+            {recipientName}님 콕 찌르기
           </DialogTitle>
           <DialogDescription className='text-left'>
             책 한 권, 또는 가벼운 한마디를 전해요.
           </DialogDescription>
         </DialogHeader>
         <div
-          className='flex rounded-xl bg-muted p-1'
+          className='flex rounded-lg bg-muted p-1'
           role='group'
-          aria-label='메시지 종류'
+          aria-label='콕 찌르기 종류'
         >
           {Object.entries(labels).map(([value, label]) => (
             <Button
@@ -173,7 +174,7 @@ export const NudgeDialog = ({
             >
               전할 한마디
             </label>
-            <textarea
+            <Textarea
               id={`${id}-message`}
               rows={3}
               maxLength={200}
@@ -181,7 +182,7 @@ export const NudgeDialog = ({
               disabled={disabled}
               value={draft.message}
               onChange={(e) => patchDraft({ message: e.target.value })}
-              className='w-full resize-y rounded-xl border border-line bg-card p-3 text-sm leading-relaxed'
+              className='resize-y'
             />
             <p className='mt-1 text-right text-xs text-text-subtle'>
               {draft.message.length}/200

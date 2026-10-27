@@ -34,6 +34,7 @@ export const toBookInput = (p: PendingBook, isLifeBook = false): BookInput => ({
     completed_year: p.completion.completedYear,
     rating: p.completion.rating ?? undefined,
     is_public: p.completion.isPublic,
+    is_life_book: p.completion.isLifeBook ?? false,
   }),
   ...(isLifeBook && { rating: 5, is_life_book: true }),
 });

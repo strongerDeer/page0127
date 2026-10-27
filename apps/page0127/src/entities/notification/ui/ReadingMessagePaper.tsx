@@ -11,7 +11,11 @@ export const ReadingMessagePaper = ({
   message,
   senderName,
   book,
+  bookHref,
+  onBookOpen,
 }: {
+  bookHref?: string | null;
+  onBookOpen?: () => void;
   kind: ReadingEnvelopeKind;
   message: string;
   senderName: string;
@@ -35,7 +39,7 @@ export const ReadingMessagePaper = ({
     )}
     <div className={book ? styles.letterBody : undefined}>
       <div>
-        <p className='text-xs text-[#485771]'>
+        <p className={styles.kicker}>
           {kind === 'recommendation'
             ? '너에게 권하는 한 권'
             : kind === 'invitation'
@@ -45,7 +49,29 @@ export const ReadingMessagePaper = ({
         <blockquote className={styles.message}>{message}</blockquote>
         {book && (
           <section className={styles.bookInfo} aria-label='함께 보낸 책'>
-            <p className={styles.bookTitle}>{book.title}</p>
+            <p className={styles.bookTitle}>
+              {bookHref ? (
+                <a
+                  href={bookHref}
+                  onClick={(event) => {
+                    if (
+                      onBookOpen &&
+                      !event.metaKey &&
+                      !event.ctrlKey &&
+                      !event.shiftKey
+                    ) {
+                      event.preventDefault();
+                      onBookOpen();
+                    }
+                  }}
+                  className='hover:underline focus-visible:underline'
+                >
+                  {book.title}
+                </a>
+              ) : (
+                book.title
+              )}
+            </p>
             {book.author && <p className={styles.author}>{book.author}</p>}
           </section>
         )}
@@ -53,12 +79,39 @@ export const ReadingMessagePaper = ({
       </div>
       {book && (
         <div className={styles.cover}>
-          <BookCover
-            src={book.cover_image}
-            title={book.title}
-            author={book.author}
-            size='full'
-          />
+          {bookHref ? (
+            <a
+              className='block rounded-sm focus-visible:outline-2 focus-visible:outline-primary'
+              href={bookHref}
+              aria-label={`${book.title} 책 정보`}
+              onClick={(event) => {
+                if (
+                  onBookOpen &&
+                  !event.metaKey &&
+                  !event.ctrlKey &&
+                  !event.shiftKey
+                ) {
+                  event.preventDefault();
+                  onBookOpen();
+                }
+              }}
+            >
+              {' '}
+              <BookCover
+                src={book.cover_image}
+                title={book.title}
+                author={book.author}
+                size='full'
+              />
+            </a>
+          ) : (
+            <BookCover
+              src={book.cover_image}
+              title={book.title}
+              author={book.author}
+              size='full'
+            />
+          )}
         </div>
       )}
     </div>

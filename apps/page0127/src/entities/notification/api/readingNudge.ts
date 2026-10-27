@@ -9,19 +9,19 @@ import type {
 } from '../model/readingNudge';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-export const getNudgeComposer = async (
+export const getNudgeSentRecipients = async (
   client: SupabaseClient,
   currentUserId: string,
-  recipientId: string
-) => {
+  day = getSeoulToday()
+): Promise<string[]> => {
   const { data, error } = await client
     .from('reading_nudge_limits')
     .select('user_id')
     .eq('actor_id', currentUserId)
-    .eq('user_id', recipientId)
-    .eq('sent_day', getSeoulToday());
-  if (error) throw new Error('메시지를 준비하지 못했어요. 다시 시도해 주세요.');
-  return { sent: (data?.length ?? 0) > 0 };
+    .eq('sent_day', day);
+  if (error)
+    throw new Error('콕 찌르기 기록을 확인하지 못했어요. 다시 눌러 주세요.');
+  return (data ?? []).map((row) => row.user_id);
 };
 export type SendEnvelopeInput = {
   kind: ReadingEnvelopeKind;

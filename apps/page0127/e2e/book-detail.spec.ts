@@ -53,7 +53,8 @@ test('비로그인 방문자는 완독 입력을 저장한 뒤에만 책을 보�
   ).toBeNull();
 
   await page.getByRole('button', { name: '나도 읽었어요' }).click();
-  await dialog.getByRole('button', { name: '연도만', exact: true }).click();
+  await dialog.getByRole('combobox', { name: '완독일 기록 방식' }).click();
+  await page.getByRole('option', { name: '연도만', exact: true }).click();
   await dialog.getByLabel('완독 연도', { exact: true }).fill('2024');
   await dialog.getByRole('button', { name: '4점', exact: true }).click();
   await dialog.getByLabel('공개 기록으로 남기기').uncheck();

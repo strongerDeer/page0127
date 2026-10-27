@@ -40,13 +40,18 @@ export const BookEnvelopeArtwork = ({
     {!compact && (
       <div className={styles.heading}>
         <p className={styles.headline}>
-          저쪽 책장 주인께서
-          <br />
-          {kind === 'invitation'
-            ? '같이 읽자고 하시네요.'
-            : hasBook
-              ? '한 권 보내셨습니다.'
-              : '한마디 보내셨습니다.'}
+          {kind === 'invitation' ? (
+            <>
+              잠깐, 일어나요!
+              <br />한 권 같이 읽을래요?
+            </>
+          ) : (
+            <>
+              저쪽 책장 주인께서
+              <br />
+              {hasBook ? '한 권 보내셨습니다.' : '한마디 보내셨습니다.'}
+            </>
+          )}
         </p>
         <hr className={styles.rule} />
         {caption && <p className={styles.caption}>{caption}</p>}
