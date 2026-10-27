@@ -6,6 +6,15 @@ import Script from 'next/script';
  */
 export const MEASUREMENT_UA_PATTERN = /Chrome-Lighthouse|HeadlessChrome/;
 
+/**
+ * 운영이 아닌 곳에서 열린 페이지인가 — 로컬 `next dev`, Vercel 미리보기(PR 배포).
+ * 여기서 본 화면은 전부 내 테스트라 GA 스크립트를 아예 넣지 않는다.
+ * VERCEL_ENV 가 없으면(로컬 빌드·CI) 판단을 미루고 기존대로 둔다.
+ */
+export const isNonProductionEnv = (env: NodeJS.ProcessEnv): boolean =>
+  env.NODE_ENV === 'development' ||
+  (!!env.VERCEL_ENV && env.VERCEL_ENV !== 'production');
+
 /** /admin 을 연 브라우저에 남기는 표시(MarkAdminDevice) — 있으면 GA 전송을 끈다 */
 export const ADMIN_DEVICE_KEY = 'page0127:admin-device';
 
@@ -16,9 +25,11 @@ export const ADMIN_DEVICE_KEY = 'page0127:admin-device';
 export const GoogleAnalytics = () => {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
 
-  if (!gaId) return null;
+  if (!gaId || isNonProductionEnv(process.env)) return null;
 
-  // 측정 도구(매주 품질 측정·PageSpeed)와 관리자 기기의 방문은 GA 로 보내지 않는다 — 유입분석에 섞인다.
+  // 측정 도구(매주 품질 측정·PageSpeed)·자동화 브라우저와 관리자 기기의 방문은 GA 로 보내지 않는다 — 유입분석에 섞인다.
+  // navigator.webdriver: Playwright·Puppeteer·Selenium 이 조종하는 브라우저는 true 다.
+  // UA 를 일반 크롬·아이폰으로 바꿔 끼운 자동화(Playwright devices 프리셋 등)는 UA 만으론 못 잡아서 함께 본다.
   // 스크립트 자체를 막지 않고 GA 공식 스위치(ga-disable-<ID>)로 **전송만** 끈다:
   // 스크립트를 빼면 측정 때만 외부 JS 비용이 사라져 성능 점수가 실제 사용자보다 좋게 나오고,
   // 지난 측정과 비교할 수 없게 된다.
@@ -34,7 +45,11 @@ export const GoogleAnalytics = () => {
           try {
             isAdminDevice = localStorage.getItem('${ADMIN_DEVICE_KEY}') === '1';
           } catch (e) {}
-          if (isAdminDevice || ${MEASUREMENT_UA_PATTERN}.test(navigator.userAgent)) {
+          if (
+            isAdminDevice ||
+            navigator.webdriver === true ||
+            ${MEASUREMENT_UA_PATTERN}.test(navigator.userAgent)
+          ) {
             window['ga-disable-${gaId}'] = true;
           }
           window.dataLayer = window.dataLayer || [];
