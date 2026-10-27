@@ -94,11 +94,7 @@ export const metadata: Metadata = {
   },
   // 검색엔진 소유권 확인 — 모든 페이지 <head> 에 메타 태그로 자동 삽입된다.
   //
-  // 네이버는 값을 코드에 박지 않고 환경변수로 받는다. 구글 것은 이미 박혀 있지만,
-  // 새로 넣는 쪽은 **값을 받는 시점과 배포 시점을 떼어놓는 게** 낫다 —
-  // 네이버 서치어드바이저에서 코드를 받아 Vercel 환경변수에 넣으면 재배포만으로
-  // 끝나고, 코드 리뷰를 한 번 더 돌 필요가 없다.
-  // 값이 없으면 태그 자체가 안 나가므로 지금 머지해도 안전하다.
+  // 구글·네이버 소유확인 코드는 공개값이라 코드에 둔다.
   verification: {
     google: 'S1f6m1CJ5CxxM962yAvh8gvAErhndacXCGb1R1R0-JU',
     other: { 'naver-site-verification': naverSiteVerification },
