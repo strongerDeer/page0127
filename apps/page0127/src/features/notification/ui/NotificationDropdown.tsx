@@ -27,8 +27,8 @@ import {
   useUnreadCount,
 } from '@/entities/notification';
 
+import { LiveReadingEnvelopeDialog } from './LiveReadingEnvelopeDialog';
 import { NotificationList } from './NotificationList';
-import { ReadingEnvelopeDialog } from './ReadingEnvelopeDialog';
 
 type NotificationDropdownProps = {
   userId: string;
@@ -88,7 +88,7 @@ export const NotificationDropdown = ({ userId }: NotificationDropdownProps) => {
         </PopoverContent>
       </Popover>
       {envelope && (
-        <ReadingEnvelopeDialog
+        <LiveReadingEnvelopeDialog
           key={envelope.id}
           notification={envelope}
           onClose={() => setEnvelope(null)}

@@ -24,7 +24,7 @@ export type PushableNotification = Pick<
   Notification,
   'user_id' | 'actor_id' | 'type'
 > &
-  Partial<Pick<Notification, 'target_id' | 'target_type' | 'message'>>;
+  Partial<Pick<Notification, 'id' | 'target_id' | 'target_type' | 'message'>>;
 
 const PUSH_TITLE = 'page0127.';
 
@@ -40,8 +40,15 @@ export const buildPushPayload = (
   actor: (NameSource & { username: string | null }) | null,
   target: NotificationTarget | null = null
 ): PushPayload | null => {
-  // 콕 찌르기는 앱 안의 가벼운 초대다. 잠금화면 푸시로 확대하지 않는다.
-  if (notification.type === 'reading_nudge') return null;
+  // 잠금화면에는 개인 메시지·책 제목을 노출하지 않는다.
+  if (notification.type === 'reading_nudge')
+    return notification.id
+      ? {
+          title: PUSH_TITLE,
+          body: `${actor ? toDisplayName(actor) : '누군가'}님의 책 메시지가 도착했어요 💌`,
+          url: `/notifications?envelope=${encodeURIComponent(notification.id)}`,
+        }
+      : null;
   const url =
     notificationHref(
       {

@@ -29,6 +29,12 @@ export const toBookInput = (p: PendingBook, isLifeBook = false): BookInput => ({
   pub_date: p.pub_date ?? undefined,
   category: p.category ?? undefined,
   status: isLifeBook ? 'completed' : (p.status ?? 'completed'),
+  ...(p.completion && {
+    completed_date: p.completion.completedDate,
+    completed_year: p.completion.completedYear,
+    rating: p.completion.rating ?? undefined,
+    is_public: p.completion.isPublic,
+  }),
   ...(isLifeBook && { rating: 5, is_life_book: true }),
 });
 

@@ -1,106 +1,169 @@
 'use client';
-
 import { useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@repo/ui';
-import { BookCheck, Check } from 'lucide-react';
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from '@repo/ui';
+import { useQueryClient } from '@tanstack/react-query';
+import { BookCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { trackEvent } from '@/shared/lib/analytics/trackEvent';
-
-import { bookApi } from '@/entities/book';
+import { type Book, bookApi } from '@/entities/book';
+import {
+  type CompletedReadingInput,
+  CompleteReadingForm,
+} from '@/entities/book/ui/CompleteReadingForm';
 
 import { addPendingBook } from '../model/addPendingBook';
-import { claimPendingBooks, toBookInput } from '../model/claim';
+import { toBookInput } from '../model/claim';
 import { toPendingLoginPath } from '../model/loginTransfer';
 import { readPendingShelf, writePendingShelf } from '../model/pendingShelf';
 
 import type { PendingBook } from '../model/types';
 
-type ReadTooButtonProps = {
-  /**
-   * 책 정보만 받는다 — 페이지에서 `toPendingBook` 으로 떼어 넘긴다.
-   * 클라이언트 컴포넌트의 props 는 HTML(RSC 페이로드)에 그대로 실려 방문자에게
-   * 보이므로, 책 기록 전체(Book)를 넘기면 그 사람의 별점·메모까지 함께 노출된다.
-   */
+export const ReadTooButton = ({
+  book,
+  isLoggedIn,
+}: {
   book: PendingBook;
   isLoggedIn: boolean;
-};
-
-type Status = 'idle' | 'saving' | 'done';
-
-/**
- * 남의 책 상세의 "나도 읽었어요" — 아는 책을 만난 순간을 가입·기록으로 잇는다.
- *
- * - 비로그인: 이 책을 맛보기 보관분에 더하고 로그인으로 간다. 로그인 화면이
- *   "고른 N권이 꽂혀요"라고 이어 주고, 로그인하면 PendingShelfClaimer 가 담는다.
- *   마음이 정해진 순간이라 홈을 거치지 않고 바로 보낸다.
- * - 로그인: 그 자리에서 내 서재에 완독으로 담는다. 중복 검사는 맛보기 담기와 같은 규칙.
- */
-export const ReadTooButton = ({ book, isLoggedIn }: ReadTooButtonProps) => {
+}) => {
   const router = useRouter();
-  const [status, setStatus] = useState<Status>('idle');
-
-  const handleGuest = () => {
-    trackEvent('cta_click', {
-      location: 'book_read_too',
-      label: '나도 읽었어요',
-    });
-    const pending = addPendingBook(readPendingShelf(), {
-      ...book,
-      status: 'completed',
-    });
-    writePendingShelf(pending);
-    router.push(toPendingLoginPath(pending, window.location.pathname));
-  };
-
-  const handleMember = async () => {
-    setStatus('saving');
-    const { added, skipped } = await claimPendingBooks([book], {
-      findExisting: async (b) =>
-        (await bookApi.getBookByISBN(b.isbn, b.provider_item_id)).length > 0,
-      create: async (b) => {
-        await bookApi.createBook(toBookInput(b));
-      },
-    });
-    if (added > 0) {
-      toast.success('내 서재에 꽂았어요.');
-      setStatus('done');
-    } else if (skipped > 0) {
-      toast('이미 내 서재에 있어요.');
-      setStatus('done');
-    } else {
-      toast.error('담지 못했어요. 잠시 뒤 다시 시도해 주세요.');
-      setStatus('idle');
+  const cache = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [existing, setExisting] = useState<Book | null>(null);
+  const [checkFailed, setCheckFailed] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const showForm = async () => {
+    setError('');
+    setCheckFailed(false);
+    setOpen(true);
+    if (!isLoggedIn) return;
+    setChecking(true);
+    try {
+      const records = await bookApi.getBookByISBN(
+        book.isbn,
+        book.provider_item_id
+      );
+      setExisting(
+        records.find((record) => record.status === 'completed') ??
+          records.find((record) => record.status === 'reading') ??
+          records[0] ??
+          null
+      );
+    } catch {
+      setCheckFailed(true);
+      setError('내 기록을 확인하지 못했어요. 다시 열어 주세요.');
+    } finally {
+      setChecking(false);
     }
   };
-
-  if (status === 'done') {
-    return (
-      <Button variant='outline' disabled className='gap-2'>
-        <Check aria-hidden='true' className='size-4' />내 서재에 있어요
-      </Button>
-    );
-  }
-
+  const save = async (value: CompletedReadingInput) => {
+    if (busy || checking || checkFailed) return;
+    setBusy(true);
+    try {
+      const completion = {
+        completed_date: value.completedDate,
+        completed_year: value.completedYear,
+        rating: value.rating ?? undefined,
+        is_public: value.isPublic,
+      };
+      if (!isLoggedIn) {
+        const pending = addPendingBook(readPendingShelf(), {
+          ...book,
+          status: 'completed',
+          completion: value,
+        });
+        if (!writePendingShelf(pending))
+          throw new Error('기록을 임시 보관하지 못했어요.');
+        router.push(toPendingLoginPath(pending, window.location.pathname));
+        return;
+      }
+      if (existing?.status === 'completed') return;
+      if (existing)
+        await bookApi.updateBook(existing.id, {
+          status: 'completed',
+          ...completion,
+        });
+      else
+        await bookApi.createBook({
+          ...toBookInput(book),
+          status: 'completed',
+          ...completion,
+        });
+      await cache.invalidateQueries();
+      router.refresh();
+      setOpen(false);
+      toast.success('내 완독 기록을 저장했어요.');
+    } catch {
+      setError('저장하지 못했어요. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
-    <div className='flex flex-wrap items-center gap-x-3 gap-y-1'>
+    <>
       <Button
         variant='outline'
         className='gap-2'
-        disabled={status === 'saving'}
-        onClick={isLoggedIn ? handleMember : handleGuest}
+        onClick={() => void showForm()}
       >
-        <BookCheck aria-hidden='true' className='size-4' />
+        <BookCheck aria-hidden className='size-4' />
         나도 읽었어요
       </Button>
-      {!isLoggedIn && (
-        <span className='text-xs text-text-subtle'>
-          로그인하면 내 서재에 바로 꽂혀요
-        </span>
-      )}
-    </div>
+      <Dialog
+        open={open}
+        onOpenChange={(value) => {
+          if (!busy) setOpen(value);
+        }}
+      >
+        <DialogContent className='max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-3xl'>
+          <DialogTitle>내 완독 기록</DialogTitle>
+          <DialogDescription>{book.title}</DialogDescription>
+          {checking ? (
+            <p role='status'>내 서재를 확인하고 있어요.</p>
+          ) : existing?.status === 'completed' ? (
+            <>
+              <p>이미 내 서재에 완독 기록이 있어요.</p>
+              <Button onClick={() => router.push(`/books/${existing.id}`)}>
+                내 기록 보기
+              </Button>
+            </>
+          ) : (
+            <>
+              {!isLoggedIn && (
+                <p className='text-sm text-text-subtle'>
+                  입력한 기록은 로그인 후 내 서재에 저장돼요.
+                </p>
+              )}
+              {checkFailed && (
+                <Button variant='outline' onClick={() => void showForm()}>
+                  내 기록 다시 확인
+                </Button>
+              )}
+              <CompleteReadingForm
+                key={existing?.id ?? 'new'}
+                initialIsPublic={existing?.is_public ?? true}
+                busy={busy || checkFailed}
+                error={error}
+                onCancel={() => setOpen(false)}
+                onSubmit={(value) => {
+                  setError('');
+                  void save(value);
+                }}
+              />
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };

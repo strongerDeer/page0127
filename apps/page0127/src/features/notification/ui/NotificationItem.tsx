@@ -32,7 +32,6 @@ import {
   SELF_NOTICE_TYPES,
   toActorSentence,
 } from '@/entities/notification';
-import { BookEnvelopeArtwork } from '@/entities/notification/ui/BookEnvelopeArtwork';
 import { toDisplayName, toInitial } from '@/entities/profile/model/displayName';
 
 type NotificationItemProps = {
@@ -124,18 +123,25 @@ export const NotificationItem = ({
           className='flex min-w-0 flex-1 items-center gap-3 rounded-xl text-left'
         >
           <span className='shrink-0' aria-hidden='true'>
-            <BookEnvelopeArtwork compact />
+            <Avatar className='h-10 w-10'>
+              <AvatarImage src={actor.photo_url || undefined} alt={actorName} />
+              <AvatarFallback>{toInitial(actor)}</AvatarFallback>
+            </Avatar>
           </span>
           <span className='min-w-0 space-y-1'>
             <span className='flex items-center gap-1.5 text-xs font-medium text-primary'>
               <Mail size={14} aria-hidden='true' />
-              {is_read ? '열어본 책 봉투' : '책 봉투가 도착했어요'}
+              {notification.envelope?.kind === 'invitation'
+                ? '같이 읽기 초대'
+                : notification.envelope?.kind === 'note'
+                  ? '한마디'
+                  : '책 추천'}
             </span>
             <span className='block break-all text-sm font-medium'>
               {actorName}님이 보내셨습니다.
             </span>
             <span className='block text-xs text-text-subtle'>
-              봉투 열어보기 ↗
+              {notification.message}
             </span>
             <RelativeTime
               date={created_at}

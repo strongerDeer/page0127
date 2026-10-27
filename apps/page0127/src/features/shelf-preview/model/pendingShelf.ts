@@ -54,11 +54,32 @@ const NULLABLE_BOOK_FIELDS = [
   'source',
 ] as const;
 
+const validCompletion = (value: unknown): boolean => {
+  if (value === undefined) return true;
+  if (!isRecord(value)) return false;
+  return (
+    (value.completedDate === null ||
+      (typeof value.completedDate === 'string' &&
+        /^\d{4}-\d{2}-\d{2}$/.test(value.completedDate))) &&
+    (value.completedYear === null ||
+      (Number.isInteger(value.completedYear) &&
+        Number(value.completedYear) >= 1800 &&
+        Number(value.completedYear) <= 9999)) &&
+    !(value.completedDate && value.completedYear) &&
+    (value.rating === null ||
+      (Number.isInteger(value.rating) &&
+        Number(value.rating) >= 1 &&
+        Number(value.rating) <= 5)) &&
+    typeof value.isPublic === 'boolean'
+  );
+};
+
 const isPendingBook = (v: unknown): v is PendingBook =>
   isRecord(v) &&
   typeof v.isbn === 'string' &&
   v.isbn.length > 0 &&
   typeof v.title === 'string' &&
+  validCompletion(v.completion) &&
   (v.status === undefined ||
     v.status === 'completed' ||
     v.status === 'want_to_read') &&

@@ -10,7 +10,7 @@ const base = {
 } as const;
 
 describe('buildPushPayload', () => {
-  it('콕 찌르기는 앱 안에서만 전달한다', () => {
+  it('메시지 ID가 없으면 딥링크 없는 푸시를 보내지 않는다', () => {
     expect(
       buildPushPayload(
         { ...base, type: 'reading_nudge', message: '같이 한 권 읽자 👀' },
@@ -70,5 +70,24 @@ describe('buildPushPayload', () => {
     expect(
       buildPushPayload({ ...base, type: 'reading_reminder' }, null)
     ).toBeNull();
+  });
+});
+
+it('책 메시지 푸시는 본문과 제목을 숨기고 해당 메시지를 연다', () => {
+  expect(
+    buildPushPayload(
+      {
+        ...base,
+        id: 'envelope-id',
+        type: 'reading_nudge',
+        message: '비밀 한마디',
+      },
+      { nickname: '지수', username: 'jisoo' },
+      { title: '비밀 책', isReply: false }
+    )
+  ).toEqual({
+    title: 'page0127.',
+    body: '지수님의 책 메시지가 도착했어요 💌',
+    url: '/notifications?envelope=envelope-id',
   });
 });

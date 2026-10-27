@@ -11,12 +11,17 @@ import { NotificationPage } from '@/features/notification/ui/NotificationPage';
  * - 페이지네이션
  * - 읽음/읽지 않음 필터
  */
-export default function Notifications() {
+export default async function Notifications({
+  searchParams,
+}: {
+  searchParams: Promise<{ envelope?: string }>;
+}) {
+  const { envelope } = await searchParams;
   return (
     <PageContainer width='narrow' className='space-y-6'>
       <PageHeader title='알림' />
 
-      <NotificationPage />
+      <NotificationPage key={envelope ?? 'list'} initialEnvelopeId={envelope} />
     </PageContainer>
   );
 }
