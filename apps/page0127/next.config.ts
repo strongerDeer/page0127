@@ -78,6 +78,18 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     '/**/*': ['./public/brand/*.png'],
   },
+  // sharp(이미지 변환 엔진)를 서버 함수 묶음에서 뺀다.
+  // next 가 sharp 를 의존성으로 갖고 있어 모든 함수에 따라 실리는데, 함수 하나 약 55MB 중
+  // 40MB 가 sharp 의 libvips 다(glibc·musl 두 벌). Vercel 에서 /_next/image 변환은 함수가
+  // 아니라 Vercel 이미지 최적화가 하고, 공유 카드·아이콘(next/og)은 sharp 대신 resvg(WASM)를
+  // 쓴다. 앱 코드도 sharp 를 import 하지 않는다.
+  // 왜(2026-10-27): Hobby 의 Functions Storage 가 23GB/10GB — 배포마다 함수 묶음이 저장된다.
+  // 모노레포라 node_modules 가 저장소 루트에 있다 — 경로는 이 앱 폴더 기준이라 ../../ 로 올라간다
+  // (**/node_modules/... 로 쓰면 맞지 않아 아무것도 빠지지 않는다).
+  // 키를 '/**' 로 둔다 — '/**/*' 는 홈('/')에 맞지 않아 홈 함수에만 sharp 가 남았다.
+  outputFileTracingExcludes: {
+    '/**': ['../../node_modules/@img/**', '../../node_modules/sharp/**'],
+  },
   experimental: {
     // 프로필 이미지 한도는 4MB(MAX_PROFILE_IMAGE_BYTES). multipart 메타데이터와
     // 나머지 폼 필드 여유를 더해 4.5mb로 둔다.
