@@ -16,6 +16,7 @@ export async function POST(
     !body ||
     !['save', 'accept', 'complete'].includes(body.action) ||
     typeof body.isPublic !== 'boolean' ||
+    (body.isLifeBook != null && typeof body.isLifeBook !== 'boolean') ||
     (body.completedDate != null &&
       (typeof body.completedDate !== 'string' ||
         !/^\d{4}-\d{2}-\d{2}$/.test(body.completedDate))) ||
@@ -24,7 +25,7 @@ export async function POST(
         !/^\d{4}-\d{2}-\d{2}$/.test(body.startDate))) ||
     (body.completedYear != null && !Number.isInteger(body.completedYear)) ||
     (body.rating != null &&
-      (!Number.isInteger(body.rating) || body.rating < 1 || body.rating > 5))
+      (!Number.isInteger(body.rating) || body.rating < 0 || body.rating > 5))
   ) {
     return errorResponse('요청을 확인해 주세요.', 400);
   }
@@ -37,6 +38,7 @@ export async function POST(
     p_completed_year: body.completedYear ?? null,
     p_rating: body.rating ?? null,
     p_start_date: body.startDate ?? null,
+    p_is_life_book: body.isLifeBook ?? false,
   });
   if (error) return errorResponse(error.message, 400);
   return successResponse(data);

@@ -75,6 +75,7 @@ export const ReadTooButton = ({
         completed_year: value.completedYear,
         rating: value.rating ?? undefined,
         is_public: value.isPublic,
+        is_life_book: value.isLifeBook,
       };
       if (!isLoggedIn) {
         const pending = addPendingBook(readPendingShelf(), {
@@ -125,7 +126,7 @@ export const ReadTooButton = ({
           if (!busy) setOpen(value);
         }}
       >
-        <DialogContent className='max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-3xl'>
+        <DialogContent className='max-h-[calc(100dvh-2rem)] overflow-y-auto'>
           <DialogTitle>내 완독 기록</DialogTitle>
           <DialogDescription>{book.title}</DialogDescription>
           {checking ? (

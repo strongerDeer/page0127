@@ -52,7 +52,7 @@
   max-width: 82%;
   overflow: hidden;
   color: #485771;
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.6;
   overflow-wrap: anywhere;
   -webkit-line-clamp: 2;
@@ -148,7 +148,7 @@
   margin-top: 20px;
   padding: 12px;
   border: 1px solid #e9e4da;
-  border-radius: 12px;
+  border-radius: var(--radius);
   background: #fff;
 }
 .bookTitle {
@@ -166,8 +166,8 @@
 .signature {
   margin: 20px 0 0;
   color: #485771;
-  font-family: "AppleMyungjo", "Batang", serif;
-  font-size: 14px;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 12px;
   line-height: 1.7;
   overflow-wrap: anywhere;
   text-align: left;
@@ -235,4 +235,16 @@
   height: auto;
   z-index: 3;
   pointer-events: none;
+}
+
+.kicker {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #485771;
+}
+
+.letterCanvas {
+  background: #f9f2e6;
+  color: #14294e;
 }

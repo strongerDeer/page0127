@@ -1,91 +1,143 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-import { Button } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Pointer } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { createClient } from '@/shared/config/supabase/client';
 
 import { getSeoulToday } from '@/entities/book/model/libraryPeriod';
 import {
-  getNudgeComposer,
+  getNudgeSentRecipients,
+  type SendEnvelopeInput,
   sendReadingNudge,
 } from '@/entities/notification/api/readingNudge';
 
 import { NudgeDialog } from './NudgeDialog';
+import { NudgeTrigger } from './NudgeTrigger';
 
-import type { SendEnvelopeInput } from '@/entities/notification/api/readingNudge';
-
+const ALREADY_SENT = '오늘은 이미 보냈어요. 내일 다시 만나요.';
+const loadSentRecipients = (userId: string, day: string) =>
+  getNudgeSentRecipients(createClient(), userId, day);
 export const NudgeButton = ({
   currentUserId,
   recipientId,
   recipientName,
   context,
   iconOnly = false,
+  loadSent = loadSentRecipients,
+  send = sendReadingNudge,
 }: {
   currentUserId: string;
   recipientId: string;
   recipientName: string;
   context: 'ahead' | 'behind' | 'tied';
   iconOnly?: boolean;
+  loadSent?: typeof loadSentRecipients;
+  send?: typeof sendReadingNudge;
 }) => {
   const [open, setOpen] = useState(false);
-  const [sentOn, setSentOn] = useState<string | null>(null);
-  const client = useQueryClient();
-  const today = getSeoulToday();
-  const queryKey = [
-    'reading-nudge',
-    currentUserId,
-    recipientId,
-    today,
-  ] as const;
-  const composer = useQuery({
+  const [day, setDay] = useState(getSeoulToday);
+  const [checking, setChecking] = useState(false);
+  const opening = useRef(false);
+  const cache = useQueryClient();
+  const queryKey = ['reading-nudge-sent', currentUserId, day] as const;
+  // 같은 화면의 여러 버튼이 하루 전송 목록 한 번을 공유한다.
+  const sentQuery = useQuery({
     queryKey,
-    queryFn: () => getNudgeComposer(createClient(), currentUserId, recipientId),
-    enabled: open,
-    staleTime: 0,
+    queryFn: () => loadSent(currentUserId, day),
+    staleTime: 30_000,
     retry: 1,
   });
+  const sent = sentQuery.data?.includes(recipientId) ?? false;
+  useEffect(() => {
+    const updateDay = () => setDay(getSeoulToday());
+    const nextDay = new Date(`${day}T00:00:00+09:00`).getTime() + 86_400_000;
+    const timer = window.setTimeout(
+      updateDay,
+      Math.max(0, nextDay - Date.now()) + 50
+    );
+    window.addEventListener('focus', updateDay);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('focus', updateDay);
+    };
+  }, [day]);
+  const rememberSent = () => {
+    const today = getSeoulToday();
+    cache.setQueryData<string[]>(
+      ['reading-nudge-sent', currentUserId, today],
+      (previous = []) => [...new Set([...previous, recipientId])]
+    );
+    setDay(today);
+    setOpen(false);
+  };
   const mutation = useMutation({
-    mutationFn: (input: SendEnvelopeInput) =>
-      sendReadingNudge(recipientId, input),
+    mutationFn: (input: SendEnvelopeInput) => send(recipientId, input),
     onSuccess: () => {
-      setSentOn(today);
-      setOpen(false);
-      void client.invalidateQueries({ queryKey });
-      toast.success(`${recipientName}님께 메시지를 보냈어요.`);
+      rememberSent();
+      void cache.invalidateQueries({
+        queryKey: ['reading-nudge-sent', currentUserId],
+      });
+      toast.success(`${recipientName}님을 콕 찔렀어요.`);
+    },
+    onError: (error) => {
+      // 다른 기기에서 먼저 보낸 경우에도 작성 창을 닫고 같은 상태로 맞춘다.
+      if (error.message.includes('오늘은 이미')) {
+        rememberSent();
+        toast.info(ALREADY_SENT);
+      }
     },
   });
+  const handleOpen = async () => {
+    if (opening.current) return;
+    const today = getSeoulToday();
+    setDay(today);
+    if (sent && day === today) {
+      toast.info(ALREADY_SENT);
+      return;
+    }
+    opening.current = true;
+    setChecking(true);
+    try {
+      // 새로고침·다른 기기 전송도 반영하려고 작성 직전에 서버 기록을 확인한다.
+      const recipients = await cache.fetchQuery({
+        queryKey: ['reading-nudge-sent', currentUserId, today],
+        queryFn: () => loadSent(currentUserId, today),
+        staleTime: 0,
+      });
+      if (recipients.includes(recipientId)) {
+        toast.info(ALREADY_SENT);
+        return;
+      }
+      mutation.reset();
+      setOpen(true);
+    } catch {
+      toast.error('콕 찌르기 기록을 확인하지 못했어요. 다시 눌러 주세요.');
+    } finally {
+      opening.current = false;
+      setChecking(false);
+    }
+  };
   return (
     <>
-      <Button
-        type='button'
-        variant='outline'
-        size={iconOnly ? 'sm' : 'md'}
-        onClick={() => {
-          mutation.reset();
-          setOpen(true);
-        }}
-        disabled={sentOn === today}
-        className='min-w-0 shrink-0 rounded-full'
-      >
-        <Pointer size={16} aria-hidden='true' />
-        {sentOn === today ? '오늘 보냄' : '메시지'}
-      </Button>
+      {/* 이미 보냈어도 이유를 알 수 있도록 네이티브 disabled 대신 클릭 안내를 남긴다. */}
+      <NudgeTrigger
+        recipientName={recipientName}
+        iconOnly={iconOnly}
+        sent={sent}
+        checking={checking || sentQuery.isPending || sentQuery.isError}
+        onClick={() => void handleOpen()}
+      />
       <NudgeDialog
-        key={context}
+        key={`${recipientId}:${context}`}
         open={open}
         onOpenChange={setOpen}
         recipientName={recipientName}
         context={context}
-        loading={composer.isPending}
         sending={mutation.isPending}
-        sent={composer.data?.sent || sentOn === today}
-        loadFailed={composer.isError}
-        onRetry={() => void composer.refetch()}
-        error={composer.error?.message ?? mutation.error?.message}
+        sent={sent}
+        error={mutation.error?.message}
         onSend={(input) => mutation.mutate(input)}
       />
     </>

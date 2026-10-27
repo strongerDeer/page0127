@@ -2,6 +2,8 @@ import { Button } from '@repo/ui';
 import { Pointer } from 'lucide-react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 
+import { NudgeTrigger } from '@/features/reading-nudge/ui/NudgeTrigger';
+
 import { ReadingLeague } from './ReadingLeague';
 import {
   ReadingLeagueError,
@@ -238,14 +240,11 @@ export const OneActiveReader: Story = {
   args: {
     readers: [me, zero, { ...zero, userId: 'another', nickname: '다른 리더' }],
     actions: (reader) => (
-      <Button
-        size='icon-sm'
-        variant='outline'
-        className='rounded-full'
-        aria-label={`${reader.nickname}님 콕 찌르기`}
-      >
-        <Pointer size={16} aria-hidden='true' />
-      </Button>
+      <NudgeTrigger
+        recipientName={reader.nickname ?? '리더'}
+        iconOnly
+        onClick={() => {}}
+      />
     ),
   },
   play: async ({ canvasElement }) => {
@@ -353,6 +352,51 @@ export const GenresAlone: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.click(
       within(canvasElement).getByRole('button', { name: '장르 문어발' })
+    );
+  },
+};
+
+export const CompactRankingActions: Story = {
+  name: '좁은 랭킹 · 아이콘과 툴팁이 잘리지 않음',
+  args: {
+    readers: [
+      me,
+      { ...zero, nickname: '아주긴닉네임을사용하는리더' },
+      { ...zero, userId: 'third', nickname: '세 번째 리더' },
+    ],
+    actions: (reader) => (
+      <NudgeTrigger
+        recipientName={reader.nickname ?? '리더'}
+        iconOnly
+        onClick={() => {}}
+      />
+    ),
+  },
+  decorators: [
+    (Story) => (
+      <div style={{ width: 280, maxWidth: '100%' }}>
+        <Story />
+      </div>
+    ),
+  ],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const page = within(canvasElement.ownerDocument.body);
+    const list = canvas.getByRole('list', { name: '전체 독서 순위' });
+    for (const button of within(list).getAllByRole('button')) {
+      const bounds = button.getBoundingClientRect();
+      expect(bounds.width).toBe(32);
+      expect(bounds.right).toBeLessThanOrEqual(
+        list.getBoundingClientRect().right
+      );
+      expect(bounds.left).toBeGreaterThanOrEqual(
+        list.getBoundingClientRect().left
+      );
+      await expect(button).toHaveTextContent('');
+    }
+    await userEvent.hover(within(list).getAllByRole('button')[0]);
+    await expect(await page.findByRole('tooltip')).toHaveTextContent(
+      '콕 찌르기'
     );
   },
 };

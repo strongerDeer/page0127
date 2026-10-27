@@ -25,6 +25,7 @@ export type ReadingEnvelopeResponse = {
 export type EnvelopeReply = {
   action: 'save' | 'accept' | 'complete';
   isPublic: boolean;
+  isLifeBook?: boolean;
   completedDate?: string | null;
   completedYear?: number | null;
   rating?: number | null;

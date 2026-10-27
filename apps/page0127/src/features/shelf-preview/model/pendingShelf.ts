@@ -68,8 +68,9 @@ const validCompletion = (value: unknown): boolean => {
     !(value.completedDate && value.completedYear) &&
     (value.rating === null ||
       (Number.isInteger(value.rating) &&
-        Number(value.rating) >= 1 &&
+        Number(value.rating) >= 0 &&
         Number(value.rating) <= 5)) &&
+    (value.isLifeBook === undefined || typeof value.isLifeBook === 'boolean') &&
     typeof value.isPublic === 'boolean'
   );
 };

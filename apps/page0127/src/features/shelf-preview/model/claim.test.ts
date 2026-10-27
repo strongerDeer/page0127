@@ -168,3 +168,19 @@ it('완독 입력에서 받은 날짜·별점·공개 범위를 로그인 후에
     is_public: false,
   });
 });
+
+it('간편 등록의 인생책 표시와 최고점을 로그인 뒤에도 유지한다', () => {
+  expect(
+    toBookInput(
+      book('life', {
+        completion: {
+          completedDate: null,
+          completedYear: 2024,
+          rating: 5,
+          isPublic: true,
+          isLifeBook: true,
+        },
+      })
+    )
+  ).toMatchObject({ rating: 5, is_life_book: true, completed_year: 2024 });
+});

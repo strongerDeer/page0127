@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import { Toaster } from '@repo/ui';
+import { toast } from 'sonner';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
 import { NotificationItem } from './NotificationItem';
@@ -43,6 +45,17 @@ const meta = {
   component: ReadingEnvelopeDialog,
   args: { notification, onClose: fn(), onRead: fn(), onVisit: fn() },
   parameters: { layout: 'fullscreen' },
+  decorators: [
+    (Story) => (
+      <>
+        <Story />
+        <Toaster />
+      </>
+    ),
+  ],
+  beforeEach: () => {
+    toast.dismiss();
+  },
 } satisfies Meta<typeof ReadingEnvelopeDialog>;
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -62,10 +75,10 @@ export const OpenLetter: Story = {
     await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
     await expect(args.onRead).toHaveBeenCalledOnce();
     await waitFor(() =>
-      expect(page.getByText('데미안', { selector: 'p' })).toBeVisible()
+      expect(page.getByRole('link', { name: '데미안' })).toBeVisible()
     );
     await userEvent.click(
-      await page.findByRole('button', { name: /책 보러 가기/ })
+      await page.findByRole('link', { name: '데미안 책 정보' })
     );
     await expect(args.onVisit).toHaveBeenCalledWith(notification);
   },
@@ -119,7 +132,7 @@ export const RetryOpening: Story = {
     await waitFor(() => expect(page.getByRole('alert')).toBeVisible());
     await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
     await waitFor(() =>
-      expect(page.getByText('데미안', { selector: 'p' })).toBeVisible()
+      expect(page.getByRole('link', { name: '데미안' })).toBeVisible()
     );
     await expect(args.onRead).toHaveBeenCalledTimes(2);
   },
@@ -168,7 +181,7 @@ export const NotificationToLetter: Story = {
     await userEvent.click(page.getByRole('button', { name: /책 추천/ }));
     await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
     await waitFor(() =>
-      expect(page.getByText('데미안', { selector: 'p' })).toBeVisible()
+      expect(page.getByRole('link', { name: '데미안' })).toBeVisible()
     );
     await userEvent.keyboard('{Escape}');
     await expect(page.queryByRole('dialog')).not.toBeInTheDocument();
@@ -195,9 +208,9 @@ export const SaveRecommendation: Story = {
       action: 'save',
       isPublic: true,
     });
-    await expect(await page.findByRole('status')).toHaveTextContent(
-      '읽고 싶어요에 담았어요.'
-    );
+    await expect(
+      await page.findByText('읽고 싶어요에 담았어요.')
+    ).toHaveTextContent('읽고 싶어요에 담았어요.');
   },
 };
 export const Invitation: Story = {
@@ -230,8 +243,8 @@ export const Invitation: Story = {
     await expect(args.onRespond).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'accept', isPublic: true })
     );
-    await expect(await page.findByRole('status')).toHaveTextContent(
-      '함께 읽고 있어요'
+    await waitFor(() =>
+      expect(page.getByText('함께 읽기를 시작했어요.')).toBeVisible()
     );
   },
 };
@@ -266,10 +279,25 @@ export const CompleteAfterConfirmation: Story = {
     const page = within(canvasElement.ownerDocument.body);
     await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
     await userEvent.click(
-      await page.findByRole('button', { name: '이미 읽었어요' })
+      await page.findByRole('button', { name: '다른 상태로 담기' })
+    );
+    await userEvent.click(
+      await page.findByRole('menuitem', { name: '이미 읽었어요' })
     );
     await expect(args.onRespond).not.toHaveBeenCalled();
-    await userEvent.click(page.getByRole('button', { name: '연도만' }));
+    await userEvent.click(
+      page.getByRole('combobox', { name: '완독일 기록 방식' })
+    );
+    await userEvent.click(
+      within(canvasElement.ownerDocument.body).getByRole('option', {
+        name: '연도만',
+      })
+    );
+    await waitFor(() =>
+      expect(
+        getComputedStyle(page.getByLabelText('완독 연도')).pointerEvents
+      ).not.toBe('none')
+    );
     await userEvent.clear(page.getByLabelText('완독 연도'));
     await userEvent.type(page.getByLabelText('완독 연도'), '2024');
     await userEvent.click(page.getByRole('button', { name: '4점' }));
@@ -280,6 +308,56 @@ export const CompleteAfterConfirmation: Story = {
       completedYear: 2024,
       rating: 4,
       isPublic: true,
+      isLifeBook: false,
     });
+  },
+};
+
+export const LifeBookCompletion: Story = {
+  args: {
+    onRespond: fn(async () => ({ ...response, status: 'completed' as const })),
+  },
+  play: async ({ canvasElement, args }) => {
+    const page = within(canvasElement.ownerDocument.body);
+    await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
+    await userEvent.click(
+      await page.findByRole('button', { name: '다른 상태로 담기' })
+    );
+    await userEvent.click(
+      await page.findByRole('menuitem', { name: '이미 읽었어요' })
+    );
+    await userEvent.click(page.getByRole('button', { name: '인생책' }));
+    await userEvent.click(page.getByRole('button', { name: '완독 기록 저장' }));
+    await expect(args.onRespond).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'complete',
+        rating: 5,
+        isLifeBook: true,
+      })
+    );
+    await waitFor(() =>
+      expect(page.getByText('완독 기록을 저장했어요.')).toBeVisible()
+    );
+  },
+};
+
+export const InvitationLetter: Story = {
+  name: '같이 읽기 · 정리한 편지',
+  args: Invitation.args,
+  play: async ({ canvasElement }) => {
+    const page = within(canvasElement.ownerDocument.body);
+    await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
+    await waitFor(() =>
+      expect(page.getByRole('button', { name: '같이 읽기 수락' })).toBeVisible()
+    );
+    await expect(
+      page.queryByRole('button', { name: /책 보러 가기/ })
+    ).not.toBeInTheDocument();
+    await expect(
+      page.getByRole('link', { name: '데미안 책 정보' })
+    ).toHaveAttribute('href', '/books/book');
+    await expect(
+      page.queryByRole('button', { name: '이미 읽었어요' })
+    ).not.toBeInTheDocument();
   },
 };

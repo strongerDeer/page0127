@@ -59,6 +59,7 @@ it('완독 입력을 검증하고 인증 수신자는 RPC에서 확인한다', a
     p_completed_year: 2024,
     p_rating: 4,
     p_start_date: null,
+    p_is_life_book: false,
   });
 });
 it('잘못된 입력과 RPC 거부를 오류로 반환한다', async () => {

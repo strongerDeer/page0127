@@ -1,10 +1,22 @@
 'use client';
 import { useId, useState } from 'react';
 
-import { Button, Input } from '@repo/ui';
+import {
+  Button,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@repo/ui';
 
+import {
+  isValidCompletedYear,
+  MIN_COMPLETED_YEAR,
+} from '../model/completedWhen';
 import { getCurrentLibraryYear, getSeoulToday } from '../model/libraryPeriod';
-import { StarRatingInput } from './StarRatingInput';
+import { RatingPicker } from './RatingPicker';
 
 import type { BookRating } from '../types';
 
@@ -13,6 +25,7 @@ export type CompletedReadingInput = {
   completedYear: number | null;
   rating: BookRating | null;
   isPublic: boolean;
+  isLifeBook?: boolean;
 };
 export const CompleteReadingForm = ({
   onSubmit,
@@ -34,6 +47,7 @@ export const CompleteReadingForm = ({
   const [date, setDate] = useState(getSeoulToday());
   const [year, setYear] = useState(String(getCurrentLibraryYear()));
   const [rating, setRating] = useState<BookRating | null>(null);
+  const [isLifeBook, setIsLifeBook] = useState(false);
   const [isPublic, setIsPublic] = useState(initialIsPublic);
   const [validation, setValidation] = useState('');
   return (
@@ -46,8 +60,7 @@ export const CompleteReadingForm = ({
           (precision === 'date' && (!date || date > getSeoulToday())) ||
           (precision === 'year' &&
             (!/^\d{4}$/.test(year) ||
-              Number(year) < 1800 ||
-              Number(year) > getCurrentLibraryYear()))
+              !isValidCompletedYear(Number(year), getCurrentLibraryYear())))
         ) {
           setValidation('완독 시점을 확인해 주세요.');
           return;
@@ -58,36 +71,28 @@ export const CompleteReadingForm = ({
           completedYear: precision === 'year' ? Number(year) : null,
           rating,
           isPublic,
+          isLifeBook,
         });
       }}
     >
       <fieldset disabled={busy} className='space-y-5'>
         <div>
           <p className='mb-2 text-sm font-medium'>언제 다 읽었나요?</p>
-          <div
-            className='mb-3 flex gap-2'
-            role='group'
-            aria-label='완독 시점 입력 방식'
-          >
-            {(
-              [
-                ['date', '날짜'],
-                ['year', '연도만'],
-                ['unknown', '기억 안 남'],
-              ] as const
-            ).map(([value, label]) => (
-              <Button
-                key={value}
-                type='button'
-                size='sm'
-                className='flex-1'
-                variant={precision === value ? 'default' : 'outline'}
-                aria-pressed={precision === value}
-                onClick={() => setPrecision(value)}
-              >
-                {label}
-              </Button>
-            ))}
+          <div className='mb-3'>
+            <Select
+              value={precision}
+              disabled={busy}
+              onValueChange={(value) => setPrecision(value as typeof precision)}
+            >
+              <SelectTrigger aria-label='완독일 기록 방식' className='w-auto'>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='date'>날짜</SelectItem>
+                <SelectItem value='year'>연도만</SelectItem>
+                <SelectItem value='unknown'>잘 모르겠어요</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           {precision === 'date' && (
             <>
@@ -113,7 +118,7 @@ export const CompleteReadingForm = ({
                 id={`${id}-year`}
                 type='number'
                 required
-                min={1800}
+                min={MIN_COMPLETED_YEAR}
                 max={getCurrentLibraryYear()}
                 value={year}
                 onChange={(e) => setYear(e.target.value)}
@@ -122,14 +127,18 @@ export const CompleteReadingForm = ({
           )}
         </div>
         <div>
-          <p className='mb-2 text-sm font-medium'>
+          <p id={`${id}-rating`} className='mb-2 text-sm font-medium'>
             어땠나요?{' '}
             <span className='font-normal text-text-subtle'>(선택)</span>
           </p>
-          <StarRatingInput
-            value={rating}
-            onChange={setRating}
-            label='내 별점'
+          <RatingPicker
+            rating={rating ?? undefined}
+            isLifeBook={isLifeBook}
+            labelledBy={`${id}-rating`}
+            onChange={(value) => {
+              setIsLifeBook(value === 'life');
+              setRating(value === 'life' ? 5 : value);
+            }}
           />
         </div>
         <label className='flex items-center gap-2 text-sm'>
@@ -147,10 +156,7 @@ export const CompleteReadingForm = ({
           {validation || error}
         </p>
       )}
-      <div className='flex flex-col gap-2'>
-        <Button type='submit' loading={busy}>
-          완독 기록 저장
-        </Button>
+      <div className='flex justify-end gap-2'>
         <Button
           type='button'
           variant='outline'
@@ -158,6 +164,9 @@ export const CompleteReadingForm = ({
           onClick={onCancel}
         >
           취소
+        </Button>
+        <Button type='submit' loading={busy}>
+          완독 기록 저장
         </Button>
       </div>
     </form>
