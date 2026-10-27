@@ -69,23 +69,39 @@ export const GaInsightsView = ({
   range,
   previousSummary,
 }: GaInsightsViewProps) => {
-  const daily = fillDaily(reports.daily, range);
+  // 추이·증감 해석은 "사람 추정(한국)" 선으로 한다 — 전체 선은 봇이 하루 수십 명씩 끼어 출렁인다
+  const allDaily = fillDaily(reports.daily, range);
+  const daily = fillDaily(reports.humanDaily, range);
+  const chartPoints = daily.map((p, i) => ({
+    ...p,
+    all: allDaily[i]?.users ?? 0,
+  }));
   const wow = weekOverWeek(daily);
   const h = buildHeadline(reports);
   const summary = reports.summary.rows[0]?.values ?? [];
   const prev = previousSummary.rows[0]?.values ?? [];
+  const human = reports.humanSummary.rows[0]?.values ?? [];
+  const humanUsers = human[0] ?? 0;
 
   const tiles = [
     {
-      label: '사용자',
+      label: '사람 추정 사용자',
+      value: formatMetric(humanUsers, 'int'),
+      hint: '한국에서 온 방문 · 해외·데이터센터 봇 제외',
+    },
+    {
+      label: 'GA 전체 사용자',
       value: formatMetric(h.users, 'int'),
-      hint: `${range.label} 동안 들어온 사람 수`,
+      hint:
+        h.users > 0
+          ? `봇 포함 · 이 중 ${formatMetric(1 - humanUsers / h.users, 'percent')}가 해외`
+          : '봇 포함',
       change: changeText(h.users, prev[0] ?? 0, 'count'),
     },
     {
-      label: '한국에서',
-      value: formatMetric(h.domesticShare, 'percent'),
-      hint: '나머지는 해외·데이터센터',
+      label: '페이지뷰',
+      value: formatMetric(human[2] ?? 0, 'int'),
+      hint: `사람 추정 기준 · 전체 ${formatMetric(summary[2] ?? 0, 'int')}`,
     },
     {
       label: '검색으로',
@@ -109,7 +125,12 @@ export const GaInsightsView = ({
     <>
       <InsightList insights={buildInsights(reports, daily, range.label)} />
 
-      <dl className='grid grid-cols-2 gap-3 sm:grid-cols-5'>
+      <p className='text-xs text-text-subtle'>
+        이 화면은 GA4 기준이라 로그인하지 않은 방문까지 셉니다. 회원만 센
+        DAU·MAU 는 어드민 홈에 있어요.
+      </p>
+
+      <dl className='grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6'>
         {tiles.map((t) => (
           <div key={t.label} className='rounded-lg border border-line p-3'>
             <dt className='text-xs text-text-subtle'>{t.label}</dt>
@@ -125,7 +146,7 @@ export const GaInsightsView = ({
       </dl>
 
       <Section title='사람이 늘고 있나?' cols={1}>
-        <DailyUsersChart points={daily} weekOverWeek={wow} />
+        <DailyUsersChart points={chartPoints} weekOverWeek={wow} />
       </Section>
 
       <Section title='어디서 오나?'>
@@ -142,6 +163,19 @@ export const GaInsightsView = ({
         <ReportTableCard
           def={defOf('sourceMedium')}
           table={reports.sourceMedium}
+        />
+      </Section>
+
+      <Section title='공유가 사람을 데려오나?' cols={1}>
+        <ShareBars
+          title='공유 링크로 들어온 방문'
+          caption='세션 기준. 받은 사람이 카톡·인스타 앱 안에서 열면 앱 이름이, 사파리·크롬으로 열면 "앱 모름"으로 잡힙니다. 이미지(스토리) 공유는 링크가 없어 여기 안 잡혀요.'
+          items={reports.shares.rows.map((r) => ({
+            key: r.raw.join('|'),
+            label: r.labels.join(' · '),
+            value: r.values[0],
+            display: `${r.values[0]}세션 · ${r.values[1]}명`,
+          }))}
         />
       </Section>
 

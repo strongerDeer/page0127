@@ -48,30 +48,25 @@ export async function getTrends(range: DateRange): Promise<AdminTrends | null> {
       if (adminIds.length > 0) q = q.not('user_id', 'in', toInFilter(adminIds));
       return q.order('visit_date').order('user_id').range(from, to);
     }, 'visits'),
-    fetchAll<{ created_at: string }>(
-      (from, to) =>
-        supabase
-          .from('profiles')
-          .select('created_at')
-          .gte('created_at', sinceUtc)
-          .lt('created_at', untilUtc)
-          .order('created_at')
-          .order('id')
-          .range(from, to),
-      'profiles'
-    ),
-    fetchAll<{ created_at: string }>(
-      (from, to) =>
-        supabase
-          .from('books')
-          .select('created_at')
-          .gte('created_at', sinceUtc)
-          .lt('created_at', untilUtc)
-          .order('created_at')
-          .order('id')
-          .range(from, to),
-      'books'
-    ),
+    // 가입·책도 운영자를 뺀다 — 아래 퍼널과 같은 사람들을 세야 두 숫자가 맞는다
+    fetchAll<{ created_at: string }>((from, to) => {
+      let q = supabase
+        .from('profiles')
+        .select('created_at')
+        .gte('created_at', sinceUtc)
+        .lt('created_at', untilUtc);
+      if (adminIds.length > 0) q = q.not('id', 'in', toInFilter(adminIds));
+      return q.order('created_at').order('id').range(from, to);
+    }, 'profiles'),
+    fetchAll<{ created_at: string }>((from, to) => {
+      let q = supabase
+        .from('books')
+        .select('created_at')
+        .gte('created_at', sinceUtc)
+        .lt('created_at', untilUtc);
+      if (adminIds.length > 0) q = q.not('user_id', 'in', toInFilter(adminIds));
+      return q.order('created_at').order('id').range(from, to);
+    }, 'books'),
   ]);
 
   if (!visits || !profiles || !books) return null;

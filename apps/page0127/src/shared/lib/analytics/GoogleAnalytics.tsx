@@ -1,5 +1,7 @@
 import Script from 'next/script';
 
+import { APP_PATTERNS } from '@/shared/lib/auth/inAppBrowser';
+
 /**
  * 측정 도구의 브라우저 표식 — Lighthouse(PageSpeed Insights 포함)는 UA 에 'Chrome-Lighthouse',
  * Playwright 등 헤드리스 크롬은 'HeadlessChrome' 을 넣는다.
@@ -15,6 +17,17 @@ export const isNonProductionEnv = (env: NodeJS.ProcessEnv): boolean =>
   env.NODE_ENV === 'development' ||
   (!!env.VERCEL_ENV && env.VERCEL_ENV !== 'production');
 
+/**
+ * 공유 링크(utm_source=share, features/share/lib/shareUrl)를 연 앱 — 인앱 브라우저 UA 로 안다.
+ * 'other'(이름 모를 안드로이드 웹뷰)는 앱 이름이 아니라서 'share' 로 남긴다.
+ * 인라인 스크립트에 넣을 수 있게 `[이름, /정규식/]` 배열 리터럴 문자열로 만든다.
+ */
+const SHARE_APP_PATTERNS_JS = `[${APP_PATTERNS.filter(
+  ([app]) => app !== 'other'
+)
+  .map(([app, pattern]) => `['${app}', ${pattern}]`)
+  .join(', ')}]`;
+
 /** /admin 을 연 브라우저에 남기는 표시(MarkAdminDevice) — 있으면 GA 전송을 끈다 */
 export const ADMIN_DEVICE_KEY = 'page0127:admin-device';
 
@@ -27,6 +40,8 @@ export const GoogleAnalytics = () => {
 
   if (!gaId || isNonProductionEnv(process.env)) return null;
 
+  // 공유 링크로 들어왔으면 utm_source=share 를 연 앱 이름(kakaotalk·instagram …)으로 바꿔 보낸다.
+  // 주소창은 그대로 두고 GA 에 보내는 page_location 만 바꾼다 — GA 는 세션 출처를 이 값에서 읽는다.
   // 측정 도구(매주 품질 측정·PageSpeed)·자동화 브라우저와 관리자 기기의 방문은 GA 로 보내지 않는다 — 유입분석에 섞인다.
   // navigator.webdriver: Playwright·Puppeteer·Selenium 이 조종하는 브라우저는 true 다.
   // UA 를 일반 크롬·아이폰으로 바꿔 끼운 자동화(Playwright devices 프리셋 등)는 UA 만으론 못 잡아서 함께 본다.
@@ -55,7 +70,21 @@ export const GoogleAnalytics = () => {
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', '${gaId}');
+          var pageLocation = null;
+          try {
+            var url = new URL(location.href);
+            if (url.searchParams.get('utm_source') === 'share') {
+              var apps = ${SHARE_APP_PATTERNS_JS};
+              for (var i = 0; i < apps.length; i++) {
+                if (apps[i][1].test(navigator.userAgent)) {
+                  url.searchParams.set('utm_source', apps[i][0]);
+                  pageLocation = url.toString();
+                  break;
+                }
+              }
+            }
+          } catch (e) {}
+          gtag('config', '${gaId}', pageLocation ? { page_location: pageLocation } : {});
         `}
       </Script>
     </>

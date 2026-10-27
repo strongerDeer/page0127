@@ -22,6 +22,7 @@ const runGaInit = (opts: {
   userAgent: string;
   storage: unknown;
   webdriver?: boolean;
+  href?: string;
 }) => {
   vi.stubEnv('NEXT_PUBLIC_GA_ID', GA_ID);
   const fragment = GoogleAnalytics() as ReactElement<{
@@ -34,11 +35,28 @@ const runGaInit = (opts: {
   const window: Record<string, unknown> = {
     navigator: { userAgent: opts.userAgent, webdriver: opts.webdriver },
     localStorage: opts.storage,
+    location: { href: opts.href ?? 'https://page0127.com/' },
+    URL,
   };
   window.window = window;
   runInNewContext(initScript, window);
-  return window[`ga-disable-${GA_ID}`] === true;
+  return window;
 };
+
+const isDisabled = (opts: Parameters<typeof runGaInit>[0]) =>
+  runGaInit(opts)[`ga-disable-${GA_ID}`] === true;
+
+/** gtag('config', ID, 옵션) 으로 넘긴 옵션 — dataLayer 에 arguments 로 쌓인다 */
+const configOptions = (opts: Parameters<typeof runGaInit>[0]) => {
+  const dataLayer = runGaInit(opts).dataLayer as ArrayLike<unknown>[];
+  const config = dataLayer.find((args) => args[0] === 'config');
+  return config?.[2] as { page_location?: string } | undefined;
+};
+
+const SHARE_URL =
+  'https://page0127.com/stronger_deer?utm_source=share&utm_medium=social&utm_campaign=share_library&utm_content=native';
+const KAKAO_IPHONE =
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 KAKAOTALK 10.8.0';
 
 const storageWith = (value: string | null) => ({
   getItem: (key: string) => (key === ADMIN_DEVICE_KEY ? value : null),
@@ -47,19 +65,19 @@ const storageWith = (value: string | null) => ({
 describe('ga-init 전송 차단', () => {
   it('관리자 기기 표시가 있으면 끈다', () => {
     expect(
-      runGaInit({ userAgent: DESKTOP_CHROME, storage: storageWith('1') })
+      isDisabled({ userAgent: DESKTOP_CHROME, storage: storageWith('1') })
     ).toBe(true);
   });
 
   it('표시가 없는 일반 브라우저는 그대로 보낸다', () => {
     expect(
-      runGaInit({ userAgent: DESKTOP_CHROME, storage: storageWith(null) })
+      isDisabled({ userAgent: DESKTOP_CHROME, storage: storageWith(null) })
     ).toBe(false);
   });
 
   it('자동화 브라우저(navigator.webdriver)는 UA 가 평범해도 끈다', () => {
     expect(
-      runGaInit({
+      isDisabled({
         userAgent: DESKTOP_CHROME,
         storage: storageWith(null),
         webdriver: true,
@@ -73,9 +91,40 @@ describe('ga-init 전송 차단', () => {
         throw new Error('SecurityError');
       },
     };
-    expect(runGaInit({ userAgent: DESKTOP_CHROME, storage: blocked })).toBe(
+    expect(isDisabled({ userAgent: DESKTOP_CHROME, storage: blocked })).toBe(
       false
     );
+  });
+});
+
+describe('공유 링크 출처', () => {
+  it('카톡 안에서 열면 utm_source 를 kakaotalk 으로 바꿔 보낸다', () => {
+    const loc = configOptions({
+      userAgent: KAKAO_IPHONE,
+      storage: storageWith(null),
+      href: SHARE_URL,
+    })?.page_location;
+    expect(new URL(loc ?? '').searchParams.get('utm_source')).toBe('kakaotalk');
+  });
+
+  it('앱 밖 브라우저로 열면 주소를 그대로 둔다', () => {
+    expect(
+      configOptions({
+        userAgent: DESKTOP_CHROME,
+        storage: storageWith(null),
+        href: SHARE_URL,
+      })?.page_location
+    ).toBeUndefined();
+  });
+
+  it('공유 링크가 아니면 인앱이어도 건드리지 않는다', () => {
+    expect(
+      configOptions({
+        userAgent: KAKAO_IPHONE,
+        storage: storageWith(null),
+        href: 'https://page0127.com/?utm_source=instagram_bio',
+      })?.page_location
+    ).toBeUndefined();
   });
 });
 

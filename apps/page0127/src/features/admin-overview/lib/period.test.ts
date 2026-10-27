@@ -14,6 +14,8 @@ describe('resolveMetricPeriod', () => {
       today: '2026-08-06',
       yesterday: '2026-08-05',
       weekStart: '2026-07-30',
+      monthStart: '2026-07-07',
+      recentStart: '2026-08-04',
     });
   });
 

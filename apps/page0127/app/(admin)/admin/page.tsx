@@ -108,7 +108,7 @@ const TrendSection = async ({ range }: RangeProps) => {
       </h2>
       <div className='grid gap-3 lg:grid-cols-3'>
         <TrendBars
-          title='방문자'
+          title='DAU (로그인 회원)'
           unit='명'
           points={trends.visitors}
           summary={`하루 평균 ${avgVisitors.toFixed(1)}명${vs(sumPoints(trends.visitors), trends.previous.visitors)} · 운영자 제외`}
@@ -117,13 +117,13 @@ const TrendSection = async ({ range }: RangeProps) => {
           title='가입'
           unit='명'
           points={trends.signups}
-          summary={`합계 ${sumPoints(trends.signups)}명${vs(sumPoints(trends.signups), trends.previous.signups)}`}
+          summary={`합계 ${sumPoints(trends.signups)}명${vs(sumPoints(trends.signups), trends.previous.signups)} · 운영자 제외`}
         />
         <TrendBars
           title='책 등록'
           unit='권'
           points={trends.books}
-          summary={`합계 ${sumPoints(trends.books)}권${vs(sumPoints(trends.books), trends.previous.books)}`}
+          summary={`합계 ${sumPoints(trends.books)}권${vs(sumPoints(trends.books), trends.previous.books)} · 운영자 제외`}
         />
       </div>
     </section>
