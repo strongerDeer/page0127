@@ -26,6 +26,9 @@ const empty = table();
 
 const reports = (over: Partial<Reports>): Reports => ({
   summary: table(['', 100]),
+  humanSummary: table(['', 80]),
+  humanDaily: empty,
+  shares: empty,
   daily: empty,
   channel: empty,
   sourceMedium: empty,

@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
+import { buildShareUrl } from '../lib/shareUrl';
+
 type ShareButtonProps = {
   /** 공유할 경로. 절대 URL 은 이 컴포넌트가 현재 origin 으로 만든다 */
   path: string;
@@ -38,8 +40,9 @@ export const ShareButton = ({
   const [isSharing, setIsSharing] = useState(false);
 
   const handleShare = async () => {
-    // origin 은 브라우저에서만 알 수 있다 — 서버 렌더 시점에는 window 가 없다
-    const url = `${window.location.origin}${path}`;
+    // origin 은 브라우저에서만 알 수 있다 — 서버 렌더 시점에는 window 가 없다.
+    // 공유 시트와 복사는 꼬리표(utm_content)가 달라 각자 만든다
+    const { origin } = window.location;
 
     if (navigator.share) {
       // 공유 시트가 열려 있는 동안 다시 호출하면 InvalidStateError 가 난다
@@ -47,7 +50,11 @@ export const ShareButton = ({
       setIsSharing(true);
 
       try {
-        await navigator.share({ title, text, url });
+        await navigator.share({
+          title,
+          text,
+          url: buildShareUrl(origin, path, 'native'),
+        });
         // 성공한 뒤에만 센다 — 시트를 열었다 닫은 것은 공유가 아니다
         trackEvent('share_click', { method: 'native', path });
         return;
@@ -63,7 +70,7 @@ export const ShareButton = ({
     }
 
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(buildShareUrl(origin, path, 'copy'));
       trackEvent('share_click', { method: 'copy', path });
       toast.success('주소를 복사했어요.');
     } catch {

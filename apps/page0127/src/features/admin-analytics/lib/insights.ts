@@ -168,7 +168,7 @@ export const buildInsights = (
       tone: 'warn',
       title: `사람이 아닌 방문이 섞인 것으로 보입니다 (데이터센터 도시 ${pct(h.datacenterShare)}, 분류 안 됨 ${pct(unassigned)})`,
       action:
-        '매주 도는 품질 측정(Lighthouse)이 GA 로 방문을 보내지 않게 막으면 아래 숫자가 실제 사람만 남습니다.',
+        "측정 도구·자동화 브라우저·관리자 기기는 이미 GA 로 보내지 않습니다. 남은 건 UA 를 위장한 외부 봇이라 막을 수 없어서, 아래 숫자와 추이는 '사람 추정(한국)' 기준으로 읽습니다.",
     });
   }
 

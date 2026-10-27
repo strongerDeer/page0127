@@ -24,7 +24,10 @@ export type ReportKey =
   | 'resolution'
   | 'dayOfWeek'
   | 'gender'
-  | 'age';
+  | 'age'
+  | 'humanSummary'
+  | 'humanDaily'
+  | 'shares';
 
 export type ReportDef = {
   key: ReportKey;
@@ -38,12 +41,40 @@ export type ReportDef = {
   limit: number;
   /** 비어 있을 때 이유 안내 (성별·연령처럼 원래 잘 비는 것) */
   emptyHint?: string;
+  /** GA Data API dimensionFilter (FilterExpression) — 행을 걸러서 센다 */
+  dimensionFilter?: object;
 };
 
 export type MetricFormat = 'int' | 'percent' | 'seconds';
 
 const users = { name: 'activeUsers', label: '사용자', format: 'int' } as const;
 const sessions = { name: 'sessions', label: '세션', format: 'int' } as const;
+const pageViews = {
+  name: 'screenPageViews',
+  label: '페이지뷰',
+  format: 'int',
+} as const;
+
+/**
+ * "사람으로 추정" = 한국에서 온 방문.
+ * 측정 도구·관리자 기기는 브라우저에서 이미 안 보내지만, UA 를 위장한 크롤러는 막을 수 없다.
+ * 그런 방문은 거의 해외 데이터센터에서 오고, 베타 모집도 국내라서 국가로 가른다.
+ * 근거: 2026-10-26 GA 사용자 62명 vs 같은 날 Vercel Web Analytics(봇 제외) 한국 방문자 8명·해외 0명.
+ */
+export const HUMAN_FILTER = {
+  filter: {
+    fieldName: 'countryId',
+    stringFilter: { matchType: 'EXACT', value: 'KR' },
+  },
+};
+
+/** 공유 링크(features/share/lib/shareUrl)로 들어온 세션 — 캠페인 이름이 share_ 로 시작 */
+export const SHARE_FILTER = {
+  filter: {
+    fieldName: 'sessionCampaignName',
+    stringFilter: { matchType: 'BEGINS_WITH', value: 'share_' },
+  },
+};
 
 // 성별·연령은 GA 관리 화면에서 "Google 신호 데이터"를 켜야 들어오고, 켜도 사용자가 적으면
 // 개인을 알아볼 수 없도록 GA 가 숫자를 숨긴다(데이터 임곗값).
@@ -58,7 +89,7 @@ export const REPORTS: ReportDef[] = [
     metrics: [
       users,
       sessions,
-      { name: 'screenPageViews', label: '페이지뷰', format: 'int' },
+      pageViews,
       { name: 'engagementRate', label: '참여율', format: 'percent' },
       {
         name: 'averageSessionDuration',
@@ -184,6 +215,32 @@ export const REPORTS: ReportDef[] = [
     limit: 10,
     emptyHint: DEMOGRAPHIC_HINT,
   },
+  {
+    key: 'humanSummary',
+    title: '사람 추정 요약',
+    dimensions: [],
+    metrics: [users, sessions, pageViews],
+    limit: 1,
+    dimensionFilter: HUMAN_FILTER,
+  },
+  {
+    key: 'humanDaily',
+    title: '사람 추정 일별 사용자',
+    dimensions: ['date'],
+    metrics: [users],
+    orderBy: { dimension: 'date' },
+    limit: MAX_RANGE_DAYS,
+    dimensionFilter: HUMAN_FILTER,
+  },
+  {
+    key: 'shares',
+    title: '공유로 들어온 방문',
+    dimensions: ['sessionSource', 'sessionCampaignName'],
+    columnLabel: '앱 / 공유한 것',
+    metrics: [sessions, users],
+    limit: 20,
+    dimensionFilter: SHARE_FILTER,
+  },
 ];
 
 /**
@@ -201,6 +258,7 @@ export const toRunReportRequest = (def: ReportDef, range: DateRange) => ({
       : { metric: { metricName: def.metrics[0].name }, desc: true },
   ],
   limit: def.limit,
+  ...(def.dimensionFilter ? { dimensionFilter: def.dimensionFilter } : {}),
 });
 
 /** GA 응답 한 줄의 모양 (필요한 필드만) */
@@ -285,6 +343,24 @@ const countryName = (code: string): string => {
 };
 
 /** GA 원본 값 → 사람이 읽는 값. 모르는 값은 그대로 둔다 */
+/**
+ * 공유 링크 출처 — 받은 사람이 어느 앱 안에서 열었나(GoogleAnalytics 의 ga-init 이 바꿔 넣는다).
+ * 'share' 는 앱 밖 브라우저(사파리·크롬)로 열었거나 앱을 알 수 없는 경우다.
+ */
+const SHARE_SOURCES: Record<string, string> = {
+  share: '공유 (앱 모름)',
+  kakaotalk: '카카오톡',
+  instagram: '인스타그램',
+  threads: '스레드',
+  facebook: '페이스북',
+  naver: '네이버 앱',
+  line: '라인',
+};
+const SHARE_CAMPAIGNS: Record<string, string> = {
+  share_library: '서재 공유',
+  share_book: '책 공유',
+};
+
 export const translateDimension = (
   dimension: string,
   value: string
@@ -305,6 +381,10 @@ export const translateDimension = (
       return GENDER[value] ?? value;
     case 'deviceCategory':
       return DEVICE[value] ?? value;
+    case 'sessionSource':
+      return SHARE_SOURCES[value] ?? value;
+    case 'sessionCampaignName':
+      return SHARE_CAMPAIGNS[value] ?? value;
     default:
       return value;
   }

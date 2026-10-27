@@ -25,7 +25,7 @@ export type InAppBrowser = {
   os: 'ios' | 'android' | 'other';
 } | null;
 
-const APP_PATTERNS: [InAppApp, RegExp][] = [
+export const APP_PATTERNS: [InAppApp, RegExp][] = [
   ['instagram', /Instagram/i],
   // 스레드 앱 UA 의 코드명
   ['threads', /Barcelona/i],

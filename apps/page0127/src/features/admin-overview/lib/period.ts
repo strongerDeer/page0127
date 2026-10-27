@@ -22,6 +22,10 @@ export type MetricPeriod = {
   yesterday: string;
   /** 최근 7일의 시작일(어제 포함 7일) */
   weekStart: string;
+  /** 최근 30일의 시작일(어제 포함 30일) — MAU 구간 */
+  monthStart: string;
+  /** "최근 3일" 의 시작일(오늘 포함 3일) — 이때부터 안 온 회원을 '멈춘 사람'으로 본다 */
+  recentStart: string;
 };
 
 /**
@@ -32,6 +36,8 @@ export const resolveMetricPeriod = (now: Date): MetricPeriod => ({
   yesterday: toKstDateKey(new Date(now.getTime() - DAY_MS)),
   // 어제를 마지막 날로 하는 7일 구간 → 어제로부터 6일 전이 시작
   weekStart: toKstDateKey(new Date(now.getTime() - 7 * DAY_MS)),
+  monthStart: toKstDateKey(new Date(now.getTime() - 30 * DAY_MS)),
+  recentStart: toKstDateKey(new Date(now.getTime() - 2 * DAY_MS)),
 });
 
 /**
