@@ -1,6 +1,9 @@
 'use client';
 
 import {
+  SegmentedControl,
+  SegmentedControlItem,
+  segmentedItemClassName,
   Select,
   SelectContent,
   SelectItem,
@@ -49,32 +52,20 @@ export const ViewTabs = ({
   isWishlistView = false,
   goalYear,
 }: ViewTabsProps) => {
-  const tabClass = (active: boolean) =>
-    `rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-      active
-        ? 'bg-primary text-white'
-        : 'text-text-subtle hover:text-text-strong'
-    }`;
   const yearActive = !isAllView && !isWishlistView;
   const collapseAlways = years.length > MAX_YEAR_TABS;
 
   return (
-    <div
-      role='tablist'
-      aria-label='통계 기간'
-      className='flex flex-wrap items-center gap-1 rounded-full bg-sunken p-1'
-    >
+    <SegmentedControl aria-label='통계 기간'>
       {/* 전체(누적) — 연도들과 구분선으로 분리
           위시리스트 뷰일 땐 전체·연도 탭이 모두 비활성이라 !isWishlistView를 곱한다 */}
-      <button
+      <SegmentedControlItem
         type='button'
-        role='tab'
-        aria-selected={isAllView && !isWishlistView}
+        aria-pressed={isAllView && !isWishlistView}
         onClick={() => onChange('all')}
-        className={tabClass(isAllView && !isWishlistView)}
       >
         전체
-      </button>
+      </SegmentedControlItem>
 
       <span className='mx-1 h-4 w-px bg-line-soft' aria-hidden />
 
@@ -88,12 +79,9 @@ export const ViewTabs = ({
           <SelectTrigger
             size='sm'
             aria-label='연도 선택'
-            className={`rounded-full border-0 px-4 font-medium shadow-none ${
+            data-active={yearActive}
+            className={`${segmentedItemClassName} border-0 shadow-none ${
               collapseAlways ? '' : 'sm:hidden'
-            } ${
-              yearActive
-                ? 'bg-primary text-white [&_svg]:!text-white'
-                : 'text-text-subtle hover:text-text-strong'
             }`}
             {...(goalYear !== undefined && years.includes(goalYear)
               ? coachTarget('set-goal')
@@ -115,17 +103,16 @@ export const ViewTabs = ({
         years.map((year) => {
           const active = yearActive && year === selectedYear;
           return (
-            <button
+            <SegmentedControlItem
               key={year}
               type='button'
-              role='tab'
-              aria-selected={active}
+              aria-pressed={active}
               onClick={() => onChange(year.toString())}
-              className={`hidden sm:inline-flex ${tabClass(active)}`}
+              className='hidden sm:inline-flex'
               {...(year === goalYear ? coachTarget('set-goal') : {})}
             >
               {year}
-            </button>
+            </SegmentedControlItem>
           );
         })}
 
@@ -133,17 +120,15 @@ export const ViewTabs = ({
       {showWishlist && (
         <>
           <span className='mx-1 h-4 w-px bg-line-soft' aria-hidden />
-          <button
+          <SegmentedControlItem
             type='button'
-            role='tab'
-            aria-selected={isWishlistView}
+            aria-pressed={isWishlistView}
             onClick={() => onChange('wishlist')}
-            className={tabClass(isWishlistView)}
           >
             읽고 싶어요
-          </button>
+          </SegmentedControlItem>
         </>
       )}
-    </div>
+    </SegmentedControl>
   );
 };

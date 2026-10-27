@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { Button } from '@repo/ui';
+import { Button, StatePanel } from '@repo/ui';
 import { Input } from '@repo/ui';
 import { Spinner } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
@@ -61,6 +61,7 @@ export const UserSearch = ({ currentUserId, emptyState }: UserSearchProps) => {
           <Search className='absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
           <Input
             type='text'
+            aria-label='사용자 검색'
             placeholder='사용자 검색 (닉네임 또는 사용자명)'
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -69,6 +70,8 @@ export const UserSearch = ({ currentUserId, emptyState }: UserSearchProps) => {
           />
           {searchQuery && (
             <button
+              type='button'
+              aria-label='검색어 지우기'
               onClick={handleClear}
               className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'
             >
@@ -95,9 +98,7 @@ export const UserSearch = ({ currentUserId, emptyState }: UserSearchProps) => {
           </p>
 
           {users.length === 0 ? (
-            <div className='rounded-2xl bg-sunken py-12 text-center'>
-              <p className='text-muted-foreground'>검색 결과가 없습니다.</p>
-            </div>
+            <StatePanel message='검색 결과가 없습니다.' />
           ) : (
             <div className='space-y-2'>
               {users.map((user) => (
@@ -115,12 +116,10 @@ export const UserSearch = ({ currentUserId, emptyState }: UserSearchProps) => {
       {/* 초기 상태 — 추천 리더가 있으면 그것을, 없으면 안내를 */}
       {!activeQuery && !isLoading && emptyState}
       {!activeQuery && !isLoading && !emptyState && (
-        <div className='rounded-2xl bg-sunken py-12 text-center'>
-          <Search className='mx-auto h-12 w-12 text-muted-foreground' />
-          <p className='mt-4 text-muted-foreground'>
-            닉네임 또는 사용자명으로 검색해보세요
-          </p>
-        </div>
+        <StatePanel
+          message='닉네임 또는 사용자명으로 검색해보세요'
+          icon={<Search className='size-10' />}
+        />
       )}
     </div>
   );

@@ -100,33 +100,10 @@
   letter-spacing: -0.8px;
 }
 .metricButtons {
-  display: flex;
   width: fit-content;
   max-width: 100%;
   margin-top: 10px;
-  padding: 3px;
-  gap: 2px;
-  border-radius: 9px;
-  background: var(--muted);
 }
-.metricButtons button {
-  min-width: 44px;
-  min-height: 36px;
-  border: 0;
-  border-radius: 7px;
-  padding: 7px 9px;
-  background: transparent;
-  font-size: 12px;
-  color: var(--text-subtle);
-  cursor: pointer;
-}
-.metricButtons button[aria-pressed="true"] {
-  background: var(--card);
-  color: var(--primary);
-  font-weight: 700;
-  box-shadow: 0 1px 4px color-mix(in srgb, var(--navy-900) 8%, transparent);
-}
-.metricButtons button:focus-visible,
 .replay:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 3px;

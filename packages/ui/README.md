@@ -53,6 +53,13 @@ apps/page0127            소비자. 시스템이 준 것만 쓴다
 
 ---
 
+## 화면 일관성
+
+페이지 기본 면은 `background`(라이트 모드 흰색), 보조 영역은 `sunken`을 쓴다.
+필터·보기 전환은 `SegmentedControl` / `SegmentedControlItem`을 사용하고 선택 상태는
+`primary` / `primary-foreground`로 통일한다.
+[알림 유형과 화면 적용 기준](../../apps/page0127/docs/design-consistency.md)을 참고한다.
+
 ## 규칙
 
 ### 크기 이름은 sm / md / lg 다

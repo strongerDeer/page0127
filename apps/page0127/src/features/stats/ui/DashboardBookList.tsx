@@ -16,6 +16,8 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  SegmentedControl,
+  SegmentedControlItem,
   Select,
   SelectContent,
   SelectItem,
@@ -358,29 +360,23 @@ export const DashboardBookList = ({
         </Popover>
 
         {/* 분절 버튼 — 고른 쪽은 파란 면(default). 연회색(secondary)은 무엇이 선택됐는지 안 보였다 */}
-        <div className='flex items-center gap-0.5 rounded-lg border border-line-soft bg-sunken p-0.5'>
-          <Button
-            variant={viewMode === 'shelf' ? 'default' : 'ghost'}
-            size='sm'
-            className='h-7 px-2'
+        <SegmentedControl aria-label='책장 보기'>
+          <SegmentedControlItem
             aria-pressed={viewMode === 'shelf'}
             onClick={() => setViewMode('shelf')}
           >
             <Library className='h-4 w-4' />
             {/* 아이콘만으로는 무엇이 바뀌는지 알기 어려웠다 */}
             <span className='ml-1'>책등</span>
-          </Button>
-          <Button
-            variant={viewMode === 'feed' ? 'default' : 'ghost'}
-            size='sm'
-            className='h-7 px-2'
+          </SegmentedControlItem>
+          <SegmentedControlItem
             aria-pressed={viewMode === 'feed'}
             onClick={() => setViewMode('feed')}
           >
             <LayoutGrid className='h-4 w-4' />
             <span className='ml-1'>표지</span>
-          </Button>
-        </div>
+          </SegmentedControlItem>
+        </SegmentedControl>
 
         <Select value={sortOption} onValueChange={handleSortChange}>
           <SelectTrigger

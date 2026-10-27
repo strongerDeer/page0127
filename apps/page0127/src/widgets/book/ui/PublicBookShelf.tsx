@@ -5,6 +5,7 @@ import { useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { StatePanel } from '@repo/ui';
 import { CoverImage, isPreOptimizedImageSrc, ReadCountBadge } from '@repo/ui';
 
 import { isRated, isTopRated, toCoverSource } from '@/entities/book';
@@ -62,11 +63,7 @@ export const PublicBookShelf = ({
   };
 
   if (books.length === 0 && readingBooks.length === 0) {
-    return (
-      <div className='rounded-2xl bg-sunken p-12 text-center'>
-        <p className='text-text-body'>조건에 맞는 책이 없어요.</p>
-      </div>
-    );
+    return <StatePanel message='조건에 맞는 책이 없어요.' />;
   }
 
   // 읽는 중인 책은 선반 끝에 — 책장만 봐도 "지금 읽고 있는 책"이 보이게

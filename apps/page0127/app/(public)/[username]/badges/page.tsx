@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { PageContainer } from '@repo/ui';
+import { PageContainer, PageHeader } from '@repo/ui';
 import { ChevronLeft } from 'lucide-react';
 
 import { createClient } from '@/shared/config/supabase/server';
@@ -79,22 +79,20 @@ const BadgesPage = async ({ params }: PageProps) => {
   const name = isOwner ? '나의' : `${toDisplayName(profile)}님의`;
 
   return (
-    <PageContainer width='content' bg='sunken' className='space-y-6'>
-      <div>
-        <Link
-          href={`/${username}`}
-          className='inline-flex items-center gap-0.5 text-sm text-text-subtle hover:text-text-strong'
-        >
-          <ChevronLeft className='size-4' aria-hidden />
-          서재로
-        </Link>
-        <h1 className='mt-2 text-2xl font-bold text-text-strong'>
-          {name} 배지 책장
-        </h1>
-        <p className='mt-2 text-sm text-text-subtle'>
-          독서의 순간을 한 권씩 모아요
-        </p>
-      </div>
+    <PageContainer width='content' className='space-y-6'>
+      <PageHeader
+        title={`${name} 배지 책장`}
+        description='독서의 순간을 한 권씩 모아요'
+        above={
+          <Link
+            href={`/${username}`}
+            className='inline-flex items-center gap-0.5 text-sm text-text-subtle hover:text-text-strong'
+          >
+            <ChevronLeft className='size-4' aria-hidden />
+            서재로
+          </Link>
+        }
+      />
       <BadgeCollection
         activity={badgeActivity}
         username={username}

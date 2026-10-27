@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@repo/ui';
+import { Button, StatePanel } from '@repo/ui';
 
 type QueryErrorStateProps = {
   message: string;
@@ -14,11 +14,7 @@ export const QueryErrorState = ({
   onRetry,
   isRetrying,
 }: QueryErrorStateProps) => (
-  <div
-    role='alert'
-    className='flex flex-col items-center gap-3 rounded-2xl bg-sunken px-4 py-8 text-center'
-  >
-    <p className='text-sm text-text-body'>{message}</p>
+  <StatePanel role='alert' message={message}>
     <Button
       type='button'
       variant='outline'
@@ -27,5 +23,5 @@ export const QueryErrorState = ({
     >
       {isRetrying ? '다시 불러오는 중…' : '다시 시도'}
     </Button>
-  </div>
+  </StatePanel>
 );

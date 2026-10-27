@@ -59,7 +59,7 @@ const ReaderItem = ({ profile, status }: ReaderItemProps) => {
         <Avatar className='size-8'>
           {/* 이름이 바로 옆에 텍스트로 있으므로 사진은 장식이다 → alt 비움 */}
           <AvatarImage src={profile.photo_url ?? undefined} alt='' />
-          <AvatarFallback className='bg-primary/15 text-xs text-primary'>
+          <AvatarFallback className='bg-accent text-xs text-accent-foreground'>
             {nameInitials(name, 2)}
           </AvatarFallback>
         </Avatar>

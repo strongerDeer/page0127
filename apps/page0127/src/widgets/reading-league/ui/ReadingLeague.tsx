@@ -4,6 +4,8 @@ import { useId, useState } from 'react';
 
 import Link from 'next/link';
 
+import { SegmentedControl, SegmentedControlItem } from '@repo/ui';
+
 import { toDisplayName } from '@/entities/profile/model/displayName';
 
 import { rankReaders } from '../model/readingLeague';
@@ -123,13 +125,13 @@ export const ReadingLeague = ({
               VS
             </span>
           </div>
-          <div
+          <SegmentedControl
             className={styles.metricButtons}
             role='group'
             aria-label='독서 지표'
           >
             {(['books', 'pages', 'genres'] as const).map((value) => (
-              <button
+              <SegmentedControlItem
                 key={value}
                 type='button'
                 aria-pressed={metric === value}
@@ -141,9 +143,9 @@ export const ReadingLeague = ({
                   : value === 'pages'
                     ? '쪽수'
                     : '장르 문어발'}
-              </button>
+              </SegmentedControlItem>
             ))}
-          </div>
+          </SegmentedControl>
         </header>
         {solo ? (
           <div className={styles.solo}>

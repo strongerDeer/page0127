@@ -1,6 +1,8 @@
 'use client';
 import { useId, useState } from 'react';
 
+import { SegmentedControl, SegmentedControlItem } from '@repo/ui';
+
 import type { KeyboardEvent, ReactNode } from 'react';
 
 import styles from './LoungeLayout.module.css';
@@ -33,13 +35,13 @@ export const LoungeLayout = ({
   };
   return (
     <>
-      <div
+      <SegmentedControl
         className={styles.mobileTabs}
         role='tablist'
         aria-label='라운지 보기'
       >
         {(['feed', 'battle'] as const).map((value) => (
-          <button
+          <SegmentedControlItem
             type='button'
             key={value}
             data-tab={value}
@@ -57,9 +59,9 @@ export const LoungeLayout = ({
               </span>
             )}
             {value === 'feed' ? '피드' : '배틀'}
-          </button>
+          </SegmentedControlItem>
         ))}
-      </div>
+      </SegmentedControl>
       <div className={styles.layout}>
         <section
           role='tabpanel'

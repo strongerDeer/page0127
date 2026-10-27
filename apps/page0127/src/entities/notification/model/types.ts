@@ -9,6 +9,7 @@
  * - comment: 댓글 알림
  * - like: 좋아요 알림
  * - reading_reminder: 2주 넘게 읽는 중인 책 (나에게 오는 알림, actor = 본인)
+ * - reading_nudge: 다른 독자가 보내는 책 봉투 (추천·같이 읽기 문구를 포함)
  * - weekly_recap: 주간 회상 (나에게 오는 알림, actor = 본인, 대상 없음 → 내 서재)
  */
 export type NotificationType =

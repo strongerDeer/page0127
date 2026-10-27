@@ -22,7 +22,7 @@ describe('DashboardBookList 보기 전환', () => {
     expect(html).toContain('표지</span>');
   });
 
-  it('선택된 쪽은 파란 면(bg-primary), 아닌 쪽은 아니다 — 무엇이 선택됐는지 보이게', () => {
+  it('보기 전환은 정확히 하나의 선택 상태를 보조 기술에 전달한다', () => {
     const html = renderToStaticMarkup(
       <DashboardBookList
         books={[createTestBook({ completed_date: '2026-01-01' })]}
@@ -35,12 +35,13 @@ describe('DashboardBookList 보기 전환', () => {
     );
     const buttons =
       html.match(/<button[^>]*aria-pressed="(true|false)"[^>]*>/g) ?? [];
-    const pressed =
-      buttons.find((b) => b.includes('aria-pressed="true"')) ?? '';
-    const unpressed =
-      buttons.find((b) => b.includes('aria-pressed="false"')) ?? '';
-    expect(pressed).toContain('bg-primary');
-    expect(unpressed).not.toContain('bg-primary');
+    expect(buttons).toHaveLength(2);
+    expect(
+      buttons.filter((button) => button.includes('aria-pressed="true"'))
+    ).toHaveLength(1);
+    expect(
+      buttons.filter((button) => button.includes('aria-pressed="false"'))
+    ).toHaveLength(1);
   });
 });
 

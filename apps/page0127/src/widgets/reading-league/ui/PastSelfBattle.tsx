@@ -1,7 +1,7 @@
 'use client';
 import { useId, useState } from 'react';
 
-import { Button } from '@repo/ui';
+import { Button, SegmentedControl, SegmentedControlItem } from '@repo/ui';
 import { ArrowRight, Users } from 'lucide-react';
 
 import { getDefaultPastSelfPeriod } from '@/entities/book';
@@ -116,22 +116,22 @@ export const PastSelfBattle = ({
               <option value='month'>지난달의 나</option>
               <option value='year'>작년의 나</option>
             </select>
-            <div
+            <SegmentedControl
               className={styles.metricButtons}
               role='group'
               aria-label='지난 나와 비교할 지표'
             >
               {(['books', 'pages'] as const).map((value) => (
-                <button
+                <SegmentedControlItem
                   type='button'
                   key={value}
                   aria-pressed={metric === value}
                   onClick={() => setMetric(value)}
                 >
                   {value === 'books' ? '권수' : '쪽수'}
-                </button>
+                </SegmentedControlItem>
               ))}
-            </div>
+            </SegmentedControl>
           </div>
         </header>
         {hasPast ? (

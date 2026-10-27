@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from 'react';
 
+import { StatePanel } from '@repo/ui';
 import { Button } from '@repo/ui';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
@@ -126,9 +127,7 @@ export const BookStreamSection = ({
           <Loader2 className='size-6 animate-spin text-muted-foreground' />
         </div>
       ) : items.length === 0 ? (
-        <p className='rounded-2xl bg-sunken py-10 text-center text-text-body'>
-          아직 이 책의 기록이 없어요.
-        </p>
+        <StatePanel message='아직 이 책의 기록이 없어요.' />
       ) : (
         <div className='space-y-3 border-t border-line-soft pt-4'>
           {items.map((item) =>

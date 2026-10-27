@@ -73,6 +73,127 @@ const test = base.extend<{ reader: Reader }>({
   },
 });
 
+// CSS 문자열 대신 실제 표면·선택·레이아웃을 확인한다. 임시 독자는 fixture가 정리한다.
+test('디자인 점검: 주요 페이지의 흰색 면과 모바일 보기 전환', async ({
+  page,
+  reader,
+}, testInfo) => {
+  test.setTimeout(150_000);
+  const year = new Date().getUTCFullYear();
+  const bookId = randomUUID();
+  const books = await reader.admin.from('books').insert([
+    {
+      id: bookId,
+      user_id: reader.id,
+      isbn: randomUUID(),
+      title: '디자인 점검 완독 책',
+      author: '점검 저자',
+      status: 'completed',
+      completed_date: `${year}-10-01`,
+      rating: 4,
+      is_public: true,
+    },
+    {
+      id: randomUUID(),
+      user_id: reader.id,
+      isbn: randomUUID(),
+      title: '디자인 점검 읽는 책',
+      status: 'reading',
+      start_date: `${year}-10-20`,
+      is_public: true,
+    },
+  ]);
+  if (books.error) throw books.error;
+  const notifications = await reader.admin.from('notifications').insert(
+    // 오래된 로컬 스키마에서도 실행 가능. 전체 6종은 Storybook에서 별도 검증한다.
+    (['follow', 'comment', 'like'] as const).map((type, index) => ({
+      user_id: reader.id,
+      actor_id: reader.id,
+      type,
+      target_id: bookId,
+      target_type: 'book',
+      is_read: index % 2 === 1,
+      message: null,
+    }))
+  );
+  if (notifications.error) throw notifications.error;
+  await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 1000 });
+    for (const [name, path, heading] of [
+      ['library', `/${reader.username}`, '님의 서재'],
+      ['notifications', '/notifications', '알림'],
+      ['feed', '/feed', '라운지'],
+      ['search', '/search', '리더 찾기'],
+      ['settings', '/settings', '설정'],
+      ['badges', `/${reader.username}/badges`, '배지 책장'],
+    ]) {
+      await page.goto(path);
+      await expect(
+        page.locator('main h1').filter({ hasText: heading })
+      ).toBeVisible();
+      await expect(page.locator('main > div').first()).toHaveCSS(
+        'background-color',
+        'rgb(255, 255, 255)'
+      );
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= window.innerWidth + 1
+        ),
+        `${name} ${width}px 가로 넘침`
+      ).toBe(true);
+      if (name === 'notifications') {
+        await expect(
+          page.locator('main').getByText('팔로우', { exact: true })
+        ).toBeVisible();
+        const filters = page.getByRole('group', { name: '알림 필터' });
+        await filters
+          .getByRole('button', { name: '읽지 않음', exact: true })
+          .click();
+        await expect(
+          filters.getByRole('button', { name: '읽지 않음', exact: true })
+        ).toHaveAttribute('aria-pressed', 'true');
+        await expect(page.getByText('댓글·답글', { exact: true })).toHaveCount(
+          0
+        );
+        await filters
+          .getByRole('button', { name: '전체', exact: true })
+          .click();
+      }
+      if (name === 'library') {
+        const periods = page.getByRole('group', { name: '통계 기간' });
+        if (width === 1440) {
+          await expect(
+            page.getByLabel('연도 선택', { exact: true })
+          ).toBeHidden();
+        }
+        await periods
+          .getByRole('button', { name: '전체', exact: true })
+          .click();
+        await expect(
+          periods.getByRole('button', { name: '전체', exact: true })
+        ).toHaveAttribute('aria-pressed', 'true');
+      }
+      if (name === 'feed') {
+        await expect(
+          page.getByText('팔로우한 사람이 책을 읽으면 여기에 쌓입니다.', {
+            exact: true,
+          })
+        ).toBeVisible();
+      }
+      await expect(page.locator('main .animate-pulse')).toHaveCount(0);
+      await page.evaluate(() =>
+        window.scrollTo({ top: 0, behavior: 'instant' })
+      );
+      await page.screenshot({
+        path: testInfo.outputPath(`${name}-${width}.png`),
+        fullPage: true,
+        animations: 'disabled',
+      });
+    }
+  }
+});
+
 test.skip(
   process.env.E2E_LOCAL_AUTH !== '1',
   '로컬 전용: E2E_LOCAL_AUTH=1과 로컬 Supabase가 필요합니다.'
@@ -441,13 +562,255 @@ test('검색·등록·수정한 기록은 새로고침 후 유지되고 보관�
     await visitor.close();
   }
 
-  await page.getByRole('button', { name: '보관하기', exact: true }).click();
+  await page
+    .getByRole('button', { name: '비공개로 변경', exact: true })
+    .click();
   await expect(
-    page.getByRole('button', { name: '보관 해제', exact: true })
+    page.getByRole('button', { name: '공개로 변경', exact: true })
   ).toBeVisible();
   await context.clearCookies();
   await page.goto(path);
   await expect(page.getByText('404 - 페이지를 찾을 수 없습니다')).toBeVisible();
   const hidden = await page.request.get(`/api/books/${record.id}`);
   expect(hidden.status()).toBe(404);
+});
+
+test('일괄 알림 관리: 선택 삭제와 페이지 밖 읽은 알림 삭제', async ({
+  page,
+  reader,
+  browser,
+  baseURL,
+}) => {
+  test.setTimeout(90_000);
+  const rows = Array.from({ length: 44 }, (_, index) => ({
+    id: randomUUID(),
+    user_id: reader.id,
+    actor_id: reader.id,
+    type: 'follow',
+    is_read: index >= 2,
+    created_at: '2025-01-01T00:00:00Z',
+  }));
+  const inserted = await reader.admin.from('notifications').insert(rows);
+  if (inserted.error) throw inserted.error;
+  const visitor = await browser.newContext({ baseURL });
+  try {
+    expect(
+      (
+        await visitor.request.post('/api/notifications/bulk', {
+          data: {
+            requestId: randomUUID(),
+            action: 'delete_selected',
+            ids: [rows[0].id],
+          },
+        })
+      ).status()
+    ).toBe(401);
+  } finally {
+    await visitor.close();
+  }
+  await page.goto('/notifications');
+  await page.getByRole('button', { name: '선택', exact: true }).click();
+  await page.getByRole('checkbox').first().check();
+  await page.getByRole('button', { name: '선택 삭제', exact: true }).click();
+  await expect(page.getByRole('alertdialog')).toContainText('알림 1개');
+  await page
+    .getByRole('alertdialog')
+    .getByRole('button', { name: '삭제', exact: true })
+    .click();
+  await expect(page.getByRole('alertdialog')).toHaveCount(0);
+  await expect
+    .poll(
+      async () =>
+        (
+          await reader.admin
+            .from('notifications')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', reader.id)
+        ).count
+    )
+    .toBe(43);
+  const unreadBefore = (
+    await reader.admin
+      .from('notifications')
+      .select('id')
+      .eq('user_id', reader.id)
+      .eq('is_read', false)
+  ).data!;
+  await page.getByRole('button', { name: '알림 더보기' }).click();
+  await page.getByRole('menuitem', { name: '읽은 알림 모두 삭제' }).click();
+  await expect(page.getByRole('alertdialog')).toContainText('불러오지 않은');
+  await page
+    .getByRole('alertdialog')
+    .getByRole('button', { name: '삭제', exact: true })
+    .click();
+  await expect(page.getByRole('alertdialog')).toHaveCount(0);
+  const remaining = await reader.admin
+    .from('notifications')
+    .select('id,is_read')
+    .eq('user_id', reader.id);
+  expect(remaining.data?.map((row) => row.id).sort()).toEqual(
+    unreadBefore.map((row) => row.id).sort()
+  );
+  expect(remaining.data?.every((row) => !row.is_read)).toBe(true);
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1
+    )
+  ).toBe(true);
+  await page.screenshot({
+    path: test.info().outputPath('notifications-bulk-mobile.png'),
+    fullPage: true,
+    animations: 'disabled',
+  });
+});
+
+test('일괄 서재 관리: 회독별 선택·비공개 복구·선택 삭제와 실패 재시도', async ({
+  page,
+  reader,
+}) => {
+  test.setTimeout(90_000);
+  const isbn = randomUUID();
+  const records = [
+    {
+      id: randomUUID(),
+      user_id: reader.id,
+      isbn,
+      title: '같은 책 첫 번째 기록',
+      status: 'completed',
+      read_count: 1,
+      is_public: true,
+      completed_date: '2025-10-01',
+    },
+    {
+      id: randomUUID(),
+      user_id: reader.id,
+      isbn,
+      title: '같은 책 두 번째 기록',
+      status: 'completed',
+      read_count: 2,
+      is_public: true,
+      completed_date: '2026-10-01',
+    },
+    {
+      id: randomUUID(),
+      user_id: reader.id,
+      isbn: randomUUID(),
+      title: '읽고 싶은 비공개 책',
+      status: 'want_to_read',
+      read_count: 1,
+      is_public: false,
+      completed_date: null,
+    },
+  ];
+  const inserted = await reader.admin.from('books').insert(records);
+  if (inserted.error) throw inserted.error;
+  await page.goto(`/${reader.username}`);
+  await page.getByRole('link', { name: '서재 관리', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '서재 관리' })).toBeVisible();
+  await expect(page.getByRole('checkbox')).toHaveCount(3);
+  await page
+    .getByRole('checkbox', { name: '같은 책 첫 번째 기록 1회독 선택' })
+    .check();
+  await page
+    .getByRole('button', { name: '비공개로 변경', exact: true })
+    .click();
+  await page
+    .getByRole('alertdialog')
+    .getByRole('button', { name: '비공개로 변경', exact: true })
+    .click();
+  await expect(page.getByRole('alertdialog')).toHaveCount(0);
+  const privacy = await reader.admin
+    .from('books')
+    .select('id,is_public')
+    .in(
+      'id',
+      records.map((row) => row.id)
+    );
+  expect(privacy.data?.find((row) => row.id === records[0].id)?.is_public).toBe(
+    false
+  );
+  expect(privacy.data?.find((row) => row.id === records[1].id)?.is_public).toBe(
+    true
+  );
+  await page
+    .getByRole('combobox', { name: '공개 범위', exact: true })
+    .selectOption('private');
+  await expect(page.getByRole('checkbox')).toHaveCount(2);
+  await page
+    .getByRole('checkbox', { name: '같은 책 첫 번째 기록 1회독 선택' })
+    .check();
+  await page.getByRole('button', { name: '공개로 변경', exact: true }).click();
+  await page
+    .getByRole('alertdialog')
+    .getByRole('button', { name: '공개로 변경', exact: true })
+    .click();
+  await expect(page.getByRole('alertdialog')).toHaveCount(0);
+  await expect(page.getByRole('checkbox')).toHaveCount(1);
+  await page
+    .getByRole('combobox', { name: '공개 범위', exact: true })
+    .selectOption('all');
+  await expect(page.getByRole('checkbox')).toHaveCount(3);
+  await page
+    .getByRole('checkbox', { name: '같은 책 두 번째 기록 2회독 선택' })
+    .check();
+  // Changing a filter deliberately clears selection.
+  await page
+    .getByRole('combobox', { name: '독서 상태', exact: true })
+    .selectOption('completed');
+  await expect(page.getByText('0개 기록 선택', { exact: true })).toBeVisible();
+  await page
+    .getByRole('checkbox', { name: '같은 책 두 번째 기록 2회독 선택' })
+    .check();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator('[data-sonner-toast]')).toHaveCount(0, {
+    timeout: 10000,
+  });
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+  await page.screenshot({
+    path: test.info().outputPath('library-management-mobile.png'),
+    fullPage: true,
+    animations: 'disabled',
+  });
+  let fail = true;
+  await page.route('**/api/books/bulk', (route) =>
+    fail
+      ? route.fulfill({
+          status: 500,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: '테스트 실패: 다시 시도해주세요.' }),
+        })
+      : route.continue()
+  );
+  await page
+    .getByRole('group', { name: '서재 일괄 관리' })
+    .getByRole('button', { name: '삭제', exact: true })
+    .click();
+  await expect(page.getByRole('alertdialog')).toContainText('복구할 수 없어요');
+  await page
+    .getByRole('alertdialog')
+    .getByRole('button', { name: '삭제', exact: true })
+    .click();
+  await expect(page.getByRole('alertdialog').getByRole('alert')).toContainText(
+    '테스트 실패'
+  );
+  fail = false;
+  await page
+    .getByRole('alertdialog')
+    .getByRole('button', { name: '삭제', exact: true })
+    .click();
+  await expect(page.getByRole('alertdialog')).toHaveCount(0);
+  expect(
+    (
+      await reader.admin.from('books').select('id').eq('user_id', reader.id)
+    ).data
+      ?.map((row) => row.id)
+      .sort()
+  ).toEqual([records[0].id, records[2].id].sort());
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1
+    )
+  ).toBe(true);
 });
