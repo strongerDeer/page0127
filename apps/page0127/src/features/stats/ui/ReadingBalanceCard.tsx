@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 
 import {
   categoryColor,
+  categoryInk,
   getBalanceDelta,
   getBalanceLabel,
   getBalanceSummary,
@@ -96,7 +97,7 @@ export const ReadingBalanceCard = ({
                 <div
                   key={category}
                   title={`${category} ${count}권 · ${share}%`}
-                  className='flex min-w-0 basis-0 items-center justify-center px-1 text-xs font-medium text-white'
+                  className={`flex min-w-0 basis-0 items-center justify-center px-1 text-xs font-medium ${categoryInk(rank)}`}
                   style={{
                     flexGrow: count,
                     backgroundColor: categoryColor(rank),

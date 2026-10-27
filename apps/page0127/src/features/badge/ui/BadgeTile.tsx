@@ -61,29 +61,36 @@ export const BadgeTile = ({
 
   return (
     <Dialog onOpenChange={() => setOpened(false)}>
-      <DialogTrigger
-        className={styles.tile}
-        aria-label={`${title} (${badge.earned ? '획득' : '미획득'})`}
-      >
+      {/* 버튼 이름은 aria-label 대신 안의 글자로 만든다 — aria-label 이 있으면 Lighthouse
+          (label-content-name-mismatch)가 배지 그림 속 글자("독서의 순간을 기록해요")까지
+          보이는 글자로 세어 이름과 다르다고 잡는다. 이름은 그대로 "제목 (획득/미획득)"이다:
+          화면용 힌트·미획득·진행도는 aria-hidden, 상태는 sr-only 로 읽힌다 */}
+      <DialogTrigger className={styles.tile}>
         <BadgeStack badge={badge} size={size} />
         <span
           className={`${styles.name} ${badge.earned ? '' : styles.unearned}`}
         >
           {title}
+          <span className='sr-only'>
+            {` (${badge.earned ? '획득' : '미획득'})`}
+          </span>
           {hint && (
-            <span className='mt-1 block text-xs text-text-subtle'>
+            <span
+              aria-hidden='true'
+              className='mt-1 block text-xs text-text-subtle'
+            >
               힌트 · {hint}
             </span>
           )}
-          {!badge.earned && <span className={styles.lockedLabel}>미획득</span>}
+          {!badge.earned && (
+            <span aria-hidden='true' className={styles.lockedLabel}>
+              미획득
+            </span>
+          )}
         </span>
         {showProgress && progress && (
-          <span className={styles.progress}>
-            <Progress
-              value={badgeProgressPercent(badge)}
-              className='h-1'
-              aria-hidden
-            />
+          <span aria-hidden='true' className={styles.progress}>
+            <Progress value={badgeProgressPercent(badge)} className='h-1' />
             <span className={styles.progressText}>{progressLabel}</span>
           </span>
         )}
