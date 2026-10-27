@@ -14,9 +14,24 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@repo/ui';
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  SegmentedControl,
+  SegmentedControlItem,
+  StatePanel,
+} from '@repo/ui';
 import { Spinner } from '@repo/ui';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { MoreHorizontal } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/client';
 import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
@@ -29,8 +44,16 @@ import {
   useDeleteNotification,
   useMarkAllAsRead,
   useMarkAsRead,
+  useUnreadCount,
 } from '@/entities/notification';
 import { useCurrentUser } from '@/entities/user';
+
+import {
+  type BulkRequest,
+  MAX_BULK_SELECTION,
+} from '@/features/bulk-management/model/types';
+import { useBulkAction } from '@/features/bulk-management/model/useBulkAction';
+import { BulkConfirmDialog } from '@/features/bulk-management/ui/BulkConfirmDialog';
 
 import { LiveReadingEnvelopeDialog } from './LiveReadingEnvelopeDialog';
 import { NotificationItem } from './NotificationItem';
@@ -41,7 +64,43 @@ export const NotificationPage = ({
   initialEnvelopeId?: string;
 }) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const [selecting, setSelecting] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [confirmation, setConfirmation] = useState<BulkRequest | null>(null);
+  const bulk = useBulkAction('notifications');
+  const chooseDelete = (action: 'delete_read' | 'delete_selected') => {
+    bulk.clearError();
+    setConfirmation({
+      requestId: crypto.randomUUID(),
+      action,
+      ids: action === 'delete_selected' ? [...selected] : [],
+      ...(action === 'delete_read' ? { before: new Date().toISOString() } : {}),
+    });
+  };
+  const confirmDelete = async () => {
+    if (!confirmation) return;
+    const result = await bulk.run(confirmation);
+    if (!result) return;
+    setConfirmation(null);
+    setSelected(new Set());
+    setSelecting(false);
+    toast.success(`${result.count}개 알림을 삭제했어요.`);
+    // Offset pagination restarts after deletions; dropdown and badge refresh too.
+    await queryClient.resetQueries({
+      queryKey: [...notificationKeys.all, 'infinite'],
+    });
+    await queryClient.invalidateQueries({ queryKey: notificationKeys.all });
+  };
+  const toggleSelection = (id: string) =>
+    setSelected((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else if (next.size < MAX_BULK_SELECTION) next.add(id);
+      return next;
+    });
   const { data: currentUser } = useCurrentUser();
+  const { data: unreadCount } = useUnreadCount(currentUser?.id);
   const observerRef = useRef<HTMLDivElement>(null);
   const [envelope, setEnvelope] = useState<NotificationWithActor | null>(null);
   const [dismissedInitial, setDismissedInitial] = useState(false);
@@ -167,7 +226,8 @@ export const NotificationPage = ({
   }
 
   const notifications = data?.pages.flat() || [];
-  const hasUnread = notifications.some((n) => !n.is_read);
+  const hasUnread =
+    (unreadCount?.count ?? 0) > 0 || notifications.some((n) => !n.is_read);
 
   return (
     <div className='space-y-4'>
@@ -186,36 +246,111 @@ export const NotificationPage = ({
           </p>
         )}
       {/* 필터 및 액션 */}
-      <div className='flex items-center justify-between rounded-2xl bg-sunken p-4'>
-        <div className='flex gap-2'>
-          <Button
-            variant={filter === 'all' ? 'default' : 'ghost'}
-            size='sm'
-            onClick={() => setFilter('all')}
+      <div className='flex flex-wrap items-center justify-between gap-3'>
+        <SegmentedControl aria-label='알림 필터'>
+          <SegmentedControlItem
+            aria-pressed={filter === 'all'}
+            onClick={() => {
+              setSelected(new Set());
+              setFilter('all');
+            }}
           >
             전체
-          </Button>
-          <Button
-            variant={filter === 'unread' ? 'default' : 'ghost'}
-            size='sm'
-            onClick={() => setFilter('unread')}
+          </SegmentedControlItem>
+          <SegmentedControlItem
+            aria-pressed={filter === 'unread'}
+            onClick={() => {
+              setSelected(new Set());
+              setFilter('unread');
+            }}
           >
             읽지 않음
-          </Button>
-        </div>
+          </SegmentedControlItem>
+        </SegmentedControl>
 
-        {hasUnread && (
+        <div className='flex items-center gap-2'>
           <Button
-            variant='ghost'
+            variant='outline'
             size='sm'
-            onClick={handleMarkAllAsRead}
-            disabled={markAllAsReadMutation.isPending}
+            disabled={bulk.pending || !notifications.length}
+            onClick={() => {
+              setSelecting((value) => !value);
+              setSelected(new Set());
+            }}
           >
-            모두 읽음
+            {selecting ? '선택 취소' : '선택'}
           </Button>
-        )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant='ghost'
+                size='icon-sm'
+                aria-label='알림 더보기'
+                disabled={bulk.pending}
+              >
+                <MoreHorizontal aria-hidden='true' />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end'>
+              <DropdownMenuItem
+                disabled={!hasUnread || markAllAsReadMutation.isPending}
+                onSelect={() => void handleMarkAllAsRead()}
+              >
+                모두 읽음
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => chooseDelete('delete_read')}>
+                읽은 알림 모두 삭제
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
+      {selecting && (
+        <div
+          role='group'
+          aria-label='알림 선택 관리'
+          className='flex flex-wrap items-center gap-2 rounded-xl border border-line-soft bg-card p-3'
+        >
+          <span role='status' className='mr-auto text-sm'>
+            {selected.size}개 선택
+          </span>
+          <Button
+            size='sm'
+            variant='ghost'
+            onClick={() =>
+              setSelected(
+                new Set(
+                  notifications
+                    .slice(0, MAX_BULK_SELECTION)
+                    .map((item) => item.id)
+                )
+              )
+            }
+          >
+            불러온 알림 모두 선택
+          </Button>
+          <Button
+            size='sm'
+            variant='ghost'
+            disabled={!selected.size}
+            onClick={() => setSelected(new Set())}
+          >
+            선택 해제
+          </Button>
+          <Button
+            size='sm'
+            variant='destructive'
+            disabled={!selected.size || bulk.pending}
+            onClick={() => chooseDelete('delete_selected')}
+          >
+            선택 삭제
+          </Button>
+          <p className='w-full text-xs text-text-subtle'>
+            현재 불러온 알림에서 최대 500개까지 선택할 수 있어요.
+          </p>
+        </div>
+      )}
       {/* 알림 목록 */}
       {isError && (
         <QueryErrorState
@@ -228,16 +363,16 @@ export const NotificationPage = ({
       )}
       {notifications.length === 0 ? (
         !isError && (
-          <div className='rounded-2xl bg-sunken py-12 text-center'>
-            <p className='text-muted-foreground'>
-              {filter === 'unread'
+          <StatePanel
+            message={
+              filter === 'unread'
                 ? '읽지 않은 알림이 없습니다'
-                : '알림이 없습니다'}
-            </p>
-          </div>
+                : '알림이 없습니다'
+            }
+          />
         )
       ) : (
-        <div className='rounded-2xl bg-sunken'>
+        <div className='overflow-hidden rounded-2xl border border-line-soft bg-card'>
           {notifications.map((notification) => (
             <NotificationItem
               key={notification.id}
@@ -247,8 +382,17 @@ export const NotificationPage = ({
                   ? setEnvelope(notification)
                   : handleNotificationClick(notification)
               }
-              onDelete={handleDelete}
-              onMarkAsRead={handleMarkAsReadSingle}
+              onDelete={selecting ? undefined : handleDelete}
+              onMarkAsRead={selecting ? undefined : handleMarkAsReadSingle}
+              selection={
+                selecting
+                  ? {
+                      checked: selected.has(notification.id),
+                      onChange: () => toggleSelection(notification.id),
+                      disabled: bulk.pending,
+                    }
+                  : undefined
+              }
             />
           ))}
 
@@ -260,11 +404,31 @@ export const NotificationPage = ({
           )}
         </div>
       )}
+      <BulkConfirmDialog
+        open={!!confirmation}
+        title={
+          confirmation?.action === 'delete_read'
+            ? '읽은 알림을 모두 삭제할까요?'
+            : `선택한 알림 ${confirmation?.ids.length ?? 0}개를 삭제할까요?`
+        }
+        description={
+          confirmation?.action === 'delete_read'
+            ? '불러오지 않은 읽은 알림도 삭제돼요. 읽지 않은 알림은 남아 있으며 삭제한 알림은 복구할 수 없어요.'
+            : '선택한 알림만 삭제해요. 삭제한 알림은 복구할 수 없어요.'
+        }
+        actionLabel='삭제'
+        destructive
+        pending={bulk.pending}
+        error={bulk.error}
+        onClose={() => setConfirmation(null)}
+        onConfirm={() => void confirmDelete()}
+      />
       {selectedEnvelope && (
         <LiveReadingEnvelopeDialog
           key={selectedEnvelope.id}
           notification={selectedEnvelope}
           onClose={closeEnvelope}
+
           onRead={() =>
             selectedEnvelope.is_read
               ? undefined

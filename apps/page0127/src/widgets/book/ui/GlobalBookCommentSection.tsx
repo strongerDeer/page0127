@@ -1,5 +1,6 @@
 'use client';
 
+import { StatePanel } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 
@@ -48,9 +49,10 @@ export const GlobalBookCommentSection = ({
           <Loader2 className='size-6 animate-spin text-muted-foreground' />
         </div>
       ) : comments.length === 0 ? (
-        <p className='mt-4 rounded-2xl bg-sunken py-10 text-center text-text-body'>
-          아직 이야기가 없어요. 먼저 남겨보세요.
-        </p>
+        <StatePanel
+          message='아직 이야기가 없어요. 먼저 남겨보세요.'
+          className='mt-4'
+        />
       ) : (
         <div className='mt-4 space-y-3'>
           {comments.map((comment) => (

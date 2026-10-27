@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@repo/ui';
+import { Button, StatePanel } from '@repo/ui';
 
 type BookRankingErrorProps = {
   // 어느 랭킹이 실패했는지 표시 (스켈레톤과 같은 외곽 유지용)
@@ -28,14 +28,14 @@ export const BookRankingError = ({ title }: BookRankingErrorProps) => {
           <h2 className='heading-2'>{title}</h2>
         </div>
       )}
-      <div className='flex flex-col items-center justify-center gap-3 rounded-2xl bg-sunken py-12'>
-        <p className='text-muted-foreground'>
-          랭킹을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
-        </p>
+      <StatePanel
+        role='alert'
+        message='랭킹을 불러오지 못했어요. 잠시 후 다시 시도해주세요.'
+      >
         <Button variant='outline' onClick={() => router.refresh()}>
           다시 시도
         </Button>
-      </div>
+      </StatePanel>
     </section>
   );
 };

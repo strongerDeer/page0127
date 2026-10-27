@@ -92,7 +92,7 @@ export const BookDetailContent = ({
                     book.status === 'completed'
                       ? 'bg-chart-3/15 text-chart-3'
                       : book.status === 'reading'
-                        ? 'bg-primary/15 text-primary'
+                        ? 'bg-accent text-accent-foreground'
                         : 'bg-muted text-muted-foreground'
                   }`}
                 >

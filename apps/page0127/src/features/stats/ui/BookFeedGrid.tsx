@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { CoverImage } from '@repo/ui';
+import { CoverImage, StatePanel } from '@repo/ui';
 
 import { toCoverSource } from '@/entities/book';
 
@@ -33,11 +33,7 @@ export const BookFeedGrid = ({
   bookHref,
 }: BookFeedGridProps) => {
   if (books.length === 0) {
-    return (
-      <div className='rounded-2xl bg-sunken p-12 text-center'>
-        <p className='text-text-body'>조건에 맞는 책이 없어요.</p>
-      </div>
-    );
+    return <StatePanel message='조건에 맞는 책이 없어요.' />;
   }
 
   return (

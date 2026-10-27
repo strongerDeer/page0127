@@ -54,10 +54,9 @@ test('방문자도 올해 서재·독서 캘린더를 보고, 비공개 책 펼�
   await page.goto(path!);
 
   // 기본 탭 = 올해(비었으면 최근 해) — '전체'가 선택돼 있으면 안 된다
-  await expect(page.getByRole('tab', { name: '전체' })).toHaveAttribute(
-    'aria-selected',
-    'false'
-  );
+  await expect(
+    page.getByRole('button', { name: '전체', exact: true })
+  ).toHaveAttribute('aria-pressed', 'false');
 
   await expect(
     page.getByRole('heading', { name: '독서 캘린더' })

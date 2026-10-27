@@ -38,9 +38,11 @@ export { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from './compon
 export { Progress } from './components/progress';
 export { Skeleton } from './components/skeleton';
 export { Toaster } from './components/sonner';
+export { StatePanel } from './components/StatePanel';
 
 /* Navigation */
 export * from './components/pagination';
+export { SegmentedControl, SegmentedControlItem, segmentedItemClassName } from './components/SegmentedControl';
 
 /* Surface */
 export { Avatar, AvatarFallback, AvatarImage } from './components/avatar';

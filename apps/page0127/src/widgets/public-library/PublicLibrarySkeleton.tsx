@@ -4,8 +4,8 @@ import { PageContainer } from '@repo/ui';
 export const PublicLibrarySkeleton = () => {
   return (
     <PageContainer width='wide' className='space-y-10'>
-      <header className='flex flex-col gap-6 md:flex-row md:items-center md:justify-between'>
-        <div className='flex items-center gap-5'>
+      <header className='flex flex-col gap-6 md:flex-row md:items-start md:justify-between'>
+        <div className='flex items-start gap-5'>
           <Skeleton className='size-20 rounded-full' />
           <div className='space-y-3'>
             <Skeleton className='h-4 w-20' />

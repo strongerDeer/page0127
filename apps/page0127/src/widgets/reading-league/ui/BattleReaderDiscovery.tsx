@@ -62,7 +62,7 @@ export const BattleReaderDiscovery = ({
             >
               <Avatar className='size-11'>
                 <AvatarImage src={reader.photoUrl ?? undefined} alt='' />
-                <AvatarFallback className='bg-primary/15 text-primary'>
+                <AvatarFallback className='bg-accent text-accent-foreground'>
                   {nameInitials(name, 2)}
                 </AvatarFallback>
               </Avatar>

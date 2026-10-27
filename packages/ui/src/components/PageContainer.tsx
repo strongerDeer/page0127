@@ -6,16 +6,16 @@ import { cn } from '../lib/cn';
   페이지 외부 래퍼
   - min-h-screen: 배경이 뷰포트를 꽉 채우도록
   - 반응형 패딩: 모바일 24px(p-6) / 데스크톱 40px(md:p-10) — 전 페이지 통일 기준
-  - bg: 공개 서재처럼 배경을 한 단 낮춰야 하는 페이지용 옵션
+  - 기본 배경: background (라이트 모드 흰색). sunken은 보조 면에만 사용한다.
 
   기존 gradient(slate→blue→indigo)는 폐기했다. 파스텔 그라디언트 배경은
   실서비스에 없고(교보·밀리 모두 단색), AI 랜딩의 대표 신호다.
-  대신 종이 톤을 한 단 눌러 책장 바닥을 만든다.
+  페이지의 기본 면은 background로 통일한다.
 */
 const outerVariants = cva('min-h-screen p-6 md:p-10', {
   variants: {
     bg: {
-      default: '',
+      default: 'bg-background',
       sunken: 'bg-sunken',
     },
   },
@@ -60,8 +60,8 @@ type PageContainerProps = VariantProps<typeof outerVariants> &
  * // 데이터 그리드 (대시보드, 전체 도서)
  * <PageContainer width="wide" className="space-y-8">{children}</PageContainer>
  *
- * // 공개 서재 (배경을 한 단 눌러 책장 바닥을 만든다)
- * <PageContainer width="library" bg="sunken">{children}</PageContainer>
+ * // 공개 서재도 같은 기본 배경을 사용한다
+ * <PageContainer width="library">{children}</PageContainer>
  */
 export const PageContainer = ({
   children,

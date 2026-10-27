@@ -26,14 +26,14 @@ export const UserCard = ({ user, currentUserId }: UserCardProps) => {
   const displayName = toDisplayName(user);
 
   return (
-    <div className='flex items-center justify-between rounded-2xl bg-sunken p-4 transition-colors hover:bg-accent/50'>
+    <div className='flex items-start justify-between gap-3 rounded-2xl border border-line-soft bg-card p-4'>
       <ProfileLink
         username={user.username}
-        className='flex flex-1 items-center gap-3'
+        className='flex min-w-0 flex-1 items-start gap-3'
       >
         {/* 프로필 이미지 */}
         {user.photo_url ? (
-          <div className='relative h-12 w-12 overflow-hidden rounded-full'>
+          <div className='relative h-12 w-12 shrink-0 overflow-hidden rounded-full'>
             <Image
               src={user.photo_url}
               alt={displayName}
@@ -44,14 +44,14 @@ export const UserCard = ({ user, currentUserId }: UserCardProps) => {
             />
           </div>
         ) : (
-          <div className='flex h-12 w-12 items-center justify-center rounded-full bg-muted text-lg font-bold text-muted-foreground'>
+          <div className='flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-muted text-lg font-bold text-muted-foreground'>
             {toInitial(user)}
           </div>
         )}
 
         {/* 사용자 정보 */}
-        <div className='flex-1'>
-          <h3 className='font-medium text-foreground'>
+        <div className='min-w-0 flex-1'>
+          <h3 className='break-words font-medium text-foreground [overflow-wrap:anywhere]'>
             {displayName}
             {isCurrentUser && (
               <span className='ml-2 text-sm font-normal text-primary'>
@@ -73,7 +73,7 @@ export const UserCard = ({ user, currentUserId }: UserCardProps) => {
 
       {/* 팔로우 버튼 (본인은 숨김) */}
       {!isCurrentUser && (
-        <div className='ml-4'>
+        <div className='shrink-0'>
           <FollowButton userId={user.id} variant='outline' size='sm' />
         </div>
       )}

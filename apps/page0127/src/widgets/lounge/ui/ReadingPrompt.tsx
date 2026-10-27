@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { BookOpen } from 'lucide-react';
 
 export const ReadingPrompt = () => (
-  <div className='mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-line bg-accent/40 p-4'>
+  <div className='mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-line-soft bg-card p-4'>
     <BookOpen className='shrink-0 text-primary' size={24} aria-hidden='true' />
     <div className='min-w-36 flex-1'>
       <h3 className='text-sm font-semibold text-text-strong'>

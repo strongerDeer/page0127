@@ -179,9 +179,9 @@ export const PublicLibraryHeader = ({
     <>
       {/* 스카이 틴트 띠 — 공개 서재의 '전시장 입구'. 화면 끝까지 꽉 채운다(둥근 카드로 띄우지 않는다).
           왼쪽은 누구인지, 오른쪽은 어떤 독자인지 */}
-      <header className='bg-accent'>
+      <header className='bg-background'>
         <div
-          className={`mx-auto grid max-w-7xl gap-6 px-6 py-8 md:px-10 md:py-10 lg:items-center ${
+          className={`mx-auto grid max-w-7xl items-start gap-6 px-6 py-8 md:px-10 md:py-10 ${
             hasTasteCard ? 'lg:grid-cols-[1fr_400px]' : ''
           }`}
         >
@@ -204,12 +204,12 @@ export const PublicLibraryHeader = ({
                   />
                 </div>
               ) : (
-                <div className='flex size-20 shrink-0 items-center justify-center rounded-full bg-primary/10 text-2xl font-bold text-primary'>
+                <div className='flex size-20 shrink-0 items-center justify-center rounded-full bg-accent text-2xl font-bold text-accent-foreground'>
                   {displayName.charAt(0).toUpperCase()}
                 </div>
               )}
               {profile.bio && (
-                <p className='relative max-w-md break-keep rounded-2xl bg-card px-4 py-3 text-sm leading-relaxed text-text-body shadow-sm'>
+                <p className='relative max-w-md break-keep rounded-2xl border border-line-soft bg-card px-4 py-3 text-sm leading-relaxed text-text-body'>
                   {/* 말풍선 꼬리 — 사진 쪽을 가리킨다 */}
                   <span
                     aria-hidden
@@ -290,6 +290,12 @@ export const PublicLibraryHeader = ({
                 {isOwnProfile && (
                   <Button asChild variant='outline' className='shadow-none'>
                     <Link href='/settings'>프로필 편집</Link>
+                  </Button>
+                )}
+
+                {isOwnProfile && (
+                  <Button asChild variant='outline'>
+                    <Link href='/library/manage'>서재 관리</Link>
                   </Button>
                 )}
 

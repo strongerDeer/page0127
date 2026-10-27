@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { PageContainer } from '@repo/ui';
+import { PageContainer, PageHeader } from '@repo/ui';
 import { ChevronLeft } from 'lucide-react';
 
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
@@ -44,19 +44,23 @@ const RecapArchivePage = async () => {
 
   return (
     <PageContainer width='narrow' className='space-y-6'>
-      <div>
-        <Link
-          // 회상 카드가 있는 내 서재로 돌아간다. 아이디가 없으면 / 가 알맞은 곳으로 보낸다
-          href={profile?.username ? `/${profile.username}` : '/'}
-          className='inline-flex items-center gap-0.5 text-sm text-text-subtle hover:text-text-strong'
-        >
-          <ChevronLeft className='size-4' aria-hidden />내 서재로
-        </Link>
-        <h1 className='mt-2 text-2xl font-bold text-text-strong'>지난 회상</h1>
-        <p className='mt-2 text-sm text-text-subtle'>
-          최근 {RECAP_ARCHIVE_WEEKS}주 동안 끝내고 담은 책을 주마다 모았어요
-        </p>
-      </div>
+      <PageHeader
+        title='지난 회상'
+        description={
+          <>
+            최근 {RECAP_ARCHIVE_WEEKS}주 동안 끝내고 담은 책을 주마다 모았어요
+          </>
+        }
+        above={
+          <Link
+            // 회상 카드가 있는 내 서재로 돌아간다. 아이디가 없으면 / 가 알맞은 곳으로 보낸다
+            href={profile?.username ? `/${profile.username}` : '/'}
+            className='inline-flex items-center gap-0.5 text-sm text-text-subtle hover:text-text-strong'
+          >
+            <ChevronLeft className='size-4' aria-hidden />내 서재로
+          </Link>
+        }
+      />
 
       <RecapArchive
         weeks={weeks}

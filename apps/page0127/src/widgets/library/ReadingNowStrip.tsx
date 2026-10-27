@@ -34,7 +34,7 @@ type ReadingNowStripProps = {
  * '지금 읽는 중' 강조 스트립
  *
  * 읽는 중인 책은 가장 활발한 책이라 흐리게(opacity) 처리하는 대신
- * 서재 맨 위에 primary 톤으로 앞세운다.
+ * 서재 맨 위의 흰색 카드와 primary 아이콘으로 앞세운다.
  * - 읽는 책이 없으면 렌더링하지 않는다(null).
  * - 표지를 앞세우고 제목은 말풍선으로만 — 제목이 줄지어 있으면 표지가 작아져 눈에 안 띄었다.
  * - 줄을 넘기면 다음 줄로(가로 스크롤 상자는 위로 뜨는 말풍선을 잘라 버린다).
@@ -67,7 +67,7 @@ export const ReadingNowStrip = ({
   return (
     <section
       ref={stripRef}
-      className='flex flex-wrap items-center gap-x-5 gap-y-3 overflow-x-clip rounded-2xl border border-primary/20 bg-primary/5 px-5 py-3'
+      className='flex flex-wrap items-center gap-x-5 gap-y-3 overflow-x-clip rounded-2xl border border-line-soft bg-card px-5 py-3'
     >
       <h3 className='flex shrink-0 items-center gap-1.5 text-sm font-medium text-text-strong'>
         <BookOpen className='size-4 text-primary' />

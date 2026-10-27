@@ -33,7 +33,7 @@ export const ArchiveToggleButton = ({
 
     if (result) {
       setCurrentIsPublic(next);
-      toast.success(next ? '공개로 전환했어요.' : '보관함으로 옮겼어요.');
+      toast.success(next ? '공개로 전환했어요.' : '비공개로 바꿨어요.');
       router.refresh();
     } else {
       toast.error('전환 중 오류가 발생했습니다.');
@@ -45,12 +45,12 @@ export const ArchiveToggleButton = ({
       {currentIsPublic ? (
         <>
           <Archive className='h-4 w-4' />
-          보관하기
+          비공개로 변경
         </>
       ) : (
         <>
           <ArchiveRestore className='h-4 w-4' />
-          보관 해제
+          공개로 변경
         </>
       )}
     </Button>
