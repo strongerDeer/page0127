@@ -16,7 +16,7 @@ import {
 
 import { NudgeDialog } from './NudgeDialog';
 
-import type { ReadingNudgeMessage } from '@/entities/notification/model/readingNudge';
+import type { SendEnvelopeInput } from '@/entities/notification/api/readingNudge';
 
 export const NudgeButton = ({
   currentUserId,
@@ -49,18 +49,13 @@ export const NudgeButton = ({
     retry: 1,
   });
   const mutation = useMutation({
-    mutationFn: ({
-      message,
-      bookId,
-    }: {
-      message: ReadingNudgeMessage;
-      bookId: string | null;
-    }) => sendReadingNudge(createClient(), recipientId, message, bookId),
+    mutationFn: (input: SendEnvelopeInput) =>
+      sendReadingNudge(recipientId, input),
     onSuccess: () => {
       setSentOn(today);
       setOpen(false);
       void client.invalidateQueries({ queryKey });
-      toast.success(`${recipientName}님을 콕 찔렀어요.`);
+      toast.success(`${recipientName}님께 메시지를 보냈어요.`);
     },
   });
   return (
@@ -68,22 +63,16 @@ export const NudgeButton = ({
       <Button
         type='button'
         variant='outline'
-        size={iconOnly ? 'icon-sm' : 'md'}
-        aria-label={
-          iconOnly
-            ? `${recipientName}님 ${sentOn === today ? '오늘 콕 찌름' : '콕 찌르기'}`
-            : undefined
-        }
-        title={`${recipientName}님 ${sentOn === today ? '오늘 콕 찌름' : '콕 찌르기'}`}
+        size={iconOnly ? 'sm' : 'md'}
         onClick={() => {
           mutation.reset();
           setOpen(true);
         }}
         disabled={sentOn === today}
-        className={iconOnly ? 'shrink-0 rounded-full' : 'min-w-0'}
+        className='min-w-0 shrink-0 rounded-full'
       >
         <Pointer size={16} aria-hidden='true' />
-        {!iconOnly && (sentOn === today ? '오늘 콕 찌름' : '콕 찌르기')}
+        {sentOn === today ? '오늘 보냄' : '메시지'}
       </Button>
       <NudgeDialog
         key={context}
@@ -91,14 +80,13 @@ export const NudgeButton = ({
         onOpenChange={setOpen}
         recipientName={recipientName}
         context={context}
-        books={composer.data?.books ?? []}
         loading={composer.isPending}
         sending={mutation.isPending}
         sent={composer.data?.sent || sentOn === today}
         loadFailed={composer.isError}
         onRetry={() => void composer.refetch()}
         error={composer.error?.message ?? mutation.error?.message}
-        onSend={(message, bookId) => mutation.mutate({ message, bookId })}
+        onSend={(input) => mutation.mutate(input)}
       />
     </>
   );

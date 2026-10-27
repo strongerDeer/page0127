@@ -29,7 +29,7 @@ test('모바일(390px)에서 책 상세 제목이 짓눌리지 않고, 가로로
   expect(scroll).toBeLessThanOrEqual(client);
 });
 
-test('비로그인 방문자가 "나도 읽었어요"를 누르면 그 책을 보관하고 로그인으로 간다', async ({
+test('비로그인 방문자는 완독 입력을 저장한 뒤에만 책을 보관하고 로그인으로 간다', async ({
   page,
 }) => {
   const path = await findBookPath(page);
@@ -38,12 +38,44 @@ test('비로그인 방문자가 "나도 읽었어요"를 누르면 그 책을 �
   await page.evaluate(() => localStorage.removeItem('page0127:pending-shelf'));
 
   await page.getByRole('button', { name: '나도 읽었어요' }).click();
+  const dialog = page.getByRole('dialog', { name: '내 완독 기록' });
+  await expect(dialog).toBeVisible();
+  await expect(page).not.toHaveURL(/\/login/);
+  expect(
+    await page.evaluate(() => localStorage.getItem('page0127:pending-shelf'))
+  ).toBeNull();
+
+  // 열거나 취소한 것만으로는 완독 기록을 만들지 않는다.
+  await dialog.getByRole('button', { name: '취소', exact: true }).click();
+  await expect(dialog).not.toBeVisible();
+  expect(
+    await page.evaluate(() => localStorage.getItem('page0127:pending-shelf'))
+  ).toBeNull();
+
+  await page.getByRole('button', { name: '나도 읽었어요' }).click();
+  await dialog.getByRole('button', { name: '연도만', exact: true }).click();
+  await dialog.getByLabel('완독 연도', { exact: true }).fill('2024');
+  await dialog.getByRole('button', { name: '4점', exact: true }).click();
+  await dialog.getByLabel('공개 기록으로 남기기').uncheck();
+  await dialog
+    .getByRole('button', { name: '완독 기록 저장', exact: true })
+    .click();
   await expect(page).toHaveURL(/\/login/);
 
   const stored = await page.evaluate(() =>
     localStorage.getItem('page0127:pending-shelf')
   );
-  expect(JSON.parse(stored ?? '{}').books).toHaveLength(1);
+  const books = JSON.parse(stored ?? '{}').books;
+  expect(books).toHaveLength(1);
+  expect(books[0]).toMatchObject({
+    status: 'completed',
+    completion: {
+      completedDate: null,
+      completedYear: 2024,
+      rating: 4,
+      isPublic: false,
+    },
+  });
   await expect(
     page.getByText('로그인하면 고른 1권이 내 서재에 바로 꽂혀요.')
   ).toBeVisible();

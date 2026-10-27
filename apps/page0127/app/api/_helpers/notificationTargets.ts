@@ -12,7 +12,12 @@ type BookRow = {
   cover_image?: string | null;
   author?: string | null;
 };
-type GlobalBookRow = { id: string; title: string };
+type GlobalBookRow = {
+  id: string;
+  title: string;
+  cover_image?: string | null;
+  author?: string | null;
+};
 
 /**
  * 알림 한 건이 가리키는 책의 제목과 답글 여부 — 문장을 만드는 쪽(목록·푸시)이 함께 쓴다.
@@ -37,7 +42,16 @@ export const toNotificationTarget = (
 
   if (target_type === 'global_book') {
     const globalBook = globalBooks.get(target_id);
-    return { title: globalBook?.title ?? null, isReply: type === 'comment' };
+    return {
+      title: globalBook?.title ?? null,
+      isReply: type === 'comment',
+      ...(type === 'reading_nudge'
+        ? {
+            cover_image: globalBook?.cover_image ?? null,
+            author: globalBook?.author ?? null,
+          }
+        : {}),
+    };
   }
   if (target_type !== 'book') return null;
 
@@ -87,7 +101,7 @@ export const loadNotificationTargets = async (
     globalBookIds.length > 0
       ? supabase
           .from('global_books')
-          .select('id, title')
+          .select('id, title, cover_image, author')
           .in('id', globalBookIds)
           .returns<GlobalBookRow[]>()
       : null,

@@ -76,6 +76,31 @@ export const sendPushForNotifications = async (
   webpush.setVapidDetails(vapid.subject, vapid.publicKey, vapid.privateKey);
 
   const admin = createAdminClient();
+  const nudgeUsers = [
+    ...new Set(
+      notifications
+        .filter((n) => n.type === 'reading_nudge')
+        .map((n) => n.user_id)
+    ),
+  ];
+  if (nudgeUsers.length) {
+    // 수신 설정은 발송 시점에 다시 확인한다. 조회 실패도 미동의로 취급한다.
+    const { data, error } = await admin
+      .from('reading_nudge_settings')
+      .select('user_id, enabled, push_enabled')
+      .in('user_id', nudgeUsers);
+    const optedIn = new Set(
+      error
+        ? []
+        : (data ?? [])
+            .filter((row) => row.enabled && row.push_enabled)
+            .map((row) => row.user_id)
+    );
+    notifications = notifications.filter(
+      (n) => n.type !== 'reading_nudge' || optedIn.has(n.user_id)
+    );
+  }
+  if (!notifications.length) return { sent: 0, removed: 0 };
   const userIds = [...new Set(notifications.map((n) => n.user_id))];
 
   const { data: subscriptions, error: subError } = await admin

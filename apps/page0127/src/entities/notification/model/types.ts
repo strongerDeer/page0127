@@ -68,6 +68,7 @@ export type NotificationTarget = {
  * 알림 조회 응답 (프로필 정보 포함)
  */
 export type NotificationWithActor = {
+  envelope?: import('./readingNudge').ReadingEnvelopeInfo | null;
   /** 좋아요·댓글 알림에만. 없으면 예전 문장을 쓴다 */
   target?: NotificationTarget | null;
   actor: {

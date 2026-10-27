@@ -24,7 +24,13 @@ export const addPendingBook = (
       books:
         book.status === 'completed'
           ? books.map((b) =>
-              isSameBook(b, book) ? { ...b, status: 'completed' } : b
+              isSameBook(b, book)
+                ? {
+                    ...b,
+                    status: 'completed',
+                    ...(book.completion ? { completion: book.completion } : {}),
+                  }
+                : b
             )
           : books,
       goal,

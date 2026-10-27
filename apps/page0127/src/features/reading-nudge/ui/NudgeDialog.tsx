@@ -1,57 +1,111 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 
 import {
+  BookCover,
   Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  Input,
 } from '@repo/ui';
+import { Search, X } from 'lucide-react';
 
-import { READING_NUDGE_MESSAGES } from '@/entities/notification/model/readingNudge';
-import { BookEnvelopeArtwork } from '@/entities/notification/ui/BookEnvelopeArtwork';
+import { searchBooks } from '@/shared/api/book';
 
-import type {
-  NudgeBook,
-  ReadingNudgeMessage,
+import {
+  randomEnvelopeWording,
+  type ReadingEnvelopeKind,
 } from '@/entities/notification/model/readingNudge';
 
+import type { SendEnvelopeInput } from '@/entities/notification/api/readingNudge';
+import type { ProviderBook } from '@/shared/api/book-provider';
+
+const labels = {
+  recommendation: '책 추천',
+  invitation: '같이 읽기',
+  note: '한마디',
+} as const;
 export type NudgeDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   recipientName: string;
-  books: NudgeBook[];
-  context: 'ahead' | 'behind' | 'tied';
+  context?: 'ahead' | 'behind' | 'tied';
   loading?: boolean;
   sending?: boolean;
   sent?: boolean;
   error?: string;
   loadFailed?: boolean;
   onRetry?: () => void;
-  onSend: (message: ReadingNudgeMessage, bookId: string | null) => void;
+  onSend: (input: SendEnvelopeInput) => void;
+  onSearch?: typeof searchBooks;
 };
 export const NudgeDialog = ({
   open,
   onOpenChange,
   recipientName,
-  books,
-  context,
-  loading = false,
-  sending = false,
-  sent = false,
+  loading,
+  sending,
+  sent,
   error,
-  loadFailed = false,
+  loadFailed,
   onRetry,
   onSend,
+  onSearch = searchBooks,
 }: NudgeDialogProps) => {
-  const [message, setMessage] = useState<ReadingNudgeMessage>('together');
-  const [bookId, setBookId] = useState('');
   const id = useId();
-  const situation: ReadingNudgeMessage =
-    context === 'ahead' ? 'chase' : context === 'behind' ? 'wait' : 'next';
+  const [kind, setKind] = useState<ReadingEnvelopeKind>('recommendation');
+  const [drafts, setDrafts] = useState(
+    () =>
+      Object.fromEntries(
+        Object.keys(labels).map((key) => [
+          key,
+          {
+            message: randomEnvelopeWording(key as ReadingEnvelopeKind),
+            book: null as ProviderBook | null,
+          },
+        ])
+      ) as Record<
+        ReadingEnvelopeKind,
+        { message: string; book: ProviderBook | null }
+      >
+  );
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<ProviderBook[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  const [searched, setSearched] = useState(false);
+  const request = useRef(0);
+  const draft = drafts[kind];
+  const disabled = Boolean(sending || loading || sent || loadFailed);
+  const patchDraft = (value: Partial<typeof draft>) =>
+    setDrafts((previous) => ({
+      ...previous,
+      [kind]: { ...previous[kind], ...value },
+    }));
+  const search = async () => {
+    const text = query.trim();
+    if (!text || disabled) return;
+    const version = ++request.current;
+    setSearching(true);
+    setSearchError('');
+    setSearched(true);
+    try {
+      const result = await onSearch(text, { maxResults: 10 });
+      if (version === request.current)
+        setResults(result.items.filter((book) => /^\d{13}$/.test(book.isbn)));
+    } catch {
+      if (version === request.current) {
+        setResults([]);
+        setSearchError('책을 찾지 못했어요. 다시 검색해 주세요.');
+      }
+    } finally {
+      if (version === request.current) setSearching(false);
+    }
+  };
   return (
     <Dialog
       open={open}
@@ -61,94 +115,189 @@ export const NudgeDialog = ({
     >
       <DialogContent className='max-h-[calc(100dvh-2rem)] max-w-md overflow-y-auto rounded-3xl'>
         <DialogHeader>
-          <div className='flex items-center gap-4 pr-4 text-left'>
-            <span className='shrink-0'>
-              <BookEnvelopeArtwork compact />
-            </span>
-            <div className='min-w-0 space-y-2'>
-              <DialogTitle className='break-all leading-snug'>
-                {recipientName}님께 책 봉투
-              </DialogTitle>
-              <DialogDescription>
-                책 한 권과 한마디를 정성껏 전해드릴게요.
-              </DialogDescription>
-            </div>
-          </div>
+          <DialogTitle className='pr-6 text-left break-all'>
+            {recipientName}님께 메시지
+          </DialogTitle>
+          <DialogDescription className='text-left'>
+            책 한 권, 또는 가벼운 한마디를 전해요.
+          </DialogDescription>
         </DialogHeader>
+        <div
+          className='flex rounded-xl bg-muted p-1'
+          role='group'
+          aria-label='메시지 종류'
+        >
+          {Object.entries(labels).map(([value, label]) => (
+            <Button
+              key={value}
+              type='button'
+              size='sm'
+              variant={kind === value ? 'default' : 'ghost'}
+              className='flex-1'
+              disabled={disabled}
+              aria-pressed={kind === value}
+              onClick={() => {
+                setKind(value as ReadingEnvelopeKind);
+                request.current++;
+                setResults([]);
+                setQuery('');
+                setSearched(false);
+                setSearching(false);
+                setSearchError('');
+              }}
+            >
+              {label}
+            </Button>
+          ))}
+        </div>
         <form
           className='space-y-5'
           onSubmit={(event) => {
             event.preventDefault();
-            onSend(message, bookId || null);
+            if (
+              !disabled &&
+              draft.message.trim() &&
+              (kind === 'note' || draft.book)
+            )
+              onSend({
+                kind,
+                message: draft.message.trim(),
+                bookIsbn: draft.book?.isbn ?? null,
+              });
           }}
         >
-          <fieldset
-            disabled={sending || loading || sent || loadFailed}
-            className='space-y-2'
-          >
-            <legend className='mb-2 text-sm font-medium'>
-              어떤 말을 보낼까요?
-            </legend>
-            {(['together', situation, 'reading'] as const).map((key) => (
-              <label
-                key={key}
-                className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 text-sm ${message === key ? 'border-primary bg-accent' : 'border-line'}`}
-              >
-                <input
-                  type='radio'
-                  name={`${id}-message`}
-                  value={key}
-                  checked={message === key}
-                  onChange={() => setMessage(key)}
-                  className='accent-primary'
-                />
-                {READING_NUDGE_MESSAGES[key]}
-              </label>
-            ))}
-          </fieldset>
           <div>
             <label
-              htmlFor={`${id}-book`}
+              htmlFor={`${id}-message`}
               className='mb-2 block text-sm font-medium'
             >
-              책 한 권도 함께 보낼까요?{' '}
-              <span className='font-normal text-text-subtle'>(선택)</span>
+              전할 한마디
             </label>
-            <select
-              id={`${id}-book`}
-              value={bookId}
-              onChange={(e) => setBookId(e.target.value)}
-              disabled={loading || sending || sent || loadFailed}
-              className='w-full rounded-lg border border-line bg-card p-3 text-sm'
-            >
-              <option value=''>한마디만 보내기</option>
-              {books.map((book) => (
-                <option key={book.id} value={book.id}>
-                  {book.title}
-                </option>
-              ))}
-            </select>
-            {bookId && (
-              <p className='mt-2 rounded-lg bg-accent px-3 py-2 text-sm text-text-body'>
-                함께 보낼 책 · {books.find((book) => book.id === bookId)?.title}
-              </p>
-            )}
-            <p className='mt-2 text-xs text-text-subtle'>
-              내 공개 기록 중 읽는 중·완독 책을 첨부할 수 있어요.
+            <textarea
+              id={`${id}-message`}
+              rows={3}
+              maxLength={200}
+              required
+              disabled={disabled}
+              value={draft.message}
+              onChange={(e) => patchDraft({ message: e.target.value })}
+              className='w-full resize-y rounded-xl border border-line bg-card p-3 text-sm leading-relaxed'
+            />
+            <p className='mt-1 text-right text-xs text-text-subtle'>
+              {draft.message.length}/200
             </p>
           </div>
+          <div>
+            <p className='mb-2 text-sm font-medium'>
+              {kind === 'note' ? '함께 보낼 책 (선택)' : '함께 보낼 책'}
+            </p>
+            {draft.book ? (
+              <div className='flex items-center gap-3 rounded-xl border border-line p-3'>
+                <BookCover
+                  src={draft.book.coverImage}
+                  title={draft.book.title}
+                  size='sm'
+                />
+                <div className='min-w-0 flex-1'>
+                  <p className='text-sm font-semibold break-words'>
+                    {draft.book.title}
+                  </p>
+                  <p className='text-xs text-text-subtle'>
+                    {draft.book.author}
+                  </p>
+                </div>
+                <Button
+                  type='button'
+                  variant='ghost'
+                  size='icon-sm'
+                  aria-label='책 선택 취소'
+                  disabled={disabled}
+                  onClick={() => patchDraft({ book: null })}
+                >
+                  <X size={16} />
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className='flex gap-2'>
+                  <Input
+                    aria-label='책 제목이나 저자 검색'
+                    placeholder='책 제목이나 저자'
+                    value={query}
+                    disabled={disabled}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        void search();
+                      }
+                    }}
+                  />
+                  <Button
+                    type='button'
+                    variant='outline'
+                    aria-label='책 검색'
+                    disabled={disabled || !query.trim()}
+                    loading={searching}
+                    onClick={() => void search()}
+                  >
+                    <Search size={18} />
+                  </Button>
+                </div>
+                {searchError && (
+                  <p role='alert' className='mt-2 text-sm'>
+                    {searchError}
+                  </p>
+                )}
+                {searched && !searching && !searchError && !results.length && (
+                  <p role='status' className='mt-2 text-sm text-text-subtle'>
+                    검색 결과가 없어요. 다른 제목으로 찾아보세요.
+                  </p>
+                )}
+                <ul className='mt-2 max-h-60 space-y-1 overflow-y-auto'>
+                  {results.map((book) => (
+                    <li key={book.isbn}>
+                      <button
+                        type='button'
+                        disabled={disabled}
+                        className='flex w-full items-center gap-3 rounded-lg p-2 text-left hover:bg-accent focus-visible:outline-2 focus-visible:outline-primary'
+                        onClick={() => {
+                          patchDraft({ book });
+                          setResults([]);
+                        }}
+                      >
+                        <BookCover
+                          src={book.coverImage}
+                          title={book.title}
+                          size='sm'
+                        />
+                        <span className='min-w-0 text-sm'>
+                          <span className='block font-semibold'>
+                            {book.title}
+                          </span>
+                          <span className='text-xs text-text-subtle'>
+                            {book.author}
+                          </span>
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
           {loading && (
-            <p role='status' className='text-sm text-text-subtle'>
-              보낼 수 있는 기록을 확인하고 있어요.
+            <p role='status' className='text-sm'>
+              전송 가능 여부를 확인하고 있어요.
             </p>
           )}
           {sent && (
             <p role='status' className='text-sm text-primary'>
-              오늘은 이미 콕 찔렀어요. 내일 다시 만나요.
+              오늘은 이미 보냈어요. 내일 다시 만나요.
             </p>
           )}
           {error && (
-            <p role='alert' className='text-sm text-text-body'>
+            <p role='alert' className='text-sm'>
               {error}
             </p>
           )}
@@ -160,14 +309,17 @@ export const NudgeDialog = ({
           <Button
             type='submit'
             className='w-full'
-            disabled={loading || sent || loadFailed}
             loading={sending}
+            disabled={
+              disabled ||
+              !draft.message.trim() ||
+              (kind !== 'note' && !draft.book)
+            }
           >
-            {bookId ? '책 봉투 보내기' : '콕 찌르기 보내기'}
+            {labels[kind]} 보내기
           </Button>
           <p className='text-xs leading-relaxed text-text-subtle'>
-            앱 내 알림으로 전달 · 같은 상대에게 서울 기준 하루 한 번<br />
-            받는 사람은 설정에서 콕 찌르기 알림을 끌 수 있어요.
+            같은 상대에게 하루 한 번 · 고른 책은 내 서재에 자동 등록되지 않아요.
           </p>
         </form>
       </DialogContent>

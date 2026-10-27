@@ -1,5 +1,6 @@
 /** POST /api/books 에 넘길 책 정보 — 로그인 너머로 들고 가는 최소 필드 */
 export type PendingBook = {
+  completion?: import('@/entities/book/ui/CompleteReadingForm').CompletedReadingInput;
   /** 없으면 기존 맛보기처럼 완독. 일반 담기는 읽고 싶은 책으로 보관한다. */
   status?: 'completed' | 'want_to_read';
   isbn: string;
