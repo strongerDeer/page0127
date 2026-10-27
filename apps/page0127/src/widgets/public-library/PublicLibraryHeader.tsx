@@ -245,7 +245,7 @@ export const PublicLibraryHeader = ({
                       {displayName}님의 서재
                     </h1>
                     {readerCard.stat && (
-                      <p className='text-sm text-text-subtle'>
+                      <p className='text-sm text-text-body'>
                         {readerCard.stat}
                       </p>
                     )}
@@ -260,14 +260,14 @@ export const PublicLibraryHeader = ({
                     {displayName}님의 서재
                   </h1>
                   {readerCard.stat && (
-                    <p className='mt-1 text-sm text-text-subtle'>
+                    <p className='mt-1 text-sm text-text-body'>
                       {readerCard.stat}
                     </p>
                   )}
                 </>
               )}
               <div className='mt-2 flex flex-wrap items-center gap-x-4 gap-y-2'>
-                <span className='text-sm text-text-subtle'>@{username}</span>
+                <span className='text-sm text-text-body'>@{username}</span>
                 <FollowStats
                   userId={profile.id}
                   onFollowersClick={() => setFollowersModalOpen(true)}

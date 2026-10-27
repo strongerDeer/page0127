@@ -65,7 +65,7 @@ export const FollowStats = ({
       >
         <Users className='h-4 w-4' />
         <span className='font-medium'>{followers}</span>
-        <span className='text-muted-foreground'>팔로워</span>
+        <span className='text-text-body'>팔로워</span>
       </button>
 
       <button
@@ -73,7 +73,7 @@ export const FollowStats = ({
         className='flex items-center gap-1 transition-colors hover:text-primary'
       >
         <span className='font-medium'>{following}</span>
-        <span className='text-muted-foreground'>팔로잉</span>
+        <span className='text-text-body'>팔로잉</span>
       </button>
     </div>
   );

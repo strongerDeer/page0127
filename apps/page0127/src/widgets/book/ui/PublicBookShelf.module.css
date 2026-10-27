@@ -74,6 +74,13 @@
   padding: 0 1px;
   /* 회독 뱃지를 표지 위에 얹기 위한 기준점 */
   position: relative;
+  /*
+    얇은 책(책등 15~23px)도 누르는 칸은 24px 이상 — WCAG 2.5.8 터치 영역 기준
+    (Lighthouse target-size, 2026-10-27). 이미지 폭은 그대로 두고 칸만 넓혀 가운데 세운다.
+    이미지를 넓히면 안 된다 — 아래 Image 주석(PublicBookShelf.tsx)의 잘림·늘어짐 참고.
+  */
+  min-width: 24px;
+  text-align: center;
 }
 
 /* 회독 뱃지 — 책장은 같은 책의 회독을 한 권으로 합쳐 세우므로,

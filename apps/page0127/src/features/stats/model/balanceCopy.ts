@@ -89,3 +89,22 @@ export const CHART_COLORS = [
 /** 순위 → 분야 색. 토큰이 7개라 8·9위는 슬레이트(chart-5)를 함께 쓴다 */
 export const categoryColor = (rank: number): string =>
   rank < CHART_COLORS.length ? CHART_COLORS[rank] : 'var(--chart-5)';
+
+/**
+ * 순위 → 분야 칸 위 글자색. 칸 색마다 흰 글자·남색 글자 중 4.5:1 을 넘는 쪽을 고른다
+ * (흰 글자 하나로 쓰면 스카이·앰버·틸 칸이 2.2~2.5 였다 — Lighthouse 2026-10-27).
+ * 다크는 chart-1·2·3 색이 바뀌어 고르는 쪽도 다르다. 순서는 CHART_COLORS 와 같다.
+ */
+const ON_CHART_INK = [
+  'text-white dark:text-[var(--navy-900)]', // chart-1 blue/600 5.33 · 다크 blue/300 6.45
+  'text-white dark:text-[var(--navy-900)]', // chart-2 orange/600 5.34 · 다크 orange/400 4.51
+  'text-[var(--navy-900)] dark:text-white', // chart-3 blue/300 6.45 · 다크 blue/500 4.36(가장 가까움)
+  'text-[var(--navy-900)]', // chart-4 amber/500 6.42
+  'text-white', // chart-5 slate/500 5.35 · 다크 slate/400 4.75
+  'text-[var(--navy-900)]', // chart-6 teal/500 5.79
+  'text-white', // chart-7 violet/500 4.55
+] as const;
+
+/** 분야 칸 위 글자색(Tailwind 클래스). 8·9위는 categoryColor 처럼 chart-5 를 따른다 */
+export const categoryInk = (rank: number): string =>
+  rank < ON_CHART_INK.length ? ON_CHART_INK[rank] : ON_CHART_INK[4];

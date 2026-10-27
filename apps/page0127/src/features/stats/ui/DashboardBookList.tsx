@@ -281,7 +281,7 @@ export const DashboardBookList = ({
       <div className='mb-4 flex flex-wrap items-center gap-2'>
         <h3 className='mr-auto text-lg font-medium text-text-strong'>
           {title}{' '}
-          <span className='font-normal text-text-subtle'>
+          <span className='font-normal text-text-body'>
             {filteredBooks.length}권
           </span>
         </h3>
@@ -383,7 +383,10 @@ export const DashboardBookList = ({
         </div>
 
         <Select value={sortOption} onValueChange={handleSortChange}>
-          <SelectTrigger className='w-[105px] border-0 bg-transparent px-2 shadow-none sm:w-[120px]'>
+          <SelectTrigger
+            aria-label='정렬 기준'
+            className='w-[105px] border-0 bg-transparent px-2 shadow-none sm:w-[120px]'
+          >
             <SelectValue placeholder='정렬 선택' />
           </SelectTrigger>
           <SelectContent>

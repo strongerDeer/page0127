@@ -55,7 +55,7 @@ export const BadgeSummary = ({
           href={`/${username}/badges`}
           className='inline-flex items-center gap-0.5 text-xs text-text-subtle hover:text-text-strong'
         >
-          전체 보기
+          배지 전체 보기
           <ChevronRight className='size-3.5' aria-hidden />
         </Link>
       </div>
