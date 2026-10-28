@@ -66,9 +66,12 @@ export default async function GlobalBooksPage(props: {
   const user = await getCurrentUser();
 
   // global_books 목록은 user와 무관 → user별 쿼리(로그인 시에만)와 함께 병렬 페치
-  let booksQuery = supabase.from('global_books').select('*', {
-    count: 'exact',
-  });
+  let booksQuery = supabase
+    .from('global_books')
+    .select('*', {
+      count: 'exact',
+    })
+    .eq('review_status', 'approved');
   if (q) {
     // 제목 또는 저자에 검색어가 포함된 책 (대소문자 무시)
     const pattern = quotePostgrestValue(`%${q}%`);

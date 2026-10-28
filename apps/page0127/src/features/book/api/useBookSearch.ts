@@ -15,6 +15,7 @@ import type { ProviderBook } from '@/entities/book';
 //   → useState 6개라면 렌더링이 여러 번 트리거될 수 있음
 //   → reducer로 묶으면 dispatch 한 번에 원자적(atomic)으로 갱신
 type SearchState = {
+  catalogBooks: ProviderBook[];
   books: ProviderBook[];
   isLoading: boolean;
   error: string | null;
@@ -30,12 +31,18 @@ type SearchState = {
 // SEARCH_ERROR  → 검색 실패 (에러 저장, loading OFF)
 type SearchAction =
   | { type: 'SEARCH_START'; query: string; page: number }
-  | { type: 'SEARCH_SUCCESS'; books: ProviderBook[]; totalResults: number }
+  | {
+      type: 'SEARCH_SUCCESS';
+      books: ProviderBook[];
+      totalResults: number;
+      catalogBooks?: ProviderBook[];
+    }
   | { type: 'SEARCH_ERROR' };
 
 // ─── 초기 상태 ────────────────────────────────────────────────────
 const initialState: SearchState = {
   books: [],
+  catalogBooks: [],
   isLoading: false,
   error: null,
   currentPage: 1,
@@ -61,6 +68,7 @@ function searchReducer(state: SearchState, action: SearchAction): SearchState {
         ...state,
         isLoading: false,
         books: action.books,
+        catalogBooks: action.catalogBooks ?? [],
         totalResults: action.totalResults,
       };
     case 'SEARCH_ERROR':
@@ -135,7 +143,11 @@ export const useBookSearch = () => {
       dispatch({
         type: 'SEARCH_SUCCESS',
         books: response.items,
-        totalResults: response.totalResults,
+        catalogBooks: response.catalogItems ?? [],
+        totalResults: Math.max(
+          response.totalResults,
+          response.catalogTotalResults ?? 0
+        ),
       });
     } catch (err) {
       if (requestId !== requestIdRef.current) return;
@@ -157,6 +169,7 @@ export const useBookSearch = () => {
   // state를 풀어서 반환 → 기존 사용처(BookSearchInput 등) 변경 없음
   return {
     books: state.books,
+    catalogBooks: state.catalogBooks,
     isLoading: state.isLoading,
     error: state.error,
     currentPage: state.currentPage,

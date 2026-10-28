@@ -30,6 +30,7 @@ async function getGlobalBook(id: string): Promise<GlobalBook | null> {
     .from('global_books')
     .select('*')
     .eq('id', id)
+    .eq('review_status', 'approved')
     .single();
 
   if (error) return null;

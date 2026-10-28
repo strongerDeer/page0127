@@ -14,6 +14,9 @@ vi.mock('../_helpers/auth', () => ({
   getCurrentUser: mocks.auth,
   getSupabaseClient: mocks.client,
 }));
+vi.mock('@/shared/config/supabase/admin', () => ({
+  createAdminClient: () => ({ from: () => ({ insert: mocks.insert }) }),
+}));
 vi.mock('../_helpers/push', () => ({ schedulePush: mocks.push }));
 vi.mock('@/shared/api/book-provider', () => ({
   getBookProvider: () => ({ getByIsbn: mocks.detail }),
@@ -45,6 +48,7 @@ beforeEach(() => {
   });
   mocks.detail.mockResolvedValue({
     isbn: '9788937460449',
+    source: 'yes24',
     title: '데미안',
     author: '헤르만 헤세',
     page: 240,
@@ -83,6 +87,9 @@ describe('책 메시지 전송', () => {
       })
     );
     expect(response.status).toBe(201);
+    expect(mocks.insert).toHaveBeenCalledWith(
+      expect.objectContaining({ review_status: 'approved', source: 'yes24' })
+    );
     expect(mocks.rpc).toHaveBeenCalledWith(
       'send_reading_envelope',
       expect.objectContaining({

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import {
+  BookCheck,
   Bug,
   Flag,
   Gauge,
@@ -16,6 +17,7 @@ const NAV = [
   { href: '/admin', label: '대시보드', icon: LayoutDashboard },
   { href: '/admin/quality', label: '품질', icon: Gauge },
   { href: '/admin/errors', label: '에러', icon: Bug },
+  { href: '/admin/books', label: '도서 검수', icon: BookCheck },
   { href: '/admin/reports', label: '신고', icon: Flag },
   { href: '/admin/analytics', label: '유입분석', icon: LineChart },
   { href: '/admin/costs', label: 'AI 비용', icon: Receipt },

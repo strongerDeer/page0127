@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 
 import { getBookProvider } from '@/shared/api/book-provider';
+import { createAdminClient } from '@/shared/config/supabase/admin';
 
 import { getCurrentUser, getSupabaseClient } from '../_helpers/auth';
 import { schedulePush } from '../_helpers/push';
@@ -36,7 +37,8 @@ export async function POST(request: NextRequest) {
           404
         );
       pageCount = book.page;
-      const { error } = await supabase.from('global_books').insert({
+      const { error } = await createAdminClient().from('global_books').insert({
+        review_status: 'approved',
         isbn: book.isbn,
         title: book.title,
         sub_title: book.subTitle,

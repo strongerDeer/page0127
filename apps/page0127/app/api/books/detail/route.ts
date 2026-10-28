@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { getBookProvider } from '@/shared/api/book-provider';
+import { toManualProviderBook } from '@/shared/api/book-provider/manualCatalog';
+
+import { getSupabaseClient } from '../../_helpers/auth';
 
 /**
  * 도서 상세 조회 API Route
@@ -12,10 +15,25 @@ export async function GET(request: NextRequest) {
   const isbn = request.nextUrl.searchParams.get('isbn');
 
   if (!isbn) {
-    return NextResponse.json({ error: 'ISBN을 입력해주세요.' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'ISBN을 입력해주세요.' },
+      { status: 400 }
+    );
   }
 
   try {
+    const client = await getSupabaseClient();
+    const { data: catalog, error } = await client
+      .from('global_books')
+      .select('isbn,title,author,publisher,source_url')
+      .eq('isbn', isbn)
+      .eq('source', 'manual')
+      .eq('review_status', 'approved')
+      .maybeSingle();
+    if (error) throw error;
+    if (catalog) return NextResponse.json(toManualProviderBook(catalog));
+    if (isbn.startsWith('manual:'))
+      return new NextResponse(null, { status: 204 });
     const book = await getBookProvider().getByIsbn(isbn);
 
     // 없는 ISBN 은 오류가 아니다 — 호출 측이 기본 정보로 진행할 수 있게 204 로 답한다
