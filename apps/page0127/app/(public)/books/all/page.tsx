@@ -111,7 +111,7 @@ export default async function GlobalBooksPage(props: {
   const totalPages = booksRes.count ? Math.ceil(booksRes.count / limit) : 0;
 
   return (
-    <PageContainer width='wide'>
+    <PageContainer>
       <div className='mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
         <PageHeader
           className='min-w-0 flex-1 [overflow-wrap:anywhere]'

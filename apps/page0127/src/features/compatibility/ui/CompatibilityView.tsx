@@ -116,7 +116,7 @@ export const CompatibilityView = ({
   };
 
   return (
-    <PageContainer width='content'>
+    <PageContainer>
       <PageHeader
         className='mb-8'
         above={

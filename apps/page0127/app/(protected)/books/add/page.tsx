@@ -306,7 +306,7 @@ const AddBookPage = () => {
 
   return (
     <ErrorBoundary>
-      <PageContainer width='content'>
+      <PageContainer>
         <div className='mb-6 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2'>
           <h1 className='heading-1'>도서 추가</h1>
           <div className='flex flex-wrap items-center gap-4'>

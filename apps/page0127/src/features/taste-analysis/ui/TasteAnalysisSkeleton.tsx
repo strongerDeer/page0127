@@ -9,7 +9,7 @@ import { PageContainer } from '@repo/ui';
  */
 export const TasteAnalysisSkeleton = () => {
   return (
-    <PageContainer width='content'>
+    <PageContainer>
       {/* Header */}
       <div className='mb-8 space-y-3'>
         <Skeleton className='h-9 w-32' />

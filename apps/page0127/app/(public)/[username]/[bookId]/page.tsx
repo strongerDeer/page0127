@@ -151,7 +151,7 @@ const BookDetailPage = async ({ params }: PageProps) => {
     book.read_count;
 
   return (
-    <PageContainer width='content'>
+    <PageContainer>
       <div className='mb-6 flex flex-wrap items-center justify-between gap-3'>
         <Link href={`/${username}`}>
           <Button variant='outline'>← {username}님의 서재로</Button>

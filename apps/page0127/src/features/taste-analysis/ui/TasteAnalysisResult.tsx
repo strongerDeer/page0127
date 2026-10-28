@@ -63,7 +63,7 @@ export const TasteAnalysisResult = ({
     );
 
   return (
-    <PageContainer width='content'>
+    <PageContainer>
       <PageHeader
         className='mb-8'
         above={

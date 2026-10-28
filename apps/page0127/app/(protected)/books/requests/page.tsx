@@ -33,7 +33,7 @@ export default async function BookRequestsPage({
     .range((page - 1) * 20, page * 20 - 1);
   if (error) throw new Error('등록 요청을 불러오지 못했습니다.');
   return (
-    <PageContainer width='content'>
+    <PageContainer>
       <div className='mb-6 flex items-center justify-between'>
         <h1 className='heading-1'>내 등록 요청</h1>
         <Link href='/books/add' className='text-sm text-primary'>

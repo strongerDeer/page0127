@@ -13,7 +13,7 @@ import { BookListItemSkeleton } from '@/widgets/book/ui/BookListItemSkeleton';
  */
 export default function Loading() {
   return (
-    <PageContainer width='wide'>
+    <PageContainer>
       {/*
         Header
 

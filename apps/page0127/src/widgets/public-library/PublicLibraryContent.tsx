@@ -230,7 +230,7 @@ export const PublicLibraryContent = ({
         ratingNudge={ratingNudge}
         readerCard={readerCard}
       />
-      <PageContainer width='wide' className='space-y-10'>
+      <PageContainer className='space-y-10'>
         {ratingNudge && (
           <RatingNudgeCard
             nudge={ratingNudge}

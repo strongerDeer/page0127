@@ -133,10 +133,10 @@ export const Highlights = ({ books }: HighlightsProps) => {
     <section
       id='highlights'
       aria-labelledby='highlights-title'
-      className='scroll-mt-20 bg-sunken px-4 py-24 md:py-32'
+      className='scroll-mt-20 bg-sunken py-24 md:py-32'
     >
       {/* 맛보기(흰 바탕)와 구분선 대신 회색 면으로 나눈다 — 카드는 흰색으로 띄운다(2026-10-25 HJ) */}
-      <div className='mx-auto max-w-6xl'>
+      <div className='page-width'>
         <SectionHead
           id='highlights-title'
           label='더 둘러보기'

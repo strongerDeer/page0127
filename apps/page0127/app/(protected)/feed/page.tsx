@@ -23,7 +23,7 @@ export default async function LoungePage() {
   if (!user) redirect('/login?redirect=%2Ffeed');
 
   return (
-    <PageContainer width='content' className='space-y-8'>
+    <PageContainer className='space-y-8'>
       <PageHeader
         title='라운지'
         description='서로의 책장이, 다음 한 권의 자극이 되도록.'

@@ -14,7 +14,7 @@ export default async function LibraryManagePage() {
   if (!user) redirect('/login?redirect=%2Flibrary%2Fmanage');
   const profile = await getProfile(user.id);
   return (
-    <PageContainer width='content' className='space-y-6'>
+    <PageContainer className='space-y-6'>
       <PageHeader
         title='서재 관리'
         description='회독별 독서 기록을 선택해 공개 범위를 바꾸거나 삭제해요.'

@@ -109,7 +109,7 @@ const Home = async () => {
           없으면 자리째 비우므로 로딩 자리도 두지 않는다(빈 상자가 깜빡였다 사라지면 CLS) */}
       <ErrorBoundary fallback={null}>
         <Suspense fallback={null}>
-          <div className='mx-auto max-w-6xl px-4 pt-6'>
+          <div className='page-width pt-6'>
             <HeroBannerSection />
           </div>
         </Suspense>

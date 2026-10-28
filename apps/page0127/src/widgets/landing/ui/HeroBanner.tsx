@@ -126,7 +126,7 @@ export const HeroBanner = ({ slides, covers = [] }: HeroBannerProps) => {
                   : 'pointer-events-none opacity-0 duration-200'
               )}
             >
-              <div className='mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 md:gap-8 md:px-12'>
+              <div className='flex w-full items-center justify-between gap-4 px-5 md:gap-8 md:px-12'>
                 {/* 카피 — min-w-0 이 없으면 긴 제목이 표지를 화면 밖으로 밀어낸다 */}
                 <div className='min-w-0 max-w-md' style={{ color: slide.fg }}>
                   <p className='mb-4 text-sm font-medium opacity-70'>
