@@ -32,12 +32,6 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
       priority: 0.5,
     },
     {
-      url: `${siteUrl}/login`,
-      lastModified,
-      changeFrequency: 'monthly',
-      priority: 0.4,
-    },
-    {
       url: `${siteUrl}/contact`,
       lastModified,
       changeFrequency: 'monthly',

@@ -24,9 +24,8 @@ import { ResumeLogin } from '@/features/shelf-preview/ui/ResumeLogin';
 import type { Metadata } from 'next';
 
 /**
- * 로그인 화면도 sitemap 에 있어 색인된다. 제목을 안 주면 랜딩과 같은 제목으로
- * 올라가는데, 그러면 검색 결과에서 **로그인 화면이 랜딩 자리를 뺏을 수 있다.**
- * 처음 온 사람이 서비스 소개 대신 버튼만 있는 화면에 떨어진다.
+ * 로그인 화면은 sitemap 에서 제외하고 (auth)/layout.tsx 에서 noindex 를 설정한다.
+ * 직접 방문하거나 링크를 공유할 때도 페이지를 식별할 수 있도록 제목은 유지한다.
  */
 export const metadata: Metadata = {
   title: '로그인 | page0127.',
@@ -76,8 +75,7 @@ const LoginPage = async ({ searchParams }: LoginPageProps) => {
             페이지 대표 제목 — 화면에는 안 보인다.
 
             눈에 보이는 큰 글자는 브랜드명(page0127.)인데, 그건 이 **페이지가 무엇인지**
-            를 말하지 않는다. 로그인 화면은 sitemap 에 올라가 색인되므로(위 metadata 주석
-            참조) 크롤러와 스크린리더에게 "여기는 로그인" 이라고 알려 줄 h1 이 따로 필요하다.
+            를 말하지 않는다. 스크린리더에게 "여기는 로그인" 이라고 알려 줄 h1 이 따로 필요하다.
             CardTitle 은 div 로 렌더돼 제목 계층에 잡히지 않는다.
           */}
           <h1 className='sr-only'>로그인</h1>

@@ -6,6 +6,8 @@ import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsernam
 
 import { BookEditPageClient } from '@/widgets/book/ui/BookEditPageClient';
 
+import type { Metadata } from 'next';
+
 type PageProps = {
   params: Promise<{ username: string; bookId: string }>;
 };
@@ -32,3 +34,7 @@ const BookEditPage = async ({ params }: PageProps) => {
 };
 
 export default BookEditPage;
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: true },
+};

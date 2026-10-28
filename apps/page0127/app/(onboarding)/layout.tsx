@@ -1,3 +1,5 @@
+import type { Metadata } from 'next';
+
 /**
  * 온보딩 레이아웃
  *
@@ -13,3 +15,7 @@ const OnboardingLayout = ({ children }: { children: React.ReactNode }) => (
 );
 
 export default OnboardingLayout;
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: true },
+};
