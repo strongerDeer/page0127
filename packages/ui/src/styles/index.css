@@ -356,6 +356,11 @@ body {
 /* @layer components 안에 둔다 — 레이어 밖이면 호출부가 bg-* 유틸로 덮으려 해도
    조용히 무시된다(.heading-* 와 .book-cover 가 겪은 것과 같은 함정). */
 @layer components {
+  /* 페이지·상단 메뉴·프로필 띠·푸터의 공통 가로 정렬 기준. 패딩도 최대 폭에 포함한다. */
+  .page-width {
+    @apply mx-auto w-full max-w-7xl px-6 md:px-10;
+  }
+
   .tint-sage {
     background: linear-gradient(
       170deg,

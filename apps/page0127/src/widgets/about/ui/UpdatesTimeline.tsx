@@ -14,7 +14,7 @@ type UpdatesTimelineProps = {
 
 /** 세로 선 — 두 목록(처음 보이는 것·접힌 것)이 같은 선 위에 이어져 보이게 */
 const LINE =
-  'relative mx-auto max-w-3xl before:absolute before:bottom-2 before:left-[11px] before:top-2 before:w-0.5 before:bg-line';
+  'relative before:absolute before:bottom-2 before:left-[11px] before:top-2 before:w-0.5 before:bg-line';
 
 type EntryProps = { entry: ChangelogEntry; latest?: boolean };
 
@@ -54,37 +54,39 @@ export const UpdatesTimeline = ({
   const older = CHANGELOG.slice(limit);
 
   return (
-    <section aria-labelledby='updates-title' className='bg-sunken px-4 py-32'>
-      <SectionHead
-        id='updates-title'
-        as={headingAs}
-        label='공지·업데이트'
-        title='계속 자라는 중.'
-      />
-      <ol className={`${LINE} mt-14`}>
-        {recent.map((entry, i) => (
-          <Entry
-            key={`${entry.date}-${entry.title}`}
-            entry={entry}
-            latest={i === 0}
-          />
-        ))}
-      </ol>
-      {older.length > 0 && (
-        <details className='group mx-auto max-w-3xl'>
-          <summary className='cursor-pointer list-none rounded-xl py-2 pl-12 text-sm font-bold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'>
-            <span className='group-open:hidden'>
-              전체 이력 보기 ({older.length}개 더)
-            </span>
-            <span className='hidden group-open:inline'>이력 접기</span>
-          </summary>
-          <ol className={`${LINE} mt-6`}>
-            {older.map((entry) => (
-              <Entry key={`${entry.date}-${entry.title}`} entry={entry} />
-            ))}
-          </ol>
-        </details>
-      )}
+    <section aria-labelledby='updates-title' className='bg-sunken py-32'>
+      <div className='page-width'>
+        <SectionHead
+          id='updates-title'
+          as={headingAs}
+          label='공지·업데이트'
+          title='계속 자라는 중.'
+        />
+        <ol className={`${LINE} mt-14`}>
+          {recent.map((entry, i) => (
+            <Entry
+              key={`${entry.date}-${entry.title}`}
+              entry={entry}
+              latest={i === 0}
+            />
+          ))}
+        </ol>
+        {older.length > 0 && (
+          <details className='group'>
+            <summary className='cursor-pointer list-none rounded-xl py-2 pl-12 text-sm font-bold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'>
+              <span className='group-open:hidden'>
+                전체 이력 보기 ({older.length}개 더)
+              </span>
+              <span className='hidden group-open:inline'>이력 접기</span>
+            </summary>
+            <ol className={`${LINE} mt-6`}>
+              {older.map((entry) => (
+                <Entry key={`${entry.date}-${entry.title}`} entry={entry} />
+              ))}
+            </ol>
+          </details>
+        )}
+      </div>
     </section>
   );
 };

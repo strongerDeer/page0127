@@ -43,7 +43,7 @@ const RecapArchivePage = async () => {
   const weeks = buildRecapArchive(recapBooks, now);
 
   return (
-    <PageContainer width='narrow' className='space-y-6'>
+    <PageContainer className='space-y-6'>
       <PageHeader
         title='지난 회상'
         description={

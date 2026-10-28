@@ -151,7 +151,7 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
   }
 
   return (
-    <PageContainer width='content'>
+    <PageContainer>
       {/* 헤더 — 뒤로가기는 버튼 박스가 아니라 조용한 텍스트 링크 */}
       <div className='mb-6 flex items-center justify-between'>
         <Link

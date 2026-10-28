@@ -181,7 +181,7 @@ export const PublicLibraryHeader = ({
           왼쪽은 누구인지, 오른쪽은 어떤 독자인지 */}
       <header className='bg-accent'>
         <div
-          className={`mx-auto grid max-w-7xl items-start gap-6 px-6 py-8 md:px-10 md:py-10 ${
+          className={`page-width grid items-start gap-6 py-8 md:py-10 ${
             hasTasteCard ? 'lg:grid-cols-[1fr_400px]' : ''
           }`}
         >

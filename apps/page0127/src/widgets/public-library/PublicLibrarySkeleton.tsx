@@ -3,7 +3,7 @@ import { PageContainer } from '@repo/ui';
 /** 공개 서재의 실제 레이아웃과 같은 폭·리듬을 사용하는 로딩 화면 */
 export const PublicLibrarySkeleton = () => {
   return (
-    <PageContainer width='wide' className='space-y-10'>
+    <PageContainer className='space-y-10'>
       <header className='flex flex-col gap-6 md:flex-row md:items-start md:justify-between'>
         <div className='flex items-start gap-5'>
           <Skeleton className='size-20 rounded-full' />

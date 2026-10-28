@@ -129,7 +129,7 @@ export const ShelfPreview = ({ picks }: ShelfPreviewProps) => {
     <section
       id='first-impression'
       aria-labelledby='shelf-preview-title'
-      className='mx-auto max-w-6xl scroll-mt-20 px-4 py-20 md:py-28'
+      className='page-width scroll-mt-20 py-20 md:py-28'
     >
       {/* 머리는 소개 페이지 SectionHead 와 같은 문법(파란 라벨 → 큰 제목 → 회색 설명).
           features 는 widgets 를 가져올 수 없어 모양만 맞춘다.

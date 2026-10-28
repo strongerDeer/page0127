@@ -18,7 +18,7 @@ export default async function Notifications({
 }) {
   const { envelope } = await searchParams;
   return (
-    <PageContainer width='narrow' className='space-y-6'>
+    <PageContainer className='space-y-6'>
       <PageHeader title='알림' />
 
       <NotificationPage key={envelope ?? 'list'} initialEnvelopeId={envelope} />

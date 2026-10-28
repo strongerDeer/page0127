@@ -32,7 +32,7 @@ export default async function SettingsPage() {
 
   if (!profile) {
     return (
-      <PageContainer width='narrow'>
+      <PageContainer>
         <p className='text-center text-muted-foreground'>
           프로필 정보를 불러올 수 없습니다.
         </p>
@@ -41,7 +41,7 @@ export default async function SettingsPage() {
   }
 
   return (
-    <PageContainer width='narrow'>
+    <PageContainer>
       <ProfileSettingsForm profile={profile} email={user.email ?? null}>
         {/* 연결 목록은 브라우저에서 세션으로 읽는다 — 서버에서 미리 받아 내리면
             연결/해제 직후 값이 어긋난다.

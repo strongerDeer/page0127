@@ -298,7 +298,7 @@ const AddBookPage = () => {
 
   return (
     <ErrorBoundary>
-      <PageContainer width='content'>
+      <PageContainer>
         <div className='mb-6 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1'>
           <h1 className='heading-1'>도서 추가</h1>
           {/* 다른 앱·엑셀에서 옮겨 오는 사람은 한 권씩 찾을 이유가 없다 */}

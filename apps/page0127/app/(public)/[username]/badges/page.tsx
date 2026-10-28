@@ -79,7 +79,7 @@ const BadgesPage = async ({ params }: PageProps) => {
   const name = isOwner ? '나의' : `${toDisplayName(profile)}님의`;
 
   return (
-    <PageContainer width='content' className='space-y-6'>
+    <PageContainer className='space-y-6'>
       <PageHeader
         title={`${name} 배지 책장`}
         description='독서의 순간을 한 권씩 모아요'
