@@ -5,6 +5,7 @@ import { CoverImage, isPreOptimizedImageSrc } from '@repo/ui';
 
 import { toCoverSource } from '@/entities/book';
 
+import { BookCoverPreview } from './BookCoverPreview';
 import { BookLikeButton } from './BookLikeButton';
 
 import type { Book, GlobalBook } from '@/entities/book';
@@ -15,7 +16,7 @@ import styles from './BookListItem.module.css';
  * 정보 밀도 (00_docs/07 §9 — 서피스별 정보 밀도 분리)
  * - 'default': 표지를 hover하면 책등이 돌아나오며 소개·출판사·카테고리 팝오버가 뜬다.
  *   전체 도서·서재처럼 **비교·탐색**을 파는 면에서 쓴다.
- * - 'compact': 그 팝오버(addCon)를 그리지 않는다. 랜딩·랭킹처럼 **발견**을 파는 면.
+ * - 'compact': 그 미리보기를 그리지 않는다. 랜딩·랭킹처럼 **발견**을 파는 면.
  *   교보 홈 카드가 소개·저자·가격을 감추는 것과 같은 이유 — 발견 면은 감춘다.
  *   표지 flip 자체는 유지한다(우리만의 spineflip 자산, §2-2).
  */
@@ -122,29 +123,20 @@ const BookListItemCover = ({
           )}
         </div>
       </div>
-
-      {/* 발견 면(compact)에서는 비교 정보를 감춘다 — flip 표지는 그대로 둔다 */}
-      {variant !== 'compact' && (
-        <div className={styles.addCon}>
-          <p className={styles.description}>
-            {description || '책 소개가 없습니다.'}
-          </p>
-          {publisher && <p className={styles.publisher}>{publisher}</p>}
-          {category && <p className={styles.publisher}>{category}</p>}
-        </div>
-      )}
     </div>
   );
 
   return (
-    <Link
-      // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
-      prefetch={false}
-      href={`/books/info/${id}`}
-      title={`${title} 상세 내용 보기`}
+    <BookCoverPreview
+      id={id}
+      title={title}
+      description={description}
+      publisher={publisher}
+      category={category}
+      enabled={variant !== 'compact'}
     >
       {inner}
-    </Link>
+    </BookCoverPreview>
   );
 };
 
