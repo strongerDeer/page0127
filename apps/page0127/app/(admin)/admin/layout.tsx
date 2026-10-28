@@ -15,7 +15,7 @@ export default async function AdminLayout({
 
   return (
     // 모바일(<md)은 메뉴를 위 가로 줄로 올린다 — 왼쪽 w-56 고정이면 390px 폭에서 본문이 130px 남짓이 된다
-    <div className='mx-auto flex min-h-screen max-w-6xl flex-col md:flex-row'>
+    <div className='page-width flex min-h-screen flex-col md:flex-row'>
       {/* assertAdmin 을 통과한 브라우저만 표시된다 — GA 전송 제외 */}
       <MarkAdminDevice />
       <aside className='border-b border-line md:w-56 md:shrink-0 md:border-b-0 md:border-r'>

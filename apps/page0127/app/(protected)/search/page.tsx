@@ -21,7 +21,7 @@ export default async function SearchPage() {
   const readers = await getRecommendedReaders(user?.id);
 
   return (
-    <PageContainer width='narrow' className='space-y-6'>
+    <PageContainer className='space-y-6'>
       <PageHeader
         title='리더 찾기'
         description='닉네임으로 찾거나, 최근 기록한 리더를 둘러보세요'

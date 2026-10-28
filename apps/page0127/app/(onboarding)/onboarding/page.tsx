@@ -38,7 +38,7 @@ const OnboardingPage = async ({
   }
 
   return (
-    <PageContainer width='narrow'>
+    <PageContainer>
       <div className='mx-auto max-w-md py-12'>
         <h1 className='heading-1 mb-2'>거의 다 왔어요</h1>
         <p className='mb-8 text-text-subtle'>

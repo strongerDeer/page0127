@@ -25,7 +25,7 @@ type SiteFooterProps = {
 export const SiteFooter = ({ className }: SiteFooterProps) => {
   return (
     <footer className={cn('border-t border-line bg-card', className)}>
-      <div className='mx-auto max-w-6xl px-4 py-10'>
+      <div className='page-width py-10'>
         <div className='flex flex-col gap-6 md:flex-row md:items-start md:justify-between'>
           <div>
             <p className='text-base font-bold text-primary'>page0127.</p>

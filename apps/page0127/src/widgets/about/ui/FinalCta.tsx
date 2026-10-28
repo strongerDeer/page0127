@@ -35,7 +35,7 @@ export const FinalCta = ({ covers, member = null }: FinalCtaProps) => (
     className='stage-blue overflow-hidden text-white'
   >
     <Reveal>
-      <div className='mx-auto grid max-w-6xl items-center gap-10 px-6 py-14 md:grid-cols-2 md:px-8 md:py-20'>
+      <div className='page-width grid items-center gap-10 py-14 md:grid-cols-2 md:py-20'>
         <div>
           <h2 id='final-title' className='display-xl text-balance text-white'>
             오늘 읽은 한 권부터 꽂아 보세요.

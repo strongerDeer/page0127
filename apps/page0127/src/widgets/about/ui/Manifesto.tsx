@@ -48,19 +48,21 @@ export const Manifesto = () => {
       // 홈에 들어오며 위아래를 줄였다 — py-40/48 이면 문단 하나에 화면 한 장이 비었다(2026-10-25 "여백이 많아").
       // 회색 면을 화면 끝까지 깔아 위(표지 띠)·아래(맛보기) 섹션과 구획을 나눈다.
       // sunken(gray/50)은 흰 바탕과 거의 구분이 안 돼 한 단 진한 gray/200 — 다크에선 그 값이 선 색이라 sunken 으로
-      className='bg-line-soft px-4 py-24 text-center md:py-32 dark:bg-sunken'
+      className='bg-line-soft py-24 text-center md:py-32 dark:bg-sunken'
     >
-      <p className='text-sm font-bold text-primary'>왜 page0127.인가요</p>
-      <p ref={ref} className='display-xl mx-auto mt-6 max-w-4xl text-balance'>
-        {WORDS.map((w, i) => (
-          <span
-            key={i}
-            className={`transition-colors duration-300 motion-reduce:transition-none ${colorOf(i < lit, w.key)}`}
-          >
-            {w.text}{' '}
-          </span>
-        ))}
-      </p>
+      <div className='page-width'>
+        <p className='text-sm font-bold text-primary'>왜 page0127.인가요</p>
+        <p ref={ref} className='display-xl mx-auto mt-6 max-w-4xl text-balance'>
+          {WORDS.map((w, i) => (
+            <span
+              key={i}
+              className={`transition-colors duration-300 motion-reduce:transition-none ${colorOf(i < lit, w.key)}`}
+            >
+              {w.text}{' '}
+            </span>
+          ))}
+        </p>
+      </div>
     </section>
   );
 };

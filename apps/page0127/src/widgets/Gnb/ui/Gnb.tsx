@@ -34,7 +34,7 @@ export const Gnb = ({ user }: GnbProps) => {
   return (
     // 그림자는 "떠 있는 것"에만 — sticky 헤더는 1px 선으로 충분하다
     <header className='sticky top-0 z-40 border-b border-line bg-card'>
-      <div className='mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 lg:gap-6'>
+      <div className='page-width flex h-16 items-center gap-3 lg:gap-6'>
         {/*
           베타 표기는 GNB 에 둔다 — 모든 화면이 지나는 유일한 자리다.
           랜딩에만 적으면 로그인해서 쓰는 사람은 자기가 베타를 쓰는 줄 모른다.

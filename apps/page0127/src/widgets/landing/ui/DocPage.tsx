@@ -23,7 +23,7 @@ export const DocPage = ({
   children,
 }: DocPageProps) => {
   return (
-    <PageContainer width='content'>
+    <PageContainer>
       <header className='mb-10 border-b border-line pb-6'>
         <h1 className='heading-1'>{title}</h1>
         {description && <p className='mt-2 text-text-body'>{description}</p>}
@@ -34,7 +34,7 @@ export const DocPage = ({
         )}
       </header>
 
-      <div className='space-y-10 pb-16'>{children}</div>
+      <div className='max-w-3xl space-y-10 pb-16'>{children}</div>
     </PageContainer>
   );
 };

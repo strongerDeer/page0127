@@ -170,7 +170,7 @@ export const BookEditPageClient = ({
   if (isLoading || !book) {
     return (
       <ErrorBoundary>
-        <PageContainer width='content'>
+        <PageContainer>
           <Card>
             <CardHeader>
               <Skeleton className='h-8 w-32' />
@@ -236,7 +236,7 @@ export const BookEditPageClient = ({
   if (isReselecting) {
     return (
       <ErrorBoundary>
-        <PageContainer width='content'>
+        <PageContainer>
           <h1 className='heading-1 mb-6'>책 다시 선택</h1>
 
           {isLoadingDetail ? (
@@ -304,7 +304,7 @@ export const BookEditPageClient = ({
 
   return (
     <ErrorBoundary>
-      <PageContainer width='content'>
+      <PageContainer>
         <BookRegistrationForm
           book={providerBookFormat}
           onSubmit={handleSubmit}

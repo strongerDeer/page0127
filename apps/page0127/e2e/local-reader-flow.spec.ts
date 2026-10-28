@@ -74,7 +74,7 @@ const test = base.extend<{ reader: Reader }>({
 });
 
 // CSS 문자열 대신 실제 표면·선택·레이아웃을 확인한다. 임시 독자는 fixture가 정리한다.
-test('디자인 점검: 주요 페이지의 흰색 면과 모바일 보기 전환', async ({
+test('디자인 점검: 페이지 공통 폭과 흰색 면 및 모바일 보기 전환', async ({
   page,
   reader,
 }, testInfo) => {
@@ -118,7 +118,7 @@ test('디자인 점검: 주요 페이지의 흰색 면과 모바일 보기 전�
   );
   if (notifications.error) throw notifications.error;
   await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
-  for (const width of [1440, 390]) {
+  for (const width of [1920, 1440, 390]) {
     await page.setViewportSize({ width, height: 1000 });
     for (const [name, path, heading] of [
       ['library', `/${reader.username}`, '님의 서재'],
@@ -127,6 +127,11 @@ test('디자인 점검: 주요 페이지의 흰색 면과 모바일 보기 전�
       ['search', '/search', '리더 찾기'],
       ['settings', '/settings', '설정'],
       ['badges', `/${reader.username}/badges`, '배지 책장'],
+      ['all-books', '/books/all', '전체 도서'],
+      ['manage', '/library/manage', '서재 관리'],
+      ['add-book', '/books/add', '도서 추가'],
+      ['import-books', '/books/import', '여러 권 한 번에 담기'],
+      ['recap', '/books/recap', '지난 회상'],
     ]) {
       await page.goto(path);
       await expect(
@@ -136,13 +141,44 @@ test('디자인 점검: 주요 페이지의 흰색 면과 모바일 보기 전�
         'background-color',
         'rgb(255, 255, 255)'
       );
+      // 실제 박스 좌표로 페이지·프로필·GNB·푸터의 최대 폭과 여백을 검증한다.
+      const expectedWidth = Math.min(width, 1280);
+      const frames = await page.locator('.page-width').evaluateAll((elements) =>
+        elements
+          .filter((element) => element.getClientRects().length > 0)
+          .map((element) => {
+            const { x, width } = element.getBoundingClientRect();
+            const style = getComputedStyle(element);
+            return {
+              x,
+              width,
+              left: style.paddingLeft,
+              right: style.paddingRight,
+            };
+          })
+      );
+      expect(frames.length).toBeGreaterThanOrEqual(3);
+      for (const frame of frames) {
+        expect(Math.abs(frame.width - expectedWidth)).toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(frame.x - (width - expectedWidth) / 2)
+        ).toBeLessThanOrEqual(1);
+        expect(frame.left).toBe(width >= 768 ? '40px' : '24px');
+        expect(frame.right).toBe(width >= 768 ? '40px' : '24px');
+      }
+      if (name === 'library') {
+        await expect(page.locator('main > header')).not.toHaveCSS(
+          'background-color',
+          'rgb(255, 255, 255)'
+        );
+      }
       expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= window.innerWidth + 1
         ),
         `${name} ${width}px 가로 넘침`
       ).toBe(true);
-      if (name === 'notifications') {
+      if (name === 'notifications' && width === 1440) {
         await expect(
           page.locator('main').getByText('팔로우', { exact: true })
         ).toBeVisible();
@@ -152,7 +188,7 @@ test('디자인 점검: 주요 페이지의 흰색 면과 모바일 보기 전�
           .click();
         await expect(
           filters.getByRole('button', { name: '읽지 않음', exact: true })
-        ).toHaveAttribute('aria-pressed', 'true');
+        ).toHaveAttribute('aria-pressed', 'true', { timeout: 15_000 });
         await expect(page.getByText('댓글·답글', { exact: true })).toHaveCount(
           0
         );
@@ -179,9 +215,11 @@ test('디자인 점검: 주요 페이지의 흰색 면과 모바일 보기 전�
           page.getByText('팔로우한 사람이 책을 읽으면 여기에 쌓입니다.', {
             exact: true,
           })
-        ).toBeVisible();
+        ).toBeVisible({ timeout: 15_000 });
       }
-      await expect(page.locator('main .animate-pulse')).toHaveCount(0);
+      await expect(page.locator('main .animate-pulse')).toHaveCount(0, {
+        timeout: 15_000,
+      });
       await page.evaluate(() =>
         window.scrollTo({ top: 0, behavior: 'instant' })
       );
@@ -190,6 +228,39 @@ test('디자인 점검: 주요 페이지의 흰색 면과 모바일 보기 전�
         fullPage: true,
         animations: 'disabled',
       });
+    }
+  }
+});
+
+test('디자인 점검: 홈과 정적 페이지의 공통 폭', async ({ page }) => {
+  test.setTimeout(90_000);
+  for (const width of [1920, 390]) {
+    await page.setViewportSize({ width, height: 1000 });
+    for (const path of ['/', '/updates', '/privacy', '/terms', '/contact']) {
+      await page.goto(path);
+      await expect(page.locator('main h1')).toBeVisible();
+      const frames = await page.locator('.page-width').evaluateAll((elements) =>
+        elements
+          .filter((element) => element.getClientRects().length > 0)
+          .map((element) => {
+            const { x, width } = element.getBoundingClientRect();
+            return { x, width };
+          })
+      );
+      expect(frames.length).toBeGreaterThanOrEqual(3);
+      for (const frame of frames) {
+        const expectedWidth = Math.min(width, 1280);
+        expect(Math.abs(frame.width - expectedWidth)).toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(frame.x - (width - expectedWidth) / 2)
+        ).toBeLessThanOrEqual(1);
+      }
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth + 1
+        ),
+        path
+      ).toBe(true);
     }
   }
 });

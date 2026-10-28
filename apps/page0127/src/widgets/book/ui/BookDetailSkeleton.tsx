@@ -10,7 +10,7 @@ import { PageContainer } from '@repo/ui';
  */
 export const BookDetailSkeleton = () => {
   return (
-    <PageContainer width='content'>
+    <PageContainer>
       {/* Header — 뒤로가기 + 액션 버튼 */}
       <div className='mb-6 flex items-center justify-between'>
         <Skeleton className='h-10 w-32' />
