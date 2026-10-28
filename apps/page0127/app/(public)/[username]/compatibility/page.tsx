@@ -9,6 +9,7 @@ import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsernam
 import { CompatibilityView } from '@/features/compatibility';
 
 import type { MutualRecommendation } from '@/entities/compatibility/types';
+import type { Metadata } from 'next';
 
 type PageProps = {
   params: Promise<{ username: string }>;
@@ -114,3 +115,7 @@ const CompatibilityPage = async ({ params }: PageProps) => {
 };
 
 export default CompatibilityPage;
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: true },
+};

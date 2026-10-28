@@ -7,6 +7,8 @@ import { getProfile } from '@/entities/profile/api/getProfile';
 
 import { AppShell } from '@/widgets/AppShell';
 
+import type { Metadata } from 'next';
+
 /**
  * 보호된 페이지 레이아웃 (로그인 필수)
  *
@@ -37,3 +39,7 @@ const ProtectedLayout = async ({ children }: { children: React.ReactNode }) => {
 };
 
 export default ProtectedLayout;
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: true },
+};

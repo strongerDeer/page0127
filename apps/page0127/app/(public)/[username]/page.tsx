@@ -91,6 +91,10 @@ export const generateMetadata = async ({
   return {
     title,
     description,
+    alternates: {
+      canonical: `/${encodeURIComponent(username)}`,
+      languages: { 'ko-KR': `/${encodeURIComponent(username)}` },
+    },
     openGraph: { title: shareTitle, description, type: 'profile' },
     twitter: { card: 'summary_large_image', title: shareTitle, description },
   };

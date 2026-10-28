@@ -3,6 +3,7 @@ import { MarkAdminDevice } from '@/shared/lib/analytics/MarkAdminDevice';
 
 import { AdminNav } from '@/widgets/admin/ui/AdminNav';
 
+import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
 // 페이지 접근 게이트. 데이터 접근 게이트는 각 서버액션/쿼리에서 재확인한다.
@@ -29,3 +30,7 @@ export default async function AdminLayout({
     </div>
   );
 }
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: true },
+};

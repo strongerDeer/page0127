@@ -68,6 +68,10 @@ export async function generateMetadata({
   return {
     title,
     description,
+    alternates: {
+      canonical: `/books/info/${encodeURIComponent(id)}`,
+      languages: { 'ko-KR': `/books/info/${encodeURIComponent(id)}` },
+    },
     openGraph: {
       title,
       description,

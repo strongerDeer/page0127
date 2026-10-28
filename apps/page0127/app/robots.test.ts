@@ -11,7 +11,21 @@ describe('robots', () => {
       expect.arrayContaining(['/books/all', '/books/info/'])
     );
     expect(rules.disallow).toEqual(
-      expect.arrayContaining(['/books/', '/api/', '/settings'])
+      expect.arrayContaining([
+        '/books$',
+        '/books/',
+        '/api/',
+        '/settings$',
+        '/admin/',
+        '/dashboard/',
+        '/library/manage$',
+        '/onboarding$',
+        '/auth/',
+        '/*/*/edit$',
+        '/*/compatibility$',
+      ])
     );
+    // 로그인 화면의 noindex는 크롤러가 읽을 수 있어야 한다.
+    expect(rules.disallow).not.toContain('/login');
   });
 });

@@ -1,3 +1,5 @@
+import type { Metadata } from 'next';
+
 /**
  * 로그인 페이지의 공통 레이아웃.
  * 목적지와 선택 전달값을 함께 판단해야 하므로 인증 게이트는 페이지가 맡는다.
@@ -9,3 +11,7 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
 };
 
 export default AuthLayout;
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: true },
+};

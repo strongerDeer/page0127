@@ -11,14 +11,29 @@ const robots = (): MetadataRoute.Robots => {
       // /books 아래에는 공개·보호 경로가 섞여 있다. 더 구체적인 Allow가
       // /books/ Disallow보다 우선해 공개 카탈로그와 상세 페이지는 색인된다.
       allow: ['/', '/books/all', '/books/info/'],
-      // 로그인 필요 영역·API 는 검색 노출 제외
+      // 수집 제외. 경로 경계를 지정해 /adminreader 같은 공개 사용자명은 허용한다.
+      // 로그인 페이지는 noindex를 읽을 수 있도록 수집을 허용한다.
       disallow: [
-        '/books/',
-        '/feed',
-        '/notifications',
-        '/settings',
-        '/search',
-        '/api/',
+        ...[
+          '/books',
+          '/feed',
+          '/notifications',
+          '/settings',
+          '/search',
+          '/api',
+          '/admin',
+          '/dashboard',
+          '/library/manage',
+          '/onboarding',
+          '/auth',
+        ].flatMap((path) => [`${path}$`, `${path}?`, `${path}/`]),
+        // 공개 서재·독서 기록 전체를 막지 않고 개인 기능만 제외한다.
+        '/*/*/edit$',
+        '/*/*/edit?',
+        '/*/*/edit/',
+        '/*/compatibility$',
+        '/*/compatibility?',
+        '/*/compatibility/',
       ],
     },
     sitemap: `${siteUrl}/sitemap.xml`,
