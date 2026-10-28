@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 
 import { getBookProvider } from '@/shared/api/book-provider';
+import { createAdminClient } from '@/shared/config/supabase/admin';
 import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
 
 import { MAX_IMPORT_ROWS } from '@/features/book-import/model/limits';
@@ -79,10 +80,12 @@ export async function POST(request: NextRequest) {
     }
 
     // 공용 카탈로그 — 이미 있는 책은 그대로 둔다 (한 권 등록의 23505 무시와 같은 뜻)
-    const { error: globalError } = await supabase.from('global_books').upsert(
-      fresh.map(({ book }) => toGlobalBookRow(book)),
-      { onConflict: 'isbn', ignoreDuplicates: true }
-    );
+    const { error: globalError } = await createAdminClient()
+      .from('global_books')
+      .upsert(
+        fresh.map(({ book }) => toGlobalBookRow(book)),
+        { onConflict: 'isbn', ignoreDuplicates: true }
+      );
     if (globalError) {
       console.error('일괄 등록 global_books 동기화 실패:', globalError);
     }
@@ -137,6 +140,7 @@ const findExistingKeys = async (
 };
 
 const toGlobalBookRow = (book: ProviderBook) => ({
+  review_status: 'approved',
   isbn: book.isbn,
   title: book.title,
   sub_title: book.subTitle,

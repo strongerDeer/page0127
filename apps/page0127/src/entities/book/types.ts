@@ -28,6 +28,9 @@ export type BookRating = 0 | 1 | 2 | 3 | 4 | 5;
  * Supabase books 테이블 타입
  */
 export type Book = {
+  /** 직접 등록한 책의 공용 카탈로그 검수 상태 */
+  catalog_review_status?: 'pending' | 'approved' | 'needs_changes' | 'rejected';
+  requested_public?: boolean;
   id: string;
   user_id: string;
 
@@ -134,6 +137,8 @@ export type BookRanking = {
  * 도서 등록/수정 시 사용하는 타입
  */
 export type BookInput = {
+  /** 직접 등록 검수에 사용할 출처 */
+  source_url?: string | null;
   // 알라딘 API 데이터
   isbn: string;
   title: string;

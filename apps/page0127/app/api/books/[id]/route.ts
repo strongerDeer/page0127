@@ -7,6 +7,7 @@ import { isNewlyCompleted } from '@/entities/book/model/completion';
 
 import { createActivity } from '../../_helpers/activity';
 import { getCurrentUser, getSupabaseClient } from '../../_helpers/auth';
+import { ensureProviderCatalog } from '../../_helpers/providerCatalog';
 import {
   errorResponse,
   notFoundResponse,
@@ -65,10 +66,19 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
     const { data: oldBook } = await supabase
       .from('books')
-      .select('status')
+      .select('status,isbn')
       .eq('id', id)
       .eq('user_id', user.id)
       .single();
+
+    if (
+      oldBook &&
+      typeof body.isbn === 'string' &&
+      body.isbn !== oldBook.isbn &&
+      body.source !== 'manual'
+    ) {
+      await ensureProviderCatalog(body.isbn);
+    }
 
     const { data, error } = await supabase
       .from('books')

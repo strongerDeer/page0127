@@ -1,9 +1,13 @@
 import { NextRequest } from 'next/server';
 
+import { createAdminClient } from '@/shared/config/supabase/admin';
 import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
+
+import { validateManualBook } from '@/features/book-review/model/review';
 
 import { createActivity } from '../_helpers/activity';
 import { getCurrentUser, getSupabaseClient } from '../_helpers/auth';
+import { ensureProviderCatalog } from '../_helpers/providerCatalog';
 import { errorResponse, successResponse } from '../_helpers/response';
 import {
   hasLifeBookReading,
@@ -94,31 +98,54 @@ export async function POST(request: NextRequest) {
     const { user, error: authError } = await getCurrentUser();
     if (authError) return authError;
 
-    // 1. global_books에 책이 없으면 추가 (ISBN 기준)
-    // ON CONFLICT DO NOTHING을 사용하여 이미 존재하면 무시
-    const { error: globalError } = await supabase
-      .from('global_books')
-      .insert({
-        isbn: body.isbn,
-        title: body.title,
-        sub_title: body.sub_title,
-        source: body.source,
-        provider_item_id: body.provider_item_id,
-        author: body.author,
-        publisher: body.publisher,
-        cover_image: body.cover_image,
-        spine_image: body.spine_image,
-        description: body.description,
-        pub_date: body.pub_date,
-        category: body.category,
-      })
-      .select()
-      .single();
-
-    // global_books 에러는 무시하고 진행 (이미 존재하는 경우 등)
-    if (globalError && globalError.code !== '23505') {
-      console.error('Failed to sync global book:', globalError);
+    if (!body || typeof body !== 'object' || typeof body.isbn !== 'string') {
+      return errorResponse('도서 정보를 확인해 주세요.', 400);
     }
+    if (body.source === 'manual') {
+      try {
+        Object.assign(body, validateManualBook(body));
+      } catch (error) {
+        return errorResponse(
+          error instanceof Error ? error.message : '입력을 확인해 주세요.',
+          400
+        );
+      }
+    }
+    const admin = createAdminClient();
+    const { data: catalog, error: catalogError } = await admin
+      .from('global_books')
+      .select('id,review_status')
+      .eq('isbn', body.isbn)
+      .maybeSingle();
+    if (catalogError)
+      return errorResponse('도서 정보를 확인하지 못했습니다.', 500);
+    if (!catalog) {
+      if (body.source === 'manual') {
+        let manual;
+        try {
+          manual = validateManualBook(body);
+        } catch (error) {
+          return errorResponse(
+            error instanceof Error ? error.message : '입력을 확인해 주세요.',
+            400
+          );
+        }
+        // 사용자 세션으로 저장한다. DB가 출처·검수 상태·표지를 강제로 제한한다.
+        const { error } = await supabase.from('global_books').insert({
+          ...manual,
+          source: 'manual',
+          review_status: 'pending',
+          submitted_by: user.id,
+        });
+        if (error && error.code !== '23505')
+          return errorResponse('등록 요청 저장에 실패했습니다.', 500);
+      } else {
+        // 브라우저의 source/제목/표지를 신뢰하지 않고 공급자에서 직접 확인한다.
+        await ensureProviderCatalog(body.isbn);
+      }
+    }
+    // source_url은 공용 검수 자료이며 독서 기록의 컬럼이 아니다.
+    const { source_url: _sourceUrl, ...readingInput } = body;
 
     // 2. 사용자 책장에 추가
     //
@@ -132,7 +159,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase
       .from('books')
       .insert({
-        ...body,
+        ...readingInput,
         is_life_book: isLifeBook,
         user_id: user!.id,
       })

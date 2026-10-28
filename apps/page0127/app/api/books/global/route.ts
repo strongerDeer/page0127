@@ -29,7 +29,8 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('global_books')
-      .select('*', { count: 'exact' });
+      .select('*', { count: 'exact' })
+      .eq('review_status', 'approved');
 
     if (search) {
       const pattern = quotePostgrestValue(`%${search}%`);
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
         limit,
         total: count,
         totalPages: count ? Math.ceil(count / limit) : 0,
-      }
+      },
     });
   } catch {
     return errorResponse('전체 도서 목록 조회에 실패했습니다.');

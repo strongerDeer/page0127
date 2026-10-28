@@ -5,7 +5,7 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { ErrorBoundary, PageContainer } from '@repo/ui';
+import { Button, ErrorBoundary, PageContainer } from '@repo/ui';
 import { toast } from 'sonner';
 
 import { getBookDetail } from '@/shared/api/book';
@@ -29,6 +29,7 @@ import { BookSearchInput } from '@/features/book/ui/BookSearchInput';
 import { BookSearchPagination } from '@/features/book/ui/BookSearchPagination';
 import { BookSearchResultCard } from '@/features/book/ui/BookSearchResultCard';
 import { DuplicateBookDialog } from '@/features/book/ui/DuplicateBookDialog';
+import { ManualBookForm } from '@/features/book-review/ui/ManualBookForm';
 
 import type { Book, ProviderBook } from '@/entities/book';
 
@@ -48,6 +49,7 @@ const AddBookPage = () => {
   const router = useRouter();
   const {
     books,
+    catalogBooks,
     isLoading: isSearching,
     search,
     goToPage,
@@ -62,6 +64,7 @@ const AddBookPage = () => {
     isLoading: isCreating,
   } = useBookCRUD();
 
+  const [showManualForm, setShowManualForm] = useState(false);
   const [selectedBook, setSelectedBook] = useState<ProviderBook | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
 
@@ -201,6 +204,7 @@ const AddBookPage = () => {
     // 표지는 어댑터가 이미 최대 해상도로 맞춰 준다.
     const bookData = {
       isbn: selectedBook.isbn,
+      source_url: selectedBook.sourceUrl,
       title: selectedBook.title,
       sub_title: selectedBook.subTitle,
       // 출처 표기(약관 의무)에 필요하다 — 화면이 books 를 직접 읽으므로 여기 같이 담는다
@@ -224,6 +228,10 @@ const AddBookPage = () => {
     const result = await createBook(bookData);
 
     if (result) {
+      if (selectedBook.source === 'manual')
+        toast.success(
+          '기록을 저장했어요. 내 등록 요청에서 검수 상태를 확인할 수 있어요.'
+        );
       // 활성화 계측 — 가입 다음 단계가 "첫 책을 꽂았다"이다.
       // 등록하면서 바로 완독으로 담는 경우가 흔한데, 그 흐름은 편집 화면을 거치지
       // 않으므로 여기서 세지 않으면 그 완독은 통째로 누락된다.
@@ -299,15 +307,22 @@ const AddBookPage = () => {
   return (
     <ErrorBoundary>
       <PageContainer>
-        <div className='mb-6 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1'>
+        <div className='mb-6 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2'>
           <h1 className='heading-1'>도서 추가</h1>
-          {/* 다른 앱·엑셀에서 옮겨 오는 사람은 한 권씩 찾을 이유가 없다 */}
-          <Link
-            href='/books/import'
-            className='text-sm text-text-subtle underline underline-offset-4'
-          >
-            여러 권 한 번에 담기
-          </Link>
+          <div className='flex flex-wrap items-center gap-4'>
+            <Link
+              href='/books/requests'
+              className='text-sm text-primary underline'
+            >
+              내 등록 요청
+            </Link>
+            <Link
+              href='/books/import'
+              className='text-sm text-text-subtle underline underline-offset-4'
+            >
+              여러 권 한 번에 담기
+            </Link>
+          </div>
         </div>
 
         {saved ? (
@@ -324,6 +339,26 @@ const AddBookPage = () => {
           />
         ) : !selectedBook ? (
           <div className='space-y-6'>
+            {showManualForm ? (
+              <ManualBookForm
+                onSelect={(book) => {
+                  setSelectedBook(book);
+                  setShowManualForm(false);
+                }}
+                onCancel={() => setShowManualForm(false)}
+              />
+            ) : (
+              <div className='flex flex-wrap items-center justify-between gap-2 text-sm text-text-subtle'>
+                <span>검색으로 찾기 어려운 책인가요?</span>
+                <Button
+                  type='button'
+                  variant='outline'
+                  onClick={() => setShowManualForm(true)}
+                >
+                  직접 등록
+                </Button>
+              </div>
+            )}
             {/* 검색 입력 */}
             <BookSearchInput
               // 스캔할 때마다 ISBN 을 채운 새 검색창으로 다시 마운트한다
@@ -346,12 +381,29 @@ const AddBookPage = () => {
               )
             )}
 
+            {!isSearching && !isScanLookup && catalogBooks.length > 0 && (
+              <section className='space-y-3'>
+                <h2 className='text-sm font-medium'>
+                  검수 승인된 직접 등록 도서
+                </h2>
+                <div className='divide-y divide-line-soft border-t border-line'>
+                  {catalogBooks.map((book) => (
+                    <BookSearchResultCard
+                      key={book.isbn}
+                      book={book}
+                      onSelect={handleSelectBook}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
             {/* 검색 결과 — 행 리스트를 카드 하나에 담는다 */}
             {!isSearching && !isScanLookup && books.length > 0 && (
               <div className='space-y-3'>
                 <div className='flex flex-wrap items-baseline justify-between gap-x-3'>
                   <p className='text-sm text-text-subtle'>
-                    총 {totalResults.toLocaleString()}권 중 {books.length}권
+                    서점 검색 결과 {books.length}권
                   </p>
                   {/*
                     검색 결과는 공급자 데이터를 그대로 보여주는 화면이라 출처 표기가
@@ -373,25 +425,27 @@ const AddBookPage = () => {
                     />
                   ))}
                 </div>
-
-                {/* Pagination */}
-                {totalResults > itemsPerPage && (
-                  <BookSearchPagination
-                    currentPage={currentPage}
-                    totalResults={totalResults}
-                    itemsPerPage={itemsPerPage}
-                    onPageChange={goToPage}
-                  />
-                )}
               </div>
             )}
 
-            {/* 검색 결과 없음 */}
-            {!isSearching && !isScanLookup && books.length === 0 && (
-              <p className='text-center text-muted-foreground'>
-                도서 제목을 검색해주세요
-              </p>
+            {!isSearching && !isScanLookup && totalResults > itemsPerPage && (
+              <BookSearchPagination
+                currentPage={currentPage}
+                totalResults={totalResults}
+                itemsPerPage={itemsPerPage}
+                onPageChange={goToPage}
+              />
             )}
+
+            {/* 검색 결과 없음 */}
+            {!isSearching &&
+              !isScanLookup &&
+              books.length === 0 &&
+              catalogBooks.length === 0 && (
+                <p className='text-center text-muted-foreground'>
+                  도서 제목을 검색해주세요
+                </p>
+              )}
           </div>
         ) : (
           /* 등록 폼 */

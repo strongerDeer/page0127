@@ -70,9 +70,14 @@ export type ProviderBook = {
   providerItemId: string | null;
   /** 공급자 상품 상세페이지. 출처 링크 제공은 YES24 이용약관상 의무다 */
   providerLink: string;
+  /** 직접 등록 검수용 출처 주소 */
+  sourceUrl?: string | null;
 };
 
 export type ProviderSearchResult = {
+  /** 승인된 직접 등록 도서는 공급자 결과와 별도로 표시한다. */
+  catalogItems?: ProviderBook[];
+  catalogTotalResults?: number;
   items: ProviderBook[];
   totalResults: number;
   page: number;

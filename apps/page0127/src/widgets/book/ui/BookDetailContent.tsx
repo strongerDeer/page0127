@@ -1,9 +1,13 @@
+import Link from 'next/link';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 import { BookCover, ReadCountBadge } from '@repo/ui';
 import { Globe, Lock, Star } from 'lucide-react';
 
 import { formatCompletedWhen, isRated, toCoverSource } from '@/entities/book';
 import { BookSourceCredit } from '@/entities/book/ui/BookSourceCredit';
+
+import { REVIEW_LABELS } from '@/features/book-review/model/review';
 
 import { BookStreamSection } from './BookStreamSection';
 
@@ -126,6 +130,21 @@ export const BookDetailContent = ({
                   </span>
                 )}
               </div>
+
+              {isOwner &&
+                book.catalog_review_status &&
+                book.catalog_review_status !== 'approved' && (
+                  <p className='rounded-lg bg-sunken p-3 text-sm'>
+                    {REVIEW_LABELS[book.catalog_review_status]} · 승인 전에는
+                    나에게만 보여요.{' '}
+                    <Link
+                      href='/books/requests'
+                      className='text-primary underline'
+                    >
+                      내 등록 요청 확인
+                    </Link>
+                  </p>
+                )}
 
               {visitorAction}
 
