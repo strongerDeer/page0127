@@ -23,6 +23,13 @@ export const getNudgeSentRecipients = async (
     throw new Error('콕 찌르기 기록을 확인하지 못했어요. 다시 눌러 주세요.');
   return (data ?? []).map((row) => row.user_id);
 };
+export const getNudgeRecipients = async (
+  client: SupabaseClient
+): Promise<string[]> => {
+  const { data, error } = await client.rpc('get_reading_nudge_recipients');
+  if (error) throw new Error('맞팔 여부를 확인하지 못했어요.');
+  return (data ?? []).map((row: { user_id: string }) => row.user_id);
+};
 export type SendEnvelopeInput = {
   kind: ReadingEnvelopeKind;
   message: string;

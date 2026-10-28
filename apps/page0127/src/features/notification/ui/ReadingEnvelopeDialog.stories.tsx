@@ -252,6 +252,8 @@ export const Note: Story = {
   args: {
     notification: {
       ...notification,
+      message: '요즘 무슨 책 읽어???',
+      actor: { ...notification.actor, nickname: '강혜진' },
       target_id: null,
       target_type: null,
       target: null,
@@ -265,10 +267,15 @@ export const Note: Story = {
   },
   play: async ({ canvasElement }) => {
     const page = within(canvasElement.ownerDocument.body);
-    await userEvent.click(page.getByRole('button', { name: '쪽지 읽기' }));
     await waitFor(() =>
-      expect(page.getByText('같이 한 권 읽자 👀')).toBeVisible()
+      expect(page.getByText('요즘 무슨 책 읽어???')).toBeVisible()
     );
+    await expect(page.getByText('to. 나에게')).toBeVisible();
+    await expect(page.getByText('from. 강혜진')).toBeVisible();
+    await expect(
+      page.queryByText('쪽지 한 장이 도착했어요.')
+    ).not.toBeInTheDocument();
+    await userEvent.click(page.getByRole('button', { name: /^확인$/ }));
   },
 };
 export const CompleteAfterConfirmation: Story = {

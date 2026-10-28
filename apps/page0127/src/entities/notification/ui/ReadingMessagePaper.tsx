@@ -30,11 +30,11 @@ export const ReadingMessagePaper = ({
       <Image
         src='/illustrations/reading-note.webp'
         unoptimized={isPreOptimizedImageSrc('/illustrations/reading-note.webp')}
-        alt='쪽지 위로 빼꼼 내다보는 작은 말'
+        alt='빼꼼 내다보는 작은 말'
         width={420}
         height={379}
         className={styles.peek}
-        sizes='138px'
+        sizes='168px'
       />
     )}
     <div className={book ? styles.letterBody : undefined}>
@@ -44,7 +44,7 @@ export const ReadingMessagePaper = ({
             ? '너에게 권하는 한 권'
             : kind === 'invitation'
               ? '함께 읽자는 초대'
-              : '살짝 두고 간 한마디'}
+              : 'to. 나에게'}
         </p>
         <blockquote className={styles.message}>{message}</blockquote>
         {book && (
@@ -75,7 +75,11 @@ export const ReadingMessagePaper = ({
             {book.author && <p className={styles.author}>{book.author}</p>}
           </section>
         )}
-        <p className={styles.signature}>— {senderName}</p>
+        <p
+          className={`${styles.signature} ${kind === 'note' ? styles.noteSignature : ''}`}
+        >
+          {kind === 'note' ? 'from.' : '—'} {senderName}
+        </p>
       </div>
       {book && (
         <div className={styles.cover}>

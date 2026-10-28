@@ -8,6 +8,7 @@ import { createClient } from '@/shared/config/supabase/client';
 
 import { getSeoulToday } from '@/entities/book/model/libraryPeriod';
 import {
+  getNudgeRecipients,
   getNudgeSentRecipients,
   type SendEnvelopeInput,
   sendReadingNudge,
@@ -19,6 +20,7 @@ import { NudgeTrigger } from './NudgeTrigger';
 const ALREADY_SENT = '오늘은 이미 보냈어요. 내일 다시 만나요.';
 const loadSentRecipients = (userId: string, day: string) =>
   getNudgeSentRecipients(createClient(), userId, day);
+const loadRecipients = () => getNudgeRecipients(createClient());
 export const NudgeButton = ({
   currentUserId,
   recipientId,
@@ -26,6 +28,7 @@ export const NudgeButton = ({
   context,
   iconOnly = false,
   loadSent = loadSentRecipients,
+  loadEligible = loadRecipients,
   send = sendReadingNudge,
 }: {
   currentUserId: string;
@@ -34,6 +37,7 @@ export const NudgeButton = ({
   context: 'ahead' | 'behind' | 'tied';
   iconOnly?: boolean;
   loadSent?: typeof loadSentRecipients;
+  loadEligible?: typeof loadRecipients;
   send?: typeof sendReadingNudge;
 }) => {
   const [open, setOpen] = useState(false);
@@ -49,6 +53,13 @@ export const NudgeButton = ({
     staleTime: 30_000,
     retry: 1,
   });
+  const eligibleQuery = useQuery({
+    queryKey: ['reading-nudge-recipients', currentUserId],
+    queryFn: loadEligible,
+    staleTime: 30_000,
+    retry: 1,
+  });
+  const eligible = eligibleQuery.data?.includes(recipientId) ?? false;
   const sent = sentQuery.data?.includes(recipientId) ?? false;
   useEffect(() => {
     const updateDay = () => setDay(getSeoulToday());
@@ -101,6 +112,16 @@ export const NudgeButton = ({
     setChecking(true);
     try {
       // 새로고침·다른 기기 전송도 반영하려고 작성 직전에 서버 기록을 확인한다.
+      const eligibleRecipients = await cache.fetchQuery({
+        queryKey: ['reading-nudge-recipients', currentUserId],
+        queryFn: loadEligible,
+        staleTime: 0,
+      });
+      if (!eligibleRecipients.includes(recipientId)) {
+        setOpen(false);
+        toast.info('맞팔한 사이에만 보낼 수 있어요.');
+        return;
+      }
       const recipients = await cache.fetchQuery({
         queryKey: ['reading-nudge-sent', currentUserId, today],
         queryFn: () => loadSent(currentUserId, today),
@@ -126,7 +147,20 @@ export const NudgeButton = ({
         recipientName={recipientName}
         iconOnly={iconOnly}
         sent={sent}
-        checking={checking || sentQuery.isPending || sentQuery.isError}
+        unavailable={
+          eligibleQuery.isError
+            ? '맞팔 확인 실패'
+            : !eligibleQuery.isPending && !eligible
+              ? '맞팔 후 콕 찌르기'
+              : undefined
+        }
+        checking={
+          checking ||
+          sentQuery.isPending ||
+          sentQuery.isError ||
+          eligibleQuery.isPending ||
+          eligibleQuery.isError
+        }
         onClick={() => void handleOpen()}
       />
       <NudgeDialog

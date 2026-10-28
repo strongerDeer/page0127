@@ -32,7 +32,11 @@ const request = (body: unknown) =>
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.auth.mockResolvedValue({ user: { id: 'sender' }, error: null });
-  mocks.rpc.mockResolvedValue({ data: 'notification-id', error: null });
+  mocks.rpc.mockImplementation(async (name) =>
+    name === 'get_reading_nudge_recipients'
+      ? { data: [{ user_id: recipientId }], error: null }
+      : { data: 'notification-id', error: null }
+  );
   mocks.insert.mockResolvedValue({ error: null });
   mocks.single.mockResolvedValue({ data: { id: 'catalog-id' }, error: null });
   mocks.client.mockResolvedValue({
@@ -116,10 +120,11 @@ describe('책 메시지 전송', () => {
     expect(mocks.detail).not.toHaveBeenCalled();
   });
   it('전송 제한·수신 거부 시 푸시하지 않는다', async () => {
-    mocks.rpc.mockResolvedValue({
-      error: { message: '오늘은 이미 보냈어요.' },
-      data: null,
-    });
+    mocks.rpc.mockImplementation(async (name) =>
+      name === 'get_reading_nudge_recipients'
+        ? { data: [{ user_id: recipientId }], error: null }
+        : { error: { message: '오늘은 이미 보냈어요.' }, data: null }
+    );
     expect(
       (await POST(request({ recipientId, kind: 'note', message: '안녕' })))
         .status
@@ -138,6 +143,27 @@ describe('책 메시지 전송', () => {
     };
     expect((await POST(request(body))).status).toBe(404);
     expect((await POST(request(body))).status).toBe(500);
-    expect(mocks.rpc).not.toHaveBeenCalled();
+    expect(mocks.rpc).not.toHaveBeenCalledWith(
+      'send_reading_envelope',
+      expect.anything()
+    );
+  });
+  it('일방 팔로우는 책 검색·저장·푸시 전에 거부한다', async () => {
+    mocks.rpc.mockResolvedValue({ data: [], error: null });
+    expect(
+      (
+        await POST(
+          request({
+            recipientId,
+            kind: 'recommendation',
+            message: '추천',
+            bookIsbn: '9788937460449',
+          })
+        )
+      ).status
+    ).toBe(403);
+    expect(mocks.detail).not.toHaveBeenCalled();
+    expect(mocks.insert).not.toHaveBeenCalled();
+    expect(mocks.push).not.toHaveBeenCalled();
   });
 });

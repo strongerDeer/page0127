@@ -115,7 +115,7 @@ export const ReadingEnvelopeDialog = ({
       }}
     >
       <DialogContent
-        className={`max-h-[calc(100dvh-2rem)] gap-0 overflow-y-auto border-0 p-0 sm:max-w-[480px] [&_[data-slot=dialog-close]]:bg-background/90 [&_[data-slot=dialog-close]]:p-1.5 ${mode === 'letter' ? styles.letterCanvas : ''}`}
+        className={`max-h-[calc(100dvh-2rem)] gap-0 overflow-y-auto border-0 p-0 sm:max-w-[480px] [&_[data-slot=dialog-close]]:bg-background/90 [&_[data-slot=dialog-close]]:p-1.5 ${kind === 'note' ? styles.noteCanvas : mode === 'letter' ? styles.letterCanvas : ''}`}
       >
         <DialogTitle className='sr-only'>
           {senderName}님의{' '}
@@ -309,26 +309,29 @@ export const ReadingEnvelopeDialog = ({
             )}
           </div>
         ) : (
-          <div className={kind === 'note' ? 'px-5 py-8' : 'px-6 pb-6'}>
+          <div className={kind === 'note' ? styles.noteSheet : 'px-6 pb-6'}>
             {kind === 'note' && (
               <ReadingMessagePaper
                 kind='note'
                 senderName={senderName}
-                message='쪽지 한 장이 도착했어요.'
+                message={notification.message || '보낸 내용이 없어요.'}
               />
             )}
             <Button
-              className='mt-4 w-full'
+              className={
+                kind === 'note' ? 'ml-auto mt-6 flex min-w-20' : 'mt-4 w-full'
+              }
               loading={busy}
               onClick={() =>
                 void run(async () => {
                   await onRead();
-                  setOpened(true);
+                  if (kind === 'note') onClose();
+                  else setOpened(true);
                 }, '메시지를 열지 못했어요.')
               }
             >
-              <MailOpen size={16} />
-              {kind === 'note' ? '쪽지 읽기' : '봉투 열어보기'}
+              {kind !== 'note' && <MailOpen size={16} />}
+              {kind === 'note' ? '확인' : '봉투 열어보기'}
             </Button>
           </div>
         )}
