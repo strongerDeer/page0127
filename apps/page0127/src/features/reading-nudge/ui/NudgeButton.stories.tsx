@@ -31,6 +31,7 @@ const meta = {
     context: 'ahead',
     iconOnly: true,
     loadSent: fn(async () => [] as string[]),
+    loadEligible: fn(async () => ['jisu', 'minho']),
     send: fn<NonNullable<Props['send']>>(async () => 'sent-id'),
   },
   render: (args) => <Harness args={args} />,
@@ -238,5 +239,48 @@ export const SharedDailyCheck: Story = {
       canvas.getByRole('button', { name: '민호님 콕 찌르기' })
     ).toHaveAttribute('aria-disabled', 'false');
     await expect(args.loadSent).toHaveBeenCalledOnce();
+  },
+};
+
+export const OneWayFollow: Story = {
+  args: { loadEligible: fn(async () => []) },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const page = within(canvasElement.ownerDocument.body);
+    const button = await canvas.findByRole('button', {
+      name: '지수님 맞팔 후 콕 찌르기',
+    });
+    await expect(button).toHaveAttribute('aria-disabled', 'true');
+    await userEvent.click(button);
+    await waitFor(() =>
+      expect(page.getByText('맞팔한 사이에만 보낼 수 있어요.')).toBeVisible()
+    );
+    await expect(page.queryByRole('dialog')).not.toBeInTheDocument();
+    await expect(args.send).not.toHaveBeenCalled();
+  },
+};
+export const UnfollowBeforeOpen: Story = {
+  render: function RelationshipChanges(args) {
+    const [loadEligible] = useState(() => {
+      let calls = 0;
+      return async () => (++calls === 1 ? ['jisu'] : []);
+    });
+    return <Harness args={{ ...args, loadEligible }} />;
+  },
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement);
+    const page = within(canvasElement.ownerDocument.body);
+    const button = await canvas.findByRole('button', {
+      name: '지수님 콕 찌르기',
+    });
+    await waitFor(() =>
+      expect(button).toHaveAttribute('aria-disabled', 'false')
+    );
+    await userEvent.click(button);
+    await waitFor(() =>
+      expect(page.getByText('맞팔한 사이에만 보낼 수 있어요.')).toBeVisible()
+    );
+    await expect(page.queryByRole('dialog')).not.toBeInTheDocument();
+    await expect(args.send).not.toHaveBeenCalled();
   },
 };

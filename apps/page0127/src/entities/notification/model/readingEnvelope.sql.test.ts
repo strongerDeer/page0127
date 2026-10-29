@@ -84,6 +84,7 @@ beforeAll(async () => {
     '20261025000003_lounge_social_battles.sql',
     '20261026000000_reading_envelope_actions.sql',
     '20261027000001_envelope_life_book_completion.sql',
+    '20261029000000_mutual_reading_envelopes.sql',
   ]) {
     await db.exec(
       readFileSync(
@@ -104,7 +105,10 @@ beforeEach(async () => {
   );
   for (const id of [sender, receiver, stranger])
     await db.query('INSERT INTO auth.users VALUES($1)', [id]);
-  await db.query('INSERT INTO follows VALUES($1,$2)', [sender, receiver]);
+  await db.query('INSERT INTO follows VALUES($1,$2),($2,$1)', [
+    sender,
+    receiver,
+  ]);
   await login(sender);
 });
 afterAll(async () => {
@@ -397,7 +401,7 @@ describe('검색한 책과 직접 작성한 메시지', () => {
       db.query("SELECT send_reading_envelope($1,'안녕',NULL,'note')", [
         receiver,
       ])
-    ).rejects.toThrow('팔로우');
+    ).rejects.toThrow('맞팔');
   });
 });
 
@@ -471,5 +475,63 @@ describe('편지에서 인생책 완독 등록', () => {
     await expect(
       db.query("SELECT respond_reading_envelope_base($1,'save')", [id])
     ).rejects.toThrow('permission denied');
+  });
+});
+
+describe('맞팔 메시지 경계', () => {
+  it('일방 팔로우는 세 종류 모두 전송하지 않고 알림·하루 제한도 남기지 않는다', async () => {
+    await db.query('DELETE FROM follows WHERE follower_id=$1', [receiver]);
+    const book = await addBook();
+    for (const kind of ['recommendation', 'invitation', 'note']) {
+      await login(sender);
+      await expect(
+        db.query("SELECT send_reading_envelope($1,'안녕',$2,$3)", [
+          receiver,
+          kind === 'note' ? null : book,
+          kind,
+        ])
+      ).rejects.toThrow('맞팔');
+    }
+    expect((await db.query('SELECT * FROM notifications')).rows).toHaveLength(
+      0
+    );
+    expect(
+      (await db.query('SELECT * FROM reading_nudge_limits')).rows
+    ).toHaveLength(0);
+    expect(
+      (await db.query('SELECT * FROM get_reading_nudge_recipients()')).rows
+    ).toHaveLength(0);
+  });
+  it('맞팔이 끊겨도 이미 받은 봉투는 열고 서재에 담을 수 있다', async () => {
+    const id = await send(await addBook(), 'recommendation');
+    await db.query('DELETE FROM follows WHERE follower_id=$1', [receiver]);
+    expect((await respond(id, 'save')).status).toBe('want_to_read');
+    await login(sender);
+    await expect(
+      db.query("SELECT send_reading_envelope($1,'안녕',NULL,'note')", [
+        receiver,
+      ])
+    ).rejects.toThrow('맞팔');
+  });
+  it('대상 목록은 본인의 맞팔만 반환하고 이전 RPC 우회는 닫는다', async () => {
+    expect(
+      (await db.query('SELECT * FROM get_reading_nudge_recipients()')).rows
+    ).toEqual([{ user_id: receiver }]);
+    const grants = (
+      await db.query<{
+        legacy: boolean;
+        anonymous: boolean;
+        allowed: boolean;
+      }>(`
+      SELECT has_function_privilege('authenticated','public.send_reading_nudge(uuid,text,uuid)','EXECUTE') AS legacy,
+      has_function_privilege('anon','public.get_reading_nudge_recipients()','EXECUTE') AS anonymous,
+      has_function_privilege('authenticated','public.send_reading_envelope(uuid,text,uuid,text,uuid,integer)','EXECUTE') AS allowed
+    `)
+    ).rows[0];
+    expect(grants).toEqual({ legacy: false, anonymous: false, allowed: true });
+    await login(stranger);
+    expect(
+      (await db.query('SELECT * FROM get_reading_nudge_recipients()')).rows
+    ).toHaveLength(0);
   });
 });

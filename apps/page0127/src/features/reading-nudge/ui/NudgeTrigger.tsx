@@ -10,12 +10,14 @@ export const NudgeTrigger = ({
   iconOnly = false,
   sent = false,
   checking = false,
+  unavailable,
   onClick,
 }: {
   recipientName: string;
   iconOnly?: boolean;
   sent?: boolean;
   checking?: boolean;
+  unavailable?: string;
   onClick: () => void;
 }) => {
   const [hintOpen, setHintOpen] = useState(false);
@@ -30,7 +32,7 @@ export const NudgeTrigger = ({
     hideTimer.current = setTimeout(() => setHintOpen(false), 150);
   };
   useEffect(() => () => clearTimeout(hideTimer.current), []);
-  const label = sent ? '오늘 콕 찌름' : '콕 찌르기';
+  const label = unavailable ?? (sent ? '오늘 콕 찌름' : '콕 찌르기');
   return (
     <Popover open={iconOnly && hintOpen} onOpenChange={setHintOpen}>
       <PopoverAnchor asChild>
@@ -39,7 +41,7 @@ export const NudgeTrigger = ({
           variant='outline'
           size={iconOnly ? 'icon-sm' : 'md'}
           aria-label={`${recipientName}님 ${label}`}
-          aria-disabled={sent || checking}
+          aria-disabled={sent || checking || Boolean(unavailable)}
           className='min-w-0 shrink-0 rounded-full aria-disabled:cursor-default aria-disabled:opacity-50'
           onPointerEnter={showHint}
           onPointerLeave={hideHint}

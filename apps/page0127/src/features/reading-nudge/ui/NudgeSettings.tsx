@@ -38,7 +38,7 @@ export const NudgeSettings = ({ userId }: { userId: string }) => {
             책 메시지 알림
           </h2>
           <p className='mt-1 text-sm text-text-subtle'>
-            책 추천·같이 읽기·한마디를 받을 수 있어요.
+            맞팔한 리더에게 책 추천·같이 읽기·한마디를 받을 수 있어요.
           </p>
         </div>
         <Switch

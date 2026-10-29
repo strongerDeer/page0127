@@ -26,6 +26,17 @@ export async function POST(request: NextRequest) {
     return errorResponse('보낼 메시지와 책을 확인해 주세요.', 400);
   try {
     const supabase = await getSupabaseClient();
+    // 책 검색·저장 전에 관계를 확인하고, 실제 전송 RPC에서도 다시 검증한다.
+    const { data: recipients, error: relationError } = await supabase.rpc(
+      'get_reading_nudge_recipients'
+    );
+    if (relationError) return errorResponse('맞팔 여부를 확인하지 못했어요.');
+    if (
+      !recipients?.some(
+        (row: { user_id: string }) => row.user_id === body.recipientId
+      )
+    )
+      return errorResponse('맞팔한 사이에만 보낼 수 있어요.', 403);
     let catalogId: string | null = null;
     let pageCount: number | null = null;
     if (body.bookIsbn) {
