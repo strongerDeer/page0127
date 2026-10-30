@@ -2,6 +2,14 @@ import Script from 'next/script';
 
 import { APP_PATTERNS } from '@/shared/lib/auth/inAppBrowser';
 
+import {
+  SHARE_CAMPAIGN_PREFIX,
+  SHARE_MEDIUM,
+  SHARE_PARAM,
+  SHARE_PARAM_VALUE,
+  SHARE_SOURCE,
+} from './shareTag';
+
 /**
  * 측정 도구의 브라우저 표식 — Lighthouse(PageSpeed Insights 포함)는 UA 에 'Chrome-Lighthouse',
  * Playwright 등 헤드리스 크롬은 'HeadlessChrome' 을 넣는다.
@@ -18,7 +26,7 @@ export const isNonProductionEnv = (env: NodeJS.ProcessEnv): boolean =>
   (!!env.VERCEL_ENV && env.VERCEL_ENV !== 'production');
 
 /**
- * 공유 링크(utm_source=share, features/share/lib/shareUrl)를 연 앱 — 인앱 브라우저 UA 로 안다.
+ * 공유 링크(?from=share, shareTag 참고)를 연 앱 — 인앱 브라우저 UA 로 안다.
  * 'other'(이름 모를 안드로이드 웹뷰)는 앱 이름이 아니라서 'share' 로 남긴다.
  * 인라인 스크립트에 넣을 수 있게 `[이름, /정규식/]` 배열 리터럴 문자열로 만든다.
  */
@@ -46,8 +54,11 @@ export const GoogleAnalytics = () => {
   // 홈 화면에 설치한 앱(standalone)으로 열었으면 세션마다 한 번 app_open, 설치 순간엔 app_install.
   // 여기(ga-init)서 보내는 이유: 컴포넌트 effect 는 GA 스크립트(afterInteractive)보다 먼저 돌 수 있어
   // trackEvent 가 gtag 없이 조용히 버려진다. appinstalled 는 안드로이드·PC 크롬만 알려 준다(iOS 없음).
-  // 공유 링크로 들어왔으면 utm_source=share 를 연 앱 이름(kakaotalk·instagram …)으로 바꿔 보낸다.
-  // 주소창은 그대로 두고 GA 에 보내는 page_location 만 바꾼다 — GA 는 세션 출처를 이 값에서 읽는다.
+  // 공유 링크(?from=share)로 들어왔으면 GA 에 보내는 page_location 에 utm 을 채운다 — GA 는 세션 출처를 이 값에서 읽는다.
+  // utm_source 는 연 앱 이름(kakaotalk·instagram …)으로, 서재(/아이디)·책(/아이디/책id)은 경로 깊이로 가른다.
+  // 주소창의 from=share 는 지운다: 받은 사람이 다시 복사할 때 깔끔하고, 새로고침해도 또 공유 유입으로 세지 않는다.
+  // history.state 를 그대로 넘겨야 Next 라우터가 들고 있는 상태가 안 깨진다.
+  // 예전에 보낸 utm 이 달린 링크(utm_source=share)도 계속 앱 이름으로 바꾼다.
   // 측정 도구(매주 품질 측정·PageSpeed)·자동화 브라우저와 관리자 기기의 방문은 GA 로 보내지 않는다 — 유입분석에 섞인다.
   // navigator.webdriver: Playwright·Puppeteer·Selenium 이 조종하는 브라우저는 true 다.
   // UA 를 일반 크롬·아이폰으로 바꿔 끼운 자동화(Playwright devices 프리셋 등)는 UA 만으론 못 잡아서 함께 본다.
@@ -79,7 +90,21 @@ export const GoogleAnalytics = () => {
           var pageLocation = null;
           try {
             var url = new URL(location.href);
-            if (url.searchParams.get('utm_source') === 'share') {
+            if (url.searchParams.get('${SHARE_PARAM}') === '${SHARE_PARAM_VALUE}') {
+              url.searchParams.delete('${SHARE_PARAM}');
+              try {
+                history.replaceState(history.state, '', url.pathname + url.search + url.hash);
+              } catch (e) {}
+              var depth = url.pathname.split('/').filter(Boolean).length;
+              url.searchParams.set('utm_source', '${SHARE_SOURCE}');
+              url.searchParams.set('utm_medium', '${SHARE_MEDIUM}');
+              url.searchParams.set(
+                'utm_campaign',
+                '${SHARE_CAMPAIGN_PREFIX}' + (depth >= 2 ? 'book' : 'library')
+              );
+              pageLocation = url.toString();
+            }
+            if (url.searchParams.get('utm_source') === '${SHARE_SOURCE}') {
               var apps = ${SHARE_APP_PATTERNS_JS};
               for (var i = 0; i < apps.length; i++) {
                 if (apps[i][1].test(navigator.userAgent)) {

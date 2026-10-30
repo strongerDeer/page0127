@@ -173,7 +173,6 @@ const BookDetailPage = async ({ params }: PageProps) => {
               fileName={`page0127-${username}-book.png`}
               title={book.title}
               sheetTitle='기록 공유하기'
-              text={book.one_line_review ?? undefined}
               loadingMessages={BOOK_STORY_LOADING}
             />
           )}

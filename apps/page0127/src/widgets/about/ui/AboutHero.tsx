@@ -74,7 +74,6 @@ export const AboutHero = ({
                 fileName={`page0127-${member.username}.png`}
                 title={`${member.displayName}님의 책장`}
                 sheetTitle='서재 공유하기'
-                text='책장을 보면, 그 사람이 보입니다.'
                 triggerLabel='서재 공유하기'
                 prominent
               />

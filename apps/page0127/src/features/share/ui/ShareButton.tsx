@@ -15,8 +15,6 @@ type ShareButtonProps = {
   path: string;
   /** 네이티브 공유 시트에 뜨는 제목 */
   title: string;
-  /** 공유 시트 본문. 카톡 등에서 링크 위에 붙는다 */
-  text?: string;
   /** 버튼에 보일 문구. 없으면 아이콘만 (아이콘 버튼) */
   label?: string;
   className?: string;
@@ -33,16 +31,14 @@ type ShareButtonProps = {
 export const ShareButton = ({
   path,
   title,
-  text,
   label,
   className,
 }: ShareButtonProps) => {
   const [isSharing, setIsSharing] = useState(false);
 
   const handleShare = async () => {
-    // origin 은 브라우저에서만 알 수 있다 — 서버 렌더 시점에는 window 가 없다.
-    // 공유 시트와 복사는 꼬리표(utm_content)가 달라 각자 만든다
-    const { origin } = window.location;
+    // origin 은 브라우저에서만 알 수 있다 — 서버 렌더 시점에는 window 가 없다
+    const url = buildShareUrl(window.location.origin, path);
 
     if (navigator.share) {
       // 공유 시트가 열려 있는 동안 다시 호출하면 InvalidStateError 가 난다
@@ -50,11 +46,9 @@ export const ShareButton = ({
       setIsSharing(true);
 
       try {
-        await navigator.share({
-          title,
-          text,
-          url: buildShareUrl(origin, path, 'native'),
-        });
+        // text 는 넘기지 않는다 — 공유 시트에서 "복사"를 고르면 OS 가 text 와 url 을 한 줄로
+        // 붙여 복사해서, 붙여 넣을 때 문구가 링크 앞에 딸려 온다. 카톡 등은 링크 미리보기(OG)로 충분하다
+        await navigator.share({ title, url });
         // 성공한 뒤에만 센다 — 시트를 열었다 닫은 것은 공유가 아니다
         trackEvent('share_click', { method: 'native', path });
         return;
@@ -70,7 +64,7 @@ export const ShareButton = ({
     }
 
     try {
-      await navigator.clipboard.writeText(buildShareUrl(origin, path, 'copy'));
+      await navigator.clipboard.writeText(url);
       trackEvent('share_click', { method: 'copy', path });
       toast.success('주소를 복사했어요.');
     } catch {

@@ -306,7 +306,6 @@ export const PublicLibraryHeader = ({
                   fileName={`page0127-${username}.png`}
                   title={`${displayName}님의 책장`}
                   sheetTitle='서재 공유하기'
-                  text='책장을 보면, 그 사람이 보입니다.'
                 />
               </div>
             </div>
