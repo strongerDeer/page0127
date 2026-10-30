@@ -20,8 +20,8 @@
      박혀 있어 다크에서 흰 상자가 책장에서 혼자 튀었다(2026-10-08 확인) */
   --book-empty-bg: #f5f5f5;
   --book-empty-text: #6b7280;
-  /* 이미지 없는 책등의 글자 — 짙은 책등 색(data-tone) 위에 얹는 밝은 미색 */
-  --spine-text: #f5f1e8;
+  /* 이미지 없는 책등의 글자 — 밝은 책등 색(data-tone) 위에 얹는 짙은 먹색 */
+  --spine-text: #1f1d1a;
 
   /* 연도 명판(.plate)의 기준점 */
   position: relative;
@@ -244,32 +244,33 @@
 
 /*
   책등 이미지가 없는 책의 색. 회색 한 가지로 칠하면 책장에서 "빈 칸"으로 읽혀서
-  천 장정 같은 차분한 색 여덟 가지를 책마다 고정으로 돌려 쓴다(spineTone).
-  모두 짙은 색이라 밝은 글자(--spine-text)가 라이트·다크 어디서나 읽힌다.
+  밝고 선명한 색 여덟 가지를 책마다 고정으로 돌려 쓴다(spineTone).
+  짙은 천 장정 색은 칙칙하다는 의견(HJ, 2026-10-31)으로 바꿨다.
+  모두 밝은 색이라 짙은 글자(--spine-text)와 대비가 7:1 이상이다.
 */
 .noImage.spine[data-tone="0"] {
-  --spine-bg: #2f3e5c;
+  --spine-bg: #ff8a7a;
 }
 .noImage.spine[data-tone="1"] {
-  --spine-bg: #2f5245;
+  --spine-bg: #ffc94d;
 }
 .noImage.spine[data-tone="2"] {
-  --spine-bg: #6b2f36;
+  --spine-bg: #6fd3b0;
 }
 .noImage.spine[data-tone="3"] {
-  --spine-bg: #7a5a1e;
+  --spine-bg: #6ab4f0;
 }
 .noImage.spine[data-tone="4"] {
-  --spine-bg: #24585c;
+  --spine-bg: #b39cff;
 }
 .noImage.spine[data-tone="5"] {
-  --spine-bg: #8a4630;
+  --spine-bg: #ff9ec7;
 }
 .noImage.spine[data-tone="6"] {
-  --spine-bg: #4e3a5e;
+  --spine-bg: #ffa55c;
 }
 .noImage.spine[data-tone="7"] {
-  --spine-bg: #3f4a52;
+  --spine-bg: #9ad86a;
 }
 
 /*
