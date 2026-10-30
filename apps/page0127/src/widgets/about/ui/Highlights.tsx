@@ -250,7 +250,7 @@ export const Highlights = ({ books }: HighlightsProps) => {
             <Card
               wide
               lead='배지.'
-              rest='책을 기록할수록 성장·분야·이야기·히든 배지 31종이 작은 전집처럼 모여요. 이미 기록한 책으로도 바로 받아요.'
+              rest='책을 기록할수록 성장·분야·이야기·히든 배지가 작은 전집처럼 모여요. 이미 기록한 책으로도 바로 받아요.'
             >
               <div className='flex w-full flex-col items-center'>
                 <ul className='flex flex-wrap items-end justify-center gap-4 md:gap-6'>
@@ -260,10 +260,12 @@ export const Highlights = ({ books }: HighlightsProps) => {
                     </li>
                   ))}
                 </ul>
-                <p className='mt-6 rounded-full bg-card px-3.5 py-2 text-sm font-bold text-text-strong shadow-lg'>
-                  🎉 새 배지를 받았어요{' '}
-                  <span className='font-normal text-text-subtle'>
-                    · 완독을 저장하면 바로 축하해 드려요
+                {/* 모바일은 두 줄로 나눠 가운데 정렬 — 한 줄짜리 알약 모양이 어중간하게 꺾이지 않게 */}
+                <p className='mt-6 rounded-2xl bg-card px-4 py-2.5 text-center text-sm font-bold text-text-strong shadow-lg sm:rounded-full sm:px-3.5 sm:py-2'>
+                  🎉 새 배지를 받았어요
+                  <span className='block font-normal text-text-subtle sm:inline'>
+                    <span className='hidden sm:inline'> · </span>
+                    완독을 저장하면 바로 축하해 드려요
                   </span>
                 </p>
               </div>
