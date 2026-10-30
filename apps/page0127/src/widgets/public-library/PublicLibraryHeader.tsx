@@ -204,7 +204,8 @@ export const PublicLibraryHeader = ({
                   />
                 </div>
               ) : (
-                <div className='flex size-20 shrink-0 items-center justify-center rounded-full bg-accent text-2xl font-bold text-accent-foreground'>
+                // 띠 배경이 bg-accent 라 같은 색이면 원이 사라진다 → 말풍선·버튼처럼 흰 카드 + 옅은 테두리로 띄운다
+                <div className='flex size-20 shrink-0 items-center justify-center rounded-full border border-line-soft bg-card text-2xl font-bold text-accent-foreground'>
                   {displayName.charAt(0).toUpperCase()}
                 </div>
               )}
