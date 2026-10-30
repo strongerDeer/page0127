@@ -58,9 +58,10 @@ export const InAppBrowserNotice = ({ browser }: InAppBrowserNoticeProps) => {
     externalOpenUrl(browser, 'https://example.com') !== null;
 
   return (
+    // 파란 띠(text-white) 안에도 놓이므로 글자색을 직접 정한다 — 안 그러면 outline 버튼 글자가 흰 바탕에 흰색이 된다
     <div
       role='status'
-      className='space-y-3 rounded-xl border border-line bg-sunken p-4 text-sm break-keep'
+      className='space-y-3 rounded-xl border border-line bg-sunken p-4 text-sm text-foreground break-keep'
     >
       <p className='font-medium text-text-strong'>
         {appName} 안에서는 구글 로그인이 막혀 있어요
