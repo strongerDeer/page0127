@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { Button, Input, Spinner, StatePanel } from '@repo/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Globe, Lock, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/client';
@@ -15,6 +16,7 @@ import { QueryErrorState } from '@/shared/ui/QueryErrorState';
 
 import { useBulkAction } from '../model/useBulkAction';
 import { BulkConfirmDialog } from './BulkConfirmDialog';
+import { SelectionBar, SelectionBarDivider } from './SelectionBar';
 
 import type { BookBulkAction, BulkRequest } from '../model/types';
 import type { Book } from '@/entities/book';
@@ -41,6 +43,7 @@ const actionNames = {
   private: '비공개로 변경',
   delete: '삭제',
 };
+const actionIcons = { public: Globe, private: Lock };
 const initialFilters = {
   status: 'all',
   visibility: 'all',
@@ -108,6 +111,7 @@ export const LibraryManagement = ({ userId }: { userId: string }) => {
     );
     router.refresh();
   };
+  const actionDisabled = !selected.size || bulk.pending || query.isFetching;
   return (
     <div className='space-y-5'>
       <form
@@ -173,42 +177,54 @@ export const LibraryManagement = ({ userId }: { userId: string }) => {
         같은 책도 회독별로 표시해요. 선택하지 않은 다른 회독과 연도의 기록은
         바뀌지 않아요.
       </p>
-      <div
-        role='group'
-        aria-label='서재 일괄 관리'
-        className='flex flex-wrap items-center gap-2 rounded-xl border border-line-soft bg-card p-3'
+      <SelectionBar
+        label='서재 일괄 관리'
+        toggleAllLabel='이 페이지 모두 선택'
+        countLabel={`${selected.size}개 기록 선택`}
+        selectedCount={selected.size}
+        selectableCount={records.length}
+        toggleAllDisabled={query.isFetching || bulk.pending}
+        onToggleAll={() =>
+          setSelected(
+            selected.size === records.length
+              ? new Set()
+              : new Set(records.map((record) => record.id))
+          )
+        }
       >
-        <span role='status' className='mr-auto text-sm font-medium'>
-          {selected.size}개 기록 선택
-        </span>
+        {(['public', 'private'] as const).map((action) => {
+          const Icon = actionIcons[action];
+          return (
+            <Button
+              key={action}
+              size='sm'
+              variant='outline'
+              className='flex-1 sm:flex-none'
+              disabled={actionDisabled}
+              onClick={() => choose(action)}
+            >
+              <Icon className='size-4' aria-hidden />
+              {/* 좁은 화면에선 "로 변경"을 숨기되 읽어 주는 이름은 그대로 둔다.
+                  한 span 으로 묶어야 버튼의 gap 이 글자 사이에 끼지 않는다 */}
+              <span>
+                {action === 'public' ? '공개' : '비공개'}
+                <span className='max-sm:sr-only'>로 변경</span>
+              </span>
+            </Button>
+          );
+        })}
+        <SelectionBarDivider />
         <Button
           size='sm'
-          variant='ghost'
-          disabled={!records.length || query.isFetching || bulk.pending}
-          onClick={() =>
-            setSelected(
-              selected.size === records.length
-                ? new Set()
-                : new Set(records.map((record) => record.id))
-            )
-          }
+          variant='destructive'
+          className='flex-1 sm:flex-none'
+          disabled={actionDisabled}
+          onClick={() => choose('delete')}
         >
-          {records.length > 0 && selected.size === records.length
-            ? '선택 해제'
-            : '이 페이지 모두 선택'}
+          <Trash2 className='size-4' aria-hidden />
+          삭제
         </Button>
-        {(['public', 'private', 'delete'] as const).map((action) => (
-          <Button
-            key={action}
-            size='sm'
-            variant={action === 'delete' ? 'destructive' : 'outline'}
-            disabled={!selected.size || bulk.pending || query.isFetching}
-            onClick={() => choose(action)}
-          >
-            {actionNames[action]}
-          </Button>
-        ))}
-      </div>
+      </SelectionBar>
       {query.isPending ? (
         <Spinner label='서재 기록을 불러오는 중' className='py-10' />
       ) : query.isError ? (
@@ -224,7 +240,10 @@ export const LibraryManagement = ({ userId }: { userId: string }) => {
           <p className='text-sm text-text-subtle'>
             총 {query.data.total}개 기록 · {filters.page + 1}페이지
           </p>
-          <ul className='divide-y divide-line-soft overflow-hidden rounded-2xl border border-line-soft bg-card'>
+          <ul
+            aria-label='독서 기록'
+            className='divide-y divide-line-soft overflow-hidden rounded-2xl border border-line-soft bg-card'
+          >
             {records.map((record) => (
               <li key={record.id} className='flex items-start gap-3 p-4'>
                 <input
@@ -255,9 +274,15 @@ export const LibraryManagement = ({ userId }: { userId: string }) => {
                         : ''}
                   </p>
                 </div>
+                {/* 공개는 서비스 색으로, 비공개는 회색으로 한 발 물러나 보이게 */}
                 <span
-                  className={`shrink-0 rounded-full px-2 py-1 text-xs ${record.is_public ? 'bg-sunken text-text-body' : 'bg-accent text-accent-foreground'}`}
+                  className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-xs ${record.is_public ? 'bg-accent text-accent-foreground' : 'bg-sunken text-text-body'}`}
                 >
+                  {record.is_public ? (
+                    <Globe className='size-3' aria-hidden />
+                  ) : (
+                    <Lock className='size-3' aria-hidden />
+                  )}
                   {record.is_public ? '공개' : '비공개'}
                 </span>
               </li>
