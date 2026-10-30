@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import { createTestBook } from '@/entities/book/model/createTestBook';
-import { spineWidthPx } from '@/entities/book/model/spineWidth';
+import { shelfSpineWidthPx } from '@/entities/book/model/spineWidth';
 
 import { PublicBookShelf } from './PublicBookShelf';
 
@@ -52,7 +52,7 @@ describe('PublicBookShelf 책등', () => {
       <PublicBookShelf books={[makeBook({ spine_image: null })]} />
     );
 
-    expect(html).toContain(`width:${spineWidthPx(20)}px`);
+    expect(html).toContain(`width:${shelfSpineWidthPx(20)}px`);
   });
 });
 

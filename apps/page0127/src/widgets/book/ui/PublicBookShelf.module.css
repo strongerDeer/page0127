@@ -236,6 +236,8 @@
 
 .noImage.spine {
   width: 50px;
+  /* 얇은 책(18px~)은 두 줄이 들어갈 폭이 없다 — 넘치는 줄은 상자 밖으로 내보내지 않는다 */
+  overflow: hidden;
   /* 세로쓰기 칸이 위아래 끝에 닿지 않게 — 가로 여백은 두 줄 자리를 위해 줄인다 */
   padding: 0.75rem 0.125rem;
   border-color: transparent;
@@ -286,7 +288,7 @@
   display: block;
   -webkit-line-clamp: unset;
   height: 100%;
-  max-width: 2.4em;
+  max-width: min(2.4em, 100%);
   line-height: 1.2;
   overflow: hidden;
   color: var(--spine-text);
