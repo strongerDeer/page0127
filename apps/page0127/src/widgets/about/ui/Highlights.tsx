@@ -1,4 +1,5 @@
 import { type Badge, BadgeMedal } from '@/features/badge';
+import { InstallGuideLink } from '@/features/pwa-install';
 
 import { Reveal } from './Reveal';
 import { SafeCover } from './SafeCover';
@@ -40,7 +41,7 @@ const Cover = ({ src, fallbackSrc, className, small }: CoverProps) => {
 
 type CardProps = {
   lead: string;
-  rest: string;
+  rest: React.ReactNode;
   /** 강조 카드의 면 — 없으면 중립 면(sunken). mint 는 쨍한 민트 무대(남색 글자) */
   tone?: 'blue' | 'mint';
   /** 한 줄을 다 쓰는 카드 — 세로를 줄인다 */
@@ -318,7 +319,12 @@ export const Highlights = ({ books }: HighlightsProps) => {
           <Reveal delay={1}>
             <Card
               lead='주간 회상.'
-              rest='이번 주의 나를 한 장으로 돌아봐요. 홈 화면에 추가하면 알림으로 받아요.'
+              rest={
+                <>
+                  이번 주의 나를 한 장으로 돌아봐요. 홈 화면에 추가하면 알림으로
+                  받아요. <InstallGuideLink />
+                </>
+              }
             >
               <div className='w-full rounded-2xl bg-card p-5 shadow-lg'>
                 <p className='text-xs text-text-subtle'>이번 주</p>

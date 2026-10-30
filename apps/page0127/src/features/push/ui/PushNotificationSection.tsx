@@ -3,6 +3,8 @@
 import { Switch } from '@repo/ui';
 import { toast } from 'sonner';
 
+import { InstallGuideLink } from '@/features/pwa-install';
+
 import { usePushSubscription } from '../api/usePushSubscription';
 
 import type { PushSupport } from '../model/pushSupport';
@@ -71,6 +73,12 @@ export const PushNotificationSection = () => {
       {support && support !== 'available' && (
         <p className='mt-3 text-sm text-text-subtle'>
           {UNAVAILABLE_COPY[support]}
+          {support === 'needs-install' && (
+            <>
+              {' '}
+              <InstallGuideLink />
+            </>
+          )}
         </p>
       )}
     </section>
