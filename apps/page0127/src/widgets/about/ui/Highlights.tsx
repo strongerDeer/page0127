@@ -318,7 +318,7 @@ export const Highlights = ({ books }: HighlightsProps) => {
           <Reveal delay={1}>
             <Card
               lead='주간 회상.'
-              rest='이번 주의 나를 한 장으로 돌아봐요. 앱으로 설치하면 알림으로 받아요.'
+              rest='이번 주의 나를 한 장으로 돌아봐요. 홈 화면에 추가하면 알림으로 받아요.'
             >
               <div className='w-full rounded-2xl bg-card p-5 shadow-lg'>
                 <p className='text-xs text-text-subtle'>이번 주</p>
