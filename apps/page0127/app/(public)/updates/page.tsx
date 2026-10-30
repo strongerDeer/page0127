@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: '공지·업데이트 | page0127.',
   description:
     'page0127.에 새로 생긴 기능과 바뀐 점을 날짜순으로 모아 둔 공지·업데이트 기록이에요.',
+  alternates: { canonical: '/updates' },
 };
 
 /**

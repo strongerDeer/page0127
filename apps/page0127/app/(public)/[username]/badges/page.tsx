@@ -35,6 +35,7 @@ export const generateMetadata = async ({
   return {
     title,
     description,
+    alternates: { canonical: `/${username}/badges` },
     openGraph: { title: shareTitle, description, type: 'profile' },
     twitter: { card: 'summary_large_image', title: shareTitle, description },
   };
