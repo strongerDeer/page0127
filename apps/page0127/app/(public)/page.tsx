@@ -1,5 +1,3 @@
-import { Suspense } from 'react';
-
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
@@ -24,6 +22,7 @@ import { ShelfPreviewSection } from '@/features/shelf-preview/ui/ShelfPreviewSec
 
 import { AboutHero, FinalCta, Highlights, Manifesto } from '@/widgets/about';
 import { getRecentBooks } from '@/widgets/about/api/getRecentBooks';
+import { getHeroBanner } from '@/widgets/landing/api/getHeroBanner';
 import { HeroBannerSection } from '@/widgets/landing/ui/HeroBannerSection';
 
 import type { ShelfPreviewData } from '@/features/shelf-preview/ui/ShelfPreviewSection';
@@ -103,9 +102,11 @@ const Home = async () => {
   // 캐시한 조회는 모두 첫 화면(셸) 전에 읽는다 — Suspense 안에서 읽으면 캐시 배경 갱신이
   // waitUntil 에 실리지 않아 [db-timeout] 으로 끊긴다(ShelfPreviewSection 주석).
   // 표지는 소개 페이지와 같은 조회라 1시간 캐시를 함께 쓴다(widgets/about/api/aboutCache.ts)
-  const [books, preview] = await Promise.all([
+  // 배너 대상(로그인/비로그인)은 세션 기준이다 — 예전 HeroBannerSection 과 같다
+  const [books, preview, banner] = await Promise.all([
     getRecentBooks(),
     loadShelfPreview(member ? null : heroVariant),
+    getHeroBanner(Boolean(user)),
   ]);
 
   return (
@@ -114,14 +115,14 @@ const Home = async () => {
       <JsonLd data={webSiteJsonLd} />
 
       {/* 롤링 배너 — 어드민에 등록한 슬라이드가 있을 때만 맨 위에 선다.
-          없으면 자리째 비우므로 로딩 자리도 두지 않는다(빈 상자가 깜빡였다 사라지면 CLS) */}
-      <ErrorBoundary fallback={null}>
-        <Suspense fallback={null}>
+          데이터는 위에서 셸 전에 읽었다(캐시 조회라 Suspense 안에서 읽지 않는다) */}
+      {banner && (
+        <ErrorBoundary fallback={null}>
           <div className='page-width pt-6'>
-            <HeroBannerSection />
+            <HeroBannerSection banner={banner} />
           </div>
-        </Suspense>
-      </ErrorBoundary>
+        </ErrorBoundary>
+      )}
 
       {/* 첫 화면 — 이 페이지의 h1. 버튼은 같은 페이지 아래 섹션으로 내려간다 */}
       <AboutHero
