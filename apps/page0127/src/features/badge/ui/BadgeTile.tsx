@@ -95,7 +95,7 @@ export const BadgeTile = ({
           </span>
         )}
       </DialogTrigger>
-      <DialogContent className='max-h-[90dvh] max-w-sm overflow-y-auto break-keep text-center'>
+      <DialogContent className='max-h-[90dvh] sm:max-w-sm overflow-y-auto break-keep text-center'>
         <div className={styles.detailStage}>
           <BadgeMedal
             badge={badge}

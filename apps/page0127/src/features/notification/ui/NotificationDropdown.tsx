@@ -79,7 +79,12 @@ export const NotificationDropdown = ({ userId }: NotificationDropdownProps) => {
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className='w-96 p-0' align='end'>
+        {/* 모바일(390px)에선 w-96 이 화면보다 넓어 왼쪽 끝에 붙었다 → 화면 폭 - 양옆 16px 로 줄이고 가장자리와 16px 띄운다 */}
+        <PopoverContent
+          className='w-[calc(100vw-2rem)] max-w-96 p-0'
+          align='end'
+          collisionPadding={16}
+        >
           <NotificationList
             userId={userId}
             onClose={() => setIsOpen(false)}

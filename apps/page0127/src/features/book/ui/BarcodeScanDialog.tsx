@@ -65,7 +65,7 @@ export const BarcodeScanDialog = ({
   onDetected,
 }: BarcodeScanDialogProps) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className='max-w-sm break-keep'>
+    <DialogContent className='sm:max-w-sm break-keep'>
       <div className='space-y-1'>
         <DialogTitle className='text-lg font-bold text-text-strong'>
           바코드로 책 찾기
