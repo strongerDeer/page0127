@@ -28,6 +28,14 @@ import { HeroBannerSection } from '@/widgets/landing/ui/HeroBannerSection';
 
 import type { ShelfPreviewData } from '@/features/shelf-preview/ui/ShelfPreviewSection';
 import type { HeroVariant } from '@/shared/lib/experiment/heroVariant';
+import type { Metadata } from 'next';
+
+// 홈의 표준 주소 — 공유 링크의 ?from=share 같은 꼬리가 붙어도 한 페이지로 센다.
+// (루트 레이아웃에 두면 모든 하위 페이지가 홈을 원본으로 가리키게 돼서 여기로 옮겼다)
+// languages(hreflang): 한국어 판 하나뿐이라 자기 자신만 가리킨다. 판이 늘면 여기에 추가.
+export const metadata: Metadata = {
+  alternates: { canonical: '/', languages: { 'ko-KR': '/' } },
+};
 
 /**
  * 메인 홈 — 로그인 여부와 상관없이 모두 같은 홈을 본다

@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: '개인정보처리방침 | page0127.',
   description:
     'page0127.이 수집하는 개인정보와 처리 방식, 이용자의 권리를 안내합니다.',
+  alternates: { canonical: '/privacy' },
 };
 
 /** 국외 이전 표의 문의처 — 각 회사 개인정보처리방침에 문의 방법이 있다 */

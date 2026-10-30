@@ -31,7 +31,14 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
 // 네이버 서치어드바이저 소유권 확인 코드. 구글 코드처럼 공개값이라 코드에 둔다.
 // (한국 서비스인데 네이버에 등록하지 않으면 검색 유입이 구조적으로 0이다)
-const naverSiteVerification = 'bc5b7246d5e207d26d0b8a16cf699841c49c82e2';
+//
+// 네이버는 http·https 를 서로 다른 사이트로 등록하고 코드도 따로 준다.
+// 처음엔 http://page0127.com 으로 등록돼 있었고(2026-08), https 를 새로 등록하며
+// 코드가 하나 더 생겼다. 메타 태그는 여러 개 둬도 되니 둘 다 남긴다.
+const naverSiteVerification = [
+  'bc5b7246d5e207d26d0b8a16cf699841c49c82e2', // http://page0127.com
+  '1d82b46eae27cbe45ae54398b7c9908b7f5dfcd9', // https://page0127.com
+];
 
 const siteTitle = 'page0127. - 책장을 보면, 그 사람이 보인다';
 const siteDescription =
@@ -78,13 +85,10 @@ export const metadata: Metadata = {
     title: siteTitle,
     description: siteDescription,
   },
-  // 표준 주소 — 같은 화면이 여러 주소로 열려도 검색엔진이 한 곳으로 몰아준다.
-  // 옛 page0127.vercel.app 은 308 로 넘어오지만, 공유 링크에 붙는 추적 파라미터
-  // (?utm_source=… 등)까지 각각 다른 페이지로 세지 않게 하려면 이게 필요하다.
-  //
-  // languages(hreflang): 한국어 판 하나뿐이라 자기 자신만 가리킨다. 다국어 사이트용
-  // 신호지만, 선언해 두면 "이 페이지는 ko-KR 판"이라는 뜻이 명시된다. 판이 늘면 여기에 추가.
-  alternates: { canonical: '/', languages: { 'ko-KR': '/' } },
+  // 표준 주소(canonical)는 여기 두지 않는다. 루트 레이아웃의 값은 자기 값을 안
+  // 적은 모든 페이지에 물려져서, /updates·/privacy 같은 페이지까지 "원본은 홈"이라고
+  // 말하게 된다(구글 서치 콘솔 "적절한 표준 태그가 포함된 대체 페이지"로 빠졌다).
+  // 홈은 (public)/page.tsx 가, 나머지 공개 페이지는 각자 자기 주소를 적는다.
   // iOS 홈 화면 앱 — 이 값이 있어야 사파리가 "웹 앱"으로 띄운다(웹푸시는 그 안에서만 된다).
   // 홈 화면 아이콘 아래 이름도 이 title 을 쓴다. (manifest.ts 의 display: 'standalone' 과 짝)
   appleWebApp: {
