@@ -45,7 +45,7 @@ export const FollowListModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-h-[80vh] max-w-md overflow-y-auto'>
+      <DialogContent className='max-h-[80vh] sm:max-w-md overflow-y-auto'>
         <DialogHeader>
           <DialogTitle>
             {type === 'followers' ? '팔로워' : '팔로잉'} ({users.length})

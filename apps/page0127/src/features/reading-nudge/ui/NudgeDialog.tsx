@@ -114,7 +114,7 @@ export const NudgeDialog = ({
         if (!sending) onOpenChange(value);
       }}
     >
-      <DialogContent className='max-h-[calc(100dvh-2rem)] max-w-md overflow-y-auto'>
+      <DialogContent className='max-h-[calc(100dvh-2rem)] sm:max-w-md overflow-y-auto'>
         <DialogHeader>
           <DialogTitle className='pr-6 text-left break-all'>
             {recipientName}님 콕 찌르기
