@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+
 import { Button } from '@repo/ui';
-import { ExternalLink, Link2 } from 'lucide-react';
+import { Check, ExternalLink, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
@@ -32,6 +34,14 @@ type InAppBrowserNoticeProps = {
  */
 export const InAppBrowserNotice = ({ browser }: InAppBrowserNoticeProps) => {
   const appName = APP_NAME[browser.app];
+  // 눌렀는지 버튼 자체에서 바로 보이게 — 토스트는 화면 아래라 인앱 브라우저에선 놓치기 쉽다
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(timer);
+  }, [copied]);
 
   const handleOpen = () => {
     const target = externalOpenUrl(browser, window.location.href);
@@ -46,6 +56,7 @@ export const InAppBrowserNotice = ({ browser }: InAppBrowserNoticeProps) => {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
       toast.success('링크를 복사했어요. 사파리나 크롬에 붙여 넣어 주세요.');
     } catch {
       toast.error(
@@ -86,8 +97,17 @@ export const InAppBrowserNotice = ({ browser }: InAppBrowserNoticeProps) => {
           </Button>
         )}
         <Button type='button' size='sm' variant='outline' onClick={handleCopy}>
-          <Link2 aria-hidden className='size-4' />
-          링크 복사
+          {copied ? (
+            <>
+              <Check aria-hidden className='size-4 text-primary' />
+              복사했어요
+            </>
+          ) : (
+            <>
+              <Link2 aria-hidden className='size-4' />
+              링크 복사
+            </>
+          )}
         </Button>
       </div>
     </div>
