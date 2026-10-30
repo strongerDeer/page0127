@@ -9,6 +9,7 @@ import { StatePanel } from '@repo/ui';
 import { CoverImage, isPreOptimizedImageSrc, ReadCountBadge } from '@repo/ui';
 
 import { isRated, isTopRated, toCoverSource } from '@/entities/book';
+import { spineTone } from '@/entities/book/model/spineTone';
 import { spineWidthPx } from '@/entities/book/model/spineWidth';
 
 import { tooltipShift } from '../model/tooltipShift';
@@ -110,6 +111,8 @@ export const PublicBookShelf = ({
               className={`${styles.noImage} ${isCoverView ? styles.cover : styles.spine}`}
               // 그릴 이미지가 없으니 늘어날 것도 없다 — 여기서는 두께를 폭으로 쓴다
               style={isCoverView ? undefined : { width: `${spineWidth}px` }}
+              // 회색 빈 칸 대신 책마다 고정된 밝은 색 (spineTone)
+              data-tone={isCoverView ? undefined : spineTone(book.id)}
             >
               <p>{book.title}</p>
             </div>
