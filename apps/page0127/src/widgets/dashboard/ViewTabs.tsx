@@ -80,7 +80,9 @@ export const ViewTabs = ({
             size='sm'
             aria-label='연도 선택'
             data-active={yearActive}
-            className={`${segmentedItemClassName} border-0 shadow-none ${
+            // 기본 Select 화살표는 회색 + opacity-50 이라 파란 활성 배경에서 거의 안 보였다
+            // → 글자색을 따라가게 하고 불투명하게. 셀렉트인 걸 화살표로 알아본다
+            className={`${segmentedItemClassName} border-0 shadow-none [&_svg:not([class*='text-'])]:text-current [&_svg]:opacity-100 ${
               collapseAlways ? '' : 'sm:hidden'
             }`}
             {...(goalYear !== undefined && years.includes(goalYear)
