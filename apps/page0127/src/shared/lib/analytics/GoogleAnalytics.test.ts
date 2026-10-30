@@ -37,6 +37,7 @@ const runGaInit = (opts: {
   const initScript = fragment.props.children[1].props.children ?? '';
 
   // 브라우저처럼 window 가 곧 전역 객체여야 dataLayer 같은 전역 참조가 풀린다
+  const replaced: { state: unknown; url: string }[] = [];
   const window: Record<string, unknown> = {
     navigator: { userAgent: opts.userAgent, webdriver: opts.webdriver },
     localStorage: opts.storage,
@@ -45,9 +46,16 @@ const runGaInit = (opts: {
     matchMedia: () => ({ matches: opts.standalone === true }),
     sessionStorage: opts.session ?? { getItem: () => null, setItem: () => {} },
     addEventListener: () => {},
+    history: {
+      state: { __NA: true },
+      replaceState: (state: unknown, _title: string, url: string) => {
+        replaced.push({ state, url });
+      },
+    },
   };
   window.window = window;
   runInNewContext(initScript, window);
+  window.replaced = replaced;
   return window;
 };
 
@@ -61,7 +69,9 @@ const configOptions = (opts: Parameters<typeof runGaInit>[0]) => {
   return config?.[2] as { page_location?: string } | undefined;
 };
 
-const SHARE_URL =
+const SHARE_URL = 'https://page0127.com/stronger_deer?from=share';
+/** 이 PR 전에 보낸 긴 utm 링크 — 이미 퍼져 있어서 계속 받아야 한다 */
+const LEGACY_SHARE_URL =
   'https://page0127.com/stronger_deer?utm_source=share&utm_medium=social&utm_campaign=share_library&utm_content=native';
 const KAKAO_IPHONE =
   'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 KAKAOTALK 10.8.0';
@@ -106,6 +116,44 @@ describe('ga-init 전송 차단', () => {
 });
 
 describe('공유 링크 출처', () => {
+  it('?from=share 를 서재 공유 utm 으로 펼쳐 보낸다', () => {
+    const loc = configOptions({
+      userAgent: DESKTOP_CHROME,
+      storage: storageWith(null),
+      href: SHARE_URL,
+    })?.page_location;
+    const url = new URL(loc ?? '');
+    expect(url.pathname).toBe('/stronger_deer');
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      utm_source: 'share',
+      utm_medium: 'social',
+      utm_campaign: 'share_library',
+    });
+  });
+
+  it('책 경로는 share_book, 원래 쿼리는 남긴다', () => {
+    const loc = configOptions({
+      userAgent: DESKTOP_CHROME,
+      storage: storageWith(null),
+      href: 'https://page0127.com/stronger_deer/9c93e4f0?tab=review&from=share',
+    })?.page_location;
+    const url = new URL(loc ?? '');
+    expect(url.searchParams.get('utm_campaign')).toBe('share_book');
+    expect(url.searchParams.get('tab')).toBe('review');
+    expect(url.searchParams.has('from')).toBe(false);
+  });
+
+  it('주소창의 from=share 는 라우터 상태를 지킨 채 지운다', () => {
+    const { replaced } = runGaInit({
+      userAgent: DESKTOP_CHROME,
+      storage: storageWith(null),
+      href: 'https://page0127.com/stronger_deer?tab=review&from=share#top',
+    }) as { replaced: { state: unknown; url: string }[] };
+    expect(replaced).toEqual([
+      { state: { __NA: true }, url: '/stronger_deer?tab=review#top' },
+    ]);
+  });
+
   it('카톡 안에서 열면 utm_source 를 kakaotalk 으로 바꿔 보낸다', () => {
     const loc = configOptions({
       userAgent: KAKAO_IPHONE,
@@ -115,12 +163,21 @@ describe('공유 링크 출처', () => {
     expect(new URL(loc ?? '').searchParams.get('utm_source')).toBe('kakaotalk');
   });
 
-  it('앱 밖 브라우저로 열면 주소를 그대로 둔다', () => {
+  it('예전 utm 링크도 카톡 안에서 열면 kakaotalk 으로 바꾼다', () => {
+    const loc = configOptions({
+      userAgent: KAKAO_IPHONE,
+      storage: storageWith(null),
+      href: LEGACY_SHARE_URL,
+    })?.page_location;
+    expect(new URL(loc ?? '').searchParams.get('utm_source')).toBe('kakaotalk');
+  });
+
+  it('예전 utm 링크를 앱 밖 브라우저로 열면 주소를 그대로 둔다', () => {
     expect(
       configOptions({
         userAgent: DESKTOP_CHROME,
         storage: storageWith(null),
-        href: SHARE_URL,
+        href: LEGACY_SHARE_URL,
       })?.page_location
     ).toBeUndefined();
   });

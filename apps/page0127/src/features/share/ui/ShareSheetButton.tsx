@@ -28,8 +28,6 @@ type ShareSheetButtonProps = {
   title: string;
   /** 시트 제목·버튼 이름 ("서재 공유하기") */
   sheetTitle: string;
-  /** 링크 공유 본문 */
-  text?: string;
   /** 이미지를 그리는 동안의 문구 — 기본은 서재(책장) 문구 */
   loadingMessages?: LoadingMessages;
   /** 있으면 아이콘 옆에 글자를 붙인 버튼 — 없으면 아이콘만(헤더처럼 자리가 좁은 곳) */
@@ -106,7 +104,6 @@ export const ShareSheetButton = ({
   fileName,
   title,
   sheetTitle,
-  text,
   loadingMessages = SHELF_LOADING,
   triggerLabel,
   prominent = false,
@@ -277,7 +274,6 @@ export const ShareSheetButton = ({
             <ShareButton
               path={path}
               title={title}
-              text={text}
               label='링크 공유하기'
               className='w-full'
             />

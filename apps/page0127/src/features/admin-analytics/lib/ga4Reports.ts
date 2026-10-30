@@ -69,7 +69,7 @@ export const HUMAN_FILTER = {
   },
 };
 
-/** 공유 링크(features/share/lib/shareUrl)로 들어온 세션 — 캠페인 이름이 share_ 로 시작 */
+/** 공유 링크(?from=share → ga-init 이 utm 으로 펼침, shared/lib/analytics/shareTag)로 들어온 세션 — 캠페인 이름이 share_ 로 시작 */
 export const SHARE_FILTER = {
   filter: {
     fieldName: 'sessionCampaignName',

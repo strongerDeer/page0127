@@ -14,7 +14,6 @@ const meta = {
     fileName: 'page0127-hyejin.png',
     title: '혜진님의 책장',
     sheetTitle: '서재 공유하기',
-    text: '책장을 보면, 그 사람이 보입니다.',
   },
   // 버튼을 눌러 시트를 연 상태로 둔다 — 시트가 이 컴포넌트의 본체다.
   // toBeVisible 로 보지 않는다: 열리는 순간엔 fade-in 이 opacity 0 에서 시작해 '안 보임'으로 판정된다
