@@ -681,8 +681,14 @@ test('일괄 알림 관리: 선택 삭제와 페이지 밖 읽은 알림 삭제'
   }
   await page.goto('/notifications');
   await page.getByRole('button', { name: '선택', exact: true }).click();
-  await page.getByRole('checkbox').first().check();
-  await page.getByRole('button', { name: '선택 삭제', exact: true }).click();
+  await page
+    .getByRole('checkbox', { name: /알림 선택:/ })
+    .first()
+    .check();
+  await page
+    .getByRole('group', { name: '알림 선택 관리' })
+    .getByRole('button', { name: '삭제', exact: true })
+    .click();
   await expect(page.getByRole('alertdialog')).toContainText('알림 1개');
   await page
     .getByRole('alertdialog')
@@ -779,7 +785,9 @@ test('일괄 서재 관리: 회독별 선택·비공개 복구·선택 삭제와
   await page.goto(`/${reader.username}`);
   await page.getByRole('link', { name: '서재 관리', exact: true }).click();
   await expect(page.getByRole('heading', { name: '서재 관리' })).toBeVisible();
-  await expect(page.getByRole('checkbox')).toHaveCount(3);
+  await expect(
+    page.getByRole('list', { name: '독서 기록' }).getByRole('checkbox')
+  ).toHaveCount(3);
   await page
     .getByRole('checkbox', { name: '같은 책 첫 번째 기록 1회독 선택' })
     .check();
@@ -807,7 +815,9 @@ test('일괄 서재 관리: 회독별 선택·비공개 복구·선택 삭제와
   await page
     .getByRole('combobox', { name: '공개 범위', exact: true })
     .selectOption('private');
-  await expect(page.getByRole('checkbox')).toHaveCount(2);
+  await expect(
+    page.getByRole('list', { name: '독서 기록' }).getByRole('checkbox')
+  ).toHaveCount(2);
   await page
     .getByRole('checkbox', { name: '같은 책 첫 번째 기록 1회독 선택' })
     .check();
@@ -817,11 +827,15 @@ test('일괄 서재 관리: 회독별 선택·비공개 복구·선택 삭제와
     .getByRole('button', { name: '공개로 변경', exact: true })
     .click();
   await expect(page.getByRole('alertdialog')).toHaveCount(0);
-  await expect(page.getByRole('checkbox')).toHaveCount(1);
+  await expect(
+    page.getByRole('list', { name: '독서 기록' }).getByRole('checkbox')
+  ).toHaveCount(1);
   await page
     .getByRole('combobox', { name: '공개 범위', exact: true })
     .selectOption('all');
-  await expect(page.getByRole('checkbox')).toHaveCount(3);
+  await expect(
+    page.getByRole('list', { name: '독서 기록' }).getByRole('checkbox')
+  ).toHaveCount(3);
   await page
     .getByRole('checkbox', { name: '같은 책 두 번째 기록 2회독 선택' })
     .check();

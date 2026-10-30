@@ -30,7 +30,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/client';
@@ -54,6 +54,7 @@ import {
 } from '@/features/bulk-management/model/types';
 import { useBulkAction } from '@/features/bulk-management/model/useBulkAction';
 import { BulkConfirmDialog } from '@/features/bulk-management/ui/BulkConfirmDialog';
+import { SelectionBar } from '@/features/bulk-management/ui/SelectionBar';
 
 import { LiveReadingEnvelopeDialog } from './LiveReadingEnvelopeDialog';
 import { NotificationItem } from './NotificationItem';
@@ -278,7 +279,7 @@ export const NotificationPage = ({
               setSelected(new Set());
             }}
           >
-            {selecting ? '선택 취소' : '선택'}
+            {selecting ? '완료' : '선택'}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -307,49 +308,38 @@ export const NotificationPage = ({
       </div>
 
       {selecting && (
-        <div
-          role='group'
-          aria-label='알림 선택 관리'
-          className='flex flex-wrap items-center gap-2 rounded-xl border border-line-soft bg-card p-3'
+        <SelectionBar
+          label='알림 선택 관리'
+          toggleAllLabel='모두 선택'
+          countLabel={`${selected.size}개 선택`}
+          selectedCount={selected.size}
+          selectableCount={Math.min(notifications.length, MAX_BULK_SELECTION)}
+          toggleAllDisabled={bulk.pending}
+          onToggleAll={() =>
+            setSelected(
+              selected.size >=
+                Math.min(notifications.length, MAX_BULK_SELECTION)
+                ? new Set()
+                : new Set(
+                    notifications
+                      .slice(0, MAX_BULK_SELECTION)
+                      .map((item) => item.id)
+                  )
+            )
+          }
+          hint='지금 목록에 보이는 알림만 골라요. 한 번에 최대 500개까지예요.'
         >
-          <span role='status' className='mr-auto text-sm'>
-            {selected.size}개 선택
-          </span>
-          <Button
-            size='sm'
-            variant='ghost'
-            onClick={() =>
-              setSelected(
-                new Set(
-                  notifications
-                    .slice(0, MAX_BULK_SELECTION)
-                    .map((item) => item.id)
-                )
-              )
-            }
-          >
-            불러온 알림 모두 선택
-          </Button>
-          <Button
-            size='sm'
-            variant='ghost'
-            disabled={!selected.size}
-            onClick={() => setSelected(new Set())}
-          >
-            선택 해제
-          </Button>
           <Button
             size='sm'
             variant='destructive'
+            className='flex-1 sm:flex-none'
             disabled={!selected.size || bulk.pending}
             onClick={() => chooseDelete('delete_selected')}
           >
-            선택 삭제
+            <Trash2 className='size-4' aria-hidden />
+            삭제
           </Button>
-          <p className='w-full text-xs text-text-subtle'>
-            현재 불러온 알림에서 최대 500개까지 선택할 수 있어요.
-          </p>
-        </div>
+        </SelectionBar>
       )}
       {/* 알림 목록 */}
       {isError && (
