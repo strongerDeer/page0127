@@ -7,7 +7,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Check, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { bookApi } from '@/entities/book';
+import { bookApi, fillMissingSpine } from '@/entities/book';
 import { GlobalBook } from '@/entities/book';
 
 import { addPendingBook } from '@/features/shelf-preview/model/addPendingBook';
@@ -51,7 +51,9 @@ export const AddToLibraryButton = ({
         category: book.category ?? undefined,
         status: 'want_to_read',
       }),
-    onSuccess: () => {
+    onSuccess: (created) => {
+      // 전체 도서에 책등이 비어 있으면 그대로 복사돼 들어온다 — 담은 뒤 YES24 에서 확인해 채운다
+      void fillMissingSpine(created);
       toast.success('내 서재에 추가되었습니다.');
       router.refresh();
     },

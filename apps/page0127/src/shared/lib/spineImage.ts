@@ -1,4 +1,7 @@
-import { isYes24PlaceholderImage } from '@/shared/api/book-provider';
+import {
+  buildYes24SpineUrl,
+  isYes24PlaceholderImage,
+} from '@/shared/api/book-provider';
 
 /**
  * 책등 이미지 주소를 브라우저에서 확인한다.
@@ -49,3 +52,22 @@ export const resolveSpineImageUrl = async (
     img.src = candidateUrl;
   });
 };
+
+type SpineFields = {
+  spine_image?: string | null;
+  source?: string | null;
+  provider_item_id?: string | null;
+};
+
+/**
+ * 책등이 비어 있는 YES24 책이면 확인해 볼 책등 주소를, 아니면 null 을 돌려준다.
+ *
+ * 왜 필요한가: 등록 화면 말고도 책이 서재에 들어오는 길이 있다(책 정보의 "내 서재에 담기",
+ * 맛보기 책장, "나도 읽었어요"). 이 길들은 전체 도서(global_books)의 책등 값을 그대로
+ * 복사하는데, 그 값이 비어 있으면 YES24 에 책등이 있어도 영영 회색 칸으로 남았다
+ * (2026-10-31 실측: 회색 칸 5권 중 4권은 YES24 에 진짜 책등이 있었다).
+ */
+export const missingSpineCandidate = (book: SpineFields): string | null =>
+  !book.spine_image && book.source === 'yes24' && book.provider_item_id
+    ? buildYes24SpineUrl(book.provider_item_id)
+    : null;

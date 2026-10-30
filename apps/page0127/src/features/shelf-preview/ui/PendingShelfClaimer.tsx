@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { clearLoginStart, readLoginStart } from '@/shared/lib/auth/loginStart';
 
-import { bookApi } from '@/entities/book';
+import { bookApi, fillMissingSpine } from '@/entities/book';
 
 import { claimReadingGoalAction } from '../api/claimReadingGoalAction';
 import {
@@ -55,6 +55,8 @@ export const PendingShelfClaimer = () => {
         create: async (b) => {
           const isLifeBook = b.isbn === pending.lifeBookIsbn;
           const book = await bookApi.createBook(toBookInput(b, isLifeBook));
+          // 맛보기 책은 전체 도서의 책등 값을 그대로 들고 온다 — 비어 있으면 YES24 에서 확인해 채운다
+          void fillMissingSpine(book);
           if (book.status === 'completed')
             created.push({ id: book.id, title: book.title, isLifeBook });
         },

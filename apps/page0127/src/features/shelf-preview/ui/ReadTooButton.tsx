@@ -14,7 +14,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { BookCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { type Book, bookApi } from '@/entities/book';
+import { type Book, bookApi, fillMissingSpine } from '@/entities/book';
 import {
   type CompletedReadingInput,
   CompleteReadingForm,
@@ -95,11 +95,13 @@ export const ReadTooButton = ({
           ...completion,
         });
       else
-        await bookApi.createBook({
-          ...toBookInput(book),
-          status: 'completed',
-          ...completion,
-        });
+        void fillMissingSpine(
+          await bookApi.createBook({
+            ...toBookInput(book),
+            status: 'completed',
+            ...completion,
+          })
+        );
       await cache.invalidateQueries();
       router.refresh();
       setOpen(false);

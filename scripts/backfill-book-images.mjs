@@ -23,6 +23,7 @@
  *   node scripts/backfill-book-images.mjs --rematch-aladin  알라딘 출처 책을 제목으로 다시 찾는다
  *   node scripts/backfill-book-images.mjs --reidentify 옛[,옛]=새ISBN13  판본을 바로잡는다
  *   node scripts/backfill-book-images.mjs --adopt-orphans  global_books 짝이 없는 책에 짝을 만든다
+ *   node scripts/backfill-book-images.mjs --fill-spines   비어 있는 책등만 YES24 에서 확인해 채운다
  *
  * `--aladin-urls` 는 위의 백필과 별개 모드다. 백필은 "받아 온 것만 덮어쓴다" 규칙이라
  * YES24 에 책등이 없는 책은 알라딘 책등 주소가 그대로 남았다(2026-09-30 실측:
@@ -80,6 +81,8 @@ const REMATCH_ALADIN = hasFlag('--rematch-aladin');
 /** `옛식별자=새ISBN13` — 잘못된 판본으로 들어간 책을 바로잡는다 */
 const REIDENTIFY = getOption('--reidentify', null);
 const ADOPT_ORPHANS = hasFlag('--adopt-orphans');
+/** 책등이 비어 있는 YES24 책만 골라 책등을 확인해 채운다 (API 키 불필요) */
+const FILL_SPINES = hasFlag('--fill-spines');
 const LIMIT = Number(getOption('--limit', '0')) || null;
 const ENV_FILE = getOption('--env', 'apps/page0127/.env.local');
 
@@ -111,7 +114,12 @@ const loadEnv = (file) => {
 
 const env = loadEnv(ENV_FILE);
 
-const required = ['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'YES24_API_KEY'];
+// --fill-spines 는 이미지 주소만 열어 보므로 YES24 API 키가 필요 없다
+const required = [
+  'NEXT_PUBLIC_SUPABASE_URL',
+  'SUPABASE_SERVICE_ROLE_KEY',
+  ...(FILL_SPINES ? [] : ['YES24_API_KEY']),
+];
 const missing = required.filter((key) => !env[key]);
 if (missing.length) {
   console.error(`환경변수가 없습니다: ${missing.join(', ')}`);
@@ -868,6 +876,77 @@ const adoptOrphans = async () => {
   console.log(`못 찾은 책    ${orphans.size - adopted}권`);
 };
 
+// ─── 비어 있는 책등 채우기 (--fill-spines) ─────────────────────────
+
+/**
+ * 책등이 비어 있는 YES24 책을 골라, 상품번호로 만든 책등 주소가 진짜 이미지인지 보고 채운다.
+ *
+ * 왜 필요한가: 앱은 책등을 "등록 뒤 브라우저에서 확인해 채우는" 방식이라, 확인이 끝나지
+ * 못했거나(3초 타임아웃·탭 닫힘) 전체 도서의 빈 값을 그대로 복사해 담은 책
+ * ("내 서재에 담기"·맛보기 책장)은 YES24 에 책등이 있어도 비어 있었다.
+ * 2026-10-31 실측: 회색 칸 5권 중 4권이 그랬다.
+ *
+ * 저장하는 값은 앱이 저장하는 것과 같은 YES24 주소다(Storage 로 옮기지 않는다).
+ * 그래야 books → global_books 동기화 트리거(20261027000000)의 규칙과도 맞는다.
+ * 확인에 실패한 책(플레이스홀더·HTTP 오류)은 건드리지 않는다 — 다음에 다시 돌리면 또 본다.
+ */
+const fillSpines = async () => {
+  const pick = async (table) => {
+    let query = supabase
+      .from(table)
+      .select('provider_item_id, title')
+      .is('spine_image', null)
+      .eq('source', 'yes24')
+      .not('provider_item_id', 'is', null);
+    if (LIMIT) query = query.limit(LIMIT);
+    const { data, error } = await query;
+    if (error) throw new Error(`${table} 조회 실패: ${error.message}`);
+    return data;
+  };
+
+  // 같은 책을 여러 사람이 담았으면 한 번만 확인한다
+  const targets = new Map();
+  for (const table of ['books', 'global_books']) {
+    for (const row of await pick(table)) {
+      if (!targets.has(row.provider_item_id))
+        targets.set(row.provider_item_id, row.title ?? '');
+    }
+  }
+  console.log(`책등이 빈 YES24 상품: ${targets.size}개`);
+  console.log('');
+
+  let filled = 0;
+  let missingOnYes24 = 0;
+  for (const [itemId, title] of targets) {
+    const url = yes24ImageUrl(itemId, 'spine');
+    const got = await downloadImage(url);
+    const label = `${itemId.padEnd(10)} ${title.slice(0, 26).padEnd(26)}`;
+    if (!got.ok) {
+      missingOnYes24 += 1;
+      console.log(`  - ${label} 없음 (${got.reason})`);
+    } else {
+      filled += 1;
+      console.log(`  ✓ ${label} ${got.width}x${got.height}`);
+      if (!DRY_RUN) {
+        for (const table of ['books', 'global_books']) {
+          const { error } = await supabase
+            .from(table)
+            .update({ spine_image: url })
+            .eq('provider_item_id', itemId)
+            .eq('source', 'yes24')
+            .is('spine_image', null);
+          if (error) throw new Error(`${table} 갱신 실패: ${error.message}`);
+        }
+      }
+    }
+    await sleep(REQUEST_INTERVAL_MS);
+  }
+
+  console.log('');
+  console.log('─'.repeat(60));
+  console.log(`책등 채움 ${filled}개 · YES24 에도 없음 ${missingOnYes24}개`);
+};
+
 const main = async () => {
   console.log(`대상 DB : ${env.NEXT_PUBLIC_SUPABASE_URL}`);
   console.log(
@@ -895,6 +974,10 @@ const main = async () => {
   }
   if (ADOPT_ORPHANS) {
     await adoptOrphans();
+    return;
+  }
+  if (FILL_SPINES) {
+    await fillSpines();
     return;
   }
 
