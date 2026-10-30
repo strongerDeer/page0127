@@ -47,6 +47,14 @@ export const fromGlobalBookRow = (
   };
 };
 
+/**
+ * 검색으로 고른 책.
+ *
+ * ⚠️ 저장할 책등(book.spine_image)은 비워 둔다. 공급자의 책등 주소는 "있을 것으로
+ * 기대하는 주소"일 뿐이라 책등이 없는 책도 회색 대체 이미지를 준다(yes24.ts). 그대로
+ * 저장하면 책장에 회색 상자가 꽂힌다. 담은 뒤 fillMissingSpine 이 확인해 채운다.
+ * 맛보기 화면(spineSrc)은 저장되지 않으므로 주소를 그대로 보여 준다.
+ */
 export const fromProviderBook = (b: ProviderBook): ShelfPick => ({
   book: {
     isbn: b.isbn,
@@ -55,7 +63,7 @@ export const fromProviderBook = (b: ProviderBook): ShelfPick => ({
     author: b.author || null,
     publisher: b.publisher || null,
     cover_image: b.coverImage || null,
-    spine_image: b.spineImage,
+    spine_image: null,
     pub_date: b.pubDate,
     category: b.category || null,
     source: b.source,

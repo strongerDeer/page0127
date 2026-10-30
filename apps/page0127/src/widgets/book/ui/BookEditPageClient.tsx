@@ -13,6 +13,7 @@ import { getBookDetail } from '@/shared/api/book';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { resolveSpineImageUrl } from '@/shared/lib/spineImage';
 
+import { BACKGROUND_SPINE_TIMEOUT_MS } from '@/entities/book';
 import { isNewlyCompleted } from '@/entities/book/model/completion';
 
 import { notifyNewBadges } from '@/features/badge';
@@ -134,9 +135,13 @@ export const BookEditPageClient = ({
 
       // 책등 이미지 존재 여부 확인 — 저장을 막지 않도록 결과를 기다리지 않는다
       if (reselectedBook) {
-        resolveSpineImageUrl(reselectedBook.spineImage).then((spineImage) =>
-          updateBook(id, { spine_image: spineImage })
-        );
+        // 모바일 데이터에서는 3초로 모자랐다 — 뒤에서 하는 일이라 넉넉히 기다린다
+        resolveSpineImageUrl(
+          reselectedBook.spineImage,
+          BACKGROUND_SPINE_TIMEOUT_MS
+        ).then((spineImage) => {
+          if (spineImage) updateBook(id, { spine_image: spineImage });
+        });
       }
     } else {
       toast.error('도서 수정에 실패했습니다.');

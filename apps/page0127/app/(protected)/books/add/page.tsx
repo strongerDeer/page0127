@@ -12,7 +12,7 @@ import { getBookDetail } from '@/shared/api/book';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { resolveSpineImageUrl } from '@/shared/lib/spineImage';
 
-import { bookApi } from '@/entities/book';
+import { BACKGROUND_SPINE_TIMEOUT_MS, bookApi } from '@/entities/book';
 import { BookSourceCredit } from '@/entities/book/ui/BookSourceCredit';
 
 import { notifyNewBadges } from '@/features/badge';
@@ -248,9 +248,14 @@ const AddBookPage = () => {
 
       // 책등 이미지 존재 여부 확인 — 등록을 막지 않도록 결과를 기다리지 않는다.
       // YES24는 책등이 없어도 200에 회색 플레이스홀더를 주므로 크기로 판정한다.
-      resolveSpineImageUrl(selectedBook.spineImage).then((spineImage) =>
-        updateBook(result.id, { spine_image: spineImage })
-      );
+      // 모바일 데이터에서는 3초로 모자라 책등이 빠지곤 했다 — 뒤에서 하는 일이라 넉넉히 기다린다.
+      // 그래도 놓치면(앱을 내림 등) 서재를 열 때 다시 채운다(useRepairMissingSpines).
+      resolveSpineImageUrl(
+        selectedBook.spineImage,
+        BACKGROUND_SPINE_TIMEOUT_MS
+      ).then((spineImage) => {
+        if (spineImage) updateBook(result.id, { spine_image: spineImage });
+      });
 
       // 완독이 아니면 "책장에 꽂혔어요"가 거짓이 된다 — 예전 흐름 그대로 서재로 보낸다
       if (formData.status !== 'completed') {
