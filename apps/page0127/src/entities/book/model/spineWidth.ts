@@ -42,7 +42,9 @@ export const DEFAULT_SPINE_WIDTH = 50;
  * spineWidthPx(45)   // 64  (가장 두꺼운 책)
  * spineWidthPx(null) // 50  (모르면 기존대로)
  */
-export const spineWidthPx = (thicknessMm: number | null | undefined): number => {
+export const spineWidthPx = (
+  thicknessMm: number | null | undefined
+): number => {
   if (typeof thicknessMm !== 'number' || thicknessMm <= 0) {
     return DEFAULT_SPINE_WIDTH;
   }
@@ -51,4 +53,32 @@ export const spineWidthPx = (thicknessMm: number | null | undefined): number => 
   const ratio = (clamped - MIN_MM) / (MAX_MM - MIN_MM);
 
   return Math.round(MIN_PX + ratio * (MAX_PX - MIN_PX));
+};
+
+/** 서재 책장(웹)의 글자 책등 폭 범위 — 아래 shelfSpineWidthPx 참고 */
+const SHELF_MIN_PX = 18;
+const SHELF_MAX_PX = 36;
+
+/**
+ * 서재 책장(웹)에서 책등 이미지가 없는 책의 폭.
+ *
+ * 왜 따로 두는가: 진짜 책등 이미지는 높이 240px 에서 15~24px 로 그려진다
+ * (2026-10-31 실측: 77·96·106·121 x 1200). spineWidthPx 의 32~64px 는 그 두세 배라
+ * 이미지 없는 책만 혼자 두꺼워 보였다(HJ). 웹 책장은 제목을 세로 한 줄로 쓰므로
+ * 이미지 책등과 같은 범위로 줄인다.
+ *
+ * 공유 이미지(StoryCard)는 굵은 큰 글자를 책등에 쌓아 그려서 spineWidthPx 폭이 필요하다
+ * — 그래서 그쪽은 그대로 둔다.
+ *
+ * @example
+ * shelfSpineWidthPx(10)   // 18
+ * shelfSpineWidthPx(20)   // 23  (중앙값)
+ * shelfSpineWidthPx(45)   // 36
+ * shelfSpineWidthPx(null) // 28  (모르면 30mm 책과 같다)
+ */
+export const shelfSpineWidthPx = (
+  thicknessMm: number | null | undefined
+): number => {
+  const ratio = (spineWidthPx(thicknessMm) - MIN_PX) / (MAX_PX - MIN_PX);
+  return Math.round(SHELF_MIN_PX + ratio * (SHELF_MAX_PX - SHELF_MIN_PX));
 };

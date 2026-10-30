@@ -10,7 +10,7 @@ import { CoverImage, isPreOptimizedImageSrc, ReadCountBadge } from '@repo/ui';
 
 import { isRated, isTopRated, toCoverSource } from '@/entities/book';
 import { spineTone } from '@/entities/book/model/spineTone';
-import { spineWidthPx } from '@/entities/book/model/spineWidth';
+import { shelfSpineWidthPx } from '@/entities/book/model/spineWidth';
 
 import { tooltipShift } from '../model/tooltipShift';
 
@@ -104,7 +104,7 @@ export const PublicBookShelf = ({
           // "이 책은 다르다"가 실루엣만으로 읽힌다
           const isReread = book.read_count > 1;
           // 이미지가 없는 책등만 두께로 폭을 만든다 (아래 Image 주석 참고)
-          const spineWidth = spineWidthPx(book.thickness_mm);
+          const spineWidth = shelfSpineWidthPx(book.thickness_mm);
 
           const noImage = (
             <div

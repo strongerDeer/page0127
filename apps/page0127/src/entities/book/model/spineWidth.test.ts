@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_SPINE_WIDTH, spineWidthPx } from './spineWidth';
+import {
+  DEFAULT_SPINE_WIDTH,
+  shelfSpineWidthPx,
+  spineWidthPx,
+} from './spineWidth';
 
 describe('spineWidthPx', () => {
   it('두꺼운 책일수록 넓다', () => {
@@ -46,5 +50,23 @@ describe('spineWidthPx', () => {
     [9, 13, 17, 21, 28, 33, 41].forEach((mm) =>
       expect(Number.isInteger(spineWidthPx(mm))).toBe(true)
     );
+  });
+});
+
+describe('shelfSpineWidthPx', () => {
+  it('진짜 책등 이미지(15~24px)와 비슷한 범위다', () => {
+    // 이 assertion 이 잠그는 버그: 32~64px 를 그대로 쓰면 이미지 없는 책만 두세 배 두꺼웠다
+    expect(shelfSpineWidthPx(10)).toBe(18);
+    expect(shelfSpineWidthPx(20)).toBe(23);
+    expect(shelfSpineWidthPx(45)).toBe(36);
+  });
+
+  it('두꺼운 책일수록 넓다는 순서는 지킨다', () => {
+    expect(shelfSpineWidthPx(10)).toBeLessThan(shelfSpineWidthPx(30));
+    expect(shelfSpineWidthPx(30)).toBeLessThan(shelfSpineWidthPx(45));
+  });
+
+  it('두께를 모르면 30mm 책과 같은 폭이다', () => {
+    expect(shelfSpineWidthPx(null)).toBe(shelfSpineWidthPx(30));
   });
 });
