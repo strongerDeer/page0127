@@ -2,6 +2,9 @@
 
 import { useEffect } from 'react';
 
+// 설치 창 이벤트(beforeinstallprompt)는 페이지가 뜨자마자 한 번만 온다 — 루트에서 미리 받아 둔다
+import './installPrompt';
+
 /**
  * 서비스워커(public/sw.js) 등록 — 화면에 아무것도 그리지 않는다.
  *
