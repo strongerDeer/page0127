@@ -1,9 +1,11 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
+
+import { HERO_SLIDES_CACHE_TAG } from '@/entities/banner/api/getActiveHeroSlides';
 
 export type SlideFields = {
   eyebrow: string;
@@ -31,6 +33,8 @@ export type SlideFields = {
 const emptyToNull = (value: string): string | null => value.trim() || null;
 
 function revalidate() {
+  // 홈의 슬라이드는 5분 캐시다 — 저장하면 바로 보이도록 캐시를 지운다
+  updateTag(HERO_SLIDES_CACHE_TAG);
   revalidatePath('/admin/banners');
   revalidatePath('/');
 }
