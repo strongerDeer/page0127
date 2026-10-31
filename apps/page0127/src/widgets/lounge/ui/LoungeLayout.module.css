@@ -45,9 +45,8 @@
   .feed {
     display: block;
   }
+  /* 배틀 영역은 화면보다 길어질 수 있어 고정하지 않는다. 고정하면 아랫부분이 잘린다. */
   .battle {
     display: block;
-    position: sticky;
-    top: 6rem;
   }
 }
