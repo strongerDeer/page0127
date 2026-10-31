@@ -14,11 +14,14 @@ import {
   type ReportTable,
   toRunReportRequest,
 } from '../lib/ga4Reports';
+import { fetchWithGaRetry, mapWithConcurrency } from '../lib/gaRetry';
 
 const GA_SCOPE = 'https://www.googleapis.com/auth/analytics.readonly';
 
 // batchRunReports 는 한 번에 최대 5개 보고서까지 받는다
 const BATCH_SIZE = 5;
+// batch 를 한꺼번에 다 보내지 않고 2개씩만 동시에 보낸다 — GA "동시 요청" 한도(429) 대비
+const BATCH_CONCURRENCY = 2;
 
 export type GaResult =
   | {
@@ -64,21 +67,25 @@ export async function getGaReports(range: DateRange): Promise<GaResult> {
 
   try {
     const token = await getCachedGoogleAccessToken([GA_SCOPE]);
-    const responses = await Promise.all(
-      batches.map(async (batch) => {
-        const res = await fetch(
-          `https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:batchRunReports`,
-          {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              requests: batch.map((j) => toRunReportRequest(j.def, j.range)),
-            }),
-            cache: 'no-store',
-          }
+    const responses = await mapWithConcurrency(
+      batches,
+      BATCH_CONCURRENCY,
+      async (batch) => {
+        const res = await fetchWithGaRetry(() =>
+          fetch(
+            `https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:batchRunReports`,
+            {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                requests: batch.map((j) => toRunReportRequest(j.def, j.range)),
+              }),
+              cache: 'no-store',
+            }
+          )
         );
         if (!res.ok) {
           // 403 이면 대개 서비스 계정을 GA 속성 "뷰어"로 추가하지 않은 것이다
@@ -89,7 +96,7 @@ export async function getGaReports(range: DateRange): Promise<GaResult> {
           (j, i) =>
             [j.key, parseReport(j.def, json.reports?.[i]?.rows)] as const
         );
-      })
+      }
     );
     const { previousSummary, ...reports } = Object.fromEntries(
       responses.flat()
