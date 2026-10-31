@@ -31,6 +31,11 @@ test('표지 경계와 미리보기의 크기·키보드·화면 가장자리', 
   const edge = links.nth(index);
   await edge.hover();
   await expect(preview).toBeVisible();
+  // 사파리는 누워 있는 lazy 책등을 안 불러온다 → hover 순간 eager 로 바꿔 받는다.
+  const spine = edge.locator('img[data-spine]');
+  if (await spine.count()) {
+    await expect(spine).toHaveAttribute('loading', 'eager');
+  }
   const bounds = await preview.boundingBox();
   expect(bounds!.x).toBeGreaterThanOrEqual(15);
   expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(1265);

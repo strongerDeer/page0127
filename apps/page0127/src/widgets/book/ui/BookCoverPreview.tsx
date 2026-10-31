@@ -18,6 +18,21 @@ type BookCoverPreviewProps = {
   children: ReactNode;
 };
 
+/**
+ * 뒤집기 직전에 책등 이미지를 불러온다.
+ *
+ * 책등은 평소 rotateY(-90deg) 로 누워 있어 화면상 너비가 0 이다. 크롬은 그래도
+ * lazy 이미지를 받지만 사파리는 "화면 밖"으로 보고 끝까지 안 받아서, hover 해도
+ * 책등 자리가 비어 있었다. loading 을 eager 로 바꾸면 그 자리에서 바로 받기 시작한다.
+ */
+const loadSpineImages = (root: HTMLElement) => {
+  root
+    .querySelectorAll<HTMLImageElement>('img[data-spine][loading="lazy"]')
+    .forEach((img) => {
+      img.loading = 'eager';
+    });
+};
+
 /** 표지 링크는 그대로 이동하고, 마우스·키보드에는 비교용 미리보기를 제공한다. */
 export const BookCoverPreview = ({
   id,
@@ -55,11 +70,13 @@ export const BookCoverPreview = ({
       className={styles.coverLink}
       data-preview-open={open}
       onPointerEnter={(event) => {
+        loadSpineImages(event.currentTarget);
         cancelClose();
         if (enabled && event.pointerType === 'mouse') setOpen(true);
       }}
       onPointerLeave={closeSoon}
       onFocus={(event) => {
+        loadSpineImages(event.currentTarget);
         if (enabled && event.currentTarget.matches(':focus-visible')) {
           cancelClose();
           setOpen(true);
