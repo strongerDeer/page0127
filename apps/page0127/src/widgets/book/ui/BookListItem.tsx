@@ -26,6 +26,8 @@ type BookItemProps = {
   book: GlobalBook | Book;
   rank?: number;
   isReadProp?: boolean;
+  /** 지금 읽는 중 — 책장(책등 뷰)과 같은 책갈피 리본을 표지에 단다 */
+  isReadingProp?: boolean;
   isLikedProp?: boolean;
   /**
    * 책 정보 페이지(/books/info/[id])는 이제 공개다 — 상세 링크는 항상 살아 있다.
@@ -47,6 +49,7 @@ type BookListItemCoverProps = {
   publisher: string | null;
   category: string | null;
   isRead: boolean;
+  isReading?: boolean;
   rank?: number;
   variant?: BookItemVariant;
 };
@@ -70,6 +73,7 @@ const BookListItemCover = ({
   publisher,
   category,
   isRead,
+  isReading = false,
   rank,
   variant = 'default',
 }: BookListItemCoverProps) => {
@@ -112,6 +116,14 @@ const BookListItemCover = ({
           {isRead && (
             <div className={styles.read}>
               <span className='sr-only'>읽음</span>
+            </div>
+          )}
+
+          {/* 읽는 중 책갈피 — 완독(접힘)과 같은 오른쪽 위 자리. 둘 다면 완독이 이긴다
+              (다시 읽는 중인 책은 이미 완독 표시가 있다) */}
+          {isReading && !isRead && (
+            <div data-bookmark className={styles.bookmark}>
+              <span className='sr-only'>읽는 중</span>
             </div>
           )}
 
@@ -172,12 +184,15 @@ export const BookListItem = ({
   book,
   rank,
   isReadProp,
+  isReadingProp,
   isLikedProp,
   isLoggedIn = true,
   variant = 'default',
 }: BookItemProps) => {
   const isRead =
     isReadProp ?? ('status' in book && book.status === 'completed');
+  const isReading =
+    isReadingProp ?? ('status' in book && book.status === 'reading');
   const cover = toCoverSource(book);
 
   return (
@@ -193,6 +208,7 @@ export const BookListItem = ({
         publisher={book.publisher}
         category={book.category}
         isRead={isRead}
+        isReading={isReading}
         rank={rank}
         variant={variant}
       />
