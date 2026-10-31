@@ -68,7 +68,8 @@ export const getNudgePreference = async (
   if (error) throw new Error('메시지 수신 설정을 불러오지 못했어요.');
   return {
     enabled: data?.enabled ?? true,
-    push_enabled: data?.push_enabled ?? false,
+    // 행이 없으면 기본 켜짐 — 실제 도착은 이 기기의 푸시 알림(브라우저 권한)이 켜진 경우뿐이다
+    push_enabled: data?.push_enabled ?? true,
   };
 };
 export const setNudgePreference = async (

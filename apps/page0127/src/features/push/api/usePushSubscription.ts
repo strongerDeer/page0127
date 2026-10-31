@@ -64,6 +64,8 @@ export const usePushSubscription = () => {
   const [override, setOverride] = useState<PushSupport | null>(null);
   const support = override ?? detected;
   const [isSubscribed, setIsSubscribed] = useState(false);
+  // 구독 여부를 브라우저에서 한 번 읽었는가 — 읽기 전에 '꺼짐'으로 보고 권유 카드를 띄우면 깜빡인다
+  const [isChecked, setIsChecked] = useState(false);
   const [isPending, setIsPending] = useState(false);
 
   useEffect(() => {
@@ -75,6 +77,7 @@ export const usePushSubscription = () => {
       const subscription = await registration?.pushManager.getSubscription();
       if (cancelled) return;
       setIsSubscribed(Boolean(subscription));
+      setIsChecked(true);
       if (subscription) {
         // 실패해도 화면은 '켜짐' 그대로 둔다 — 다음 방문 때 다시 맞춘다
         await apiClient
@@ -135,5 +138,5 @@ export const usePushSubscription = () => {
     }
   }, []);
 
-  return { support, isSubscribed, isPending, enable, disable };
+  return { support, isSubscribed, isChecked, isPending, enable, disable };
 };

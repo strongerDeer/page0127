@@ -55,6 +55,7 @@ import {
 import { useBulkAction } from '@/features/bulk-management/model/useBulkAction';
 import { BulkConfirmDialog } from '@/features/bulk-management/ui/BulkConfirmDialog';
 import { SelectionBar } from '@/features/bulk-management/ui/SelectionBar';
+import { PushPromptCard } from '@/features/push';
 
 import { LiveReadingEnvelopeDialog } from './LiveReadingEnvelopeDialog';
 import { NotificationItem } from './NotificationItem';
@@ -232,6 +233,8 @@ export const NotificationPage = ({
 
   return (
     <div className='space-y-4'>
+      {/* 알림 목록을 보러 온 순간이 "기기로도 받을래요?"를 묻기 가장 자연스러운 때 */}
+      <PushPromptCard />
       {initialEnvelopeId && initialEnvelope.isError && (
         <QueryErrorState
           message='메시지를 불러오지 못했어요.'
