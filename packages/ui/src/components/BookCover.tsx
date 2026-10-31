@@ -29,9 +29,9 @@ export type BookCoverSize = keyof typeof coverSizes;
  *
  * 슬롯은 판형 비율(1:1.45)로 고정한다. 목록에서 판형이 다른 책이 섞여도 글 칸의
  * 시작선이 흔들리지 않게 하려는 것이다. 다만 이미지를 슬롯에 **맞춰 자르지는 않는다**
- * (`.book-cover-fit` 주석 참고) — 바닥·가운데 정렬로 슬롯 안에 세운다.
+ * (`.book-cover-fit` 주석 참고) — 높이는 슬롯과 같게, 너비는 원본 비율대로 가운데 정렬.
  */
-const slotVariants = cva('flex items-end justify-center', {
+const slotVariants = cva('flex items-center justify-center', {
   variants: {
     size: {
       xs: 'book-cover-box',

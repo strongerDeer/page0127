@@ -39,7 +39,7 @@ export const BookGridItem = ({ book, href }: BookGridItemProps) => {
     >
       {/* 대칭 rounded-lg 를 쓰고 있었다 — BookCover 로 바꾸며 도메인 셰이프
           (왼쪽은 책등이라 각지고 오른쪽만 둥근 비대칭)로 통일했다.
-          칸은 판형 비율, 표지는 그 안에 원본 판형대로 바닥 정렬. 회색 바탕은 두지 않는다 —
+          칸은 판형 비율, 표지는 높이를 칸에 맞추고 너비는 원본 비율대로 가운데. 회색 바탕은 두지 않는다 —
           판형이 칸보다 좁거나 낮은 책에서 회색 띠로 남는다 */}
       <div className='book-cover-box relative'>
         {/* 표지가 없으면 제목·저자를 조판해 표지를 만든다 (BookCover 가 처리) */}
