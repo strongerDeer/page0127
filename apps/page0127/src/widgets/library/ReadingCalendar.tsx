@@ -240,6 +240,8 @@ export const ReadingCalendar = ({
                         decorative
                         size='fill'
                         sizes='26px'
+                        // 26px 칸에 겹쳐 쌓는 작은 표지 — 칸 모양이 그림이라 꽉 채운다
+                        fit='cover'
                       />
                     </span>
                   ))}

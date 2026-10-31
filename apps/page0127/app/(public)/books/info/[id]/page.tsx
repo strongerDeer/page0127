@@ -178,8 +178,7 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
         <div className='space-y-6'>
           {/* 표지가 컬럼 한 칸을 통째로 차지하는 자리 — size='full'.
               판형 비율은 시스템이 정하므로 여기서 aspect 를 적지 않는다.
-              글자만 키운다(기본 12px → 14px): 표지를 크게 놓는 자리라
-              대체 조판도 그만큼 읽혀야 한다 */}
+              대체 조판 글자 크기도 size='full' 이면 BookCover 가 키운다 */}
           <BookCover
             {...toCoverSource(book)}
             title={book.title}
@@ -189,7 +188,6 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
             priority
             large
             decorative
-            className='px-3 py-4 text-sm'
           />
 
           {/* 완독한 독자 프로필 (왼쪽 컬럼 배치) */}

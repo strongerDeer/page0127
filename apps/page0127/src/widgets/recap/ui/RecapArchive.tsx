@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { CoverImage } from '@repo/ui';
+import { BookCover } from '@repo/ui';
 
 import { toCoverSource } from '@/entities/book';
 import { toWeekRangeLabel, toWeeksAgoLabel } from '@/entities/recap';
@@ -47,14 +47,16 @@ const RecapRow = ({
       href={`/books/${book.id}`}
       className='flex items-center gap-3 rounded-lg p-1.5 hover:bg-sunken'
     >
-      {/* 표지 칸은 늘 같은 크기 — 못 불러오면 빈 칸이 아니라 옅은 바탕만 남는다 */}
-      <div className='h-[70px] w-12 shrink-0 overflow-hidden rounded bg-sunken'>
-        <CoverImage
+      {/* 표지 칸은 늘 같은 크기 — 표지는 그 안에 원본 판형대로(자르지 않는다).
+          못 불러오면 제목 조판이 칸을 채운다 */}
+      <div className='relative h-[70px] w-12 shrink-0'>
+        <BookCover
           {...toCoverSource(book)}
-          alt=''
-          width={48}
-          height={70}
-          className='book-cover h-full w-full rounded object-cover'
+          title={book.title}
+          decorative
+          size='fill'
+          sizes='48px'
+          small
         />
       </div>
       <div className='min-w-0'>

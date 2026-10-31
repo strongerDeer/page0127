@@ -252,6 +252,14 @@ body {
   .book-cover {
     border-radius: var(--book-cover-radius);
     box-shadow: none;
+    /* 표지 가장자리 1px 선 — 흰 바탕 표지가 흰 카드·흰 화면에 묻히지 않게.
+       그림자 대신 선(07 §2.3)이고, border 가 아니라 outline 인 이유는 두 가지다.
+       - img 의 border·inset box-shadow 는 이미지에 가려지거나 크기를 바꾼다.
+         outline 은 콘텐츠 위에 그려지고 레이아웃에 자리를 차지하지 않는다.
+       - offset -1px 로 표지 안쪽 1px 에 얹어, 표지 크기를 그대로 둔다.
+       전체 책 격자(BookListItem.module.css)가 이미 같은 값을 쓰고 있다. */
+    outline: 1px solid var(--line);
+    outline-offset: -1px;
     background-color: var(--book-cover-surface);
     /* 좌측 책등 — 종이 두께 */
     background-image: linear-gradient(
@@ -272,6 +280,22 @@ body {
      함께 쓴다(BookCover 가 보장한다). */
   .book-cover-box {
     aspect-ratio: var(--book-cover-ratio);
+    flex-shrink: 0;
+  }
+
+  /* 표지 슬롯 안의 이미지 — 자르지 않고 원본 판형대로, 높이는 슬롯과 같게.
+     YES24 표지 실측(2026-10-31, 20권): 세로/가로 비율이 1.28 ~ 1.76 으로 넓다.
+     슬롯 비율(1.45)에 object-cover 로 채우면 가로가 넓은 책은 양옆이 최대 12%,
+     세로로 긴 책은 위아래가 최대 17% 잘렸다(제목·저자 줄이 날아간다).
+
+     높이를 슬롯에 맞추고 너비는 원본 비율대로 둔다(HJ 결정: 높이는 같게, 너비는
+     달라져도 된다). 슬롯이 가운데 정렬이라 넓은 책은 슬롯 양옆으로 조금 넘치고
+     좁은 책은 양옆이 남는다 — 차지하는 자리(슬롯)는 모든 책이 같다.
+     img 요소 자체가 실제 표지 크기라 outline·모서리가 표지 가장자리를 따라간다. */
+  .book-cover-fit {
+    width: auto;
+    height: 100%;
+    max-width: none;
     flex-shrink: 0;
   }
 }

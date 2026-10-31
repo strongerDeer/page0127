@@ -102,7 +102,7 @@ export const ReadingNowStrip = ({
                 className='block transition-transform group-hover:-translate-y-0.5 focus-visible:-translate-y-0.5'
               >
                 {/* 표지는 그림자로 띄우지 않는다(07 §2.3) — 도메인 셰이프는 BookCover 가 맡는다 */}
-                <span className='relative block h-21 w-14 bg-muted'>
+                <span className='relative block h-21 w-14'>
                   <BookCover
                     {...toCoverSource(book)}
                     title={book.title}
@@ -112,16 +112,8 @@ export const ReadingNowStrip = ({
                     small
                     decorative
                   />
-                  {/*
-                    표지 가장자리 1px 선 — 흰 바탕 표지는 흰 카드에 묻혀 경계가 사라진다.
-                    그림자 대신 선(07 §2.3), 이미지 위에 겹쳐야 보이므로 inset 링 오버레이로 둔다.
-                    모서리는 BookCover 의 비대칭 반경을 그대로 따른다.
-                  */}
-                  <span
-                    aria-hidden
-                    data-cover-edge
-                    className='pointer-events-none absolute inset-0 rounded-[var(--book-cover-radius)] ring-1 ring-line ring-inset'
-                  />
+                  {/* 표지 가장자리 1px 선은 BookCover(.book-cover outline)가 그린다 —
+                      칸이 아니라 실제 표지 가장자리를 따라간다 */}
                   {/* 2주 넘게 읽는 중 — 완독·중단을 정리하라는 가벼운 넛지 */}
                   {isLong && (
                     <span
