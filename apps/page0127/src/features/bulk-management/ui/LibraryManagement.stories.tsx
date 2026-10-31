@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { Toaster } from '@repo/ui';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { expect, userEvent, within } from 'storybook/test';
 
@@ -60,6 +61,7 @@ const meta = {
     (Story) => (
       <Provider>
         <Story />
+        <Toaster />
       </Provider>
     ),
   ],
@@ -90,5 +92,21 @@ export const Selected: Story = {
     await expect(
       canvas.getByRole('button', { name: '비공개로 변경' })
     ).toBeEnabled();
+  },
+};
+
+/** 배지를 누르면 확인창 없이 바로 바뀌고 되돌리기 토스트가 뜬다 */
+export const BadgeToggle: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(
+      await canvas.findByRole('button', { name: /^사고외주 1회독: 공개/ })
+    );
+    await expect(
+      await canvas.findByRole('button', { name: /^사고외주 1회독: 비공개/ })
+    ).toBeInTheDocument();
+    await expect(
+      await within(document.body).findByRole('button', { name: '되돌리기' })
+    ).toBeInTheDocument();
   },
 };
