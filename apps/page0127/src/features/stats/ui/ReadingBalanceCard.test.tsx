@@ -26,7 +26,7 @@ const THREE = [
 ];
 
 describe('ReadingBalanceCard', () => {
-  it('점수 · 띠 · 다음에 읽어 볼 분야(안 읽은 분야 전부가 아니라 2개만)', () => {
+  it('점수 · 띠 · 추천 분야(안 읽은 분야 전부가 아니라 2개만, "다음에 읽어 볼"은 지시처럼 읽혀 반려)', () => {
     const balance = calculateReadingBalance(THREE);
     const html = renderToStaticMarkup(
       <ReadingBalanceCard year={2026} balance={balance} />
@@ -35,7 +35,8 @@ describe('ReadingBalanceCard', () => {
     expect(html).toContain(`>${balance.score}<`);
     expect(html).toContain('조금씩 넓혀 가는 중');
     expect(html).toContain('8개 분야 · 완독 11권');
-    expect(html).toContain('다음에 읽어 볼 분야 — 예술/생활 · 인문학');
+    expect(html).toContain('추천 분야 — 예술/생활 · 인문학');
+    expect(html).not.toContain('다음에 읽어 볼');
     expect(html).not.toContain('아직 안 읽은 분야');
     expect(html).not.toContain('기울');
   });
@@ -144,7 +145,7 @@ describe('ReadingBalanceCard', () => {
       <ReadingBalanceCard year={2026} balance={calculateReadingBalance([])} />
     );
     expect(html).toContain('완독한 책이 쌓이면 분야가 채워져요');
-    expect(html).not.toContain('다음에 읽어 볼 분야');
+    expect(html).not.toContain('추천 분야');
   });
 
   it('분야별 자세히 — 접어 두고, 묶인 서점 대분류가 다를 때만 원래 이름을 보여 준다', () => {
@@ -178,5 +179,20 @@ describe('ReadingBalanceCard', () => {
       />
     );
     expect(html).not.toContain('<details');
+  });
+
+  it("서점 이름이 분야 이름의 앞부분이면('인문' → 인문학) 같은 이름으로 보고 다시 쓰지 않는다", () => {
+    const html = renderToStaticMarkup(
+      <ReadingBalanceCard
+        year={2026}
+        balance={calculateReadingBalance([
+          ...books('국내도서-인문', 1),
+          ...books('국내도서-자연과학', 1),
+          ...books('국내도서-소설/시/희곡', 1),
+        ])}
+      />
+    );
+    expect(html).toContain('자연과학 1');
+    expect(html).not.toContain('인문 1');
   });
 });

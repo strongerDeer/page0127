@@ -42,9 +42,12 @@ export const ReadingBalanceCard = ({
   const hasBooks = balance.total > 0;
   const axes = radarAxes(balance);
   const next = nextCategories(balance);
-  // 서점 이름이 분야 이름과 같은 칸은 띠가 이미 다 보여 준다 — 묶인 게 있을 때만 상세를 연다
+  // 서점 이름이 분야 이름과 같은 칸은 띠가 이미 다 보여 준다 — 묶인 게 있을 때만 상세를 연다.
+  // '인문' → 인문학처럼 분야 이름의 앞부분이기만 해도 같은 이름으로 본다(운영에서 '인문 1'이 군더더기로 붙었다)
+  const sameName = (category: string, label: string) =>
+    category.replace(/[\s/]/g, '').startsWith(label.replace(/[\s/]/g, ''));
   const merged = (category: string, sources: { label: string }[]) =>
-    sources.length > 1 || sources[0]?.label !== category;
+    sources.length > 1 || !sameName(category, sources[0]?.label ?? '');
   const hasDetail = balance.ranked.some(({ category, sources }) =>
     merged(category, sources)
   );
@@ -168,7 +171,7 @@ export const ReadingBalanceCard = ({
 
             {next.length > 0 && (
               <p className='mt-4 break-keep text-sm text-text-subtle'>
-                다음에 읽어 볼 분야 — {next.join(' · ')}
+                추천 분야 — {next.join(' · ')}
               </p>
             )}
           </>
