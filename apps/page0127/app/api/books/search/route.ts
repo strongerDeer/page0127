@@ -52,7 +52,9 @@ export async function GET(request: NextRequest) {
       count,
     } = await client
       .from('global_books')
-      .select('isbn,title,author,publisher,source_url', { count: 'exact' })
+      .select('isbn,title,author,publisher,source_url,cover_image', {
+        count: 'exact',
+      })
       .eq('source', 'manual')
       .eq('review_status', 'approved')
       .or(

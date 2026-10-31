@@ -8,7 +8,7 @@ export const REVIEW_LABELS = {
 } as const;
 export type ReviewStatus = keyof typeof REVIEW_LABELS;
 export const REVIEW_COLUMNS =
-  'id,isbn,title,author,publisher,source_url,review_status,review_note,review_version,submitted_by,created_at,reviewed_at';
+  'id,isbn,title,author,publisher,source_url,cover_image,review_status,review_note,review_version,submitted_by,created_at,reviewed_at';
 export type BookReview = {
   id: string;
   isbn: string;
@@ -16,6 +16,7 @@ export type BookReview = {
   author: string | null;
   publisher: string | null;
   source_url: string | null;
+  cover_image: string | null;
   review_status: ReviewStatus;
   review_note: string | null;
   review_version: number;

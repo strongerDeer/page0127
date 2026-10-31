@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useReducer, useRef } from 'react';
+import { type ReactNode, useEffect, useId, useReducer, useRef } from 'react';
 
 import { Button } from '@repo/ui';
 import {
@@ -54,6 +54,14 @@ type BookRegistrationFormProps = {
   initialStatus?: BookStatus;
   // 수정 모드에서만 전달 — 있을 때만 "책 선택부터 다시" 버튼을 보여준다
   onReselectBook?: () => void;
+  /**
+   * 책 정보 미리보기 대신 그릴 내용. 직접 등록에서 서지 입력칸(ManualBookFields)을
+   * 넣는다 — 책 정보와 독서 기록을 한 폼에서 한 번에 저장하려고. 이 경우 첫 포커스도
+   * 그 입력칸이 가져가므로 한줄평으로 옮기지 않는다.
+   */
+  bookSection?: ReactNode;
+  /** 카드 제목. 주지 않으면 '도서 등록'/'도서 수정'. */
+  heading?: string;
 };
 
 export type BookFormData = {
@@ -265,6 +273,8 @@ export const BookRegistrationForm = ({
   initialData,
   initialStatus = 'completed',
   onReselectBook,
+  bookSection,
+  heading,
 }: BookRegistrationFormProps) => {
   const formId = useId();
   const ids = {
@@ -305,13 +315,14 @@ export const BookRegistrationForm = ({
   // 완독 직후엔 손이 바로 문장으로 가야 한다 — 저장소 관례대로 autoFocus 속성 대신 ref 로 준다.
   // 수정 화면(initialData)에서는 포커스를 옮기지 않는다: 사용자는 다른 필드를 고치러 왔을 수 있다.
   const oneLineReviewRef = useRef<HTMLInputElement>(null);
+  const hasBookSection = !!bookSection;
   useEffect(() => {
-    if (initialData) return;
+    if (initialData || hasBookSection) return;
     // preventScroll: 그냥 focus() 하면 입력란이 뷰로 스크롤되고 모바일에서는 키보드가
     // 바로 올라와, 위쪽 표지·제목·저자 미리보기가 화면 밖으로 밀린다. 추가 흐름에서
     // 그 미리보기는 "책을 제대로 골랐나" 를 확인할 유일한 수단이다.
     oneLineReviewRef.current?.focus({ preventScroll: true });
-  }, [initialData]);
+  }, [initialData, hasBookSection]);
 
   const {
     status,
@@ -398,50 +409,56 @@ export const BookRegistrationForm = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{initialData ? '도서 수정' : '도서 등록'}</CardTitle>
+        <CardTitle>
+          {heading ?? (initialData ? '도서 수정' : '도서 등록')}
+        </CardTitle>
       </CardHeader>
 
       <CardContent>
         <form onSubmit={handleSubmit} className='space-y-8'>
-          {/* 책 정보 미리보기 */}
-          <div className='flex items-start justify-between gap-4 rounded-lg bg-muted/50 p-4'>
-            <div className='flex gap-4'>
-              <div className='relative h-32 w-24 shrink-0'>
-                <BookCover
-                  src={book.coverImage}
-                  title={book.title}
-                  size='fill'
-                />
-              </div>
-              <div>
-                <h4 className='font-medium'>{book.title}</h4>
-                {book.subTitle && (
-                  <p className='text-xs text-muted-foreground'>
-                    {book.subTitle}
+          {/* 책 정보 미리보기 — 직접 등록이면 서지 입력칸이 이 자리에 온다 */}
+          {bookSection ?? (
+            <div className='flex items-start justify-between gap-4 rounded-lg bg-muted/50 p-4'>
+              <div className='flex gap-4'>
+                <div className='relative h-32 w-24 shrink-0'>
+                  <BookCover
+                    src={book.coverImage}
+                    title={book.title}
+                    size='fill'
+                  />
+                </div>
+                <div>
+                  <h4 className='font-medium'>{book.title}</h4>
+                  {book.subTitle && (
+                    <p className='text-xs text-muted-foreground'>
+                      {book.subTitle}
+                    </p>
+                  )}
+                  <p className='text-sm text-foreground'>{book.author}</p>
+                  <p className='text-sm text-muted-foreground'>
+                    {book.publisher}
                   </p>
-                )}
-                <p className='text-sm text-foreground'>{book.author}</p>
-                <p className='text-sm text-muted-foreground'>
-                  {book.publisher}
-                </p>
-                {/* 좌변을 boolean 으로 좁힌다 — 쪽수가 0이면 화면에 "0"이 찍힌다 */}
-                {book.page !== null && book.page > 0 && (
-                  <p className='text-sm text-muted-foreground'>{book.page}쪽</p>
-                )}
+                  {/* 좌변을 boolean 으로 좁힌다 — 쪽수가 0이면 화면에 "0"이 찍힌다 */}
+                  {book.page !== null && book.page > 0 && (
+                    <p className='text-sm text-muted-foreground'>
+                      {book.page}쪽
+                    </p>
+                  )}
+                </div>
               </div>
+              {onReselectBook && (
+                <Button
+                  type='button'
+                  variant='outline'
+                  size='sm'
+                  onClick={onReselectBook}
+                  className='shrink-0 shadow-none'
+                >
+                  <RefreshCw className='h-3.5 w-3.5' />책 변경
+                </Button>
+              )}
             </div>
-            {onReselectBook && (
-              <Button
-                type='button'
-                variant='outline'
-                size='sm'
-                onClick={onReselectBook}
-                className='shrink-0 shadow-none'
-              >
-                <RefreshCw className='h-3.5 w-3.5' />책 변경
-              </Button>
-            )}
-          </div>
+          )}
 
           {/* 필수는 독서 상태 하나뿐이라 여기에만 배지를 단다. 나머지는 표시 없이 선택이다
               (구분선을 두었다가 뺐다 — 선 하나가 화면을 오히려 빽빽해 보이게 했다) */}

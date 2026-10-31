@@ -29,9 +29,36 @@ import { BookSearchInput } from '@/features/book/ui/BookSearchInput';
 import { BookSearchPagination } from '@/features/book/ui/BookSearchPagination';
 import { BookSearchResultCard } from '@/features/book/ui/BookSearchResultCard';
 import { DuplicateBookDialog } from '@/features/book/ui/DuplicateBookDialog';
-import { ManualBookForm } from '@/features/book-review/ui/ManualBookForm';
+import { uploadManualCover } from '@/features/book-review/lib/uploadManualCover';
+import { validateManualBook } from '@/features/book-review/model/review';
+import {
+  EMPTY_MANUAL_BOOK,
+  type ManualBookDraft,
+  ManualBookFields,
+} from '@/features/book-review/ui/ManualBookForm';
 
 import type { Book, ProviderBook } from '@/entities/book';
+
+// 직접 등록 폼은 미리보기를 그리지 않으므로 책 자리는 빈 값으로 채운다
+const EMPTY_PROVIDER_BOOK: ProviderBook = {
+  isbn: '',
+  title: '',
+  author: '',
+  publisher: '',
+  subTitle: null,
+  source: 'manual',
+  coverImage: '',
+  spineImage: null,
+  backImage: null,
+  providerItemId: null,
+  providerLink: '',
+  pubDate: null,
+  description: '',
+  category: '',
+  page: null,
+  toc: null,
+  dimensions: null,
+};
 
 /**
  * 도서 추가 페이지
@@ -47,6 +74,8 @@ const AddBookPage = () => {
   const initialStatus =
     searchParams.get('status') === 'reading' ? 'reading' : 'completed';
   const router = useRouter();
+  // 직접 등록은 검색과 다른 화면이다 — 주소에 남겨 뒤로 가기로 검색에 돌아올 수 있게 한다
+  const isManual = searchParams.get('mode') === 'manual';
   const {
     books,
     catalogBooks,
@@ -64,7 +93,13 @@ const AddBookPage = () => {
     isLoading: isCreating,
   } = useBookCRUD();
 
-  const [showManualForm, setShowManualForm] = useState(false);
+  // 직접 등록 입력값. 검색어(?title=)가 있으면 제목칸을 채워 둔다 — 찾다가 없어서 온 것이므로
+  const [manualDraft, setManualDraft] = useState<ManualBookDraft>(() => ({
+    ...EMPTY_MANUAL_BOOK,
+    title: searchParams.get('title') ?? '',
+  }));
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [lastQuery, setLastQuery] = useState('');
   const [selectedBook, setSelectedBook] = useState<ProviderBook | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
 
@@ -88,13 +123,45 @@ const AddBookPage = () => {
   // 실험 1: forwardRef → React 19 ref as prop — 페이지 진입 시 자동 포커스
   const searchInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    searchInputRef.current?.focus();
-  }, []);
+    if (!isManual) searchInputRef.current?.focus();
+  }, [isManual]);
+
+  const handleSearch = (query: string) => {
+    setLastQuery(query.trim());
+    return search(query);
+  };
+
+  // 직접 등록 화면으로 — 방금 찾던 제목을 들고 간다(ISBN 이면 ISBN 칸으로)
+  const openManual = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('mode', 'manual');
+    const digits = lastQuery.replace(/[\s-]/g, '');
+    params.delete('title');
+    if (/^\d{13}$/.test(digits)) {
+      setManualDraft({ ...EMPTY_MANUAL_BOOK, isbn: digits });
+    } else {
+      setManualDraft({ ...EMPTY_MANUAL_BOOK, title: lastQuery });
+      if (lastQuery) params.set('title', lastQuery);
+    }
+    router.push(`/books/add?${params}`);
+  };
+
+  const closeManual = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('mode');
+    params.delete('title');
+    const rest = params.toString();
+    router.replace(rest ? `/books/add?${rest}` : '/books/add');
+  };
 
   // 실험 1 심화: '/' 단축키로 언제든 검색창 포커스
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement) return; // 입력 중에는 무시
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      )
+        return; // 입력 중에는 무시
       if (e.key === '/') {
         e.preventDefault();
         searchInputRef.current?.focus(); // useImperativeHandle 없이 DOM ref 직접 호출
@@ -195,7 +262,67 @@ const AddBookPage = () => {
 
   const handleSubmit = async (formData: BookFormData) => {
     if (!selectedBook) return;
+    await saveBook(selectedBook, formData);
+  };
 
+  // 직접 등록 저장 — 서지 정보 검증 → 표지 올리기 → 같은 저장 길(saveBook)
+  const handleManualSubmit = async (formData: BookFormData) => {
+    let values: ReturnType<typeof validateManualBook>;
+    try {
+      values = validateManualBook(manualDraft);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '입력을 확인해 주세요.');
+      return;
+    }
+
+    let coverImage = '';
+    if (manualDraft.coverFile) {
+      setIsUploadingCover(true);
+      try {
+        coverImage = await uploadManualCover(manualDraft.coverFile);
+      } catch (err) {
+        toast.error(
+          err instanceof Error ? err.message : '표지 사진을 올리지 못했어요.'
+        );
+        setIsUploadingCover(false);
+        return;
+      }
+    }
+
+    // 표지를 올린 뒤 저장이 시작되기 전 틈에 버튼이 살아나지 않도록 저장이 끝날 때 푼다
+    try {
+      await saveBook(
+        {
+          isbn: values.isbn || `manual:${crypto.randomUUID()}`,
+          title: values.title,
+          author: values.author,
+          publisher: values.publisher,
+          subTitle: null,
+          source: 'manual',
+          sourceUrl: values.source_url,
+          coverImage,
+          spineImage: null,
+          backImage: null,
+          providerItemId: null,
+          providerLink: '',
+          pubDate: null,
+          description: '',
+          category: '',
+          page: null,
+          toc: null,
+          dimensions: null,
+        },
+        formData
+      );
+    } finally {
+      setIsUploadingCover(false);
+    }
+  };
+
+  const saveBook = async (
+    selectedBook: ProviderBook,
+    formData: BookFormData
+  ) => {
     // 재독 횟수 계산 — existingBook 은 중복 다이얼로그를 취소해도 남아 있어서
     // ISBN 이 지금 저장하는 책과 같은지 함께 본다(자세한 근거는 resolveReadCount 주석)
     const readCount = resolveReadCount(existingBook, selectedBook.isbn);
@@ -307,6 +434,8 @@ const AddBookPage = () => {
   const handleRecordAnother = () => {
     setSaved(null);
     setSelectedBook(null);
+    setManualDraft(EMPTY_MANUAL_BOOK);
+    if (isManual) closeManual();
   };
 
   return (
@@ -342,35 +471,28 @@ const AddBookPage = () => {
             onGoToLibrary={() => router.push('/books')}
             onRecordAnother={handleRecordAnother}
           />
+        ) : isManual ? (
+          /* 직접 등록 — 검색·바코드 없이 책 정보와 독서 기록을 한 폼에서 */
+          <BookRegistrationForm
+            book={EMPTY_PROVIDER_BOOK}
+            heading='직접 등록'
+            bookSection={
+              <ManualBookFields value={manualDraft} onChange={setManualDraft} />
+            }
+            initialStatus={initialStatus}
+            onSubmit={handleManualSubmit}
+            onCancel={closeManual}
+            isLoading={isUploadingCover || isCreating || isFinishing}
+          />
         ) : !selectedBook ? (
           <div className='space-y-6'>
-            {showManualForm ? (
-              <ManualBookForm
-                onSelect={(book) => {
-                  setSelectedBook(book);
-                  setShowManualForm(false);
-                }}
-                onCancel={() => setShowManualForm(false)}
-              />
-            ) : (
-              <div className='flex flex-wrap items-center justify-between gap-2 text-sm text-text-subtle'>
-                <span>검색으로 찾기 어려운 책인가요?</span>
-                <Button
-                  type='button'
-                  variant='outline'
-                  onClick={() => setShowManualForm(true)}
-                >
-                  직접 등록
-                </Button>
-              </div>
-            )}
             {/* 검색 입력 */}
             <BookSearchInput
               // 스캔할 때마다 ISBN 을 채운 새 검색창으로 다시 마운트한다
               key={scannedIsbn ?? 'search'}
               initialQuery={scannedIsbn ?? undefined}
               ref={searchInputRef}
-              onSearch={search}
+              onSearch={handleSearch}
               isLoading={isSearching}
               onScanClick={() => setIsScanOpen(true)}
             />
@@ -448,9 +570,21 @@ const AddBookPage = () => {
               books.length === 0 &&
               catalogBooks.length === 0 && (
                 <p className='text-center text-muted-foreground'>
-                  도서 제목을 검색해주세요
+                  {lastQuery
+                    ? `'${lastQuery}'(으)로 찾은 책이 없어요`
+                    : '도서 제목을 검색해주세요'}
                 </p>
               )}
+
+            {/* 직접 등록 입구 — 검색을 먼저 해 보고, 없을 때 내려오는 자리라 결과 아래에 둔다 */}
+            {!isSearching && !isScanLookup && (
+              <div className='flex flex-wrap items-center justify-center gap-x-3 gap-y-2 border-t border-line pt-5 text-sm text-text-subtle'>
+                <span>찾는 책이 없나요?</span>
+                <Button type='button' variant='outline' onClick={openManual}>
+                  직접 등록하기
+                </Button>
+              </div>
+            )}
           </div>
         ) : (
           /* 등록 폼 */
