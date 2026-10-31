@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import { createTestBook } from './createTestBook';
-import { BALANCE_CATEGORIES, calculateReadingBalance } from './readingBalance';
+import {
+  BALANCE_CATEGORIES,
+  calculateReadingBalance,
+  sourceLabel,
+} from './readingBalance';
 
 const books = (category: string, count: number) =>
   Array.from({ length: count }, () =>
@@ -87,5 +91,34 @@ describe('calculateReadingBalance', () => {
 
   it('작년 기록이 없으면 비교하지 않는다', () => {
     expect(calculateReadingBalance(SAMPLE, []).prev).toBeNull();
+  });
+
+  it('상세 — 묶기 전 서점 대분류별 권수, 표기만 다른 이름은 하나로 센다', () => {
+    const balance = calculateReadingBalance([
+      ...books('국내도서-IT 모바일', 3),
+      ...books('국내도서>자연과학>물리학', 1),
+      ...books('컴퓨터/모바일', 1),
+      ...books('국내도서-경제경영', 1),
+      ...books('국내도서>경제경영>마케팅', 1),
+      ...books('경제/경영', 1),
+    ]);
+    const science = balance.ranked.find((r) => r.category === '과학/IT');
+    expect(science?.sources).toEqual([
+      { label: 'IT 모바일', count: 3 },
+      { label: '자연과학', count: 1 },
+      { label: '컴퓨터/모바일', count: 1 },
+    ]);
+    const business = balance.ranked.find((r) => r.category === '경제/경영');
+    expect(business?.sources).toEqual([{ label: '경제경영', count: 3 }]);
+  });
+});
+
+describe('sourceLabel', () => {
+  it('YES24·알라딘 둘 다 서점 대분류만 뽑는다', () => {
+    expect(sourceLabel('국내도서-IT 모바일')).toBe('IT 모바일');
+    expect(sourceLabel('국내도서>사회과학>사회학>사회학 일반')).toBe(
+      '사회과학'
+    );
+    expect(sourceLabel('예술/대중문화')).toBe('예술/대중문화');
   });
 });
