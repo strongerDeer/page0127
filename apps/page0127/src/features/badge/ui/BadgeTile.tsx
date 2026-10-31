@@ -74,11 +74,15 @@ export const BadgeTile = ({
           className={`${styles.name} ${badge.earned ? '' : styles.unearned}`}
         >
           {titleName}
+          {/* 공백은 span 바깥 글자 노드로 둔다 — span 안에 넣으면 접근 가능한 이름 계산에서
+              잘려 "쌓이는 이야기·1권" 이 된다 */}
           {titleLevel && (
-            <span className={styles.nameLevel}>
-              <span className={styles.nameLevelSep}>{' · '}</span>
-              {titleLevel}
-            </span>
+            <>
+              {' '}
+              <span className={styles.nameLevel}>
+                <span className={styles.nameLevelSep}>·</span> {titleLevel}
+              </span>
+            </>
           )}
           <span className='sr-only'>
             {` (${badge.earned ? '획득' : '미획득'})`}
