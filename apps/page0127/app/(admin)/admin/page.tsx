@@ -18,6 +18,8 @@ import {
   budgetBasisCents,
   computeBudgetUsage,
 } from '@/features/admin-costs/lib/cost';
+import { getAdminEvents } from '@/features/admin-events/api/getAdminEvents';
+import { AdminEventsPanel } from '@/features/admin-events/ui/AdminEventsPanel';
 import { getFunnel } from '@/features/admin-overview/api/getFunnel';
 import { getOverview } from '@/features/admin-overview/api/getOverview';
 import { getRetention } from '@/features/admin-overview/api/getRetention';
@@ -79,6 +81,13 @@ const OverviewSection = async () => {
 };
 
 type RangeProps = { range: DateRange };
+
+const NotesSection = async ({
+  range,
+  today,
+}: RangeProps & { today: string }) => (
+  <AdminEventsPanel events={await getAdminEvents(range)} today={today} />
+);
 
 const TrendSection = async ({ range }: RangeProps) => {
   const trends = await getTrends(range);
@@ -217,6 +226,15 @@ export default async function AdminHomePage({
 
       <div className='space-y-6 border-t border-line pt-6'>
         <PeriodPicker basePath='/admin' range={range} maxDate={kstToday(now)} />
+
+        <ErrorBoundary fallback={<FailNotice />}>
+          <Suspense
+            key={`notes-${rangeKey}`}
+            fallback={<Skeleton height='h-24' />}
+          >
+            <NotesSection range={range} today={kstToday(now)} />
+          </Suspense>
+        </ErrorBoundary>
 
         <ErrorBoundary fallback={<FailNotice />}>
           <Suspense key={rangeKey} fallback={<Skeleton height='h-40' />}>

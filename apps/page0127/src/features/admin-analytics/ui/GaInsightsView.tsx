@@ -1,4 +1,8 @@
-import { changeRate, type DateRange } from '@/shared/lib/admin/dateRange';
+import {
+  changeRate,
+  type DateRange,
+  shortDate,
+} from '@/shared/lib/admin/dateRange';
 
 import {
   CHANNELS,
@@ -21,6 +25,7 @@ import { InsightList } from './InsightList';
 import { ReportTableCard } from './ReportTableCard';
 import { type ShareBarItem, ShareBars } from './ShareBars';
 
+import type { AdminEvent } from '@/features/admin-events/api/getAdminEvents';
 import type { ReactNode } from 'react';
 
 type GaInsightsViewProps = {
@@ -28,6 +33,8 @@ type GaInsightsViewProps = {
   range: DateRange;
   /** 바로 앞 같은 길이 기간의 요약 — 타일 증감 */
   previousSummary: ReportTable;
+  /** 운영 기록 — 일별 차트에 세로선으로 찍는다 */
+  events?: AdminEvent[];
 };
 
 /** 증감 표기 — 비율 지표는 %p(포인트), 개수는 % */
@@ -69,6 +76,7 @@ export const GaInsightsView = ({
   reports,
   range,
   previousSummary,
+  events = [],
 }: GaInsightsViewProps) => {
   // 추이·증감 해석은 "사람 추정(한국)" 선으로 한다 — 전체 선은 봇이 하루 수십 명씩 끼어 출렁인다
   const allDaily = fillDaily(reports.daily, range);
@@ -155,7 +163,14 @@ export const GaInsightsView = ({
       </dl>
 
       <Section title='사람이 늘고 있나?' cols={1}>
-        <DailyUsersChart points={chartPoints} weekOverWeek={wow} />
+        <DailyUsersChart
+          points={chartPoints}
+          weekOverWeek={wow}
+          markers={events.map((e) => ({
+            label: shortDate(e.date),
+            title: e.title,
+          }))}
+        />
       </Section>
 
       <Section title='어디서 오나?'>

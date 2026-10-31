@@ -20,6 +20,8 @@ import {
 import { HeroAbPanel } from '@/features/admin-analytics/ui/HeroAbPanel';
 import { SearchQueryTable } from '@/features/admin-analytics/ui/SearchQueryTable';
 import { SetupNotice } from '@/features/admin-analytics/ui/SetupNotice';
+import { getAdminEvents } from '@/features/admin-events/api/getAdminEvents';
+import { AdminEventsPanel } from '@/features/admin-events/ui/AdminEventsPanel';
 
 import { PartialDayNotice } from '@/widgets/admin/ui/PartialDayNotice';
 import { PeriodPicker } from '@/widgets/admin/ui/PeriodPicker';
@@ -48,6 +50,8 @@ export default async function AdminAnalyticsPage({
   const gaPromise = getGaReports(range);
   const eventsPromise = gaPromise.then(() => getGaEvents(range));
   const searchPromise = getSearchQueries(range);
+  // 운영 기록(인스타 공유 등) — DB 라 GA 한도와 무관, 나란히
+  const notesPromise = getAdminEvents(range);
 
   return (
     <section className='space-y-6'>
@@ -75,12 +79,23 @@ export default async function AdminAnalyticsPage({
 
       {range.includesToday && <PartialDayNotice />}
 
+      <Suspense
+        key={`notes-${range.from}-${range.to}`}
+        fallback={<Skeleton className='h-24' />}
+      >
+        <NotesBlock promise={notesPromise} today={kstToday(now)} />
+      </Suspense>
+
       {/* key: 기간을 바꾸면 이전 기간 숫자 대신 다시 스켈레톤을 보여 준다 */}
       <Suspense
         key={`ga-${range.from}-${range.to}`}
         fallback={<BlockSkeleton tall />}
       >
-        <GaReportsBlock promise={gaPromise} range={range} />
+        <GaReportsBlock
+          promise={gaPromise}
+          notesPromise={notesPromise}
+          range={range}
+        />
       </Suspense>
 
       <Section title='가입 유도가 효과 있나?' cols={1}>
@@ -115,19 +130,30 @@ const BlockSkeleton = ({ tall = false }: { tall?: boolean }) => (
   </div>
 );
 
+const NotesBlock = async ({
+  promise,
+  today,
+}: {
+  promise: ReturnType<typeof getAdminEvents>;
+  today: string;
+}) => <AdminEventsPanel events={await promise} today={today} />;
+
 const GaReportsBlock = async ({
   promise,
+  notesPromise,
   range,
 }: {
   promise: ReturnType<typeof getGaReports>;
+  notesPromise: ReturnType<typeof getAdminEvents>;
   range: DateRange;
 }) => {
-  const ga = await promise;
+  const [ga, notes] = await Promise.all([promise, notesPromise]);
   return ga.status === 'ok' ? (
     <GaInsightsView
       reports={ga.reports}
       range={range}
       previousSummary={ga.previousSummary}
+      events={notes ?? []}
     />
   ) : (
     <SetupNotice
