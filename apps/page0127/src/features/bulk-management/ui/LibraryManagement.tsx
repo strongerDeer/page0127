@@ -5,7 +5,17 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { Button, Input, Spinner, StatePanel } from '@repo/ui';
+import {
+  Button,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Spinner,
+  StatePanel,
+} from '@repo/ui';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Globe, Lock, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -57,7 +67,6 @@ export const LibraryManagement = ({ userId }: { userId: string }) => {
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState(initialFilters);
   const [search, setSearch] = useState('');
-  const [year, setYear] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmation, setConfirmation] = useState<BulkRequest | null>(null);
   const bulk = useBulkAction('books');
@@ -65,12 +74,51 @@ export const LibraryManagement = ({ userId }: { userId: string }) => {
     queryKey: ['library-management', userId, filters],
     queryFn: async () =>
       (
-        await apiClient.get<{ records: RecordItem[]; total: number }>(
+        await apiClient.get<{
+          records: RecordItem[];
+          total: number;
+          years: number[];
+        }>(
           `/books/manage?${new URLSearchParams({ ...filters, page: String(filters.page) })}`
         )
       ).data,
   });
   const records = query.data?.records ?? [];
+  // 연도 목록은 응답에서 받는다. 첫 응답 전에도 고른 연도는 보이게 끼워 둔다
+  const years =
+    query.data?.years ?? (filters.year ? [Number(filters.year)] : []);
+  const filterSelects = [
+    {
+      key: 'status',
+      label: '독서 상태',
+      options: [
+        { value: 'all', label: '전체 상태' },
+        { value: 'completed', label: '완독' },
+        { value: 'reading', label: '읽는 중' },
+        { value: 'want_to_read', label: '읽고 싶어요' },
+      ],
+    },
+    {
+      key: 'visibility',
+      label: '공개 범위',
+      options: [
+        { value: 'all', label: '전체 범위' },
+        { value: 'public', label: '공개' },
+        { value: 'private', label: '비공개' },
+      ],
+    },
+    {
+      key: 'year',
+      label: '등록 연도',
+      options: [
+        { value: 'all', label: '전체 연도' },
+        ...years.map((value) => ({
+          value: String(value),
+          label: `${value}년`,
+        })),
+      ],
+    },
+  ] as const;
   const changeFilters = (next: Partial<typeof filters>) => {
     setFilters((current) => ({ ...current, ...next, page: next.page ?? 0 }));
     setSelected(new Set());
@@ -114,65 +162,60 @@ export const LibraryManagement = ({ userId }: { userId: string }) => {
   const actionDisabled = !selected.size || bulk.pending || query.isFetching;
   return (
     <div className='space-y-5'>
-      <form
-        className='grid grid-cols-2 items-end gap-3 rounded-2xl border border-line-soft bg-card p-4 sm:grid-cols-[minmax(0,1fr)_7rem_auto]'
-        onSubmit={(event) => {
-          event.preventDefault();
-          changeFilters({ search: search.trim(), year });
-        }}
-      >
-        <label className='col-span-2 min-w-0 text-sm sm:col-span-1'>
-          제목·저자
-          <Input
-            className='mt-1'
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            maxLength={200}
-          />
-        </label>
-        <label className='text-sm'>
-          등록 연도
-          <Input
-            className='mt-1 w-full'
-            type='number'
-            min={1000}
-            max={9999}
-            placeholder='전체'
-            value={year}
-            onChange={(event) => setYear(event.target.value)}
-          />
-        </label>
-        <Button variant='outline' type='submit'>
-          검색
-        </Button>
-        <label className='text-sm'>
-          독서 상태
-          <select
-            className='mt-1 block w-full min-w-0 rounded-lg border border-line bg-card px-2 py-2'
-            value={filters.status}
-            onChange={(event) => changeFilters({ status: event.target.value })}
-          >
-            <option value='all'>전체 상태</option>
-            <option value='completed'>완독</option>
-            <option value='reading'>읽는 중</option>
-            <option value='want_to_read'>읽고 싶어요</option>
-          </select>
-        </label>
-        <label className='text-sm'>
-          공개 범위
-          <select
-            className='mt-1 block w-full min-w-0 rounded-lg border border-line bg-card px-2 py-2'
-            value={filters.visibility}
-            onChange={(event) =>
-              changeFilters({ visibility: event.target.value })
-            }
-          >
-            <option value='all'>공개·비공개 전체</option>
-            <option value='public'>공개</option>
-            <option value='private'>비공개</option>
-          </select>
-        </label>
-      </form>
+      {/* 네이티브 select·number 입력은 사파리에서 높이·화살표가 제각각이라
+          공통 Select(Radix) 로 맞춘다. 셀렉트는 고르는 즉시 적용, 검색어만 버튼으로 */}
+      <div className='space-y-3 rounded-2xl border border-line-soft bg-card p-4'>
+        <form
+          className='flex items-end gap-2'
+          onSubmit={(event) => {
+            event.preventDefault();
+            changeFilters({ search: search.trim() });
+          }}
+        >
+          <label className='min-w-0 flex-1 text-sm'>
+            제목·저자
+            <Input
+              className='mt-1'
+              type='search'
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              maxLength={200}
+            />
+          </label>
+          <Button variant='outline' type='submit'>
+            검색
+          </Button>
+        </form>
+        <div className='grid grid-cols-2 gap-3 sm:grid-cols-3'>
+          {filterSelects.map(({ key, label, options }) => (
+            <div key={key} className='min-w-0 text-sm'>
+              <span id={`manage-filter-${key}`}>{label}</span>
+              <Select
+                value={filters[key] || 'all'}
+                onValueChange={(value) =>
+                  changeFilters({
+                    [key]: key === 'year' && value === 'all' ? '' : value,
+                  })
+                }
+              >
+                <SelectTrigger
+                  aria-labelledby={`manage-filter-${key}`}
+                  className='mt-1 w-full'
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {options.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ))}
+        </div>
+      </div>
       <p className='text-sm text-text-body'>
         같은 책도 회독별로 표시해요. 선택하지 않은 다른 회독과 연도의 기록은
         바뀌지 않아요.
