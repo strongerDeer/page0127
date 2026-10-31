@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 import {
+  comparableRange,
   type DateRange,
   previousRange,
   toUtcBounds,
@@ -35,7 +36,11 @@ const GA_SCOPE = 'https://www.googleapis.com/auth/analytics.readonly';
 export type GaEventsResult =
   | {
       status: 'ok';
+      /** 깔때기의 "이번" 기간 — 오늘(집계 중)을 뺀 끝난 날들. 오늘 하루만이면 오늘 */
+      current: DateRange;
       previous: DateRange;
+      /** false = 오늘 하루만이라 앞 기간과 견줄 수 없음(증감 숨김) */
+      comparable: boolean;
       events: EventRow[];
       /** null = GA 에 location 맞춤 측정기준이 없어 못 받음 */
       ctaLocations: CtaLocationRow[] | null;
@@ -106,7 +111,11 @@ export async function getGaEvents(range: DateRange): Promise<GaEventsResult> {
   if (!propertyId || missing.length > 0)
     return { status: 'unconfigured', missing };
 
-  const previous = previousRange(range);
+  // 깔때기는 "이번 vs 앞 기간" 표라 끝난 날끼리 견준다 — 오늘이 들면 어제까지로 자른다.
+  // 오늘 하루만 고르면 오늘 숫자를 그대로 보여 주고 증감만 숨긴다
+  const comparable = comparableRange(range);
+  const current = comparable ?? range;
+  const previous = previousRange(current);
   try {
     // 서로 기다릴 이유가 없다 — 토큰 발급과 운영자 id 조회를 함께 보낸다
     const [token, adminIds] = await Promise.all([
@@ -115,11 +124,11 @@ export async function getGaEvents(range: DateRange): Promise<GaEventsResult> {
     ]);
     const [eventRows, ctaRows, heroAbRows, curSignups, prevSignups] =
       await Promise.all([
-        runReport(propertyId, token, toEventsRequest(range, previous)),
+        runReport(propertyId, token, toEventsRequest(current, previous)),
         runReport(
           propertyId,
           token,
-          toCtaLocationRequest(range, previous)
+          toCtaLocationRequest(current, previous)
         ).catch((e: unknown) => {
           console.error(
             '[admin] CTA 위치 조회 실패(맞춤 측정기준 location 확인):',
@@ -136,12 +145,14 @@ export async function getGaEvents(range: DateRange): Promise<GaEventsResult> {
             return null;
           }
         ),
-        countSignups(range, adminIds),
+        countSignups(current, adminIds),
         countSignups(previous, adminIds),
       ]);
     return {
       status: 'ok',
+      current,
       previous,
+      comparable: comparable !== null,
       events: parseEvents(eventRows),
       ctaLocations: ctaRows ? parseCtaLocations(ctaRows) : null,
       heroAb: heroAbRows ? parseHeroAb(heroAbRows) : null,

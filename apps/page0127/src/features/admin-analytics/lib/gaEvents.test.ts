@@ -19,7 +19,7 @@ const row = (dims: string[], metrics: number[]) => ({
 
 describe('toEventsRequest', () => {
   it('현재·이전 기간을 이름 붙여 한 번에 묻는다', () => {
-    const r = parseDateRange({ range: '7d' }, new Date('2026-10-22T03:00:00Z'));
+    const r = parseDateRange({ range: '7d' }, new Date('2026-10-21T03:00:00Z'));
     const req = toEventsRequest(r, previousRange(r));
     expect(req.dateRanges).toEqual([
       { startDate: '2026-10-15', endDate: '2026-10-21', name: 'current' },
@@ -65,7 +65,7 @@ describe('parseCtaLocations', () => {
 
 describe('toHeroAbRequest', () => {
   it('같은 기간 하나만 묻고, 이벤트 × 사용자 속성 hero_variant 로 나눈다', () => {
-    const r = parseDateRange({ range: '7d' }, new Date('2026-10-22T03:00:00Z'));
+    const r = parseDateRange({ range: '7d' }, new Date('2026-10-21T03:00:00Z'));
     const req = toHeroAbRequest(r);
     expect(req.dateRanges).toEqual([
       { startDate: '2026-10-15', endDate: '2026-10-21' },

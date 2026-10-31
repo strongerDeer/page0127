@@ -32,9 +32,9 @@ describe('bucketByDay', () => {
     expect(sumPoints(points)).toBe(0);
   });
 
-  it('프리셋 기간은 어제까지 그 일수만큼 깐다', () => {
+  it('프리셋 기간은 오늘까지 그 일수만큼 깐다', () => {
     const points = bucketByDay([], parseDateRange({ range: '7d' }, now));
     expect(points).toHaveLength(7);
-    expect(points.at(-1)?.date).toBe('2026-10-05');
+    expect(points.at(-1)?.date).toBe('2026-10-06');
   });
 });
