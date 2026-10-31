@@ -199,7 +199,9 @@
   display: flex;
   align-items: flex-start;
   gap: 16px;
-  justify-content: space-between;
+  /* 배지가 몇 개 없을 때 양끝으로 흩어지지 않게 가운데로 모은다.
+     보이는 개수는 컨테이너 폭에 맞춰 정해지므로 많을 땐 어차피 한 줄이 꽉 찬다 */
+  justify-content: center;
   overflow: visible;
   padding: 14px 8px 12px;
   margin-top: 8px;
@@ -220,6 +222,22 @@
 .summaryShelf .name {
   margin-top: 17px;
   font-size: 11px;
+}
+.nameLevel {
+  white-space: nowrap;
+}
+/* 요약 책장은 칸이 76px 라 단계를 아랫줄에 따로 둔다. 가운뎃점은 화면에서만 숨긴다 */
+.summaryShelf .nameLevel {
+  display: block;
+  color: var(--text-subtle);
+}
+.summaryShelf .nameLevelSep {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 .summaryShelf .tile:focus-visible {
   outline-offset: 2px;

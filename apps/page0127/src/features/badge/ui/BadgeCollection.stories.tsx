@@ -48,6 +48,15 @@ export const EmptyOwner: Story = {
 export const LibrarySummary: Story = {
   render: (args) => <BadgeSummary {...args} username='stronger_khj' />,
 };
+/** 배지가 몇 개 없을 때도 양끝으로 흩어지지 않고 가운데에 모인다. */
+export const LibrarySummaryFew: Story = {
+  args: {
+    books: books.slice(3, 6),
+    readingGoal: null,
+    firstTasteAnalysisAt: null,
+  },
+  render: (args) => <BadgeSummary {...args} username='stronger_khj' />,
+};
 
 export const Covers: Story = {
   render: () => {

@@ -52,6 +52,9 @@ export const BadgeTile = ({
   const [opened, setOpened] = useState(false);
   const { title, hint } = badgePresentation(badge);
   const secret = isSecretBadge(badge);
+  // "쌓이는 이야기 · 1권" 처럼 단계가 붙은 이름은 단계만 따로 감싼다 —
+  // 좁은 요약 책장에서 "· 1권" 이 가운뎃점부터 다음 줄로 떨어지지 않게 단계를 아랫줄로 내린다
+  const [titleName, titleLevel] = title.split(' · ') as [string, string?];
   const progressLabel = badgeProgressLabel(badge);
   const progress = secret ? null : badge.progress;
   const earnedDate =
@@ -70,7 +73,13 @@ export const BadgeTile = ({
         <span
           className={`${styles.name} ${badge.earned ? '' : styles.unearned}`}
         >
-          {title}
+          {titleName}
+          {titleLevel && (
+            <span className={styles.nameLevel}>
+              <span className={styles.nameLevelSep}>{' · '}</span>
+              {titleLevel}
+            </span>
+          )}
           <span className='sr-only'>
             {` (${badge.earned ? '획득' : '미획득'})`}
           </span>
