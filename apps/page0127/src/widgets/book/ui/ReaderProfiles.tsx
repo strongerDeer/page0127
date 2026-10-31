@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui';
 import { createClient } from '@/shared/config/supabase/server';
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
+import { getConnectionIds } from '@/entities/follow/api/getConnectionIds';
 import {
   nameInitials,
   toDisplayName,
@@ -16,9 +17,7 @@ import { ProfileLink } from '@/entities/profile/ui/ProfileLink';
 import {
   type BookReader,
   type BookReaderRow,
-  type FollowEdge,
   pickBookReaders,
-  toConnectionIds,
 } from '../model/bookReaders';
 
 type ReaderProfilesProps = {
@@ -103,27 +102,6 @@ const fetchReaderRows = async (
   return query.order('updated_at', { ascending: false }).limit(FETCH_LIMIT);
 };
 
-/**
- * 나와 팔로우로 이어진 사람(+나) id.
- * follows 는 "Anyone can view follows" 정책이라 별도 RPC 없이 읽힌다.
- */
-const fetchConnectionIds = async (
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  myId: string
-): Promise<string[]> => {
-  const { data, error } = await supabase
-    .from('follows')
-    .select('follower_id, following_id')
-    .or(`follower_id.eq.${myId},following_id.eq.${myId}`);
-
-  if (error) {
-    console.warn(`[ReaderProfiles] 팔로우 조회 실패: ${error.message}`);
-    // 실패하면 아무도 드러내지 않는 쪽(숫자만)으로 닫는다
-    return [myId];
-  }
-  return [...toConnectionIds((data ?? []) as FollowEdge[], myId)];
-};
-
 export const ReaderProfiles = async ({ isbn }: ReaderProfilesProps) => {
   const supabase = await createClient();
 
@@ -156,7 +134,7 @@ export const ReaderProfiles = async ({ isbn }: ReaderProfilesProps) => {
   let connectedTotal = 0;
 
   if (user) {
-    const connectionIds = await fetchConnectionIds(supabase, user.id);
+    const connectionIds = await getConnectionIds(user.id);
     // 전체 60행 안에 안 든 오래된 기록도 놓치지 않도록 이어진 사람만 따로 다시 받는다
     const { data: connectedRows, error: connectedError } =
       await fetchReaderRows(supabase, isbn, connectionIds);

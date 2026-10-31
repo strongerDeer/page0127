@@ -85,7 +85,9 @@ export const BookLikeButton = ({
       <Heart
         className={`h-5 w-5 transition-colors ${
           // 화면엔 기준값(liked)이 아니라 낙관적 오버레이(optimisticLiked)를 그린다
-          optimisticLiked ? 'fill-rank-up text-rank-up' : 'text-muted-foreground'
+          optimisticLiked
+            ? 'fill-rank-up text-rank-up'
+            : 'text-muted-foreground'
         }`}
       />
     </Button>
