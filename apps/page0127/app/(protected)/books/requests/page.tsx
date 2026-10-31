@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-import { PageContainer } from '@repo/ui';
+import { BookCover, PageContainer } from '@repo/ui';
 
 import { createClient } from '@/shared/config/supabase/server';
 
@@ -42,8 +42,8 @@ export default async function BookRequestsPage({
       </div>
       <p className='mb-5 text-sm text-text-subtle'>
         직접 등록한 책은 바로 기록할 수 있어요. 승인 전에는 나에게만 보이며,
-        승인 후에는 내가 선택한 공개 설정이 적용됩니다. 표지는 기본 이미지로
-        제공해요.
+        승인 후에는 내가 선택한 공개 설정이 적용됩니다. 올린 표지 사진도 함께
+        확인해요.
       </p>
       <div className='space-y-4'>
         {!data?.length && (
@@ -57,11 +57,19 @@ export default async function BookRequestsPage({
             className='space-y-3 rounded-xl border border-line p-4'
           >
             <div className='flex items-start justify-between gap-3'>
-              <div>
-                <h2 className='font-medium'>{book.title}</h2>
-                <p className='text-sm text-text-subtle'>
-                  {book.author} · {book.publisher || '출판사 미입력'}
-                </p>
+              <div className='flex gap-3'>
+                <BookCover
+                  src={book.cover_image}
+                  title={book.title}
+                  size='sm'
+                  decorative
+                />
+                <div>
+                  <h2 className='font-medium'>{book.title}</h2>
+                  <p className='text-sm text-text-subtle'>
+                    {book.author} · {book.publisher || '출판사 미입력'}
+                  </p>
+                </div>
               </div>
               <span className='shrink-0 rounded-full bg-sunken px-3 py-1 text-xs'>
                 {REVIEW_LABELS[book.review_status]}

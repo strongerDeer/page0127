@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const client = await getSupabaseClient();
     const { data: catalog, error } = await client
       .from('global_books')
-      .select('isbn,title,author,publisher,source_url')
+      .select('isbn,title,author,publisher,source_url,cover_image')
       .eq('isbn', isbn)
       .eq('source', 'manual')
       .eq('review_status', 'approved')

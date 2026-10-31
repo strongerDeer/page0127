@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import { Button, Input } from '@repo/ui';
+import { BookCover, Button, Input } from '@repo/ui';
 
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
@@ -109,12 +109,33 @@ export default async function AdminBooksPage({
             key={`${book.id}-${book.review_version}`}
             className='space-y-4 rounded-xl border border-line p-4'
           >
-            <div>
-              <h2 className='font-medium'>{book.title}</h2>
-              <p className='text-sm text-text-subtle'>
-                {book.author || '저자 미입력'} ·{' '}
-                {book.publisher || '출판사 미입력'}
-              </p>
+            <div className='flex gap-3'>
+              {/* 직접 올린 표지도 검수 대상이다 — 책과 맞는지·부적절하지 않은지 본다 */}
+              <BookCover
+                src={book.cover_image}
+                title={book.title}
+                size='md'
+                decorative
+              />
+              <div>
+                <h2 className='font-medium'>{book.title}</h2>
+                <p className='text-sm text-text-subtle'>
+                  {book.author || '저자 미입력'} ·{' '}
+                  {book.publisher || '출판사 미입력'}
+                </p>
+                {book.cover_image ? (
+                  <a
+                    href={book.cover_image}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='text-xs text-primary'
+                  >
+                    표지 원본 보기 ↗
+                  </a>
+                ) : (
+                  <p className='text-xs text-text-subtle'>표지 없음</p>
+                )}
+              </div>
             </div>
             <dl className='space-y-1 text-sm'>
               <div>

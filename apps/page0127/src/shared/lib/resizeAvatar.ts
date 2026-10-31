@@ -76,7 +76,8 @@ const toWebpBlob = (canvas: HTMLCanvasElement): Promise<Blob | null> =>
   });
 
 /**
- * 프로필 사진을 최대 512px WebP 로 줄인다.
+ * 프로필 사진을 최대 512px WebP 로 줄인다. 직접 등록 책 표지도 같은 방식으로
+ * 줄이므로 최대 변·파일 이름만 옵션으로 바꿀 수 있다(uploadManualCover).
  *
  * **어떤 이유로든 실패하면 원본을 그대로 돌려준다.** 리사이즈는 최적화지
  * 검증이 아니다 — 여기서 막으면 사용자는 이유를 알 수 없는 채로 프로필 사진을
@@ -84,14 +85,21 @@ const toWebpBlob = (canvas: HTMLCanvasElement): Promise<Blob | null> =>
  *
  * 줄인 결과가 원본보다 크면(작고 잘 압축된 PNG 등) 원본을 쓴다.
  */
-export const resizeAvatarFile = async (file: File): Promise<File> => {
+export const resizeAvatarFile = async (
+  file: File,
+  {
+    maxEdge = AVATAR_MAX_EDGE,
+    name = 'avatar.webp',
+  }: { maxEdge?: number; name?: string } = {}
+): Promise<File> => {
   if (shouldSkipResize(file)) return file;
 
   try {
     const image = await loadImage(file);
     const { width, height } = calcResizedSize(
       image.naturalWidth,
-      image.naturalHeight
+      image.naturalHeight,
+      maxEdge
     );
 
     const canvas = document.createElement('canvas');
@@ -107,7 +115,7 @@ export const resizeAvatarFile = async (file: File): Promise<File> => {
     if (!blob || blob.size >= file.size) return file;
 
     // 확장자는 서버가 MIME 으로 정한다(updateProfileAction). 이름만 맞춰 둔다.
-    return new File([blob], 'avatar.webp', {
+    return new File([blob], name, {
       type: 'image/webp',
       lastModified: Date.now(),
     });
