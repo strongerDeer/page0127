@@ -85,9 +85,10 @@ export default async function GlobalBooksPage(props: {
   const myBooksQuery = user
     ? supabase
         .from('books')
-        .select('isbn')
+        .select('isbn, status')
         .eq('user_id', user.id)
-        .eq('status', 'completed')
+        // 완독은 접힘, 읽는 중은 책갈피 — 두 상태를 한 번에 가져온다
+        .in('status', ['completed', 'reading'])
     : null;
   const myLikesQuery = user
     ? supabase.from('book_likes').select('book_id').eq('user_id', user.id)
@@ -101,8 +102,11 @@ export default async function GlobalBooksPage(props: {
   ]);
 
   const myReadIsbns = new Set<string>();
+  const myReadingIsbns = new Set<string>();
   const myLikedIds = new Set<string>();
-  myBooksRes?.data?.forEach((b: { isbn: string }) => myReadIsbns.add(b.isbn));
+  myBooksRes?.data?.forEach((b: { isbn: string; status: string }) =>
+    (b.status === 'completed' ? myReadIsbns : myReadingIsbns).add(b.isbn)
+  );
   myLikesRes?.data?.forEach((l: { book_id: string }) =>
     myLikedIds.add(l.book_id)
   );
@@ -159,6 +163,7 @@ export default async function GlobalBooksPage(props: {
             key={book.id}
             book={book}
             isReadProp={myReadIsbns.has(book.isbn)}
+            isReadingProp={myReadingIsbns.has(book.isbn)}
             isLikedProp={myLikedIds.has(book.id)}
           />
         ))}
