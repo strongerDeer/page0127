@@ -20,11 +20,20 @@ export const BALANCE_CATEGORIES = MAIN_CATEGORIES.filter(
   (category): category is BalanceCategory => category !== '기타'
 );
 
+/** 묶기 전 서점 대분류 하나 — 예: 과학/IT 안의 'IT 모바일' */
+export type BalanceSource = { label: string; count: number };
+
 export type ReadingBalance = {
   /** 8개 분야 권수 — BALANCE_CATEGORIES 순서 고정(레이더 축) */
   categories: { category: BalanceCategory; count: number }[];
   /** 1권 이상 분야, 많은 순(동률은 BALANCE_CATEGORIES 순서). share 는 0~100 정수 */
-  ranked: { category: BalanceCategory; count: number; share: number }[];
+  ranked: {
+    category: BalanceCategory;
+    count: number;
+    share: number;
+    /** 이 분야로 묶인 서점 대분류, 많은 순 — 상세 펼치기용 */
+    sources: BalanceSource[];
+  }[];
   /** 기타 제외 완독 권수 */
   total: number;
   /** 분류 불명(기타) 완독 권수 — 균형 계산에서 빠진 책 */
@@ -43,10 +52,24 @@ export type ReadingBalance = {
 /** 이보다 적으면 점수가 한 권에 크게 흔들려 의미가 없다 */
 const MIN_BOOKS_FOR_SCORE = 3;
 
+/**
+ * 원본 분류 문자열에서 서점 대분류 이름만 뽑는다.
+ * YES24 `국내도서-IT 모바일` → 'IT 모바일', 알라딘 `국내도서>사회과학>사회학` → '사회과학'.
+ * 구분자가 없으면(예전에 대분류 이름 그대로 저장된 행) 그대로 쓴다.
+ */
+export const sourceLabel = (category: string): string => {
+  const match = /^[^>-]+[>-]\s*([^>]+)/.exec(category);
+  return (match?.[1] ?? category).trim();
+};
+
+/** '경제경영'·'경제/경영'·'경제 경영'은 같은 대분류다 — 표기만 달라 따로 세지 않게 */
+const sourceKey = (label: string) => label.replace(/[\s/]/g, '');
+
 const countByCategory = (books: Book[]) => {
   const counts = new Map<BalanceCategory, number>(
     BALANCE_CATEGORIES.map((category) => [category, 0])
   );
+  const sources = new Map<BalanceCategory, Map<string, BalanceSource>>();
   let unclassified = 0;
   books
     .filter((book) => book.status === 'completed')
@@ -57,15 +80,22 @@ const countByCategory = (books: Book[]) => {
         return;
       }
       counts.set(category, (counts.get(category) ?? 0) + 1);
+      // 매핑이 기타가 아니면 category 는 빈 값이 아니다
+      const label = sourceLabel(book.category ?? '');
+      const bucket = sources.get(category) ?? new Map<string, BalanceSource>();
+      const source = bucket.get(sourceKey(label)) ?? { label, count: 0 };
+      source.count += 1;
+      bucket.set(sourceKey(label), source);
+      sources.set(category, bucket);
     });
-  return { counts, unclassified };
+  return { counts, sources, unclassified };
 };
 
 export const calculateReadingBalance = (
   books: Book[],
   prevYearBooks: Book[] = []
 ): ReadingBalance => {
-  const { counts, unclassified } = countByCategory(books);
+  const { counts, sources, unclassified } = countByCategory(books);
   const categories = BALANCE_CATEGORIES.map((category) => ({
     category,
     count: counts.get(category) ?? 0,
@@ -80,6 +110,9 @@ export const calculateReadingBalance = (
       category,
       count,
       share: Math.round((count / total) * 100),
+      sources: [...(sources.get(category)?.values() ?? [])].sort(
+        (a, b) => b.count - a.count
+      ),
     }));
 
   const readCount = ranked.length;

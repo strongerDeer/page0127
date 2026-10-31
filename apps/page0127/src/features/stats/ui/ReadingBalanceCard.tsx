@@ -42,6 +42,12 @@ export const ReadingBalanceCard = ({
   const hasBooks = balance.total > 0;
   const axes = radarAxes(balance);
   const next = nextCategories(balance);
+  // 서점 이름이 분야 이름과 같은 칸은 띠가 이미 다 보여 준다 — 묶인 게 있을 때만 상세를 연다
+  const merged = (category: string, sources: { label: string }[]) =>
+    sources.length > 1 || sources[0]?.label !== category;
+  const hasDetail = balance.ranked.some(({ category, sources }) =>
+    merged(category, sources)
+  );
   const hasRadar = axes.length > 0;
 
   return (
@@ -124,6 +130,41 @@ export const ReadingBalanceCard = ({
                 )
                 .join(', ')}
             </p>
+
+            {/* 상세 — 8개로 묶기 전 서점 대분류별 권수(YES24는 대분류 하나만 줘서 이 단계까지만 있다) */}
+            {hasDetail && (
+              <details className='mt-3'>
+                <summary className='cursor-pointer select-none text-sm text-text-body'>
+                  분야별 자세히 보기
+                </summary>
+                <ul className='mt-3 grid gap-2 text-sm'>
+                  {balance.ranked.map(({ category, count, sources }, rank) => {
+                    const showSources = merged(category, sources);
+                    return (
+                      <li key={category} className='flex items-start gap-2'>
+                        <span
+                          aria-hidden
+                          className='mt-1.5 size-2.5 shrink-0 rounded-full'
+                          style={{ backgroundColor: categoryColor(rank) }}
+                        />
+                        <div className='min-w-0'>
+                          <span className='font-medium text-text-strong'>
+                            {category} {count}권
+                          </span>
+                          {showSources && (
+                            <p className='break-keep text-xs text-text-subtle'>
+                              {sources
+                                .map(({ label, count: n }) => `${label} ${n}`)
+                                .join(' · ')}
+                            </p>
+                          )}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </details>
+            )}
 
             {next.length > 0 && (
               <p className='mt-4 break-keep text-sm text-text-subtle'>

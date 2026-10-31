@@ -115,14 +115,14 @@ describe('ReadingBalanceCard', () => {
     );
   });
 
-  it('순위 막대 목록은 띠와 겹쳐서 뺀다 — 숫자는 띠 칸의 접근명·툴팁으로', () => {
+  it('펼쳐진 순위 막대 목록은 띠와 겹쳐서 뺀다 — 숫자는 띠 칸의 접근명·툴팁으로(목록은 접힌 상세 안에만)', () => {
     const html = renderToStaticMarkup(
       <ReadingBalanceCard
         year={2026}
         balance={calculateReadingBalance(THREE)}
       />
     );
-    expect(html).not.toContain('<ul');
+    expect(html.replace(/<details[\s\S]*<\/details>/, '')).not.toContain('<ul');
     expect(html).toContain('title="소설/시/희곡 5권 · 45%"');
   });
 
@@ -145,5 +145,38 @@ describe('ReadingBalanceCard', () => {
     );
     expect(html).toContain('완독한 책이 쌓이면 분야가 채워져요');
     expect(html).not.toContain('다음에 읽어 볼 분야');
+  });
+
+  it('분야별 자세히 — 접어 두고, 묶인 서점 대분류가 다를 때만 원래 이름을 보여 준다', () => {
+    const balance = calculateReadingBalance([
+      ...books('국내도서-IT 모바일', 3),
+      ...books('국내도서-자연과학', 1),
+      ...books('국내도서-에세이', 2),
+      ...books('국내도서-소설/시/희곡', 1),
+    ]);
+    const html = renderToStaticMarkup(
+      <ReadingBalanceCard year={2026} balance={balance} />
+    );
+    expect(html).toContain('<details');
+    expect(html).not.toContain('<details open');
+    expect(html).toContain('분야별 자세히 보기');
+    expect(html).toContain('과학/IT 4권');
+    expect(html).toContain('IT 모바일 3 · 자연과학 1');
+    // 에세이는 서점 이름도 '에세이'라 한 번 더 쓰지 않는다
+    expect(html).toContain('에세이 2권</span></div>');
+  });
+
+  it('묶인 게 하나도 없으면(서점 이름이 전부 분야 이름과 같으면) 상세를 그리지 않는다', () => {
+    const html = renderToStaticMarkup(
+      <ReadingBalanceCard
+        year={2026}
+        balance={calculateReadingBalance([
+          ...books('국내도서-에세이', 2),
+          ...books('국내도서-자기계발', 1),
+          ...books('국내도서-인문학', 1),
+        ])}
+      />
+    );
+    expect(html).not.toContain('<details');
   });
 });
