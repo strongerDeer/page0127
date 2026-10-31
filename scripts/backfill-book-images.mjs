@@ -24,6 +24,7 @@
  *   node scripts/backfill-book-images.mjs --reidentify 옛[,옛]=새ISBN13  판본을 바로잡는다
  *   node scripts/backfill-book-images.mjs --adopt-orphans  global_books 짝이 없는 책에 짝을 만든다
  *   node scripts/backfill-book-images.mjs --fill-spines   비어 있는 책등만 YES24 에서 확인해 채운다
+ *   node scripts/backfill-book-images.mjs --clear-placeholder-spines  회색 대체 이미지로 저장된 책등을 비운다
  *
  * `--aladin-urls` 는 위의 백필과 별개 모드다. 백필은 "받아 온 것만 덮어쓴다" 규칙이라
  * YES24 에 책등이 없는 책은 알라딘 책등 주소가 그대로 남았다(2026-09-30 실측:
@@ -83,6 +84,8 @@ const REIDENTIFY = getOption('--reidentify', null);
 const ADOPT_ORPHANS = hasFlag('--adopt-orphans');
 /** 책등이 비어 있는 YES24 책만 골라 책등을 확인해 채운다 (API 키 불필요) */
 const FILL_SPINES = hasFlag('--fill-spines');
+/** 확인 없이 저장된 YES24 책등 주소 중 회색 대체 이미지인 것을 비운다 (API 키 불필요) */
+const CLEAR_PLACEHOLDER_SPINES = hasFlag('--clear-placeholder-spines');
 const LIMIT = Number(getOption('--limit', '0')) || null;
 const ENV_FILE = getOption('--env', 'apps/page0127/.env.local');
 
@@ -118,7 +121,7 @@ const env = loadEnv(ENV_FILE);
 const required = [
   'NEXT_PUBLIC_SUPABASE_URL',
   'SUPABASE_SERVICE_ROLE_KEY',
-  ...(FILL_SPINES ? [] : ['YES24_API_KEY']),
+  ...(FILL_SPINES || CLEAR_PLACEHOLDER_SPINES ? [] : ['YES24_API_KEY']),
 ];
 const missing = required.filter((key) => !env[key]);
 if (missing.length) {
@@ -947,6 +950,72 @@ const fillSpines = async () => {
   console.log(`책등 채움 ${filled}개 · YES24 에도 없음 ${missingOnYes24}개`);
 };
 
+// ─── 회색 대체 이미지 책등 비우기 (--clear-placeholder-spines) ───────────
+
+/**
+ * YES24 책등 주소가 저장돼 있지만 실제로는 회색 대체 이미지인 행을 비운다.
+ *
+ * 왜 생겼나: 가입 맛보기 책장(검색으로 고른 책)과 읽기 권유(reading-nudges)가 공급자의
+ * 책등 주소를 확인 없이 저장했다. 책등이 없는 책이면 그 주소는 420x600 회색 이미지라
+ * 책장에 회색 상자가 꽂혔다(2026-10-31 코드 점검에서 발견, 같은 날 저장 쪽은 고침).
+ * 비워 두면 화면은 글자 책등(색·세로 제목)으로 그린다.
+ */
+const clearPlaceholderSpines = async () => {
+  const pick = async (table) => {
+    let query = supabase
+      .from(table)
+      .select('spine_image, title')
+      .like('spine_image', 'https://image.yes24.com/goods/%/SIDE/%');
+    if (LIMIT) query = query.limit(LIMIT);
+    const { data, error } = await query;
+    if (error) throw new Error(`${table} 조회 실패: ${error.message}`);
+    return data;
+  };
+
+  // 같은 주소는 한 번만 받아 본다
+  const targets = new Map();
+  for (const table of ['books', 'global_books']) {
+    for (const row of await pick(table)) {
+      if (!targets.has(row.spine_image)) targets.set(row.spine_image, row.title ?? '');
+    }
+  }
+  console.log(`확인할 YES24 책등 주소: ${targets.size}개`);
+  console.log('');
+
+  let cleared = 0;
+  let unreachable = 0;
+  for (const [url, title] of targets) {
+    const got = await downloadImage(url);
+    if (got.ok) {
+      await sleep(REQUEST_INTERVAL_MS);
+      continue;
+    }
+    // 플레이스홀더만 비운다. 네트워크 오류는 그 순간의 실패일 수 있으니 그대로 둔다
+    if (got.reason !== '플레이스홀더(이미지 없음)') {
+      unreachable += 1;
+      console.log(`  ? ${title.slice(0, 26).padEnd(26)} 확인 못 함 (${got.reason})`);
+      await sleep(REQUEST_INTERVAL_MS);
+      continue;
+    }
+    cleared += 1;
+    console.log(`  × ${title.slice(0, 26).padEnd(26)} 회색 대체 이미지 → 비움`);
+    if (!DRY_RUN) {
+      for (const table of ['books', 'global_books']) {
+        const { error } = await supabase
+          .from(table)
+          .update({ spine_image: null })
+          .eq('spine_image', url);
+        if (error) throw new Error(`${table} 갱신 실패: ${error.message}`);
+      }
+    }
+    await sleep(REQUEST_INTERVAL_MS);
+  }
+
+  console.log('');
+  console.log('─'.repeat(60));
+  console.log(`회색 대체 이미지 비움 ${cleared}개 · 확인 못 함 ${unreachable}개`);
+};
+
 const main = async () => {
   console.log(`대상 DB : ${env.NEXT_PUBLIC_SUPABASE_URL}`);
   console.log(
@@ -978,6 +1047,10 @@ const main = async () => {
   }
   if (FILL_SPINES) {
     await fillSpines();
+    return;
+  }
+  if (CLEAR_PLACEHOLDER_SPINES) {
+    await clearPlaceholderSpines();
     return;
   }
 

@@ -19,6 +19,7 @@ import { countPublicCompatibilityBooks } from '@/entities/compatibility/model/an
 import { TASTE_ANALYSIS_MIN_BOOKS } from '@/entities/taste-analysis/model/analysisGate';
 
 import { BadgeSummary } from '@/features/badge';
+import { useRepairMissingSpines } from '@/features/book/model/useRepairMissingSpines';
 import { CoachTipHost } from '@/features/onboarding';
 import { ReadingGoalDialog } from '@/features/profile/ui/ReadingGoalDialog';
 import {
@@ -85,6 +86,8 @@ export const PublicLibraryContent = ({
   badgeActivity,
   recapSlot,
 }: PublicLibraryContentProps) => {
+  // 폰에서 등록하다 책등 확인을 놓친 책을 주인이 서재를 열 때 뒤에서 채운다
+  useRepairMissingSpines(books, isOwnProfile);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

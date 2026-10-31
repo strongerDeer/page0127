@@ -56,7 +56,9 @@ export async function POST(request: NextRequest) {
         author: book.author,
         publisher: book.publisher,
         cover_image: book.coverImage,
-        spine_image: book.spineImage,
+        // 공급자 책등 주소는 확인 전이라 회색 대체 이미지일 수 있다 — 비워 두면
+        // 누군가 이 책을 담아 책등을 확인했을 때 트리거가 채운다(sync_global_spine_image)
+        spine_image: null,
         description: book.description,
         pub_date: book.pubDate,
         category: book.category,
