@@ -1,6 +1,10 @@
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
-import { type DateRange, previousRange } from '@/shared/lib/admin/dateRange';
+import {
+  comparableRange,
+  type DateRange,
+  previousRange,
+} from '@/shared/lib/admin/dateRange';
 import {
   getAdminUserIds,
   toInFilter,
@@ -16,8 +20,14 @@ export type AdminTrends = {
   visitors: TrendPoint[];
   signups: TrendPoint[];
   books: TrendPoint[];
-  /** 바로 앞 같은 길이 기간의 합계 — 요약 옆 증감 표시용 */
-  previous: { visitors: number; signups: number; books: number };
+  /**
+   * 증감 비교용 합계 — 오늘(집계 중)을 뺀 끝난 날들(comparable)과 그 바로 앞 같은 길이(previous).
+   * 오늘 하루만 고르면 견줄 날이 없어 null
+   */
+  comparison: {
+    current: { visitors: number; signups: number; books: number };
+    previous: { visitors: number; signups: number; books: number };
+  } | null;
 };
 
 /** 날짜 키 중 기간 안에 드는 개수 */
@@ -33,7 +43,9 @@ const countIn = (keys: string[], r: DateRange): number =>
 export async function getTrends(range: DateRange): Promise<AdminTrends | null> {
   await assertAdmin();
   const supabase = createAdminClient();
-  const previous = previousRange(range);
+  const comparable = comparableRange(range);
+  // 앞 기간은 "끝난 날" 기준 — 오늘이 들면 길이가 하루 짧아진다. 오늘 하루면 어제와 견주지 않는다
+  const previous = previousRange(comparable ?? range);
   const sinceUtc = kstDateToUtcStart(previous.from);
   const untilUtc = kstDateToUtcEnd(range.to);
   const adminIds = await getAdminUserIds();
@@ -81,10 +93,17 @@ export async function getTrends(range: DateRange): Promise<AdminTrends | null> {
     visitors: bucketByDay(visitKeys, range),
     signups: bucketByDay(signupKeys, range),
     books: bucketByDay(bookKeys, range),
-    previous: {
-      visitors: countIn(visitKeys, previous),
-      signups: countIn(signupKeys, previous),
-      books: countIn(bookKeys, previous),
+    comparison: comparable && {
+      current: {
+        visitors: countIn(visitKeys, comparable),
+        signups: countIn(signupKeys, comparable),
+        books: countIn(bookKeys, comparable),
+      },
+      previous: {
+        visitors: countIn(visitKeys, previous),
+        signups: countIn(signupKeys, previous),
+        books: countIn(bookKeys, previous),
+      },
     },
   };
 }

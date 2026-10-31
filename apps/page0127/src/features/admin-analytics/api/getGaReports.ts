@@ -1,5 +1,9 @@
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
-import { type DateRange, previousRange } from '@/shared/lib/admin/dateRange';
+import {
+  comparableRange,
+  type DateRange,
+  previousRange,
+} from '@/shared/lib/admin/dateRange';
 import {
   getCachedGoogleAccessToken,
   missingGoogleConfig,
@@ -29,6 +33,11 @@ export type GaResult =
       reports: Record<ReportKey, ReportTable>;
       /** 바로 앞 같은 길이 기간의 요약 — 타일의 증감 표시용 */
       previousSummary: ReportTable;
+      /**
+       * 증감 비교용 "이번" 요약 — 오늘(집계 중)을 뺀 끝난 날들. 오늘이 없으면 summary 와 같다.
+       * 오늘 하루만 고르면 견줄 날이 없어 null
+       */
+      comparableSummary: ReportTable | null;
       previous: DateRange;
     }
   /** 설정이 비었다 — 화면이 빠진 변수 이름을 보여 준다 */
@@ -48,17 +57,26 @@ export async function getGaReports(range: DateRange): Promise<GaResult> {
   const missing = missingGoogleConfig(propertyId ? [] : ['GA4_PROPERTY_ID']);
   if (missing.length > 0) return { status: 'unconfigured', missing };
 
-  const previous = previousRange(range);
+  // 증감은 끝난 날끼리 — 오늘이 들면 어제까지로 자른 기간과 그 앞 같은 길이를 견준다
+  const comparable = comparableRange(range);
+  const previous = previousRange(comparable ?? range);
   const summaryDef = REPORTS.find((d) => d.key === 'summary');
-  // 키 'previousSummary' 는 앞 기간 요약 — 나머지는 고른 기간의 보고서
+  // 'previousSummary' = 앞 기간 요약, 'comparableSummary' = 오늘 뺀 이번 요약 — 나머지는 고른 기간
   type Job = {
-    key: ReportKey | 'previousSummary';
+    key: ReportKey | 'previousSummary' | 'comparableSummary';
     def: ReportDef;
     range: DateRange;
   };
   const jobs: Job[] = REPORTS.map((def) => ({ key: def.key, def, range }));
-  if (summaryDef)
+  if (summaryDef && comparable) {
     jobs.push({ key: 'previousSummary', def: summaryDef, range: previous });
+    if (comparable !== range)
+      jobs.push({
+        key: 'comparableSummary',
+        def: summaryDef,
+        range: comparable,
+      });
+  }
 
   const batches: Job[][] = [];
   for (let i = 0; i < jobs.length; i += BATCH_SIZE) {
@@ -98,13 +116,18 @@ export async function getGaReports(range: DateRange): Promise<GaResult> {
         );
       }
     );
-    const { previousSummary, ...reports } = Object.fromEntries(
-      responses.flat()
-    ) as Record<ReportKey | 'previousSummary', ReportTable>;
+    const { previousSummary, comparableSummary, ...reports } =
+      Object.fromEntries(responses.flat()) as Record<
+        ReportKey | 'previousSummary' | 'comparableSummary',
+        ReportTable
+      >;
     return {
       status: 'ok',
       reports,
       previousSummary: previousSummary ?? { rows: [] },
+      comparableSummary: comparable
+        ? (comparableSummary ?? reports.summary)
+        : null,
       previous,
     };
   } catch (e) {
