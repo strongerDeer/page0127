@@ -17,14 +17,14 @@ import { RecommendedReaders } from '@/features/user/ui/RecommendedReaders';
 export default async function SearchPage() {
   const user = await getCurrentUser();
 
-  // 검색어를 몰라도 만날 수 있게 — 본인은 빼고 추천한다
+  // 검색어를 몰라도 만날 수 있게 — 제작자 + 팔로우로 이어진 리더만(모르는 사람은 노출하지 않는다)
   const readers = await getRecommendedReaders(user?.id);
 
   return (
     <PageContainer className='space-y-6'>
       <PageHeader
         title='리더 찾기'
-        description='닉네임으로 찾거나, 최근 기록한 리더를 둘러보세요'
+        description='닉네임으로 리더를 찾아보세요'
       />
 
       <UserSearch
