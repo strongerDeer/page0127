@@ -42,6 +42,7 @@ import { TasteProfileCard } from '@/features/taste-analysis/ui/TasteProfileCard'
 
 import { type ReaderCard, toIdentityLabel } from './model/readerCard';
 
+import type { FollowSnapshot } from '@/entities/follow';
 import type { PublicTasteHistoryItem } from '@/entities/taste-analysis/types';
 import type { RatingNudge } from '@/features/rating-nudge';
 
@@ -70,6 +71,8 @@ type PublicLibraryHeaderProps = {
   ratingNudge: RatingNudge | null;
   /** 독서 명함 — 성향 이름(주인공)과 숫자 한 줄. 공유 카드(OG)와 같은 규칙 */
   readerCard: ReaderCard;
+  /** 서버가 함께 읽은 팔로우 숫자·여부 — null 이면 브라우저가 불러온다 */
+  followSnapshot: FollowSnapshot | null;
 };
 
 export const PublicLibraryHeader = ({
@@ -84,6 +87,7 @@ export const PublicLibraryHeader = ({
   tasteAnalysisRemaining,
   ratingNudge,
   readerCard,
+  followSnapshot,
 }: PublicLibraryHeaderProps) => {
   const router = useRouter();
   const [followersModalOpen, setFollowersModalOpen] = useState(false);
@@ -273,11 +277,17 @@ export const PublicLibraryHeader = ({
                   userId={profile.id}
                   onFollowersClick={() => setFollowersModalOpen(true)}
                   onFollowingClick={() => setFollowingModalOpen(true)}
+                  initialStats={followSnapshot?.stats}
                 />
               </div>
 
               <div className='mt-4 flex flex-wrap items-center gap-2'>
-                {!isOwnProfile && <FollowButton userId={profile.id} />}
+                {!isOwnProfile && (
+                  <FollowButton
+                    userId={profile.id}
+                    initialIsFollowing={followSnapshot?.isFollowing}
+                  />
+                )}
 
                 {!isOwnProfile &&
                   compatibilityBookCount >= COMPATIBILITY_MIN_BOOKS && (
@@ -300,14 +310,17 @@ export const PublicLibraryHeader = ({
                   </Button>
                 )}
 
-                {/* 공유 버튼 하나 → 시트에서 스토리 이미지 또는 링크 (인스타·카톡 구분은 휴대폰 공유 시트가 한다) */}
-                <ShareSheetButton
-                  path={`/${username}`}
-                  imagePath={`/${username}/story-image`}
-                  fileName={`page0127-${username}.png`}
-                  title={`${displayName}님의 책장`}
-                  sheetTitle='서재 공유하기'
-                />
+                {/* 공유 버튼 하나 → 시트에서 스토리 이미지 또는 링크 (인스타·카톡 구분은 휴대폰 공유 시트가 한다).
+                    주인에게만 — 스토리 이미지는 "내 서재"를 자랑하는 그림이라 남의 서재에서 뜨면 어색하다 */}
+                {isOwnProfile && (
+                  <ShareSheetButton
+                    path={`/${username}`}
+                    imagePath={`/${username}/story-image`}
+                    fileName={`page0127-${username}.png`}
+                    title={`${displayName}님의 책장`}
+                    sheetTitle='서재 공유하기'
+                  />
+                )}
               </div>
             </div>
           </div>

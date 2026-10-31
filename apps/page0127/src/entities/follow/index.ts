@@ -17,6 +17,8 @@ export type {
 // API
 export { followApi } from './api/followApi';
 export { getFollowingLeague } from './api/getFollowingLeague';
+export type { FollowSnapshot } from './api/getFollowSnapshot';
+export { getFollowSnapshot } from './api/getFollowSnapshot';
 export { getReadingSocial } from './api/getReadingSocial';
 export type {
   FollowingLeague,

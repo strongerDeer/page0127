@@ -37,6 +37,7 @@ import { VisitorChemiCard, VisitorSignupBanner } from './VisitorCta';
 
 import type { Book } from '@/entities/book';
 import type { OverallStats } from '@/entities/book';
+import type { FollowSnapshot } from '@/entities/follow';
 import type { Profile } from '@/entities/profile/types';
 import type { PublicTasteHistoryItem } from '@/entities/taste-analysis/types';
 import type { BadgeActivity } from '@/features/badge/model/badges';
@@ -58,6 +59,8 @@ type PublicLibraryContentProps = {
   analysisHistory: PublicTasteHistoryItem[];
   tasteAnalysisRemaining: number;
   badgeActivity?: BadgeActivity;
+  /** 서버가 함께 읽은 팔로우 숫자·여부 — null 이면 브라우저가 불러온다 */
+  followSnapshot?: FollowSnapshot | null;
   /** 주인에게만 넣는 주간 회상 카드 — 서버 컴포넌트라 페이지가 그려서 넘긴다 */
   recapSlot?: ReactNode;
 };
@@ -84,6 +87,7 @@ export const PublicLibraryContent = ({
   analysisHistory,
   tasteAnalysisRemaining,
   badgeActivity,
+  followSnapshot = null,
   recapSlot,
 }: PublicLibraryContentProps) => {
   // 폰에서 등록하다 책등 확인을 놓친 책을 주인이 서재를 열 때 뒤에서 채운다
@@ -232,6 +236,7 @@ export const PublicLibraryContent = ({
         tasteAnalysisRemaining={tasteAnalysisRemaining}
         ratingNudge={ratingNudge}
         readerCard={readerCard}
+        followSnapshot={followSnapshot}
       />
       <PageContainer className='space-y-10'>
         {ratingNudge && (

@@ -59,10 +59,13 @@ export const BadgeCollection = ({
             : `배지 ${earnedCount}종 획득`}
         </p>
       </div>
-      <p className='text-xs text-text-subtle'>
-        점선은 아직 받지 않은 배지예요. 올리거나 선택하면 표지를 미리 볼 수
-        있어요.
-      </p>
+      {/* 점선(받지 않은 배지)은 주인에게만 보인다 — 방문자 화면엔 점선이 없으니 설명도 뺀다 */}
+      {isOwner && (
+        <p className='text-xs text-text-subtle'>
+          점선은 아직 받지 않은 배지예요. 올리거나 선택하면 표지를 미리 볼 수
+          있어요.
+        </p>
+      )}
       {sections.map((section) => (
         <section
           key={section.kind}
