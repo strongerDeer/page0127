@@ -21,6 +21,8 @@ import { toast } from 'sonner';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { resolveSpineImageUrl } from '@/shared/lib/spineImage';
 
+import { BACKGROUND_SPINE_TIMEOUT_MS } from '@/entities/book';
+
 import { bookImportApi } from '../api/bookImportApi';
 import { decodeTextFile } from '../model/decodeTextFile';
 import { MATCH_BATCH_SIZE, MAX_IMPORT_ROWS } from '../model/limits';
@@ -99,7 +101,11 @@ export const BookImportFlow = () => {
 
   const checkSpine = (book: ProviderBook) => {
     if (!spineChecks.current.has(book.isbn)) {
-      spineChecks.current.set(book.isbn, resolveSpineImageUrl(book.spineImage));
+      // 확인 화면을 보는 동안 뒤에서 돈다 — 모바일 데이터에서는 3초로 모자라 책등이 빠졌다(#345)
+      spineChecks.current.set(
+        book.isbn,
+        resolveSpineImageUrl(book.spineImage, BACKGROUND_SPINE_TIMEOUT_MS)
+      );
     }
   };
 
@@ -171,7 +177,7 @@ export const BookImportFlow = () => {
     if (selected.length === 0) return;
     setStep('saving');
     try {
-      // 확인 화면을 보는 동안 대부분 끝나 있다. 남은 것도 한 장당 최대 3초다
+      // 확인 화면을 보는 동안 대부분 끝나 있다. 남은 것도 한 장당 최대 10초다
       const spineOk = new Map<string, boolean>();
       await Promise.all(
         selected.map(async (item) => {
