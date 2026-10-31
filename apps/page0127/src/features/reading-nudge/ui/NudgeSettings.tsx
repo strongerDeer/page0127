@@ -48,7 +48,7 @@ export const NudgeSettings = ({ userId }: { userId: string }) => {
           onCheckedChange={(value) =>
             mutation.mutate({
               enabled: value,
-              push_enabled: query.data?.push_enabled ?? false,
+              push_enabled: query.data?.push_enabled ?? true,
             })
           }
         />
@@ -62,7 +62,7 @@ export const NudgeSettings = ({ userId }: { userId: string }) => {
         </div>
         <Switch
           aria-label='책 메시지 기기 알림 받기'
-          checked={query.data?.push_enabled ?? false}
+          checked={query.data?.push_enabled ?? true}
           disabled={!query.data?.enabled || mutation.isPending || query.isError}
           onCheckedChange={(value) =>
             mutation.mutate({ enabled: true, push_enabled: value })
