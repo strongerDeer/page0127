@@ -83,7 +83,8 @@ const BadgesPage = async ({ params }: PageProps) => {
     <PageContainer className='space-y-6'>
       <PageHeader
         title={`${name} 배지 책장`}
-        description='독서의 순간을 한 권씩 모아요'
+        // 모으라는 말은 주인에게 하는 말 — 방문자에겐 제목과 배지만 보여 준다
+        description={isOwner ? '독서의 순간을 한 권씩 모아요' : undefined}
         above={
           <Link
             href={`/${username}`}

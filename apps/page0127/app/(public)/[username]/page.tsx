@@ -11,6 +11,7 @@ import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 import { getCurrentLibraryYear, getSeoulToday } from '@/entities/book';
 import { getPublicShelfSummary } from '@/entities/book/api/getPublicShelfSummary';
 import { getOverallStats } from '@/entities/book/server';
+import { getFollowSnapshot } from '@/entities/follow/api/getFollowSnapshot';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProfileByUsername';
 import { toDisplayName } from '@/entities/profile/model/displayName';
@@ -196,12 +197,14 @@ const LibraryContent = async ({
   // 연도 탭은 이 전체 목록을 클라이언트에서 즉시 분류한다.
   // 따라서 탭을 바꿀 때 이 Server Component와 DB 쿼리가 다시 실행되지 않는다.
   // 취향 이력은 방문자도 본다 — 공개해도 되는 칸만 주는 RPC 라 주인·방문자가 같은 조회를 쓴다
-  const [allBooks, overallStats, tasteHistory, badgeActivity] =
+  // 팔로우 숫자·여부도 같이 읽는다 — 브라우저가 따로 부르면 새로고침마다 숫자가 '–' 로 깜빡인다
+  const [allBooks, overallStats, tasteHistory, badgeActivity, followSnapshot] =
     await Promise.all([
       getBooks(profile.id, !isOwnProfile),
       getOverallStats(profile.id, true),
       getPublicTasteHistory(profile.id),
       getBadgeActivity(profile.id),
+      getFollowSnapshot(supabase, profile.id, currentUser?.id ?? null),
     ]);
 
   // 소유자 전용 데이터 — 방문자면 아예 조회하지 않는다
@@ -261,6 +264,7 @@ const LibraryContent = async ({
       analysisHistory={tasteHistory}
       tasteAnalysisRemaining={tasteAnalysisRemaining}
       badgeActivity={badgeActivity}
+      followSnapshot={followSnapshot}
       // 주간 회상 — 홈이 비로그인 랜딩 전용이 되면서 로그인 사용자가 매일 오는 이 자리로 옮겼다.
       // 내 기록을 되돌아보는 카드라 주인에게만. 실패하거나 할 말이 없으면 조용히 사라진다
       recapSlot={

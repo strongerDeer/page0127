@@ -9,6 +9,8 @@ import { followBroadcast } from '@/shared/lib/broadcastChannel';
 
 import { followApi, followKeys } from '@/entities/follow';
 
+import type { FollowStats as FollowStatsData } from '@/entities/follow';
+
 /**
  * 팔로우 통계 표시 컴포넌트
  *
@@ -21,18 +23,24 @@ type FollowStatsProps = {
   userId: string;
   onFollowersClick?: () => void;
   onFollowingClick?: () => void;
+  /** 서버가 페이지와 함께 읽어 온 숫자 — 있으면 첫 화면에 바로 그리고 따로 요청하지 않는다 */
+  initialStats?: FollowStatsData;
 };
 
 export const FollowStats = ({
   userId,
   onFollowersClick,
   onFollowingClick,
+  initialStats,
 }: FollowStatsProps) => {
   const queryClient = useQueryClient();
 
   const { data: stats, isLoading } = useQuery({
     queryKey: followKeys.stats(userId),
     queryFn: () => followApi.getFollowStats(userId),
+    // 서버 값으로 시작하면 staleTime(1분) 동안은 다시 묻지 않는다.
+    // 다른 탭·이 탭에서 팔로우하면 아래 무효화로 바로 다시 받는다
+    initialData: initialStats,
   });
 
   // useEffectEvent: 구독 콜백을 effect 밖으로 분리한다.

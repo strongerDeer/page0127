@@ -34,9 +34,19 @@ const TOPIC_MAX_WIDTH = 8;
 const SHELF_BOARD = 12;
 const SHELF_ROW_GAP = 36;
 
-/** 표지 일렬 (책이 적을 때) */
+/** 표지 일렬 (책이 적을 때) — 5장이 본문 폭(904px)에 꼭 맞는 크기 */
 const ROW_COVER = { width: 168, height: 252 } as const;
 const ROW_COVER_GAP = 16;
+/**
+ * 표지가 한두 장이면 기본 크기로는 흰 면 가운데 작은 점처럼 보인다 → 키워서 세운다.
+ * 세 장부터는 기본 크기(다섯 장이 한 줄에 들어가야 한다)
+ */
+const FEW_COVER_SIZE: Record<number, { width: number; height: number }> = {
+  1: { width: 232, height: 348 },
+  2: { width: 208, height: 312 },
+};
+/** 빈 책장에 세우는 점선 자리 수 — "여기에 책이 꽂힌다"만 읽히면 된다 */
+const EMPTY_SLOTS = 3;
 
 /** 흰 면 위로 올라온 카드의 둥근 위 모서리 */
 export const PANEL_RADIUS = 56;
@@ -228,6 +238,20 @@ const ShelfBook = ({
   );
 };
 
+/** 선반 널 — 책장·표지 일렬·빈 책장이 같은 널 위에 선다 */
+const ShelfBoard = () => (
+  <div
+    style={{
+      display: 'flex',
+      width: CONTENT_WIDTH,
+      height: SHELF_BOARD,
+      borderRadius: 3,
+      background: OG_COLORS.line,
+      boxShadow: '0 8px 16px rgba(20, 41, 78, 0.12)',
+    }}
+  />
+);
+
 /** 책장 — 최대 2단, 각 단은 가운데. 몇 단으로 나눌지는 toShelfLayout 이 정한다 */
 const Shelf = ({ items }: { items: StoryShelfItem[] }) => {
   const { rows, bookHeight } = toShelfLayout(items, CONTENT_WIDTH);
@@ -265,22 +289,76 @@ const Shelf = ({ items }: { items: StoryShelfItem[] }) => {
               </div>
             ))}
           </div>
-          {/* 선반 널 */}
-          <div
-            style={{
-              display: 'flex',
-              width: CONTENT_WIDTH,
-              height: SHELF_BOARD,
-              borderRadius: 3,
-              background: OG_COLORS.line,
-              boxShadow: '0 8px 16px rgba(20, 41, 78, 0.12)',
-            }}
-          />
+          <ShelfBoard />
         </div>
       ))}
     </div>
   );
 };
+
+/** 책이 적을 때(5권 미만) — 표지를 앞으로 세운 한 줄. 한두 장이면 키운다 */
+const CoverShelf = ({ covers }: { covers: string[] }) => {
+  const size = FEW_COVER_SIZE[covers.length] ?? ROW_COVER;
+  return (
+    <div
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        {covers.map((src, i) => (
+          <div
+            key={src}
+            style={{
+              display: 'flex',
+              marginLeft: i === 0 ? 0 : ROW_COVER_GAP,
+            }}
+          >
+            <Cover src={src} {...size} />
+          </div>
+        ))}
+      </div>
+      <ShelfBoard />
+    </div>
+  );
+};
+
+/**
+ * 아직 책이 없는 책장 — 흰 면이 통째로 비면 그리다 만 이미지로 보인다.
+ * 점선 자리 몇 칸을 세워 "여기에 책이 꽂힌다"를 보이고, 지금 상태를 한 줄로 말한다
+ */
+const EmptyShelf = () => (
+  <div
+    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+  >
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
+      {Array.from({ length: EMPTY_SLOTS }, (_, i) => (
+        <div
+          key={i}
+          style={{
+            display: 'flex',
+            width: ROW_COVER.width,
+            height: ROW_COVER.height,
+            marginLeft: i === 0 ? 0 : ROW_COVER_GAP,
+            borderRadius: 8,
+            // 선반 널(line)보다 한 단계 진하게 — 같은 색이면 흰 면에 묻혀 빈칸으로만 보인다
+            border: '4px dashed #c3cad6',
+          }}
+        />
+      ))}
+    </div>
+    <ShelfBoard />
+    <div
+      style={{
+        display: 'flex',
+        marginTop: 56,
+        fontSize: 44,
+        fontWeight: 800,
+        letterSpacing: -1,
+      }}
+    >
+      책장을 채우는 중이에요
+    </div>
+  </div>
+);
 
 /**
  * 서재 스토리 이미지 (1080×1920).
@@ -427,19 +505,24 @@ export const StoryCard = ({
       >
         {shelf ? (
           <Shelf items={shelf} />
+        ) : covers.length > 0 ? (
+          <CoverShelf covers={covers} />
         ) : (
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            {covers.map((src, i) => (
-              <div
-                key={src}
-                style={{
-                  display: 'flex',
-                  marginLeft: i === 0 ? 0 : ROW_COVER_GAP,
-                }}
-              >
-                <Cover src={src} {...ROW_COVER} />
-              </div>
-            ))}
+          <EmptyShelf />
+        )}
+
+        {/* 권수가 없을 만큼 적을 때(3권 미만) — 무슨 책인지만 한 줄로 말한다. 숫자 '1권'은 크게 세우지 않는다 */}
+        {!shelf && covers.length > 0 && !count && (
+          <div
+            style={{
+              display: 'flex',
+              marginTop: 44,
+              fontSize: 34,
+              fontWeight: 500,
+              color: OG_COLORS.inkSoft,
+            }}
+          >
+            최근에 꽂은 책
           </div>
         )}
 

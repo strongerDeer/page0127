@@ -28,12 +28,15 @@ type FollowButtonProps = {
   >;
   // 크기는 시스템 이름을 그대로 물려받는다(sm/md/lg).
   size?: React.ComponentProps<typeof Button>['size'];
+  /** 서버가 페이지와 함께 읽어 온 팔로우 여부 — 있으면 버튼이 처음부터 맞는 라벨로 뜬다 */
+  initialIsFollowing?: boolean;
 };
 
 export const FollowButton = ({
   userId,
   variant = 'default',
   size = 'md',
+  initialIsFollowing,
 }: FollowButtonProps) => {
   const queryClient = useQueryClient();
 
@@ -41,6 +44,7 @@ export const FollowButton = ({
   const { data: isFollowing = false, isLoading } = useQuery({
     queryKey: followKeys.isFollowing(userId),
     queryFn: () => followApi.isFollowing(userId),
+    initialData: initialIsFollowing,
   });
 
   // 버튼 라벨을 서버 왕복 전에 뒤집어 둔다. 실패 시 onError에서 되돌린다.
