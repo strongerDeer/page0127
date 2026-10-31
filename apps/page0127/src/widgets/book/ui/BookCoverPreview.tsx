@@ -33,6 +33,25 @@ const loadSpineImages = (root: HTMLElement) => {
     });
 };
 
+/**
+ * 미리보기 상자를 붙일 기준 사각형.
+ *
+ * 열리면 표지는 90도 돌아 사라지고 **책등**이 보인다. 책등은 표지 왼쪽 바깥에
+ * 서므로, 링크(=표지 너비) 오른쪽에 붙이면 상자가 표지 너비만큼(약 130px) 떨어져
+ * 떠 보였다(2026-10-31 HJ). 그래서 보이는 책등의 오른쪽 끝에 붙인다.
+ * 책등 오른쪽 끝은 회전 내내 표지 왼쪽 끝 그대로라 애니메이션 중에도 상자가 안 움직인다.
+ *
+ * 동작 줄이기 설정이면 표지가 돌지 않으니(책등 안 보임) 링크 기준 그대로 둔다.
+ */
+const getAnchorRect = (link: HTMLElement | null): DOMRect => {
+  if (!link) return new DOMRect();
+  const spine = link.querySelector<HTMLElement>('[data-spine-face]');
+  const reduceMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches;
+  return (spine && !reduceMotion ? spine : link).getBoundingClientRect();
+};
+
 /** 표지 링크는 그대로 이동하고, 마우스·키보드에는 비교용 미리보기를 제공한다. */
 export const BookCoverPreview = ({
   id,
@@ -46,6 +65,10 @@ export const BookCoverPreview = ({
   const [open, setOpen] = useState(false);
   const previewId = useId();
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const linkRef = useRef<HTMLAnchorElement>(null);
+  const anchorRef = useRef({
+    getBoundingClientRect: () => getAnchorRect(linkRef.current),
+  });
   const cancelClose = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
   };
@@ -63,6 +86,7 @@ export const BookCoverPreview = ({
 
   const link = (
     <Link
+      ref={linkRef}
       prefetch={false}
       href={`/books/info/${id}`}
       aria-label={`${title} 상세 내용 보기`}
@@ -92,7 +116,8 @@ export const BookCoverPreview = ({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverAnchor asChild>{link}</PopoverAnchor>
+      <PopoverAnchor virtualRef={anchorRef} />
+      {link}
       <PopoverContent
         id={previewId}
         role='tooltip'
