@@ -16,10 +16,7 @@ type CategoryBookShelfProps = {
  * - PublicBookShelf는 "렌더링만" 담당하는 단일 책임 컴포넌트라 그룹핑 로직을 넣지 않는다
  * - 대신 이 컴포넌트가 카테고리별로 묶어서 섹션마다 PublicBookShelf를 호출한다
  */
-export const CategoryBookShelf = ({
-  books,
-  username,
-}: CategoryBookShelfProps) => {
+export const CategoryBookShelf = ({ books, username }: CategoryBookShelfProps) => {
   // 카테고리별로 책을 묶는다 — books 순서를 그대로 유지한 채 버킷에 담아서
   // DashboardBookList가 이미 적용한 정렬(최신순/별점순 등)이 섹션 안에서도 유지되게 한다
   const grouped = new Map<string, Book[]>();
