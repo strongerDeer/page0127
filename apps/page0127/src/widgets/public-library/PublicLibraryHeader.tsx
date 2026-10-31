@@ -37,7 +37,7 @@ import {
 import { FollowButton, FollowListModal, FollowStats } from '@/features/follow';
 import { coachTarget } from '@/features/onboarding';
 import { toLockedAnalysisMessage } from '@/features/rating-nudge';
-import { ShareSheetButton } from '@/features/share';
+import { ShareButton, ShareSheetButton } from '@/features/share';
 import { TasteProfileCard } from '@/features/taste-analysis/ui/TasteProfileCard';
 
 import { type ReaderCard, toIdentityLabel } from './model/readerCard';
@@ -73,6 +73,8 @@ type PublicLibraryHeaderProps = {
   readerCard: ReaderCard;
   /** 서버가 함께 읽은 팔로우 숫자·여부 — null 이면 브라우저가 불러온다 */
   followSnapshot: FollowSnapshot | null;
+  /** 공개된 완독·읽는 중 책이 하나라도 있는지 — 없으면 이미지 없이 링크만 공유한다 */
+  hasShareableBooks: boolean;
 };
 
 export const PublicLibraryHeader = ({
@@ -88,6 +90,7 @@ export const PublicLibraryHeader = ({
   ratingNudge,
   readerCard,
   followSnapshot,
+  hasShareableBooks,
 }: PublicLibraryHeaderProps) => {
   const router = useRouter();
   const [followersModalOpen, setFollowersModalOpen] = useState(false);
@@ -311,16 +314,23 @@ export const PublicLibraryHeader = ({
                 )}
 
                 {/* 공유 버튼 하나 → 시트에서 스토리 이미지 또는 링크 (인스타·카톡 구분은 휴대폰 공유 시트가 한다).
-                    주인에게만 — 스토리 이미지는 "내 서재"를 자랑하는 그림이라 남의 서재에서 뜨면 어색하다 */}
-                {isOwnProfile && (
-                  <ShareSheetButton
-                    path={`/${username}`}
-                    imagePath={`/${username}/story-image`}
-                    fileName={`page0127-${username}.png`}
-                    title={`${displayName}님의 책장`}
-                    sheetTitle='서재 공유하기'
-                  />
-                )}
+                    주인에게만 — 스토리 이미지는 "내 서재"를 자랑하는 그림이라 남의 서재에서 뜨면 어색하다.
+                    책이 하나도 없으면 이미지에 그릴 것이 없다 → 시트 없이 링크만 공유한다 */}
+                {isOwnProfile &&
+                  (hasShareableBooks ? (
+                    <ShareSheetButton
+                      path={`/${username}`}
+                      imagePath={`/${username}/story-image`}
+                      fileName={`page0127-${username}.png`}
+                      title={`${displayName}님의 책장`}
+                      sheetTitle='서재 공유하기'
+                    />
+                  ) : (
+                    <ShareButton
+                      path={`/${username}`}
+                      title={`${displayName}님의 책장`}
+                    />
+                  ))}
               </div>
             </div>
           </div>

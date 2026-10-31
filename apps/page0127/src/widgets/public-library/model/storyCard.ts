@@ -38,7 +38,9 @@ export const toStoryAddress = (
 export const toStoryCardProps = (
   data: ReaderShareData,
   username: string,
-  siteUrl: string | undefined
+  siteUrl: string | undefined,
+  /** 완독 표지가 없을 때 대신 세울 읽는 중 표지 */
+  readingCovers: string[] = []
 ): StoryCardProps => {
   const { identity } = data.card;
   const onlyThisYear = data.yearBooks >= READER_STAT_MIN_BOOKS;
@@ -62,7 +64,9 @@ export const toStoryCardProps = (
         ? data.topics.slice(0, STORY_TOPIC_LIMIT)
         : [],
     shelf: toStoryShelf(data.books, { year: data.year, onlyThisYear }),
-    covers: data.covers,
+    ...(data.covers.length === 0 && readingCovers.length > 0
+      ? { covers: readingCovers, coversLabel: '지금 읽는 중인 책' }
+      : { covers: data.covers }),
     count,
   };
 };
