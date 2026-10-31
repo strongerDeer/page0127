@@ -1,7 +1,7 @@
-import { cva, type VariantProps } from 'class-variance-authority';
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { cn } from '../lib/cn';
-import { CoverImage } from './CoverImage';
+import { cn } from "../lib/cn";
+import { CoverImage } from "./CoverImage";
 
 /**
  * 표지 크기 계단.
@@ -31,27 +31,27 @@ export type BookCoverSize = keyof typeof coverSizes;
  * 시작선이 흔들리지 않게 하려는 것이다. 다만 이미지를 슬롯에 **맞춰 자르지는 않는다**
  * (`.book-cover-fit` 주석 참고) — 바닥·가운데 정렬로 슬롯 안에 세운다.
  */
-const slotVariants = cva('flex items-end justify-center', {
+const slotVariants = cva("flex items-end justify-center", {
   variants: {
     size: {
-      xs: 'book-cover-box',
-      sm: 'book-cover-box',
-      md: 'book-cover-box',
-      lg: 'book-cover-box',
-      xl: 'book-cover-box',
+      xs: "book-cover-box",
+      sm: "book-cover-box",
+      md: "book-cover-box",
+      lg: "book-cover-box",
+      xl: "book-cover-box",
       /**
        * 컬럼 폭을 그대로 채운다. 높이는 판형 비율에서 나온다.
        * 상세 페이지처럼 표지가 레이아웃의 한 칸을 통째로 차지하는 자리용이다.
        */
-      full: 'book-cover-box w-full',
+      full: "book-cover-box w-full",
       /** 부모가 크기를 정하는 상자 안을 채운다 (부모에 position 필요) */
-      fill: 'absolute inset-0',
+      fill: "absolute inset-0",
     },
   },
-  defaultVariants: { size: 'sm' },
+  defaultVariants: { size: "sm" },
 });
 
-type BookCoverProps = Omit<VariantProps<typeof slotVariants>, 'size'> & {
+type BookCoverProps = Omit<VariantProps<typeof slotVariants>, "size"> & {
   /** 표지 이미지 URL. 없거나 빈 문자열이면 제목을 조판한다 */
   src?: string | null;
   /**
@@ -72,7 +72,7 @@ type BookCoverProps = Omit<VariantProps<typeof slotVariants>, 'size'> & {
    * - `full` — 컬럼 폭을 채운다(상세 페이지처럼 표지가 한 칸을 차지할 때)
    * - `fill` — 부모가 크기를 정한다. 부모에 `relative` 와 크기가 있어야 한다
    */
-  size?: BookCoverSize | 'full' | 'fill';
+  size?: BookCoverSize | "full" | "fill";
   /** next/image 의 sizes. 안 주면 size 에서 파생한다 */
   sizes?: string;
   /**
@@ -82,7 +82,7 @@ type BookCoverProps = Omit<VariantProps<typeof slotVariants>, 'size'> & {
    * - `cover` — 슬롯을 꽉 채우고 넘치는 부분을 자른다. 테두리를 두른 부채꼴·
    *   달력 칸처럼 **틀 자체가 그림**인 장식 자리에서만 쓴다.
    */
-  fit?: 'contain' | 'cover';
+  fit?: "contain" | "cover";
   /** 슬롯의 위치·여백 등. 크기는 size 가 정하므로 여기서 덮지 않는 편이 좋다 */
   className?: string;
   /** 장식용 표지라 스크린리더에서 감출 때 (제목이 옆에 이미 있는 경우) */
@@ -115,9 +115,9 @@ export const BookCover = ({
   fallbackSrc,
   title,
   author,
-  size = 'sm',
+  size = "sm",
   sizes,
-  fit = 'contain',
+  fit = "contain",
   className,
   decorative,
   priority,
@@ -135,10 +135,10 @@ export const BookCover = ({
   // 지정이 없으면 실제 렌더 폭을 그대로 알려준다. 이걸 빼면 next/image 가
   // 화면 폭 기준으로 과하게 큰 이미지를 받아온다.
   // full·fill 은 레이아웃이 폭을 정하므로 호출부가 sizes 를 주는 편이 좋다.
-  const resolvedSizes = sizes ?? (width ? `${width}px` : '200px');
+  const resolvedSizes = sizes ?? (width ? `${width}px` : "200px");
 
   // 상세·결과처럼 표지를 크게 놓는 자리는 대체 조판 글자도 키운다
-  const bigType = large || size === 'lg' || size === 'xl' || size === 'full';
+  const bigType = large || size === "lg" || size === "xl" || size === "full";
 
   return (
     <span
@@ -153,15 +153,15 @@ export const BookCover = ({
         fallbackSrc={fallbackSrc}
         large={large}
         small={small}
-        alt={decorative ? '' : title}
+        alt={decorative ? "" : title}
         priority={priority}
         // 로딩 전 자리 잡기용 비율 힌트일 뿐이다. 실제 크기는 슬롯과 원본 판형이 정한다.
         width={width ?? 400}
         height={height ?? 580}
         sizes={resolvedSizes}
         className={cn(
-          'book-cover',
-          fit === 'cover' ? 'h-full w-full object-cover' : 'book-cover-fit'
+          "book-cover",
+          fit === "cover" ? "h-full w-full object-cover" : "book-cover-fit",
         )}
         fallback={
           <FallbackCover title={title} author={author} bigType={bigType} />
@@ -186,24 +186,24 @@ const FallbackCover = ({ title, author, bigType }: FallbackCoverProps) => {
   return (
     <span
       className={cn(
-        'book-cover',
+        "book-cover",
         // 슬롯 크기를 넘지 않는다 — 글자가 길어도 상자를 옆으로 밀지 않는다
         // (예전에 xs 계단에서 제목이 상자를 밀어 비율이 1.45 대신 1.23 이 됐다)
-        'h-full w-full min-w-0 overflow-hidden',
+        "h-full w-full min-w-0 overflow-hidden",
         // 대체 표지에도 면과 경계가 보여야 한다. 경계는 .book-cover 의 outline 이 맡는다
-        'flex bg-sunken',
+        "flex bg-sunken",
         // 저자가 있으면 위아래로 벌려 표지 조판처럼, 없으면 가운데 정렬
         author
-          ? 'flex-col justify-between text-left'
-          : 'items-center justify-center text-center',
+          ? "flex-col justify-between text-left"
+          : "items-center justify-center text-center",
         // 대체 표지는 진짜 표지의 자리를 메우는 것이지 강조 대상이 아니다 —
         // 07 의 weight 3단계 중 400 을 쓴다.
-        'leading-snug text-text-subtle',
-        bigType ? 'px-3 py-4 text-sm' : 'p-2 text-xs'
+        "leading-snug text-text-subtle",
+        bigType ? "px-3 py-4 text-sm" : "p-2 text-xs",
       )}
     >
-      <span className='line-clamp-4 break-keep'>{title}</span>
-      {author && <span className='line-clamp-1 shrink-0'>{author}</span>}
+      <span className="line-clamp-4 break-keep">{title}</span>
+      {author && <span className="line-clamp-1 shrink-0">{author}</span>}
     </span>
   );
 };
