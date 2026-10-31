@@ -237,6 +237,11 @@ export const PublicLibraryContent = ({
         ratingNudge={ratingNudge}
         readerCard={readerCard}
         followSnapshot={followSnapshot}
+        hasShareableBooks={books.some(
+          (book) =>
+            book.is_public &&
+            (book.status === 'completed' || book.status === 'reading')
+        )}
       />
       <PageContainer className='space-y-10'>
         {ratingNudge && (

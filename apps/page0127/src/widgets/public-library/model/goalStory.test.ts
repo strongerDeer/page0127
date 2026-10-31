@@ -31,6 +31,7 @@ const BOOKS = [
 ];
 
 const data = (over: Partial<ReaderShareData> = {}): ReaderShareData => ({
+  userId: 'u1',
   displayName: '혜진',
   photoUrl: null,
   readingGoal: { year: 2026, target: 3 },

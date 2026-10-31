@@ -19,6 +19,7 @@ const book = (id: string, completed_date: string): PublicShelfBook => ({
 });
 
 const data = (over: Partial<ReaderShareData> = {}): ReaderShareData => ({
+  userId: 'u1',
   displayName: '혜진',
   photoUrl: null,
   readingGoal: null,
@@ -119,5 +120,19 @@ describe('toStoryCardProps', () => {
       '4',
       '5',
     ]);
+  });
+
+  it('완독 표지가 없으면 읽는 중 표지로 세우고 그렇게 말한다', () => {
+    const props = toStoryCardProps(data({ covers: [] }), 'hj', undefined, [
+      'r.jpg',
+    ]);
+    expect(props.covers).toEqual(['r.jpg']);
+    expect(props.coversLabel).toBe('지금 읽는 중인 책');
+  });
+
+  it('완독 표지가 있으면 읽는 중 표지는 쓰지 않는다', () => {
+    const props = toStoryCardProps(data(), 'hj', undefined, ['r.jpg']);
+    expect(props.covers).toEqual(['a.jpg']);
+    expect(props.coversLabel).toBeUndefined();
   });
 });

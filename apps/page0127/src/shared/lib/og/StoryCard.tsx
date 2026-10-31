@@ -45,8 +45,6 @@ const FEW_COVER_SIZE: Record<number, { width: number; height: number }> = {
   1: { width: 232, height: 348 },
   2: { width: 208, height: 312 },
 };
-/** 빈 책장에 세우는 점선 자리 수 — "여기에 책이 꽂힌다"만 읽히면 된다 */
-const EMPTY_SLOTS = 3;
 
 /** 흰 면 위로 올라온 카드의 둥근 위 모서리 */
 export const PANEL_RADIUS = 56;
@@ -82,6 +80,8 @@ export type StoryCardProps = {
   /** 책장 (최대 2단) — null 이면 covers 를 일렬로 */
   shelf: StoryShelfItem[] | null;
   covers: string[];
+  /** 권수 대신 표지 아래 한 줄 — 기본은 "최근에 꽂은 책", 읽는 중 표지면 그렇게 말한다 */
+  coversLabel?: string;
   /** 크게 보일 권수 하나 */
   count: { label: string; value: number } | null;
   /** 권수 아래 한 줄 ("목표 20권 · 10월 12일 달성") — 권수가 있을 때만 */
@@ -322,45 +322,6 @@ const CoverShelf = ({ covers }: { covers: string[] }) => {
 };
 
 /**
- * 아직 책이 없는 책장 — 흰 면이 통째로 비면 그리다 만 이미지로 보인다.
- * 점선 자리 몇 칸을 세워 "여기에 책이 꽂힌다"를 보이고, 지금 상태를 한 줄로 말한다
- */
-const EmptyShelf = () => (
-  <div
-    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
-  >
-    <div style={{ display: 'flex', justifyContent: 'center' }}>
-      {Array.from({ length: EMPTY_SLOTS }, (_, i) => (
-        <div
-          key={i}
-          style={{
-            display: 'flex',
-            width: ROW_COVER.width,
-            height: ROW_COVER.height,
-            marginLeft: i === 0 ? 0 : ROW_COVER_GAP,
-            borderRadius: 8,
-            // 선반 널(line)보다 한 단계 진하게 — 같은 색이면 흰 면에 묻혀 빈칸으로만 보인다
-            border: '4px dashed #c3cad6',
-          }}
-        />
-      ))}
-    </div>
-    <ShelfBoard />
-    <div
-      style={{
-        display: 'flex',
-        marginTop: 56,
-        fontSize: 44,
-        fontWeight: 800,
-        letterSpacing: -1,
-      }}
-    >
-      책장을 채우는 중이에요
-    </div>
-  </div>
-);
-
-/**
  * 서재 스토리 이미지 (1080×1920).
  *
  * 위는 파란 무대(공유 카드와 같은 바탕) — 누구인지·어떤 독자인지.
@@ -378,6 +339,7 @@ export const StoryCard = ({
   topics,
   shelf,
   covers,
+  coversLabel = '최근에 꽂은 책',
   count,
   note = null,
 }: StoryCardProps) => {
@@ -505,13 +467,12 @@ export const StoryCard = ({
       >
         {shelf ? (
           <Shelf items={shelf} />
-        ) : covers.length > 0 ? (
-          <CoverShelf covers={covers} />
         ) : (
-          <EmptyShelf />
+          // 책이 하나도 없으면 서재 화면이 이미지 대신 링크 공유만 연다 — 여기 오는 일은 거의 없다
+          covers.length > 0 && <CoverShelf covers={covers} />
         )}
 
-        {/* 권수가 없을 만큼 적을 때(3권 미만) — 무슨 책인지만 한 줄로 말한다. 숫자 '1권'은 크게 세우지 않는다 */}
+        {/* 권수가 없을 만큼 적을 때(3권 미만)·읽는 중 표지일 때 — 무슨 책인지만 한 줄로 말한다. 숫자 '1권'은 크게 세우지 않는다 */}
         {!shelf && covers.length > 0 && !count && (
           <div
             style={{
@@ -522,7 +483,7 @@ export const StoryCard = ({
               color: OG_COLORS.inkSoft,
             }}
           >
-            최근에 꽂은 책
+            {coversLabel}
           </div>
         )}
 

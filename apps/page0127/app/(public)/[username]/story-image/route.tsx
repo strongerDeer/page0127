@@ -2,6 +2,8 @@ import { renderOg } from '@/shared/lib/og/render';
 import { StoryCard } from '@/shared/lib/og/StoryCard';
 import { STORY_SIZE } from '@/shared/lib/og/theme';
 
+import { getPublicReadingCovers } from '@/entities/book/api/getPublicReadingCovers';
+
 import { getReaderShareData } from '@/widgets/public-library/api/getReaderShareData';
 import { resolveStoryShelf } from '@/widgets/public-library/api/resolveStoryShelf';
 import { toStoryCardProps } from '@/widgets/public-library/model/storyCard';
@@ -27,10 +29,15 @@ export const GET = async (_request: Request, { params }: Context) => {
   }
   if (!data) return new Response('없는 서재', { status: 404 });
 
+  // 완독 표지가 하나도 없으면 읽는 중인 책으로 흰 면을 채운다 — 완독이 있으면 묻지 않는다
+  const readingCovers =
+    data.covers.length === 0 ? await getPublicReadingCovers(data.userId) : [];
+
   const props = toStoryCardProps(
     data,
     username,
-    process.env.NEXT_PUBLIC_SITE_URL
+    process.env.NEXT_PUBLIC_SITE_URL,
+    readingCovers
   );
   // 책등을 미리 받아 실제 폭으로 단을 나눈다 — 추정으로 나누면 빈 둘째 단이 섰다
   const shelf = props.shelf && (await resolveStoryShelf(props.shelf));

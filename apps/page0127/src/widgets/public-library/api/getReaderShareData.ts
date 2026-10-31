@@ -12,6 +12,8 @@ import { type ReaderCard, toReaderCard } from '../model/readerCard';
 import type { ReadingGoal } from '@/entities/profile/types';
 
 export type ReaderShareData = {
+  /** 서재 주인 id — 스토리 라우트가 더 읽을 것이 있을 때(읽는 중 표지) */
+  userId: string;
   displayName: string;
   photoUrl: string | null;
   /** 연간 독서 목표 — 목표 달성 스토리용. 정한 적 없으면 null */
@@ -48,6 +50,7 @@ export const getReaderShareData = async (
   const latest = history[0];
 
   return {
+    userId: profile.id,
     displayName: toDisplayName(profile),
     photoUrl: profile.photo_url,
     readingGoal: profile.reading_goal ?? null,
