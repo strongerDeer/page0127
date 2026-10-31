@@ -34,23 +34,23 @@ describe('toRunReportRequest', () => {
     ]);
     expect(req.dimensions).toEqual([{ name: 'countryId' }]);
   });
-  it('요일은 차원 순(일→토)으로 정렬한다', () => {
-    expect(toRunReportRequest(def('dayOfWeek'), range).orderBys).toEqual([
-      { dimension: { dimensionName: 'dayOfWeek' } },
+  it('정렬 지정이 있으면 그 차원 순으로 정렬한다', () => {
+    expect(toRunReportRequest(def('daily'), range).orderBys).toEqual([
+      { dimension: { dimensionName: 'date' } },
     ]);
   });
 });
 
 describe('parseReport', () => {
   it('GA 문자열 숫자를 number 로, 차원 값을 한국어로 바꾼다', () => {
-    const table = parseReport(def('dayOfWeek'), [
+    const table = parseReport(def('device'), [
       {
-        dimensionValues: [{ value: '0' }],
+        dimensionValues: [{ value: 'mobile' }],
         metricValues: [{ value: '12' }, { value: '30' }],
       },
     ]);
     expect(table.rows).toEqual([
-      { labels: ['일'], raw: ['0'], values: [12, 30] },
+      { labels: ['모바일'], raw: ['mobile'], values: [12, 30] },
     ]);
   });
   it('도시는 도시 이름 + 한국어 국가명, 원본 코드는 raw 에 남긴다', () => {

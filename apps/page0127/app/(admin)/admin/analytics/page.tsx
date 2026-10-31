@@ -4,7 +4,7 @@ import { Skeleton } from '@repo/ui';
 
 import {
   type DateRange,
-  kstYesterday,
+  kstToday,
   parseDateRange,
   type RangeSearchParams,
 } from '@/shared/lib/admin/dateRange';
@@ -21,6 +21,7 @@ import { HeroAbPanel } from '@/features/admin-analytics/ui/HeroAbPanel';
 import { SearchQueryTable } from '@/features/admin-analytics/ui/SearchQueryTable';
 import { SetupNotice } from '@/features/admin-analytics/ui/SetupNotice';
 
+import { PartialDayNotice } from '@/widgets/admin/ui/PartialDayNotice';
 import { PeriodPicker } from '@/widgets/admin/ui/PeriodPicker';
 
 // 매 요청마다 GA 를 새로 조회한다 — 관리자만 보는 화면이라 호출 수가 적다
@@ -69,8 +70,10 @@ export default async function AdminAnalyticsPage({
       <PeriodPicker
         basePath='/admin/analytics'
         range={range}
-        maxDate={kstYesterday(now)}
+        maxDate={kstToday(now)}
       />
+
+      {range.includesToday && <PartialDayNotice />}
 
       {/* key: 기간을 바꾸면 이전 기간 숫자 대신 다시 스켈레톤을 보여 준다 */}
       <Suspense

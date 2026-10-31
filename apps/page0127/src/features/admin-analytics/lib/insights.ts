@@ -113,6 +113,46 @@ export const fillDaily = (t: ReportTable, range: DateRange): DailyPoint[] => {
   });
 };
 
+const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
+
+export type WeekdayAverage = {
+  /** 0=일 … 6=토 */
+  day: number;
+  label: string;
+  /** 그 요일이 기간에 몇 번 들었나 */
+  count: number;
+  /** 그 요일 하루 평균 사용자 */
+  avg: number;
+};
+
+/**
+ * 요일별 **하루 평균** 사용자 (일→토).
+ *
+ * 왜 GA dayOfWeek 합계가 아니라 일별 선에서 직접 세나:
+ * 1) 합계는 기간에 그 요일이 몇 번 들었는지에 끌려간다 — 10/01~10/30 이면 목·금이 5번,
+ *    나머지는 4번이라 목·금이 25% 부풀어 보인다. 평균이어야 요일끼리 견줄 수 있다.
+ * 2) 일별 선(사람 추정)과 같은 데이터라 추이 차트와 숫자가 어긋나지 않는다(봇 제외 기준도 같다).
+ * 3) 요일은 KST 날짜 키에서 바로 계산한다 — 시간대를 다시 따질 일이 없다.
+ */
+export const weekdayAverages = (points: DailyPoint[]): WeekdayAverage[] => {
+  const sums = Array.from({ length: 7 }, () => ({ users: 0, count: 0 }));
+  for (const p of points) {
+    // p.date = 'YYYYMMDD' (KST 날짜). UTC 자정으로 만들어 getUTCDay 로 읽으면 시간대 영향이 없다
+    const iso = `${p.date.slice(0, 4)}-${p.date.slice(4, 6)}-${p.date.slice(6, 8)}`;
+    const day = new Date(`${iso}T00:00:00Z`).getUTCDay();
+    sums[day].users += p.users;
+    sums[day].count += 1;
+  }
+  return sums
+    .map((s, day) => ({
+      day,
+      label: WEEKDAYS[day],
+      count: s.count,
+      avg: s.count === 0 ? 0 : s.users / s.count,
+    }))
+    .filter((w) => w.count > 0);
+};
+
 /** 기간 마지막 7일 / 그 전 7일 - 1. 기간이 14일 미만이거나 앞 주가 0 이면 비교 불가(null) */
 export const weekOverWeek = (points: DailyPoint[]): number | null => {
   if (points.length < 14) return null;

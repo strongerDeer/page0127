@@ -39,6 +39,9 @@ export async function getRetention(
   await assertAdmin();
   const supabase = createAdminClient();
   const yesterday = kstYesterday(now);
+  // 기간에 오늘이 들어 있으면(오늘 프리셋·사용자 지정) 오늘 방문까지 읽어 기간 재방문·시각 분포에 넣는다.
+  // 코호트 창 판정은 여전히 yesterday 까지라 오늘 방문이 W1·W4 를 앞당기지 않는다
+  const visitsUntil = range.to > yesterday ? range.to : yesterday;
   const adminIds = await getAdminUserIds();
   const notAdmin = adminIds.length > 0 ? toInFilter(adminIds) : null;
 
@@ -48,7 +51,7 @@ export async function getRetention(
         .from('user_daily_visits')
         .select('user_id, visit_date, first_visit_at')
         .gte('visit_date', range.from)
-        .lte('visit_date', yesterday);
+        .lte('visit_date', visitsUntil);
       if (notAdmin) q = q.not('user_id', 'in', notAdmin);
       return q.order('visit_date').order('user_id').range(from, to);
     }, 'retention-visits'),

@@ -22,7 +22,6 @@ export type ReportKey =
   | 'browser'
   | 'os'
   | 'resolution'
-  | 'dayOfWeek'
   | 'gender'
   | 'age'
   | 'humanSummary'
@@ -192,14 +191,6 @@ export const REPORTS: ReportDef[] = [
     limit: 10,
   },
   {
-    key: 'dayOfWeek',
-    title: '요일',
-    dimensions: ['dayOfWeek'],
-    metrics: [users, sessions],
-    orderBy: { dimension: 'dayOfWeek' },
-    limit: 7,
-  },
-  {
     key: 'gender',
     title: '성별',
     dimensions: ['userGender'],
@@ -309,7 +300,6 @@ export const parseReport = (
   }),
 });
 
-const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 const GENDER: Record<string, string> = {
   male: '남성',
   female: '여성',
@@ -392,9 +382,6 @@ export const translateDimension = (
       return countryName(value);
     case 'sessionDefaultChannelGroup':
       return CHANNELS[value]?.name ?? value;
-    case 'dayOfWeek':
-      // GA 는 0=일요일 … 6=토요일 문자열로 준다
-      return DAY_NAMES[Number(value)] ?? value;
     case 'userGender':
       return GENDER[value] ?? value;
     case 'deviceCategory':

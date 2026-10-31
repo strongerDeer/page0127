@@ -6,11 +6,12 @@ type PeriodPickerProps = {
   /** 현재 화면 경로 — '/admin', '/admin/analytics' */
   basePath: string;
   range: DateRange;
-  /** 사용자 지정 상한 (KST 어제) — 오늘은 진행 중이라 고를 수 없다 */
+  /** 사용자 지정 상한 (KST 오늘) — 오늘을 고르면 화면이 "집계 중"으로 표시한다 */
   maxDate: string;
 };
 
 const PRESETS = [
+  { preset: 'today', label: '오늘' },
   { preset: '7d', label: '1주' },
   { preset: '30d', label: '1달' },
 ] as const satisfies { preset: keyof typeof PRESET_DAYS; label: string }[];
@@ -19,7 +20,7 @@ const chip =
   'rounded border px-3 py-1.5 text-sm transition-colors hover:bg-accent';
 
 /**
- * 어드민 기간 선택 — 1주 · 1달 · 사용자 지정.
+ * 어드민 기간 선택 — 오늘 · 1주 · 1달 · 사용자 지정.
  *
  * 서버 컴포넌트다: 프리셋은 링크, 사용자 지정은 GET 폼이라 JS 없이도 동작하고,
  * 고른 기간이 URL(?range=…)에 남아 새로고침·공유해도 그대로 열린다.
