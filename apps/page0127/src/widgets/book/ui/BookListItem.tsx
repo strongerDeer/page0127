@@ -81,7 +81,11 @@ const BookListItemCover = ({
     <div className={styles.perspective}>
       <div className={styles.cover}>
         <div className={styles.bookImg}>
-          {/* 책등 이미지 */}
+          {/* 책등 이미지 — 평소엔 옆으로 90도 누워 있다가 hover 때 앞으로 돈다.
+              사파리는 이렇게 누운(화면상 너비 0) lazy 이미지를 "안 보인다"고 보고
+              끝까지 불러오지 않는다(2026-10-31, /books/all). 그래서 표지에 포인터·포커스가
+              닿는 순간 BookCoverPreview 가 data-spine 이미지를 eager 로 바꿔 불러온다.
+              터치 기기는 뒤집기가 없으니 지금처럼 안 받는다. */}
           <div className={styles.flipCover}>
             {spine ? (
               <Image
@@ -89,6 +93,7 @@ const BookListItemCover = ({
                 alt=''
                 width='400'
                 height='400'
+                data-spine=''
                 unoptimized={isPreOptimizedImageSrc(spine)}
               />
             ) : (

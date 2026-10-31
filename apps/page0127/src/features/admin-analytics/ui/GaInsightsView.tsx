@@ -33,6 +33,8 @@ type GaInsightsViewProps = {
   range: DateRange;
   /** 바로 앞 같은 길이 기간의 요약 — 타일 증감 */
   previousSummary: ReportTable;
+  /** 증감용 이번 요약(오늘 뺀 끝난 날들). null = 오늘 하루만이라 견줄 날 없음 */
+  comparableSummary: ReportTable | null;
   /** 운영 기록 — 일별 차트에 세로선으로 찍는다 */
   events?: AdminEvent[];
 };
@@ -76,6 +78,7 @@ export const GaInsightsView = ({
   reports,
   range,
   previousSummary,
+  comparableSummary,
   events = [],
 }: GaInsightsViewProps) => {
   // 추이·증감 해석은 "사람 추정(한국)" 선으로 한다 — 전체 선은 봇이 하루 수십 명씩 끼어 출렁인다
@@ -90,9 +93,10 @@ export const GaInsightsView = ({
   const wow = weekOverWeek(completeDaily);
   const weekdays = weekdayAverages(completeDaily);
   const h = buildHeadline(reports);
-  // 오늘이 섞이면 반나절을 꽉 찬 앞 기간과 견주게 된다 — 타일 증감을 숨긴다
-  const change = (cur: number, prev: number, kind: 'count' | 'ratio') =>
-    range.includesToday ? undefined : changeText(cur, prev, kind);
+  // 증감은 오늘(집계 중)을 뺀 끝난 날끼리 견준다 — 반나절을 꽉 찬 하루와 견주면 무조건 줄어 보인다
+  const cmp = comparableSummary?.rows[0]?.values ?? null;
+  const change = (i: number, kind: 'count' | 'ratio') =>
+    cmp ? changeText(cmp[i] ?? 0, prev[i] ?? 0, kind) : undefined;
   const summary = reports.summary.rows[0]?.values ?? [];
   const prev = previousSummary.rows[0]?.values ?? [];
   const human = reports.humanSummary.rows[0]?.values ?? [];
@@ -111,7 +115,7 @@ export const GaInsightsView = ({
         h.users > 0
           ? `봇 포함 · 이 중 ${formatMetric(1 - humanUsers / h.users, 'percent')}가 해외`
           : '봇 포함',
-      change: change(h.users, prev[0] ?? 0, 'count'),
+      change: change(0, 'count'),
     },
     {
       label: '페이지뷰',
@@ -132,7 +136,7 @@ export const GaInsightsView = ({
       label: '참여율',
       value: formatMetric(summary[3] ?? 0, 'percent'),
       hint: '10초 이상 머물거나 2쪽 이상 본 방문',
-      change: change(summary[3] ?? 0, prev[3] ?? 0, 'ratio'),
+      change: change(3, 'ratio'),
     },
   ];
 

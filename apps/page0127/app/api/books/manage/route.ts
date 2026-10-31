@@ -1,3 +1,4 @@
+import { toKstDateKey } from '@/shared/lib/date';
 import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
 
 import { getCurrentUser, getSupabaseClient } from '../../_helpers/auth';
@@ -42,10 +43,28 @@ export async function GET(request: Request) {
     const pattern = quotePostgrestValue(`%${search}%`);
     query = query.or(`title.ilike.${pattern},author.ilike.${pattern}`);
   }
-  const { data, count, error } = await query
-    .order('created_at', { ascending: false })
-    .order('id')
-    .range(page * 50, page * 50 + 49);
+  // 등록 연도 셀렉트에 쓸 범위: 가장 오래된 기록의 연도 ~ 올해 (KST)
+  const [{ data, count, error }, oldest] = await Promise.all([
+    query
+      .order('created_at', { ascending: false })
+      .order('id')
+      .range(page * 50, page * 50 + 49),
+    supabase
+      .from('books')
+      .select('created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+  ]);
   if (error) return errorResponse('서재 기록을 불러오지 못했어요.');
-  return successResponse({ records: data, total: count ?? 0 });
+  const thisYear = Number(toKstDateKey(new Date()).slice(0, 4));
+  const firstYear = oldest.data
+    ? Number(toKstDateKey(new Date(oldest.data.created_at)).slice(0, 4))
+    : thisYear;
+  const years = Array.from(
+    { length: Math.max(thisYear - firstYear, 0) + 1 },
+    (_, index) => thisYear - index
+  );
+  return successResponse({ records: data, total: count ?? 0, years });
 }

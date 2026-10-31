@@ -1,8 +1,14 @@
 import Link from 'next/link';
 
+import { toKstDateKey } from '@/shared/lib/date';
+
 import { ACTIVE_WINDOW_DAYS, providerLabel } from '../lib/memberStats';
 
 import type { MemberRow } from '@/features/admin-members/api/getMembers';
+
+// 칸 공통 — 숫자 칸은 오른쪽, 글 칸은 왼쪽 정렬. 머리글도 같은 쪽으로 맞춘다
+const th = 'whitespace-nowrap px-3 py-2 font-normal';
+const td = 'whitespace-nowrap px-3 py-2.5';
 
 type MemberTableProps = {
   rows: MemberRow[];
@@ -18,62 +24,84 @@ export const MemberTable = ({ rows, firstNumber }: MemberTableProps) => {
     return <p className='text-sm text-text-subtle'>가입자가 없습니다.</p>;
   }
   return (
-    <table className='w-full border-collapse text-sm'>
-      <thead>
-        <tr className='border-b border-line text-left text-text-subtle'>
-          <th className='w-12 py-2 pr-2 text-right font-normal'>#</th>
-          <th className='py-2'>회원</th>
-          <th className='py-2'>가입 경로</th>
-          <th className='py-2'>가입일</th>
-          <th className='py-2'>최근 접속</th>
-          <th
-            className='py-2'
-            title={`최근 ${ACTIVE_WINDOW_DAYS}일 중 들어온 날 수`}
-          >
-            활동일({ACTIVE_WINDOW_DAYS}일)
-          </th>
-          <th className='py-2'>등록 책</th>
-          <th className='py-2'>상태</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((m, i) => (
-          <tr key={m.id} className='border-b border-line'>
-            <td className='py-2 pr-2 text-right tabular-nums text-text-subtle'>
-              {firstNumber - i}
-            </td>
-            <td className='py-2'>
-              <Link href={`/admin/members/${m.id}`} className='hover:underline'>
-                {m.nickname ?? m.username ?? m.id.slice(0, 8)}
-              </Link>
-              {m.username && (
-                <a
-                  href={`/${m.username}`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='ml-1.5 text-xs text-text-subtle underline hover:text-text-strong'
-                  aria-label={`${m.nickname ?? m.username} 서재 새 탭에서 열기`}
-                >
-                  서재 ↗
-                </a>
-              )}
-              <div className='text-xs text-text-subtle'>{m.maskedEmail}</div>
-            </td>
-            <td className='py-2'>{providerLabel(m.provider)}</td>
-            <td className='py-2'>{m.createdAt.slice(0, 10)}</td>
-            <td className='py-2'>{m.lastSeen ?? '-'}</td>
-            <td className='py-2'>{m.activeDays}일</td>
-            <td className='py-2'>{m.bookCount}권</td>
-            <td className='py-2'>
-              {m.suspended ? (
-                <span className='text-destructive'>정지</span>
-              ) : (
-                <span className='text-text-subtle'>정상</span>
-              )}
-            </td>
+    <div className='overflow-x-auto'>
+      <table className='w-full border-collapse text-sm'>
+        <thead>
+          <tr className='border-b border-line text-xs text-text-subtle'>
+            <th className={`${th} w-10 text-right`}>#</th>
+            <th className={`${th} text-left`}>회원</th>
+            <th className={`${th} text-left`}>가입 경로</th>
+            <th className={`${th} text-left`}>가입일</th>
+            <th className={`${th} text-left`}>최근 접속</th>
+            <th
+              className={`${th} text-right`}
+              title={`최근 ${ACTIVE_WINDOW_DAYS}일 중 들어온 날 수`}
+            >
+              활동일({ACTIVE_WINDOW_DAYS}일)
+            </th>
+            <th className={`${th} text-right`}>등록 책</th>
+            <th className={`${th} text-center`}>상태</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rows.map((m, i) => (
+            <tr
+              key={m.id}
+              className='border-b border-line/60 align-middle hover:bg-accent'
+            >
+              <td className={`${td} text-right text-xs text-text-subtle`}>
+                {firstNumber - i}
+              </td>
+              <td className={`${td} min-w-40`}>
+                <div className='flex items-baseline gap-1.5'>
+                  <Link
+                    href={`/admin/members/${m.id}`}
+                    className='font-medium hover:underline'
+                  >
+                    {m.nickname ?? m.username ?? m.id.slice(0, 8)}
+                  </Link>
+                  {m.username && (
+                    <a
+                      href={`/${m.username}`}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='shrink-0 text-xs text-text-subtle hover:text-text-strong hover:underline'
+                      aria-label={`${m.nickname ?? m.username} 서재 새 탭에서 열기`}
+                    >
+                      서재 ↗
+                    </a>
+                  )}
+                </div>
+                <div className='mt-0.5 text-xs text-text-subtle'>
+                  {m.maskedEmail}
+                </div>
+              </td>
+              <td className={`${td} text-text-subtle`}>
+                {providerLabel(m.provider)}
+              </td>
+              <td className={`${td} tabular-nums`}>
+                {toKstDateKey(new Date(m.createdAt))}
+              </td>
+              <td className={`${td} tabular-nums`}>{m.lastSeen ?? '-'}</td>
+              <td className={`${td} text-right tabular-nums`}>
+                {m.activeDays}일
+              </td>
+              <td className={`${td} text-right tabular-nums`}>
+                {m.bookCount}권
+              </td>
+              <td className={`${td} text-center`}>
+                {m.suspended ? (
+                  <span className='rounded bg-destructive/10 px-1.5 py-0.5 text-xs text-destructive'>
+                    정지
+                  </span>
+                ) : (
+                  <span className='text-xs text-text-subtle'>정상</span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 };

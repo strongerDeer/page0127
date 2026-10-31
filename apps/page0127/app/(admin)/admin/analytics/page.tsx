@@ -20,7 +20,10 @@ import {
 import { HeroAbPanel } from '@/features/admin-analytics/ui/HeroAbPanel';
 import { SearchQueryTable } from '@/features/admin-analytics/ui/SearchQueryTable';
 import { SetupNotice } from '@/features/admin-analytics/ui/SetupNotice';
-import { getAdminEvents } from '@/features/admin-events/api/getAdminEvents';
+import {
+  getAdminEvents,
+  getRecentAdminEvents,
+} from '@/features/admin-events/api/getAdminEvents';
 import { AdminEventsPanel } from '@/features/admin-events/ui/AdminEventsPanel';
 
 import { PartialDayNotice } from '@/widgets/admin/ui/PartialDayNotice';
@@ -83,7 +86,11 @@ export default async function AdminAnalyticsPage({
         key={`notes-${range.from}-${range.to}`}
         fallback={<Skeleton className='h-24' />}
       >
-        <NotesBlock promise={notesPromise} today={kstToday(now)} />
+        <NotesBlock
+          promise={notesPromise}
+          range={range}
+          today={kstToday(now)}
+        />
       </Suspense>
 
       {/* key: 기간을 바꾸면 이전 기간 숫자 대신 다시 스켈레톤을 보여 준다 */}
@@ -132,11 +139,24 @@ const BlockSkeleton = ({ tall = false }: { tall?: boolean }) => (
 
 const NotesBlock = async ({
   promise,
+  range,
   today,
 }: {
   promise: ReturnType<typeof getAdminEvents>;
+  range: DateRange;
   today: string;
-}) => <AdminEventsPanel events={await promise} today={today} />;
+}) => {
+  const [events, recent] = await Promise.all([promise, getRecentAdminEvents()]);
+  return (
+    <AdminEventsPanel
+      events={events}
+      recent={recent}
+      from={range.from}
+      to={range.to}
+      today={today}
+    />
+  );
+};
 
 const GaReportsBlock = async ({
   promise,
@@ -153,6 +173,7 @@ const GaReportsBlock = async ({
       reports={ga.reports}
       range={range}
       previousSummary={ga.previousSummary}
+      comparableSummary={ga.comparableSummary}
       events={notes ?? []}
     />
   ) : (
@@ -175,8 +196,10 @@ const GaEventsBlock = async ({
   return events.status === 'ok' ? (
     <div className='space-y-3'>
       <EventFunnelPanel
-        range={range}
+        range={events.current}
         previous={events.previous}
+        comparable={events.comparable}
+        excludesToday={range.includesToday && events.comparable}
         events={events.events}
         ctaLocations={events.ctaLocations}
         dbSignups={events.dbSignups}

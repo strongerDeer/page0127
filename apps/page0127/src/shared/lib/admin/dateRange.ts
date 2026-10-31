@@ -9,10 +9,11 @@ import { toKstDateKey } from '@/shared/lib/date';
  * 그대로 조회하고, "10/1~10/15 유입분석" 같은 링크를 그대로 다시 열 수 있다.
  *
  * 오늘은 어떻게 다루나:
- * 1주·1달 프리셋은 어제까지다 — 오늘은 아직 안 끝난 날이라 섞으면 마지막 칸이 늘 낮게 나와
- * "줄었다"로 읽힌다. 대신 '오늘' 프리셋과 사용자 지정(끝을 오늘로)으로 오늘을 볼 수 있고,
- * 그때는 includesToday 가 true 라 화면이 "집계 중" 안내를 띄우고 앞 기간 증감을 숨긴다
- * (반나절 숫자를 꽉 찬 하루와 견주면 무조건 줄어 보인다).
+ * 오늘·1주·1달 프리셋은 모두 **오늘까지**다(HJ, 2026-10-31 — "오늘이 빠지면 지금 상황이 안 보인다").
+ * 오늘이 들면 includesToday 가 true 라 화면이 "집계 중" 안내를 띄운다.
+ * 앞 기간 대비 증감은 반나절 오늘을 꽉 찬 하루와 견주면 무조건 줄어 보이므로,
+ * comparableRange(어제까지로 자른 기간)와 그 바로 앞 같은 길이 기간으로 센다.
+ * 오늘 하루만 고르면 견줄 끝난 날이 없어 증감을 숨긴다.
  *
  * 날짜는 전부 KST 'YYYY-MM-DD' 다(user_daily_visits.visit_date 와 같은 기준).
  */
@@ -106,14 +107,14 @@ const presetRange = (
       label: '오늘',
     };
   }
-  const yesterday = kstYesterday(now);
+  const today = kstToday(now);
   const days = PRESET_DAYS[preset];
   return {
     preset,
-    from: addDays(yesterday, -(days - 1)),
-    to: yesterday,
+    from: addDays(today, -(days - 1)),
+    to: today,
     days,
-    includesToday: false,
+    includesToday: true,
     label: `최근 ${days}일`,
   };
 };
@@ -184,6 +185,26 @@ export const previousRange = (r: DateRange): DateRange => {
     days: r.days,
     includesToday: false,
     label: `${shortDate(from)} ~ ${shortDate(to)}`,
+  };
+};
+
+/**
+ * 증감 비교에 쓸 기간 — 오늘(집계 중)을 뺀 끝난 날들.
+ * - 오늘이 없으면 그대로
+ * - 오늘이 들면 끝을 어제로 당긴다(길이 1 줄어듦). 앞 기간도 이 기간 기준으로 잡아야 길이가 같다
+ * - 오늘 하루뿐이면 null — 견줄 끝난 날이 없다
+ */
+export const comparableRange = (r: DateRange): DateRange | null => {
+  if (!r.includesToday) return r;
+  if (r.days <= 1) return null;
+  const to = addDays(r.to, -1);
+  return {
+    preset: 'custom',
+    from: r.from,
+    to,
+    days: r.days - 1,
+    includesToday: false,
+    label: `${shortDate(r.from)} ~ ${shortDate(to)}`,
   };
 };
 

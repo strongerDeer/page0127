@@ -18,7 +18,10 @@ import {
   budgetBasisCents,
   computeBudgetUsage,
 } from '@/features/admin-costs/lib/cost';
-import { getAdminEvents } from '@/features/admin-events/api/getAdminEvents';
+import {
+  getAdminEvents,
+  getRecentAdminEvents,
+} from '@/features/admin-events/api/getAdminEvents';
 import { AdminEventsPanel } from '@/features/admin-events/ui/AdminEventsPanel';
 import { getFunnel } from '@/features/admin-overview/api/getFunnel';
 import { getOverview } from '@/features/admin-overview/api/getOverview';
@@ -85,9 +88,21 @@ type RangeProps = { range: DateRange };
 const NotesSection = async ({
   range,
   today,
-}: RangeProps & { today: string }) => (
-  <AdminEventsPanel events={await getAdminEvents(range)} today={today} />
-);
+}: RangeProps & { today: string }) => {
+  const [events, recent] = await Promise.all([
+    getAdminEvents(range),
+    getRecentAdminEvents(),
+  ]);
+  return (
+    <AdminEventsPanel
+      events={events}
+      recent={recent}
+      from={range.from}
+      to={range.to}
+      today={today}
+    />
+  );
+};
 
 const TrendSection = async ({ range }: RangeProps) => {
   const trends = await getTrends(range);
@@ -101,11 +116,12 @@ const TrendSection = async ({ range }: RangeProps) => {
     );
   }
   const avgVisitors = sumPoints(trends.visitors) / trends.visitors.length;
-  // 앞 같은 길이 기간 대비 — 길이가 같아 합계 비교가 곧 평균 비교다
-  // 오늘이 섞이면 반나절 숫자를 꽉 찬 앞 기간과 견주게 돼 무조건 줄어 보인다 — 증감을 숨긴다
-  const vs = (cur: number, prev: number): string => {
-    if (range.includesToday) return '';
-    const r = changeRate(cur, prev);
+  // 앞 같은 길이 기간 대비 — 길이가 같아 합계 비교가 곧 평균 비교다.
+  // 오늘(집계 중)은 빼고 끝난 날끼리 견준다(getTrends 의 comparison). 오늘 하루만이면 숨긴다
+  const cmp = trends.comparison;
+  const vs = (key: 'visitors' | 'signups' | 'books'): string => {
+    if (!cmp) return '';
+    const r = changeRate(cmp.current[key], cmp.previous[key]);
     if (r === null) return '';
     const p = Math.round(r * 100);
     return ` · 앞 기간 ${p > 0 ? '+' : p < 0 ? '−' : '±'}${Math.abs(p)}%`;
@@ -128,19 +144,19 @@ const TrendSection = async ({ range }: RangeProps) => {
           title='DAU (로그인 회원)'
           unit='명'
           points={trends.visitors}
-          summary={`하루 평균 ${avgVisitors.toFixed(1)}명${vs(sumPoints(trends.visitors), trends.previous.visitors)} · 운영자 제외`}
+          summary={`하루 평균 ${avgVisitors.toFixed(1)}명${vs('visitors')} · 운영자 제외`}
         />
         <TrendBars
           title='가입'
           unit='명'
           points={trends.signups}
-          summary={`합계 ${sumPoints(trends.signups)}명${vs(sumPoints(trends.signups), trends.previous.signups)} · 운영자 제외`}
+          summary={`합계 ${sumPoints(trends.signups)}명${vs('signups')} · 운영자 제외`}
         />
         <TrendBars
           title='책 등록'
           unit='권'
           points={trends.books}
-          summary={`합계 ${sumPoints(trends.books)}권${vs(sumPoints(trends.books), trends.previous.books)} · 운영자 제외`}
+          summary={`합계 ${sumPoints(trends.books)}권${vs('books')} · 운영자 제외`}
         />
       </div>
     </section>

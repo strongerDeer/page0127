@@ -3,6 +3,7 @@ import { createClient } from '@/shared/config/supabase/server';
 import { toRenderableSrc } from '@/shared/lib/imageHost';
 
 import { toCoverSource } from '@/entities/book';
+import { getConnectionIds } from '@/entities/follow/api/getConnectionIds';
 
 import {
   type CoverRow,
@@ -61,6 +62,10 @@ const toCoverRows = (rows: BookCoverRow[] | null): CoverRow[] => {
 /**
  * /search 첫 화면의 "추천 리더".
  *
+ * 노출 범위(2026-10-31 결정): 제작자 + 나와 팔로우로 이어진 사람만.
+ * 모르는 사람의 닉네임·사진·최근 책이 낯선 사람에게 뜨지 않게 한다.
+ * 비로그인이거나 이어진 사람이 없으면 제작자만 남는다.
+ *
  * 추천은 장식이 아니라 입구지만, 실패해도 검색은 그대로 쓸 수 있어야 한다
  * → 에러는 경고만 남기고 빈 목록을 돌려준다(화면은 기존 안내로 떨어진다).
  */
@@ -69,6 +74,13 @@ export async function getRecommendedReaders(
 ): Promise<RecommendedReaderCard[]> {
   const supabase = await createClient();
 
+  // 이어진 사람(나 제외)만 최근 기록을 훑는다 — 모르는 사람은 처음부터 받지 않는다
+  const connectionIds = currentUserId
+    ? (await getConnectionIds(currentUserId)).filter(
+        (id) => id !== currentUserId
+      )
+    : [];
+
   // is_public 을 명시한다 — RLS 만 믿으면 로그인 사용자 자신의 비공개 기록이 섞인다
   const [featuredResult, recentResult] = await Promise.all([
     supabase
@@ -76,12 +88,15 @@ export async function getRecommendedReaders(
       .select('id')
       .eq('username', FEATURED_READER_USERNAME)
       .maybeSingle(),
-    supabase
-      .from('books')
-      .select(COVER_COLUMNS)
-      .eq('is_public', true)
-      .order('updated_at', { ascending: false })
-      .limit(RECENT_ROWS),
+    connectionIds.length > 0
+      ? supabase
+          .from('books')
+          .select(COVER_COLUMNS)
+          .eq('is_public', true)
+          .in('user_id', connectionIds)
+          .order('updated_at', { ascending: false })
+          .limit(RECENT_ROWS)
+      : Promise.resolve({ data: [] as BookCoverRow[], error: null }),
   ]);
 
   if (featuredResult.error || recentResult.error) {

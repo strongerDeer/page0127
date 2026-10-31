@@ -139,13 +139,11 @@ export const Many: Story = {
   args: { readers: [me, jisu, minho, seoyeon, zero] },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const list = within(canvas.getByRole('list', { name: '전체 독서 순위' }));
+    const list = within(canvas.getByRole('list', { name: '독서 순위' }));
     await expect(list.getAllByRole('listitem')).toHaveLength(5);
     await expect(list.getAllByRole('listitem')[2]).toHaveTextContent('나');
     await userEvent.click(canvas.getByRole('button', { name: '쪽수' }));
-    const updatedList = within(
-      canvas.getByRole('list', { name: '전체 독서 순위' })
-    );
+    const updatedList = within(canvas.getByRole('list', { name: '독서 순위' }));
     await expect(updatedList.getAllByRole('listitem')[1]).toHaveTextContent(
       '나'
     );
@@ -160,7 +158,7 @@ export const SharedFirst: Story = {
   args: { readers: [{ ...me, completedBooks: 18 }, jisu, minho] },
   play: async ({ canvasElement }) => {
     const list = within(
-      within(canvasElement).getByRole('list', { name: '전체 독서 순위' })
+      within(canvasElement).getByRole('list', { name: '독서 순위' })
     );
     await expect(list.getAllByLabelText('1위')).toHaveLength(2);
     await expect(list.getByLabelText('3위')).toBeVisible();
@@ -178,7 +176,7 @@ export const NoPublicRecords: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const list = within(canvas.getByRole('list', { name: '전체 독서 순위' }));
+    const list = within(canvas.getByRole('list', { name: '독서 순위' }));
     await expect(list.getAllByLabelText('1위')).toHaveLength(3);
   },
 };
@@ -255,14 +253,14 @@ export const OneActiveReader: Story = {
     ).toHaveLength(2);
     await expect(canvas.queryByRole('combobox')).not.toBeInTheDocument();
     await expect(
-      within(canvas.getByRole('list', { name: '전체 독서 순위' })).getAllByRole(
+      within(canvas.getByRole('list', { name: '독서 순위' })).getAllByRole(
         'listitem'
       )
     ).toHaveLength(3);
     await expect(
-      within(
-        canvas.getByRole('list', { name: '전체 독서 순위' })
-      ).getAllByLabelText('2위')
+      within(canvas.getByRole('list', { name: '독서 순위' })).getAllByLabelText(
+        '2위'
+      )
     ).toHaveLength(2);
     await expect(canvas.queryByText(/선두 기록 대비/)).not.toBeInTheDocument();
   },
@@ -382,7 +380,7 @@ export const CompactRankingActions: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const page = within(canvasElement.ownerDocument.body);
-    const list = canvas.getByRole('list', { name: '전체 독서 순위' });
+    const list = canvas.getByRole('list', { name: '독서 순위' });
     for (const button of within(list).getAllByRole('button')) {
       const bounds = button.getBoundingClientRect();
       expect(bounds.width).toBe(32);
@@ -398,5 +396,42 @@ export const CompactRankingActions: Story = {
     await expect(await page.findByRole('tooltip')).toHaveTextContent(
       '콕 찌르기'
     );
+  },
+};
+
+/** 팔로잉 100명 중 87위: 상위 5명 + 내 앞뒤만 카드에, 나머지는 전체 순위 모달로. */
+const crowd: LeagueReader[] = Array.from({ length: 100 }, (_, i) => ({
+  ...me,
+  userId: `reader-${i + 1}`,
+  username: `reader-${i + 1}`,
+  nickname: `리더 ${i + 1}`,
+  completedBooks: i < 86 ? 120 - i : 100 - i,
+}));
+
+export const HundredFollowing: Story = {
+  name: '팔로잉 100명 · 87위',
+  args: { readers: [{ ...me, completedBooks: 33 }, ...crowd] },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const page = within(canvasElement.ownerDocument.body);
+    const list = within(canvas.getByRole('list', { name: '독서 순위' }));
+    const rows = list.getAllByRole('listitem');
+    await expect(rows).toHaveLength(8);
+    await expect(rows[6]).toHaveTextContent('나');
+    await expect(within(rows[6]).getByLabelText('87위')).toBeVisible();
+    await userEvent.click(
+      canvas.getByRole('button', { name: '전체 순위 보기 (101명)' })
+    );
+    const dialog = await page.findByRole('dialog', { name: '전체 순위' });
+    await expect(dialog).toHaveTextContent('나는 87위');
+    const all = within(
+      within(dialog).getByRole('list', { name: '전체 독서 순위' })
+    ).getAllByRole('listitem');
+    await expect(all).toHaveLength(101);
+    await waitFor(() => {
+      const me = all[86].getBoundingClientRect();
+      expect(me.top).toBeGreaterThanOrEqual(0);
+      expect(me.bottom).toBeLessThanOrEqual(window.innerHeight);
+    });
   },
 };

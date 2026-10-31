@@ -92,7 +92,7 @@ describe('fillDaily', () => {
     const points = fillDaily(
       table(['20261004', 5]),
       // KST 10/6 정오 → 어제 = 10/5
-      parseDateRange({ range: '30d' }, new Date('2026-10-06T03:00:00Z'))
+      parseDateRange({ range: '30d' }, new Date('2026-10-05T03:00:00Z'))
     );
     expect(points).toHaveLength(30);
     expect(points.at(-1)).toEqual({

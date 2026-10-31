@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   addDays,
   changeRate,
+  comparableRange,
   daysBetween,
   listDateKeys,
   MAX_RANGE_DAYS,
@@ -16,26 +17,26 @@ import {
 const now = new Date('2026-10-22T03:00:00Z');
 
 describe('parseDateRange', () => {
-  it('값이 없으면 기본(최근 30일, 어제까지)', () => {
+  it('값이 없으면 기본(최근 30일, 오늘까지)', () => {
     expect(parseDateRange({}, now)).toEqual({
       preset: '30d',
-      from: '2026-09-22',
-      to: '2026-10-21',
+      from: '2026-09-23',
+      to: '2026-10-22',
       days: 30,
-      includesToday: false,
+      includesToday: true,
       label: '최근 30일',
     });
   });
 
-  it('최근 7일은 어제를 포함한 7일', () => {
+  it('최근 7일은 오늘을 포함한 7일', () => {
     const r = parseDateRange({ range: '7d' }, now);
-    expect([r.from, r.to, r.days]).toEqual(['2026-10-15', '2026-10-21', 7]);
+    expect([r.from, r.to, r.days]).toEqual(['2026-10-16', '2026-10-22', 7]);
   });
 
-  it('UTC 로는 전날이어도 KST 기준 어제를 끝으로 잡는다', () => {
+  it('UTC 로는 전날이어도 KST 기준 오늘을 끝으로 잡는다', () => {
     // 2026-10-22 08:00 KST = 2026-10-21 23:00 UTC
     const r = parseDateRange({ range: '7d' }, new Date('2026-10-21T23:00:00Z'));
-    expect(r.to).toBe('2026-10-21');
+    expect(r.to).toBe('2026-10-22');
   });
 
   it('사용자 지정 기간', () => {
@@ -132,13 +133,13 @@ describe('날짜 계산', () => {
   it('기간의 모든 날짜를 깐다', () => {
     const r = parseDateRange({ range: '7d' }, now);
     expect(listDateKeys(r)).toEqual([
-      '2026-10-15',
       '2026-10-16',
       '2026-10-17',
       '2026-10-18',
       '2026-10-19',
       '2026-10-20',
       '2026-10-21',
+      '2026-10-22',
     ]);
   });
 
@@ -158,8 +159,34 @@ describe('날짜 계산', () => {
 describe('previousRange', () => {
   it('바로 앞의 같은 길이 기간', () => {
     const p = previousRange(parseDateRange({ range: '7d' }, now));
-    expect([p.from, p.to, p.days]).toEqual(['2026-10-08', '2026-10-14', 7]);
+    expect([p.from, p.to, p.days]).toEqual(['2026-10-09', '2026-10-15', 7]);
   });
+});
+
+describe('comparableRange', () => {
+  it('오늘이 들면 어제까지로 자르고, 앞 기간도 그 길이로 잡는다', () => {
+    // 10/16~10/22(오늘) → 비교는 10/16~10/21(6일) vs 10/10~10/15(6일)
+    const c = comparableRange(parseDateRange({ range: '7d' }, now));
+    expect(c).toMatchObject({
+      from: '2026-10-16',
+      to: '2026-10-21',
+      days: 6,
+      includesToday: false,
+    });
+    const p = previousRange(c!);
+    expect([p.from, p.to, p.days]).toEqual(['2026-10-10', '2026-10-15', 6]);
+  });
+  it('오늘이 없으면 그대로, 오늘 하루뿐이면 null', () => {
+    const past = parseDateRange(
+      { range: 'custom', from: '2026-10-01', to: '2026-10-15' },
+      now
+    );
+    expect(comparableRange(past)).toBe(past);
+    expect(comparableRange(parseDateRange({ range: 'today' }, now))).toBeNull();
+  });
+});
+
+describe('changeRate', () => {
   it('증감률 — 앞 기간이 0 이면 null', () => {
     expect(changeRate(15, 10)).toBeCloseTo(0.5);
     expect(changeRate(3, 0)).toBeNull();

@@ -84,20 +84,20 @@ export const sendPushForNotifications = async (
     ),
   ];
   if (nudgeUsers.length) {
-    // 수신 설정은 발송 시점에 다시 확인한다. 조회 실패도 미동의로 취급한다.
+    // 수신 설정은 발송 시점에 다시 확인한다.
+    // 설정 행이 없으면(한 번도 안 건드림) 기본값 = 켜짐 — 기기 구독이 있는 기기에만 가므로
+    // 브라우저 알림 권한을 허용한 사람에게만 실제로 도착한다. 조회 실패는 보내지 않는다.
     const { data, error } = await admin
       .from('reading_nudge_settings')
       .select('user_id, enabled, push_enabled')
       .in('user_id', nudgeUsers);
-    const optedIn = new Set(
-      error
-        ? []
-        : (data ?? [])
-            .filter((row) => row.enabled && row.push_enabled)
-            .map((row) => row.user_id)
+    const optedOut = new Set(
+      (data ?? [])
+        .filter((row) => !row.enabled || !row.push_enabled)
+        .map((row) => row.user_id)
     );
     notifications = notifications.filter(
-      (n) => n.type !== 'reading_nudge' || optedIn.has(n.user_id)
+      (n) => n.type !== 'reading_nudge' || (!error && !optedOut.has(n.user_id))
     );
   }
   if (!notifications.length) return { sent: 0, removed: 0 };

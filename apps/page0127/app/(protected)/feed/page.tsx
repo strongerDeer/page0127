@@ -7,7 +7,7 @@ import { ErrorBoundary, PageContainer, PageHeader } from '@repo/ui';
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { ActivityFeed } from '@/widgets/activity';
-import { LoungeLayout, ReadingPrompt } from '@/widgets/lounge';
+import { LoungeLayout, ReadingPromptGate } from '@/widgets/lounge';
 import {
   ReadingLeagueLoading,
   ReadingLeagueSection,
@@ -50,7 +50,10 @@ export default async function LoungePage() {
             >
               새로운 기록
             </h2>
-            <ReadingPrompt />
+            {/* 읽는 중인 책이 없을 때만 보인다. 조회를 기다리느라 피드가 늦지 않게 따로 감싼다. */}
+            <Suspense fallback={null}>
+              <ReadingPromptGate userId={user.id} />
+            </Suspense>
             <ActivityFeed />
           </div>
         }
