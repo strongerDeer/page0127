@@ -1,8 +1,17 @@
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@repo/ui';
 import { Crown } from 'lucide-react';
 
 import { toDisplayName } from '@/entities/profile/model/displayName';
 import { ProfileLink } from '@/entities/profile/ui/ProfileLink';
 
+import { compactRanking } from '../model/readingLeague';
 import { LeagueAvatar } from './LeagueAvatar';
 
 import type { RankedReader } from '../model/readingLeague';
@@ -29,6 +38,7 @@ export const LeaguePodium = ({
   const ahead = mine
     ? readers.filter((reader) => reader.value > mine.value).at(-1)
     : undefined;
+  const { rows, hidden } = compactRanking(readers, currentUserId);
 
   return (
     <>
@@ -96,50 +106,64 @@ export const LeaguePodium = ({
           </p>
         ) : null}
       </div>
-      <ol className={styles.readerList} aria-label='전체 독서 순위'>
-        {readers.map((reader) => (
-          <li
-            key={reader.userId}
-            className={styles.readerRow}
-            data-me={reader.userId === currentUserId}
-            data-actions={Boolean(actions)}
-          >
-            <span
-              className={styles.rank}
-              aria-label={reader.rank ? `${reader.rank}위` : '순위 없음'}
-            >
-              {reader.rank ?? '—'}
-            </span>
-            <LeagueAvatar reader={reader} />
-            <div className={styles.readerInfo}>
-              <ProfileLink
-                username={reader.username}
-                className={styles.readerName}
-              >
-                {reader.userId === currentUserId ? '나' : toDisplayName(reader)}
-              </ProfileLink>
-              {reader.userId === currentUserId && (
-                <span className={styles.you}>YOU</span>
-              )}
-              {reader.completedBooks === 0 && (
-                <small>올해 공개 완독 기록 없음</small>
-              )}
-              {unit === '쪽' && reader.missingPageBooks > 0 && (
-                <small>쪽수 미등록 {reader.missingPageBooks}권</small>
-              )}
-            </div>
-            <strong className={styles.readerValue}>
-              {reader.value.toLocaleString('ko-KR')}
-              {unit}
-            </strong>
-            {actions && (
-              <span className={styles.nudgeSlot}>
-                {reader.userId !== currentUserId && actions(reader)}
-              </span>
-            )}
-          </li>
-        ))}
+      <ol className={styles.readerList} aria-label='독서 순위'>
+        {rows.map((row, index) =>
+          row.type === 'gap' ? (
+            <li key={`gap-${index}`} className={styles.rankGap} aria-hidden>
+              ⋯
+            </li>
+          ) : (
+            <ReaderRow
+              key={row.reader.userId}
+              reader={row.reader}
+              currentUserId={currentUserId}
+              unit={unit}
+              actions={actions}
+            />
+          )
+        )}
       </ol>
+      {hidden > 0 && (
+        <Dialog>
+          <DialogTrigger asChild>
+            <button type='button' className={styles.allRanksButton}>
+              전체 순위 보기 ({readers.length}명)
+            </button>
+          </DialogTrigger>
+          <DialogContent
+            className={styles.allRanksDialog}
+            onOpenAutoFocus={(event) => {
+              // 몇 위든 열자마자 내 줄이 보이게 한다.
+              const row = (event.currentTarget as HTMLElement).querySelector(
+                '[data-me="true"]'
+              );
+              row?.scrollIntoView({ block: 'center' });
+            }}
+          >
+            <DialogHeader>
+              <DialogTitle>전체 순위</DialogTitle>
+              <DialogDescription>
+                나와 팔로잉 {readers.length - 1}명
+                {mine?.rank ? ` · 나는 ${mine.rank}위` : ''}
+              </DialogDescription>
+            </DialogHeader>
+            <ol
+              className={`${styles.readerList} ${styles.allRanksList}`}
+              aria-label='전체 독서 순위'
+            >
+              {readers.map((reader) => (
+                <ReaderRow
+                  key={reader.userId}
+                  reader={reader}
+                  currentUserId={currentUserId}
+                  unit={unit}
+                  actions={actions}
+                />
+              ))}
+            </ol>
+          </DialogContent>
+        </Dialog>
+      )}
       {mine?.rank && ahead && (
         <p className={styles.ownSummary}>
           {toDisplayName(ahead)}님과{' '}
@@ -150,3 +174,50 @@ export const LeaguePodium = ({
     </>
   );
 };
+
+const ReaderRow = ({
+  reader,
+  currentUserId,
+  unit,
+  actions,
+}: {
+  reader: RankedReader;
+  currentUserId: string;
+  unit: string;
+  actions?: (reader: RankedReader) => ReactNode;
+}) => (
+  <li
+    className={styles.readerRow}
+    data-me={reader.userId === currentUserId}
+    data-actions={Boolean(actions)}
+  >
+    <span
+      className={styles.rank}
+      aria-label={reader.rank ? `${reader.rank}위` : '순위 없음'}
+    >
+      {reader.rank ?? '—'}
+    </span>
+    <LeagueAvatar reader={reader} />
+    <div className={styles.readerInfo}>
+      <ProfileLink username={reader.username} className={styles.readerName}>
+        {reader.userId === currentUserId ? '나' : toDisplayName(reader)}
+      </ProfileLink>
+      {reader.userId === currentUserId && (
+        <span className={styles.you}>YOU</span>
+      )}
+      {reader.completedBooks === 0 && <small>올해 공개 완독 기록 없음</small>}
+      {unit === '쪽' && reader.missingPageBooks > 0 && (
+        <small>쪽수 미등록 {reader.missingPageBooks}권</small>
+      )}
+    </div>
+    <strong className={styles.readerValue}>
+      {reader.value.toLocaleString('ko-KR')}
+      {unit}
+    </strong>
+    {actions && (
+      <span className={styles.nudgeSlot}>
+        {reader.userId !== currentUserId && actions(reader)}
+      </span>
+    )}
+  </li>
+);
