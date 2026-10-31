@@ -106,6 +106,21 @@ describe('YearSummary', () => {
     expect(html).not.toContain('data-facts');
   });
 
+  it('0권이면 큰 숫자 대신 낮은 카드로 접는다 — 오른쪽이 한 줄만 남아 비어 보였다', () => {
+    const zero = render({
+      completed: 0,
+      totalPages: 0,
+      averageRating: 0,
+      lifeBookCount: 0,
+      monthlyReading: monthly.map((m) => ({ ...m, count: 0 })),
+    });
+    expect(zero).toContain('data-compact');
+    expect(zero).not.toContain('text-6xl');
+    // 권수가 있으면 원래 크기
+    expect(render({})).not.toContain('data-compact');
+    expect(render({})).toContain('text-6xl');
+  });
+
   it('달성 공유 버튼은 올해 목표를 채웠을 때만 보인다', () => {
     const share = <button type='button'>달성 공유하기</button>;
     // 14/40 — 아직

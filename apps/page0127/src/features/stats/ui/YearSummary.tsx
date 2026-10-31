@@ -70,6 +70,8 @@ export const YearSummary = ({
   const isPast = pace.state === 'past_met' || pace.state === 'past_missed';
   // 자랑할 순간은 올해 목표를 채운 뒤뿐이다
   const showGoalShare = Boolean(goalShare) && pace.state === 'met';
+  // 0권이면 통계 칸이 전부 빠져 오른쪽이 한 줄만 남는다 → 큰 숫자를 줄이고 카드를 낮게 접는다
+  const isCompact = completed === 0;
 
   // 환산은 계산할 수 있는 것만 — 종이 한 장(2쪽) 0.1mm, 1분/쪽(기존 독서 시간 규칙)
   const stackCm = Math.round(totalPages / 200);
@@ -113,14 +115,34 @@ export const YearSummary = ({
   ];
 
   return (
-    <section className='grid gap-6 rounded-[28px] border border-line-soft bg-card p-6 sm:p-8 md:grid-cols-[200px_1fr] md:items-center'>
-      <div>
-        <p className='text-sm text-text-subtle'>{year}년에 완독한 책</p>
-        <p className='mt-1 text-6xl font-bold tracking-[-0.04em] text-text-strong'>
-          {completed}
-          <span className='ml-1 text-xl font-medium text-text-subtle'>권</span>
+    <section
+      data-compact={isCompact || undefined}
+      className={`grid rounded-[28px] border border-line-soft bg-card md:grid-cols-[200px_1fr] md:items-center ${
+        isCompact ? 'gap-3 px-6 py-5 sm:px-8' : 'gap-6 p-6 sm:p-8'
+      }`}
+    >
+      {isCompact ? (
+        // 왼쪽 칸 폭(200px)은 그대로 둬서 한마디가 권수가 있는 해와 같은 자리에서 시작한다
+        <p className='flex items-baseline gap-2 text-sm text-text-subtle'>
+          {year}년에 완독한 책
+          <span className='text-3xl font-bold tracking-[-0.04em] text-text-strong'>
+            {completed}
+            <span className='ml-0.5 text-base font-medium text-text-subtle'>
+              권
+            </span>
+          </span>
         </p>
-      </div>
+      ) : (
+        <div>
+          <p className='text-sm text-text-subtle'>{year}년에 완독한 책</p>
+          <p className='mt-1 text-6xl font-bold tracking-[-0.04em] text-text-strong'>
+            {completed}
+            <span className='ml-1 text-xl font-medium text-text-subtle'>
+              권
+            </span>
+          </p>
+        </div>
+      )}
 
       <div className='min-w-0'>
         <div className='flex flex-wrap items-start justify-between gap-2'>
