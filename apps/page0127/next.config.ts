@@ -127,6 +127,20 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '**.kakaocdn.net' },
     ],
   },
+  // 짧은 유입 주소 — 인스타 프로필 링크 칸은 주소를 그대로 보여 줘서 utm 을 달면 길고 지저분하다.
+  // 그래서 프로필엔 page0127.com/ig 만 두고, 여기서 utm 이 붙은 홈으로 넘긴다(GA 가 utm 으로 출처를 읽는다).
+  // 아이디는 3자 이상(USERNAME_MIN_LENGTH)이라 2자 경로 'ig' 가 서재(/[username])와 겹칠 일이 없다.
+  // permanent: false(307) — 브라우저가 기억하지 않아서 나중에 utm 값을 바꿔도 바로 반영된다.
+  async redirects() {
+    return [
+      {
+        source: '/ig',
+        destination:
+          '/?utm_source=instagram&utm_medium=social&utm_campaign=profile',
+        permanent: false,
+      },
+    ];
+  },
   // 모든 응답에 붙는 보안 헤더.
   async headers() {
     // Content-Security-Policy — enforce(실제 차단) 모드.
