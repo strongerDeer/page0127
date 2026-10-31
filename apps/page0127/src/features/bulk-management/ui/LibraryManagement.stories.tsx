@@ -37,7 +37,7 @@ const RECORDS = [
 ];
 
 const mockAdapter: AxiosAdapter = async (config) => ({
-  data: { records: RECORDS, total: RECORDS.length },
+  data: { records: RECORDS, total: RECORDS.length, years: [2026, 2025] },
   status: 200,
   statusText: 'OK',
   headers: {},
