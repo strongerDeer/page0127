@@ -9,6 +9,7 @@ import {
   fillDaily,
   isDatacenterCity,
   type Reports,
+  weekdayAverages,
   weekOverWeek,
 } from './insights';
 
@@ -41,7 +42,6 @@ const reports = (over: Partial<Reports>): Reports => ({
   browser: empty,
   os: empty,
   resolution: empty,
-  dayOfWeek: empty,
   gender: empty,
   age: empty,
   ...over,
@@ -169,5 +169,35 @@ describe('buildInsights', () => {
     }));
     const t = titles(reports({}), daily);
     expect(t.some((s) => s.includes('50% 줄었습니다'))).toBe(true);
+  });
+});
+
+describe('weekdayAverages', () => {
+  it('KST 날짜로 요일을 정하고, 그 요일이 든 횟수로 나눈 하루 평균을 낸다', () => {
+    // 2026-10-01 은 목요일. 10/01~10/30 이면 목·금 5번, 나머지 4번
+    const range = parseDateRange(
+      { range: 'custom', from: '2026-10-01', to: '2026-10-30' },
+      new Date('2026-10-31T03:00:00Z')
+    );
+    const points = fillDaily(
+      table(['20261001', 10], ['20261008', 20], ['20261003', 8]),
+      range
+    );
+    const byLabel = Object.fromEntries(
+      weekdayAverages(points).map((w) => [w.label, w])
+    );
+    expect(byLabel['목']).toMatchObject({ day: 4, count: 5, avg: 6 });
+    expect(byLabel['토']).toMatchObject({ day: 6, count: 4, avg: 2 });
+    expect(byLabel['일'].count).toBe(4);
+  });
+
+  it('기간에 없는 요일은 빠진다 (일→토 순서 유지)', () => {
+    const range = parseDateRange(
+      { range: 'custom', from: '2026-10-31', to: '2026-11-01' },
+      new Date('2026-11-02T03:00:00Z')
+    );
+    expect(
+      weekdayAverages(fillDaily(empty, range)).map((w) => w.label)
+    ).toEqual(['일', '토']);
   });
 });

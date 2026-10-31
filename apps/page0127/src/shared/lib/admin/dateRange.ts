@@ -8,18 +8,21 @@ import { toKstDateKey } from '@/shared/lib/date';
  * 서버 컴포넌트가 그 기간으로 바로 조회할 수 없다. searchParams 로 두면 서버가 읽어
  * 그대로 조회하고, "10/1~10/15 유입분석" 같은 링크를 그대로 다시 열 수 있다.
  *
- * 왜 끝이 항상 어제 이하인가:
- * admin-overview/lib/period.ts 와 같은 원칙 — 오늘은 아직 안 끝난 날이라 섞으면
- * 마지막 칸이 늘 낮게 나와 "줄었다"로 읽힌다. 사용자 지정도 어제까지로 자른다.
+ * 오늘은 어떻게 다루나:
+ * 1주·1달 프리셋은 어제까지다 — 오늘은 아직 안 끝난 날이라 섞으면 마지막 칸이 늘 낮게 나와
+ * "줄었다"로 읽힌다. 대신 '오늘' 프리셋과 사용자 지정(끝을 오늘로)으로 오늘을 볼 수 있고,
+ * 그때는 includesToday 가 true 라 화면이 "집계 중" 안내를 띄우고 앞 기간 증감을 숨긴다
+ * (반나절 숫자를 꽉 찬 하루와 견주면 무조건 줄어 보인다).
  *
  * 날짜는 전부 KST 'YYYY-MM-DD' 다(user_daily_visits.visit_date 와 같은 기준).
  */
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-export type RangePreset = '7d' | '30d' | 'custom';
+export type RangePreset = 'today' | '7d' | '30d' | 'custom';
 
 export const PRESET_DAYS: Record<Exclude<RangePreset, 'custom'>, number> = {
+  today: 1,
   '7d': 7,
   '30d': 30,
 };
@@ -31,11 +34,13 @@ export type DateRange = {
   preset: RangePreset;
   /** 첫날 (KST, 포함) */
   from: string;
-  /** 마지막 날 (KST, 포함) — 항상 어제 이하 */
+  /** 마지막 날 (KST, 포함) — 오늘 이하 */
   to: string;
+  /** 오늘(KST)이 들어 있다 — 아직 집계 중이라 숫자가 계속 늘어난다 */
+  includesToday: boolean;
   /** from~to 날짜 수 */
   days: number;
-  /** 화면 표기 — '최근 7일' · '10/01 ~ 10/15' */
+  /** 화면 표기 — '오늘' · '최근 7일' · '10/01 ~ 10/15' */
   label: string;
 };
 
@@ -79,20 +84,36 @@ export const shortDate = (dateKey: string): string =>
 export const listDateKeys = ({ from, days }: DateRange): string[] =>
   Array.from({ length: days }, (_, i) => addDays(from, i));
 
+/** KST 오늘 */
+export const kstToday = (now: Date): string => toKstDateKey(now);
+
 /** KST 어제 */
 export const kstYesterday = (now: Date): string =>
   toKstDateKey(new Date(now.getTime() - DAY_MS));
 
 const presetRange = (
   preset: Exclude<RangePreset, 'custom'>,
-  yesterday: string
+  now: Date
 ): DateRange => {
+  if (preset === 'today') {
+    const today = kstToday(now);
+    return {
+      preset,
+      from: today,
+      to: today,
+      days: 1,
+      includesToday: true,
+      label: '오늘',
+    };
+  }
+  const yesterday = kstYesterday(now);
   const days = PRESET_DAYS[preset];
   return {
     preset,
     from: addDays(yesterday, -(days - 1)),
     to: yesterday,
     days,
+    includesToday: false,
     label: `최근 ${days}일`,
   };
 };
@@ -108,21 +129,23 @@ export const parseDateRange = (
   now: Date,
   fallback: Exclude<RangePreset, 'custom'> = '30d'
 ): DateRange => {
-  const yesterday = kstYesterday(now);
+  const today = kstToday(now);
   const range = first(sp.range);
 
-  if (range === '7d' || range === '30d') return presetRange(range, yesterday);
+  if (range === 'today' || range === '7d' || range === '30d') {
+    return presetRange(range, now);
+  }
 
   if (range === 'custom') {
     let from = first(sp.from);
     let to = first(sp.to);
     if (!isValidDateKey(from) || !isValidDateKey(to)) {
-      return presetRange(fallback, yesterday);
+      return presetRange(fallback, now);
     }
     // 시작·끝을 거꾸로 넣어도 뜻은 분명하다 — 바로잡아 준다
     if (from > to) [from, to] = [to, from];
-    // 오늘·미래는 아직 데이터가 없다(또는 진행 중) — 어제로 자른다
-    if (to > yesterday) to = yesterday;
+    // 미래는 아직 데이터가 없다 — 오늘로 자른다(오늘은 집계 중으로 표시)
+    if (to > today) to = today;
     if (from > to) from = to;
     // 너무 긴 기간은 끝을 기준으로 1년만 본다
     if (daysBetween(from, to) > MAX_RANGE_DAYS) {
@@ -133,11 +156,12 @@ export const parseDateRange = (
       from,
       to,
       days: daysBetween(from, to),
+      includesToday: to === today,
       label: `${shortDate(from)} ~ ${shortDate(to)}`,
     };
   }
 
-  return presetRange(fallback, yesterday);
+  return presetRange(fallback, now);
 };
 
 /** 기간 → 쿼리스트링 (링크·폼이 같은 모양을 쓰게) */
@@ -158,6 +182,7 @@ export const previousRange = (r: DateRange): DateRange => {
     from,
     to,
     days: r.days,
+    includesToday: false,
     label: `${shortDate(from)} ~ ${shortDate(to)}`,
   };
 };

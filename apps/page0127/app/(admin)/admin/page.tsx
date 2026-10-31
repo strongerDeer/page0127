@@ -6,7 +6,7 @@ import { MONTHLY_BUDGET_KRW, USD_TO_KRW } from '@/shared/lib/admin/config';
 import {
   changeRate,
   type DateRange,
-  kstYesterday,
+  kstToday,
   parseDateRange,
   type RangeSearchParams,
   toRangeQuery,
@@ -18,6 +18,8 @@ import {
   budgetBasisCents,
   computeBudgetUsage,
 } from '@/features/admin-costs/lib/cost';
+import { getAdminEvents } from '@/features/admin-events/api/getAdminEvents';
+import { AdminEventsPanel } from '@/features/admin-events/ui/AdminEventsPanel';
 import { getFunnel } from '@/features/admin-overview/api/getFunnel';
 import { getOverview } from '@/features/admin-overview/api/getOverview';
 import { getRetention } from '@/features/admin-overview/api/getRetention';
@@ -32,6 +34,7 @@ import { RetentionPanel } from '@/features/admin-overview/ui/RetentionPanel';
 import { TrendBars } from '@/features/admin-overview/ui/TrendBars';
 import { getLatestRegressionCount } from '@/features/admin-quality/api/getLatestRegressionCount';
 
+import { PartialDayNotice } from '@/widgets/admin/ui/PartialDayNotice';
 import { PeriodPicker } from '@/widgets/admin/ui/PeriodPicker';
 
 // 지표는 매번 새로 읽는다. 어드민은 방금 일어난 일을 보러 오는 화면이라
@@ -79,6 +82,13 @@ const OverviewSection = async () => {
 
 type RangeProps = { range: DateRange };
 
+const NotesSection = async ({
+  range,
+  today,
+}: RangeProps & { today: string }) => (
+  <AdminEventsPanel events={await getAdminEvents(range)} today={today} />
+);
+
 const TrendSection = async ({ range }: RangeProps) => {
   const trends = await getTrends(range);
   if (!trends) {
@@ -92,7 +102,9 @@ const TrendSection = async ({ range }: RangeProps) => {
   }
   const avgVisitors = sumPoints(trends.visitors) / trends.visitors.length;
   // 앞 같은 길이 기간 대비 — 길이가 같아 합계 비교가 곧 평균 비교다
+  // 오늘이 섞이면 반나절 숫자를 꽉 찬 앞 기간과 견주게 돼 무조건 줄어 보인다 — 증감을 숨긴다
   const vs = (cur: number, prev: number): string => {
+    if (range.includesToday) return '';
     const r = changeRate(cur, prev);
     if (r === null) return '';
     const p = Math.round(r * 100);
@@ -106,6 +118,11 @@ const TrendSection = async ({ range }: RangeProps) => {
           ({range.label} · {range.from} ~ {range.to})
         </span>
       </h2>
+      {range.includesToday && (
+        <div className='mb-3'>
+          <PartialDayNotice />
+        </div>
+      )}
       <div className='grid gap-3 lg:grid-cols-3'>
         <TrendBars
           title='DAU (로그인 회원)'
@@ -208,11 +225,16 @@ export default async function AdminHomePage({
       </ErrorBoundary>
 
       <div className='space-y-6 border-t border-line pt-6'>
-        <PeriodPicker
-          basePath='/admin'
-          range={range}
-          maxDate={kstYesterday(now)}
-        />
+        <PeriodPicker basePath='/admin' range={range} maxDate={kstToday(now)} />
+
+        <ErrorBoundary fallback={<FailNotice />}>
+          <Suspense
+            key={`notes-${rangeKey}`}
+            fallback={<Skeleton height='h-24' />}
+          >
+            <NotesSection range={range} today={kstToday(now)} />
+          </Suspense>
+        </ErrorBoundary>
 
         <ErrorBoundary fallback={<FailNotice />}>
           <Suspense key={rangeKey} fallback={<Skeleton height='h-40' />}>

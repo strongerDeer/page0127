@@ -22,6 +22,7 @@ describe('parseDateRange', () => {
       from: '2026-09-22',
       to: '2026-10-21',
       days: 30,
+      includesToday: false,
       label: '최근 30일',
     });
   });
@@ -59,17 +60,48 @@ describe('parseDateRange', () => {
     expect([r.from, r.to]).toEqual(['2026-10-01', '2026-10-15']);
   });
 
-  it('오늘·미래는 어제로 자른다', () => {
+  it('미래는 오늘(KST)로 자르고, 오늘이 들어가면 includesToday', () => {
     const r = parseDateRange(
       { range: 'custom', from: '2026-10-20', to: '2026-12-01' },
       now
     );
-    expect([r.from, r.to]).toEqual(['2026-10-20', '2026-10-21']);
+    expect([r.from, r.to, r.includesToday]).toEqual([
+      '2026-10-20',
+      '2026-10-22',
+      true,
+    ]);
     const future = parseDateRange(
       { range: 'custom', from: '2026-11-01', to: '2026-12-01' },
       now
     );
-    expect([future.from, future.to]).toEqual(['2026-10-21', '2026-10-21']);
+    expect([future.from, future.to]).toEqual(['2026-10-22', '2026-10-22']);
+    const past = parseDateRange(
+      { range: 'custom', from: '2026-10-01', to: '2026-10-21' },
+      now
+    );
+    expect(past.includesToday).toBe(false);
+  });
+
+  it('오늘 프리셋은 KST 오늘 하루 (UTC 로는 전날이어도)', () => {
+    // 2026-10-31 08:00 KST = 2026-10-30 23:00 UTC
+    const r = parseDateRange(
+      { range: 'today' },
+      new Date('2026-10-30T23:00:00Z')
+    );
+    expect(r).toMatchObject({
+      preset: 'today',
+      from: '2026-10-31',
+      to: '2026-10-31',
+      days: 1,
+      includesToday: true,
+    });
+    expect(toRangeQuery(r)).toBe('range=today');
+    // 앞 기간(어제)은 꽉 찬 하루다
+    expect(previousRange(r)).toMatchObject({
+      from: '2026-10-30',
+      to: '2026-10-30',
+      includesToday: false,
+    });
   });
 
   it('1년을 넘으면 끝을 기준으로 자른다', () => {

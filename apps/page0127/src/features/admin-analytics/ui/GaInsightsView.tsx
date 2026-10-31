@@ -1,4 +1,8 @@
-import { changeRate, type DateRange } from '@/shared/lib/admin/dateRange';
+import {
+  changeRate,
+  type DateRange,
+  shortDate,
+} from '@/shared/lib/admin/dateRange';
 
 import {
   CHANNELS,
@@ -13,6 +17,7 @@ import {
   fillDaily,
   isDatacenterCity,
   type Reports,
+  weekdayAverages,
   weekOverWeek,
 } from '../lib/insights';
 import { DailyUsersChart } from './DailyUsersChart';
@@ -20,6 +25,7 @@ import { InsightList } from './InsightList';
 import { ReportTableCard } from './ReportTableCard';
 import { type ShareBarItem, ShareBars } from './ShareBars';
 
+import type { AdminEvent } from '@/features/admin-events/api/getAdminEvents';
 import type { ReactNode } from 'react';
 
 type GaInsightsViewProps = {
@@ -27,6 +33,8 @@ type GaInsightsViewProps = {
   range: DateRange;
   /** 바로 앞 같은 길이 기간의 요약 — 타일 증감 */
   previousSummary: ReportTable;
+  /** 운영 기록 — 일별 차트에 세로선으로 찍는다 */
+  events?: AdminEvent[];
 };
 
 /** 증감 표기 — 비율 지표는 %p(포인트), 개수는 % */
@@ -62,12 +70,13 @@ const toBars = (t: ReportTable): ShareBarItem[] =>
 
 /**
  * 유입분석 본문 — 표 14장 대신 **질문 4개**로 묶는다.
- * 결론(볼 것) → 핵심 숫자 → 질문별 차트 → 세부 표(접힘) 순서. 숫자를 읽기 전에 결론부터 본다.
+ * 결론(볼 것) → 핵심 숫자 → 질문별 차트 → 세부 표 순서. 숫자를 읽기 전에 결론부터 본다.
  */
 export const GaInsightsView = ({
   reports,
   range,
   previousSummary,
+  events = [],
 }: GaInsightsViewProps) => {
   // 추이·증감 해석은 "사람 추정(한국)" 선으로 한다 — 전체 선은 봇이 하루 수십 명씩 끼어 출렁인다
   const allDaily = fillDaily(reports.daily, range);
@@ -76,8 +85,14 @@ export const GaInsightsView = ({
     ...p,
     all: allDaily[i]?.users ?? 0,
   }));
-  const wow = weekOverWeek(daily);
+  // 증감·요일 평균은 끝난 날만으로 센다 — 오늘(집계 중)을 넣으면 마지막 7일·그 요일이 낮게 나온다
+  const completeDaily = range.includesToday ? daily.slice(0, -1) : daily;
+  const wow = weekOverWeek(completeDaily);
+  const weekdays = weekdayAverages(completeDaily);
   const h = buildHeadline(reports);
+  // 오늘이 섞이면 반나절을 꽉 찬 앞 기간과 견주게 된다 — 타일 증감을 숨긴다
+  const change = (cur: number, prev: number, kind: 'count' | 'ratio') =>
+    range.includesToday ? undefined : changeText(cur, prev, kind);
   const summary = reports.summary.rows[0]?.values ?? [];
   const prev = previousSummary.rows[0]?.values ?? [];
   const human = reports.humanSummary.rows[0]?.values ?? [];
@@ -96,7 +111,7 @@ export const GaInsightsView = ({
         h.users > 0
           ? `봇 포함 · 이 중 ${formatMetric(1 - humanUsers / h.users, 'percent')}가 해외`
           : '봇 포함',
-      change: changeText(h.users, prev[0] ?? 0, 'count'),
+      change: change(h.users, prev[0] ?? 0, 'count'),
     },
     {
       label: '페이지뷰',
@@ -117,13 +132,15 @@ export const GaInsightsView = ({
       label: '참여율',
       value: formatMetric(summary[3] ?? 0, 'percent'),
       hint: '10초 이상 머물거나 2쪽 이상 본 방문',
-      change: changeText(summary[3] ?? 0, prev[3] ?? 0, 'ratio'),
+      change: change(summary[3] ?? 0, prev[3] ?? 0, 'ratio'),
     },
   ];
 
   return (
     <>
-      <InsightList insights={buildInsights(reports, daily, range.label)} />
+      <InsightList
+        insights={buildInsights(reports, completeDaily, range.label)}
+      />
 
       <p className='text-xs text-text-subtle'>
         이 화면은 GA4 기준이라 로그인하지 않은 방문까지 셉니다. 회원만 센
@@ -146,7 +163,14 @@ export const GaInsightsView = ({
       </dl>
 
       <Section title='사람이 늘고 있나?' cols={1}>
-        <DailyUsersChart points={chartPoints} weekOverWeek={wow} />
+        <DailyUsersChart
+          points={chartPoints}
+          weekOverWeek={wow}
+          markers={events.map((e) => ({
+            label: shortDate(e.date),
+            title: e.title,
+          }))}
+        />
       </Section>
 
       <Section title='어디서 오나?'>
@@ -225,27 +249,25 @@ export const GaInsightsView = ({
         <ShareBars title='기기' items={toBars(reports.device)} />
         <ShareBars
           title='요일'
-          caption='어느 요일에 알림·글을 올리면 좋을지 판단할 때'
-          items={toBars(reports.dayOfWeek)}
+          caption='사람 추정 기준 하루 평균. 기간에 요일마다 든 날 수가 달라 합계 대신 평균으로 견줍니다(오늘은 집계 중이라 뺌)'
+          items={weekdays.map((w) => ({
+            key: String(w.day),
+            label: w.label,
+            value: w.avg,
+            display: `평균 ${w.avg.toFixed(1)}명 · ${w.count}일`,
+          }))}
+          emptyText='끝난 날이 없어 아직 요일 평균을 낼 수 없어요'
         />
       </Section>
 
-      <details className='rounded-lg border border-line p-4'>
-        <summary className='cursor-pointer text-sm font-medium'>
-          세부 표 — 브라우저 · OS · 해상도 · 성별 · 연령
-        </summary>
-        <div className='mt-3 grid gap-3 sm:grid-cols-2'>
-          {(['browser', 'os', 'resolution', 'gender', 'age'] as const).map(
-            (key) => (
-              <ReportTableCard
-                key={key}
-                def={defOf(key)}
-                table={reports[key]}
-              />
-            )
-          )}
-        </div>
-      </details>
+      {/* 세부 표 — 접어 두면 열어 보지 않게 돼서 다른 질문들처럼 늘 펼쳐 둔다 (2026-10-31) */}
+      <Section title='세부 표 — 브라우저 · OS · 해상도 · 성별 · 연령'>
+        {(['browser', 'os', 'resolution', 'gender', 'age'] as const).map(
+          (key) => (
+            <ReportTableCard key={key} def={defOf(key)} table={reports[key]} />
+          )
+        )}
+      </Section>
     </>
   );
 };

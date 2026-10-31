@@ -10,8 +10,20 @@ type EventFunnelPanelProps = {
   dbSignups: PeriodPair | null;
 };
 
-/** '+50%' · '−20%' · 앞 기간이 0 이면 '새로' / 둘 다 0 이면 '—' */
-export const ChangeBadge = ({ pair }: { pair: PeriodPair }) => {
+/**
+ * '+50%' · '−20%' · 앞 기간이 0 이면 '새로' / 둘 다 0 이면 '—'.
+ * partial(기간에 오늘이 들어 집계 중)이면 반나절을 꽉 찬 앞 기간과 견주게 돼 증감 대신 '집계 중'.
+ */
+export const ChangeBadge = ({
+  pair,
+  partial = false,
+}: {
+  pair: PeriodPair;
+  partial?: boolean;
+}) => {
+  if (partial) {
+    return <span className='text-xs text-text-subtle'>집계 중</span>;
+  }
   const rate = changeRate(pair.current, pair.previous);
   if (rate === null) {
     return (
@@ -80,7 +92,7 @@ export const EventFunnelPanel = ({
                 {n(e.count.previous)} ({n(e.users.previous)})
               </td>
               <td className='px-2 py-1.5 text-right'>
-                <ChangeBadge pair={e.count} />
+                <ChangeBadge pair={e.count} partial={range.includesToday} />
               </td>
             </tr>
           ))}
@@ -99,7 +111,7 @@ export const EventFunnelPanel = ({
                 {n(dbSignups.previous)}
               </td>
               <td className='px-2 py-1.5 text-right'>
-                <ChangeBadge pair={dbSignups} />
+                <ChangeBadge pair={dbSignups} partial={range.includesToday} />
               </td>
             </tr>
           )}
@@ -131,7 +143,7 @@ export const EventFunnelPanel = ({
                 <span className='text-xs text-text-subtle'>
                   / {n(c.count.previous)}
                 </span>{' '}
-                <ChangeBadge pair={c.count} />
+                <ChangeBadge pair={c.count} partial={range.includesToday} />
               </span>
             </li>
           ))}

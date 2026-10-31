@@ -4,6 +4,7 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -19,6 +20,8 @@ type DailyUsersChartProps = {
   points: (DailyPoint & { all: number })[];
   /** 마지막 7일 vs 그 전 7일 변화율 — 제목 옆 요약 */
   weekOverWeek: number | null;
+  /** 운영 기록 — label('MM/DD')이 같은 날에 세로 점선 + 짧은 이름 */
+  markers?: { label: string; title: string }[];
 };
 
 /**
@@ -29,6 +32,7 @@ type DailyUsersChartProps = {
 export const DailyUsersChart = ({
   points,
   weekOverWeek,
+  markers = [],
 }: DailyUsersChartProps) => (
   <div className='rounded-lg border border-line p-4'>
     <div className='flex items-baseline justify-between gap-2'>
@@ -95,6 +99,20 @@ export const DailyUsersChart = ({
             name === 'all' ? 'GA 전체' : '사람 추정',
           ]}
         />
+        {markers.map((m) => (
+          <ReferenceLine
+            key={`${m.label}-${m.title}`}
+            x={m.label}
+            stroke={chartInk.axis}
+            strokeDasharray='2 2'
+            label={{
+              value: m.title.length > 10 ? `${m.title.slice(0, 10)}…` : m.title,
+              position: 'insideTopLeft',
+              fill: chartInk.axis,
+              fontSize: 10,
+            }}
+          />
+        ))}
         <Area
           type='monotone'
           dataKey='all'
