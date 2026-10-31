@@ -10,8 +10,8 @@ import type { Book } from '../types';
  * 분야 균형 — "고르게 읽고 있나".
  *
  * 학습 포인트: 고른 정도 = 정규화 섀넌 엔트로피.
- *   H = −Σ p·ln p (p = 그 분야 비율), 최댓값은 ln 9(9개 분야가 똑같을 때)
- *   score = H / ln 9 × 100 → 한 분야만 읽으면 0, 9개를 고르게 읽으면 100.
+ *   H = −Σ p·ln p (p = 그 분야 비율), 최댓값은 ln 8(8개 분야가 똑같을 때)
+ *   score = H / ln 8 × 100 → 한 분야만 읽으면 0, 8개를 고르게 읽으면 100.
  * '기타'는 분류 불명이라 "새 분야를 읽었다"고 볼 수 없어 계산에서 뺀다.
  */
 export type BalanceCategory = Exclude<MainCategory, '기타'>;
@@ -21,7 +21,7 @@ export const BALANCE_CATEGORIES = MAIN_CATEGORIES.filter(
 );
 
 export type ReadingBalance = {
-  /** 9개 분야 권수 — BALANCE_CATEGORIES 순서 고정(레이더 축) */
+  /** 8개 분야 권수 — BALANCE_CATEGORIES 순서 고정(레이더 축) */
   categories: { category: BalanceCategory; count: number }[];
   /** 1권 이상 분야, 많은 순(동률은 BALANCE_CATEGORIES 순서). share 는 0~100 정수 */
   ranked: { category: BalanceCategory; count: number; share: number }[];

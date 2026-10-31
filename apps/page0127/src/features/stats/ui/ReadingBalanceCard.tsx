@@ -2,16 +2,17 @@
 
 import dynamic from 'next/dynamic';
 
+import { BALANCE_CATEGORIES, type ReadingBalance } from '@/entities/book';
+
 import {
   categoryColor,
   categoryInk,
   getBalanceDelta,
   getBalanceLabel,
   getBalanceSummary,
+  nextCategories,
   radarAxes,
 } from '../model/balanceCopy';
-
-import type { ReadingBalance } from '@/entities/book';
 
 // 레이더는 recharts — 브라우저 측정(ResponsiveContainer)이 필요해 SSR 에서 뺀다
 const CategoryRadarChart = dynamic(
@@ -40,6 +41,7 @@ export const ReadingBalanceCard = ({
   const delta = getBalanceDelta(balance);
   const hasBooks = balance.total > 0;
   const axes = radarAxes(balance);
+  const next = nextCategories(balance);
   const hasRadar = axes.length > 0;
 
   return (
@@ -62,7 +64,7 @@ export const ReadingBalanceCard = ({
             {year ?? '지금까지'} 독서 균형
           </h3>
           <span className='text-xs text-text-subtle'>
-            9개 분야 · 완독 {balance.total}권
+            {BALANCE_CATEGORIES.length}개 분야 · 완독 {balance.total}권
           </span>
         </div>
         <p className='mt-2 break-keep text-base font-bold text-text-strong'>
@@ -123,9 +125,9 @@ export const ReadingBalanceCard = ({
                 .join(', ')}
             </p>
 
-            {balance.zero.length > 0 && (
+            {next.length > 0 && (
               <p className='mt-4 break-keep text-sm text-text-subtle'>
-                아직 안 읽은 분야 — {balance.zero.join(' · ')}
+                다음에 읽어 볼 분야 — {next.join(' · ')}
               </p>
             )}
           </>

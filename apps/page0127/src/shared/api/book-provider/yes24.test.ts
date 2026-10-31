@@ -183,7 +183,7 @@ describe('YES24 분류를 기존 대분류로 옮길 수 있다', () => {
 
   it('다른 분류도 알라딘과 같은 대분류로 떨어진다', () => {
     expect(mapToMainCategory('국내도서-경제경영')).toBe('경제/경영');
-    expect(mapToMainCategory('국내도서-컴퓨터/IT')).toBe('컴퓨터/모바일');
+    expect(mapToMainCategory('국내도서-컴퓨터/IT')).toBe('과학/IT');
     expect(mapToMainCategory('국내도서-에세이')).toBe('에세이');
   });
 });

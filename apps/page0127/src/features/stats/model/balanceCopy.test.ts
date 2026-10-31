@@ -8,6 +8,7 @@ import {
   getBalanceDelta,
   getBalanceLabel,
   getBalanceSummary,
+  nextCategories,
   radarAxes,
 } from './balanceCopy';
 
@@ -29,25 +30,25 @@ describe('balanceCopy', () => {
       ...books('에세이', 2),
     ]);
     expect(getBalanceSummary(balance)).toBe(
-      '9개 분야 중 3개를 읽었어요. 소설/시/희곡·자기계발이 82%'
+      '8개 분야 중 3개를 읽었어요. 소설/시/희곡·자기계발이 82%'
     );
   });
 
   it('한 분야만이면 그 분야 이름만', () => {
     expect(getBalanceSummary(calculateReadingBalance(books('소설', 3)))).toBe(
-      '9개 분야 중 1개를 읽었어요. 소설/시/희곡이 100%'
+      '8개 분야 중 1개를 읽었어요. 소설/시/희곡이 100%'
     );
   });
 
   it('받침 없는 분야로 끝나면 조사는 "가"', () => {
     expect(getBalanceSummary(calculateReadingBalance(books('에세이', 3)))).toBe(
-      '9개 분야 중 1개를 읽었어요. 에세이가 100%'
+      '8개 분야 중 1개를 읽었어요. 에세이가 100%'
     );
   });
 
   it('완독은 있는데 전부 분류 불명이면 그렇게 말한다', () => {
     expect(
-      getBalanceSummary(calculateReadingBalance(books('국내도서>여행', 2)))
+      getBalanceSummary(calculateReadingBalance(books('국내도서>어린이', 2)))
     ).toBe('분야 정보가 없는 책 2권은 아직 셀 수 없어요');
   });
 
@@ -82,7 +83,7 @@ describe('balanceCopy', () => {
       ...books('에세이', 2),
       ...books('경제경영', 1),
     ]);
-    // BALANCE_CATEGORIES 순서: 컴퓨터 · 소설 · 인문 · 에세이 · 경제 · 자기계발 · …
+    // BALANCE_CATEGORIES 순서: 소설 · 에세이 · 인문 · 사회/역사 · 과학/IT · 경제 · 자기계발 · 예술/생활
     expect(radarAxes(balance)).toEqual([
       { category: '소설/시/희곡', count: 5 },
       { category: '에세이', count: 2 },
@@ -91,38 +92,54 @@ describe('balanceCopy', () => {
     ]);
   });
 
-  it('9개를 다 읽으면 가장 적게 읽은 분야 하나를 뺀다(고르는 건 권수, 그리는 건 고정 순서)', () => {
-    const nine = [
-      '컴퓨터/모바일',
-      '소설/시/희곡',
+  it('8개를 다 읽으면 8축 모두 고정 순서로 그린다', () => {
+    const all = [
+      '예술/생활',
+      '자기계발',
+      '경제/경영',
+      '과학/IT',
+      '사회/역사',
       '인문학',
       '에세이',
+      '소설/시/희곡',
+    ].flatMap((category, i) => books(category, 8 - i));
+    expect(
+      radarAxes(calculateReadingBalance(all)).map((a) => a.category)
+    ).toEqual([
+      '소설/시/희곡',
+      '에세이',
+      '인문학',
+      '사회/역사',
+      '과학/IT',
       '경제/경영',
       '자기계발',
-      '과학',
-      '예술/대중문화',
-      '역사',
-    ].flatMap((category, i) => books(category, 9 - i));
-    const axes = radarAxes(calculateReadingBalance(nine)).map(
-      (a) => a.category
-    );
-    expect(axes).not.toContain('역사');
-    expect(axes[0]).toBe('컴퓨터/모바일');
+      '예술/생활',
+    ]);
   });
 
-  it('레이더 축은 8개까지 — 9개를 다 읽어도 9번째는 뺀다', () => {
-    const nine = [
-      '컴퓨터/모바일',
+  it('다음 분야 추천 — 가장 많이 읽은 분야의 옆자리 안 읽은 분야 2개', () => {
+    // 소설이 1위 → 옆자리는 에세이(뒤)·예술/생활(앞). 에세이는 읽었으니 예술/생활, 그다음 거리 2인 인문학
+    const balance = calculateReadingBalance([
+      ...books('소설', 5),
+      ...books('에세이', 2),
+      ...books('자기계발', 1),
+    ]);
+    expect(nextCategories(balance)).toEqual(['예술/생활', '인문학']);
+  });
+
+  it('다음 분야 추천 — 다 읽었거나 0권이면 없다', () => {
+    expect(nextCategories(calculateReadingBalance([]))).toEqual([]);
+    const all = [
       '소설/시/희곡',
-      '인문학',
       '에세이',
+      '인문학',
+      '사회/역사',
+      '과학/IT',
       '경제/경영',
       '자기계발',
-      '과학',
-      '예술/대중문화',
-      '역사',
-    ].flatMap((category, i) => books(category, 9 - i));
-    expect(radarAxes(calculateReadingBalance(nine))).toHaveLength(8);
+      '예술/생활',
+    ].flatMap((category) => books(category, 1));
+    expect(nextCategories(calculateReadingBalance(all))).toEqual([]);
   });
 
   it('읽은 분야가 3개 미만이면 레이더를 그리지 않는다(빈 배열) — 선 하나·점 하나는 모양이 아니다', () => {

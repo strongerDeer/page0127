@@ -26,7 +26,7 @@ const THREE = [
 ];
 
 describe('ReadingBalanceCard', () => {
-  it('점수 · 띠 · 안 읽은 분야(텍스트)', () => {
+  it('점수 · 띠 · 다음에 읽어 볼 분야(안 읽은 분야 전부가 아니라 2개만)', () => {
     const balance = calculateReadingBalance(THREE);
     const html = renderToStaticMarkup(
       <ReadingBalanceCard year={2026} balance={balance} />
@@ -34,8 +34,9 @@ describe('ReadingBalanceCard', () => {
     expect(html).toContain('2026 독서 균형');
     expect(html).toContain(`>${balance.score}<`);
     expect(html).toContain('조금씩 넓혀 가는 중');
-    expect(html).toContain('아직 안 읽은 분야');
-    expect(html).toContain('인문학 · 경제/경영');
+    expect(html).toContain('8개 분야 · 완독 11권');
+    expect(html).toContain('다음에 읽어 볼 분야 — 예술/생활 · 인문학');
+    expect(html).not.toContain('아직 안 읽은 분야');
     expect(html).not.toContain('기울');
   });
 
@@ -143,6 +144,6 @@ describe('ReadingBalanceCard', () => {
       <ReadingBalanceCard year={2026} balance={calculateReadingBalance([])} />
     );
     expect(html).toContain('완독한 책이 쌓이면 분야가 채워져요');
-    expect(html).not.toContain('아직 안 읽은 분야');
+    expect(html).not.toContain('다음에 읽어 볼 분야');
   });
 });

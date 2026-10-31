@@ -269,7 +269,7 @@ describe('회독과 성장 단계 회귀', () => {
       readingGoal: null,
       firstTasteAnalysisAt: null,
     });
-    expect(badges).toHaveLength(31);
+    expect(badges).toHaveLength(30);
     const shelf = badges.filter((b) => b.id === 'shelf');
     expect(shelf).toHaveLength(1);
     expect(shelf[0]).toMatchObject({

@@ -8,7 +8,7 @@ const books = (category: string, count: number) =>
     createTestBook({ category, completed_date: '2026-05-01' })
   );
 
-// 소설5 · 자기계발4 · 에세이2 · 경제2 · 컴퓨터1 = 14권
+// 소설5 · 자기계발4 · 에세이2 · 경제2 · 컴퓨터1(과학/IT) = 14권
 const SAMPLE = [
   ...books('국내도서>소설/시/희곡>한국소설', 5),
   ...books('국내도서>자기계발>성공', 4),
@@ -18,9 +18,9 @@ const SAMPLE = [
 ];
 
 describe('calculateReadingBalance', () => {
-  it('기타를 뺀 9개 분야를 고정 순서로 센다 (레이더 축)', () => {
+  it('기타를 뺀 8개 분야를 고정 순서로 센다 (레이더 축)', () => {
     const balance = calculateReadingBalance(SAMPLE);
-    expect(BALANCE_CATEGORIES).toHaveLength(9);
+    expect(BALANCE_CATEGORIES).toHaveLength(8);
     expect(balance.categories.map((c) => c.category)).toEqual([
       ...BALANCE_CATEGORIES,
     ]);
@@ -35,18 +35,18 @@ describe('calculateReadingBalance', () => {
       ['자기계발', 4],
       ['에세이', 2],
       ['경제/경영', 2],
-      ['컴퓨터/모바일', 1],
+      ['과학/IT', 1],
     ]);
     expect(balance.ranked[0].share).toBe(36);
     expect(balance.topShare).toBe(64);
-    expect(balance.zero).toEqual(['인문학', '과학', '예술/대중문화', '역사']);
+    expect(balance.zero).toEqual(['인문학', '사회/역사', '예술/생활']);
   });
 
   it('고른 정도 = 정규화 엔트로피 × 100', () => {
-    expect(calculateReadingBalance(SAMPLE).score).toBe(67);
+    expect(calculateReadingBalance(SAMPLE).score).toBe(71);
   });
 
-  it('9개 분야를 한 권씩이면 100, 한 분야만이면 0', () => {
+  it('8개 분야를 한 권씩이면 100, 한 분야만이면 0', () => {
     // 인문학이 소설로 잡히던 매퍼 규칙 순서는 #191 에서 고쳐졌다 → 분야 이름 그대로 넣는다
     const even = BALANCE_CATEGORIES.map((category) =>
       createTestBook({ category })
@@ -62,7 +62,8 @@ describe('calculateReadingBalance', () => {
   it('기타(분류 불명)와 완독이 아닌 책은 세지 않는다', () => {
     const balance = calculateReadingBalance([
       createTestBook({ category: null }),
-      createTestBook({ category: '국내도서>여행' }),
+      // 어린이·청소년은 분야가 아니라 독자 나이로 나눈 분류라 기타다
+      createTestBook({ category: '국내도서>어린이' }),
       createTestBook({ category: '소설', status: 'reading' }),
       ...books('소설', 3),
     ]);

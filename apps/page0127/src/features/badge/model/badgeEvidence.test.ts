@@ -80,7 +80,10 @@ describe('배지 집계 근거', () => {
       evidenceFor(books, 'science')?.books.map((book) => book.title)
     ).toEqual(['과학 첫 책', '과학 두 번째']);
     const wide = evidenceFor(books, 'wide-view')!;
-    expect(wide.books.map((book) => book.detail)).toEqual(['과학', '인문학']);
+    expect(wide.books.map((book) => book.detail)).toEqual([
+      '과학/IT',
+      '인문학',
+    ]);
     expect(wide.milestone).toEqual({ count: 2, label: '2분야' });
   });
   it('미획득 히든과 책이 아닌 방문 배지는 책 근거를 제공하지 않는다', () => {
