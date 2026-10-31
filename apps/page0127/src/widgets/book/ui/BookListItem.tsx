@@ -86,7 +86,7 @@ const BookListItemCover = ({
               끝까지 불러오지 않는다(2026-10-31, /books/all). 그래서 표지에 포인터·포커스가
               닿는 순간 BookCoverPreview 가 data-spine 이미지를 eager 로 바꿔 불러온다.
               터치 기기는 뒤집기가 없으니 지금처럼 안 받는다. */}
-          <div className={styles.flipCover}>
+          <div data-spine-face='' className={styles.flipCover}>
             {spine ? (
               <Image
                 src={spine}
