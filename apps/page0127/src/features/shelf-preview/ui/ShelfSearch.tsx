@@ -129,7 +129,7 @@ export const ShelfSearch = ({
                     fallback={
                       <span className='block h-13.5 w-9 shrink-0 rounded-sm bg-sunken' />
                     }
-                    className='h-13.5 w-9 shrink-0 rounded-sm object-cover'
+                    className='book-cover h-13.5 w-9 shrink-0 object-cover'
                   />
                   <span className='min-w-0 flex-1'>
                     <span className='block truncate text-sm font-medium text-text-strong'>

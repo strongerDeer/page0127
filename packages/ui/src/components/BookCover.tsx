@@ -24,7 +24,14 @@ const coverSizes = {
 
 export type BookCoverSize = keyof typeof coverSizes;
 
-const coverVariants = cva('book-cover', {
+/**
+ * 표지 슬롯 — 표지가 들어갈 자리. 이미지는 이 안에 원본 판형대로 들어간다.
+ *
+ * 슬롯은 판형 비율(1:1.45)로 고정한다. 목록에서 판형이 다른 책이 섞여도 글 칸의
+ * 시작선이 흔들리지 않게 하려는 것이다. 다만 이미지를 슬롯에 **맞춰 자르지는 않는다**
+ * (`.book-cover-fit` 주석 참고) — 바닥·가운데 정렬로 슬롯 안에 세운다.
+ */
+const slotVariants = cva('flex items-end justify-center', {
   variants: {
     size: {
       xs: 'book-cover-box',
@@ -37,14 +44,14 @@ const coverVariants = cva('book-cover', {
        * 상세 페이지처럼 표지가 레이아웃의 한 칸을 통째로 차지하는 자리용이다.
        */
       full: 'book-cover-box w-full',
-      /** 부모가 크기를 정하는 비율 박스 안을 채운다 (부모에 position 필요) */
-      fill: 'h-full w-full',
+      /** 부모가 크기를 정하는 상자 안을 채운다 (부모에 position 필요) */
+      fill: 'absolute inset-0',
     },
   },
   defaultVariants: { size: 'sm' },
 });
 
-type BookCoverProps = Omit<VariantProps<typeof coverVariants>, 'size'> & {
+type BookCoverProps = Omit<VariantProps<typeof slotVariants>, 'size'> & {
   /** 표지 이미지 URL. 없거나 빈 문자열이면 제목을 조판한다 */
   src?: string | null;
   /**
@@ -68,7 +75,15 @@ type BookCoverProps = Omit<VariantProps<typeof coverVariants>, 'size'> & {
   size?: BookCoverSize | 'full' | 'fill';
   /** next/image 의 sizes. 안 주면 size 에서 파생한다 */
   sizes?: string;
-  /** 위치·여백 등. 크기는 size 가 정하므로 여기서 덮지 않는 편이 좋다 */
+  /**
+   * 표지를 슬롯에 맞추는 방식.
+   *
+   * - `contain`(기본) — 원본 판형 그대로 슬롯 안에 세운다. 잘리지 않는다.
+   * - `cover` — 슬롯을 꽉 채우고 넘치는 부분을 자른다. 테두리를 두른 부채꼴·
+   *   달력 칸처럼 **틀 자체가 그림**인 장식 자리에서만 쓴다.
+   */
+  fit?: 'contain' | 'cover';
+  /** 슬롯의 위치·여백 등. 크기는 size 가 정하므로 여기서 덮지 않는 편이 좋다 */
   className?: string;
   /** 장식용 표지라 스크린리더에서 감출 때 (제목이 옆에 이미 있는 경우) */
   decorative?: boolean;
@@ -102,146 +117,89 @@ export const BookCover = ({
   author,
   size = 'sm',
   sizes,
+  fit = 'contain',
   className,
   decorative,
   priority,
   large = false,
   small = false,
 }: BookCoverProps) => {
-  // className 은 shape 에 섞지 않고 각 분기의 **맨 뒤**로 넘긴다.
-  // 여기서 합쳐 두면 뒤따라오는 기본 클래스(`text-xs` 등)가 호출부 지정을
-  // 이겨 버린다 — twMerge 는 나중에 온 것을 남기기 때문이다.
-  const shape = coverVariants({ size });
+  const slot = cn(slotVariants({ size }), className);
 
-  // 최적화 경로와 실패 시 대체는 CoverImage 가 정한다 — 이 컴포넌트가 앱 15곳에서
-  // 쓰이는데, 그중 한 곳이라도 빠지면 그 화면만 조용히 한도를 태운다.
-  const common = {
-    src,
-    fallbackSrc,
-    large,
-    small,
-    alt: decorative ? '' : title,
-    'aria-hidden': decorative || undefined,
-    priority,
-  };
-
-  if (size === 'fill' || size === 'full') {
-    // fill: 부모가 크기를 정한다(부모에 relative + 크기 필요).
-    // full: 컬럼 폭을 채우고 높이는 aspect-ratio 가 만든다.
-    return (
-      <CoverImage
-        {...common}
-        {...(size === 'fill'
-          ? { fill: true }
-          : // full 은 레이아웃이 폭을 정하므로 고유 크기를 알 수 없다.
-            // 판형 비율에 맞는 임의의 큰 값을 힌트로 주고 실제 크기는 CSS 가 정한다.
-            { width: 400, height: 580 })}
-        sizes={sizes}
-        className={cn(
-          shape,
-          'object-cover',
-          size === 'full' && 'h-auto',
-          className
-        )}
-        fallback={
-          <FallbackCover
-            shape={shape}
-            title={title}
-            author={author}
-            decorative={decorative}
-            className={className}
-          />
-        }
-      />
-    );
-  }
-
-  const height = coverSizes[size];
-  // 판형 비율(20/29)에서 너비를 얻는다. CSS 의 aspect-ratio 와 같은 값이라
-  // 둘이 어긋날 일은 없지만, next/image 는 렌더 전에 숫자를 요구하므로
-  // 여기서도 한 번 계산한다.
-  const width = Math.round((height * 20) / 29);
+  // 계단(xs~xl)은 높이를 못 박고 너비는 판형 비율에서 얻는다. CSS 의 aspect-ratio 와
+  // 같은 값이지만 인라인으로도 적는다 — 슬롯 크기가 확정돼야 안쪽 이미지의
+  // max-height: 100% 가 풀리고, next/image 도 렌더 전에 숫자를 요구한다.
+  const height = size in coverSizes ? coverSizes[size as BookCoverSize] : null;
+  const width = height ? Math.round((height * 20) / 29) : null;
 
   // 지정이 없으면 실제 렌더 폭을 그대로 알려준다. 이걸 빼면 next/image 가
   // 화면 폭 기준으로 과하게 큰 이미지를 받아온다.
-  const resolvedSizes = sizes ?? `${width}px`;
+  // full·fill 은 레이아웃이 폭을 정하므로 호출부가 sizes 를 주는 편이 좋다.
+  const resolvedSizes = sizes ?? (width ? `${width}px` : '200px');
+
+  // 상세·결과처럼 표지를 크게 놓는 자리는 대체 조판 글자도 키운다
+  const bigType = large || size === 'lg' || size === 'xl' || size === 'full';
 
   return (
-    <CoverImage
-      {...common}
-      width={width}
-      height={height}
-      sizes={resolvedSizes}
-      // 높이 계단이 정한 상자를 이미지가 채운다. 판형이 다른 책이 섞여도
-      // 목록의 표지 폭이 흔들리지 않는다.
-      className={cn(shape, 'object-cover', className)}
-      style={{ height }}
-      fallback={
-        <FallbackCover
-          shape={shape}
-          title={title}
-          author={author}
-          decorative={decorative}
-          height={height}
-          width={width}
-          className={className}
-        />
-      }
-    />
+    <span
+      className={slot}
+      style={height && width ? { height, width } : undefined}
+      aria-hidden={decorative || undefined}
+    >
+      {/* 최적화 경로와 실패 시 대체는 CoverImage 가 정한다 — 이 컴포넌트가 앱 25곳에서
+          쓰이는데, 그중 한 곳이라도 빠지면 그 화면만 조용히 한도를 태운다. */}
+      <CoverImage
+        src={src}
+        fallbackSrc={fallbackSrc}
+        large={large}
+        small={small}
+        alt={decorative ? '' : title}
+        priority={priority}
+        // 로딩 전 자리 잡기용 비율 힌트일 뿐이다. 실제 크기는 슬롯과 원본 판형이 정한다.
+        width={width ?? 400}
+        height={height ?? 580}
+        sizes={resolvedSizes}
+        className={cn(
+          'book-cover',
+          fit === 'cover' ? 'h-full w-full object-cover' : 'book-cover-fit'
+        )}
+        fallback={
+          <FallbackCover title={title} author={author} bigType={bigType} />
+        }
+      />
+    </span>
   );
 };
 
 type FallbackCoverProps = {
-  shape: string;
   title: string;
   author?: string | null;
-  decorative?: boolean;
-  height?: number;
-  width?: number;
-  className?: string;
+  bigType?: boolean;
 };
 
 /**
  * 표지 이미지가 없는 책 — 제목(과 저자)을 조판해 표지를 만든다.
  *
- * 이미지와 **같은 상자**를 쓴다. 예전에는 대체 조판만 비율이 없어서
- * `fallbackClassName` 이라는 별도 prop 으로 기하를 따로 넘겨야 했는데,
- * 크기를 size 계단이 정하게 되면서 그 prop 이 필요 없어졌다.
+ * 슬롯을 꽉 채운다. 슬롯이 판형 비율이라 대체 표지도 같은 판형이 된다.
  */
-const FallbackCover = ({
-  shape,
-  title,
-  author,
-  decorative,
-  height,
-  width,
-  className,
-}: FallbackCoverProps) => {
+const FallbackCover = ({ title, author, bigType }: FallbackCoverProps) => {
   return (
     <span
-      aria-hidden={decorative || undefined}
-      // 너비를 함께 못 박는다. aspect-ratio 만으로는 부족하다 —
-      // 콘텐츠의 최소 너비가 비율보다 우선하기 때문에, 작은 계단(xs)에서
-      // 제목 글자가 상자를 옆으로 밀어 비율이 1.45 대신 1.23 이 됐다.
-      // (실측으로 잡았다: 52.2×64 → 44×64)
-      style={height ? { height, width } : undefined}
       className={cn(
-        shape,
-        // 글자가 상자를 넘겨도 비율을 지킨다.
-        'overflow-hidden',
-        // 대체 표지에도 면과 경계가 보여야 한다. .book-cover 가 @layer
-        // components 로 들어가면서 이제 이 유틸들이 실제로 먹는다 —
-        // 레이어 밖에 있던 동안에는 적어 두고도 무시됐다.
-        'flex border border-line bg-sunken p-2',
+        'book-cover',
+        // 슬롯 크기를 넘지 않는다 — 글자가 길어도 상자를 옆으로 밀지 않는다
+        // (예전에 xs 계단에서 제목이 상자를 밀어 비율이 1.45 대신 1.23 이 됐다)
+        'h-full w-full min-w-0 overflow-hidden',
+        // 대체 표지에도 면과 경계가 보여야 한다. 경계는 .book-cover 의 outline 이 맡는다
+        'flex bg-sunken',
         // 저자가 있으면 위아래로 벌려 표지 조판처럼, 없으면 가운데 정렬
         author
           ? 'flex-col justify-between text-left'
           : 'items-center justify-center text-center',
         // 대체 표지는 진짜 표지의 자리를 메우는 것이지 강조 대상이 아니다 —
         // 07 의 weight 3단계 중 400 을 쓴다.
-        'text-xs leading-snug text-text-subtle',
-        // 호출부 지정이 마지막에 와야 위 기본값들을 덮을 수 있다.
-        className
+        'leading-snug text-text-subtle',
+        bigType ? 'px-3 py-4 text-sm' : 'p-2 text-xs'
       )}
     >
       <span className='line-clamp-4 break-keep'>{title}</span>

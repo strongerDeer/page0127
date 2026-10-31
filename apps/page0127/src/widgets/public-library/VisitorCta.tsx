@@ -186,6 +186,8 @@ export const VisitorSignupBanner = ({
                   decorative
                   size='fill'
                   sizes='84px'
+                  // 흰 테두리 부채꼴 — 틀이 그림이라 표지가 틀을 꽉 채워야 한다
+                  fit='cover'
                   // 84px 부채꼴 — 소개 페이지 표지 띠와 같은 폭이라 같은 이유로 M 고정
                   small
                 />
