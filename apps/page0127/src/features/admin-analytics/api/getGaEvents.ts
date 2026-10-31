@@ -26,6 +26,7 @@ import {
   toEventsRequest,
   toHeroAbRequest,
 } from '../lib/gaEvents';
+import { fetchWithGaRetry } from '../lib/gaRetry';
 
 import type { GaRow } from '../lib/ga4Reports';
 
@@ -51,17 +52,20 @@ const runReport = async (
   token: string,
   body: unknown
 ): Promise<GaRow[]> => {
-  const res = await fetch(
-    `https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-      cache: 'no-store',
-    }
+  // 429(동시 요청 한도)는 잠깐 뒤 다시 보내면 풀린다 — gaRetry 참고
+  const res = await fetchWithGaRetry(() =>
+    fetch(
+      `https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+        cache: 'no-store',
+      }
+    )
   );
   if (!res.ok) {
     throw new Error(`GA4 조회 실패 (${res.status}): ${await res.text()}`);
