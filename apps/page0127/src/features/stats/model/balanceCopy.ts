@@ -47,6 +47,34 @@ export const getBalanceDelta = (balance: ReadingBalance): string | null => {
   return `작년엔 ${balance.readCount - readCountDelta}개 분야를 읽었어요`;
 };
 
+/** 안 읽은 분야는 이만큼만 권한다 — 전부 나열하면 할 일 목록처럼 읽혔다(2026-10-31) */
+const MAX_NEXT_CATEGORIES = 2;
+
+/**
+ * 다음에 읽어 볼 분야 — 가장 많이 읽은 분야와 가까운 안 읽은 분야 최대 2개.
+ * '가깝다' = BALANCE_CATEGORIES 순서(레이더 축 순서)에서 옆자리.
+ * 순서가 소설 → 에세이 → 인문 → 사회/역사 → 과학/IT → 경제 → 자기계발 → 예술/생활 → (다시 소설)
+ * 로 이웃끼리 결이 비슷하게 놓여 있어서, 옆자리부터 고르면 손이 덜 가는 분야를 권하게 된다.
+ * 거리가 같으면 순서상 뒤쪽(시계 방향)을 먼저 본다.
+ */
+export const nextCategories = (balance: ReadingBalance): string[] => {
+  const top = balance.ranked[0]?.category;
+  if (!top) return [];
+  const unread = new Set<string>(balance.zero);
+  const size = BALANCE_CATEGORIES.length;
+  const start = BALANCE_CATEGORIES.indexOf(top);
+  const picked: string[] = [];
+  for (let distance = 1; distance <= size / 2; distance += 1) {
+    for (const step of [distance, -distance]) {
+      const category = BALANCE_CATEGORIES[(start + step + size) % size];
+      if (unread.has(category) && !picked.includes(category)) {
+        picked.push(category);
+      }
+    }
+  }
+  return picked.slice(0, MAX_NEXT_CATEGORIES);
+};
+
 /** 레이더 축 상한 — 9축은 촘촘해서 라벨이 겹치고 모양이 안 읽혔다 */
 const MAX_RADAR_AXES = 8;
 /** 이보다 적으면 선·점이라 '모양'이 없다 */

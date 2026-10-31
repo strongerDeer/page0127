@@ -32,7 +32,6 @@ export type BadgeId =
   | 'science'
   | 'arts'
   | 'history'
-  | 'technology'
   | 'shelf'
   | 'wide-view'
   | 'one-sitting'
@@ -97,7 +96,7 @@ export type BadgeInput = {
 export const SHELF_LEVELS = [
   1, 5, 10, 25, 50, 100, 200, 300, 500, 1000,
 ] as const;
-export const WIDE_VIEW_LEVELS = [2, 3, 5, 7, 9] as const;
+export const WIDE_VIEW_LEVELS = [2, 3, 5, 7, 8] as const;
 export const CATEGORY_LEVELS = [3, 10, 30, 50, 100] as const;
 export const CLASSIC_LEVELS = [1, 5, 10, 25, 50] as const;
 export const VISIT_LEVELS = [7, 30, 100] as const;
@@ -108,10 +107,9 @@ export const CATEGORY_BADGES = [
   { id: 'essays', category: '에세이', name: '타인의 마음' },
   { id: 'business', category: '경제/경영', name: '세상을 읽는 눈' },
   { id: 'self-growth', category: '자기계발', name: '어제보다 한 걸음' },
-  { id: 'science', category: '과학', name: '호기심의 궤도' },
-  { id: 'arts', category: '예술/대중문화', name: '감각의 발견' },
-  { id: 'history', category: '역사', name: '시간 여행자' },
-  { id: 'technology', category: '컴퓨터/모바일', name: '새로운 언어' },
+  { id: 'science', category: '과학/IT', name: '호기심의 궤도' },
+  { id: 'arts', category: '예술/생활', name: '감각의 발견' },
+  { id: 'history', category: '사회/역사', name: '시간 여행자' },
 ] as const;
 
 export const badgeLevels = (id: BadgeId): readonly number[] => {
@@ -255,7 +253,7 @@ export const computeBadges = ({
     nthDistinct(completed, target)
   );
 
-  // 분야는 독서 균형과 같은 9개 분류 — 분류 불명(기타)은 세지 않는다
+  // 분야는 독서 균형과 같은 8개 분류 — 분류 불명(기타)은 세지 않는다
   const categoryHits = new Map<string, Book>();
   completed.forEach((book) => {
     const category = mapToMainCategory(book.category);

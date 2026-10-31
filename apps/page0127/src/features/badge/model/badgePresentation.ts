@@ -97,7 +97,6 @@ export const badgeNoteColor = (id: Badge['id']) => {
     science: '#b7ddf5',
     arts: '#fac4ae',
     history: '#f4d68a',
-    technology: '#bfd1ff',
   };
   return colors[id] ?? '#ffe181';
 };

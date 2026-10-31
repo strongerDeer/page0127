@@ -8,31 +8,35 @@
  */
 
 /**
- * 대분류 카테고리 목록 (6개)
+ * 대분류 카테고리 목록 (8개 + 기타)
+ *
+ * 일반 독자 기준으로 묶었다(2026-10-31). 컴퓨터/모바일처럼 직업 독자가 주로 읽는 분야를
+ * 따로 두면 "아직 안 읽은 분야"로 늘 남고, 여행·요리·건강 같은 흔한 책은 기타로 빠졌다.
+ * 순서가 독서 균형 레이더 축 순서이자 동률일 때의 순서다.
  */
 export const MAIN_CATEGORIES = [
-  '컴퓨터/모바일',
   '소설/시/희곡',
-  '인문학',
   '에세이',
+  '인문학',
+  '사회/역사',
+  '과학/IT',
   '경제/경영',
   '자기계발',
-  '과학',
-  '예술/대중문화',
-  '역사',
+  '예술/생활',
   '기타',
 ] as const;
 
 export type MainCategory = (typeof MAIN_CATEGORIES)[number];
 
 /**
- * 알라딘 카테고리를 대분류로 매핑
+ * 공급자 분류 문자열을 대분류로 매핑
  *
- * @param category - 알라딘 카테고리 (예: "국내도서>자기계발>리더십>리더십")
- * @returns 대분류 카테고리 (예: "자기계발")
+ * YES24는 `국내도서-소설/시/희곡`(대분류 하나), 예전 알라딘 책은
+ * `국내도서>자기계발>리더십>리더십`(여러 단계)으로 온다. 구분자에 기대지 않고
+ * 단어가 들어 있는지만 보므로 둘 다 같은 규칙으로 떨어진다.
  *
  * @example
- * mapToMainCategory('국내도서>자기계발>리더십>리더십') // '자기계발'
+ * mapToMainCategory('국내도서-IT 모바일') // '과학/IT'
  * mapToMainCategory('국내도서>소설/시/희곡>소설') // '소설/시/희곡'
  */
 export const mapToMainCategory = (category: string | null): MainCategory => {
@@ -40,90 +44,57 @@ export const mapToMainCategory = (category: string | null): MainCategory => {
 
   // 소문자로 변환하여 대소문자 구분 없이 매칭
   const lowerCategory = category.toLowerCase();
+  const has = (...words: string[]) =>
+    words.some((word) => lowerCategory.includes(word));
 
-  // 컴퓨터/모바일
+  // 과학/IT 의 IT 쪽 — '개발'·'디자인'(웹디자인)이 아래 다른 규칙에 걸리기 전에 먼저 본다
   if (
-    lowerCategory.includes('컴퓨터') ||
-    lowerCategory.includes('모바일') ||
-    lowerCategory.includes('프로그래밍') ||
+    has('컴퓨터', '모바일', '프로그래밍', '개발') ||
     // 'it'을 includes 로 찾으면 'literature'·'fitness' 같은 영단어에도 걸린다
-    /\bit\b/.test(lowerCategory) ||
-    lowerCategory.includes('개발')
+    /\bit\b/.test(lowerCategory)
   ) {
-    return '컴퓨터/모바일';
+    return '과학/IT';
   }
 
   // 인문학 — 소설보다 먼저 본다. '인문학'이라는 글자 안에 '문학'이 들어 있어서
   // 순서가 바뀌면 인문학 책이 전부 아래 소설 규칙(includes('문학'))에 걸린다.
-  if (
-    lowerCategory.includes('인문') ||
-    lowerCategory.includes('철학') ||
-    lowerCategory.includes('심리') ||
-    lowerCategory.includes('사회')
-  ) {
+  if (has('인문', '철학', '심리', '종교')) {
     return '인문학';
   }
 
-  // 소설/시/희곡
-  if (
-    lowerCategory.includes('소설') ||
-    lowerCategory.includes('시/희곡') ||
-    lowerCategory.includes('문학')
-  ) {
+  // 사회/역사 — '사회과학'이 아래 과학 규칙에 걸리지 않게 과학보다 먼저 본다
+  if (has('사회', '정치', '역사')) {
+    return '사회/역사';
+  }
+
+  if (has('소설', '시/희곡', '문학')) {
     return '소설/시/희곡';
   }
 
-  // 에세이
-  if (lowerCategory.includes('에세이') || lowerCategory.includes('수필')) {
+  if (has('에세이', '수필')) {
     return '에세이';
   }
 
-  // 경제/경영
-  if (
-    lowerCategory.includes('경제') ||
-    lowerCategory.includes('경영') ||
-    lowerCategory.includes('마케팅') ||
-    lowerCategory.includes('비즈니스')
-  ) {
+  if (has('경제', '경영', '마케팅', '비즈니스')) {
     return '경제/경영';
   }
 
-  // 자기계발
-  if (
-    lowerCategory.includes('자기계발') ||
-    lowerCategory.includes('자기관리') ||
-    lowerCategory.includes('성공') ||
-    lowerCategory.includes('리더십')
-  ) {
+  if (has('자기계발', '자기관리', '성공', '리더십')) {
     return '자기계발';
   }
 
-  // 과학
+  if (has('과학', '수학', '기술', '공학')) {
+    return '과학/IT';
+  }
+
+  // 예술/생활 — 예술·대중문화에 여행·요리·건강·취미 같은 생활 책을 더했다
   if (
-    lowerCategory.includes('과학') ||
-    lowerCategory.includes('수학') ||
-    lowerCategory.includes('기술')
+    has('예술', '미술', '음악', '영화', '디자인', '대중문화', '만화') ||
+    has('여행', '요리', '살림', '건강', '취미', '레저', '스포츠', '뷰티')
   ) {
-    return '과학';
+    return '예술/생활';
   }
 
-  // 예술/대중문화
-  if (
-    lowerCategory.includes('예술') ||
-    lowerCategory.includes('미술') ||
-    lowerCategory.includes('음악') ||
-    lowerCategory.includes('영화') ||
-    lowerCategory.includes('디자인') ||
-    lowerCategory.includes('대중문화')
-  ) {
-    return '예술/대중문화';
-  }
-
-  // 역사
-  if (lowerCategory.includes('역사')) {
-    return '역사';
-  }
-
-  // 기타
+  // 어린이·청소년처럼 분야가 아닌 독자 나이로 나눈 분류도 여기로 온다
   return '기타';
 };

@@ -38,18 +38,40 @@ describe('mapToMainCategory', () => {
     expect(mapToMainCategory('국내도서>인문학>문학이론')).toBe('인문학');
   });
 
-  it('사회과학은 인문학으로 묶는다', () => {
-    // 대분류에 사회 칸이 없어서 인문학이 흡수한다. '과학' 규칙보다 먼저 걸려야 한다.
+  it('사회과학·정치·역사는 사회/역사로 묶는다', () => {
+    // '과학' 규칙보다 먼저 걸려야 한다
     expect(mapToMainCategory('국내도서>사회과학>사회학>사회학 일반')).toBe(
-      '인문학'
+      '사회/역사'
     );
+    expect(mapToMainCategory('국내도서-사회 정치')).toBe('사회/역사');
+    expect(mapToMainCategory('국내도서-역사')).toBe('사회/역사');
+  });
+
+  it('컴퓨터는 과학과 같은 과학/IT 다', () => {
+    // 직업 독자 분야라 따로 두면 대부분에게 "안 읽은 분야"로 남았다(2026-10-31)
+    expect(mapToMainCategory('국내도서-IT 모바일')).toBe('과학/IT');
+    expect(mapToMainCategory('국내도서-자연과학')).toBe('과학/IT');
+    // 예전에 대분류 이름 그대로 저장된 행
+    expect(mapToMainCategory('컴퓨터/모바일')).toBe('과학/IT');
+    expect(mapToMainCategory('과학')).toBe('과학/IT');
+  });
+
+  it('여행·요리·건강·취미는 기타가 아니라 예술/생활 이다', () => {
+    expect(mapToMainCategory('국내도서-여행')).toBe('예술/생활');
+    expect(mapToMainCategory('국내도서-가정 살림')).toBe('예술/생활');
+    expect(mapToMainCategory('국내도서-건강 취미')).toBe('예술/생활');
+    expect(mapToMainCategory('국내도서>요리/살림>집밥')).toBe('예술/생활');
+    expect(mapToMainCategory('예술/대중문화')).toBe('예술/생활');
+  });
+
+  it('종교는 인문학이다', () => {
+    expect(mapToMainCategory('국내도서-종교')).toBe('인문학');
   });
 
   it("영문 단어 안의 'it'을 컴퓨터로 오인하지 않는다", () => {
     expect(mapToMainCategory('외국도서>Literature & Fiction')).toBe('기타');
     expect(mapToMainCategory('외국도서>Fitness')).toBe('기타');
-    expect(mapToMainCategory('국내도서-IT 모바일')).toBe('컴퓨터/모바일');
-    expect(mapToMainCategory('국내도서-컴퓨터/IT')).toBe('컴퓨터/모바일');
+    expect(mapToMainCategory('국내도서-컴퓨터/IT')).toBe('과학/IT');
   });
 
   it('비어 있으면 기타', () => {

@@ -129,10 +129,10 @@ const calculateCategoryReading = (books: Book[]): CategoryReadingData[] => {
       '경제/경영',
       '자기계발',
       '인문학',
-      '사회과학',
-      '과학',
-      '기술공학',
-      '예술/대중문화',
+      '사회/역사',
+      '과학/IT',
+      '예술/생활',
+      '에세이',
     ];
     const existingCategories = new Set(result.map(({ category }) => category));
 

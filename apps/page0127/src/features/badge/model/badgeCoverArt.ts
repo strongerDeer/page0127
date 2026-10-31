@@ -77,7 +77,6 @@ const COVER_ART: Record<CoverId, CoverArt> = {
   science: expansion(7, '#dce5ef', '#2a476d'),
   arts: expansion(8, '#ecdee9', '#693e61'),
   history: expansion(9, '#eadccf', '#744a30'),
-  technology: expansion(10, '#d8e8ed', '#25546a'),
   shelf: companion(0, '#f4ecd5', '#29261e'),
   'wide-view': companion(1, '#b5d9e9', '#17365b'),
   'one-sitting': story(0, '#f87920', '#172981'),

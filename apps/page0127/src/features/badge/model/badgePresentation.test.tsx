@@ -29,8 +29,8 @@ describe('배지 표지와 공개 범위', () => {
     };
     const collection = renderToStaticMarkup(<BadgeCollection {...props} />);
     const summary = renderToStaticMarkup(<BadgeSummary {...props} />);
-    expect(collection).toContain('전체 31종 중 1종 획득');
-    expect(summary).toContain('1 / 31종');
+    expect(collection).toContain('전체 30종 중 1종 획득');
+    expect(summary).toContain('1 / 30종');
   });
 
   it('성장 묶음의 뒷표지는 획득 개수를 늘리지 않고 단계별 색상을 구분한다', () => {
@@ -42,7 +42,7 @@ describe('배지 표지와 공개 범위', () => {
     };
     const collection = renderToStaticMarkup(<BadgeCollection {...props} />);
     const earned = computeBadges(props).filter((badge) => badge.earned).length;
-    expect(collection).toContain(`전체 31종 중 ${earned}종 획득`);
+    expect(collection).toContain(`전체 30종 중 ${earned}종 획득`);
     expect(collection).toContain('data-badge-stack="2"');
     expect(
       new Set(
@@ -70,7 +70,7 @@ describe('배지 표지와 공개 범위', () => {
     }
   });
 
-  it('받은 31종은 각자의 표지와 제목을 사용한다', () => {
+  it('받은 30종은 각자의 표지와 제목을 사용한다', () => {
     for (const badge of badges) {
       const earned = { ...badge, earned: true, level: 1 };
       expect(badgePresentation(earned).cover).toBe(badge.id);
@@ -122,7 +122,7 @@ describe('배지 표지와 공개 범위', () => {
     expect(visitor).not.toContain('data-badge-book');
     expect(visitor).not.toContain('비밀의 책');
     const owner = renderToStaticMarkup(<BadgeCollection {...input} isOwner />);
-    expect(owner.match(/data-badge-book="true"/g)).toHaveLength(31);
+    expect(owner.match(/data-badge-book="true"/g)).toHaveLength(30);
     expect(owner.match(/data-cover="unwritten"/g)).toHaveLength(8);
     const earnedVisitor = renderToStaticMarkup(
       <BadgeCollection

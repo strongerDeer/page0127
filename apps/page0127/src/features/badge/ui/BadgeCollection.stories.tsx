@@ -257,7 +257,7 @@ export const ExpandedGrowth: Story = {
 /** 상호작용 없이 전체 확장 상태를 확인하는 검수 화면. */
 export const GrowthPreview: Story = { args: ExpandedGrowth.args };
 
-/** 획득 여부와 무관하게 실제 31종 표지를 한 번씩 비교하는 디자인 검수 화면. */
+/** 획득 여부와 무관하게 실제 30종 표지를 한 번씩 비교하는 디자인 검수 화면. */
 export const AllBadgeCovers: Story = {
   render: () => (
     <div className='grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4 lg:grid-cols-5'>
