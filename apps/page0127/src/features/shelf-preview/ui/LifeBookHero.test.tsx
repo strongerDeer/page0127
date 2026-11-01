@@ -16,18 +16,23 @@ const leader = (isbn: string): LeaderLifeBook => ({
 });
 
 describe('LifeBookHero', () => {
-  it('공감 문장·h1 은 A 와 같고, A 의 부제 없이 질문을 크게 묻는다', () => {
+  it('인생책 질문을 제목으로 묻고, 위 섹션과 겹치는 공감 문장은 쓰지 않는다', () => {
     const html = renderToStaticMarkup(<LifeBookHero leaders={[]} />);
-    expect(html).toContain('기록은 여기저기 흩어져요');
-    expect(html).toContain('책장을 보면,');
     expect(html).toContain('당신의 인생책은?');
+    expect(html).toContain('그 책으로 내 서재를 시작해 보세요');
+    expect(html).not.toContain('기록은 여기저기 흩어져요');
     expect(html).not.toContain('기억나는 책 세 권을 골라보세요');
+  });
+
+  it('첫 화면의 "내 책장 만들어 보기"가 내려올 자리(#first-impression)가 있다', () => {
+    const html = renderToStaticMarkup(<LifeBookHero leaders={[]} />);
+    expect(html).toContain('id="first-impression"');
   });
 
   it('처음에는 빈 실루엣과 펼친 검색칸이 있고, 등록 버튼은 없다', () => {
     const html = renderToStaticMarkup(<LifeBookHero leaders={[]} />);
     expect(html).toContain('border-dashed');
-    expect(html).toContain('제목이나 저자로 찾아보세요');
+    expect(html).toContain('책 제목이나 저자');
     expect(html).not.toContain('다른 책 찾아보기');
     expect(html).not.toContain('내 서재에 등록하기');
   });
