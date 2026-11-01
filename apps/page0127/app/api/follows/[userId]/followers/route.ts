@@ -1,6 +1,10 @@
 import { NextRequest } from 'next/server';
 
 import { getCurrentUser, getSupabaseClient } from '../../../_helpers/auth';
+import {
+  getFollowCountMap,
+  pickFollowCounts,
+} from '../../../_helpers/followCounts';
 import { errorResponse, successResponse } from '../../../_helpers/response';
 
 /**
@@ -38,11 +42,14 @@ export async function GET(
     // 팔로워 ID 목록
     const followerIds = followers.map((f) => f.follower_id);
 
-    // 프로필 일괄 조회
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, nickname, username, bio, photo_url')
-      .in('id', followerIds);
+    // 프로필·팔로워/팔로잉 수 일괄 조회 (숫자는 user_follow_stats 뷰)
+    const [{ data: profiles }, countMap] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('id, nickname, username, bio, photo_url')
+        .in('id', followerIds),
+      getFollowCountMap(supabase, followerIds),
+    ]);
 
     // 프로필 맵 생성
     const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
@@ -57,8 +64,7 @@ export async function GET(
         username: profile?.username || null,
         bio: profile?.bio || null,
         photo_url: profile?.photo_url || null,
-        followers_count: 0,
-        following_count: 0,
+        ...pickFollowCounts(countMap, follow.follower_id),
         is_following: false,
       };
     });
