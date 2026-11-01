@@ -165,7 +165,7 @@ const BookListItemContent = ({
   isLoggedIn,
 }: BookListItemContentProps) => (
   <div className={styles.content}>
-    <h3 className={styles.title}>
+    <h2 className={styles.title}>
       <Link
         // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
         prefetch={false}
@@ -173,7 +173,7 @@ const BookListItemContent = ({
       >
         {title}
       </Link>
-    </h3>
+    </h2>
     <p className={styles.author}>{author}</p>
     <div className={styles.like}>
       <BookLikeButton

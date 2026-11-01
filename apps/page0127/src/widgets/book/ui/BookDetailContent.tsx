@@ -94,7 +94,7 @@ export const BookDetailContent = ({
                 <span
                   className={`inline-block whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ${
                     book.status === 'completed'
-                      ? 'bg-chart-3/15 text-chart-3'
+                      ? 'bg-chart-3/15 text-primary'
                       : book.status === 'reading'
                         ? 'bg-accent text-accent-foreground'
                         : 'bg-muted text-muted-foreground'

@@ -34,7 +34,7 @@ export const RecapRating = ({
       )}
 
       {isLifeBook && (
-        <span className='rounded-full bg-chart-3/15 px-2 py-0.5 font-medium text-chart-3'>
+        <span className='rounded-full bg-chart-3/15 px-2 py-0.5 font-medium text-primary'>
           인생책
         </span>
       )}

@@ -44,19 +44,66 @@ function DialogOverlay({
   )
 }
 
+/**
+ * 열기 직전에 포커스가 있던 요소를 기억했다가, 닫힌 뒤 포커스가 body 로 떨어지면 돌려준다.
+ *
+ * Radix 는 닫을 때 <DialogTrigger> 로만 포커스를 돌려준다. 우리 모달은 대부분
+ * open 상태를 직접 쥐고 일반 버튼으로 여는 방식(트리거 없음)이라, 닫으면 포커스가
+ * body 로 사라져 키보드 사용자가 페이지 맨 위부터 다시 Tab 해야 했다.
+ * 트리거가 있는 모달은 Radix 가 먼저 돌려주므로 여기서는 아무것도 하지 않는다.
+ *
+ * 여는 버튼은 onOpenAutoFocus 에서 잡는다. 이 이벤트는 포커스를 모달 안으로 옮기기
+ * 직전에 오므로 그때의 activeElement 가 여는 버튼이다. (DialogContent 는 닫혀 있어도
+ * 렌더되므로 렌더 시점에 잡으면 페이지 첫 로드 때의 body 가 잡힌다.)
+ */
+function useReturnFocusFallback() {
+  const openerRef = React.useRef<HTMLElement | null>(null)
+
+  const rememberOpener = React.useCallback(() => {
+    openerRef.current = document.activeElement as HTMLElement | null
+  }, [])
+
+  const returnFocus = React.useCallback(() => {
+    const opener = openerRef.current
+    openerRef.current = null
+    // Radix 가 자기 처리를 끝낸 다음 프레임에 확인한다
+    requestAnimationFrame(() => {
+      const active = document.activeElement
+      const lost = !active || active === document.body
+      if (lost && opener && opener !== document.body && opener.isConnected) {
+        opener.focus()
+      }
+    })
+  }, [])
+
+  return { rememberOpener, returnFocus }
+}
+
 function DialogContent({
   className,
   children,
   showCloseButton = true,
+  onOpenAutoFocus,
+  onCloseAutoFocus,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
 }) {
+  const { rememberOpener, returnFocus } = useReturnFocusFallback()
+
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
+        onOpenAutoFocus={(event) => {
+          rememberOpener()
+          onOpenAutoFocus?.(event)
+        }}
+        onCloseAutoFocus={(event) => {
+          onCloseAutoFocus?.(event)
+          if (!event.defaultPrevented) returnFocus()
+        }}
         className={cn(
           "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg",
           className

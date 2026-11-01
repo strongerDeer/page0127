@@ -86,7 +86,7 @@ export const ReadingCalendar = ({
   return (
     <section className='rounded-2xl border border-line-soft bg-card p-5'>
       <div className='flex items-center justify-between'>
-        <h3 className='text-base font-bold text-text-strong'>독서 캘린더</h3>
+        <h2 className='text-base font-bold text-text-strong'>독서 캘린더</h2>
         <div className='flex items-center gap-1'>
           <Button
             variant='outline'
@@ -320,7 +320,7 @@ const CalendarBookList = ({
   trailing,
 }: CalendarBookListProps) => (
   <div>
-    <h4 className='text-xs font-medium text-text-subtle'>{heading}</h4>
+    <h3 className='text-xs font-medium text-text-subtle'>{heading}</h3>
     <ul className='divide-y divide-line-soft'>
       {books.map((book) => {
         const right = trailing(book);

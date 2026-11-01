@@ -68,7 +68,8 @@ const LoginPage = async ({ searchParams }: LoginPageProps) => {
   const inAppBrowser = detectInAppBrowser((await headers()).get('user-agent'));
 
   return (
-    <div className='flex min-h-screen items-center justify-center px-4'>
+    // 로그인 화면은 AppShell(헤더·main) 밖이라 landmark 를 직접 둔다 (landmark-one-main)
+    <main className='flex min-h-screen items-center justify-center px-4'>
       <Card className='w-full max-w-md shadow-none'>
         <CardHeader className='text-center'>
           {/*
@@ -102,7 +103,7 @@ const LoginPage = async ({ searchParams }: LoginPageProps) => {
           </p>
         </CardContent>
       </Card>
-    </div>
+    </main>
   );
 };
 

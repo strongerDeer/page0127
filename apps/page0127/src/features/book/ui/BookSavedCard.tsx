@@ -79,7 +79,7 @@ export const BookSavedCard = ({
           </div>
 
           {isLifeBook && (
-            <span className='rounded-full bg-chart-3/15 px-3 py-1 text-sm font-medium text-chart-3'>
+            <span className='rounded-full bg-chart-3/15 px-3 py-1 text-sm font-medium text-primary'>
               인생책
             </span>
           )}

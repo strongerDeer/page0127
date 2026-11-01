@@ -100,7 +100,11 @@ export const ActivityCard = ({
     <article className='py-7'>
       {/* 헤더 — 누가 · 무엇을 · 언제, 한 줄 */}
       <div className='flex items-center gap-3'>
-        <ProfileLink username={activity.user.username} className='shrink-0'>
+        <ProfileLink
+          username={activity.user.username}
+          className='shrink-0'
+          aria-label={`${activity.user.nickname || activity.user.username}의 서재`}
+        >
           {activity.user.photo_url ? (
             <div className='relative size-11 overflow-hidden rounded-full'>
               <Image

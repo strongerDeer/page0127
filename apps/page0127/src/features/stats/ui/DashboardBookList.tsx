@@ -281,12 +281,12 @@ export const DashboardBookList = ({
     <div>
       {/* 책을 먼저 보이게 하는 최소 툴바. 상세 조건은 필요할 때만 펼친다. */}
       <div className='mb-4 flex flex-wrap items-center gap-2'>
-        <h3 className='mr-auto text-lg font-medium text-text-strong'>
+        <h2 className='mr-auto text-lg font-medium text-text-strong'>
           {title}{' '}
           <span className='font-normal text-text-body'>
             {filteredBooks.length}권
           </span>
-        </h3>
+        </h2>
 
         {showViewAll && (
           <Link
@@ -304,8 +304,9 @@ export const DashboardBookList = ({
           aria-expanded={isSearchOpen}
           className={searchQuery ? 'text-primary' : 'text-text-body'}
         >
-          <Search className='h-4 w-4' />
-          <span className='hidden sm:inline'>검색</span>
+          <Search className='h-4 w-4' aria-hidden />
+          {/* 모바일에선 글자를 숨기되 스크린리더 이름은 남긴다 (hidden 이면 이름 없는 버튼) */}
+          <span className='sr-only sm:not-sr-only'>검색</span>
         </Button>
 
         <Popover open={isFilterPanelOpen} onOpenChange={setIsFilterPanelOpen}>
@@ -332,7 +333,7 @@ export const DashboardBookList = ({
           >
             <div className='mb-4 flex items-center justify-between'>
               <div>
-                <h4 className='text-sm font-medium text-text-strong'>필터</h4>
+                <h3 className='text-sm font-medium text-text-strong'>필터</h3>
                 <p className='mt-0.5 text-xs text-text-subtle'>
                   카테고리는 여러 개 선택할 수 있어요.
                 </p>

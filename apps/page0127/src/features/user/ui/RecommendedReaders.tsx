@@ -40,7 +40,7 @@ export const RecommendedReaders = ({ readers }: RecommendedReadersProps) => (
               <span className='flex items-center gap-3'>
                 <Avatar className='size-10'>
                   <AvatarImage src={reader.photoUrl ?? undefined} alt='' />
-                  <AvatarFallback className='bg-primary/15 text-sm text-primary'>
+                  <AvatarFallback className='bg-primary/10 text-sm text-primary'>
                     {nameInitials(name, 2)}
                   </AvatarFallback>
                 </Avatar>
