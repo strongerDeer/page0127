@@ -12,6 +12,11 @@
 #   apps/page0127 · packages/* · 루트 package.json·package-lock.json·turbo.json.
 #   그 안에서도 테스트·스토리·문서(md)·e2e 는 빌드 결과에 안 들어가므로 뺀다.
 #
+# 같은 커밋을 다시 배포하면 빌드한다 (2026-11-01):
+#   대시보드·API 의 Redeploy 는 보통 환경 변수(예: HERO_AB)를 바꾼 뒤 그 값을 반영하려고 한다.
+#   코드가 같아도 환경 변수는 빌드 때 함수에 묶이므로, 건너뛰면 바꾼 값이 운영에 안 들어간다.
+#   이 스크립트 자체가 바뀐 커밋도 빌드한다 — 안 그러면 이 규칙을 담은 커밋이 배포되지 않는다.
+#
 # 모르면 빌드한다 (fail-open):
 #   비교할 이전 배포가 없거나(새 브랜치의 첫 푸시) 얕은 클론이라 그 커밋이 없으면 빌드한다.
 #   빌드를 하나 더 하는 것은 비용이고, 필요한 배포를 빠뜨리는 것은 장애다.
@@ -34,6 +39,12 @@ if [[ -z "$PREVIOUS_SHA" ]]; then
   exit 1
 fi
 
+COMMIT_SHA="${VERCEL_GIT_COMMIT_SHA:-}"
+if [[ -n "$COMMIT_SHA" && "$PREVIOUS_SHA" == "$COMMIT_SHA" ]]; then
+  echo "같은 커밋(${COMMIT_SHA:0:7})을 다시 배포한다 — 환경 변수 반영을 위해 빌드한다"
+  exit 1
+fi
+
 cd "$(git rev-parse --show-toplevel)" || exit 1
 
 if ! git cat-file -e "${PREVIOUS_SHA}^{commit}" 2>/dev/null; then
@@ -47,6 +58,7 @@ if git diff --quiet "$PREVIOUS_SHA" HEAD -- \
   package.json \
   package-lock.json \
   turbo.json \
+  scripts/vercel-ignore-build.sh \
   ':(exclude)**/*.test.ts' \
   ':(exclude)**/*.test.tsx' \
   ':(exclude)**/*.stories.tsx' \
