@@ -29,7 +29,7 @@ const CHIP: Record<Verdict, string> = {
   pass: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
   warn: 'bg-amber-50 text-amber-700 ring-amber-600/20',
   fail: 'bg-red-50 text-red-700 ring-red-600/20',
-  neutral: 'bg-gray-100 text-gray-500 ring-gray-400/20',
+  neutral: 'bg-gray-100 text-gray-600 ring-gray-400/20',
 };
 
 const RATING_VERDICT: Record<RumRating, Verdict> = {

@@ -9,7 +9,7 @@ const TONE: Record<
 > = {
   warn: { icon: '!', label: '확인 필요', cls: 'bg-amber-100 text-amber-800' },
   good: { icon: '✓', label: '좋음', cls: 'bg-emerald-100 text-emerald-800' },
-  info: { icon: 'i', label: '참고', cls: 'bg-line/60 text-text-subtle' },
+  info: { icon: 'i', label: '참고', cls: 'bg-line/60 text-text-body' },
 };
 
 /** 화면 맨 위 "그래서 뭘 하나" — 숫자를 읽기 전에 결론부터 */

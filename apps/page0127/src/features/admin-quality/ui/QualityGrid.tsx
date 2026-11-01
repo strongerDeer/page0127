@@ -5,12 +5,7 @@ import {
   seriesDelta,
 } from '../lib/metrics';
 
-import type {
-  Dir,
-  FormFactor,
-  MetricKey,
-  TrendPayload,
-} from '../lib/metrics';
+import type { Dir, FormFactor, MetricKey, TrendPayload } from '../lib/metrics';
 import type { Verdict } from '../lib/verdict';
 
 // 방향 색 — 개선=초록, 악화=빨강, 변화없음=회색. (판정 색과 별개.)
@@ -91,8 +86,10 @@ const GridTable = ({
   payload: TrendPayload;
 }) => {
   // page → (metric → values) 로 정리.
-  const byPage: Record<string, Partial<Record<MetricKey, (number | null)[]>>> =
-    {};
+  const byPage: Record<
+    string,
+    Partial<Record<MetricKey, (number | null)[]>>
+  > = {};
   METRIC_ORDER.forEach((mk) => {
     payload[ff][mk].forEach((s) => {
       (byPage[s.page] ??= {})[mk] = s.values;
@@ -127,7 +124,10 @@ const GridTable = ({
               const color =
                 PAGE_PALETTE[payload.pages.indexOf(page) % PAGE_PALETTE.length];
               return (
-                <tr key={page} className='border-b border-line/60 last:border-0'>
+                <tr
+                  key={page}
+                  className='border-b border-line/60 last:border-0'
+                >
                   <td className='py-2.5 pl-4 pr-4'>
                     <span className='flex items-center gap-2 font-medium'>
                       <span
@@ -142,7 +142,7 @@ const GridTable = ({
                     const values = byPage[page][mk] ?? [];
                     const { last, delta, dir } = seriesDelta(
                       values,
-                      def.lowerIsBetter,
+                      def.lowerIsBetter
                     );
                     return (
                       <td key={mk} className='py-2.5 pr-4'>
@@ -198,13 +198,15 @@ export const QualityGrid = ({ data }: { data: TrendPayload }) => {
         <h2 className='text-sm font-medium'>한눈에 — 페이지별 지표</h2>
         <p className='mt-0.5 text-xs text-text-subtle'>
           선 색: <span className='text-emerald-700'>초록=개선</span> ·{' '}
-          <span className='text-red-600'>빨강=악화</span>. 점 색은 판정(양호/주의/위험).
+          <span className='text-red-600'>빨강=악화</span>. 점 색은
+          판정(양호/주의/위험).
         </p>
       </div>
 
       <div className='space-y-1.5'>
         <p className='px-1 text-xs text-text-subtle'>
-          모바일 <span className='text-text-subtle/70'>· 느린 4G · CPU 4× 스로틀</span>
+          모바일{' '}
+          <span className='text-text-subtle'>· 느린 4G · CPU 4× 스로틀</span>
         </p>
         <GridTable ff='mobile' payload={data} />
       </div>
@@ -212,7 +214,7 @@ export const QualityGrid = ({ data }: { data: TrendPayload }) => {
       <div className='space-y-1.5 pt-1'>
         <p className='px-1 text-xs text-text-subtle'>
           데스크탑{' '}
-          <span className='text-text-subtle/70'>· 빠른 4G · 스로틀 없음</span>
+          <span className='text-text-subtle'>· 빠른 4G · 스로틀 없음</span>
         </p>
         <GridTable ff='desktop' payload={data} />
       </div>
