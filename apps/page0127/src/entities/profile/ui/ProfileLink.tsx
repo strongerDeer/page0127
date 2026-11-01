@@ -6,6 +6,8 @@ type ProfileLinkProps = {
   /** 없으면(탈퇴·미설정) 링크를 걸지 않는다 */
   username: string | null;
   className?: string;
+  /** 안에 글자가 없을 때(아바타 이미지만) 링크 이름 */
+  'aria-label'?: string;
   children: React.ReactNode;
 };
 
@@ -24,13 +26,14 @@ type ProfileLinkProps = {
 export const ProfileLink = ({
   username,
   className,
+  'aria-label': ariaLabel,
   children,
 }: ProfileLinkProps) => {
   const href = profileHref(username);
   if (!href) return <span className={className}>{children}</span>;
 
   return (
-    <Link href={href} className={className}>
+    <Link href={href} className={className} aria-label={ariaLabel}>
       {children}
     </Link>
   );

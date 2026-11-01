@@ -92,11 +92,14 @@ export const BookRecordLikeButton = ({
       onClick={() => likeMutation.mutate(isLiked)}
       disabled={likeMutation.isPending}
       aria-pressed={isLiked}
-      aria-label={isLiked ? '좋아요 취소' : '좋아요'}
     >
+      {/* 이름은 "좋아요 3"처럼 보이는 숫자를 포함해야 한다(label-content-name-mismatch).
+          눌린 상태는 aria-pressed 가 알려 주므로 이름은 그대로 둔다. */}
       <Heart
+        aria-hidden
         className={`h-4 w-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`}
       />
+      <span className='sr-only'>좋아요</span>
       <span className='text-sm text-muted-foreground'>{count}</span>
     </Button>
   );

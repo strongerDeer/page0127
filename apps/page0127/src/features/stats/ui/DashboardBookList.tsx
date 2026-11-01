@@ -304,8 +304,9 @@ export const DashboardBookList = ({
           aria-expanded={isSearchOpen}
           className={searchQuery ? 'text-primary' : 'text-text-body'}
         >
-          <Search className='h-4 w-4' />
-          <span className='hidden sm:inline'>검색</span>
+          <Search className='h-4 w-4' aria-hidden />
+          {/* 모바일에선 글자를 숨기되 스크린리더 이름은 남긴다 (hidden 이면 이름 없는 버튼) */}
+          <span className='sr-only sm:not-sr-only'>검색</span>
         </Button>
 
         <Popover open={isFilterPanelOpen} onOpenChange={setIsFilterPanelOpen}>
