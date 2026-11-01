@@ -40,7 +40,7 @@ export const BadgeSummary = ({
       className={`${styles.summary} rounded-2xl border border-line-soft bg-card px-5 py-5 sm:px-6`}
     >
       <div className='flex items-center justify-between gap-2'>
-        <h3
+        <h2
           id='badge-summary-title'
           className='text-sm font-bold text-text-strong'
         >
@@ -50,7 +50,7 @@ export const BadgeSummary = ({
               ? `${earned.length} / ${badges.length}종`
               : `${earned.length}종`}
           </span>
-        </h3>
+        </h2>
         <Link
           href={`/${username}/badges`}
           className='inline-flex items-center gap-0.5 text-xs text-text-subtle hover:text-text-strong'

@@ -69,11 +69,11 @@ export const ReadingNowStrip = ({
       ref={stripRef}
       className='flex flex-wrap items-center gap-x-5 gap-y-3 overflow-x-clip rounded-2xl border border-line-soft bg-card px-5 py-3'
     >
-      <h3 className='flex shrink-0 items-center gap-1.5 text-sm font-medium text-text-strong'>
+      <h2 className='flex shrink-0 items-center gap-1.5 text-sm font-medium text-text-strong'>
         <BookOpen className='size-4 text-primary' />
         지금 읽는 중
         <span className='font-normal text-text-subtle'>{books.length}권</span>
-      </h3>
+      </h2>
 
       <ul className='flex flex-wrap gap-3'>
         {books.map((book) => {

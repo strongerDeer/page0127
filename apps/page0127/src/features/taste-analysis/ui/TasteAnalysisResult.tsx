@@ -82,7 +82,11 @@ export const TasteAnalysisResult = ({
       {/* 1. 독서 성향 */}
       <Card className='mb-6'>
         <CardHeader>
-          <CardTitle className='flex items-center gap-2 text-base'>
+          <CardTitle
+            role='heading'
+            aria-level={2}
+            className='flex items-center gap-2 text-base'
+          >
             <BookOpen className='h-4.5 w-4.5 text-text-subtle' />
             독서 성향
           </CardTitle>
@@ -118,7 +122,11 @@ export const TasteAnalysisResult = ({
       {/* 2. 선호도 프로필 */}
       <Card className='mb-6'>
         <CardHeader>
-          <CardTitle className='flex items-center gap-2 text-base'>
+          <CardTitle
+            role='heading'
+            aria-level={2}
+            className='flex items-center gap-2 text-base'
+          >
             <Star className='h-4.5 w-4.5 text-text-subtle' />
             선호도 프로필
           </CardTitle>
@@ -262,7 +270,11 @@ const RecommendationSection = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className='flex items-center gap-2 text-base'>
+        <CardTitle
+          role='heading'
+          aria-level={2}
+          className='flex items-center gap-2 text-base'
+        >
           {icon}
           {title}
         </CardTitle>
@@ -288,7 +300,7 @@ const RecommendationSection = ({
                   />
                 )}
                 <div className='flex-1'>
-                  <h4 className='font-medium text-text-strong'>{book.title}</h4>
+                  <h3 className='font-medium text-text-strong'>{book.title}</h3>
                   {book.author && (
                     <p className='text-sm text-text-subtle'>{book.author}</p>
                   )}

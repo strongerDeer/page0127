@@ -69,9 +69,9 @@ export const ReadingBalanceCard = ({
 
       <div className='min-w-0'>
         <div className='flex items-baseline justify-between gap-2'>
-          <h3 className='text-base font-bold text-text-strong'>
+          <h2 className='text-base font-bold text-text-strong'>
             {year ?? '지금까지'} 독서 균형
-          </h3>
+          </h2>
           <span className='text-xs text-text-subtle'>
             {BALANCE_CATEGORIES.length}개 분야 · 완독 {balance.total}권
           </span>

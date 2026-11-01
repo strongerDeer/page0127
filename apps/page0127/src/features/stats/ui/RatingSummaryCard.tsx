@@ -36,7 +36,7 @@ export const RatingSummaryCard = ({
   return (
     <section className='flex flex-col gap-4 rounded-2xl border border-line-soft bg-card p-5'>
       <div className='flex items-baseline justify-between'>
-        <h3 className='text-base font-bold text-text-strong'>평점 분포</h3>
+        <h2 className='text-base font-bold text-text-strong'>평점 분포</h2>
         <span className='text-xs text-text-subtle'>
           평균 {averageRating > 0 ? averageRating.toFixed(1) : '—'} · {total}권
         </span>
