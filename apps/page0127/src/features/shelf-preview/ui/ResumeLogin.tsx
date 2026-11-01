@@ -54,7 +54,7 @@ export const ResumeLogin = ({
   };
   const failed = storageFailed || result.failed > 0 || !pending;
   return (
-    <div className='mx-auto max-w-md space-y-4 px-4 py-16'>
+    <main className='mx-auto max-w-md space-y-4 px-4 py-16'>
       <h1 className='heading-2'>
         {failed
           ? '선택한 책을 확인해 주세요'
@@ -108,6 +108,6 @@ export const ResumeLogin = ({
           </>
         )
       )}
-    </div>
+    </main>
   );
 };
