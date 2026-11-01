@@ -219,7 +219,14 @@ export const Loading: Story = {
       <Button {...args} variant='outline' loading>
         불러오는 중
       </Button>
-      <Button {...args} size='icon-md' loading aria-label='불러오는 중' />
+      {/* 아이콘 버튼엔 args 를 펼치지 않는다. meta.args 의 children('기록 시작하기')이
+          따라 들어오면 보이는 글자와 aria-label 이 달라 label-content-name-mismatch 에 걸린다. */}
+      <Button
+        variant={args.variant}
+        size='icon-md'
+        loading
+        aria-label='불러오는 중'
+      />
     </div>
   ),
 };
