@@ -22,6 +22,8 @@ type ShelfSearchProps = {
    * 기본값(false)은 "다른 책 찾아보기" 버튼으로 접어 둔다(맛보기 A).
    */
   defaultOpen?: boolean;
+  /** 가운데 정렬 화면(히어로 B)용 — 입력칸·안내 문구를 가운데로 */
+  centered?: boolean;
   placeholder?: string;
 };
 
@@ -33,6 +35,7 @@ export const ShelfSearch = ({
   disabled,
   onPick,
   defaultOpen = false,
+  centered = false,
   placeholder = '책 제목이나 저자',
 }: ShelfSearchProps) => {
   const [open, setOpen] = useState(defaultOpen);
@@ -74,7 +77,7 @@ export const ShelfSearch = ({
       <form
         role='search'
         onSubmit={handleSubmit}
-        className='flex max-w-md gap-2'
+        className={`flex max-w-md gap-2 ${centered ? 'mx-auto' : ''}`}
       >
         <Input
           aria-label='책 제목이나 저자'
@@ -91,7 +94,10 @@ export const ShelfSearch = ({
         </Button>
       </form>
 
-      <div aria-live='polite' className='mt-3'>
+      <div
+        aria-live='polite'
+        className={`mt-3 ${centered ? 'text-center' : ''}`}
+      >
         {status === 'loading' && (
           <p className='text-sm text-text-subtle'>찾는 중…</p>
         )}
