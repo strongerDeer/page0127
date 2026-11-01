@@ -28,7 +28,7 @@ import { useBulkAction } from '../model/useBulkAction';
 import { BulkConfirmDialog } from './BulkConfirmDialog';
 import { SelectionBar, SelectionBarDivider } from './SelectionBar';
 
-import type { BookBulkAction, BulkRequest } from '../model/types';
+import type { BulkRequest } from '../model/types';
 import type { Book } from '@/entities/book';
 
 type RecordItem = Pick<
@@ -43,15 +43,11 @@ type RecordItem = Pick<
   | 'completed_date'
   | 'completed_year'
 >;
+type ManageData = { records: RecordItem[]; total: number; years: number[] };
 const statusNames = {
   reading: '읽는 중',
   completed: '완독',
   want_to_read: '읽고 싶어요',
-};
-const actionNames = {
-  public: '공개로 변경',
-  private: '비공개로 변경',
-  delete: '삭제',
 };
 const actionIcons = { public: Globe, private: Lock };
 const initialFilters = {
@@ -68,17 +64,15 @@ export const LibraryManagement = ({ userId }: { userId: string }) => {
   const [filters, setFilters] = useState(initialFilters);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  // 확인창은 되돌릴 수 없는 삭제에만 쓴다. 공개 범위는 되돌리기 토스트로 충분하다
   const [confirmation, setConfirmation] = useState<BulkRequest | null>(null);
   const bulk = useBulkAction('books');
+  const queryKey = ['library-management', userId, filters];
   const query = useQuery({
-    queryKey: ['library-management', userId, filters],
+    queryKey,
     queryFn: async () =>
       (
-        await apiClient.get<{
-          records: RecordItem[];
-          total: number;
-          years: number[];
-        }>(
+        await apiClient.get<ManageData>(
           `/books/manage?${new URLSearchParams({ ...filters, page: String(filters.page) })}`
         )
       ).data,
@@ -130,21 +124,84 @@ export const LibraryManagement = ({ userId }: { userId: string }) => {
       else next.add(id);
       return next;
     });
-  const choose = (action: BookBulkAction) => {
+  const patchVisibility = (ids: string[], isPublic: boolean) =>
+    queryClient.setQueryData<ManageData>(queryKey, (data) =>
+      data
+        ? {
+            ...data,
+            records: data.records.map((record) =>
+              ids.includes(record.id)
+                ? { ...record, is_public: isPublic }
+                : record
+            ),
+          }
+        : data
+    );
+  const refreshOtherViews = () =>
+    Promise.all(
+      ['books', 'activities', 'notifications'].map((key) =>
+        queryClient.invalidateQueries({ queryKey: [key] })
+      )
+    );
+  /**
+   * 공개 범위 바꾸기 — 배지 하나든 선택한 여러 개든 같은 길로.
+   * 1) 화면을 먼저 바꾸고(낙관적 업데이트) 2) 서버에 보낸 뒤
+   * 3) 실패하면 원래대로, 성공하면 "되돌리기" 토스트를 띄운다.
+   * 이미 그 상태인 기록은 보내지 않는다.
+   */
+  const changeVisibility = async (
+    targets: RecordItem[],
+    isPublic: boolean,
+    isUndo = false
+  ) => {
+    const changing = targets.filter((record) => record.is_public !== isPublic);
+    if (!changing.length) return;
+    const ids = changing.map((record) => record.id);
+    patchVisibility(ids, isPublic);
+    const result = await bulk.run({
+      requestId: crypto.randomUUID(),
+      action: isPublic ? 'public' : 'private',
+      ids,
+    });
+    if (!result) {
+      patchVisibility(ids, !isPublic);
+      toast.error('공개 범위를 바꾸지 못했어요. 다시 시도해주세요.');
+      return;
+    }
+    if (!isUndo) setSelected(new Set());
+    const subject =
+      changing.length === 1
+        ? `'${changing[0].title}' 기록`
+        : `${changing.length}개 기록`;
+    const state = isPublic ? '공개' : '비공개';
+    if (isUndo) toast.success(`${subject}을 다시 ${state}로 돌렸어요.`);
+    else
+      toast.success(`${subject}을 ${state}로 바꿨어요.`, {
+        action: {
+          label: '되돌리기',
+          onClick: () =>
+            void changeVisibility(
+              changing.map((record) => ({ ...record, is_public: isPublic })),
+              !isPublic,
+              true
+            ),
+        },
+      });
+    await refreshOtherViews();
+  };
+  const askDelete = () => {
     bulk.clearError();
     setConfirmation({
       requestId: crypto.randomUUID(),
-      action,
+      action: 'delete',
       ids: [...selected],
     });
   };
-  const confirm = async () => {
+  const confirmDelete = async () => {
     if (!confirmation) return;
     const result = await bulk.run(confirmation);
     if (!result) return;
-    toast.success(
-      `${result.count}개 독서 기록을 ${confirmation.action === 'delete' ? '삭제했어요.' : confirmation.action === 'public' ? '공개로 바꿨어요.' : '비공개로 바꿨어요.'}`
-    );
+    toast.success(`${result.count}개 독서 기록을 삭제했어요.`);
     setConfirmation(null);
     setSelected(new Set());
     // Always return to a real page even if the last page was deleted.
@@ -152,13 +209,10 @@ export const LibraryManagement = ({ userId }: { userId: string }) => {
     await queryClient.invalidateQueries({
       queryKey: ['library-management', userId],
     });
-    await Promise.all(
-      ['books', 'activities', 'notifications'].map((key) =>
-        queryClient.invalidateQueries({ queryKey: [key] })
-      )
-    );
+    await refreshOtherViews();
     router.refresh();
   };
+  const selectedRecords = records.filter((record) => selected.has(record.id));
   const actionDisabled = !selected.size || bulk.pending || query.isFetching;
   return (
     <div className='space-y-5'>
@@ -217,8 +271,8 @@ export const LibraryManagement = ({ userId }: { userId: string }) => {
         </div>
       </div>
       <p className='text-sm text-text-body'>
-        같은 책도 회독별로 표시해요. 선택하지 않은 다른 회독과 연도의 기록은
-        바뀌지 않아요.
+        오른쪽 공개·비공개 배지를 누르면 바로 바뀌어요. 같은 책도 회독별로 따로
+        바뀌어요.
       </p>
       <SelectionBar
         label='서재 일괄 관리'
@@ -243,8 +297,16 @@ export const LibraryManagement = ({ userId }: { userId: string }) => {
               size='sm'
               variant='outline'
               className='flex-1 sm:flex-none'
-              disabled={actionDisabled}
-              onClick={() => choose(action)}
+              // 고른 기록이 모두 이미 그 상태면 누를 일이 없다
+              disabled={
+                actionDisabled ||
+                selectedRecords.every(
+                  (record) => record.is_public === (action === 'public')
+                )
+              }
+              onClick={() =>
+                void changeVisibility(selectedRecords, action === 'public')
+              }
             >
               <Icon className='size-4' aria-hidden />
               {/* 좁은 화면에선 "로 변경"을 숨기되 읽어 주는 이름은 그대로 둔다.
@@ -262,7 +324,7 @@ export const LibraryManagement = ({ userId }: { userId: string }) => {
           variant='destructive'
           className='flex-1 sm:flex-none'
           disabled={actionDisabled}
-          onClick={() => choose('delete')}
+          onClick={askDelete}
         >
           <Trash2 className='size-4' aria-hidden />
           삭제
@@ -317,9 +379,16 @@ export const LibraryManagement = ({ userId }: { userId: string }) => {
                         : ''}
                   </p>
                 </div>
-                {/* 공개는 서비스 색으로, 비공개는 회색으로 한 발 물러나 보이게 */}
-                <span
-                  className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-xs ${record.is_public ? 'bg-accent text-accent-foreground' : 'bg-sunken text-text-body'}`}
+                {/* 배지를 누르면 바로 바뀐다. 공개는 서비스 색, 비공개는 회색으로
+                    한 발 물러나 보이게. 눌리는 것임을 테두리·hover 로 알린다 */}
+                <button
+                  type='button'
+                  className={`inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60 ${record.is_public ? 'border-accent bg-accent text-accent-foreground hover:border-primary/40' : 'border-line bg-sunken text-text-body hover:border-text-subtle'}`}
+                  aria-label={`${record.title} ${record.read_count}회독: ${record.is_public ? '공개' : '비공개'}. 누르면 ${record.is_public ? '비공개' : '공개'}로 바꿔요`}
+                  disabled={bulk.pending}
+                  onClick={() =>
+                    void changeVisibility([record], !record.is_public)
+                  }
                 >
                   {record.is_public ? (
                     <Globe className='size-3' aria-hidden />
@@ -327,7 +396,7 @@ export const LibraryManagement = ({ userId }: { userId: string }) => {
                     <Lock className='size-3' aria-hidden />
                   )}
                   {record.is_public ? '공개' : '비공개'}
-                </span>
+                </button>
               </li>
             ))}
           </ul>
@@ -357,14 +426,13 @@ export const LibraryManagement = ({ userId }: { userId: string }) => {
         open={!!confirmation}
         title={
           confirmation
-            ? `${confirmation.ids.length}개 독서 기록을 ${actionNames[confirmation.action as BookBulkAction]}할까요?`
+            ? `${confirmation.ids.length}개 독서 기록을 삭제할까요?`
             : ''
         }
         description={
           <>
-            {confirmation?.action === 'delete'
-              ? '선택한 기록의 평점·리뷰·메모와 연결된 댓글·좋아요도 삭제되며 복구할 수 없어요.'
-              : '독서 기록은 그대로 보존해요. 비공개 기록은 이 화면의 공개 범위 필터에서 다시 공개할 수 있어요.'}
+            선택한 기록의 평점·리뷰·메모와 연결된 댓글·좋아요도 삭제되며 복구할
+            수 없어요.
             <br />
             {records
               .filter((record) => confirmation?.ids.includes(record.id))
@@ -374,16 +442,12 @@ export const LibraryManagement = ({ userId }: { userId: string }) => {
             {(confirmation?.ids.length ?? 0) > 3 ? ' 외 선택한 기록' : ''}
           </>
         }
-        actionLabel={
-          confirmation
-            ? actionNames[confirmation.action as BookBulkAction]
-            : '확인'
-        }
-        destructive={confirmation?.action === 'delete'}
+        actionLabel='삭제'
+        destructive
         pending={bulk.pending}
         error={bulk.error}
         onClose={() => setConfirmation(null)}
-        onConfirm={() => void confirm()}
+        onConfirm={() => void confirmDelete()}
       />
     </div>
   );
