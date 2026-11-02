@@ -131,26 +131,35 @@ export const BookCoverPreview = ({
         onPointerEnter={cancelClose}
         onPointerLeave={closeSoon}
       >
-        <p className={styles.previewTitle}>{title}</p>
-        <p className={styles.description}>
-          {description || '책 소개가 없습니다.'}
-        </p>
-        {(publisher || category) && (
-          <dl className={styles.previewMetadata}>
-            {publisher && (
-              <div>
-                <dt>출판사</dt>
-                <dd>{publisher}</dd>
-              </div>
-            )}
-            {category && (
-              <div>
-                <dt>분류</dt>
-                <dd>{category}</dd>
-              </div>
-            )}
-          </dl>
-        )}
+        {/* 상자 전체를 상세 링크로 — 소개를 읽다가 그대로 눌러 들어갈 수 있게(2026-11-02 HJ).
+            키보드는 이미 표지 링크로 같은 곳에 가므로 탭 순서에는 넣지 않는다. */}
+        <Link
+          prefetch={false}
+          href={`/books/info/${id}`}
+          tabIndex={-1}
+          className={styles.previewLink}
+        >
+          <p className={styles.previewTitle}>{title}</p>
+          <p className={styles.description}>
+            {description || '책 소개가 없습니다.'}
+          </p>
+          {(publisher || category) && (
+            <dl className={styles.previewMetadata}>
+              {publisher && (
+                <div>
+                  <dt>출판사</dt>
+                  <dd>{publisher}</dd>
+                </div>
+              )}
+              {category && (
+                <div>
+                  <dt>분류</dt>
+                  <dd>{category}</dd>
+                </div>
+              )}
+            </dl>
+          )}
+        </Link>
       </PopoverContent>
     </Popover>
   );
