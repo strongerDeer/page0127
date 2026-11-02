@@ -396,6 +396,14 @@ test('온보딩을 완료하면 빈 서재에 도착하고 공유 주소를 복�
   ).toBeDisabled();
   await page.getByRole('checkbox', { name: /만 14세 이상/ }).check();
   await page.getByRole('button', { name: '시작하기', exact: true }).click();
+  // 가려던 곳 없이 가입하면 빈 서재 전에 "읽은 책 고르기"를 거친다 — 건너뛰면 빈 서재다
+  await expect(page).toHaveURL(/\/onboarding\/books/);
+  await expect(
+    page.getByRole('heading', { name: '기억나는 책을 골라 주세요' })
+  ).toBeVisible();
+  await page
+    .getByRole('button', { name: '나중에 할게요', exact: true })
+    .click();
   await expect(page).toHaveURL(new RegExp(`/${reader.username}(\\?|$)`));
   await expect(page.getByText('첫 책을 기록해 보세요')).toBeVisible();
 
