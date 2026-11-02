@@ -26,6 +26,9 @@ export const APP = {
       name: "detail",
       path: "/stronger_khj/80a21270-ed22-4e3a-a1e9-17f65b361c54",
     },
+    // bookinfo: 공개 책 정보(로그인 없이 공유·검색으로 들어오는 화면). 고정 책 ID(백년목2, /books/all 첫 책)로 시계열 유지.
+    // 책이 지워지면 404 로 점수가 0 이 되니 그때 config 에서 교체한다.
+    { name: "bookinfo", path: "/books/info/20796404-2d51-44ac-a11b-faf9cd4ea596" },
   ] satisfies PageAnchor[],
 };
 

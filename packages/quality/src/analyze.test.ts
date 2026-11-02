@@ -83,6 +83,21 @@ describe('analyze', () => {
     expect(analyze([base, curr]).trend.weight).toBe('improving');
   });
 
+  it('측정 페이지가 새로 늘어도 추세는 두 측정에 다 있는 페이지로만 본다', () => {
+    const curr = nextDeploy();
+    // 점수 낮고 무거운 새 페이지 추가 — 평균에 섞이면 성능·전송량 모두 '악화'로 잡힌다
+    curr.pages.push({
+      ...structuredClone(base.pages[0]),
+      name: 'bookinfo',
+      lighthouse: { performance: 40, accessibility: 90, bestPractices: 90, seo: 100 },
+      weight: { totalKb: 3000, imageKb: 2000, scriptKb: 300 },
+    });
+    const result = analyze([base, curr]);
+    expect(result.trend.performance).toBe('flat');
+    expect(result.trend.weight).toBe('flat');
+    expect(result.regressions).toHaveLength(0);
+  });
+
   it('변화 없으면 회귀가 없고 추세는 flat이다', () => {
     const curr = nextDeploy();
     const result = analyze([base, curr]);

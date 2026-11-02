@@ -97,7 +97,7 @@ export type MetricSeries = { page: string; values: (number | null)[] };
 export const buildSeries = (
   records: QualityRecord[],
   ff: FormFactor,
-  def: MetricDef,
+  def: MetricDef
 ): MetricSeries[] => {
   if (records.length === 0) return [];
 
@@ -124,7 +124,7 @@ export type Dir = 'up' | 'down' | 'flat'; // up=개선, down=악화, flat=변화
 // 마지막 두 유효값으로 최신값·증감·방향. lowerIsBetter면 감소가 개선.
 export const seriesDelta = (
   values: (number | null)[],
-  lowerIsBetter: boolean,
+  lowerIsBetter: boolean
 ): { last: number | null; delta: number | null; dir: Dir } => {
   const nn = values.filter((v): v is number => v != null);
   if (nn.length === 0) return { last: null, delta: null, dir: 'flat' };
@@ -147,15 +147,30 @@ export type TrendPayload = {
 };
 
 export const buildTrendPayload = (records: QualityRecord[]): TrendPayload => {
-  const byFf = (ff: FormFactor) =>
-    Object.fromEntries(
-      METRIC_ORDER.map((k) => [k, buildSeries(records, ff, METRICS[k])]),
+  // 최신 측정에 없는 페이지(측정 목록에서 뺀 페이지)는 표·추세 모두에서 뺀다.
+  // 예: /about 은 2026-10-25 /updates 로 옮겨 측정을 그만뒀는데, 예전 기록의
+  // 마지막 값(10/19)이 한눈에 표에 최신처럼 남아 있었다.
+  // 최신 레코드에 그 폼팩터가 아예 없으면(측정 실패 등) 거르지 않는다.
+  const latest = records[records.length - 1];
+  const byFf = (ff: FormFactor) => {
+    const current = new Set(
+      latest ? pagesOf(latest, ff).map((p) => p.name) : []
+    );
+    const keep = (s: MetricSeries) => current.size === 0 || current.has(s.page);
+    return Object.fromEntries(
+      METRIC_ORDER.map((k) => [
+        k,
+        buildSeries(records, ff, METRICS[k]).filter(keep),
+      ])
     ) as Record<MetricKey, MetricSeries[]>;
+  };
 
   const mobile = byFf('mobile');
-  const pages = (mobile.perf.length ? mobile.perf : buildSeries(records, 'desktop', METRICS.perf)).map(
-    (s) => s.page,
-  );
+  const pages = (
+    mobile.perf.length
+      ? mobile.perf
+      : buildSeries(records, 'desktop', METRICS.perf)
+  ).map((s) => s.page);
 
   return {
     weeks: records.map((r) => weekLabel(r.timestamp)),

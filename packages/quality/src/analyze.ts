@@ -38,16 +38,28 @@ const thresholdsFor = (formFactor: FormFactor) =>
     ? { ...REGRESSION, ...DESKTOP_REGRESSION }
     : REGRESSION;
 
-const avgPerformance = (r: QualityRecord): number => {
-  if (r.pages.length === 0) return 0;
-  return (
-    r.pages.reduce((s, p) => s + p.lighthouse.performance, 0) / r.pages.length
-  );
+// 추세 평균은 **두 측정에 모두 있는 페이지**로만 낸다. 측정 페이지를 넣거나 빼면
+// 평균의 모집단이 바뀌어, 코드 변화 없이도 '개선/악화'로 잡히기 때문이다.
+const pagesIn = (r: QualityRecord, names?: Set<string>): PageMetrics[] =>
+  names ? r.pages.filter((p) => names.has(p.name)) : r.pages;
+
+export const commonPageNames = (
+  a: QualityRecord,
+  b: QualityRecord
+): Set<string> => {
+  const inB = new Set(b.pages.map((p) => p.name));
+  return new Set(a.pages.map((p) => p.name).filter((n) => inB.has(n)));
+};
+
+const avgPerformance = (r: QualityRecord, names?: Set<string>): number => {
+  const pages = pagesIn(r, names);
+  if (pages.length === 0) return 0;
+  return pages.reduce((s, p) => s + p.lighthouse.performance, 0) / pages.length;
 };
 
 // 페이지 평균 총 전송 바이트(KB). 노이즈가 적어 추세 판단의 1순위.
-const avgTotalKb = (r: QualityRecord): number => {
-  const vals = r.pages
+const avgTotalKb = (r: QualityRecord, names?: Set<string>): number => {
+  const vals = pagesIn(r, names)
     .map((p) => p.weight?.totalKb ?? 0)
     .filter((v) => v > 0);
   if (vals.length === 0) return 0;
@@ -221,6 +233,7 @@ export const analyze = (history: QualityRecord[]): Analysis => {
   // ('unknown'은 git ref 해석 실패 sentinel이라 동일 판정에서 제외 → 회귀 감지 유지.)
   const sameDeployment =
     current.gitRef === prev.gitRef && current.gitRef !== 'unknown';
+  const common = commonPageNames(prev, current);
 
   return {
     isBaseline: false,
@@ -228,8 +241,8 @@ export const analyze = (history: QualityRecord[]): Analysis => {
     sameDeployment,
     trend: {
       performance: labelTrend(
-        avgPerformance(prev),
-        avgPerformance(current),
+        avgPerformance(prev, common),
+        avgPerformance(current, common),
         true
       ),
       bundle: labelTrend(
@@ -237,7 +250,11 @@ export const analyze = (history: QualityRecord[]): Analysis => {
         current.bundle.totalFirstLoadKb,
         false
       ),
-      weight: labelTrend(avgTotalKb(prev), avgTotalKb(current), false),
+      weight: labelTrend(
+        avgTotalKb(prev, common),
+        avgTotalKb(current, common),
+        false
+      ),
     },
     regressions: sameDeployment ? [] : regressions,
     suppressedRegressions: sameDeployment ? regressions : [],
