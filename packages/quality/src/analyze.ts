@@ -5,6 +5,7 @@ import type {
   QualityRecord,
   RegressionRecord,
 } from './types.ts';
+import { detectEnvironmentChanges } from './environment.ts';
 
 // 'unmeasured' = 직전 또는 이번 값이 0(측정 실패)이라 비교할 수 없음.
 export type TrendLabel = 'improving' | 'degrading' | 'flat' | 'unmeasured';
@@ -27,39 +28,8 @@ export type Analysis = {
   environmentChanges: string[];
 };
 
-const chromeMajor = (v: string): string => v.split('.')[0];
-
-// 판정은 Chrome 메이저·Lighthouse 버전으로만 한다. 러너 이미지는 매주 바뀌어서
-// 그것까지 넣으면 매주 "환경 변경"이 떠 아무도 안 읽게 된다 — 설명에만 덧붙인다.
-// 한쪽이라도 기록이 없거나 'unknown' 이면 비교하지 않는다(모름 ≠ 바뀜).
-export const detectEnvironmentChanges = (
-  prev: QualityRecord,
-  current: QualityRecord
-): string[] => {
-  const a = prev.environment;
-  const b = current.environment;
-  if (!a || !b) return [];
-
-  const changes: string[] = [];
-  if (
-    a.chromeVersion !== 'unknown' &&
-    b.chromeVersion !== 'unknown' &&
-    chromeMajor(a.chromeVersion) !== chromeMajor(b.chromeVersion)
-  ) {
-    changes.push(`Chrome ${a.chromeVersion}→${b.chromeVersion}`);
-  }
-  if (
-    a.lighthouseVersion !== 'unknown' &&
-    b.lighthouseVersion !== 'unknown' &&
-    a.lighthouseVersion !== b.lighthouseVersion
-  ) {
-    changes.push(`Lighthouse ${a.lighthouseVersion}→${b.lighthouseVersion}`);
-  }
-  if (changes.length > 0 && a.runnerImage !== b.runnerImage) {
-    changes.push(`러너 이미지 ${a.runnerImage}→${b.runnerImage}`);
-  }
-  return changes;
-};
+// 브라우저 쪽(어드민 화면)에서도 쓰려고 런타임 의존성 없는 파일로 뺐다.
+export { detectEnvironmentChanges };
 
 // 폼팩터별 회귀 임계. 데스크탑은 CPU 스로틀이 없어 표본이 훨씬 안정적이므로
 // LCP/TBT 최소 회귀폭을 좁게 잡는다(모바일 임계를 쓰면 실제 악화를 놓친다).
