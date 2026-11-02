@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { readSignupMethod, toWelcomePath } from './signupWelcome';
+import {
+  readSignupMethod,
+  toPostOnboardingPath,
+  toWelcomePath,
+} from './signupWelcome';
 
 describe('toWelcomePath', () => {
   it('온보딩 뒤 원래 목적지의 쿼리·해시와 가입 완료 표시를 함께 유지한다', () => {
@@ -37,5 +41,28 @@ describe('readSignupMethod', () => {
   it('손으로 고친 값은 other 로 뭉갠다', () => {
     expect(readSignupMethod('<script>')).toBe('other');
     expect(readSignupMethod('')).toBe('other');
+  });
+});
+
+describe('toPostOnboardingPath', () => {
+  it('가려던 곳이 없으면 빈 서재 대신 책 고르기 화면으로 보낸다', () => {
+    expect(toPostOnboardingPath('bookworm', 'kakao')).toBe(
+      '/onboarding/books?welcome=kakao'
+    );
+    expect(toPostOnboardingPath('bookworm', 'Evil&x=1', null)).toBe(
+      '/onboarding/books?welcome=other'
+    );
+  });
+
+  it('가려던 곳이 있으면 그 맥락을 지킨다', () => {
+    expect(toPostOnboardingPath('bookworm', 'google', '/books/info/abc')).toBe(
+      '/books/info/abc?welcome=google'
+    );
+  });
+
+  it('외부 주소는 없는 것으로 보고 책 고르기로 보낸다', () => {
+    expect(toPostOnboardingPath('bookworm', 'google', '//evil.test')).toBe(
+      '/onboarding/books?welcome=google'
+    );
   });
 });

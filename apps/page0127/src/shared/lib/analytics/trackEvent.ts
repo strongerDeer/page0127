@@ -33,6 +33,7 @@ declare global {
  *   랜딩    cta_click · signup_start · shelf_preview_view → shelf_preview_pick → shelf_preview_save | shelf_preview_goal
  *   로그인  login_start                     ← 맛보기 저장 뒤 로그인 화면에서 떠났는지 가른다
  *   가입    sign_up                         ← signup_start 는 클릭일 뿐, 이건 온보딩 완료
+ *   첫 책   first_books_save | first_books_skip ← 가입 직후 책 고르기(맛보기 없이 가입한 사람)
  *   담기    shelf_preview_claim             ← 맛보기 보관분이 서재에 들어갔다 (book_add 는 /books/add 에서만 나간다)
  *   활성화  book_add → book_complete      ← 비어 있던 구간
  *   차별화  taste_analysis_run
@@ -82,6 +83,10 @@ export type AnalyticsEvent =
    * method: 로그인 공급자(google·kakao). 보내는 곳은 SignupTracker
    */
   | 'sign_up'
+  /** 가입 직후 "읽은 책 고르기"에서 골라 서재로 갔다(FirstBooksPicker). count: 고른 권수 */
+  | 'first_books_save'
+  /** 가입 직후 "읽은 책 고르기"를 건너뛰었다 */
+  | 'first_books_skip'
   /** 책을 서재에 담았다. status 로 어떤 상태로 담았는지 함께 본다 */
   | 'book_add'
   /** 완독으로 **전환**됐다. 이미 완독인 책을 다시 저장한 것은 세지 않는다 */
