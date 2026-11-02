@@ -38,7 +38,10 @@ export default async function AdminQualityPage() {
         </span>
       </div>
 
-      <RegressionBanner record={latest} />
+      <RegressionBanner
+        record={latest}
+        previous={records.length >= 2 ? records[records.length - 2] : undefined}
+      />
 
       {/* 리포트는 이 페이지의 결론이라 맨 위에 둔다 — 아래 표·차트는 그 근거다.
           맨 끝에 있을 땐 할 일까지 스크롤을 다 내려야 했다 */}

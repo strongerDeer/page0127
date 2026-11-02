@@ -6,7 +6,8 @@
   "type": "module",
   "exports": {
     "./types": "./src/types.ts",
-    "./rum": "./src/rum.ts"
+    "./rum": "./src/rum.ts",
+    "./environment": "./src/environment.ts"
   },
   "scripts": {
     "measure": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON src/run.ts",
