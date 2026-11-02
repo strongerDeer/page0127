@@ -39,7 +39,7 @@ const mkPage = (p: PageInput): PageMetrics =>
 const rec = (
   timestamp: string,
   pages: PageInput[],
-  desktopPages?: PageInput[],
+  desktopPages?: PageInput[]
 ): QualityRecord =>
   ({
     timestamp,
@@ -162,12 +162,12 @@ describe('buildTrendPayload', () => {
       rec(
         '2026-07-07T00:00:00Z',
         [{ name: 'home', perf: 50 }],
-        [{ name: 'home', perf: 70 }],
+        [{ name: 'home', perf: 70 }]
       ),
       rec(
         '2026-07-14T00:00:00Z',
         [{ name: 'home', perf: 55 }],
-        [{ name: 'home', perf: 75 }],
+        [{ name: 'home', perf: 75 }]
       ),
     ];
     const p = buildTrendPayload(records);
@@ -175,5 +175,27 @@ describe('buildTrendPayload', () => {
     expect(p.pages).toEqual(['home']);
     expect(p.mobile.perf[0].values).toEqual([50, 55]);
     expect(p.desktop.perf[0].values).toEqual([70, 75]);
+  });
+});
+
+describe('buildTrendPayload — 측정을 그만둔 페이지', () => {
+  const records = [
+    rec('2026-10-19T00:00:00Z', [
+      { name: 'home', perf: 60 },
+      { name: 'about', perf: 89 },
+    ]),
+    rec('2026-11-02T00:00:00Z', [{ name: 'home', perf: 70 }]),
+  ];
+
+  it('최신 측정에 없는 페이지는 표·추세에서 뺀다', () => {
+    const p = buildTrendPayload(records);
+    expect(p.pages).toEqual(['home']);
+    expect(p.mobile.perf.map((s) => s.page)).toEqual(['home']);
+  });
+
+  it('최신 레코드에 그 폼팩터가 없으면 거르지 않는다', () => {
+    const p = buildTrendPayload(records);
+    // 데스크탑은 두 레코드 모두 없음 → 빈 배열 그대로
+    expect(p.desktop.perf).toEqual([]);
   });
 });
