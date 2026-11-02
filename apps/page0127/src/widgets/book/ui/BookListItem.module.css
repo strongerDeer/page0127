@@ -31,12 +31,24 @@
 .preview {
   width: 320px;
   max-width: calc(100vw - 32px);
-  padding: 20px;
+  /* 안쪽 여백은 .previewLink 가 가진다 — 상자 끝까지 눌리게 */
+  padding: 0;
   text-align: left;
   overflow-wrap: anywhere;
   background-color: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--radius);
+}
+
+.previewLink {
+  display: block;
+  padding: 20px;
+  border-radius: inherit;
+}
+
+.previewLink:hover .previewTitle {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .previewTitle {
@@ -77,7 +89,8 @@
 .perspective {
   position: relative;
   perspective: 800px;
-  margin-bottom: 2.4rem;
+  /* 표지와 제목 사이는 .article 의 gap 하나로만 띄운다.
+     예전 2.4rem 이 gap 과 더해져 표지 아래가 휑했다(2026-11-02 HJ) */
   cursor: pointer;
 }
 
