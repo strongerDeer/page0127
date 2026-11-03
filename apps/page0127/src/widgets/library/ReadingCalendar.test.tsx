@@ -45,7 +45,7 @@ describe('ReadingCalendar', () => {
     expect(html).toContain('2026년 5월');
   });
 
-  it('주인 화면의 비공개 책은 반투명이고 요약 뒤에 따로 센다', () => {
+  it('주인 화면의 비공개 책은 반투명이고 완독에 함께 세며 그중 권수를 따로 적는다', () => {
     const html = renderToStaticMarkup(
       <ReadingCalendar
         books={[
@@ -58,7 +58,7 @@ describe('ReadingCalendar', () => {
       />
     );
     expect(html).toContain('opacity-50');
-    expect(html).toContain('>0권</b> 완독 · 비공개 1권');
+    expect(html).toContain('>1권</b> 완독 · 100쪽 · 그중 나만 보기 1권');
   });
 
   it('방문자 화면에는 비공개 권수 문구가 없다', () => {

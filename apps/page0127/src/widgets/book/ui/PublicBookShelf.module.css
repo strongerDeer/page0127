@@ -125,7 +125,8 @@
    li 는 바닥 정렬이라 커진 만큼 위로만 자란다(선반 선은 그대로).
    +12px 는 줄 간격(gap 31px) 안이라 윗줄과 겹치지 않는다. */
 .books li a.reread img,
-.books li a.reread .noImage {
+.books li a.reread .noImage,
+.books li a.reread .quilt {
   height: 252px;
 }
 
@@ -334,13 +335,15 @@
 }
 
 .compact .books li a img,
-.compact .noImage {
+.compact .noImage,
+.compact .quilt {
   height: 210px;
 }
 
 /* 재독 책은 여기서도 조금 크게 (gap 28px 안이라 윗줄과 안 겹친다) */
 .compact .books li a.reread img,
-.compact .books li a.reread .noImage {
+.compact .books li a.reread .noImage,
+.compact .books li a.reread .quilt {
   height: 221px;
 }
 
@@ -349,7 +352,8 @@
   height: 218px;
 }
 
-.compact .noImage.cover {
+.compact .noImage.cover,
+.compact .quilt.cover {
   width: 149px;
 }
 
@@ -375,4 +379,88 @@
     --book-empty-bg: #1a1c1f;
     --book-empty-text: #9aa0a8;
   }
+}
+
+/*
+  나만 보기 북커버 — 방문자에게 안 보이는 책(비공개·검수 중)을 주인 책장에서 감싼다.
+  HJ 결정(2026-11-03): 캔버스 천 다이어리 커버처럼 심플하게 — 포인트 블루 천,
+  가장자리 박음질, 서비스 아이콘 패치 하나. 겉으로는 무슨 책인지 드러내지 않는다.
+  (무늬·단추 퀼팅 시안, 제목을 적은 천 라벨 시안은 반려)
+  천 색은 표지 이미지처럼 "물건"의 색이라 라이트·다크 모두 같다.
+*/
+.quilt {
+  position: relative;
+  height: 240px;
+  margin: 0 1px;
+  border-radius: 3px 6px 6px 3px;
+  /*
+    층(위→아래): 왼쪽 접힌 면 그늘 → 옅은 빛 → 올 사이 결(세로·가로 1px 줄) →
+    천의 불규칙한 얼룩(feTurbulence 노이즈) → 바탕 블루.
+  */
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0) 9px),
+    linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0) 55%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.05) 0 1px,
+      rgba(0, 0, 0, 0.05) 1px 2px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.04) 0 1px,
+      rgba(0, 0, 0, 0.06) 1px 2px
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E"),
+    #2d78db;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 0 16px 18px;
+}
+
+/* 가장자리 박음질 */
+.quilt::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  /* 참고 이미지처럼 천과 거의 같은 색으로 아주 연하게 — 보일 듯 말 듯 */
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.quilt.cover {
+  width: 170px;
+}
+
+.quilt.spine {
+  justify-content: center;
+  padding: 0 0 10px;
+  border-radius: 2px;
+}
+
+.quilt.spine::before {
+  inset: 3px;
+}
+
+/* 아이콘 패치 — 천에 꿰매 붙인 고무 패치처럼 살짝 띄운다.
+   책장 이미지 공통 규칙(높이 240·테두리)보다 구체적으로 써서 덮는다 */
+.books li a .quilt .quiltBadge {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  border: 0;
+  box-shadow: none;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.35));
+}
+
+.books li a .quilt.spine .quiltBadge {
+  width: 16px;
+  height: 16px;
 }

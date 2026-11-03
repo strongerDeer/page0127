@@ -118,6 +118,37 @@ export const PublicBookShelf = ({
             </div>
           );
 
+          // 방문자에게 안 보이는 책(내가 비공개로 둔 책·검수 중인 직접 등록 책)은
+          // 천 북커버를 통째로 씌운다(HJ 결정 B안, 2026-11-03 — 무늬 없는 포인트 블루 단색에
+          // 로고 라벨, 참고 이미지는 캔버스 다이어리 커버). 이 책들은 주인
+          // 화면에만 오므로 방문자는 볼 일이 없다. 진짜 표지는 눌러서 상세에서 본다.
+          const privateLabel =
+            book.catalog_review_status &&
+            book.catalog_review_status !== 'approved'
+              ? '검수 중'
+              : '나만 보기';
+          const quilt = (
+            <div
+              data-quilt
+              className={`${styles.quilt} ${isCoverView ? styles.cover : styles.spine}`}
+              style={isCoverView ? undefined : { width: `${spineWidth}px` }}
+            >
+              {/* 겉으로는 무슨 책인지 드러내지 않는다 — 천에 서비스 아이콘 패치 하나만
+                  (HJ, 2026-11-03). 제목은 화면낭독기와 꺼냈을 때의 말풍선으로만 */}
+              <Image
+                src='/brand/app-icon.png'
+                width={isCoverView ? 40 : 16}
+                height={isCoverView ? 40 : 16}
+                alt=''
+                aria-hidden='true'
+                className={styles.quiltBadge}
+              />
+              <span className='sr-only'>
+                {book.title} ({privateLabel})
+              </span>
+            </div>
+          );
+
           // width·height 속성은 로딩 전 자리 잡기용 비율 힌트일 뿐이다.
           // 실제 크기는 CSS(`height: 240px; width: auto`)가 정한다 →
           // 높이는 고정, 폭은 이미지 원본 비율을 따른다.
@@ -136,7 +167,9 @@ export const PublicBookShelf = ({
                 aria-label={isReading ? `${book.title} (읽는 중)` : undefined}
                 aria-describedby={`shelf-tip-${book.id}`}
               >
-                {isCoverView ? (
+                {book.is_public === false ? (
+                  quilt
+                ) : isCoverView ? (
                   <CoverImage
                     {...toCoverSource(book)}
                     {...imageBox}

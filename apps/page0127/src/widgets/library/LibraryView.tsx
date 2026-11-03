@@ -27,7 +27,6 @@ import { PublicBookShelf } from '@/widgets/book/ui/PublicBookShelf';
 import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
 import { ViewTabs } from '@/widgets/dashboard/ViewTabs';
 
-import { PrivateBooksDisclosure } from './PrivateBooksDisclosure';
 import { ReadingCalendar } from './ReadingCalendar';
 import { ReadingNowStrip } from './ReadingNowStrip';
 import { WishlistShelf } from './WishlistShelf';
@@ -136,16 +135,13 @@ type LibraryViewProps = {
   /** 위시리스트 책 목록 — 연도와 무관한 전체 want_to_read (내 서재만 주입) */
   wishlistBooks?: Book[];
 
-  /** 주인에게만 보이는 비공개 책 — 책장 맨 아래 펼치기로 노출 (방문자는 빈 배열) */
-  privateBooks?: Book[];
-
   /** 균형 계산용 — 선택 연도와 그 전 해의 공개 완독 책 */
   balanceBooks?: { current: Book[]; previous: Book[] };
 
   /**
    * 이 서재에 기록이 하나도 없는지 (주인=비공개·읽고 싶어요 포함 전체, 방문자=공개분).
    *
-   * `books` 는 지금 탭(연도)의 공개 책이라 "그 해만 비었다"와 "처음 왔다"를 가리지 못한다.
+   * `books` 는 지금 탭(연도)의 책뿐이라 "그 해만 비었다"와 "처음 왔다"를 가리지 못한다.
    * 비공개 책만 있는 주인에게 "첫 책을 기록해 보세요"를 보이면 사실과 다르다.
    */
   isLibraryEmpty?: boolean;
@@ -183,7 +179,6 @@ export const LibraryView = ({
   showWishlist = false,
   isWishlistView = false,
   wishlistBooks = [],
-  privateBooks = [],
   balanceBooks = { current: [], previous: [] },
   isLibraryEmpty = false,
 }: LibraryViewProps) => {
@@ -337,10 +332,6 @@ export const LibraryView = ({
           }
         />
       </section>
-
-      {username && (
-        <PrivateBooksDisclosure books={privateBooks} username={username} />
-      )}
     </div>
   );
 
@@ -399,7 +390,7 @@ export const LibraryView = ({
 
                 {/* 연도 탭과 같은 균형 카드 — 읽은 분야만 레이더 + 띠 + 고른 정도 + 안 읽은 분야.
                 예전 '카테고리 취향'은 9축 고정 레이더라 연도 탭과 모양이 달랐다.
-                books 는 이미 공개 책·재독 합침이다(PublicLibraryContent 의 visibleBooks) */}
+                books 는 이미 재독 합침이다(PublicLibraryContent 의 visibleBooks — 주인은 비공개 포함) */}
                 <ReadingBalanceCard balance={calculateReadingBalance(books)} />
 
                 <Card className='rounded-2xl bg-card py-6 shadow-none'>

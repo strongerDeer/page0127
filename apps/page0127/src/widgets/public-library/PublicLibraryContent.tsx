@@ -118,27 +118,25 @@ export const PublicLibraryContent = ({
     [books, currentYear]
   );
 
-  const periodBooks = useMemo(
-    () => filterBooksByLibraryYear(books, selectedPeriod, currentYear),
-    [books, currentYear, selectedPeriod]
-  );
-
-  // 재독은 새 row 로 쌓이므로 그대로 그리면 같은 책이 회독 수만큼 책장에 선다.
-  // 공개/보관을 나눈 뒤에 합친다 — 1회독은 공개, 2회독은 보관처럼 회독마다
-  // 공개 설정이 다를 수 있어, 합치고 나서 나누면 한쪽 칸에서 통째로 사라진다.
-  const archivedBooks = useMemo(
-    () => dedupeReadings(periodBooks.filter((book) => !book.is_public)),
-    [periodBooks]
-  );
-
-  const visibleBooks = useMemo(
-    () => dedupeReadings(periodBooks.filter((book) => book.is_public)),
-    [periodBooks]
-  );
-
   const publicBooks = useMemo(
     () => books.filter((book) => book.is_public),
     [books]
+  );
+
+  // 주인이 보는 책장·숫자의 기준. 주인은 비공개 책·검수 대기 책까지 "내 책"으로 센다.
+  // 예전엔 비공개 책을 책장 아래 "나만 보는 비공개 책 N권"으로 따로 뺐는데, 직접 등록한
+  // 책은 검수 전까지 강제로 비공개라 "방금 기록한 책이 서재 0권"으로 보였다(2026-11-03).
+  // 숨기는 건 방문자 쪽 일이다 — 방문자는 books 에 공개분만 온다.
+  // 공유 카드·뱃지·명함·케미는 방문자도 보는 숫자라 계속 publicBooks 를 쓴다.
+  const shelfSourceBooks = isOwnProfile ? books : publicBooks;
+
+  // 재독은 새 row 로 쌓이므로 그대로 그리면 같은 책이 회독 수만큼 책장에 선다
+  const visibleBooks = useMemo(
+    () =>
+      dedupeReadings(
+        filterBooksByLibraryYear(shelfSourceBooks, selectedPeriod, currentYear)
+      ),
+    [shelfSourceBooks, selectedPeriod, currentYear]
   );
 
   const compatibilityBookCount = countPublicCompatibilityBooks(publicBooks);
@@ -151,8 +149,8 @@ export const PublicLibraryContent = ({
   );
 
   const stats = useMemo(
-    () => calculateBookStats(publicBooks, selectedPeriod, currentYear),
-    [currentYear, publicBooks, selectedPeriod]
+    () => calculateBookStats(shelfSourceBooks, selectedPeriod, currentYear),
+    [currentYear, shelfSourceBooks, selectedPeriod]
   );
 
   // 독서 명함 — 공유 카드(OG)와 같은 규칙: 공개 완독 책만, 같은 countShelf 로 센다.
@@ -178,17 +176,21 @@ export const PublicLibraryContent = ({
   // 달력: 방문자는 공개만(books 가 이미 공개만 온다), 주인은 비공개까지 — 반투명으로 그린다
   const calendarBooks = isOwnProfile ? books : publicBooks;
 
-  // 균형 카드: 통계와 같은 집합(공개 책, 재독 합침)으로 올해와 작년을 센다
+  // 균형 카드: 통계와 같은 집합(재독 합침)으로 올해와 작년을 센다
   const balanceBooks = useMemo(
     () => ({
       current: dedupeReadings(
-        filterBooksByLibraryYear(publicBooks, selectedYear, currentYear)
+        filterBooksByLibraryYear(shelfSourceBooks, selectedYear, currentYear)
       ),
       previous: dedupeReadings(
-        filterBooksByLibraryYear(publicBooks, selectedYear - 1, currentYear)
+        filterBooksByLibraryYear(
+          shelfSourceBooks,
+          selectedYear - 1,
+          currentYear
+        )
       ),
     }),
-    [publicBooks, selectedYear, currentYear]
+    [shelfSourceBooks, selectedYear, currentYear]
   );
 
   // 로그인하지 않은 방문자 — 가입 길(VisitorCta)을 보여 줄 대상
@@ -304,7 +306,6 @@ export const PublicLibraryContent = ({
           isOwner={isOwnProfile}
           isWishlistView={isWishlistView}
           wishlistBooks={wishlistBooks}
-          privateBooks={isOwnProfile ? archivedBooks : []}
           balanceBooks={balanceBooks}
           // books 는 주인이면 비공개·읽고 싶어요까지, 방문자면 공개분만 온다
           isLibraryEmpty={books.length === 0}

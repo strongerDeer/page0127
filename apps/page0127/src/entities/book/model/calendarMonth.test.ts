@@ -24,7 +24,7 @@ describe('buildCalendarMonth', () => {
     m.weeks.forEach((week) => expect(week).toHaveLength(7));
   });
 
-  it('완독일 칸에 책이 놓이고, 요약은 공개만 세고 비공개는 따로', () => {
+  it('완독일 칸에 책이 놓이고, 요약은 받은 책 전부를 세고 그중 비공개를 따로', () => {
     const pub = createTestBook({
       completed_date: '2026-09-05',
       page_count: 312,
@@ -40,8 +40,8 @@ describe('buildCalendarMonth', () => {
       priv.id,
     ]);
     expect(m.summary).toEqual({
-      publicCount: 1,
-      publicPages: 312,
+      count: 2,
+      pages: 512,
       privateCount: 1,
     });
   });
@@ -130,7 +130,7 @@ describe('buildCalendarMonth', () => {
     expect(findDay(m, 5).ranges[0].lane).toBe(0);
   });
 
-  it('activeMonths — 그 해 공개 완독이 있는 달', () => {
+  it('activeMonths — 그 해 완독이 있는 달(주인이 넘긴 비공개 포함)', () => {
     const m = buildCalendarMonth(
       [
         createTestBook({ completed_date: '2026-01-07' }),
@@ -141,7 +141,7 @@ describe('buildCalendarMonth', () => {
       2026,
       9
     );
-    expect(m.activeMonths).toEqual([1, 5]);
+    expect(m.activeMonths).toEqual([1, 5, 6]);
   });
 });
 
@@ -170,7 +170,7 @@ describe('buildCalendarMonth · 읽는 중', () => {
     expect(findDay(m, 8).readingStarts.map((b) => b.id)).toEqual([book.id]);
     expect(findDay(m, 9).readingStarts).toEqual([]);
     expect(m.weeks.flat().every((d) => !d || d.ranges.length === 0)).toBe(true);
-    expect(m.summary.publicCount).toBe(0);
+    expect(m.summary.count).toBe(0);
   });
 
   it('시작일이 없으면 담은 날(KST)에 놓는다', () => {
