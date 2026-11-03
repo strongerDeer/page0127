@@ -131,8 +131,18 @@ export async function POST(request: NextRequest) {
           );
         }
         // 사용자 세션으로 저장한다. DB가 출처·검수 상태·표지를 강제로 제한한다.
+        //
+        // 표지 주소를 꼭 함께 넘긴다. 여기서 카탈로그 행을 먼저 만들면 books 트리거
+        // (apply_book_catalog_review)는 이 행을 찾아 표지를 **카탈로그 값으로 덮어쓴다**.
+        // 예전엔 validateManualBook 결과(제목·저자 등)만 넣어 올린 표지가 기록과 검수 화면
+        // 모두에서 "표지 없음"이 됐다(2026-11-03, 파일은 Storage 에 남아 있었다).
+        // 주소가 정말 제출자가 올린 파일인지는 DB 가드(is_own_manual_cover)가 다시 본다.
         const { error } = await supabase.from('global_books').insert({
           ...manual,
+          cover_image:
+            typeof body.cover_image === 'string' && body.cover_image
+              ? body.cover_image
+              : null,
           source: 'manual',
           review_status: 'pending',
           submitted_by: user.id,

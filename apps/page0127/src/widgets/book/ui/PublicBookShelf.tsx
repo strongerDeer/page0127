@@ -119,7 +119,8 @@ export const PublicBookShelf = ({
           );
 
           // 방문자에게 안 보이는 책(내가 비공개로 둔 책·검수 중인 직접 등록 책)은
-          // 퀼팅 원단 커버를 통째로 씌운다(HJ 결정 B안, 2026-11-03). 이 책들은 주인
+          // 천 북커버를 통째로 씌운다(HJ 결정 B안, 2026-11-03 — 무늬 없는 포인트 블루 단색에
+          // 로고 라벨, 참고 이미지는 캔버스 다이어리 커버). 이 책들은 주인
           // 화면에만 오므로 방문자는 볼 일이 없다. 진짜 표지는 눌러서 상세에서 본다.
           const privateLabel =
             book.catalog_review_status &&
@@ -133,20 +134,12 @@ export const PublicBookShelf = ({
               style={isCoverView ? undefined : { width: `${spineWidth}px` }}
             >
               {/* 커버를 씌워도 주인은 무슨 책인지 알아야 한다(HJ, 2026-11-03) —
-                  다이어리 커버의 투명 창처럼 진짜 표지를 작게, 아래에 제목 라벨 */}
-              {isCoverView && book.cover_image && (
-                <span className={styles.quiltWindow} aria-hidden='true'>
-                  <CoverImage
-                    {...toCoverSource(book)}
-                    width={64}
-                    height={92}
-                    alt=''
-                    fallback={null}
-                  />
-                </span>
-              )}
+                  천 라벨에 로고와 제목을 박는다 */}
               {isCoverView ? (
                 <span className={styles.quiltLabel}>
+                  <span className={styles.quiltLogo} aria-hidden='true'>
+                    page0127.
+                  </span>
                   <span className={styles.quiltTitle}>{book.title}</span>
                   <span className={styles.quiltNote}>{privateLabel}</span>
                 </span>
