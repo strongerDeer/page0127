@@ -34,6 +34,16 @@ if [[ "$BRANCH" == dependabot/* ]]; then
   exit 0
 fi
 
+# Claude 작업 브랜치도 미리보기를 만들지 않는다 (2026-11-03):
+#   Functions Storage 는 "보관 중인 배포 수 × 배포 하나 크기(약 90MB)"다. 10/21~11/2 13일간
+#   빌드된 배포 252개 중 147개가 미리보기였고, 거의 다 claude/* PR 푸시였다.
+#   이 브랜치들의 화면 확인은 캡처(로컬·운영)로 하고, 검증은 CI 가 한다.
+#   미리보기가 꼭 필요한 PR 은 claude/ 가 아닌 이름의 브랜치로 올리면 된다.
+if [[ "$BRANCH" == claude/* ]]; then
+  echo "Claude 작업 브랜치 — 미리보기를 만들지 않는다 (Functions Storage 절약, CI 가 검증한다)"
+  exit 0
+fi
+
 if [[ -z "$PREVIOUS_SHA" ]]; then
   echo "이전 배포가 없다 — 빌드한다"
   exit 1
