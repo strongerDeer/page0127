@@ -128,3 +128,33 @@ describe('PublicBookShelf — 책장 강화', () => {
     expect(html).toContain('data-align="center"');
   });
 });
+
+describe('PublicBookShelf 나만 보기 커버', () => {
+  it('비공개 책은 퀼팅 커버를 씌우고 제목·상태를 남긴다', () => {
+    const html = renderToStaticMarkup(
+      <PublicBookShelf
+        books={[
+          createTestBook({
+            title: '나만의 책',
+            is_public: false,
+            catalog_review_status: 'pending',
+          }),
+        ]}
+        username='me'
+      />
+    );
+    expect(html).toContain('data-quilt');
+    expect(html).toContain('나만의 책');
+    expect(html).toContain('검수 중');
+  });
+
+  it('공개 책에는 씌우지 않는다', () => {
+    const html = renderToStaticMarkup(
+      <PublicBookShelf
+        books={[createTestBook({ is_public: true })]}
+        username='me'
+      />
+    );
+    expect(html).not.toContain('data-quilt');
+  });
+});
