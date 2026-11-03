@@ -56,9 +56,10 @@ export const Empty: Story = {
   name: '처음 (0권)',
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
+    // 고르기 전엔 저장 대신 "건너뛰기"가 떠 있다
     await expect(
-      await canvas.findByRole('button', { name: /책을 골라 주세요/ })
-    ).toBeDisabled();
+      await canvas.findByRole('button', { name: '건너뛰기' })
+    ).toBeEnabled();
   },
 };
 

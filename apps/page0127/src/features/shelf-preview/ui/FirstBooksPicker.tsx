@@ -189,27 +189,32 @@ export const FirstBooksPicker = ({ picks, target }: FirstBooksPickerProps) => {
         </div>
       </div>
 
-      <div className='flex flex-col gap-2 sm:flex-row-reverse sm:items-center sm:justify-between'>
-        <Button
-          size='lg'
-          disabled={selected.length === 0 || leaving}
-          onClick={handleSave}
-          className='h-14 w-full gap-2 text-base font-bold sm:w-auto sm:px-8'
-        >
-          {selected.length === 0
-            ? '책을 골라 주세요'
-            : `${selected.length}권 꽂고 내 서재로`}
-          <ArrowRight aria-hidden='true' className='size-5' />
-        </Button>
-        <Button
-          type='button'
-          variant='ghost'
-          disabled={leaving}
-          onClick={handleSkip}
-          className='text-text-subtle'
-        >
-          나중에 할게요
-        </Button>
+      {/* 하단 고정 버튼 — 고르기 칸이 화면을 채우면 버튼이 스크롤 아래로 밀려 안 보였다(2026-11-03).
+          고르기 전엔 "건너뛰기", 한 권이라도 고르면 저장 버튼으로 바뀐다.
+          sticky 라 페이지 끝에 닿으면 제자리에 놓인다. 데스크톱은 한 화면에 다 보여 고정하지 않는다. */}
+      <div className='sticky bottom-0 z-10 -mx-6 border-t border-line-soft bg-background/95 px-6 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur sm:static sm:mx-0 sm:flex sm:justify-end sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none'>
+        {selected.length === 0 ? (
+          <Button
+            type='button'
+            size='lg'
+            variant='outline'
+            disabled={leaving}
+            onClick={handleSkip}
+            className='h-14 w-full text-base sm:w-auto sm:px-8'
+          >
+            건너뛰기
+          </Button>
+        ) : (
+          <Button
+            size='lg'
+            disabled={leaving}
+            onClick={handleSave}
+            className='h-14 w-full gap-2 text-base font-bold sm:w-auto sm:px-8'
+          >
+            {selected.length}권 꽂고 내 서재로
+            <ArrowRight aria-hidden='true' className='size-5' />
+          </Button>
+        )}
       </div>
     </div>
   );
