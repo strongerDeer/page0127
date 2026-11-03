@@ -244,7 +244,7 @@ CI의 `Block production database in CI` 단계가 두 URL이 같으면 실패해
 - Production 스코프: 운영 Supabase 값
 - Preview 스코프: **개발 클라우드** Supabase 값
 - Preview 스코프의 `PRODUCTION_SUPABASE_URL`: 운영 Supabase URL (가드의 대조군이므로 운영 값이 맞다)
-- Git Production Branch: `main`
+- Git Production Branch: `release` (2026-11-03부터. main 머지는 쌓기만 하고, Actions "1. 릴리스 미리보기" → "2. 운영 배포"로 내보낸다)
 - GitHub의 필수 체크가 끝난 커밋만 Production에 배포되도록 설정
 
 ⚠️ **환경변수는 배포 시점에 굳는다.** 값을 바꿔도 기존 배포에는 반영되지 않으므로 새로

@@ -44,6 +44,18 @@ if [[ "$BRANCH" == claude/* ]]; then
   exit 0
 fi
 
+# main 은 "모아 두는 곳"이고 운영은 release 브랜치다 (2026-11-03):
+#   PR 을 main 에 머지할 때마다 운영 배포가 하나씩 생겨 하루 10~20번 배포됐다.
+#   이제 Vercel 운영 브랜치는 release 이고, main 은 쌓기만 한다. 내보낼 때는
+#   Actions 의 "1. 릴리스 미리보기"(main → release-next, 미리보기 1개) →
+#   "2. 운영 배포"(release-next → release, 운영 배포 1개) 를 누른다.
+#   VERCEL_ENV 로 가르는 이유: Vercel 운영 브랜치를 바꾸기 전에는 main 이 아직 production 이라
+#   그동안은 평소처럼 빌드해야 한다. 바꾼 뒤에야 main 이 preview 가 되고 그때부터 건너뛴다.
+if [[ "$BRANCH" == "main" && "${VERCEL_ENV:-}" == "preview" ]]; then
+  echo "main 은 운영 브랜치가 아니다 — 미리보기를 만들지 않는다 (릴리스 미리보기는 release-next)"
+  exit 0
+fi
+
 if [[ -z "$PREVIOUS_SHA" ]]; then
   echo "이전 배포가 없다 — 빌드한다"
   exit 1
