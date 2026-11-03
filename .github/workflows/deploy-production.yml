@@ -1,6 +1,6 @@
 name: "2. 운영 배포"
 
-# "1. 릴리스 미리보기"로 확인한 release-next 를 그대로 운영(release 브랜치)에 내보낸다.
+# "1. 스테이징 배포"로 확인한 staging 을 그대로 운영(release 브랜치)에 내보낸다.
 # Vercel 운영 브랜치가 release 라서 이 push 한 번이 운영 배포 한 번이다.
 #
 # - 미리보기에서 본 커밋 그대로 나간다. 그 사이 main 이 움직여도 섞이지 않는다.
@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   ship:
-    name: release-next → release
+    name: staging → release
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -39,11 +39,11 @@ jobs:
         run: |
           set -euo pipefail
 
-          if ! git rev-parse -q --verify origin/release-next >/dev/null; then
-            echo "::error::release-next 가 없다 — 먼저 '1. 릴리스 미리보기'를 실행한다"
+          if ! git rev-parse -q --verify origin/staging >/dev/null; then
+            echo "::error::staging 이 없다 — 먼저 '1. 스테이징 배포'를 실행한다"
             exit 1
           fi
-          NEXT_SHA=$(git rev-parse origin/release-next)
+          NEXT_SHA=$(git rev-parse origin/staging)
 
           if git rev-parse -q --verify origin/release >/dev/null; then
             RELEASE_SHA=$(git rev-parse origin/release)
