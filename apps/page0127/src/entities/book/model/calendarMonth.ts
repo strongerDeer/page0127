@@ -48,8 +48,13 @@ export type CalendarMonth = {
   month: number;
   /** 일요일 시작, 7칸씩 */
   weeks: (CalendarDay | null)[][];
-  summary: { publicCount: number; publicPages: number; privateCount: number };
-  /** 그 해 공개 완독이 있는 달 (1~12) */
+  /**
+   * 그 달 완독 — 받은 책 전부를 센다. 방문자는 공개 책만 받고, 주인은 비공개 책까지
+   * 받아 "내 기록"으로 센다(2026-11-03, 직접 등록 책이 0권으로 보이던 문제).
+   * privateCount 는 count 중 방문자에게 안 보이는 권수다.
+   */
+  summary: { count: number; pages: number; privateCount: number };
+  /** 그 해 완독이 있는 달 (1~12) — summary 와 같은 기준 */
   activeMonths: number[];
 };
 
@@ -159,14 +164,11 @@ export const buildCalendarMonth = (
     (book) =>
       book.completed_date >= monthStart && book.completed_date <= monthEnd
   );
-  const publicInMonth = inMonth.filter((book) => book.is_public);
 
   const activeMonths = Array.from(
     new Set(
       completed
-        .filter(
-          (book) => book.is_public && book.completed_date.startsWith(`${year}-`)
-        )
+        .filter((book) => book.completed_date.startsWith(`${year}-`))
         .map((book) => Number(book.completed_date.slice(5, 7)))
     )
   ).sort((a, b) => a - b);
@@ -176,12 +178,9 @@ export const buildCalendarMonth = (
     month,
     weeks,
     summary: {
-      publicCount: publicInMonth.length,
-      publicPages: publicInMonth.reduce(
-        (sum, book) => sum + (book.page_count ?? 0),
-        0
-      ),
-      privateCount: inMonth.length - publicInMonth.length,
+      count: inMonth.length,
+      pages: inMonth.reduce((sum, book) => sum + (book.page_count ?? 0), 0),
+      privateCount: inMonth.filter((book) => !book.is_public).length,
     },
     activeMonths,
   };

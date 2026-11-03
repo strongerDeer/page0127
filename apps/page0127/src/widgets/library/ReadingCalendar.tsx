@@ -258,13 +258,12 @@ export const ReadingCalendar = ({
       </div>
 
       <p className='mt-3 text-xs text-text-subtle'>
-        {view.month}월{' '}
-        <b className='text-text-strong'>{summary.publicCount}권</b> 완독
-        {summary.publicPages > 0 &&
-          ` · ${summary.publicPages.toLocaleString()}쪽`}
+        {view.month}월 <b className='text-text-strong'>{summary.count}권</b>{' '}
+        완독
+        {summary.pages > 0 && ` · ${summary.pages.toLocaleString()}쪽`}
         {isOwner &&
           summary.privateCount > 0 &&
-          ` · 비공개 ${summary.privateCount}권`}
+          ` · 그중 나만 보기 ${summary.privateCount}권`}
       </p>
 
       <Dialog open={selected !== null} onOpenChange={() => setSelected(null)}>
