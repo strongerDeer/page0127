@@ -133,7 +133,14 @@ export const CompletedYearDialog = ({
 
   return (
     <Dialog open onOpenChange={(open) => !open && handleSkip()}>
-      <DialogContent>
+      <DialogContent
+        onOpenAutoFocus={(event) => {
+          // 기본 동작은 첫 버튼("올해")에 포커스 링을 띄워, 선택된 "모름"과 헷갈리게 했다.
+          // 창 자체에 포커스를 둬서 화면 읽기·Tab 순서는 지키고 링은 안 보이게 한다.
+          event.preventDefault();
+          (event.currentTarget as HTMLElement).focus();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>
             방금 꽂은 {books.length}권, 언제 읽고 어땠나요?
@@ -144,7 +151,8 @@ export const CompletedYearDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        <ul className='max-h-[50vh] space-y-4 overflow-y-auto pr-1'>
+        {/* overflow 가 버튼 포커스 링(3px)을 자르지 않게 안쪽 여백을 두고 바깥으로 상쇄한다 */}
+        <ul className='-m-1 max-h-[50vh] space-y-4 overflow-y-auto p-1'>
           {books.map((book) => {
             const row = rows[book.id];
             const yearError = getCompletedYearError(
