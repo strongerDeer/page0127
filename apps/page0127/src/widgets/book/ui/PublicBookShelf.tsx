@@ -133,22 +133,19 @@ export const PublicBookShelf = ({
               className={`${styles.quilt} ${isCoverView ? styles.cover : styles.spine}`}
               style={isCoverView ? undefined : { width: `${spineWidth}px` }}
             >
-              {/* 커버를 씌워도 주인은 무슨 책인지 알아야 한다(HJ, 2026-11-03) —
-                  천 라벨에 로고와 제목을 박는다 */}
-              {isCoverView ? (
-                <span className={styles.quiltLabel}>
-                  <span className={styles.quiltLogo} aria-hidden='true'>
-                    page0127.
-                  </span>
-                  <span className={styles.quiltTitle}>{book.title}</span>
-                  <span className={styles.quiltNote}>{privateLabel}</span>
-                </span>
-              ) : (
-                <span className={styles.quiltSpineTitle}>
-                  {book.title}
-                  <span className='sr-only'> ({privateLabel})</span>
-                </span>
-              )}
+              {/* 겉으로는 무슨 책인지 드러내지 않는다 — 천에 서비스 아이콘 패치 하나만
+                  (HJ, 2026-11-03). 제목은 화면낭독기와 꺼냈을 때의 말풍선으로만 */}
+              <Image
+                src='/brand/app-icon.png'
+                width={isCoverView ? 40 : 16}
+                height={isCoverView ? 40 : 16}
+                alt=''
+                aria-hidden='true'
+                className={styles.quiltBadge}
+              />
+              <span className='sr-only'>
+                {book.title} ({privateLabel})
+              </span>
             </div>
           );
 

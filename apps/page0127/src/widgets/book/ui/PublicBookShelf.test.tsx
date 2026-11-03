@@ -130,7 +130,7 @@ describe('PublicBookShelf — 책장 강화', () => {
 });
 
 describe('PublicBookShelf 나만 보기 커버', () => {
-  it('비공개 책은 퀼팅 커버를 씌우고 제목·상태를 남긴다', () => {
+  it('비공개 책은 북커버를 씌우고 제목·상태는 화면낭독기에만 남긴다', () => {
     const html = renderToStaticMarkup(
       <PublicBookShelf
         books={[
