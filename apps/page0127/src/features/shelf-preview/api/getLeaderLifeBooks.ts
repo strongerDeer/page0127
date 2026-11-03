@@ -35,7 +35,8 @@ const loadLeaderLifeBooks = async (): Promise<LeaderLifeBook[]> => {
 
 const cachedLeaderLifeBooks = unstable_cache(
   loadLeaderLifeBooks,
-  ['shelf-preview', 'leader-life-books'],
+  // v2: 저장용 책 정보(book)를 함께 든다 — 예전 모양의 캐시를 읽지 않게 키를 바꿨다
+  ['shelf-preview', 'leader-life-books-v2'],
   { revalidate: 3600 }
 );
 
