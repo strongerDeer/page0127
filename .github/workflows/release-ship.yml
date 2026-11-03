@@ -1,0 +1,87 @@
+name: "2. 운영 배포"
+
+# "1. 릴리스 미리보기"로 확인한 release-next 를 그대로 운영(release 브랜치)에 내보낸다.
+# Vercel 운영 브랜치가 release 라서 이 push 한 번이 운영 배포 한 번이다.
+#
+# - 미리보기에서 본 커밋 그대로 나간다. 그 사이 main 이 움직여도 섞이지 않는다.
+# - release 는 앞으로만 간다(fast-forward). release 에 main 에 없는 커밋이 있으면 멈춘다.
+#   급한 수정(핫픽스)도 main 에 PR 로 머지한 뒤 1 → 2 를 바로 누른다.
+# - 버전 태그(v2026.11.03, 같은 날 두 번째는 v2026.11.03-2)와 GitHub Release 를 만든다.
+#   Release 본문은 지난 태그 이후 머지된 PR 목록으로 자동 작성된다.
+#
+# ⚠️ 마이그레이션이 들어 있으면 이걸 누르기 전에 운영 Supabase 에 db push 를 끝낸다(DB 먼저, 코드 나중).
+#
+# 실행: GitHub → Actions → "2. 운영 배포" → Run workflow
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  ship:
+    name: release-next → release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: release 로 내보내기 + 버전 태그
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          if ! git rev-parse -q --verify origin/release-next >/dev/null; then
+            echo "::error::release-next 가 없다 — 먼저 '1. 릴리스 미리보기'를 실행한다"
+            exit 1
+          fi
+          NEXT_SHA=$(git rev-parse origin/release-next)
+
+          if git rev-parse -q --verify origin/release >/dev/null; then
+            RELEASE_SHA=$(git rev-parse origin/release)
+            if [ "$RELEASE_SHA" = "$NEXT_SHA" ]; then
+              echo "운영과 같은 커밋(${NEXT_SHA:0:7})이다 — 내보낼 것이 없다" | tee -a "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            if ! git merge-base --is-ancestor "$RELEASE_SHA" "$NEXT_SHA"; then
+              echo "::error::release 에 main 에 없는 커밋이 있다(${RELEASE_SHA:0:7}). 그 커밋을 main 에 먼저 합친 뒤 1 → 2 를 다시 실행한다"
+              exit 1
+            fi
+          fi
+
+          git push origin "${NEXT_SHA}:refs/heads/release"
+
+          # 버전: 한국 날짜 기준. 같은 날 여러 번이면 -2, -3 …
+          BASE="v$(TZ=Asia/Seoul date +%Y.%m.%d)"
+          TAG="$BASE"
+          N=1
+          while git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; do
+            N=$((N + 1))
+            TAG="${BASE}-${N}"
+          done
+          PREV_TAG=$(git tag --list 'v*' --sort=-creatordate | head -n 1 || true)
+
+          git tag "$TAG" "$NEXT_SHA"
+          git push origin "refs/tags/${TAG}"
+
+          if [ -n "$PREV_TAG" ]; then
+            gh release create "$TAG" --title "$TAG" --generate-notes --notes-start-tag "$PREV_TAG"
+          else
+            gh release create "$TAG" --title "$TAG" --generate-notes
+          fi
+
+          {
+            echo "## 운영 배포 시작: ${TAG}"
+            echo
+            echo "- 커밋: \`${NEXT_SHA:0:7}\` → release"
+            echo "- Vercel 빌드 2~3분 뒤 https://page0127.com 에 반영된다."
+            echo "- 변경 목록: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${TAG}"
+          } >> "$GITHUB_STEP_SUMMARY"
