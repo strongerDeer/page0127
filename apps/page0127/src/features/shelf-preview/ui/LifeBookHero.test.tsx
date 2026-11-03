@@ -9,10 +9,21 @@ import type { LeaderLifeBook } from '../model/leaderLifeBooks';
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 const leader = (isbn: string): LeaderLifeBook => ({
-  isbn,
-  title: `리더 책 ${isbn}`,
+  book: {
+    isbn,
+    provider_item_id: isbn,
+    title: `리더 책 ${isbn}`,
+    author: null,
+    publisher: null,
+    cover_image: null,
+    spine_image: null,
+    pub_date: null,
+    category: null,
+    source: null,
+  },
   coverSrc: `https://image.yes24.com/goods/${isbn}/XL`,
   coverFallback: null,
+  spineSrc: null,
 });
 
 describe('LifeBookHero', () => {
@@ -37,15 +48,23 @@ describe('LifeBookHero', () => {
     expect(html).not.toContain('내 서재에 등록하기');
   });
 
-  it('리더 인생책이 있으면 표지만 보여 주고 인원 수는 없다', () => {
+  it('리더 인생책이 있으면 표지를 보여 주고 인원 수는 없다', () => {
     const html = renderToStaticMarkup(
       <LifeBookHero leaders={['1', '2', '3'].map(leader)} />
     );
     expect(html).toContain('리더들이 뽑은 인생책이에요');
     expect(html).toContain('리더 책 3');
     expect(html).not.toMatch(/\d+명/);
-    // 보여주기만 한다 — 누르는 대상이 아니다
-    expect(html.match(/<button/g) ?? []).toHaveLength(1); // 검색 [찾기] 버튼뿐
+  });
+
+  it('리더 인생책 표지는 눌러서 고르는 버튼이다(아직 고른 책 없음)', () => {
+    const html = renderToStaticMarkup(
+      <LifeBookHero leaders={['1', '2', '3'].map(leader)} />
+    );
+    expect(html).toContain('aria-label="리더 책 1 인생책으로 고르기"');
+    // 검색 [찾기] 1개 + 표지 3개
+    expect(html.match(/<button/g) ?? []).toHaveLength(4);
+    expect(html.match(/aria-pressed="true"/g) ?? []).toHaveLength(0);
   });
 
   it('리더 인생책이 없으면 그 줄을 그리지 않는다', () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useTransition } from 'react';
+import { type ReactNode, useState, useTransition } from 'react';
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -46,6 +46,20 @@ const YearlyTrendChart = dynamic(
     ssr: false,
     loading: () => (
       <div className='h-[300px] animate-pulse rounded-lg bg-muted' />
+    ),
+  }
+);
+
+// 월별 독서 차트도 recharts — 같은 이유로 나중에, 자리만 차트 높이(180px)만큼 잡아 둔다
+const MonthlyReadingChart = dynamic(
+  () =>
+    import('@/features/stats/ui/MonthlyReadingChart').then(
+      (m) => m.MonthlyReadingChart
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className='h-[180px] animate-pulse rounded-lg bg-muted' />
     ),
   }
 );
@@ -181,6 +195,26 @@ export const LibraryView = ({
 
   // 차트 클릭 → 목록 필터링은 급하지 않음 → 우선순위를 낮춰 입력 응답성을 지킨다
   const [isFilterPending, startFilterTransition] = useTransition();
+
+  // 월별 차트 막대 → 캘린더를 그 달로. jump 가 바뀌면 key 로 캘린더를 새로 연다(초기 달만 받는 컴포넌트라서)
+  const [calendarJump, setCalendarJump] = useState<{
+    year: number;
+    month: number;
+    seq: number;
+  } | null>(null);
+  const handleMonthClick = (month: number) => {
+    setCalendarJump((prev) => ({
+      year: selectedYear,
+      month,
+      seq: (prev?.seq ?? 0) + 1,
+    }));
+    // 모바일은 차트가 캘린더 아래 → 넘긴 달이 보이게 캘린더로 올린다
+    document
+      .getElementById('reading-calendar')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  // 다른 연도 탭으로 가면 이전 점프는 무시
+  const jump = calendarJump?.year === selectedYear ? calendarJump : null;
 
   const handleRatingClick = (rating: RatingFilter) =>
     startFilterTransition(() => filters.toggleRating(rating));
@@ -428,24 +462,47 @@ export const LibraryView = ({
                 {/* items-start — 평점 카드가 달력 높이에 맞춰 늘어나면 아래가 텅 빈다 */}
                 <div className='grid grid-cols-1 items-start gap-6 lg:grid-cols-2'>
                   <ReadingCalendar
-                    key={selectedYear}
+                    key={`${selectedYear}-${jump?.seq ?? 0}`}
                     books={calendarBooks}
                     year={selectedYear}
                     today={today}
                     isOwner={isOwner}
                     bookHref={bookHref}
+                    initialMonth={jump?.month}
                   />
-                  <RatingSummaryCard
-                    year={selectedYear}
-                    ratings={stats.ratingReading}
-                    averageRating={stats.averageRating}
-                    total={stats.totalCompletedBooks}
-                    lifeBooks={completedBooks.filter(
-                      (book) => book.is_life_book
-                    )}
-                    bookHref={bookHref}
-                    onRatingClick={handleRatingClick}
-                  />
+                  {/* 오른쪽 칸: 월별 권수 → 평점. 모바일에선 캘린더 아래로 */}
+                  <div className='space-y-6'>
+                    <section className='rounded-2xl border border-line-soft bg-card p-5'>
+                      <h2 className='text-base font-bold text-text-strong'>
+                        월별 독서 추이
+                      </h2>
+                      <p className='mt-1 text-sm text-text-subtle'>
+                        막대를 누르면 캘린더가 그 달로 넘어가요
+                      </p>
+                      <div className='mt-3'>
+                        <MonthlyReadingChart
+                          data={stats.monthlyReading}
+                          onMonthClick={handleMonthClick}
+                          currentMonth={
+                            selectedYear === currentYear
+                              ? Number(today.slice(5, 7))
+                              : undefined
+                          }
+                        />
+                      </div>
+                    </section>
+                    <RatingSummaryCard
+                      year={selectedYear}
+                      ratings={stats.ratingReading}
+                      averageRating={stats.averageRating}
+                      total={stats.totalCompletedBooks}
+                      lifeBooks={completedBooks.filter(
+                        (book) => book.is_life_book
+                      )}
+                      bookHref={bookHref}
+                      onRatingClick={handleRatingClick}
+                    />
+                  </div>
                 </div>
               </>
             )}

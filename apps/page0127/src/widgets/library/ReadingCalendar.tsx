@@ -34,6 +34,8 @@ type ReadingCalendarProps = {
   today: string;
   isOwner: boolean;
   bookHref: (book: Book) => string;
+  /** 처음 보여줄 달 — 월별 차트 막대를 누르면 부모가 key 와 함께 바꿔 그 달로 다시 연다 */
+  initialMonth?: number;
 };
 
 type MonthState = { year: number; month: number };
@@ -73,10 +75,11 @@ export const ReadingCalendar = ({
   today,
   isOwner,
   bookHref,
+  initialMonth,
 }: ReadingCalendarProps) => {
   const [view, dispatch] = useReducer(monthReducer, {
     year,
-    month: getInitialCalendarMonth(books, year, today),
+    month: initialMonth ?? getInitialCalendarMonth(books, year, today),
   });
   const [selected, setSelected] = useState<CalendarDay | null>(null);
 
@@ -84,7 +87,10 @@ export const ReadingCalendar = ({
   const { summary } = month;
 
   return (
-    <section className='rounded-2xl border border-line-soft bg-card p-5'>
+    <section
+      id='reading-calendar'
+      className='scroll-mt-24 rounded-2xl border border-line-soft bg-card p-5'
+    >
       <div className='flex items-center justify-between'>
         <h2 className='text-base font-bold text-text-strong'>독서 캘린더</h2>
         <div className='flex items-center gap-1'>
@@ -112,7 +118,7 @@ export const ReadingCalendar = ({
         </div>
       </div>
 
-      {/* 월 칩 — 월별 추이 차트를 대신한다. 공개 완독이 있는 달에 점 */}
+      {/* 월 칩 — 공개 완독이 있는 달에 점. 권수는 옆 월별 차트가 보여준다 */}
       <div className='mt-3 grid grid-cols-12 gap-0.5'>
         {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => {
           const isOn = m === view.month;

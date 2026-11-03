@@ -401,9 +401,7 @@ test('온보딩을 완료하면 빈 서재에 도착하고 공유 주소를 복�
   await expect(
     page.getByRole('heading', { name: '기억나는 책을 골라 주세요' })
   ).toBeVisible();
-  await page
-    .getByRole('button', { name: '나중에 할게요', exact: true })
-    .click();
+  await page.getByRole('button', { name: '건너뛰기', exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`/${reader.username}(\\?|$)`));
   await expect(page.getByText('첫 책을 기록해 보세요')).toBeVisible();
 

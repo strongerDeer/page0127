@@ -31,6 +31,20 @@ describe('ReadingCalendar', () => {
     expect(html).toContain('>1권</b> 완독 · 300쪽');
   });
 
+  it('initialMonth 가 오면 그 달로 연다 (월별 차트 막대 클릭)', () => {
+    const html = renderToStaticMarkup(
+      <ReadingCalendar
+        books={[createTestBook({ completed_date: '2026-10-13' })]}
+        year={2026}
+        today='2026-10-13'
+        isOwner={false}
+        bookHref={href}
+        initialMonth={5}
+      />
+    );
+    expect(html).toContain('2026년 5월');
+  });
+
   it('주인 화면의 비공개 책은 반투명이고 완독에 함께 세며 그중 권수를 따로 적는다', () => {
     const html = renderToStaticMarkup(
       <ReadingCalendar

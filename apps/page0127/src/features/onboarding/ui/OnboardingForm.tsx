@@ -194,7 +194,7 @@ export const OnboardingForm = ({
         />
         <Label
           htmlFor={ids.agreement}
-          className='text-sm leading-relaxed font-normal break-keep'
+          className='block text-sm leading-relaxed font-normal break-keep'
         >
           만 14세 이상이며,{' '}
           <Link href='/terms' target='_blank' className='underline'>
