@@ -4,6 +4,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -20,6 +21,9 @@ type MonthlyReadingChartProps = {
 
   /** Bar 클릭 이벤트 핸들러 (선택사항) */
   onMonthClick?: (month: number) => void;
+
+  /** 이번 달 — 민트로 칠한다. 올해 탭이 아니면 넘기지 않는다 */
+  currentMonth?: number;
 };
 
 /**
@@ -32,6 +36,7 @@ type MonthlyReadingChartProps = {
 export const MonthlyReadingChart = ({
   data,
   onMonthClick,
+  currentMonth,
 }: MonthlyReadingChartProps) => {
   // recharts 3 은 막대 클릭에 (막대 정보, 순서) 를 넘긴다 — 순서로 원본 데이터를 찾는 게 버전에 덜 민감하다
   const handleBarClick = (_bar: unknown, index: number) => {
@@ -39,12 +44,13 @@ export const MonthlyReadingChart = ({
     if (onMonthClick && month) onMonthClick(month);
   };
 
+  // 캘린더 옆 보조 차트라 낮게 — 300px 이면 오른쪽 칸이 캘린더보다 한참 길어진다
   return (
-    <div className='h-[300px] w-full'>
+    <div className='h-[180px] w-full'>
       <ResponsiveContainer width='100%' height='100%'>
         <BarChart
           data={data}
-          margin={{ top: 16, right: 12, left: -20, bottom: 0 }}
+          margin={{ top: 8, right: 4, left: -28, bottom: 0 }}
         >
           <CartesianGrid
             vertical={false}
@@ -57,7 +63,9 @@ export const MonthlyReadingChart = ({
             dataKey='month'
             axisLine={false}
             tickLine={false}
-            tickFormatter={(month) => `${month}월`}
+            // 모바일 폭에서도 12달이 다 보이게 숫자만, 건너뛰지 않는다('N월'은 툴팁에)
+            interval={0}
+            tickFormatter={(month) => `${month}`}
             tick={{ fill: 'var(--text-subtle)', fontSize: 12 }}
           />
 
@@ -86,7 +94,19 @@ export const MonthlyReadingChart = ({
             onClick={handleBarClick}
             // Recharts 애니메이션이 React 19에서 리렌더 burst를 유발 → 비활성화
             isAnimationActive={false}
-          />
+          >
+            {/* 이번 달 = 민트(읽는 중 책갈피와 같은 --teal-500), 나머지는 기본 파랑 */}
+            {data.map((item) => (
+              <Cell
+                key={item.month}
+                fill={
+                  item.month === currentMonth
+                    ? 'var(--teal-500)'
+                    : 'var(--primary)'
+                }
+              />
+            ))}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
     </div>

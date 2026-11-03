@@ -51,7 +51,7 @@ const YearlyTrendChart = dynamic(
   }
 );
 
-// 월별 독서 차트도 recharts — 같은 이유로 나중에, 자리만 300px 잡아 둔다
+// 월별 독서 차트도 recharts — 같은 이유로 나중에, 자리만 차트 높이(180px)만큼 잡아 둔다
 const MonthlyReadingChart = dynamic(
   () =>
     import('@/features/stats/ui/MonthlyReadingChart').then(
@@ -60,7 +60,7 @@ const MonthlyReadingChart = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className='h-[300px] animate-pulse rounded-lg bg-muted' />
+      <div className='h-[180px] animate-pulse rounded-lg bg-muted' />
     ),
   }
 );
@@ -492,6 +492,11 @@ export const LibraryView = ({
                         <MonthlyReadingChart
                           data={stats.monthlyReading}
                           onMonthClick={handleMonthClick}
+                          currentMonth={
+                            selectedYear === currentYear
+                              ? Number(today.slice(5, 7))
+                              : undefined
+                          }
                         />
                       </div>
                     </section>
