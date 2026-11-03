@@ -1,17 +1,18 @@
-name: "1. 릴리스 미리보기"
+name: "1. 스테이징 배포"
 
-# main 에 쌓인 변경을 운영에 내보내기 전에 미리보기 하나로 확인한다.
+# main 에 쌓인 변경을 운영에 내보내기 전에 staging(리허설용 미리보기) 하나로 확인한다.
+# staging → production 으로 "승격"하는 흔한 방식을 브랜치 두 개(staging·release)로 한다.
 #
 # 흐름 (2026-11-03부터):
 #   PR → main 머지 (운영 배포 안 함, 쌓기만)
-#     → 이 워크플로: main 을 release-next 브랜치로 복사 → Vercel 이 미리보기 1개를 만든다
+#     → 이 워크플로: main 을 staging 브랜치로 복사 → Vercel 이 미리보기 1개를 만든다
 #     → 미리보기에서 확인
-#     → "2. 운영 배포" 워크플로: release-next 를 release 로 → 운영 배포 1번 + 버전 태그
+#     → "2. 운영 배포" 워크플로: staging 을 release 로 → 운영 배포 1번 + 버전 태그
 #
 # 왜: 머지마다 운영 배포가 생겨 하루 10~20번 배포됐고, 배포가 쌓여 Vercel Hobby 의
 # Functions Storage 한도(10GB)를 넘었다. 확인 없이 바로 운영에 나가는 것도 문제였다.
 #
-# 실행: GitHub → Actions → "1. 릴리스 미리보기" → Run workflow
+# 실행: GitHub → Actions → "1. 스테이징 배포" → Run workflow
 
 on:
   workflow_dispatch: {}
@@ -25,7 +26,7 @@ concurrency:
 
 jobs:
   preview:
-    name: main → release-next
+    name: main → staging
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -34,18 +35,18 @@ jobs:
           ref: main
           fetch-depth: 0
 
-      - name: release-next 를 main 으로 맞추기
+      - name: staging 을 main 으로 맞추기
         run: |
           set -euo pipefail
           MAIN_SHA=$(git rev-parse origin/main)
-          # release-next 는 매번 main 으로 덮어쓰는 임시 브랜치다(사람이 커밋하지 않는다).
-          git push --force origin "${MAIN_SHA}:refs/heads/release-next"
+          # staging 은 매번 main 으로 덮어쓰는 임시 브랜치다(사람이 커밋하지 않는다).
+          git push --force origin "${MAIN_SHA}:refs/heads/staging"
 
           {
-            echo "## 릴리스 미리보기 준비됨"
+            echo "## 스테이징 준비됨"
             echo
             echo "- 커밋: \`${MAIN_SHA:0:7}\`"
-            echo "- 미리보기 주소(빌드 2~3분 뒤): https://page0127-git-release-next-strongerdeers-projects.vercel.app"
+            echo "- 미리보기 주소(빌드 2~3분 뒤): https://page0127-git-staging-strongerdeers-projects.vercel.app"
             echo "  - Vercel 에 로그인한 브라우저에서만 열린다(미리보기 보호)."
             echo "- 확인이 끝나면 Actions → **2. 운영 배포** 를 실행한다."
             echo
