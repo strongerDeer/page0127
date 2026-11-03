@@ -5,10 +5,21 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
 // 표지 주소는 비워 둔다 — 스토리북에서 외부 이미지를 부르지 않고, 표지가 없을 때 제목 대체를 같이 본다
 const leader = (isbn: string, title: string): LeaderLifeBook => ({
-  isbn,
-  title,
+  book: {
+    isbn,
+    provider_item_id: null,
+    title,
+    author: null,
+    publisher: null,
+    cover_image: null,
+    spine_image: null,
+    pub_date: null,
+    category: null,
+    source: null,
+  },
   coverSrc: null,
   coverFallback: null,
+  spineSrc: null,
 });
 
 const LEADERS = [
