@@ -1,10 +1,10 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 
 import { Button, Input, Label, Textarea } from '@repo/ui';
 
-import { resubmitBook, reviewBook } from '../api/actions';
+import { deleteCatalogBook, resubmitBook, reviewBook } from '../api/actions';
 
 import type { BookReview } from '../model/review';
 
@@ -51,6 +51,73 @@ export const ReviewDecisionForm = ({ book }: { book: BookReview }) => {
     </form>
   );
 };
+/**
+ * 강제 삭제 — 실수로 누르지 않게 두 번 누르게 한다.
+ * 기록한 사람 수(readingCount)를 보여 줘서 누구 기록까지 사라지는지 알고 지우게 한다.
+ */
+export const DeleteCatalogBookForm = ({
+  bookId,
+  readingCount,
+}: {
+  bookId: string;
+  readingCount: number;
+}) => {
+  const [state, action, pending] = useActionState(
+    deleteCatalogBook,
+    initialState
+  );
+  const [confirming, setConfirming] = useState(false);
+  if (state.ok) {
+    return (
+      <p role='status' className='text-sm'>
+        {state.message}
+      </p>
+    );
+  }
+  return (
+    <form action={action} className='space-y-2 border-t border-line pt-3'>
+      <input type='hidden' name='id' value={bookId} />
+      {confirming ? (
+        <>
+          <p className='text-sm text-destructive'>
+            공용 도서와 이 책의 독서 기록 {readingCount}개(모든 사용자)가 함께
+            지워지고 되돌릴 수 없어요.
+          </p>
+          <div className='flex gap-2'>
+            <Button variant='destructive' size='sm' disabled={pending}>
+              {pending ? '삭제 중…' : '영구 삭제'}
+            </Button>
+            <Button
+              type='button'
+              variant='outline'
+              size='sm'
+              onClick={() => setConfirming(false)}
+              disabled={pending}
+            >
+              취소
+            </Button>
+          </div>
+        </>
+      ) : (
+        <Button
+          type='button'
+          variant='ghost'
+          size='sm'
+          className='text-destructive'
+          onClick={() => setConfirming(true)}
+        >
+          강제 삭제
+        </Button>
+      )}
+      {state.message && (
+        <p role='alert' className='text-sm'>
+          {state.message}
+        </p>
+      )}
+    </form>
+  );
+};
+
 export const SubmissionEditForm = ({ book }: { book: BookReview }) => {
   const [state, action, pending] = useActionState(resubmitBook, initialState);
   return (
