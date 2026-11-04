@@ -82,6 +82,9 @@ beforeAll(async () => {
   `);
   await db.exec(migration('20261028000000_book_catalog_review.sql'));
   await db.exec(migration('20261101000100_manual_book_cover_upload.sql'));
+  await db.exec(
+    migration('20261104000000_catalog_guard_allow_account_deletion.sql')
+  );
 });
 afterAll(() => db.close());
 beforeEach(async () => {
@@ -170,5 +173,64 @@ describe('표지 업로드 정책', () => {
     ).toBe(false);
     expect(await upload(me, '9788937460449/cover.jpg')).toBe(false);
     expect(await upload(me, `manual/${me}/cover.gif`)).toBe(false);
+  });
+});
+
+describe('탈퇴(auth.users 삭제)', () => {
+  /** Auth 서버가 지우는 상황 — JWT 역할이 없다 */
+  const deleteAsAuthServer = (uid: string) =>
+    db.exec(`
+      SELECT set_config('test.uid','',false), set_config('test.role','',false);
+      DELETE FROM auth.users WHERE id = '${uid}';
+    `);
+
+  it('직접 등록한 책이 있어도 계정이 지워지고, 카탈로그는 제출자만 비운다', async () => {
+    const url = coverUrl(me);
+    await addManualBook('manual:del', url);
+    await db.exec(`
+      SELECT set_config('test.role','service_role',false);
+      UPDATE public.global_books SET review_status = 'approved', reviewed_by = '${other}'
+      WHERE isbn = 'manual:del';
+    `);
+    const before = await db.query<{ review_version: number }>(
+      `SELECT review_version FROM public.global_books WHERE isbn = 'manual:del'`
+    );
+
+    await expect(deleteAsAuthServer(me)).resolves.toBeDefined();
+
+    const { rows } = await db.query<{
+      submitted_by: string | null;
+      review_status: string;
+      cover_image: string | null;
+      review_version: number;
+    }>(
+      `SELECT submitted_by, review_status, cover_image, review_version
+       FROM public.global_books WHERE isbn = 'manual:del'`
+    );
+    expect(rows[0]).toEqual({
+      submitted_by: null,
+      review_status: 'approved',
+      cover_image: url,
+      review_version: before.rows[0].review_version,
+    });
+  });
+
+  it('검수한 운영자 계정을 지워도 실패하지 않는다', async () => {
+    await addManualBook('manual:rev', null);
+    await db.exec(`
+      SELECT set_config('test.role','service_role',false);
+      UPDATE public.global_books SET reviewed_by = '${other}' WHERE isbn = 'manual:rev';
+    `);
+    await expect(deleteAsAuthServer(other)).resolves.toBeDefined();
+  });
+
+  it('사용자가 직접 남의 책 제출자를 비우는 건 여전히 막힌다', async () => {
+    await addManualBook('manual:mine', null);
+    await asUser(other);
+    await expect(
+      db.exec(
+        `UPDATE public.global_books SET submitted_by = NULL WHERE isbn = 'manual:mine'`
+      )
+    ).rejects.toThrow('이 도서 정보는 수정할 수 없습니다.');
   });
 });
