@@ -1,8 +1,10 @@
-import { NextRequest } from 'next/server';
+import { after, NextRequest } from 'next/server';
 
 import { getBookProvider } from '@/shared/api/book-provider';
+import { checkYes24SpineOnServer } from '@/shared/api/book-provider/checkYes24SpineOnServer';
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
+import { missingSpineCandidate } from '@/shared/lib/spineImage';
 
 import { MAX_IMPORT_ROWS } from '@/features/book-import/model/limits';
 import { mapWithLimit } from '@/features/book-import/model/mapWithLimit';
@@ -18,6 +20,8 @@ import type {
 } from '@/features/book-import/model/types';
 
 const PROVIDER_CONCURRENCY = 4;
+/** 응답 뒤 책등 확인 — YES24 이미지 서버에 한꺼번에 몰리지 않게 */
+const SPINE_CHECK_CONCURRENCY = 4;
 
 export const maxDuration = 60;
 
@@ -93,7 +97,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase
       .from('books')
       .insert(fresh.map(({ item, book }) => toBookRow(userId, item, book)))
-      .select('id');
+      .select('id, spine_image, source, provider_item_id');
 
     if (error) {
       // 한 번에 넣으므로 실패하면 전부 안 담긴 것이다 — 일부만 담겼다고 말하지 않는다
@@ -102,6 +106,30 @@ export async function POST(request: NextRequest) {
     }
 
     failed += fresh.length - data.length;
+
+    // 브라우저가 확인하지 못한 책등은 응답을 보낸 뒤 서버에서 다시 본다.
+    // 폰 데이터에서 1200px 책등 확인이 끊겨 빈 책등으로 남던 것(2026-11-04)과 같은 이유다.
+    // 기다리지 않으므로 담기 응답은 늦어지지 않는다(after).
+    const unchecked = data.flatMap((row) => {
+      const url = missingSpineCandidate(row);
+      return url ? [{ id: row.id, url }] : [];
+    });
+    if (unchecked.length > 0) {
+      after(async () => {
+        await mapWithLimit(unchecked, SPINE_CHECK_CONCURRENCY, async (row) => {
+          if ((await checkYes24SpineOnServer(row.url)) !== 'real') return;
+          const { error: spineError } = await supabase
+            .from('books')
+            .update({ spine_image: row.url })
+            .eq('id', row.id)
+            .eq('user_id', userId)
+            .is('spine_image', null);
+          if (spineError)
+            console.warn('일괄 등록 책등 채우기 실패:', spineError.message);
+        });
+      });
+    }
+
     return successResponse<ImportResponse>(
       { added: data.length, skipped, failed },
       201

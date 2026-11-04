@@ -1,5 +1,7 @@
 import { CoverImage } from '@repo/ui';
 
+import { SPINE_TONE_COLORS, spineTone } from '@/entities/book/model/spineTone';
+
 import type { ShelfPick } from '../model/types';
 
 type PreviewShelfProps = {
@@ -8,21 +10,23 @@ type PreviewShelfProps = {
   onRemove: (pick: ShelfPick) => void;
 };
 
-/** 같은 색이 줄지으면 책장이 아니라 막대그래프처럼 보인다 */
-const BLANK_TONES = [
-  'bg-text-subtle/40',
-  'bg-primary/40',
-  'bg-text-strong/30',
-] as const;
-
-const BlankSpine = ({ index }: { index: number }) => (
+/**
+ * 책등 이미지가 없는 책 — 서재 책장·전체 도서와 같은 규칙(책마다 고정된 밝은 색 + 세로 제목).
+ * 아직 저장 전이라 책 id 가 없으므로 ISBN 으로 색을 고른다.
+ */
+const TextSpine = ({ isbn, title }: { isbn: string; title: string }) => (
   <span
-    className={`block h-full w-6 rounded-sm ${BLANK_TONES[index % BLANK_TONES.length]}`}
-  />
+    className='flex h-full w-6 items-center justify-center overflow-hidden rounded-sm px-0.5 py-2'
+    style={{ backgroundColor: SPINE_TONE_COLORS[spineTone(isbn)] }}
+  >
+    <span className='h-full overflow-hidden text-ellipsis whitespace-nowrap text-[10px] font-medium leading-tight tracking-wide text-[#1f1d1a] [writing-mode:vertical-rl]'>
+      {title}
+    </span>
+  </span>
 );
 
 /**
- * 고른 순서대로 책등을 세운다. 책등이 없거나 못 불러온 책은 색 막대로 선다.
+ * 고른 순서대로 책등을 세운다. 책등이 없거나 못 불러온 책은 색 + 세로 제목 책등으로 선다.
  * 비어 있을 때도 선반을 먼저 보여 준다 — 고르면 무엇을 얻는지가 첫 화면에 보여야 한다.
  */
 export const PreviewShelf = ({ picks, onRemove }: PreviewShelfProps) => (
@@ -33,7 +37,7 @@ export const PreviewShelf = ({ picks, onRemove }: PreviewShelfProps) => (
       </div>
     ) : (
       <ul className='flex h-full items-end gap-1 overflow-x-auto'>
-        {picks.map((pick, i) => (
+        {picks.map((pick) => (
           <li
             key={pick.book.isbn}
             className='h-[85%] shrink-0 animate-in fade-in slide-in-from-bottom-4 odd:h-[92%] motion-reduce:animate-none'
@@ -50,7 +54,9 @@ export const PreviewShelf = ({ picks, onRemove }: PreviewShelfProps) => (
                 alt=''
                 width={30}
                 height={150}
-                fallback={<BlankSpine index={i} />}
+                fallback={
+                  <TextSpine isbn={pick.book.isbn} title={pick.book.title} />
+                }
                 className='h-full w-auto rounded-sm object-contain'
               />
             </button>
