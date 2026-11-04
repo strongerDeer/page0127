@@ -56,14 +56,17 @@ export const Empty: Story = {
   name: '처음 (0권)',
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    // 고르기 전엔 저장 대신 "건너뛰기"가 떠 있다
+    // 고르기 전엔 "선택 완료"가 꺼져 있고, 건너뛰기는 보조로 늘 있다
     await expect(
       await canvas.findByRole('button', { name: '건너뛰기' })
     ).toBeEnabled();
+    await expect(
+      canvas.getByRole('button', { name: /선택 완료/ })
+    ).toBeDisabled();
   },
 };
 
-/** 두 권 고르면 남은 권수, 저장 버튼에 권수가 붙는다 */
+/** 두 권 고르면 남은 권수, 선택 완료 버튼에 권수가 붙는다 */
 export const TwoPicked: Story = {
   name: '두 권 고름',
   play: async ({ canvasElement }) => {
@@ -72,11 +75,12 @@ export const TwoPicked: Story = {
       await canvas.findByRole('button', { name: '소설 책 1' })
     );
     await userEvent.click(canvas.getByRole('button', { name: '에세이 책 2' }));
+    // 데스크톱 책장과 모바일 하단 줄이 같은 안내를 낸다 — 둘 중 하나만 화면에 보인다
     await expect(
-      canvas.getByText('1권만 더 고르면 첫인상이 나와요')
-    ).toBeInTheDocument();
+      canvas.getAllByText('1권만 더 고르면 첫인상이 나와요').length
+    ).toBeGreaterThan(0);
     await expect(
-      canvas.getByRole('button', { name: /2권 꽂고 내 서재로/ })
+      canvas.getByRole('button', { name: /선택 완료\s*2권/ })
     ).toBeEnabled();
   },
 };
