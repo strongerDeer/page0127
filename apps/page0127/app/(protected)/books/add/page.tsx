@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -126,10 +126,15 @@ const AddBookPage = () => {
     if (!isManual) searchInputRef.current?.focus();
   }, [isManual]);
 
-  const handleSearch = (query: string) => {
-    setLastQuery(query.trim());
-    return search(query);
-  };
+  // useCallback 필수: 이 페이지는 try/finally 때문에 React Compiler 가 건너뛰어
+  // 자동 메모이제이션이 안 된다. 매 렌더 새 함수가 되면 검색창이 같은 검색을 반복한다.
+  const handleSearch = useCallback(
+    (query: string) => {
+      setLastQuery(query.trim());
+      return search(query);
+    },
+    [search]
+  );
 
   // 직접 등록 화면으로 — 방금 찾던 제목을 들고 간다(ISBN 이면 ISBN 칸으로)
   const openManual = () => {

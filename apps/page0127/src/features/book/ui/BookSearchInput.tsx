@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
 
 import { Button } from '@repo/ui';
 import { Input } from '@repo/ui';
@@ -55,12 +55,20 @@ export const BookSearchInput = ({
   // 타이핑 멈춘 후 400ms 뒤의 값 — 이 값이 바뀔 때만 API 호출
   const debouncedQuery = useDebounce(query, 400);
 
-  // debouncedQuery가 바뀔 때마다 자동 검색
+  // useEffectEvent: onSearch 는 "부를 함수"일 뿐 "다시 검색할 이유"가 아니다.
+  // 예전엔 onSearch 를 effect 의존성에 넣어서, 부모가 렌더마다 새 함수를 내려주면
+  // 검색 → 부모 리렌더(검색 중 상태) → 새 onSearch → effect 재실행 → 또 검색…
+  // 으로 같은 검색어 요청이 끝없이 나갔다(429 폭주). 부모가 useCallback 을 깜빡해도
+  // (React Compiler 가 try/finally 등으로 그 컴포넌트를 건너뛰어도) 안전하도록,
+  // 항상 최신 onSearch 를 부르되 effect 는 검색어가 바뀔 때만 돈다.
+  const runSearch = useEffectEvent((q: string) => onSearch(q));
+
+  // debouncedQuery가 바뀔 때만 자동 검색
   useEffect(() => {
     if (debouncedQuery.trim()) {
-      onSearch(debouncedQuery);
+      runSearch(debouncedQuery);
     }
-  }, [debouncedQuery, onSearch]);
+  }, [debouncedQuery]);
 
   const saveRecentSearch = (q: string) => {
     if (!q.trim()) return;
