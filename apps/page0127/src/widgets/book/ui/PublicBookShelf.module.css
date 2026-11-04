@@ -69,7 +69,7 @@
   justify-content: flex-start;
 }
 
-.books li a {
+.books li .item {
   display: block;
   transition: all 0.3s;
   /* 위 패딩 제거: flex-end에서 위 패딩은 이미지를 선반 아래로 밀어 선을 덮는다 */
@@ -113,7 +113,7 @@
   line-height: 1;
 }
 
-.books li a img {
+.books li .item img {
   width: auto;
   height: 240px;
   border: 1px solid var(--book-border);
@@ -124,24 +124,24 @@
 /* 여러 번 읽은 책은 조금 크게 세운다 — 손때가 탄 책이 책장에서 도드라지듯.
    li 는 바닥 정렬이라 커진 만큼 위로만 자란다(선반 선은 그대로).
    +12px 는 줄 간격(gap 31px) 안이라 윗줄과 겹치지 않는다. */
-.books li a.reread img,
-.books li a.reread .noImage,
-.books li a.reread .quilt {
+.books li .item.reread img,
+.books li .item.reread .noImage,
+.books li .item.reread .quilt {
   height: 252px;
 }
 
 /* 꺼내기 — 마우스·키보드 포커스 모두. 옆 책을 덮던 확대(scale 1.1) 대신 위로만 12px 빠진다 */
-.books li:hover a,
-.books li a:focus-visible {
+.books li:hover .item,
+.books li .item:focus-visible {
   transform: translateY(-12px);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .books li a {
+  .books li .item {
     transition: none;
   }
-  .books li:hover a,
-  .books li a:focus-visible {
+  .books li:hover .item,
+  .books li .item:focus-visible {
     transform: none;
   }
 }
@@ -186,7 +186,7 @@
 }
 
 .books li:hover .tip,
-.books li a:focus-visible .tip {
+.books li .item:focus-visible .tip {
   opacity: 1;
 }
 
@@ -334,16 +334,16 @@
   gap: 28px 2px;
 }
 
-.compact .books li a img,
+.compact .books li .item img,
 .compact .noImage,
 .compact .quilt {
   height: 210px;
 }
 
 /* 재독 책은 여기서도 조금 크게 (gap 28px 안이라 윗줄과 안 겹친다) */
-.compact .books li a.reread img,
-.compact .books li a.reread .noImage,
-.compact .books li a.reread .quilt {
+.compact .books li .item.reread img,
+.compact .books li .item.reread .noImage,
+.compact .books li .item.reread .quilt {
   height: 221px;
 }
 
@@ -450,7 +450,7 @@
 
 /* 아이콘 패치 — 천에 꿰매 붙인 고무 패치처럼 살짝 띄운다.
    책장 이미지 공통 규칙(높이 240·테두리)보다 구체적으로 써서 덮는다 */
-.books li a .quilt .quiltBadge {
+.books li .item .quilt .quiltBadge {
   position: relative;
   width: 40px;
   height: 40px;
@@ -460,7 +460,7 @@
   filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.35));
 }
 
-.books li a .quilt.spine .quiltBadge {
+.books li .item .quilt.spine .quiltBadge {
   width: 16px;
   height: 16px;
 }

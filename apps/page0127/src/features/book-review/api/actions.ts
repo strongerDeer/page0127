@@ -110,3 +110,47 @@ export async function resubmitBook(
     };
   }
 }
+
+/**
+ * 직접 등록 책 강제 삭제 — 테스트로 올린 책처럼 아예 없어야 하는 책을 지운다(HJ, 2026-11-04).
+ *
+ * 반려는 공개만 막고 기록은 남긴다. 이건 공용 도서와 **그 책을 기록한 모든 사람의
+ * 독서 기록**까지 지운다. 기록을 먼저 지우는 이유: 기록이 남아 있으면 사용자가 그
+ * 기록을 다시 저장할 때 books 트리거(apply_book_catalog_review)가 카탈로그 행을
+ * "검수 대기"로 되살린다. 활동·댓글·좋아요·검수 이력은 FK cascade 로 함께 지워진다.
+ * 서점(YES24) 책은 여기서 지우지 않는다 — 다른 사람들의 진짜 기록이 걸려 있다.
+ */
+export async function deleteCatalogBook(
+  _state: ReviewActionState,
+  form: FormData
+): Promise<ReviewActionState> {
+  await assertAdmin();
+  const id = String(form.get('id') ?? '');
+  if (!uuid.test(id)) return { ok: false, message: '새로고침해 주세요.' };
+
+  const admin = createAdminClient();
+  const { data: book, error: findError } = await admin
+    .from('global_books')
+    .select('id,isbn,source')
+    .eq('id', id)
+    .maybeSingle();
+  if (findError) return { ok: false, message: '책을 확인하지 못했습니다.' };
+  if (!book) return { ok: false, message: '이미 삭제된 책이에요.' };
+  if (book.source !== 'manual')
+    return { ok: false, message: '직접 등록한 책만 삭제할 수 있어요.' };
+
+  const { error: readingsError } = await admin
+    .from('books')
+    .delete()
+    .eq('isbn', book.isbn);
+  if (readingsError)
+    return { ok: false, message: '독서 기록 삭제에 실패했습니다.' };
+
+  const { error } = await admin.from('global_books').delete().eq('id', id);
+  if (error) return { ok: false, message: '도서 삭제에 실패했습니다.' };
+
+  revalidatePath('/admin/books');
+  revalidatePath('/books/requests');
+  revalidatePath('/books');
+  return { ok: true, message: '삭제했어요.' };
+}

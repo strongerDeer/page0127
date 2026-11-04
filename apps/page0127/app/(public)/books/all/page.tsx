@@ -15,6 +15,8 @@ import { createClient } from '@/shared/config/supabase/server';
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
 
+import { catalogVisibilityFilter } from '@/entities/book/api/catalogVisibility';
+
 import { BookListItem } from '@/widgets/book/ui/BookListItem';
 
 import type { GlobalBook } from '@/entities/book';
@@ -71,7 +73,9 @@ export default async function GlobalBooksPage(props: {
     .select('*', {
       count: 'exact',
     })
-    .eq('review_status', 'approved');
+    .eq('review_status', 'approved')
+    // 직접 등록 책은 등록한 사람에게만
+    .or(catalogVisibilityFilter(user?.id));
   if (q) {
     // 제목 또는 저자에 검색어가 포함된 책 (대소문자 무시)
     const pattern = quotePostgrestValue(`%${q}%`);

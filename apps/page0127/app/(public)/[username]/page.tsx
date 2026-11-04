@@ -8,7 +8,12 @@ import { createClient } from '@/shared/config/supabase/server';
 import { checkUsageLimit } from '@/shared/lib/aiUsage';
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
-import { getCurrentLibraryYear, getSeoulToday } from '@/entities/book';
+import {
+  getCurrentLibraryYear,
+  getSeoulToday,
+  mergeByCompletedDate,
+} from '@/entities/book';
+import { getMaskedPrivateBooks } from '@/entities/book/api/getMaskedPrivateBooks';
 import { getPublicShelfSummary } from '@/entities/book/api/getPublicShelfSummary';
 import { getOverallStats } from '@/entities/book/server';
 import { getFollowSnapshot } from '@/entities/follow/api/getFollowSnapshot';
@@ -198,14 +203,24 @@ const LibraryContent = async ({
   // 따라서 탭을 바꿀 때 이 Server Component와 DB 쿼리가 다시 실행되지 않는다.
   // 취향 이력은 방문자도 본다 — 공개해도 되는 칸만 주는 RPC 라 주인·방문자가 같은 조회를 쓴다
   // 팔로우 숫자·여부도 같이 읽는다 — 브라우저가 따로 부르면 새로고침마다 숫자가 '–' 로 깜빡인다
-  const [allBooks, overallStats, tasteHistory, badgeActivity, followSnapshot] =
-    await Promise.all([
-      getBooks(profile.id, !isOwnProfile),
-      getOverallStats(profile.id, true),
-      getPublicTasteHistory(profile.id),
-      getBadgeActivity(profile.id),
-      getFollowSnapshot(supabase, profile.id, currentUser?.id ?? null),
-    ]);
+  // 방문자에게는 비공개 완독 책도 "북커버 씌운 책"으로 꽂는다 — 무슨 책인지는 가리고
+  // 권수만 맞춘다(HJ, 2026-11-04). 주인은 getBooks 가 이미 전부 준다.
+  const [
+    shelfBooks,
+    maskedBooks,
+    overallStats,
+    tasteHistory,
+    badgeActivity,
+    followSnapshot,
+  ] = await Promise.all([
+    getBooks(profile.id, !isOwnProfile),
+    isOwnProfile ? Promise.resolve([]) : getMaskedPrivateBooks(profile.id),
+    getOverallStats(profile.id, true),
+    getPublicTasteHistory(profile.id),
+    getBadgeActivity(profile.id),
+    getFollowSnapshot(supabase, profile.id, currentUser?.id ?? null),
+  ]);
+  const allBooks = mergeByCompletedDate(shelfBooks, maskedBooks);
 
   // 소유자 전용 데이터 — 방문자면 아예 조회하지 않는다
   let analyzableBookCount = 0;

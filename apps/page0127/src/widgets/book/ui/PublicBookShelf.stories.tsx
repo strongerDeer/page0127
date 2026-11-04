@@ -69,3 +69,28 @@ type Story = StoryObj<typeof meta>;
 
 /** 주인 책장 — 방문자에게 안 보이는 책은 퀼팅 커버를 씌운다 */
 export const OwnerWithPrivateBooks: Story = {};
+
+/** 방문자가 보는 남의 책장 — 비공개 완독 책은 제목 없이 "비공개 도서" 북커버로만 꽂힌다 */
+export const VisitorWithMaskedBooks: Story = {
+  args: {
+    username: 'someone',
+    books: [
+      createTestBook({
+        id: 'pub-1',
+        title: '공개 책등',
+        rating: 3,
+        is_public: true,
+        spine_image: null,
+        thickness_mm: 20,
+      }),
+      createTestBook({
+        id: 'private-0',
+        title: '비공개 도서',
+        is_public: false,
+        is_masked: true,
+        spine_image: null,
+        cover_image: null,
+      }),
+    ],
+  },
+};

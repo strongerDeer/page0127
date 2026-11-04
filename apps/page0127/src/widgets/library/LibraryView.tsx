@@ -391,7 +391,12 @@ export const LibraryView = ({
                 {/* 연도 탭과 같은 균형 카드 — 읽은 분야만 레이더 + 띠 + 고른 정도 + 안 읽은 분야.
                 예전 '카테고리 취향'은 9축 고정 레이더라 연도 탭과 모양이 달랐다.
                 books 는 이미 재독 합침이다(PublicLibraryContent 의 visibleBooks — 주인은 비공개 포함) */}
-                <ReadingBalanceCard balance={calculateReadingBalance(books)} />
+                <ReadingBalanceCard
+                  // 가린 비공개 책은 분야를 모른다 — 균형에서는 뺀다
+                  balance={calculateReadingBalance(
+                    books.filter((book) => !book.is_masked)
+                  )}
+                />
 
                 <Card className='rounded-2xl bg-card py-6 shadow-none'>
                   <CardHeader className='pb-4'>

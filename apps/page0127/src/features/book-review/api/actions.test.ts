@@ -3,18 +3,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   admin: vi.fn(),
   rpc: vi.fn(),
+  from: vi.fn(),
   client: vi.fn(),
   revalidate: vi.fn(),
 }));
 vi.mock('@/shared/lib/admin/assertAdmin', () => ({ assertAdmin: mocks.admin }));
 vi.mock('@/shared/config/supabase/admin', () => ({
-  createAdminClient: () => ({ rpc: mocks.rpc }),
+  createAdminClient: () => ({ rpc: mocks.rpc, from: mocks.from }),
 }));
 vi.mock('@/shared/config/supabase/server', () => ({
   createClient: mocks.client,
 }));
 vi.mock('next/cache', () => ({ revalidatePath: mocks.revalidate }));
-import { resubmitBook, reviewBook } from './actions';
+import { deleteCatalogBook, resubmitBook, reviewBook } from './actions';
 
 const form = () => {
   const data = new FormData();
@@ -67,5 +68,63 @@ describe('검수 서버 액션 권한', () => {
     expect(
       (await resubmitBook({ ok: false, message: '' }, form())).message
     ).toContain('로그인');
+  });
+});
+
+describe('직접 등록 책 강제 삭제', () => {
+  const idForm = () => {
+    const data = new FormData();
+    data.set('id', '12345678-0000-0000-0000-000000000000');
+    return data;
+  };
+  // from(table) 호출 순서대로 기록해 무엇을 어떤 순서로 지웠는지 본다
+  const setup = (source: string) => {
+    const deleted: string[] = [];
+    mocks.from.mockImplementation((table: string) => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: async () => ({
+            data: { id: 'g1', isbn: 'manual:abc', source },
+            error: null,
+          }),
+        }),
+      }),
+      delete: () => ({
+        eq: async (column: string, value: string) => {
+          deleted.push(`${table}:${column}=${value}`);
+          return { error: null };
+        },
+      }),
+    }));
+    return deleted;
+  };
+
+  it('관리자가 아니면 아무것도 지우지 않는다', async () => {
+    mocks.admin.mockRejectedValue(new Error('not found'));
+    await expect(
+      deleteCatalogBook({ ok: false, message: '' }, idForm())
+    ).rejects.toThrow('not found');
+    expect(mocks.from).not.toHaveBeenCalled();
+  });
+
+  it('독서 기록을 먼저 지우고 공용 도서를 지운다 — 기록이 남으면 트리거가 되살린다', async () => {
+    const deleted = setup('manual');
+    expect(
+      (await deleteCatalogBook({ ok: false, message: '' }, idForm())).ok
+    ).toBe(true);
+    expect(deleted).toEqual([
+      'books:isbn=manual:abc',
+      'global_books:id=12345678-0000-0000-0000-000000000000',
+    ]);
+  });
+
+  it('서점 책은 지우지 않는다', async () => {
+    const deleted = setup('yes24');
+    const result = await deleteCatalogBook(
+      { ok: false, message: '' },
+      idForm()
+    );
+    expect(result.ok).toBe(false);
+    expect(deleted).toEqual([]);
   });
 });

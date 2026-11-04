@@ -1,5 +1,7 @@
 import { createAnonClient } from '@/shared/config/supabase/anon';
 
+import { catalogVisibilityFilter } from './catalogVisibility';
+
 /**
  * 전체 도서 공유 카드에 세울 표지 — 최근 서비스에 들어온 책 순.
  *
@@ -18,6 +20,7 @@ export const getRecentGlobalCovers = async (
       .from('global_books')
       .select('cover_image')
       .not('cover_image', 'is', null)
+      .or(catalogVisibilityFilter())
       .order('created_at', { ascending: false })
       .limit(limit);
 

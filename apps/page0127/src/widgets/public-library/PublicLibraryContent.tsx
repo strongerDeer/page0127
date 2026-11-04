@@ -126,9 +126,11 @@ export const PublicLibraryContent = ({
   // 주인이 보는 책장·숫자의 기준. 주인은 비공개 책·검수 대기 책까지 "내 책"으로 센다.
   // 예전엔 비공개 책을 책장 아래 "나만 보는 비공개 책 N권"으로 따로 뺐는데, 직접 등록한
   // 책은 검수 전까지 강제로 비공개라 "방금 기록한 책이 서재 0권"으로 보였다(2026-11-03).
-  // 숨기는 건 방문자 쪽 일이다 — 방문자는 books 에 공개분만 온다.
-  // 공유 카드·뱃지·명함·케미는 방문자도 보는 숫자라 계속 publicBooks 를 쓴다.
-  const shelfSourceBooks = isOwnProfile ? books : publicBooks;
+  // 방문자는 books 에 공개 책 + "북커버 씌운" 비공개 완독 책(is_masked)이 온다 —
+  // 무슨 책인지는 가린 채 책장·완독 수에는 들어간다(HJ, 2026-11-04). 그래서 주인·방문자
+  // 모두 books 를 그대로 쓴다.
+  // 공유 카드·뱃지·명함·케미는 책 내용을 쓰므로 계속 publicBooks(가린 책 제외)를 쓴다.
+  const shelfSourceBooks = books;
 
   // 재독은 새 row 로 쌓이므로 그대로 그리면 같은 책이 회독 수만큼 책장에 선다
   const visibleBooks = useMemo(
@@ -176,21 +178,26 @@ export const PublicLibraryContent = ({
   // 달력: 방문자는 공개만(books 가 이미 공개만 온다), 주인은 비공개까지 — 반투명으로 그린다
   const calendarBooks = isOwnProfile ? books : publicBooks;
 
-  // 균형 카드: 통계와 같은 집합(재독 합침)으로 올해와 작년을 센다
+  // 균형 카드: 통계와 같은 집합(재독 합침)으로 올해와 작년을 센다.
+  // 가린 책은 분야를 모르니 뺀다 — 넣으면 엉뚱한 분야(기타)가 채워진다
+  const balanceSourceBooks = useMemo(
+    () => shelfSourceBooks.filter((book) => !book.is_masked),
+    [shelfSourceBooks]
+  );
   const balanceBooks = useMemo(
     () => ({
       current: dedupeReadings(
-        filterBooksByLibraryYear(shelfSourceBooks, selectedYear, currentYear)
+        filterBooksByLibraryYear(balanceSourceBooks, selectedYear, currentYear)
       ),
       previous: dedupeReadings(
         filterBooksByLibraryYear(
-          shelfSourceBooks,
+          balanceSourceBooks,
           selectedYear - 1,
           currentYear
         )
       ),
     }),
-    [shelfSourceBooks, selectedYear, currentYear]
+    [balanceSourceBooks, selectedYear, currentYear]
   );
 
   // 로그인하지 않은 방문자 — 가입 길(VisitorCta)을 보여 줄 대상
@@ -307,7 +314,7 @@ export const PublicLibraryContent = ({
           isWishlistView={isWishlistView}
           wishlistBooks={wishlistBooks}
           balanceBooks={balanceBooks}
-          // books 는 주인이면 비공개·읽고 싶어요까지, 방문자면 공개분만 온다
+          // books 는 주인이면 비공개·읽고 싶어요까지, 방문자면 공개분 + 가린 비공개 완독 책
           isLibraryEmpty={books.length === 0}
         />
 

@@ -39,12 +39,22 @@ describe('sitemap', () => {
       from: (table: string) => ({
         select: () => {
           if (table === 'global_books') {
-            return {
-              order: () => ({
-                limit: async () => ({
-                  data: [{ id: 'book-1', created_at: '2026-10-20' }],
-                }),
+            // 승인된 서점 책만 — 직접 등록 책은 등록한 사람에게만 보이므로 뺀다
+            const order = () => ({
+              limit: async () => ({
+                data: [{ id: 'book-1', created_at: '2026-10-20' }],
               }),
+            });
+            return {
+              eq: (column: string, value: string) => {
+                expect([column, value]).toEqual(['review_status', 'approved']);
+                return {
+                  or: (filter: string) => {
+                    expect(filter).toBe('source.is.null,source.neq.manual');
+                    return { order };
+                  },
+                };
+              },
             };
           }
           if (table === 'books') return { eq: publicOnly };

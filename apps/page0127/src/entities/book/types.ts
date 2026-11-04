@@ -84,6 +84,11 @@ export type Book = {
 
   // 공개 설정
   is_public: boolean;
+  /**
+   * 방문자 화면에만 있는 "북커버 씌운 비공개 책"(DB 컬럼 아님).
+   * 제목·표지·id 가 가려져 있어 상세로 이동하지 않는다 — model/maskPrivateBook.ts
+   */
+  is_masked?: boolean;
 
   // 메타 정보
   created_at: string;

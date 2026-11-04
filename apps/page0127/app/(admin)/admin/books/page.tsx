@@ -13,7 +13,10 @@ import {
   type ReviewStatus,
   safeSourceUrl,
 } from '@/features/book-review/model/review';
-import { ReviewDecisionForm } from '@/features/book-review/ui/ReviewForms';
+import {
+  DeleteCatalogBookForm,
+  ReviewDecisionForm,
+} from '@/features/book-review/ui/ReviewForms';
 
 export default async function AdminBooksPage({
   searchParams,
@@ -62,6 +65,20 @@ export default async function AdminBooksPage({
         .limit(200)
     : { data: [], error: null };
   if (historyError) throw new Error('검수 이력을 불러오지 못했습니다.');
+  // 강제 삭제 때 함께 지워질 독서 기록 수
+  const { data: readings } = books.length
+    ? await client
+        .from('books')
+        .select('isbn')
+        .in(
+          'isbn',
+          books.map((book) => book.isbn)
+        )
+    : { data: [] };
+  const readingCounts = new Map<string, number>();
+  (readings ?? []).forEach(({ isbn }) =>
+    readingCounts.set(isbn, (readingCounts.get(isbn) ?? 0) + 1)
+  );
   return (
     <section className='space-y-5'>
       <div>
@@ -200,6 +217,10 @@ export default async function AdminBooksPage({
                   ))}
               </ul>
             </details>
+            <DeleteCatalogBookForm
+              bookId={book.id}
+              readingCount={readingCounts.get(book.isbn) ?? 0}
+            />
           </article>
         );
       })}

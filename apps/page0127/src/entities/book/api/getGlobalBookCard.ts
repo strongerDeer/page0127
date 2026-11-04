@@ -1,5 +1,7 @@
 import { createAnonClient } from '@/shared/config/supabase/anon';
 
+import { catalogVisibilityFilter } from '@/entities/book/api/catalogVisibility';
+
 import { summarizeRatings } from '../model/rating';
 
 /** 도서 상세(/books/info/[id]) 공유 카드에 쓰는 필드 */
@@ -32,6 +34,8 @@ export const getGlobalBookCard = async (
     .from('global_books')
     .select('title, author, cover_image, isbn')
     .eq('id', id)
+    .eq('review_status', 'approved')
+    .or(catalogVisibilityFilter())
     .maybeSingle();
 
   if (error) {

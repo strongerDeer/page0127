@@ -10,6 +10,7 @@ import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 import { decodeHtmlEntities } from '@/shared/lib/htmlEntities';
 
 import { RATING_MAX, summarizeRatings, toCoverSource } from '@/entities/book';
+import { catalogVisibilityFilter } from '@/entities/book/api/catalogVisibility';
 import { BookSourceCredit } from '@/entities/book/ui/BookSourceCredit';
 
 import { AddToLibraryButton } from '@/widgets/book/ui/AddToLibraryButton';
@@ -25,12 +26,17 @@ type PageProps = {
 };
 
 async function getGlobalBook(id: string): Promise<GlobalBook | null> {
-  const supabase = await createClient();
+  const [supabase, user] = await Promise.all([
+    createClient(),
+    getCurrentUser(),
+  ]);
   const { data, error } = await supabase
     .from('global_books')
     .select('*')
     .eq('id', id)
     .eq('review_status', 'approved')
+    // 직접 등록 책은 등록한 사람에게만 — 다른 사람에게는 없는 책(404)
+    .or(catalogVisibilityFilter(user?.id))
     .single();
 
   if (error) return null;
