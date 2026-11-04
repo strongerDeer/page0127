@@ -1,12 +1,8 @@
 'use server';
 
-import { isYes24PlaceholderImage } from '@/shared/api/book-provider';
+import { checkYes24SpineOnServer } from '@/shared/api/book-provider/checkYes24SpineOnServer';
 import { createClient } from '@/shared/config/supabase/server';
-import { readJpegSize } from '@/shared/lib/jpegSize';
 import { missingSpineCandidate } from '@/shared/lib/spineImage';
-
-/** 서버에서 YES24 책등 한 장을 받을 때의 한도. 서버 ↔ YES24 는 보통 0.1~0.3초다 */
-const SERVER_FETCH_TIMEOUT_MS = 8000;
 
 /**
  * 결과: 'filled' 채움 · 'none' YES24 에도 책등이 없음(또는 대상 아님) · 'error' 확인 자체를 못 함
@@ -49,24 +45,8 @@ export const fillMissingSpineAction = async (
   const candidate = missingSpineCandidate(book);
   if (!candidate) return 'none';
 
-  let bytes: Uint8Array;
-  try {
-    const res = await fetch(candidate, {
-      signal: AbortSignal.timeout(SERVER_FETCH_TIMEOUT_MS),
-      cache: 'no-store',
-    });
-    // YES24 는 책등이 없어도 200(회색 대체 이미지)을 준다 → 200 이 아니면 서버가 막힌 것.
-    // 'error' 로 돌려 브라우저 확인으로 넘긴다
-    if (!res.ok) return 'error';
-    bytes = new Uint8Array(await res.arrayBuffer());
-  } catch {
-    return 'error';
-  }
-
-  const size = readJpegSize(bytes);
-  if (!size) return 'error';
-  if (isYes24PlaceholderImage(size.width, size.height, bytes.length))
-    return 'none';
+  const check = await checkYes24SpineOnServer(candidate);
+  if (check !== 'real') return check;
 
   const { error: updateError } = await supabase
     .from('books')
