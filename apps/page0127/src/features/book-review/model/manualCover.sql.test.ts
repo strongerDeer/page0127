@@ -80,11 +80,13 @@ beforeAll(async () => {
       source text, is_public boolean DEFAULT true, created_at timestamptz DEFAULT now());
     CREATE TABLE public.activities(id uuid PRIMARY KEY, user_id uuid, book_id uuid);
   `);
+  await db.exec(migration('20261027000000_sync_global_spine_image.sql'));
   await db.exec(migration('20261028000000_book_catalog_review.sql'));
   await db.exec(migration('20261101000100_manual_book_cover_upload.sql'));
   await db.exec(
     migration('20261104000000_catalog_guard_allow_account_deletion.sql')
   );
+  await db.exec(migration('20261104000100_catalog_guard_allow_spine_sync.sql'));
 });
 afterAll(() => db.close());
 beforeEach(async () => {
@@ -230,6 +232,66 @@ describe('탈퇴(auth.users 삭제)', () => {
     await expect(
       db.exec(
         `UPDATE public.global_books SET submitted_by = NULL WHERE isbn = 'manual:mine'`
+      )
+    ).rejects.toThrow('이 도서 정보는 수정할 수 없습니다.');
+  });
+});
+
+describe('책등 채우기(books → global_books 동기화)', () => {
+  const itemId = '192687417';
+  const spine = `https://image.yes24.com/goods/${itemId}/SIDE/XL`;
+
+  /** 승인된 YES24 책이 전체 도서에 책등 없이 있고, 내가 그 책을 담은 상태 */
+  const addYes24Book = async (isbn: string) => {
+    await db.exec(`SELECT set_config('test.role','service_role',false)`);
+    await db.query(
+      `INSERT INTO public.global_books(isbn,title,source,provider_item_id,review_status)
+       VALUES ($1,'엔시티피케이션','yes24',$2,'approved')`,
+      [isbn, itemId]
+    );
+    await asUser(me);
+    const { rows } = await db.query<{ id: string }>(
+      `INSERT INTO public.books(user_id,isbn,title,source,provider_item_id)
+       VALUES ($1,$2,'엔시티피케이션','yes24',$3) RETURNING id`,
+      [me, isbn, itemId]
+    );
+    return rows[0].id;
+  };
+
+  const catalogOf = async (isbn: string) =>
+    (
+      await db.query<{ spine_image: string | null; review_version: number }>(
+        'SELECT spine_image, review_version FROM public.global_books WHERE isbn = $1',
+        [isbn]
+      )
+    ).rows[0];
+
+  it('내 책에 책등을 채우면 저장되고, 전체 도서의 빈 책등도 채워진다', async () => {
+    const id = await addYes24Book('9791190000001');
+    const before = await catalogOf('9791190000001');
+
+    await db.query('UPDATE public.books SET spine_image = $1 WHERE id = $2', [
+      spine,
+      id,
+    ]);
+
+    const reading = await db.query<{ spine_image: string | null }>(
+      'SELECT spine_image FROM public.books WHERE id = $1',
+      [id]
+    );
+    expect(reading.rows[0].spine_image).toBe(spine);
+    expect(await catalogOf('9791190000001')).toEqual({
+      spine_image: spine,
+      review_version: before.review_version,
+    });
+  });
+
+  it('사용자가 전체 도서 책등을 직접 채우는 건 여전히 막힌다', async () => {
+    await addYes24Book('9791190000002');
+    await expect(
+      db.query(
+        'UPDATE public.global_books SET spine_image = $1 WHERE isbn = $2',
+        [spine, '9791190000002']
       )
     ).rejects.toThrow('이 도서 정보는 수정할 수 없습니다.');
   });
