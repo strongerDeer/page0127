@@ -186,7 +186,8 @@
 
 /*
   책등 이미지가 없는 책 — 서재 책장(PublicBookShelf .noImage.spine)과 같은 글자 책등.
-  색(--spine-bg)과 폭은 BookListItem 이 책마다 inline 으로 넣는다.
+  색(background-color)과 폭은 BookListItem 이 책마다 inline 으로 넣는다
+  (CSS module 안에 정의 안 된 변수를 쓰면 token-usage 테스트가 막는다).
   이 슬롯의 책등은 18~28px 라 두 줄이 들어갈 폭이 없다 — 두 번째 줄이 반쯤 잘려 보였다.
   그래서 세로 한 줄로 쓰고 넘치면 말줄임(…)한다.
 */
@@ -197,7 +198,7 @@
   align-items: center;
   justify-content: center;
   padding: 0.625rem 0.125rem;
-  background-color: var(--spine-bg, var(--sunken));
+  background-color: var(--sunken);
 }
 
 .spineFallback p {

@@ -11,7 +11,6 @@ import { BookCoverPreview } from './BookCoverPreview';
 import { BookLikeButton } from './BookLikeButton';
 
 import type { Book, GlobalBook } from '@/entities/book';
-import type { CSSProperties } from 'react';
 
 import styles from './BookListItem.module.css';
 
@@ -111,12 +110,10 @@ const BookListItemCover = ({
               // 폭은 책장(높이 240px)의 글자 책등 폭을 이 슬롯 높이(최대 190px)에 맞춰 줄인다.
               <div
                 className={styles.spineFallback}
-                style={
-                  {
-                    '--spine-bg': SPINE_TONE_COLORS[spineTone(id)],
-                    width: `${Math.round(shelfSpineWidthPx(thicknessMm) * SPINE_SLOT_SCALE)}px`,
-                  } as CSSProperties
-                }
+                style={{
+                  backgroundColor: SPINE_TONE_COLORS[spineTone(id)],
+                  width: `${Math.round(shelfSpineWidthPx(thicknessMm) * SPINE_SLOT_SCALE)}px`,
+                }}
               >
                 <p>{title}</p>
               </div>
