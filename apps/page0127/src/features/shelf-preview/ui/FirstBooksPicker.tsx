@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react';
 
 import { Button, CoverImage } from '@repo/ui';
-import { ArrowRight, Check, RotateCw } from 'lucide-react';
+import { Check, RotateCw } from 'lucide-react';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { markLoginStart } from '@/shared/lib/auth/loginStart';
 
+import { SPINE_TONE_COLORS, spineTone } from '@/entities/book/model/spineTone';
 import { toFirstImpression } from '@/entities/taste-analysis/model/firstImpression';
 
 import {
@@ -66,6 +67,7 @@ export const FirstBooksPicker = ({ picks, target }: FirstBooksPickerProps) => {
   const isFull = selected.length >= MAX_PENDING_BOOKS;
   const impression = toFirstImpression(selected.map((p) => p.book.category));
   const remaining = SUGGESTED_COUNT - selected.length;
+  const hint = `${remaining}권만 더 고르면 첫인상이 나와요`;
   const isSelected = (pick: ShelfPick) =>
     selected.some((p) => isSameBook(p.book, pick.book));
 
@@ -97,7 +99,8 @@ export const FirstBooksPicker = ({ picks, target }: FirstBooksPickerProps) => {
           기억나는 책을 골라 주세요
         </h1>
         <p className='mt-2 text-text-subtle break-keep'>
-          읽은 책을 누르면 바로 서재에 꽂혀요. 세 권이면 책장의 첫인상이 나와요.
+          읽은 책을 골라 선택 완료를 누르면 서재에 꽂혀요. 세 권이면 책장의
+          첫인상이 나와요.
         </p>
       </div>
 
@@ -174,47 +177,94 @@ export const FirstBooksPicker = ({ picks, target }: FirstBooksPickerProps) => {
         />
       </div>
 
-      <div className='tint-blue space-y-4 rounded-3xl p-5'>
+      {/* 데스크톱 — 고른 책이 꽂히는 책장. 모바일은 고르기 칸 아래로 밀려 고르는 동안 안 보여서
+          (2026-11-04) 하단 바의 작은 표지 줄로 대신하고, 첫인상 카드만 남긴다. */}
+      <div className='tint-blue hidden space-y-4 rounded-3xl p-5 sm:block'>
         <p className='text-xs font-bold text-text-subtle'>
           내 책장 · {selected.length}권
         </p>
         <PreviewShelf picks={selected} onRemove={handleToggle} />
         <div aria-live='polite' className='space-y-3'>
           {remaining > 0 && selected.length > 0 && (
-            <p className='text-sm font-bold text-text-strong'>
-              {remaining}권만 더 고르면 첫인상이 나와요
-            </p>
+            <p className='text-sm font-bold text-text-strong'>{hint}</p>
           )}
           {impression && <FirstImpressionCard type={impression} />}
         </div>
       </div>
+      {impression && (
+        <div className='sm:hidden'>
+          <FirstImpressionCard type={impression} />
+        </div>
+      )}
 
-      {/* 하단 고정 버튼 — 고르기 칸이 화면을 채우면 버튼이 스크롤 아래로 밀려 안 보였다(2026-11-03).
-          고르기 전엔 "건너뛰기", 한 권이라도 고르면 저장 버튼으로 바뀐다.
-          sticky 라 페이지 끝에 닿으면 제자리에 놓인다. 데스크톱은 한 화면에 다 보여 고정하지 않는다. */}
-      <div className='sticky bottom-0 z-10 -mx-6 border-t border-line-soft bg-background/95 px-6 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur sm:static sm:mx-0 sm:flex sm:justify-end sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none'>
-        {selected.length === 0 ? (
+      {/* 하단 버튼 — "건너뛰기"만 크게 있으면 다들 그걸 누른다(2026-11-04).
+          건너뛰기는 작은 보조 버튼, "선택 완료"가 주 버튼이고 한 권 이상 골라야 켜진다.
+          모바일은 하단 고정(sticky) — 고르기 칸이 화면을 채우면 버튼이 스크롤 아래로 밀렸다(2026-11-03). */}
+      <div className='sticky bottom-0 z-10 -mx-6 border-t border-line-soft bg-background/95 px-6 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none'>
+        {/* 모바일 전용 — 고른 책 작은 표지 줄. 눌러서 뺄 수 있다 */}
+        {selected.length > 0 && (
+          <div className='mb-3 flex items-center gap-3 sm:hidden'>
+            <ul className='flex shrink-0 -space-x-2'>
+              {selected.map((pick) => (
+                <li key={pick.book.isbn}>
+                  <button
+                    type='button'
+                    aria-label={`${pick.book.title} 빼기`}
+                    onClick={() => handleToggle(pick)}
+                    className='block rounded-sm ring-2 ring-background'
+                  >
+                    <CoverImage
+                      src={pick.coverSrc}
+                      fallbackSrc={pick.coverFallback}
+                      alt=''
+                      width={28}
+                      height={42}
+                      fallback={
+                        <span
+                          className='block h-[42px] w-7 rounded-sm'
+                          style={{
+                            backgroundColor:
+                              SPINE_TONE_COLORS[spineTone(pick.book.isbn)],
+                          }}
+                        />
+                      }
+                      className='h-[42px] w-7 rounded-sm object-cover'
+                    />
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <p
+              aria-live='polite'
+              className='min-w-0 text-sm font-bold text-text-strong break-keep'
+            >
+              {remaining > 0 ? hint : `${selected.length}권 골랐어요`}
+            </p>
+          </div>
+        )}
+        <div className='flex items-center gap-2 sm:justify-end'>
           <Button
             type='button'
-            size='lg'
-            variant='outline'
+            variant='ghost'
             disabled={leaving}
             onClick={handleSkip}
-            className='h-14 w-full text-base sm:w-auto sm:px-8'
+            className='h-14 shrink-0 px-4 text-text-subtle sm:h-12'
           >
             건너뛰기
           </Button>
-        ) : (
           <Button
+            type='button'
             size='lg'
-            disabled={leaving}
+            disabled={leaving || selected.length === 0}
             onClick={handleSave}
-            className='h-14 w-full gap-2 text-base font-bold sm:w-auto sm:px-8'
+            className='h-14 flex-1 gap-2 text-base font-bold sm:h-12 sm:flex-none sm:px-8'
           >
-            {selected.length}권 꽂고 내 서재로
-            <ArrowRight aria-hidden='true' className='size-5' />
+            선택 완료
+            {selected.length > 0 && (
+              <span className='font-normal'>{selected.length}권</span>
+            )}
           </Button>
-        )}
+        </div>
       </div>
     </div>
   );
