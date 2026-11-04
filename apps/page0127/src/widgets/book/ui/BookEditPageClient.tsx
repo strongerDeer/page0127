@@ -11,9 +11,8 @@ import { toast } from 'sonner';
 
 import { getBookDetail } from '@/shared/api/book';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
-import { resolveSpineImageUrl } from '@/shared/lib/spineImage';
 
-import { BACKGROUND_SPINE_TIMEOUT_MS } from '@/entities/book';
+import { fillMissingSpine } from '@/entities/book';
 import { isNewlyCompleted } from '@/entities/book/model/completion';
 
 import { notifyNewBadges } from '@/features/badge';
@@ -133,14 +132,13 @@ export const BookEditPageClient = ({
       toast.success('도서 정보가 수정되었습니다!');
       router.push(`/${username}/${id}`); // 수정한 책 상세로 이동
 
-      // 책등 이미지 존재 여부 확인 — 저장을 막지 않도록 결과를 기다리지 않는다
+      // 책등 이미지 확인 — 저장을 막지 않도록 결과를 기다리지 않는다. 서버에서 먼저 확인한다
       if (reselectedBook) {
-        // 모바일 데이터에서는 3초로 모자랐다 — 뒤에서 하는 일이라 넉넉히 기다린다
-        resolveSpineImageUrl(
-          reselectedBook.spineImage,
-          BACKGROUND_SPINE_TIMEOUT_MS
-        ).then((spineImage) => {
-          if (spineImage) updateBook(id, { spine_image: spineImage });
+        void fillMissingSpine({
+          id,
+          spine_image: null,
+          source: reselectedBook.source,
+          provider_item_id: reselectedBook.providerItemId,
         });
       }
     } else {
