@@ -1,5 +1,7 @@
 import { createClient } from '@/shared/config/supabase/server';
 
+import { catalogVisibilityFilter } from '@/entities/book/api/catalogVisibility';
+
 import type { MetadataRoute } from 'next';
 
 // sitemap.xml 을 코드로 생성 (Next.js 파일 규칙)
@@ -58,6 +60,8 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
     const { data } = await supabase
       .from('global_books')
       .select('id, created_at')
+      .eq('review_status', 'approved')
+      .or(catalogVisibilityFilter())
       .order('created_at', { ascending: false })
       .limit(MAX_BOOK_URLS);
 

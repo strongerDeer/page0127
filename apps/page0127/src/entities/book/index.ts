@@ -73,6 +73,13 @@ export { readingDayCount, readingSince } from './model/readingSince';
 export type { CoverSource } from './model/coverSource';
 export { toCoverSource } from './model/coverSource';
 
+// 방문자에게 비공개 책을 "북커버 씌운 책"으로 보여 주기
+export {
+  maskPrivateBooks,
+  mergeByCompletedDate,
+  PRIVATE_BOOK_TITLE,
+} from './model/maskPrivateBook';
+
 // 재독 기록 합치기 — 같은 책의 회독이 책장에 여러 번 서지 않게 한다
 export { dedupeReadings } from './model/dedupeReadings';
 

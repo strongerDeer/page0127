@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 
 import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
 
+import { catalogVisibilityFilter } from '@/entities/book/api/catalogVisibility';
+
 import { getSupabaseClient } from '../../_helpers/auth';
 import { errorResponse, successResponse } from '../../_helpers/response';
 
@@ -30,7 +32,9 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('global_books')
       .select('*', { count: 'exact' })
-      .eq('review_status', 'approved');
+      .eq('review_status', 'approved')
+      // 비로그인 공용 목록 — 직접 등록 책은 빼고 서점 책만
+      .or(catalogVisibilityFilter());
 
     if (search) {
       const pattern = quotePostgrestValue(`%${search}%`);

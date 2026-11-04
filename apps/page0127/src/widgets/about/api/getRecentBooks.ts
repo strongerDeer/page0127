@@ -2,6 +2,7 @@ import { createAnonClient } from '@/shared/config/supabase/anon';
 import { toRenderableSrc } from '@/shared/lib/imageHost';
 
 import { toCoverSource } from '@/entities/book';
+import { catalogVisibilityFilter } from '@/entities/book/api/catalogVisibility';
 
 import { cacheAbout } from './aboutCache';
 
@@ -30,6 +31,7 @@ const loadRecentBooks = async (): Promise<ShelfBook[]> => {
     .from('global_books')
     .select('id, title, cover_image, provider_item_id, spine_image')
     .not('cover_image', 'is', null)
+    .or(catalogVisibilityFilter())
     .order('created_at', { ascending: false })
     .limit(RECENT_LIMIT);
   if (error) throw new Error(error.message);

@@ -148,6 +148,27 @@ describe('PublicBookShelf 나만 보기 커버', () => {
     expect(html).toContain('검수 중');
   });
 
+  it('방문자에게 가린 비공개 책은 북커버만 — 링크도 제목도 없이 "비공개 도서"', () => {
+    const html = renderToStaticMarkup(
+      <PublicBookShelf
+        username='hj'
+        books={[
+          makeBook({
+            id: 'private-0',
+            title: '비공개 도서',
+            is_public: false,
+            is_masked: true,
+          }),
+        ]}
+      />
+    );
+
+    expect(html).toContain('data-quilt');
+    expect(html).not.toContain('href=');
+    expect(html).toContain('비공개 도서');
+    expect(html).not.toContain('나만 보기');
+  });
+
   it('공개 책에는 씌우지 않는다', () => {
     const html = renderToStaticMarkup(
       <PublicBookShelf

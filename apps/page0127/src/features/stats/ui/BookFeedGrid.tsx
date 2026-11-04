@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { CoverImage, StatePanel } from '@repo/ui';
 
-import { toCoverSource } from '@/entities/book';
+import { PRIVATE_BOOK_TITLE, toCoverSource } from '@/entities/book';
 
 import type { Book } from '@/entities/book';
 
@@ -40,6 +40,43 @@ export const BookFeedGrid = ({
     <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5'>
       {books.map((book) => {
         const rank = rankMap.get(book.id);
+
+        // 방문자에게 가린 비공개 책 — 갈 곳이 없으니 링크 대신 북커버 칸만 둔다
+        if (book.is_masked) {
+          return (
+            <div
+              key={book.id}
+              data-masked
+              title={PRIVATE_BOOK_TITLE}
+              className='relative flex aspect-square flex-col overflow-hidden rounded-md border border-line-soft bg-muted'
+            >
+              {rank !== undefined && (
+                <div className='pt-3 text-center leading-none'>
+                  <p className='text-xs font-bold tracking-[0.2em] text-text-subtle'>
+                    BOOK
+                  </p>
+                  <p className='text-xl font-black text-text-strong'>
+                    #{String(rank).padStart(3, '0')}
+                  </p>
+                </div>
+              )}
+              <div className='flex min-h-0 flex-1 items-center justify-center px-6 py-2'>
+                {/* 책장의 천 북커버와 같은 포인트 블루 + 아이콘 패치 */}
+                <div className='flex aspect-[20/29] h-full items-center justify-center rounded-sm bg-[#2d78db] shadow-md'>
+                  <span
+                    aria-hidden='true'
+                    className="size-7 bg-[url('/brand/app-icon.png')] bg-contain bg-no-repeat"
+                  />
+                </div>
+              </div>
+              <div className='shrink-0 bg-line px-2 py-1.5 text-center'>
+                <p className='text-xs font-medium text-text-subtle'>
+                  {PRIVATE_BOOK_TITLE}
+                </p>
+              </div>
+            </div>
+          );
+        }
 
         return (
           <Link
