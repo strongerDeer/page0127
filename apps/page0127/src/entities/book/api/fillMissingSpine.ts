@@ -4,6 +4,7 @@ import {
 } from '@/shared/lib/spineImage';
 
 import { bookApi } from './bookApi';
+import { fillMissingSpineAction } from './fillMissingSpineAction';
 
 import type { Book } from '../types';
 
@@ -20,6 +21,7 @@ export const BACKGROUND_SPINE_TIMEOUT_MS = 10_000;
  * 책등이 비어 있는 YES24 책이면 책등을 확인해 채운다. 채웠으면 true.
  *
  * 화면을 막지 않도록 결과를 기다리지 않고 부른다(`void fillMissingSpine(book)`).
+ * 먼저 서버에서 확인하고(fillMissingSpineAction), 서버가 확인하지 못했을 때만 브라우저에서 본다.
  * 확인에 실패하면 그냥 비워 둔다 — 글자 책등이 남을 뿐 담긴 책은 그대로다.
  * 채우면 books 트리거가 전체 도서(global_books)의 빈 책등도 같이 채운다
  * (20261027000000_sync_global_spine_image) → 다음에 담는 사람은 처음부터 책등을 받는다.
@@ -30,6 +32,16 @@ export const fillMissingSpine = async (
 ): Promise<boolean> => {
   const candidate = missingSpineCandidate(book);
   if (!candidate) return false;
+
+  // 1순위: 서버에서 확인한다 — 폰 데이터·앱 닫기와 상관없이 끝까지 간다(fillMissingSpineAction)
+  try {
+    const result = await fillMissingSpineAction(book.id);
+    if (result !== 'error') return result === 'filled';
+  } catch {
+    // 서버 액션 요청 자체가 실패(오프라인 등) — 아래 브라우저 확인으로 넘어간다
+  }
+
+  // 2순위: 서버가 확인하지 못했을 때만 예전처럼 브라우저에서 본다
   try {
     const spineImage = await resolveSpineImageUrl(candidate, timeout);
     if (!spineImage) return false;
