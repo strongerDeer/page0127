@@ -235,6 +235,8 @@ export const LibraryView = ({
     모바일 GNB 의 "도서 추가"는 + 아이콘뿐이라 "상단 도서 추가"라는 말만으로는
     찾기 어렵다 → 주인에게는 여기서 바로 가는 버튼을 준다.
   */
+  const isGoalPinned = isLibraryEmpty && goalTarget > 0;
+
   const emptyNotice = isLibraryEmpty && (
     <Card className='rounded-2xl border-dashed bg-card py-6 shadow-none'>
       <CardHeader>
@@ -255,8 +257,9 @@ export const LibraryView = ({
               도서 추가
             </Link>
           </Button>
-          {/* 목표 버튼은 아래 접힌 올해 요약 안에도 있지만, 접혀 있으면 못 찾는다 */}
-          {onSetGoal && (
+          {/* 목표 버튼은 아래 접힌 올해 요약 안에도 있지만, 접혀 있으면 못 찾는다.
+            목표를 정해 요약이 밖으로 나와 있으면(연도 뷰) 거기 '목표 수정'이 있으니 겹치지 않게 뺀다 */}
+          {onSetGoal && !(isGoalPinned && !isAllView) && (
             <Button variant='outline' size='sm' onClick={onSetGoal}>
               올해 목표 정하기
             </Button>
@@ -282,6 +285,43 @@ export const LibraryView = ({
     ) : (
       content
     );
+
+  /*
+    올해 요약 카드. 기록이 없으면 통계와 함께 접어 두지만, **그 해 목표를 정해 뒀으면 꺼내 둔다.**
+    목표를 정한 직후 서재가 비어 있다는 이유로 목표가 접힌 상자 속에 숨으면
+    "저장이 안 됐나?"로 읽힌다. 0권 카드는 한 줄로 낮게 접히고(data-compact)
+    "올해 목표 N권, 첫 책부터 시작해요"라고 말하므로 빈 성적표가 되지 않는다.
+  */
+  const yearSummary = (
+    <YearSummary
+      year={selectedYear}
+      today={today}
+      completed={stats.totalCompletedBooks}
+      target={goalTarget}
+      totalPages={stats.totalPages}
+      averageRating={stats.averageRating}
+      lifeBookCount={stats.lifeBookCount}
+      monthlyReading={stats.monthlyReading}
+      isOwner={isOwner}
+      onSetGoal={
+        onSetGoal && selectedYear === currentYear ? onSetGoal : undefined
+      }
+      goalShare={
+        // 자랑은 주인이 한다. 이미지는 올해 목표만 그린다(goal-story 라우트)
+        isOwner && username && selectedYear === currentYear ? (
+          <ShareSheetButton
+            path={`/${username}`}
+            imagePath={`/${username}/goal-story`}
+            fileName={`page0127-${username}-goal.png`}
+            title={`${currentYear} 독서 목표 달성`}
+            sheetTitle='목표 달성 공유하기'
+            triggerLabel='달성 공유하기'
+            loadingMessages={GOAL_STORY_LOADING}
+          />
+        ) : undefined
+      }
+    />
+  );
 
   // 책장 제목은 지금 보는 범위를 그대로 말한다
   const shelfTitle = isAllView ? allShelfTitle : `${selectedYear}년 서재`;
@@ -421,38 +461,11 @@ export const LibraryView = ({
           <div className='space-y-6'>
             {emptyNotice}
 
+            {isGoalPinned && yearSummary}
+
             {collapseWhenEmpty(
               <>
-                <YearSummary
-                  year={selectedYear}
-                  today={today}
-                  completed={stats.totalCompletedBooks}
-                  target={goalTarget}
-                  totalPages={stats.totalPages}
-                  averageRating={stats.averageRating}
-                  lifeBookCount={stats.lifeBookCount}
-                  monthlyReading={stats.monthlyReading}
-                  isOwner={isOwner}
-                  onSetGoal={
-                    onSetGoal && selectedYear === currentYear
-                      ? onSetGoal
-                      : undefined
-                  }
-                  goalShare={
-                    // 자랑은 주인이 한다. 이미지는 올해 목표만 그린다(goal-story 라우트)
-                    isOwner && username && selectedYear === currentYear ? (
-                      <ShareSheetButton
-                        path={`/${username}`}
-                        imagePath={`/${username}/goal-story`}
-                        fileName={`page0127-${username}-goal.png`}
-                        title={`${currentYear} 독서 목표 달성`}
-                        sheetTitle='목표 달성 공유하기'
-                        triggerLabel='달성 공유하기'
-                        loadingMessages={GOAL_STORY_LOADING}
-                      />
-                    ) : undefined
-                  }
-                />
+                {!isGoalPinned && yearSummary}
 
                 {bookShelf}
 
