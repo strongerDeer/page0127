@@ -184,12 +184,37 @@
   width: auto;
 }
 
-/* 책등 이미지가 없는 책 — 종이 두께만 표현한다 */
+/*
+  책등 이미지가 없는 책 — 서재 책장(PublicBookShelf .noImage.spine)과 같은 글자 책등.
+  색(background-color)과 폭은 BookListItem 이 책마다 inline 으로 넣는다
+  (CSS module 안에 정의 안 된 변수를 쓰면 token-usage 테스트가 막는다).
+  이 슬롯의 책등은 18~28px 라 두 줄이 들어갈 폭이 없다 — 두 번째 줄이 반쯤 잘려 보였다.
+  그래서 세로 한 줄로 쓰고 넘치면 말줄임(…)한다.
+*/
 .spineFallback {
-  width: 14px;
   height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 0.125rem;
   background-color: var(--sunken);
-  border-right: 1px solid var(--line);
+}
+
+.spineFallback p {
+  writing-mode: vertical-rl;
+  height: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.05em;
+  text-align: center;
+  word-break: keep-all;
+  /* 밝은 책등 색 위의 짙은 먹색 — 다크 모드에서도 책등 색이 밝으니 그대로 둔다 */
+  color: #1f1d1a;
 }
 
 /* 터치는 첫 탭에 상세로 이동한다. 뒤집기는 정밀 포인터와 키보드에만 적용한다. */

@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { CoverImage, isPreOptimizedImageSrc } from '@repo/ui';
 
 import { toCoverSource } from '@/entities/book';
+import { SPINE_TONE_COLORS, spineTone } from '@/entities/book/model/spineTone';
+import { shelfSpineWidthPx } from '@/entities/book/model/spineWidth';
 
 import { BookCoverPreview } from './BookCoverPreview';
 import { BookLikeButton } from './BookLikeButton';
@@ -20,6 +22,9 @@ import styles from './BookListItem.module.css';
  *   교보 홈 카드가 소개·저자·가격을 감추는 것과 같은 이유 — 발견 면은 감춘다.
  *   표지 flip 자체는 유지한다(우리만의 spineflip 자산, §2-2).
  */
+/** 서재 책장 높이(240px) 대비 이 표지 슬롯 최대 높이(190px) */
+const SPINE_SLOT_SCALE = 190 / 240;
+
 type BookItemVariant = 'default' | 'compact';
 
 type BookItemProps = {
@@ -45,6 +50,8 @@ type BookListItemCoverProps = {
   /** cover 를 불러오지 못했을 때 쓸 주소 (Storage 사본) */
   coverFallback?: string | null;
   spine: string | null;
+  /** 책등 이미지가 없을 때 글자 책등 폭을 정하는 실물 두께 */
+  thicknessMm?: number | null;
   description: string | null;
   publisher: string | null;
   category: string | null;
@@ -69,6 +76,7 @@ const BookListItemCover = ({
   cover,
   coverFallback,
   spine,
+  thicknessMm,
   description,
   publisher,
   category,
@@ -97,7 +105,18 @@ const BookListItemCover = ({
                 unoptimized={isPreOptimizedImageSrc(spine)}
               />
             ) : (
-              <div className={styles.spineFallback} />
+              // 책등 이미지가 없는 책 — 서재 책장과 같은 규칙(세로 제목 + 책마다 고정된 밝은 색).
+              // 회색 빈 띠는 "깨진 책"으로 읽혔다(2026-11-04 HJ, 숨결이 바람 될 때·책 먹는 법).
+              // 폭은 책장(높이 240px)의 글자 책등 폭을 이 슬롯 높이(최대 190px)에 맞춰 줄인다.
+              <div
+                className={styles.spineFallback}
+                style={{
+                  backgroundColor: SPINE_TONE_COLORS[spineTone(id)],
+                  width: `${Math.round(shelfSpineWidthPx(thicknessMm) * SPINE_SLOT_SCALE)}px`,
+                }}
+              >
+                <p>{title}</p>
+              </div>
             )}
           </div>
 
@@ -209,6 +228,8 @@ export const BookListItem = ({
         cover={cover.src}
         coverFallback={cover.fallbackSrc}
         spine={book.spine_image}
+        // 전체 도서(GlobalBook)는 두께를 모른다 → 기본 폭
+        thicknessMm={'thickness_mm' in book ? book.thickness_mm : null}
         description={book.description}
         publisher={book.publisher}
         category={book.category}
