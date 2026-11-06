@@ -30,6 +30,8 @@ const IMPORT_LIMIT = 10;
 const STANDARD_LIMIT = 60;
 const BEACON_LIMIT = 120;
 const WINDOW_MS = 60_000; // 1분
+// 모든 API 앞에서 실행되는 검사이므로 DB 지연을 오래 기다리지 않는다.
+const RATE_LIMIT_TIMEOUT_MS = 1_000;
 
 // Vercel Cron이 호출하는 라우트 — CRON_SECRET으로 이미 보호되는 서버 간 호출이라 제외
 const EXCLUDED_PREFIXES = ['/api/cron'];
@@ -79,7 +81,7 @@ function getIdentifier(
 /**
  * /api/* 요청에 레이트 리밋을 적용한다.
  * 제한을 넘으면 429 응답을, 통과하거나 적용 대상이 아니면 null을 반환한다.
- * increment_rate_limit RPC 자체가 실패해도 요청은 막지 않는다 — fail-open.
+ * increment_rate_limit RPC가 실패하거나 1초를 넘겨도 요청은 막지 않는다 — fail-open.
  *
  * RPC는 service_role(admin)로만 호출한다. anon 키로 직접 호출해 카운터를 조작하는 것을
  * 막기 위해 함수의 EXECUTE 권한을 service_role에만 부여했기 때문이다.
@@ -102,12 +104,23 @@ export async function checkApiRateLimit(
   // (실제 카운팅 윈도우는 DB 함수 안에서 now() 기준으로 계산된다)
   const windowStartMs = Math.floor(Date.now() / WINDOW_MS) * WINDOW_MS;
 
+  const controller = new AbortController();
+  const timer = setTimeout(
+    () =>
+      controller.abort(
+        new DOMException('레이트 리밋 검사 시간 초과 (1000ms)', 'AbortError')
+      ),
+    RATE_LIMIT_TIMEOUT_MS
+  );
+
   try {
     const identifier = getIdentifier(request, user, tier);
     const admin = createAdminClient();
-    const { data: count, error } = await admin.rpc('increment_rate_limit', {
-      p_identifier: identifier,
-    });
+    const { data: count, error } = await admin
+      .rpc('increment_rate_limit', { p_identifier: identifier })
+      // 실제 HTTP 요청을 취소한다. 재시도로 대기 시간이 늘거나 카운터가 중복 증가하지 않게 한다.
+      .abortSignal(controller.signal)
+      .retry(false);
 
     if (error) {
       throw error;
@@ -128,6 +141,8 @@ export async function checkApiRateLimit(
     }
   } catch (error) {
     console.error('레이트 리밋 체크 실패 (요청은 통과시킴):', error);
+  } finally {
+    clearTimeout(timer);
   }
 
   return null;
