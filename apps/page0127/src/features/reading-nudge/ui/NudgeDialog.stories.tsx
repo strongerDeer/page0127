@@ -1,5 +1,6 @@
 import { expect, fn, userEvent, within } from 'storybook/test';
 
+import { waitForDialog } from '../../../../.storybook/waitForDialog';
 import { NudgeDialog } from './NudgeDialog';
 
 import type { ProviderBook } from '@/shared/api/book-provider';
@@ -38,7 +39,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 export const Recommendation: Story = {
   play: async ({ canvasElement, args }) => {
-    const page = within(canvasElement.ownerDocument.body);
+    const page = await waitForDialog(canvasElement);
     await userEvent.clear(page.getByLabelText('전할 한마디'));
     await userEvent.type(page.getByLabelText('전할 한마디'), '네 생각이 났어.');
     await userEvent.type(
@@ -59,7 +60,7 @@ export const Recommendation: Story = {
 };
 export const DraftsPersist: Story = {
   play: async ({ canvasElement, args }) => {
-    const page = within(canvasElement.ownerDocument.body);
+    const page = await waitForDialog(canvasElement);
     await userEvent.clear(page.getByLabelText('전할 한마디'));
     await userEvent.type(page.getByLabelText('전할 한마디'), '추천 초안');
     await userEvent.click(page.getByRole('button', { name: '한마디' }));
@@ -78,11 +79,8 @@ export const DraftsPersist: Story = {
 };
 export const Invitation: Story = {
   play: async ({ canvasElement }) => {
-    await userEvent.click(
-      within(canvasElement.ownerDocument.body).getByRole('button', {
-        name: '같이 읽기',
-      })
-    );
+    const page = await waitForDialog(canvasElement);
+    await userEvent.click(page.getByRole('button', { name: '같이 읽기' }));
   },
 };
 export const Sent: Story = {
@@ -101,7 +99,7 @@ export const Failed: Story = {
 export const SearchEmpty: Story = {
   args: { onSearch: fn(async () => ({ items: [], totalResults: 0, page: 1 })) },
   play: async ({ canvasElement }) => {
-    const page = within(canvasElement.ownerDocument.body);
+    const page = await waitForDialog(canvasElement);
     await userEvent.type(
       page.getByLabelText('책 제목이나 저자 검색'),
       '없는 책'

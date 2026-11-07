@@ -4,6 +4,7 @@ import { Toaster } from '@repo/ui';
 import { toast } from 'sonner';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
+import { waitForDialog } from '../../../../.storybook/waitForDialog';
 import { NotificationItem } from './NotificationItem';
 import { ReadingEnvelopeDialog } from './ReadingEnvelopeDialog';
 
@@ -71,7 +72,7 @@ export const NoCover: Story = {
 };
 export const OpenLetter: Story = {
   play: async ({ canvasElement, args }) => {
-    const page = within(canvasElement.ownerDocument.body);
+    const page = await waitForDialog(canvasElement);
     await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
     await expect(args.onRead).toHaveBeenCalledOnce();
     await waitFor(() =>
@@ -93,7 +94,7 @@ export const JustAMessage: Story = {
     },
   },
   play: async ({ canvasElement }) => {
-    const page = within(canvasElement.ownerDocument.body);
+    const page = await waitForDialog(canvasElement);
     await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
     await waitFor(() =>
       expect(
@@ -105,7 +106,7 @@ export const JustAMessage: Story = {
 export const UnavailableBook: Story = {
   args: { notification: { ...notification, target: null } },
   play: async ({ canvasElement, args }) => {
-    const page = within(canvasElement.ownerDocument.body);
+    const page = await waitForDialog(canvasElement);
     await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
     await waitFor(() =>
       expect(page.getByText('지금은 첨부한 책을 볼 수 없어요.')).toBeVisible()
@@ -127,7 +128,7 @@ export const RetryOpening: Story = {
       .mockResolvedValue(undefined);
   },
   play: async ({ canvasElement, args }) => {
-    const page = within(canvasElement.ownerDocument.body);
+    const page = await waitForDialog(canvasElement);
     await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
     await waitFor(() => expect(page.getByRole('alert')).toBeVisible());
     await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
@@ -179,6 +180,7 @@ export const NotificationToLetter: Story = {
   play: async ({ canvasElement }) => {
     const page = within(canvasElement.ownerDocument.body);
     await userEvent.click(page.getByRole('button', { name: /책 추천/ }));
+    await waitForDialog(canvasElement);
     await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
     await waitFor(() =>
       expect(page.getByRole('link', { name: '데미안' })).toBeVisible()
@@ -199,7 +201,7 @@ const response = {
 export const SaveRecommendation: Story = {
   args: { onRespond: fn(async () => response) },
   play: async ({ canvasElement, args }) => {
-    const page = within(canvasElement.ownerDocument.body);
+    const page = await waitForDialog(canvasElement);
     await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
     await userEvent.click(
       await page.findByRole('button', { name: '읽고 싶어요에 담기' })
@@ -231,7 +233,7 @@ export const Invitation: Story = {
     })),
   },
   play: async ({ canvasElement, args }) => {
-    const page = within(canvasElement.ownerDocument.body);
+    const page = await waitForDialog(canvasElement);
     await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
     await userEvent.click(
       await page.findByRole('button', { name: '같이 읽기 수락' })
@@ -266,7 +268,7 @@ export const Note: Story = {
     },
   },
   play: async ({ canvasElement }) => {
-    const page = within(canvasElement.ownerDocument.body);
+    const page = await waitForDialog(canvasElement);
     await waitFor(() =>
       expect(page.getByText('요즘 무슨 책 읽어???')).toBeVisible()
     );
@@ -283,7 +285,7 @@ export const CompleteAfterConfirmation: Story = {
     onRespond: fn(async () => ({ ...response, status: 'completed' as const })),
   },
   play: async ({ canvasElement, args }) => {
-    const page = within(canvasElement.ownerDocument.body);
+    const page = await waitForDialog(canvasElement);
     await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
     await userEvent.click(
       await page.findByRole('button', { name: '다른 상태로 담기' })
@@ -325,7 +327,7 @@ export const LifeBookCompletion: Story = {
     onRespond: fn(async () => ({ ...response, status: 'completed' as const })),
   },
   play: async ({ canvasElement, args }) => {
-    const page = within(canvasElement.ownerDocument.body);
+    const page = await waitForDialog(canvasElement);
     await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
     await userEvent.click(
       await page.findByRole('button', { name: '다른 상태로 담기' })
@@ -352,7 +354,7 @@ export const InvitationLetter: Story = {
   name: '같이 읽기 · 정리한 편지',
   args: Invitation.args,
   play: async ({ canvasElement }) => {
-    const page = within(canvasElement.ownerDocument.body);
+    const page = await waitForDialog(canvasElement);
     await userEvent.click(page.getByRole('button', { name: '봉투 열어보기' }));
     await waitFor(() =>
       expect(page.getByRole('button', { name: '같이 읽기 수락' })).toBeVisible()
