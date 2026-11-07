@@ -22,6 +22,11 @@ const USERNAME_PATTERN = /^[a-z0-9_]+$/;
  * Next.js 는 정적 경로를 동적 경로보다 먼저 매칭하므로, username 이 'about' 인
  * 사용자가 생기면 그 사람의 서재는 영원히 열리지 않는다.
  * `is_reserved_username()` (마이그레이션)과 같은 목록을 유지한다.
+ *
+ * 🧪 reservedRoutes.test.ts 가 CI 에서 두 가지를 확인한다.
+ *    1) app/ 최상위 경로·public/ 폴더가 이 목록에 전부 있는가
+ *    2) 이 목록과 가장 최근 마이그레이션의 is_reserved_username() 이 같은가
+ *    → 라우트를 추가하면 여기 한 줄 + 새 마이그레이션을 함께 올린다.
  */
 export const RESERVED_USERNAMES: ReadonlySet<string> = new Set([
   // 실제 라우트 (app/ 최상위 세그먼트)
@@ -40,6 +45,15 @@ export const RESERVED_USERNAMES: ReadonlySet<string> = new Set([
   'contact',
   'privacy',
   'terms',
+  'updates',
+  'onboarding',
+  'library',
+  'icons',
+  // public/ 폴더 — /[username]/... 하위 주소와 겹칠 수 있다
+  'badges',
+  'brand',
+  'images',
+  'illustrations',
   // Next.js 파일 규칙이 만드는 최상위 경로
   'sitemap',
   'sitemap.xml',
@@ -53,6 +67,8 @@ export const RESERVED_USERNAMES: ReadonlySet<string> = new Set([
   'static',
   'public',
   'well-known',
+  'manifest',
+  'offline',
   // 아직 없지만 만들면 충돌하는 것들
   'help',
   'support',
@@ -68,6 +84,8 @@ export const RESERVED_USERNAMES: ReadonlySet<string> = new Set([
   'profile',
   'user',
   'users',
+  'home',
+  'explore',
   'null',
   'undefined',
   'page0127',
