@@ -2,6 +2,8 @@ import { cache } from 'react';
 
 import { createClient } from '@/shared/config/supabase/server';
 
+import { getVerifiedUser } from './getVerifiedUser';
+
 import type { User } from '@supabase/supabase-js';
 
 /**
@@ -19,9 +21,6 @@ import type { User } from '@supabase/supabase-js';
  */
 export const getCurrentUser = cache(async (): Promise<User | null> => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  return user;
+  // A temporary Auth outage belongs in the error boundary, not in a signed-out UI.
+  return getVerifiedUser(supabase.auth);
 });

@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server';
 
 import { updateSession } from '@/shared/config/supabase/middleware';
+import { copyAuthResponse } from '@/shared/config/supabase/response';
 import {
   HERO_VARIANT_COOKIE,
   HERO_VARIANT_MAX_AGE_SEC,
@@ -57,10 +58,12 @@ export async function proxy(request: NextRequest) {
     response.cookies.delete(HERO_VARIANT_COOKIE);
   }
 
+  if (response.status === 503) return response;
+
   if (request.nextUrl.pathname.startsWith('/api/')) {
     const rateLimitResponse = await checkApiRateLimit(request, user);
     if (rateLimitResponse) {
-      return rateLimitResponse;
+      return copyAuthResponse(response, rateLimitResponse);
     }
   }
 
