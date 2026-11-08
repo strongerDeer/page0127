@@ -1,0 +1,88 @@
+/**
+ * Do not edit directly, this file was auto-generated.
+ */
+
+:root {
+  --blue-50: #e3eefc;
+  --blue-300: #74b0ff;
+  --blue-400: #438ef2;
+  --blue-500: #2d78db;
+  --blue-600: #1e69cb;
+  --blue-700: #0455bf;
+  --navy-300: #97a4c0;
+  --navy-500: #66779a;
+  --navy-600: #5f6f8f; /** 라이트 text/subtle 전용. navy/500 은 흰 배경에서 4.496 이라 WCAG AA(4.5)를 0.004 차이로 못 넘긴다 — 색상·채도는 그대로 두고 명도만 7% 낮춰 흰 배경 5.05 / sunken 4.71 을 확보했다. navy/500 자체를 낮추지 않은 이유는 다크의 text-faint 가 그 값을 쓰기 때문이다(낮추면 navy/900 위 3.21 → 2.94 로 그래픽 기준 3:1 마저 깨진다) */
+  --navy-700: #3b4e70;
+  --navy-800: #1b386b; /** 다크 모드 표면 단차 — background(navy/900) 위에 얹는 면. 라이트의 gray/50 자리다 */
+  --navy-900: #14294e;
+  --gray-0: #ffffff;
+  --gray-50: #f6f7f8;
+  --gray-200: #eceff2;
+  --gray-300: #dfe3e8;
+  --ink-400: #9aa0a8; /** 다크 text-subtle. ink/950 위 7.3:1 */
+  --ink-600: #3f434a; /** 활성 메뉴·호버 배경(accent). 흰 글자 9.5:1 */
+  --ink-700: #2e3136; /** 카드·섹션 경계선 */
+  --ink-800: #24262a; /** 보조 면(muted·secondary). 카드보다 한 단 어둡다 */
+  --ink-900: #1a1c1f; /** 카드·팝오버 면. background 보다 한 단 밝아야 카드가 떠 보인다 */
+  --ink-950: #0f1012; /** 기본 배경 */
+  --ink-975: #0a0b0c; /** 가라앉은 면(sunken). 배경보다 어둡다 — 이전에는 navy/800 이라 배경보다 밝아서 이름과 반대로 튀어나와 보였다 */
+  --orange-400: #f0642d; /** 다크 모드 rank-up. orange/600 은 navy/900 위에서 3.35 라 본문에 못 쓴다 (색상·채도 유지, 명도만 45%→56%) */
+  --orange-600: #bf3f0d; /** 라이트 rank-up·chart-2. 옛 값 #d9480f 는 흰 배경 4.30 이라 12px bold 인 RankDeltaBadge 에서 AA 미달이었다(WCAG Large 는 18.66px bold 부터다). 색상·채도는 그대로 두고 명도만 12% 낮춰 흰 배경 5.34 / sunken 4.98 — primary(5.33)·destructive(5.44)와 같은 수준으로 맞췄다. 다크는 orange/400 을 따로 쓰므로 영향 없다 */
+  --red-400: #dd7065; /** 다크 모드 destructive. red/600 은 navy/900 위에서 2.65 라 못 쓴다 (색상·채도 유지, 명도만 46%→63%) */
+  --red-600: #c0392b;
+  --amber-500: #d9a520;
+  --slate-400: #627397; /** 다크 모드 chart-5. slate/500 은 navy/900 위 2.70 으로 그래픽 기준(3:1)도 못 넘는다 (명도 45%→49%) */
+  --slate-500: #5b6b8c;
+  --teal-500: #14b8a6;
+  --violet-500: #7a5cf0;
+  --violet-600: #6a49ee; /** 랜딩 프로모 카드의 보라 면. violet/500 은 흰 글자 4.55 로 AA 를 겨우 넘고, 그 위의 반투명 서브(흰 75%)는 3.27 로 미달이었다. 색상(252°)·채도(83%)는 그대로 두고 명도만 65%→61% 로 낮춰 제목 5.52 / 서브(흰 90%) 4.79 를 확보했다 — orange/400·600 과 같은 방식이다 */
+  --violet-700: #5438c8; /** 보라 면의 어두운 끝. 프로모 카드에 hex 로 박혀 있던 값을 그대로 승격했다 — 색상선(252°)은 500·600 과 같고, 어두운 쪽에서 채도가 낮아지는 형태다 */
+  --overlay: rgba(0, 0, 0, 0.5019607843137255); /** 모달·드로어 뒤를 덮는 막. 검정 50% — 팔레트 색이 아니라 화면을 가리는 용도라 primitive 를 참조하지 않는다 */
+  --radius: 0.5rem; /** 카드 모서리 반경 기준(8px). radius-sm/md/lg/xl 은 이 값에서 파생된다 */
+  --font-h1-desktop: 28px;
+  --font-h1-mobile: 24px;
+  --font-h2-desktop: 20px;
+  --font-h2-mobile: 18px;
+  --font-display-xl-desktop: 48px;
+  --font-display-xl-mobile: 32px;
+  --text-strong: var(--navy-900); /** 제목·책 제목 */
+  --text-body: var(--navy-700); /** 본문 */
+  --text-subtle: var(--navy-600); /** 저자·출판사·메타·캡션. navy/500 은 흰 배경 4.496 으로 AA 에 0.004 모자라 navy/600 으로 내렸다 (Storybook addon-a11y 가 잡았다). 2026-07-29 부터 옛 faint 자리도 이 토큰이 맡는다 — faint(navy/300)는 흰 배경 2.50 으로 AA 미달이었고, 4.5 를 넘기려면 이 값과 육안 구분이 안 되는 색이 되어 4단계가 성립하지 않았다 */
+  --chart-1: var(--blue-600); /** 차트 계열 1 — 진한 블루 (primary 와 동일 색) */
+  --chart-2: var(--orange-600); /** 차트 계열 2 — 코랄 오렌지 (rank-up 과 동일 색) */
+  --chart-3: var(--blue-300); /** 차트 계열 3 — 라이트 스카이 */
+  --chart-4: var(--amber-500); /** 차트 계열 4 — 앰버 */
+  --chart-5: var(--slate-500); /** 차트 계열 5 — 슬레이트 네이비 */
+  --chart-6: var(--teal-500); /** 차트 계열 6 — 틸, 카테고리 구분 보조 */
+  --chart-7: var(--violet-500); /** 차트 계열 7 — 바이올렛, 카테고리 구분 보조 (프로모 카드와 동일 계열) */
+  --background: var(--gray-0);
+  --card: var(--gray-0);
+  --popover: var(--gray-0);
+  --sunken: var(--gray-50); /** 중립 모듈 면·틴트·플레이스홀더 배경 */
+  --secondary: var(--gray-50); /** 중립 면. sunken 과 같은 값 — 과거 #f1f3f5 로 따로 있었으나 육안 구분이 안 되는 밝기 차(L* 약 2)라 통합했다 */
+  --muted: var(--gray-50); /** 중립 면. sunken 과 같은 값 — 과거 #f1f3f5 로 따로 있었으나 육안 구분이 안 되는 밝기 차(L* 약 2)라 통합했다 */
+  --line: var(--gray-300); /** 카드·섹션 경계선. 입체는 그림자가 아니라 이 1px 선으로 만든다 */
+  --line-soft: var(--gray-200); /** line 보다 옅은 보조 구분선 (리스트 아이템 사이 등) */
+  --primary: var(--blue-600); /** 브랜드·주 CTA·링크 전용 진한 블루 (흰 글자 대비 4.7:1). 완독 등 핵심 행동 강조에도 쓴다 */
+  --primary-foreground: var(--gray-0);
+  --accent: var(--blue-50); /** 활성 메뉴·호버 배경 (스카이 틴트) */
+  --accent-foreground: var(--blue-700);
+  --ring: var(--blue-600);
+  --rank-up: var(--orange-600); /** 순위 상승·포인트 강조 전용 코랄 오렌지 (primary 블루의 보색). 다른 용도로 쓰지 않는다 */
+  --destructive: var(--red-600); /** 삭제·탈퇴 전용. 그 외 경고·에러 표시에는 쓰지 않는다 */
+  --sidebar: var(--gray-0);
+  --sidebar-primary: var(--blue-600);
+  --sidebar-primary-foreground: var(--gray-0);
+  --sidebar-accent: var(--blue-50);
+  --sidebar-accent-foreground: var(--blue-700);
+  --sidebar-ring: var(--blue-600);
+  --foreground: var(--text-strong);
+  --card-foreground: var(--text-strong);
+  --popover-foreground: var(--text-strong);
+  --secondary-foreground: var(--text-strong);
+  --muted-foreground: var(--text-subtle);
+  --border: var(--line);
+  --input: var(--line);
+  --sidebar-foreground: var(--text-strong);
+  --sidebar-border: var(--line);
+}
