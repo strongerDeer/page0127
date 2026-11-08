@@ -2,8 +2,10 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { createServerClient } from '@supabase/ssr';
 
+import { getVerifiedUser } from '@/shared/lib/auth/getVerifiedUser';
 import { isProtectedPath } from '@/shared/lib/auth/protectedRoutes';
 
+import { copyAuthResponse } from './response';
 import { createTimeoutFetch } from './timeout';
 
 import type { SupabaseClient, User } from '@supabase/supabase-js';
@@ -23,7 +25,7 @@ export async function updateSession(request: NextRequest): Promise<{
   user: User | null;
   supabase: SupabaseClient;
 }> {
-  const supabaseResponse = NextResponse.next({
+  let supabaseResponse = NextResponse.next({
     request,
   });
 
@@ -31,33 +33,64 @@ export async function updateSession(request: NextRequest): Promise<{
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      // 여기서 하는 인증 호출은 세션 확인뿐이라 외부 IdP 왕복이 없다.
-      // 그래서 콜백용 15초가 아니라 짧게 잡는다 — 이 호출은 **매 요청** 걸리므로
-      // 상한이 길면 Auth 가 느려질 때 사이트 전체가 그만큼 멈춘다.
-      //
-      // 알고 쓸 것: 아래 getUser() 는 error 를 보지 않고 user 만 꺼내므로, 상한에
-      // 걸리면 로그인한 사용자도 user=null 이 되어 보호 경로에서 /login 으로 간다.
-      // 상한이 없을 때의 대안이 "60초 뒤 함수 타임아웃"이라 이쪽을 택했다.
-      global: { fetch: createTimeoutFetch({ authMs: 5_000 }) },
+      // PWA 재실행 시 만료된 토큰을 갱신할 시간을 준다(인증 15초, DB 5초).
+      global: { fetch: createTimeoutFetch() },
       cookies: {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
+        setAll(cookiesToSet, headers) {
+          const previousResponse = supabaseResponse;
+          cookiesToSet.forEach(({ name, value }) => {
             request.cookies.set(name, value);
+          });
+          // next() snapshots request headers. Rebuild after rotating the cookies,
+          // so Server Components receive the refreshed tokens in this same request.
+          supabaseResponse = copyAuthResponse(
+            previousResponse,
+            NextResponse.next({ request })
+          );
+          cookiesToSet.forEach(({ name, value, options }) => {
             supabaseResponse.cookies.set(name, value, options);
+          });
+          Object.entries(headers).forEach(([name, value]) => {
+            supabaseResponse.headers.set(name, value);
           });
         },
       },
     }
   );
 
-  // 중요: getUser()를 호출해야 세션이 갱신됨
-  // getSession()은 세션을 갱신하지 않으므로 사용하면 안 됨
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Verify with the Auth server; do not authorize from getSession() or raw cookies.
+  let user: User | null;
+  try {
+    user = await getVerifiedUser(supabase.auth);
+  } catch {
+    // Fail closed without redirecting to login or clearing a recoverable session.
+    const message =
+      '로그인 상태를 확인하지 못했어요. 잠시 후 다시 시도해 주세요.';
+    const response = request.nextUrl.pathname.startsWith('/api/')
+      ? NextResponse.json({ error: message }, { status: 503 })
+      : new NextResponse(
+          `<!doctype html><html lang="ko"><meta charset="utf-8">
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <title>잠시 연결이 원활하지 않아요 · page0127.</title>
+          <body style="font-family:system-ui,sans-serif;max-width:28rem;margin:15vh auto;padding:24px;line-height:1.7">
+          <h1 style="font-size:1.3rem">잠시 연결이 원활하지 않아요</h1>
+          <p>${message}</p><a href="">다시 시도</a></body></html>`,
+          {
+            status: 503,
+            headers: { 'Content-Type': 'text/html; charset=utf-8' },
+          }
+        );
+    response.headers.set('Cache-Control', 'no-store');
+    response.headers.set('Retry-After', '3');
+    return {
+      response: copyAuthResponse(supabaseResponse, response),
+      user: null,
+      supabase,
+    };
+  }
 
   // 경로 판정은 shared/lib/auth/protectedRoutes 한 곳에 있다.
   // 로그아웃(useLogout)도 같은 함수를 써서 "막는 곳"과 "머물러도 되는 곳"이 어긋나지 않는다.
@@ -75,7 +108,11 @@ export async function updateSession(request: NextRequest): Promise<{
       'redirect',
       `${pathname}${request.nextUrl.search}${request.nextUrl.hash}`
     );
-    return { response: NextResponse.redirect(url), user, supabase };
+    return {
+      response: copyAuthResponse(supabaseResponse, NextResponse.redirect(url)),
+      user,
+      supabase,
+    };
   }
 
   return { response: supabaseResponse, user, supabase };
