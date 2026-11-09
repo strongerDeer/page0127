@@ -2,7 +2,11 @@ import { cache } from 'react';
 
 import { createClient } from '@/shared/config/supabase/server';
 
-import { getVerifiedUser } from './getVerifiedUser';
+import {
+  type AuthUser,
+  getVerifiedClaimsUser,
+  getVerifiedUser,
+} from './getVerifiedUser';
 
 import type { User } from '@supabase/supabase-js';
 
@@ -17,10 +21,20 @@ import type { User } from '@supabase/supabase-js';
  * - 캐시 범위는 서버 요청 하나다. 다른 사용자·다른 요청과 섞이지 않는다.
  * - Server Action·Route Handler 처럼 RSC 렌더 밖에서는 cache 가 매번 새로 부른다
  *   (그쪽은 원래 요청당 한 번이라 손해가 없다).
- * - 세션 갱신(쿠키 재발급)은 proxy(middleware.ts)의 getUser 가 맡는다. 여기는 읽기만 한다.
+ * - 세션 갱신(쿠키 재발급)은 proxy(middleware.ts)가 맡는다. 여기는 읽기만 한다.
+ * - 2026-11-09부터 getClaims(JWT 로컬 검증)로 확인한다 — 자세한 차이는 getVerifiedClaimsUser 참고.
  */
-export const getCurrentUser = cache(async (): Promise<User | null> => {
+export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
   const supabase = await createClient();
   // A temporary Auth outage belongs in the error boundary, not in a signed-out UI.
+  return getVerifiedClaimsUser(supabase.auth);
+});
+
+/**
+ * Auth 서버에 직접 물어 확인한다 — 정지·탈퇴를 토큰 만료(1시간)까지 기다리지 않고 바로 반영해야
+ * 하는 경계(관리자 확인)에서만 쓴다. 일반 화면은 getCurrentUser 를 쓴다.
+ */
+export const getStrictCurrentUser = cache(async (): Promise<User | null> => {
+  const supabase = await createClient();
   return getVerifiedUser(supabase.auth);
 });

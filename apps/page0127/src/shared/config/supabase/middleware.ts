@@ -2,13 +2,16 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { createServerClient } from '@supabase/ssr';
 
-import { getVerifiedUser } from '@/shared/lib/auth/getVerifiedUser';
+import {
+  type AuthUser,
+  getVerifiedClaimsUser,
+} from '@/shared/lib/auth/getVerifiedUser';
 import { isProtectedPath } from '@/shared/lib/auth/protectedRoutes';
 
 import { copyAuthResponse } from './response';
 import { createTimeoutFetch } from './timeout';
 
-import type { SupabaseClient, User } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * Middleware용 Supabase 클라이언트
@@ -22,7 +25,7 @@ import type { SupabaseClient, User } from '@supabase/supabase-js';
  */
 export async function updateSession(request: NextRequest): Promise<{
   response: NextResponse;
-  user: User | null;
+  user: AuthUser | null;
   supabase: SupabaseClient;
 }> {
   let supabaseResponse = NextResponse.next({
@@ -61,10 +64,12 @@ export async function updateSession(request: NextRequest): Promise<{
     }
   );
 
-  // Verify with the Auth server; do not authorize from getSession() or raw cookies.
-  let user: User | null;
+  // Verify the JWT signature (getClaims); never authorize from getSession() or raw cookies.
+  // 비대칭 서명키면 서버 안에서 검증이 끝나 Auth 왕복이 없다. 만료가 가까우면 먼저 갱신해
+  // 위 setAll 로 새 쿠키를 심는 흐름은 getUser 때와 같다.
+  let user: AuthUser | null;
   try {
-    user = await getVerifiedUser(supabase.auth);
+    user = await getVerifiedClaimsUser(supabase.auth);
   } catch {
     // Fail closed without redirecting to login or clearing a recoverable session.
     const message =

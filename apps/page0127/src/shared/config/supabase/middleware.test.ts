@@ -8,7 +8,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   createServerClient: vi.fn(),
-  getUser: vi.fn(),
+  getClaims: vi.fn(),
 }));
 vi.mock('@supabase/ssr', () => ({
   createServerClient: mocks.createServerClient,
@@ -37,17 +37,17 @@ const request = (path = '/settings') =>
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.createServerClient.mockReturnValue({
-    auth: { getUser: mocks.getUser },
+    auth: { getClaims: mocks.getClaims },
   });
-  mocks.getUser.mockResolvedValue({
-    data: { user: { id: 'reader' } },
+  mocks.getClaims.mockResolvedValue({
+    data: { claims: { sub: 'reader' } },
     error: null,
   });
 });
 
 describe('PWA 세션 갱신 응답', () => {
   it('갱신 토큰을 같은 요청의 RSC와 브라우저 응답 모두에 전달한다', async () => {
-    mocks.getUser.mockImplementationOnce(async () => {
+    mocks.getClaims.mockImplementationOnce(async () => {
       await cookies().setAll!(
         [
           {
@@ -58,7 +58,7 @@ describe('PWA 세션 갱신 응답', () => {
         ],
         authHeaders
       );
-      return { data: { user: { id: 'reader' } }, error: null };
+      return { data: { claims: { sub: 'reader' } }, error: null };
     });
     const { response, user } = await updateSession(request());
     expect(user?.id).toBe('reader');
@@ -77,7 +77,7 @@ describe('PWA 세션 갱신 응답', () => {
   });
 
   it('setAll이 여러 번 호출되어도 이전 쿠키와 캐시 금지 헤더를 유지한다', async () => {
-    mocks.getUser.mockImplementationOnce(async () => {
+    mocks.getClaims.mockImplementationOnce(async () => {
       await cookies().setAll!(
         [{ name: 'first', value: 'one', options: { path: '/' } }],
         authHeaders
@@ -86,7 +86,7 @@ describe('PWA 세션 갱신 응답', () => {
         [{ name: 'second', value: 'two', options: { path: '/' } }],
         {}
       );
-      return { data: { user: { id: 'reader' } }, error: null };
+      return { data: { claims: { sub: 'reader' } }, error: null };
     });
     const { response } = await updateSession(request());
     expect(response.cookies.get('first')?.value).toBe('one');
@@ -96,8 +96,8 @@ describe('PWA 세션 갱신 응답', () => {
 
   it('인증 서버 장애는 로그인 리디렉션 대신 재시도 가능한 503으로 처리한다', async () => {
     const original = request();
-    mocks.getUser.mockResolvedValueOnce({
-      data: { user: null },
+    mocks.getClaims.mockResolvedValueOnce({
+      data: null,
       error: new AuthRetryableFetchError('offline', 0),
     });
     const { response, user } = await updateSession(original);
@@ -112,8 +112,8 @@ describe('PWA 세션 갱신 응답', () => {
   });
 
   it('API 인증 확인 장애는 HTML 대신 503 JSON으로 반환한다', async () => {
-    mocks.getUser.mockResolvedValueOnce({
-      data: { user: null },
+    mocks.getClaims.mockResolvedValueOnce({
+      data: null,
       error: new AuthRetryableFetchError('offline', 0),
     });
     const { response } = await updateSession(request('/api/auth/me'));
@@ -123,7 +123,7 @@ describe('PWA 세션 갱신 응답', () => {
   });
 
   it('진짜 비로그인 리디렉션에도 세션 제거 쿠키를 보존한다', async () => {
-    mocks.getUser.mockImplementationOnce(async () => {
+    mocks.getClaims.mockImplementationOnce(async () => {
       await cookies().setAll!(
         [
           {
@@ -134,7 +134,7 @@ describe('PWA 세션 갱신 응답', () => {
         ],
         authHeaders
       );
-      return { data: { user: null }, error: new AuthSessionMissingError() };
+      return { data: null, error: new AuthSessionMissingError() };
     });
     const { response } = await updateSession(request('/settings?tab=profile'));
     expect(response.status).toBe(307);
@@ -149,8 +149,8 @@ describe('PWA 세션 갱신 응답', () => {
   });
 
   it('비로그인 방문자의 공개 페이지는 그대로 통과시킨다', async () => {
-    mocks.getUser.mockResolvedValueOnce({
-      data: { user: null },
+    mocks.getClaims.mockResolvedValueOnce({
+      data: null,
       error: new AuthSessionMissingError(),
     });
     expect((await updateSession(request('/'))).response.status).toBe(200);
