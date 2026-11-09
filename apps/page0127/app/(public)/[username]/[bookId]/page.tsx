@@ -11,7 +11,6 @@ import { bookSelect, withPersonalMemo } from '@/entities/book/api/bookMemo';
 import { getBookReadings } from '@/entities/book/api/getBookReadings';
 import { getPublicBookRecord } from '@/entities/book/api/getPublicBookRecord';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
-import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProfileByUsername';
 import { toDisplayName } from '@/entities/profile/model/displayName';
 import { getBookQuotes } from '@/entities/quote';
 
@@ -56,7 +55,7 @@ export const generateMetadata = async ({
   params,
 }: PageProps): Promise<Metadata> => {
   const { username, bookId } = await params;
-  const profile = await getPublicProfileByUsername(username);
+  const profile = await getProfileByUsername(username);
 
   if (!profile) {
     notFound();

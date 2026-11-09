@@ -18,7 +18,6 @@ import { getPublicShelfSummary } from '@/entities/book/api/getPublicShelfSummary
 import { getOverallStats } from '@/entities/book/server';
 import { getFollowSnapshot } from '@/entities/follow/api/getFollowSnapshot';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
-import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProfileByUsername';
 import { toDisplayName } from '@/entities/profile/model/displayName';
 import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTasteHistory';
 
@@ -46,8 +45,10 @@ type PageProps = {
  * ("page0127. - 책장을 보면, 그 사람이 보인다")가 똑같이 뜬다.
  * 링크를 받은 사람이 이게 누구 책장인지 알 수 없다는 뜻이다.
  *
- * 세션을 읽지 않는 조회를 쓰는 이유는 opengraph-image.tsx 와 같다 —
- * 미리보기는 링크를 받은 사람이 볼 것과 같아야 한다.
+ * 책장 요약·취향 이력은 세션을 읽지 않는 조회를 쓴다(opengraph-image.tsx 와 같은 이유 —
+ * 미리보기는 링크를 받은 사람이 볼 것과 같아야 한다).
+ * 프로필만은 아래 page 와 같은 getProfileByUsername 을 쓴다. 프로필은 누가 보든 같은
+ * 공개 칸이라 결과가 같고, React cache() 덕에 page 의 조회와 합쳐져 DB 에 한 번만 간다.
  * OG 이미지 자체는 같은 폴더의 opengraph-image.tsx 가 파일 규칙으로 자동 연결한다.
  *
  * 없는 사용자면 여기서 notFound() 를 부른다 — 아래 페이지 본문이 아니라.
@@ -61,7 +62,7 @@ export const generateMetadata = async ({
   params,
 }: PageProps): Promise<Metadata> => {
   const { username } = await params;
-  const profile = await getPublicProfileByUsername(username);
+  const profile = await getProfileByUsername(username);
 
   if (!profile) {
     notFound();
