@@ -48,7 +48,8 @@ const RecapArchivePage = async () => {
         title='지난 회상'
         description={
           <>
-            최근 {RECAP_ARCHIVE_WEEKS}주 동안 끝내고 담은 책을 주마다 모았어요
+            이번 주와 지난 {RECAP_ARCHIVE_WEEKS}주 동안 끝내고 담은 책을 주마다
+            모았어요
           </>
         }
         above={

@@ -52,7 +52,7 @@ test('다른 브라우저에서 선택한 책 복원 후에도 원래 책 정보
   const path = await link.getAttribute('href');
   await page.goto(path!);
   await page
-    .getByRole('button', { name: '내 책장에 담기', exact: true })
+    .getByRole('button', { name: '읽고 싶어요', exact: true })
     .click();
   await expect(page).toHaveURL(/\/login\?shelf=/);
   expect(new URL(page.url()).searchParams.get('redirect')).toBe(path);

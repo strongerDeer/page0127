@@ -163,8 +163,9 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
 
   return (
     <PageContainer>
-      {/* 헤더 — 뒤로가기는 버튼 박스가 아니라 조용한 텍스트 링크 */}
-      <div className='mb-6 flex items-center justify-between'>
+      {/* 헤더 — 뒤로가기는 버튼 박스가 아니라 조용한 텍스트 링크.
+          담기 버튼이 둘이라 좁은 폰에서는 버튼 줄이 아래로 내려간다(flex-wrap) */}
+      <div className='mb-6 flex flex-wrap items-center justify-between gap-3'>
         <Link
           href='/books/all'
           className='inline-flex items-center gap-1 text-sm text-text-subtle transition-colors hover:text-text-strong'
