@@ -31,7 +31,7 @@ import { WeeklyRecapCard } from '@/widgets/recap/ui/WeeklyRecapCard';
 
 import type { Book } from '@/entities/book';
 import type { Profile } from '@/entities/profile/types';
-import type { User } from '@supabase/supabase-js';
+import type { AuthUser } from '@/shared/lib/auth/getVerifiedUser';
 import type { Metadata } from 'next';
 
 type PageProps = {
@@ -176,7 +176,7 @@ const LibraryPage = async ({ params }: PageProps) => {
 
 type LibraryContentProps = {
   profile: Profile;
-  currentUser: User | null;
+  currentUser: AuthUser | null;
   username: string;
 };
 

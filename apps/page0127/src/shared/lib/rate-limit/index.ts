@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { createAdminClient } from '@/shared/config/supabase/admin';
 
-import type { User } from '@supabase/supabase-js';
+import type { AuthUser } from '@/shared/lib/auth/getVerifiedUser';
 
 // OpenAI를 호출하는 라우트 — 호출 자체가 비싸고 UI에도 재시도 유도가 없어 가장 엄격하게 제한
 const STRICT_PATHS = [
@@ -69,7 +69,7 @@ function getTier(pathname: string): Tier | null {
  */
 function getIdentifier(
   request: NextRequest,
-  user: User | null,
+  user: AuthUser | null,
   tier: Tier
 ): string {
   const base = user
@@ -89,7 +89,7 @@ function getIdentifier(
  */
 export async function checkApiRateLimit(
   request: NextRequest,
-  user: User | null
+  user: AuthUser | null
 ): Promise<NextResponse | null> {
   const { pathname } = request.nextUrl;
   const tier = getTier(pathname);

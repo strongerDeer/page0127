@@ -1,11 +1,12 @@
 import {
   AuthApiError,
+  AuthInvalidJwtError,
   AuthRetryableFetchError,
   AuthSessionMissingError,
 } from '@supabase/supabase-js';
 import { describe, expect, it, vi } from 'vitest';
 
-import { getVerifiedUser } from './getVerifiedUser';
+import { getVerifiedClaimsUser, getVerifiedUser } from './getVerifiedUser';
 
 import type { User } from '@supabase/supabase-js';
 
@@ -46,5 +47,53 @@ describe('서버의 로그인 상태 검증', () => {
     await expect(
       getVerifiedUser({ getUser: vi.fn().mockRejectedValue(error) })
     ).rejects.toBe(error);
+  });
+});
+
+describe('JWT 로컬 검증(getClaims)으로 로그인 상태 확인', () => {
+  it('검증된 claims 를 화면에서 쓰는 사용자 모양으로 바꾼다', async () => {
+    const getClaims = vi.fn().mockResolvedValue({
+      data: {
+        claims: {
+          sub: 'reader',
+          email: 'reader@example.com',
+          user_metadata: { name: '리더' },
+        },
+      },
+      error: null,
+    });
+    expect(await getVerifiedClaimsUser({ getClaims })).toEqual({
+      id: 'reader',
+      email: 'reader@example.com',
+      user_metadata: { name: '리더' },
+      app_metadata: {},
+    });
+  });
+
+  it('세션이 없으면(data null) 네트워크 없이 비로그인이다', async () => {
+    const getClaims = vi.fn().mockResolvedValue({ data: null, error: null });
+    expect(await getVerifiedClaimsUser({ getClaims })).toBeNull();
+  });
+
+  it.each([
+    new AuthSessionMissingError(),
+    new AuthInvalidJwtError('Invalid JWT signature'),
+    new AuthApiError('revoked', 401, 'bad_jwt'),
+    new AuthApiError('banned', 403, 'user_banned'),
+  ])(
+    '서명 오류·만료·명시적 거절은 비로그인으로 처리한다: %s',
+    async (error) => {
+      const getClaims = vi.fn().mockResolvedValue({ data: null, error });
+      expect(await getVerifiedClaimsUser({ getClaims })).toBeNull();
+    }
+  );
+
+  it.each([
+    new AuthRetryableFetchError('jwks offline', 0),
+    new AuthApiError('server down', 503, undefined),
+    new AuthApiError('rate limit', 429, undefined),
+  ])('일시적 실패는 비로그인으로 바꾸지 않는다: %s', async (error) => {
+    const getClaims = vi.fn().mockResolvedValue({ data: null, error });
+    await expect(getVerifiedClaimsUser({ getClaims })).rejects.toBe(error);
   });
 });
