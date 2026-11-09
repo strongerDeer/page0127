@@ -1,14 +1,7 @@
 'use client';
 
 import { Button } from '@repo/ui';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@repo/ui';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@repo/ui';
 
 import { isRated } from '@/entities/book';
 

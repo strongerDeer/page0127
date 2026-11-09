@@ -5,16 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@repo/ui';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@repo/ui';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@repo/ui';
 
 import { useBookCRUD } from '../api/useBookCRUD';
 
@@ -62,7 +53,10 @@ export const DeleteBookButton = ({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>취소</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirm} variant='destructive'>
+            <AlertDialogAction
+              onClick={handleConfirm}
+              variant='destructive'
+            >
               삭제
             </AlertDialogAction>
           </AlertDialogFooter>
