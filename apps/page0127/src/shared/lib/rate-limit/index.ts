@@ -140,7 +140,16 @@ export async function checkApiRateLimit(
       );
     }
   } catch (error) {
-    console.error('레이트 리밋 체크 실패 (요청은 통과시킴):', error);
+    // 1초 시간 초과는 "DB가 잠깐 느렸다"는 예상한 상황이고, fail-open 이라 사용자 영향도 없다.
+    // console.error 로 찍으면 Sentry(captureConsoleIntegration, error 레벨만 수집)가 이슈로 올리고
+    // 카카오 알림까지 가서, 진짜 장애 알림이 묻힌다(알림 피로). 그래서 시간 초과만 warn 으로 낮춘다.
+    // 판별은 에러 문구가 아니라 우리가 건 signal 로 한다 — SDK가 에러를 감싸는 모양이 바뀌어도 안전하다.
+    // 522 같은 연결 실패·DB 오류는 진짜 이상 신호라 그대로 error 로 남긴다.
+    if (controller.signal.aborted) {
+      console.warn('레이트 리밋 체크 시간 초과 (요청은 통과시킴):', error);
+    } else {
+      console.error('레이트 리밋 체크 실패 (요청은 통과시킴):', error);
+    }
   } finally {
     clearTimeout(timer);
   }

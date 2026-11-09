@@ -17,6 +17,7 @@ const request = (path = '/api/notifications/unread-count') =>
 beforeEach(() => {
   vi.useFakeTimers();
   vi.spyOn(console, 'error').mockImplementation(() => {});
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
   // 실제 SDK를 통해 RPC 요청 취소가 동작하는지 검증한다.
   vi.mocked(createAdminClient).mockImplementation(() =>
     createClient('https://example.supabase.co', 'test-service-role-key', {
@@ -55,7 +56,9 @@ describe('checkApiRateLimit', () => {
     expect(await result).toBeNull();
     expect(signal?.aborted).toBe(true);
     expect(signal?.reason.name).toBe('AbortError');
-    expect(console.error).toHaveBeenCalledOnce();
+    // 시간 초과는 예상한 상황 — Sentry·카카오 알림으로 가는 error 가 아니라 warn 으로만 남긴다
+    expect(console.warn).toHaveBeenCalledOnce();
+    expect(console.error).not.toHaveBeenCalled();
     expect(vi.getTimerCount()).toBe(0);
     await vi.advanceTimersByTimeAsync(10_000);
     expect(fetchMock).toHaveBeenCalledOnce();
@@ -90,7 +93,9 @@ describe('checkApiRateLimit', () => {
 
     expect(await checkApiRateLimit(request(), null)).toBeNull();
     expect(fetchMock).toHaveBeenCalledOnce();
+    // 시간 초과가 아닌 진짜 실패는 그대로 error — 알림으로 받아야 한다
     expect(console.error).toHaveBeenCalledOnce();
+    expect(console.warn).not.toHaveBeenCalled();
     expect(vi.getTimerCount()).toBe(0);
   });
 
