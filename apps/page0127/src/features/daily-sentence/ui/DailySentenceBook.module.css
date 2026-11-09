@@ -1,0 +1,191 @@
+/*
+ * 오늘의 문장 책 — 닫힌 표지 → 책장이 몇 장 넘어가며 → 펼친 면.
+ * 프로토타입(codex/daily-sentence-prototype)의 연출을 카드 크기로 줄였다.
+ * 상태는 data-state 하나로: closed | opening | open
+ */
+
+.stage {
+  position: relative;
+  width: 168px;
+  height: 120px;
+  perspective: 900px;
+  flex-shrink: 0;
+}
+
+/* 닫힌 표지 — 남색 표지 + 민트 책갈피 */
+.cover {
+  position: absolute;
+  left: 46px;
+  top: 0;
+  width: 84px;
+  height: 116px;
+  border-radius: 3px 8px 8px 3px;
+  background: var(--navy-900);
+  box-shadow:
+    3px 3px 0 var(--card),
+    4px 5px 0 var(--line),
+    8px 12px 16px rgb(20 41 78 / 0.18);
+  transform: rotate(-6deg);
+  transition:
+    transform 0.55s ease,
+    opacity 0.4s ease;
+}
+
+.cover::before {
+  /* 책등 선 */
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  border-left: 1px solid rgb(255 255 255 / 0.18);
+}
+
+.coverTitle {
+  position: absolute;
+  left: 18px;
+  top: 30px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.ribbon {
+  position: absolute;
+  right: 12px;
+  top: -2px;
+  width: 9px;
+  height: 24px;
+  background: var(--teal-500);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
+}
+
+/* 펼친 면 */
+.spread {
+  position: absolute;
+  inset: 6px 0 0;
+  opacity: 0;
+  transform: rotate(-3deg) scale(0.86);
+  transform-style: preserve-3d;
+  transition:
+    opacity 0.4s ease,
+    transform 0.8s ease;
+}
+
+.page {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 104px;
+  background: #fffefb;
+  border: 1px solid var(--line);
+}
+
+.page::after {
+  /* 줄 노트 */
+  content: "";
+  position: absolute;
+  inset: 22px 12px 22px;
+  background: repeating-linear-gradient(
+    transparent 0,
+    transparent 9px,
+    rgb(20 41 78 / 0.08) 9px,
+    rgb(20 41 78 / 0.08) 10px
+  );
+}
+
+.left {
+  left: 0;
+  border-radius: 6px 0 0 6px;
+}
+
+.right {
+  right: 0;
+  border-radius: 0 6px 6px 0;
+}
+
+.turning {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 50%;
+  height: 104px;
+  border: 1px solid var(--line);
+  border-radius: 0 6px 6px 0;
+  background: linear-gradient(90deg, #e8e6df, #fffefb 22%, #f2f0e9);
+  transform-origin: left center;
+  opacity: 0;
+}
+
+[data-state="opening"] .cover,
+[data-state="open"] .cover {
+  transform: rotate(-10deg) translateX(-40px) scale(0.8);
+  opacity: 0;
+}
+
+[data-state="opening"] .spread,
+[data-state="open"] .spread {
+  opacity: 1;
+  transform: rotate(-3deg) scale(1);
+}
+
+[data-state="opening"] .turning {
+  animation: turn 0.9s cubic-bezier(0.3, 0.1, 0.3, 1) both;
+  animation-delay: 0.3s;
+}
+
+/* 넘어가는 장마다 조금씩 늦게 — 왼쪽·오른쪽 면(1·2번째) 뒤에 4장이 온다 */
+[data-state="opening"] .turning:nth-child(4) {
+  animation-delay: 0.52s;
+}
+
+[data-state="opening"] .turning:nth-child(5) {
+  animation-delay: 0.74s;
+}
+
+[data-state="opening"] .turning:nth-child(6) {
+  animation-delay: 0.96s;
+}
+
+@keyframes turn {
+  0% {
+    opacity: 1;
+    transform: rotateY(0deg);
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: rotateY(-178deg);
+  }
+}
+
+/* 문장이 나타날 때 */
+.reveal {
+  animation: arrive 0.5s ease both;
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cover,
+  .spread {
+    transition: none;
+  }
+
+  [data-state="opening"] .turning {
+    animation: none;
+  }
+
+  .reveal {
+    animation: none;
+  }
+}

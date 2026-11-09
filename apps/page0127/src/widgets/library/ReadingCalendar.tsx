@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@repo/ui';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Bookmark, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import {
   buildCalendarMonth,
@@ -21,10 +21,12 @@ import {
   readingDayCount,
   toCoverSource,
 } from '@/entities/book';
+import { formatSentenceSource } from '@/entities/daily-sentence';
 
 import { CHART_COLORS } from '@/features/stats/model/balanceCopy';
 
 import type { Book, CalendarDay } from '@/entities/book';
+import type { DailySentence } from '@/entities/daily-sentence';
 
 type ReadingCalendarProps = {
   /** 방문자 = 공개 책만, 주인 = 비공개 포함(반투명) */
@@ -36,6 +38,11 @@ type ReadingCalendarProps = {
   bookHref: (book: Book) => string;
   /** 처음 보여줄 달 — 월별 차트 막대를 누르면 부모가 key 와 함께 바꿔 그 달로 다시 연다 */
   initialMonth?: number;
+  /**
+   * 오늘의 문장을 펼친 날 — 주인에게만 넘어온다(나만 보기).
+   * 완독 집계(completions)와는 다른 배열이라 권수·쪽수에 섞이지 않는다.
+   */
+  sentenceDraws?: DailySentence[];
 };
 
 type MonthState = { year: number; month: number };
@@ -76,6 +83,7 @@ export const ReadingCalendar = ({
   isOwner,
   bookHref,
   initialMonth,
+  sentenceDraws = [],
 }: ReadingCalendarProps) => {
   const [view, dispatch] = useReducer(monthReducer, {
     year,
@@ -84,6 +92,13 @@ export const ReadingCalendar = ({
   const [selected, setSelected] = useState<CalendarDay | null>(null);
 
   const month = buildCalendarMonth(books, view.year, view.month);
+  // 날짜 → 그날 펼친 문장. 하루 한 줄이라 Map 하나로 찾는다
+  const sentenceByDate = new Map(
+    sentenceDraws.map((sentence) => [sentence.draw_date, sentence])
+  );
+  const selectedSentence = selected
+    ? sentenceByDate.get(selected.date)
+    : undefined;
   const { summary } = month;
 
   return (
@@ -189,9 +204,11 @@ export const ReadingCalendar = ({
               outline: '1.5px dashed var(--primary)',
             })),
           ];
+          const sentence = sentenceByDate.get(day.date);
           const label = [
             count > 0 && `${count}권 완독`,
             startCount > 0 && `${startCount}권 읽기 시작`,
+            sentence && '오늘의 문장',
           ]
             .filter(Boolean)
             .join(', ');
@@ -199,7 +216,8 @@ export const ReadingCalendar = ({
             <button
               key={day.date}
               type='button'
-              disabled={covers.length === 0}
+              // 책이 없어도 문장을 펼친 날은 눌러서 다시 읽을 수 있다
+              disabled={covers.length === 0 && !sentence}
               onClick={() => setSelected(day)}
               aria-label={
                 label ? `${view.month}월 ${day.day}일, ${label}` : undefined
@@ -207,6 +225,14 @@ export const ReadingCalendar = ({
               className='relative h-14 border-t border-line-soft px-1 pt-0.5 text-left text-xs text-text-subtle enabled:hover:bg-sunken'
             >
               {day.day}
+
+              {/* 오늘의 문장을 펼친 날 — 날짜 옆 작은 책갈피(서재 책갈피와 같은 민트) */}
+              {sentence && (
+                <Bookmark
+                  aria-hidden
+                  className='absolute right-1 top-1 size-3 fill-current text-[var(--teal-500)]'
+                />
+              )}
 
               {/* 기간 막대 — 시작일을 적은 책만. 줄마다 3px */}
               {day.ranges.map((range) => (
@@ -292,6 +318,19 @@ export const ReadingCalendar = ({
                   : null
               }
             />
+          )}
+          {selectedSentence && (
+            <div>
+              <h3 className='text-xs font-medium text-text-subtle'>
+                오늘의 문장
+              </h3>
+              <blockquote className='mt-2 whitespace-pre-wrap break-keep border-l-2 border-[var(--teal-500)] pl-3 text-sm font-medium leading-relaxed text-text-strong'>
+                {selectedSentence.text}
+              </blockquote>
+              <p className='mt-2 pl-3 text-xs text-text-subtle'>
+                {formatSentenceSource(selectedSentence)}
+              </p>
+            </div>
           )}
           {selected && selected.readingStarts.length > 0 && (
             <CalendarBookList

@@ -16,6 +16,10 @@ import {
 import { getMaskedPrivateBooks } from '@/entities/book/api/getMaskedPrivateBooks';
 import { getPublicShelfSummary } from '@/entities/book/api/getPublicShelfSummary';
 import { getOverallStats } from '@/entities/book/server';
+import {
+  getDailySentences,
+  hasDailySentences,
+} from '@/entities/daily-sentence';
 import { getFollowSnapshot } from '@/entities/follow/api/getFollowSnapshot';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProfileByUsername';
@@ -23,6 +27,7 @@ import { toDisplayName } from '@/entities/profile/model/displayName';
 import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTasteHistory';
 
 import { getBadgeActivity } from '@/features/badge/api/getBadgeActivity';
+import { DailySentenceCard } from '@/features/daily-sentence';
 
 import { toReaderCard } from '@/widgets/public-library/model/readerCard';
 import { PublicLibraryContent } from '@/widgets/public-library/PublicLibraryContent';
@@ -213,6 +218,8 @@ const LibraryContent = async ({
     tasteHistory,
     badgeActivity,
     followSnapshot,
+    sentenceDraws,
+    hasSentencePool,
   ] = await Promise.all([
     getBooks(profile.id, !isOwnProfile),
     isOwnProfile ? Promise.resolve([]) : getMaskedPrivateBooks(profile.id),
@@ -220,7 +227,14 @@ const LibraryContent = async ({
     getPublicTasteHistory(profile.id),
     getBadgeActivity(profile.id),
     getFollowSnapshot(supabase, profile.id, currentUser?.id ?? null),
+    // 오늘의 문장은 나만 본다(HJ, 2026-11-09) — 방문자면 조회하지 않는다
+    isOwnProfile
+      ? getDailySentences(supabase, profile.id)
+      : Promise.resolve([]),
+    isOwnProfile ? hasDailySentences(supabase) : Promise.resolve(false),
   ]);
+  const todaySentence =
+    sentenceDraws.find((sentence) => sentence.draw_date === today) ?? null;
   const allBooks = mergeByCompletedDate(shelfBooks, maskedBooks);
 
   // 소유자 전용 데이터 — 방문자면 아예 조회하지 않는다
@@ -283,9 +297,14 @@ const LibraryContent = async ({
       followSnapshot={followSnapshot}
       // 주간 회상 — 홈이 비로그인 랜딩 전용이 되면서 로그인 사용자가 매일 오는 이 자리로 옮겼다.
       // 내 기록을 되돌아보는 카드라 주인에게만. 실패하거나 할 말이 없으면 조용히 사라진다
+      sentenceDraws={sentenceDraws}
       recapSlot={
         isOwnProfile ? (
           <>
+            {/* 오늘의 문장 — 매일 들르는 자리라 맨 위. 풀이 비었고 오늘 펼친 것도 없으면 카드 없음 */}
+            {(hasSentencePool || todaySentence) && (
+              <DailySentenceCard today={todaySentence} />
+            )}
             <ErrorBoundary fallback={null}>
               <Suspense fallback={null}>
                 <WeeklyRecapCard />

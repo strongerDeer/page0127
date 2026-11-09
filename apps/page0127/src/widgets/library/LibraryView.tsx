@@ -33,6 +33,7 @@ import { WishlistShelf } from './WishlistShelf';
 
 import type { Book } from '@/entities/book';
 import type { BookStats, OverallStats } from '@/entities/book';
+import type { DailySentence } from '@/entities/daily-sentence';
 import type { RatingFilter } from '@/features/stats/model/useLibraryFilters';
 
 // 연도별 추이는 recharts(압축 약 90KB) — 프로필 첫 화면 JS 에 실리지 않게 나중에 불러온다.
@@ -125,6 +126,8 @@ type LibraryViewProps = {
 
   /** 달력에 그릴 책 — 방문자는 공개만, 주인은 비공개 포함(반투명) */
   calendarBooks?: Book[];
+  /** 주인에게만 — 오늘의 문장을 펼친 날에 캘린더 책갈피를 꽂는다 */
+  sentenceDraws?: DailySentence[];
 
   /** '읽고 싶어요' 탭 노출 여부 (내 서재에서만 true) */
   showWishlist?: boolean;
@@ -176,6 +179,7 @@ export const LibraryView = ({
   isOwner = false,
   onSetGoal,
   calendarBooks = [],
+  sentenceDraws = [],
   showWishlist = false,
   isWishlistView = false,
   wishlistBooks = [],
@@ -482,6 +486,7 @@ export const LibraryView = ({
                   <ReadingCalendar
                     key={`${selectedYear}-${jump?.seq ?? 0}`}
                     books={calendarBooks}
+                    sentenceDraws={sentenceDraws}
                     year={selectedYear}
                     today={today}
                     isOwner={isOwner}
