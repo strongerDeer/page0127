@@ -15,6 +15,7 @@ const toDailySentence = ({ draw_date, sentence }: DrawRow): DailySentence => ({
   translator: sentence.translator,
   page: sentence.page,
   isbn: sentence.isbn,
+  cover_image: sentence.cover_image,
 });
 
 /**
@@ -32,7 +33,7 @@ export const getDailySentences = async (
   const { data, error } = await client
     .from('sentence_draws')
     .select(
-      'draw_date, sentence:daily_sentences!inner(id, text, book_title, author, translator, page, isbn)'
+      'draw_date, sentence:daily_sentences!inner(id, text, book_title, author, translator, page, isbn, cover_image)'
     )
     .eq('user_id', userId)
     .order('draw_date', { ascending: false })

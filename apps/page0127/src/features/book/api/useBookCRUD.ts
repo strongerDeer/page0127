@@ -74,28 +74,25 @@ export const useBookCRUD = () => {
    * 수정 페이지의 useEffect 의존성으로 사용되므로 함수 참조를 고정한다.
    * 참조가 렌더마다 바뀌면 로딩 상태 변경 → 재렌더 → 재조회가 반복된다.
    */
-  const getBookById = useCallback(
-    async (id: string): Promise<Book | null> => {
-      setIsLoading(true);
-      setError(null);
+  const getBookById = useCallback(async (id: string): Promise<Book | null> => {
+    setIsLoading(true);
+    setError(null);
 
-      try {
-        const data = await bookApi.getBookById(id);
-        return data;
-      } catch (err) {
-        const message =
-          err instanceof Error
-            ? err.message
-            : '도서 조회 중 오류가 발생했습니다.';
-        setError(message);
-        console.error(err);
-        return null;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
+    try {
+      const data = await bookApi.getBookById(id);
+      return data;
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : '도서 조회 중 오류가 발생했습니다.';
+      setError(message);
+      console.error(err);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   /**
    * U: 도서 정보 수정

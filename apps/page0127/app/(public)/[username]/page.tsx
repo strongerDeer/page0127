@@ -17,8 +17,10 @@ import { getMaskedPrivateBooks } from '@/entities/book/api/getMaskedPrivateBooks
 import { getPublicShelfSummary } from '@/entities/book/api/getPublicShelfSummary';
 import { getOverallStats } from '@/entities/book/server';
 import {
+  getBookInfoId,
   getDailySentences,
   hasDailySentences,
+  sentenceBookHref,
 } from '@/entities/daily-sentence';
 import { getFollowSnapshot } from '@/entities/follow/api/getFollowSnapshot';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
@@ -236,6 +238,13 @@ const LibraryContent = async ({
   ]);
   const todaySentence =
     sentenceDraws.find((sentence) => sentence.draw_date === today) ?? null;
+  // 오늘 펼친 문장이 있을 때만 한 번 더 묻는다(하루 한 줄이라 가볍다)
+  const todayBookHref = todaySentence
+    ? sentenceBookHref(
+        todaySentence,
+        await getBookInfoId(supabase, todaySentence.isbn)
+      )
+    : null;
   const allBooks = mergeByCompletedDate(shelfBooks, maskedBooks);
 
   // 소유자 전용 데이터 — 방문자면 아예 조회하지 않는다
@@ -304,7 +313,10 @@ const LibraryContent = async ({
           <>
             {/* 오늘의 문장 — 매일 들르는 자리라 맨 위. 풀이 비었고 오늘 펼친 것도 없으면 카드 없음 */}
             {(hasSentencePool || todaySentence) && (
-              <DailySentenceCard today={todaySentence} />
+              <DailySentenceCard
+                today={todaySentence}
+                todayBookHref={todayBookHref}
+              />
             )}
             <ErrorBoundary fallback={null}>
               <Suspense fallback={null}>

@@ -9,6 +9,7 @@ export type AdminSentence = {
   translator: string | null;
   page: number | null;
   isbn: string | null;
+  cover_image: string | null;
   rights_note: string | null;
   is_active: boolean;
   created_at: string;
@@ -22,7 +23,7 @@ export async function getAdminSentences(): Promise<AdminSentence[] | null> {
   const { data, error } = await createAdminClient()
     .from('daily_sentences')
     .select(
-      'id, text, book_title, author, translator, page, isbn, rights_note, is_active, created_at, sentence_draws(count)'
+      'id, text, book_title, author, translator, page, isbn, cover_image, rights_note, is_active, created_at, sentence_draws(count)'
     )
     .order('created_at', { ascending: false });
 

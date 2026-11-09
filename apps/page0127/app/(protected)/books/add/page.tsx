@@ -35,6 +35,11 @@ import { BookSearchInput } from '@/features/book/ui/BookSearchInput';
 import { BookSearchPagination } from '@/features/book/ui/BookSearchPagination';
 import { BookSearchResultCard } from '@/features/book/ui/BookSearchResultCard';
 import { DuplicateBookDialog } from '@/features/book/ui/DuplicateBookDialog';
+import {
+  addQuotesAction,
+  hasInvalidQuoteDraft,
+  QuoteDraftsField,
+} from '@/features/book-quote';
 import { uploadManualCover } from '@/features/book-review/lib/uploadManualCover';
 import { validateManualBook } from '@/features/book-review/model/review';
 import {
@@ -44,6 +49,7 @@ import {
 } from '@/features/book-review/ui/ManualBookForm';
 
 import type { Book, ProviderBook } from '@/entities/book';
+import type { QuoteDraftInput } from '@/features/book-quote';
 
 // 직접 등록 폼은 미리보기를 그리지 않으므로 책 자리는 빈 값으로 채운다
 const EMPTY_PROVIDER_BOOK: ProviderBook = {
@@ -100,6 +106,8 @@ const AddBookPage = () => {
     title: searchParams.get('title') ?? '',
   }));
   const [isUploadingCover, setIsUploadingCover] = useState(false);
+  // 등록 폼의 "간직한 문장" — 책이 저장된 뒤 한 번에 저장한다(HJ, 2026-11-09)
+  const [quoteDrafts, setQuoteDrafts] = useState<QuoteDraftInput[]>([]);
   const [lastQuery, setLastQuery] = useState('');
   const [selectedBook, setSelectedBook] = useState<ProviderBook | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
@@ -153,6 +161,7 @@ const AddBookPage = () => {
   };
 
   const closeManual = () => {
+    setQuoteDrafts([]);
     const params = new URLSearchParams(searchParams.toString());
     params.delete('mode');
     params.delete('title');
@@ -301,11 +310,19 @@ const AddBookPage = () => {
 
   const handleSubmit = async (formData: BookFormData) => {
     if (!selectedBook) return;
+    if (hasInvalidQuoteDraft(quoteDrafts)) {
+      toast.error('간직한 문장은 한 칸에 200자까지예요.');
+      return;
+    }
     await saveBook(selectedBook, formData);
   };
 
   // 직접 등록 저장 — 서지 정보 검증 → 표지 올리기 → 같은 저장 길(saveBook)
   const handleManualSubmit = async (formData: BookFormData) => {
+    if (hasInvalidQuoteDraft(quoteDrafts)) {
+      toast.error('간직한 문장은 한 칸에 200자까지예요.');
+      return;
+    }
     let values: ReturnType<typeof validateManualBook>;
     try {
       values = validateManualBook(manualDraft);
@@ -394,6 +411,22 @@ const AddBookPage = () => {
     const result = await createBook(bookData);
 
     if (result) {
+      // 함께 적은 문장 — 책이 저장돼야 붙일 수 있어서 지금 저장한다. 실패해도 책 등록은 그대로다.
+      if (quoteDrafts.some((draft) => draft.text.trim())) {
+        const quoteResult = await addQuotesAction(
+          result.isbn,
+          quoteDrafts
+        ).catch(() => ({
+          ok: false as const,
+          message: '문장을 저장하지 못했어요.',
+        }));
+        if (!quoteResult.ok)
+          toast.error(
+            `책은 등록했어요. ${quoteResult.message} 책 상세의 간직한 문장에서 다시 적어 주세요.`
+          );
+      }
+      setQuoteDrafts([]);
+
       if (selectedBook.source === 'manual')
         toast.success(
           '기록을 저장했어요. 내 등록 요청에서 검수 상태를 확인할 수 있어요.'
@@ -462,6 +495,8 @@ const AddBookPage = () => {
 
   const handleCancel = () => {
     setSelectedBook(null);
+    // 다른 책을 고르러 간다 — 이 책에 적던 문장이 다음 책에 붙지 않게 비운다
+    setQuoteDrafts([]);
   };
 
   const handleRecordAnother = () => {
@@ -514,6 +549,9 @@ const AddBookPage = () => {
             }
             initialStatus={initialStatus}
             onSubmit={handleManualSubmit}
+            quotesSection={
+              <QuoteDraftsField value={quoteDrafts} onChange={setQuoteDrafts} />
+            }
             onCancel={closeManual}
             isLoading={isUploadingCover || isCreating || isFinishing}
           />
@@ -634,6 +672,12 @@ const AddBookPage = () => {
                 initialStatus={initialStatus}
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
+                quotesSection={
+                  <QuoteDraftsField
+                    value={quoteDrafts}
+                    onChange={setQuoteDrafts}
+                  />
+                }
                 isLoading={isCreating || isFinishing}
               />
             )}

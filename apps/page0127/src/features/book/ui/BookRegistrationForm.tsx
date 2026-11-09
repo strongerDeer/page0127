@@ -62,6 +62,11 @@ type BookRegistrationFormProps = {
   bookSection?: ReactNode;
   /** 카드 제목. 주지 않으면 '도서 등록'/'도서 수정'. */
   heading?: string;
+  /**
+   * 나만의 메모 아래에 끼울 칸. 도서 등록 화면이 "간직한 문장" 입력을 넣는다.
+   * 문장은 books 가 아닌 다른 테이블이라 BookFormData 에 섞지 않고, 값도 부르는 쪽이 쥔다.
+   */
+  quotesSection?: ReactNode;
 };
 
 export type BookFormData = {
@@ -275,6 +280,7 @@ export const BookRegistrationForm = ({
   onReselectBook,
   bookSection,
   heading,
+  quotesSection,
 }: BookRegistrationFormProps) => {
   const formId = useId();
   const ids = {
@@ -707,6 +713,8 @@ export const BookRegistrationForm = ({
               aria-describedby={`${ids.personalMemo}-hint`}
             />
           </div>
+
+          {quotesSection}
 
           {/* 태그 */}
           <div className='space-y-3'>

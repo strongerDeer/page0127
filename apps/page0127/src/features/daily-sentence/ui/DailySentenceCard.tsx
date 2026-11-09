@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from 'react';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-import { Button } from '@repo/ui';
-import { BookOpen, Lock } from 'lucide-react';
+import { BookCover, Button } from '@repo/ui';
+import { BookOpen, ChevronRight, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { formatSentenceSource } from '@/entities/daily-sentence';
@@ -23,6 +24,8 @@ const TURNING_PAGES = 4;
 type DailySentenceCardProps = {
   /** 오늘 이미 펼친 문장 — 없으면 닫힌 책과 펼치기 버튼 */
   today: DailySentence | null;
+  /** 오늘 문장의 "이 책 보러 가기" 주소(서버가 정한다) — 없으면 링크를 그리지 않는다 */
+  todayBookHref?: string | null;
 };
 
 type BookState = 'closed' | 'opening' | 'open';
@@ -41,9 +44,13 @@ const prefersReducedMotion = () =>
  *
  * 펼친 뒤 router.refresh() 로 서버 컴포넌트를 다시 그려 캘린더 북마크까지 맞춘다.
  */
-export const DailySentenceCard = ({ today }: DailySentenceCardProps) => {
+export const DailySentenceCard = ({
+  today,
+  todayBookHref = null,
+}: DailySentenceCardProps) => {
   const router = useRouter();
   const [sentence, setSentence] = useState(today);
+  const [bookHref, setBookHref] = useState(todayBookHref);
   const [state, setState] = useState<BookState>(today ? 'open' : 'closed');
   const [, startTransition] = useTransition();
 
@@ -60,6 +67,7 @@ export const DailySentenceCard = ({ today }: DailySentenceCardProps) => {
         return;
       }
       setSentence(result.sentence);
+      setBookHref(result.bookHref);
       setState('open');
       router.refresh();
     });
@@ -84,23 +92,28 @@ export const DailySentenceCard = ({ today }: DailySentenceCardProps) => {
       </div>
 
       <div className='mt-4 flex flex-col gap-5 sm:flex-row sm:items-center'>
-        <div className={styles.stage} data-state={state} aria-hidden>
-          <div className={styles.cover}>
-            <span className={styles.coverTitle}>
-              오늘의
-              <br />
-              문장
-            </span>
-            <span className={styles.ribbon} />
+        {state === 'open' && sentence ? (
+          // 펼친 뒤에는 빈 책장 그림 대신 그 책의 표지 — 표지가 없으면 BookCover 가 제목을 조판한다
+          <SentenceBookCover sentence={sentence} href={bookHref} />
+        ) : (
+          <div className={styles.stage} data-state={state} aria-hidden>
+            <div className={styles.cover}>
+              <span className={styles.coverTitle}>
+                오늘의
+                <br />
+                문장
+              </span>
+              <span className={styles.ribbon} />
+            </div>
+            <div className={styles.spread}>
+              <div className={`${styles.page} ${styles.left}`} />
+              <div className={`${styles.page} ${styles.right}`} />
+              {Array.from({ length: TURNING_PAGES }, (_, i) => (
+                <div key={i} className={styles.turning} />
+              ))}
+            </div>
           </div>
-          <div className={styles.spread}>
-            <div className={`${styles.page} ${styles.left}`} />
-            <div className={`${styles.page} ${styles.right}`} />
-            {Array.from({ length: TURNING_PAGES }, (_, i) => (
-              <div key={i} className={styles.turning} />
-            ))}
-          </div>
-        </div>
+        )}
 
         {state === 'open' && sentence ? (
           // 문장이 바뀌는 순간 스크린 리더에도 읽어 준다
@@ -111,6 +124,15 @@ export const DailySentenceCard = ({ today }: DailySentenceCardProps) => {
             <p className='mt-3 text-sm text-text-subtle'>
               {formatSentenceSource(sentence)}
             </p>
+            {bookHref && (
+              <Link
+                href={bookHref}
+                className='mt-2 inline-flex items-center gap-0.5 text-sm font-medium text-text-strong underline-offset-4 hover:underline'
+              >
+                이 책 보러 가기
+                <ChevronRight className='size-4' aria-hidden />
+              </Link>
+            )}
           </div>
         ) : (
           <div className='min-w-0'>
@@ -132,5 +154,38 @@ export const DailySentenceCard = ({ today }: DailySentenceCardProps) => {
         )}
       </div>
     </section>
+  );
+};
+
+type SentenceBookCoverProps = {
+  sentence: DailySentence;
+  href: string | null;
+};
+
+/** 펼친 카드 왼쪽 표지 — 링크가 있으면 눌러서 책으로 간다(같은 곳을 가리키는 글 링크가 옆에 있어 탭 순서에서는 뺀다) */
+const SentenceBookCover = ({ sentence, href }: SentenceBookCoverProps) => {
+  const cover = (
+    <BookCover
+      src={sentence.cover_image}
+      title={sentence.book_title}
+      author={sentence.author}
+      size='lg'
+      small
+      decorative
+    />
+  );
+
+  return (
+    <div
+      className={`flex shrink-0 justify-center sm:w-[168px] ${styles.reveal}`}
+    >
+      {href ? (
+        <Link href={href} tabIndex={-1} aria-hidden>
+          {cover}
+        </Link>
+      ) : (
+        cover
+      )}
+    </div>
   );
 };
