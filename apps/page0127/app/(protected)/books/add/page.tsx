@@ -1,6 +1,13 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from 'react';
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -217,14 +224,16 @@ const AddBookPage = () => {
   // 바코드로 읽은 ISBN — 검색 목록을 거치지 않고 그 책으로 바로 넘어간다.
   // 중복 확인·상세 보강은 목록에서 고른 것과 같은 길(handleSelectBook)을 탄다.
   const [isScanOpen, setIsScanOpen] = useState(false);
-  // 읽은 ISBN 을 검색창에 채워 둔다. 비워 두면 책을 불러오는 동안 검색창에
-  // 돌아가는 예시 제목(placeholder)이 보여서 다른 책이 찍힌 것처럼 보인다.
-  const [scannedIsbn, setScannedIsbn] = useState<string | null>(null);
-  const [isScanLookup, setIsScanLookup] = useState(false);
+  // 검색창에 미리 채워 둘 값 — 바코드면 읽은 ISBN, 책 정보에서 왔으면 제목.
+  // 비워 두면 책을 불러오는 동안 검색창에 돌아가는 예시 제목(placeholder)이 보여서
+  // 다른 책이 찍힌 것처럼 보인다.
+  const [searchPrefill, setSearchPrefill] = useState<string | null>(null);
+  // ISBN 으로 책을 불러오는 중 — 어디서 왔는지에 따라 안내 문구만 다르다
+  const [isbnLookup, setIsbnLookup] = useState<'scan' | 'preset' | null>(null);
   const handleScanned = async (isbn: string, source: 'camera' | 'photo') => {
     setIsScanOpen(false);
-    setScannedIsbn(isbn);
-    setIsScanLookup(true);
+    setSearchPrefill(isbn);
+    setIsbnLookup('scan');
     try {
       const book = await getBookDetail(isbn).catch(() => null);
       trackEvent('book_barcode_scan', { source, found: !!book });
@@ -237,9 +246,40 @@ const AddBookPage = () => {
       }
       await handleSelectBook(book);
     } finally {
-      setIsScanLookup(false);
+      setIsbnLookup(null);
     }
   };
+
+  // 책 정보의 "읽은 책 기록하기"로 왔다(?isbn=&title=) — 검색을 건너뛰고 그 책의 등록 폼을 연다.
+  // 중복 확인·상세 보강은 바코드와 같은 길(handleSelectBook)을 탄다.
+  // 서점 상세에 없는 책(직접 등록 책 등)이면 제목으로 검색해 목록에서 고르게 한다.
+  const openPresetBook = useEffectEvent(
+    async (isbn: string, title: string | null) => {
+      setIsbnLookup('preset');
+      try {
+        const book = await getBookDetail(isbn).catch(() => null);
+        if (book) {
+          await handleSelectBook(book);
+          return;
+        }
+        setSearchPrefill(title || isbn);
+      } finally {
+        setIsbnLookup(null);
+      }
+    }
+  );
+
+  // 주소의 isbn 은 처음 한 번만 연다. ref 로 막는 이유: 개발 모드 StrictMode 가
+  // effect 를 두 번 돌려 상세 조회·중복 확인이 두 번 나가는 것을 막는다.
+  // 등록을 마치고 "한 권 더 기록"으로 돌아왔을 때 같은 책이 다시 열리지 않게도 한다.
+  const presetIsbn = searchParams.get('isbn');
+  const presetTitle = searchParams.get('title');
+  const presetOpened = useRef(false);
+  useEffect(() => {
+    if (!presetIsbn || isManual || presetOpened.current) return;
+    presetOpened.current = true;
+    void openPresetBook(presetIsbn, presetTitle);
+  }, [presetIsbn, presetTitle, isManual]);
 
   // 재독 선택 시 - 등록 폼 표시
   const handleReread = async () => {
@@ -481,9 +521,9 @@ const AddBookPage = () => {
           <div className='space-y-6'>
             {/* 검색 입력 */}
             <BookSearchInput
-              // 스캔할 때마다 ISBN 을 채운 새 검색창으로 다시 마운트한다
-              key={scannedIsbn ?? 'search'}
-              initialQuery={scannedIsbn ?? undefined}
+              // 미리 채울 값이 바뀔 때마다(스캔·책 정보) 그 값을 채운 새 검색창으로 다시 마운트한다
+              key={searchPrefill ?? 'search'}
+              initialQuery={searchPrefill ?? undefined}
               ref={searchInputRef}
               onSearch={handleSearch}
               isLoading={isSearching}
@@ -491,9 +531,11 @@ const AddBookPage = () => {
             />
 
             {/* 로딩 상태 */}
-            {isScanLookup ? (
+            {isbnLookup ? (
               <p className='text-center text-muted-foreground'>
-                바코드로 찾은 책을 불러오는 중...
+                {isbnLookup === 'scan'
+                  ? '바코드로 찾은 책을 불러오는 중...'
+                  : '고른 책을 불러오는 중...'}
               </p>
             ) : (
               isSearching && (
@@ -501,7 +543,7 @@ const AddBookPage = () => {
               )
             )}
 
-            {!isSearching && !isScanLookup && catalogBooks.length > 0 && (
+            {!isSearching && !isbnLookup && catalogBooks.length > 0 && (
               <section className='space-y-3'>
                 <h2 className='text-sm font-medium'>
                   검수 승인된 직접 등록 도서
@@ -519,7 +561,7 @@ const AddBookPage = () => {
             )}
 
             {/* 검색 결과 — 행 리스트를 카드 하나에 담는다 */}
-            {!isSearching && !isScanLookup && books.length > 0 && (
+            {!isSearching && !isbnLookup && books.length > 0 && (
               <div className='space-y-3'>
                 <div className='flex flex-wrap items-baseline justify-between gap-x-3'>
                   <p className='text-sm text-text-subtle'>
@@ -548,7 +590,7 @@ const AddBookPage = () => {
               </div>
             )}
 
-            {!isSearching && !isScanLookup && totalResults > itemsPerPage && (
+            {!isSearching && !isbnLookup && totalResults > itemsPerPage && (
               <BookSearchPagination
                 currentPage={currentPage}
                 totalResults={totalResults}
@@ -559,7 +601,7 @@ const AddBookPage = () => {
 
             {/* 검색 결과 없음 */}
             {!isSearching &&
-              !isScanLookup &&
+              !isbnLookup &&
               books.length === 0 &&
               catalogBooks.length === 0 && (
                 <p className='text-center text-muted-foreground'>
@@ -570,7 +612,7 @@ const AddBookPage = () => {
               )}
 
             {/* 직접 등록 입구 — 검색을 먼저 해 보고, 없을 때 내려오는 자리라 결과 아래에 둔다 */}
-            {!isSearching && !isScanLookup && (
+            {!isSearching && !isbnLookup && (
               <div className='flex flex-wrap items-center justify-center gap-x-3 gap-y-2 border-t border-line pt-5 text-sm text-text-subtle'>
                 <span>찾는 책이 없나요?</span>
                 <Button type='button' variant='outline' onClick={openManual}>

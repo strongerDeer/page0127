@@ -5,14 +5,20 @@ import { isWithinWeek, toKstWeekRange } from './kstWeek';
 import type { RecapBook } from '../model/types';
 import type { KstWeekRange } from './kstWeek';
 
-/** 아카이브가 거슬러 보는 주 수. 이번 주는 서재 회상 카드가 맡으므로 지난주부터 센다 */
+/**
+ * 아카이브가 거슬러 보는 지난 주 수. 이번 주는 여기에 더해 맨 위에 둔다.
+ *
+ * 예전엔 이번 주를 서재 회상 카드에만 맡기고 지난주부터 셌다. 그러자 카드의 "이번 주에
+ * 1권을 담으셨어요 · 지난 회상 >"을 누르면 방금 본 그 책이 없는 화면이 나왔다(2026-11-09 HJ).
+ * 카드와 겹치더라도 "눌렀는데 없다"보다 낫다.
+ */
 export const RECAP_ARCHIVE_WEEKS = 12;
 
 const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
 
 /** 지난 한 주의 기록 */
 export type RecapWeek = KstWeekRange & {
-  /** 몇 주 전인가 (1 = 지난주) */
+  /** 몇 주 전인가 (0 = 이번 주, 1 = 지난주) */
   weeksAgo: number;
   /** 그 주에 완독한 책 — 완독일 최신순 */
   completed: RecapBook[];
@@ -25,7 +31,7 @@ const byIdAsc = (a: RecapBook, b: RecapBook): number =>
   a.id.localeCompare(b.id);
 
 /**
- * 지난 N주의 회상 — 주마다 완독한 책과 담은 책을 모은다.
+ * 이번 주와 지난 N주의 회상 — 주마다 완독한 책과 담은 책을 모은다.
  *
  * 저장하는 것이 없다. 회상은 책 기록(완독일·담은 날)에서 다시 계산되므로, 이 화면을
  * 늦게 만들어도 그동안의 주가 다 복원된다.
@@ -42,7 +48,7 @@ export const buildRecapArchive = (
 ): RecapWeek[] => {
   const archive: RecapWeek[] = [];
 
-  for (let weeksAgo = 1; weeksAgo <= weeks; weeksAgo += 1) {
+  for (let weeksAgo = 0; weeksAgo <= weeks; weeksAgo += 1) {
     // KST 는 일광절약시간이 없어서 7일씩 빼도 주 경계가 어긋나지 않는다
     const week = toKstWeekRange(
       new Date(now.getTime() - weeksAgo * MS_PER_WEEK)
@@ -93,6 +99,8 @@ export const toWeekRangeLabel = (
   return `${start} – ${endDay}일`;
 };
 
-/** 1 → '지난주', n → 'n주 전' */
-export const toWeeksAgoLabel = (weeksAgo: number): string =>
-  weeksAgo === 1 ? '지난주' : `${weeksAgo}주 전`;
+/** 0 → '이번 주', 1 → '지난주', n → 'n주 전' */
+export const toWeeksAgoLabel = (weeksAgo: number): string => {
+  if (weeksAgo === 0) return '이번 주';
+  return weeksAgo === 1 ? '지난주' : `${weeksAgo}주 전`;
+};

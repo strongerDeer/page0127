@@ -25,7 +25,7 @@ const book = (over: Partial<RecapBook> & { id: string }): RecapBook => ({
 });
 
 describe('buildRecapArchive', () => {
-  it('지난주부터 센다 — 이번 주는 서재 회상 카드가 맡는다', () => {
+  it('이번 주부터 센다 — 회상 카드에서 "지난 회상"을 눌러도 방금 본 책이 있다', () => {
     const archive = buildRecapArchive(
       [
         book({ id: 'this-week', completed_date: '2026-07-27' }),
@@ -34,13 +34,35 @@ describe('buildRecapArchive', () => {
       NOW
     );
 
-    expect(archive).toHaveLength(1);
+    expect(archive).toHaveLength(2);
     expect(archive[0]).toMatchObject({
+      startKey: '2026-07-27',
+      endKey: '2026-08-02',
+      weeksAgo: 0,
+    });
+    expect(archive[0].completed.map((b) => b.id)).toEqual(['this-week']);
+    expect(archive[1]).toMatchObject({
       startKey: '2026-07-20',
       endKey: '2026-07-26',
       weeksAgo: 1,
     });
-    expect(archive[0].completed.map((b) => b.id)).toEqual(['last-week']);
+    expect(archive[1].completed.map((b) => b.id)).toEqual(['last-week']);
+  });
+
+  it('이번 주에 읽고 싶어요로 담은 책도 이번 주 담음에 들어간다', () => {
+    const [week] = buildRecapArchive(
+      [
+        book({
+          id: 'wish',
+          status: 'want_to_read',
+          created_at: '2026-07-27T05:00:00Z',
+        }),
+      ],
+      NOW
+    );
+
+    expect(week).toMatchObject({ weeksAgo: 0 });
+    expect(week.added.map((b) => b.id)).toEqual(['wish']);
   });
 
   it('아무 일 없던 주는 뺀다', () => {
@@ -137,7 +159,8 @@ describe('toWeekRangeLabel', () => {
 });
 
 describe('toWeeksAgoLabel', () => {
-  it('1주 전은 지난주라고 부른다', () => {
+  it('0주 전은 이번 주, 1주 전은 지난주라고 부른다', () => {
+    expect(toWeeksAgoLabel(0)).toBe('이번 주');
     expect(toWeeksAgoLabel(1)).toBe('지난주');
     expect(toWeeksAgoLabel(3)).toBe('3주 전');
   });
