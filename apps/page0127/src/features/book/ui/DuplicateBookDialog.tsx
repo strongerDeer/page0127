@@ -92,7 +92,8 @@ export const DuplicateBookDialog = ({
           </div>
         </div>
 
-        <DialogFooter className='flex-col gap-2 sm:flex-row sm:justify-between'>
+        {/* 기본 DialogFooter 의 flex-col-reverse 를 살려 모바일에서도 주 버튼 줄이 위, 취소가 아래 */}
+        <DialogFooter className='gap-2 sm:justify-between'>
           <Button
             type='button'
             variant='outline'

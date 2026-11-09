@@ -763,17 +763,10 @@ export const BookRegistrationForm = ({
             />
           </div>
 
-          {/* 버튼 */}
+          {/* 버튼 — 사이트 규칙: 주 버튼은 오른쪽(다이얼로그 DialogFooter 와 같은 방향).
+              페이지 폼은 꽉 찬 너비를 유지하되 1:2 로 주 버튼을 더 넓게 둔다.
+              CSS order 로 뒤집지 않고 JSX 순서 자체를 바꿔 Tab 순서도 화면과 같게 한다. */}
           <div className='flex gap-3'>
-            <Button type='submit' disabled={isLoading} className='flex-1'>
-              {isLoading
-                ? initialData
-                  ? '수정 중...'
-                  : '등록 중...'
-                : initialData
-                  ? '수정하기'
-                  : '등록하기'}
-            </Button>
             <Button
               type='button'
               variant='outline'
@@ -782,6 +775,15 @@ export const BookRegistrationForm = ({
               className='flex-1'
             >
               취소
+            </Button>
+            <Button type='submit' disabled={isLoading} className='flex-[2]'>
+              {isLoading
+                ? initialData
+                  ? '수정 중...'
+                  : '등록 중...'
+                : initialData
+                  ? '수정하기'
+                  : '등록하기'}
             </Button>
           </div>
         </form>
