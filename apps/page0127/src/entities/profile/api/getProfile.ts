@@ -1,3 +1,5 @@
+import { cache } from 'react';
+
 import { createClient } from '@/shared/config/supabase/server';
 
 import { toIdentityDefaults } from '../model/identityDefaults';
@@ -17,28 +19,34 @@ const UNIQUE_VIOLATION = '23505';
  * - profiles 테이블이 없으면 자동 생성
  * - reading_goal은 JSONB 타입
  *
+ * - React cache(): 레이아웃(사이드바 셸·온보딩 확인)과 페이지가 같은 요청 안에서
+ *   각자 내 프로필을 찾는다. 같은 userId 호출은 요청당 한 번만 DB 에 간다
+ *   (요청이 끝나면 버려진다 — 저장 직후의 다음 요청은 새 값을 읽는다)
+ *
  * @param userId - 사용자 ID
  * @returns 프로필 정보
  */
-export const getProfile = async (userId: string): Promise<Profile | null> => {
-  const supabase = await createClient();
+export const getProfile = cache(
+  async (userId: string): Promise<Profile | null> => {
+    const supabase = await createClient();
 
-  // 1. 프로필 조회
-  // 학습 포인트: maybeSingle()은 0개 또는 1개의 결과를 허용 (탈퇴한 사용자 대응)
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select(PROFILE_PUBLIC_COLUMNS)
-    .eq('id', userId)
-    .maybeSingle();
+    // 1. 프로필 조회
+    // 학습 포인트: maybeSingle()은 0개 또는 1개의 결과를 허용 (탈퇴한 사용자 대응)
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select(PROFILE_PUBLIC_COLUMNS)
+      .eq('id', userId)
+      .maybeSingle();
 
-  if (error) {
-    // 프로필이 없으면 null 반환 (에러 로그만 출력)
-    console.error('프로필 조회 실패:', error.message);
-    return null;
+    if (error) {
+      // 프로필이 없으면 null 반환 (에러 로그만 출력)
+      console.error('프로필 조회 실패:', error.message);
+      return null;
+    }
+
+    return profile;
   }
-
-  return profile;
-};
+);
 
 /** 접미사를 붙여도 20자를 넘지 않도록 앞부분을 자른다 */
 const withSuffix = (base: string, suffix: string): string =>
