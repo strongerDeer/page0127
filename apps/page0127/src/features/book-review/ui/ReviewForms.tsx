@@ -84,9 +84,6 @@ export const DeleteCatalogBookForm = ({
             지워지고 되돌릴 수 없어요.
           </p>
           <div className='flex gap-2'>
-            <Button variant='destructive' size='sm' disabled={pending}>
-              {pending ? '삭제 중…' : '영구 삭제'}
-            </Button>
             <Button
               type='button'
               variant='outline'
@@ -95,6 +92,9 @@ export const DeleteCatalogBookForm = ({
               disabled={pending}
             >
               취소
+            </Button>
+            <Button variant='destructive' size='sm' disabled={pending}>
+              {pending ? '삭제 중…' : '영구 삭제'}
             </Button>
           </div>
         </>
