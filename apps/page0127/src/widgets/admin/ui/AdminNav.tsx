@@ -8,6 +8,7 @@ import {
   ImageIcon,
   LayoutDashboard,
   LineChart,
+  Quote,
   Receipt,
   Users,
 } from 'lucide-react';
@@ -23,6 +24,7 @@ const NAV = [
   { href: '/admin/costs', label: 'AI 비용', icon: Receipt },
   { href: '/admin/members', label: '회원 관리', icon: Users },
   { href: '/admin/banners', label: '메인 배너', icon: ImageIcon },
+  { href: '/admin/sentences', label: '오늘의 문장', icon: Quote },
 ];
 
 export const AdminNav = () => {

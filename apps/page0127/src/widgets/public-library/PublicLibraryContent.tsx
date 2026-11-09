@@ -37,6 +37,7 @@ import { VisitorChemiCard, VisitorSignupBanner } from './VisitorCta';
 
 import type { Book } from '@/entities/book';
 import type { OverallStats } from '@/entities/book';
+import type { DailySentence } from '@/entities/daily-sentence';
 import type { FollowSnapshot } from '@/entities/follow';
 import type { Profile } from '@/entities/profile/types';
 import type { PublicTasteHistoryItem } from '@/entities/taste-analysis/types';
@@ -63,6 +64,8 @@ type PublicLibraryContentProps = {
   followSnapshot?: FollowSnapshot | null;
   /** 주인에게만 넣는 주간 회상 카드 — 서버 컴포넌트라 페이지가 그려서 넘긴다 */
   recapSlot?: ReactNode;
+  /** 주인이 뽑은 오늘의 문장 기록 — 캘린더 책갈피용. 방문자면 빈 배열(나만 보기) */
+  sentenceDraws?: DailySentence[];
 };
 
 /**
@@ -89,6 +92,7 @@ export const PublicLibraryContent = ({
   badgeActivity,
   followSnapshot = null,
   recapSlot,
+  sentenceDraws = [],
 }: PublicLibraryContentProps) => {
   // 폰에서 등록하다 책등 확인을 놓친 책을 주인이 서재를 열 때 뒤에서 채운다
   useRepairMissingSpines(books, isOwnProfile);
@@ -309,6 +313,7 @@ export const PublicLibraryContent = ({
           username={username}
           onSetGoal={isOwnProfile ? () => setIsGoalDialogOpen(true) : undefined}
           calendarBooks={calendarBooks}
+          sentenceDraws={sentenceDraws}
           showWishlist={isOwnProfile}
           isOwner={isOwnProfile}
           isWishlistView={isWishlistView}
