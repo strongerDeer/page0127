@@ -13,9 +13,11 @@ import { getPublicBookRecord } from '@/entities/book/api/getPublicBookRecord';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProfileByUsername';
 import { toDisplayName } from '@/entities/profile/model/displayName';
+import { getBookQuotes } from '@/entities/quote';
 
 import { ArchiveToggleButton } from '@/features/book/ui/ArchiveToggleButton';
 import { DeleteBookButton } from '@/features/book/ui/DeleteBookButton';
+import { BookQuotesSection } from '@/features/book-quote';
 import { ShareSheetButton } from '@/features/share';
 import { toPendingBook } from '@/features/shelf-preview/model/toPendingBook';
 import { ReadTooButton } from '@/features/shelf-preview/ui/ReadTooButton';
@@ -148,7 +150,12 @@ const BookDetailPage = async ({ params }: PageProps) => {
 
   // 책장은 회독을 한 권으로 합쳐 최신 회독만 링크한다 → 옛 회독으로 가는 길을
   // 여기서 되돌려 준다. 방문자에게는 공개된 회독만 보인다.
-  const readings = await getBookReadings(profile.id, book.isbn, isOwner);
+  // 간직한 문장은 나만 본다(HJ, 2026-11-09) — 방문자면 아예 조회하지 않는다.
+  // 회독과 무관하게 내 계정 + ISBN 으로 모으므로 회독 목록과 함께 읽는다.
+  const [readings, quotes] = await Promise.all([
+    getBookReadings(profile.id, book.isbn, isOwner),
+    isOwner ? getBookQuotes(supabase, profile.id, book.isbn) : null,
+  ]);
 
   // 헤더 배지와 아래 목록이 같은 번호를 말해야 한다 — 저장된 read_count 는
   // 재독을 놓친 경우 1 로 남아 있어 목록과 어긋난다
@@ -193,6 +200,9 @@ const BookDetailPage = async ({ params }: PageProps) => {
         book={book}
         isOwner={isOwner}
         readCount={readCount}
+        quotesSlot={
+          quotes && <BookQuotesSection isbn={book.isbn} quotes={quotes} />
+        }
         visitorAction={
           // 남의 책일 때만 — 아는 책을 만난 순간을 내 기록(또는 가입)으로 잇는다
           isOwner ? undefined : (

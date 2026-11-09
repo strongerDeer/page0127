@@ -27,6 +27,7 @@ import { getBadgeActivity } from '@/features/badge/api/getBadgeActivity';
 import { toReaderCard } from '@/widgets/public-library/model/readerCard';
 import { PublicLibraryContent } from '@/widgets/public-library/PublicLibraryContent';
 import { PublicLibrarySkeleton } from '@/widgets/public-library/PublicLibrarySkeleton';
+import { RandomQuoteCard } from '@/widgets/quote/ui/RandomQuoteCard';
 import { WeeklyRecapCard } from '@/widgets/recap/ui/WeeklyRecapCard';
 
 import type { Book } from '@/entities/book';
@@ -284,11 +285,19 @@ const LibraryContent = async ({
       // 내 기록을 되돌아보는 카드라 주인에게만. 실패하거나 할 말이 없으면 조용히 사라진다
       recapSlot={
         isOwnProfile ? (
-          <ErrorBoundary fallback={null}>
-            <Suspense fallback={null}>
-              <WeeklyRecapCard />
-            </Suspense>
-          </ErrorBoundary>
+          <>
+            <ErrorBoundary fallback={null}>
+              <Suspense fallback={null}>
+                <WeeklyRecapCard />
+              </Suspense>
+            </ErrorBoundary>
+            {/* 간직한 문장 하나 — 나만 보는 카드라 회상과 같은 주인 전용 자리에 둔다 */}
+            <ErrorBoundary fallback={null}>
+              <Suspense fallback={null}>
+                <RandomQuoteCard username={username} />
+              </Suspense>
+            </ErrorBoundary>
+          </>
         ) : null
       }
     />
