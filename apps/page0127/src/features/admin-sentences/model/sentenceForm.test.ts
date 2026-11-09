@@ -31,6 +31,7 @@ describe('parseSentenceForm', () => {
         translator: null,
         page: 12,
         isbn: null,
+        cover_image: null,
         rights_note: '저작권 만료',
       },
     });
@@ -59,6 +60,26 @@ describe('parseSentenceForm', () => {
     expect(
       parseSentenceForm(form({ text: '문장', book_title: '책', page: '12쪽' }))
         .ok
+    ).toBe(false);
+  });
+
+  it('표지는 YES24 https 주소만 받는다', () => {
+    const base = { text: '문장', book_title: '책' };
+    const ok = parseSentenceForm(
+      form({ ...base, cover_image: 'https://image.yes24.com/goods/1/XL' })
+    );
+    expect(ok.ok && ok.value.cover_image).toBe(
+      'https://image.yes24.com/goods/1/XL'
+    );
+    expect(
+      parseSentenceForm(
+        form({ ...base, cover_image: 'http://image.yes24.com/goods/1/XL' })
+      ).ok
+    ).toBe(false);
+    expect(
+      parseSentenceForm(
+        form({ ...base, cover_image: 'https://evil.example.com/a.jpg' })
+      ).ok
     ).toBe(false);
   });
 });

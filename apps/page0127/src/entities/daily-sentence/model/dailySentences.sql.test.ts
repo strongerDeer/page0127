@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 /**
- * 오늘의 문장 규칙(20261109000200_daily_sentences.sql)을 실제 SQL 로 확인한다.
+ * 오늘의 문장 규칙(20261109000200_daily_sentences.sql + 000300 표지)을 실제 SQL 로 확인한다.
  * Supabase 의 auth 스키마·authenticated 역할은 필요한 만큼만 흉내 낸다.
  */
 const db = new PGlite();
@@ -46,6 +46,7 @@ beforeAll(async () => {
     GRANT USAGE ON SCHEMA auth, public TO authenticated, anon;
   `);
   await db.exec(migration('20261109000200_daily_sentences.sql'));
+  await db.exec(migration('20261109000300_daily_sentence_cover.sql'));
   // Supabase 는 public 테이블 권한을 기본으로 준다 — 실제로 막는 것은 RLS 다
   await db.exec(`
     GRANT SELECT, INSERT, UPDATE, DELETE ON public.daily_sentences, public.sentence_draws TO authenticated;
@@ -115,6 +116,28 @@ describe('draw_daily_sentence', () => {
   it('로그인하지 않으면 실패한다', async () => {
     await asUser('');
     await expect(draw()).rejects.toThrow();
+  });
+});
+
+describe('표지 (20261109000300)', () => {
+  it('뽑은 문장의 표지 주소를 함께 돌려준다', async () => {
+    await db.exec(`
+      DELETE FROM public.daily_sentences WHERE id = '${s2}';
+      UPDATE public.daily_sentences SET cover_image = 'https://image.yes24.com/goods/1/XL' WHERE id = '${s1}';
+    `);
+    await asUser(me);
+    const { rows } = await db.query<{ cover_image: string | null }>(
+      'SELECT cover_image FROM public.draw_daily_sentence()'
+    );
+    expect(rows[0].cover_image).toBe('https://image.yes24.com/goods/1/XL');
+  });
+
+  it('https 가 아닌 주소는 저장되지 않는다', async () => {
+    await expect(
+      db.exec(
+        `UPDATE public.daily_sentences SET cover_image = 'javascript:alert(1)' WHERE id = '${s1}'`
+      )
+    ).rejects.toThrow();
   });
 });
 

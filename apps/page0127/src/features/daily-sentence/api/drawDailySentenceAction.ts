@@ -2,10 +2,13 @@
 
 import { createClient } from '@/shared/config/supabase/server';
 
+import { getBookInfoId, sentenceBookHref } from '@/entities/daily-sentence';
+
 import type { DailySentence } from '@/entities/daily-sentence';
 
 export type DrawResult =
-  { ok: true; sentence: DailySentence } | { ok: false; message: string };
+  | { ok: true; sentence: DailySentence; bookHref: string | null }
+  | { ok: false; message: string };
 
 /**
  * 오늘의 문장 펼치기 (Server Action)
@@ -34,5 +37,10 @@ export const drawDailySentenceAction = async (): Promise<DrawResult> => {
   }
   if (!data) return { ok: false, message: '오늘은 펼칠 문장이 없어요.' };
 
-  return { ok: true, sentence: data };
+  // 카드는 펼친 뒤 받은 값으로 그린다(router.refresh 가 와도 useState 는 그대로) — 링크도 함께 준다
+  const bookHref = sentenceBookHref(
+    data,
+    await getBookInfoId(supabase, data.isbn)
+  );
+  return { ok: true, sentence: data, bookHref };
 };

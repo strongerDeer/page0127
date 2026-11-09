@@ -8,4 +8,6 @@ export type DailySentence = {
   translator: string | null;
   page: number | null;
   isbn: string | null;
+  /** 어드민에서 책을 고를 때 받아 둔 서점 표지(https). 없으면 제목을 조판한다 */
+  cover_image: string | null;
 };

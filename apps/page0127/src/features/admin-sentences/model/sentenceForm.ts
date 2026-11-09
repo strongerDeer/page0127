@@ -12,6 +12,7 @@ export type SentenceValues = {
   translator: string | null;
   page: number | null;
   isbn: string | null;
+  cover_image: string | null;
   rights_note: string | null;
 };
 
@@ -23,6 +24,29 @@ const str = (value: FormDataEntryValue | null): string =>
 
 const optional = (value: FormDataEntryValue | null): string | null =>
   str(value) || null;
+
+/**
+ * 표지 주소는 화면이 next/image 로 그린다 — next.config 의 remotePatterns 에 없는 호스트면
+ * 사용자 서재 카드가 통째로 깨진다. 그래서 서점(YES24)과 우리 Storage 만 받는다.
+ */
+const coverHosts = () => {
+  const hosts = ['image.yes24.com'];
+  try {
+    hosts.push(new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').hostname);
+  } catch {
+    // 환경 변수가 없으면(테스트 등) YES24 만
+  }
+  return hosts;
+};
+
+export const isAllowedCoverUrl = (value: string): boolean => {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && coverHosts().includes(url.hostname);
+  } catch {
+    return false;
+  }
+};
 
 /** Postgres char_length 와 같은 기준(코드 포인트)으로 센다 */
 const count = (text: string) => [...text].length;
@@ -51,6 +75,13 @@ export const parseSentenceForm = (form: FormData): SentenceFormResult => {
       return { ok: false, message: '쪽수를 다시 확인해 주세요.' };
   }
 
+  const coverImage = optional(form.get('cover_image'));
+  if (coverImage && !isAllowedCoverUrl(coverImage))
+    return {
+      ok: false,
+      message: '표지는 책 검색에서 골라 주세요(서점·우리 저장소 주소만 돼요).',
+    };
+
   return {
     ok: true,
     value: {
@@ -60,6 +91,7 @@ export const parseSentenceForm = (form: FormData): SentenceFormResult => {
       translator: optional(form.get('translator')),
       page,
       isbn: optional(form.get('isbn')),
+      cover_image: coverImage,
       rights_note: optional(form.get('rights_note')),
     },
   };
