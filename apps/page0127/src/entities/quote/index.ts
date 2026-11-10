@@ -2,6 +2,7 @@
 // 외부 슬라이스/레이어는 항상 '@/entities/quote'를 통해 import 한다
 
 export { getBookQuotes } from './api/getBookQuotes';
+export { getQuoteShelf } from './api/getQuoteShelf';
 export { getRandomQuote } from './api/getRandomQuote';
 export {
   countQuoteChars,
@@ -12,4 +13,9 @@ export {
   type QuoteInput,
   type QuoteInputResult,
 } from './model/quoteInput';
+export {
+  groupQuotesByBook,
+  type QuoteShelfBook,
+  type QuoteShelfGroup,
+} from './model/quoteShelf';
 export type { BookQuote, RandomQuote } from './model/types';
