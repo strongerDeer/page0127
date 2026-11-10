@@ -12,7 +12,7 @@ type RandomQuoteCardProps = {
 };
 
 /**
- * 서재(프로필)의 "간직한 문장" 한 장 — 내가 적은 책 문장 중 하나를 무작위로.
+ * 서재 독서 캘린더 패널의 "간직한 문장" 한 장 — 내가 적은 책 문장 중 하나를 무작위로.
  *
  * 나만 본다(HJ, 2026-11-09): 페이지가 주인일 때만 이 카드를 넣고, RPC 도 RLS 로
  * 본인 문장만 후보로 삼는다. 문장이 하나도 없으면 아무것도 그리지 않는다 —
@@ -32,25 +32,23 @@ export const RandomQuoteCard = async ({ username }: RandomQuoteCardProps) => {
     .filter(Boolean)
     .join(' · ');
 
+  // 독서 캘린더 패널 맨 아래 한 덩이로 들어간다(HJ B안, 2026-11-10) — 짧게, 두 줄까지
   return (
-    <section
-      aria-labelledby='random-quote-heading'
-      className='rounded-xl border border-line px-7 py-6'
-    >
+    <section aria-labelledby='random-quote-heading'>
       <div className='flex items-baseline justify-between gap-3'>
-        <h2
+        <h4
           id='random-quote-heading'
-          className='text-sm font-bold text-text-strong'
+          className='text-xs font-medium text-text-subtle'
         >
           간직한 문장
-        </h2>
+        </h4>
         <span className='inline-flex items-center gap-1 text-xs text-text-subtle'>
           <Lock className='size-3' aria-hidden />
           나만 보여요
         </span>
       </div>
 
-      <blockquote className='mt-4 whitespace-pre-wrap break-keep text-lg font-bold leading-relaxed text-text-strong'>
+      <blockquote className='mt-2 line-clamp-3 whitespace-pre-wrap break-keep text-sm font-medium leading-relaxed text-text-strong'>
         {quote.text}
       </blockquote>
 
@@ -58,12 +56,12 @@ export const RandomQuoteCard = async ({ username }: RandomQuoteCardProps) => {
         (quote.book_id ? (
           <Link
             href={`/${username}/${quote.book_id}`}
-            className='mt-3 inline-block text-sm text-text-subtle hover:text-text-strong'
+            className='mt-1 inline-block text-xs text-text-subtle hover:text-text-strong'
           >
             {source}
           </Link>
         ) : (
-          <p className='mt-3 text-sm text-text-subtle'>{source}</p>
+          <p className='mt-1 text-xs text-text-subtle'>{source}</p>
         ))}
     </section>
   );

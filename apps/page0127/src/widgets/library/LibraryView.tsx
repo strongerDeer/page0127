@@ -128,6 +128,10 @@ type LibraryViewProps = {
   calendarBooks?: Book[];
   /** 주인에게만 — 오늘의 문장을 펼친 날에 캘린더 책갈피를 꽂는다 */
   sentenceDraws?: DailySentence[];
+  /** 캘린더 오늘 패널에 넣을 것(주인: 오늘의 문장 펼치기) */
+  calendarTodaySlot?: ReactNode;
+  /** 캘린더 패널 맨 아래(주인: 간직한 문장·주간 회상 링크) */
+  calendarFooterSlot?: ReactNode;
 
   /** '읽고 싶어요' 탭 노출 여부 (내 서재에서만 true) */
   showWishlist?: boolean;
@@ -180,6 +184,8 @@ export const LibraryView = ({
   onSetGoal,
   calendarBooks = [],
   sentenceDraws = [],
+  calendarTodaySlot,
+  calendarFooterSlot,
   showWishlist = false,
   isWishlistView = false,
   wishlistBooks = [],
@@ -379,6 +385,25 @@ export const LibraryView = ({
     </div>
   );
 
+  // 독서 캘린더 — 주인이 올해를 볼 때는 맨 위 "오늘 허브"(오늘의 문장·그날 읽은 책·간직한 문장),
+  // 방문자·지난해는 예전 자리(독서 균형 아래)에 전체 폭으로 둔다(HJ B안, 2026-11-10).
+  // 방문자의 첫인상은 여전히 "올해 몇 권 + 책장"이어야 해서 위로 올리지 않는다.
+  const calendarFirst = isOwner && selectedYear === currentYear;
+  const calendar = (
+    <ReadingCalendar
+      key={`${selectedYear}-${jump?.seq ?? 0}`}
+      books={calendarBooks}
+      sentenceDraws={sentenceDraws}
+      year={selectedYear}
+      today={today}
+      isOwner={isOwner}
+      bookHref={bookHref}
+      initialMonth={jump?.month}
+      todaySlot={calendarTodaySlot}
+      footerSlot={calendarFooterSlot}
+    />
+  );
+
   return (
     <>
       <section className='space-y-6'>
@@ -465,6 +490,9 @@ export const LibraryView = ({
           <div className='space-y-6'>
             {emptyNotice}
 
+            {/* 빈 서재여도 오늘의 문장은 펼칠 수 있어야 한다 — 접히는 영역 밖에 둔다 */}
+            {calendarFirst && calendar}
+
             {isGoalPinned && yearSummary}
 
             {collapseWhenEmpty(
@@ -481,51 +509,41 @@ export const LibraryView = ({
                   )}
                 />
 
-                {/* items-start — 평점 카드가 달력 높이에 맞춰 늘어나면 아래가 텅 빈다 */}
+                {!calendarFirst && calendar}
+
+                {/* 캘린더가 전체 폭이 되면서 월별 추이·평점은 그 아래 2단(HJ, 2026-11-10).
+                    items-start — 한쪽이 길어져도 다른 쪽이 늘어나 텅 비지 않게 */}
                 <div className='grid grid-cols-1 items-start gap-6 lg:grid-cols-2'>
-                  <ReadingCalendar
-                    key={`${selectedYear}-${jump?.seq ?? 0}`}
-                    books={calendarBooks}
-                    sentenceDraws={sentenceDraws}
+                  <section className='rounded-2xl border border-line-soft bg-card p-5'>
+                    <h2 className='text-base font-bold text-text-strong'>
+                      월별 독서 추이
+                    </h2>
+                    <p className='mt-1 text-sm text-text-subtle'>
+                      막대를 누르면 캘린더가 그 달로 넘어가요
+                    </p>
+                    <div className='mt-3'>
+                      <MonthlyReadingChart
+                        data={stats.monthlyReading}
+                        onMonthClick={handleMonthClick}
+                        currentMonth={
+                          selectedYear === currentYear
+                            ? Number(today.slice(5, 7))
+                            : undefined
+                        }
+                      />
+                    </div>
+                  </section>
+                  <RatingSummaryCard
                     year={selectedYear}
-                    today={today}
-                    isOwner={isOwner}
+                    ratings={stats.ratingReading}
+                    averageRating={stats.averageRating}
+                    total={stats.totalCompletedBooks}
+                    lifeBooks={completedBooks.filter(
+                      (book) => book.is_life_book
+                    )}
                     bookHref={bookHref}
-                    initialMonth={jump?.month}
+                    onRatingClick={handleRatingClick}
                   />
-                  {/* 오른쪽 칸: 월별 권수 → 평점. 모바일에선 캘린더 아래로 */}
-                  <div className='space-y-6'>
-                    <section className='rounded-2xl border border-line-soft bg-card p-5'>
-                      <h2 className='text-base font-bold text-text-strong'>
-                        월별 독서 추이
-                      </h2>
-                      <p className='mt-1 text-sm text-text-subtle'>
-                        막대를 누르면 캘린더가 그 달로 넘어가요
-                      </p>
-                      <div className='mt-3'>
-                        <MonthlyReadingChart
-                          data={stats.monthlyReading}
-                          onMonthClick={handleMonthClick}
-                          currentMonth={
-                            selectedYear === currentYear
-                              ? Number(today.slice(5, 7))
-                              : undefined
-                          }
-                        />
-                      </div>
-                    </section>
-                    <RatingSummaryCard
-                      year={selectedYear}
-                      ratings={stats.ratingReading}
-                      averageRating={stats.averageRating}
-                      total={stats.totalCompletedBooks}
-                      lifeBooks={completedBooks.filter(
-                        (book) => book.is_life_book
-                      )}
-                      bookHref={bookHref}
-                      onRatingClick={handleRatingClick}
-                    />
-                  </div>
                 </div>
               </>
             )}

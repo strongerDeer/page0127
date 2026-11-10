@@ -66,6 +66,10 @@ type PublicLibraryContentProps = {
   recapSlot?: ReactNode;
   /** 주인이 뽑은 오늘의 문장 기록 — 캘린더 책갈피용. 방문자면 빈 배열(나만 보기) */
   sentenceDraws?: DailySentence[];
+  /** 독서 캘린더 오늘 패널 — 주인 서재의 오늘의 문장 펼치기(서버가 그려 넘긴다) */
+  calendarTodaySlot?: ReactNode;
+  /** 독서 캘린더 패널 맨 아래 — 주인 서재의 간직한 문장·주간 회상 링크 */
+  calendarFooterSlot?: ReactNode;
 };
 
 /**
@@ -93,6 +97,8 @@ export const PublicLibraryContent = ({
   followSnapshot = null,
   recapSlot,
   sentenceDraws = [],
+  calendarTodaySlot,
+  calendarFooterSlot,
 }: PublicLibraryContentProps) => {
   // 폰에서 등록하다 책등 확인을 놓친 책을 주인이 서재를 열 때 뒤에서 채운다
   useRepairMissingSpines(books, isOwnProfile);
@@ -314,6 +320,8 @@ export const PublicLibraryContent = ({
           onSetGoal={isOwnProfile ? () => setIsGoalDialogOpen(true) : undefined}
           calendarBooks={calendarBooks}
           sentenceDraws={sentenceDraws}
+          calendarTodaySlot={calendarTodaySlot}
+          calendarFooterSlot={calendarFooterSlot}
           showWishlist={isOwnProfile}
           isOwner={isOwnProfile}
           isWishlistView={isWishlistView}

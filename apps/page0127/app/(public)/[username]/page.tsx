@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { ErrorBoundary } from '@repo/ui';
@@ -34,7 +35,6 @@ import { toReaderCard } from '@/widgets/public-library/model/readerCard';
 import { PublicLibraryContent } from '@/widgets/public-library/PublicLibraryContent';
 import { PublicLibrarySkeleton } from '@/widgets/public-library/PublicLibrarySkeleton';
 import { RandomQuoteCard } from '@/widgets/quote/ui/RandomQuoteCard';
-import { WeeklyRecapCard } from '@/widgets/recap/ui/WeeklyRecapCard';
 
 import type { Book } from '@/entities/book';
 import type { Profile } from '@/entities/profile/types';
@@ -305,31 +305,33 @@ const LibraryContent = async ({
       tasteAnalysisRemaining={tasteAnalysisRemaining}
       badgeActivity={badgeActivity}
       followSnapshot={followSnapshot}
-      // 주간 회상 — 홈이 비로그인 랜딩 전용이 되면서 로그인 사용자가 매일 오는 이 자리로 옮겼다.
-      // 내 기록을 되돌아보는 카드라 주인에게만. 실패하거나 할 말이 없으면 조용히 사라진다
       sentenceDraws={sentenceDraws}
-      recapSlot={
+      // 서재 위쪽 카드 셋(오늘의 문장·주간 회상·간직한 문장)은 독서 캘린더 패널로 옮겼다(HJ B안, 2026-11-10).
+      // 오늘의 문장 — 오늘 칸 패널. 풀이 비었고 오늘 펼친 것도 없으면 넣지 않는다
+      calendarTodaySlot={
+        isOwnProfile && (hasSentencePool || todaySentence) ? (
+          <DailySentenceCard
+            today={todaySentence}
+            todayBookHref={todayBookHref}
+          />
+        ) : null
+      }
+      // 패널 맨 아래 — 간직한 문장 하나(나만 보기)와 주간 회상으로 가는 길
+      calendarFooterSlot={
         isOwnProfile ? (
-          <>
-            {/* 오늘의 문장 — 매일 들르는 자리라 맨 위. 풀이 비었고 오늘 펼친 것도 없으면 카드 없음 */}
-            {(hasSentencePool || todaySentence) && (
-              <DailySentenceCard
-                today={todaySentence}
-                todayBookHref={todayBookHref}
-              />
-            )}
-            <ErrorBoundary fallback={null}>
-              <Suspense fallback={null}>
-                <WeeklyRecapCard />
-              </Suspense>
-            </ErrorBoundary>
-            {/* 간직한 문장 하나 — 나만 보는 카드라 회상과 같은 주인 전용 자리에 둔다 */}
+          <div className='flex flex-col gap-3'>
             <ErrorBoundary fallback={null}>
               <Suspense fallback={null}>
                 <RandomQuoteCard username={username} />
               </Suspense>
             </ErrorBoundary>
-          </>
+            <Link
+              href='/books/recap'
+              className='text-xs font-medium text-text-subtle hover:text-text-strong'
+            >
+              주간 회상 보기 ›
+            </Link>
+          </div>
         ) : null
       }
     />

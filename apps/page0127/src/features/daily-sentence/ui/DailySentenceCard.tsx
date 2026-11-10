@@ -74,24 +74,22 @@ export const DailySentenceCard = ({
   };
 
   return (
-    <section
-      aria-labelledby='daily-sentence-heading'
-      className='rounded-xl border border-line px-7 py-6'
-    >
+    // 독서 캘린더의 오늘 패널 안에 들어간다(HJ B안, 2026-11-10) — 테두리·큰 제목은 패널이 맡는다
+    <section aria-labelledby='daily-sentence-heading'>
       <div className='flex items-baseline justify-between gap-3'>
-        <h2
+        <h4
           id='daily-sentence-heading'
-          className='text-sm font-bold text-text-strong'
+          className='text-xs font-medium text-text-subtle'
         >
           {sentence ? '오늘 펼쳐진 문장' : '오늘의 문장'}
-        </h2>
+        </h4>
         <span className='inline-flex items-center gap-1 text-xs text-text-subtle'>
           <Lock className='size-3' aria-hidden />
           나만 보여요
         </span>
       </div>
 
-      <div className='mt-4 flex flex-col gap-5 sm:flex-row sm:items-center'>
+      <div className='mt-3 flex flex-col gap-4 sm:flex-row sm:items-center lg:flex-col lg:items-start'>
         {state === 'open' && sentence ? (
           // 펼친 뒤에는 빈 책장 그림 대신 그 책의 표지 — 표지가 없으면 BookCover 가 제목을 조판한다
           <SentenceBookCover sentence={sentence} href={bookHref} />
@@ -118,7 +116,7 @@ export const DailySentenceCard = ({
         {state === 'open' && sentence ? (
           // 문장이 바뀌는 순간 스크린 리더에도 읽어 준다
           <div className={`min-w-0 ${styles.reveal}`} aria-live='polite'>
-            <blockquote className='whitespace-pre-wrap break-keep text-lg font-bold leading-relaxed text-text-strong'>
+            <blockquote className='whitespace-pre-wrap break-keep text-base font-bold leading-relaxed text-text-strong'>
               {sentence.text}
             </blockquote>
             <p className='mt-3 text-sm text-text-subtle'>
@@ -169,16 +167,14 @@ const SentenceBookCover = ({ sentence, href }: SentenceBookCoverProps) => {
       src={sentence.cover_image}
       title={sentence.book_title}
       author={sentence.author}
-      size='lg'
+      size='md'
       small
       decorative
     />
   );
 
   return (
-    <div
-      className={`flex shrink-0 justify-center sm:w-[168px] ${styles.reveal}`}
-    >
+    <div className={`flex shrink-0 ${styles.reveal}`}>
       {href ? (
         <Link href={href} tabIndex={-1} aria-hidden>
           {cover}
