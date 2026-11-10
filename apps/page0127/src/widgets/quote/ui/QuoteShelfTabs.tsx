@@ -27,20 +27,20 @@ export const QuoteShelfTabs = ({
   const tabs = [
     {
       value: 'mine',
-      label: '내가 적은 문장',
+      label: '내가 모은 문장',
       count: mineCount,
       href: `/${username}/quotes`,
     },
     {
       value: 'daily',
-      label: '오늘의 문장 기록',
+      label: '오늘의 문장',
       count: dailyCount,
       href: `/${username}/quotes?tab=daily`,
     },
   ] as const;
 
   return (
-    <nav aria-label='문장 보관함 보기'>
+    <nav aria-label='문장 서랍 보기'>
       <SegmentedControl className='w-fit'>
         {tabs.map((tab) => {
           const active = tab.value === current;

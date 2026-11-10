@@ -11,11 +11,14 @@ type MyQuotesListProps = {
 };
 
 /**
- * "내가 적은 문장" — 책 한 권 = 한 묶음. 최근에 문장을 적은 책이 위.
+ * "내가 모은 문장" — 책 표지만 늘어놓고 오른쪽 위에 문장 개수를 단다(HJ, 2026-11-10).
  *
- * 읽기 전용이다. 고치고 지우는 곳은 책 상세의 "간직한 문장" 하나로 둔다
- * (같은 일을 두 군데서 하게 하면 둘 중 하나는 반드시 낡는다). 그래서 묶음마다
- * 그 책 상세로 가는 링크를 단다.
+ * 왜 문장을 펼쳐 보이지 않나: 한 책에 문장을 수십 개 적을 수도 있어서, 문장을 다
+ * 보여 주면 책 몇 권만으로 페이지가 끝없이 길어진다. 책 한 권 = 칸 하나로 두고,
+ * 문장은 표지를 눌러 책 상세의 "내가 모은 문장"(#my-quotes)에서 읽고 고친다.
+ * (고치는 곳을 한 군데로 두는 효과도 있다)
+ *
+ * 책 기록을 모두 지운 책은 갈 상세가 없어 링크 없이 표지만 그린다.
  */
 export const MyQuotesList = ({ username, groups }: MyQuotesListProps) => {
   if (groups.length === 0) {
@@ -24,8 +27,8 @@ export const MyQuotesList = ({ username, groups }: MyQuotesListProps) => {
         icon={<Quote className='size-6' />}
         message={
           <>
-            아직 적어 둔 문장이 없어요.
-            <br />책 상세의 &lsquo;간직한 문장&rsquo;에서 마음에 남은 문장을
+            아직 모은 문장이 없어요.
+            <br />책 상세의 &lsquo;내가 모은 문장&rsquo;에서 마음에 남은 문장을
             적어 보세요.
           </>
         }
@@ -33,80 +36,60 @@ export const MyQuotesList = ({ username, groups }: MyQuotesListProps) => {
     );
   }
 
+  const quoteCount = groups.reduce((sum, g) => sum + g.quotes.length, 0);
+
   return (
-    <ul className='flex flex-col gap-4'>
-      {groups.map(({ isbn, book, quotes }) => {
-        const href = book ? `/${username}/${book.id}` : null;
-        const title = book?.title ?? '지운 책';
+    <div className='flex flex-col gap-5'>
+      <p className='text-sm text-text-subtle'>
+        책 {groups.length}권에서 문장 {quoteCount}개를 모았어요
+      </p>
 
-        return (
-          <li
-            key={isbn}
-            className='rounded-2xl border border-line-soft bg-card p-4 sm:p-5'
-          >
-            <article
-              aria-label={`${title}에서 적은 문장 ${quotes.length}개`}
-              className='flex gap-4'
-            >
-              <div className='shrink-0'>
-                {href ? (
-                  // 바로 옆 제목 링크와 같은 곳이라 탭 순서에서는 뺀다
-                  <Link href={href} tabIndex={-1} aria-hidden>
-                    <BookCover
-                      src={book?.cover_image}
-                      title={title}
-                      author={book?.author}
-                      size='sm'
-                      small
-                      decorative
-                    />
-                  </Link>
-                ) : (
-                  <BookCover title={title} size='sm' small decorative />
-                )}
+      <ul className='grid grid-cols-3 gap-x-4 gap-y-6 sm:grid-cols-4 lg:grid-cols-6'>
+        {groups.map(({ isbn, book, quotes }) => {
+          const title = book?.title ?? '지운 책';
+          const label = `${title}, 문장 ${quotes.length}개`;
+          const body = (
+            <>
+              <div className='relative'>
+                <BookCover
+                  src={book?.cover_image}
+                  title={title}
+                  author={book?.author}
+                  size='full'
+                  decorative
+                />
+                <span
+                  aria-hidden
+                  className='absolute -right-2 -top-2 inline-flex h-7 min-w-7 items-center justify-center rounded-full border-[1.5px] border-primary bg-background px-1.5 text-xs font-bold tabular-nums text-primary'
+                >
+                  {quotes.length}
+                </span>
               </div>
+              <span className='mt-2 line-clamp-2 break-keep text-xs text-text-body'>
+                {title}
+              </span>
+            </>
+          );
 
-              <div className='min-w-0 flex-1'>
-                <h3 className='break-keep text-sm font-bold text-text-strong'>
-                  {href ? (
-                    <Link
-                      href={href}
-                      className='underline-offset-4 hover:underline'
-                    >
-                      {title}
-                    </Link>
-                  ) : (
-                    title
-                  )}
-                </h3>
-                {book?.author && (
-                  <p className='mt-0.5 text-xs text-text-subtle'>
-                    {book.author}
-                  </p>
-                )}
-
-                <ul className='mt-3 flex flex-col gap-3'>
-                  {quotes.map((quote) => (
-                    <li
-                      key={quote.id}
-                      className='border-l-2 border-line-soft pl-3'
-                    >
-                      <blockquote className='whitespace-pre-wrap break-keep text-sm leading-relaxed text-text-strong'>
-                        {quote.text}
-                      </blockquote>
-                      {quote.page && (
-                        <p className='mt-1 text-xs text-text-subtle'>
-                          p. {quote.page}
-                        </p>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </article>
-          </li>
-        );
-      })}
-    </ul>
+          return (
+            <li key={isbn}>
+              {book ? (
+                <Link
+                  href={`/${username}/${book.id}#my-quotes`}
+                  aria-label={label}
+                  className='flex flex-col rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring'
+                >
+                  {body}
+                </Link>
+              ) : (
+                <div aria-label={label} role='group' className='flex flex-col'>
+                  {body}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 };

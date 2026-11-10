@@ -5,7 +5,7 @@ import type { BookQuote } from '../model/types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
- * 문장 보관함 "내가 적은 문장" — 내 문장 전부를 책별로 묶어서.
+ * 문장 서랍 "내가 적은 문장" — 내 문장 전부를 책별로 묶어서.
  *
  * 문장은 (user_id, isbn) 에 걸려 있고 books.id 를 모른다(회독마다 기록이 따로라서).
  * 그래서 두 번 묻는다: 문장 전부 → 그 ISBN 들의 내 책 기록(제목·표지·상세 링크용).
@@ -25,7 +25,7 @@ export const getQuoteShelf = async (
     .returns<BookQuote[]>();
 
   if (error) {
-    console.error('문장 보관함 조회 실패:', error.message);
+    console.error('문장 서랍 조회 실패:', error.message);
     return [];
   }
   if (!quotes?.length) return [];
@@ -40,7 +40,7 @@ export const getQuoteShelf = async (
 
   // 책 정보가 없어도 문장은 보여 준다 — 제목 자리에 "지운 책" 안내가 나온다
   if (booksError) {
-    console.error('문장 보관함 책 정보 조회 실패:', booksError.message);
+    console.error('문장 서랍 책 정보 조회 실패:', booksError.message);
   }
 
   return groupQuotesByBook(quotes, books ?? []);

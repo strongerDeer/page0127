@@ -130,7 +130,7 @@ type LibraryViewProps = {
   sentenceDraws?: DailySentence[];
   /** 캘린더 오늘 패널에 넣을 것(주인: 오늘의 문장 펼치기) */
   calendarTodaySlot?: ReactNode;
-  /** 캘린더 패널 맨 아래(주인: 간직한 문장·주간 회상 링크) */
+  /** 캘린더 패널 맨 아래(주인: 내가 모은 문장·주간 회상 링크) */
   calendarFooterSlot?: ReactNode;
 
   /** '읽고 싶어요' 탭 노출 여부 (내 서재에서만 true) */
@@ -385,7 +385,7 @@ export const LibraryView = ({
     </div>
   );
 
-  // 독서 캘린더 — 주인이 올해를 볼 때는 맨 위 "오늘 허브"(오늘의 문장·그날 읽은 책·간직한 문장),
+  // 독서 캘린더 — 주인이 올해를 볼 때는 맨 위 "오늘 허브"(오늘의 문장·그날 읽은 책·내가 모은 문장),
   // 방문자·지난해는 예전 자리(독서 균형 아래)에 전체 폭으로 둔다(HJ B안, 2026-11-10).
   // 방문자의 첫인상은 여전히 "올해 몇 권 + 책장"이어야 해서 위로 올리지 않는다.
   const calendarFirst = isOwner && selectedYear === currentYear;

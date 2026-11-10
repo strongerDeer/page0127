@@ -128,12 +128,12 @@ describe('ReadingCalendar · 그날 패널 (B안)', () => {
         isOwner
         bookHref={href}
         todaySlot={<p>오늘의 문장 펼치기</p>}
-        footerSlot={<p>간직한 문장 한 줄</p>}
+        footerSlot={<p>내가 모은 문장 한 줄</p>}
       />
     );
     expect(html).toContain('10월 13일 · 오늘');
     expect(html).toContain('오늘의 문장 펼치기');
-    expect(html).toContain('간직한 문장 한 줄');
+    expect(html).toContain('내가 모은 문장 한 줄');
     // 책이 없어도 오늘 칸은 누를 수 있다(펼치기 자리)
     expect(html).toMatch(
       /<button type="button" aria-pressed="true" aria-label="10월 13일, 오늘"/

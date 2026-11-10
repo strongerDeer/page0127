@@ -25,14 +25,14 @@ type PageProps = {
 
 // 나만 보는 페이지 — 검색에 걸릴 이유가 없다
 export const metadata: Metadata = {
-  title: '문장 보관함 | page0127.',
+  title: '문장 서랍 | page0127.',
   robots: { index: false, follow: false },
 };
 
 /**
- * 문장 보관함 (Server Component) — 주인만.
+ * 문장 서랍 (Server Component) — 주인만.
  *
- * 서재 독서 캘린더 패널에는 간직한 문장이 무작위로 하나만 나온다(HJ B안, 2026-11-10).
+ * 서재 독서 캘린더 패널에는 내가 모은 문장이 무작위로 하나만 나온다(HJ B안, 2026-11-10).
  * 그동안 모은 문장을 한곳에서 보는 자리가 여기다.
  *  - 내가 적은 문장: 책별 묶음(book_quotes, 계정+ISBN)
  *  - 오늘의 문장 기록: 펼친 날짜순(sentence_draws)
@@ -64,7 +64,7 @@ const QuotesPage = async ({ params, searchParams }: PageProps) => {
   return (
     <PageContainer className='space-y-6'>
       <PageHeader
-        title='문장 보관함'
+        title='문장 서랍'
         description={
           <span className='inline-flex items-center gap-1'>
             <Lock className='size-3.5' aria-hidden />

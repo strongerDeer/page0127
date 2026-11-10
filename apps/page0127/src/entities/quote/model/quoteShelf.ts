@@ -10,7 +10,7 @@ export type QuoteShelfBook = {
   created_at: string;
 };
 
-/** 문장 보관함 "내가 적은 문장" 한 묶음 — 책 한 권과 그 책에서 적은 문장들 */
+/** 문장 서랍 "내가 적은 문장" 한 묶음 — 책 한 권과 그 책에서 적은 문장들 */
 export type QuoteShelfGroup = {
   isbn: string;
   /** 책 기록을 모두 지웠으면 null — 문장만 남는다(문장은 기록과 따로 산다) */

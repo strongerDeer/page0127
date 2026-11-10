@@ -1,21 +1,29 @@
-import { BookCover, StatePanel } from '@repo/ui';
+'use client';
+
+import { useState } from 'react';
+
+import { StatePanel } from '@repo/ui';
 import { BookOpen } from 'lucide-react';
 
-import { formatSentenceSource } from '@/entities/daily-sentence';
-
 import { formatDrawDay, groupDrawsByMonth } from '../model/drawMonths';
+import { DailySentenceReader } from './DailySentenceReader';
 
 import type { DailySentence } from '@/entities/daily-sentence';
+
+import styles from './SentencePage.module.css';
 
 type DailySentenceHistoryProps = {
   draws: DailySentence[];
 };
 
 /**
- * "오늘의 문장 기록" — 펼친 날짜순(최신 위), 달마다 제목.
- * 캘린더 책갈피를 하루씩 눌러 보지 않아도 그동안 받은 문장을 한 번에 훑는다.
+ * "오늘의 문장" 탭 — 그날 펼친 책 한 페이지씩, 달마다 묶어 최신이 위.
+ * 페이지를 누르면 리더가 열리고 거기서 책장 넘기듯 앞뒤로 넘겨 본다.
  */
 export const DailySentenceHistory = ({ draws }: DailySentenceHistoryProps) => {
+  // 열린 페이지의 위치(draws 안 인덱스). null 이면 닫힘
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
   if (draws.length === 0) {
     return (
       <StatePanel
@@ -31,50 +39,71 @@ export const DailySentenceHistory = ({ draws }: DailySentenceHistoryProps) => {
     );
   }
 
+  // 리더는 달 구분 없이 이 순서(최신 → 과거)로 넘긴다 — 그리드와 같은 순서
+  const months = groupDrawsByMonth(draws);
+  const ordered = months.flatMap((m) => m.draws);
+  const indexOf = new Map(ordered.map((d, i) => [d.draw_date, i]));
+
   return (
-    <div className='flex flex-col gap-8'>
-      {groupDrawsByMonth(draws).map(({ month, label, draws: monthDraws }) => (
-        <section key={month} aria-labelledby={`draws-${month}`}>
-          <h3
-            id={`draws-${month}`}
-            className='text-sm font-bold text-text-strong'
-          >
-            {label}
-          </h3>
-          <ol className='mt-3 flex flex-col gap-3'>
-            {monthDraws.map((draw) => (
-              <li
-                key={draw.draw_date}
-                className='flex gap-4 rounded-2xl border border-line-soft bg-card p-4'
+    <>
+      <div className='flex flex-col gap-8'>
+        {months.map(({ month, label, draws: monthDraws }) => (
+          <section key={month} aria-labelledby={`draws-${month}`}>
+            <div className='flex items-baseline justify-between'>
+              <h3
+                id={`draws-${month}`}
+                className='text-sm font-bold text-text-strong'
               >
-                <div className='shrink-0'>
-                  <BookCover
-                    src={draw.cover_image}
-                    title={draw.book_title}
-                    author={draw.author}
-                    size='xs'
-                    small
-                    decorative
-                  />
-                </div>
-                <div className='min-w-0 flex-1'>
-                  <p className='text-xs font-medium text-text-subtle'>
-                    <time dateTime={draw.draw_date}>
-                      {formatDrawDay(draw.draw_date)}
-                    </time>
-                  </p>
-                  <blockquote className='mt-1 whitespace-pre-wrap break-keep text-sm font-medium leading-relaxed text-text-strong'>
-                    {draw.text}
-                  </blockquote>
-                  <p className='mt-1.5 text-xs text-text-subtle'>
-                    {formatSentenceSource(draw)}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
-      ))}
-    </div>
+                {label}
+              </h3>
+              <span className='text-xs text-text-subtle'>
+                펼친 페이지 {monthDraws.length}장
+              </span>
+            </div>
+            <ul className='mt-3 grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-4'>
+              {monthDraws.map((draw) => (
+                <li key={draw.draw_date}>
+                  <button
+                    type='button'
+                    onClick={() =>
+                      setOpenIndex(indexOf.get(draw.draw_date) ?? 0)
+                    }
+                    aria-label={`${formatDrawDay(draw.draw_date)}에 펼친 문장 보기`}
+                    className={`${styles.paper} flex aspect-[1/1.3] w-full flex-col justify-between p-3 pl-4 text-left transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring`}
+                  >
+                    <span
+                      className={`${styles.meta} flex justify-between gap-2 text-[10px]`}
+                    >
+                      <span className='shrink-0'>
+                        {formatDrawDay(draw.draw_date)}
+                      </span>
+                      <span className={`${styles.serif} truncate`}>
+                        {draw.book_title}
+                      </span>
+                    </span>
+                    <span
+                      className={`${styles.serif} line-clamp-4 break-keep text-[13px] leading-relaxed`}
+                    >
+                      {draw.text}
+                    </span>
+                    <span
+                      className={`${styles.meta} ${styles.serif} self-center text-[10px]`}
+                    >
+                      {draw.page ? `— ${draw.page} —` : '—'}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+
+      <DailySentenceReader
+        draws={ordered}
+        index={openIndex}
+        onIndexChange={setOpenIndex}
+      />
+    </>
   );
 };

@@ -1,4 +1,4 @@
-/** 책 상세 "간직한 문장" 한 줄 — book_quotes 행에서 화면에 필요한 칸만 */
+/** 책 상세 "내가 모은 문장" 한 줄 — book_quotes 행에서 화면에 필요한 칸만 */
 export type BookQuote = {
   id: string;
   isbn: string;
