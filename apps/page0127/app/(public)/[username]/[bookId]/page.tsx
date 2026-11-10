@@ -149,7 +149,7 @@ const BookDetailPage = async ({ params }: PageProps) => {
 
   // 책장은 회독을 한 권으로 합쳐 최신 회독만 링크한다 → 옛 회독으로 가는 길을
   // 여기서 되돌려 준다. 방문자에게는 공개된 회독만 보인다.
-  // 간직한 문장은 나만 본다(HJ, 2026-11-09) — 방문자면 아예 조회하지 않는다.
+  // 내가 모은 문장은 나만 본다(HJ, 2026-11-09) — 방문자면 아예 조회하지 않는다.
   // 회독과 무관하게 내 계정 + ISBN 으로 모으므로 회독 목록과 함께 읽는다.
   const [readings, quotes] = await Promise.all([
     getBookReadings(profile.id, book.isbn, isOwner),

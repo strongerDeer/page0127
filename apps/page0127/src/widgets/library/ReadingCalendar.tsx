@@ -41,7 +41,7 @@ type ReadingCalendarProps = {
    * 펼치기·애니메이션·서버 액션은 그 카드(features/daily-sentence)가 맡는다.
    */
   todaySlot?: ReactNode;
-  /** 패널 맨 아래 — 주인 서재의 간직한 문장 한 줄·주간 회상 링크 */
+  /** 패널 맨 아래 — 주인 서재의 내가 모은 문장 한 줄·주간 회상 링크 */
   footerSlot?: ReactNode;
 };
 

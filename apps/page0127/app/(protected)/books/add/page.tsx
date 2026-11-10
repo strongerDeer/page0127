@@ -106,7 +106,7 @@ const AddBookPage = () => {
     title: searchParams.get('title') ?? '',
   }));
   const [isUploadingCover, setIsUploadingCover] = useState(false);
-  // 등록 폼의 "간직한 문장" — 책이 저장된 뒤 한 번에 저장한다(HJ, 2026-11-09)
+  // 등록 폼의 "내가 모은 문장" — 책이 저장된 뒤 한 번에 저장한다(HJ, 2026-11-09)
   const [quoteDrafts, setQuoteDrafts] = useState<QuoteDraftInput[]>([]);
   const [lastQuery, setLastQuery] = useState('');
   const [selectedBook, setSelectedBook] = useState<ProviderBook | null>(null);
@@ -311,7 +311,7 @@ const AddBookPage = () => {
   const handleSubmit = async (formData: BookFormData) => {
     if (!selectedBook) return;
     if (hasInvalidQuoteDraft(quoteDrafts)) {
-      toast.error('간직한 문장은 한 칸에 200자까지예요.');
+      toast.error('내가 모은 문장은 한 칸에 200자까지예요.');
       return;
     }
     await saveBook(selectedBook, formData);
@@ -320,7 +320,7 @@ const AddBookPage = () => {
   // 직접 등록 저장 — 서지 정보 검증 → 표지 올리기 → 같은 저장 길(saveBook)
   const handleManualSubmit = async (formData: BookFormData) => {
     if (hasInvalidQuoteDraft(quoteDrafts)) {
-      toast.error('간직한 문장은 한 칸에 200자까지예요.');
+      toast.error('내가 모은 문장은 한 칸에 200자까지예요.');
       return;
     }
     let values: ReturnType<typeof validateManualBook>;
@@ -422,7 +422,7 @@ const AddBookPage = () => {
         }));
         if (!quoteResult.ok)
           toast.error(
-            `책은 등록했어요. ${quoteResult.message} 책 상세의 간직한 문장에서 다시 적어 주세요.`
+            `책은 등록했어요. ${quoteResult.message} 책 상세의 내가 모은 문장에서 다시 적어 주세요.`
           );
       }
       setQuoteDrafts([]);

@@ -12,7 +12,7 @@ type RandomQuoteCardProps = {
 };
 
 /**
- * 서재 독서 캘린더 패널의 "간직한 문장" 한 장 — 내가 적은 책 문장 중 하나를 무작위로.
+ * 서재 독서 캘린더 패널의 "내가 모은 문장" 한 장 — 내가 적은 책 문장 중 하나를 무작위로.
  *
  * 나만 본다(HJ, 2026-11-09): 페이지가 주인일 때만 이 카드를 넣고, RPC 도 RLS 로
  * 본인 문장만 후보로 삼는다. 문장이 하나도 없으면 아무것도 그리지 않는다 —
@@ -40,7 +40,7 @@ export const RandomQuoteCard = async ({ username }: RandomQuoteCardProps) => {
           id='random-quote-heading'
           className='text-xs font-medium text-text-subtle'
         >
-          간직한 문장
+          내가 모은 문장
         </h4>
         <span className='inline-flex items-center gap-1 text-xs text-text-subtle'>
           <Lock className='size-3' aria-hidden />

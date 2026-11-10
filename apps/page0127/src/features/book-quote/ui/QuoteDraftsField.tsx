@@ -21,7 +21,7 @@ type QuoteDraftsFieldProps = {
 };
 
 /**
- * 도서 등록 폼의 "간직한 문장(선택)" 칸 (HJ, 2026-11-09).
+ * 도서 등록 폼의 "내가 모은 문장(선택)" 칸 (HJ, 2026-11-09).
  *
  * 처음엔 + 버튼 하나만 보인다 — 등록 폼이 이미 길어서, 쓰지 않는 사람에게 빈 칸을 늘어놓지 않는다.
  * 값은 등록 화면이 쥐고 있다가, 책이 저장된 뒤 addQuotesAction 으로 한 번에 저장한다.
@@ -46,7 +46,7 @@ export const QuoteDraftsField = ({
             className='h-4 w-4 shrink-0 text-muted-foreground'
             aria-hidden
           />
-          간직한 문장
+          내가 모은 문장
         </Label>
         <span className='inline-flex items-center gap-1 text-xs text-muted-foreground'>
           <Lock className='h-3 w-3' aria-hidden />

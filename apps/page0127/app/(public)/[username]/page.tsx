@@ -306,7 +306,7 @@ const LibraryContent = async ({
       badgeActivity={badgeActivity}
       followSnapshot={followSnapshot}
       sentenceDraws={sentenceDraws}
-      // 서재 위쪽 카드 셋(오늘의 문장·주간 회상·간직한 문장)은 독서 캘린더 패널로 옮겼다(HJ B안, 2026-11-10).
+      // 서재 위쪽 카드 셋(오늘의 문장·주간 회상·내가 모은 문장)은 독서 캘린더 패널로 옮겼다(HJ B안, 2026-11-10).
       // 오늘의 문장 — 오늘 칸 패널. 풀이 비었고 오늘 펼친 것도 없으면 넣지 않는다
       calendarTodaySlot={
         isOwnProfile && (hasSentencePool || todaySentence) ? (
@@ -316,7 +316,7 @@ const LibraryContent = async ({
           />
         ) : null
       }
-      // 패널 맨 아래 — 간직한 문장 하나(나만 보기)와 주간 회상으로 가는 길
+      // 패널 맨 아래 — 내가 모은 문장 하나(나만 보기)와 문장 서랍·주간 회상으로 가는 길
       calendarFooterSlot={
         isOwnProfile ? (
           <div className='flex flex-col gap-3'>
@@ -325,12 +325,20 @@ const LibraryContent = async ({
                 <RandomQuoteCard username={username} />
               </Suspense>
             </ErrorBoundary>
-            <Link
-              href='/books/recap'
-              className='text-xs font-medium text-text-subtle hover:text-text-strong'
-            >
-              주간 회상 보기 ›
-            </Link>
+            <div className='flex flex-wrap gap-x-4 gap-y-1'>
+              <Link
+                href={`/${username}/quotes`}
+                className='text-xs font-medium text-text-subtle hover:text-text-strong'
+              >
+                문장 서랍 ›
+              </Link>
+              <Link
+                href='/books/recap'
+                className='text-xs font-medium text-text-subtle hover:text-text-strong'
+              >
+                주간 회상 보기 ›
+              </Link>
+            </div>
           </div>
         ) : null
       }

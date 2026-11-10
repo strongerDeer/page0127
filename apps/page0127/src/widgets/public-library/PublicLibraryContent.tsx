@@ -68,7 +68,7 @@ type PublicLibraryContentProps = {
   sentenceDraws?: DailySentence[];
   /** 독서 캘린더 오늘 패널 — 주인 서재의 오늘의 문장 펼치기(서버가 그려 넘긴다) */
   calendarTodaySlot?: ReactNode;
-  /** 독서 캘린더 패널 맨 아래 — 주인 서재의 간직한 문장·주간 회상 링크 */
+  /** 독서 캘린더 패널 맨 아래 — 주인 서재의 내가 모은 문장·주간 회상 링크 */
   calendarFooterSlot?: ReactNode;
 };
 

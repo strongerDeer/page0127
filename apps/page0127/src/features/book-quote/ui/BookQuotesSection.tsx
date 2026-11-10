@@ -45,7 +45,7 @@ type BookQuotesSectionProps = {
 };
 
 /**
- * 책 상세 "간직한 문장" (Client Component) — 주인에게만 그린다.
+ * 책 상세 "내가 모은 문장" (Client Component) — 주인에게만 그린다.
  *
  * 페이지(서버)가 주인일 때만 문장을 조회해 넘기고, DB RLS 도 본인 행만 연다.
  * 그래서 이 컴포넌트는 "방문자면 숨기기"를 따로 하지 않는다 — 데이터가 오지 않으니까.
@@ -58,10 +58,11 @@ export const BookQuotesSection = ({ isbn, quotes }: BookQuotesSectionProps) => {
   const [editingId, setEditingId] = useState<string | null>(null);
 
   return (
-    <Card className='mt-6'>
+    // 문장 서랍의 표지를 누르면 여기로 바로 내려온다(#my-quotes)
+    <Card id='my-quotes' className='mt-6 scroll-mt-20'>
       <CardHeader className='flex flex-row items-center justify-between gap-3 space-y-0'>
         <CardTitle className='flex items-baseline gap-2'>
-          간직한 문장
+          내가 모은 문장
           {quotes.length > 0 && (
             <span className='text-sm font-normal text-muted-foreground'>
               {quotes.length}

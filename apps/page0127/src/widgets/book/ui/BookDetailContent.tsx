@@ -39,7 +39,7 @@ type BookDetailContentProps = {
    */
   visitorAction?: React.ReactNode;
   /**
-   * 주인에게만 넣는 "간직한 문장" 칸. 문장 조회는 페이지가 주인일 때만 하고
+   * 주인에게만 넣는 "내가 모은 문장" 칸. 문장 조회는 페이지가 주인일 때만 하고
    * 여기는 자리만 내준다 — 공개 상세와 같이 쓰는 위젯이 사적 데이터를 직접 읽지 않게.
    */
   quotesSlot?: React.ReactNode;
