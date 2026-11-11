@@ -1,22 +1,26 @@
+import { cache } from 'react';
+
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { Button } from '@repo/ui';
 import { BookCover, PageContainer } from '@repo/ui';
 import { ArrowLeft, Star } from 'lucide-react';
 
-import { createClient } from '@/shared/config/supabase/server';
-import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
+import { createAnonClient } from '@/shared/config/supabase/anon';
 import { decodeHtmlEntities } from '@/shared/lib/htmlEntities';
 
 import { RATING_MAX, summarizeRatings, toCoverSource } from '@/entities/book';
 import { catalogVisibilityFilter } from '@/entities/book/api/catalogVisibility';
 import { BookSourceCredit } from '@/entities/book/ui/BookSourceCredit';
 
-import { AddToLibraryButton } from '@/widgets/book/ui/AddToLibraryButton';
+import { getPublicReaderTotal } from '@/widgets/book/api/getBookReaders';
+import {
+  BookInfoActions,
+  BookInfoGuestCta,
+  BookInfoMyMemo,
+  BookInfoReaders,
+} from '@/widgets/book/ui/BookInfoPersonal';
 import { GlobalBookCommentSection } from '@/widgets/book/ui/GlobalBookCommentSection';
-import { MyBookMemo } from '@/widgets/book/ui/MyBookMemo';
-import { ReaderProfiles } from '@/widgets/book/ui/ReaderProfiles';
 
 import type { GlobalBook } from '@/entities/book';
 import type { Metadata } from 'next';
@@ -25,23 +29,41 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-async function getGlobalBook(id: string): Promise<GlobalBook | null> {
-  const [supabase, user] = await Promise.all([
-    createClient(),
-    getCurrentUser(),
-  ]);
+/**
+ * 이 페이지는 CDN 에 미리 만들어 둔다(ISR) — 2026-11-11 Vercel CPU 한도 초과 대응.
+ *
+ * 그래서 서버에서 로그인(쿠키)을 읽지 않는다. 쿠키를 읽는 순간 Next 가 "사람마다 다른 페이지"로
+ * 보고 매 요청 렌더링으로 돌아간다. 공용 데이터는 쿠키 없는 createAnonClient 로 읽고,
+ * 사람마다 다른 부분(담기 버튼·나의 기록·이어진 리더 얼굴·비로그인 안내)은 BookInfoPersonal 이
+ * 브라우저에서 채운다.
+ *
+ * - revalidate 1시간: 그 뒤 첫 방문 때 뒤에서 새로 만든다(그 사이엔 지난 판을 준다)
+ * - 책 기록이 바뀌면 revalidateBookInfoPages() 가 바로 버린다 → 완독 수·별점은 곧바로 반영
+ * - generateStaticParams 가 빈 배열: 빌드 때 미리 만들지 않고, 처음 열릴 때 만들어 캐시한다
+ */
+export const revalidate = 3600;
+
+export function generateStaticParams() {
+  return [];
+}
+
+/** generateMetadata 와 page 가 같은 책을 두 번 읽지 않게 요청 안에서 묶는다 */
+const getGlobalBook = cache(async (id: string): Promise<GlobalBook | null> => {
+  const supabase = createAnonClient();
   const { data, error } = await supabase
     .from('global_books')
     .select('*')
     .eq('id', id)
     .eq('review_status', 'approved')
-    // 직접 등록 책은 등록한 사람에게만 — 다른 사람에게는 없는 책(404)
-    .or(catalogVisibilityFilter(user?.id))
+    // 직접 등록 책은 공용 페이지에 없다(404) — 누가 보는지 모르는 캐시 페이지라
+    // "등록한 사람에게만" 규칙을 지킬 수 없다. 등록자는 목록에서 내 서재의 그 책으로 간다
+    // (/books/mine/[id], HJ M1 결정 2026-11-11)
+    .or(catalogVisibilityFilter(null))
     .single();
 
   if (error) return null;
   return data;
-}
+});
 
 /**
  * 책 정보 페이지는 로그인 없이 열려 있다 — 이 서비스의 SEO 자산 1순위다.
@@ -89,10 +111,10 @@ export async function generateMetadata({
 }
 
 async function getBookStats(isbn: string) {
-  const supabase = await createClient();
+  const supabase = createAnonClient();
 
   // is_public 을 명시하는 이유: RLS 는 익명 방문자만 걸러준다.
-  // 로그인 사용자에게는 자기 비공개 기록까지 섞여 방문자와 다른 숫자가 보였다.
+  // (지금은 익명 클라이언트라 RLS 만으로도 같지만, 의도를 코드에 남긴다)
   // "이 책을 몇 명이 완독했나"는 누가 보든 같아야 한다.
   const { count: completedCount, error: completedError } = await supabase
     .from('books')
@@ -143,23 +165,11 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
 
   if (!book) notFound();
 
-  // stats(book.isbn 의존)와 현재 사용자 조회는 서로 독립 → 병렬
-  const supabase = await createClient();
-  const [stats, user] = await Promise.all([
+  // 통계와 리더 수는 서로 독립 → 병렬
+  const [stats, readerTotal] = await Promise.all([
     getBookStats(book.isbn),
-    getCurrentUser(),
+    getPublicReaderTotal(createAnonClient(), book.isbn),
   ]);
-
-  // 라이브러리 포함 여부는 user + book.isbn 둘 다 필요 → user 확정 후 조회
-  let isInLibrary = false;
-  if (user) {
-    const { count } = await supabase
-      .from('books')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .eq('isbn', book.isbn);
-    isInLibrary = !!count;
-  }
 
   return (
     <PageContainer>
@@ -173,11 +183,8 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
           <ArrowLeft aria-hidden='true' className='size-4' />
           전체 도서
         </Link>
-        <AddToLibraryButton
-          book={book}
-          isInLibrary={isInLibrary}
-          isLoggedIn={!!user}
-        />
+        {/* 담기 상태는 사람마다 다르다 → 브라우저에서 */}
+        <BookInfoActions book={book} />
       </div>
 
       <div className='grid gap-8 md:grid-cols-[200px_1fr]'>
@@ -197,8 +204,10 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
             decorative
           />
 
-          {/* 완독한 독자 프로필 (왼쪽 컬럼 배치) */}
-          <ReaderProfiles isbn={book.isbn} />
+          {/* 완독한 독자 프로필 (왼쪽 컬럼 배치) — 수는 캐시, 이어진 리더 얼굴은 브라우저에서 */}
+          {readerTotal !== null && (
+            <BookInfoReaders isbn={book.isbn} publicTotal={readerTotal} />
+          )}
         </div>
 
         {/* 책 정보 & 통계 & 메모 */}
@@ -254,8 +263,8 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
             </p>
           </div>
 
-          {/* 나의 기록 (로그인 + 서재에 있을 때만 — 컴포넌트 내부에서 체크) */}
-          <MyBookMemo isbn={book.isbn} />
+          {/* 나의 기록 (로그인 + 서재에 있을 때만 — 브라우저에서) */}
+          <BookInfoMyMemo isbn={book.isbn} />
 
           {/* 책 소개 — 카드가 아니라 구분선으로 시작하는 본문 섹션 */}
           {book.description && (
@@ -269,20 +278,8 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
 
           <GlobalBookCommentSection globalBookId={book.id} />
 
-          {/* 비로그인 방문자 — 여기서 서비스를 처음 만난다 */}
-          {!user && (
-            <div className='flex flex-col items-center gap-3 rounded-2xl bg-sunken px-6 py-8 text-center'>
-              <p className='font-medium text-text-strong'>
-                이 책도 내 책장에 꽂아둘까요?
-              </p>
-              <p className='text-sm text-text-subtle'>
-                읽은 책을 기록하면, 몰랐던 취향이 보이기 시작합니다.
-              </p>
-              <Link href='/login'>
-                <Button className='mt-1'>내 책장 만들기</Button>
-              </Link>
-            </div>
-          )}
+          {/* 비로그인 방문자 — 여기서 서비스를 처음 만난다 (브라우저에서 판단) */}
+          <BookInfoGuestCta />
         </div>
       </div>
     </PageContainer>

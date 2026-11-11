@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { createClient } from '@/shared/config/supabase/server';
+import { revalidateBookInfoPages } from '@/shared/lib/cache/revalidateBookInfoPages';
 import {
   extractOwnedProfileImagePath,
   PROFILE_STORAGE_BUCKET,
@@ -103,6 +104,8 @@ export async function DELETE() {
       }
     }
 
+    // 탈퇴한 사람의 기록이 완독 수·리더 수에서 빠진다
+    revalidateBookInfoPages();
     return NextResponse.json(
       { message: '계정이 삭제되었습니다.' },
       { status: 200 }

@@ -37,3 +37,16 @@ export const pickBookReaders = (
   const readers = [...byUser].map(([userId, status]) => ({ userId, status }));
   return { readers: readers.slice(0, max), total: readers.length };
 };
+
+/** 화면에 얼굴로 그리는 리더의 프로필 — 필요한 컬럼만 */
+export type ReaderProfile = {
+  id: string;
+  username: string | null;
+  nickname: string | null;
+  photo_url: string | null;
+};
+
+export type ReaderEntry = {
+  profile: ReaderProfile;
+  status: ReaderStatus;
+};

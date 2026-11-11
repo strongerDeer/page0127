@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 
 import { createAdminClient } from '@/shared/config/supabase/admin';
+import { revalidateBookInfoPages } from '@/shared/lib/cache/revalidateBookInfoPages';
 
 import { bookSelect, withPersonalMemo } from '@/entities/book/api/bookMemo';
 import { isNewlyCompleted } from '@/entities/book/model/completion';
@@ -117,6 +118,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       });
     }
 
+    revalidateBookInfoPages();
     return successResponse(data);
   } catch {
     return errorResponse('책 수정에 실패했습니다.');
@@ -160,6 +162,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
       console.error('삭제한 책의 알림 정리 실패:', notifyError.message);
     }
 
+    revalidateBookInfoPages();
     return successResponse({ message: '삭제되었습니다.' });
   } catch {
     return errorResponse('책 삭제에 실패했습니다.');

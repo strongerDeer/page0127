@@ -3,6 +3,7 @@ import { after, NextRequest } from 'next/server';
 import { getBookProvider } from '@/shared/api/book-provider';
 import { checkYes24SpineOnServer } from '@/shared/api/book-provider/checkYes24SpineOnServer';
 import { createAdminClient } from '@/shared/config/supabase/admin';
+import { revalidateBookInfoPages } from '@/shared/lib/cache/revalidateBookInfoPages';
 import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
 import { missingSpineCandidate } from '@/shared/lib/spineImage';
 
@@ -130,6 +131,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    revalidateBookInfoPages();
     return successResponse<ImportResponse>(
       { added: data.length, skipped, failed },
       201

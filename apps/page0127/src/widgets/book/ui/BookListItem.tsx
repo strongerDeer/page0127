@@ -7,6 +7,7 @@ import { toCoverSource } from '@/entities/book';
 import { SPINE_TONE_COLORS, spineTone } from '@/entities/book/model/spineTone';
 import { shelfSpineWidthPx } from '@/entities/book/model/spineWidth';
 
+import { bookInfoHref } from '../model/bookInfoHref';
 import { BookCoverPreview } from './BookCoverPreview';
 import { BookLikeButton } from './BookLikeButton';
 
@@ -44,6 +45,8 @@ type BookItemProps = {
 
 type BookListItemCoverProps = {
   id: string;
+  /** 표지·제목을 눌렀을 때 갈 곳 — bookInfoHref() */
+  href: string;
   title: string;
   author: string | null;
   cover: string | null;
@@ -63,6 +66,7 @@ type BookListItemCoverProps = {
 
 type BookListItemContentProps = {
   id: string;
+  href: string;
   title: string;
   author: string | null;
   isLiked: boolean;
@@ -71,6 +75,7 @@ type BookListItemContentProps = {
 
 const BookListItemCover = ({
   id,
+  href,
   title,
   author,
   cover,
@@ -164,7 +169,7 @@ const BookListItemCover = ({
 
   return (
     <BookCoverPreview
-      id={id}
+      href={href}
       title={title}
       description={description}
       publisher={publisher}
@@ -178,6 +183,7 @@ const BookListItemCover = ({
 
 const BookListItemContent = ({
   id,
+  href,
   title,
   author,
   isLiked,
@@ -188,7 +194,7 @@ const BookListItemContent = ({
       <Link
         // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
         prefetch={false}
-        href={`/books/info/${id}`}
+        href={href}
       >
         {title}
       </Link>
@@ -218,11 +224,13 @@ export const BookListItem = ({
   const isReading =
     isReadingProp ?? ('status' in book && book.status === 'reading');
   const cover = toCoverSource(book);
+  const href = bookInfoHref(book);
 
   return (
     <article className={styles.article}>
       <BookListItem.Cover
         id={book.id}
+        href={href}
         title={book.title}
         author={book.author}
         cover={cover.src}
@@ -240,6 +248,7 @@ export const BookListItem = ({
       />
       <BookListItem.Content
         id={book.id}
+        href={href}
         title={book.title}
         author={book.author}
         isLiked={isLikedProp ?? false}

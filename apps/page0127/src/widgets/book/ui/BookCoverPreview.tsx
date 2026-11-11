@@ -9,7 +9,8 @@ import { Popover, PopoverAnchor, PopoverContent } from '@repo/ui';
 import styles from './BookListItem.module.css';
 
 type BookCoverPreviewProps = {
-  id: string;
+  /** 표지를 눌렀을 때 갈 곳 — bookInfoHref() */
+  href: string;
   title: string;
   description: string | null;
   publisher: string | null;
@@ -54,7 +55,7 @@ const getAnchorRect = (link: HTMLElement | null): DOMRect => {
 
 /** 표지 링크는 그대로 이동하고, 마우스·키보드에는 비교용 미리보기를 제공한다. */
 export const BookCoverPreview = ({
-  id,
+  href,
   title,
   description,
   publisher,
@@ -88,7 +89,7 @@ export const BookCoverPreview = ({
     <Link
       ref={linkRef}
       prefetch={false}
-      href={`/books/info/${id}`}
+      href={href}
       aria-label={`${title} 상세 내용 보기`}
       aria-describedby={open ? previewId : undefined}
       className={styles.coverLink}
@@ -135,7 +136,7 @@ export const BookCoverPreview = ({
             키보드는 이미 표지 링크로 같은 곳에 가므로 탭 순서에는 넣지 않는다. */}
         <Link
           prefetch={false}
-          href={`/books/info/${id}`}
+          href={href}
           tabIndex={-1}
           className={styles.previewLink}
         >

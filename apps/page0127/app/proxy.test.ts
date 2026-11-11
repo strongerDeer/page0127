@@ -68,14 +68,21 @@ describe('proxy matcher — 정적 파일에는 proxy(세션 확인)를 태우�
     '/favicon.ico',
     '/_next/static/chunks/main.js',
     '/sw.js',
+    // 책 정보는 CDN 캐시 페이지 — proxy 가 돌면 캐시를 줘도 함수가 깨어난다
+    '/books/info/abc-123',
+    '/books/info/abc-123/opengraph-image-1ram65',
   ])('%s 는 건너뛴다', (path) => {
     expect(matches(path)).toBe(false);
   });
 
-  it.each(['/', '/books/all', '/stronger_khj', '/api/auth/me'])(
-    '%s 는 태운다',
-    (path) => {
-      expect(matches(path)).toBe(true);
-    }
-  );
+  it.each([
+    '/',
+    '/books/all',
+    '/books/mine/abc-123',
+    '/stronger_khj',
+    '/api/auth/me',
+    '/api/books/info/9788936434120/me',
+  ])('%s 는 태운다', (path) => {
+    expect(matches(path)).toBe(true);
+  });
 });
