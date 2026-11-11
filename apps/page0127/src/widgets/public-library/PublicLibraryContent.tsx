@@ -273,18 +273,6 @@ export const PublicLibraryContent = ({
 
         {recapSlot}
 
-        {/* 뱃지 — 통계와 같은 공개 책으로 계산해 주인·방문자가 같은 뱃지를 본다.
-          프로필 바로 아래에 둬서 "어떤 독자인지"를 먼저 보여 준다. 전부는 상세 페이지에서 */}
-        <BadgeSummary
-          activity={badgeActivity}
-          username={username}
-          isOwner={isOwnProfile}
-          books={publicBooks}
-          readingGoal={readingGoal ?? null}
-          // 이력은 최신순 10건까지라 마지막 것이 가장 오래된 분석이다
-          firstTasteAnalysisAt={analysisHistory.at(-1)?.created_at ?? null}
-        />
-
         {/* 비로그인 방문자에게만 — 로그인한 다른 사용자는 이미 자기 책장이 있다 */}
         {isVisitor && (
           <VisitorChemiCard
@@ -322,6 +310,19 @@ export const PublicLibraryContent = ({
           sentenceDraws={sentenceDraws}
           calendarTodaySlot={calendarTodaySlot}
           calendarFooterSlot={calendarFooterSlot}
+          // 뱃지 — 통계와 같은 공개 책으로 계산해 주인·방문자가 같은 뱃지를 본다. 전부는 상세 페이지에서.
+          // 프로필 바로 아래에 있다가 '취향' 묶음 맨 아래로 내려갔다(HJ, 2026-11-11)
+          badgeSlot={
+            <BadgeSummary
+              activity={badgeActivity}
+              username={username}
+              isOwner={isOwnProfile}
+              books={publicBooks}
+              readingGoal={readingGoal ?? null}
+              // 이력은 최신순 10건까지라 마지막 것이 가장 오래된 분석이다
+              firstTasteAnalysisAt={analysisHistory.at(-1)?.created_at ?? null}
+            />
+          }
           showWishlist={isOwnProfile}
           isOwner={isOwnProfile}
           isWishlistView={isWishlistView}

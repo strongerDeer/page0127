@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useState, useTransition } from 'react';
+import { type ReactNode, useTransition } from 'react';
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
@@ -27,6 +27,7 @@ import { PublicBookShelf } from '@/widgets/book/ui/PublicBookShelf';
 import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
 import { ViewTabs } from '@/widgets/dashboard/ViewTabs';
 
+import { LibrarySectionNav } from './LibrarySectionNav';
 import { ReadingCalendar } from './ReadingCalendar';
 import { ReadingNowStrip } from './ReadingNowStrip';
 import { WishlistShelf } from './WishlistShelf';
@@ -47,20 +48,6 @@ const YearlyTrendChart = dynamic(
     ssr: false,
     loading: () => (
       <div className='h-[300px] animate-pulse rounded-lg bg-muted' />
-    ),
-  }
-);
-
-// 월별 독서 차트도 recharts — 같은 이유로 나중에, 자리만 차트 높이(180px)만큼 잡아 둔다
-const MonthlyReadingChart = dynamic(
-  () =>
-    import('@/features/stats/ui/MonthlyReadingChart').then(
-      (m) => m.MonthlyReadingChart
-    ),
-  {
-    ssr: false,
-    loading: () => (
-      <div className='h-[180px] animate-pulse rounded-lg bg-muted' />
     ),
   }
 );
@@ -132,6 +119,8 @@ type LibraryViewProps = {
   calendarTodaySlot?: ReactNode;
   /** 캘린더 패널 맨 아래(주인: 내가 모은 문장·주간 회상 링크) */
   calendarFooterSlot?: ReactNode;
+  /** 배지 줄 — 취향 묶음 맨 아래에 둔다(HJ, 2026-11-11). 예전엔 프로필 바로 아래였다 */
+  badgeSlot?: ReactNode;
 
   /** '읽고 싶어요' 탭 노출 여부 (내 서재에서만 true) */
   showWishlist?: boolean;
@@ -186,6 +175,7 @@ export const LibraryView = ({
   sentenceDraws = [],
   calendarTodaySlot,
   calendarFooterSlot,
+  badgeSlot,
   showWishlist = false,
   isWishlistView = false,
   wishlistBooks = [],
@@ -205,26 +195,6 @@ export const LibraryView = ({
 
   // 차트 클릭 → 목록 필터링은 급하지 않음 → 우선순위를 낮춰 입력 응답성을 지킨다
   const [isFilterPending, startFilterTransition] = useTransition();
-
-  // 월별 차트 막대 → 캘린더를 그 달로. jump 가 바뀌면 key 로 캘린더를 새로 연다(초기 달만 받는 컴포넌트라서)
-  const [calendarJump, setCalendarJump] = useState<{
-    year: number;
-    month: number;
-    seq: number;
-  } | null>(null);
-  const handleMonthClick = (month: number) => {
-    setCalendarJump((prev) => ({
-      year: selectedYear,
-      month,
-      seq: (prev?.seq ?? 0) + 1,
-    }));
-    // 모바일은 차트가 캘린더 아래 → 넘긴 달이 보이게 캘린더로 올린다
-    document
-      .getElementById('reading-calendar')
-      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-  // 다른 연도 탭으로 가면 이전 점프는 무시
-  const jump = calendarJump?.year === selectedYear ? calendarJump : null;
 
   const handleRatingClick = (rating: RatingFilter) =>
     startFilterTransition(() => filters.toggleRating(rating));
@@ -385,23 +355,39 @@ export const LibraryView = ({
     </div>
   );
 
-  // 독서 캘린더 — 주인이 올해를 볼 때는 맨 위 "오늘 허브"(오늘의 문장·그날 읽은 책·내가 모은 문장),
-  // 방문자·지난해는 예전 자리(독서 균형 아래)에 전체 폭으로 둔다(HJ B안, 2026-11-10).
-  // 방문자의 첫인상은 여전히 "올해 몇 권 + 책장"이어야 해서 위로 올리지 않는다.
-  const calendarFirst = isOwner && selectedYear === currentYear;
+  // 달마다 완독 권수 — 캘린더 머리의 막대(월별 독서 추이)로 그린다
+  const monthlyCounts = Array.from(
+    { length: 12 },
+    (_, i) => stats.monthlyReading.find((m) => m.month === i + 1)?.count ?? 0
+  );
   const calendar = (
     <ReadingCalendar
-      key={`${selectedYear}-${jump?.seq ?? 0}`}
+      key={selectedYear}
       books={calendarBooks}
       sentenceDraws={sentenceDraws}
       year={selectedYear}
       today={today}
       isOwner={isOwner}
       bookHref={bookHref}
-      initialMonth={jump?.month}
+      monthlyCounts={monthlyCounts}
       todaySlot={calendarTodaySlot}
       footerSlot={calendarFooterSlot}
     />
+  );
+
+  // 주인이 올해를 볼 때, 서재 묶음 맨 위에 오늘의 문장으로 내려가는 한 줄.
+  // 캘린더가 '기록' 묶음으로 내려가면서 매일 펼치는 입구가 묻히지 않게 남긴다
+  const drewToday = sentenceDraws.some((draw) => draw.draw_date === today);
+  const todayShortcut = calendarTodaySlot && selectedYear === currentYear && (
+    <a
+      href='#reading-calendar'
+      className='flex min-h-11 items-center justify-between rounded-xl border border-line-soft bg-card px-4 text-sm font-medium text-text-strong hover:bg-sunken'
+    >
+      {drewToday ? '오늘 펼친 문장 보기' : '오늘의 문장 펼치기'}
+      <span className='text-xs font-normal text-text-subtle'>
+        나만 보여요 ›
+      </span>
+    </a>
   );
 
   return (
@@ -419,7 +405,10 @@ export const LibraryView = ({
 
         {isWishlistView ? (
           /* ── 읽고 싶어요(위시리스트) 뷰 ── 서재와 분리된 별도 목록 */
-          <WishlistShelf books={wishlistBooks} bookHref={bookHref} />
+          <>
+            <WishlistShelf books={wishlistBooks} bookHref={bookHref} />
+            {badgeSlot}
+          </>
         ) : isAllView ? (
           /* ── 전체(누적) 뷰 ── */
           <div className='space-y-6'>
@@ -484,23 +473,30 @@ export const LibraryView = ({
                 {bookShelf}
               </>
             )}
+            {badgeSlot}
           </div>
-        ) : (
-          /* ── 연도 뷰 ── "올해 몇 권"이 첫인상, 바로 아래 책장이 주인공 */
+        ) : /* ── 연도 뷰 ── 서재 · 기록 · 취향 세 묶음(HJ, 2026-11-11)
+             서재 = 무엇을 읽고 있고 읽었나 / 기록 = 언제 읽었나 / 취향 = 어떤 독자인가.
+             전부 펼쳐 두고, 위의 바로가기 탭으로 묶음 사이를 오간다(접지 않는다 — HJ) */
+        isLibraryEmpty ? (
           <div className='space-y-6'>
             {emptyNotice}
-
             {/* 빈 서재여도 오늘의 문장은 펼칠 수 있어야 한다 — 접히는 영역 밖에 둔다 */}
-            {calendarFirst && calendar}
-
+            {calendarTodaySlot && selectedYear === currentYear && calendar}
             {isGoalPinned && yearSummary}
-
             {collapseWhenEmpty(
               <>
                 {!isGoalPinned && yearSummary}
-
                 {bookShelf}
-
+                <RatingSummaryCard
+                  year={selectedYear}
+                  ratings={stats.ratingReading}
+                  averageRating={stats.averageRating}
+                  total={stats.totalCompletedBooks}
+                  lifeBooks={[]}
+                  bookHref={bookHref}
+                  onRatingClick={handleRatingClick}
+                />
                 <ReadingBalanceCard
                   year={selectedYear}
                   balance={calculateReadingBalance(
@@ -508,48 +504,70 @@ export const LibraryView = ({
                     balanceBooks.previous
                   )}
                 />
-
-                {!calendarFirst && calendar}
-
-                {/* 캘린더가 전체 폭이 되면서 월별 추이·평점은 그 아래 2단(HJ, 2026-11-10).
-                    items-start — 한쪽이 길어져도 다른 쪽이 늘어나 텅 비지 않게 */}
-                <div className='grid grid-cols-1 items-start gap-6 lg:grid-cols-2'>
-                  <section className='rounded-2xl border border-line-soft bg-card p-5'>
-                    <h2 className='text-base font-bold text-text-strong'>
-                      월별 독서 추이
-                    </h2>
-                    <p className='mt-1 text-sm text-text-subtle'>
-                      막대를 누르면 캘린더가 그 달로 넘어가요
-                    </p>
-                    <div className='mt-3'>
-                      <MonthlyReadingChart
-                        data={stats.monthlyReading}
-                        onMonthClick={handleMonthClick}
-                        currentMonth={
-                          selectedYear === currentYear
-                            ? Number(today.slice(5, 7))
-                            : undefined
-                        }
-                      />
-                    </div>
-                  </section>
-                  <RatingSummaryCard
-                    year={selectedYear}
-                    ratings={stats.ratingReading}
-                    averageRating={stats.averageRating}
-                    total={stats.totalCompletedBooks}
-                    lifeBooks={completedBooks.filter(
-                      (book) => book.is_life_book
-                    )}
-                    bookHref={bookHref}
-                    onRatingClick={handleRatingClick}
-                  />
-                </div>
               </>
             )}
+            {badgeSlot}
+          </div>
+        ) : (
+          <div className='space-y-6'>
+            <LibrarySectionNav />
+
+            <LibraryGroup id='library-shelf' title='서재'>
+              {todayShortcut}
+              {yearSummary}
+              {bookShelf}
+            </LibraryGroup>
+
+            <LibraryGroup id='library-record' title='기록'>
+              {/* 월별 독서 추이는 캘린더 머리의 막대가 맡는다 — 따로 카드를 두지 않는다 */}
+              {calendar}
+              <RatingSummaryCard
+                year={selectedYear}
+                ratings={stats.ratingReading}
+                averageRating={stats.averageRating}
+                total={stats.totalCompletedBooks}
+                lifeBooks={completedBooks.filter((book) => book.is_life_book)}
+                bookHref={bookHref}
+                onRatingClick={handleRatingClick}
+              />
+            </LibraryGroup>
+
+            <LibraryGroup id='library-taste' title='취향'>
+              <ReadingBalanceCard
+                year={selectedYear}
+                balance={calculateReadingBalance(
+                  balanceBooks.current,
+                  balanceBooks.previous
+                )}
+              />
+              {badgeSlot}
+            </LibraryGroup>
           </div>
         )}
       </section>
     </>
   );
 };
+
+type LibraryGroupProps = {
+  id: string;
+  title: string;
+  children: ReactNode;
+};
+
+/** 서재·기록·취향 한 묶음 — 바로가기 탭이 id 로 내려온다(헤더+탭 줄만큼 띄워 멈춘다) */
+const LibraryGroup = ({ id, title, children }: LibraryGroupProps) => (
+  <section
+    id={id}
+    aria-labelledby={`${id}-heading`}
+    className='scroll-mt-32 space-y-4'
+  >
+    <h2
+      id={`${id}-heading`}
+      className='pt-2 text-lg font-bold text-text-strong'
+    >
+      {title}
+    </h2>
+    <div className='space-y-6'>{children}</div>
+  </section>
+);
