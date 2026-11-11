@@ -80,8 +80,10 @@ export const config = {
      * - monitoring (Sentry 터널 라우트 — 인증/세션 로직을 우회해야 에러 전송이 막히지 않음)
      * - sw.js · offline.html · icons/ (서비스워커·PWA 정적 자원 — 세션을 읽을 이유가 없다.
      *   sw.js 는 브라우저가 수시로 갱신 확인을 해서, 태우면 그때마다 Supabase 인증 호출이 나간다)
-     * - public 폴더의 파일들 (.svg, .png 등)
+     * - public 폴더의 파일들 (.svg, .png, .avif, .woff2 등)
+     *   avif·woff2 가 빠져 있어서 배지 그림(avif)·배지 글꼴(woff2)을 받을 때마다 proxy 가 돌아
+     *   Supabase 세션까지 확인했다(2026-11-11 운영에서 페이지당 3~4번 확인 → Vercel CPU 한도).
      */
-    '/((?!_next/static|_next/image|favicon.ico|monitoring|sw\\.js|offline\\.html|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|monitoring|sw\\.js|offline\\.html|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|woff2?)$).*)',
   ],
 };

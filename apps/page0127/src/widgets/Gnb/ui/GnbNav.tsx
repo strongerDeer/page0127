@@ -1,9 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { cn } from '@/shared/lib/utils';
+import { IntentPrefetchLink } from '@/shared/ui/IntentPrefetchLink';
 
 // GNB 주 메뉴 — 활성 표시에 usePathname이 필요해서 이 부분만 Client
 type GnbNavProps = {
@@ -45,7 +45,7 @@ export const GnbNav = ({ isLoggedIn }: GnbNavProps) => {
         const active =
           pathname === link.href || pathname.startsWith(`${link.href}/`);
         return (
-          <Link
+          <IntentPrefetchLink
             key={link.href}
             href={link.href}
             aria-current={active ? 'page' : undefined}
@@ -57,7 +57,7 @@ export const GnbNav = ({ isLoggedIn }: GnbNavProps) => {
             )}
           >
             {link.label}
-          </Link>
+          </IntentPrefetchLink>
         );
       })}
     </nav>

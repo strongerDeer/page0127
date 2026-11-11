@@ -1,9 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { cn } from '@/shared/lib/utils';
+import { IntentPrefetchLink } from '@/shared/ui/IntentPrefetchLink';
 
 import { isNavItemActive, navItems, resolveNavHref } from '../model/navItems';
 
@@ -31,7 +31,7 @@ export const BottomTabBar = ({ username }: BottomTabBarProps) => {
         const active = isNavItemActive(pathname, item, username);
         const Icon = item.icon;
         return (
-          <Link
+          <IntentPrefetchLink
             key={item.label}
             href={href}
             aria-current={active ? 'page' : undefined}
@@ -42,7 +42,7 @@ export const BottomTabBar = ({ username }: BottomTabBarProps) => {
           >
             <Icon aria-hidden='true' className='size-5' />
             {item.label}
-          </Link>
+          </IntentPrefetchLink>
         );
       })}
     </nav>

@@ -13,7 +13,7 @@ vi.mock('@/shared/lib/rate-limit', () => ({
   checkApiRateLimit: mocks.checkApiRateLimit,
 }));
 
-import { proxy } from '../proxy';
+import { config, proxy } from '../proxy';
 
 afterEach(() => {
   vi.resetAllMocks();
@@ -52,4 +52,30 @@ describe('proxy에서 다른 응답을 반환할 때의 세션', () => {
     ).toBe(response);
     expect(mocks.checkApiRateLimit).not.toHaveBeenCalled();
   });
+});
+
+describe('proxy matcher — 정적 파일에는 proxy(세션 확인)를 태우지 않는다', () => {
+  // Next 는 matcher 문자열을 path-to-regexp 로 바꿔 쓰지만, 이 패턴은 "/(...)" 하나뿐이라
+  // 앞의 "/" 를 붙인 정규식으로 같은 판정을 재현할 수 있다.
+  const [pattern] = config.matcher;
+  const matches = (path: string) => new RegExp(`^${pattern}$`).test(path);
+
+  it.each([
+    '/badges/editorial/sized/story-art-v3-640.avif',
+    '/badges/editorial/cover-sans.woff2',
+    '/images/hero.webp',
+    '/brand/logo.svg',
+    '/favicon.ico',
+    '/_next/static/chunks/main.js',
+    '/sw.js',
+  ])('%s 는 건너뛴다', (path) => {
+    expect(matches(path)).toBe(false);
+  });
+
+  it.each(['/', '/books/all', '/stronger_khj', '/api/auth/me'])(
+    '%s 는 태운다',
+    (path) => {
+      expect(matches(path)).toBe(true);
+    }
+  );
 });
