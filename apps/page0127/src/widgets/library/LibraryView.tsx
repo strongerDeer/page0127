@@ -30,6 +30,7 @@ import { ViewTabs } from '@/widgets/dashboard/ViewTabs';
 import { LibrarySectionNav } from './LibrarySectionNav';
 import { ReadingCalendar } from './ReadingCalendar';
 import { ReadingNowStrip } from './ReadingNowStrip';
+import { ReadingRecord } from './ReadingRecord';
 import { WishlistShelf } from './WishlistShelf';
 
 import type { Book } from '@/entities/book';
@@ -355,25 +356,23 @@ export const LibraryView = ({
     </div>
   );
 
-  // 달마다 완독 권수 — 캘린더 머리의 막대(월별 독서 추이)로 그린다
+  // 달마다 완독 권수 — 기록 묶음의 월별 완독 막대로 그린다
   const monthlyCounts = Array.from(
     { length: 12 },
     (_, i) => stats.monthlyReading.find((m) => m.month === i + 1)?.count ?? 0
   );
-  const calendar = (
-    <ReadingCalendar
-      key={selectedYear}
-      books={calendarBooks}
-      sentenceDraws={sentenceDraws}
-      year={selectedYear}
-      today={today}
-      isOwner={isOwner}
-      bookHref={bookHref}
-      monthlyCounts={monthlyCounts}
-      todaySlot={calendarTodaySlot}
-      footerSlot={calendarFooterSlot}
-    />
-  );
+  const calendarProps = {
+    books: calendarBooks,
+    sentenceDraws,
+    year: selectedYear,
+    today,
+    isOwner,
+    bookHref,
+    todaySlot: calendarTodaySlot,
+    footerSlot: calendarFooterSlot,
+  };
+  // 빈 서재에서 오늘의 문장만 펼칠 때 쓰는 캘린더 — 월별 막대 없이 혼자 달을 들고 있다
+  const calendar = <ReadingCalendar key={selectedYear} {...calendarProps} />;
 
   // 주인이 올해를 볼 때, 서재 묶음 맨 위에 오늘의 문장으로 내려가는 한 줄.
   // 캘린더가 '기록' 묶음으로 내려가면서 매일 펼치는 입구가 묻히지 않게 남긴다
@@ -519,16 +518,24 @@ export const LibraryView = ({
             </LibraryGroup>
 
             <LibraryGroup id='library-record' title='기록'>
-              {/* 월별 독서 추이는 캘린더 머리의 막대가 맡는다 — 따로 카드를 두지 않는다 */}
-              {calendar}
-              <RatingSummaryCard
-                year={selectedYear}
-                ratings={stats.ratingReading}
-                averageRating={stats.averageRating}
-                total={stats.totalCompletedBooks}
-                lifeBooks={completedBooks.filter((book) => book.is_life_book)}
-                bookHref={bookHref}
-                onRatingClick={handleRatingClick}
+              {/* 캘린더 + [월별 완독 | 평점 분포] — 막대를 누르면 캘린더가 그 달로(상태는 ReadingRecord) */}
+              <ReadingRecord
+                key={selectedYear}
+                calendar={calendarProps}
+                monthlyCounts={monthlyCounts}
+                ratingCard={
+                  <RatingSummaryCard
+                    year={selectedYear}
+                    ratings={stats.ratingReading}
+                    averageRating={stats.averageRating}
+                    total={stats.totalCompletedBooks}
+                    lifeBooks={completedBooks.filter(
+                      (book) => book.is_life_book
+                    )}
+                    bookHref={bookHref}
+                    onRatingClick={handleRatingClick}
+                  />
+                }
               />
             </LibraryGroup>
 

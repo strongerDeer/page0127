@@ -31,23 +31,20 @@ describe('ReadingCalendar', () => {
     expect(html).toContain('>1권</b> 완독 · 300쪽');
   });
 
-  it('monthlyCounts 가 오면 월 칩 자리에 권수 막대 — 누르는 버튼 12개 그대로', () => {
-    const counts = [2, 0, 4, 0, 0, 0, 0, 0, 0, 1, 0, 0];
+  it('view 를 주면 그 달을 그린다 — 부모가 상태를 들고 있는 제어 모드', () => {
     const html = renderToStaticMarkup(
       <ReadingCalendar
-        books={[createTestBook({ completed_date: '2026-10-13' })]}
+        books={[createTestBook({ completed_date: '2026-03-05' })]}
         year={2026}
         today='2026-10-13'
         isOwner={false}
         bookHref={href}
-        monthlyCounts={counts}
+        view={{ year: 2026, month: 3 }}
+        onViewChange={() => {}}
       />
     );
-    expect((html.match(/data-month-chip/g) ?? []).length).toBe(12);
-    expect(html).toContain('aria-label="3월, 4권"');
-    expect(html).toContain('aria-label="2월, 0권"');
-    // 가장 많이 읽은 달(3월 4권)이 100%
-    expect(html).toContain('height:100%');
+    expect(html).toContain('2026년 3월');
+    expect(html).toContain('aria-label="3월, 완독 있음"');
   });
 
   it('initialMonth 가 오면 그 달로 연다', () => {
