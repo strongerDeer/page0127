@@ -32,11 +32,12 @@ type ReadingCalendarProps = {
   /** 처음 보여줄 달 */
   initialMonth?: number;
   /**
-   * 달마다 완독 권수(1월부터 12개) — 있으면 월 칩 자리에 막대를 그린다.
-   * 월별 독서 추이 차트를 따로 두지 않고 캘린더 머리에 붙였다(HJ, 2026-11-11):
-   * 막대가 곧 달 고르기 버튼이라 "차트 따로, 캘린더 따로"가 없어진다.
+   * 지금 보는 연·월 — 부모가 들고 있을 때만 넘긴다(제어 컴포넌트).
+   * 서재에서는 캘린더 밖의 월별 완독 막대(MonthlyReadingCard)도 이 달을 바꾸므로
+   * 상태를 둘의 부모(ReadingRecord)로 끌어올렸다. 안 넘기면 캘린더가 스스로 들고 있다.
    */
-  monthlyCounts?: readonly number[];
+  view?: CalendarView;
+  onViewChange?: (view: CalendarView) => void;
   /**
    * 오늘의 문장을 펼친 날 — 주인에게만 넘어온다(나만 보기).
    * 완독 집계(completions)와는 다른 배열이라 권수·쪽수에 섞이지 않는다.
@@ -51,12 +52,15 @@ type ReadingCalendarProps = {
   footerSlot?: ReactNode;
 };
 
-type MonthState = { year: number; month: number };
+export type CalendarView = { year: number; month: number };
 type MonthAction =
   { type: 'PREV' } | { type: 'NEXT' } | { type: 'GO'; month: number };
 
 // 12월→1월 경계에서 연·월이 따로 바뀌면 한 번 '2026년 13월' 같은 상태를 거친다 → 한 액션으로 같이 바꾼다
-const monthReducer = (state: MonthState, action: MonthAction): MonthState => {
+const monthReducer = (
+  state: CalendarView,
+  action: MonthAction
+): CalendarView => {
   switch (action.type) {
     case 'PREV':
       return state.month === 1
@@ -89,15 +93,26 @@ export const ReadingCalendar = ({
   isOwner,
   bookHref,
   initialMonth,
-  monthlyCounts,
+  view: controlledView,
+  onViewChange,
   sentenceDraws = [],
   todaySlot,
   footerSlot,
 }: ReadingCalendarProps) => {
-  const [view, dispatch] = useReducer(monthReducer, {
+  const [ownView, ownDispatch] = useReducer(monthReducer, {
     year,
     month: initialMonth ?? getInitialCalendarMonth(books, year, today),
   });
+  // 부모가 view 를 주면 그 값을 그리고, 바뀐 값은 onViewChange 로 올려 보낸다.
+  // 같은 reducer 를 거치므로 12월→1월 경계 규칙은 어느 쪽이든 같다
+  const view = controlledView ?? ownView;
+  const dispatch = (action: MonthAction) => {
+    if (controlledView && onViewChange) {
+      onViewChange(monthReducer(controlledView, action));
+    } else {
+      ownDispatch(action);
+    }
+  };
   // 고른 날짜(YYYY-MM-DD). 처음엔 오늘 — 서재에 들어오면 오늘 칸이 바로 열려 있다
   const [selectedDate, setSelectedDate] = useState<string | null>(today);
 
@@ -152,52 +167,38 @@ export const ReadingCalendar = ({
       {/* 넓은 화면: 왼쪽 달력 + 오른쪽 그날 패널 / 폰: 달력 아래에 패널 (HJ B안, 2026-11-10) */}
       <div className='mt-3 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]'>
         <div className='min-w-0'>
-          {monthlyCounts ? (
-            <MonthBars
-              counts={monthlyCounts}
-              selectedMonth={view.month}
-              // 이번 달은 민트(읽는 중 책갈피와 같은 색) — 그 해를 볼 때만
-              thisMonth={
-                today.startsWith(`${view.year}-`)
-                  ? Number(today.slice(5, 7))
-                  : undefined
-              }
-              onSelect={(m) => dispatch({ type: 'GO', month: m })}
-            />
-          ) : (
-            // 월 칩 — 공개 완독이 있는 달에 점(권수 데이터가 없을 때)
-            <div className='grid grid-cols-12 gap-0.5'>
-              {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => {
-                const isOn = m === view.month;
-                const hasBooks = month.activeMonths.includes(m);
-                return (
-                  <button
-                    key={m}
-                    type='button'
-                    data-month-chip
-                    onClick={() => dispatch({ type: 'GO', month: m })}
-                    aria-pressed={isOn}
-                    aria-label={`${m}월${hasBooks ? ', 완독 있음' : ''}`}
-                    className={`relative rounded-md py-1 text-xs ${
-                      isOn
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-text-subtle hover:bg-sunken'
-                    }`}
-                  >
-                    {m}
-                    {hasBooks && (
-                      <span
-                        aria-hidden
-                        className={`absolute bottom-0.5 left-1/2 size-1 -translate-x-1/2 rounded-full ${
-                          isOn ? 'bg-primary-foreground' : 'bg-primary'
-                        }`}
-                      />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          {/* 월 칩 — 공개 완독이 있는 달에 점. 달마다 몇 권인지는 아래 월별 완독 카드가 막대로 보여 준다 */}
+          <div className='grid grid-cols-12 gap-0.5'>
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => {
+              const isOn = m === view.month;
+              const hasBooks = month.activeMonths.includes(m);
+              return (
+                <button
+                  key={m}
+                  type='button'
+                  data-month-chip
+                  onClick={() => dispatch({ type: 'GO', month: m })}
+                  aria-pressed={isOn}
+                  aria-label={`${m}월${hasBooks ? ', 완독 있음' : ''}`}
+                  className={`relative rounded-md py-1 text-xs ${
+                    isOn
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-text-subtle hover:bg-sunken'
+                  }`}
+                >
+                  {m}
+                  {hasBooks && (
+                    <span
+                      aria-hidden
+                      className={`absolute bottom-0.5 left-1/2 size-1 -translate-x-1/2 rounded-full ${
+                        isOn ? 'bg-primary-foreground' : 'bg-primary'
+                      }`}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
 
           {/* 날짜 숫자가 칸 왼쪽 위에 있으므로 요일도 왼쪽에 맞춘다 (가운데면 열이 어긋나 보인다) */}
           <div className='mt-3 grid grid-cols-7 px-1 text-left text-xs text-text-subtle'>
@@ -533,77 +534,3 @@ const CalendarBookList = ({
     </ul>
   </div>
 );
-
-type MonthBarsProps = {
-  counts: readonly number[];
-  selectedMonth: number;
-  thisMonth?: number;
-  onSelect: (month: number) => void;
-};
-
-/**
- * 캘린더 머리의 월별 막대 — 달마다 완독 권수를 막대로, 누르면 아래 달력이 그 달로 넘어간다.
- *
- * 예전 Recharts 차트(MonthlyReadingChart)를 버튼 12개로 바꿨다. 버튼이라 키보드로도
- * 고를 수 있고(aria-pressed), 차트 라이브러리(압축 약 90KB)를 서재에서 내려받지 않는다.
- * 막대 높이는 그 해 가장 많이 읽은 달을 100% 로 둔 비율이다.
- */
-const MonthBars = ({
-  counts,
-  selectedMonth,
-  thisMonth,
-  onSelect,
-}: MonthBarsProps) => {
-  const max = Math.max(1, ...counts);
-  return (
-    <div className='grid grid-cols-12 gap-0.5'>
-      {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => {
-        const count = counts[m - 1] ?? 0;
-        const isOn = m === selectedMonth;
-        const barColor = isOn
-          ? 'bg-primary'
-          : m === thisMonth
-            ? 'bg-[var(--teal-500)]'
-            : 'bg-primary/30';
-        return (
-          <button
-            key={m}
-            type='button'
-            data-month-chip
-            onClick={() => onSelect(m)}
-            aria-pressed={isOn}
-            aria-label={`${m}월, ${count}권`}
-            className={`flex flex-col items-center gap-1 rounded-md px-0.5 pb-1 pt-1.5 ${
-              isOn ? 'bg-sunken' : 'hover:bg-sunken'
-            }`}
-          >
-            <span
-              aria-hidden
-              className='h-3 text-[10px] leading-3 tabular-nums text-text-subtle'
-            >
-              {count > 0 ? count : ''}
-            </span>
-            <span
-              aria-hidden
-              className='flex h-12 w-full items-end justify-center'
-            >
-              <span
-                className={`w-full max-w-4 rounded-t-sm ${count > 0 ? barColor : 'bg-line-soft'}`}
-                style={{
-                  height:
-                    count > 0 ? `${Math.max(10, (count / max) * 100)}%` : 2,
-                }}
-              />
-            </span>
-            <span
-              aria-hidden
-              className={`text-xs ${isOn ? 'font-bold text-text-strong' : 'text-text-subtle'}`}
-            >
-              {m}
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  );
-};
