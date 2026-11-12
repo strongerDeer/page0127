@@ -2,9 +2,9 @@
 
 import { useMemo } from 'react';
 
-import Link from 'next/link';
-
 import { ChevronRight } from 'lucide-react';
+
+import { IntentPrefetchLink } from '@/shared/ui/IntentPrefetchLink';
 
 import { getBadgeEvidence } from '../model/badgeEvidence';
 import { computeBadges } from '../model/badges';
@@ -51,13 +51,13 @@ export const BadgeSummary = ({
               : `${earned.length}종`}
           </span>
         </h2>
-        <Link
+        <IntentPrefetchLink
           href={`/${username}/badges`}
           className='inline-flex items-center gap-0.5 text-xs text-text-subtle hover:text-text-strong'
         >
           배지 전체 보기
           <ChevronRight className='size-3.5' aria-hidden />
-        </Link>
+        </IntentPrefetchLink>
       </div>
       {earned.length ? (
         <ul className={styles.summaryShelf} aria-label='획득한 배지 책장'>

@@ -3,7 +3,6 @@
 import { useState } from 'react';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Button, isPreOptimizedImageSrc } from '@repo/ui';
@@ -27,6 +26,7 @@ import {
   USAGE_LIMIT_EXCEEDED_MESSAGE,
 } from '@/shared/lib/aiUsageMessages';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
+import { IntentPrefetchLink } from '@/shared/ui/IntentPrefetchLink';
 
 import { COMPATIBILITY_MIN_BOOKS } from '@/entities/compatibility/model/analysisGate';
 import {
@@ -295,21 +295,25 @@ export const PublicLibraryHeader = ({
                 {!isOwnProfile &&
                   compatibilityBookCount >= COMPATIBILITY_MIN_BOOKS && (
                     <Button asChild variant='outline' className='shadow-none'>
-                      <Link href={`/${username}/compatibility`}>
+                      <IntentPrefetchLink href={`/${username}/compatibility`}>
                         <Sparkles className='h-4 w-4' />
                         독서 케미
-                      </Link>
+                      </IntentPrefetchLink>
                     </Button>
                   )}
                 {isOwnProfile && (
                   <Button asChild variant='outline' className='shadow-none'>
-                    <Link href='/settings'>프로필 편집</Link>
+                    <IntentPrefetchLink href='/settings'>
+                      프로필 편집
+                    </IntentPrefetchLink>
                   </Button>
                 )}
 
                 {isOwnProfile && (
                   <Button asChild variant='outline'>
-                    <Link href='/library/manage'>서재 관리</Link>
+                    <IntentPrefetchLink href='/library/manage'>
+                      서재 관리
+                    </IntentPrefetchLink>
                   </Button>
                 )}
 

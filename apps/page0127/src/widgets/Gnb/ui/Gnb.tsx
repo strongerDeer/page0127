@@ -1,7 +1,7 @@
-import Link from 'next/link';
-
 import { Button } from '@repo/ui';
 import { Plus } from 'lucide-react';
+
+import { IntentPrefetchLink } from '@/shared/ui/IntentPrefetchLink';
 
 import { NotificationDropdown } from '@/features/notification';
 import { coachTarget } from '@/features/onboarding';
@@ -42,9 +42,12 @@ export const Gnb = ({ user }: GnbProps) => {
         */}
         <div className='flex shrink-0 items-baseline gap-1.5'>
           {/* 로고는 언제나 홈 — 내 서재는 메뉴·프로필에서 간다 */}
-          <Link href='/' className='text-lg font-bold text-primary'>
+          <IntentPrefetchLink
+            href='/'
+            className='text-lg font-bold text-primary'
+          >
             page0127.
-          </Link>
+          </IntentPrefetchLink>
           <span className='rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-medium leading-none text-primary'>
             베타
           </span>
@@ -66,11 +69,14 @@ export const Gnb = ({ user }: GnbProps) => {
             <>
               <NotificationDropdown userId={user.userId} />
               <Button asChild size='sm' className='ml-1'>
-                <Link href='/books/add' {...coachTarget('add-book')}>
+                <IntentPrefetchLink
+                  href='/books/add'
+                  {...coachTarget('add-book')}
+                >
                   <Plus aria-hidden='true' />
                   <span className='hidden md:inline'>도서 추가</span>
                   <span className='sr-only md:hidden'>도서 추가</span>
-                </Link>
+                </IntentPrefetchLink>
               </Button>
               <div className='ml-1'>
                 <ProfileDropdown
@@ -83,10 +89,10 @@ export const Gnb = ({ user }: GnbProps) => {
           ) : (
             <>
               <Button asChild variant='ghost' className='hidden sm:inline-flex'>
-                <Link href='/login'>로그인</Link>
+                <IntentPrefetchLink href='/login'>로그인</IntentPrefetchLink>
               </Button>
               <Button asChild>
-                <Link href='/login'>시작하기</Link>
+                <IntentPrefetchLink href='/login'>시작하기</IntentPrefetchLink>
               </Button>
             </>
           )}

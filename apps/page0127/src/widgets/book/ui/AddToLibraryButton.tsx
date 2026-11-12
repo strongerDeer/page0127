@@ -25,6 +25,11 @@ type AddToLibraryButtonProps = {
   isInLibrary: boolean;
   /** 비로그인 방문자에게는 담기 대신 로그인을 유도한다 (책 정보 페이지는 공개다) */
   isLoggedIn?: boolean;
+  /**
+   * 담은 뒤 할 일. 없으면 router.refresh() 로 서버 화면을 다시 그린다.
+   * 책 정보 페이지는 CDN 캐시라 refresh 해도 담기 상태가 안 바뀐다 → 내 상태 쿼리를 다시 읽게 넘긴다
+   */
+  onAdded?: () => void;
   className?: string;
 };
 
@@ -51,6 +56,7 @@ export const AddToLibraryButton = ({
   book,
   isInLibrary,
   isLoggedIn = true,
+  onAdded,
   className,
 }: AddToLibraryButtonProps) => {
   const router = useRouter();
@@ -75,7 +81,8 @@ export const AddToLibraryButton = ({
       // 전체 도서에 책등이 비어 있으면 그대로 복사돼 들어온다 — 담은 뒤 YES24 에서 확인해 채운다
       void fillMissingSpine(created);
       toast.success('읽고 싶어요에 담았어요.');
-      router.refresh();
+      if (onAdded) onAdded();
+      else router.refresh();
     },
     onError: () => {
       toast.error('책 담기 중 오류가 발생했습니다.');

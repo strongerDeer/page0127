@@ -20,6 +20,7 @@ export function useNotifications(options: GetNotificationsOptions) {
     queryFn: () => getNotifications(options),
     enabled: !!options.userId,
     staleTime: 1000 * 60, // 1분 동안 fresh
-    refetchInterval: 1000 * 60, // 1분마다 자동 refetch
+    // 5분마다 자동 refetch (1분 → 5분, 2026-11-11 Vercel CPU 한도 — useUnreadCount 와 같은 이유)
+    refetchInterval: 1000 * 60 * 5,
   });
 }

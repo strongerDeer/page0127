@@ -1,50 +1,21 @@
 import { Star } from 'lucide-react';
 
-// FSD: widgets는 app을 import할 수 없다 (역방향)
-// → app/api/_helpers의 헬퍼는 NextResponse 의존(=route 전용)이라 widget에서 부적합
-// → shared의 createClient·getCurrentUser 를 직접 쓴다
-import { createClient } from '@/shared/config/supabase/server';
-import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
+import { isRated } from '@/entities/book';
 
-import {
-  BOOK_WITH_MEMO_SELECT,
-  isRated,
-  withPersonalMemo,
-} from '@/entities/book';
+import type { MyBookMemoData } from '../model/bookInfoMe';
 
 type MyBookMemoProps = {
-  isbn: string;
+  /** 내 서재의 이 책 기록 */
+  myBook: MyBookMemoData;
 };
 
-export const MyBookMemo = async ({ isbn }: MyBookMemoProps) => {
-  const supabase = await createClient();
-  // 같은 화면의 다른 서버 컴포넌트와 Auth 조회를 나눠 쓴다 → getCurrentUser
-  const user = await getCurrentUser();
-
-  if (!user) return null;
-
-  // maybeSingle: PostgREST 의 single() 은 0행에도 에러를 낸다.
-  // "서재에 없음"은 정상 상황이므로 에러가 아니라 null 로 받아야 한다.
-  // 반대로 같은 ISBN 이 두 행이면 single() 은 에러 → 에러를 버리면 기록 카드가
-  // 조용히 사라진다. 그래서 에러는 남기고 화면만 안전하게 접는다.
-  const { data: book, error } = await supabase
-    .from('books')
-    .select(BOOK_WITH_MEMO_SELECT)
-    .eq('user_id', user.id)
-    .eq('isbn', isbn)
-    .maybeSingle();
-
-  if (error) {
-    console.warn(
-      `[MyBookMemo] 내 기록 조회 실패 (isbn=${isbn}): ${error.message}`
-    );
-    return null;
-  }
-
-  if (!book) return null; // Not in library, nothing to show
-
-  const myBook = withPersonalMemo(book);
-
+/**
+ * 나의 기록 — 그리기만 한다.
+ *
+ * 예전엔 서버 컴포넌트가 직접 로그인·기록을 읽었는데, 책 정보 페이지를 CDN 에 캐시하면서
+ * 로그인한 브라우저가 API 로 받아 이 컴포넌트로 그리게 바뀌었다(BookInfoPersonal).
+ */
+export const MyBookMemo = ({ myBook }: MyBookMemoProps) => {
   return (
     <section>
       <h2 className='heading-2'>나의 기록</h2>

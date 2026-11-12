@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { createClient } from '@/shared/config/supabase/server';
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
+import { revalidateBookInfoPages } from '@/shared/lib/cache/revalidateBookInfoPages';
 
 import { validateManualBook } from '../model/review';
 
@@ -54,6 +55,8 @@ export async function reviewBook(
     revalidatePath('/admin/books');
     revalidatePath('/books/requests');
     revalidatePath('/books');
+    // 승인되면 캐시된 404 가, 반려되면 캐시된 책 페이지가 남아 있다
+    revalidateBookInfoPages();
     return { ok: true, message: '검수 결과를 저장했습니다.' };
   } catch (error) {
     return {
@@ -102,6 +105,7 @@ export async function resubmitBook(
     revalidatePath('/books/requests');
     revalidatePath('/admin/books');
     revalidatePath('/books');
+    revalidateBookInfoPages();
     return { ok: true, message: '수정한 정보를 다시 검수 요청했어요.' };
   } catch (error) {
     return {
@@ -152,5 +156,6 @@ export async function deleteCatalogBook(
   revalidatePath('/admin/books');
   revalidatePath('/books/requests');
   revalidatePath('/books');
+  revalidateBookInfoPages();
   return { ok: true, message: '삭제했어요.' };
 }

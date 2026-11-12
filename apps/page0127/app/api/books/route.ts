@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 
 import { createAdminClient } from '@/shared/config/supabase/admin';
+import { revalidateBookInfoPages } from '@/shared/lib/cache/revalidateBookInfoPages';
 import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
 
 import { validateManualBook } from '@/features/book-review/model/review';
@@ -199,6 +200,7 @@ export async function POST(request: NextRequest) {
         body.status === 'completed' ? 'book_completed' : 'book_added',
     });
 
+    revalidateBookInfoPages();
     return successResponse(data, 201);
   } catch {
     return errorResponse('책 추가에 실패했습니다.');
