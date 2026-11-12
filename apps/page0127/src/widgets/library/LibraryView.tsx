@@ -31,6 +31,7 @@ import { LibrarySectionNav } from './LibrarySectionNav';
 import { ReadingCalendar } from './ReadingCalendar';
 import { ReadingNowStrip } from './ReadingNowStrip';
 import { ReadingRecord } from './ReadingRecord';
+import { TodaySentenceBanner } from './TodaySentenceBanner';
 import { WishlistShelf } from './WishlistShelf';
 
 import type { Book } from '@/entities/book';
@@ -374,20 +375,13 @@ export const LibraryView = ({
   // 빈 서재에서 오늘의 문장만 펼칠 때 쓰는 캘린더 — 월별 막대 없이 혼자 달을 들고 있다
   const calendar = <ReadingCalendar key={selectedYear} {...calendarProps} />;
 
-  // 주인이 올해를 볼 때, 서재 묶음 맨 위에 오늘의 문장으로 내려가는 한 줄.
-  // 캘린더가 '기록' 묶음으로 내려가면서 매일 펼치는 입구가 묻히지 않게 남긴다
+  // 주인이 올해를 볼 때, 오늘의 문장을 아직 안 펼쳤으면 서재 묶음 맨 위에 배너.
+  // 캘린더가 '기록' 묶음으로 내려가면서 매일 펼치는 입구가 묻히지 않게 남긴다.
+  // 펼친 뒤에는 숨긴다 — 펼친 문장은 캘린더 오늘 칸에서 본다(HJ, 2026-11-12)
   const drewToday = sentenceDraws.some((draw) => draw.draw_date === today);
-  const todayShortcut = calendarTodaySlot && selectedYear === currentYear && (
-    <a
-      href='#reading-calendar'
-      className='flex min-h-11 items-center justify-between rounded-xl border border-line-soft bg-card px-4 text-sm font-medium text-text-strong hover:bg-sunken'
-    >
-      {drewToday ? '오늘 펼친 문장 보기' : '오늘의 문장 펼치기'}
-      <span className='text-xs font-normal text-text-subtle'>
-        나만 보여요 ›
-      </span>
-    </a>
-  );
+  const todayShortcut = calendarTodaySlot &&
+    selectedYear === currentYear &&
+    !drewToday && <TodaySentenceBanner today={today} />;
 
   return (
     <>
