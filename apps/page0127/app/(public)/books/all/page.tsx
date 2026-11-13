@@ -19,8 +19,12 @@ import { catalogVisibilityFilter } from '@/entities/book/api/catalogVisibility';
 
 import { BookListItem } from '@/widgets/book/ui/BookListItem';
 
+import { getBooksAllCanonical } from './canonical';
+
 import type { GlobalBook } from '@/entities/book';
 import type { Metadata } from 'next';
+
+type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 /**
  * 검색 결과에 뜨는 제목·설명.
@@ -31,19 +35,24 @@ import type { Metadata } from 'next';
  *
  * 이 페이지는 로그인 없이 열리는 카탈로그라 SEO 자산 1순위다.
  */
-export const metadata: Metadata = {
-  title: '전체 도서 | page0127.',
-  description:
-    'page0127.에 기록된 책을 한눈에 둘러보세요. 누가 이 책을 읽었고 어떤 문장을 남겼는지 볼 수 있어요.',
-  alternates: { canonical: '/books/all' },
-  openGraph: {
-    title: '전체 도서 | page0127.',
-    description: 'page0127.에 기록된 책을 한눈에 둘러보세요.',
-    url: '/books/all',
-  },
-};
+export const generateMetadata = async (props: {
+  searchParams: SearchParams;
+}): Promise<Metadata> => {
+  // 2페이지 이후는 자기 주소가 canonical — 이유는 canonical.ts 참고
+  const canonical = getBooksAllCanonical(await props.searchParams);
 
-type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
+  return {
+    title: '전체 도서 | page0127.',
+    description:
+      'page0127.에 기록된 책을 한눈에 둘러보세요. 누가 이 책을 읽었고 어떤 문장을 남겼는지 볼 수 있어요.',
+    alternates: { canonical },
+    openGraph: {
+      title: '전체 도서 | page0127.',
+      description: 'page0127.에 기록된 책을 한눈에 둘러보세요.',
+      url: canonical,
+    },
+  };
+};
 
 export default async function GlobalBooksPage(props: {
   searchParams: SearchParams;
