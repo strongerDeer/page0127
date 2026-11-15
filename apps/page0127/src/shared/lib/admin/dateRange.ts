@@ -123,12 +123,14 @@ const presetRange = (
  * searchParams → 기간. 잘못된 값은 오류 대신 기본 기간으로 물러난다 —
  * 손으로 고친 URL 하나 때문에 어드민 화면이 죽을 이유는 없다.
  *
+ * 기본은 최근 1주다(HJ, 2026-11-15 — 이번 주 흐름을 먼저 본다). 1달은 버튼 한 번으로 연다.
+ *
  * @param now 기준 시각. 테스트가 고정 시각을 넣을 수 있게 인자로 받는다
  */
 export const parseDateRange = (
   sp: RangeSearchParams,
   now: Date,
-  fallback: Exclude<RangePreset, 'custom'> = '30d'
+  fallback: Exclude<RangePreset, 'custom'> = '7d'
 ): DateRange => {
   const today = kstToday(now);
   const range = first(sp.range);
