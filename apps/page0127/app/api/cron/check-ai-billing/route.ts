@@ -13,7 +13,10 @@ import {
   saveKakaoTokens,
 } from '@/shared/lib/kakao-alert/tokenStore';
 
-import { fetchOpenAiCosts } from '@/features/admin-costs/api/getOpenAiCosts';
+import {
+  describeCostsFailure,
+  fetchOpenAiCostsWithRetry,
+} from '@/features/admin-costs/api/getOpenAiCosts';
 import {
   dayCrossingInput,
   kstYesterday,
@@ -47,12 +50,22 @@ export async function GET(request: Request) {
   }
 
   const yesterday = kstYesterday(new Date());
-  const result = await fetchOpenAiCosts(yesterday.at);
+  // 일시 오류(429·5xx·네트워크)면 한 번 더 — 실패한 날의 알림은 다시 오지 않기 때문
+  const result = await fetchOpenAiCostsWithRetry(yesterday.at);
   if (!result.ok) {
     if (result.failure.kind === 'no-key') {
       return successResponse({ alerted: false, reason: 'no_admin_key' });
     }
-    return errorResponse('OpenAI 청구액을 읽지 못했습니다.', 502);
+    // 실패 이유(forbidden / status 코드)를 함께 남겨야 키 문제인지 OpenAI 장애인지 가를 수 있다
+    const reason = describeCostsFailure(result.failure);
+    const hint =
+      result.failure.kind === 'forbidden'
+        ? ' OPENAI_ADMIN_KEY(관리자 키)가 유효한지 확인하세요.'
+        : '';
+    return errorResponse(
+      `OpenAI 청구액을 읽지 못했습니다. [${reason}]${hint}`,
+      502
+    );
   }
 
   const { beforeCents, afterCents } = dayCrossingInput(

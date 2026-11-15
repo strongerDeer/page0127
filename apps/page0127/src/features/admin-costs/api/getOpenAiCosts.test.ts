@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { getOpenAiCosts } from './getOpenAiCosts';
+import {
+  describeCostsFailure,
+  fetchOpenAiCostsWithRetry,
+  getOpenAiCosts,
+  isRetryableCostsFailure,
+} from './getOpenAiCosts';
 
 vi.mock('@/shared/lib/admin/assertAdmin', () => ({
   assertAdmin: vi.fn(async () => undefined),
@@ -30,6 +35,7 @@ const json = (body: unknown, status = 200) =>
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 describe('getOpenAiCosts', () => {
@@ -96,5 +102,72 @@ describe('getOpenAiCosts', () => {
       ok: false,
       failure: { kind: 'error' },
     });
+  });
+});
+
+describe('isRetryableCostsFailure', () => {
+  it('429·5xx·네트워크 오류만 다시 부른다', () => {
+    expect(isRetryableCostsFailure({ kind: 'error', status: 429 })).toBe(true);
+    expect(isRetryableCostsFailure({ kind: 'error', status: 503 })).toBe(true);
+    expect(isRetryableCostsFailure({ kind: 'error' })).toBe(true);
+  });
+
+  it('권한·키 없음·잘못된 요청은 다시 불러도 같으니 재시도하지 않는다', () => {
+    expect(isRetryableCostsFailure({ kind: 'forbidden' })).toBe(false);
+    expect(isRetryableCostsFailure({ kind: 'no-key' })).toBe(false);
+    expect(isRetryableCostsFailure({ kind: 'error', status: 400 })).toBe(false);
+  });
+});
+
+describe('describeCostsFailure', () => {
+  it('로그에서 원인을 가를 수 있게 status 까지 적는다', () => {
+    expect(describeCostsFailure({ kind: 'error', status: 503 })).toBe(
+      'error(status 503)'
+    );
+    expect(describeCostsFailure({ kind: 'error' })).toBe('error(network)');
+    expect(describeCostsFailure({ kind: 'forbidden' })).toBe('forbidden');
+  });
+});
+
+describe('fetchOpenAiCostsWithRetry', () => {
+  it('5xx 뒤 한 번 더 불러서 성공하면 성공으로 돌려준다', async () => {
+    vi.stubEnv('OPENAI_ADMIN_KEY', 'sk-admin-test');
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(json({}, 503))
+      .mockResolvedValueOnce(
+        json(page([{ start_time: OCT1, value: 0.01 }], null))
+      );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await fetchOpenAiCostsWithRetry(NOW, { retryDelayMs: 0 });
+    expect(result.ok).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('재시도는 한 번뿐 — 또 실패하면 그 실패를 돌려준다', async () => {
+    vi.stubEnv('OPENAI_ADMIN_KEY', 'sk-admin-test');
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fetchMock = vi.fn().mockResolvedValue(json({}, 429));
+    vi.stubGlobal('fetch', fetchMock);
+
+    expect(await fetchOpenAiCostsWithRetry(NOW, { retryDelayMs: 0 })).toEqual({
+      ok: false,
+      failure: { kind: 'error', status: 429 },
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('401·403 은 다시 부르지 않는다', async () => {
+    vi.stubEnv('OPENAI_ADMIN_KEY', 'sk-admin-test');
+    const fetchMock = vi.fn().mockResolvedValue(json({}, 403));
+    vi.stubGlobal('fetch', fetchMock);
+
+    expect(await fetchOpenAiCostsWithRetry(NOW, { retryDelayMs: 0 })).toEqual({
+      ok: false,
+      failure: { kind: 'forbidden' },
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
