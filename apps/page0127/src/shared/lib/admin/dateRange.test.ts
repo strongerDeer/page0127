@@ -17,14 +17,14 @@ import {
 const now = new Date('2026-10-22T03:00:00Z');
 
 describe('parseDateRange', () => {
-  it('값이 없으면 기본(최근 30일, 오늘까지)', () => {
+  it('값이 없으면 기본(최근 7일, 오늘까지)', () => {
     expect(parseDateRange({}, now)).toEqual({
-      preset: '30d',
-      from: '2026-09-23',
+      preset: '7d',
+      from: '2026-10-16',
       to: '2026-10-22',
-      days: 30,
+      days: 7,
       includesToday: true,
-      label: '최근 30일',
+      label: '최근 7일',
     });
   });
 
@@ -118,8 +118,8 @@ describe('parseDateRange', () => {
     expect(
       parseDateRange({ range: 'custom', from: '2026-02-30', to: 'x' }, now)
         .preset
-    ).toBe('30d');
-    expect(parseDateRange({ range: 'bogus' }, now, '7d').preset).toBe('7d');
+    ).toBe('7d');
+    expect(parseDateRange({ range: 'bogus' }, now, '30d').preset).toBe('30d');
   });
 });
 
