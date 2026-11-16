@@ -7,6 +7,15 @@ import { measureBuild } from './build.ts';
 import { APP, FORM_FACTORS, LIGHTHOUSE_RUNS } from './config.ts';
 import { measureField, measureFieldHistory } from './crux.ts';
 import { measureLighthouseMedian } from './lighthouse.ts';
+import {
+  assembleRecord,
+  BUILD_PART_FILE,
+  type BuildPart,
+  lighthousePartFile,
+  type LighthousePart,
+  readPart,
+  writePart,
+} from './parts.ts';
 import { buildNarrative } from './report.ts';
 import { measureRuntime } from './runtime.ts';
 import { measureSeo } from './seo.ts';
@@ -15,7 +24,6 @@ import type {
   FormFactor,
   MeasureEnvironment,
   PageMetrics,
-  QualityRecord,
 } from './types.ts';
 
 // 번들/코드건강을 측정할 대상 = page0127 앱 디렉터리(자기 repo).
@@ -67,35 +75,64 @@ const measurePages = async (
   return { pages, environment };
 };
 
-const main = async (): Promise<void> => {
-  console.error(
-    `[quality] 측정 시작: ${APP.name} (폼팩터: ${FORM_FACTORS.join(', ')})`
-  );
+// ── 실행 단계(phase) ─────────────────────────────────────────────────────
+// CI(quality.yml)는 시간을 줄이려고 측정을 러너 여러 대에 나눠 동시에 돌린다.
+//   lighthouse : LH_FORM_FACTORS 의 폼팩터만 Lighthouse 측정 → 조각 JSON
+//   build      : SEO·런타임·next build·tsc·eslint            → 조각 JSON
+//   report     : 조각을 모아 CrUX·회귀 분석·AI 해석 → Supabase 저장
+//   all(기본)  : 위 셋을 한 프로세스에서 차례로(로컬 확인용, 예전 동작과 같다)
+//
+// 왜 Lighthouse 를 한 러너 안에서 동시에 돌리지 않고 러너를 나누나:
+// 같은 컴퓨터에서 동시에 돌리면 CPU 를 나눠 써서 점수가 실제보다 나쁘게 나온다.
+// 러너가 다르면 서로 간섭이 없다.
+type Phase = 'lighthouse' | 'build' | 'report' | 'all';
+const PHASES: Phase[] = ['lighthouse', 'build', 'report', 'all'];
 
-  // 모바일은 히스토리 연속성의 기준. 없으면 기록하지 않는다(회귀 시계열 단절 방지).
-  const mobile = FORM_FACTORS.includes('mobile')
-    ? await measurePages('mobile')
-    : { pages: [] };
-  const { pages, environment } = mobile;
-  if (pages.length === 0) {
-    throw new Error(
-      'LH_FORM_FACTORS에 mobile이 없어 기준 시계열을 만들 수 없습니다.'
-    );
+const parsePhase = (raw: string | undefined): Phase => {
+  const phase = (raw ?? 'all') as Phase;
+  if (!PHASES.includes(phase)) {
+    throw new Error(`알 수 없는 단계: '${raw}' (허용: ${PHASES.join(', ')})`);
   }
-  const desktopPages = FORM_FACTORS.includes('desktop')
-    ? (await measurePages('desktop')).pages
-    : undefined;
-  if (environment) {
-    console.error(
-      `[quality] 측정 환경: Chrome ${environment.chromeVersion} · Lighthouse ${environment.lighthouseVersion} · 러너 ${environment.runnerImage} · 성능지수 ${environment.benchmarkIndex}`
-    );
-  }
+  return phase;
+};
 
-  const homeUrl = `${APP.targetUrl}${APP.pages[0]?.path ?? '/'}`;
+// job 사이에 넘기는 조각 JSON 폴더. CI 는 이 폴더를 artifact 로 올리고 내려받는다.
+const PARTS_DIR = resolve(
+  REPO_ROOT,
+  process.env.QUALITY_PARTS_DIR ?? 'packages/quality/.parts'
+);
+
+const homeUrl = `${APP.targetUrl}${APP.pages[0]?.path ?? '/'}`;
+
+const runLighthouse = async (): Promise<void> => {
+  for (const formFactor of FORM_FACTORS) {
+    const { pages, environment } = await measurePages(formFactor);
+    const part: LighthousePart = {
+      formFactor,
+      pages,
+      ...(environment ? { environment } : {}),
+    };
+    writePart(PARTS_DIR, lighthousePartFile(formFactor), part);
+    if (environment) {
+      console.error(
+        `[quality] 측정 환경(${formFactor}): Chrome ${environment.chromeVersion} · Lighthouse ${environment.lighthouseVersion} · 러너 ${environment.runnerImage} · 성능지수 ${environment.benchmarkIndex}`
+      );
+    }
+    console.error(`[quality] Lighthouse ${formFactor} ${pages.length}페이지 완료`);
+  }
+};
+
+const runBuild = async (): Promise<void> => {
   const homeHtml = await fetch(homeUrl).then((r) => r.text());
   const seo = await measureSeo(APP.targetUrl, homeHtml);
   const runtime = await measureRuntime(homeUrl);
+  const build = measureBuild(BUILD_PATH);
+  const part: BuildPart = { gitRef: gitRef(BUILD_PATH), build, seo, runtime };
+  writePart(PARTS_DIR, BUILD_PART_FILE, part);
+  console.error(`[quality] 빌드·SEO·런타임 완료 (빌드 ${build.buildTimeSec}초)`);
+};
 
+const runReport = async (): Promise<void> => {
   // CrUX는 외부 API 의존 → 실패해도 측정 전체를 죽이지 않는다. 없으면 field undefined.
   let field;
   try {
@@ -110,24 +147,14 @@ const main = async (): Promise<void> => {
     console.warn('[quality] CrUX 추세 조회 실패 — 추세 없이 진행:', e);
   }
 
-  const build = measureBuild(BUILD_PATH);
-
-  const record: QualityRecord = {
+  const record = assembleRecord({
+    mobile: readPart<LighthousePart>(PARTS_DIR, lighthousePartFile('mobile')),
+    desktop: readPart<LighthousePart>(PARTS_DIR, lighthousePartFile('desktop')),
+    build: readPart<BuildPart>(PARTS_DIR, BUILD_PART_FILE),
+    field,
+    app: { name: APP.name, env: APP.env, targetUrl: APP.targetUrl },
     timestamp: new Date().toISOString(),
-    app: APP.name,
-    env: APP.env,
-    targetUrl: APP.targetUrl,
-    gitRef: gitRef(BUILD_PATH),
-    ...(environment ? { environment } : {}),
-    pages,
-    ...(desktopPages ? { desktopPages } : {}),
-    bundle: build.bundle,
-    buildTimeSec: build.buildTimeSec,
-    ...(field ? { field } : {}),
-    seo,
-    runtime,
-    codeHealth: build.codeHealth,
-  };
+  });
 
   // 단일 앱(page0127)이라 앱 필터가 필요 없다 — 최근 레코드를 그대로 회귀 기준으로 쓴다.
   const priorHistory = await readPriorRecords();
@@ -140,6 +167,16 @@ const main = async (): Promise<void> => {
   console.error(
     `[quality] 완료: ${APP.name} (회귀 ${analysis.regressions.length}건)`
   );
+};
+
+const main = async (): Promise<void> => {
+  const phase = parsePhase(process.argv[2]);
+  console.error(
+    `[quality] ${phase} 단계 시작: ${APP.name} (폼팩터: ${FORM_FACTORS.join(', ')})`
+  );
+  if (phase === 'lighthouse' || phase === 'all') await runLighthouse();
+  if (phase === 'build' || phase === 'all') await runBuild();
+  if (phase === 'report' || phase === 'all') await runReport();
 };
 
 // 실패 원인을 나눠서 알린다(uptime.yml과 같은 이유). "품질 측정 실패" 한 줄만

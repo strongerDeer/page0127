@@ -1,22 +1,68 @@
 name: quality
 
-# 주 1회(월 09:00 KST) 자동 + 필요 시 수동으로 배포된 page0127의 품질을 측정해
+# 주 1회(월 06:17 KST) 자동 + 필요 시 수동으로 배포된 page0127의 품질을 측정해
 # Supabase(quality_records/field_history)에 쌓는다. 측정은 무거워(Chrome+빌드) CI에서만 돈다.
 on:
   schedule:
-    - cron: '0 0 * * 1' # 매주 월 09:00 KST (UTC 00:00)
+    # 매주 월 06:17 KST = UTC 일요일 21:17. cron 은 UTC 기준이라 요일이 하루 앞(0=일)이다.
+    #
+    # 왜 정각이 아닌가: 예전엔 '0 0 * * 1'(월 09:00 KST)이었는데 실제 시작은 11~12시였다.
+    # UTC 00:00 정각엔 전 세계 schedule 이 몰려 GitHub 가 2~3시간씩 미룬다.
+    # 정각을 피하고 10시 확인까지 4시간 여유를 둬서, 늦어져도 확인 전에 끝나게 한다.
+    - cron: '17 21 * * 0'
   workflow_dispatch: {}
 
-# 실패 시 이슈를 열려면 필요하다. 기본 토큰은 contents: read 만 갖는다.
+# 기본 토큰은 읽기만. 이슈를 여는 notify job 에서만 issues: write 를 준다(최소 권한).
 permissions:
   contents: read
-  issues: write
 
+# ── 구조: fan-out / fan-in ────────────────────────────────────────────────
+# 예전엔 한 러너가 Lighthouse 36번(6페이지×2폼팩터×3회)을 차례로 재고 빌드까지 해서
+# 9~11분 걸렸다(그중 Lighthouse 가 63%). 지금은 러너 3대가 동시에 재고 마지막에 모은다.
+#
+#   lighthouse (mobile)  ─┐
+#   lighthouse (desktop) ─┼─▶ report: 조각 모아 분석·AI 해석·저장 ─▶ (실패 시) notify
+#   build                ─┘
+#
+# 한 러너 안에서 Lighthouse 를 동시에 돌리지 않는 이유: CPU 를 나눠 써서 점수가 왜곡된다.
+# job 은 서로 다른 컴퓨터라 메모리를 공유하지 못해, 결과는 JSON 조각을 artifact 로 넘긴다.
+# secret 도 job 마다 필요한 것만 준다(Lighthouse·build job 은 운영 DB 키를 모른다).
 jobs:
-  measure:
+  lighthouse:
+    name: Lighthouse (${{ matrix.form-factor }})
     runs-on: ubuntu-latest
-    # 5앵커 × 2폼팩터 × 3회 = 30 Lighthouse + next build + tsc/eslint. 여유 있게 45분.
-    timeout-minutes: 45
+    # 6페이지 × 3회 = 18번. 평소 3분 안팎.
+    timeout-minutes: 30
+    strategy:
+      # 한쪽이 실패하면 어차피 저장하지 않으니 다른 쪽도 멈춰 러너 시간을 아낀다.
+      fail-fast: true
+      matrix:
+        form-factor: [mobile, desktop]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Lighthouse 는 ubuntu-latest 사전설치 Chrome 을 chrome-launcher 가 자동 탐지해 쓴다
+      # → 여기선 Playwright 설치가 필요 없다.
+      - name: Measure Lighthouse
+        run: npm run measure -w @repo/quality -- lighthouse
+        env:
+          QUALITY_TARGET_URL: ${{ secrets.QUALITY_TARGET_URL }}
+          LH_FORM_FACTORS: ${{ matrix.form-factor }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quality-lighthouse-${{ matrix.form-factor }}
+          path: packages/quality/.parts/
+          if-no-files-found: error
+          retention-days: 7
+
+  build:
+    name: Build · SEO · Runtime
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -25,18 +71,54 @@ jobs:
           cache: npm
       - run: npm ci
 
-      # Lighthouse는 ubuntu-latest 사전설치 Chrome을 chrome-launcher가 자동 탐지해 쓴다.
-      # 여기서 설치하는 건 measureRuntime(runtime.ts)이 쓰는 Playwright chromium이다.
+      # measureRuntime(runtime.ts)이 쓰는 Playwright chromium.
       - name: Install Playwright chromium
         run: npx playwright install --with-deps chromium
         working-directory: apps/page0127
 
-      # measure는 내부에서 apps/page0127를 next build 한다(measureBuild가 번들/코드건강 측정).
-      # 따라서 빌드에 필요한 공개 env + OPENAI 더미 키를, 저장에 필요한 service_role과 함께 준다.
-      - name: Measure quality
-        run: npm run measure -w @repo/quality
+      # measureBuild 가 apps/page0127 를 next build 한다(번들/코드건강 측정).
+      # 이 빌드는 크기·코드건강 측정용이라 DB 에 붙지 않는다 → 공개 env 는 개발 값이어도 무방.
+      # 운영 service_role 키는 이 job 에 주지 않는다(저장은 report job 만 한다).
+      - name: Measure build · SEO · runtime
+        run: npm run measure -w @repo/quality -- build
         env:
-          # 측정 대상 = 배포된 사이트 URL(Lighthouse/CrUX/SEO/runtime가 원격으로 접속)
+          QUALITY_TARGET_URL: ${{ secrets.QUALITY_TARGET_URL }}
+          # 공개 env 는 번들에 박힌다. 예전처럼 운영 URL + 개발 anon 키 조합을 그대로 쓴다.
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.PRODUCTION_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          # OPENAI 는 모듈 로드 시 필요해서 더미 값.
+          OPENAI_API_KEY: dummy
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quality-build
+          path: packages/quality/.parts/
+          if-no-files-found: error
+          retention-days: 7
+
+  report:
+    name: Report · Save
+    needs: [lighthouse, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # 세 조각(lighthouse-mobile.json, lighthouse-desktop.json, build.json)을 한 폴더로 모은다.
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: quality-*
+          merge-multiple: true
+          path: packages/quality/.parts/
+
+      - name: Analyze · save
+        run: npm run measure -w @repo/quality -- report
+        env:
+          # CrUX 조회·홈 URL 계산에 쓴다.
           QUALITY_TARGET_URL: ${{ secrets.QUALITY_TARGET_URL }}
           # 저장(service_role은 RLS 우회) — store.ts가 이 두 "이름"을 읽는다.
           #
@@ -47,16 +129,24 @@ jobs:
           # 기록이 개발 DB에 쌓여 운영 어드민 대시보드가 비게 된다.
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.PRODUCTION_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PRODUCTION_SUPABASE_SERVICE_ROLE_KEY }}
-          # 내부 next build가 요구하는 값들(공개 env는 번들에 박히고, OPENAI는 모듈 로드 시 필요).
-          # 이 빌드는 번들 크기·코드건강 측정용이라 DB에 붙지 않는다 → 개발 값이어도 무방.
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          OPENAI_API_KEY: dummy
           # CrUX(없으면 필드 지표만 생략하고 측정은 계속). ?key= 방식.
           CRUX_API_KEY: ${{ secrets.CRUX_API_KEY }}
           # 리포트 해석(report.ts). 없으면 해석만 생략하고 측정은 계속.
           # Console 의 page0127 워크스페이스 키 — 소액 충전·자동 충전 끔으로 피해 상한을 둔다.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
+  notify:
+    name: 실패 알림
+    # 앞의 job 중 하나라도 실패하면 돈다. job 수준 failure() 는 needs 에 적은 job 결과를 본다.
+    needs: [lighthouse, build, report]
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    # 체크아웃을 안 하므로 gh 가 git 에서 저장소를 알아낼 수 없다 → GH_REPO 로 알려 준다.
+    env:
+      GH_REPO: ${{ github.repository }}
+    steps:
       # 실패를 이슈로 남긴다.
       #
       # 왜 메일로 충분하지 않나: 이 워크플로는 2026-08-03부터 4주 연속 빨간불이었는데
@@ -66,7 +156,6 @@ jobs:
       # 중복 방지: 같은 제목의 열린 이슈가 있으면 새로 만들지 않고 댓글만 단다.
       # (안 그러면 주마다 이슈가 하나씩 쌓인다)
       - name: 실패를 이슈로 알림
-        if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
           TITLE: '🚨 주간 품질 측정 실패'
