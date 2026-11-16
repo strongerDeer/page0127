@@ -5,7 +5,7 @@ import { type ReactNode, useReducer, useState } from 'react';
 import Link from 'next/link';
 
 import { BookCover, Button } from '@repo/ui';
-import { Bookmark, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Bookmark, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import {
   buildCalendarMonth,
@@ -78,6 +78,8 @@ const monthReducer = (
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 /** 표지 겹쳐 쌓기 — 이보다 많으면 +N */
 const MAX_COVERS = 2;
+/** 날짜를 안 골랐을 때 패널의 "이 달 완독한 책" — 이보다 많으면 "외 N권" */
+const MAX_MONTH_BOOKS = 4;
 
 /**
  * ⑥ 독서 달력 — 이미 받은 책 목록으로 그린다(네트워크 요청 없음).
@@ -354,6 +356,7 @@ export const ReadingCalendar = ({
         <DayPanel
           day={selected}
           month={view.month}
+          monthDays={days}
           today={today}
           sentence={selectedSentence}
           todaySlot={todaySlot}
@@ -368,6 +371,8 @@ export const ReadingCalendar = ({
 type DayPanelProps = {
   day: CalendarDay | null;
   month: number;
+  /** 날짜를 안 골랐을 때 "이 달 요약"을 그릴 그 달의 날들 */
+  monthDays: CalendarDay[];
   today: string;
   sentence: DailySentence | undefined;
   todaySlot?: ReactNode;
@@ -383,6 +388,7 @@ type DayPanelProps = {
 const DayPanel = ({
   day,
   month,
+  monthDays,
   today,
   sentence,
   todaySlot,
@@ -402,14 +408,10 @@ const DayPanel = ({
       <h3 className='text-sm font-bold text-text-strong'>
         {day
           ? `${month}월 ${day.day}일${isToday ? ' · 오늘' : ''}`
-          : `${month}월`}
+          : `${month}월 한눈에`}
       </h3>
 
-      {!day && (
-        <p className='text-sm text-text-subtle'>
-          날짜를 누르면 그날 읽은 책과 문장이 여기 보여요.
-        </p>
-      )}
+      {!day && <MonthOverview days={monthDays} bookHref={bookHref} />}
 
       {showTodaySlot && todaySlot}
 
@@ -475,6 +477,98 @@ const DayPanel = ({
         </div>
       )}
     </aside>
+  );
+};
+
+type MonthOverviewProps = {
+  days: CalendarDay[];
+  bookHref: (book: Book) => string;
+};
+
+/**
+ * 날짜를 안 고른 패널 — 예전엔 안내 한 줄만 있어서, 캘린더 높이만큼 늘어난 패널이 통째로 비었다.
+ * 그 자리에 "이 달 요약"(완독·읽기 시작 권수 + 완독한 책)을 둔다(HJ A안, 2026-11-16).
+ * 한 해 흐름은 아래 월별 완독 카드가, 한 달은 여기가 맡는다 — 같은 정보를 두 번 그리지 않는다.
+ * 숫자는 이미 계산된 날(CalendarDay)들에서 다시 모은다 → 추가 조회 없음.
+ */
+const MonthOverview = ({ days, bookHref }: MonthOverviewProps) => {
+  const completions = days.flatMap((d) =>
+    d.completions.map(({ book }) => ({ book, day: d.day }))
+  );
+  const startCount = days.reduce((sum, d) => sum + d.readingStarts.length, 0);
+
+  // 빈 달 — 안내를 패널 가운데로. 문장 칸(footerSlot)은 mt-auto 로 그대로 바닥에 남는다
+  if (completions.length === 0 && startCount === 0) {
+    return (
+      <div className='flex flex-1 flex-col items-center justify-center gap-2 py-8 text-center'>
+        <span
+          aria-hidden
+          className='grid size-12 place-items-center rounded-2xl border border-line-soft bg-gradient-to-b from-[var(--tint-blue-from)] to-[var(--tint-blue-to)] text-primary'
+        >
+          <BookOpen className='size-5' />
+        </span>
+        <p className='mt-1 text-sm font-bold text-text-strong'>
+          이 달엔 아직 기록이 없어요
+        </p>
+        <p className='break-keep text-xs text-text-subtle'>
+          책을 다 읽으면 그날 칸에 표지가 꽂혀요.
+        </p>
+      </div>
+    );
+  }
+
+  const shown = completions.slice(0, MAX_MONTH_BOOKS);
+  const ratingOf = (book: Book) =>
+    isRated(book.rating)
+      ? book.is_life_book
+        ? '인생책'
+        : `${book.rating}점`
+      : null;
+
+  return (
+    <>
+      <dl className='grid grid-cols-2 gap-2'>
+        {[
+          ['완독', completions.length],
+          ['읽기 시작', startCount],
+        ].map(([label, count]) => (
+          <div
+            key={label}
+            className='rounded-xl border border-line-soft bg-card px-3 py-2.5'
+          >
+            <dt className='text-xs text-text-subtle'>{label}</dt>
+            <dd className='mt-0.5 text-lg font-bold tabular-nums text-text-strong'>
+              {count}
+              <span className='ml-1 text-xs font-normal text-text-subtle'>
+                권
+              </span>
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      {shown.length > 0 && (
+        <CalendarBookList
+          heading='이 달 완독한 책'
+          books={shown.map(({ book }) => book)}
+          bookHref={bookHref}
+          trailing={(book) => {
+            const day = shown.find((c) => c.book.id === book.id)?.day;
+            const rating = ratingOf(book);
+            return [day && `${day}일`, rating].filter(Boolean).join(' · ');
+          }}
+        />
+      )}
+      {completions.length > MAX_MONTH_BOOKS && (
+        <p className='-mt-2 text-xs text-text-subtle'>
+          외 {completions.length - MAX_MONTH_BOOKS}권
+        </p>
+      )}
+
+      <p className='text-xs text-text-subtle'>
+        날짜를 누르면 그날 기록만 보여요.
+      </p>
+    </>
   );
 };
 
