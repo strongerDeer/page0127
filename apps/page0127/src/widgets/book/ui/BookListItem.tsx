@@ -41,6 +41,12 @@ type BookItemProps = {
    */
   isLoggedIn?: boolean;
   variant?: BookItemVariant;
+  /**
+   * 첫 화면에 보이는 표지만 true — lazy 를 풀고 높은 우선순위로 받는다.
+   * 전체 도서 모바일 LCP 가 이 표지였다(2026-11-16 CI 실측 6~7초, 대부분 표지 내려받기 대기).
+   * 목록 전체에 주면 책 20권이 서로 대역폭을 다퉈 오히려 늦어진다.
+   */
+  priority?: boolean;
 };
 
 type BookListItemCoverProps = {
@@ -62,6 +68,7 @@ type BookListItemCoverProps = {
   isReading?: boolean;
   rank?: number;
   variant?: BookItemVariant;
+  priority?: boolean;
 };
 
 type BookListItemContentProps = {
@@ -89,6 +96,7 @@ const BookListItemCover = ({
   isReading = false,
   rank,
   variant = 'default',
+  priority = false,
 }: BookListItemCoverProps) => {
   const inner = (
     <div className={styles.perspective}>
@@ -133,6 +141,7 @@ const BookListItemCover = ({
             alt={title}
             width={400}
             height={400}
+            priority={priority}
             fallback={
               <div className={styles.fallback}>
                 <p className={styles.fallbackTitle}>{title}</p>
@@ -218,6 +227,7 @@ export const BookListItem = ({
   isLikedProp,
   isLoggedIn = true,
   variant = 'default',
+  priority = false,
 }: BookItemProps) => {
   const isRead =
     isReadProp ?? ('status' in book && book.status === 'completed');
@@ -245,6 +255,7 @@ export const BookListItem = ({
         isReading={isReading}
         rank={rank}
         variant={variant}
+        priority={priority}
       />
       <BookListItem.Content
         id={book.id}

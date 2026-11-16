@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 
 import { getBookProvider } from '@/shared/api/book-provider';
 import { createAdminClient } from '@/shared/config/supabase/admin';
+import { revalidateBookInfoPages } from '@/shared/lib/cache/revalidateBookInfoPages';
 
 import { getCurrentUser, getSupabaseClient } from '../_helpers/auth';
 import { schedulePush } from '../_helpers/push';
@@ -67,6 +68,8 @@ export async function POST(request: NextRequest) {
       });
       if (error && error.code !== '23505')
         return errorResponse('책 정보를 준비하지 못했어요.');
+      // 새 승인 책이 생겼다 — 전체 도서 캐시 목록·책 정보 페이지를 버린다(getCachedCatalogPage.ts)
+      if (!error) revalidateBookInfoPages();
       const { data, error: readError } = await supabase
         .from('global_books')
         .select('id')

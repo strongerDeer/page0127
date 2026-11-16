@@ -79,6 +79,9 @@ export const BookDetailContent = ({
                 // 계산해 넓은 화면에서 필요 이상으로 큰 후보를 고른다.
                 sizes='(min-width: 640px) 224px, 192px'
                 large
+                // 이 표지가 상세 화면의 LCP 다(2026-11-16 CI 실측, 모바일 4.0~4.7초).
+                // 기본 lazy 면 레이아웃이 끝난 뒤에야 요청을 시작한다 → 먼저·높은 우선순위로 받는다.
+                priority
               />
             </div>
 
