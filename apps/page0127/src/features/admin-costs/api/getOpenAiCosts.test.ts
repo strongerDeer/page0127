@@ -5,6 +5,7 @@ import {
   fetchOpenAiCostsWithRetry,
   getOpenAiCosts,
   isRetryableCostsFailure,
+  nextRetryDelayMs,
 } from './getOpenAiCosts';
 
 vi.mock('@/shared/lib/admin/assertAdmin', () => ({
@@ -105,6 +106,44 @@ describe('getOpenAiCosts', () => {
   });
 });
 
+describe('실패 응답 해석', () => {
+  it('429 본문의 error.code 와 Retry-After(초)를 담는다', async () => {
+    vi.stubEnv('OPENAI_ADMIN_KEY', 'sk-admin-test');
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(
+            JSON.stringify({ error: { code: 'rate_limit_exceeded' } }),
+            { status: 429, headers: { 'retry-after': '7' } }
+          )
+        )
+    );
+    expect(await getOpenAiCosts(NOW)).toEqual({
+      ok: false,
+      failure: {
+        kind: 'error',
+        status: 429,
+        code: 'rate_limit_exceeded',
+        retryAfterMs: 7000,
+      },
+    });
+  });
+
+  it('본문이 JSON 이 아니어도 status 는 남긴다', async () => {
+    vi.stubEnv('OPENAI_ADMIN_KEY', 'sk-admin-test');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('busy', { status: 503 }))
+    );
+    expect(await getOpenAiCosts(NOW)).toEqual({
+      ok: false,
+      failure: { kind: 'error', status: 503 },
+    });
+  });
+});
+
 describe('isRetryableCostsFailure', () => {
   it('429·5xx·네트워크 오류만 다시 부른다', () => {
     expect(isRetryableCostsFailure({ kind: 'error', status: 429 })).toBe(true);
@@ -112,62 +151,123 @@ describe('isRetryableCostsFailure', () => {
     expect(isRetryableCostsFailure({ kind: 'error' })).toBe(true);
   });
 
-  it('권한·키 없음·잘못된 요청은 다시 불러도 같으니 재시도하지 않는다', () => {
+  it('권한·키 없음·잘못된 요청·잔액 소진은 기다려도 같으니 재시도하지 않는다', () => {
     expect(isRetryableCostsFailure({ kind: 'forbidden' })).toBe(false);
     expect(isRetryableCostsFailure({ kind: 'no-key' })).toBe(false);
     expect(isRetryableCostsFailure({ kind: 'error', status: 400 })).toBe(false);
+    expect(
+      isRetryableCostsFailure({
+        kind: 'error',
+        status: 429,
+        code: 'insufficient_quota',
+      })
+    ).toBe(false);
   });
 });
 
 describe('describeCostsFailure', () => {
-  it('로그에서 원인을 가를 수 있게 status 까지 적는다', () => {
+  it('로그에서 원인을 가를 수 있게 status·code 까지 적는다', () => {
     expect(describeCostsFailure({ kind: 'error', status: 503 })).toBe(
       'error(status 503)'
     );
+    expect(
+      describeCostsFailure({
+        kind: 'error',
+        status: 429,
+        code: 'rate_limit_exceeded',
+      })
+    ).toBe('error(status 429, rate_limit_exceeded)');
     expect(describeCostsFailure({ kind: 'error' })).toBe('error(network)');
     expect(describeCostsFailure({ kind: 'forbidden' })).toBe('forbidden');
   });
 });
 
+describe('nextRetryDelayMs', () => {
+  const delays = [5_000, 15_000, 30_000];
+
+  it('Retry-After 가 없으면 백오프 표(5초 → 15초 → 30초)를 따른다', () => {
+    const failure = { kind: 'error', status: 429 } as const;
+    expect(nextRetryDelayMs(failure, 0, delays)).toBe(5_000);
+    expect(nextRetryDelayMs(failure, 1, delays)).toBe(15_000);
+    expect(nextRetryDelayMs(failure, 2, delays)).toBe(30_000);
+  });
+
+  it('Retry-After 를 존중하되 30초를 넘기지 않는다', () => {
+    expect(
+      nextRetryDelayMs(
+        { kind: 'error', status: 429, retryAfterMs: 2_000 },
+        0,
+        delays
+      )
+    ).toBe(2_000);
+    expect(
+      nextRetryDelayMs(
+        { kind: 'error', status: 429, retryAfterMs: 600_000 },
+        0,
+        delays
+      )
+    ).toBe(30_000);
+  });
+});
+
 describe('fetchOpenAiCostsWithRetry', () => {
-  it('5xx 뒤 한 번 더 불러서 성공하면 성공으로 돌려준다', async () => {
+  const noSleep = vi.fn(async () => undefined);
+
+  it('429 두 번 뒤 세 번째에 성공하면 성공으로 돌려준다', async () => {
     vi.stubEnv('OPENAI_ADMIN_KEY', 'sk-admin-test');
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce(json({}, 503))
+      .mockResolvedValueOnce(json({}, 429))
+      .mockResolvedValueOnce(json({}, 429))
       .mockResolvedValueOnce(
         json(page([{ start_time: OCT1, value: 0.01 }], null))
       );
     vi.stubGlobal('fetch', fetchMock);
+    const sleep = vi.fn(async () => undefined);
 
-    const result = await fetchOpenAiCostsWithRetry(NOW, { retryDelayMs: 0 });
+    const result = await fetchOpenAiCostsWithRetry(NOW, {
+      delaysMs: [5_000, 15_000, 30_000],
+      sleep,
+    });
     expect(result.ok).toBe(true);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(sleep.mock.calls).toEqual([[5_000], [15_000]]);
   });
 
-  it('재시도는 한 번뿐 — 또 실패하면 그 실패를 돌려준다', async () => {
+  it('재시도는 표 길이(3번)까지만 — 계속 실패하면 마지막 실패를 돌려준다', async () => {
     vi.stubEnv('OPENAI_ADMIN_KEY', 'sk-admin-test');
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    const fetchMock = vi.fn().mockResolvedValue(json({}, 429));
+    const fetchMock = vi.fn().mockImplementation(async () => json({}, 503));
     vi.stubGlobal('fetch', fetchMock);
 
-    expect(await fetchOpenAiCostsWithRetry(NOW, { retryDelayMs: 0 })).toEqual({
-      ok: false,
-      failure: { kind: 'error', status: 429 },
-    });
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(
+      await fetchOpenAiCostsWithRetry(NOW, {
+        delaysMs: [1, 1, 1],
+        sleep: noSleep,
+      })
+    ).toEqual({ ok: false, failure: { kind: 'error', status: 503 } });
+    expect(fetchMock).toHaveBeenCalledTimes(4);
   });
 
-  it('401·403 은 다시 부르지 않는다', async () => {
+  it('401·403 과 insufficient_quota 는 다시 부르지 않는다', async () => {
     vi.stubEnv('OPENAI_ADMIN_KEY', 'sk-admin-test');
     const fetchMock = vi.fn().mockResolvedValue(json({}, 403));
     vi.stubGlobal('fetch', fetchMock);
-
-    expect(await fetchOpenAiCostsWithRetry(NOW, { retryDelayMs: 0 })).toEqual({
+    expect(await fetchOpenAiCostsWithRetry(NOW, { sleep: noSleep })).toEqual({
       ok: false,
       failure: { kind: 'forbidden' },
     });
     expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    const quotaMock = vi
+      .fn()
+      .mockResolvedValue(json({ error: { code: 'insufficient_quota' } }, 429));
+    vi.stubGlobal('fetch', quotaMock);
+    expect(await fetchOpenAiCostsWithRetry(NOW, { sleep: noSleep })).toEqual({
+      ok: false,
+      failure: { kind: 'error', status: 429, code: 'insufficient_quota' },
+    });
+    expect(quotaMock).toHaveBeenCalledTimes(1);
   });
 });

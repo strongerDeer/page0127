@@ -22,7 +22,7 @@
     },
     {
       "path": "/api/cron/check-ai-billing",
-      "schedule": "30 0 * * *"
+      "schedule": "47 1 * * *"
     },
     {
       "path": "/api/cron/reading-reminders",

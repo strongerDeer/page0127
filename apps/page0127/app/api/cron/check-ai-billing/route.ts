@@ -38,6 +38,10 @@ import { errorResponse, successResponse } from '../../_helpers/response';
  *   Costs API 는 하루 버킷이라 실시간이 아니다. 끝난 날(어제)만 보면 그날을 두 번 세지 않아
  *   "이미 보냈다"를 저장할 곳 없이 기준선을 건넌 날 한 번만 보낸다.
  *
+ * 왜 01:47 UTC(10:47 KST)인가:
+ *   예전 00:30 UTC 에는 Costs API 가 이틀 연속 429 를 줬다(2026-11-15·16). 같은 키로 낮에 부르면 성공 →
+ *   하루가 바뀐 직후 붐비는 시각을 피해, 사람들이 잘 고르지 않는 분(47분)으로 옮겼다.
+ *
  * 관리자 키가 없거나 카카오 연결 전이면 조용히 끝난다 — 고장이 아니다.
  * ⚠️ Vercel Cron은 GET으로 호출한다.
  */
@@ -50,7 +54,7 @@ export async function GET(request: Request) {
   }
 
   const yesterday = kstYesterday(new Date());
-  // 일시 오류(429·5xx·네트워크)면 한 번 더 — 실패한 날의 알림은 다시 오지 않기 때문
+  // 일시 오류(429·5xx·네트워크)면 기다렸다 최대 3번 더 — 실패한 날의 알림은 다시 오지 않기 때문
   const result = await fetchOpenAiCostsWithRetry(yesterday.at);
   if (!result.ok) {
     if (result.failure.kind === 'no-key') {
