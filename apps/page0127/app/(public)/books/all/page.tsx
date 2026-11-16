@@ -70,7 +70,10 @@ export default async function GlobalBooksPage(props: {
 }) {
   const searchParams = await props.searchParams;
   const page = Number(searchParams.page) || 1;
-  const limit = 20;
+  // 한 페이지 개수는 격자 열 수(2·3·4·6) 모두로 나눠떨어져야 마지막 줄이 비지 않는다.
+  // 서버는 화면 폭을 모르니 열 수에 맞춰 바꾸지 않고 공배수(24)로 고정한다.
+  // 예전 20권은 6열에서 6+6+6+2 → 마지막 줄 4칸이 비었다(2026-11-16 HJ).
+  const limit = 24;
   const sort = (searchParams.sort as string) || 'created_at';
   const order = (searchParams.order as string) || 'desc';
   // GNB 검색폼(GET /books/all?q=...)에서 넘어온 검색어.
@@ -209,7 +212,7 @@ export default async function GlobalBooksPage(props: {
         </p>
       )}
 
-      <div className='grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
+      <div className='grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6'>
         {books.map((book) => (
           <BookListItem
             key={book.id}
