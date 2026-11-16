@@ -1,4 +1,6 @@
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
+
+import { BOOKS_ALL_CACHE_TAG } from './cacheTags';
 
 /**
  * 캐시된 책 정보 페이지(/books/info/[id])를 전부 버린다 — 다음 방문 때 새로 만든다.
@@ -12,7 +14,12 @@ import { revalidatePath } from 'next/cache';
  * 기록이 하루 몇 건인 지금은 전부 버리는 쪽이 단순하고 빠지는 경우가 없다.
  *
  * 경로에 라우트 그룹 이름을 넣어야 한다 — 패턴은 파일 구조를 가리킨다(Next revalidatePath 문서).
+ *
+ * 전체 도서(/books/all)의 비로그인용 캐시 목록도 같이 버린다(2026-11-16). 새 책이 생기거나
+ * 검수에서 승인·삭제되는 곳이 바로 여기를 부르는 곳들이라, 목록·전체 권수가 곧바로 맞춰진다.
+ * `{ expire: 0 }` = 다음 방문자가 지난 판을 보지 않고 새로 만든 목록을 받는다.
  */
 export const revalidateBookInfoPages = () => {
   revalidatePath('/(static)/books/info/[id]', 'page');
+  revalidateTag(BOOKS_ALL_CACHE_TAG, { expire: 0 });
 };

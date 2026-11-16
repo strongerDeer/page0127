@@ -16,6 +16,11 @@ import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
 
 import { catalogVisibilityFilter } from '@/entities/book/api/catalogVisibility';
+import {
+  type CatalogPage,
+  getCachedCatalogPage,
+} from '@/entities/book/api/getCachedCatalogPage';
+import { toCatalogCacheKey } from '@/entities/book/model/catalogPageCache';
 
 import { BookListItem } from '@/widgets/book/ui/BookListItem';
 
@@ -76,6 +81,18 @@ export default async function GlobalBooksPage(props: {
   // Fetch User Data for UI states (Read/Liked) - Cached per request
   const user = await getCurrentUser();
 
+  // 비로그인 + 검색 없음 + 앞쪽 페이지 → 캐시된 목록(1시간, 책이 바뀌면 바로 버림).
+  // DB 대기(약 0.9초)가 사라져 스켈레톤 다음 진짜 목록이 곧바로 뜬다 — LCP(저자 글자)가 여기 있다.
+  // 이유와 캐시하지 않는 경우는 getCachedCatalogPage.ts · catalogPageCache.ts 참고.
+  const cacheKey = toCatalogCacheKey({
+    isLoggedIn: Boolean(user),
+    q,
+    page,
+    sort,
+    order,
+    limit,
+  });
+
   // global_books 목록은 user와 무관 → user별 쿼리(로그인 시에만)와 함께 병렬 페치
   let booksQuery = supabase
     .from('global_books')
@@ -107,9 +124,25 @@ export default async function GlobalBooksPage(props: {
     ? supabase.from('book_likes').select('book_id').eq('user_id', user.id)
     : null;
 
+  // 캐시를 못 읽으면(데이터 캐시·DB 일시 오류) 그 요청만 바로 DB 에 묻는다
+  const loadBooks = async (): Promise<CatalogPage> => {
+    if (cacheKey) {
+      try {
+        return await getCachedCatalogPage(cacheKey);
+      } catch (error) {
+        console.error(
+          '[books/all] 캐시 목록 실패, 직접 조회:',
+          error instanceof Error ? error.message : error
+        );
+      }
+    }
+    const { data, count } = await booksQuery;
+    return { books: (data as GlobalBook[] | null) ?? [], count };
+  };
+
   // Promise.all은 null을 그대로 통과시키므로 비로그인 시에도 안전
   const [booksRes, myBooksRes, myLikesRes] = await Promise.all([
-    booksQuery,
+    loadBooks(),
     myBooksQuery,
     myLikesQuery,
   ]);
@@ -124,7 +157,7 @@ export default async function GlobalBooksPage(props: {
     myLikedIds.add(l.book_id)
   );
 
-  const books = (booksRes.data as GlobalBook[]) || [];
+  const { books } = booksRes;
   const totalPages = booksRes.count ? Math.ceil(booksRes.count / limit) : 0;
 
   return (

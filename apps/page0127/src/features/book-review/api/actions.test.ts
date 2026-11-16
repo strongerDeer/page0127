@@ -14,7 +14,10 @@ vi.mock('@/shared/config/supabase/admin', () => ({
 vi.mock('@/shared/config/supabase/server', () => ({
   createClient: mocks.client,
 }));
-vi.mock('next/cache', () => ({ revalidatePath: mocks.revalidate }));
+vi.mock('next/cache', () => ({
+  revalidatePath: mocks.revalidate,
+  revalidateTag: vi.fn(),
+}));
 import { deleteCatalogBook, resubmitBook, reviewBook } from './actions';
 
 const form = () => {
