@@ -258,11 +258,12 @@ export const ReadingCalendar = ({
                   disabled={covers.length === 0 && !sentence && !isToday}
                   onClick={() => setSelectedDate(day.date)}
                   aria-pressed={isSelected}
+                  // 오늘은 '선택'과 다른 상태 — 스크린리더엔 aria-current로, 눈엔 날짜 숫자 파란 원으로 알린다
+                  aria-current={isToday ? 'date' : undefined}
                   aria-label={`${view.month}월 ${day.day}일${isToday ? ', 오늘' : ''}${label ? `, ${label}` : ''}`}
                   className={`relative flex h-14 flex-col items-start justify-start border-t border-line-soft px-1 pt-0.5 text-left text-xs text-text-subtle enabled:hover:bg-sunken sm:h-16 lg:h-20 ${
-                    isSelected
-                      ? 'z-10 rounded-md bg-sunken ring-2 ring-primary'
-                      : ''
+                    // 고른 날 — 오늘 파란 원·기간 막대와 겹치지 않게 테두리 없이 옅은 tint 면만
+                    isSelected ? 'tint-blue z-10 rounded-md' : ''
                   }`}
                 >
                   <span

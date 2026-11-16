@@ -150,9 +150,9 @@ describe('ReadingCalendar · 그날 패널 (B안)', () => {
     expect(html).toContain('10월 13일 · 오늘');
     expect(html).toContain('오늘의 문장 펼치기');
     expect(html).toContain('내가 모은 문장 한 줄');
-    // 책이 없어도 오늘 칸은 누를 수 있다(펼치기 자리)
+    // 책이 없어도 오늘 칸은 누를 수 있다(펼치기 자리). 오늘은 선택과 따로 aria-current로 알린다
     expect(html).toMatch(
-      /<button type="button" aria-pressed="true" aria-label="10월 13일, 오늘"/
+      /<button type="button" aria-pressed="true" aria-current="date" aria-label="10월 13일, 오늘"/
     );
   });
 
