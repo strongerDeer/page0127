@@ -16,9 +16,9 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",
-    "chrome-launcher": "^1.2.2",
+    "chrome-launcher": "^1.2.3",
     "lighthouse": "^13.6.0",
-    "node-html-parser": "^9.0.6",
+    "node-html-parser": "^9.0.7",
     "playwright": "^1.64.0"
   },
   "devDependencies": {
