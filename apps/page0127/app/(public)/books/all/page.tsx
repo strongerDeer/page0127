@@ -51,6 +51,12 @@ export const generateMetadata = async (props: {
       description: 'page0127.에 기록된 책을 한눈에 둘러보세요.',
       url: canonical,
     },
+    // 루트 레이아웃의 twitter 제목(홈 문구)이 물려 오지 않게 이 페이지 제목을 적는다
+    twitter: {
+      card: 'summary_large_image',
+      title: '전체 도서 | page0127.',
+      description: 'page0127.에 기록된 책을 한눈에 둘러보세요.',
+    },
   };
 };
 

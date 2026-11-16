@@ -1,3 +1,4 @@
+import { balanceLines } from './balanceLines';
 import { RatingStars } from './RatingStars';
 import { Cover, STAGE_BACKGROUND } from './StageCard';
 import {
@@ -5,6 +6,7 @@ import {
   STORY_CONTENT_WIDTH,
   STORY_GUTTER,
   STORY_SAFE_Y,
+  StoryFooter,
   StoryProfile,
 } from './StoryCard';
 import { OG_COLORS, truncate } from './theme';
@@ -31,6 +33,19 @@ const lineWidth = (fontSize: number) =>
 const TITLE_SIZE = 64;
 const TITLE_LINES = 2;
 const BYLINE_MAX_WIDTH = 30;
+
+/**
+ * 큰 제목의 줄 — 두 줄에 들어가면 폭이 비슷하게 나눈다(balanceLines).
+ * 앞에서부터 채우면(wrapLines) "평범하지만 부자가 되고 / 싶어"처럼 한 단어만 떨어졌다.
+ * 두 줄을 넘는 긴 제목은 앞에서부터 채우고 둘째 줄 끝을 말줄임한다.
+ */
+export const titleLines = (title: string): string[] => {
+  const width = lineWidth(TITLE_SIZE);
+  const lineCount = wrapLines(title, width, Infinity).length;
+  // 두 줄일 때만 나눌 자리를 고른다 — 앞에서부터 채운 두 줄도 후보라서 고른 줄이 폭을 넘지 않는다
+  if (lineCount === 2) return balanceLines(title, width);
+  return wrapLines(title, width, TITLE_LINES);
+};
 
 export type BookStoryCardProps = {
   photoUrl: string | null;
@@ -267,13 +282,11 @@ export const BookStoryCard = ({
                   letterSpacing: -1.5,
                 }}
               >
-                {wrapLines(title, lineWidth(TITLE_SIZE), TITLE_LINES).map(
-                  (line, i) => (
-                    <div key={i} style={{ display: 'flex' }}>
-                      {line}
-                    </div>
-                  )
-                )}
+                {titleLines(title).map((line, i) => (
+                  <div key={i} style={{ display: 'flex' }}>
+                    {line}
+                  </div>
+                ))}
               </div>
               {author && (
                 <div
@@ -292,6 +305,8 @@ export const BookStoryCard = ({
           )}
         </div>
       </div>
+
+      <StoryFooter />
     </div>
   );
 };

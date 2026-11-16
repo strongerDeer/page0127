@@ -107,6 +107,8 @@ export async function generateMetadata({
       // images 는 두지 않는다 — 같은 폴더의 opengraph-image.tsx 가 1.91:1 카드를 만든다.
       // 표지 원본(세로)을 넘기면 카톡에서 위아래가 잘렸다.
     },
+    // 루트 레이아웃의 twitter 제목(홈 문구)이 물려 오지 않게 이 책의 제목을 적는다
+    twitter: { card: 'summary_large_image', title, description },
   };
 }
 
