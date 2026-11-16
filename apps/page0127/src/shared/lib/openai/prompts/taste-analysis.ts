@@ -21,6 +21,12 @@ type BookForAnalysis = {
    * 제목 대신 번호로 고르게 해야 지어낸 책이 근거로 들어오지 않는다.
    */
   key: string;
+  /**
+   * 어느 칸에 넣을지 — 'recent' 요즘 읽은 책, 'lasting' 그 전에 읽은 인생책·5점.
+   * 기준의 단일 출처는 entities/taste-analysis/model/bookSelection (shared는 entities를 모르므로
+   * 호출부가 붙여 준다). AI 는 날짜를 모르기 때문에 이 칸이 "무엇이 최근인지" 알려 주는 유일한 신호다.
+   */
+  period: 'recent' | 'lasting';
   title: string;
   author: string | null;
   category: string | null;
@@ -58,8 +64,10 @@ export function createTasteAnalysisPrompt(
   const ratedBooks = books.filter(
     (book): book is BookForAnalysis & { score: number } => book.score !== null
   );
-  const highRatedBooks = ratedBooks.filter((book) => book.score >= 4);
-  const lowRatedBooks = ratedBooks.filter((book) => book.score < 3);
+  const recentBooks = ratedBooks.filter((book) => book.period === 'recent');
+  const lastingBooks = ratedBooks.filter((book) => book.period === 'lasting');
+  const highRatedBooks = recentBooks.filter((book) => book.score >= 4);
+  const lowRatedBooks = recentBooks.filter((book) => book.score < 3);
 
   // 책 정보를 텍스트로 변환
   const formatBooks = (bookList: (BookForAnalysis & { score: number })[]) =>
@@ -70,6 +78,21 @@ export function createTasteAnalysisPrompt(
       )
       .join('\n\n');
 
+  // 예전 인생책·5점 — 요즘 칸이 꽉 찬 사람에게만 있다. 없으면 섹션도 지침도 빼서
+  // 책이 적은 사람의 프롬프트는 예전과 같은 모양을 유지한다.
+  const lastingSection =
+    lastingBooks.length > 0
+      ? `
+### 오래 남은 책 — 그 전에 읽은 인생책·만점 책 (${lastingBooks.length}권):
+${formatBooks(lastingBooks)}
+`
+      : '';
+  const lastingGuide =
+    lastingBooks.length > 0
+      ? `
+- "오래 남은 책"은 오래 이어져 온 뿌리 취향을 확인하는 참고로만 쓰세요. 요즘 책과 결이 다르면 요즘 쪽을 따르고, 그 차이를 취향의 변화로 설명해도 좋습니다`
+      : '';
+
   // 타입 카탈로그를 "이름: 판단 기준" 목록으로 변환
   const personalityTypeList = personalityTypes
     .map((t) => `- "${t.name}": ${t.criteria}`)
@@ -79,12 +102,14 @@ export function createTasteAnalysisPrompt(
 
 ## 분석 데이터
 
-### 높은 점수를 준 책들 (${SCORE_MAX}점 만점 중 4점 이상, ${highRatedBooks.length}권):
+### 요즘 읽은 책 — 최근 완독한 순서
+
+#### 높은 점수를 준 책들 (${SCORE_MAX}점 만점 중 4점 이상, ${highRatedBooks.length}권):
 ${formatBooks(highRatedBooks)}
 
-### 낮은 점수를 준 책들 (${SCORE_MAX}점 만점 중 3점 미만, ${lowRatedBooks.length}권):
+#### 낮은 점수를 준 책들 (${SCORE_MAX}점 만점 중 3점 미만, ${lowRatedBooks.length}권):
 ${formatBooks(lowRatedBooks)}
-
+${lastingSection}
 ## 분석 요청사항
 
 다음 형식의 JSON으로 응답해주세요:
@@ -147,7 +172,7 @@ ${formatBooks(lowRatedBooks)}
 ## 근거 책(evidence) 지침 ⚠️ 매우 중요
 - 성향과 좋아하는 주제를 그렇게 판단한 **근거가 된 책 3~5권**을 고르세요
 - book 에는 위 분석 데이터에 적힌 **책 번호(예: "B3")를 그대로** 쓰세요. 목록에 없는 책은 쓰지 마세요
-- 가능하면 높은 점수를 준 책에서 고르세요
+- 가능하면 요즘 읽은 책 중 높은 점수를 준 책에서 고르세요
 - reason 은 그 책에서 읽어 낸 취향을 **40자 이내 한 줄**로, 명사형으로 끝내세요
   (예: "일의 현장에서 바로 쓰는 실전 지식을 찾는 시선")
 - topics 에는 이 책이 근거가 된 주제를 liked.topics 에 쓴 이름 **그대로** 1~2개 넣으세요
@@ -158,6 +183,7 @@ personality_type은 반드시 아래 목록 중 하나를 **이름 그대로(글
 ${personalityTypeList}
 
 ## 분석 지침
+- **성향 타입과 좋아하는 주제는 "요즘 읽은 책"을 중심으로** 판단하세요. 지금의 취향을 보여 주는 게 목적입니다${lastingGuide}
 - 책 소개와 목차의 **의미**를 깊이 분석하여 숨겨진 패턴을 찾아주세요
 - 단순 통계가 아닌, 사용자가 모르는 자신의 취향을 발견하게 해주세요
 - 추천 이유는 사용자의 독서 패턴과 연결하여 설명하세요
