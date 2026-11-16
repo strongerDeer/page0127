@@ -58,14 +58,22 @@ export type BookStoryCardProps = {
 };
 
 /** 표지가 없는 책 — 남색 판형 위에 제목. 자리가 비면 이미지의 중심이 사라진다 */
-const PlainCover = ({ title }: { title: string }) => (
+export const PlainCover = ({
+  title,
+  width = COVER.width,
+  height = COVER.height,
+}: {
+  title: string;
+  width?: number;
+  height?: number;
+}) => (
   <div
     style={{
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
-      width: COVER.width,
-      height: COVER.height,
+      width,
+      height,
       padding: 40,
       borderRadius: 8,
       background: OG_COLORS.ink,
