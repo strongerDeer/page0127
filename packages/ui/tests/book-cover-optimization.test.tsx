@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import { BookCover } from '../src/components/BookCover';
-import { pickCoverSrc } from '../src/components/CoverImage';
+import { isWideCover, pickCoverSrc } from '../src/components/CoverImage';
 
 const YES24_COVER = 'https://image.yes24.com/goods/13137546/XL';
 const SUPABASE_UPLOAD =
@@ -135,5 +135,24 @@ describe('pickCoverSrc', () => {
 
   it('src 와 fallbackSrc 가 같으면 한 번 실패로 둘 다 건너뛴다', () => {
     expect(pickCoverSrc([storage, storage], [storage])).toBe(null);
+  });
+});
+
+/**
+ * 가로로 넓은 판형만 너비 상한(.book-cover-fit[data-wide])을 받는다.
+ * load 이벤트는 서버 렌더로 재현할 수 없어서 판정 함수만 고정한다.
+ */
+describe('isWideCover', () => {
+  it('가로가 더 긴 판형은 넓은 표지다 (비즈니스 모델의 탄생, 약 0.8)', () => {
+    expect(isWideCover({ naturalWidth: 275, naturalHeight: 220 })).toBe(true);
+  });
+
+  it('YES24 보통 판형(1.28~1.76)은 넓은 표지가 아니다 — 높이를 슬롯에 맞춘다', () => {
+    expect(isWideCover({ naturalWidth: 100, naturalHeight: 128 })).toBe(false);
+    expect(isWideCover({ naturalWidth: 100, naturalHeight: 176 })).toBe(false);
+  });
+
+  it('크기를 아직 모르면(0) 넓은 표지로 보지 않는다', () => {
+    expect(isWideCover({ naturalWidth: 0, naturalHeight: 0 })).toBe(false);
   });
 });
