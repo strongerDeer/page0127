@@ -182,4 +182,49 @@ describe('ReadingCalendar · 그날 패널 (B안)', () => {
     );
     expect(html).toContain('오늘은 아직 기록이 없어요.');
   });
+
+  it('날짜를 안 고른 달은 "이 달 요약" — 완독·읽기 시작 권수와 완독한 책', () => {
+    const html = renderToStaticMarkup(
+      <ReadingCalendar
+        books={[
+          createTestBook({
+            id: 'a',
+            title: '첫 책',
+            completed_date: '2026-03-05',
+            rating: 4,
+          }),
+          createTestBook({
+            id: 'b',
+            title: '둘째 책',
+            completed_date: '2026-03-20',
+          }),
+        ]}
+        year={2026}
+        today='2026-10-13'
+        isOwner={false}
+        bookHref={href}
+        initialMonth={3}
+      />
+    );
+    expect(html).toContain('3월 한눈에');
+    expect(html).toContain('이 달 완독한 책');
+    expect(html).toContain('첫 책');
+    expect(html).toContain('5일 · 4점');
+    expect(html).not.toContain('이 달엔 아직 기록이 없어요');
+  });
+
+  it('기록이 없는 달은 패널 가운데에 빈 상태', () => {
+    const html = renderToStaticMarkup(
+      <ReadingCalendar
+        books={[]}
+        year={2026}
+        today='2026-10-13'
+        isOwner={false}
+        bookHref={href}
+        initialMonth={2}
+      />
+    );
+    expect(html).toContain('2월 한눈에');
+    expect(html).toContain('이 달엔 아직 기록이 없어요');
+  });
 });
