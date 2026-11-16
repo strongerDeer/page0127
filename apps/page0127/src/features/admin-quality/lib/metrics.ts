@@ -2,9 +2,10 @@ import { type Verdict, verdict } from './verdict';
 
 import type { PageMetrics, QualityRecord } from '@repo/quality/types';
 
-// 그리드·추세가 함께 쓰는 지표 4종. 시안에서 확정한 열: 성능 / LCP(랩) / 전송 / CLS.
+// 그리드·추세가 함께 쓰는 지표. 시안에서 확정한 열: 성능 / LCP(랩) / 전송 / CLS
+// + 2026-11-16 추가: LCP(실제) — 같은 느린4G·CPU 4x 조건을 브라우저에 직접 걸어 잰 값.
 // (LCP 랩과 전송량은 판정 색을 안 매긴다 — 회선/콘텐츠 영향이라 코드 신호로 보기 어렵다.)
-export type MetricKey = 'perf' | 'lcp' | 'weight' | 'cls';
+export type MetricKey = 'perf' | 'lcp' | 'lcpReal' | 'weight' | 'cls';
 export type FormFactor = 'mobile' | 'desktop';
 
 export type MetricDef = {
@@ -46,6 +47,18 @@ export const METRICS: Record<MetricKey, MetricDef> = {
     formatDelta: (d) => fmtMs(Math.abs(d)),
     verdict: null,
   },
+  // 실제 스로틀 LCP — 모바일만, 11/16 이후 레코드만 있다(이전 주는 '–').
+  // LCP(랩)는 스트리밍 페이지에서 JS 다운로드까지 더해 2~3배 부푼다.
+  // 실사용자 기준(2.5초)과 같은 눈금이라 판정 색을 매긴다.
+  lcpReal: {
+    key: 'lcpReal',
+    label: 'LCP(실제)',
+    lowerIsBetter: true,
+    read: (p) => p.realLcp,
+    format: fmtMs,
+    formatDelta: (d) => fmtMs(Math.abs(d)),
+    verdict: (v) => verdict('fieldLcpP75', v, 'mobile'),
+  },
   weight: {
     key: 'weight',
     label: '전송',
@@ -66,7 +79,7 @@ export const METRICS: Record<MetricKey, MetricDef> = {
   },
 };
 
-export const METRIC_ORDER: MetricKey[] = ['perf', 'lcp', 'weight', 'cls'];
+export const METRIC_ORDER: MetricKey[] = ['perf', 'lcp', 'lcpReal', 'weight', 'cls'];
 
 // 페이지 선 색 — dataviz 카테고리 순서(파랑·주황·아쿠아·노랑·마젠타…). 페이지 순번대로 배정.
 export const PAGE_PALETTE = [

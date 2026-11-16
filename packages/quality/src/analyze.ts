@@ -111,7 +111,22 @@ const detectPageRegressions = (
     // LCP 회귀는 "절대값 > 2500"이 아니라 "직전 대비 노이즈 밴드를 넘는 악화"일 때만.
     // 느린4G LCP는 표본마다 수십 초 출렁이므로(lcpSpreadMs), 그 흔들림보다
     // 크게 나빠졌을 때만 진짜 회귀로 본다. 이게 허위경보(매주 LCP 4건)의 해소책.
-    if (prevPage) {
+    //
+    // 두 레코드 모두 실제 스로틀 LCP(realLcp)가 있으면 그걸로 본다 — 시뮬레이션은
+    // 스트리밍 페이지에서 크게 부풀고 회차마다 4초↔8초로 흔들린다(2026-11-16 분석).
+    if (prevPage?.realLcp != null && page.realLcp != null) {
+      const delta = page.realLcp - prevPage.realLcp;
+      if (delta > t.realLcpMinRegressionMs) {
+        regressions.push({
+          metric: 'lcp',
+          page: page.name,
+          formFactor,
+          prev: prevPage.realLcp,
+          curr: page.realLcp,
+          detail: `${tag}${page.name} LCP(실제 스로틀) ${prevPage.realLcp}→${page.realLcp}ms (+${delta}ms, 최소 회귀폭 ${t.realLcpMinRegressionMs}ms 초과)`,
+        });
+      }
+    } else if (prevPage) {
       const noiseBand = Math.max(page.lcpSpreadMs ?? 0, t.lcpMinRegressionMs);
       const lcpDelta = page.cwv.lcp - prevPage.cwv.lcp;
       if (lcpDelta > noiseBand) {

@@ -182,6 +182,38 @@ const withDesktop = (r: QualityRecord): QualityRecord => {
   return clone;
 };
 
+describe('analyze — 실제 스로틀 LCP(realLcp)', () => {
+  const withReal = (r: QualityRecord, lcp: number): QualityRecord => {
+    r.pages[0].realLcp = lcp;
+    r.pages[0].realFcp = 1800;
+    return r;
+  };
+
+  it('두 레코드 모두 realLcp가 있으면 시뮬레이션이 크게 흔들려도 realLcp로만 판단한다', () => {
+    const prev = withReal(structuredClone(base), 2500);
+    const curr = withReal(nextDeploy(), 2600); // +100ms → 회귀 아님
+    curr.pages[0].cwv.lcp = 8000; // 시뮬레이션은 +6000ms (Lantern 과대추정)
+    const result = analyze([prev, curr]);
+    expect(result.regressions.some((r) => r.metric === 'lcp')).toBe(false);
+  });
+
+  it('realLcp가 최소 회귀폭(700ms)을 넘게 나빠지면 회귀로 잡는다', () => {
+    const prev = withReal(structuredClone(base), 2500);
+    const curr = withReal(nextDeploy(), 3400); // +900ms
+    const result = analyze([prev, curr]);
+    const lcp = result.regressions.find((r) => r.metric === 'lcp');
+    expect(lcp?.curr).toBe(3400);
+    expect(lcp?.detail).toContain('실제 스로틀');
+  });
+
+  it('직전 레코드에 realLcp가 없으면(도입 첫 주) 예전처럼 시뮬레이션으로 판단한다', () => {
+    const curr = withReal(nextDeploy(), 2500);
+    curr.pages[0].cwv.lcp = 4500; // +2500ms > 밴드 1500
+    const result = analyze([base, curr]);
+    expect(result.regressions.some((r) => r.metric === 'lcp')).toBe(true);
+  });
+});
+
 describe('analyze — 데스크탑 폼팩터', () => {
   it('직전에 데스크탑이 없으면(첫 데스크탑 측정) 회귀로 잡지 않는다', () => {
     const curr = withDesktop(nextDeploy());

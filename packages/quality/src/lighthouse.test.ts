@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { assertMeasurable, extractEnvironment, median } from './lighthouse';
+import {
+  assertMeasurable,
+  extractEnvironment,
+  extractRealVitals,
+  median,
+} from './lighthouse';
 
 describe('assertMeasurable', () => {
   it('정상 결과(runtimeError 없음)는 통과한다', () => {
@@ -72,5 +77,22 @@ describe('extractEnvironment', () => {
       runnerImage: 'local',
       benchmarkIndex: 0,
     });
+  });
+});
+
+describe('extractRealVitals', () => {
+  it('LCP·FCP numericValue를 반올림해 꺼낸다', () => {
+    expect(
+      extractRealVitals({
+        audits: {
+          'largest-contentful-paint': { numericValue: 2485.4 },
+          'first-contentful-paint': { numericValue: 2001.6 },
+        },
+      })
+    ).toEqual({ lcp: 2485, fcp: 2002 });
+  });
+
+  it('audit이 없으면 0', () => {
+    expect(extractRealVitals({ audits: {} })).toEqual({ lcp: 0, fcp: 0 });
   });
 });
