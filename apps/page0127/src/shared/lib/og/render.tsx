@@ -72,10 +72,18 @@ const loadFonts = async (): Promise<OgFont[]> => {
   }
 };
 
+/**
+ * 로그인한 사람만 볼 수 있는 이미지(문장 카드·케미 카드)의 캐시 — CDN 에 올리면 안 된다.
+ * 같은 주소라도 쿠키(누가 부르는지)에 따라 그림이 다르거나, 남이 부르면 404 여야 한다.
+ */
+export const PRIVATE_IMAGE_CACHE_CONTROL = 'private, no-store';
+
 export const renderOg = async (
   element: React.ReactElement,
-  // 공유 카드는 OG 크기, 스토리 이미지는 STORY_SIZE — 폰트·캐시 규칙은 같다
-  size: { width: number; height: number } = OG_SIZE
+  // 공유 카드는 OG 크기, 스토리 이미지는 STORY_SIZE — 폰트 규칙은 같다
+  size: { width: number; height: number } = OG_SIZE,
+  // 기본은 공개 캐시(1시간). 로그인한 사람만 보는 이미지는 PRIVATE_IMAGE_CACHE_CONTROL
+  cacheControl: string = OG_CACHE_CONTROL
 ) => {
   const fonts = await loadFonts();
 
@@ -84,6 +92,6 @@ export const renderOg = async (
     // 빈 배열을 넘기면 기본 폰트까지 사라진다 — 없을 때는 옵션 자체를 뺀다
     ...(fonts.length > 0 ? { fonts } : {}),
     // next/og 기본값은 max-age=0 이라 크롤러가 부를 때마다 다시 그린다
-    headers: { 'Cache-Control': OG_CACHE_CONTROL },
+    headers: { 'Cache-Control': cacheControl },
   });
 };

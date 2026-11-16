@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { balanceLines } from './balanceLines';
+import { balancedWrap, balanceLines } from './balanceLines';
 
 describe('balanceLines', () => {
   it('한 줄에 들어가면 그대로', () => {
@@ -31,5 +31,19 @@ describe('balanceLines', () => {
     expect(balanceLines('가나다라마바사아자차카타', 5)).toEqual([
       '가나다라마바사아자차카타',
     ]);
+  });
+});
+
+describe('balancedWrap', () => {
+  it('두 줄이 되면 마지막 한 단어만 떨어지지 않게 나눈다', () => {
+    expect(
+      balancedWrap('같은 방향을 보며 걷지만 각자의 속도가 있는 사이예요', 20, 3)
+    ).toEqual(['같은 방향을 보며 걷지만', '각자의 속도가 있는 사이예요']);
+  });
+
+  it('세 줄 이상이면 앞에서부터 채우고 줄 수에서 자른다', () => {
+    const lines = balancedWrap('가나 다라 마바 사아 자차 카타 파하', 5, 2);
+    expect(lines).toHaveLength(2);
+    expect(lines[1].endsWith('…')).toBe(true);
   });
 });

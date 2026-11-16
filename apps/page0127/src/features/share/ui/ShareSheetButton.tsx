@@ -18,8 +18,11 @@ import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { ShareButton } from './ShareButton';
 
 type ShareSheetButtonProps = {
-  /** 공유할 페이지 경로 — 링크 공유에 쓴다 */
-  path: string;
+  /**
+   * 공유할 페이지 경로 — 링크 공유에 쓴다.
+   * 없으면 링크 공유 버튼을 그리지 않는다 — 문장 카드처럼 남이 열 수 있는 페이지가 없는 것
+   */
+  path?: string;
   /** 공유 이미지를 그리는 경로 (같은 origin) */
   imagePath: string;
   /** 저장·공유될 이미지 파일 이름 */
@@ -34,6 +37,10 @@ type ShareSheetButtonProps = {
   triggerLabel?: string;
   /** true면 글자 버튼을 큰 보조 버튼으로 — 홈 첫 화면처럼 큰 버튼 옆에 나란히 설 때 */
   prominent?: boolean;
+  /** true면 아이콘 버튼을 작은 고스트 버튼으로 — 문장 한 줄 옆의 고치기·지우기 버튼과 나란히 설 때 */
+  compact?: boolean;
+  /** 시트 설명 — 기본은 이미지·링크 둘 다 있을 때의 문구 */
+  description?: string;
 };
 
 type LoadingMessages = {
@@ -107,7 +114,11 @@ export const ShareSheetButton = ({
   loadingMessages = SHELF_LOADING,
   triggerLabel,
   prominent = false,
+  compact = false,
+  description = '이미지는 스토리·게시물에, 링크는 메시지로 보내기 좋아요.',
 }: ShareSheetButtonProps) => {
+  // 지표의 path — 링크가 없는 공유(문장 카드)는 이미지 경로로 센다
+  const trackPath = path ?? imagePath;
   const [open, setOpen] = useState(false);
   const [image, setImage] = useState<ImageState>({ status: 'loading' });
   const [isSharing, setIsSharing] = useState(false);
@@ -158,7 +169,10 @@ export const ShareSheetButton = ({
         try {
           // 파일만 보낸다 — 링크를 같이 넣으면 앱마다 하나를 버린다.
           await navigator.share({ files: [image.file], title });
-          trackEvent('share_click', { method: 'image_share', path });
+          trackEvent('share_click', {
+            method: 'image_share',
+            path: trackPath,
+          });
           return;
         } catch (error) {
           // 취소는 존중한다. 권한·플랫폼 오류일 때만 저장으로 이어간다.
@@ -177,7 +191,10 @@ export const ShareSheetButton = ({
       } finally {
         link.remove();
       }
-      trackEvent('share_click', { method: 'image_download', path });
+      trackEvent('share_click', {
+        method: 'image_download',
+        path: trackPath,
+      });
       toast.success('이미지를 저장했어요. 저장한 이미지를 공유해 주세요.');
     } catch {
       toast.error('이미지를 저장하지 못했어요. 링크로 공유해 주세요.');
@@ -203,15 +220,15 @@ export const ShareSheetButton = ({
         </Button>
       ) : (
         <Button
-          variant='outline'
-          size='icon-md'
+          variant={compact ? 'ghost' : 'outline'}
+          size={compact ? 'icon-sm' : 'icon-md'}
           className='shadow-none'
           onClick={() => setOpen(true)}
           title={sheetTitle}
         >
           {/* 아이콘만 있는 버튼은 스크린리더가 읽을 이름이 없다 */}
           <span className='sr-only'>{sheetTitle}</span>
-          <Share2 className='h-4 w-4' />
+          <Share2 className={compact ? 'size-3.5' : 'h-4 w-4'} />
         </Button>
       )}
 
@@ -220,7 +237,7 @@ export const ShareSheetButton = ({
           <DialogHeader>
             <DialogTitle>{sheetTitle}</DialogTitle>
             <DialogDescription className='break-keep'>
-              이미지는 스토리·게시물에, 링크는 메시지로 보내기 좋아요.
+              {description}
             </DialogDescription>
           </DialogHeader>
 
@@ -271,12 +288,14 @@ export const ShareSheetButton = ({
                 </>
               )}
             </Button>
-            <ShareButton
-              path={path}
-              title={title}
-              label='링크 공유하기'
-              className='w-full'
-            />
+            {path && (
+              <ShareButton
+                path={path}
+                title={title}
+                label='링크 공유하기'
+                className='w-full'
+              />
+            )}
           </div>
         </DialogContent>
       </Dialog>

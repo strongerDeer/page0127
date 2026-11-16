@@ -200,7 +200,14 @@ const BookDetailPage = async ({ params }: PageProps) => {
         isOwner={isOwner}
         readCount={readCount}
         quotesSlot={
-          quotes && <BookQuotesSection isbn={book.isbn} quotes={quotes} />
+          quotes && (
+            <BookQuotesSection
+              isbn={book.isbn}
+              quotes={quotes}
+              username={username}
+              bookId={book.id}
+            />
+          )
         }
         visitorAction={
           // 남의 책일 때만 — 아는 책을 만난 순간을 내 기록(또는 가입)으로 잇는다
