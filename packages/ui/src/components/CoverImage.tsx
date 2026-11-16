@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, type SyntheticEvent, useState } from 'react';
 
 import Image, { type ImageProps } from 'next/image';
 
@@ -50,23 +50,56 @@ export const CoverImage = ({
   small = false,
   fallback = null,
   alt,
+  onLoad,
   ...rest
 }: CoverImageProps) => {
   // 불러오다 실패한 주소들. 주소 자체를 기억하므로 src 가 바뀌면 자연히 새로 시도한다.
   const [failedSrcs, setFailedSrcs] = useState<string[]>([]);
+  // 가로로 넓은 판형으로 확인된 주소. 주소로 기억하므로 src 가 바뀌면 자연히 풀린다.
+  const [wideSrc, setWideSrc] = useState<string | null>(null);
   const src = pickCoverSrc([srcProp, fallbackSrc], failedSrcs);
 
   if (!src) return <>{fallback}</>;
+
+  const handleLoad = (event: SyntheticEvent<HTMLImageElement>) => {
+    if (isWideCover(event.currentTarget)) setWideSrc(src);
+    onLoad?.(event);
+  };
 
   return (
     <Image
       {...rest}
       {...toCoverImageProps(src, large ? 'large' : small ? 'small' : 'default')}
       alt={alt}
+      // CSS(.book-cover-fit[data-wide])가 이 표시를 보고 너비 상한을 건다
+      data-wide={wideSrc === src || undefined}
+      onLoad={handleLoad}
       onError={() => setFailedSrcs((prev) => [...prev, src])}
     />
   );
 };
+
+/**
+ * 세로/가로 비율이 이보다 작으면 "가로로 넓은 표지"로 본다.
+ *
+ * 표지 슬롯은 1:1.45 이고 이미지는 높이를 슬롯에 맞춘다(.book-cover-fit). 그러면
+ * 이미지 너비 = 슬롯 너비 × (1.45 ÷ 비율). 이 값이 슬롯의 120% 를 넘는 지점이
+ * 1.45 ÷ 1.2 ≈ 1.2 다. YES24 보통 판형(1.28~1.76)은 여기 걸리지 않는다.
+ * 걸리는 책은 『비즈니스 모델의 탄생』처럼 가로가 더 긴 판형이다(약 0.8 → 너비 180%).
+ */
+const WIDE_COVER_RATIO = 1.2;
+
+/**
+ * 불러온 이미지가 가로로 넓은 판형인지.
+ *
+ * CSS 로는 이미지의 원본 비율을 읽을 수 없어서 load 시점에 JS 로 잰다.
+ * naturalWidth/Height 는 srcset 밀도로 나뉜 값일 수 있지만 비율은 그대로다.
+ */
+export const isWideCover = ({
+  naturalWidth,
+  naturalHeight,
+}: Pick<HTMLImageElement, 'naturalWidth' | 'naturalHeight'>): boolean =>
+  naturalWidth > 0 && naturalHeight / naturalWidth < WIDE_COVER_RATIO;
 
 /**
  * 후보 주소 중 아직 실패하지 않은 첫 번째를 고른다. 없으면 null(→ fallback).
