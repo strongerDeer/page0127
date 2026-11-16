@@ -56,7 +56,10 @@ export const wrapLines = (
   // 넘친 줄은 버리고 마지막 줄에 말줄임표 — 남은 말이 있다는 것을 알린다
   const kept = lines.slice(0, maxLines);
   const last = kept[maxLines - 1];
+  // 꽉 찬 줄은 truncate(last) 가 그대로 돌려줘 말줄임표가 빠졌다 — 말줄임표를 붙인 채로 잘라야 자리가 난다
   kept[maxLines - 1] =
-    textWidth(`${last}…`) <= maxWidth ? `${last}…` : truncate(last, maxWidth);
+    textWidth(`${last}…`) <= maxWidth
+      ? `${last}…`
+      : truncate(`${last}…`, maxWidth);
   return kept;
 };

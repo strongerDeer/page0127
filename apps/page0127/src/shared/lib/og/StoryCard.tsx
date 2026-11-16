@@ -165,6 +165,46 @@ export const StoryProfile = ({
   </div>
 );
 
+/**
+ * 맨 아래 한 줄 — 처음 보는 사람에게 "어디서 만든 책장인지"와 "나도 만들 수 있다"를 말한다.
+ * 위 프로필 줄의 주소는 "이 사람의 서재" 주소라, 서비스 이름으로는 잘 읽히지 않았다.
+ *
+ * 자리: 흰 면 아래 안전 영역(250px) 안쪽의 위쪽. 본문(책장·권수)은 안전 영역 위에서 끝나서
+ * 겹치지 않는다. 인스타 답장 입력창은 이보다 아래(≈ 아래 180px)라 가리지 않는다.
+ * 주소만 굵게(브랜드 파랑), 나머지는 옅게 — 인스타 홍보 카드와 같은 "키워드만 굵게" 문법.
+ */
+export const STORY_FOOTER_BOTTOM = 172;
+
+export const StoryFooter = () => (
+  <div
+    style={{
+      display: 'flex',
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: STORY_FOOTER_BOTTOM,
+      justifyContent: 'center',
+      alignItems: 'baseline',
+      fontSize: 34,
+      letterSpacing: -0.5,
+    }}
+  >
+    <div style={{ display: 'flex', fontWeight: 800, color: OG_COLORS.brand }}>
+      page0127.com
+    </div>
+    {/* 조사(에서)는 주소에 붙여 쓴다 — 띄우면 "page0127.com 에서"로 끊겨 읽힌다 */}
+    <div
+      style={{
+        display: 'flex',
+        fontWeight: 500,
+        color: OG_COLORS.inkSoft,
+      }}
+    >
+      에서 내 책장 만들기
+    </div>
+  </div>
+);
+
 /** 제목을 세로로 쌓는다 — satori 는 writing-mode 를 모른다. 한글은 원래 글자를 쌓는 세로쓰기다 */
 const StackedTitle = ({
   title,
@@ -356,6 +396,7 @@ export const StoryCard = ({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
+        position: 'relative',
         backgroundImage: STAGE_BACKGROUND,
       }}
     >
@@ -550,6 +591,8 @@ export const StoryCard = ({
           </div>
         )}
       </div>
+
+      <StoryFooter />
     </div>
   );
 };

@@ -40,3 +40,11 @@ describe('wrapLines', () => {
     expect(wrapLines('   ', 10, 3)).toEqual([]);
   });
 });
+
+describe('wrapLines — 꽉 찬 마지막 줄', () => {
+  it('줄 수를 넘겨 자를 때 마지막 줄이 꽉 차 있어도 말줄임표를 붙인다', () => {
+    const lines = wrapLines('가나다 라마바 사아자 차카타', 7, 1);
+    expect(lines).toHaveLength(1);
+    expect(lines[0].endsWith('…')).toBe(true);
+  });
+});
