@@ -1,4 +1,5 @@
 import { textWidth } from './theme';
+import { wrapLines } from './wrapLines';
 
 /**
  * 한 줄에 안 들어가는 제목을 두 줄로 — 두 줄의 폭이 가장 비슷해지는 띄어쓰기에서 나눈다.
@@ -26,4 +27,21 @@ export const balanceLines = (text: string, maxWidth: number): string[] => {
     }
   }
   return best;
+};
+
+/**
+ * 여러 줄 문장용 — 딱 두 줄이 되면 폭을 맞춰 나누고(balanceLines), 그보다 길면 앞에서부터
+ * 채운 뒤 maxLines 에서 말줄임한다(wrapLines). "같은 방향을 보며 걷지만, 각자의 속도가 있는 /
+ * 사이예요."처럼 마지막 한 단어만 떨어지는 두 줄을 막는다.
+ * 앞에서부터 채운 두 줄도 balanceLines 의 후보라서 고른 줄이 maxWidth 를 넘지 않는다.
+ */
+export const balancedWrap = (
+  text: string,
+  maxWidth: number,
+  maxLines: number
+): string[] => {
+  if (maxLines >= 2 && wrapLines(text, maxWidth, Infinity).length === 2) {
+    return balanceLines(text, maxWidth);
+  }
+  return wrapLines(text, maxWidth, maxLines);
 };

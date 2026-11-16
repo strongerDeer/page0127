@@ -30,6 +30,8 @@ import {
   QUOTE_MAX_LENGTH,
 } from '@/entities/quote';
 
+import { ShareSheetButton } from '@/features/share';
+
 import {
   addQuoteAction,
   deleteQuoteAction,
@@ -42,6 +44,16 @@ type BookQuotesSectionProps = {
   /** 문장은 기록(books.id)이 아니라 내 계정 + ISBN 에 붙는다 — 회독해도 한곳에 모인다 */
   isbn: string;
   quotes: BookQuote[];
+  /** 문장 카드 이미지 주소를 만든다 — /{username}/{bookId}/quote-story/{quoteId} */
+  username: string;
+  bookId: string;
+};
+
+/** 문장 카드 이미지를 그리는 동안의 문구 */
+const QUOTE_STORY_LOADING = {
+  title: '문장 카드를 그리고 있어요',
+  wait: '문장을 옮겨 적는 중…',
+  slow: '표지를 받아 오는 중이에요. 조금만 기다려 주세요.',
 };
 
 /**
@@ -53,7 +65,12 @@ type BookQuotesSectionProps = {
  * + 문장 추가 → 입력칸이 열리고, 저장하면 목록 끝에 하나씩 쌓인다.
  * 저장 뒤 router.refresh() 로 서버 컴포넌트를 다시 그려 목록을 DB 와 맞춘다.
  */
-export const BookQuotesSection = ({ isbn, quotes }: BookQuotesSectionProps) => {
+export const BookQuotesSection = ({
+  isbn,
+  quotes,
+  username,
+  bookId,
+}: BookQuotesSectionProps) => {
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -101,6 +118,7 @@ export const BookQuotesSection = ({ isbn, quotes }: BookQuotesSectionProps) => {
                 <QuoteItem
                   key={quote.id}
                   quote={quote}
+                  imagePath={`/${username}/${bookId}/quote-story/${quote.id}`}
                   onEdit={() => {
                     setAdding(false);
                     setEditingId(quote.id);
@@ -138,9 +156,14 @@ export const BookQuotesSection = ({ isbn, quotes }: BookQuotesSectionProps) => {
   );
 };
 
-type QuoteItemProps = { quote: BookQuote; onEdit: () => void };
+type QuoteItemProps = {
+  quote: BookQuote;
+  /** 이 문장의 카드 이미지 주소 */
+  imagePath: string;
+  onEdit: () => void;
+};
 
-const QuoteItem = ({ quote, onEdit }: QuoteItemProps) => {
+const QuoteItem = ({ quote, imagePath, onEdit }: QuoteItemProps) => {
   const router = useRouter();
   const [confirming, setConfirming] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -163,6 +186,16 @@ const QuoteItem = ({ quote, onEdit }: QuoteItemProps) => {
       </blockquote>
       <div className='mt-1 flex items-center gap-1 text-xs text-muted-foreground'>
         {quote.page && <span className='mr-1'>p. {quote.page}</span>}
+        {/* 문장은 나만 보이니 링크는 없다 — 이미지(문장 카드)만 공유한다. 이미지는 주인만 그릴 수 있다 */}
+        <ShareSheetButton
+          imagePath={imagePath}
+          fileName={`page0127-quote-${quote.id.slice(0, 8)}.png`}
+          title='책 속 한 문장'
+          sheetTitle='문장 카드 공유하기'
+          description='스토리·게시물에 올리기 좋은 문장 카드예요.'
+          loadingMessages={QUOTE_STORY_LOADING}
+          compact
+        />
         <Button
           variant='ghost'
           size='icon-sm'

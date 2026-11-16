@@ -44,6 +44,8 @@ import { replaceUserLabels } from '@/entities/compatibility/lib/replaceUserLabel
 import { COMPATIBILITY_MIN_BOOKS as MIN_BOOKS } from '@/entities/compatibility/model/analysisGate';
 import { getCompatibilityTypeByScore } from '@/entities/compatibility/model/compatibilityTypes';
 
+import { ShareSheetButton } from '@/features/share';
+
 import type {
   CompatibilityAnalysis,
   MutualRecommendation,
@@ -134,6 +136,7 @@ export const CompatibilityView = ({
         <CompatibilityResult
           analysis={analysis}
           targetName={targetName}
+          username={username}
           recommendationsForMe={recommendationsForMe}
           recommendationsForTarget={recommendationsForTarget}
           isCurrentUserFirst={isCurrentUserFirst}
@@ -273,9 +276,18 @@ const BookCountRow = ({ label, count, isEnough }: BookCountRowProps) => (
 
 // ─── 결과 화면 ───
 
+/** 케미 이미지를 그리는 동안의 문구 */
+const CHEMISTRY_LOADING = {
+  title: '케미 카드를 그리고 있어요',
+  wait: '두 책장을 나란히 놓는 중…',
+  slow: '조금만 기다려 주세요. 거의 다 됐어요.',
+};
+
 type CompatibilityResultProps = {
   analysis: CompatibilityAnalysis;
   targetName: string;
+  /** 상대의 username — 공유 링크(상대 서재의 케미 화면)와 케미 이미지 주소에 쓴다 */
+  username: string;
   recommendationsForMe: MutualRecommendation[];
   recommendationsForTarget: MutualRecommendation[];
   isCurrentUserFirst: boolean;
@@ -287,6 +299,7 @@ type CompatibilityResultProps = {
 const CompatibilityResult = ({
   analysis,
   targetName,
+  username,
   recommendationsForMe,
   recommendationsForTarget,
   isCurrentUserFirst,
@@ -329,6 +342,19 @@ const CompatibilityResult = ({
           <p className='mx-auto mt-6 max-w-xl whitespace-pre-wrap text-left leading-relaxed text-text-body'>
             {label(analysis.compatibility_description)}
           </p>
+          {/* 이미지는 나와 상대 둘의 케미(로그인한 나만 그릴 수 있다).
+              링크는 상대 서재의 케미 화면 — 받은 사람이 열면 "그 사람과 나의 케미"를 볼 수 있다 */}
+          <div className='mt-8 flex justify-center'>
+            <ShareSheetButton
+              path={`/${username}/compatibility`}
+              imagePath={`/${username}/compatibility/story-image`}
+              fileName={`page0127-chemistry-${username}.png`}
+              title={`${targetName} 님과의 독서 케미`}
+              sheetTitle='케미 공유하기'
+              triggerLabel='케미 공유하기'
+              loadingMessages={CHEMISTRY_LOADING}
+            />
+          </div>
         </CardContent>
       </Card>
 
