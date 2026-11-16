@@ -34,6 +34,7 @@ jobs:
     name: Lighthouse (${{ matrix.form-factor }})
     runs-on: ubuntu-latest
     # 6페이지 × 3회 = 18번. 평소 3분 안팎.
+    # mobile 은 실제 스로틀 LCP(LH_REAL_RUNS, 기본 1회)를 페이지마다 한 번 더 재서 +2~3분.
     timeout-minutes: 30
     strategy:
       # 한쪽이 실패하면 어차피 저장하지 않으니 다른 쪽도 멈춰 러너 시간을 아낀다.

@@ -200,3 +200,57 @@ export const measureLighthouseMedian = async (
     tbtSpreadMs: tbts.length ? Math.max(...tbts) - Math.min(...tbts) : 0,
   };
 };
+
+export type RealVitals = { lcp: number; fcp: number };
+
+// lhr 에서 LCP·FCP 만 꺼낸다(테스트 가능하게 분리).
+export const extractRealVitals = (lhr: {
+  audits: Record<string, { numericValue?: number } | undefined>;
+}): RealVitals => ({
+  lcp: Math.round(lhr.audits['largest-contentful-paint']?.numericValue ?? 0),
+  fcp: Math.round(lhr.audits['first-contentful-paint']?.numericValue ?? 0),
+});
+
+/**
+ * 실제 스로틀(devtools) LCP — mobile 전용.
+ *
+ * 기본 측정(simulate = Lantern)은 빠르게 한 번 로드한 뒤 "느린 폰이면 몇 초?"를
+ * 계산한다. 이때 관측 LCP 보다 먼저 끝난 요청은 전부 LCP 가 기다린 것으로 엮는다.
+ * 스트리밍 SSR(loading.tsx·Suspense)로 본문이 늦게 도착하는 페이지는 그 사이에
+ * JS 번들이 다 받아지므로, 실제로는 JS 없이 그려지는 글자 LCP 에 JS 다운로드
+ * 시간이 통째로 더해져 7~8초로 부풀었다(2026-11-16 분석, 실제 스로틀 2.1~2.8초).
+ *
+ * devtools 모드는 같은 조건(느린4G 1.6Mbps·RTT 150ms·CPU 4x)을 브라우저에 직접 건다.
+ * 대신 실제로 느리게 로드하므로 오래 걸리고, 표본 간 흔들림도 조금 더 크다.
+ */
+export const measureRealVitals = async (url: string): Promise<RealVitals> => {
+  const chrome = await chromeLauncher.launch({ chromeFlags: ['--headless'] });
+  try {
+    const runnerResult = await lighthouse(url, {
+      port: chrome.port,
+      output: 'json',
+      onlyCategories: ['performance'],
+      throttlingMethod: 'devtools',
+    });
+    if (!runnerResult) throw new Error(`Lighthouse 결과 없음: ${url}`);
+    assertMeasurable(runnerResult.lhr, url);
+    return extractRealVitals(runnerResult.lhr);
+  } finally {
+    await chrome.kill();
+  }
+};
+
+// N회 실제 스로틀 측정의 중앙값.
+export const measureRealVitalsMedian = async (
+  url: string,
+  runs: number
+): Promise<RealVitals> => {
+  const results: RealVitals[] = [];
+  for (let i = 0; i < Math.max(1, Math.floor(runs)); i += 1) {
+    results.push(await measureRealVitals(url));
+  }
+  return {
+    lcp: median(results.map((r) => r.lcp)),
+    fcp: median(results.map((r) => r.fcp)),
+  };
+};

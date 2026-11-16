@@ -4,9 +4,17 @@ import { fileURLToPath } from 'node:url';
 
 import { analyze } from './analyze.ts';
 import { measureBuild } from './build.ts';
-import { APP, FORM_FACTORS, LIGHTHOUSE_RUNS } from './config.ts';
+import {
+  APP,
+  FORM_FACTORS,
+  LIGHTHOUSE_RUNS,
+  REAL_LCP_RUNS,
+} from './config.ts';
 import { measureField, measureFieldHistory } from './crux.ts';
-import { measureLighthouseMedian } from './lighthouse.ts';
+import {
+  measureLighthouseMedian,
+  measureRealVitalsMedian,
+} from './lighthouse.ts';
 import {
   assembleRecord,
   BUILD_PART_FILE,
@@ -60,6 +68,11 @@ const measurePages = async (
     const url = `${APP.targetUrl}${p.path}`;
     const lh = await measureLighthouseMedian(url, LIGHTHOUSE_RUNS, formFactor);
     environment ??= lh.environment;
+    // 실제 스로틀 LCP 는 mobile 만 — 시뮬레이션이 부풀리는 건 느린4G·CPU 4x 조건이다.
+    const real =
+      formFactor === 'mobile' && REAL_LCP_RUNS > 0
+        ? await measureRealVitalsMedian(url, REAL_LCP_RUNS)
+        : undefined;
     pages.push({
       name: p.name,
       url,
@@ -70,6 +83,7 @@ const measurePages = async (
       samples: lh.samples,
       lcpSpreadMs: lh.lcpSpreadMs,
       tbtSpreadMs: lh.tbtSpreadMs,
+      ...(real && { realLcp: real.lcp, realFcp: real.fcp }),
     });
   }
   return { pages, environment };

@@ -17,6 +17,7 @@ type PageInput = {
   lcp?: number;
   cls?: number;
   weightKb?: number;
+  realLcp?: number;
 };
 
 const mkPage = (p: PageInput): PageMetrics =>
@@ -34,6 +35,7 @@ const mkPage = (p: PageInput): PageMetrics =>
       p.weightKb == null
         ? undefined
         : { totalKb: p.weightKb, imageKb: 0, scriptKb: 0 },
+    realLcp: p.realLcp,
   }) as PageMetrics;
 
 const rec = (
@@ -86,6 +88,20 @@ describe('buildSeries', () => {
   it('weight가 없는 페이지는 null로 읽힌다(구 레코드 하위호환)', () => {
     const s = buildSeries(records, 'mobile', METRICS.weight);
     expect(s[0].values).toEqual([null, null]);
+  });
+
+  it('LCP(실제)는 realLcp를 읽고, 도입 전 주는 null(선이 끊김)', () => {
+    const s = buildSeries(
+      [
+        rec('2026-11-09T00:00:00Z', [{ name: 'home', lcp: 8000 }]),
+        rec('2026-11-16T00:00:00Z', [{ name: 'home', lcp: 8000, realLcp: 2500 }]),
+      ],
+      'mobile',
+      METRICS.lcpReal
+    );
+    expect(s[0].values).toEqual([null, 2500]);
+    expect(METRICS.lcpReal.verdict?.(2500)).toBe('pass');
+    expect(METRICS.lcpReal.verdict?.(3000)).toBe('warn');
   });
 
   it('데스크탑이 없는 레코드는 빈 배열 취급', () => {

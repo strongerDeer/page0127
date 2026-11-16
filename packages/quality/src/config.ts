@@ -35,6 +35,11 @@ export const APP = {
 // Lighthouse 반복 횟수(중앙값). 느린4G LCP/SI 노이즈를 걷어낸다. LH_RUNS로 조정.
 export const LIGHTHOUSE_RUNS = Math.max(1, Number(process.env.LH_RUNS ?? 3));
 
+// 실제 스로틀(devtools) LCP 측정 횟수 — mobile만. 0이면 끈다. LH_REAL_RUNS로 조정.
+// 실제로 느리게 로드하므로 1회가 시뮬레이션보다 오래 걸린다(페이지당 약 15~25초).
+// 그래서 기본 1회: 랩 노이즈 판단은 여전히 시뮬레이션 표본(lcpSpreadMs)이 맡는다.
+export const REAL_LCP_RUNS = Math.max(0, Number(process.env.LH_REAL_RUNS ?? 1));
+
 // 측정 폼팩터. 기본 둘 다 → 측정 시간 약 2배. LH_FORM_FACTORS로 조정.
 const parseFormFactors = (raw: string | undefined): FormFactor[] => {
   if (!raw) return ["mobile", "desktop"];
@@ -59,6 +64,9 @@ export const REGRESSION = {
   clsMax: 0.1,
   tbtMaxMs: 200,
   lcpMinRegressionMs: 1500,
+  // 실제 스로틀 LCP(realLcp)용 최소 회귀폭. 값 자체가 2~3초 범위라 시뮬레이션(7~8초)보다
+  // 좁게 잡는다. 1회 측정 흔들림(실측 ±0.3초)의 2배 남짓.
+  realLcpMinRegressionMs: 700,
   tbtMinRegressionMs: 100,
   weightIncreaseRatio: 0.15,
 };

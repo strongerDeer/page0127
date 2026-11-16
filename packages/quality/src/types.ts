@@ -36,6 +36,12 @@ export type PageMetrics = {
   samples?: number; // Lighthouse 측정 횟수(중앙값 표본 수)
   lcpSpreadMs?: number; // 표본 LCP 최대-최소 — 랩 노이즈 가시화
   tbtSpreadMs?: number; // 표본 TBT 최대-최소 — 랩 노이즈 가시화
+  // 실제 스로틀(devtools) LCP·FCP — mobile만, 2026-11-16 이후 레코드에만 있다.
+  // cwv.lcp(Lantern 시뮬레이션)는 스트리밍 SSR 페이지에서 LCP 전에 끝난 JS 다운로드까지
+  // LCP 의존성으로 계산해 3배 가까이 부풀린다(실측: 전체 도서 시뮬 8.0s vs 실제 2.5s).
+  // 같은 조건(느린4G·CPU 4x)을 브라우저에 직접 걸어 잰 값이라 LCP 판단은 이걸 우선한다.
+  realLcp?: number; // ms
+  realFcp?: number; // ms
 };
 
 // ── 필드 데이터(CrUX) — 실제 크롬 사용자 28일 75분위 ────────────────────
