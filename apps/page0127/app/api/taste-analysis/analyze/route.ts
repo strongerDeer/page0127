@@ -22,6 +22,11 @@ import { createTasteAnalysisPrompt } from '@/shared/lib/openai/prompts/taste-ana
 import { isRated } from '@/entities/book';
 import { TASTE_ANALYSIS_MIN_BOOKS } from '@/entities/taste-analysis/model/analysisGate';
 import {
+  BOOK_SELECTION_VERSION,
+  LASTING_BOOKS_FOR_ANALYSIS,
+  RECENT_BOOKS_FOR_ANALYSIS,
+} from '@/entities/taste-analysis/model/bookSelection';
+import {
   toBookKey,
   toTasteEvidence,
 } from '@/entities/taste-analysis/model/evidence';
@@ -29,6 +34,7 @@ import { READING_PERSONALITY_TYPES } from '@/entities/taste-analysis/model/perso
 import { RECOMMENDATIONS_REQUEST_COUNT } from '@/entities/taste-analysis/model/recommendations';
 
 import type { Book, ProviderBook } from '@/entities/book';
+import type { BookSelectionMeta } from '@/entities/taste-analysis/model/bookSelection';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 // gpt-4o + max_tokens 4000 응답은 경우에 따라 수십 초가 걸릴 수 있어
@@ -73,27 +79,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. 완독한 책 목록 조회 (최소 5권 필요)
-    //    최신순 정렬 후 최근 N권까지만 프롬프트에 사용 — 응답 속도·비용 관리
-    const MAX_BOOKS_FOR_PROMPT = 100;
-    const { data: books, error: booksError } = await supabase
-      .from('books')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('status', 'completed')
-      .not('rating', 'is', null) // 별점이 있는 책만
-      .order('completed_date', { ascending: false })
-      .limit(MAX_BOOKS_FOR_PROMPT);
+    // 2. 분석할 책 고르기 (최소 5권 필요) — 기준은 entities/taste-analysis/model/bookSelection
+    //    "요즘 읽은 책" 최근 40권 + 그 전에 읽은 인생책·5점 "오래 남은 책" 최대 10권
+    const selected = await selectBooksForAnalysis(supabase, user.id);
 
-    if (booksError) {
-      console.error('책 목록 조회 실패:', booksError);
+    if ('error' in selected) {
+      console.error('책 목록 조회 실패:', selected.error);
       return NextResponse.json(
         { error: '책 목록을 불러올 수 없습니다.' },
         { status: 500 }
       );
     }
 
-    if (!books || books.length < TASTE_ANALYSIS_MIN_BOOKS) {
+    const { recentBooks, lastingBooks } = selected;
+    // 번호(B1, B2…)는 이 순서로 붙는다 — 프롬프트와 근거 책 맞추기가 같은 배열을 봐야 한다
+    const books = [...recentBooks, ...lastingBooks];
+
+    if (books.length < TASTE_ANALYSIS_MIN_BOOKS) {
       return NextResponse.json(
         {
           error: `분석을 위해 최소 ${TASTE_ANALYSIS_MIN_BOOKS}권의 완독한 책(별점 포함)이 필요합니다.`,
@@ -125,8 +127,9 @@ export async function POST(request: NextRequest) {
     //    인생책은 별도 컬럼(is_life_book)이라 여기서는 rating 그대로 쓴다.
     const prompt = createTasteAnalysisPrompt(
       // key: 응답이 근거 책을 번호로 고르게 한다 — 지어낸 책이 근거로 들어오지 않는다
-      (books as Book[]).map((book, index) => ({
+      books.map((book, index) => ({
         key: toBookKey(index),
+        period: index < recentBooks.length ? 'recent' : 'lasting',
         title: book.title,
         author: book.author,
         category: book.category,
@@ -189,15 +192,21 @@ export async function POST(request: NextRequest) {
     //      preference_profile 안에 둔다(JSONB) — 마이그레이션 없이 옛 분석과 나란히 산다
     const evidence = toTasteEvidence(
       aiResponse.evidence,
-      (books as Book[]).map((book) => ({
+      books.map((book) => ({
         id: book.id,
         title: book.title,
         cover_image: book.cover_image,
       })),
       aiResponse.preference_profile?.liked?.topics ?? []
     );
+    // 선정 기준도 함께 남긴다 — 취향 변화 기록에서 기준이 바뀐 지점을 구분할 수 있게
+    const selection: BookSelectionMeta = {
+      version: BOOK_SELECTION_VERSION,
+      recent_count: recentBooks.length,
+      lasting_count: lastingBooks.length,
+    };
     const preferenceProfile = aiResponse.preference_profile
-      ? { ...aiResponse.preference_profile, evidence }
+      ? { ...aiResponse.preference_profile, evidence, selection }
       : aiResponse.preference_profile;
 
     // 5. 분석 결과 저장
@@ -326,6 +335,53 @@ export async function POST(request: NextRequest) {
       }
     }
   }
+}
+
+/**
+ * 분석할 책을 두 칸으로 고른다.
+ *
+ * 정렬: 완독일 → 완독 연도 → 등록일, 모두 최근 순.
+ * NULL 은 반드시 뒤로 보낸다(nullsFirst: false). Postgres 는 내림차순에서 NULL 을
+ * 맨 앞에 두는 게 기본값(NULLS FIRST)이라, 빠뜨리면 완독일을 "연도만/모름"으로 넣은
+ * 책이 최근 책보다 먼저 자리를 차지한다 — 예전 코드가 그랬다.
+ *
+ * "오래 남은 책"은 요즘 칸이 꽉 찼을 때만 찾는다. 덜 찼으면 이미 모든 책이 들어갔다.
+ */
+async function selectBooksForAnalysis(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<
+  { recentBooks: Book[]; lastingBooks: Book[] } | { error: unknown }
+> {
+  // 평가(rating) 있는 완독 책 — 0("평가 안 함")도 게이트에선 센다(analysisGate)
+  const ratedCompleted = () =>
+    supabase
+      .from('books')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'completed')
+      .not('rating', 'is', null)
+      .order('completed_date', { ascending: false, nullsFirst: false })
+      .order('completed_year', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false });
+
+  const { data: recent, error: recentError } = await ratedCompleted().limit(
+    RECENT_BOOKS_FOR_ANALYSIS
+  );
+  if (recentError) return { error: recentError };
+
+  const recentBooks = (recent ?? []) as Book[];
+  if (recentBooks.length < RECENT_BOOKS_FOR_ANALYSIS) {
+    return { recentBooks, lastingBooks: [] };
+  }
+
+  const { data: lasting, error: lastingError } = await ratedCompleted()
+    .or('is_life_book.eq.true,rating.eq.5')
+    .not('id', 'in', `(${recentBooks.map((book) => book.id).join(',')})`)
+    .limit(LASTING_BOOKS_FOR_ANALYSIS);
+  if (lastingError) return { error: lastingError };
+
+  return { recentBooks, lastingBooks: (lasting ?? []) as Book[] };
 }
 
 /**

@@ -7,6 +7,8 @@
  * - 추천 타입은 3가지 (match, expand, challenge)
  */
 
+import type { BookSelectionMeta } from './model/bookSelection';
+
 /**
  * 추천 타입
  * - match: 성향 맞춤 (기존 취향에 딱 맞는 안전한 추천)
@@ -62,6 +64,8 @@ export type PreferenceProfile = {
   };
   /** 근거 책 — 2026-10-25 이전 분석에는 없다 */
   evidence?: TasteEvidence[];
+  /** 책 선정 기준(model/bookSelection) — 2026-11-16 이전 분석에는 없다(= 최근 100권 한 목록) */
+  selection?: BookSelectionMeta;
 };
 
 /**
