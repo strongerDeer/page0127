@@ -26,6 +26,8 @@ permissions:
 #
 # 한 러너 안에서 Lighthouse 를 동시에 돌리지 않는 이유: CPU 를 나눠 써서 점수가 왜곡된다.
 # job 은 서로 다른 컴퓨터라 메모리를 공유하지 못해, 결과는 JSON 조각을 artifact 로 넘긴다.
+# 조각 폴더(measure-parts)는 숨김 폴더(.으로 시작)로 만들면 안 된다 — upload-artifact@v4 는
+# .git·.env 같은 비밀 유출을 막으려고 숨김 파일을 기본 제외해 "No files were found" 로 실패한다.
 # secret 도 job 마다 필요한 것만 준다(Lighthouse·build job 은 운영 DB 키를 모른다).
 jobs:
   lighthouse:
@@ -55,7 +57,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: quality-lighthouse-${{ matrix.form-factor }}
-          path: packages/quality/.parts/
+          path: packages/quality/measure-parts/
           if-no-files-found: error
           retention-days: 7
 
@@ -91,7 +93,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: quality-build
-          path: packages/quality/.parts/
+          path: packages/quality/measure-parts/
           if-no-files-found: error
           retention-days: 7
 
@@ -113,7 +115,7 @@ jobs:
         with:
           pattern: quality-*
           merge-multiple: true
-          path: packages/quality/.parts/
+          path: packages/quality/measure-parts/
 
       - name: Analyze · save
         run: npm run measure -w @repo/quality -- report
