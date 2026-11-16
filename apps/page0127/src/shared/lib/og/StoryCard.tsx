@@ -175,7 +175,12 @@ export const StoryProfile = ({
  */
 export const STORY_FOOTER_BOTTOM = 172;
 
-export const StoryFooter = () => (
+export const StoryFooter = ({
+  tone = 'dark',
+}: {
+  /** 'dark' = 흰 면 위(파란 주소 + 옅은 남색), 'light' = 짙은 바탕 위(흰 주소 + 옅은 흰색) */
+  tone?: 'dark' | 'light';
+}) => (
   <div
     style={{
       display: 'flex',
@@ -189,7 +194,13 @@ export const StoryFooter = () => (
       letterSpacing: -0.5,
     }}
   >
-    <div style={{ display: 'flex', fontWeight: 800, color: OG_COLORS.brand }}>
+    <div
+      style={{
+        display: 'flex',
+        fontWeight: 800,
+        color: tone === 'dark' ? OG_COLORS.brand : '#ffffff',
+      }}
+    >
       page0127.com
     </div>
     {/* 조사(에서)는 주소에 붙여 쓴다 — 띄우면 "page0127.com 에서"로 끊겨 읽힌다 */}
@@ -197,7 +208,7 @@ export const StoryFooter = () => (
       style={{
         display: 'flex',
         fontWeight: 500,
-        color: OG_COLORS.inkSoft,
+        color: tone === 'dark' ? OG_COLORS.inkSoft : 'rgba(255, 255, 255, 0.8)',
       }}
     >
       에서 내 책장 만들기
