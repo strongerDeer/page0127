@@ -33,8 +33,8 @@ export default function Loading() {
         </div>
       </div>
 
-      {/* Book Grid — 한 페이지 limit이 20이라 12개 정도 그려두면 첫 화면 충분 */}
-      <div className='grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
+      {/* Book Grid — 한 페이지 limit이 24라 12개(2·3·4·6열 모두 꽉 찬 줄) 그려두면 첫 화면 충분. 열 구성은 page.tsx 와 같게 */}
+      <div className='grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6'>
         {Array.from({ length: 12 }).map((_, i) => (
           <BookListItemSkeleton key={i} />
         ))}
