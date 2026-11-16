@@ -97,9 +97,11 @@ const parsePhase = (raw: string | undefined): Phase => {
 };
 
 // job 사이에 넘기는 조각 JSON 폴더. CI 는 이 폴더를 artifact 로 올리고 내려받는다.
+// 이름을 점(.)으로 시작하지 말 것: upload-artifact@v4 는 숨김 파일을 기본으로 빼고 올려서
+// `.parts` 였을 때 "No files were found" 로 실패했다(2026-11-16 실행 #28).
 const PARTS_DIR = resolve(
   REPO_ROOT,
-  process.env.QUALITY_PARTS_DIR ?? 'packages/quality/.parts'
+  process.env.QUALITY_PARTS_DIR ?? 'packages/quality/measure-parts'
 );
 
 const homeUrl = `${APP.targetUrl}${APP.pages[0]?.path ?? '/'}`;

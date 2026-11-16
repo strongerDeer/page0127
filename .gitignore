@@ -59,4 +59,4 @@ supabase/snippets/
 
 # 품질 측정 로컬 JSON 산출물 (검증용, Supabase 전환 후 미사용)
 packages/quality/.data/
-packages/quality/.parts/
+packages/quality/measure-parts/
