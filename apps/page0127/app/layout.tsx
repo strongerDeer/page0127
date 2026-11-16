@@ -130,6 +130,9 @@ const RootLayout = ({
           href='https://cdn.jsdelivr.net'
           crossOrigin='anonymous'
         />
+        {/* 책 표지 이미지 서버 — 목록·상세의 LCP 가 YES24 표지라(2026-11-16 CI 실측)
+            첫 표지 요청 전에 연결(DNS·TLS)을 미리 열어 둔다. 이미지는 CORS 요청이 아니라 crossOrigin 없음 */}
+        <link rel='preconnect' href='https://image.yes24.com' />
         {/* 폰트 CSS 는 화면 그리기를 막지 않게 스크립트로 붙인다.
             <link rel='stylesheet'> 로 두면 이 CSS 를 다 받을 때까지 첫 글자가
             안 뜬다(모바일 실측 0.8~0.9초). 어차피 font-display: swap 이라 폰트가

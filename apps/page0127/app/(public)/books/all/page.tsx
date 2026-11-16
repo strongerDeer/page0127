@@ -29,6 +29,9 @@ import { getBooksAllCanonical } from './canonical';
 import type { GlobalBook } from '@/entities/book';
 import type { Metadata } from 'next';
 
+/** 첫 화면에 보이는 책 수(모바일 2열 × 2줄) — 이 표지들만 priority 로 먼저 받는다 */
+const FIRST_SCREEN_BOOKS = 4;
+
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 /**
@@ -210,10 +213,12 @@ export default async function GlobalBooksPage(props: {
       )}
 
       <div className='grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'>
-        {books.map((book) => (
+        {books.map((book, index) => (
           <BookListItem
             key={book.id}
             book={book}
+            // 모바일 2열 기준 첫 화면 두 줄(4권)만 먼저 받는다 — LCP 표지가 여기 있다
+            priority={index < FIRST_SCREEN_BOOKS}
             isReadProp={myReadIsbns.has(book.isbn)}
             isReadingProp={myReadingIsbns.has(book.isbn)}
             isLikedProp={myLikedIds.has(book.id)}

@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   push: vi.fn(),
   rpc: vi.fn(),
   insert: vi.fn(),
+  revalidate: vi.fn(),
   single: vi.fn(),
 }));
 vi.mock('../_helpers/auth', () => ({
@@ -18,6 +19,9 @@ vi.mock('@/shared/config/supabase/admin', () => ({
   createAdminClient: () => ({ from: () => ({ insert: mocks.insert }) }),
 }));
 vi.mock('../_helpers/push', () => ({ schedulePush: mocks.push }));
+vi.mock('@/shared/lib/cache/revalidateBookInfoPages', () => ({
+  revalidateBookInfoPages: mocks.revalidate,
+}));
 vi.mock('@/shared/api/book-provider', () => ({
   getBookProvider: () => ({ getByIsbn: mocks.detail }),
 }));
@@ -94,6 +98,8 @@ describe('책 메시지 전송', () => {
     expect(mocks.insert).toHaveBeenCalledWith(
       expect.objectContaining({ review_status: 'approved', source: 'yes24' })
     );
+    // 새 승인 책 → 전체 도서 캐시 목록을 버린다
+    expect(mocks.revalidate).toHaveBeenCalled();
     expect(mocks.rpc).toHaveBeenCalledWith(
       'send_reading_envelope',
       expect.objectContaining({
