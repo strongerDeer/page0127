@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { Button } from '@repo/ui';
+import { Check } from 'lucide-react';
 
 import { OAuthLoginButtons } from '@/features/auth/ui/OAuthLoginButtons';
 
@@ -77,9 +78,13 @@ export const BackCover = ({ member = null }: BackCoverProps) => (
               <OAuthLoginButtons next='/dashboard' />
             </div>
             <p className={styles.checks}>
-              <span>✓ 무료</span>
-              <span>✓ 10초 가입</span>
-              <span>✓ 언제든 탈퇴</span>
+              {/* 글자 ✓ 는 글꼴마다 모양이 달라 아이콘으로 그린다 */}
+              {['무료', '10초 가입', '언제든 탈퇴'].map((label) => (
+                <span key={label}>
+                  <Check aria-hidden className={styles.checkIcon} />
+                  {label}
+                </span>
+              ))}
             </p>
           </>
         )}

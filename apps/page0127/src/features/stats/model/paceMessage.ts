@@ -105,7 +105,7 @@ export const getPaceMessage = ({
       };
     case 'behind':
       return {
-        headline: `지금 속도면 올해 약 ${pace.projected}권 📚`,
+        headline: `지금 속도면 올해 약 ${pace.projected}권 🥹`,
         detail: isOwner
           ? `${toGoal} — 남은 ${pace.weeksLeft}주 동안 일주일에 ${pace.perWeek}권이면 닿아요.`
           : `${toGoal}, 남은 ${pace.weeksLeft}주`,
@@ -113,7 +113,7 @@ export const getPaceMessage = ({
       };
     case 'far_behind':
       return {
-        headline: `지금 속도면 올해 약 ${pace.projected}권 📚`,
+        headline: `지금 속도면 올해 약 ${pace.projected}권 🥹`,
         detail: isOwner
           ? `${toGoal} — 남은 기간엔 빠듯한 속도예요. 목표를 다시 정해 볼까요?`
           : `${toGoal}, 남은 ${pace.weeksLeft}주`,

@@ -179,3 +179,25 @@ describe('PublicBookShelf 나만 보기 커버', () => {
     expect(html).not.toContain('data-quilt');
   });
 });
+
+describe('PublicBookShelf — 끝칸(trailingSlot)', () => {
+  it('넘겨준 끝칸을 마지막 책 다음 칸으로 세운다', () => {
+    const html = renderToStaticMarkup(
+      <PublicBookShelf
+        books={[createTestBook({ id: 'a' })]}
+        trailingSlot={<span data-slot>도서 추가</span>}
+      />
+    );
+
+    const lastLi = html.split('<li').at(-1) ?? '';
+    expect(lastLi).toContain('data-slot');
+  });
+
+  it('끝칸이 없으면 칸을 만들지 않는다 — 방문자 화면', () => {
+    const html = renderToStaticMarkup(
+      <PublicBookShelf books={[createTestBook({ id: 'a' })]} />
+    );
+
+    expect(html.split('<li').length - 1).toBe(1);
+  });
+});

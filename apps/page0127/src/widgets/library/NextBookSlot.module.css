@@ -1,0 +1,99 @@
+.slot {
+  position: relative;
+  display: block;
+  width: 46px;
+  border: 2px dashed var(--line);
+  border-bottom: 0;
+  border-radius: 3px 3px 0 0;
+  color: var(--primary);
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+
+.pill {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  min-width: 30px;
+  padding: 0 7px;
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  background: var(--card);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 4px 10px -4px rgb(20 41 78 / 0.3);
+  transition:
+    padding 0.25s,
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.icon {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+/* 펼치기 전에는 폭 0 으로 접어 두지만 화면낭독기는 링크 이름으로 그대로 읽는다 */
+.label {
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-width 0.25s,
+    opacity 0.2s;
+}
+
+.slot:hover,
+.slot:focus-visible {
+  border-color: var(--primary);
+  background-color: color-mix(in srgb, var(--primary) 6%, transparent);
+  outline: none;
+}
+
+.slot:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--background),
+    0 0 0 4px var(--primary);
+}
+
+.slot:hover .pill,
+.slot:focus-visible .pill {
+  padding: 0 12px;
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.slot:hover .label,
+.slot:focus-visible .label {
+  max-width: 80px;
+  opacity: 1;
+}
+
+/* 터치 기기 — 올리기가 없으니 처음부터 펼쳐 둔다 */
+@media (hover: none) {
+  .pill {
+    padding: 0 10px;
+  }
+
+  .label {
+    max-width: 80px;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slot,
+  .pill,
+  .label {
+    transition: none;
+  }
+}
