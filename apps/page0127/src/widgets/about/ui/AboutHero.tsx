@@ -167,7 +167,10 @@ export const AboutHero = ({
           )}
         </div>
         <p aria-hidden='true' className={styles.hint}>
-          스크롤하면 책이 펼쳐져요
+          <span className={styles.hintFine}>
+            스크롤하거나 → 키를 누르면 책이 펼쳐져요
+          </span>
+          <span className={styles.hintTouch}>위로 밀면 책이 펼쳐져요</span>
         </p>
       </div>
     </div>
