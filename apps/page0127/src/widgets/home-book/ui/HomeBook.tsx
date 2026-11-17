@@ -1,6 +1,12 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+import {
+  ensurePageSound,
+  playPageSound,
+  soundForTurn,
+} from '../model/pageSound';
 
 import type { BookChapter } from '../model/chapters';
 
@@ -120,8 +126,19 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const snapsRef = useRef<HTMLDivElement>(null);
-  const tocBtnRef = useRef<HTMLButtonElement>(null);
+  const toolsRef = useRef<HTMLDivElement>(null);
   const tocRef = useRef<HTMLElement>(null);
+  // 넘김 소리 — 기본 꺼짐. 스크롤 처리(effect 안)에서도 읽게 ref 에 함께 둔다
+  const [sound, setSound] = useState(false);
+  const soundRef = useRef(false);
+
+  const toggleSound = () => {
+    if (!sound && !ensurePageSound()) return;
+    const on = !sound;
+    soundRef.current = on;
+    setSound(on);
+    if (on) playPageSound('turn');
+  };
 
   // 쪽 순서대로의 목차 — 표지 · 장… · 뒤표지
   const entries = [
@@ -215,9 +232,12 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
       root.style.setProperty('--book-run', `${TURNS * STEP}px`);
       start = root.getBoundingClientRect().top + scrollY - gnb;
 
-      // 스냅 자리: [0] 은 문서 맨 위(배너가 있을 때), 나머지는 쪽마다
+      // 스냅 자리: [0] 문서 맨 위(배너가 있을 때), 쪽마다 하나, 마지막은 책 뒤(푸터) —
+      // 책 뒤 자리가 없으면 뒤표지에서 아래로 밀어도 뒤표지로 되돌아와 푸터에 갈 수 없다
+      // (브라우저가 스크롤 끝 위치로 맞춰 준다)
+      const last = snaps.length - 1;
       snaps.forEach((s, i) => {
-        s.style.top = `${i === 0 ? -start : (i - 1) * STEP}px`;
+        s.style.top = `${i === 0 ? -start : i === last ? root.offsetHeight : (i - 1) * STEP}px`;
         s.hidden = i === 0 && start < 2;
       });
 
@@ -362,11 +382,13 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
 
       // 목차: 책 안에 있을 때만 버튼을 띄우고, 지금 쪽을 표시한다
       const r = root.getBoundingClientRect();
-      tocBtnRef.current?.toggleAttribute(
+      toolsRef.current?.toggleAttribute(
         'data-show',
         r.top < vh * 0.5 && r.bottom > vh * 0.5
       );
       if (cur !== lastCur) {
+        if (lastCur >= 0 && soundRef.current)
+          playPageSound(soundForTurn(lastCur, cur, TURNS));
         lastCur = cur;
         tocRef.current
           ?.querySelectorAll('a')
@@ -544,9 +566,9 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
 
   return (
     <div ref={rootRef} className={styles.book}>
-      {/* 스크롤 스냅 자리 — [0] 문서 맨 위, 그다음 쪽마다 하나 (위치는 JS) */}
+      {/* 스크롤 스냅 자리 — [0] 문서 맨 위, 쪽마다 하나, 마지막은 책 뒤(푸터) (위치는 JS) */}
       <div ref={snapsRef} aria-hidden='true'>
-        {['top', ...entries.map((e) => e.anchor)].map((key) => (
+        {['top', ...entries.map((e) => e.anchor), 'after'].map((key) => (
           <div key={key} className={styles.snap} />
         ))}
       </div>
@@ -560,15 +582,36 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
       {/* 무대가 붙어 있는 동안 스크롤할 길이(쪽 넘김 수 × STEP) */}
       <div aria-hidden='true' className={styles.run} />
 
-      {/* 목차 — popover 라 여닫기에 JS 가 필요 없다 */}
-      <button
-        ref={tocBtnRef}
-        type='button'
-        popoverTarget='book-toc'
-        className={styles.tocButton}
-      >
-        목차
-      </button>
+      {/* 책 도구 — 책 안에 있을 때만 뜬다. 목차는 popover 라 여닫기에 JS 가 필요 없다 */}
+      <div ref={toolsRef} className={styles.tools}>
+        <button
+          type='button'
+          aria-pressed={sound}
+          aria-label={sound ? '넘김 소리 끄기' : '넘김 소리 켜기'}
+          onClick={toggleSound}
+          className={styles.tool}
+        >
+          <svg
+            aria-hidden='true'
+            viewBox='0 0 16 16'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='1.6'
+            className={styles.toolIcon}
+          >
+            <path d='M2 6h3l4-3v10l-4-3H2z' />
+            {sound ? (
+              <path d='M11.5 5.5a3.5 3.5 0 0 1 0 5' />
+            ) : (
+              <path d='M11.5 6l3 4m0-4l-3 4' />
+            )}
+          </svg>
+          소리
+        </button>
+        <button type='button' popoverTarget='book-toc' className={styles.tool}>
+          목차
+        </button>
+      </div>
       <nav
         ref={tocRef}
         id='book-toc'

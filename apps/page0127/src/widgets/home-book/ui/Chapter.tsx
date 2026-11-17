@@ -31,6 +31,7 @@ type ChapterProps = {
  * 서버 컴포넌트. 넘김(겹치기·말림)은 바깥의 HomeBook 이 켠다 — JS 가 없거나 동작 줄이기면
  * 겹치지 않고 쪽이 평범하게 위아래로 이어진다(앵커 이동·버튼은 그대로 동작).
  * - 이전/다음 장은 그냥 앵커 링크다. 마지막 장의 "다음"은 책을 덮는다(#book-back).
+ * - 오른쪽 아래 접힌 귀는 뺐다 — 미리 접혀 있던 귀가 넘김 시작에 평평해졌다 다시 말려 어색했다(2026-11-17 HJ).
  * - 장 정보가 없으면(목록에 없는 장) 그리지 않는다.
  */
 export const Chapter = ({
@@ -118,14 +119,6 @@ export const Chapter = ({
           {next ? '다음 장' : '책 덮기'} <span aria-hidden='true'>→</span>
         </a>
       </nav>
-
-      {/* 접힌 귀 — 눌러서 넘기는 모서리. 쪽번호의 "다음 장"과 같은 곳이라 키보드·스크린리더에선 뺀다 */}
-      <a
-        href={nextHref}
-        aria-hidden='true'
-        tabIndex={-1}
-        className={styles.dogEar}
-      />
     </div>
   );
 };

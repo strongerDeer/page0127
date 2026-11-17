@@ -191,8 +191,6 @@
 
 .next {
   justify-self: end;
-  /* 오른쪽 아래 접힌 귀와 겹치지 않게 */
-  margin-right: 1.75rem;
 }
 
 .prev:hover,
@@ -200,30 +198,4 @@
 .prev:focus-visible,
 .next:focus-visible {
   color: var(--text-strong);
-}
-
-/* ── 접힌 귀: 오른쪽 아래 모서리를 누르면 다음 장 ───────── */
-.dogEar {
-  position: absolute;
-  z-index: 2;
-  right: 0;
-  bottom: 0;
-  width: 2.25rem;
-  height: 2.25rem;
-  /* 왼쪽 위 삼각형 = 접혀 올라온 종이 뒷면, 오른쪽 아래 = 귀가 접혀 드러난 아래 종이 */
-  background:
-    linear-gradient(to top left, var(--background) 0 50%, transparent 50%),
-    linear-gradient(
-      to top left,
-      rgb(10 20 40 / 0.14),
-      rgb(255 255 255 / 0.55) 45%,
-      rgb(10 20 40 / 0.06)
-    );
-  filter: drop-shadow(-2px -2px 3px rgb(10 20 40 / 0.12));
-  transform-origin: 100% 100%;
-  transition: transform 0.2s ease;
-}
-
-.dogEar:hover {
-  transform: scale(1.35);
 }

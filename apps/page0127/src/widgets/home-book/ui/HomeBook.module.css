@@ -80,14 +80,32 @@
   color: color-mix(in srgb, var(--text-subtle) 30%, transparent);
 }
 
-/* ── 목차 버튼: 책 안에 있을 때만 오른쪽 아래에 뜬다 ───────── */
-.tocButton {
+/* ── 책 도구(소리 · 목차): 책 안에 있을 때만 오른쪽 아래에 뜬다 ───────── */
+.tools {
   position: fixed;
   z-index: 36;
   right: 1rem;
   bottom: calc(var(--book-bottom) + 1rem + 2.75rem);
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+}
+
+.tools[data-show] {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+.tool {
   display: inline-flex;
   align-items: center;
+  gap: 0.375rem;
   min-height: 2.75rem;
   padding: 0 1rem;
   border: 1px solid var(--line);
@@ -97,18 +115,17 @@
   font-size: 0.875rem;
   font-weight: 700;
   box-shadow: 0 6px 18px rgb(10 20 40 / 0.12);
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(8px);
-  transition:
-    opacity 0.2s,
-    transform 0.2s;
 }
 
-.tocButton[data-show] {
-  opacity: 1;
-  pointer-events: auto;
-  transform: none;
+.tool[aria-pressed="true"] {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.toolIcon {
+  width: 1rem;
+  height: 1rem;
 }
 
 /* ── 목차 (popover) ────────────────────────────────── */

@@ -1,3 +1,5 @@
+import { SPINE_TONE_COLORS, spineTone } from '@/entities/book/model/spineTone';
+
 import { type Badge, BadgeMedal } from '@/features/badge';
 
 import { SafeCover } from './SafeCover';
@@ -101,54 +103,105 @@ export const ShareVisual = ({ books }: VisualProps) => {
   );
 };
 
-type MiniShelfProps = {
-  who: string;
-  covers: (string | null)[];
-  /** 둘 다 읽은 책 자리 — 테두리로 동그라미 친다 */
-  same: readonly number[];
+// 책장에 꽂힌 높이 — 책마다 조금씩 달라야 진짜 책장처럼 보인다
+const SPINE_HEIGHTS = ['h-[88%]', 'h-full', 'h-[80%]', 'h-[94%]', 'h-[84%]'];
+
+/** 책등 한 권 — 책등 사진이 있으면 그것, 없으면 서재와 같은 색 + 세로 제목 책등 */
+const Spine = ({ book, i }: { book: ShelfBook | null; i: number }) => {
+  const title = book?.title ?? '';
+  const text = (
+    <span
+      className='flex h-full w-5 items-center justify-center overflow-hidden rounded-[2px] px-0.5 py-1.5 md:w-6'
+      style={{
+        backgroundColor: SPINE_TONE_COLORS[spineTone(book?.id ?? String(i))],
+      }}
+    >
+      <span className='h-full overflow-hidden text-ellipsis whitespace-nowrap text-[9px] font-medium leading-tight text-[#1f1d1a] [writing-mode:vertical-rl]'>
+        {title}
+      </span>
+    </span>
+  );
+  return (
+    <span
+      className={`block shrink-0 ${SPINE_HEIGHTS[i % SPINE_HEIGHTS.length]}`}
+    >
+      {book?.spineImage ? (
+        <SafeCover
+          src={book.spineImage}
+          small
+          alt=''
+          width={24}
+          height={160}
+          fallback={text}
+          className='h-full w-auto rounded-[2px] object-contain'
+        />
+      ) : (
+        text
+      )}
+    </span>
+  );
 };
 
-const MiniShelf = ({ who, covers, same }: MiniShelfProps) => (
+type ChemShelfProps = {
+  who: string;
+  books: (ShelfBook | null)[];
+  /** 둘 다 읽은 책을 뽑아 올린 자리 — 빈칸으로 남긴다 */
+  pulled: readonly number[];
+};
+
+/** 한 사람의 서재 한 칸 — 책등으로 꽂힌 책들, 함께 읽은 책은 위로 뽑혀 빈자리만 남는다 */
+const ChemShelf = ({ who, books, pulled }: ChemShelfProps) => (
   <div className='flex flex-col items-center gap-2'>
-    <div className='flex items-end gap-1 rounded-xl border-b-8 border-primary/20 bg-card px-2.5 pt-3 shadow-lg md:gap-1.5 md:px-3'>
-      {covers.map((src, i) => (
-        <span
-          key={i}
-          className={`-mb-1 rounded-sm ${same.includes(i) ? 'ring-2 ring-primary ring-offset-2 ring-offset-card' : ''}`}
-        >
-          <Cover src={src} className='w-9 md:w-12' />
-        </span>
-      ))}
+    <div className='flex h-28 items-end gap-[3px] rounded-t-md border-b-[10px] border-[#c9a77c] bg-card px-2.5 pt-2.5 shadow-[inset_0_8px_14px_-10px_rgb(20_41_78/0.35)] md:h-36 md:px-3'>
+      {books.map((b, i) =>
+        pulled.includes(i) ? (
+          // 뽑혀 나간 자리 — 위의 표지와 같은 책
+          <span
+            key={i}
+            className='block h-[86%] w-5 shrink-0 rounded-[2px] border-2 border-dashed border-primary/45 md:w-6'
+          />
+        ) : (
+          <Spine key={i} book={b} i={i} />
+        )
+      )}
     </div>
-    <p className='text-sm font-bold text-text-strong'>{who}</p>
+    <p className='text-sm font-bold text-text-strong'>{who}의 서재</p>
   </div>
 );
 
-/** 5장 · 독서 케미 — 두 책장을 나란히, 겹친 책에 동그라미 */
+/**
+ * 5장 · 독서 케미 — 두 사람의 서재(책등)를 나란히 놓고, 둘 다 읽은 책만 위로 뽑아 표지를 보여 준다
+ * (2026-11-17 HJ "각자 책등으로 꽂힌 서재, 동일하게 읽은 책은 위로 해서 2권 정도 책표지")
+ */
 export const ChemVisual = ({ books }: VisualProps) => {
-  const pick = coverPicker(books);
-  const both = [pick(3), pick(4)];
+  const at = (i: number) => (books.length ? books[i % books.length] : null);
+  const both = [at(3), at(4)];
+  const mine = [at(0), at(1), both[0], at(2), at(5), both[1], at(6)];
+  const hers = [at(7), both[0], at(8), at(9), both[1], at(10), at(11)];
+
   return (
-    <div aria-hidden='true' className='flex flex-col items-center gap-5'>
-      <div className='flex items-center gap-3 md:gap-6'>
-        <MiniShelf
-          who='나'
-          covers={[pick(0), both[0], pick(1), both[1]]}
-          same={[1, 3]}
-        />
-        <div className='text-center'>
-          <p className='text-4xl font-bold text-primary md:text-6xl'>78%</p>
-          <p className='mt-1 text-xs text-text-subtle md:text-sm'>
-            함께 읽은 책 2권
-          </p>
-        </div>
-        <MiniShelf
-          who='혜진'
-          covers={[both[0], pick(6), both[1], pick(7)]}
-          same={[0, 2]}
-        />
+    <div aria-hidden='true' className='flex w-full flex-col items-center'>
+      {/* 둘 다 읽은 책 — 서재에서 뽑아 표지가 보이게 세운다 */}
+      <div className='flex items-end gap-3'>
+        {both.map((b, i) => (
+          <Cover
+            key={i}
+            src={b?.coverImage ?? null}
+            className={`w-16 shadow-xl md:w-20 ${i ? 'rotate-3' : '-rotate-3'}`}
+          />
+        ))}
       </div>
-      <p className='rounded-full bg-card px-4 py-2 text-sm font-bold text-text-strong shadow-md'>
+      <p className='mt-3 flex items-baseline gap-2'>
+        <b className='text-3xl font-bold text-primary md:text-4xl'>78%</b>
+        <span className='text-sm text-text-subtle'>둘 다 읽은 책 2권</span>
+      </p>
+
+      <div className='mt-4 flex items-start gap-4 md:gap-8'>
+        <ChemShelf who='나' books={mine} pulled={[2, 5]} />
+        <ChemShelf who='혜진' books={hers} pulled={[1, 4]} />
+      </div>
+
+      <p className='mt-4 rounded-full bg-card px-4 py-2 text-sm font-bold text-text-strong shadow-md'>
         둘 다 &lsquo;관계&rsquo;를 좋아해요
       </p>
     </div>

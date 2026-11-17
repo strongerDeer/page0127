@@ -232,6 +232,8 @@ test('책장에 꽂힌 책을 누르면 빠진다', async ({ page }) => {
   await expect(sh.getByText('내 책장 · 2권')).toBeVisible();
   await sh.getByRole('button', { name: `${firstTitle} 빼기` }).click();
   await expect(sh.getByText('내 책장 · 1권')).toBeVisible();
+  // 넘긴 쪽은 숨겨져(접근성 트리에서도 빠진다) 고르기 쪽으로 돌아가서 본다
+  await openChapter(page, 'pick');
   await expect(picks.nth(0)).toHaveAttribute('aria-pressed', 'false');
 });
 
