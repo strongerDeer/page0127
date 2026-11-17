@@ -167,9 +167,16 @@ const Home = async () => {
         </Chapter>
       </ShelfPreviewProvider>
     ) : preview?.variant === 'b' ? (
-      <Chapter id='pick' chapters={chapters} layout='free'>
+      // A 의 첫인상 쪽과 같은 배치 — 왼쪽 장 번호·명조 제목·설명, 오른쪽 고르는 판
+      <Chapter
+        id='pick'
+        chapters={chapters}
+        kicker='1분 맛보기'
+        heading='당신의 인생책은?'
+        lead='몇 번을 다시 읽어도 좋은, 마음에 오래 남은 한 권. 그 책으로 내 서재를 시작해 보세요.'
+      >
         <TrackOnMount event='shelf_preview_view' />
-        <LifeBookHero leaders={preview.leaders} />
+        <LifeBookHero leaders={preview.leaders} inBook />
       </Chapter>
     ) : null;
 
