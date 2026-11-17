@@ -357,10 +357,15 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
       if (!t) return;
       const k = wraps.findIndex((w) => w.contains(t));
       if (k < 0) return;
-      const s = scrollY;
-      const covered = k > 0 && s < pins[k - 1] + T - 1;
-      const turned = k < last && s > pins[k] + 1;
-      if (!covered && !turned) return;
+      // 실제로 보이는지 그 자리에서 확인한다 — 마우스로 누른 버튼, 넘기기 시작했지만 아직 보이는 쪽의
+      // 버튼은 그대로 둔다(여기서 스크롤을 옮기면 누르던 중의 클릭이 엉뚱한 곳에 떨어진다)
+      const box = t.getBoundingClientRect();
+      const x = box.left + box.width / 2;
+      const y = box.top + box.height / 2;
+      if (x >= 0 && x <= W && y >= gnb && y <= vb) {
+        const hit = document.elementFromPoint(x, y);
+        if (hit && (hit === t || t.contains(hit) || hit.contains(t))) return;
+      }
       scrollTo({ top: restOf(k) });
       draw();
       // 긴 장: 포커스한 것이 화면 아래에 있으면 그만큼만 더 내린다(넘김이 시작되기 전까지)
