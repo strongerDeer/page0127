@@ -13,6 +13,18 @@ const section = (page: Page) =>
 const pickButtons = (page: Page) =>
   section(page).getByRole('list').first().getByRole('button');
 
+/**
+ * 맛보기 장을 펼친 채로 연다. 홈은 장이 겹겹이 쌓인 책이라(home-book) 맨 위에서는 맛보기가
+ * 앞 장 밑에 깔려 있다 — 실제 사람처럼 그 장까지 넘긴 자리(장 앵커)에서 시작한다.
+ * 책 모드가 켜진 뒤(data-book="on") 앵커 자리로 다시 맞추므로 그때까지 기다린다.
+ */
+const gotoPreview = async (page: Page) => {
+  await page.goto('/#book-ch-first-impression');
+  await page.waitForFunction(
+    () => document.querySelector('[data-book="on"]') !== null
+  );
+};
+
 const readPending = (page: Page) =>
   page.evaluate((key) => localStorage.getItem(key), PENDING_KEY);
 
@@ -20,7 +32,7 @@ test('저장소가 없는 다른 브라우저에서도 로그인 링크로 목�
   page,
   browser,
 }) => {
-  await page.goto('/');
+  await gotoPreview(page);
   const s = section(page);
   await s.getByRole('button', { name: /년 목표 세우기$/ }).click();
   await s.getByRole('button', { name: '목표 저장하기' }).click();
@@ -51,9 +63,7 @@ test('다른 브라우저에서 선택한 책 복원 후에도 원래 책 정보
   await expect(link).toBeVisible();
   const path = await link.getAttribute('href');
   await page.goto(path!);
-  await page
-    .getByRole('button', { name: '읽고 싶어요', exact: true })
-    .click();
+  await page.getByRole('button', { name: '읽고 싶어요', exact: true }).click();
   await expect(page).toHaveURL(/\/login\?shelf=/);
   expect(new URL(page.url()).searchParams.get('redirect')).toBe(path);
   const fresh = await browser.newContext();
@@ -88,13 +98,24 @@ test('비로그인 홈은 왜 page0127.인가요 → 맛보기 → 보이는 것
   page,
 }) => {
   await page.goto('/');
-  const top = async (name: RegExp) =>
-    (await page.getByRole('region', { name }).first().boundingBox())?.y ?? 0;
-  const why = await top(/왜 page0127/);
-  const preview = await top(/당신의 첫인상/);
-  const highlights = await top(/보이는 것들/);
+  // 화면 위치가 아니라 문서 순서로 본다 — 책 모드에선 다음 장이 앞 장 밑에 겹쳐 있어 y 좌표가 순서와 다르다
+  const order = await page.evaluate(() => {
+    const names = [/왜 page0127/, /당신의 첫인상/, /보이는 것들/];
+    const regions = [
+      ...document.querySelectorAll(
+        'section[aria-label], section[aria-labelledby]'
+      ),
+    ];
+    const nameOf = (el: Element) =>
+      el.getAttribute('aria-label') ??
+      document.getElementById(el.getAttribute('aria-labelledby') ?? '')
+        ?.textContent ??
+      '';
+    return names.map((re) => regions.findIndex((el) => re.test(nameOf(el))));
+  });
+  const [why, preview, highlights] = order;
   // 설명(왜) → 체험(맛보기) → 그다음 보상(쌓이면 보이는 것들) 순으로 읽힌다(2026-10-25 홈 개편)
-  expect(why).toBeGreaterThan(0);
+  expect(why).toBeGreaterThanOrEqual(0);
   expect(why).toBeLessThan(preview);
   expect(preview).toBeLessThan(highlights);
 });
@@ -102,7 +123,7 @@ test('비로그인 홈은 왜 page0127.인가요 → 맛보기 → 보이는 것
 test('0권이면 목표 버튼을 펼쳐 저장하고, 로그인으로 가며 목표를 보관한다', async ({
   page,
 }) => {
-  await page.goto('/');
+  await gotoPreview(page);
   const s = section(page);
   await s.getByRole('button', { name: /년 목표 세우기$/ }).click();
   await s.getByRole('button', { name: '목표 한 권 늘리기' }).click();
@@ -119,7 +140,7 @@ test('0권이면 목표 버튼을 펼쳐 저장하고, 로그인으로 가며 �
 test('고르기 전엔 저장 버튼이 없고, 고르면 나타나 남은 권수를 말하며, 저장하면 보관한다', async ({
   page,
 }) => {
-  await page.goto('/');
+  await gotoPreview(page);
   const s = section(page);
   await expect(s).toBeVisible();
   const picks = pickButtons(page);
@@ -156,7 +177,7 @@ test('고르기 전엔 저장 버튼이 없고, 고르면 나타나 남은 권�
 test('다른 책 보기로 묶음을 넘겨도 고른 책은 책장에 남는다', async ({
   page,
 }) => {
-  await page.goto('/');
+  await gotoPreview(page);
   const s = section(page);
   const next = s.getByRole('button', { name: /다른 책 보기/ });
   test.skip(
@@ -174,7 +195,7 @@ test('다른 책 보기로 묶음을 넘겨도 고른 책은 책장에 남는다
 });
 
 test('책장에 꽂힌 책을 누르면 빠진다', async ({ page }) => {
-  await page.goto('/');
+  await gotoPreview(page);
   const s = section(page);
   const picks = pickButtons(page);
   test.skip(
@@ -195,7 +216,7 @@ test('책장에 꽂힌 책을 누르면 빠진다', async ({ page }) => {
 test('모두 비우기를 누르면 책장과 보관분이 비고 저장 버튼이 사라진다', async ({
   page,
 }) => {
-  await page.goto('/');
+  await gotoPreview(page);
   const s = section(page);
   const picks = pickButtons(page);
   test.skip(
@@ -218,7 +239,7 @@ test('모두 비우기를 누르면 책장과 보관분이 비고 저장 버튼�
 });
 
 test('고르고 떠났다가 다시 오면 책장이 되살아난다', async ({ page }) => {
-  await page.goto('/');
+  await gotoPreview(page);
   await page.evaluate((key) => {
     localStorage.setItem(
       key,
@@ -253,7 +274,7 @@ test('고르고 떠났다가 다시 오면 책장이 되살아난다', async ({ 
 });
 
 test('다른 책 찾아보기를 누르면 검색창이 나온다', async ({ page }) => {
-  await page.goto('/');
+  await gotoPreview(page);
   const s = section(page);
   await s.getByRole('button', { name: '다른 책 찾아보기' }).click();
   await expect(

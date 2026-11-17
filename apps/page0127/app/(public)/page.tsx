@@ -22,7 +22,12 @@ import { ShelfPreviewSection } from '@/features/shelf-preview/ui/ShelfPreviewSec
 
 import { AboutHero, FinalCta, Highlights, Manifesto } from '@/widgets/about';
 import { getRecentBooks } from '@/widgets/about/api/getRecentBooks';
-import { buildChapters,Chapter, HomeBook } from '@/widgets/home-book';
+import {
+  BackCover,
+  buildChapters,
+  Chapter,
+  HomeBook,
+} from '@/widgets/home-book';
 import { getHeroBanner } from '@/widgets/landing/api/getHeroBanner';
 import { HeroBannerSection } from '@/widgets/landing/ui/HeroBannerSection';
 
@@ -166,6 +171,9 @@ const Home = async () => {
               .slice(-4)}
           />
         </Chapter>
+
+        {/* 책의 끝 — 다 읽으면 맺음 장이 책으로 줄어들어 뒤집히고, 띠지와 바코드가 있는 뒤표지가 남는다 */}
+        <BackCover />
       </HomeBook>
     </div>
   );

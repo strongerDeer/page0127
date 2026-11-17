@@ -13,6 +13,8 @@ type HomeBookProps = {
 };
 
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const seg = (t: number, a: number, b: number) => clamp((t - a) / (b - a));
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const ease = (t: number) =>
   t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 
@@ -60,10 +62,12 @@ const isTyping = (el: EventTarget | null) =>
  * 쪽 넘김의 좌표 (vb = 화면 아래 끝 = 창 높이 − 하단 탭바, gnb = 헤더 높이, T = 넘김 거리)
  * ① 쪽 i 는 sticky 다. top = min(gnb, vb − 쪽 높이) → 긴 장은 끝까지 읽은 순간(쪽 아랫변이 vb 에 닿을 때),
  *    짧은 장은 윗변이 헤더에 닿을 때 멈춘다. 그때의 스크롤 = pin[i].
- * ② 장 감싸개의 아래 여백이 T(--book-turn) 라서, 쪽 i 는 pin[i] ~ pin[i]+T 동안 멈춰 있다 → 이 구간이 넘김.
+ * ② 장 감싸개 끝의 빈 블록(::after)이 T(--book-turn) 라서, 쪽 i 는 pin[i] ~ pin[i]+T 동안 멈춰 있다 → 이 구간이 넘김.
  * ③ 다음 장은 -(vb − gnb) 만큼 당겨져 앞 장 밑에 깔린다. 그러면 넘김이 끝나는 순간(pin[i]+T)
  *    다음 장 윗변이 정확히 헤더 아래에 온다 — 곧 "다음 장 앵커로 이동한 자리"와 같다.
  *    넘기는 동안엔 남은 거리(1−p)·T 만큼 위로 끌어올려 제자리에 가만히 있는 것처럼 보이게 한다.
+ * ④ 맨 끝(뒤표지, BackCover)은 넘기지 않고 덮는다: 맺음 장이 책 크기로 줄어들어 책상 위 책 자리로
+ *    가고, 뒤집히면서 뒤표지가 보인다(시안 v9 의 마지막과 같다).
  *
  * 성능
  * - 스크롤마다 rAF 한 번, 만지는 건 넘기고 있는 쪽 하나의 clip-path 와 그 밑 쪽의 transform 뿐.
@@ -102,6 +106,13 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
     let heights: number[] = [];
     let pins: number[] = [];
     let raf = 0;
+    // 덮기: 마지막 쪽이 뒤표지면 그 앞 장은 말지 않고 덮는다
+    const last = pages.length - 1;
+    const backBook =
+      wraps[last].dataset.bookChapter === 'back'
+        ? pages[last].querySelector<HTMLElement>('[data-book-back]')
+        : null;
+    let bookRest = { x: 0, y: 0, w: 1, h: 1 };
 
     const docTop = (el: HTMLElement) =>
       el.getBoundingClientRect().top + scrollY;
@@ -132,6 +143,21 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
         s.style.top = `${Math.min(gnb, vb - heights[i])}px`;
       });
       pins = wraps.map((w, i) => docTop(w) + heights[i] - vb);
+
+      // 뒤표지 책이 쉬는 자리(화면 좌표) — 뒤표지 쪽은 한 화면짜리라 쉴 때 윗변이 헤더 아래(gnb)다
+      if (backBook) {
+        const prev = backBook.style.transform;
+        backBook.style.transform = '';
+        const b = backBook.getBoundingClientRect();
+        const sh = pages[last].getBoundingClientRect();
+        bookRest = {
+          x: b.left,
+          y: gnb + (b.top - sh.top),
+          w: b.width,
+          h: b.height,
+        };
+        backBook.style.transform = prev;
+      }
 
       const dpr = Math.min(2, devicePixelRatio || 1);
       cv.width = W * dpr;
@@ -236,6 +262,42 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
       ctx.globalAlpha = 1;
     };
 
+    // 맺음 장(i)을 p(0~1)만큼 덮는다: 책 비율로 잘리며 줄어 책 자리로 간 뒤, 뒤집혀 뒤표지가 된다
+    const closeBook = (i: number, p: number) => {
+      const page = pages[i];
+      const offY = vb - heights[i];
+      const Hv = vb - gnb;
+      const cx = W / 2;
+      const cy = gnb + Hv / 2;
+      const a = bookRest.w / bookRest.h;
+      const cw = Math.min(W, Hv * a);
+      const ch = cw / a;
+      const shrink = ease(seg(p, 0, 0.6));
+      const flip = ease(seg(p, 0.45, 1));
+
+      const left = lerp(0, cx - cw / 2, shrink);
+      const right = lerp(W, cx + cw / 2, shrink);
+      const top = lerp(gnb, cy - ch / 2, shrink);
+      const bottom = lerp(vb, cy + ch / 2, shrink);
+      const s = lerp(1, bookRest.w / cw, shrink);
+      const dx = (bookRest.x + bookRest.w / 2 - cx) * shrink;
+      const dy = (bookRest.y + bookRest.h / 2 - cy) * shrink;
+
+      page.style.clipPath = `inset(${top - offY}px ${W - right}px ${heights[i] - (bottom - offY)}px ${left}px round ${8 * shrink}px)`;
+      page.style.transformOrigin = `${cx}px ${cy - offY}px`;
+      page.style.backfaceVisibility = 'hidden';
+      // 원근은 줄어든 크기만큼 늘려 화면에선 늘 1600px 로 보이게 한다
+      page.style.transform = `translate(${dx}px, ${dy}px) scale(${s}) perspective(${1600 / s}px) rotateY(${180 * flip}deg)`;
+      if (backBook)
+        backBook.style.transform = `perspective(1600px) rotateY(${-180 * (1 - flip)}deg)`;
+    };
+
+    const clearClose = (i: number) => {
+      const page = pages[i];
+      page.style.transformOrigin = '';
+      page.style.backfaceVisibility = '';
+    };
+
     let lastCur = -1;
     const draw = () => {
       raf = 0;
@@ -250,8 +312,19 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
         // 밑에 깔린 다음 쪽: 넘김이 끝날 때까지 제자리에 있는 것처럼 끌어올린다
         pages[i + 1].style.transform =
           p < 1 ? `translateY(${-(1 - p) * T}px)` : '';
-        if (q > 0 && q < 1) curl(i, ease(p));
-        else pages[i].style.clipPath = '';
+        const closing = Boolean(backBook) && i === last - 1;
+        if (q > 0 && q < 1) {
+          if (closing) closeBook(i, p);
+          else curl(i, ease(p));
+        } else {
+          pages[i].style.clipPath = '';
+          if (closing) {
+            clearClose(i);
+            // 덮이기 전엔 뒤표지를 뒤로 돌려 둔다(맺음 장 밑에 깔려 안 보이지만, 덮다 만 각도가 남지 않게)
+            if (backBook)
+              backBook.style.transform = q >= 1 ? '' : 'rotateY(-180deg)';
+          }
+        }
       }
 
       // 목차: 책 안에 있을 때만 버튼을 띄우고, 지금 장을 표시한다
@@ -277,8 +350,38 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
       scrollTo({ top: restOf(target), behavior: 'smooth' });
     };
 
+    // 앞 장 밑에 깔린(또는 이미 넘긴) 장 안으로 키보드 포커스가 들어가면 그 장을 펼친다.
+    // 그대로 두면 포커스한 버튼이 다른 종이에 가려 보이지 않는다
+    const onFocus = (e: FocusEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (!t) return;
+      const k = wraps.findIndex((w) => w.contains(t));
+      if (k < 0) return;
+      const s = scrollY;
+      const covered = k > 0 && s < pins[k - 1] + T - 1;
+      const turned = k < last && s > pins[k] + 1;
+      if (!covered && !turned) return;
+      scrollTo({ top: restOf(k) });
+      draw();
+      // 긴 장: 포커스한 것이 화면 아래에 있으면 그만큼만 더 내린다(넘김이 시작되기 전까지)
+      const r = t.getBoundingClientRect();
+      if (r.bottom > vb && k < last) {
+        scrollTo({ top: Math.min(scrollY + r.bottom - vb + 16, pins[k]) });
+        draw();
+      }
+    };
+
     // 장 이동 링크(쪽번호·접힌 귀·목차·첫 화면 버튼)는 앵커 그대로도 맞는 자리에 가지만, 부드럽게 넘기려고 가로챈다
     const onClick = (e: MouseEvent) => {
+      const restart = (
+        e.target as HTMLElement | null
+      )?.closest<HTMLAnchorElement>('a[data-book-restart]');
+      if (restart) {
+        e.preventDefault();
+        scrollTo({ top: 0, behavior: 'smooth' });
+        history.replaceState(null, '', location.pathname + location.search);
+        return;
+      }
       const a = (e.target as HTMLElement | null)?.closest<HTMLAnchorElement>(
         'a[href^="#book-ch-"]'
       );
@@ -317,11 +420,19 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
     pages.forEach((p) => ro.observe(p));
 
     measure();
+    // 장 앵커로 바로 들어온 경우(공유 링크·첫 화면 버튼 뒤 새로고침): 브라우저는 책 모드가 켜지기 전
+    // 평평한 배치 기준으로 스크롤해 뒀으니, 쌓인 책 기준의 그 장 자리로 다시 맞춘다
+    const k0 = chapters.findIndex((c) => `#${c.anchor}` === location.hash);
+    if (k0 >= 0) {
+      scrollTo({ top: restOf(k0) });
+      draw();
+    }
     addEventListener('scroll', onScroll, { passive: true });
     addEventListener('resize', remeasure);
     addEventListener('keydown', onKey);
     // 첫 화면 버튼("어떻게 쓰나요?")·목차(popover 는 최상위 층)도 책 바깥이라 문서에서 받는다
     document.addEventListener('click', onClick);
+    root.addEventListener('focusin', onFocus);
 
     return () => {
       cancelAnimationFrame(raf);
@@ -331,12 +442,16 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
       removeEventListener('resize', remeasure);
       removeEventListener('keydown', onKey);
       document.removeEventListener('click', onClick);
+      root.removeEventListener('focusin', onFocus);
+      if (backBook) backBook.style.transform = '';
       delete root.dataset.book;
       wraps.forEach((w) => (w.style.zIndex = ''));
       pages.forEach((p) => {
         p.style.top = '';
         p.style.transform = '';
         p.style.clipPath = '';
+        p.style.transformOrigin = '';
+        p.style.backfaceVisibility = '';
         p.removeAttribute('data-turned');
       });
     };
