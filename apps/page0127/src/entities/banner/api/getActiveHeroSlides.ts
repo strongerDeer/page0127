@@ -59,7 +59,7 @@ const cachedPublishedSlides = unstable_cache(
  * Supabase 가 한 번 5초 넘게 늦으면 그 요청의 배너가 빠지고 에러가 남았다.
  * 슬라이드는 어드민에서 가끔 바꾸는 값이라 매 요청 읽을 이유가 없다.
  * ⚠️ 캐시 조회라 Suspense 안이 아니라 셸 전에(page 에서) 읽어야 한다 —
- * 늦게 등록된 배경 갱신은 waitUntil 에 실리지 않아 끊긴다(ShelfPreviewSection 주석).
+ * 늦게 등록된 배경 갱신은 waitUntil 에 실리지 않아 끊긴다(ShelfPreviewData 주석).
  *
  * 결과가 0개면 호출부가 준 폴백(코드 상수)을 반환해 랜딩이 비지 않게 한다.
  *

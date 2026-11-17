@@ -8,13 +8,15 @@ import styles from './HomeBook.module.css';
 
 type HomeBookProps = {
   chapters: BookChapter[];
-  /** 서버에서 그린 장들(<Chapter>) — 이 컴포넌트는 감싸기만 하고 내용은 건드리지 않는다 */
+  /**
+   * 서버에서 그린 쪽들 — 표지(CoverPage) · 장(Chapter)… · 뒤표지(BackCover) 순서.
+   * 이 컴포넌트는 겹치고 넘기기만 하고 내용은 건드리지 않는다.
+   */
   children: React.ReactNode;
 };
 
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const seg = (t: number, a: number, b: number) => clamp((t - a) / (b - a));
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const ease = (t: number) =>
   t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 
@@ -56,124 +58,199 @@ const isTyping = (el: EventTarget | null) =>
   (el.isContentEditable ||
     Boolean(el.closest('input, textarea, select, [role="listbox"]')));
 
+/** 스페이스를 눌러 쓰는 것(버튼·링크) 위에선 스페이스로 넘기지 않는다 */
+const usesSpace = (el: EventTarget | null) =>
+  el instanceof HTMLElement &&
+  Boolean(el.closest('button, a, summary, [role="button"], [role="option"]'));
+
+/** 쪽을 복제해 책 속 쪽(표지 안 첫 쪽·덮일 책의 앞면)에 줄여 넣는다 — 확대/축소가 끝나면 진짜 쪽과 딱 겹친다 */
+const cloneInto = (
+  host: HTMLElement,
+  page: HTMLElement,
+  W: number,
+  H: number,
+  scale: number
+) => {
+  host.querySelector('[data-book-twin]')?.remove();
+  const twin = page.cloneNode(true) as HTMLElement;
+  twin.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
+  twin.removeAttribute('id');
+  twin.removeAttribute('data-book-page');
+  twin.removeAttribute('data-book-current');
+  twin.setAttribute('data-book-twin', '');
+  twin.setAttribute('aria-hidden', 'true');
+  twin.inert = true;
+  Object.assign(twin.style, {
+    position: 'absolute',
+    left: '50%',
+    top: '50%',
+    width: `${W}px`,
+    height: `${H}px`,
+    minHeight: '0',
+    margin: '0',
+    zIndex: 'auto',
+    visibility: 'inherit',
+    clipPath: 'none',
+    transform: `translate(-50%, -50%) scale(${1 / scale})`,
+    pointerEvents: 'none',
+  });
+  host.append(twin);
+  return twin;
+};
+
 /**
- * 홈 "한 권의 책" — 장을 겹겹이 쌓고, 끝까지 읽은 장의 모서리를 말아 넘긴다 (② 장 넘김, HJ 시안 방식)
+ * 홈 "한 권의 책" — 시안 v9 의 뼈대 그대로: 화면에 붙은 무대 하나에 쪽을 겹쳐 두고, 스크롤로 넘긴다
  *
- * 쪽 넘김의 좌표 (vb = 화면 아래 끝 = 창 높이 − 하단 탭바, gnb = 헤더 높이, T = 넘김 거리)
- * ① 쪽 i 는 sticky 다. top = min(gnb, vb − 쪽 높이) → 긴 장은 끝까지 읽은 순간(쪽 아랫변이 vb 에 닿을 때),
- *    짧은 장은 윗변이 헤더에 닿을 때 멈춘다. 그때의 스크롤 = pin[i].
- * ② 장 감싸개 끝의 빈 블록(::after)이 T(--book-turn) 라서, 쪽 i 는 pin[i] ~ pin[i]+T 동안 멈춰 있다 → 이 구간이 넘김.
- * ③ 다음 장은 -(vb − gnb) 만큼 당겨져 앞 장 밑에 깔린다. 그러면 넘김이 끝나는 순간(pin[i]+T)
- *    다음 장 윗변이 정확히 헤더 아래에 온다 — 곧 "다음 장 앵커로 이동한 자리"와 같다.
- *    넘기는 동안엔 남은 거리(1−p)·T 만큼 위로 끌어올려 제자리에 가만히 있는 것처럼 보이게 한다.
- * ④ 맨 끝(뒤표지, BackCover)은 넘기지 않고 덮는다: 맺음 장이 책 크기로 줄어들어 책상 위 책 자리로
- *    가고, 뒤집히면서 뒤표지가 보인다(시안 v9 의 마지막과 같다).
+ * 좌표 (H = 무대 높이 = 창 − 헤더 − 하단 탭바, STEP = 쪽 하나 넘기는 스크롤 = 0.8H)
+ * - 무대(.stage)는 sticky 라 책 길이(쪽 넘김 수 × STEP) 동안 화면에 붙어 있다.
+ * - 진행도 prog = (스크롤 − 시작) / STEP. 정수 k 면 k 번째 쪽이 펼쳐져 있고, k~k+1 사이면 넘기는 중.
+ *   - 0→1 : 표지가 열리면서(0~55%) 책으로 다가가(25~100%), 표지 안 첫 쪽(1장 복제본)이 정확히 화면 크기가
+ *           되는 순간 그게 곧 1장이다 — 이음매가 없다.
+ *   - 가운데 : 쪽 오른쪽 아래 모서리가 말려 넘어간다(clip-path + 캔버스에 뒷면·그림자).
+ *   - 마지막 : 마지막 장(복제본)이 화면 가득에서 책 크기로 줄고 뒤집혀 뒤표지가 된다. 버튼이 그 아래 떠오른다.
+ * - 쪽마다 스냅 자리가 있어(scroll-snap, mandatory) 한 번 밀면 한 쪽씩 넘어간다.
  *
  * 성능
- * - 스크롤마다 rAF 한 번, 만지는 건 넘기고 있는 쪽 하나의 clip-path 와 그 밑 쪽의 transform 뿐.
- * - 말린 종이 뒷면·그림자는 화면 크기 캔버스 하나에 넘기는 동안만 그린다(멈춰 있으면 비운다).
- * - 동작 줄이기·JS 실패 → data-book 을 켜지 않아 쌓지 않고 평범하게 이어진다.
+ * - 스크롤마다 rAF 한 번, 만지는 건 넘기는 쪽 하나의 clip-path·transform 뿐. 캔버스는 넘기는 동안만 그린다.
+ * - 쪽 내용은 서버에서 그린 HTML 그대로라 검색엔진·스크린리더가 모두 읽는다.
+ * - 동작 줄이기·JS 실패 → data-book 을 켜지 않아 쪽이 평범하게 위아래로 이어진다.
  */
 export const HomeBook = ({ chapters, children }: HomeBookProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const snapsRef = useRef<HTMLDivElement>(null);
   const tocBtnRef = useRef<HTMLButtonElement>(null);
   const tocRef = useRef<HTMLElement>(null);
 
+  // 쪽 순서대로의 목차 — 표지 · 장… · 뒤표지
+  const entries = [
+    { anchor: 'book-cover', label: '', title: '표지', folio: null },
+    ...chapters.map((c) => ({ ...c, folio: c.folio as number | null })),
+    { anchor: 'book-back', label: '', title: '뒤표지', folio: null },
+  ];
+  const anchorKey = entries.map((e) => e.anchor).join(' ');
+
   useEffect(() => {
     const root = rootRef.current;
+    const stage = stageRef.current;
     const cv = canvasRef.current;
+    const snapBox = snapsRef.current;
     const ctx = cv?.getContext('2d');
-    if (!root || !cv || !ctx) return;
+    if (!root || !stage || !cv || !snapBox || !ctx) return;
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-    const wraps = [
-      ...root.querySelectorAll<HTMLElement>('[data-book-chapter]'),
+    const anchors = anchorKey.split(' ');
+    const pages = [
+      ...stage.querySelectorAll<HTMLElement>(':scope > [data-book-page]'),
     ];
-    const sheets = wraps.map((w) =>
-      w.querySelector<HTMLElement>('[data-book-sheet]')
-    );
-    if (wraps.length < 2 || sheets.some((s) => !s)) return;
-    const pages = sheets as HTMLElement[];
+    const N = pages.length;
+    if (N < 3) return;
+    const TURNS = N - 1;
+    const q = (el: HTMLElement, sel: string) =>
+      el.querySelector<HTMLElement>(sel);
+
+    // 표지(첫 쪽)와 뒤표지(마지막 쪽)의 움직이는 부분
+    const cover = {
+      book: q(pages[0], '[data-cover-book]'),
+      lid: q(pages[0], '[data-cover-lid]'),
+      leaf: q(pages[0], '[data-cover-leaf]'),
+      cta: q(pages[0], '[data-cover-cta]'),
+    };
+    const back = {
+      book: q(pages[TURNS], '[data-back-book]'),
+      flip: q(pages[TURNS], '[data-back-flip]'),
+      front: q(pages[TURNS], '[data-back-front]'),
+      cta: q(pages[TURNS], '[data-back-cta]'),
+    };
+    const snaps = [...snapBox.children] as HTMLElement[];
+    const html = document.documentElement;
+    const coarse = matchMedia('(pointer: coarse)').matches;
 
     root.dataset.book = 'on';
 
     let W = 0;
+    let H = 0;
     let vh = 0;
-    let vb = 0;
     let gnb = 64;
-    let T = 0;
-    let heights: number[] = [];
-    let pins: number[] = [];
+    let STEP = 1;
+    let start = 0;
     let raf = 0;
-    // 덮기: 마지막 쪽이 뒤표지면 그 앞 장은 말지 않고 덮는다
-    const last = pages.length - 1;
-    const backBook =
-      wraps[last].dataset.bookChapter === 'back'
-        ? pages[last].querySelector<HTMLElement>('[data-book-back]')
-        : null;
-    let bookRest = { x: 0, y: 0, w: 1, h: 1 };
+    let S0 = 1;
+    let S1 = 1;
+    let coverD: Pt = [0, 0];
+    let backD: Pt = [0, 0];
+    let twin: HTMLElement | null = null;
+    let cur = 0;
+    let lastCur = -1;
+    // 폰에서 검색창에 글을 쓰는 동안은 쪽을 고정한다 — 키보드가 올라오며 브라우저가 스크롤을 옮겨도 넘어가지 않게
+    let lock: number | null = null;
 
-    const docTop = (el: HTMLElement) =>
-      el.getBoundingClientRect().top + scrollY;
+    const restOf = (k: number) => start + clamp(k, 0, TURNS) * STEP;
 
-    // 이 장을 "막 펼친 자리" — 첫 장은 윗변이 헤더 아래, 나머지는 앞 장 넘김이 끝난 자리
-    const restOf = (k: number) =>
-      k <= 0 ? docTop(wraps[0]) - gnb : pins[k - 1] + T;
+    // 이 요소의 가운데를 무대 가운데로 옮기는 이동량
+    const toCenter = (el: HTMLElement): Pt => {
+      const r = el.getBoundingClientRect();
+      const s = stage.getBoundingClientRect();
+      return [
+        W / 2 - (r.left - s.left + r.width / 2),
+        H / 2 - (r.top - s.top + r.height / 2),
+      ];
+    };
 
     const measure = () => {
       vh = innerHeight;
-      W = document.documentElement.clientWidth;
+      W = html.clientWidth;
       gnb =
         document.querySelector('header')?.getBoundingClientRect().height ?? 64;
       const bar = document.querySelector<HTMLElement>('[data-bottom-bar]');
       const bottom =
         bar && getComputedStyle(bar).display !== 'none' ? bar.offsetHeight : 0;
-      vb = vh - bottom;
-      T = Math.round((vb - gnb) * 0.8);
+      H = vh - gnb - bottom;
+      STEP = Math.max(1, Math.round(H * 0.8));
 
-      root.style.setProperty('--book-vh', `${vh}px`);
       root.style.setProperty('--book-gnb', `${gnb}px`);
+      root.style.setProperty('--book-h', `${H}px`);
       root.style.setProperty('--book-bottom', `${bottom}px`);
-      root.style.setProperty('--book-turn', `${T}px`);
+      root.style.setProperty('--book-run', `${TURNS * STEP}px`);
+      start = root.getBoundingClientRect().top + scrollY - gnb;
 
-      wraps.forEach((w, i) => (w.style.zIndex = String(wraps.length - i)));
-      heights = pages.map((s) => s.offsetHeight);
-      pages.forEach((s, i) => {
-        s.style.top = `${Math.min(gnb, vb - heights[i])}px`;
+      // 스냅 자리: [0] 은 문서 맨 위(배너가 있을 때), 나머지는 쪽마다
+      snaps.forEach((s, i) => {
+        s.style.top = `${i === 0 ? -start : (i - 1) * STEP}px`;
+        s.hidden = i === 0 && start < 2;
       });
-      pins = wraps.map((w, i) => docTop(w) + heights[i] - vb);
 
-      // 뒤표지 책이 쉬는 자리(화면 좌표) — 뒤표지 쪽은 한 화면짜리라 쉴 때 윗변이 헤더 아래(gnb)다
-      if (backBook) {
-        const prev = backBook.style.transform;
-        backBook.style.transform = '';
-        const b = backBook.getBoundingClientRect();
-        const sh = pages[last].getBoundingClientRect();
-        bookRest = {
-          x: b.left,
-          y: gnb + (b.top - sh.top),
-          w: b.width,
-          h: b.height,
-        };
-        backBook.style.transform = prev;
+      // 표지: 책이 화면을 채우는 배율, 그 안 첫 쪽에 1장 복제본
+      if (cover.book && cover.leaf) {
+        cover.book.style.transform = 'none';
+        const r = cover.book.getBoundingClientRect();
+        S0 = Math.max(W / r.width, H / r.height);
+        coverD = toCenter(cover.book);
+        twin = cloneInto(cover.leaf, pages[1], W, H, S0);
+      }
+      // 뒤표지: 마지막 장 복제본을 덮일 책의 앞면에
+      if (back.book && back.front) {
+        back.book.style.transform = 'none';
+        const r = back.book.getBoundingClientRect();
+        S1 = Math.max(W / r.width, H / r.height);
+        backD = toCenter(back.book);
+        cloneInto(back.front, pages[TURNS - 1], W, H, S1);
       }
 
       const dpr = Math.min(2, devicePixelRatio || 1);
       cv.width = W * dpr;
-      cv.height = vh * dpr;
+      cv.height = H * dpr;
       cv.style.width = `${W}px`;
-      cv.style.height = `${vh}px`;
+      cv.style.height = `${H}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       draw();
     };
 
-    // 말린 뒷면 = 같은 종이의 뒷면이라 그 장 바탕색 그대로. 다크 모드 전환도 따라가게 그때그때 읽는다
-    // (넘기는 쪽 하나만 프레임당 한 번 읽는다)
+    // 말린 뒷면 = 같은 종이의 뒷면이라 그 쪽 바탕색 그대로. 다크 모드 전환도 따라가게 그때그때 읽는다
     const flapColor = (page: HTMLElement) => {
-      const sec = page.querySelector('section');
-      const c = sec ? getComputedStyle(sec).backgroundColor : '';
-      return isTransparent(c) ? getComputedStyle(page).backgroundColor : c;
+      const c = getComputedStyle(page).backgroundColor;
+      return isTransparent(c) ? getComputedStyle(html).backgroundColor : c;
     };
 
     const path = (poly: Pt[]) => {
@@ -184,34 +261,28 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
       ctx.closePath();
     };
 
-    // 쪽 i 를 오른쪽 아래 모서리에서 e(0~1)만큼 말아 넘긴다 (시안 v9 과 같은 계산)
-    const curl = (i: number, e: number) => {
-      const page = pages[i];
-      const offY = vb - heights[i]; // 멈춘 쪽의 윗변(화면 좌표, 긴 장이면 음수)
-      const Cn: Pt = [W, vb];
-      const P: Pt = [
-        W - 2 * W * e,
-        vb - (vb - gnb) * 0.3 * Math.sin(Math.PI * e),
-      ];
+    // 쪽을 오른쪽 아래 모서리에서 e(0~1)만큼 말아 넘긴다 (시안 v9 과 같은 계산)
+    const curl = (page: HTMLElement, e: number) => {
+      const Cn: Pt = [W, H];
+      const P: Pt = [W - 2 * W * e, H - H * 0.3 * Math.sin(Math.PI * e)];
       const dx = Cn[0] - P[0];
       const dy = Cn[1] - P[1];
       const len = Math.hypot(dx, dy) || 1;
       const n: Pt = [dx / len, dy / len];
       const M: Pt = [(Cn[0] + P[0]) / 2, (Cn[1] + P[1]) / 2];
       const rect: Pt[] = [
-        [0, offY],
-        [W, offY],
-        [W, vb],
-        [0, vb],
+        [0, 0],
+        [W, 0],
+        [W, H],
+        [0, H],
       ];
       const front = clipHalf(rect, M, n, true);
       const cut = clipHalf(rect, M, n, false);
       const flap = cut.map((p) => reflect(p, M, n));
 
-      // 남는 앞면 — clip-path 는 쪽 기준 좌표라 offY 만큼 내린다
       page.style.clipPath =
         front.length > 2
-          ? `polygon(${front.map((p) => `${p[0]}px ${p[1] - offY}px`).join(',')})`
+          ? `polygon(${front.map((p) => `${p[0]}px ${p[1]}px`).join(',')})`
           : 'polygon(0 0,0 0,0 0)';
 
       ctx.globalAlpha = Math.min(1, (1 - e) * 5);
@@ -229,7 +300,7 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
       g1.addColorStop(0, 'rgba(10,20,40,.30)');
       g1.addColorStop(1, 'rgba(10,20,40,0)');
       ctx.fillStyle = g1;
-      ctx.fillRect(0, 0, W, vh);
+      ctx.fillRect(0, 0, W, H);
       ctx.restore();
       // 말려 올라간 뒷면
       ctx.save();
@@ -257,80 +328,44 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
       g2.addColorStop(0.4, 'rgba(255,255,255,.04)');
       g2.addColorStop(1, 'rgba(10,20,40,.08)');
       ctx.fillStyle = g2;
-      ctx.fillRect(0, 0, W, vh);
+      ctx.fillRect(0, 0, W, H);
       ctx.restore();
       ctx.globalAlpha = 1;
     };
 
-    // 맺음 장(i)을 p(0~1)만큼 덮는다: 책 비율로 잘리며 줄어 책 자리로 간 뒤, 뒤집혀 뒤표지가 된다
-    const closeBook = (i: number, p: number) => {
-      const page = pages[i];
-      const offY = vb - heights[i];
-      const Hv = vb - gnb;
-      const cx = W / 2;
-      const cy = gnb + Hv / 2;
-      const a = bookRest.w / bookRest.h;
-      const cw = Math.min(W, Hv * a);
-      const ch = cw / a;
-      const shrink = ease(seg(p, 0, 0.6));
-      const flip = ease(seg(p, 0.45, 1));
-
-      const left = lerp(0, cx - cw / 2, shrink);
-      const right = lerp(W, cx + cw / 2, shrink);
-      const top = lerp(gnb, cy - ch / 2, shrink);
-      const bottom = lerp(vb, cy + ch / 2, shrink);
-      const s = lerp(1, bookRest.w / cw, shrink);
-      const dx = (bookRest.x + bookRest.w / 2 - cx) * shrink;
-      const dy = (bookRest.y + bookRest.h / 2 - cy) * shrink;
-
-      page.style.clipPath = `inset(${top - offY}px ${W - right}px ${heights[i] - (bottom - offY)}px ${left}px round ${8 * shrink}px)`;
-      page.style.transformOrigin = `${cx}px ${cy - offY}px`;
-      page.style.backfaceVisibility = 'hidden';
-      // 원근은 줄어든 크기만큼 늘려 화면에선 늘 1600px 로 보이게 한다
-      page.style.transform = `translate(${dx}px, ${dy}px) scale(${s}) perspective(${1600 / s}px) rotateY(${180 * flip}deg)`;
-      if (backBook)
-        backBook.style.transform = `perspective(1600px) rotateY(${-180 * (1 - flip)}deg)`;
-    };
-
-    const clearClose = (i: number) => {
-      const page = pages[i];
-      page.style.transformOrigin = '';
-      page.style.backfaceVisibility = '';
-    };
-
-    let lastCur = -1;
     const draw = () => {
       raf = 0;
-      const s = scrollY;
-      ctx.clearRect(0, 0, W, vh);
-      let cur = 0;
-      for (let i = 0; i < pages.length - 1; i++) {
-        const q = (s - pins[i]) / T;
-        const p = clamp(q);
-        if (q >= 0.5) cur = i + 1;
-        pages[i].toggleAttribute('data-turned', q >= 1);
-        // 밑에 깔린 다음 쪽: 넘김이 끝날 때까지 제자리에 있는 것처럼 끌어올린다
-        pages[i + 1].style.transform =
-          p < 1 ? `translateY(${-(1 - p) * T}px)` : '';
-        const closing = Boolean(backBook) && i === last - 1;
-        if (q > 0 && q < 1) {
-          if (closing) closeBook(i, p);
-          else curl(i, ease(p));
-        } else {
-          pages[i].style.clipPath = '';
-          if (closing) {
-            clearClose(i);
-            // 덮이기 전엔 뒤표지를 뒤로 돌려 둔다(맺음 장 밑에 깔려 안 보이지만, 덮다 만 각도가 남지 않게)
-            if (backBook)
-              backBook.style.transform = q >= 1 ? '' : 'rotateY(-180deg)';
-          }
-        }
-      }
+      const y = scrollY;
+      // 책 안에서만 스냅한다 — 책이 끝난 뒤(푸터)는 평소처럼 자유롭게 스크롤
+      html.style.scrollSnapType = y <= restOf(TURNS) + 2 ? 'y mandatory' : '';
 
-      // 목차: 책 안에 있을 때만 버튼을 띄우고, 지금 장을 표시한다
+      let prog = lock ?? clamp((y - start) / STEP, 0, TURNS);
+      if (Math.abs(prog - Math.round(prog)) < 0.004) prog = Math.round(prog);
+      const k = Math.min(TURNS - 1, Math.floor(prog));
+      const t = prog >= TURNS ? 1 : prog - k;
+      cur = Math.round(prog);
+      const closing = k === TURNS - 1 && t > 0;
+      ctx.clearRect(0, 0, W, H);
+
+      pages.forEach((pg, i) => {
+        pg.style.zIndex = String(closing && i === TURNS ? N + 1 : N - i);
+        const gone = i < k || (i === k && t >= 1) || (closing && i === k);
+        pg.style.visibility = gone ? 'hidden' : '';
+        if (i !== k || closing) pg.style.clipPath = '';
+        pg.toggleAttribute('data-book-current', i === cur);
+      });
+
+      // 1장 문장: 거의 펼쳤을 때 단어가 차례로 진해진다(표지 속 복제본도 같이)
+      const lit = prog > 0.7;
+      pages[1].toggleAttribute('data-lit', lit);
+      twin?.toggleAttribute('data-lit', lit);
+
+      // 목차: 책 안에 있을 때만 버튼을 띄우고, 지금 쪽을 표시한다
       const r = root.getBoundingClientRect();
-      const inBook = r.top < vh * 0.5 && r.bottom > vh * 0.5;
-      tocBtnRef.current?.toggleAttribute('data-show', inBook);
+      tocBtnRef.current?.toggleAttribute(
+        'data-show',
+        r.top < vh * 0.5 && r.bottom > vh * 0.5
+      );
       if (cur !== lastCur) {
         lastCur = cur;
         tocRef.current
@@ -339,80 +374,113 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
             a.setAttribute('aria-current', i === cur ? 'page' : 'false')
           );
       }
+
+      // 표지: 열리면서 책 속으로 들어간다
+      if (k === 0 && cover.book && cover.lid) {
+        const open = ease(seg(t, 0, 0.55));
+        const zoom = ease(seg(t, 0.25, 1));
+        cover.lid.style.transform = `rotateY(${-178 * open}deg)`;
+        const s = 1 + (S0 - 1) * zoom;
+        cover.book.style.transform = `translate(${coverD[0] * zoom}px, ${coverD[1] * zoom}px) scale(${s})`;
+        if (cover.cta) {
+          const fade = seg(t, 0.05, 0.3);
+          cover.cta.style.opacity = String(1 - fade);
+          cover.cta.style.visibility = fade >= 1 ? 'hidden' : '';
+        }
+        return;
+      }
+
+      // 마지막: 마지막 장이 줄어들며 책이 되고, 뒤집혀 뒤표지가 보인다
+      if (k === TURNS - 1 && back.book && back.flip) {
+        const z = ease(seg(t, 0, 0.55));
+        const fl = ease(seg(t, 0.4, 1));
+        const s = S1 + (1 - S1) * z;
+        back.book.style.transform = `translate(${backD[0] * (1 - z)}px, ${backD[1] * (1 - z)}px) scale(${s})`;
+        back.flip.style.transform = `perspective(1600px) rotateY(${180 * fl}deg)`;
+        if (back.cta) {
+          const show = seg(t, 0.7, 1);
+          back.cta.style.opacity = String(show);
+          back.cta.style.visibility = show <= 0 ? 'hidden' : '';
+        }
+        return;
+      }
+
+      if (t > 0.001) curl(pages[k], ease(t));
     };
 
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(draw);
     };
 
-    const goTo = (k: number) => {
-      const target = clamp(k, 0, pages.length - 1);
-      scrollTo({ top: restOf(target), behavior: 'smooth' });
+    const jump = (k: number, smooth: boolean) => {
+      lock = null;
+      scrollTo({ top: restOf(k), behavior: smooth ? 'smooth' : 'instant' });
+      if (!smooth) draw();
     };
 
-    // 앞 장 밑에 깔린(또는 이미 넘긴) 장 안으로 키보드 포커스가 들어가면 그 장을 펼친다.
-    // 그대로 두면 포커스한 버튼이 다른 종이에 가려 보이지 않는다
-    const onFocus = (e: FocusEvent) => {
-      const t = e.target as HTMLElement | null;
-      if (!t) return;
-      const k = wraps.findIndex((w) => w.contains(t));
+    const indexOfHash = (hash: string) => anchors.indexOf(hash.slice(1));
+
+    // 덮여 있는(또는 이미 넘긴) 쪽 안으로 키보드 포커스가 들어가면 그 쪽을 펼친다 — 탭으로 다음 쪽에 넘어가기.
+    // 지금 보이는 쪽(넘기는 중이면 앞뒤 두 쪽)이면 그대로 둔다(누르던 클릭이 엉뚱한 곳에 떨어지지 않게)
+    const onFocusIn = (e: FocusEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (!el) return;
+      const k = pages.findIndex((p) => p.contains(el));
       if (k < 0) return;
-      // 실제로 보이는지 그 자리에서 확인한다 — 마우스로 누른 버튼, 넘기기 시작했지만 아직 보이는 쪽의
-      // 버튼은 그대로 둔다(여기서 스크롤을 옮기면 누르던 중의 클릭이 엉뚱한 곳에 떨어진다)
-      const box = t.getBoundingClientRect();
-      const x = box.left + box.width / 2;
-      const y = box.top + box.height / 2;
-      if (x >= 0 && x <= W && y >= gnb && y <= vb) {
-        const hit = document.elementFromPoint(x, y);
-        if (hit && (hit === t || t.contains(hit) || hit.contains(t))) return;
-      }
-      scrollTo({ top: restOf(k) });
-      draw();
-      // 긴 장: 포커스한 것이 화면 아래에 있으면 그만큼만 더 내린다(넘김이 시작되기 전까지)
-      const r = t.getBoundingClientRect();
-      if (r.bottom > vb && k < last) {
-        scrollTo({ top: Math.min(scrollY + r.bottom - vb + 16, pins[k]) });
-        draw();
-      }
+      const prog = clamp((scrollY - start) / STEP, 0, TURNS);
+      const visible =
+        k === cur || k === Math.floor(prog) || k === Math.ceil(prog);
+      if (!visible) jump(k, false);
+      if (coarse && isTyping(el)) lock = k;
     };
 
-    // 장 이동 링크(쪽번호·접힌 귀·목차·첫 화면 버튼)는 앵커 그대로도 맞는 자리에 가지만, 부드럽게 넘기려고 가로챈다
+    const onFocusOut = (e: FocusEvent) => {
+      if (lock === null || !isTyping(e.target)) return;
+      const k = lock;
+      lock = null;
+      // 키보드가 내려가며 옮겨진 스크롤을 그 쪽 자리로 되돌린다
+      requestAnimationFrame(() => jump(k, false));
+    };
+
+    // 쪽 이동 링크(쪽번호·접힌 귀·목차·첫 화면 버튼)는 앵커 그대로도 맞는 자리에 가지만, 부드럽게 넘기려고 가로챈다
     const onClick = (e: MouseEvent) => {
-      const restart = (
-        e.target as HTMLElement | null
-      )?.closest<HTMLAnchorElement>('a[data-book-restart]');
-      if (restart) {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('a[data-book-restart]')) {
         e.preventDefault();
-        scrollTo({ top: 0, behavior: 'smooth' });
+        jump(0, true);
         history.replaceState(null, '', location.pathname + location.search);
         return;
       }
-      const a = (e.target as HTMLElement | null)?.closest<HTMLAnchorElement>(
-        'a[href^="#book-ch-"]'
-      );
+      const a = target?.closest<HTMLAnchorElement>('a[href^="#book-"]');
       if (!a) return;
-      const k = chapters.findIndex(
-        (c) => `#${c.anchor}` === a.getAttribute('href')
-      );
+      const href = a.getAttribute('href') ?? '';
+      const k = indexOfHash(href);
       if (k < 0) return;
       e.preventDefault();
       tocRef.current?.hidePopover?.();
-      goTo(k);
-      history.replaceState(null, '', a.getAttribute('href'));
+      jump(k, true);
+      history.replaceState(null, '', href);
     };
 
-    // ← → 로 장 넘기기. 스페이스·PageDown 은 긴 장을 읽는 데 써야 해서 건드리지 않는다
+    const onHash = () => {
+      const k = indexOfHash(location.hash);
+      if (k >= 0) jump(k, false);
+    };
+
+    // 방향키·PageUp/Down·스페이스로 한 쪽씩. 글을 쓰는 중이거나 책 밖이면 건드리지 않는다
     const onKey = (e: KeyboardEvent) => {
-      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
-      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      const fwd = ['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key);
+      const bwd = ['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key);
+      if (!fwd && !bwd) return;
+      if (e.key === ' ' && (e.shiftKey || usesSpace(e.target))) return;
       if (isTyping(e.target)) return;
-      const r = root.getBoundingClientRect();
-      if (r.top > vh * 0.5 || r.bottom < vh * 0.5) return;
+      if (scrollY < start - 2 || scrollY > restOf(TURNS) + 2) return;
+      if ((fwd && cur >= TURNS) || (bwd && cur <= 0)) return;
       e.preventDefault();
-      goTo(lastCur + (e.key === 'ArrowRight' ? 1 : -1));
+      jump(cur + (fwd ? 1 : -1), true);
     };
 
-    // 맛보기에서 책을 고르는 등 장 높이가 바뀌면 다시 잰다
     let mraf = 0;
     const remeasure = () => {
       if (!mraf)
@@ -421,23 +489,23 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
           measure();
         });
     };
+    // 창 크기·주소창 높이가 바뀌면 다시 잰다. 쪽 내용이 바뀌어도(맛보기에서 책을 고름) 쪽 크기는 그대로다
     const ro = new ResizeObserver(remeasure);
-    pages.forEach((p) => ro.observe(p));
+    ro.observe(stage);
 
     measure();
-    // 장 앵커로 바로 들어온 경우(공유 링크·첫 화면 버튼 뒤 새로고침): 브라우저는 책 모드가 켜지기 전
-    // 평평한 배치 기준으로 스크롤해 뒀으니, 쌓인 책 기준의 그 장 자리로 다시 맞춘다
-    const k0 = chapters.findIndex((c) => `#${c.anchor}` === location.hash);
-    if (k0 >= 0) {
-      scrollTo({ top: restOf(k0) });
-      draw();
-    }
+    // 쪽 앵커로 바로 들어온 경우(공유 링크·새로고침): 브라우저는 책 모드가 켜지기 전 평평한 배치 기준으로
+    // 스크롤해 뒀으니, 겹친 책 기준의 그 쪽 자리로 다시 맞춘다
+    onHash();
+    document.fonts?.ready.then(remeasure);
     addEventListener('scroll', onScroll, { passive: true });
     addEventListener('resize', remeasure);
     addEventListener('keydown', onKey);
-    // 첫 화면 버튼("어떻게 쓰나요?")·목차(popover 는 최상위 층)도 책 바깥이라 문서에서 받는다
+    addEventListener('hashchange', onHash);
+    // 첫 화면 버튼·목차(popover 는 최상위 층)도 받으려고 문서에서 받는다
     document.addEventListener('click', onClick);
-    root.addEventListener('focusin', onFocus);
+    root.addEventListener('focusin', onFocusIn);
+    root.addEventListener('focusout', onFocusOut);
 
     return () => {
       cancelAnimationFrame(raf);
@@ -446,28 +514,51 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
       removeEventListener('scroll', onScroll);
       removeEventListener('resize', remeasure);
       removeEventListener('keydown', onKey);
+      removeEventListener('hashchange', onHash);
       document.removeEventListener('click', onClick);
-      root.removeEventListener('focusin', onFocus);
-      if (backBook) backBook.style.transform = '';
+      root.removeEventListener('focusin', onFocusIn);
+      root.removeEventListener('focusout', onFocusOut);
+      html.style.scrollSnapType = '';
       delete root.dataset.book;
-      wraps.forEach((w) => (w.style.zIndex = ''));
-      pages.forEach((p) => {
-        p.style.top = '';
-        p.style.transform = '';
-        p.style.clipPath = '';
-        p.style.transformOrigin = '';
-        p.style.backfaceVisibility = '';
-        p.removeAttribute('data-turned');
+      root.querySelectorAll('[data-book-twin]').forEach((el) => el.remove());
+      [
+        cover.book,
+        cover.lid,
+        cover.cta,
+        back.book,
+        back.flip,
+        back.cta,
+        ...pages,
+      ].forEach((el) => {
+        if (!el) return;
+        el.style.transform = '';
+        el.style.opacity = '';
+        el.style.visibility = '';
+        el.style.clipPath = '';
+        el.style.zIndex = '';
+        el.removeAttribute('data-book-current');
+        el.removeAttribute('data-lit');
       });
     };
-  }, [chapters]);
+  }, [anchorKey]);
 
   return (
     <div ref={rootRef} className={styles.book}>
-      {children}
+      {/* 스크롤 스냅 자리 — [0] 문서 맨 위, 그다음 쪽마다 하나 (위치는 JS) */}
+      <div ref={snapsRef} aria-hidden='true'>
+        {['top', ...entries.map((e) => e.anchor)].map((key) => (
+          <div key={key} className={styles.snap} />
+        ))}
+      </div>
 
-      {/* 말린 종이 뒷면·그림자 — 넘기는 동안만 그린다 */}
-      <canvas ref={canvasRef} aria-hidden='true' className={styles.canvas} />
+      <div ref={stageRef} className={styles.stage}>
+        {children}
+        {/* 말린 종이 뒷면·그림자 — 넘기는 동안만 그린다 */}
+        <canvas ref={canvasRef} aria-hidden='true' className={styles.canvas} />
+      </div>
+
+      {/* 무대가 붙어 있는 동안 스크롤할 길이(쪽 넘김 수 × STEP) */}
+      <div aria-hidden='true' className={styles.run} />
 
       {/* 목차 — popover 라 여닫기에 JS 가 필요 없다 */}
       <button
@@ -487,8 +578,8 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
       >
         <p className={styles.tocTitle}>목차</p>
         <ol>
-          {chapters.map((c) => (
-            <li key={c.id}>
+          {entries.map((c) => (
+            <li key={c.anchor}>
               <a href={`#${c.anchor}`}>
                 <span className={styles.tocLabel}>{c.label}</span>
                 <span className={styles.tocName}>{c.title}</span>

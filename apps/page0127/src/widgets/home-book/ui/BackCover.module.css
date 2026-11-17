@@ -1,5 +1,5 @@
 /*
- * 책의 끝 — 책상 위에 덮어 둔 책의 뒤표지
+ * 책의 끝 — 책상 위에 덮어 둔 책의 뒤표지 + 그 아래 가입 버튼
  * 책상·표지 색은 첫 화면(AboutHero.module.css)과 같다 — 같은 책을 다시 덮어 둔 것이라서.
  */
 
@@ -7,14 +7,22 @@
   --cover: #0969e0;
   --cover-ink: #fbf1e6;
   --belt: #f6efe2;
+
+  scroll-margin-top: 4rem;
 }
 
 .desk {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(16px, 3svh, 28px);
   min-height: calc(100svh - 4rem);
+  height: 100%;
+  padding: 24px 20px 28px;
   background:
     radial-gradient(
-      55% 45% at 50% 42%,
+      55% 45% at 50% 38%,
       rgb(255 255 255 / 0.55),
       transparent 70%
     ),
@@ -30,7 +38,7 @@
   .desk {
     background:
       radial-gradient(
-        55% 45% at 50% 42%,
+        55% 45% at 50% 38%,
         rgb(255 255 255 / 0.06),
         transparent 70%
       ),
@@ -38,56 +46,65 @@
   }
 }
 
-.stage {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(20px, 3.5svh, 32px);
-  padding: 32px 20px 40px;
-}
-
+/* 버튼이 아래에 서야 해서 첫 화면 책보다 조금 작게 */
 .book {
-  --bh: min(56svh, 540px);
+  --bh: min(50svh, 500px);
   --bw: calc(var(--bh) * 0.7);
 
   position: relative;
+  flex: none;
   width: var(--bw);
   height: var(--bh);
-  /* 넘김 중 HomeBook 이 rotateY 로 뒤집는다 — 뒷면(맺음 장 쪽)은 안 보이게 */
-  backface-visibility: hidden;
 }
 
 @media (max-width: 767px) {
   .book {
-    --bw: min(74vw, 300px);
+    --bw: min(60vw, 250px, calc(44svh * 0.7));
     --bh: calc(var(--bw) / 0.7);
   }
 }
 
-/* 책 그림자 — filter 대신 고정 그라데이션(뒤집는 동안 다시 그리지 않게) */
+/* 책 그림자 — filter 대신 고정 그라데이션(줄고 뒤집는 동안 다시 그리지 않게) */
 .book::before {
   content: "";
   position: absolute;
   inset: 8% -6% -6% 4%;
-  z-index: -1;
   background: radial-gradient(closest-side, rgb(16 30 60 / 0.38), transparent);
 }
 
+/* 앞면(마지막 장)·뒷면(뒤표지)을 한 장처럼 뒤집는다. 기본은 다 뒤집힌 상태 = 뒷면이 보인다 */
+.flip {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: perspective(1600px) rotateY(180deg);
+}
+
+.front,
 .back {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  padding: 12% 14% 0 10%;
-  border-radius: 8px 3px 3px 8px;
-  background: var(--cover);
-  color: var(--cover-ink);
   overflow: hidden;
+  backface-visibility: hidden;
+}
+
+.front {
+  border-radius: 2px 6px 6px 2px;
+  background: var(--sunken);
 }
 
 /* 뒤표지에선 책등이 오른쪽 */
+.back {
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  padding: 11% 14% calc(var(--bh) * 0.34) 10%;
+  border-radius: 8px 3px 3px 8px;
+  background: var(--cover);
+  color: var(--cover-ink);
+  box-shadow: 0 30px 50px -20px rgb(20 30 50 / 0.55);
+}
+
 .back::before {
   content: "";
   position: absolute;
@@ -97,18 +114,19 @@
   box-shadow: -1px 0 0 rgb(0 0 0 / 0.16);
 }
 
-.imprint {
-  font-size: calc(var(--bw) * 0.042);
-  line-height: 1.6;
-  color: color-mix(in srgb, var(--cover-ink) 72%, transparent);
+.title {
+  font-size: calc(var(--bw) * 0.082);
+  line-height: 1.4;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  word-break: keep-all;
 }
 
-.imprint b {
-  display: block;
-  margin-bottom: 4%;
-  font-size: calc(var(--bw) * 0.075);
+.imprint {
+  margin-top: auto;
+  font-size: calc(var(--bw) * 0.05);
   font-weight: 800;
-  color: var(--cover-ink);
 }
 
 /* ── 뒤 띠지: 앞표지 띠지가 이어진다 ───────────────────── */
@@ -196,35 +214,67 @@
   );
 }
 
+/* ── 책 아래: 가입 버튼 ─────────────────────────────── */
+.cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: center;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.login {
+  width: min(100%, 20rem);
+}
+
+.checks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  font-size: 0.8125rem;
+  color: var(--navy-700);
+}
+
 .again {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
   min-height: 2.75rem;
-  padding: 0 1.25rem;
-  border-radius: 999px;
-  border: 1px solid rgb(20 41 78 / 0.18);
-  background: rgb(255 255 255 / 0.6);
-  color: var(--navy-900);
-  font-size: 0.875rem;
-  font-weight: 700;
-  text-decoration: none;
+  padding: 0 0.5rem;
+  color: var(--navy-700);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .again:hover,
 .again:focus-visible {
-  background: #fff;
+  color: var(--navy-900);
 }
 
 @media (prefers-color-scheme: dark) {
+  .checks,
   .again {
-    border-color: rgb(255 255 255 / 0.2);
-    background: rgb(255 255 255 / 0.08);
-    color: #fff;
+    color: var(--navy-300);
   }
 
   .again:hover,
   .again:focus-visible {
-    background: rgb(255 255 255 / 0.16);
+    color: #fff;
   }
+}
+
+/* 책 모드: 쪽(무대 크기)을 꽉 채운다. 버튼은 덮고 난 뒤 떠오르니 JS 가 opacity 를 맡는다 */
+:global([data-book="on"]) .desk {
+  min-height: 0;
 }

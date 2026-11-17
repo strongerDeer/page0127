@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 
 import { ErrorBoundary } from '@repo/ui';
 
+import { TrackOnMount } from '@/shared/lib/analytics/TrackOnMount';
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 import { toPostLoginPath } from '@/shared/lib/auth/onboardingRedirect';
 import {
@@ -18,20 +19,36 @@ import { toDisplayName } from '@/entities/profile/model/displayName';
 
 import { getLeaderLifeBooks } from '@/features/shelf-preview/api/getLeaderLifeBooks';
 import { getShelfPicks } from '@/features/shelf-preview/api/getShelfPicks';
-import { ShelfPreviewSection } from '@/features/shelf-preview/ui/ShelfPreviewSection';
+import { LifeBookHero } from '@/features/shelf-preview/ui/LifeBookHero';
+import {
+  ShelfPanel,
+  ShelfPickCount,
+  ShelfPickGrid,
+  ShelfPreviewProvider,
+  ShelfSaveAction,
+} from '@/features/shelf-preview/ui/ShelfPreview';
 
-import { AboutHero, FinalCta, Highlights, Manifesto } from '@/widgets/about';
+import {
+  AboutHero,
+  BadgeVisual,
+  ChemVisual,
+  LoungeVisual,
+  Manifesto,
+  ShareVisual,
+} from '@/widgets/about';
 import { getRecentBooks } from '@/widgets/about/api/getRecentBooks';
 import {
   BackCover,
   buildChapters,
   Chapter,
+  chapterAnchor,
+  CoverPage,
   HomeBook,
 } from '@/widgets/home-book';
 import { getHeroBanner } from '@/widgets/landing/api/getHeroBanner';
 import { HeroBannerSection } from '@/widgets/landing/ui/HeroBannerSection';
 
-import type { ShelfPreviewData } from '@/features/shelf-preview/ui/ShelfPreviewSection';
+import type { ShelfPreviewData } from '@/features/shelf-preview/ui/ShelfPreviewData';
 import type { HeroVariant } from '@/shared/lib/experiment/heroVariant';
 import type { Metadata } from 'next';
 
@@ -50,9 +67,9 @@ export const metadata: Metadata = {
  * 가입 버튼 → 내 서재로·서재 공유하기, 맛보기(가입 유도용 체험)는 숨긴다.
  * 로그인 직후 도착지는 그대로 내 서재다(toPostLoginPath). 홈은 로고·메뉴로 온다.
  *
- * 구성 (2026-10-25 HJ 홈 개편 — 소개 페이지와 합쳤다)
- * 배너(어드민 등록 시) → 첫 화면(책상 위의 책 표지, 2026-11-17) →
- * 왜 page0127.인가요 → 당신의 첫인상(맛보기) → 책장이 쌓이면 보이는 것들 → 가입 카드.
+ * 구성 — 홈 전체가 한 권의 책이다(2026-11-17 HJ, 시안 v9). 한 쪽 = 한 화면, 한 쪽에 하나씩.
+ * 배너(어드민 등록 시) → 표지(책상 위의 책) → 1 왜 page0127.인가요 → 2 책 고르기 → 3 내 책장 →
+ * 4 공개 서재와 공유 → 5 독서 케미 → 6 배지 → 7 라운지 → 뒤표지(맺음 문장 + 가입 버튼).
  * - 설명(소개)과 체험(맛보기)이 두 페이지로 나뉘어 있어, 홈은 체험만·소개는 설명만 했다.
  *   처음 온 사람은 대개 홈만 본다 → 설명과 체험을 한 흐름에 둔다.
  * - 서점식 큐레이션(랭킹·발견·프로모)과 이용 방법 단계는 뺐다. 맛보기가 기록과
@@ -106,7 +123,7 @@ const Home = async () => {
   );
 
   // 캐시한 조회는 모두 첫 화면(셸) 전에 읽는다 — Suspense 안에서 읽으면 캐시 배경 갱신이
-  // waitUntil 에 실리지 않아 [db-timeout] 으로 끊긴다(ShelfPreviewSection 주석).
+  // waitUntil 에 실리지 않아 [db-timeout] 으로 끊긴다(ShelfPreviewData 주석).
   // 표지는 소개 페이지와 같은 조회라 1시간 캐시를 함께 쓴다(widgets/about/api/aboutCache.ts)
   // 배너 대상(로그인/비로그인)은 세션 기준이다 — 예전 HeroBannerSection 과 같다
   const [books, preview, banner] = await Promise.all([
@@ -115,7 +132,48 @@ const Home = async () => {
     getHeroBanner(Boolean(user)),
   ]);
 
-  const chapters = buildChapters({ withPreview: Boolean(preview) });
+  const chapters = buildChapters({ preview: preview?.variant ?? null });
+  const covers = { books };
+
+  // 맛보기 쪽 — A: 책 고르기·내 책장 두 쪽(상태는 Provider 하나가 함께 든다), B: 인생책 찾기 한 쪽.
+  // 이미 서재가 있는 사람에겐 체험할 이유가 없어 숨긴다(preview 가 null → 쪽도 빠진다)
+  const previewPages =
+    preview?.variant === 'a' ? (
+      <ShelfPreviewProvider picks={preview.picks}>
+        <Chapter
+          id='pick'
+          chapters={chapters}
+          kicker='1분 맛보기'
+          heading='당신의 첫인상.'
+          lead='기억나는 책 세 권을 골라보세요. 다음 장에서 당신의 책장이 서요.'
+          aside={<ShelfPickCount shelfHref={`#${chapterAnchor('shelf')}`} />}
+        >
+          {/* 맛보기 깔때기의 분모 — 맛보기를 본 사람 수. 그룹은 GA 사용자 속성으로 붙는다 */}
+          <TrackOnMount event='shelf_preview_view' />
+          <ShelfPickGrid />
+        </Chapter>
+        <Chapter
+          id='shelf'
+          chapters={chapters}
+          heading={
+            <>
+              고른 책이
+              <br />
+              책장에 꽂혔어요
+            </>
+          }
+          lead='앞 장에서 고른 책이 여기 꽂혀요. 가입하면 이 책장을 그대로 저장해 드려요.'
+          aside={<ShelfSaveAction />}
+        >
+          <ShelfPanel />
+        </Chapter>
+      </ShelfPreviewProvider>
+    ) : preview?.variant === 'b' ? (
+      <Chapter id='pick' chapters={chapters} layout='free'>
+        <TrackOnMount event='shelf_preview_view' />
+        <LifeBookHero leaders={preview.leaders} />
+      </Chapter>
+    ) : null;
 
   return (
     // break-keep: 한국어를 단어 단위로 줄바꿈한다 — 없으면 '쌓/인'처럼 단어 중간에서 끊긴다
@@ -132,48 +190,107 @@ const Home = async () => {
         </ErrorBoundary>
       )}
 
-      {/* 첫 화면 — 책상 위의 책. 표지 제목이 이 페이지의 h1, 스크롤하면 표지가 열린다(CSS 만).
-          버튼은 같은 페이지 아래 장으로 넘어간다 — 섹션 id 가 아니라 장 앵커로 가야 쌓인 책에서도
-          그 장을 막 펼친 자리에 멈춘다 */}
-      <AboutHero
-        member={member}
-        startHref='#book-ch-first-impression'
-        guideHref='#book-ch-highlights'
-      />
-
-      {/* 본문 — 섹션 하나가 책의 한 장. 끝까지 읽은 장은 모서리가 말려 넘어간다(② 장 넘김).
-          장 목록 하나(chapters)가 머리글·쪽번호·목차 번호를 정한다 */}
+      {/* 책 한 권 — 쪽 목록 하나(chapters)가 머리글·쪽번호·목차 번호를 정한다.
+          스크롤하면 표지가 열려 책 속으로 들어가고, 쪽이 한 장씩 넘어가고, 끝에서 덮여 뒤표지가 된다 */}
       <HomeBook chapters={chapters}>
-        <Chapter id='why' chapters={chapters}>
+        {/* 표지 = 첫 화면. 표지 제목이 이 페이지의 h1. 버튼은 같은 책의 쪽으로 넘어간다 */}
+        <CoverPage>
+          <AboutHero
+            member={member}
+            startHref={`#${chapterAnchor('pick')}`}
+            guideHref={`#${chapterAnchor('share')}`}
+          />
+        </CoverPage>
+
+        <Chapter id='why' chapters={chapters} paper='gray' layout='center'>
           <Manifesto />
         </Chapter>
 
-        {/* 책장 맛보기(당신의 첫인상.) — 고르기·책장 2단, 저장하려고 가입하게 한다
-            (설계: 2026-10-08-home-shelf-preview-design.md).
-            이미 서재가 있는 사람에겐 체험할 이유가 없어 숨긴다(preview 가 null → 장도 빠진다) */}
-        {preview && (
-          <Chapter id='first-impression' chapters={chapters}>
-            <ShelfPreviewSection {...preview} />
-          </Chapter>
-        )}
+        {previewPages}
 
-        <Chapter id='highlights' chapters={chapters}>
-          <Highlights books={books} />
+        <Chapter
+          id='share'
+          chapters={chapters}
+          paper='sunken'
+          heading={
+            <>
+              주소 하나로
+              <br />내 책장을 보여 줘요
+            </>
+          }
+          lead={
+            <>
+              <b>공개 서재와 공유.</b> 주소 하나로 내 책장을 보여 주고, 인스타
+              스토리에 올릴 이미지도 바로 만들어요.
+            </>
+          }
+        >
+          <ShareVisual {...covers} />
         </Chapter>
 
-        {/* 표지가 있는 책 중에서 고른다 — 그냥 마지막 4권이면 표지 없는 칸만 설 수 있다 */}
-        <Chapter id='closing' chapters={chapters} tone='dark'>
-          <FinalCta
-            member={member}
-            covers={books
-              .map((b) => b.coverImage)
-              .filter(Boolean)
-              .slice(-4)}
-          />
+        <Chapter
+          id='chem'
+          chapters={chapters}
+          paper='gray'
+          heading={
+            <>
+              책장을 나란히 놓으면
+              <br />
+              보이는 사이
+            </>
+          }
+          lead={
+            <>
+              <b>독서 케미.</b> 다른 사람의 책장과 나란히 놓고, 겹치는 책과
+              취향을 확인해요.
+            </>
+          }
+        >
+          <ChemVisual {...covers} />
         </Chapter>
 
-        {/* 책의 끝 — 다 읽으면 맺음 장이 책으로 줄어들어 뒤집히고, 띠지와 바코드가 있는 뒤표지가 남는다 */}
-        <BackCover />
+        <Chapter
+          id='badge'
+          chapters={chapters}
+          heading={
+            <>
+              기록할수록
+              <br />
+              작은 전집이 모여요
+            </>
+          }
+          lead={
+            <>
+              <b>배지.</b> 성장·분야·이야기·히든 배지가 작은 전집처럼 모여요.
+              이미 기록한 책으로도 바로 받아요.
+            </>
+          }
+        >
+          <BadgeVisual />
+        </Chapter>
+
+        <Chapter
+          id='lounge'
+          chapters={chapters}
+          paper='sunken'
+          heading={
+            <>
+              함께 읽으면
+              <br />한 권 더 읽게 돼요
+            </>
+          }
+          lead={
+            <>
+              <b>라운지.</b> 팔로우한 리더와 올해 몇 권 읽었는지 겨루고, 새로
+              꽂은 책도 바로 봐요.
+            </>
+          }
+        >
+          <LoungeVisual {...covers} />
+        </Chapter>
+
+        {/* 책의 끝 — 마지막 장이 줄어들어 뒤집히면 뒤표지(맺음 문장)가 남고, 그 아래 가입 버튼이 떠오른다 */}
+        <BackCover member={member} />
       </HomeBook>
     </div>
   );

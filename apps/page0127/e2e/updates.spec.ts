@@ -26,10 +26,10 @@ test('홈 첫 화면 버튼은 같은 페이지의 맛보기·둘러보기 장�
   await page.goto('/');
   await expect(
     page.getByRole('link', { name: '내 책장 만들어 보기' })
-  ).toHaveAttribute('href', '#book-ch-first-impression');
+  ).toHaveAttribute('href', '#book-ch-pick');
   await expect(
     page.getByRole('link', { name: '어떻게 쓰나요?' })
-  ).toHaveAttribute('href', '#book-ch-highlights');
+  ).toHaveAttribute('href', '#book-ch-share');
 });
 
 test('홈 표지 띠에 깨진 이미지가 보이지 않는다', async ({ page }) => {

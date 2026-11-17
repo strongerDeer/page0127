@@ -484,6 +484,44 @@
   }
 }
 
+/* ---------- 홈 책 모드(HomeBook data-book="on"): 펼침·확대는 JS 가 스크롤에 맞춰 움직인다 ---------- */
+:global([data-book="on"]) .desk {
+  height: 100%;
+  view-timeline: none;
+}
+
+:global([data-book="on"]) .stage {
+  position: relative;
+  top: auto;
+  height: 100%;
+  min-height: 0;
+}
+
+:global([data-book="on"]) .book,
+:global([data-book="on"]) .cover,
+:global([data-book="on"]) .cta {
+  animation: none;
+}
+
+:global([data-book="on"]) .book {
+  will-change: transform;
+}
+
+/* 첫 쪽엔 1장 복제본(data-book-twin)이 들어간다 — 원래 그려 둔 장 제목은 숨긴다 */
+:global([data-book="on"]) .leaf {
+  overflow: hidden;
+  padding: 0;
+}
+
+:global([data-book="on"]) .leafChapter,
+:global([data-book="on"]) .leafTitle {
+  display: none;
+}
+
+:global([data-book="on"]) .hint {
+  display: block;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .roll > span {
     animation: none;

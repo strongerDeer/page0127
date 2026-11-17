@@ -1,66 +1,169 @@
 /*
- * 책의 한 장 (② 장 넘김) — 홈 섹션을 감싸는 종이 한 장
+ * 책의 한 쪽 (시안 v9 의 .pg) — 머리글 · 본문(가운데) · 쪽번호가 한 화면에 들어간다
  *
- * 성능: 움직이는 건 transform·opacity 뿐이고, 스크롤 연동 애니메이션이라 메인 스레드를 쓰지 않는다.
- * 지원 안 함·동작 줄이기 → 머리글·쪽번호·이동 링크만 있고 평범하게 이어진다.
+ * 책 모드(HomeBook data-book="on")에선 화면에 붙은 무대 안에 쪽이 겹겹이 쌓인다(HomeBook.module.css).
+ * 그 밖(JS 없음·동작 줄이기)에선 한 화면 높이의 쪽이 위아래로 이어진다.
  */
 
-.chapter {
+.page {
   /* page-width(max-w-7xl, px-6 md:px-10)와 같은 안쪽 선 — 머리글·쪽번호가 본문 글줄에 맞는다 */
   --gutter: max(1.5rem, calc((100% - 80rem) / 2 + 1.5rem));
-  --ink: var(--text-subtle);
-  --ink-strong: var(--text-strong);
 
   position: relative;
   isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100svh - 4rem);
+  background: var(--background);
   /* 앵커로 왔을 때 GNB(64px)에 머리글이 가리지 않게 */
   scroll-margin-top: 4rem;
 }
 
 @media (min-width: 768px) {
-  .chapter {
+  .page {
     --gutter: max(2.5rem, calc((100% - 80rem) / 2 + 2.5rem));
   }
 }
 
-.chapter[data-tone="dark"] {
-  --ink: rgb(255 255 255 / 0.72);
-  --ink-strong: #fff;
+.white {
+  background: var(--background);
+}
+
+.sunken {
+  background: var(--sunken);
+}
+
+/* sunken(gray/50)은 흰 바탕과 거의 구분이 안 돼 한 단 진한 gray/200 — 다크에선 그 값이 선 색이라 sunken */
+.gray {
+  background: var(--line-soft);
+}
+
+@media (prefers-color-scheme: dark) {
+  .gray {
+    background: var(--sunken);
+  }
 }
 
 /* ── 머리글: 책 이름 · 장 이름 ───────────────────────── */
 .runhead {
-  position: absolute;
-  z-index: 2;
-  top: 1.25rem;
-  inset-inline: var(--gutter);
   display: flex;
   justify-content: space-between;
   gap: 1rem;
+  padding: 1rem var(--gutter) 0;
   font-size: 0.75rem;
   line-height: 1.2;
   letter-spacing: 0.02em;
-  color: var(--ink);
-  pointer-events: none;
+  color: var(--text-subtle);
 }
 
 .runhead b {
   font-weight: 800;
-  color: var(--ink-strong);
+  color: var(--primary);
+}
+
+/* 목차 버튼이 오른쪽 위에 오는 좁은 화면에선 장 이름을 뺀다 */
+@media (max-width: 640px) {
+  .runhead span {
+    display: none;
+  }
+}
+
+/* ── 본문 ─────────────────────────────────────────── */
+.body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-height: 0;
+  padding-block: clamp(12px, 3svh, 32px);
+}
+
+.pw {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-inline: 24px;
+}
+
+@media (min-width: 768px) {
+  .pw {
+    padding-inline: 48px;
+  }
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(16px, 4svh, 40px);
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .split {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: 56px;
+  }
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+  letter-spacing: 0.04em;
+  color: var(--text-subtle);
+}
+
+.label::after {
+  content: "";
+  width: 28px;
+  height: 1px;
+  background: var(--line);
+}
+
+.heading {
+  text-wrap: balance;
+}
+
+.lead {
+  max-width: 30em;
+  font-size: clamp(16px, 1.4vw, 19px);
+  color: var(--text-subtle);
+  text-wrap: pretty;
+}
+
+.lead b {
+  color: var(--text-strong);
+}
+
+.vis {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 /* ── 쪽번호 줄: ← 이전 장 · 2 · 다음 장 → ───────────── */
 .folio {
-  position: absolute;
-  z-index: 2;
-  bottom: 1rem;
-  inset-inline: var(--gutter);
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 0.75rem;
+  padding: 0 var(--gutter) 0.25rem;
   font-size: 0.8125rem;
-  color: var(--ink);
+  color: var(--text-subtle);
 }
 
 .no {
@@ -77,9 +180,13 @@
   gap: 0.375rem;
   min-height: 2.75rem;
   font-weight: 600;
-  color: var(--ink);
+  color: var(--text-subtle);
   text-decoration: none;
   transition: color 0.15s;
+}
+
+.prev {
+  justify-self: start;
 }
 
 .next {
@@ -92,7 +199,7 @@
 .next:hover,
 .prev:focus-visible,
 .next:focus-visible {
-  color: var(--ink-strong);
+  color: var(--text-strong);
 }
 
 /* ── 접힌 귀: 오른쪽 아래 모서리를 누르면 다음 장 ───────── */
@@ -103,7 +210,7 @@
   bottom: 0;
   width: 2.25rem;
   height: 2.25rem;
-  /* 왼쪽 위 삼각형 = 접혀 올라온 종이 뒷면, 오른쪽 아래 = 귀가 접혀 드러난 아래 종이(페이지 바탕) */
+  /* 왼쪽 위 삼각형 = 접혀 올라온 종이 뒷면, 오른쪽 아래 = 귀가 접혀 드러난 아래 종이 */
   background:
     linear-gradient(to top left, var(--background) 0 50%, transparent 50%),
     linear-gradient(
@@ -112,7 +219,6 @@
       rgb(255 255 255 / 0.55) 45%,
       rgb(10 20 40 / 0.06)
     );
-  clip-path: polygon(100% 0, 100% 100%, 0 100%, 0 0);
   filter: drop-shadow(-2px -2px 3px rgb(10 20 40 / 0.12));
   transform-origin: 100% 100%;
   transition: transform 0.2s ease;
@@ -121,12 +227,3 @@
 .dogEar:hover {
   transform: scale(1.35);
 }
-
-/* ── 종이 한 장 ─────────────────────────────────────── */
-.sheet {
-  position: relative;
-  /* 투명한 섹션(맛보기)도 아래 장이 비치지 않게 — 종이는 불투명하다 */
-  background: var(--background);
-}
-
-/* 책 모드(쌓기·멈춤·넘김 자리)는 HomeBook.module.css 가 data-book="on" 일 때 덧붙인다 */

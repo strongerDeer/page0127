@@ -25,11 +25,11 @@ const ROLLING_WORDS = ['취향을', '계절을', '마음을'] as const;
  * 홈 첫 화면 — 책상 위에 놓인 책 한 권(2026-11-17 HJ "홈을 한 권의 책으로" ① 표지·펼침)
  *
  * 표지가 곧 히어로다. 제목(h1)은 표지 위의 진짜 글자라 서버 HTML 에 그대로 있다.
- * 스크롤하면 표지가 왼쪽으로 열리고 면지가 보인다 — 다음 PR(②)에서 이 자리에 본문 장이 이어진다.
+ * 스크롤하면 표지가 왼쪽으로 열리고 책 속으로 들어가 첫 쪽이 1장이 된다(홈에선 HomeBook 이 data-cover-* 를 움직인다).
  *
  * 성능 원칙 (HJ "최대한 성능 고려")
- * - JS 0 바이트: 서버 컴포넌트 + CSS 만. 펼침은 CSS 스크롤 연동 애니메이션(animation-timeline)이라
- *   메인 스레드를 쓰지 않는다. 지원하지 않는 브라우저·동작 줄이기에선 덮인 표지로 멈춰 있다.
+ * - 서버 컴포넌트. 홈의 책 모드에선 HomeBook 이 펼침·확대를 맡고, 그 밖(책 모드 전·다른 페이지)에선
+ *   CSS 스크롤 연동 애니메이션(animation-timeline)으로 표지만 연다. 동작 줄이기에선 덮인 표지로 멈춰 있다.
  * - 웹폰트는 띠지 명조 서브셋 6.8KB 하나(앞·뒤 띠지 문장 27자만 담음 — 기기 명조는 기기마다 모양이 달라 고정).
  * - 이미지 1장: 앱 아이콘 96px WebP(3KB). 표지 질감·그림자·바코드는 전부 CSS.
  * - 표지 장식(0127. 음각·띠지·책갈피)은 aria-hidden — 읽는 순서는 제목 → 부제 → 버튼.
@@ -41,16 +41,16 @@ export const AboutHero = ({
 }: AboutHeroProps) => (
   <section aria-labelledby='about-title' className={styles.desk}>
     <div className={styles.stage}>
-      <div className={styles.book}>
+      <div data-cover-book='' className={styles.book}>
         {/* 책 몸통: 종이 단면(오른쪽·아래)과 표지 안쪽의 첫 쪽 */}
         <div aria-hidden='true' className={styles.pagesBottom} />
         <div aria-hidden='true' className={styles.pagesEdge} />
-        <div aria-hidden='true' className={styles.leaf}>
+        <div aria-hidden='true' data-cover-leaf='' className={styles.leaf}>
           <span className={styles.leafChapter}>제1장</span>
           <span className={styles.leafTitle}>왜 page0127.인가요</span>
         </div>
 
-        <div className={styles.cover}>
+        <div data-cover-lid='' className={styles.cover}>
           <div className={styles.front}>
             <span aria-hidden='true' className={styles.bigNum}>
               0127<i>.</i>
@@ -99,7 +99,7 @@ export const AboutHero = ({
         </div>
       </div>
 
-      <div className={styles.cta}>
+      <div data-cover-cta='' className={styles.cta}>
         <p className={styles.lead}>
           한 권 꽂는 데 10초, 평가한 완독 책 다섯 권이 모이면 취향 노트가
           나와요.
