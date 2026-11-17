@@ -1,8 +1,4 @@
-'use client';
-
-import { useEffect, useRef, useState } from 'react';
-
-import { litCount, toWords } from '../model/wordFill';
+import { toWords } from '../model/wordFill';
 
 const WORDS = toWords([
   {
@@ -12,57 +8,26 @@ const WORDS = toWords([
   { text: ' 했어요.' },
 ]);
 
-const colorOf = (lit: boolean, key: boolean) =>
-  !lit ? 'text-text-subtle/30' : key ? 'text-primary' : 'text-text-strong';
-
 /**
- * 스크롤하는 만큼 단어가 옅은 색에서 진한 색으로 채워진다.
+ * 1장 "왜 page0127.인가요"의 문장 — 이 쪽을 펼치면 단어가 옅은 색에서 차례로 진해진다.
  *
- * 문장 전체는 처음부터 DOM 에 있으므로 스크린리더·검색엔진은 그대로 읽는다 — 색만 바뀐다.
- * 처음 값은 '전부 켜짐': 서버 HTML·JS 실패 시 옅은 문장이 남지 않게 하고,
- * 마운트 직후 실제 진행도로 내린다. reduced-motion 이면 켜진 채로 둔다.
+ * 서버 컴포넌트. 차오르는 연출은 HomeBook 이 쪽에 data-lit 을 켜고 CSS 가 단어마다
+ * 조금씩 늦게(--book-word) 색을 바꾼다 — 쪽이 화면에 붙어 움직이지 않아서, 예전처럼
+ * 문단 위치로 진행도를 재면 늘 0 에 머물러 회색으로 남았다(2026-11-17 HJ 스크린샷).
+ * 문장은 처음부터 진한 색이다: JS 실패·동작 줄이기면 그대로 읽힌다(옅게 하는 건 책 모드 CSS).
  */
-export const Manifesto = () => {
-  const ref = useRef<HTMLParagraphElement>(null);
-  const [lit, setLit] = useState(WORDS.length);
-
-  useEffect(() => {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-    const update = () => {
-      const r = ref.current?.getBoundingClientRect();
-      if (!r) return;
-      // 문단 윗변이 화면 80% 지점에 닿을 때 시작해, 아래로 지나가며 끝난다
-      const progress =
-        (innerHeight * 0.8 - r.top) / (r.height + innerHeight * 0.3);
-      setLit(litCount(progress, WORDS.length));
-    };
-    update();
-    addEventListener('scroll', update, { passive: true });
-    return () => removeEventListener('scroll', update);
-  }, []);
-
-  return (
-    <section
-      aria-label='왜 page0127.인가요'
-      // 홈에 들어오며 위아래를 줄였다 — py-40/48 이면 문단 하나에 화면 한 장이 비었다(2026-10-25 "여백이 많아").
-      // 회색 면을 화면 끝까지 깔아 위(표지 띠)·아래(맛보기) 섹션과 구획을 나눈다.
-      // sunken(gray/50)은 흰 바탕과 거의 구분이 안 돼 한 단 진한 gray/200 — 다크에선 그 값이 선 색이라 sunken 으로
-      className='bg-line-soft py-24 text-center md:py-32 dark:bg-sunken'
-    >
-      <div className='page-width'>
-        <p className='text-sm font-bold text-primary'>왜 page0127.인가요</p>
-        <p ref={ref} className='display-xl mx-auto mt-6 max-w-4xl text-balance'>
-          {WORDS.map((w, i) => (
-            <span
-              key={i}
-              className={`transition-colors duration-300 motion-reduce:transition-none ${colorOf(i < lit, w.key)}`}
-            >
-              {w.text}{' '}
-            </span>
-          ))}
-        </p>
-      </div>
-    </section>
-  );
-};
+export const Manifesto = () => (
+  <p className='display-xl mx-auto mt-6 max-w-4xl text-balance'>
+    {WORDS.map((w, i) => (
+      <span
+        key={i}
+        data-word=''
+        // 단어 순번 — 차오르는 지연(i × 45ms)에 쓴다. 연속값이라 클래스로 표현할 수 없다
+        style={{ '--book-word': i } as React.CSSProperties}
+        className={w.key ? 'text-primary' : 'text-text-strong'}
+      >
+        {w.text}{' '}
+      </span>
+    ))}
+  </p>
+);

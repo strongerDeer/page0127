@@ -32,6 +32,8 @@ const SCAN_DIRS = ['src', 'app'];
 const EXEMPT_FILES: string[] = [
   // 승인한 고정 봉투 아트만 그리며 원격 표지 URL은 받지 않는다
   'src/entities/notification/ui/BookEnvelopeArtwork.tsx',
+  // 홈 표지의 앱 아이콘 — 미리 줄여 둔 로컬 96px WebP 하나만 그린다(unoptimized)
+  'src/widgets/about/ui/AboutHero.tsx',
 ];
 
 const collectFiles = (dir: string): string[] => {

@@ -1,11 +1,262 @@
-/* 한 줄 높이만 보이게 자르고, 세로로 쌓인 단어를 한 칸씩 올린다.
-   마지막 칸은 첫 단어의 복제 — 처음으로 돌아갈 때 튀지 않게 */
+/*
+ * 홈 첫 화면 — 책상 위의 책 (① 표지·펼침)
+ *
+ * 펼침은 CSS 스크롤 연동 애니메이션으로만 움직인다(JS 없음).
+ *   .desk  : 스크롤 길이를 가진 바깥 상자. view-timeline 을 건다.
+ *   .stage : 화면에 붙어 있는(sticky) 무대. 이 안의 책이 타임라인 진행도로 열린다.
+ * 지원 브라우저 + 동작 줄이기 꺼짐일 때만 .desk 가 길어지고 애니메이션이 붙는다.
+ * 그 밖에는 덮인 표지 한 장으로 멈춰 있고, 바로 아래 섹션으로 평범하게 스크롤된다.
+ *
+ * 성능: transform·opacity 만 바꾼다(합성 단계에서 처리, 레이아웃·페인트 없음).
+ */
+
+.desk {
+  /* 표지 색 = 앱 아이콘 파랑. #0a72f0 은 크림 글자 대비 4.0 이라 한 단 내려 4.58(AA) */
+  --cover: #0969e0;
+  --cover-ink: #fbf1e6;
+  --belt: #f6efe2;
+  --gnb-h: 4rem; /* Gnb h-16 — 무대가 헤더 아래에 붙는다 */
+
+  position: relative;
+  background:
+    radial-gradient(
+      55% 45% at 50% 38%,
+      rgb(255 255 255 / 0.55),
+      transparent 70%
+    ),
+    radial-gradient(
+      130% 110% at 50% 45%,
+      transparent 50%,
+      rgb(16 40 80 / 0.16)
+    ),
+    #d6e4f5;
+}
+
+@media (prefers-color-scheme: dark) {
+  .desk {
+    background:
+      radial-gradient(
+        55% 45% at 50% 38%,
+        rgb(255 255 255 / 0.06),
+        transparent 70%
+      ),
+      var(--navy-900);
+  }
+}
+
+.stage {
+  /* 헤더(64px)와 모바일 아래 탭바(56px)를 뺀 한 화면 */
+  min-height: calc(100svh - var(--gnb-h) - 3.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(20px, 3.5svh, 36px);
+  padding: 32px 20px 40px;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .stage {
+    min-height: calc(100svh - var(--gnb-h));
+  }
+}
+
+/* ---------- 책 ---------- */
+.book {
+  --bh: min(56svh, 540px);
+  --bw: calc(var(--bh) * 0.7);
+  position: relative;
+  width: var(--bw);
+  height: var(--bh);
+  perspective: 1800px;
+}
+
+/* 책상 위 그림자 — filter(drop-shadow)는 펼치는 동안 매 프레임 다시 그려서 쓰지 않는다.
+   움직이지 않는 그라데이션 한 장 */
+.book::before {
+  content: "";
+  position: absolute;
+  left: 2%;
+  right: -8%;
+  bottom: -7%;
+  height: 14%;
+  background: radial-gradient(
+    50% 50% at 50% 50%,
+    rgb(16 32 64 / 0.32),
+    transparent 72%
+  );
+}
+
+@media (max-width: 520px) {
+  .book {
+    --bw: min(74vw, 300px);
+    --bh: calc(var(--bw) / 0.7);
+  }
+}
+
+/* 종이 단면 — 오른쪽과 아래로 살짝 보인다 */
+.pagesEdge,
+.pagesBottom {
+  position: absolute;
+  background: repeating-linear-gradient(
+    var(--dir),
+    #f6f8fb 0 1.5px,
+    rgb(0 0 0 / 0.11) 1.5px 2.2px
+  );
+}
+
+.pagesEdge {
+  --dir: to right;
+  top: 1.2%;
+  bottom: 1.2%;
+  right: -8px;
+  width: 9px;
+  border-radius: 0 3px 3px 0;
+}
+
+.pagesBottom {
+  --dir: to bottom;
+  left: 3%;
+  right: -8px;
+  bottom: -6px;
+  height: 7px;
+  border-radius: 0 0 4px 2px;
+}
+
+/* 표지 안쪽의 첫 쪽 — 펼치면 다음 장 제목이 보인다 */
+.leaf {
+  position: absolute;
+  inset: 0;
+  border-radius: 2px 6px 6px 2px;
+  background: #fbfcfe;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.6em;
+  padding: 0 14%;
+  color: var(--text-strong);
+  font-size: calc(var(--bw) * 0.05);
+}
+
+.leafChapter {
+  font-size: 0.7em;
+  color: var(--text-subtle);
+  letter-spacing: 0.08em;
+}
+
+.leafTitle {
+  font-weight: 700;
+  font-size: 1.3em;
+}
+
+@media (prefers-color-scheme: dark) {
+  .leaf {
+    background: var(--navy-800);
+    color: var(--gray-0);
+  }
+}
+
+/* ---------- 표지(앞면 + 면지) ---------- */
+.cover {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+}
+
+.front,
+.endpaper {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  backface-visibility: hidden;
+}
+
+.front {
+  box-shadow: 0 20px 34px -18px rgb(16 32 64 / 0.45);
+  border-radius: 3px 8px 8px 3px;
+  background: var(--cover);
+  color: var(--cover-ink);
+  display: flex;
+  flex-direction: column;
+  padding: 9% 9% 0 13%;
+}
+
+/* 책등 쪽 접힘 홈 — 넓은 그라데이션 대신 옅은 면 + 1px 선(HJ "그라데이션 과함") */
+.front::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 7%;
+  background: rgb(0 0 0 / 0.07);
+  box-shadow:
+    1px 0 0 rgb(0 0 0 / 0.16),
+    2px 0 0 rgb(255 255 255 / 0.1);
+}
+
+.endpaper {
+  transform: rotateY(180deg);
+  border-radius: 8px 3px 3px 8px;
+  background-color: #e6eff9;
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgb(20 41 78 / 0.16) 1px,
+    transparent 1.2px
+  );
+  background-size: 14px 14px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6%;
+}
+
+.title {
+  /* "책장이 계절을 말해 줍니다"가 한 줄에 들어가는 크기(2026-11-17 HJ "한 줄로") */
+  font-size: calc(var(--bw) * 0.063);
+  line-height: 1.42;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  word-break: keep-all;
+}
+
+.mark {
+  /* 제목 옆에 두면 제목 폭을 먹어 둘째 줄이 꺾였다 → 표지 오른쪽 위 모서리로(출판사 마크 자리) */
+  position: absolute;
+  top: 4%;
+  right: 6%;
+  width: calc(var(--bw) * 0.075);
+  height: auto;
+  border-radius: 22%;
+  box-shadow: 0 0 0 1px rgb(251 241 230 / 0.35);
+}
+
+.subtitle {
+  margin-top: 6%;
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  font-size: calc(var(--bw) * 0.038);
+}
+
+.subtitle::before {
+  content: "";
+  width: 1.6em;
+  height: 1px;
+  background: currentColor;
+}
+
+/* 제목의 돌아가는 단어 — 한 줄만 보이게 자르고 한 칸씩 올린다(마지막 칸은 첫 단어 복제) */
 .roll {
   display: inline-block;
-  height: 1em;
-  line-height: 1;
+  height: 1.1em;
+  line-height: 1.1;
   overflow: hidden;
-  vertical-align: -0.12em;
+  vertical-align: -0.16em;
+  color: var(--mint);
 }
 
 .roll > span {
@@ -29,6 +280,290 @@
   100% {
     transform: translateY(-300%);
   }
+}
+
+/* 0127. 음각 — 표지보다 살짝 어둡게, 위 그림자·아래 빛 */
+.bigNum {
+  position: absolute;
+  left: 11%;
+  bottom: 29%;
+  font-weight: 800;
+  font-size: calc(var(--bw) * 0.36);
+  line-height: 0.8;
+  letter-spacing: -0.06em;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--cover) 94%, #000);
+  text-shadow:
+    0 -1px 0 rgb(0 0 0 / 0.16),
+    0 1px 0 rgb(255 255 255 / 0.12);
+}
+
+.bigNum i {
+  font-style: normal;
+  color: color-mix(in srgb, var(--mint) 70%, var(--cover));
+  text-shadow: none;
+}
+
+/* ---------- 띠지 ---------- */
+.belt {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 31%;
+  padding: 0 22% 0 13%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: calc(var(--bw) * 0.016);
+  background: var(--belt);
+  /* 띠지는 다크에서도 크림 종이라 글자색을 고정한다(토큰은 다크에서 밝아진다) */
+  color: var(--navy-900);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.5),
+    0 -3px 8px -2px rgb(0 0 0 / 0.28);
+}
+
+/* 띠지가 책등까지 감싸는 부분 + 아래 접힌 선 */
+.belt::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 7%;
+  background: rgb(20 41 78 / 0.07);
+  box-shadow: 1px 0 0 rgb(20 41 78 / 0.12);
+}
+
+.belt::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 4.5% 0;
+  height: 1px;
+  background: rgb(20 41 78 / 0.18);
+}
+
+.beltEyebrow {
+  font-size: calc(var(--bw) * 0.027);
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  color: var(--blue-600);
+}
+
+/*
+ * 띠지 명조 — 앞표지·뒤표지(home-book BackCover) 띠지 문장에 쓰는 글자 27자만 담은 서브셋(6.8KB).
+ * 기기 명조(AppleMyungjo·바탕…)는 기기마다 모양·폭이 달라 띠지 줄바꿈이 깨질 수 있어서
+ * 한 글꼴로 고정했다(2026-11-17 HJ). 전체 한글 명조는 수 MB 라 쓰는 글자만 담는다.
+ *
+ * 원본: Noto Serif KR Black(900), SIL Open Font License 1.1 — 서브셋·재배포 가능.
+ * 띠지 문장을 바꾸면 이 파일도 다시 만들어야 한다(없는 글자는 아래 대체 명조로 보인다):
+ *   https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@900&text=<새 문장 URL 인코딩>
+ *   → 응답 CSS 의 woff2 주소를 받아 public/brand/belt-serif-subset.woff2 로 덮어쓴다.
+ */
+@font-face {
+  font-family: "Page0127 Belt Serif";
+  src: url("/brand/belt-serif-subset.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+.beltHead {
+  font-family:
+    "Page0127 Belt Serif", "AppleMyungjo", "Noto Serif KR", "Batang", serif;
+  font-weight: 900;
+  font-size: calc(var(--bw) * 0.054);
+  line-height: 1.32;
+  letter-spacing: -0.02em;
+}
+
+.beltFoot {
+  font-size: calc(var(--bw) * 0.03);
+  color: var(--navy-700);
+}
+
+.beltHeadSans {
+  font-weight: 800;
+  font-size: calc(var(--bw) * 0.05);
+  line-height: 1.32;
+  letter-spacing: -0.02em;
+}
+
+/* 배너를 단 띠지 — 링크다. 누를 수 있다는 걸 손가락 모양·살짝 밝아짐으로만 알린다 */
+.beltLink {
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.beltLink:hover {
+  filter: brightness(1.03);
+}
+
+.beltLink:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -4px;
+}
+
+/* 앱 아이콘과 같은 책갈피 — 띠지 위 가장자리에서 내려온다 */
+.bookmark {
+  position: absolute;
+  /* 위 "0127." 민트 점의 오른쪽 끝(표지 폭의 약 91.7%)에 맞춘다 — 실제 화면 390·1440 실측 */
+  right: 8.3%;
+  top: -1px;
+  width: calc(var(--bw) * 0.085);
+  height: 62%;
+  background: var(--cover);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+}
+
+/* ---------- 책 아래 문구·버튼 ---------- */
+.cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.lead {
+  max-width: 30rem;
+  font-size: 15px;
+  color: var(--text-subtle);
+  text-wrap: balance;
+}
+
+@media (prefers-color-scheme: dark) {
+  .lead {
+    color: var(--navy-300);
+  }
+}
+
+.hint {
+  display: none;
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+
+.hintTouch {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .hintFine {
+    display: none;
+  }
+
+  .hintTouch {
+    display: inline;
+  }
+}
+
+@media (max-height: 700px) {
+  .lead {
+    display: none;
+  }
+}
+
+/* ---------- 펼침: 지원 브라우저 + 동작 줄이기 꺼짐일 때만 ---------- */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .desk {
+      /* 무대 한 화면 + 펼치는 데 쓸 스크롤 0.7화면 */
+      height: calc(170svh - var(--gnb-h));
+      view-timeline: --desk block;
+    }
+
+    .stage {
+      position: sticky;
+      top: var(--gnb-h);
+      height: calc(100svh - var(--gnb-h));
+    }
+
+    /* 표지가 왼쪽으로 열린다 */
+    .cover {
+      animation: open-cover linear both;
+      animation-timeline: --desk;
+      animation-range: contain 0% contain 70%;
+    }
+
+    /* 넓은 화면: 열리는 만큼 책이 오른쪽으로 비켜 펼친 두 쪽이 가운데에 온다.
+       좁은 화면은 두 쪽이 다 들어가지 않아 제자리에서 표지만 화면 밖으로 넘긴다 */
+    @media (min-width: 768px) {
+      .book {
+        animation: center-spread linear both;
+        animation-timeline: --desk;
+        animation-range: contain 0% contain 70%;
+      }
+    }
+
+    /* 버튼·문구는 펼치기 시작하면 물러난다 */
+    .cta {
+      animation: fade-out linear both;
+      animation-timeline: --desk;
+      animation-range: contain 0% contain 25%;
+    }
+
+    .hint {
+      display: block;
+    }
+  }
+}
+
+@keyframes open-cover {
+  to {
+    transform: rotateY(-178deg);
+  }
+}
+
+@keyframes center-spread {
+  to {
+    transform: translateX(calc(var(--bw) * 0.5));
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* ---------- 홈 책 모드(HomeBook data-book="on"): 펼침·확대는 JS 가 스크롤에 맞춰 움직인다 ---------- */
+:global([data-book="on"]) .desk {
+  height: 100%;
+  view-timeline: none;
+}
+
+:global([data-book="on"]) .stage {
+  position: relative;
+  top: auto;
+  height: 100%;
+  min-height: 0;
+}
+
+:global([data-book="on"]) .book,
+:global([data-book="on"]) .cover,
+:global([data-book="on"]) .cta {
+  animation: none;
+}
+
+:global([data-book="on"]) .book {
+  will-change: transform;
+}
+
+/* 첫 쪽엔 1장 복제본(data-book-twin)이 들어간다 — 원래 그려 둔 장 제목은 숨긴다 */
+:global([data-book="on"]) .leaf {
+  overflow: hidden;
+  padding: 0;
+}
+
+:global([data-book="on"]) .leafChapter,
+:global([data-book="on"]) .leafTitle {
+  display: none;
+}
+
+:global([data-book="on"]) .hint {
+  /* 표지에선 버튼 아래 흐름 안에 둔다 — 화면 아래에 띄우면 좁은 화면에서 버튼을 가린다.
+     1장부터는 HomeBook 의 넘김 안내가 이어 받는다 */
+  display: block;
 }
 
 @media (prefers-reduced-motion: reduce) {

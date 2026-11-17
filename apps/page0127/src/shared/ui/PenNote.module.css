@@ -1,0 +1,28 @@
+/*
+ * 연필 메모 — 시안 v9 아날로그 룩의 손글씨(2026-11-17 HJ "필기 느낌").
+ * 메모 문장에 쓰는 글자만 담은 서브셋(5KB). 원본: Nanum Pen Script, SIL Open Font License 1.1.
+ * 메모 문장을 바꾸거나 새로 쓰면 이 파일도 다시 만들어야 한다(없는 글자는 기기 손글씨체로 보인다):
+ *   https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&text=<모든 메모 문장 URL 인코딩>
+ *   → 응답 CSS 의 woff2 주소를 받아 public/brand/hand-pen-subset.woff2 로 덮어쓴다.
+ */
+@font-face {
+  font-family: "Page0127 Pen";
+  src: url("/brand/hand-pen-subset.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.note {
+  display: block;
+  font-family: "Page0127 Pen", "Nanum Pen Script", cursive;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.05;
+  /* 연필 색 — 남색을 옅게. 다크에선 글자 색에 가깝게 밝힌다 */
+  color: color-mix(in srgb, var(--text-subtle) 80%, var(--primary));
+  transform: rotate(-4deg);
+  transform-origin: left center;
+  white-space: nowrap;
+  pointer-events: none;
+}

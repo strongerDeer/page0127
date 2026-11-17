@@ -1,0 +1,341 @@
+/* 홈 "한 권의 책" 무대 — 쪽 겹치기·캔버스·목차 (시안 v9 의 .flip / .stage / .pg) */
+
+.book {
+  /* JS(HomeBook)가 실제 값으로 덮어쓴다 — 여기는 재기 전의 기본값 */
+  --book-gnb: 4rem;
+  --book-h: calc(100svh - 4rem);
+  --book-run: 0px;
+  --book-bottom: 0px;
+  /* 1장 문장의 단어 순번(Manifesto 가 단어마다 덮어쓴다) */
+  --book-word: 0;
+
+  position: relative;
+}
+
+.snap,
+.canvas,
+.edges,
+.run {
+  display: none;
+}
+
+/*
+ * ── 책 모드(HomeBook 이 data-book="on" 을 켠다) ────────────────
+ * 무대(.stage)가 헤더 아래에 붙고, 쪽은 모두 무대를 꽉 채워 겹친다. 앞 쪽이 위(z-index 는 JS).
+ * 무대 뒤의 빈 블록(.run)이 넘길 거리만큼 스크롤을 만든다.
+ */
+.book[data-book="on"] .stage {
+  position: sticky;
+  top: var(--book-gnb);
+  height: var(--book-h);
+  overflow: hidden;
+}
+
+.book[data-book="on"] .stage > :global([data-book-page]) {
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+  /* 쪽은 한 화면에 들어가게 짰다. 아주 작은 화면에서 넘치면 잘리지 않고 그 쪽 안에서만 스크롤된다 */
+  overflow: hidden auto;
+  will-change: clip-path;
+}
+
+.book[data-book="on"] .run {
+  display: block;
+  height: var(--book-run);
+}
+
+/* 쪽마다 스냅 자리 — 한 번 밀면 한 쪽(scroll-snap-stop: always 로 여러 쪽을 건너뛰지 않는다) */
+.book[data-book="on"] .snap {
+  display: block;
+  position: absolute;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  scroll-margin-top: var(--book-gnb);
+  pointer-events: none;
+}
+
+.book[data-book="on"] .snap[hidden] {
+  display: none;
+}
+
+/* 말린 종이 뒷면·그림자 — 쪽들 위 */
+.book[data-book="on"] .canvas {
+  display: block;
+  position: absolute;
+  z-index: 100;
+  inset: 0 auto auto 0;
+  pointer-events: none;
+}
+
+/* 1장 문장: 펼치기 전엔 옅고, 쪽이 거의 펼쳐지면(data-lit) 앞 단어부터 45ms 씩 늦게 진해진다 */
+.book[data-book="on"] :global([data-word]) {
+  transition: color 0.35s calc(var(--book-word) * 45ms);
+}
+
+.book[data-book="on"]
+  :global(:is([data-book-page], [data-book-twin]):not([data-lit]) [data-word]) {
+  color: color-mix(in srgb, var(--text-subtle) 30%, transparent);
+}
+
+/*
+ * 종이 노이즈 — 시안 v9 "종이 노이즈"(2026-11-17 HJ "노이즈 적용").
+ * 잔점(밝은 점·어두운 점)과 아주 옅은 큰 얼룩, 두 겹 모두 SVG feTurbulence 를 data URI 로 넣어
+ * 이미지 파일이 없다. 홈 책 무대에만 덮는다 — body 에 걸면 서재·설정까지 깔린다.
+ * 쪽·말린 종이(캔버스) 위, 책 도구 아래. 움직이지 않아 동작 줄이기와 무관하다.
+ */
+.book[data-book="on"] .stage::after {
+  content: "";
+  position: absolute;
+  z-index: 150;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2.4' intercept='-.7'/%3E%3CfeFuncG type='linear' slope='2.4' intercept='-.7'/%3E%3CfeFuncB type='linear' slope='2.4' intercept='-.7'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='3' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
+  background-size:
+    240px 240px,
+    900px 900px;
+  mix-blend-mode: overlay;
+  opacity: 0.44;
+}
+
+/* 남은 쪽 두께 — 종이 단면 줄무늬. 폭은 JS 가 남은 장 수로 정한다 */
+.book[data-book="on"] .edges {
+  display: block;
+  position: absolute;
+  z-index: 90;
+  inset: 0 0 0 auto;
+  width: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to left,
+    var(--card) 0 2px,
+    rgb(0 0 0 / 0.14) 2px 3px
+  );
+  box-shadow: -1px 0 0 rgb(0 0 0 / 0.08);
+}
+
+/* 종이에 인쇄한 사진처럼 — 표지 이미지 채도·대비를 아주 조금 낮춘다(시안 아날로그 룩) */
+.book[data-book="on"] .stage :global(img) {
+  filter: saturate(0.88) contrast(0.96);
+}
+
+/* 어두운 화면: 밝은 점이 튀지 않게 뒤집고 더 옅게 */
+@media (prefers-color-scheme: dark) {
+  .book[data-book="on"] .stage::after {
+    filter: invert(1);
+    mix-blend-mode: soft-light;
+    opacity: 0.3;
+  }
+}
+
+/* ── 책 도구(소리 · 목차): 책 안에 있을 때만 오른쪽 아래에 뜬다 ───────── */
+.tools {
+  /* 오른쪽 아래, 쪽번호 줄(이전·다음 장) 바로 위 — 시안의 오른쪽 위보다 이쪽이 낫다(2026-11-17 HJ) */
+  position: fixed;
+  z-index: 36;
+  /* 오른쪽 가장자리의 남은 쪽 두께(최대 ~24px)에 닿지 않게 */
+  right: 2rem;
+  bottom: calc(var(--book-bottom) + 1rem + 2.75rem);
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+}
+
+.tools[data-show] {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+.tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--text-strong);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgb(10 20 40 / 0.12);
+}
+
+.tool[aria-pressed="true"] {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.toolIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* ── 넘김 안내: 표지·1장에서 화면 아래 가운데 ───────────────── */
+.hint {
+  position: fixed;
+  z-index: 36;
+  left: 50%;
+  bottom: calc(var(--book-bottom) + 1.25rem);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  box-shadow: 0 6px 18px rgb(10 20 40 / 0.1);
+  color: var(--text-subtle);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 8px);
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
+}
+
+/* 좁은 화면에선 오른쪽 아래 도구 줄과 폭이 겹쳐서 그 위로 올린다 */
+@media (max-width: 640px) {
+  .hint {
+    bottom: calc(var(--book-bottom) + 1rem + 2.75rem + 3.5rem);
+  }
+}
+
+.hint[data-show] {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.hint kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.375rem;
+  height: 1.375rem;
+  margin: 0 0.0625rem;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 0.3rem;
+  background: var(--card);
+  color: var(--text-strong);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* 아래로 까딱이는 화살표 — 스크롤하라는 몸짓 */
+.hintArrow {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  animation: hint-nudge 1.6s ease-in-out infinite;
+}
+
+@keyframes hint-nudge {
+  50% {
+    transform: translateY(2px) rotate(45deg);
+  }
+}
+
+.hintTouch {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .hintFine {
+    display: none;
+  }
+
+  .hintTouch {
+    display: inline;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hintArrow {
+    animation: none;
+  }
+}
+
+/* ── 목차 (popover) ────────────────────────────────── */
+.toc {
+  inset: auto 1rem calc(var(--book-bottom) + 1rem + 6rem) auto;
+  width: min(20rem, calc(100vw - 2rem));
+  margin: 0;
+  padding: 1.25rem 1rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--card);
+  color: var(--text-strong);
+  box-shadow: 0 16px 40px rgb(10 20 40 / 0.18);
+}
+
+.tocTitle {
+  padding: 0 0.5rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-subtle);
+}
+
+.toc ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.toc a {
+  display: grid;
+  grid-template-columns: 3.25rem 1fr auto;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.625rem 0.5rem;
+  border-radius: 0.5rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.toc a:hover,
+.toc a:focus-visible {
+  background: var(--sunken);
+}
+
+.toc a[aria-current="page"] {
+  color: var(--primary);
+}
+
+.toc a[aria-current="page"] .tocName {
+  font-weight: 700;
+}
+
+.tocLabel {
+  font-size: 0.75rem;
+  color: var(--text-subtle);
+}
+
+.tocName {
+  font-size: 0.9375rem;
+}
+
+/* 목차 끝의 쪽번호 — 점선 대신 숫자만 */
+.tocNo {
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-subtle);
+}

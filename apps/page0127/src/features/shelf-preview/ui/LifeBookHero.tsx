@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { Button, cn,CoverImage } from '@repo/ui';
+import { Button, cn, CoverImage } from '@repo/ui';
 import { ArrowRight, BookOpen, Crown } from 'lucide-react';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
@@ -21,6 +21,11 @@ import type { ShelfPick } from '../model/types';
 type LifeBookHeroProps = {
   /** 리더들이 뽑은 인생책 — 비어 있으면 줄을 그리지 않는다 */
   leaders: LeaderLifeBook[];
+  /**
+   * 홈 책의 쪽 안에 넣을 때 — 제목·설명은 쪽(Chapter)이 왼쪽에 쓰고, 여기선 고르는 판만 그린다.
+   * A 의 첫인상 쪽과 같은 배치(왼쪽 글 + 오른쪽 그림)로 맞춘다(2026-11-17).
+   */
+  inBook?: boolean;
 };
 
 /**
@@ -32,7 +37,10 @@ type LifeBookHeroProps = {
  * - 기본은 **찾기**다. 리더 인생책 줄은 지름길 — 누르면 검색으로 고른 것처럼 위 빈 카드에 꽂힌다(2026-11-03).
  * - 인원 수·투표 같은 숫자는 넣지 않는다 — 가입 전에 올라가는 숫자는 사실과 다르다.
  */
-export const LifeBookHero = ({ leaders }: LifeBookHeroProps) => {
+export const LifeBookHero = ({
+  leaders,
+  inBook = false,
+}: LifeBookHeroProps) => {
   const router = useRouter();
   const [chosen, setChosen] = useState<ShelfPick | null>(null);
 
@@ -82,6 +90,152 @@ export const LifeBookHero = ({ leaders }: LifeBookHeroProps) => {
     router.push(toPendingLoginPath(pending));
   };
 
+  const board = (
+    <div
+      className={cn(
+        'tint-cool mx-auto flex flex-col items-center text-center',
+        inBook
+          ? 'w-full max-w-xl rounded-md px-5 py-6 md:p-8'
+          : 'mt-12 max-w-2xl rounded-3xl px-5 py-10 md:mt-16 md:p-14'
+      )}
+    >
+      <div ref={slotRef} className='scroll-my-24'>
+        {chosen ? (
+          <div className='relative w-36 md:w-44'>
+            <CoverImage
+              src={chosen.coverSrc}
+              fallbackSrc={chosen.coverFallback}
+              alt={`${chosen.book.title} (내 인생책)`}
+              width={192}
+              height={288}
+              fallback={
+                <span className='flex aspect-2/3 items-center justify-center rounded-lg bg-card p-3 text-center text-sm text-text-subtle ring-4 ring-chart-6'>
+                  {chosen.book.title}
+                </span>
+              }
+              className='aspect-2/3 h-auto w-full rounded-lg object-cover shadow-xl ring-4 ring-chart-6'
+            />
+            <span className='absolute -top-3 -right-3 flex size-9 items-center justify-center rounded-full bg-chart-6 text-white shadow-md'>
+              <Crown aria-hidden='true' className='size-5' />
+            </span>
+          </div>
+        ) : (
+          // 빈 자리 — 여기에 내 인생책이 꽂힌다는 것을 모양으로 보여 준다
+          <div
+            aria-hidden='true'
+            className='flex aspect-2/3 w-36 items-center justify-center rounded-lg border-2 border-dashed border-chart-6/60 bg-card/60 md:w-44'
+          >
+            <BookOpen className='size-10 text-chart-6/50' />
+          </div>
+        )}
+      </div>
+
+      {chosen ? (
+        <div className='mt-6 w-full min-w-0'>
+          <p className='break-keep text-lg font-bold text-text-strong md:text-xl'>
+            {chosen.book.title}
+          </p>
+          {chosen.book.author && (
+            <p className='mt-1 truncate text-sm text-text-subtle'>
+              {chosen.book.author}
+            </p>
+          )}
+          <div className='mt-5 flex flex-col items-center gap-2'>
+            <Button
+              size='lg'
+              onClick={handleSave}
+              className='h-14 w-full gap-2 px-7 text-base font-bold shadow-lg shadow-primary/30 sm:w-auto'
+            >
+              내 서재에 등록하기
+              <ArrowRight aria-hidden='true' className='size-5' />
+            </Button>
+            <p className='text-xs text-text-subtle'>
+              무료 · 구글·카카오로 10초 가입
+            </p>
+            <button
+              type='button'
+              onClick={() => setChosen(null)}
+              className='rounded-md px-2 py-1.5 text-sm font-medium text-text-subtle hover:bg-primary/10 hover:text-text-strong'
+            >
+              다른 책 찾기
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className='mt-6 w-full'>
+          <ShelfSearch
+            defaultOpen
+            centered
+            placeholder='책 제목이나 저자'
+            // 검색칸은 아직 고르기 전에만 보인다 — 고른 책이 없으니 표시할 것도 없다
+            isSelected={() => false}
+            disabled={false}
+            onPick={(pick) => handlePick(pick, 'search')}
+          />
+        </div>
+      )}
+
+      {/* 고른 순간을 화면낭독기 사용자도 듣게 한다 */}
+      <p aria-live='polite' className='sr-only'>
+        {chosen ? `${chosen.book.title}을 인생책으로 골랐어요.` : ''}
+      </p>
+
+      {leaders.length > 0 && (
+        <div className='mt-10 w-full border-t border-line-soft pt-8'>
+          <p className='text-sm font-bold text-text-strong md:text-base'>
+            리더들이 뽑은 인생책이에요
+          </p>
+          <p className='mt-1 text-xs text-text-subtle'>
+            같은 책이 있다면 눌러서 바로 골라 보세요
+          </p>
+          <ul className='mx-auto mt-4 grid max-w-md grid-cols-5 gap-2 md:gap-3'>
+            {leaders.map((leader) => {
+              const selected = chosen?.book.isbn === leader.book.isbn;
+              return (
+                <li key={leader.book.isbn}>
+                  {/* 누르면 위 카드에 꽂힌다. 고른 책은 위 카드와 같은 민트 테두리로 표시 */}
+                  <button
+                    type='button'
+                    aria-pressed={selected}
+                    aria-label={`${leader.book.title} 인생책으로 고르기`}
+                    onClick={() => handlePick(leader, 'leader')}
+                    className={cn(
+                      'block w-full rounded-md transition-transform hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none motion-reduce:hover:translate-y-0',
+                      selected && '-translate-y-1'
+                    )}
+                  >
+                    <CoverImage
+                      src={leader.coverSrc}
+                      fallbackSrc={leader.coverFallback}
+                      alt=''
+                      width={96}
+                      height={144}
+                      fallback={
+                        <span className='flex aspect-2/3 items-center justify-center overflow-hidden rounded-md bg-sunken p-1 text-[10px] text-text-subtle'>
+                          <span className='line-clamp-4'>
+                            {leader.book.title}
+                          </span>
+                        </span>
+                      }
+                      className={cn(
+                        'aspect-2/3 h-auto w-full rounded-md object-cover shadow-md',
+                        selected
+                          ? 'ring-2 ring-chart-6'
+                          : 'ring-1 ring-text-strong/10'
+                      )}
+                    />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+
+  if (inBook) return board;
+
   return (
     // id: 홈 첫 화면의 "내 책장 만들어 보기"가 여기로 내려온다 — A 와 같은 자리(scroll-mt 로 GNB 에 안 가리게)
     <section
@@ -103,140 +257,7 @@ export const LifeBookHero = ({ leaders }: LifeBookHeroProps) => {
         </p>
       </div>
 
-      <div className='tint-cool mx-auto mt-12 flex max-w-2xl flex-col items-center rounded-3xl px-5 py-10 text-center md:mt-16 md:p-14'>
-        <div ref={slotRef} className='scroll-my-24'>
-          {chosen ? (
-            <div className='relative w-36 md:w-44'>
-              <CoverImage
-                src={chosen.coverSrc}
-                fallbackSrc={chosen.coverFallback}
-                alt={`${chosen.book.title} (내 인생책)`}
-                width={192}
-                height={288}
-                fallback={
-                  <span className='flex aspect-2/3 items-center justify-center rounded-lg bg-card p-3 text-center text-sm text-text-subtle ring-4 ring-chart-6'>
-                    {chosen.book.title}
-                  </span>
-                }
-                className='aspect-2/3 h-auto w-full rounded-lg object-cover shadow-xl ring-4 ring-chart-6'
-              />
-              <span className='absolute -top-3 -right-3 flex size-9 items-center justify-center rounded-full bg-chart-6 text-white shadow-md'>
-                <Crown aria-hidden='true' className='size-5' />
-              </span>
-            </div>
-          ) : (
-            // 빈 자리 — 여기에 내 인생책이 꽂힌다는 것을 모양으로 보여 준다
-            <div
-              aria-hidden='true'
-              className='flex aspect-2/3 w-36 items-center justify-center rounded-lg border-2 border-dashed border-chart-6/60 bg-card/60 md:w-44'
-            >
-              <BookOpen className='size-10 text-chart-6/50' />
-            </div>
-          )}
-        </div>
-
-        {chosen ? (
-          <div className='mt-6 w-full min-w-0'>
-            <p className='break-keep text-lg font-bold text-text-strong md:text-xl'>
-              {chosen.book.title}
-            </p>
-            {chosen.book.author && (
-              <p className='mt-1 truncate text-sm text-text-subtle'>
-                {chosen.book.author}
-              </p>
-            )}
-            <div className='mt-5 flex flex-col items-center gap-2'>
-              <Button
-                size='lg'
-                onClick={handleSave}
-                className='h-14 w-full gap-2 px-7 text-base font-bold shadow-lg shadow-primary/30 sm:w-auto'
-              >
-                내 서재에 등록하기
-                <ArrowRight aria-hidden='true' className='size-5' />
-              </Button>
-              <p className='text-xs text-text-subtle'>
-                무료 · 구글·카카오로 10초 가입
-              </p>
-              <button
-                type='button'
-                onClick={() => setChosen(null)}
-                className='rounded-md px-2 py-1.5 text-sm font-medium text-text-subtle hover:bg-primary/10 hover:text-text-strong'
-              >
-                다른 책 찾기
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className='mt-6 w-full'>
-            <ShelfSearch
-              defaultOpen
-              centered
-              placeholder='책 제목이나 저자'
-              // 검색칸은 아직 고르기 전에만 보인다 — 고른 책이 없으니 표시할 것도 없다
-              isSelected={() => false}
-              disabled={false}
-              onPick={(pick) => handlePick(pick, 'search')}
-            />
-          </div>
-        )}
-
-        {/* 고른 순간을 화면낭독기 사용자도 듣게 한다 */}
-        <p aria-live='polite' className='sr-only'>
-          {chosen ? `${chosen.book.title}을 인생책으로 골랐어요.` : ''}
-        </p>
-
-        {leaders.length > 0 && (
-          <div className='mt-10 w-full border-t border-line-soft pt-8'>
-            <p className='text-sm font-bold text-text-strong md:text-base'>
-              리더들이 뽑은 인생책이에요
-            </p>
-            <p className='mt-1 text-xs text-text-subtle'>
-              같은 책이 있다면 눌러서 바로 골라 보세요
-            </p>
-            <ul className='mx-auto mt-4 grid max-w-md grid-cols-5 gap-2 md:gap-3'>
-              {leaders.map((leader) => {
-                const selected = chosen?.book.isbn === leader.book.isbn;
-                return (
-                  <li key={leader.book.isbn}>
-                    {/* 누르면 위 카드에 꽂힌다. 고른 책은 위 카드와 같은 민트 테두리로 표시 */}
-                    <button
-                      type='button'
-                      aria-pressed={selected}
-                      aria-label={`${leader.book.title} 인생책으로 고르기`}
-                      onClick={() => handlePick(leader, 'leader')}
-                      className={cn(
-                        'block w-full rounded-md transition-transform hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary motion-reduce:transition-none motion-reduce:hover:translate-y-0',
-                        selected && '-translate-y-1'
-                      )}
-                    >
-                      <CoverImage
-                        src={leader.coverSrc}
-                        fallbackSrc={leader.coverFallback}
-                        alt=''
-                        width={96}
-                        height={144}
-                        fallback={
-                          <span className='flex aspect-2/3 items-center justify-center overflow-hidden rounded-md bg-sunken p-1 text-[10px] text-text-subtle'>
-                            <span className='line-clamp-4'>
-                              {leader.book.title}
-                            </span>
-                          </span>
-                        }
-                        className={cn(
-                          'aspect-2/3 h-auto w-full rounded-md object-cover shadow-md',
-                          selected
-                            ? 'ring-2 ring-chart-6'
-                            : 'ring-1 ring-text-strong/10'
-                        )}
-                      />
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
-      </div>
+      {board}
     </section>
   );
 };

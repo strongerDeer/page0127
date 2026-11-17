@@ -19,17 +19,17 @@ test('홈 첫 화면 제목이 JS 를 기다리지 않고 보이고, h1 은 하�
   await expect(page.locator('h1')).toHaveCount(1);
 });
 
-test('홈 첫 화면 버튼은 같은 페이지의 맛보기·둘러보기로 내려간다', async ({
+test('홈 첫 화면 버튼은 같은 페이지의 맛보기·둘러보기 장으로 넘어간다', async ({
   page,
 }) => {
   // 버튼이 다른 페이지로 나가지 않는다
   await page.goto('/');
   await expect(
     page.getByRole('link', { name: '내 책장 만들어 보기' })
-  ).toHaveAttribute('href', '#first-impression');
+  ).toHaveAttribute('href', '#book-ch-pick');
   await expect(
     page.getByRole('link', { name: '어떻게 쓰나요?' })
-  ).toHaveAttribute('href', '#highlights');
+  ).toHaveAttribute('href', '#book-ch-sentence');
 });
 
 test('홈 표지 띠에 깨진 이미지가 보이지 않는다', async ({ page }) => {

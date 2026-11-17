@@ -1,67 +1,143 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { Button } from '@repo/ui';
 
 import { ShareSheetButton } from '@/features/share';
 
-import { type ShelfBook, splitCoverRows } from '../model/coverRows';
-import { CoverMarquee } from './CoverMarquee';
-import { Reveal } from './Reveal';
+import { BeltLink } from './BeltLink';
 
 import type { HomeMember } from '../model/member';
+import type { HeroSlide } from '@/entities/banner/types';
 
 import styles from './AboutHero.module.css';
 
 type AboutHeroProps = {
-  books: ShelfBook[];
-  /** "내 책장 만들어 보기"가 갈 곳 — 홈에선 같은 페이지의 맛보기 섹션(#first-impression) */
+  /** "내 책장 만들어 보기"가 갈 곳 — 홈에선 같은 페이지의 맛보기 장(#book-ch-first-impression) */
   startHref?: string;
   /** "어떻게 쓰나요?"가 갈 곳 */
   guideHref?: string;
   /** 로그인 사용자 — 있으면 버튼이 "내 서재로·서재 공유하기"로 바뀐다 */
   member?: HomeMember | null;
+  /**
+   * 어드민 배너 — 있으면 띠지 문구를 갈아 끼운다(제목=큰 문장, 설명=아랫줄, 띠지 전체가 링크).
+   * 없으면 기본 띠지 문구. 예전엔 표지 위에 배너 칸이 따로 있어 표지를 화면 아래로 밀었다(2026-11-17).
+   */
+  belt?: HeroSlide | null;
 };
 
-// 홈 히어로("책장을 보면, 그 사람이 보인다.")와 겹치지 않게 문장을 바꾸고,
-// 돌아가는 단어 효과만 살렸다. 소개는 "체험"이 아니라 "이해"를 맡는다.
+// 표지 제목에서 돌아가는 단어. 스크린리더·검색엔진은 첫 단어로 고정된 문장을 읽는다.
 const ROLLING_WORDS = ['취향을', '계절을', '마음을'] as const;
 
+/**
+ * 홈 첫 화면 — 책상 위에 놓인 책 한 권(2026-11-17 HJ "홈을 한 권의 책으로" ① 표지·펼침)
+ *
+ * 표지가 곧 히어로다. 제목(h1)은 표지 위의 진짜 글자라 서버 HTML 에 그대로 있다.
+ * 스크롤하면 표지가 왼쪽으로 열리고 책 속으로 들어가 첫 쪽이 1장이 된다(홈에선 HomeBook 이 data-cover-* 를 움직인다).
+ *
+ * 성능 원칙 (HJ "최대한 성능 고려")
+ * - 서버 컴포넌트. 홈의 책 모드에선 HomeBook 이 펼침·확대를 맡고, 그 밖(책 모드 전·다른 페이지)에선
+ *   CSS 스크롤 연동 애니메이션(animation-timeline)으로 표지만 연다. 동작 줄이기에선 덮인 표지로 멈춰 있다.
+ * - 웹폰트는 띠지 명조 서브셋 6.8KB 하나(앞·뒤 띠지 문장 27자만 담음 — 기기 명조는 기기마다 모양이 달라 고정).
+ * - 이미지 1장: 앱 아이콘 96px WebP(3KB). 표지 질감·그림자·바코드는 전부 CSS.
+ * - 표지 장식(0127. 음각·띠지·책갈피)은 aria-hidden — 읽는 순서는 제목 → 부제 → 버튼.
+ */
 export const AboutHero = ({
-  books,
   startHref = '/',
   guideHref = '#steps',
   member = null,
-}: AboutHeroProps) => {
-  const rows = splitCoverRows(books);
+  belt = null,
+}: AboutHeroProps) => (
+  <section aria-labelledby='about-title' className={styles.desk}>
+    <div className={styles.stage}>
+      <div data-cover-book='' className={styles.book}>
+        {/* 책 몸통: 종이 단면(오른쪽·아래)과 표지 안쪽의 첫 쪽 */}
+        <div aria-hidden='true' className={styles.pagesBottom} />
+        <div aria-hidden='true' className={styles.pagesEdge} />
+        <div aria-hidden='true' data-cover-leaf='' className={styles.leaf}>
+          <span className={styles.leafChapter}>제1장</span>
+          <span className={styles.leafTitle}>왜 page0127.인가요</span>
+        </div>
 
-  return (
-    // pb: 아래 '왜' 섹션이 회색 면이라, 띠가 바로 붙으면 두 면이 맞닿아 답답하다 — 흰 여백을 둔다
-    <section
-      aria-labelledby='about-title'
-      className='pt-24 pb-16 md:pt-28 md:pb-20'
-    >
-      <div className='page-width text-center'>
-        <p className='text-sm font-bold text-primary'>
-          독서 기록 서비스, page0127.
-        </p>
-        <h1 id='about-title' className='display-xl mt-4 text-balance'>
-          읽은 책을 꽂아 두면,
-          <br />
-          책장이{' '}
-          {/* 스크린리더·검색엔진은 고정 문장을 읽는다 — 계속 바뀌는 글자를 읽히면 혼란스럽다 */}
-          <span className='sr-only'>{ROLLING_WORDS[0]}</span>
-          <span aria-hidden='true' className={`${styles.roll} text-primary`}>
-            {[...ROLLING_WORDS, ROLLING_WORDS[0]].map((w, i) => (
-              <span key={i}>{w}</span>
-            ))}
-          </span>{' '}
-          말해 줍니다
-        </h1>
-        <p className='mx-auto mt-5 max-w-md text-balance text-base text-text-subtle'>
+        <div data-cover-lid='' className={styles.cover}>
+          <div className={styles.front}>
+            <span aria-hidden='true' className={styles.bigNum}>
+              0127<i>.</i>
+            </span>
+            <div className={styles.titleRow}>
+              <h1 id='about-title' className={styles.title}>
+                읽은 책을 꽂아 두면,
+                <br />
+                책장이 <span className='sr-only'>{ROLLING_WORDS[0]}</span>
+                <span aria-hidden='true' className={styles.roll}>
+                  {[...ROLLING_WORDS, ROLLING_WORDS[0]].map((w, i) => (
+                    <span key={i}>{w}</span>
+                  ))}
+                </span>{' '}
+                말해 줍니다
+              </h1>
+              {/* 출판사 마크 자리 — 작게, 정면으로. unoptimized: 이미 96px WebP(3KB)라
+                  이미지 변환 함수를 거칠 필요가 없다(Vercel 이미지 변환·CPU 절약) */}
+              <Image
+                src='/brand/app-icon-96.webp'
+                alt=''
+                width={48}
+                height={48}
+                unoptimized
+                className={styles.mark}
+              />
+            </div>
+            <p className={styles.subtitle}>읽은 책이 쌓여 책장이 됩니다</p>
+
+            {/* 띠지 — 실제 책처럼 표지 아래를 감싸는 종이 띠. 숫자 아랫단을 살짝 가린다.
+                어드민 배너가 있으면 그 문구로 갈아 끼우고 띠지가 링크가 된다 */}
+            {belt ? (
+              <BeltLink
+                slideId={belt.id}
+                href={belt.href}
+                cta={belt.cta}
+                className={`${styles.belt} ${styles.beltLink}`}
+              >
+                <span className={styles.beltEyebrow}>{belt.eyebrow}</span>
+                {/* 배너 문구는 그때그때 바뀌어 띠지 명조 서브셋에 글자가 없다 → 본문 고딕 */}
+                <span className={styles.beltHeadSans}>
+                  {belt.lines[0]}
+                  <br />
+                  {belt.lines[1]}
+                </span>
+                <span className={styles.beltFoot}>
+                  {belt.sub} <span aria-hidden='true'>→</span>
+                </span>
+                <i aria-hidden='true' className={styles.bookmark} />
+              </BeltLink>
+            ) : (
+              <div aria-hidden='true' className={styles.belt}>
+                <span className={styles.beltEyebrow}>
+                  2026 독서 기록 서비스
+                </span>
+                <span className={styles.beltHead}>
+                  “읽은 책이 쌓이면,
+                  <br />
+                  책장이 나를 소개한다”
+                </span>
+                <span className={styles.beltFoot}>
+                  한 권을 꽂는 순간, 당신의 서재가 시작됩니다
+                </span>
+                <i className={styles.bookmark} />
+              </div>
+            )}
+          </div>
+          {/* 표지 안쪽(면지) — 펼치면 보인다 */}
+          <div aria-hidden='true' className={styles.endpaper} />
+        </div>
+      </div>
+
+      <div data-cover-cta='' className={styles.cta}>
+        <p className={styles.lead}>
           한 권 꽂는 데 10초, 평가한 완독 책 다섯 권이 모이면 취향 노트가
           나와요.
         </p>
-        <div className='mt-8 flex flex-wrap justify-center gap-2.5'>
+        <div className='flex flex-wrap justify-center gap-2.5'>
           {member ? (
             // 이미 서재가 있는 사람 — 체험 대신 자기 책장으로, 그리고 자랑하러
             <>
@@ -90,25 +166,13 @@ export const AboutHero = ({
             </>
           )}
         </div>
+        <p aria-hidden='true' className={styles.hint}>
+          <span className={styles.hintFine}>
+            스크롤하거나 → 키를 누르면 책이 펼쳐져요
+          </span>
+          <span className={styles.hintTouch}>위로 밀면 책이 펼쳐져요</span>
+        </p>
       </div>
-
-      {rows && (
-        // 공통 페이지 컨테이너로 표지 띠도 본문과 같은 좌우 여백을 쓴다
-        <Reveal delay={2} className='page-width mt-16'>
-          {/* 진한 남색 띠 — 파란 면 위에서는 파란 표지가 묻혔다. 홈의 진한 파랑은 마무리 카드에만 둔다(2026-10-25 B안) */}
-          <div className='band-strong overflow-hidden rounded-3xl py-12 shadow-xl'>
-            <p className='mb-9 flex items-center justify-center gap-2.5 text-sm font-bold text-white'>
-              <span
-                aria-hidden='true'
-                className='size-2 animate-pulse rounded-full bg-mint motion-reduce:animate-none'
-              />
-              방금 page0127.에 꽂힌 책
-              <span className='font-normal text-white/70'>· 최근 등록 순</span>
-            </p>
-            <CoverMarquee rows={rows} />
-          </div>
-        </Reveal>
-      )}
-    </section>
-  );
-};
+    </div>
+  </section>
+);

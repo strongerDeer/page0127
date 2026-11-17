@@ -1,6 +1,11 @@
 export { AboutHero } from './ui/AboutHero';
-export { FinalCta } from './ui/FinalCta';
-export { Highlights } from './ui/Highlights';
+export {
+  BadgeVisual,
+  ChemVisual,
+  LoungeVisual,
+  SentenceVisual,
+  ShareVisual,
+} from './ui/FeatureVisuals';
 export { Manifesto } from './ui/Manifesto';
 export { Reveal } from './ui/Reveal';
 export { SectionHead } from './ui/SectionHead';
