@@ -1,3 +1,5 @@
+import { PenNote } from '@/shared/ui/PenNote';
+
 import { SPINE_TONE_COLORS, spineTone } from '@/entities/book/model/spineTone';
 
 import { type Badge, BadgeMedal } from '@/features/badge';
@@ -244,7 +246,10 @@ export const ChemVisual = ({ books }: VisualProps) => {
   return (
     <div aria-hidden='true' className='flex w-full flex-col items-center'>
       {/* 둘 다 읽은 책 — 서재에서 뽑아 표지가 보이게 세운다 */}
-      <div className='flex items-end gap-3'>
+      <div className='relative flex items-end gap-3'>
+        <PenNote className='absolute bottom-full left-full -ml-2 mb-1 text-[22px] md:text-[26px]'>
+          겹친 책에 동그라미!
+        </PenNote>
         {both.map((b, i) => (
           <Cover
             key={i}

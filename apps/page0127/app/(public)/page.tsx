@@ -1,8 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-import { ErrorBoundary } from '@repo/ui';
-
 import { TrackOnMount } from '@/shared/lib/analytics/TrackOnMount';
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 import { toPostLoginPath } from '@/shared/lib/auth/onboardingRedirect';
@@ -47,7 +45,6 @@ import {
   HomeBook,
 } from '@/widgets/home-book';
 import { getHeroBanner } from '@/widgets/landing/api/getHeroBanner';
-import { HeroBannerSection } from '@/widgets/landing/ui/HeroBannerSection';
 
 import type { ShelfPreviewData } from '@/features/shelf-preview/ui/ShelfPreviewData';
 import type { HeroVariant } from '@/shared/lib/experiment/heroVariant';
@@ -69,7 +66,7 @@ export const metadata: Metadata = {
  * 로그인 직후 도착지는 그대로 내 서재다(toPostLoginPath). 홈은 로고·메뉴로 온다.
  *
  * 구성 — 홈 전체가 한 권의 책이다(2026-11-17 HJ, 시안 v9). 한 쪽 = 한 화면, 한 쪽에 하나씩.
- * 배너(어드민 등록 시) → 표지(책상 위의 책) → 1 왜 page0127.인가요 → 2 책 고르기 → 3 내 책장 →
+ * 표지(책상 위의 책, 어드민 배너는 표지 띠지 문구로) → 1 왜 page0127.인가요 → 2 책 고르기 → 3 내 책장 →
  * 4 문장 → 5 공개 서재와 공유 → 6 독서 케미 → 7 배지 → 8 라운지 → 뒤표지(맺음 문장 + 가입 버튼).
  * - 설명(소개)과 체험(맛보기)이 두 페이지로 나뉘어 있어, 홈은 체험만·소개는 설명만 했다.
  *   처음 온 사람은 대개 홈만 본다 → 설명과 체험을 한 흐름에 둔다.
@@ -181,16 +178,6 @@ const Home = async () => {
     <div className='min-h-screen break-keep bg-background'>
       <JsonLd data={webSiteJsonLd} />
 
-      {/* 롤링 배너 — 어드민에 등록한 슬라이드가 있을 때만 맨 위에 선다.
-          데이터는 위에서 셸 전에 읽었다(캐시 조회라 Suspense 안에서 읽지 않는다) */}
-      {banner && (
-        <ErrorBoundary fallback={null}>
-          <div className='page-width pt-6'>
-            <HeroBannerSection banner={banner} />
-          </div>
-        </ErrorBoundary>
-      )}
-
       {/* 책 한 권 — 쪽 목록 하나(chapters)가 머리글·쪽번호·목차 번호를 정한다.
           스크롤하면 표지가 열려 책 속으로 들어가고, 쪽이 한 장씩 넘어가고, 끝에서 덮여 뒤표지가 된다 */}
       <HomeBook chapters={chapters}>
@@ -200,6 +187,7 @@ const Home = async () => {
             member={member}
             startHref={`#${chapterAnchor('pick')}`}
             guideHref={`#${chapterAnchor('sentence')}`}
+            belt={banner?.slides[0] ?? null}
           />
         </CoverPage>
 

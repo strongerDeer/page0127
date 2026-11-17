@@ -375,6 +375,29 @@
   color: var(--navy-700);
 }
 
+.beltHeadSans {
+  font-weight: 800;
+  font-size: calc(var(--bw) * 0.05);
+  line-height: 1.32;
+  letter-spacing: -0.02em;
+}
+
+/* 배너를 단 띠지 — 링크다. 누를 수 있다는 걸 손가락 모양·살짝 밝아짐으로만 알린다 */
+.beltLink {
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.beltLink:hover {
+  filter: brightness(1.03);
+}
+
+.beltLink:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -4px;
+}
+
 /* 앱 아이콘과 같은 책갈피 — 띠지 위 가장자리에서 내려온다 */
 .bookmark {
   position: absolute;

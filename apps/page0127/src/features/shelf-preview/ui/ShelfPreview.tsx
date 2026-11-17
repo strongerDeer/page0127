@@ -8,6 +8,7 @@ import { Button, CoverImage } from '@repo/ui';
 import { ArrowRight, Check, RotateCcw, RotateCw } from 'lucide-react';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
+import { PenNote } from '@/shared/ui/PenNote';
 
 import { toFirstImpression } from '@/entities/taste-analysis/model/firstImpression';
 
@@ -136,6 +137,9 @@ export const ShelfPickCount = ({ shelfHref }: { shelfHref: string }) => {
         <b className='text-2xl font-bold text-primary md:text-3xl'>{n}</b>{' '}
         {n < IMPRESSION_AT ? `/ ${IMPRESSION_AT}권 골랐어요` : '권 골랐어요'}
       </p>
+      {n === 0 && (
+        <PenNote className='mt-1'>기억나는 걸로 딱 세 권만 →</PenNote>
+      )}
       {n > 0 && (
         <Button asChild variant='secondary' className='gap-1.5 rounded-full'>
           <a href={shelfHref}>
@@ -259,8 +263,14 @@ export const ShelfPanel = () => {
   const impression = toFirstImpression(selected.map((p) => p.book.category));
 
   return (
-    // 책장·다음 행동을 옅은 파란 판 하나로 묶는다(2026-10-25 HJ)
-    <div className='tint-blue flex w-full max-w-xl flex-col rounded-3xl p-5 md:p-7'>
+    // 책장·다음 행동을 옅은 파란 판 하나로 묶는다(2026-10-25 HJ).
+    // 시안 아날로그 룩(2026-11-17): 종이 카드처럼 모서리를 덜 둥글게 + 위에 마스킹 테이프 + 연필 메모
+    <div className='tint-blue relative flex w-full max-w-xl flex-col rounded-md p-5 shadow-[0_1px_0_var(--line),0_22px_36px_-24px_rgb(16_40_80/0.4)] md:p-7'>
+      <span
+        aria-hidden='true'
+        className='absolute -top-3 left-1/2 h-6 w-26 -translate-x-1/2 -rotate-3 bg-[rgb(120_150_195/0.38)] shadow-[0_1px_2px_rgb(0_0_0/0.08)] [clip-path:polygon(2%_0,98%_0,100%_22%,97%_44%,100%_66%,97%_86%,99%_100%,1%_100%,3%_82%,0_62%,3%_42%,0_20%)]'
+      />
+      <PenNote className='absolute -top-11 right-0'>여기 꽂혀요 ↓</PenNote>
       <div className='flex min-h-8 items-center justify-between gap-3'>
         <p className='text-xs font-bold text-text-subtle md:text-sm'>
           내 책장 · {selected.length}권

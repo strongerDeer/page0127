@@ -128,6 +128,7 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
   const snapsRef = useRef<HTMLDivElement>(null);
   const toolsRef = useRef<HTMLDivElement>(null);
   const hintRef = useRef<HTMLParagraphElement>(null);
+  const edgesRef = useRef<HTMLDivElement>(null);
   const tocRef = useRef<HTMLElement>(null);
   // 넘김 소리 — 기본 꺼짐. 스크롤 처리(effect 안)에서도 읽게 ref 에 함께 둔다
   const [sound, setSound] = useState(false);
@@ -389,6 +390,10 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
         'data-show',
         r.top < vh * 0.5 && r.bottom > vh * 0.5
       );
+      // 남은 쪽 두께 — 책 속에 들어온 뒤 남은 장 수 × 3px, 넘길수록 얇아진다(시안 .edges)
+      if (edgesRef.current)
+        edgesRef.current.style.width = `${prog < 1 ? 0 : (TURNS - prog) * 3}px`;
+
       if (cur >= 2) turnedEnough = true;
       hintRef.current?.toggleAttribute(
         'data-show',
@@ -587,6 +592,8 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
         {children}
         {/* 말린 종이 뒷면·그림자 — 넘기는 동안만 그린다 */}
         <canvas ref={canvasRef} aria-hidden='true' className={styles.canvas} />
+        {/* 오른쪽 가장자리에 겹겹이 보이는 남은 쪽 */}
+        <div ref={edgesRef} aria-hidden='true' className={styles.edges} />
       </div>
 
       {/* 무대가 붙어 있는 동안 스크롤할 길이(쪽 넘김 수 × STEP) */}
@@ -630,6 +637,10 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
         <button type='button' popoverTarget='book-toc' className={styles.tool}>
           목차
         </button>
+        {/* 다시 온 사람·회원은 넘기지 않고 바로 뒤표지(가입·내 서재 버튼)로 */}
+        <a href='#book-back' className={styles.tool}>
+          건너뛰기
+        </a>
       </div>
       <nav
         ref={tocRef}

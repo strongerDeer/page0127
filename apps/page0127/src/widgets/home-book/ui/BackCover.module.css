@@ -187,22 +187,23 @@
 /* 바코드 — 그림 없이 줄무늬 그라데이션 */
 .isbn {
   flex: none;
-  width: 28%;
-  padding: 5% 5% 3%;
+  /* 실제 책 뒤표지 비율에 가깝게 작게(2026-11-17 HJ "바코드는 더 작게") */
+  width: 19%;
+  padding: 3% 3% 2%;
   border: 1px solid rgb(20 41 78 / 0.15);
   border-radius: 3px;
   background: #fff;
   color: #111;
-  font-size: calc(var(--bw) * 0.022);
-  letter-spacing: 0.06em;
+  font-size: calc(var(--bw) * 0.016);
+  letter-spacing: 0.04em;
   text-align: center;
   white-space: nowrap;
 }
 
 .isbn i {
   display: block;
-  height: calc(var(--bw) * 0.1);
-  margin-bottom: 4px;
+  height: calc(var(--bw) * 0.065);
+  margin-bottom: 3px;
   background: repeating-linear-gradient(
     to right,
     #111 0 1px,

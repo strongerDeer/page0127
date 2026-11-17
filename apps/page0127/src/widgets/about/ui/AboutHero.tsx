@@ -5,7 +5,10 @@ import { Button } from '@repo/ui';
 
 import { ShareSheetButton } from '@/features/share';
 
+import { BeltLink } from './BeltLink';
+
 import type { HomeMember } from '../model/member';
+import type { HeroSlide } from '@/entities/banner/types';
 
 import styles from './AboutHero.module.css';
 
@@ -16,6 +19,11 @@ type AboutHeroProps = {
   guideHref?: string;
   /** 로그인 사용자 — 있으면 버튼이 "내 서재로·서재 공유하기"로 바뀐다 */
   member?: HomeMember | null;
+  /**
+   * 어드민 배너 — 있으면 띠지 문구를 갈아 끼운다(제목=큰 문장, 설명=아랫줄, 띠지 전체가 링크).
+   * 없으면 기본 띠지 문구. 예전엔 표지 위에 배너 칸이 따로 있어 표지를 화면 아래로 밀었다(2026-11-17).
+   */
+  belt?: HeroSlide | null;
 };
 
 // 표지 제목에서 돌아가는 단어. 스크린리더·검색엔진은 첫 단어로 고정된 문장을 읽는다.
@@ -38,6 +46,7 @@ export const AboutHero = ({
   startHref = '/',
   guideHref = '#steps',
   member = null,
+  belt = null,
 }: AboutHeroProps) => (
   <section aria-labelledby='about-title' className={styles.desk}>
     <div className={styles.stage}>
@@ -80,19 +89,43 @@ export const AboutHero = ({
             </div>
             <p className={styles.subtitle}>읽은 책이 쌓여 책장이 됩니다</p>
 
-            {/* 띠지 — 실제 책처럼 표지 아래를 감싸는 종이 띠. 숫자 아랫단을 살짝 가린다 */}
-            <div aria-hidden='true' className={styles.belt}>
-              <span className={styles.beltEyebrow}>2026 독서 기록 서비스</span>
-              <span className={styles.beltHead}>
-                “읽은 책이 쌓이면,
-                <br />
-                책장이 나를 소개한다”
-              </span>
-              <span className={styles.beltFoot}>
-                한 권을 꽂는 순간, 당신의 서재가 시작됩니다
-              </span>
-              <i className={styles.bookmark} />
-            </div>
+            {/* 띠지 — 실제 책처럼 표지 아래를 감싸는 종이 띠. 숫자 아랫단을 살짝 가린다.
+                어드민 배너가 있으면 그 문구로 갈아 끼우고 띠지가 링크가 된다 */}
+            {belt ? (
+              <BeltLink
+                slideId={belt.id}
+                href={belt.href}
+                cta={belt.cta}
+                className={`${styles.belt} ${styles.beltLink}`}
+              >
+                <span className={styles.beltEyebrow}>{belt.eyebrow}</span>
+                {/* 배너 문구는 그때그때 바뀌어 띠지 명조 서브셋에 글자가 없다 → 본문 고딕 */}
+                <span className={styles.beltHeadSans}>
+                  {belt.lines[0]}
+                  <br />
+                  {belt.lines[1]}
+                </span>
+                <span className={styles.beltFoot}>
+                  {belt.sub} <span aria-hidden='true'>→</span>
+                </span>
+                <i aria-hidden='true' className={styles.bookmark} />
+              </BeltLink>
+            ) : (
+              <div aria-hidden='true' className={styles.belt}>
+                <span className={styles.beltEyebrow}>
+                  2026 독서 기록 서비스
+                </span>
+                <span className={styles.beltHead}>
+                  “읽은 책이 쌓이면,
+                  <br />
+                  책장이 나를 소개한다”
+                </span>
+                <span className={styles.beltFoot}>
+                  한 권을 꽂는 순간, 당신의 서재가 시작됩니다
+                </span>
+                <i className={styles.bookmark} />
+              </div>
+            )}
           </div>
           {/* 표지 안쪽(면지) — 펼치면 보인다 */}
           <div aria-hidden='true' className={styles.endpaper} />
