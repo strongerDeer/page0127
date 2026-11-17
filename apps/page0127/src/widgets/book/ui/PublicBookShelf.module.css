@@ -23,7 +23,7 @@
   /* 이미지 없는 책등의 글자 — 밝은 책등 색(data-tone) 위에 얹는 짙은 먹색 */
   --spine-text: #1f1d1a;
 
-  /* 끝칸(trailingSlot)이 책과 같은 높이로 서도록 넘겨주는 값 — 책 이미지 높이와 같다 */
+  /* 끝칸(trailingSlot)을 책과 같은 높이로 세우는 값 — 책 이미지 높이와 같다 */
   --shelf-book-h: 240px;
 
   /* 연도 명판(.plate)의 기준점 */
@@ -468,7 +468,13 @@
   height: 16px;
 }
 
-/* 끝칸 — 책처럼 바닥에 붙여 세운다. 안의 내용(점선 빈칸 등)은 넣는 쪽이 그린다 */
+/* 끝칸 — 책처럼 바닥에 붙여 세운다. 모양(점선 빈칸 등)은 넣는 쪽이 그리고, 높이만 선반이 맞춘다.
+   변수를 다른 CSS 파일로 넘기지 않는 이유: 토큰 대조 테스트(app/token-usage.test.ts)가
+   파일 밖 변수 사용을 정의 누락으로 본다 */
 .books li.slot {
   padding: 0 4px;
+}
+
+.books li.slot > * {
+  height: var(--shelf-book-h);
 }

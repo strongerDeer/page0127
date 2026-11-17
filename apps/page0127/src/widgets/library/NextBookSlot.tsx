@@ -11,7 +11,7 @@ import styles from './NextBookSlot.module.css';
  * 오면 + 가 "도서 추가"로 펼쳐진다. 터치 기기는 올리기가 없어 처음부터 펼쳐 둔다.
  * 칸 전체가 링크라 누를 자리가 넓다.
  *
- * 높이는 선반이 넘겨주는 --shelf-book-h 를 따른다(PublicBookShelf.module.css).
+ * 높이는 선반이 정한다 — 끝칸 안의 첫 요소를 책 높이로 맞춘다(PublicBookShelf.module.css .slot).
  */
 export const NextBookSlot = () => (
   <Link href='/books/add' prefetch={false} className={styles.slot}>
