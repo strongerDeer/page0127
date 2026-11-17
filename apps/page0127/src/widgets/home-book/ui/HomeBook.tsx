@@ -127,6 +127,7 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const snapsRef = useRef<HTMLDivElement>(null);
   const toolsRef = useRef<HTMLDivElement>(null);
+  const hintRef = useRef<HTMLParagraphElement>(null);
   const tocRef = useRef<HTMLElement>(null);
   // 넘김 소리 — 기본 꺼짐. 스크롤 처리(effect 안)에서도 읽게 ref 에 함께 둔다
   const [sound, setSound] = useState(false);
@@ -200,6 +201,8 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
     let twin: HTMLElement | null = null;
     let cur = 0;
     let lastCur = -1;
+    // 넘김 안내는 두 쪽 넘게 넘겨 본 뒤엔 1장에서 다시 띄우지 않는다(표지에선 늘 띄운다)
+    let turnedEnough = false;
     // 폰에서 검색창에 글을 쓰는 동안은 쪽을 고정한다 — 키보드가 올라오며 브라우저가 스크롤을 옮겨도 넘어가지 않게
     let lock: number | null = null;
 
@@ -385,6 +388,13 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
       toolsRef.current?.toggleAttribute(
         'data-show',
         r.top < vh * 0.5 && r.bottom > vh * 0.5
+      );
+      if (cur >= 2) turnedEnough = true;
+      hintRef.current?.toggleAttribute(
+        'data-show',
+        r.top > -vh * 0.5 &&
+          r.bottom > vh * 0.5 &&
+          (cur === 0 || (cur === 1 && !turnedEnough))
       );
       if (cur !== lastCur) {
         if (lastCur >= 0 && soundRef.current)
@@ -581,6 +591,15 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
 
       {/* 무대가 붙어 있는 동안 스크롤할 길이(쪽 넘김 수 × STEP) */}
       <div aria-hidden='true' className={styles.run} />
+
+      {/* 넘김 안내 — 표지와 1장에서만. 마우스·키보드면 스크롤·방향키, 터치면 밀기를 알려 준다 */}
+      <p ref={hintRef} aria-hidden='true' className={styles.hint}>
+        <span className={styles.hintArrow} />
+        <span className={styles.hintFine}>
+          스크롤하거나 <kbd>←</kbd> <kbd>→</kbd> 키로 넘겨요
+        </span>
+        <span className={styles.hintTouch}>위로 밀면 다음 쪽으로 넘어가요</span>
+      </p>
 
       {/* 책 도구 — 책 안에 있을 때만 뜬다. 목차는 popover 라 여닫기에 JS 가 필요 없다 */}
       <div ref={toolsRef} className={styles.tools}>

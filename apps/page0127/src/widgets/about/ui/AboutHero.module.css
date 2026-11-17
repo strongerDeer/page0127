@@ -519,7 +519,8 @@
 }
 
 :global([data-book="on"]) .hint {
-  display: block;
+  /* 책 모드에선 HomeBook 의 넘김 안내(스크롤·방향키)가 대신한다 */
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -34,6 +34,7 @@ import {
   ChemVisual,
   LoungeVisual,
   Manifesto,
+  SentenceVisual,
   ShareVisual,
 } from '@/widgets/about';
 import { getRecentBooks } from '@/widgets/about/api/getRecentBooks';
@@ -69,7 +70,7 @@ export const metadata: Metadata = {
  *
  * 구성 — 홈 전체가 한 권의 책이다(2026-11-17 HJ, 시안 v9). 한 쪽 = 한 화면, 한 쪽에 하나씩.
  * 배너(어드민 등록 시) → 표지(책상 위의 책) → 1 왜 page0127.인가요 → 2 책 고르기 → 3 내 책장 →
- * 4 공개 서재와 공유 → 5 독서 케미 → 6 배지 → 7 라운지 → 뒤표지(맺음 문장 + 가입 버튼).
+ * 4 문장 → 5 공개 서재와 공유 → 6 독서 케미 → 7 배지 → 8 라운지 → 뒤표지(맺음 문장 + 가입 버튼).
  * - 설명(소개)과 체험(맛보기)이 두 페이지로 나뉘어 있어, 홈은 체험만·소개는 설명만 했다.
  *   처음 온 사람은 대개 홈만 본다 → 설명과 체험을 한 흐름에 둔다.
  * - 서점식 큐레이션(랭킹·발견·프로모)과 이용 방법 단계는 뺐다. 맛보기가 기록과
@@ -162,7 +163,7 @@ const Home = async () => {
               책장에 꽂혔어요
             </>
           }
-          lead='앞 장에서 고른 책이 여기 꽂혀요. 가입하면 이 책장을 그대로 저장해 드려요.'
+          lead='앞 장에서 고른 책이 여기 꽂혀요. 가입하면 이 책장을 그대로 저장해 드려요. 읽은 책이 많다면 바코드나 CSV로 한 번에 옮겨 와요.'
           aside={<ShelfSaveAction />}
         >
           <ShelfPanel />
@@ -198,7 +199,7 @@ const Home = async () => {
           <AboutHero
             member={member}
             startHref={`#${chapterAnchor('pick')}`}
-            guideHref={`#${chapterAnchor('share')}`}
+            guideHref={`#${chapterAnchor('sentence')}`}
           />
         </CoverPage>
 
@@ -209,9 +210,30 @@ const Home = async () => {
         {previewPages}
 
         <Chapter
-          id='share'
+          id='sentence'
           chapters={chapters}
           paper='sunken'
+          heading={
+            <>
+              책은 덮어도
+              <br />
+              문장은 남겨 둬요
+            </>
+          }
+          lead={
+            <>
+              <b>간직한 문장.</b> 밑줄 그은 문장을 책마다 모아 두고, 하루 한 번
+              오늘의 문장을 펼쳐요. 마음에 든 문장은 카드로 만들어 스토리에
+              올려요.
+            </>
+          }
+        >
+          <SentenceVisual />
+        </Chapter>
+
+        <Chapter
+          id='share'
+          chapters={chapters}
           heading={
             <>
               주소 하나로
@@ -242,7 +264,7 @@ const Home = async () => {
           lead={
             <>
               <b>독서 케미.</b> 다른 사람의 책장과 나란히 놓고, 겹치는 책과
-              취향을 확인해요.
+              취향을 확인해요. 케미 카드는 스토리 이미지로도 나눠요.
             </>
           }
         >
@@ -281,8 +303,8 @@ const Home = async () => {
           }
           lead={
             <>
-              <b>라운지.</b> 팔로우한 리더와 올해 몇 권 읽었는지 겨루고, 새로
-              꽂은 책도 바로 봐요.
+              <b>라운지.</b> 팔로우한 리더와 올해의 독서 배틀을 하고, 뜸한
+              친구는 콕 찔러 깨워요. 새로 꽂은 책도 바로 봐요.
             </>
           }
         >

@@ -7,7 +7,7 @@ import { SafeCover } from './SafeCover';
 import type { ShelfBook } from '../model/coverRows';
 
 /**
- * 홈 책 4~7장(공개 서재와 공유 · 독서 케미 · 배지 · 라운지)의 그림 — 쪽마다 하나씩 (시안 v9)
+ * 홈 책 뒤쪽 장(공개 서재와 공유 · 문장 · 독서 케미 · 배지 · 라운지)의 그림 — 쪽마다 하나씩 (시안 v9)
  *
  * 예전엔 "책장이 쌓이면 보이는 것들" 한 섹션에 카드 여섯 장을 몰아 넣어 화면 세 장 길이였다.
  * 책 홈은 한 쪽에 하나만 보여 주기로 해서(2026-11-17 HJ) 카드를 쪽 그림으로 나눴다.
@@ -102,6 +102,68 @@ export const ShareVisual = ({ books }: VisualProps) => {
     </div>
   );
 };
+
+/**
+ * 데모 문장 — 실제 책의 문장을 옮기면 저작권·출처 표시가 따라온다.
+ * 그래서 page0127. 이 직접 쓴 문장만 쓰고 책 표지·제목은 붙이지 않는다.
+ */
+const DEMO_QUOTE = '어떤 문장은 읽은 날보다 오래 남는다.';
+const DEMO_SAVED = [
+  { text: '밑줄은 그 날의 나를 기억하는 방법.', page: 'p.48' },
+  { text: '천천히 읽어도 끝은 온다.', page: 'p.213' },
+] as const;
+
+/** 문장 장 · 오늘의 문장(펼친 책) + 간직한 문장 + 스토리 카드 */
+export const SentenceVisual = () => (
+  <div
+    aria-hidden='true'
+    className='flex w-full max-w-md items-stretch justify-center gap-4 md:gap-6'
+  >
+    <div className='flex w-full max-w-xs flex-col gap-3'>
+      <div className='rounded-2xl bg-card p-4 shadow-xl'>
+        <p className='flex items-baseline justify-between text-xs'>
+          <b className='text-text-strong'>오늘의 문장</b>
+          <span className='text-text-subtle'>하루 한 번 펼쳐요</span>
+        </p>
+        {/* 펼친 책 — 가운데 접힌 선 하나로 두 쪽을 나눈다 */}
+        <div className='relative mt-3 grid grid-cols-2 overflow-hidden rounded-md bg-sunken shadow-inner'>
+          <span className='absolute inset-y-0 left-1/2 w-px bg-text-strong/10' />
+          <span className='absolute -top-1 right-6 h-8 w-2.5 rounded-b-sm bg-primary' />
+          <p className='col-span-2 px-5 py-6 text-center text-[15px] leading-relaxed font-bold text-text-strong'>
+            {DEMO_QUOTE}
+          </p>
+        </div>
+        <p className='mt-2 text-[11px] text-text-subtle'>
+          펼친 날은 캘린더에 책갈피로 남아요
+        </p>
+      </div>
+      <ul className='space-y-2'>
+        {DEMO_SAVED.map((q) => (
+          <li
+            key={q.page}
+            className='flex items-center gap-2.5 rounded-xl bg-card px-3.5 py-2.5 text-sm shadow-md'
+          >
+            <span className='h-6 w-1 shrink-0 rounded-full bg-primary/40' />
+            <span className='min-w-0 flex-1 truncate text-text-strong'>
+              {q.text}
+            </span>
+            <span className='shrink-0 text-xs text-text-subtle'>{q.page}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+    {/* 문장 카드 스토리 이미지 — 실제 공유 이미지처럼 위는 파랑, 문장이 주인공 */}
+    <div className='hidden aspect-9/16 w-32 shrink-0 flex-col overflow-hidden rounded-2xl bg-card shadow-xl sm:flex md:w-36'>
+      <div className='stage-blue flex flex-1 flex-col justify-center px-3.5 text-white'>
+        <span className='text-2xl leading-none font-bold text-white/50'>“</span>
+        <p className='mt-1 text-[13px] leading-snug font-bold'>{DEMO_QUOTE}</p>
+      </div>
+      <p className='py-2 text-center text-[9px] font-bold text-primary'>
+        page0127.com
+      </p>
+    </div>
+  </div>
+);
 
 // 책장에 꽂힌 높이 — 책마다 조금씩 달라야 진짜 책장처럼 보인다
 const SPINE_HEIGHTS = ['h-[88%]', 'h-full', 'h-[80%]', 'h-[94%]', 'h-[84%]'];

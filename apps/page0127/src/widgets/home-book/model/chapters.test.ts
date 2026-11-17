@@ -3,16 +3,17 @@ import { describe, expect, it } from 'vitest';
 import { buildChapters, neighborsOf } from './chapters';
 
 describe('buildChapters', () => {
-  it('비회원(A)은 시안 순서대로 일곱 장 — 맛보기가 책 고르기·내 책장 두 쪽', () => {
+  it('비회원(A)은 시안 순서대로 여덟 장 — 맛보기가 책 고르기·내 책장 두 쪽', () => {
     const chapters = buildChapters({ preview: 'a' });
     expect(chapters.map((c) => [c.id, c.label, c.folio])).toEqual([
       ['why', '제1장', 1],
       ['pick', '제2장', 2],
       ['shelf', '제3장', 3],
-      ['share', '제4장', 4],
-      ['chem', '제5장', 5],
-      ['badge', '제6장', 6],
-      ['lounge', '제7장', 7],
+      ['sentence', '제4장', 4],
+      ['share', '제5장', 5],
+      ['chem', '제6장', 6],
+      ['badge', '제7장', 7],
+      ['lounge', '제8장', 8],
     ]);
   });
 
@@ -21,6 +22,7 @@ describe('buildChapters', () => {
     expect(chapters.map((c) => c.id)).toEqual([
       'why',
       'pick',
+      'sentence',
       'share',
       'chem',
       'badge',
@@ -33,10 +35,11 @@ describe('buildChapters', () => {
     const chapters = buildChapters({ preview: null });
     expect(chapters.map((c) => [c.id, c.label])).toEqual([
       ['why', '제1장'],
-      ['share', '제2장'],
-      ['chem', '제3장'],
-      ['badge', '제4장'],
-      ['lounge', '제5장'],
+      ['sentence', '제2장'],
+      ['share', '제3장'],
+      ['chem', '제4장'],
+      ['badge', '제5장'],
+      ['lounge', '제6장'],
     ]);
   });
 

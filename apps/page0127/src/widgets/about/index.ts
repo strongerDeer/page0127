@@ -3,6 +3,7 @@ export {
   BadgeVisual,
   ChemVisual,
   LoungeVisual,
+  SentenceVisual,
   ShareVisual,
 } from './ui/FeatureVisuals';
 export { Manifesto } from './ui/Manifesto';
