@@ -392,7 +392,8 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
       );
       // 남은 쪽 두께 — 책 속에 들어온 뒤 남은 장 수 × 3px, 넘길수록 얇아진다(시안 .edges)
       if (edgesRef.current)
-        edgesRef.current.style.width = `${prog < 1 ? 0 : (TURNS - prog) * 3}px`;
+        // 좁은 화면은 한 장에 1.5px — 3px 이면 8장이 화면 폭의 5%를 먹는다
+        edgesRef.current.style.width = `${prog < 1 ? 0 : (TURNS - prog) * (W < 640 ? 1.5 : 3)}px`;
 
       if (cur >= 2) turnedEnough = true;
       hintRef.current?.toggleAttribute(

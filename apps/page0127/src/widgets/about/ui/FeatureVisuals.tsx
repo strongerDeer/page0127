@@ -247,7 +247,7 @@ export const ChemVisual = ({ books }: VisualProps) => {
     <div aria-hidden='true' className='flex w-full flex-col items-center'>
       {/* 둘 다 읽은 책 — 서재에서 뽑아 표지가 보이게 세운다 */}
       <div className='relative flex items-end gap-3'>
-        <PenNote className='absolute bottom-full left-full -ml-2 mb-1 text-[22px] md:text-[26px]'>
+        <PenNote className='absolute bottom-full left-1/2 mb-2 -translate-x-1/2 text-[22px] md:left-full md:-ml-2 md:mb-1 md:translate-x-0 md:text-[26px]'>
           겹친 책에 동그라미!
         </PenNote>
         {both.map((b, i) => (

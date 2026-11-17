@@ -98,10 +98,10 @@
   color: var(--primary);
 }
 
-/* 책 모드에선 오른쪽 위에 책 도구(소리·목차·건너뛰기)가 떠서 장 이름을 뺀다 — 목차·장 번호에 같은 이름이 있다.
-   좁은 화면은 책 모드가 아니어도 자리가 없어 뺀다 */
-:global([data-book="on"]) .runhead span {
-  display: none;
+/* 책 모드에선 오른쪽 위에 책 도구(소리·목차·건너뛰기)가 뜬다 — 장 이름이 가리지 않게 그 폭만큼 비운다(시안도 같다).
+   좁은 화면은 자리가 없어 장 이름을 뺀다 */
+:global([data-book="on"]) .runhead {
+  padding-right: calc(var(--gutter) + 17rem);
 }
 
 @media (max-width: 640px) {
