@@ -398,7 +398,8 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
       if (cur >= 2) turnedEnough = true;
       hintRef.current?.toggleAttribute(
         'data-show',
-        r.top > -vh * 0.5 && r.bottom > vh * 0.5 && cur === 1 && !turnedEnough
+        // 1장에 있으면 무대가 화면에 붙어 있다(책 윗변은 이미 화면 위로 한참 올라가 있어 r.top 은 보지 않는다)
+        r.bottom > vh * 0.5 && cur === 1 && !turnedEnough
       );
       if (cur !== lastCur) {
         if (lastCur >= 0 && soundRef.current)
