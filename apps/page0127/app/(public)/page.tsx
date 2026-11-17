@@ -22,6 +22,7 @@ import { ShelfPreviewSection } from '@/features/shelf-preview/ui/ShelfPreviewSec
 
 import { AboutHero, FinalCta, Highlights, Manifesto } from '@/widgets/about';
 import { getRecentBooks } from '@/widgets/about/api/getRecentBooks';
+import { buildChapters,Chapter, HomeBook } from '@/widgets/home-book';
 import { getHeroBanner } from '@/widgets/landing/api/getHeroBanner';
 import { HeroBannerSection } from '@/widgets/landing/ui/HeroBannerSection';
 
@@ -109,6 +110,8 @@ const Home = async () => {
     getHeroBanner(Boolean(user)),
   ]);
 
+  const chapters = buildChapters({ withPreview: Boolean(preview) });
+
   return (
     // break-keep: 한국어를 단어 단위로 줄바꿈한다 — 없으면 '쌓/인'처럼 단어 중간에서 끊긴다
     <div className='min-h-screen break-keep bg-background'>
@@ -125,30 +128,45 @@ const Home = async () => {
       )}
 
       {/* 첫 화면 — 책상 위의 책. 표지 제목이 이 페이지의 h1, 스크롤하면 표지가 열린다(CSS 만).
-          버튼은 같은 페이지 아래 섹션으로 내려간다 */}
+          버튼은 같은 페이지 아래 장으로 넘어간다 — 섹션 id 가 아니라 장 앵커로 가야 쌓인 책에서도
+          그 장을 막 펼친 자리에 멈춘다 */}
       <AboutHero
         member={member}
-        startHref='#first-impression'
-        guideHref='#highlights'
+        startHref='#book-ch-first-impression'
+        guideHref='#book-ch-highlights'
       />
 
-      <Manifesto />
+      {/* 본문 — 섹션 하나가 책의 한 장. 끝까지 읽은 장은 모서리가 말려 넘어간다(② 장 넘김).
+          장 목록 하나(chapters)가 머리글·쪽번호·목차 번호를 정한다 */}
+      <HomeBook chapters={chapters}>
+        <Chapter id='why' chapters={chapters}>
+          <Manifesto />
+        </Chapter>
 
-      {/* 책장 맛보기(당신의 첫인상.) — 고르기·책장 2단, 저장하려고 가입하게 한다
-          (설계: 2026-10-08-home-shelf-preview-design.md).
-          이미 서재가 있는 사람에겐 체험할 이유가 없어 숨긴다(preview 가 null) */}
-      {preview && <ShelfPreviewSection {...preview} />}
+        {/* 책장 맛보기(당신의 첫인상.) — 고르기·책장 2단, 저장하려고 가입하게 한다
+            (설계: 2026-10-08-home-shelf-preview-design.md).
+            이미 서재가 있는 사람에겐 체험할 이유가 없어 숨긴다(preview 가 null → 장도 빠진다) */}
+        {preview && (
+          <Chapter id='first-impression' chapters={chapters}>
+            <ShelfPreviewSection {...preview} />
+          </Chapter>
+        )}
 
-      <Highlights books={books} />
+        <Chapter id='highlights' chapters={chapters}>
+          <Highlights books={books} />
+        </Chapter>
 
-      {/* 표지가 있는 책 중에서 고른다 — 그냥 마지막 4권이면 표지 없는 칸만 설 수 있다 */}
-      <FinalCta
-        member={member}
-        covers={books
-          .map((b) => b.coverImage)
-          .filter(Boolean)
-          .slice(-4)}
-      />
+        {/* 표지가 있는 책 중에서 고른다 — 그냥 마지막 4권이면 표지 없는 칸만 설 수 있다 */}
+        <Chapter id='closing' chapters={chapters} tone='dark'>
+          <FinalCta
+            member={member}
+            covers={books
+              .map((b) => b.coverImage)
+              .filter(Boolean)
+              .slice(-4)}
+          />
+        </Chapter>
+      </HomeBook>
     </div>
   );
 };

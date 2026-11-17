@@ -1,0 +1,164 @@
+/* 홈 "한 권의 책" 무대 — 캔버스·목차 */
+
+.book {
+  /* JS(HomeBook)가 실제 값으로 덮어쓴다 — 여기는 재기 전의 기본값 */
+  --book-vh: 100vh;
+  --book-gnb: 4rem;
+  --book-bottom: 0px;
+  --book-turn: 80vh;
+
+  position: relative;
+}
+
+/*
+ * ── 책 모드(HomeBook 이 data-book="on" 을 켠다) ────────────────
+ * 장을 겹겹이 쌓는다: 앞 장이 위(z-index 큰 값, JS), 다음 장이 그 밑에 깔려 있다.
+ * - 쪽(sheet)은 화면 한 장 이상 높이 — 짧은 장도 한 쪽을 채운다.
+ * - 끝까지 읽으면 쪽이 화면에 멈추고(sticky, top 은 JS 가 장마다 계산) --book-turn 만큼
+ *   더 스크롤하는 동안 모서리가 말려 넘어간다(그림은 캔버스).
+ * - 다음 장은 위로 당겨(-margin) 앞 장 밑에 깔린다. 넘기는 동안의 위치 보정은 JS 가 한다.
+ */
+.book[data-book="on"] > :global([data-book-chapter]) {
+  padding-bottom: var(--book-turn);
+}
+
+.book[data-book="on"] > :global([data-book-chapter]:last-of-type) {
+  padding-bottom: 0;
+}
+
+.book[data-book="on"]
+  > :global([data-book-chapter])
+  + :global([data-book-chapter]) {
+  margin-top: calc(
+    -1 * (var(--book-vh) - var(--book-gnb) - var(--book-bottom))
+  );
+}
+
+.book[data-book="on"] :global([data-book-sheet]) {
+  position: sticky;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(var(--book-vh) - var(--book-gnb) - var(--book-bottom));
+  will-change: transform, clip-path;
+}
+
+/* 섹션이 쪽을 꽉 채워 바탕색이 끝까지 닿는다 */
+.book[data-book="on"] :global([data-book-sheet] > section) {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* 다 넘긴 쪽은 그리지 않는다 */
+.book[data-book="on"] :global([data-book-sheet][data-turned]) {
+  visibility: hidden;
+}
+
+/* 말린 종이 뒷면·그림자. 헤더(z-40) 밑, 쪽들 위 */
+.canvas {
+  position: fixed;
+  z-index: 35;
+  inset: 0 auto auto 0;
+  pointer-events: none;
+}
+
+/* ── 목차 버튼: 책 안에 있을 때만 오른쪽 아래에 뜬다 ───────── */
+.tocButton {
+  position: fixed;
+  z-index: 36;
+  right: 1rem;
+  bottom: calc(var(--book-bottom) + 1rem + 2.75rem);
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--text-strong);
+  font-size: 0.875rem;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgb(10 20 40 / 0.12);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+}
+
+.tocButton[data-show] {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+/* ── 목차 (popover) ────────────────────────────────── */
+.toc {
+  inset: auto 1rem calc(var(--book-bottom) + 1rem + 6rem) auto;
+  width: min(20rem, calc(100vw - 2rem));
+  margin: 0;
+  padding: 1.25rem 1rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: var(--card);
+  color: var(--text-strong);
+  box-shadow: 0 16px 40px rgb(10 20 40 / 0.18);
+}
+
+.tocTitle {
+  padding: 0 0.5rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-subtle);
+}
+
+.toc ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.toc a {
+  display: grid;
+  grid-template-columns: 3.25rem 1fr auto;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.625rem 0.5rem;
+  border-radius: 0.5rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.toc a:hover,
+.toc a:focus-visible {
+  background: var(--sunken);
+}
+
+.toc a[aria-current="page"] {
+  color: var(--primary);
+}
+
+.toc a[aria-current="page"] .tocName {
+  font-weight: 700;
+}
+
+.tocLabel {
+  font-size: 0.75rem;
+  color: var(--text-subtle);
+}
+
+.tocName {
+  font-size: 0.9375rem;
+}
+
+/* 목차 끝의 쪽번호 — 점선 대신 숫자만 */
+.tocNo {
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-subtle);
+}

@@ -10,7 +10,7 @@ import type { HomeMember } from '../model/member';
 import styles from './AboutHero.module.css';
 
 type AboutHeroProps = {
-  /** "내 책장 만들어 보기"가 갈 곳 — 홈에선 같은 페이지의 맛보기 섹션(#first-impression) */
+  /** "내 책장 만들어 보기"가 갈 곳 — 홈에선 같은 페이지의 맛보기 장(#book-ch-first-impression) */
   startHref?: string;
   /** "어떻게 쓰나요?"가 갈 곳 */
   guideHref?: string;

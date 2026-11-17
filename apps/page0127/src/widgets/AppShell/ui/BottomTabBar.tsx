@@ -24,6 +24,8 @@ export const BottomTabBar = ({ username }: BottomTabBarProps) => {
   return (
     <nav
       aria-label='하단 탭 메뉴'
+      // 화면 아래를 가리는 고정 막대 — 홈의 책(HomeBook)이 이만큼 쪽 아래를 띄운다
+      data-bottom-bar=''
       className='fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-card md:hidden'
     >
       {items.map((item) => {
