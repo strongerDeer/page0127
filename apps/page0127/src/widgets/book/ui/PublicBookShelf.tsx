@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -37,6 +37,13 @@ type PublicBookShelfProps = {
   readingBooks?: Book[];
   /** 마지막 단 오른쪽 아래 연도 명판 (장식) */
   plateLabel?: string;
+  /**
+   * 마지막 책 다음 칸에 세울 것 (예: 주인에게만 보이는 점선 "도서 추가" 빈칸).
+   *
+   * 선반은 무엇을 세울지 모른다 — 누구에게 보일지는 isOwner 를 아는 쪽(LibraryView)이 정해
+   * 만들어 넣는다. 선반이 "도서 추가"라는 기능까지 알게 되면 렌더링만 하는 역할이 흐려진다.
+   */
+  trailingSlot?: ReactNode;
 };
 
 /**
@@ -54,6 +61,7 @@ export const PublicBookShelf = ({
   compact = false,
   readingBooks = [],
   plateLabel,
+  trailingSlot,
 }: PublicBookShelfProps) => {
   const [imgSrc, setImgSrc] = useState<Record<string, string>>({});
   const shelfRef = useRef<HTMLDivElement>(null);
@@ -272,6 +280,7 @@ export const PublicBookShelf = ({
             </li>
           );
         })}
+        {trailingSlot && <li className={styles.slot}>{trailingSlot}</li>}
       </ul>
 
       {plateLabel && (

@@ -28,6 +28,7 @@ import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
 import { ViewTabs } from '@/widgets/dashboard/ViewTabs';
 
 import { LibrarySectionNav } from './LibrarySectionNav';
+import { NextBookSlot } from './NextBookSlot';
 import { ReadingCalendar } from './ReadingCalendar';
 import { ReadingNowStrip } from './ReadingNowStrip';
 import { ReadingRecord } from './ReadingRecord';
@@ -348,6 +349,15 @@ export const LibraryView = ({
                 readingBooks={hasActiveShelfFilter(filters) ? [] : readingBooks}
                 plateLabel={String(selectedYear)}
                 username={username}
+                // 다음 책 자리 — 주인이 올해 책장을 조건 없이 볼 때만.
+                // 지난해 책장에 "추가" 칸이 있으면 어색하고, 조건을 걸면 걸러진 목록이라 끝칸이 아니다
+                trailingSlot={
+                  isOwner &&
+                  selectedYear === currentYear &&
+                  !hasActiveShelfFilter(filters) ? (
+                    <NextBookSlot />
+                  ) : undefined
+                }
                 compact
               />
             )
