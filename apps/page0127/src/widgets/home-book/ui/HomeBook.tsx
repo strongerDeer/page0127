@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
+
+import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
 
 import {
   ensurePageSound,
@@ -122,6 +124,9 @@ const cloneInto = (
  * - 쪽 내용은 서버에서 그린 HTML 그대로라 검색엔진·스크린리더가 모두 읽는다.
  * - 동작 줄이기·JS 실패 → data-book 을 켜지 않아 쪽이 평범하게 위아래로 이어진다.
  */
+// 브라우저가 "사람이 눌렀다"로 쳐 주는 이벤트(이때만 AudioContext 를 켤 수 있다)
+const UNLOCK_EVENTS = ['pointerup', 'keydown', 'touchend'] as const;
+
 export const HomeBook = ({ chapters, children }: HomeBookProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -132,9 +137,14 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
   const hintRef = useRef<HTMLParagraphElement>(null);
   const edgesRef = useRef<HTMLDivElement>(null);
   const tocRef = useRef<HTMLElement>(null);
-  // 넘김 소리 — 기본 꺼짐. 스크롤 처리(effect 안)에서도 읽게 ref 에 함께 둔다
-  const [sound, setSound] = useState(false);
-  const soundRef = useRef(false);
+  // 넘김 소리 — 기본 켜짐(2026-11-17 HJ). 끈 사람은 브라우저에 기억해 다음에도 꺼 둔다.
+  // 브라우저는 사람이 한 번 누르기(탭·클릭·키) 전엔 소리를 막아서, 실제 소리는 첫 누르기 뒤부터 난다.
+  // 스크롤 처리(effect 안)에서도 읽게 ref 에 함께 둔다
+  const [sound, setSound] = useLocalStorage('page0127:book-sound', true);
+  const soundRef = useRef(sound);
+  useEffect(() => {
+    soundRef.current = sound;
+  }, [sound]);
 
   const toggleSound = () => {
     if (!sound && !ensurePageSound()) return;
@@ -549,6 +559,13 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
     addEventListener('hashchange', onHash);
     // 첫 화면 버튼·목차(popover 는 최상위 층)도 받으려고 문서에서 받는다
     document.addEventListener('click', onClick);
+    // 소리가 켜져 있으면 첫 누르기(탭·클릭·키)에서 오디오를 깨운다 — 그 전엔 브라우저가 막는다
+    const unlock = () => {
+      if (soundRef.current) ensurePageSound();
+    };
+    UNLOCK_EVENTS.forEach((t) =>
+      document.addEventListener(t, unlock, { capture: true, passive: true })
+    );
     root.addEventListener('focusin', onFocusIn);
     root.addEventListener('focusout', onFocusOut);
 
@@ -561,6 +578,9 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
       removeEventListener('keydown', onKey);
       removeEventListener('hashchange', onHash);
       document.removeEventListener('click', onClick);
+      UNLOCK_EVENTS.forEach((t) =>
+        document.removeEventListener(t, unlock, { capture: true })
+      );
       root.removeEventListener('focusin', onFocusIn);
       root.removeEventListener('focusout', onFocusOut);
       html.style.scrollSnapType = '';
