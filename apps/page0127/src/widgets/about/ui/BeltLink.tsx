@@ -9,6 +9,8 @@ type BeltLinkProps = {
   href: string;
   cta: string;
   className: string;
+  /** 기념일 띠지 색(--belt·--belt-ink) */
+  style?: React.CSSProperties;
   children: React.ReactNode;
 };
 
@@ -21,11 +23,13 @@ export const BeltLink = ({
   href,
   cta,
   className,
+  style,
   children,
 }: BeltLinkProps) => (
   <a
     href={href}
     className={className}
+    style={style}
     onClick={() => {
       trackEvent('cta_click', {
         location: 'cover_belt',
