@@ -14,6 +14,7 @@
 
 .snap,
 .canvas,
+.noise,
 .edges,
 .run {
   display: none;
@@ -83,22 +84,17 @@
 
 /*
  * 종이 노이즈 — 시안 v9 "종이 노이즈"(2026-11-17 HJ "노이즈 적용").
- * 잔점(밝은 점·어두운 점)과 아주 옅은 큰 얼룩, 두 겹 모두 SVG feTurbulence 를 data URI 로 넣어
- * 이미지 파일이 없다. 홈 책 무대에만 덮는다 — body 에 걸면 서재·설정까지 깔린다.
+ * 잔점(밝은 점·어두운 점)과 아주 옅은 큰 얼룩, 두 겹 모두 SVG feTurbulence 라 이미지 파일이 없다.
+ * 배경 이미지가 아니라 캔버스에 그린다(LCP 후보에서 빠지게 — model/paperNoise 참고).
+ * 홈 책 무대에만 덮는다 — body 에 걸면 서재·설정까지 깔린다.
  * 쪽·말린 종이(캔버스) 위, 책 도구 아래. 움직이지 않아 동작 줄이기와 무관하다.
  */
-.book[data-book="on"] .stage::after {
-  content: "";
+.book[data-book="on"] .noise {
+  display: block;
   position: absolute;
   z-index: 150;
-  inset: 0;
+  inset: 0 auto auto 0;
   pointer-events: none;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2.4' intercept='-.7'/%3E%3CfeFuncG type='linear' slope='2.4' intercept='-.7'/%3E%3CfeFuncB type='linear' slope='2.4' intercept='-.7'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='3' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
-  background-size:
-    240px 240px,
-    900px 900px;
   mix-blend-mode: overlay;
   opacity: 0.44;
 }
@@ -126,7 +122,7 @@
 
 /* 어두운 화면: 밝은 점이 튀지 않게 뒤집고 더 옅게 */
 @media (prefers-color-scheme: dark) {
-  .book[data-book="on"] .stage::after {
+  .book[data-book="on"] .noise {
     filter: invert(1);
     mix-blend-mode: soft-light;
     opacity: 0.3;

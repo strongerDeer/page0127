@@ -7,6 +7,7 @@ import {
   playPageSound,
   soundForTurn,
 } from '../model/pageSound';
+import { paintPaperNoise } from '../model/paperNoise';
 
 import type { BookChapter } from '../model/chapters';
 
@@ -125,6 +126,7 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const noiseRef = useRef<HTMLCanvasElement>(null);
   const snapsRef = useRef<HTMLDivElement>(null);
   const toolsRef = useRef<HTMLDivElement>(null);
   const hintRef = useRef<HTMLParagraphElement>(null);
@@ -268,6 +270,7 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
       cv.style.width = `${W}px`;
       cv.style.height = `${H}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (noiseRef.current) void paintPaperNoise(noiseRef.current, W, H, dpr);
       draw();
     };
 
@@ -375,6 +378,11 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
         pg.style.zIndex = String(closing && i === TURNS ? N + 1 : N - i);
         const gone = i < k || (i === k && t >= 1) || (closing && i === k);
         pg.style.visibility = gone ? 'hidden' : '';
+        // 아직 드러나지 않은 뒤쪽 쪽(앞 쪽에 완전히 가려짐)은 투명하게 — 보기엔 같지만, 안 그러면
+        // 책 모드가 켜지는 순간 가려진 1장 문장까지 "그려진" 것으로 쳐서 LCP 가 늦게 잡힌다.
+        // visibility 대신 opacity 라 목차·Tab·화면 낭독기로는 그대로 닿는다
+        const behind = i > k + 1 || (i === k + 1 && t === 0);
+        pg.style.opacity = behind ? '0' : '';
         if (i !== k || closing) pg.style.clipPath = '';
         pg.toggleAttribute('data-book-current', i === cur);
       });
@@ -592,6 +600,8 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
         {children}
         {/* 말린 종이 뒷면·그림자 — 넘기는 동안만 그린다 */}
         <canvas ref={canvasRef} aria-hidden='true' className={styles.canvas} />
+        {/* 종이 노이즈 — 캔버스라 LCP 후보가 아니다(model/paperNoise) */}
+        <canvas ref={noiseRef} aria-hidden='true' className={styles.noise} />
         {/* 오른쪽 가장자리에 겹겹이 보이는 남은 쪽 */}
         <div ref={edgesRef} aria-hidden='true' className={styles.edges} />
       </div>
