@@ -609,7 +609,7 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
         <span className={styles.hintTouch}>위로 밀면 다음 쪽으로 넘어가요</span>
       </p>
 
-      {/* 책 도구 — 책 안에 있을 때만 뜬다. 목차는 popover 라 여닫기에 JS 가 필요 없다 */}
+      {/* 책 도구(오른쪽 아래) — 책 안에 있을 때만 뜬다. 목차는 popover 라 여닫기에 JS 가 필요 없다 */}
       <div ref={toolsRef} className={styles.tools}>
         <button
           type='button'

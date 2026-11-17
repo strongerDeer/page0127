@@ -184,37 +184,6 @@
   color: var(--navy-700);
 }
 
-/* 바코드 — 그림 없이 줄무늬 그라데이션 */
-.isbn {
-  flex: none;
-  /* 실제 책 뒤표지 비율에 가깝게 작게(2026-11-17 HJ "바코드는 더 작게") */
-  width: 19%;
-  padding: 3% 3% 2%;
-  border: 1px solid rgb(20 41 78 / 0.15);
-  border-radius: 3px;
-  background: #fff;
-  color: #111;
-  font-size: calc(var(--bw) * 0.016);
-  letter-spacing: 0.04em;
-  text-align: center;
-  white-space: nowrap;
-}
-
-.isbn i {
-  display: block;
-  height: calc(var(--bw) * 0.065);
-  margin-bottom: 3px;
-  background: repeating-linear-gradient(
-    to right,
-    #111 0 1px,
-    transparent 1px 3px,
-    #111 3px 5px,
-    transparent 5px 6px,
-    #111 6px 7px,
-    transparent 7px 10px
-  );
-}
-
 /* ── 책 아래: 가입 버튼 ─────────────────────────────── */
 .cta {
   display: flex;

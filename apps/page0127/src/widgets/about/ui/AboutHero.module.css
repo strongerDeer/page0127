@@ -215,7 +215,8 @@
 }
 
 .title {
-  font-size: calc(var(--bw) * 0.07);
+  /* "책장이 계절을 말해 줍니다"가 한 줄에 들어가는 크기(2026-11-17 HJ "한 줄로") */
+  font-size: calc(var(--bw) * 0.063);
   line-height: 1.42;
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -223,8 +224,11 @@
 }
 
 .mark {
-  flex: none;
-  width: calc(var(--bw) * 0.1);
+  /* 제목 옆에 두면 제목 폭을 먹어 둘째 줄이 꺾였다 → 표지 오른쪽 위 모서리로(출판사 마크 자리) */
+  position: absolute;
+  top: 4%;
+  right: 6%;
+  width: calc(var(--bw) * 0.075);
   height: auto;
   border-radius: 22%;
   box-shadow: 0 0 0 1px rgb(251 241 230 / 0.35);
@@ -401,9 +405,10 @@
 /* 앱 아이콘과 같은 책갈피 — 띠지 위 가장자리에서 내려온다 */
 .bookmark {
   position: absolute;
-  right: 12%;
+  /* 위 "0127." 민트 점의 오른쪽 끝(표지 폭의 81.3%)에 맞춘다 — Pretendard 800 실측 */
+  right: 18.7%;
   top: -1px;
-  width: calc(var(--bw) * 0.065);
+  width: calc(var(--bw) * 0.085);
   height: 62%;
   background: var(--cover);
   clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);

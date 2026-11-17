@@ -98,12 +98,7 @@
   color: var(--primary);
 }
 
-/* 책 모드에선 오른쪽 위에 책 도구(소리·목차·건너뛰기)가 뜬다 — 장 이름이 가리지 않게 그 폭만큼 비운다(시안도 같다).
-   좁은 화면은 자리가 없어 장 이름을 뺀다 */
-:global([data-book="on"]) .runhead {
-  padding-right: calc(var(--gutter) + 17rem);
-}
-
+/* 좁은 화면은 자리가 없어 장 이름을 뺀다 */
 @media (max-width: 640px) {
   .runhead span {
     display: none;
@@ -227,28 +222,17 @@
   font-variant-numeric: tabular-nums;
 }
 
-.pgnav {
-  /* 손가락으로 누르기 쉽게 — 누르는 칸은 44px */
+.prev,
+.next {
+  /* 손가락으로 누르기 쉽게 — 글자는 작아도 누르는 칸은 44px */
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  min-width: 0;
-  max-width: 100%;
   min-height: 2.75rem;
-  padding: 0 0.875rem;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  /* 아날로그 룩 — 종이 카드처럼 모서리를 덜 둥글게 */
-  border-radius: 6px;
-  background: var(--card);
-  color: var(--text-strong);
-  font-size: 0.875rem;
   font-weight: 600;
-  white-space: nowrap;
+  color: var(--text-subtle);
   text-decoration: none;
-  transition:
-    background-color 0.15s,
-    border-color 0.15s;
+  transition: color 0.15s;
 }
 
 .prev {
@@ -257,44 +241,11 @@
 
 .next {
   justify-self: end;
-  padding-right: 0.75rem;
-  border-color: var(--primary);
-  background: var(--primary);
-  color: var(--primary-foreground);
-}
-
-.nt {
-  overflow: hidden;
-  font-weight: 500;
-  text-overflow: ellipsis;
-  opacity: 0.8;
-}
-
-.arr {
-  display: inline-block;
-  transition: transform 0.2s;
 }
 
 .prev:hover,
-.prev:focus-visible {
-  border-color: var(--text-subtle);
-}
-
-.next:hover .arr,
-.next:focus-visible .arr {
-  transform: translateX(3px);
-}
-
-/* 좁은 화면: 장 이름과 "이전 장" 글자는 빼고 화살표만 */
-@media (max-width: 520px) {
-  .nt,
-  .prev .lbl {
-    display: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .arr {
-    transition: none;
-  }
+.next:hover,
+.prev:focus-visible,
+.next:focus-visible {
+  color: var(--text-strong);
 }

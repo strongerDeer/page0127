@@ -102,28 +102,21 @@ export const Chapter = ({
         )}
       </div>
 
-      {/* 시안처럼 알약 버튼 — 다음 장은 파란 채움에 장 이름까지("다음 장 · 독서 케미 →") */}
       <nav aria-label={`${chapter.label} 넘기기`} className={styles.folio}>
-        <a
-          href={prev ? `#${prev.anchor}` : '#book-cover'}
-          // 좁은 화면에선 글자를 숨기고 화살표만 보여서 이름을 따로 단다
-          aria-label={prev ? '이전 장' : '표지로'}
-          className={`${styles.pgnav} ${styles.prev}`}
-        >
-          <span aria-hidden='true' className={styles.arr}>
-            ←
-          </span>
-          <span className={styles.lbl}>{prev ? '이전 장' : '표지로'}</span>
-        </a>
+        {prev ? (
+          <a href={`#${prev.anchor}`} className={styles.prev}>
+            <span aria-hidden='true'>←</span> 이전 장
+          </a>
+        ) : (
+          <a href='#book-cover' className={styles.prev}>
+            <span aria-hidden='true'>←</span> 표지
+          </a>
+        )}
         <span aria-hidden='true' className={styles.no}>
           {chapter.folio}
         </span>
-        <a href={nextHref} className={`${styles.pgnav} ${styles.next}`}>
-          {next ? '다음 장' : '책 덮기'}
-          {next && <span className={styles.nt}>· {next.title}</span>}
-          <span aria-hidden='true' className={styles.arr}>
-            →
-          </span>
+        <a href={nextHref} className={styles.next}>
+          {next ? '다음 장' : '책 덮기'} <span aria-hidden='true'>→</span>
         </a>
       </nav>
     </div>

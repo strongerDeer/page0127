@@ -54,10 +54,6 @@ export const BackCover = ({ member = null }: BackCoverProps) => (
                   서재는 한 권부터 시작됩니다
                 </span>
               </div>
-              <div className={styles.isbn}>
-                <i />
-                ISBN 0127-2026
-              </div>
             </div>
           </div>
         </div>
