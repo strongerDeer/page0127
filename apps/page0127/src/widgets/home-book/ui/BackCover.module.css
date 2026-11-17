@@ -214,6 +214,18 @@
   color: var(--navy-700);
 }
 
+.checks span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.checkIcon {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
 .again {
   display: inline-flex;
   align-items: center;

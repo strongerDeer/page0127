@@ -65,5 +65,5 @@ export const updateReadingGoalAction = async (
     return { status: 'error', message: '독서 목표 설정에 실패했습니다.' };
   }
 
-  return { status: 'success', message: '독서 목표가 설정되었습니다! 🎯' };
+  return { status: 'success', message: '독서 목표가 설정되었습니다!' };
 };

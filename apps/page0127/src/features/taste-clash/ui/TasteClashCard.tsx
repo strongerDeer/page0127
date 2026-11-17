@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { BookCover } from '@repo/ui';
+import { Star } from 'lucide-react';
 
 import { toCoverSource } from '@/entities/book';
 
@@ -53,9 +54,17 @@ export const TasteClashCard = ({
           ].map((item) => (
             <div key={item.name} className='rounded-lg bg-sunken p-3'>
               <p className='text-sm'>{item.name}</p>
-              <p className='mt-2 text-primary' aria-label={`${item.rating}점`}>
-                {'★'.repeat(item.rating)}
-                {'☆'.repeat(5 - item.rating)}
+              <p
+                className='mt-2 flex justify-center gap-0.5 text-primary'
+                aria-label={`${item.rating}점`}
+              >
+                {Array.from({ length: 5 }, (_, i) => (
+                  <Star
+                    key={i}
+                    aria-hidden
+                    className={`size-4 ${i < item.rating ? 'fill-current' : ''}`}
+                  />
+                ))}
               </p>
             </div>
           ))}

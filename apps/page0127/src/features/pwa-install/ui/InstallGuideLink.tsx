@@ -87,7 +87,7 @@ const InstallGuideBody = ({ onDone }: { onDone: () => void }) => {
     if (!promptInstall) return;
     const outcome = await promptInstall();
     if (outcome === 'accepted') {
-      toast.success('홈 화면에 추가했어요. 이제 앱처럼 열 수 있어요 🎉');
+      toast.success('홈 화면에 추가했어요. 이제 앱처럼 열 수 있어요');
       onDone();
     }
   };
@@ -96,7 +96,7 @@ const InstallGuideBody = ({ onDone }: { onDone: () => void }) => {
     case 'installed':
       return (
         <Guide
-          title='이미 홈 화면에서 열었어요 🎉'
+          title='이미 홈 화면에서 열었어요'
           description='설정 → 푸시 알림을 켜면 새 알림과 주간 회상을 이 기기로 받아요.'
         />
       );

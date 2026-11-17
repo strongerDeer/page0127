@@ -1,3 +1,5 @@
+import { Star } from 'lucide-react';
+
 import { isRated, RATING_MAX } from '@/entities/book';
 
 import type { RecapBook } from '@/entities/recap';
@@ -25,9 +27,14 @@ export const RecapRating = ({
     <p className='mt-1 flex items-center gap-2 text-sm text-text-subtle'>
       {isRated(rating) && (
         <>
-          <span aria-hidden='true'>
-            {'★'.repeat(rating)}
-            {'☆'.repeat(RATING_MAX - rating)}
+          {/* 글자 ★☆ 대신 아이콘 — 글꼴에 따라 이모지처럼 그려지지 않게. 채움 = 점수, 테두리만 = 남은 칸 */}
+          <span aria-hidden='true' className='flex items-center gap-0.5'>
+            {Array.from({ length: RATING_MAX }, (_, i) => (
+              <Star
+                key={i}
+                className={`size-3.5 ${i < rating ? 'fill-current' : ''}`}
+              />
+            ))}
           </span>
           <span className='sr-only'>{`${RATING_MAX}점 만점에 ${rating}점`}</span>
         </>

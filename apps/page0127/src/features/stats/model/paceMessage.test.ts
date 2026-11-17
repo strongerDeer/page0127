@@ -21,7 +21,7 @@ const msg = (
 describe('getPaceMessage', () => {
   it('조금 뒤처짐 — 예상 권수와 주당 권수', () => {
     const m = msg(14, 40);
-    expect(m.headline).toBe('지금 속도면 올해 약 18권 📚');
+    expect(m.headline).toBe('지금 속도면 올해 약 18권 🥹');
     expect(m.detail).toBe(
       '목표 40권까지 26권 — 남은 11.3주 동안 일주일에 2.3권이면 닿아요.'
     );
