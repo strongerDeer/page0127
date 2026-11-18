@@ -31,6 +31,7 @@ import {
   updateSentence,
 } from '../api/sentenceActions';
 import { SentenceFields } from './SentenceFields';
+import { SentenceImportDialog } from './SentenceImportDialog';
 
 import type { AdminSentence } from '../api/getAdminSentences';
 import type { SentenceActionResult } from '../api/sentenceActions';
@@ -89,10 +90,13 @@ export const AdminSentenceManager = ({
           {activeCount === 0 &&
             ' — 활성 문장이 없으면 사용자 서재에 카드가 나오지 않아요.'}
         </span>
-        <Button size='sm' className='ml-auto' onClick={() => setEditing('new')}>
-          <Plus aria-hidden />
-          문장 추가
-        </Button>
+        <div className='ml-auto flex items-center gap-2'>
+          <SentenceImportDialog />
+          <Button size='sm' onClick={() => setEditing('new')}>
+            <Plus aria-hidden />
+            문장 추가
+          </Button>
+        </div>
       </div>
 
       {sentences === null ? (
