@@ -250,9 +250,12 @@ export const ChemVisual = ({ books }: VisualProps) => {
   return (
     <div aria-hidden='true' className='flex w-full flex-col items-center'>
       {/* 둘 다 읽은 책 — 서재에서 뽑아 표지가 보이게 세운다 */}
-      {/* 메모: 좁은 화면은 표지 위 한 줄 자리를 실제로 차지한다 — 띄워 두면 위 설명 글을 덮었다(2026-11-18 점검) */}
-      <div className='relative flex flex-wrap items-end justify-center gap-3 md:flex-nowrap'>
-        <PenNote className='mb-1 basis-full text-center text-[22px] md:absolute md:bottom-full md:left-full md:-ml-2 md:mb-1 md:basis-auto md:text-left md:text-[26px]'>
+      {/* 메모는 좁은 화면에서 위 설명 글을 덮어 뺀다(2026-11-18 HJ) */}
+      <div className='relative flex items-end gap-3'>
+        <PenNote
+          hideOnMobile
+          className='absolute bottom-full left-full -ml-2 mb-1 text-[26px]'
+        >
           겹친 책에 동그라미!
         </PenNote>
         {both.map((b, i) => (
@@ -273,7 +276,8 @@ export const ChemVisual = ({ books }: VisualProps) => {
         <ChemShelf who='혜진' books={hers} pulled={[1, 4]} />
       </div>
 
-      <p className='mt-4 rounded-full bg-card px-4 py-2 text-sm font-bold text-text-strong shadow-md'>
+      {/* 좁은 화면은 쪽이 넘쳐 뺀다 — 서재 두 칸과 78% 로 뜻이 충분히 전해진다(2026-11-18 HJ "컨텐츠 줄이기") */}
+      <p className='mt-4 hidden rounded-full bg-card px-4 py-2 text-sm font-bold text-text-strong shadow-md md:block'>
         둘 다 &lsquo;관계&rsquo;를 좋아해요
       </p>
     </div>

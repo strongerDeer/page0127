@@ -95,13 +95,13 @@ export const LifeBookHero = ({
       className={cn(
         'tint-cool mx-auto flex flex-col items-center text-center',
         inBook
-          ? 'w-full max-w-xl rounded-md px-5 py-6 md:p-8'
+          ? 'w-full max-w-xl rounded-md px-5 py-4 md:p-8'
           : 'mt-12 max-w-2xl rounded-3xl px-5 py-10 md:mt-16 md:p-14'
       )}
     >
       <div ref={slotRef} className='scroll-my-24'>
         {chosen ? (
-          <div className='relative w-36 md:w-44'>
+          <div className='relative w-20 md:w-44'>
             <CoverImage
               src={chosen.coverSrc}
               fallbackSrc={chosen.coverFallback}
@@ -123,15 +123,15 @@ export const LifeBookHero = ({
           // 빈 자리 — 여기에 내 인생책이 꽂힌다는 것을 모양으로 보여 준다
           <div
             aria-hidden='true'
-            className='flex aspect-2/3 w-36 items-center justify-center rounded-lg border-2 border-dashed border-chart-6/60 bg-card/60 md:w-44'
+            className='flex aspect-2/3 w-20 items-center justify-center rounded-lg border-2 border-dashed border-chart-6/60 bg-card/60 md:w-44'
           >
-            <BookOpen className='size-10 text-chart-6/50' />
+            <BookOpen className='size-8 text-chart-6/50 md:size-10' />
           </div>
         )}
       </div>
 
       {chosen ? (
-        <div className='mt-6 w-full min-w-0'>
+        <div className='mt-4 w-full min-w-0 md:mt-6'>
           <p className='break-keep text-lg font-bold text-text-strong md:text-xl'>
             {chosen.book.title}
           </p>
@@ -162,7 +162,7 @@ export const LifeBookHero = ({
           </div>
         </div>
       ) : (
-        <div className='mt-6 w-full'>
+        <div className='mt-4 w-full md:mt-6'>
           <ShelfSearch
             defaultOpen
             centered
@@ -181,14 +181,15 @@ export const LifeBookHero = ({
       </p>
 
       {leaders.length > 0 && (
-        <div className='mt-10 w-full border-t border-line-soft pt-8'>
+        <div className='mt-4 w-full border-t border-line-soft pt-4 md:mt-10 md:pt-8'>
           <p className='text-sm font-bold text-text-strong md:text-base'>
             리더들이 뽑은 인생책이에요
           </p>
-          <p className='mt-1 text-xs text-text-subtle'>
+          {/* 좁은 화면은 쪽이 넘쳐 안내 한 줄을 뺀다(2026-11-18 HJ) */}
+          <p className='mt-1 hidden text-xs text-text-subtle md:block'>
             같은 책이 있다면 눌러서 바로 골라 보세요
           </p>
-          <ul className='mx-auto mt-4 grid max-w-md grid-cols-5 gap-2 md:gap-3'>
+          <ul className='mx-auto mt-3 grid max-w-md grid-cols-5 gap-2 md:mt-4 md:gap-3'>
             {leaders.map((leader) => {
               const selected = chosen?.book.isbn === leader.book.isbn;
               return (

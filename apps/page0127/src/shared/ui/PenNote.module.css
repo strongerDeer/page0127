@@ -26,3 +26,10 @@
   white-space: nowrap;
   pointer-events: none;
 }
+
+/* 모듈 CSS 라 Tailwind 의 hidden 유틸리티(@layer)보다 위 display:block 이 이긴다 — 그래서 여기서 숨긴다 */
+@media (max-width: 767px) {
+  .desktopOnly {
+    display: none;
+  }
+}
