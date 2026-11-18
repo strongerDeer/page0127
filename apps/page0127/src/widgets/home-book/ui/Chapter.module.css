@@ -232,6 +232,20 @@
   }
 }
 
+.leadShort {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .leadLong {
+    display: none;
+  }
+
+  .leadShort {
+    display: block;
+  }
+}
+
 .vis {
   display: flex;
   justify-content: center;
