@@ -3,7 +3,7 @@
 import { useTransition } from 'react';
 
 import { Button } from '@repo/ui';
-import { Library } from 'lucide-react';
+import { Library, LoaderCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { addSentenceBooksToCatalog } from '../api/sentenceActions';
@@ -26,7 +26,7 @@ export const CatalogSyncButton = () => {
       toast.success(
         `문장의 책 ${result.books}권이 전체 도서에 있어요.${
           result.failed > 0
-            ? ` (${result.failed}권은 서점에서 못 찾았어요)`
+            ? ` (${result.failed}권은 못 넣었어요. 다시 누르면 이어서 넣어요)`
             : ''
         }`
       );
@@ -38,9 +38,14 @@ export const CatalogSyncButton = () => {
       variant='outline'
       onClick={handleClick}
       disabled={pending}
+      aria-busy={pending}
     >
-      <Library aria-hidden />
-      {pending ? '넣는 중…' : '전체 도서에 넣기'}
+      {pending ? (
+        <LoaderCircle className='animate-spin' aria-hidden />
+      ) : (
+        <Library aria-hidden />
+      )}
+      {pending ? '넣는 중… 30초쯤 걸려요' : '전체 도서에 넣기'}
     </Button>
   );
 };

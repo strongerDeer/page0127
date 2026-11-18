@@ -10,6 +10,7 @@ import { revalidateBookInfoPages } from '@/shared/lib/cache/revalidateBookInfoPa
 import { ensureProviderCatalog } from '@/entities/book/api/ensureProviderCatalog';
 
 import { fillMissingCovers } from '../model/fillMissingCovers';
+import { isRateLimitError, paceCalls, retryOn429 } from '../model/paceCalls';
 import { parseSentenceCsv, sentenceKey } from '../model/sentenceCsv';
 import { parseSentenceForm } from '../model/sentenceForm';
 
@@ -116,12 +117,28 @@ export async function deleteSentence(
   return { ok: true };
 }
 
-/** 서점(YES24)에서 ISBN 으로 표지 주소를 찾는다. 못 찾거나 실패하면 null */
+/**
+ * 서점 오류를 남긴다 — 429(잠깐 막힘)는 다시 눌러 풀리는 일이라 경고로만 남긴다.
+ * error 로 남기면 운영 알림(카톡)이 울린다(2026-11-18 표지 채우기 때 27건).
+ */
+const logProviderFailure = (label: string, isbn: string, error: unknown) => {
+  if (isRateLimitError(error))
+    console.warn(
+      `[admin] ${label} — YES24 429, 다시 누르면 이어서 채워요:`,
+      isbn
+    );
+  else console.error(`[admin] ${label}:`, isbn, error);
+};
+
+/** 서점(YES24)에서 ISBN 으로 표지 주소를 찾는다. 429 면 쉬었다 다시, 그래도 안 되면 null */
 const lookupCover = async (isbn: string): Promise<string | null> => {
   try {
-    return (await getBookProvider().getByIsbn(isbn))?.coverImage || null;
+    return (
+      (await retryOn429(() => getBookProvider().getByIsbn(isbn)))?.coverImage ||
+      null
+    );
   } catch (error) {
-    console.error('[admin] 문장 표지 찾기 실패:', isbn, error);
+    logProviderFailure('문장 표지 찾기 실패', isbn, error);
     return null;
   }
 };
@@ -256,35 +273,32 @@ export async function fillSentenceCovers(): Promise<FillCoversResult> {
   return { ok: true, filled, missing: rows.length - filled };
 }
 
-const CATALOG_CONCURRENCY = 5;
-
 /**
  * ISBN 들을 전체 도서(global_books)에 넣는다 — 이미 있으면 건너뛴다.
  * 사용자가 책을 담을 때와 같은 ensureProviderCatalog(서점 원본 서지·승인 상태)를 쓴다.
+ * 서점을 천천히 부르고(paceCalls), 429 면 쉬었다 다시 묻는다(retryOn429).
  * 못 찾은 ISBN 은 실패로 세고 넘어간다(문장은 그대로 "담기" 화면으로 이어진다).
  */
 const addBooksToCatalog = async (
   isbns: (string | null)[]
 ): Promise<{ done: number; failed: number }> => {
   const unique = [...new Set(isbns.filter((v): v is string => !!v))];
+  const results = await paceCalls(unique, (isbn) =>
+    retryOn429(() => ensureProviderCatalog(isbn))
+  );
   let done = 0;
   let failed = 0;
-  for (let i = 0; i < unique.length; i += CATALOG_CONCURRENCY) {
-    const results = await Promise.allSettled(
-      unique.slice(i, i + CATALOG_CONCURRENCY).map(ensureProviderCatalog)
-    );
-    results.forEach((result, index) => {
-      if (result.status === 'fulfilled') done += 1;
-      else {
-        failed += 1;
-        console.error(
-          '[admin] 문장 책 전체 도서 등록 실패:',
-          unique[i + index],
-          result.reason
-        );
-      }
-    });
-  }
+  results.forEach((result, index) => {
+    if (result.status === 'fulfilled') done += 1;
+    else {
+      failed += 1;
+      logProviderFailure(
+        '문장 책 전체 도서 등록 실패',
+        unique[index],
+        result.reason
+      );
+    }
+  });
   if (done > 0) revalidateBookInfoPages();
   return { done, failed };
 };

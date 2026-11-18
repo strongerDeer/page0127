@@ -1,6 +1,12 @@
 import { getAdminSentences } from '@/features/admin-sentences/api/getAdminSentences';
 import { AdminSentenceManager } from '@/features/admin-sentences/ui/AdminSentenceManager';
 
+/**
+ * 이 화면의 서버 액션(표지 채우기·전체 도서에 넣기)은 서점 API 를 천천히 여러 번 불러
+ * 수십 초 걸릴 수 있다(2026-11-18, 74권 ≈ 30초). 기본 제한 시간에 끊기지 않게 늘린다.
+ */
+export const maxDuration = 120;
+
 export default async function AdminSentencesPage() {
   const sentences = await getAdminSentences();
   return (
