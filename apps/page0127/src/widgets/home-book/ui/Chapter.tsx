@@ -20,6 +20,11 @@ type ChapterProps = {
   /** 쪽의 큰 제목(h2). 없으면 섹션 이름은 장 이름(aria-label) */
   heading?: React.ReactNode;
   lead?: React.ReactNode;
+  /**
+   * 좁은 화면(640px 이하)에서 lead 대신 보이는 한 줄 설명 — 작은 폰에선 3줄 설명이 쪽을 빡빡하게 만든다
+   * (2026-11-18 HJ). 없으면 lead 를 그대로 쓴다.
+   */
+  leadShort?: React.ReactNode;
   /** 설명 아래 — 고른 권수·저장 버튼처럼 글 쪽에 붙는 것 */
   aside?: React.ReactNode;
   children?: React.ReactNode;
@@ -42,6 +47,7 @@ export const Chapter = ({
   kicker,
   heading,
   lead,
+  leadShort,
   aside,
   children,
 }: ChapterProps) => {
@@ -92,7 +98,20 @@ export const Chapter = ({
                   <h2 id={titleId} className={`display-xl ${styles.heading}`}>
                     {heading}
                   </h2>
-                  {lead && <p className={styles.lead}>{lead}</p>}
+                  {lead &&
+                    (leadShort ? (
+                      <>
+                        {/* 둘 중 하나만 display 되므로 화면 낭독기도 하나만 읽는다 */}
+                        <p className={`${styles.lead} ${styles.leadLong}`}>
+                          {lead}
+                        </p>
+                        <p className={`${styles.lead} ${styles.leadShort}`}>
+                          {leadShort}
+                        </p>
+                      </>
+                    ) : (
+                      <p className={styles.lead}>{lead}</p>
+                    ))}
                   {aside}
                 </div>
                 <div className={styles.vis}>{children}</div>

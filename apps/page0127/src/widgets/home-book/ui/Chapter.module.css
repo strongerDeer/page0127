@@ -106,18 +106,27 @@
 }
 
 /* ── 본문 ─────────────────────────────────────────── */
+/*
+ * 세로 가운데 — align-items: center 대신 자식의 margin-block: auto 로 한다.
+ * center 는 내용이 칸보다 크면 위아래로 똑같이 넘쳐, 위로 넘친 부분이 머리글을 덮고 스크롤로도 못 본다
+ * (작은 폰에서 "page0127." 과 "제N장"이 겹쳤다, 2026-11-18 점검). auto 여백은 남는 자리만 나눠 가져서
+ * 넘치면 0 이 되고 위에서부터 쌓인다. 줄어들지 않게(flex-shrink 0) 해서 넘친 만큼 쪽이 길어지고,
+ * 쪽은 그 안에서 스크롤된다(쪽번호 줄은 내용 아래로 밀린다).
+ */
 .body {
-  flex: 1;
+  flex: 1 0 auto;
   display: flex;
-  align-items: center;
-  min-height: 0;
   padding-block: clamp(12px, 3svh, 32px);
+}
+
+.body > * {
+  margin-block: auto;
 }
 
 .pw {
   width: 100%;
   max-width: 1180px;
-  margin: 0 auto;
+  margin: auto;
   padding-inline: 24px;
 }
 
@@ -189,6 +198,52 @@
   );
   padding: 0 2px;
   margin: 0 -2px;
+}
+
+/*
+ * 작은 폰 — 실제 아이폰 사파리는 주소창·탭바 때문에 보이는 높이가 660~750px 이라 쪽이 자주 넘쳤다.
+ * 장 제목·설명·간격을 한 단계 줄여 한 화면에 들어가게 한다(2026-11-18 HJ "모바일은 크기를 조금 줄이거나").
+ */
+@media (max-width: 640px) {
+  .body {
+    padding-block: 10px;
+  }
+
+  .split {
+    gap: 14px;
+  }
+
+  .copy {
+    gap: 8px;
+  }
+
+  .label {
+    font-size: 0.8125rem;
+  }
+
+  .heading {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+
+  .lead {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+}
+
+.leadShort {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .leadLong {
+    display: none;
+  }
+
+  .leadShort {
+    display: block;
+  }
 }
 
 .vis {

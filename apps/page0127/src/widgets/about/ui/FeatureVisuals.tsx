@@ -238,16 +238,24 @@ const ChemShelf = ({ who, books, pulled }: ChemShelfProps) => (
  * (2026-11-17 HJ "각자 책등으로 꽂힌 서재, 동일하게 읽은 책은 위로 해서 2권 정도 책표지")
  */
 export const ChemVisual = ({ books }: VisualProps) => {
-  const at = (i: number) => (books.length ? books[i % books.length] : null);
-  const both = [at(3), at(4)];
+  // 표지를 세워 보여 주는 "둘 다 읽은 책"은 표지 있는 책으로 고른다 — 최근 책 순서 그대로 쓰면
+  // 표지 없는 책이 걸려 회색 빈칸이 됐다(2026-11-18 점검). 나머지 책은 책등이라 표지가 없어도 된다
+  const withCover = books.filter((b) => b.coverImage);
+  const rest = books.filter((b) => !withCover.slice(0, 2).includes(b));
+  const at = (i: number) => (rest.length ? rest[i % rest.length] : null);
+  const both = [withCover[0] ?? at(3), withCover[1] ?? at(4)];
   const mine = [at(0), at(1), both[0], at(2), at(5), both[1], at(6)];
-  const hers = [at(7), both[0], at(8), at(9), both[1], at(10), at(11)];
+  const hers = [at(7), both[0], at(8), at(3), both[1], at(9), at(10)];
 
   return (
     <div aria-hidden='true' className='flex w-full flex-col items-center'>
       {/* 둘 다 읽은 책 — 서재에서 뽑아 표지가 보이게 세운다 */}
+      {/* 메모는 좁은 화면에서 위 설명 글을 덮어 뺀다(2026-11-18 HJ) */}
       <div className='relative flex items-end gap-3'>
-        <PenNote className='absolute bottom-full left-1/2 mb-2 -translate-x-1/2 text-[22px] md:left-full md:-ml-2 md:mb-1 md:translate-x-0 md:text-[26px]'>
+        <PenNote
+          hideOnMobile
+          className='absolute bottom-full left-full -ml-2 mb-1 text-[26px]'
+        >
           겹친 책에 동그라미!
         </PenNote>
         {both.map((b, i) => (
@@ -268,7 +276,8 @@ export const ChemVisual = ({ books }: VisualProps) => {
         <ChemShelf who='혜진' books={hers} pulled={[1, 4]} />
       </div>
 
-      <p className='mt-4 rounded-full bg-card px-4 py-2 text-sm font-bold text-text-strong shadow-md'>
+      {/* 좁은 화면은 쪽이 넘쳐 뺀다 — 서재 두 칸과 78% 로 뜻이 충분히 전해진다(2026-11-18 HJ "컨텐츠 줄이기") */}
+      <p className='mt-4 hidden rounded-full bg-card px-4 py-2 text-sm font-bold text-text-strong shadow-md md:block'>
         둘 다 &lsquo;관계&rsquo;를 좋아해요
       </p>
     </div>

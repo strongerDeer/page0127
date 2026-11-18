@@ -144,6 +144,7 @@ const Home = async () => {
           kicker='1분 맛보기'
           heading='당신의 첫인상.'
           lead='기억나는 책 세 권을 골라보세요. 다음 장에서 당신의 책장이 서요.'
+          leadShort='기억나는 책 세 권만 골라 보세요.'
           aside={<ShelfPickCount shelfHref={`#${chapterAnchor('shelf')}`} />}
         >
           {/* 맛보기 깔때기의 분모 — 맛보기를 본 사람 수. 그룹은 GA 사용자 속성으로 붙는다 */}
@@ -161,6 +162,7 @@ const Home = async () => {
             </>
           }
           lead='앞 장에서 고른 책이 여기 꽂혀요. 가입하면 이 책장을 그대로 저장해 드려요. 읽은 책이 많다면 바코드나 CSV로 한 번에 옮겨 와요.'
+          leadShort='고른 책이 그대로 내 책장이 돼요.'
           aside={<ShelfSaveAction />}
         >
           <ShelfPanel />
@@ -174,6 +176,7 @@ const Home = async () => {
         kicker='1분 맛보기'
         heading='당신의 인생책은?'
         lead='몇 번을 다시 읽어도 좋은, 마음에 오래 남은 한 권. 그 책으로 내 서재를 시작해 보세요.'
+        leadShort='마음에 오래 남은 한 권으로 시작해요.'
       >
         <TrackOnMount event='shelf_preview_view' />
         <LifeBookHero leaders={preview.leaders} inBook />
@@ -222,6 +225,11 @@ const Home = async () => {
               올려요.
             </>
           }
+          leadShort={
+            <>
+              <b>간직한 문장.</b> 밑줄 친 문장을 모아 둬요.
+            </>
+          }
         >
           <SentenceVisual />
         </Chapter>
@@ -239,6 +247,11 @@ const Home = async () => {
             <>
               <b>공개 서재와 공유.</b> 주소 하나로 내 책장을 보여 주고, 인스타
               스토리에 올릴 이미지도 바로 만들어요.
+            </>
+          }
+          leadShort={
+            <>
+              <b>공개 서재.</b> 주소 하나로 책장을 보여 줘요.
             </>
           }
         >
@@ -262,6 +275,11 @@ const Home = async () => {
               취향을 확인해요. 케미 카드는 스토리 이미지로도 나눠요.
             </>
           }
+          leadShort={
+            <>
+              <b>독서 케미.</b> 겹치는 책으로 취향을 봐요.
+            </>
+          }
         >
           <ChemVisual {...covers} />
         </Chapter>
@@ -282,6 +300,11 @@ const Home = async () => {
               이미 기록한 책으로도 바로 받아요.
             </>
           }
+          leadShort={
+            <>
+              <b>배지.</b> 기록할수록 전집처럼 모여요.
+            </>
+          }
         >
           <BadgeVisual />
         </Chapter>
@@ -300,6 +323,11 @@ const Home = async () => {
             <>
               <b>라운지.</b> 팔로우한 리더와 올해의 독서 배틀을 하고, 뜸한
               친구는 콕 찔러 깨워요. 새로 꽂은 책도 바로 봐요.
+            </>
+          }
+          leadShort={
+            <>
+              <b>라운지.</b> 리더와 올해의 독서 배틀을 해요.
             </>
           }
         >
