@@ -1,4 +1,22 @@
-import type { HeroSlide, HeroSlideRow } from '../types';
+import type { HeroCover, HeroSlide, HeroSlideRow } from '../types';
+
+/** 기본 표지 색 — AboutHero.module.css 의 --cover/--cover-ink 와 같은 값 */
+export const DEFAULT_COVER_BG = '#0969e0';
+export const DEFAULT_COVER_FG = '#fbf1e6';
+
+export function rowToCover(row: HeroSlideRow): HeroCover {
+  if (row.cover_style !== 'custom') return { style: 'default' };
+  return {
+    style: 'custom',
+    bg: row.cover_bg || DEFAULT_COVER_BG,
+    fg: row.cover_fg || DEFAULT_COVER_FG,
+    title: row.cover_title?.trim() || null,
+    showNumber: row.show_number,
+    art: row.art_url
+      ? { url: row.art_url, x: row.art_x, y: row.art_y, w: row.art_w }
+      : null,
+  };
+}
 
 export function rowToHeroSlide(row: HeroSlideRow): HeroSlide {
   return {
@@ -10,6 +28,8 @@ export function rowToHeroSlide(row: HeroSlideRow): HeroSlide {
     cta: row.cta,
     bg: row.bg,
     fg: row.fg,
+    beltStyle: row.belt_style === 'default' ? 'default' : 'custom',
+    cover: rowToCover(row),
   };
 }
 

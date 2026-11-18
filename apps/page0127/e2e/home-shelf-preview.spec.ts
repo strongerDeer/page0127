@@ -290,6 +290,11 @@ test('고르고 떠났다가 다시 오면 책장이 되살아난다', async ({ 
     );
   }, PENDING_KEY);
   await page.reload();
+  // 새로고침 뒤에도 책 모드가 켜질 때까지 기다린다 — 그 전에 쪽을 옮기면, 책 모드가 켜지며
+  // 처음 주소(#book-ch-pick) 자리로 다시 맞춰 2장에 머문다(gotoPreview 와 같은 이유)
+  await page.waitForFunction(
+    () => document.querySelector('[data-book="on"]') !== null
+  );
   await openChapter(page, 'shelf');
 
   const s = shelf(page);

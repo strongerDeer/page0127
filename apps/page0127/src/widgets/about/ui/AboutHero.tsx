@@ -6,9 +6,11 @@ import { Button } from '@repo/ui';
 import { ShareSheetButton } from '@/features/share';
 
 import { BeltLink } from './BeltLink';
+import { CoverArt } from './CoverArt';
 
 import type { HomeMember } from '../model/member';
 import type { HeroSlide } from '@/entities/banner/types';
+import type { CSSProperties } from 'react';
 
 import styles from './AboutHero.module.css';
 
@@ -22,6 +24,8 @@ type AboutHeroProps = {
   /**
    * 어드민 배너 — 있으면 띠지 문구를 갈아 끼운다(제목=큰 문장, 설명=아랫줄, 띠지 전체가 링크).
    * 없으면 기본 띠지 문구. 예전엔 표지 위에 배너 칸이 따로 있어 표지를 화면 아래로 밀었다(2026-11-17).
+   * 기념일 표지(2026-11-17 HJ): 슬라이드가 '기본 띠지'를 고르면 띠지는 기본 문구, '표지 갈아입히기'면
+   * 앞표지 색·제목·그림까지 바뀐다(slide.cover).
    */
   belt?: HeroSlide | null;
 };
@@ -47,132 +51,167 @@ export const AboutHero = ({
   guideHref = '#steps',
   member = null,
   belt = null,
-}: AboutHeroProps) => (
-  <section aria-labelledby='about-title' className={styles.desk}>
-    <div className={styles.stage}>
-      <div data-cover-book='' className={styles.book}>
-        {/* 책 몸통: 종이 단면(오른쪽·아래)과 표지 안쪽의 첫 쪽 */}
-        <div aria-hidden='true' className={styles.pagesBottom} />
-        <div aria-hidden='true' className={styles.pagesEdge} />
-        <div aria-hidden='true' data-cover-leaf='' className={styles.leaf}>
-          <span className={styles.leafChapter}>제1장</span>
-          <span className={styles.leafTitle}>왜 page0127.인가요</span>
+}: AboutHeroProps) => {
+  const cover = belt?.cover.style === 'custom' ? belt.cover : null;
+  const customBelt = belt?.beltStyle === 'custom' ? belt : null;
+  // 표지·책갈피·0127. 음각이 모두 --cover 를 쓰므로 변수만 바꾸면 함께 갈아입는다
+  const frontStyle = cover
+    ? ({ '--cover': cover.bg, '--cover-ink': cover.fg } as CSSProperties)
+    : undefined;
+
+  return (
+    <section aria-labelledby='about-title' className={styles.desk}>
+      <div className={styles.stage}>
+        <div data-cover-book='' className={styles.book}>
+          {/* 책 몸통: 종이 단면(오른쪽·아래)과 표지 안쪽의 첫 쪽 */}
+          <div aria-hidden='true' className={styles.pagesBottom} />
+          <div aria-hidden='true' className={styles.pagesEdge} />
+          <div aria-hidden='true' data-cover-leaf='' className={styles.leaf}>
+            <span className={styles.leafChapter}>제1장</span>
+            <span className={styles.leafTitle}>왜 page0127.인가요</span>
+          </div>
+
+          <div data-cover-lid='' className={styles.cover}>
+            <div className={styles.front} style={frontStyle}>
+              {cover?.art && <CoverArt art={cover.art} />}
+              {(!cover || cover.showNumber) && (
+                <span aria-hidden='true' className={styles.bigNum}>
+                  0127<i>.</i>
+                </span>
+              )}
+              <div className={styles.titleRow}>
+                <h1 id='about-title' className={styles.title}>
+                  {cover?.title ? (
+                    // 기념일 제목은 눈에만 바꾼다 — 검색엔진·스크린리더는 서비스 소개 문장을 그대로 읽는다
+                    <>
+                      <span className='sr-only'>
+                        읽은 책을 꽂아 두면, 책장이 {ROLLING_WORDS[0]} 말해
+                        줍니다
+                      </span>
+                      <span aria-hidden='true' className={styles.customTitle}>
+                        {cover.title}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      읽은 책을 꽂아 두면,
+                      <br />
+                      책장이 <span className='sr-only'>{ROLLING_WORDS[0]}</span>
+                      <span aria-hidden='true' className={styles.roll}>
+                        {[...ROLLING_WORDS, ROLLING_WORDS[0]].map((w, i) => (
+                          <span key={i}>{w}</span>
+                        ))}
+                      </span>{' '}
+                      말해 줍니다
+                    </>
+                  )}
+                </h1>
+                {/* 출판사 마크 자리 — 작게, 정면으로. unoptimized: 이미 96px WebP(3KB)라
+                  이미지 변환 함수를 거칠 필요가 없다(Vercel 이미지 변환·CPU 절약) */}
+                <Image
+                  src='/brand/app-icon-96.webp'
+                  alt=''
+                  width={48}
+                  height={48}
+                  unoptimized
+                  className={styles.mark}
+                />
+              </div>
+              <p className={styles.subtitle}>읽은 책이 쌓여 책장이 됩니다</p>
+
+              {/* 띠지 — 실제 책처럼 표지 아래를 감싸는 종이 띠. 숫자 아랫단을 살짝 가린다.
+                어드민 배너가 있으면 그 문구로 갈아 끼우고 띠지가 링크가 된다 */}
+              {customBelt ? (
+                <BeltLink
+                  slideId={customBelt.id}
+                  href={customBelt.href}
+                  cta={customBelt.cta}
+                  className={`${styles.belt} ${styles.beltLink} ${styles.beltCustom}`}
+                  style={
+                    {
+                      '--belt': customBelt.bg,
+                      '--belt-ink': customBelt.fg,
+                    } as CSSProperties
+                  }
+                >
+                  <span className={styles.beltEyebrow}>
+                    {customBelt.eyebrow}
+                  </span>
+                  {/* 배너 문구는 그때그때 바뀌어 띠지 명조 서브셋에 글자가 없다 → 본문 고딕 */}
+                  <span className={styles.beltHeadSans}>
+                    {customBelt.lines[0]}
+                    <br />
+                    {customBelt.lines[1]}
+                  </span>
+                  <span className={styles.beltFoot}>
+                    {customBelt.sub} <span aria-hidden='true'>→</span>
+                  </span>
+                  <i aria-hidden='true' className={styles.bookmark} />
+                </BeltLink>
+              ) : (
+                <div aria-hidden='true' className={styles.belt}>
+                  <span className={styles.beltEyebrow}>
+                    2026 독서 기록 서비스
+                  </span>
+                  <span className={styles.beltHead}>
+                    “읽은 책이 쌓이면,
+                    <br />
+                    책장이 나를 소개한다”
+                  </span>
+                  <span className={styles.beltFoot}>
+                    한 권을 꽂는 순간, 당신의 서재가 시작됩니다
+                  </span>
+                  <i className={styles.bookmark} />
+                </div>
+              )}
+            </div>
+            {/* 표지 안쪽(면지) — 펼치면 보인다 */}
+            <div aria-hidden='true' className={styles.endpaper} />
+          </div>
         </div>
 
-        <div data-cover-lid='' className={styles.cover}>
-          <div className={styles.front}>
-            <span aria-hidden='true' className={styles.bigNum}>
-              0127<i>.</i>
-            </span>
-            <div className={styles.titleRow}>
-              <h1 id='about-title' className={styles.title}>
-                읽은 책을 꽂아 두면,
-                <br />
-                책장이 <span className='sr-only'>{ROLLING_WORDS[0]}</span>
-                <span aria-hidden='true' className={styles.roll}>
-                  {[...ROLLING_WORDS, ROLLING_WORDS[0]].map((w, i) => (
-                    <span key={i}>{w}</span>
-                  ))}
-                </span>{' '}
-                말해 줍니다
-              </h1>
-              {/* 출판사 마크 자리 — 작게, 정면으로. unoptimized: 이미 96px WebP(3KB)라
-                  이미지 변환 함수를 거칠 필요가 없다(Vercel 이미지 변환·CPU 절약) */}
-              <Image
-                src='/brand/app-icon-96.webp'
-                alt=''
-                width={48}
-                height={48}
-                unoptimized
-                className={styles.mark}
-              />
-            </div>
-            <p className={styles.subtitle}>읽은 책이 쌓여 책장이 됩니다</p>
-
-            {/* 띠지 — 실제 책처럼 표지 아래를 감싸는 종이 띠. 숫자 아랫단을 살짝 가린다.
-                어드민 배너가 있으면 그 문구로 갈아 끼우고 띠지가 링크가 된다 */}
-            {belt ? (
-              <BeltLink
-                slideId={belt.id}
-                href={belt.href}
-                cta={belt.cta}
-                className={`${styles.belt} ${styles.beltLink}`}
-              >
-                <span className={styles.beltEyebrow}>{belt.eyebrow}</span>
-                {/* 배너 문구는 그때그때 바뀌어 띠지 명조 서브셋에 글자가 없다 → 본문 고딕 */}
-                <span className={styles.beltHeadSans}>
-                  {belt.lines[0]}
-                  <br />
-                  {belt.lines[1]}
-                </span>
-                <span className={styles.beltFoot}>
-                  {belt.sub} <span aria-hidden='true'>→</span>
-                </span>
-                <i aria-hidden='true' className={styles.bookmark} />
-              </BeltLink>
+        <div data-cover-cta='' className={styles.cta}>
+          <p className={styles.lead}>
+            한 권 꽂는 데 10초, 평가한 완독 책 다섯 권이 모이면 취향 노트가
+            나와요.
+          </p>
+          <div className='flex flex-wrap justify-center gap-2.5'>
+            {member ? (
+              // 이미 서재가 있는 사람 — 체험 대신 자기 책장으로, 그리고 자랑하러
+              <>
+                <Button asChild size='lg'>
+                  <Link href={`/${member.username}`}>내 서재로</Link>
+                </Button>
+                <ShareSheetButton
+                  path={`/${member.username}`}
+                  imagePath={`/${member.username}/story-image`}
+                  fileName={`page0127-${member.username}.png`}
+                  title={`${member.displayName}님의 책장`}
+                  sheetTitle='서재 공유하기'
+                  triggerLabel='서재 공유하기'
+                  prominent
+                />
+              </>
             ) : (
-              <div aria-hidden='true' className={styles.belt}>
-                <span className={styles.beltEyebrow}>
-                  2026 독서 기록 서비스
-                </span>
-                <span className={styles.beltHead}>
-                  “읽은 책이 쌓이면,
-                  <br />
-                  책장이 나를 소개한다”
-                </span>
-                <span className={styles.beltFoot}>
-                  한 권을 꽂는 순간, 당신의 서재가 시작됩니다
-                </span>
-                <i className={styles.bookmark} />
-              </div>
+              <>
+                {/* 로그인으로 바로 보내지 않는다 — 고르고 책장이 서는 체험은 홈에 있다 */}
+                <Button asChild size='lg'>
+                  <Link href={startHref}>내 책장 만들어 보기</Link>
+                </Button>
+                <Button asChild size='lg' variant='secondary'>
+                  <Link href={guideHref}>어떻게 쓰나요?</Link>
+                </Button>
+              </>
             )}
           </div>
-          {/* 표지 안쪽(면지) — 펼치면 보인다 */}
-          <div aria-hidden='true' className={styles.endpaper} />
+          <p aria-hidden='true' className={styles.hint}>
+            <span className={styles.hintFine}>
+              스크롤하거나 → 키를 누르면 책이 펼쳐져요
+            </span>
+            <span className={styles.hintTouch}>위로 밀면 책이 펼쳐져요</span>
+          </p>
         </div>
       </div>
-
-      <div data-cover-cta='' className={styles.cta}>
-        <p className={styles.lead}>
-          한 권 꽂는 데 10초, 평가한 완독 책 다섯 권이 모이면 취향 노트가
-          나와요.
-        </p>
-        <div className='flex flex-wrap justify-center gap-2.5'>
-          {member ? (
-            // 이미 서재가 있는 사람 — 체험 대신 자기 책장으로, 그리고 자랑하러
-            <>
-              <Button asChild size='lg'>
-                <Link href={`/${member.username}`}>내 서재로</Link>
-              </Button>
-              <ShareSheetButton
-                path={`/${member.username}`}
-                imagePath={`/${member.username}/story-image`}
-                fileName={`page0127-${member.username}.png`}
-                title={`${member.displayName}님의 책장`}
-                sheetTitle='서재 공유하기'
-                triggerLabel='서재 공유하기'
-                prominent
-              />
-            </>
-          ) : (
-            <>
-              {/* 로그인으로 바로 보내지 않는다 — 고르고 책장이 서는 체험은 홈에 있다 */}
-              <Button asChild size='lg'>
-                <Link href={startHref}>내 책장 만들어 보기</Link>
-              </Button>
-              <Button asChild size='lg' variant='secondary'>
-                <Link href={guideHref}>어떻게 쓰나요?</Link>
-              </Button>
-            </>
-          )}
-        </div>
-        <p aria-hidden='true' className={styles.hint}>
-          <span className={styles.hintFine}>
-            스크롤하거나 → 키를 누르면 책이 펼쳐져요
-          </span>
-          <span className={styles.hintTouch}>위로 밀면 책이 펼쳐져요</span>
-        </p>
-      </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};

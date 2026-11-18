@@ -395,6 +395,10 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
         pg.style.opacity = behind ? '0' : '';
         if (i !== k || closing) pg.style.clipPath = '';
         pg.toggleAttribute('data-book-current', i === cur);
+        // 클릭은 지금 펼친 쪽만 받는다. 쪽은 앞 쪽이 위에 쌓이는 구조(zIndex N - i)라, 다 넘기지 못한
+        // 앞 쪽(말린 끝이 몇 px 남은 상태 등)이 보이지 않게 남아 지금 쪽 버튼의 클릭을 가로챌 수 있었다
+        // (2026-11-18 CI: 3장 '목표 세우기' 클릭을 2장 '다른 책 찾아보기'가 가로챔 → 다시 누르려 스크롤 → 4장으로 넘어감)
+        pg.style.pointerEvents = i === cur ? '' : 'none';
       });
 
       // 1장 문장: 거의 펼쳤을 때 단어가 차례로 진해진다(표지 속 복제본도 같이)

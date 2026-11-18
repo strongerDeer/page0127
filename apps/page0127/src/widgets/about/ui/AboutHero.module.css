@@ -15,6 +15,8 @@
   --cover: #0969e0;
   --cover-ink: #fbf1e6;
   --belt: #f6efe2;
+  /* 띠지 글자색 — 기념일 띠지는 어드민 색으로 바꾼다(.beltCustom) */
+  --belt-ink: var(--navy-900);
   --gnb-h: 4rem; /* Gnb h-16 — 무대가 헤더 아래에 붙는다 */
 
   position: relative;
@@ -181,6 +183,23 @@
   display: flex;
   flex-direction: column;
   padding: 9% 9% 0 13%;
+  /* 기념일 그림(.art)을 z-index:-1 로 표지 바탕 바로 위, 글자 아래에 깔기 위한 쌓임 맥락 */
+  isolation: isolate;
+}
+
+/* 기념일 표지 그림 — 가운데 점 기준 % 배치(CoverArt) */
+.art {
+  position: absolute;
+  z-index: -1;
+  height: auto;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* 기념일 제목 — 줄바꿈은 어드민에서 입력한 그대로 */
+.customTitle {
+  white-space: pre-line;
 }
 
 /* 책등 쪽 접힘 홈 — 넓은 그라데이션 대신 옅은 면 + 1px 선(HJ "그라데이션 과함") */
@@ -316,7 +335,7 @@
   gap: calc(var(--bw) * 0.016);
   background: var(--belt);
   /* 띠지는 다크에서도 크림 종이라 글자색을 고정한다(토큰은 다크에서 밝아진다) */
-  color: var(--navy-900);
+  color: var(--belt-ink);
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.5),
     0 -3px 8px -2px rgb(0 0 0 / 0.28);
@@ -384,6 +403,13 @@
   font-size: calc(var(--bw) * 0.05);
   line-height: 1.32;
   letter-spacing: -0.02em;
+}
+
+/* 기념일 띠지 — 어드민이 고른 글자색 하나로 맞춘다(라벨·아랫줄은 조금 옅게) */
+.beltCustom .beltEyebrow,
+.beltCustom .beltFoot {
+  color: inherit;
+  opacity: 0.78;
 }
 
 /* 배너를 단 띠지 — 링크다. 누를 수 있다는 걸 손가락 모양·살짝 밝아짐으로만 알린다 */

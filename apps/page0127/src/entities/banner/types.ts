@@ -16,7 +16,39 @@ export type HeroSlide = {
   bg: string;
   /** 글자색 hex */
   fg: string;
+  /** default=기본 띠지 문구, custom=이 슬라이드의 문구·색 */
+  beltStyle: BeltStyle;
+  /** 홈 앞표지 — 기본 파란 표지이거나 기념일용으로 갈아입힌 표지 */
+  cover: HeroCover;
 };
+
+export type BeltStyle = 'default' | 'custom';
+export type CoverStyle = 'default' | 'custom';
+
+/** 표지 위 그림. 위치는 표지 기준 %(그림 가운데), 크기는 표지 너비 대비 % */
+export type HeroCoverArt = {
+  url: string;
+  x: number;
+  y: number;
+  w: number;
+};
+
+/**
+ * 판별 유니온 — style 이 'custom' 일 때만 색·제목·그림이 있다.
+ * DB 의 cover_style 칸과 1:1 이라 "값을 비운 것"과 "기본을 고른 것"이 섞이지 않는다.
+ */
+export type HeroCover =
+  | { style: 'default' }
+  | {
+      style: 'custom';
+      bg: string;
+      fg: string;
+      /** 비우면 기본 제목(굴러가는 단어)을 그대로 쓴다 */
+      title: string | null;
+      /** 큰 숫자 "0127." 을 보일지 */
+      showNumber: boolean;
+      art: HeroCoverArt | null;
+    };
 
 /**
  * 슬라이드 행이 가진 모든 컬럼.
@@ -27,7 +59,7 @@ export type HeroSlide = {
  * 생길 자리를 없앤다.
  */
 export const HERO_SLIDE_COLUMNS =
-  'id, eyebrow, line1, line2, sub, href, cta, bg, fg, sort_order, is_active, audience, starts_at, ends_at, click_count';
+  'id, eyebrow, line1, line2, sub, href, cta, bg, fg, sort_order, is_active, audience, starts_at, ends_at, click_count, belt_style, cover_style, cover_bg, cover_fg, cover_title, show_number, art_url, art_x, art_y, art_w';
 
 export type HeroSlideRow = {
   id: string;
@@ -48,4 +80,14 @@ export type HeroSlideRow = {
   ends_at: string | null;
   /** 누적 클릭 수 — 어드민 목록에서 눈으로 비교하는 값 */
   click_count: number;
+  belt_style: BeltStyle;
+  cover_style: CoverStyle;
+  cover_bg: string | null;
+  cover_fg: string | null;
+  cover_title: string | null;
+  show_number: boolean;
+  art_url: string | null;
+  art_x: number;
+  art_y: number;
+  art_w: number;
 };
