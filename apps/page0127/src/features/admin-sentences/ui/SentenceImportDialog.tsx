@@ -60,6 +60,8 @@ export const SentenceImportDialog = () => {
         return;
       }
       const extra = [
+        result.inserted > 0 &&
+          `표지 ${result.covers}개는 ISBN으로 찾아 넣었어요`,
         result.skipped > 0 && `이미 있던 ${result.skipped}개는 건너뛰었어요`,
         result.invalid > 0 && `문제 있는 ${result.invalid}줄은 뺐어요`,
       ].filter(Boolean);
@@ -92,8 +94,8 @@ export const SentenceImportDialog = () => {
             <DialogDescription>
               첫 줄 머리글에 <code>text</code>(문장)와 <code>book_title</code>
               (책 제목)이 꼭 있어야 해요. author · translator · page · isbn ·
-              rights_note 열은 있으면 함께 넣어요. 이미 있는 문장은 건너뛰고,
-              넣은 문장은 바로 활성이에요.
+              rights_note 열은 있으면 함께 넣어요. 표지는 ISBN으로 자동으로
+              찾아요. 이미 있는 문장은 건너뛰고, 넣은 문장은 바로 활성이에요.
             </DialogDescription>
           </DialogHeader>
 
