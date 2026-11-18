@@ -16,7 +16,7 @@ vi.mock('@/shared/config/supabase/admin', () => ({
     }),
   }),
 }));
-import { ensureProviderCatalog } from './providerCatalog';
+import { ensureProviderCatalog } from './ensureProviderCatalog';
 
 beforeEach(() => {
   vi.resetAllMocks();

@@ -30,6 +30,7 @@ import {
   toggleSentenceActive,
   updateSentence,
 } from '../api/sentenceActions';
+import { CatalogSyncButton } from './CatalogSyncButton';
 import { FillCoversButton } from './FillCoversButton';
 import { SentenceFields } from './SentenceFields';
 import { SentenceImportDialog } from './SentenceImportDialog';
@@ -95,6 +96,7 @@ export const AdminSentenceManager = ({
         </span>
         <div className='ml-auto flex items-center gap-2'>
           <FillCoversButton count={missingCovers} />
+          <CatalogSyncButton />
           <SentenceImportDialog />
           <Button size='sm' onClick={() => setEditing('new')}>
             <Plus aria-hidden />

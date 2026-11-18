@@ -5,6 +5,9 @@ import { revalidatePath } from 'next/cache';
 import { getBookProvider } from '@/shared/api/book-provider';
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
+import { revalidateBookInfoPages } from '@/shared/lib/cache/revalidateBookInfoPages';
+
+import { ensureProviderCatalog } from '@/entities/book/api/ensureProviderCatalog';
 
 import { fillMissingCovers } from '../model/fillMissingCovers';
 import { parseSentenceCsv, sentenceKey } from '../model/sentenceCsv';
@@ -182,6 +185,8 @@ export async function importSentences(
       };
     }
     revalidate();
+    // 문장의 책을 전체 도서에도 넣어 "이 책 보러 가기"가 도서 정보로 가게 한다(HJ, 2026-11-18)
+    await addBooksToCatalog(toInsert.map((row) => row.isbn));
   }
 
   return {
@@ -249,4 +254,62 @@ export async function fillSentenceCovers(): Promise<FillCoversResult> {
 
   if (filled > 0) revalidate();
   return { ok: true, filled, missing: rows.length - filled };
+}
+
+const CATALOG_CONCURRENCY = 5;
+
+/**
+ * ISBN 들을 전체 도서(global_books)에 넣는다 — 이미 있으면 건너뛴다.
+ * 사용자가 책을 담을 때와 같은 ensureProviderCatalog(서점 원본 서지·승인 상태)를 쓴다.
+ * 못 찾은 ISBN 은 실패로 세고 넘어간다(문장은 그대로 "담기" 화면으로 이어진다).
+ */
+const addBooksToCatalog = async (
+  isbns: (string | null)[]
+): Promise<{ done: number; failed: number }> => {
+  const unique = [...new Set(isbns.filter((v): v is string => !!v))];
+  let done = 0;
+  let failed = 0;
+  for (let i = 0; i < unique.length; i += CATALOG_CONCURRENCY) {
+    const results = await Promise.allSettled(
+      unique.slice(i, i + CATALOG_CONCURRENCY).map(ensureProviderCatalog)
+    );
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled') done += 1;
+      else {
+        failed += 1;
+        console.error(
+          '[admin] 문장 책 전체 도서 등록 실패:',
+          unique[i + index],
+          result.reason
+        );
+      }
+    });
+  }
+  if (done > 0) revalidateBookInfoPages();
+  return { done, failed };
+};
+
+export type CatalogSyncResult =
+  { ok: true; books: number; failed: number } | { ok: false; message: string };
+
+/**
+ * 풀에 있는 문장의 책을 전체 도서에 한 번에 넣는다 (HJ, 2026-11-18 B안).
+ * 넣고 나면 오늘의 문장 "이 책 보러 가기"가 도서 정보 화면으로 간다.
+ * 이미 있는 책은 건너뛰므로 여러 번 눌러도 안전하다.
+ */
+export async function addSentenceBooksToCatalog(): Promise<CatalogSyncResult> {
+  await assertAdmin();
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from('daily_sentences')
+    .select('isbn')
+    .not('isbn', 'is', null);
+  if (error) {
+    console.error('[admin] 문장 ISBN 조회 실패:', error.message);
+    return { ok: false, message: '문장의 책 목록을 읽지 못했어요.' };
+  }
+  const { done, failed } = await addBooksToCatalog(
+    (data ?? []).map((row) => row.isbn as string | null)
+  );
+  return { ok: true, books: done, failed };
 }

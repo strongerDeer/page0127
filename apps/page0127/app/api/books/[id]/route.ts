@@ -4,11 +4,11 @@ import { createAdminClient } from '@/shared/config/supabase/admin';
 import { revalidateBookInfoPages } from '@/shared/lib/cache/revalidateBookInfoPages';
 
 import { bookSelect, withPersonalMemo } from '@/entities/book/api/bookMemo';
+import { ensureProviderCatalog } from '@/entities/book/api/ensureProviderCatalog';
 import { isNewlyCompleted } from '@/entities/book/model/completion';
 
 import { createActivity } from '../../_helpers/activity';
 import { getCurrentUser, getSupabaseClient } from '../../_helpers/auth';
-import { ensureProviderCatalog } from '../../_helpers/providerCatalog';
 import {
   errorResponse,
   notFoundResponse,
