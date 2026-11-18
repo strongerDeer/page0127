@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 
+import { parseSentenceCsv, sentenceKey } from '../model/sentenceCsv';
 import { parseSentenceForm } from '../model/sentenceForm';
 
 /**
@@ -108,4 +109,65 @@ export async function deleteSentence(
   }
   revalidate();
   return { ok: true };
+}
+
+export type SentenceImportResult =
+  | {
+      ok: true;
+      inserted: number;
+      /** 풀에 이미 있던 문장이라 건너뛴 수 */
+      skipped: number;
+      /** 검사에 걸려 못 넣은 줄 수 */
+      invalid: number;
+    }
+  | { ok: false; message: string };
+
+/**
+ * CSV 한 번에 올리기 (HJ, 2026-11-18) — 화면이 미리 읽어 보여 준 것과 별개로 서버가 다시 읽는다.
+ * 브라우저가 보낸 값은 믿지 않는다: 같은 검사기(parseSentenceCsv → parseSentenceForm)를 다시 거친다.
+ *
+ * 이미 풀에 있는 문장(띄어쓰기 차이 무시)은 건너뛴다 — 같은 파일을 두 번 올려도 겹치지 않게.
+ * 넣는 문장은 바로 활성이다. 한 번의 insert 로 넣어서, 실패하면 하나도 들어가지 않는다.
+ */
+export async function importSentences(
+  csvText: string
+): Promise<SentenceImportResult> {
+  await assertAdmin();
+  if (typeof csvText !== 'string' || csvText.length > 900_000)
+    return { ok: false, message: '파일이 너무 커요.' };
+
+  const parsed = parseSentenceCsv(csvText);
+  if (!parsed.ok) return { ok: false, message: parsed.message };
+  if (parsed.rows.length === 0)
+    return { ok: false, message: '넣을 수 있는 문장이 없어요.' };
+
+  const admin = createAdminClient();
+  const { data: existing, error: readError } = await admin
+    .from('daily_sentences')
+    .select('text');
+  if (readError) {
+    console.error('[admin] 문장 목록 조회 실패:', readError.message);
+    return { ok: false, message: '지금 있는 문장을 확인하지 못했어요.' };
+  }
+  const known = new Set((existing ?? []).map((row) => sentenceKey(row.text)));
+  const fresh = parsed.rows.filter((row) => !known.has(sentenceKey(row.text)));
+
+  if (fresh.length > 0) {
+    const { error } = await admin.from('daily_sentences').insert(fresh);
+    if (error) {
+      console.error('[admin] 문장 일괄 저장 실패:', error.message);
+      return {
+        ok: false,
+        message: '문장을 넣지 못했어요. 하나도 저장되지 않았어요.',
+      };
+    }
+    revalidate();
+  }
+
+  return {
+    ok: true,
+    inserted: fresh.length,
+    skipped: parsed.rows.length - fresh.length,
+    invalid: parsed.errors.length,
+  };
 }
