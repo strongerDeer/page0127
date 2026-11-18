@@ -2,9 +2,11 @@
 
 import { revalidatePath } from 'next/cache';
 
+import { getBookProvider } from '@/shared/api/book-provider';
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 
+import { fillMissingCovers } from '../model/fillMissingCovers';
 import { parseSentenceCsv, sentenceKey } from '../model/sentenceCsv';
 import { parseSentenceForm } from '../model/sentenceForm';
 
@@ -115,6 +117,8 @@ export type SentenceImportResult =
   | {
       ok: true;
       inserted: number;
+      /** ISBN 으로 표지를 찾아 채운 수 */
+      covers: number;
       /** 풀에 이미 있던 문장이라 건너뛴 수 */
       skipped: number;
       /** 검사에 걸려 못 넣은 줄 수 */
@@ -152,8 +156,21 @@ export async function importSentences(
   const known = new Set((existing ?? []).map((row) => sentenceKey(row.text)));
   const fresh = parsed.rows.filter((row) => !known.has(sentenceKey(row.text)));
 
-  if (fresh.length > 0) {
-    const { error } = await admin.from('daily_sentences').insert(fresh);
+  // 표지가 빈 줄은 ISBN 으로 서점 표지를 찾아 채운다(새로 넣을 줄만 — 조회 수를 아낀다)
+  const { rows: toInsert, filled } = await fillMissingCovers(
+    fresh,
+    async (isbn) => {
+      try {
+        return (await getBookProvider().getByIsbn(isbn))?.coverImage || null;
+      } catch (error) {
+        console.error('[admin] 문장 표지 찾기 실패:', isbn, error);
+        return null;
+      }
+    }
+  );
+
+  if (toInsert.length > 0) {
+    const { error } = await admin.from('daily_sentences').insert(toInsert);
     if (error) {
       console.error('[admin] 문장 일괄 저장 실패:', error.message);
       return {
@@ -166,7 +183,8 @@ export async function importSentences(
 
   return {
     ok: true,
-    inserted: fresh.length,
+    inserted: toInsert.length,
+    covers: filled,
     skipped: parsed.rows.length - fresh.length,
     invalid: parsed.errors.length,
   };
