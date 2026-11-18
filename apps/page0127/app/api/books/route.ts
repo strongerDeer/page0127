@@ -4,11 +4,12 @@ import { createAdminClient } from '@/shared/config/supabase/admin';
 import { revalidateBookInfoPages } from '@/shared/lib/cache/revalidateBookInfoPages';
 import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
 
+import { ensureProviderCatalog } from '@/entities/book/api/ensureProviderCatalog';
+
 import { validateManualBook } from '@/features/book-review/model/review';
 
 import { createActivity } from '../_helpers/activity';
 import { getCurrentUser, getSupabaseClient } from '../_helpers/auth';
-import { ensureProviderCatalog } from '../_helpers/providerCatalog';
 import { errorResponse, successResponse } from '../_helpers/response';
 import {
   hasLifeBookReading,
