@@ -1,7 +1,5 @@
 import { isAllowedCoverUrl } from './sentenceForm';
 
-import type { SentenceValues } from './sentenceForm';
-
 /**
  * CSV 로 올린 문장 중 표지가 빈 줄을 ISBN 으로 채운다 (HJ, 2026-11-18).
  *
@@ -13,15 +11,18 @@ import type { SentenceValues } from './sentenceForm';
  * - 동시에 CONCURRENCY 개씩만 — 서점 API 를 한꺼번에 두드리지 않게.
  * - 못 찾거나 실패하면 표지 없이 넣는다(문장 저장을 막지 않는다).
  * - 이미 표지가 있는 줄은 건드리지 않는다.
+ * - CSV 로 넣을 줄과 이미 풀에 있는 줄(표지 채우기 버튼) 둘 다 쓴다 — isbn·cover_image 만 본다.
  */
 const CONCURRENCY = 5;
 
 export type CoverLookup = (isbn: string) => Promise<string | null>;
 
-export const fillMissingCovers = async (
-  rows: SentenceValues[],
+type CoverRow = { isbn: string | null; cover_image: string | null };
+
+export const fillMissingCovers = async <T extends CoverRow>(
+  rows: T[],
   lookup: CoverLookup
-): Promise<{ rows: SentenceValues[]; filled: number }> => {
+): Promise<{ rows: T[]; filled: number }> => {
   const isbns = [
     ...new Set(
       rows
