@@ -270,7 +270,10 @@ export const ShelfPanel = () => {
         aria-hidden='true'
         className='absolute -top-3 left-1/2 h-6 w-26 -translate-x-1/2 -rotate-3 bg-[rgb(120_150_195/0.38)] shadow-[0_1px_2px_rgb(0_0_0/0.08)] [clip-path:polygon(2%_0,98%_0,100%_22%,97%_44%,100%_66%,97%_86%,99%_100%,1%_100%,3%_82%,0_62%,3%_42%,0_20%)]'
       />
-      <PenNote className='absolute -top-11 right-0'>여기 꽂혀요 ↓</PenNote>
+      {/* 넓은 화면은 판 위 바깥에 띄우고, 좁은 화면은 위 설명 글을 덮어서 판 안 오른쪽 위에 둔다(2026-11-18 점검) */}
+      <PenNote className='-mt-1 mb-1 self-end md:absolute md:-top-11 md:right-0 md:m-0'>
+        여기 꽂혀요 ↓
+      </PenNote>
       <div className='flex min-h-8 items-center justify-between gap-3'>
         <p className='text-xs font-bold text-text-subtle md:text-sm'>
           내 책장 · {selected.length}권

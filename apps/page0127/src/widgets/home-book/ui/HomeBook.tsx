@@ -642,7 +642,7 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
         <span className={styles.hintTouch}>위로 밀면 다음 쪽으로 넘어가요</span>
       </p>
 
-      {/* 책 도구(오른쪽 아래) — 책 안에 있을 때만 뜬다. 목차는 popover 라 여닫기에 JS 가 필요 없다 */}
+      {/* 책 도구(오른쪽 아래, 좁은 화면은 머리글 줄 오른쪽) — 책 안에 있을 때만 뜬다. 목차는 popover 라 여닫기에 JS 가 필요 없다 */}
       <div ref={toolsRef} className={styles.tools}>
         <button
           type='button'
@@ -666,14 +666,37 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
               <path d='M11.5 6l3 4m0-4l-3 4' />
             )}
           </svg>
-          소리
+          <span className={styles.toolText}>소리</span>
         </button>
         <button type='button' popoverTarget='book-toc' className={styles.tool}>
-          목차
+          <svg
+            aria-hidden='true'
+            viewBox='0 0 16 16'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='1.6'
+            strokeLinecap='round'
+            className={styles.toolIcon}
+          >
+            <path d='M3 4h10M3 8h10M3 12h6' />
+          </svg>
+          <span className={styles.toolText}>목차</span>
         </button>
         {/* 다시 온 사람·회원은 넘기지 않고 바로 뒤표지(가입·내 서재 버튼)로 */}
         <a href='#book-back' className={styles.tool}>
-          건너뛰기
+          <svg
+            aria-hidden='true'
+            viewBox='0 0 16 16'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='1.6'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            className={styles.toolIcon}
+          >
+            <path d='M3 3.5l5 4.5-5 4.5M8 3.5l5 4.5-5 4.5' />
+          </svg>
+          <span className={styles.toolText}>건너뛰기</span>
         </a>
       </div>
       <nav

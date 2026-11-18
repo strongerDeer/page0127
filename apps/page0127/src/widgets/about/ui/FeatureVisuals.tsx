@@ -238,16 +238,21 @@ const ChemShelf = ({ who, books, pulled }: ChemShelfProps) => (
  * (2026-11-17 HJ "각자 책등으로 꽂힌 서재, 동일하게 읽은 책은 위로 해서 2권 정도 책표지")
  */
 export const ChemVisual = ({ books }: VisualProps) => {
-  const at = (i: number) => (books.length ? books[i % books.length] : null);
-  const both = [at(3), at(4)];
+  // 표지를 세워 보여 주는 "둘 다 읽은 책"은 표지 있는 책으로 고른다 — 최근 책 순서 그대로 쓰면
+  // 표지 없는 책이 걸려 회색 빈칸이 됐다(2026-11-18 점검). 나머지 책은 책등이라 표지가 없어도 된다
+  const withCover = books.filter((b) => b.coverImage);
+  const rest = books.filter((b) => !withCover.slice(0, 2).includes(b));
+  const at = (i: number) => (rest.length ? rest[i % rest.length] : null);
+  const both = [withCover[0] ?? at(3), withCover[1] ?? at(4)];
   const mine = [at(0), at(1), both[0], at(2), at(5), both[1], at(6)];
-  const hers = [at(7), both[0], at(8), at(9), both[1], at(10), at(11)];
+  const hers = [at(7), both[0], at(8), at(3), both[1], at(9), at(10)];
 
   return (
     <div aria-hidden='true' className='flex w-full flex-col items-center'>
       {/* 둘 다 읽은 책 — 서재에서 뽑아 표지가 보이게 세운다 */}
-      <div className='relative flex items-end gap-3'>
-        <PenNote className='absolute bottom-full left-1/2 mb-2 -translate-x-1/2 text-[22px] md:left-full md:-ml-2 md:mb-1 md:translate-x-0 md:text-[26px]'>
+      {/* 메모: 좁은 화면은 표지 위 한 줄 자리를 실제로 차지한다 — 띄워 두면 위 설명 글을 덮었다(2026-11-18 점검) */}
+      <div className='relative flex flex-wrap items-end justify-center gap-3 md:flex-nowrap'>
+        <PenNote className='mb-1 basis-full text-center text-[22px] md:absolute md:bottom-full md:left-full md:-ml-2 md:mb-1 md:basis-auto md:text-left md:text-[26px]'>
           겹친 책에 동그라미!
         </PenNote>
         {both.map((b, i) => (

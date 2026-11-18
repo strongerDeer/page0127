@@ -106,18 +106,27 @@
 }
 
 /* ── 본문 ─────────────────────────────────────────── */
+/*
+ * 세로 가운데 — align-items: center 대신 자식의 margin-block: auto 로 한다.
+ * center 는 내용이 칸보다 크면 위아래로 똑같이 넘쳐, 위로 넘친 부분이 머리글을 덮고 스크롤로도 못 본다
+ * (작은 폰에서 "page0127." 과 "제N장"이 겹쳤다, 2026-11-18 점검). auto 여백은 남는 자리만 나눠 가져서
+ * 넘치면 0 이 되고 위에서부터 쌓인다. 줄어들지 않게(flex-shrink 0) 해서 넘친 만큼 쪽이 길어지고,
+ * 쪽은 그 안에서 스크롤된다(쪽번호 줄은 내용 아래로 밀린다).
+ */
 .body {
-  flex: 1;
+  flex: 1 0 auto;
   display: flex;
-  align-items: center;
-  min-height: 0;
   padding-block: clamp(12px, 3svh, 32px);
+}
+
+.body > * {
+  margin-block: auto;
 }
 
 .pw {
   width: 100%;
   max-width: 1180px;
-  margin: 0 auto;
+  margin: auto;
   padding-inline: 24px;
 }
 
