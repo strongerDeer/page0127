@@ -30,6 +30,7 @@ import {
   toggleSentenceActive,
   updateSentence,
 } from '../api/sentenceActions';
+import { FillCoversButton } from './FillCoversButton';
 import { SentenceFields } from './SentenceFields';
 import { SentenceImportDialog } from './SentenceImportDialog';
 
@@ -61,6 +62,8 @@ export const AdminSentenceManager = ({
   const [query, setQuery] = useState('');
 
   const activeCount = sentences?.filter((s) => s.is_active).length ?? 0;
+  const missingCovers =
+    sentences?.filter((s) => !s.cover_image && s.isbn).length ?? 0;
 
   // 문장·책 제목·저자로 거른다 — 풀이 커져도 고칠 문장을 바로 찾게
   const visible = useMemo(() => {
@@ -91,6 +94,7 @@ export const AdminSentenceManager = ({
             ' — 활성 문장이 없으면 사용자 서재에 카드가 나오지 않아요.'}
         </span>
         <div className='ml-auto flex items-center gap-2'>
+          <FillCoversButton count={missingCovers} />
           <SentenceImportDialog />
           <Button size='sm' onClick={() => setEditing('new')}>
             <Plus aria-hidden />

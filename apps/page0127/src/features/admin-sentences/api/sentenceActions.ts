@@ -113,6 +113,16 @@ export async function deleteSentence(
   return { ok: true };
 }
 
+/** 서점(YES24)에서 ISBN 으로 표지 주소를 찾는다. 못 찾거나 실패하면 null */
+const lookupCover = async (isbn: string): Promise<string | null> => {
+  try {
+    return (await getBookProvider().getByIsbn(isbn))?.coverImage || null;
+  } catch (error) {
+    console.error('[admin] 문장 표지 찾기 실패:', isbn, error);
+    return null;
+  }
+};
+
 export type SentenceImportResult =
   | {
       ok: true;
@@ -159,14 +169,7 @@ export async function importSentences(
   // 표지가 빈 줄은 ISBN 으로 서점 표지를 찾아 채운다(새로 넣을 줄만 — 조회 수를 아낀다)
   const { rows: toInsert, filled } = await fillMissingCovers(
     fresh,
-    async (isbn) => {
-      try {
-        return (await getBookProvider().getByIsbn(isbn))?.coverImage || null;
-      } catch (error) {
-        console.error('[admin] 문장 표지 찾기 실패:', isbn, error);
-        return null;
-      }
-    }
+    lookupCover
   );
 
   if (toInsert.length > 0) {
@@ -188,4 +191,62 @@ export async function importSentences(
     skipped: parsed.rows.length - fresh.length,
     invalid: parsed.errors.length,
   };
+}
+
+export type FillCoversResult =
+  | { ok: true; filled: number; missing: number }
+  | { ok: false; message: string };
+
+/**
+ * 이미 풀에 있는 문장 중 표지가 빈 것을 ISBN 으로 한 번에 채운다 (HJ, 2026-11-18).
+ * CSV 를 표지 자동 채우기 전에 올렸거나, 하나씩 넣을 때 표지를 안 고른 문장용.
+ * 같은 책(ISBN)의 문장은 한 번의 update 로 묶는다.
+ */
+export async function fillSentenceCovers(): Promise<FillCoversResult> {
+  await assertAdmin();
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from('daily_sentences')
+    .select('id, isbn, cover_image')
+    .is('cover_image', null)
+    .not('isbn', 'is', null);
+  if (error) {
+    console.error('[admin] 표지 빈 문장 조회 실패:', error.message);
+    return { ok: false, message: '표지가 빈 문장을 찾지 못했어요.' };
+  }
+  const rows = (data ?? []) as {
+    id: string;
+    isbn: string | null;
+    cover_image: string | null;
+  }[];
+  if (rows.length === 0) return { ok: true, filled: 0, missing: 0 };
+
+  const { rows: next } = await fillMissingCovers(rows, lookupCover);
+
+  // 표지 주소별로 id 를 모아 한 번씩만 update 한다
+  const byCover = new Map<string, string[]>();
+  for (const row of next) {
+    if (!row.cover_image) continue;
+    byCover.set(row.cover_image, [
+      ...(byCover.get(row.cover_image) ?? []),
+      row.id,
+    ]);
+  }
+
+  let filled = 0;
+  for (const [cover, ids] of byCover) {
+    const { error: updateError } = await admin
+      .from('daily_sentences')
+      .update({ cover_image: cover })
+      .in('id', ids)
+      .is('cover_image', null);
+    if (updateError) {
+      console.error('[admin] 문장 표지 저장 실패:', updateError.message);
+      continue;
+    }
+    filled += ids.length;
+  }
+
+  if (filled > 0) revalidate();
+  return { ok: true, filled, missing: rows.length - filled };
 }
