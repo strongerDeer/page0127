@@ -1,0 +1,32 @@
+{
+  "label": "cache-off",
+  "connections": 50,
+  "seconds": 20,
+  "measuredAt": "2026-11-20T11:25:38.990Z",
+  "targets": {
+    "book-info": {
+      "rps": 96,
+      "p50": 497,
+      "p97_5": 691,
+      "p99": 865,
+      "errors": 0,
+      "total": 1922
+    },
+    "books-all": {
+      "rps": 59,
+      "p50": 790,
+      "p97_5": 1170,
+      "p99": 1337,
+      "errors": 0,
+      "total": 1186
+    },
+    "library": {
+      "rps": 29,
+      "p50": 1517,
+      "p97_5": 2275,
+      "p99": 3280,
+      "errors": 0,
+      "total": 579
+    }
+  }
+}

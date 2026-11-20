@@ -4,7 +4,8 @@
  *
  * 사용법:
  *   supabase start                       # 로컬 DB 띄우기 (Docker)
- *   node scripts/lab/seed-large-library.mjs 10000
+ *   node scripts/lab/seed-large-library.mjs 10000            # lab_reader 에 1만 권
+ *   node scripts/lab/seed-large-library.mjs 150 lab_small    # 보통 크기 서재
  *
  * 하는 일:
  *   1) 실험 계정(lab-reader)을 하나 만든다. 이미 있으면 그 계정의 책을 지우고 다시 채운다.
@@ -19,8 +20,13 @@ import { execSync } from "node:child_process";
 
 import { createClient } from "@supabase/supabase-js";
 
-const LAB_EMAIL = "lab-reader@example.test";
-const LAB_USERNAME = "lab_reader";
+// 세 번째 인자로 다른 실험 계정을 만들 수 있다 (예: 보통 크기 서재 lab_small 150권)
+const LAB_USERNAME = process.argv[3] ?? "lab_reader";
+if (!/^lab_[a-z0-9_]{1,16}$/.test(LAB_USERNAME)) {
+  console.error("실험 계정 이름은 lab_ 로 시작해야 해요. 예: lab_small");
+  process.exit(1);
+}
+const LAB_EMAIL = `${LAB_USERNAME.replace(/_/g, "-")}@example.test`;
 const BATCH = 500;
 
 const count = Number(process.argv[2] ?? 10000);
@@ -199,16 +205,14 @@ for (let from = 0; from < rows.length; from += BATCH) {
     { onConflict: "isbn" },
   );
   if (globals.error) throw globals.error;
-  const books = await supabase
-    .from("books")
-    .insert(
-      chunk.map((row) => ({
-        ...row.book,
-        user_id: userId,
-        title: row.global.title,
-        thickness_mm: row.global.thickness_mm,
-      })),
-    );
+  const books = await supabase.from("books").insert(
+    chunk.map((row) => ({
+      ...row.book,
+      user_id: userId,
+      title: row.global.title,
+      thickness_mm: row.global.thickness_mm,
+    })),
+  );
   if (books.error) throw books.error;
   process.stdout.write(`\r${Math.min(from + BATCH, count)} / ${count}권`);
 }
