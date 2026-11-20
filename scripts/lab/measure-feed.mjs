@@ -12,6 +12,7 @@
  * 재는 것:
  *   - allLoaded  : 1,000개를 끝까지 다 불러왔는지(아니면 결과를 믿지 않는다)
  *   - cards      : 화면에 실제로 그려진 활동 카드 수
+ *   - tbtMs      : 첫 화면부터 다 불러올 때까지 Long Task 50ms 초과분 합
  *   - dom        : DOM 노드 수
  *   - heapMB     : JS 힙 사용량 — 카드가 쌓일수록 메모리가 는다
  *   - loadMoreMs : 마지막 10페이지를 불러올 때 가장 긴 Long Task — 페이지가 붙을 때마다 멈추는 시간
@@ -98,6 +99,8 @@ const measureOnce = async (browser) => {
   }
 
   const snapshot = await page.evaluate(() => ({
+    // 첫 화면부터 지금까지 Long Task 의 50ms 초과분 합(TBT 방식)
+    tbtMs: Math.round(window.__lab.longTasks.reduce((sum, x) => sum + Math.max(0, x.d - 50), 0)),
     allLoaded: document.body.innerText.includes("모든 활동을 불러왔습니다"),
     cards: document.querySelectorAll("div.divide-y > *").length,
     dom: document.querySelectorAll("*").length,
@@ -141,6 +144,7 @@ const measureOnce = async (browser) => {
   return {
     allLoaded: snapshot.allLoaded,
     cards: snapshot.cards,
+    tbtMs: snapshot.tbtMs,
     dom: snapshot.dom,
     heapMB: Math.round(usedSize / 1024 / 1024),
     loadMoreMs: Math.round(loadMoreMs),

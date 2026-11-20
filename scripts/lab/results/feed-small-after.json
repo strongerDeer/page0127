@@ -1,0 +1,15 @@
+{
+  "label": "small-after",
+  "cpuSlowdown": 4,
+  "measuredAt": "2026-11-20T12:39:00.902Z",
+  "feed": {
+    "allLoaded": true,
+    "cards": 7,
+    "tbtMs": 382,
+    "dom": 430,
+    "heapMB": 7,
+    "loadMoreMs": 0,
+    "scrollJankMs": 0,
+    "clickMs": 32
+  }
+}
