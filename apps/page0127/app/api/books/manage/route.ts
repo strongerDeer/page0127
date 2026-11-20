@@ -1,5 +1,5 @@
 import { toKstDateKey } from '@/shared/lib/date';
-import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
+import { applyTokenSearch } from '@/shared/lib/tokenSearch';
 
 import { getCurrentUser, getSupabaseClient } from '../../_helpers/auth';
 import { errorResponse, successResponse } from '../../_helpers/response';
@@ -39,10 +39,8 @@ export async function GET(request: Request) {
     query = query
       .gte('created_at', `${year}-01-01T00:00:00+09:00`)
       .lt('created_at', `${Number(year) + 1}-01-01T00:00:00+09:00`);
-  if (search) {
-    const pattern = quotePostgrestValue(`%${search}%`);
-    query = query.or(`title.ilike.${pattern},author.ilike.${pattern}`);
-  }
+  // 검색어의 단어가 모두 (제목이나 저자에) 들어간 책
+  query = applyTokenSearch(query, search, ['title', 'author']);
   // 등록 연도 셀렉트에 쓸 범위: 가장 오래된 기록의 연도 ~ 올해 (KST)
   const [{ data, count, error }, oldest] = await Promise.all([
     query

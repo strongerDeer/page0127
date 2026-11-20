@@ -4,7 +4,7 @@ import { BookCover, Button, Input } from '@repo/ui';
 
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
-import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
+import { applyTokenSearch } from '@/shared/lib/tokenSearch';
 
 import {
   type BookReview,
@@ -39,12 +39,8 @@ export default async function AdminBooksPage({
     .select(REVIEW_COLUMNS, { count: 'exact' })
     .eq('source', 'manual')
     .eq('review_status', status);
-  if (q) {
-    const pattern = quotePostgrestValue(`%${q}%`);
-    query = query.or(
-      `title.ilike.${pattern},author.ilike.${pattern},isbn.ilike.${pattern}`
-    );
-  }
+  // 검색어의 단어가 모두 (제목·저자·ISBN 중 어딘가에) 들어간 책
+  query = applyTokenSearch(query, q, ['title', 'author', 'isbn']);
   const { data, error, count } = await query
     .order('created_at', { ascending: true })
     .range((page - 1) * 20, page * 20 - 1);

@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 import { toKstDateKey } from '@/shared/lib/date';
+import { applyTokenSearch } from '@/shared/lib/tokenSearch';
 
 import {
   ACTIVE_WINDOW_DAYS,
@@ -53,11 +54,10 @@ export async function getMembers(opts: {
     .order('created_at', { ascending: false })
     .range(from, to);
 
-  if (opts.search) {
-    // PostgREST or 필터 파괴 방지: 쉼표·괄호 제거
-    const safe = opts.search.replace(/[,()]/g, '');
-    query = query.or(`email.ilike.%${safe}%,nickname.ilike.%${safe}%`);
-  }
+  // 검색어의 단어가 모두 (이메일이나 닉네임에) 들어간 회원.
+  // 예전엔 쉼표·괄호를 지워서 주입을 막았는데, applyTokenSearch 가 값을 따옴표로 감싸므로 지울 필요가 없다.
+  if (opts.search)
+    query = applyTokenSearch(query, opts.search, ['email', 'nickname']);
 
   const { data: profiles, count, error } = await query;
   if (error) console.error('[admin] 회원 목록 조회 실패:', error.message);

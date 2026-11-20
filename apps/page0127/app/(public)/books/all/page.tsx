@@ -13,7 +13,7 @@ import { PageContainer, PageHeader } from '@repo/ui';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
-import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
+import { applyTokenSearch } from '@/shared/lib/tokenSearch';
 
 import { catalogVisibilityFilter } from '@/entities/book/api/catalogVisibility';
 import {
@@ -80,9 +80,12 @@ export default async function GlobalBooksPage(props: {
   const sort = (searchParams.sort as string) || 'created_at';
   const order = (searchParams.order as string) || 'desc';
   // GNB 검색폼(GET /books/all?q=...)에서 넘어온 검색어.
-  // PostgREST or() 문법과 충돌하는 문자(콤마·괄호)는 제거한다.
-  const rawQ = typeof searchParams.q === 'string' ? searchParams.q.trim() : '';
-  const q = rawQ.replace(/[,()]/g, '');
+  // 쉼표·괄호를 지우지 않는다 — 지우면 "세네카, 오늘을…" 같은 제목을 붙여 넣었을 때
+  // DB 제목과 한 글자 달라져 0건이 된다. 필터 주입은 applyTokenSearch 의 따옴표 처리가 막는다.
+  const q =
+    typeof searchParams.q === 'string'
+      ? searchParams.q.trim().slice(0, 200)
+      : '';
   // 정렬·페이지 링크에 검색어를 유지시키는 쿼리 조각
   const qParam = q ? `&q=${encodeURIComponent(q)}` : '';
 
@@ -114,13 +117,8 @@ export default async function GlobalBooksPage(props: {
     .eq('review_status', 'approved')
     // 직접 등록 책은 등록한 사람에게만
     .or(catalogVisibilityFilter(user?.id));
-  if (q) {
-    // 제목 또는 저자에 검색어가 포함된 책 (대소문자 무시)
-    const pattern = quotePostgrestValue(`%${q}%`);
-    booksQuery = booksQuery.or(
-      `title.ilike.${pattern},author.ilike.${pattern}`
-    );
-  }
+  // 검색어의 단어가 모두 (제목이나 저자에) 들어간 책 — "세네카 오늘", "한강 소년"도 찾는다
+  booksQuery = applyTokenSearch(booksQuery, q, ['title', 'author']);
   booksQuery = booksQuery
     .order(sort, { ascending: order === 'asc' })
     .range(from, to);
