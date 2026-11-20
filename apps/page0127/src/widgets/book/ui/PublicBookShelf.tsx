@@ -14,7 +14,6 @@ import {
   PRIVATE_BOOK_TITLE,
   toCoverSource,
 } from '@/entities/book';
-import { isSpineShaped } from '@/entities/book/model/spineShape';
 import { spineTone } from '@/entities/book/model/spineTone';
 import { shelfSpineWidthPx } from '@/entities/book/model/spineWidth';
 
@@ -85,10 +84,6 @@ export const PublicBookShelf = ({
   trailingSlot,
 }: PublicBookShelfProps) => {
   const [imgSrc, setImgSrc] = useState<Record<string, string>>({});
-  // 책등 자리에 앞표지가 들어 있던 책 — 글자 책등으로 바꿔 그린다(isSpineShaped)
-  const [notSpineIds, setNotSpineIds] = useState<ReadonlySet<string>>(
-    () => new Set()
-  );
   const shelfRef = useRef<HTMLDivElement>(null);
   const [shelfWidth, setShelfWidth] = useState(DEFAULT_SHELF_WIDTH);
 
@@ -218,7 +213,7 @@ export const PublicBookShelf = ({
             alt={book.title}
             fallback={noImage}
           />
-        ) : renderedSpine && !notSpineIds.has(book.id) ? (
+        ) : renderedSpine ? (
           <Image
             src={renderedSpine}
             {...imageBox}
@@ -228,11 +223,6 @@ export const PublicBookShelf = ({
             alt={book.title}
             unoptimized={isPreOptimizedImageSrc(renderedSpine)}
             onError={() => onError(book.id)}
-            onLoad={(event) => {
-              // 실패해서 바꿔 끼운 no-book.jpg 는 원래 표지 모양이다 — 원본 책등만 잰다
-              if (imgSrc[book.id] || isSpineShaped(event.currentTarget)) return;
-              setNotSpineIds((prev) => new Set(prev).add(book.id));
-            }}
             // ⚠️ 책등 이미지에 폭을 강제하지 않는다.
             // 두께(thickness_mm)로 폭을 고정했던 적이 있다(2026-09-29). 박스가
             // 원본 비율보다 넓어서 `cover` 는 위아래가 잘리고(평균 55% 손실),
