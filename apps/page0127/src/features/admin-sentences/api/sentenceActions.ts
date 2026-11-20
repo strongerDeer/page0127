@@ -276,6 +276,7 @@ export async function fillSentenceCovers(): Promise<FillCoversResult> {
 /**
  * ISBN 들을 전체 도서(global_books)에 넣는다 — 이미 있으면 건너뛴다.
  * 사용자가 책을 담을 때와 같은 ensureProviderCatalog(서점 원본 서지·승인 상태)를 쓴다.
+ * 여기는 서재 책이 없어 책등을 따로 채울 길이 없으므로 withSpine 으로 책등도 함께 확인한다.
  * 서점을 천천히 부르고(paceCalls), 429 면 쉬었다 다시 묻는다(retryOn429).
  * 못 찾은 ISBN 은 실패로 세고 넘어간다(문장은 그대로 "담기" 화면으로 이어진다).
  */
@@ -284,7 +285,7 @@ const addBooksToCatalog = async (
 ): Promise<{ done: number; failed: number }> => {
   const unique = [...new Set(isbns.filter((v): v is string => !!v))];
   const results = await paceCalls(unique, (isbn) =>
-    retryOn429(() => ensureProviderCatalog(isbn))
+    retryOn429(() => ensureProviderCatalog(isbn, { withSpine: true }))
   );
   let done = 0;
   let failed = 0;
