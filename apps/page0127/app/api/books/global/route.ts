@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 
-import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
+import { applyTokenSearch } from '@/shared/lib/tokenSearch';
 
 import { catalogVisibilityFilter } from '@/entities/book/api/catalogVisibility';
 
@@ -36,10 +36,8 @@ export async function GET(request: NextRequest) {
       // 비로그인 공용 목록 — 직접 등록 책은 빼고 서점 책만
       .or(catalogVisibilityFilter());
 
-    if (search) {
-      const pattern = quotePostgrestValue(`%${search}%`);
-      query = query.or(`title.ilike.${pattern},author.ilike.${pattern}`);
-    }
+    // 검색어의 단어가 모두 (제목이나 저자에) 들어간 책
+    query = applyTokenSearch(query, search, ['title', 'author']);
 
     // 정렬
     query = query.order(sort, { ascending: order === 'asc' });
