@@ -175,6 +175,12 @@
   color: var(--primary-foreground);
 }
 
+/* 켜 두었지만 브라우저가 아직 막은 상태(새로고침 직후) — 채우지 않고 테두리·글자만 파랗게 */
+.tool[data-waiting] {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
 .toolIcon {
   width: 1rem;
   height: 1rem;

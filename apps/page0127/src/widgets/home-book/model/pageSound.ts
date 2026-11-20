@@ -2,7 +2,8 @@
  * 책 넘김 소리 — 녹음 파일 없이 브라우저에서 직접 합성한다 (시안 v9 "부드러운 종이", 2026-11-17 HJ 결정)
  *
  * - 기본 켜짐(2026-11-17 HJ), 끄면 기억한다. 단 브라우저가 첫 누르기(탭·클릭·키) 전엔
- *   AudioContext 를 막아서, 실제 소리는 그 뒤부터 난다(HomeBook 이 그때 ensurePageSound 를 부른다).
+ *   AudioContext 를 막아서(자동재생 정책 — 휠·스크롤은 '사람이 눌렀다'로 치지 않는다), 실제 소리는 그 뒤부터 난다
+ *   (HomeBook 이 그때 ensurePageSound 를 부른다). 그 사이 버튼이 '대기'로 보이도록 깨어 있는지를 구독할 수 있다.
  * - 걸러 낸 잡음(스윽)과 낮은 사인파(툭)뿐이라 음원 저작권·파일 용량이 없다.
  * - 펼칠 때(표지 열림) · 넘길 때 · 덮을 때(뒤표지) 세 가지.
  */
@@ -13,6 +14,20 @@ type Ctx = { actx: AudioContext; master: GainNode };
 
 let ctx: Ctx | null = null;
 
+// 오디오가 깨어났는지(running) 바뀔 때 알려 줄 곳 — HomeBook 이 useSyncExternalStore 로 구독한다
+const listeners = new Set<() => void>();
+const notify = () => listeners.forEach((l) => l());
+
+export const subscribePageSound = (listener: () => void) => {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+};
+
+/** 지금 소리를 낼 수 있는지 — 새로고침 직후엔 첫 누르기 전까지 false */
+export const isPageSoundReady = () => ctx?.actx.state === 'running';
+
 /** 사람이 누른 순간(소리 버튼·첫 탭·키)에 부른다 — 사용자 동작 안에서 만들어야 브라우저가 막지 않는다 */
 export const ensurePageSound = (): boolean => {
   if (!ctx) {
@@ -22,6 +37,8 @@ export const ensurePageSound = (): boolean => {
         .webkitAudioContext;
     if (!AC) return false;
     const actx = new AC();
+    // 브라우저가 막았다 풀었다 하면(running ↔ suspended) 버튼 모양도 따라가게
+    actx.onstatechange = notify;
     // 귀에 거슬리는 고음을 깎고, 겹쳐 울려도 튀지 않게 누른다
     const lp = actx.createBiquadFilter();
     lp.type = 'lowpass';
@@ -34,7 +51,7 @@ export const ensurePageSound = (): boolean => {
     master.connect(lp).connect(comp).connect(actx.destination);
     ctx = { actx, master };
   }
-  void ctx.actx.resume();
+  void ctx.actx.resume().then(notify, notify);
   return true;
 };
 

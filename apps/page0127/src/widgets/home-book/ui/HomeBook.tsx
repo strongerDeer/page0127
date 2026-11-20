@@ -1,13 +1,15 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 
 import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
 
 import {
   ensurePageSound,
+  isPageSoundReady,
   playPageSound,
   soundForTurn,
+  subscribePageSound,
 } from '../model/pageSound';
 import { paintPaperNoise } from '../model/paperNoise';
 
@@ -146,7 +148,29 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
     soundRef.current = sound;
   }, [sound]);
 
+  // 켜 둔 것(사람의 선택)과 실제로 소리를 낼 수 있는지(브라우저 오디오 상태)는 따로 본다.
+  // 새로고침 직후엔 켜 둠 + 아직 막힘 = '대기' — 버튼을 채우지 않고 테두리만 보여 준다. 서버 렌더는 막힘으로 시작
+  const audioReady = useSyncExternalStore(
+    subscribePageSound,
+    isPageSoundReady,
+    () => false
+  );
+  const soundWaiting = sound && !audioReady;
+  // 누르기 시작한 순간(pointerdown·keydown)에 대기였는지 기억한다.
+  // 문서 쪽 unlock 이 pointerup·keydown 에서 오디오를 먼저 깨우면 click 이 오기 전에 '켜짐'으로 바뀔 수 있어서다
+  const pressedWhileWaitingRef = useRef(false);
+  const markPress = () => {
+    pressedWhileWaitingRef.current = soundWaiting;
+  };
+
   const toggleSound = () => {
+    const wasWaiting = pressedWhileWaitingRef.current || soundWaiting;
+    pressedWhileWaitingRef.current = false;
+    // 대기 중에 누르면 끄지 않고 깨운다 — 소리를 들으려고 누른 건데 꺼지면 안 된다
+    if (wasWaiting) {
+      if (ensurePageSound()) playPageSound('turn');
+      return;
+    }
     if (!sound && !ensurePageSound()) return;
     const on = !sound;
     soundRef.current = on;
@@ -646,8 +670,18 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
       <div ref={toolsRef} className={styles.tools}>
         <button
           type='button'
-          aria-pressed={sound}
-          aria-label={sound ? '넘김 소리 끄기' : '넘김 소리 켜기'}
+          aria-pressed={sound && audioReady}
+          aria-label={
+            soundWaiting
+              ? '넘김 소리 켜기 — 한 번 눌러야 소리가 나요'
+              : sound
+                ? '넘김 소리 끄기'
+                : '넘김 소리 켜기'
+          }
+          title={soundWaiting ? '한 번 눌러야 소리가 나요' : undefined}
+          data-waiting={soundWaiting || undefined}
+          onPointerDown={markPress}
+          onKeyDown={markPress}
           onClick={toggleSound}
           className={styles.tool}
         >
@@ -660,7 +694,10 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
             className={styles.toolIcon}
           >
             <path d='M2 6h3l4-3v10l-4-3H2z' />
-            {sound ? (
+            {soundWaiting ? (
+              // 대기 — 소리 물결을 점선으로
+              <path d='M11.5 5.5a3.5 3.5 0 0 1 0 5' strokeDasharray='1.6 1.6' />
+            ) : sound ? (
               <path d='M11.5 5.5a3.5 3.5 0 0 1 0 5' />
             ) : (
               <path d='M11.5 6l3 4m0-4l-3 4' />
