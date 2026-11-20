@@ -1,0 +1,25 @@
+{
+  "label": "step4-compiler-fix-10000",
+  "cpuSlowdown": 4,
+  "measuredAt": "2026-11-20T12:19:08.119Z",
+  "views": {
+    "year": {
+      "htmlKB": 7191,
+      "tbtMs": 2765,
+      "longTasks": 14,
+      "dom": 2147,
+      "shelfBooks": 75,
+      "searchMs": 48,
+      "scrollJankMs": null
+    },
+    "all": {
+      "htmlKB": 7989,
+      "tbtMs": 3839,
+      "longTasks": 17,
+      "dom": 7015,
+      "shelfBooks": 633,
+      "searchMs": 136,
+      "scrollJankMs": 3367
+    }
+  }
+}

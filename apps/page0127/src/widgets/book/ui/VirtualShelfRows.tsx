@@ -27,6 +27,10 @@ type VirtualShelfRowsProps = {
  *   (280px 반복 그라디언트)이 그대로다. 그래서 바깥 상자에 단 수 × 단 높이를 준다.
  * - **SSR**: 서버에는 창이 없다. initialRect 로 "보통 화면 크기"를 가정해 첫 몇 단은
  *   서버 HTML 에도 들어가게 한다 — 첫 화면이 빈 선반으로 깜빡이지 않는다.
+ * - **'use no memo'(React Compiler 제외)**: useWindowVirtualizer 는 스크롤할 때마다 *같은*
+ *   virtualizer 객체를 돌려주고 안쪽 값만 바꾼다. 컴파일러는 "객체가 같으니 결과도 같다"고 보고
+ *   getVirtualItems() 결과를 재사용해 버린다 → 스크롤해도 처음 그린 단만 남고 가운데 선반이
+ *   빈 칸이 된다. 그래서 이 컴포넌트만 자동 메모에서 뺀다.
  */
 export const VirtualShelfRows = ({
   rows,
@@ -35,6 +39,7 @@ export const VirtualShelfRows = ({
   rowClassName,
   renderItem,
 }: VirtualShelfRowsProps) => {
+  'use no memo';
   const listRef = useRef<HTMLDivElement>(null);
   const [scrollMargin, setScrollMargin] = useState(0);
 

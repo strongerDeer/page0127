@@ -1,0 +1,14 @@
+{
+  "label": "virtual",
+  "cpuSlowdown": 4,
+  "measuredAt": "2026-11-20T12:19:07.693Z",
+  "feed": {
+    "allLoaded": true,
+    "cards": 7,
+    "dom": 436,
+    "heapMB": 10,
+    "loadMoreMs": 94,
+    "scrollJankMs": 350,
+    "clickMs": 48
+  }
+}

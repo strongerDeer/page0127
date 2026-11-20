@@ -1,13 +1,11 @@
 'use client';
 
-import { useEffect, useEffectEvent, useRef } from 'react';
-
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 
 import { QueryErrorState } from '@/shared/ui/QueryErrorState';
 
-import { ActivityCard } from './ActivityCard';
+import { VirtualActivityRows } from './VirtualActivityRows';
 
 import type { Activity } from '@/entities/activity';
 
@@ -24,6 +22,7 @@ const PAGE_SIZE = 20;
 /**
  * 활동 목록(무한 스크롤) 공용 컴포넌트.
  * 학습 포인트: 데이터 소스(queryKey/queryFn)를 주입받아 피드·책 타임라인이 재사용한다.
+ * 카드는 VirtualActivityRows 가 화면 근처 것만 그린다 — 1,000개를 내려도 DOM 은 수십 장 분량.
  */
 export const ActivityList = ({
   queryKey,
@@ -32,8 +31,6 @@ export const ActivityList = ({
   hideBook,
   initialCommentsOpen,
 }: ActivityListProps) => {
-  const observerRef = useRef<HTMLDivElement>(null);
-
   const {
     data,
     fetchNextPage,
@@ -53,21 +50,11 @@ export const ActivityList = ({
     initialPageParam: 0,
   });
 
-  const onIntersect = useEffectEvent(() => {
+  // 가상 목록이 "끝 근처를 그렸다"고 알려 줄 때 부른다
+  const loadMore = () => {
     if (hasNextPage && !isFetchingNextPage && !isFetchNextPageError)
       fetchNextPage();
-  });
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) onIntersect();
-      },
-      { threshold: 0.1 }
-    );
-    if (observerRef.current) observer.observe(observerRef.current);
-    return () => observer.disconnect();
-  }, [hasNextPage]);
+  };
 
   if (isLoading) {
     return (
@@ -92,18 +79,14 @@ export const ActivityList = ({
 
   return (
     <div>
-      <div className='divide-y divide-line-soft border-t border-line'>
-        {activities.map((activity) => (
-          <ActivityCard
-            key={activity.id}
-            activity={activity}
-            hideBook={hideBook}
-            initialCommentsOpen={initialCommentsOpen}
-          />
-        ))}
-      </div>
+      <VirtualActivityRows
+        activities={activities}
+        hideBook={hideBook}
+        initialCommentsOpen={initialCommentsOpen}
+        onReachEnd={loadMore}
+      />
       {errorState}
-      <div ref={observerRef} className='py-4'>
+      <div className='py-4'>
         {isFetchingNextPage && (
           <div className='flex items-center justify-center'>
             <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
