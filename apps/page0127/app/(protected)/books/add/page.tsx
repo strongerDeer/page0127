@@ -92,6 +92,7 @@ const AddBookPage = () => {
     books,
     catalogBooks,
     isLoading: isSearching,
+    error: searchError,
     search,
     goToPage,
     currentPage,
@@ -626,6 +627,13 @@ const AddBookPage = () => {
                   ))}
                 </div>
               </div>
+            )}
+
+            {/* 검색 실패 — 직전 결과는 그대로 두고, 실패했다는 사실만 알린다 */}
+            {!isSearching && searchError && (
+              <p role='alert' className='text-center text-sm text-destructive'>
+                {searchError}
+              </p>
             )}
 
             {!isSearching && !isbnLookup && totalResults > itemsPerPage && (

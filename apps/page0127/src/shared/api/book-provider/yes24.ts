@@ -101,12 +101,30 @@ export const mapYes24Book = (item: Yes24Item): ProviderBook | null => {
   };
 };
 
+/**
+ * 같은 ISBN 은 첫 번째 것만 남긴다.
+ *
+ * YES24 검색 응답은 한 페이지 안에 같은 상품을 두 번 담아 보낼 때가 있다
+ * (2026-11-20 '죽음의 수용소' 1페이지에서 청소년판 itemId 103338434 가 두 번).
+ * 화면은 ISBN 을 React key 로 쓰므로 중복이 남으면 같은 책이 두 줄 보이고 key 도 겹친다.
+ */
+const uniqueByIsbn = (books: ProviderBook[]): ProviderBook[] => {
+  const seen = new Set<string>();
+  return books.filter((book) => {
+    if (seen.has(book.isbn)) return false;
+    seen.add(book.isbn);
+    return true;
+  });
+};
+
 export const mapYes24ItemList = (
   data: Yes24ItemListData
 ): ProviderSearchResult => ({
-  items: (data.items ?? [])
-    .map(mapYes24Book)
-    .filter((book): book is ProviderBook => book !== null),
+  items: uniqueByIsbn(
+    (data.items ?? [])
+      .map(mapYes24Book)
+      .filter((book): book is ProviderBook => book !== null)
+  ),
   totalResults: data.totalCount ?? 0,
   page: data.currentPage ?? 1,
 });

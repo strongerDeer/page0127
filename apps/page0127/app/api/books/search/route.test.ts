@@ -65,6 +65,68 @@ describe('승인된 직접 등록 도서 검색', () => {
     expect((await response.json()).catalogItems).toHaveLength(1);
     log.mockRestore();
   });
+  it('직접 등록 도서가 offset 보다 적어도(PGRST103) 2페이지 서점 결과를 돌려준다', async () => {
+    // 실제 운영 버그(2026-11-20): 직접 등록 도서 0권 + page=2 → offset 10 → 416 → 검색 전체 500
+    mocks.search.mockResolvedValue({
+      items: [{ isbn: '9788936811853', title: '2페이지 책' }],
+      totalResults: 24,
+      page: 2,
+    });
+    mocks.range.mockResolvedValue({
+      data: null,
+      count: null,
+      error: {
+        code: 'PGRST103',
+        message: 'Requested range not satisfiable',
+      },
+    });
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const response = await GET(
+      new NextRequest('http://localhost/api/books/search?query=책&page=2')
+    );
+    const result = await response.json();
+    expect(response.status).toBe(200);
+    expect(result.items).toHaveLength(1);
+    expect(result.page).toBe(2);
+    expect(result.catalogItems).toEqual([]);
+    // 정상 상황이라 에러 로그도 남기지 않는다
+    expect(log).not.toHaveBeenCalled();
+    log.mockRestore();
+  });
+  it('직접 등록 도서 조회가 실패해도 서점 결과는 돌려준다', async () => {
+    mocks.search.mockResolvedValue({
+      items: [{ isbn: '9788936434120', title: '서점 책' }],
+      totalResults: 1,
+      page: 1,
+    });
+    mocks.range.mockResolvedValue({
+      data: null,
+      count: null,
+      error: { code: '57014', message: 'statement timeout' },
+    });
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const response = await GET(
+      new NextRequest('http://localhost/api/books/search?query=책')
+    );
+    expect(response.status).toBe(200);
+    expect((await response.json()).items).toHaveLength(1);
+    expect(log).toHaveBeenCalled();
+    log.mockRestore();
+  });
+  it('서점과 직접 등록 도서가 모두 실패하면 500', async () => {
+    mocks.search.mockRejectedValue(new Error('provider down'));
+    mocks.range.mockResolvedValue({
+      data: null,
+      count: null,
+      error: { code: '57014', message: 'statement timeout' },
+    });
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const response = await GET(
+      new NextRequest('http://localhost/api/books/search?query=책')
+    );
+    expect(response.status).toBe(500);
+    log.mockRestore();
+  });
   it('공백 검색어는 공급자 호출 전에 거절한다', async () => {
     expect(
       (
