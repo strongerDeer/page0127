@@ -73,7 +73,9 @@ describe('mapYes24Book', () => {
     // 이 assertion 이 잠그는 버그: 부제는 대부분 빈 문자열로 온다. 그대로 두면
     // 화면이 둘째 줄에 빈 줄을 그려서 카드마다 높이가 들쭉날쭉해진다.
     expect(mapYes24Book({ ...소년이온다, subTitle: '' })?.subTitle).toBeNull();
-    expect(mapYes24Book({ ...소년이온다, subTitle: '  ' })?.subTitle).toBeNull();
+    expect(
+      mapYes24Book({ ...소년이온다, subTitle: '  ' })?.subTitle
+    ).toBeNull();
     expect(
       mapYes24Book({ ...소년이온다, subTitle: undefined })?.subTitle
     ).toBeNull();
@@ -145,7 +147,12 @@ describe('mapYes24Book', () => {
     // 이 assertion 이 잠그는 버그: YES24 는 치수를 등록하지 않은 상품에 0 을 준다
     // (2026-09-28 실측, ISBN 9791162243664). 0 을 그대로 저장하면 책장이 그 책을
     // 두께 0mm 로 그려 선 하나로 사라진다 — 값이 없을 때의 기본 두께와 구분되지 않는다.
-    const book = mapYes24Book({ ...소년이온다, width: 0, length: 0, height: 0 });
+    const book = mapYes24Book({
+      ...소년이온다,
+      width: 0,
+      length: 0,
+      height: 0,
+    });
     expect(book?.dimensions).toBeNull();
 
     const partial = mapYes24Book({ ...소년이온다, height: 0 });
@@ -201,6 +208,18 @@ describe('mapYes24ItemList', () => {
     // 걸러낸 뒤에도 totalCount 는 공급자가 말한 값 그대로다 — 페이지네이션이 이 값을 쓴다
     expect(result.totalResults).toBe(15);
     expect(result.page).toBe(1);
+  });
+
+  it('한 페이지 안에 같은 ISBN 이 두 번 오면 하나만 남긴다', () => {
+    // YES24 실응답에서 관찰(2026-11-20): 같은 상품이 한 페이지에 두 번 담겨 옴
+    const result = mapYes24ItemList({
+      items: [소년이온다, 세트상품, { ...소년이온다 }],
+      currentPage: 1,
+      pageSize: 3,
+      totalCount: 3,
+    });
+
+    expect(result.items.map((book) => book.isbn)).toEqual(['9788936434120']);
   });
 
   it('결과가 없어도 터지지 않는다', () => {

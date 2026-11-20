@@ -27,12 +27,13 @@ type SearchState = {
 // ─── Action 타입 정의 ──────────────────────────────────────────────
 // 어떤 "사건"이 발생했는지 명시적으로 표현
 // SEARCH_START  → 검색 시작 (loading ON, 이전 에러 초기화)
-// SEARCH_SUCCESS → 검색 성공 (결과 저장, loading OFF)
-// SEARCH_ERROR  → 검색 실패 (에러 저장, loading OFF)
+// SEARCH_SUCCESS → 검색 성공 (결과·페이지 저장, loading OFF)
+// SEARCH_ERROR  → 검색 실패 (에러 저장, loading OFF — 결과·페이지는 직전 성공 그대로)
 type SearchAction =
-  | { type: 'SEARCH_START'; query: string; page: number }
+  | { type: 'SEARCH_START'; query: string }
   | {
       type: 'SEARCH_SUCCESS';
+      page: number;
       books: ProviderBook[];
       totalResults: number;
       catalogBooks?: ProviderBook[];
@@ -61,13 +62,16 @@ function searchReducer(state: SearchState, action: SearchAction): SearchState {
         isLoading: true,
         error: null,
         currentQuery: action.query,
-        currentPage: action.page,
+        // currentPage 는 여기서 바꾸지 않는다. 요청이 실패하면 화면에는 직전 페이지
+        // 결과가 남는데, 페이지 번호만 먼저 넘어가 있으면 "2페이지인데 1페이지 내용"이
+        // 된다(2026-11-20 실제로 겪은 버그). 결과가 도착한 순간에 결과와 함께 바꾼다.
       };
     case 'SEARCH_SUCCESS':
       return {
         ...state,
         isLoading: false,
         books: action.books,
+        currentPage: action.page,
         catalogBooks: action.catalogBooks ?? [],
         totalResults: action.totalResults,
       };
@@ -75,7 +79,7 @@ function searchReducer(state: SearchState, action: SearchAction): SearchState {
       return {
         ...state,
         isLoading: false,
-        error: '도서 검색 중 오류가 발생했습니다.',
+        error: '검색 결과를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.',
       };
     default:
       return state;
@@ -117,7 +121,7 @@ export const useBookSearch = () => {
     const requestId = (requestIdRef.current += 1);
 
     // 검색 시작: loading ON, 쿼리/페이지 저장
-    dispatch({ type: 'SEARCH_START', query, page });
+    dispatch({ type: 'SEARCH_START', query });
 
     try {
       // ISBN(바코드 리더기·숫자 입력)이면 제목 검색 대신 상세 조회로 그 한 권을 바로 띄운다.
@@ -127,7 +131,12 @@ export const useBookSearch = () => {
         const book = await getBookDetail(isbn).catch(() => null);
         if (requestId !== requestIdRef.current) return;
         if (book) {
-          dispatch({ type: 'SEARCH_SUCCESS', books: [book], totalResults: 1 });
+          dispatch({
+            type: 'SEARCH_SUCCESS',
+            books: [book],
+            totalResults: 1,
+            page,
+          });
           return;
         }
       }
@@ -142,6 +151,7 @@ export const useBookSearch = () => {
       // items 는 ISBN 없는 항목(세트 상품 등)이 걸러진 뒤라 totalResults 보다 적을 수 있다
       dispatch({
         type: 'SEARCH_SUCCESS',
+        page,
         books: response.items,
         catalogBooks: response.catalogItems ?? [],
         totalResults: Math.max(

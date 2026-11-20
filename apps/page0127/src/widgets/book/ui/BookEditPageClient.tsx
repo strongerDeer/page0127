@@ -61,6 +61,7 @@ export const BookEditPageClient = ({
   const {
     books: searchResults,
     isLoading: isSearching,
+    error: searchError,
     search,
     goToPage,
     currentPage,
@@ -283,6 +284,15 @@ export const BookEditPageClient = ({
                     />
                   )}
                 </div>
+              )}
+
+              {!isSearching && searchError && (
+                <p
+                  role='alert'
+                  className='text-center text-sm text-destructive'
+                >
+                  {searchError}
+                </p>
               )}
 
               {!isSearching && searchResults.length === 0 && (
