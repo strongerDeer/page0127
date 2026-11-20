@@ -1,10 +1,9 @@
 import { PenNote } from '@/shared/ui/PenNote';
 
-import { SPINE_TONE_COLORS, spineTone } from '@/entities/book/model/spineTone';
-
 import { type Badge, BadgeMedal } from '@/features/badge';
 
 import { SafeCover } from './SafeCover';
+import { ShelfSpine } from './ShelfSpine';
 
 import type { ShelfBook } from '../model/coverRows';
 
@@ -167,67 +166,40 @@ export const SentenceVisual = () => (
   </div>
 );
 
-// 책장에 꽂힌 높이 — 책마다 조금씩 달라야 진짜 책장처럼 보인다
-const SPINE_HEIGHTS = ['h-[88%]', 'h-full', 'h-[80%]', 'h-[94%]', 'h-[84%]'];
-
-/** 책등 한 권 — 책등 사진이 있으면 그것, 없으면 서재와 같은 색 + 세로 제목 책등 */
-const Spine = ({ book, i }: { book: ShelfBook | null; i: number }) => {
-  const title = book?.title ?? '';
-  const text = (
-    <span
-      className='flex h-full w-5 items-center justify-center overflow-hidden rounded-[2px] px-0.5 py-1.5 md:w-6'
-      style={{
-        backgroundColor: SPINE_TONE_COLORS[spineTone(book?.id ?? String(i))],
-      }}
-    >
-      <span className='h-full overflow-hidden text-ellipsis whitespace-nowrap text-[9px] font-medium leading-tight text-[#1f1d1a] [writing-mode:vertical-rl]'>
-        {title}
-      </span>
-    </span>
-  );
-  return (
-    <span
-      className={`block shrink-0 ${SPINE_HEIGHTS[i % SPINE_HEIGHTS.length]}`}
-    >
-      {book?.spineImage ? (
-        <SafeCover
-          src={book.spineImage}
-          small
-          alt=''
-          width={24}
-          height={160}
-          fallback={text}
-          className='h-full w-auto rounded-[2px] object-contain'
-        />
-      ) : (
-        text
-      )}
-    </span>
-  );
-};
+/** 서재 한 칸에 꽂는 권수 — 좁은 화면은 두 칸이 나란히 서야 해서 앞의 7권만 */
+const MOBILE_SHELF_COUNT = 7;
 
 type ChemShelfProps = {
   who: string;
   books: (ShelfBook | null)[];
-  /** 둘 다 읽은 책을 뽑아 올린 자리 — 빈칸으로 남긴다 */
+  /** 둘 다 읽은 책을 뽑아 올린 자리 — 빈칸으로 남긴다 (좁은 화면에도 보이게 앞 7칸 안에 둔다) */
   pulled: readonly number[];
 };
 
-/** 한 사람의 서재 한 칸 — 책등으로 꽂힌 책들, 함께 읽은 책은 위로 뽑혀 빈자리만 남는다 */
+/**
+ * 한 사람의 서재 한 칸 — 책등으로 꽂힌 책들, 함께 읽은 책은 위로 뽑혀 빈자리만 남는다.
+ * 흰 카드 배경 없이 나무 선반 위에 책만 세운다 — 실제 책등이 들어와 그것만으로 책장으로 읽힌다(2026-11-20 HJ).
+ */
 const ChemShelf = ({ who, books, pulled }: ChemShelfProps) => (
   <div className='flex flex-col items-center gap-2'>
-    <div className='flex h-28 items-end gap-[3px] rounded-t-md border-b-[10px] border-[#c9a77c] bg-card px-2.5 pt-2.5 shadow-[inset_0_8px_14px_-10px_rgb(20_41_78/0.35)] md:h-36 md:px-3'>
-      {books.map((b, i) =>
-        pulled.includes(i) ? (
+    <div className='flex h-28 items-end gap-[3px] border-b-[10px] border-[#c9a77c] px-2.5 md:h-36 md:px-3'>
+      {books.map((b, i) => {
+        const hideOnMobile = i >= MOBILE_SHELF_COUNT ? 'hidden md:block' : '';
+        return pulled.includes(i) ? (
           // 뽑혀 나간 자리 — 위의 표지와 같은 책
           <span
             key={i}
-            className='block h-[86%] w-5 shrink-0 rounded-[2px] border-2 border-dashed border-primary/45 md:w-6'
+            className={`block h-full w-5 shrink-0 rounded-[2px] border-2 border-dashed border-primary/45 md:w-6 ${hideOnMobile}`}
           />
         ) : (
-          <Spine key={i} book={b} i={i} />
-        )
-      )}
+          <ShelfSpine
+            key={i}
+            book={b}
+            index={i}
+            className={`block ${hideOnMobile}`}
+          />
+        );
+      })}
     </div>
     <p className='text-sm font-bold text-text-strong'>{who}의 서재</p>
   </div>
@@ -244,8 +216,31 @@ export const ChemVisual = ({ books }: VisualProps) => {
   const rest = books.filter((b) => !withCover.slice(0, 2).includes(b));
   const at = (i: number) => (rest.length ? rest[i % rest.length] : null);
   const both = [withCover[0] ?? at(3), withCover[1] ?? at(4)];
-  const mine = [at(0), at(1), both[0], at(2), at(5), both[1], at(6)];
-  const hers = [at(7), both[0], at(8), at(3), both[1], at(9), at(10)];
+  // 한 칸 10권 — 실제 책등은 글자 책등보다 얇아 7권이면 선반이 비어 보였다(2026-11-20 HJ)
+  const mine = [
+    at(0),
+    at(1),
+    both[0],
+    at(2),
+    at(5),
+    both[1],
+    at(6),
+    at(11),
+    at(12),
+    at(13),
+  ];
+  const hers = [
+    at(7),
+    both[0],
+    at(8),
+    at(3),
+    both[1],
+    at(9),
+    at(10),
+    at(14),
+    at(15),
+    at(16),
+  ];
 
   return (
     <div aria-hidden='true' className='flex w-full flex-col items-center'>

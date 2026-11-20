@@ -12,6 +12,8 @@ type SafeCoverProps = {
   small?: boolean;
   /** 못 불러왔을 때 대신 그릴 것 — 없으면 아무것도 그리지 않는다 */
   fallback?: React.ReactNode;
+  /** 불러온 뒤 원본 크기를 잴 때 (예: 책등 모양 확인) */
+  onLoad?: React.ReactEventHandler<HTMLImageElement>;
 };
 
 /**
