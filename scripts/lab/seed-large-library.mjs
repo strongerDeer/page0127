@@ -189,6 +189,8 @@ const userId = await findOrCreateUser();
     email: LAB_EMAIL,
     nickname: "실험 독자",
     username: LAB_USERNAME,
+    // 로그인해서 볼 화면(피드)도 재므로 가입 마무리(온보딩)를 끝낸 계정으로 둔다
+    onboarded_at: new Date().toISOString(),
   });
   if (error) throw error;
 }

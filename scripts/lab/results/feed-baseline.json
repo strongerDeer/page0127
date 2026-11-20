@@ -1,0 +1,13 @@
+{
+  "label": "baseline",
+  "cpuSlowdown": 4,
+  "measuredAt": "2026-11-20T11:46:11.333Z",
+  "feed": {
+    "cards": 1000,
+    "dom": 27642,
+    "heapMB": 32,
+    "loadMoreMs": 122,
+    "scrollJankMs": 3822,
+    "clickMs": 176
+  }
+}
