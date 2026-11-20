@@ -2,6 +2,8 @@ import Link from 'next/link';
 
 import { cn } from '@repo/ui';
 
+import { INSTAGRAM_URL } from '@/shared/config/social';
+
 /**
  * 사이트 공통 푸터 — **모든 화면**에 붙는다(앱 셸이 렌더한다).
  *
@@ -16,6 +18,27 @@ const footerLinks = [
   { href: '/privacy', label: '개인정보처리방침' },
   { href: '/terms', label: '이용약관' },
 ];
+
+/**
+ * 인스타그램 로고 — lucide-react 1.x는 브랜드 아이콘을 빼서 직접 그린다.
+ * 장식용이라 aria-hidden, 링크 이름은 옆 글자(sr-only 아님)가 맡는다.
+ */
+const InstagramIcon = () => (
+  <svg
+    aria-hidden='true'
+    viewBox='0 0 24 24'
+    fill='none'
+    stroke='currentColor'
+    strokeWidth={2}
+    strokeLinecap='round'
+    strokeLinejoin='round'
+    className='size-4'
+  >
+    <rect x='2' y='2' width='20' height='20' rx='5' />
+    <circle cx='12' cy='12' r='4' />
+    <circle cx='17.5' cy='6.5' r='0.5' fill='currentColor' />
+  </svg>
+);
 
 type SiteFooterProps = {
   /** 모바일 하단 탭바에 가리지 않도록 아래 여백을 더할 때 쓴다 */
@@ -32,6 +55,16 @@ export const SiteFooter = ({ className }: SiteFooterProps) => {
             <p className='mt-2 text-sm text-text-subtle'>
               읽은 책이 모여 책장이 됩니다.
             </p>
+            {/* 외부 링크: 새 탭 + noopener(열린 창이 window.opener로 이 페이지를 조작하지 못하게) */}
+            <a
+              href={INSTAGRAM_URL}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='mt-4 inline-flex items-center gap-1.5 text-sm text-text-subtle transition-colors hover:text-text-strong'
+            >
+              <InstagramIcon />
+              인스타그램
+            </a>
           </div>
 
           {/* aria-label: 여러 nav 중 푸터 링크임을 스크린 리더에 구분 */}

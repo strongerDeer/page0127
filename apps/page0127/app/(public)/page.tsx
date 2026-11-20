@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+import { OFFICIAL_SOCIAL_URLS } from '@/shared/config/social';
 import { TrackOnMount } from '@/shared/lib/analytics/TrackOnMount';
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 import { toPostLoginPath } from '@/shared/lib/auth/onboardingRedirect';
@@ -10,7 +11,10 @@ import {
   resolveHeroVariant,
 } from '@/shared/lib/experiment/heroVariant';
 import { JsonLd } from '@/shared/lib/seo/JsonLd';
-import { buildWebSiteJsonLd } from '@/shared/lib/seo/structuredData';
+import {
+  buildOrganizationJsonLd,
+  buildWebSiteJsonLd,
+} from '@/shared/lib/seo/structuredData';
 
 import { getProfile } from '@/entities/profile/api/getProfile';
 import { toDisplayName } from '@/entities/profile/model/displayName';
@@ -85,6 +89,15 @@ const webSiteJsonLd = buildWebSiteJsonLd({
   url: siteUrl,
   description:
     '읽은 책을 한 권씩 기록하면 AI가 독서 취향을 분석하고 다음에 읽을 책을 추천해 주는 독서 기록 서비스',
+});
+
+// 브랜드 정보(JSON-LD) — sameAs로 공식 인스타그램 계정을 이 사이트와 같은 브랜드로 묶는다.
+// logo는 구글 권장(112px 이상) 크기의 앱 아이콘을 쓴다.
+const organizationJsonLd = buildOrganizationJsonLd({
+  name: 'page0127.',
+  url: siteUrl,
+  logo: `${siteUrl}/brand/app-icon.png`,
+  sameAs: OFFICIAL_SOCIAL_URLS,
 });
 
 /** 맛보기 책 목록 — 그룹에 맞는 것만 읽는다. null 이면 맛보기를 숨긴다(로그인한 사람) */
@@ -187,6 +200,7 @@ const Home = async () => {
     // break-keep: 한국어를 단어 단위로 줄바꿈한다 — 없으면 '쌓/인'처럼 단어 중간에서 끊긴다
     <div className='min-h-screen break-keep bg-background'>
       <JsonLd data={webSiteJsonLd} />
+      <JsonLd data={organizationJsonLd} />
 
       {/* 책 한 권 — 쪽 목록 하나(chapters)가 머리글·쪽번호·목차 번호를 정한다.
           스크롤하면 표지가 열려 책 속으로 들어가고, 쪽이 한 장씩 넘어가고, 끝에서 덮여 뒤표지가 된다 */}

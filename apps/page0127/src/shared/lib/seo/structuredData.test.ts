@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildWebSiteJsonLd, serializeJsonLd } from './structuredData';
+import {
+  buildOrganizationJsonLd,
+  buildWebSiteJsonLd,
+  serializeJsonLd,
+} from './structuredData';
 
 describe('serializeJsonLd', () => {
   /**
@@ -33,6 +37,26 @@ describe('buildWebSiteJsonLd', () => {
       url: 'https://page0127.com',
       description: '설명',
       inLanguage: 'ko-KR',
+    });
+  });
+});
+
+describe('buildOrganizationJsonLd', () => {
+  it('schema.org Organization 형식으로 공식 SNS 주소를 sameAs에 담는다', () => {
+    expect(
+      buildOrganizationJsonLd({
+        name: 'page0127.',
+        url: 'https://page0127.com',
+        logo: 'https://page0127.com/icon.png',
+        sameAs: ['https://www.instagram.com/page0127._/'],
+      })
+    ).toEqual({
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'page0127.',
+      url: 'https://page0127.com',
+      logo: 'https://page0127.com/icon.png',
+      sameAs: ['https://www.instagram.com/page0127._/'],
     });
   });
 });

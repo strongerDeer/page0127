@@ -25,6 +25,12 @@ describe('SiteFooter', () => {
     expect(html).toContain('href="/terms"');
   });
 
+  it('공식 인스타그램으로 새 탭에서 안전하게 연결한다', () => {
+    expect(html).toContain('href="https://www.instagram.com/page0127._/"');
+    expect(html).toContain('target="_blank"');
+    expect(html).toContain('rel="noopener noreferrer"');
+  });
+
   it('베타 서비스임을 알리고 문의로 유도한다', () => {
     // 고지와 "말하는 방법"이 떨어져 있으면 둘 다 소용이 없다.
     expect(html).toContain('베타');
