@@ -213,7 +213,11 @@ export const ChemVisual = ({ books }: VisualProps) => {
   // 표지를 세워 보여 주는 "둘 다 읽은 책"은 표지 있는 책으로 고른다 — 최근 책 순서 그대로 쓰면
   // 표지 없는 책이 걸려 회색 빈칸이 됐다(2026-11-18 점검). 나머지 책은 책등이라 표지가 없어도 된다
   const withCover = books.filter((b) => b.coverImage);
-  const rest = books.filter((b) => !withCover.slice(0, 2).includes(b));
+  const others = books.filter((b) => !withCover.slice(0, 2).includes(b));
+  // 서재 칸에는 책등 이미지가 있는 책만 꽂는다(2026-11-20 HJ "데이터 있는 책등만").
+  // 하나도 없을 때만 글자 책등으로라도 채운다 — 빈 선반보다는 낫다
+  const withSpine = others.filter((b) => b.spineImage);
+  const rest = withSpine.length ? withSpine : others;
   const at = (i: number) => (rest.length ? rest[i % rest.length] : null);
   const both = [withCover[0] ?? at(3), withCover[1] ?? at(4)];
   // 한 칸 10권 — 실제 책등은 글자 책등보다 얇아 7권이면 선반이 비어 보였다(2026-11-20 HJ)

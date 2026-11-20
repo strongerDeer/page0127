@@ -23,7 +23,9 @@ type ShelfSpineProps = {
  * 같은 규칙이어야 홈 그림이 실제 화면의 미리보기가 된다(2026-11-20 HJ).
  *
  * 클라이언트 컴포넌트인 이유: 불러온 이미지의 원본 비율을 재서(isSpineShaped)
- * 책등 자리에 앞표지가 든 YES24 이미지를 글자 책등으로 바꾼다 — load 이벤트가 있어야 한다.
+ * 책등 자리에 앞표지가 든 YES24 이미지(『걷는 독서』)면 그 칸을 아예 뺀다 — load 이벤트가 있어야 한다.
+ * 홈 그림은 장식이라 빼도 되지만, 내 서재는 YES24 이미지를 그대로 보여 준다(2026-11-20 HJ).
+ * 책등이 없는 책은 부르는 쪽(ChemVisual)이 미리 거른다 — 여기 오는 글자 책등은 모자랄 때·불러오기 실패뿐.
  */
 export const ShelfSpine = ({
   book,
@@ -46,9 +48,11 @@ export const ShelfSpine = ({
     </span>
   );
 
+  if (notSpine) return null;
+
   return (
     <span className={`h-full shrink-0 ${className}`}>
-      {book?.spineImage && !notSpine ? (
+      {book?.spineImage ? (
         <SafeCover
           src={book.spineImage}
           small
