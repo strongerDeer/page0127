@@ -168,7 +168,7 @@ export type BookInput = {
   read_count?: number; // 재독 횟수 (기본값 1)
 
   // 날짜 정보
-  start_date?: string;
+  start_date?: string | null;
   // 수정에서 "날짜 ↔ 연도만 ↔ 모름"을 바꾸면 반대쪽 값을 null 로 지워야 한다
   completed_date?: string | null;
   completed_year?: number | null;

@@ -74,7 +74,8 @@ export type BookFormData = {
   // 날짜 / 연도만 / 모름 중 하나만 찬다. 수정에서 바꾸면 반대쪽을 null 로 지운다
   completed_date?: string | null;
   completed_year?: number | null;
-  start_date?: string;
+  // 지울 때는 null 을 보낸다 — undefined 는 JSON 에서 키째 빠져 PATCH 가 "변경 없음"으로 받는다
+  start_date?: string | null;
   rating?: BookRating;
   is_life_book?: boolean;
   one_line_review?: string;
@@ -220,6 +221,23 @@ export const toInitialCompletedPrecision = (
   if (initialData?.completed_year) return 'year';
   if (initialData?.status === 'completed') return 'unknown';
   return 'date';
+};
+
+/**
+ * 저장할 시작일을 정한다.
+ *
+ * 시작일이 없을 때 키를 빼지 않고 null 을 돌려주는 게 핵심이다.
+ * PATCH 는 body 에 없는 컬럼을 건드리지 않으므로(undefined = 변경 없음),
+ * 스위치를 끄거나 '읽고 싶은'으로 바꿔도 예전 시작일이 남았다.
+ */
+export const toStartDateField = (
+  state: Pick<FormState, 'status' | 'showStartDate' | 'startDate'>
+): string | null => {
+  const hasStartDate =
+    state.status === 'completed' || state.status === 'reading';
+  return hasStartDate && state.showStartDate && state.startDate
+    ? state.startDate
+    : null;
 };
 
 /**
@@ -378,14 +396,12 @@ export const BookRegistrationForm = ({
       Object.assign(formData, completedFields);
     }
 
-    // 시작일 추가 (완독 or 읽는중)
-    if (
-      (status === 'completed' || status === 'reading') &&
-      showStartDate &&
-      startDate
-    ) {
-      formData.start_date = startDate;
-    }
+    // 시작일: 값이 없으면 null 로 보내야 수정 화면에서 지운 시작일이 실제로 지워진다
+    formData.start_date = toStartDateField({
+      status,
+      showStartDate,
+      startDate,
+    });
 
     // 태그 처리: 쉼표로 구분, 중복 제거, 10개 제한
     if (tagsInput.trim()) {

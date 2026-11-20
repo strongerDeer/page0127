@@ -5,6 +5,7 @@ import {
   type FormState,
   toCompletedFields,
   toInitialCompletedPrecision,
+  toStartDateField,
 } from './BookRegistrationForm';
 
 const base: FormState = {
@@ -138,5 +139,48 @@ describe('완독 시점 (날짜 / 연도만 / 모름)', () => {
     // 읽는 중이던 책을 완독으로 바꿀 때는 '모름'이 미리 골라져 있으면 안 된다
     expect(toInitialCompletedPrecision({ status: 'reading' })).toBe('date');
     expect(toInitialCompletedPrecision(undefined)).toBe('date');
+  });
+});
+
+describe('시작일 저장값 (toStartDateField)', () => {
+  it('스위치가 켜져 있고 날짜가 있으면 그 날짜', () => {
+    expect(
+      toStartDateField({
+        status: 'reading',
+        showStartDate: true,
+        startDate: '2026-11-01',
+      })
+    ).toBe('2026-11-01');
+  });
+
+  // 수정 화면에서 시작일을 지웠는데 남던 버그 — undefined 가 아니라 null 이어야 PATCH 가 지운다
+  it('스위치를 끄면 null (키를 빼지 않는다)', () => {
+    expect(
+      toStartDateField({
+        status: 'reading',
+        showStartDate: false,
+        startDate: '2026-11-01',
+      })
+    ).toBeNull();
+  });
+
+  it('날짜를 비우면 null', () => {
+    expect(
+      toStartDateField({
+        status: 'completed',
+        showStartDate: true,
+        startDate: '',
+      })
+    ).toBeNull();
+  });
+
+  it("'읽고 싶은'으로 바꾸면 null", () => {
+    expect(
+      toStartDateField({
+        status: 'want_to_read',
+        showStartDate: true,
+        startDate: '2026-11-01',
+      })
+    ).toBeNull();
   });
 });
