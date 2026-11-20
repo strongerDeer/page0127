@@ -1,0 +1,25 @@
+{
+  "label": "capped-10000",
+  "cpuSlowdown": 4,
+  "measuredAt": "2026-11-20T10:32:29.180Z",
+  "views": {
+    "year": {
+      "htmlKB": 1727,
+      "tbtMs": 542,
+      "longTasks": 5,
+      "dom": 1395,
+      "shelfBooks": 113,
+      "searchMs": 80,
+      "scrollJankMs": null
+    },
+    "all": {
+      "htmlKB": 2464,
+      "tbtMs": 954,
+      "longTasks": 9,
+      "dom": 8065,
+      "shelfBooks": 889,
+      "searchMs": 136,
+      "scrollJankMs": 550
+    }
+  }
+}

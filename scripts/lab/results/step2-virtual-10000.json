@@ -1,0 +1,25 @@
+{
+  "label": "step2-virtual-10000",
+  "cpuSlowdown": 4,
+  "measuredAt": "2026-11-20T10:50:17.970Z",
+  "views": {
+    "year": {
+      "htmlKB": 9096,
+      "tbtMs": 3268,
+      "longTasks": 14,
+      "dom": 2169,
+      "shelfBooks": 77,
+      "searchMs": 48,
+      "scrollJankMs": null
+    },
+    "all": {
+      "htmlKB": 9897,
+      "tbtMs": 3905,
+      "longTasks": 18,
+      "dom": 7061,
+      "shelfBooks": 645,
+      "searchMs": 96,
+      "scrollJankMs": 1717
+    }
+  }
+}

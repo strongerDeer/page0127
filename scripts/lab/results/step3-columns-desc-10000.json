@@ -1,0 +1,25 @@
+{
+  "label": "step3-columns-desc-10000",
+  "cpuSlowdown": 4,
+  "measuredAt": "2026-11-20T10:58:05.953Z",
+  "views": {
+    "year": {
+      "htmlKB": 7191,
+      "tbtMs": 2695,
+      "longTasks": 12,
+      "dom": 2148,
+      "shelfBooks": 75,
+      "searchMs": 56,
+      "scrollJankMs": null
+    },
+    "all": {
+      "htmlKB": 7989,
+      "tbtMs": 3534,
+      "longTasks": 18,
+      "dom": 7163,
+      "shelfBooks": 633,
+      "searchMs": 104,
+      "scrollJankMs": 1467
+    }
+  }
+}
