@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useRef, useState } from 'react';
+import { type ReactNode, useLayoutEffect, useRef, useState } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -17,11 +17,31 @@ import {
 import { spineTone } from '@/entities/book/model/spineTone';
 import { shelfSpineWidthPx } from '@/entities/book/model/spineWidth';
 
+import {
+  estimateShelfItemWidth,
+  packShelfRows,
+  SHELF_ROW_GAP,
+  SHELF_ROW_HEIGHT,
+  TRAILING_SLOT_PX,
+} from '../model/shelfRows';
 import { tooltipShift } from '../model/tooltipShift';
+import { VirtualShelfRows } from './VirtualShelfRows';
 
 import type { Book } from '@/entities/book';
 
 import styles from './PublicBookShelf.module.css';
+
+/**
+ * 이 권수를 넘으면 보이는 단만 그린다(가상화).
+ *
+ * 그 아래는 지금처럼 전부 그린다 — 대부분의 서재가 여기 속한다. 가상화하면 화면 밖 책은
+ * DOM 에 없어서 브라우저 찾기(Ctrl+F)·화면낭독기 목록에서 빠지는데, 수백 권까지는 전부
+ * 그려도 충분히 빠르다(2026-11-20 측정: 1,000권 전체 보기 검색 반응 0.09초).
+ */
+const VIRTUALIZE_MIN_ITEMS = 300;
+
+/** 서버는 책장 폭을 모른다 — 데스크톱 책장 폭으로 가정하고 첫 단들을 나눈다 */
+const DEFAULT_SHELF_WIDTH = 1100;
 
 type PublicBookShelfProps = {
   books: Book[];
@@ -65,6 +85,18 @@ export const PublicBookShelf = ({
 }: PublicBookShelfProps) => {
   const [imgSrc, setImgSrc] = useState<Record<string, string>>({});
   const shelfRef = useRef<HTMLDivElement>(null);
+  const [shelfWidth, setShelfWidth] = useState(DEFAULT_SHELF_WIDTH);
+
+  // 단 나누기는 책장 폭에 달렸다 — 창 크기가 바뀌면 다시 나눈다
+  useLayoutEffect(() => {
+    const shelf = shelfRef.current;
+    if (!shelf) return;
+    const observer = new ResizeObserver(([entry]) => {
+      setShelfWidth(Math.round(entry.contentRect.width));
+    });
+    observer.observe(shelf);
+    return () => observer.disconnect();
+  }, []);
 
   const getHref = (book: Book) => {
     if (bookHref) return bookHref(book);
@@ -100,188 +132,219 @@ export const PublicBookShelf = ({
     tip.style.setProperty('--tip-shift', `${shift}px`);
   };
 
+  const renderItem = ({ book, isReading }: (typeof shelfItems)[number]) => {
+    // 최고 평가(5점·인생책)만 표지를 크게 세우고 나머지는 책등으로 꽂는다
+    const isCoverView = isTopRated(book.rating, book.is_life_book);
+    // 책등만 여기서 대체한다 — onError 로 대체된 뒤에는 로컬 이미지(no-book.jpg)가
+    // 들어온다. 최적화 여부 판정은 실제로 그릴 src 기준이어야 한다.
+    // 표지는 CoverImage 가 YES24 → Storage 사본 → 이미지 없음 순으로 대체한다.
+    const renderedSpine = imgSrc[book.id] || book.spine_image;
+    // 여러 번 읽은 책은 조금 크게 — 뱃지가 잘 안 보이는 책등에서도
+    // "이 책은 다르다"가 실루엣만으로 읽힌다
+    const isReread = book.read_count > 1;
+    // 이미지가 없는 책등만 두께로 폭을 만든다 (아래 Image 주석 참고)
+    const spineWidth = shelfSpineWidthPx(book.thickness_mm);
+
+    const noImage = (
+      <div
+        className={`${styles.noImage} ${isCoverView ? styles.cover : styles.spine}`}
+        // 그릴 이미지가 없으니 늘어날 것도 없다 — 여기서는 두께를 폭으로 쓴다
+        style={isCoverView ? undefined : { width: `${spineWidth}px` }}
+        // 회색 빈 칸 대신 책마다 고정된 밝은 색 (spineTone)
+        data-tone={isCoverView ? undefined : spineTone(book.id)}
+      >
+        <p>{book.title}</p>
+      </div>
+    );
+
+    // 방문자에게 안 보이는 책(내가 비공개로 둔 책·검수 중인 직접 등록 책)은
+    // 천 북커버를 통째로 씌운다(HJ 결정 B안, 2026-11-03 — 무늬 없는 포인트 블루 단색에
+    // 로고 라벨, 참고 이미지는 캔버스 다이어리 커버). 주인은 눌러서 상세에서 진짜 표지를 본다.
+    // 방문자에게도 같은 북커버로 꽂히지만(is_masked, HJ 2026-11-04) 제목·id 를 가린
+    // 책이라 상세로 가지 않고 "비공개 도서"라고만 알린다.
+    const isMasked = book.is_masked === true;
+    const privateLabel = isMasked
+      ? PRIVATE_BOOK_TITLE
+      : book.catalog_review_status && book.catalog_review_status !== 'approved'
+        ? '검수 중'
+        : '나만 보기';
+    const quilt = (
+      <div
+        data-quilt
+        className={`${styles.quilt} ${isCoverView ? styles.cover : styles.spine}`}
+        style={isCoverView ? undefined : { width: `${spineWidth}px` }}
+      >
+        {/* 겉으로는 무슨 책인지 드러내지 않는다 — 천에 서비스 아이콘 패치 하나만
+                  (HJ, 2026-11-03). 제목은 화면낭독기와 꺼냈을 때의 말풍선으로만 */}
+        <Image
+          src='/brand/app-icon.png'
+          width={isCoverView ? 40 : 16}
+          height={isCoverView ? 40 : 16}
+          alt=''
+          aria-hidden='true'
+          className={styles.quiltBadge}
+        />
+        <span className='sr-only'>
+          {isMasked ? privateLabel : `${book.title} (${privateLabel})`}
+        </span>
+      </div>
+    );
+
+    // width·height 속성은 로딩 전 자리 잡기용 비율 힌트일 뿐이다.
+    // 실제 크기는 CSS(`height: 240px; width: auto`)가 정한다 →
+    // 높이는 고정, 폭은 이미지 원본 비율을 따른다.
+    const imageBox = {
+      width: isCoverView ? 170 : 50,
+      height: 240,
+    };
+
+    const itemClassName = `${styles.item} ${isReread ? styles.reread : ''}`;
+    const itemBody = (
+      <>
+        {book.is_public === false ? (
+          quilt
+        ) : isCoverView ? (
+          <CoverImage
+            {...toCoverSource(book)}
+            {...imageBox}
+            // sizes 를 주지 않는다 — 폭이 고정이라 next/image 가 1x·2x 두 후보만 만든다.
+            // sizes 를 주면 후보 15개(16~3840w)가 표지마다 HTML 에 실리는데,
+            // YES24 loader 가 어차피 M·L 둘 중 하나로 접어서 고르는 결과는 같다.
+            alt={book.title}
+            fallback={noImage}
+          />
+        ) : renderedSpine ? (
+          <Image
+            src={renderedSpine}
+            {...imageBox}
+            // 원격 책등은 unoptimized 라 srcset 이 없다. 이 값은 onError 뒤의
+            // no-book.jpg(로컬, 최적화됨)용이다 — 높이 240 이면 폭이 약 170px 로 그려진다.
+            sizes='170px'
+            alt={book.title}
+            unoptimized={isPreOptimizedImageSrc(renderedSpine)}
+            onError={() => onError(book.id)}
+            // ⚠️ 책등 이미지에 폭을 강제하지 않는다.
+            // 두께(thickness_mm)로 폭을 고정했던 적이 있다(2026-09-29). 박스가
+            // 원본 비율보다 넓어서 `cover` 는 위아래가 잘리고(평균 55% 손실),
+            // `fill` 은 글자가 옆으로 늘어났다(평균 2.27배). 비율을 지키는 방법은
+            // 폭을 이미지에 맡기는 것뿐이다.
+          />
+        ) : (
+          noImage
+        )}
+
+        {/* 회독 뱃지. 표지는 자리가 있어 "n회독"을 그대로 쓰고,
+                  책등(50px)은 숫자만 원형으로 얹는다 */}
+        {isReread &&
+          (isCoverView ? (
+            <ReadCountBadge
+              readCount={book.read_count}
+              size='sm'
+              className={`${styles.readCount} bg-primary text-primary-foreground shadow-sm`}
+            />
+          ) : (
+            <span
+              className={`${styles.readCountSpine} bg-primary text-primary-foreground shadow-sm`}
+            >
+              <span aria-hidden='true'>{book.read_count}</span>
+              <span className='sr-only'>{book.read_count}회독</span>
+            </span>
+          ))}
+
+        {/* 꺼냈을 때(hover·focus) 보이는 제목 말풍선.
+                  aria-hidden 이어도 aria-describedby 로는 읽힌다 — 링크 이름(표지 alt)과
+                  말풍선 글자가 겹쳐 "제목 제목 · 3점"으로 두 번 읽히지 않게 한다 */}
+        <span
+          id={`shelf-tip-${book.id}`}
+          role='tooltip'
+          aria-hidden='true'
+          className={styles.tip}
+        >
+          {/* 3줄 자르기는 안쪽 칸에서 — 여백(padding)이 있는 칸에서 자르면
+                    4번째 줄이 아래 여백으로 비친다. 인생책은 화면엔 글자를 붙이지 않고(사용자 결정 10/15)
+                    화면낭독기에만 읽힌다 — 이 말풍선이 링크의 설명(aria-describedby)이다 */}
+          <span data-tip-text className={styles.tipText}>
+            {isMasked ? privateLabel : book.title}
+            {isRated(book.rating) &&
+              !book.is_life_book &&
+              ` · ${book.rating}점`}
+          </span>
+          {book.is_life_book && <span className='sr-only'> · 인생책</span>}
+        </span>
+        {isReading && (
+          <span data-bookmark aria-hidden className={styles.bookmark} />
+        )}
+      </>
+    );
+
+    return (
+      <li key={book.id} onMouseEnter={placeTip} onFocus={placeTip}>
+        {isMasked ? (
+          // 가린 책은 갈 곳이 없다 — 링크 대신 초점만 받는 칸으로 두고 말풍선으로 알린다
+          <span
+            tabIndex={0}
+            className={itemClassName}
+            aria-describedby={`shelf-tip-${book.id}`}
+          >
+            {itemBody}
+          </span>
+        ) : (
+          <Link
+            // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
+            prefetch={false}
+            href={getHref(book)}
+            className={itemClassName}
+            aria-label={isReading ? `${book.title} (읽는 중)` : undefined}
+            aria-describedby={`shelf-tip-${book.id}`}
+          >
+            {itemBody}
+          </Link>
+        )}
+      </li>
+    );
+  };
+
+  const trailing = trailingSlot ? (
+    <li key='trailing-slot' className={styles.slot}>
+      {trailingSlot}
+    </li>
+  ) : null;
+
+  // 많을 때만 가상화 — 끝칸(도서 추가)도 한 칸으로 같이 단에 나눈다
+  const size = compact ? 'compact' : 'normal';
+  const shouldVirtualize = shelfItems.length > VIRTUALIZE_MIN_ITEMS;
+  const rows = shouldVirtualize
+    ? packShelfRows(
+        [
+          ...shelfItems.map(({ book }) => estimateShelfItemWidth(book, size)),
+          ...(trailing ? [TRAILING_SLOT_PX] : []),
+        ],
+        shelfWidth,
+        size
+      )
+    : [];
+
   return (
     <div
       ref={shelfRef}
       className={`${styles.shelf} ${compact ? styles.compact : ''}`}
     >
-      <ul className={styles.books} data-align='center'>
-        {shelfItems.map(({ book, isReading }) => {
-          // 최고 평가(5점·인생책)만 표지를 크게 세우고 나머지는 책등으로 꽂는다
-          const isCoverView = isTopRated(book.rating, book.is_life_book);
-          // 책등만 여기서 대체한다 — onError 로 대체된 뒤에는 로컬 이미지(no-book.jpg)가
-          // 들어온다. 최적화 여부 판정은 실제로 그릴 src 기준이어야 한다.
-          // 표지는 CoverImage 가 YES24 → Storage 사본 → 이미지 없음 순으로 대체한다.
-          const renderedSpine = imgSrc[book.id] || book.spine_image;
-          // 여러 번 읽은 책은 조금 크게 — 뱃지가 잘 안 보이는 책등에서도
-          // "이 책은 다르다"가 실루엣만으로 읽힌다
-          const isReread = book.read_count > 1;
-          // 이미지가 없는 책등만 두께로 폭을 만든다 (아래 Image 주석 참고)
-          const spineWidth = shelfSpineWidthPx(book.thickness_mm);
-
-          const noImage = (
-            <div
-              className={`${styles.noImage} ${isCoverView ? styles.cover : styles.spine}`}
-              // 그릴 이미지가 없으니 늘어날 것도 없다 — 여기서는 두께를 폭으로 쓴다
-              style={isCoverView ? undefined : { width: `${spineWidth}px` }}
-              // 회색 빈 칸 대신 책마다 고정된 밝은 색 (spineTone)
-              data-tone={isCoverView ? undefined : spineTone(book.id)}
-            >
-              <p>{book.title}</p>
-            </div>
-          );
-
-          // 방문자에게 안 보이는 책(내가 비공개로 둔 책·검수 중인 직접 등록 책)은
-          // 천 북커버를 통째로 씌운다(HJ 결정 B안, 2026-11-03 — 무늬 없는 포인트 블루 단색에
-          // 로고 라벨, 참고 이미지는 캔버스 다이어리 커버). 주인은 눌러서 상세에서 진짜 표지를 본다.
-          // 방문자에게도 같은 북커버로 꽂히지만(is_masked, HJ 2026-11-04) 제목·id 를 가린
-          // 책이라 상세로 가지 않고 "비공개 도서"라고만 알린다.
-          const isMasked = book.is_masked === true;
-          const privateLabel = isMasked
-            ? PRIVATE_BOOK_TITLE
-            : book.catalog_review_status &&
-                book.catalog_review_status !== 'approved'
-              ? '검수 중'
-              : '나만 보기';
-          const quilt = (
-            <div
-              data-quilt
-              className={`${styles.quilt} ${isCoverView ? styles.cover : styles.spine}`}
-              style={isCoverView ? undefined : { width: `${spineWidth}px` }}
-            >
-              {/* 겉으로는 무슨 책인지 드러내지 않는다 — 천에 서비스 아이콘 패치 하나만
-                  (HJ, 2026-11-03). 제목은 화면낭독기와 꺼냈을 때의 말풍선으로만 */}
-              <Image
-                src='/brand/app-icon.png'
-                width={isCoverView ? 40 : 16}
-                height={isCoverView ? 40 : 16}
-                alt=''
-                aria-hidden='true'
-                className={styles.quiltBadge}
-              />
-              <span className='sr-only'>
-                {isMasked ? privateLabel : `${book.title} (${privateLabel})`}
-              </span>
-            </div>
-          );
-
-          // width·height 속성은 로딩 전 자리 잡기용 비율 힌트일 뿐이다.
-          // 실제 크기는 CSS(`height: 240px; width: auto`)가 정한다 →
-          // 높이는 고정, 폭은 이미지 원본 비율을 따른다.
-          const imageBox = {
-            width: isCoverView ? 170 : 50,
-            height: 240,
-          };
-
-          const itemClassName = `${styles.item} ${isReread ? styles.reread : ''}`;
-          const itemBody = (
-            <>
-              {book.is_public === false ? (
-                quilt
-              ) : isCoverView ? (
-                <CoverImage
-                  {...toCoverSource(book)}
-                  {...imageBox}
-                  // sizes 를 주지 않는다 — 폭이 고정이라 next/image 가 1x·2x 두 후보만 만든다.
-                  // sizes 를 주면 후보 15개(16~3840w)가 표지마다 HTML 에 실리는데,
-                  // YES24 loader 가 어차피 M·L 둘 중 하나로 접어서 고르는 결과는 같다.
-                  alt={book.title}
-                  fallback={noImage}
-                />
-              ) : renderedSpine ? (
-                <Image
-                  src={renderedSpine}
-                  {...imageBox}
-                  // 원격 책등은 unoptimized 라 srcset 이 없다. 이 값은 onError 뒤의
-                  // no-book.jpg(로컬, 최적화됨)용이다 — 높이 240 이면 폭이 약 170px 로 그려진다.
-                  sizes='170px'
-                  alt={book.title}
-                  unoptimized={isPreOptimizedImageSrc(renderedSpine)}
-                  onError={() => onError(book.id)}
-                  // ⚠️ 책등 이미지에 폭을 강제하지 않는다.
-                  // 두께(thickness_mm)로 폭을 고정했던 적이 있다(2026-09-29). 박스가
-                  // 원본 비율보다 넓어서 `cover` 는 위아래가 잘리고(평균 55% 손실),
-                  // `fill` 은 글자가 옆으로 늘어났다(평균 2.27배). 비율을 지키는 방법은
-                  // 폭을 이미지에 맡기는 것뿐이다.
-                />
-              ) : (
-                noImage
-              )}
-
-              {/* 회독 뱃지. 표지는 자리가 있어 "n회독"을 그대로 쓰고,
-                  책등(50px)은 숫자만 원형으로 얹는다 */}
-              {isReread &&
-                (isCoverView ? (
-                  <ReadCountBadge
-                    readCount={book.read_count}
-                    size='sm'
-                    className={`${styles.readCount} bg-primary text-primary-foreground shadow-sm`}
-                  />
-                ) : (
-                  <span
-                    className={`${styles.readCountSpine} bg-primary text-primary-foreground shadow-sm`}
-                  >
-                    <span aria-hidden='true'>{book.read_count}</span>
-                    <span className='sr-only'>{book.read_count}회독</span>
-                  </span>
-                ))}
-
-              {/* 꺼냈을 때(hover·focus) 보이는 제목 말풍선.
-                  aria-hidden 이어도 aria-describedby 로는 읽힌다 — 링크 이름(표지 alt)과
-                  말풍선 글자가 겹쳐 "제목 제목 · 3점"으로 두 번 읽히지 않게 한다 */}
-              <span
-                id={`shelf-tip-${book.id}`}
-                role='tooltip'
-                aria-hidden='true'
-                className={styles.tip}
-              >
-                {/* 3줄 자르기는 안쪽 칸에서 — 여백(padding)이 있는 칸에서 자르면
-                    4번째 줄이 아래 여백으로 비친다. 인생책은 화면엔 글자를 붙이지 않고(사용자 결정 10/15)
-                    화면낭독기에만 읽힌다 — 이 말풍선이 링크의 설명(aria-describedby)이다 */}
-                <span data-tip-text className={styles.tipText}>
-                  {isMasked ? privateLabel : book.title}
-                  {isRated(book.rating) &&
-                    !book.is_life_book &&
-                    ` · ${book.rating}점`}
-                </span>
-                {book.is_life_book && (
-                  <span className='sr-only'> · 인생책</span>
-                )}
-              </span>
-              {isReading && (
-                <span data-bookmark aria-hidden className={styles.bookmark} />
-              )}
-            </>
-          );
-
-          return (
-            <li key={book.id} onMouseEnter={placeTip} onFocus={placeTip}>
-              {isMasked ? (
-                // 가린 책은 갈 곳이 없다 — 링크 대신 초점만 받는 칸으로 두고 말풍선으로 알린다
-                <span
-                  tabIndex={0}
-                  className={itemClassName}
-                  aria-describedby={`shelf-tip-${book.id}`}
-                >
-                  {itemBody}
-                </span>
-              ) : (
-                <Link
-                  // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
-                  prefetch={false}
-                  href={getHref(book)}
-                  className={itemClassName}
-                  aria-label={isReading ? `${book.title} (읽는 중)` : undefined}
-                  aria-describedby={`shelf-tip-${book.id}`}
-                >
-                  {itemBody}
-                </Link>
-              )}
-            </li>
-          );
-        })}
-        {trailingSlot && <li className={styles.slot}>{trailingSlot}</li>}
-      </ul>
+      {shouldVirtualize ? (
+        <VirtualShelfRows
+          rows={rows}
+          rowHeight={SHELF_ROW_HEIGHT[size]}
+          rowGap={SHELF_ROW_GAP[size]}
+          rowClassName={styles.books}
+          renderItem={(index) =>
+            index < shelfItems.length ? renderItem(shelfItems[index]) : trailing
+          }
+        />
+      ) : (
+        <ul className={styles.books} data-align='center'>
+          {shelfItems.map(renderItem)}
+          {trailing}
+        </ul>
+      )}
 
       {plateLabel && (
         <span aria-hidden='true' className={styles.plate}>

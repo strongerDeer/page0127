@@ -115,31 +115,91 @@ export const generateMetadata = async ({
   };
 };
 
-/** 책 목록 조회 — 소유자면 전체(공개+보관), 방문자면 공개된 것만 */
+/**
+ * Supabase API 가 한 번에 돌려주는 최대 행 수(max_rows). 넘으면 **에러 없이 잘린다.**
+ * 그래서 이 크기씩 끊어서 끝까지 받는다.
+ */
+const BOOKS_PAGE_SIZE = 1000;
+
+/**
+ * 서재 화면이 쓰는 칸만 받는다.
+ *
+ * 받은 책은 전부 클라이언트 컴포넌트(PublicLibraryContent)의 props 로 넘어가서 HTML 안에
+ * JSON 으로 실린다(RSC payload). `select('*')` 면 화면에 안 쓰는 책 소개·목차·메모까지
+ * 권수만큼 실려 온다 — 1만 권 실험에서 HTML 의 3분의 1이 책 소개였다.
+ *
+ * 빠진 칸: description·toc(책 소개·목차 — 상세 페이지가 따로 읽는다), personal_memo(book_memos 로 옮김),
+ * tags, sub_title, provider_item_id, source, requested_public, updated_at.
+ * 서재에서 새로 쓰는 칸이 생기면 여기에 더해야 한다.
+ */
+const LIBRARY_BOOK_COLUMNS = [
+  'id',
+  'user_id',
+  'isbn',
+  'title',
+  'author',
+  'publisher',
+  'cover_image',
+  'spine_image',
+  'pub_date',
+  'category',
+  'status',
+  'start_date',
+  'completed_date',
+  'completed_year',
+  'rating',
+  'is_life_book',
+  'one_line_review',
+  'created_at',
+  'page_count',
+  'thickness_mm',
+  'is_public',
+  'read_count',
+  'reading_reminded_at',
+  'catalog_review_status',
+].join(',');
+
+/**
+ * 책 목록 조회 — 소유자면 전체(공개+보관), 방문자면 공개된 것만
+ *
+ * 예전에는 한 번에 받았다. 1,000권을 넘는 서재는 1,001권째부터 책장·통계·달력에서
+ * 말없이 빠졌다(2026-11-20 1만 권 실험에서 발견). 지금은 1,000권씩 이어 받는다.
+ *
+ * 정렬에 id 를 덧붙이는 이유: 같은 완독일 책이 여러 권이면 순서가 매번 달라질 수 있고,
+ * 그러면 쪽 경계에서 같은 책이 두 번 오거나 한 권이 빠진다. 끝까지 같은 순서여야 나눠 받을 수 있다.
+ */
 const getBooks = async (
   userId: string,
   publicOnly: boolean
 ): Promise<Book[]> => {
   const supabase = await createClient();
+  const books: Book[] = [];
 
-  let query = supabase
-    .from('books')
-    .select('*')
-    .eq('user_id', userId)
-    .order('completed_date', { ascending: false });
+  for (let from = 0; ; from += BOOKS_PAGE_SIZE) {
+    let query = supabase
+      .from('books')
+      // 화면이 안 쓰는 칸은 빼서 받는다 — Book 의 일부지만 서재 화면에선 Book 으로 다룬다
+      .select(LIBRARY_BOOK_COLUMNS)
+      .eq('user_id', userId)
+      .order('completed_date', { ascending: false })
+      .order('id', { ascending: true })
+      .range(from, from + BOOKS_PAGE_SIZE - 1);
 
-  if (publicOnly) {
-    query = query.eq('is_public', true);
+    if (publicOnly) {
+      query = query.eq('is_public', true);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('책 목록 조회 실패:', error.message);
+      // 일부만 받은 채로 그리면 "책이 사라졌다"처럼 보인다 — 전부 아니면 빈 목록
+      return [];
+    }
+
+    books.push(...((data ?? []) as unknown as Book[]));
+    if (!data || data.length < BOOKS_PAGE_SIZE) return books;
   }
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.error('책 목록 조회 실패:', error.message);
-    return [];
-  }
-
-  return data ?? [];
 };
 
 /**
