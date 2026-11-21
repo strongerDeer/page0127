@@ -1,6 +1,7 @@
 import { Card, cn } from '@repo/ui';
 
 import { buildPeopleLayout } from '../model/peopleLayout';
+import { CanvasPeople } from './CanvasPeople';
 import { ZoomableDiagram } from './ZoomableDiagram';
 
 import type {
@@ -186,10 +187,40 @@ const LeadBox = ({ person }: { person: GuidePerson }) => (
   </div>
 );
 
+const LinkLegend = ({ section }: { section: PeopleSection }) => {
+  const usedKinds = [...new Set(section.links.map((l) => l.kind))];
+  return (
+    <>
+      {usedKinds.length > 1 && (
+        <p className='flex gap-3 text-xs text-text-subtle'>
+          {usedKinds.map((kind) => (
+            <span key={kind} className='flex items-center gap-1'>
+              <span
+                aria-hidden='true'
+                className={cn('inline-block w-5 border-t-2', lineStyle(kind))}
+              />
+              {linkKindLabel[kind]}
+            </span>
+          ))}
+        </p>
+      )}
+    </>
+  );
+};
+
 const PeopleBlock = ({ section }: { section: PeopleSection }) => {
+  // 좌표가 적힌 관계도 — 인스타 카드와 같은 그림을 그대로
+  if (section.canvas) {
+    return (
+      <ZoomableDiagram label={section.title}>
+        <CanvasPeople section={section} />
+        <LinkLegend section={section} />
+      </ZoomableDiagram>
+    );
+  }
+
   const layout = buildPeopleLayout(section);
   const [left, right] = layout.branches;
-  const usedKinds = [...new Set(section.links.map((l) => l.kind))];
   const rightHasGroups = Boolean(right && right.groups.length > 0);
 
   return (
@@ -251,19 +282,7 @@ const PeopleBlock = ({ section }: { section: PeopleSection }) => {
         </div>
       )}
 
-      {usedKinds.length > 1 && (
-        <p className='flex gap-3 text-xs text-text-subtle'>
-          {usedKinds.map((kind) => (
-            <span key={kind} className='flex items-center gap-1'>
-              <span
-                aria-hidden='true'
-                className={cn('inline-block w-5 border-t-2', lineStyle(kind))}
-              />
-              {linkKindLabel[kind]}
-            </span>
-          ))}
-        </p>
-      )}
+      <LinkLegend section={section} />
     </ZoomableDiagram>
   );
 };

@@ -29,4 +29,9 @@ describe('BookGuide', () => {
     expect(html).toContain('border-dotted');
     expect(html).toContain('border-dashed');
   });
+
+  it('캔버스 모드: 선은 SVG, 관계는 화면 낭독기용 문장으로도 나온다', () => {
+    expect(html).toContain('<polyline');
+    expect(html).toContain('안문자 — 손녀 — 리사');
+  });
 });

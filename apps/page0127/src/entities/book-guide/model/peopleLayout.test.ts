@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import daeonsil from './__fixtures__/daeonsil.json';
+import daeonsil from './__fixtures__/daeonsil-auto.json';
 import { bookGuideSectionsSchema, type PeopleSection } from './bookGuideSchema';
 import { buildPeopleLayout } from './peopleLayout';
 

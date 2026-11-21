@@ -19,7 +19,7 @@ import type {
  *   4. 구성원끼리의 관계 → 상대 이름과 관계를 구성원 옆에 작은 배지로
  */
 
-export type LinkRef = { label: string; kind: GuideLinkKind };
+export type LinkRef = { label?: string; kind: GuideLinkKind };
 
 export type AttachedGroup = {
   name: string;

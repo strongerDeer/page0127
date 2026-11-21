@@ -14,12 +14,36 @@ import { z } from 'zod';
 
 const text = (max: number) => z.string().trim().min(1).max(max);
 
+/**
+ * 자리 지정 — 관계도 캔버스(가로 720) 위 좌표. 단위는 px.
+ * 편집기(어드민)에서 끌어 옮기면 이 값이 바뀐다. 없으면 자동으로 자리를 잡는다.
+ */
+export const GUIDE_CANVAS_WIDTH = 720;
+const coord = z.number().int().min(0).max(2000);
+const rectSchema = z.object({
+  x: coord.max(GUIDE_CANVAS_WIDTH),
+  y: coord,
+  w: z.number().int().min(40).max(GUIDE_CANVAS_WIDTH),
+  h: z.number().int().min(32).max(800).optional(),
+});
+
+/**
+ * 상자 색 — 임의 색(hex)이 아니라 디자인 시스템 짝 중에서 고른다.
+ * 그래야 다크 모드·글자 대비가 자동으로 맞는다.
+ * primary=파랑 채움, mint=민트 채움, outline=민트 테두리, plain=흰 카드
+ */
+export const GUIDE_TONES = ['primary', 'mint', 'outline', 'plain'] as const;
+
 const personSchema = z.object({
   /** 관계선이 가리키는 키 — 같은 가이드 안에서만 유일하면 된다 */
   id: text(40),
   name: text(40),
+  /** 이름 옆에 작게 붙는 별명 — "강영두(깨죽이)" 의 깨죽이 */
+  alias: text(20).optional(),
   /** 없으면 이름만 보인다 — 원작에 설명이 없는 인물을 지어내지 않는다 */
   role: text(60).optional(),
+  tone: z.enum(GUIDE_TONES).optional(),
+  at: rectSchema.optional(),
 });
 
 /** 관계 종류 — 카드에서는 선 모양(실선·점선·파선), 사이트에서는 배지 색이 된다 */
@@ -35,7 +59,13 @@ const peopleSectionSchema = z
     groups: z
       .array(
         z.object({
+          /** 관계선이 묶음 전체(회색 판)를 가리킬 때 쓰는 키 */
+          id: text(40).optional(),
           name: text(40),
+          /** 회색 판 자리. 캔버스 모드에서 자리 없는 구성원은 판 안에 격자로 채운다 */
+          box: rectSchema.optional(),
+          /** 판 안 격자 열 수 */
+          cols: z.number().int().min(1).max(4).optional(),
           members: z.array(personSchema).min(1).max(12),
         })
       )
@@ -45,11 +75,22 @@ const peopleSectionSchema = z
         z.object({
           from: text(40),
           to: text(40),
-          label: text(20),
+          /** 없으면 선만 긋는다 */
+          label: text(20).optional(),
           kind: z.enum(GUIDE_LINK_KINDS),
         })
       )
       .max(30),
+    /**
+     * 있으면 "캔버스 모드" — 상자를 적힌 좌표에 그대로 그린다(인스타 카드와 같은 그림).
+     * 없으면 지금처럼 자동 배치(가지 모양).
+     */
+    canvas: z
+      .object({
+        /** 없으면 가장 아래 상자에 맞춘다 */
+        height: z.number().int().min(120).max(2000).optional(),
+      })
+      .optional(),
   })
   .superRefine((section, ctx) => {
     // 관계선이 없는 사람을 가리키면 그림에서 선이 허공으로 간다 → 저장 전에 막는다
@@ -57,14 +98,34 @@ const peopleSectionSchema = z
       ...section.leads,
       ...section.groups.flatMap((g) => g.members),
     ].map((p) => p.id);
-    const known = new Set(ids);
+    // 선 끝은 사람 id 또는 묶음 id
+    const known = new Set([
+      ...ids,
+      ...section.groups.flatMap((g) => (g.id ? [g.id] : [])),
+    ]);
 
-    if (known.size !== ids.length) {
+    if (new Set(ids).size !== ids.length) {
       ctx.addIssue({
         code: 'custom',
         path: ['groups'],
         message:
           '인물 id가 겹쳐요. 같은 가이드 안에서 id는 하나씩만 써 주세요.',
+      });
+    }
+
+    // 캔버스 모드: 회색 판(box)도 자기 좌표(at)도 없는 구성원은 그릴 자리가 없다
+    if (section.canvas) {
+      section.groups.forEach((group, gi) => {
+        if (group.box) return;
+        group.members.forEach((m, mi) => {
+          if (!m.at) {
+            ctx.addIssue({
+              code: 'custom',
+              path: ['groups', gi, 'members', mi, 'at'],
+              message: `"${m.name}" 자리가 없어요. 묶음에 box를 주거나 이 사람에 at을 적어 주세요.`,
+            });
+          }
+        });
       });
     }
 
@@ -74,7 +135,7 @@ const peopleSectionSchema = z
           ctx.addIssue({
             code: 'custom',
             path: ['links', i, end],
-            message: `"${link[end]}" 인물이 없어요. leads나 groups에 있는 id를 써 주세요.`,
+            message: `"${link[end]}" 인물이 없어요. leads·groups에 있는 사람 id나 묶음 id를 써 주세요.`,
           });
         }
       }
@@ -133,6 +194,10 @@ export type TimelineSection = z.infer<typeof timelineSectionSchema>;
 export type PlacesSection = z.infer<typeof placesSectionSchema>;
 export type GuidePerson = z.infer<typeof personSchema>;
 export type GuideLinkKind = (typeof GUIDE_LINK_KINDS)[number];
+export type GuideTone = (typeof GUIDE_TONES)[number];
+export type GuideRect = z.infer<typeof rectSchema>;
+export type GuideGroup = PeopleSection['groups'][number];
+export type GuideLink = PeopleSection['links'][number];
 
 /** DB 에서 읽은 값을 검사한다 — 깨졌으면 null(가이드를 숨긴다) */
 export const parseBookGuideSections = (
