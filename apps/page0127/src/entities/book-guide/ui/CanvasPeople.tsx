@@ -17,40 +17,48 @@ import type { CanvasNode } from '../model/canvasLayout';
  * 이름·설명·관계는 전부 HTML 글자라 검색엔진이 읽는다(SVG 는 선 모양만).
  */
 
-/** 색은 디자인 시스템 짝으로만 — 다크 모드·대비는 토큰이 책임진다 */
+/**
+ * 색·크기는 피그마 컴포넌트(1080 카드)와 같은 값 — 사이트는 이 그림을 통째로 줄여 보여 준다.
+ * 색은 디자인 시스템 짝으로만 — 다크 모드·대비는 토큰이 책임진다.
+ */
 const toneClass: Record<GuideTone, { box: string; role: string }> = {
   primary: {
     box: 'bg-primary text-primary-foreground',
     role: 'text-primary-foreground',
   },
-  mint: { box: 'bg-mint text-on-mint', role: 'text-on-mint' },
+  green: {
+    box: 'bg-guide-green text-on-guide-green',
+    role: 'text-on-guide-green opacity-80',
+  },
   outline: {
-    box: 'border-2 border-mint bg-card text-text-strong',
+    box: 'border-4 border-guide-green bg-card text-text-strong',
     role: 'text-text-subtle',
   },
-  plain: {
-    box: 'border border-line-soft bg-card text-text-strong',
+  white: { box: 'bg-card text-text-strong', role: 'text-text-subtle' },
+  line: {
+    box: 'border-2 border-line bg-card text-text-strong',
     role: 'text-text-subtle',
   },
+  sunken: { box: 'bg-sunken text-text-strong', role: 'text-text-subtle' },
 };
 
 /** 관계 종류 → 선 색·모양. 실선=인연, 점선=가족, 파선=일 */
 const lineClass: Record<GuideLinkKind, string> = {
   bond: 'stroke-primary',
   family: 'stroke-chart-7',
-  work: 'stroke-text-subtle',
+  work: 'stroke-text-body',
 };
 const lineDash: Record<GuideLinkKind, string | undefined> = {
   bond: undefined,
   // 0 길이 + round cap = 동그란 점선
-  family: '0 6',
-  work: '6 4',
+  family: '0 10',
+  work: '13 9',
 };
 const badgeClass: Record<GuideLinkKind, string> = {
-  bond: 'border-solid border-primary text-primary',
-  // 글자는 text-body — 보라(chart-7)는 다크 카드 위 글자 대비가 4.5 에 못 미친다. 선·테두리만 보라
-  family: 'border-dotted border-chart-7 text-text-body',
-  work: 'border-dashed border-text-subtle text-text-subtle',
+  bond: 'border-primary text-primary',
+  // 글자는 text-body — 보라(chart-7)는 다크 카드 위 글자 대비가 4.5 에 못 미친다. 테두리만 보라
+  family: 'border-chart-7 text-text-body',
+  work: 'border-text-body text-text-body',
 };
 
 const rectStyle = ({ rect }: Pick<CanvasNode, 'rect'>) => ({
@@ -66,30 +74,35 @@ const PersonBox = ({ node }: { node: CanvasNode }) => {
   return (
     <div
       className={cn(
-        'absolute flex flex-col justify-center overflow-hidden',
+        'absolute flex flex-col justify-center',
         node.isLead
-          ? 'items-center rounded-2xl px-4 text-center'
-          : 'rounded-xl px-3',
+          ? // 주인공 칸만 떠 있는 그림자(피그마 drop shadow 와 같은 값)
+            'items-center rounded-3xl px-5 text-center shadow-[0_16px_40px_rgb(20_41_78/0.14)]'
+          : 'rounded-2xl px-4',
         tone.box
       )}
       style={rectStyle(node)}
     >
       <p
         className={cn(
-          'leading-tight font-bold',
-          node.isLead ? 'text-xl' : 'text-base'
+          // 글자는 줄바꿈 없이(피그마와 같은 줄 수) — 데이터의 \n 만 줄을 바꾼다.
+          // p 에 직접 건다: 전역 p 스타일(pre-wrap)이 부모 값을 덮는다
+          'leading-tight whitespace-pre',
+          node.isLead
+            ? 'text-[36px] font-extrabold tracking-[-0.01em]'
+            : 'text-[26px] font-bold'
         )}
       >
         {person.name}
         {person.alias && (
-          <span className='ml-0.5 text-xs font-medium'>({person.alias})</span>
+          <span className='text-base font-normal'>({person.alias})</span>
         )}
       </p>
       {person.role && (
         <p
           className={cn(
-            'mt-0.5 leading-snug',
-            node.isLead ? 'text-sm' : 'text-xs',
+            'mt-1 leading-snug whitespace-pre',
+            node.isLead ? 'text-[22px] font-medium' : 'text-xl',
             tone.role
           )}
         >
@@ -121,7 +134,7 @@ export const CanvasPeople = ({ section }: { section: PeopleSection }) => {
           className='absolute rounded-2xl bg-sunken'
           style={rectStyle(panel)}
         >
-          <h4 className='px-3 pt-3 text-sm font-bold text-text-strong'>
+          <h4 className='px-6 pt-5 text-[22px] font-bold whitespace-nowrap text-text-body'>
             {panel.name}
           </h4>
         </div>
@@ -133,17 +146,20 @@ export const CanvasPeople = ({ section }: { section: PeopleSection }) => {
         width={layout.width}
         height={layout.height}
       >
-        {layout.lines.map((line) => (
-          <polyline
-            key={line.key}
-            points={line.points.map((p) => p.join(',')).join(' ')}
-            fill='none'
-            strokeWidth={2}
-            strokeLinecap={line.kind === 'family' ? 'round' : 'butt'}
-            strokeDasharray={lineDash[line.kind]}
-            className={lineClass[line.kind]}
-          />
-        ))}
+        {layout.lines.flatMap((line) =>
+          line.lines.map((points, j) => (
+            <polyline
+              key={`${line.key}-${j}`}
+              points={points.map((p) => p.join(',')).join(' ')}
+              fill='none'
+              strokeWidth={3}
+              strokeLinecap={line.kind === 'family' ? 'round' : 'butt'}
+              strokeLinejoin='round'
+              strokeDasharray={lineDash[line.kind]}
+              className={lineClass[line.kind]}
+            />
+          ))
+        )}
       </svg>
 
       {layout.nodes.map((node) => (
@@ -152,11 +168,12 @@ export const CanvasPeople = ({ section }: { section: PeopleSection }) => {
 
       {layout.lines.map(
         (line) =>
-          line.label && (
+          line.label &&
+          line.badge && (
             <span
               key={line.key}
               className={cn(
-                'absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-[1.5px] bg-card px-2.5 py-0.5 text-xs font-bold whitespace-nowrap',
+                'absolute flex h-8 -translate-x-1/2 -translate-y-1/2 items-center rounded-full border-2 bg-card px-3.5 text-[19px] font-bold whitespace-nowrap',
                 badgeClass[line.kind]
               )}
               style={{ left: line.badge[0], top: line.badge[1] }}

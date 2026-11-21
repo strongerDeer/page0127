@@ -5,15 +5,17 @@ import { useEffect, useState } from 'react';
 import { cn } from '@repo/ui';
 import { Maximize2, X } from 'lucide-react';
 
-/** 관계도를 그리는 기준 폭 — PC 본문 폭에 맞춘 값. 좁은 화면은 이 그림을 통째로 줄인다 */
-export const DIAGRAM_WIDTH = 720;
+import { GUIDE_CANVAS_WIDTH } from '../model/bookGuideSchema';
+
+/** 관계도를 그리는 기준 폭 — 인스타 카드(1080)에서 좌우 여백 100 을 뺀 폭. 화면에선 이 그림을 통째로 줄인다 */
+export const DIAGRAM_WIDTH = GUIDE_CANVAS_WIDTH;
 
 /**
- * 컨테이너 폭에 따라 그림을 줄이는 단계 — zoom × 720 이 그 폭을 넘지 않게 고른 값.
+ * 컨테이너 폭에 따라 그림을 줄이는 단계 — zoom × 880 이 그 폭을 넘지 않게 고른 값.
  * (calc(100cqw / 720px) 처럼 길이끼리 나누는 CSS 는 아직 브라우저 지원이 고르지 않아 단계로 둔다)
  */
 const fitZoom =
-  '[zoom:0.4] @min-[346px]:[zoom:0.48] @min-[400px]:[zoom:0.55] @min-[480px]:[zoom:0.66] @min-[560px]:[zoom:0.77] @min-[640px]:[zoom:0.88] @min-[720px]:[zoom:1]';
+  '[zoom:0.36] @min-[352px]:[zoom:0.4] @min-[396px]:[zoom:0.45] @min-[440px]:[zoom:0.5] @min-[528px]:[zoom:0.6] @min-[616px]:[zoom:0.7] @min-[704px]:[zoom:0.8] @min-[792px]:[zoom:0.9] @min-[880px]:[zoom:1]';
 
 /**
  * 관계도 확대 보기 — 모바일·PC 가 같은 그림을 쓰고, 좁으면 줄여 보여 주다가 누르면 원래 크기로 펼친다.
@@ -81,12 +83,12 @@ export const ZoomableDiagram = ({
           <X aria-hidden='true' className='size-5' />
         </button>
       ) : (
-        // 그림 아래 오른쪽 — 줄여 보이는 화면에서만. 720px 이상이면 이미 원래 크기라 숨긴다
+        // 그림 아래 오른쪽 — 줄여 보이는 화면에서만. 880px 이상이면 이미 원래 크기라 숨긴다
         <button
           type='button'
           onClick={() => setExpanded(true)}
           aria-label={`${label} 크게 보기`}
-          className='mt-3 ml-auto flex items-center gap-1 rounded-full bg-card px-3 py-1.5 text-xs font-medium text-text-body ring-1 ring-line @min-[720px]:hidden'
+          className='mt-3 ml-auto flex items-center gap-1 rounded-full bg-card px-3 py-1.5 text-xs font-medium text-text-body ring-1 ring-line @min-[880px]:hidden'
         >
           <Maximize2 aria-hidden='true' className='size-3.5' />
           크게 보기

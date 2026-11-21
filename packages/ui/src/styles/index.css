@@ -62,6 +62,8 @@
   --color-rank-up: var(--rank-up);
   --color-mint: var(--mint);
   --color-on-mint: var(--on-mint);
+  --color-guide-green: var(--guide-green);
+  --color-on-guide-green: var(--on-guide-green);
 
   /* shadcn 색 매핑 */
   --color-primary: var(--primary);

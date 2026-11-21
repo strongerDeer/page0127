@@ -15,10 +15,11 @@ import { z } from 'zod';
 const text = (max: number) => z.string().trim().min(1).max(max);
 
 /**
- * 자리 지정 — 관계도 캔버스(가로 720) 위 좌표. 단위는 px.
+ * 자리 지정 — 관계도 캔버스(가로 880) 위 좌표. 단위는 px.
+ * 880 = 인스타 카드(1080) 좌우 여백 100 을 뺀 폭. 피그마 좌표에서 (100, 맨 위) 만 빼면 그대로 옮겨진다.
  * 편집기(어드민)에서 끌어 옮기면 이 값이 바뀐다. 없으면 자동으로 자리를 잡는다.
  */
-export const GUIDE_CANVAS_WIDTH = 720;
+export const GUIDE_CANVAS_WIDTH = 880;
 const coord = z.number().int().min(0).max(2000);
 const rectSchema = z.object({
   x: coord.max(GUIDE_CANVAS_WIDTH),
@@ -29,10 +30,18 @@ const rectSchema = z.object({
 
 /**
  * 상자 색 — 임의 색(hex)이 아니라 디자인 시스템 짝 중에서 고른다.
- * 그래야 다크 모드·글자 대비가 자동으로 맞는다.
- * primary=파랑 채움, mint=민트 채움, outline=민트 테두리, plain=흰 카드
+ * 그래야 다크 모드·글자 대비가 자동으로 맞는다. (피그마 컴포넌트와 1:1)
+ * primary=파랑 채움, green=초록 채움, outline=초록 테두리,
+ * white=흰 카드(판 안), line=흰 카드+테두리(판 밖), sunken=회색 카드
  */
-export const GUIDE_TONES = ['primary', 'mint', 'outline', 'plain'] as const;
+export const GUIDE_TONES = [
+  'primary',
+  'green',
+  'outline',
+  'white',
+  'line',
+  'sunken',
+] as const;
 
 const personSchema = z.object({
   /** 관계선이 가리키는 키 — 같은 가이드 안에서만 유일하면 된다 */
@@ -41,6 +50,7 @@ const personSchema = z.object({
   /** 이름 옆에 작게 붙는 별명 — "강영두(깨죽이)" 의 깨죽이 */
   alias: text(20).optional(),
   /** 없으면 이름만 보인다 — 원작에 설명이 없는 인물을 지어내지 않는다 */
+  /** 줄바꿈(\n)은 그대로 보여 준다 */
   role: text(60).optional(),
   tone: z.enum(GUIDE_TONES).optional(),
   at: rectSchema.optional(),
@@ -78,6 +88,24 @@ const peopleSectionSchema = z
           /** 없으면 선만 긋는다 */
           label: text(20).optional(),
           kind: z.enum(GUIDE_LINK_KINDS),
+          /**
+           * 피그마에서 가져온 선 모양 그대로(꺾은선 여러 개 + 배지 자리).
+           * 없으면 양 끝 상자를 보고 자동으로 긋는다. 편집기에서 상자를 옮기면 지워진다(자동으로 돌아감).
+           * lines 가 빈 배열이면 그리지 않는다 — 갈래선(산아→스미·오태양)처럼 다른 관계가 대신 그린 경우.
+           */
+          route: z
+            .object({
+              lines: z
+                .array(
+                  z
+                    .array(z.tuple([coord, coord]))
+                    .min(2)
+                    .max(40)
+                )
+                .max(8),
+              badge: z.tuple([coord, coord]).optional(),
+            })
+            .optional(),
         })
       )
       .max(30),
@@ -85,6 +113,8 @@ const peopleSectionSchema = z
      * 있으면 "캔버스 모드" — 상자를 적힌 좌표에 그대로 그린다(인스타 카드와 같은 그림).
      * 없으면 지금처럼 자동 배치(가지 모양).
      */
+    /** 범례 이름 바꾸기 — 예: 기록 속 사람들의 실선은 "인연" 대신 "기록" */
+    legend: z.partialRecord(z.enum(GUIDE_LINK_KINDS), text(10)).optional(),
     canvas: z
       .object({
         /** 없으면 가장 아래 상자에 맞춘다 */

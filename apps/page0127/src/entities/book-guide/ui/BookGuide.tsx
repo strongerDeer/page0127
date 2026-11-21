@@ -61,8 +61,13 @@ const PersonName = ({ person, onTint = false }: PersonNameProps) => (
 );
 
 /** 선 한 줄의 모양 — 관계 종류마다 실선·점선·파선 */
+const lineColor: Record<GuideLinkKind, string> = {
+  bond: 'border-primary',
+  family: 'border-chart-7',
+  work: 'border-text-body',
+};
 const lineStyle = (kind: GuideLinkKind) =>
-  cn('border-primary', linkBorder[kind]);
+  cn(lineColor[kind], linkBorder[kind]);
 
 const LinkBadge = ({
   link,
@@ -199,7 +204,7 @@ const LinkLegend = ({ section }: { section: PeopleSection }) => {
                 aria-hidden='true'
                 className={cn('inline-block w-5 border-t-2', lineStyle(kind))}
               />
-              {linkKindLabel[kind]}
+              {section.legend?.[kind] ?? linkKindLabel[kind]}
             </span>
           ))}
         </p>

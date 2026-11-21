@@ -10,6 +10,7 @@ import { BookGuide, bookGuideSectionsSchema } from '@/entities/book-guide';
 
 import { saveBookGuide } from '../api/guideActions';
 import { toCanvas } from '../model/editPeopleSection';
+import { figmaSvgToPeopleSection } from '../model/figmaSvg';
 import { CanvasEditor } from './CanvasEditor';
 
 import type { BookGuideSection, PeopleSection } from '@/entities/book-guide';
@@ -70,6 +71,45 @@ export const GuideEditor = ({
     setActive((i) => Math.min(i, parsed.data.length - 1));
     setJson(null);
     setJsonError(null);
+  };
+
+  /**
+   * 피그마 SVG 가져오기 — 파일마다 인물관계도 하나. 같은 제목이 있으면 바꾸고, 없으면 앞쪽에 더한다.
+   * 파일은 브라우저 안에서만 읽는다(서버로 올리지 않음) — 저장은 평소처럼 저장 버튼으로.
+   */
+  const importSvgs = async (files: FileList | null) => {
+    if (!files?.length) return;
+    let next = sections;
+    for (const file of Array.from(files)) {
+      const result = figmaSvgToPeopleSection(await file.text());
+      if (!result.ok) {
+        toast.error(`${file.name}: ${result.message}`);
+        continue;
+      }
+      result.warnings.forEach((w) => toast.warning(`${file.name}: ${w}`));
+      const at = next.findIndex(
+        (s) => s.type === 'people' && s.title === result.section.title
+      );
+      const peopleCount = next.filter((s) => s.type === 'people').length;
+      next =
+        at >= 0
+          ? next.map((s, i) => (i === at ? result.section : s))
+          : [
+              ...next.slice(0, peopleCount),
+              result.section,
+              ...next.slice(peopleCount),
+            ];
+    }
+    const parsed = bookGuideSectionsSchema.safeParse(next);
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      toast.error(
+        `가져온 데이터가 맞지 않아요: ${issue.path.join('.')} — ${issue.message}`
+      );
+      return;
+    }
+    setSections(parsed.data);
+    toast.success('피그마 관계도를 가져왔어요. 확인 후 저장해 주세요.');
   };
 
   const save = (nextStatus: 'draft' | 'published') =>
@@ -147,6 +187,19 @@ export const GuideEditor = ({
             {sectionLabel[s.type]} · {s.title}
           </button>
         ))}
+        <label className='cursor-pointer rounded-full border border-dashed border-line px-3 py-1 text-sm text-text-subtle hover:text-text-strong'>
+          피그마 SVG 가져오기
+          <input
+            type='file'
+            accept='.svg,image/svg+xml'
+            multiple
+            className='sr-only'
+            onChange={(e) => {
+              void importSvgs(e.target.files);
+              e.target.value = '';
+            }}
+          />
+        </label>
         <button
           type='button'
           aria-pressed={json !== null}

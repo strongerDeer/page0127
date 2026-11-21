@@ -21,12 +21,14 @@ import type {
  *   - 묶음 구성원: 그 묶음 회색 판(box) 안에 격자(cols 열)로
  */
 
-export const LEAD_HEIGHT = 96;
-export const MEMBER_HEIGHT = 56;
-export const PANEL_PAD = 12;
-/** 판 위쪽 묶음 이름 줄 높이 */
-export const PANEL_HEAD = 40;
-export const CELL_GAP = 8;
+// 크기는 피그마 컴포넌트와 같은 값(1080 카드 기준 px)
+export const LEAD_WIDTH = 300;
+export const LEAD_HEIGHT = 136;
+export const MEMBER_HEIGHT = 100;
+export const PANEL_PAD = 14;
+/** 판 위쪽 묶음 이름 줄 높이 — 첫 카드가 판 위에서 53px 아래 */
+export const PANEL_HEAD = 53;
+export const CELL_GAP = 12;
 
 type Rect = Required<GuideRect>;
 
@@ -43,10 +45,10 @@ export type CanvasLine = {
   key: string;
   kind: GuideLinkKind;
   label?: string;
-  /** 꺾은선 꼭짓점 — SVG polyline points 로 바로 쓴다 */
-  points: [number, number][];
-  /** 관계 배지 가운데 자리 */
-  badge: [number, number];
+  /** 꺾은선들 — 각각 SVG polyline points 로 바로 쓴다 */
+  lines: [number, number][][];
+  /** 관계 배지 가운데 자리 — 없으면 배지를 그리지 않는다 */
+  badge?: [number, number];
 };
 
 export type CanvasLayout = {
@@ -69,7 +71,7 @@ const clamp = (v: number, lo: number, hi: number) =>
 export const routeLine = (
   a: Rect,
   b: Rect
-): Pick<CanvasLine, 'points' | 'badge'> => {
+): { points: [number, number][]; badge: [number, number] } => {
   const acx = a.x + a.w / 2;
   const acy = a.y + a.h / 2;
   const bcy = b.y + b.h / 2;
@@ -130,7 +132,7 @@ export const buildCanvasLayout = (section: PeopleSection): CanvasLayout => {
 
   // 1. 중심 인물 — 좌표 없으면 맨 위 왼쪽/오른쪽(하나면 가운데)
   section.leads.forEach((lead, i) => {
-    const w = 260;
+    const w = LEAD_WIDTH;
     const fallbackX =
       section.leads.length === 1 ? (width - w) / 2 : i === 0 ? 0 : width - w;
     const rect = lead.at
@@ -140,7 +142,7 @@ export const buildCanvasLayout = (section: PeopleSection): CanvasLayout => {
     nodes.push({
       person: lead,
       rect,
-      tone: lead.tone ?? (i === 0 ? 'primary' : 'mint'),
+      tone: lead.tone ?? (i === 0 ? 'primary' : 'green'),
       isLead: true,
     });
   });
@@ -175,22 +177,37 @@ export const buildCanvasLayout = (section: PeopleSection): CanvasLayout => {
       const rect = rects.get(m.id);
       // 판도 좌표도 없는 구성원은 그릴 자리가 없다 — 스키마가 저장 전에 막는다
       if (!rect) return;
-      nodes.push({ person: m, rect, tone: m.tone ?? 'plain', isLead: false });
+      // 판 안은 흰 카드, 판 밖은 테두리 있는 흰 카드(피그마 카드와 같은 약속)
+      nodes.push({
+        person: m,
+        rect,
+        tone: m.tone ?? (group.box && !m.at ? 'white' : 'line'),
+        isLead: false,
+      });
     });
   });
 
   // 3. 선 — 양 끝 상자를 알면 경로가 정해진다
   const lines: CanvasLine[] = section.links.flatMap((link, i) => {
+    const key = `${link.from}-${link.to}-${i}`;
+    // 피그마에서 가져온 모양이 있으면 그대로
+    if (link.route) {
+      return [
+        {
+          key,
+          kind: link.kind,
+          label: link.label,
+          lines: link.route.lines,
+          badge: link.route.badge,
+        },
+      ];
+    }
     const a = rects.get(link.from);
     const b = rects.get(link.to);
     if (!a || !b) return [];
+    const { points, badge } = routeLine(a, b);
     return [
-      {
-        key: `${link.from}-${link.to}-${i}`,
-        kind: link.kind,
-        label: link.label,
-        ...routeLine(a, b),
-      },
+      { key, kind: link.kind, label: link.label, lines: [points], badge },
     ];
   });
 
@@ -198,7 +215,8 @@ export const buildCanvasLayout = (section: PeopleSection): CanvasLayout => {
   const bottom = Math.max(
     0,
     ...[...rects.values()].map((r) => r.y + r.h),
-    ...panels.map((p) => p.rect.y + p.rect.h)
+    ...panels.map((p) => p.rect.y + p.rect.h),
+    ...lines.flatMap((l) => l.lines.flat().map(([, y]) => y))
   );
   const height = section.canvas?.height ?? bottom + 8;
 

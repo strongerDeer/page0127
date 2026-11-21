@@ -30,8 +30,8 @@ const section: PeopleSection = {
 
 describe('편집기 데이터 바꾸기', () => {
   it('격자(8px)에 맞추고 캔버스 밖으로 못 나간다', () => {
-    expect(fitRect({ x: 703, y: -5, w: 101, h: 50 })).toEqual({
-      x: 616,
+    expect(fitRect({ x: 870, y: -5, w: 101, h: 50 })).toEqual({
+      x: 776,
       y: 0,
       w: 104,
       h: 48,

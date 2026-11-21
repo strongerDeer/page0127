@@ -38,12 +38,21 @@ const allPeople = (s: PeopleSection): GuidePerson[] => [
 ];
 
 /** 사람 한 명의 필드를 바꾼다(이름·별명·설명·색·자리) */
+/**
+ * 피그마에서 가져온 선 모양(route)은 상자 자리를 전제로 한다.
+ * 자리를 바꾸면 그 모양이 어긋나므로, 모든 선을 자동 긋기로 돌린다.
+ */
+const dropRoutes = (s: PeopleSection) => {
+  for (const link of s.links) delete link.route;
+};
+
 export const updatePerson = (
   section: PeopleSection,
   id: string,
   patch: Partial<GuidePerson>
 ): PeopleSection => {
   const next = structuredClone(section);
+  if ('at' in patch) dropRoutes(next);
   const person = allPeople(next).find((p) => p.id === id);
   if (!person) return section;
   Object.assign(person, patch);
@@ -73,6 +82,7 @@ export const moveGroupBox = (
   const group = next.groups[groupIndex];
   if (!group) return section;
   const box = fitRect(rect);
+  dropRoutes(next);
   const prev = group.box;
   if (prev) {
     const dx = box.x - prev.x;
@@ -107,6 +117,7 @@ export const toCanvas = (section: PeopleSection): PeopleSection => {
   const next = structuredClone(section);
   next.canvas = {};
   const colW = (GUIDE_CANVAS_WIDTH - 2 * 16) / 3;
+  dropRoutes(next);
   next.groups.forEach((g, i) => {
     if (g.box || g.members.every((m) => m.at)) return;
     g.box = {

@@ -45,16 +45,20 @@ type Drag = {
 
 const toneLabel: Record<GuideTone, string> = {
   primary: '파랑',
-  mint: '민트',
-  outline: '테두리',
-  plain: '흰 카드',
+  green: '초록',
+  outline: '초록 테두리',
+  white: '흰 카드',
+  line: '테두리 카드',
+  sunken: '회색 카드',
 };
 
 const toneSwatch: Record<GuideTone, string> = {
   primary: 'bg-primary',
-  mint: 'bg-mint',
-  outline: 'border-2 border-mint bg-card',
-  plain: 'border border-line bg-card',
+  green: 'bg-guide-green',
+  outline: 'border-2 border-guide-green bg-card',
+  white: 'border border-line-soft bg-card',
+  line: 'border-2 border-line bg-card',
+  sunken: 'bg-sunken',
 };
 
 const sameTarget = (a: Target | null, b: Target) =>

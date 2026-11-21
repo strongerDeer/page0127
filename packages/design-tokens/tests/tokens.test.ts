@@ -33,6 +33,7 @@ const PRIMITIVE_PREFIXES = [
   '--amber-',
   '--slate-',
   '--teal-',
+  '--green-',
   '--violet-',
 ];
 const isPrimitive = (name: string) => PRIMITIVE_PREFIXES.some((p) => name.startsWith(p));

@@ -69,6 +69,7 @@
     "500": { "$value": "#5b6b8c", "$type": "color" }
   },
   "teal": { "500": { "$value": "#14b8a6", "$type": "color" } },
+  "green": { "500": { "$value": "#00c96b", "$type": "color", "$description": "읽기 가이드 관계도 주인공 칸의 초록 면 (인스타 카드와 같은 색). navy/900 글자 6.7:1" } },
   "violet": {
     "500": { "$value": "#7a5cf0", "$type": "color" },
     "600": {

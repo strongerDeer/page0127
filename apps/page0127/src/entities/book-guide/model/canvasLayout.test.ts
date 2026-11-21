@@ -44,41 +44,82 @@ describe('routeLine — 두 상자를 잇는 선 경로', () => {
 });
 
 describe('buildCanvasLayout', () => {
-  const sections = bookGuideSectionsSchema.parse(daeonsil);
-  const first = sections[0] as PeopleSection;
-  const layout = buildCanvasLayout(first);
+  const base: PeopleSection = {
+    type: 'people',
+    title: '테스트',
+    leads: [
+      { id: 'a', name: '가', at: { x: 40, y: 0, w: 300, h: 136 } },
+      { id: 'b', name: '나' },
+    ],
+    groups: [
+      {
+        id: 'office',
+        name: '사무소',
+        box: { x: 0, y: 200, w: 200 },
+        members: [
+          { id: 'c', name: '다' },
+          { id: 'd', name: '라' },
+        ],
+      },
+    ],
+    links: [{ from: 'a', to: 'office', label: '동료', kind: 'work' }],
+    canvas: {},
+  };
+  const layout = buildCanvasLayout(base);
 
-  it('좌표가 적힌 상자는 그 자리에', () => {
-    const youngdu = layout.nodes.find((n) => n.person.id === 'youngdu');
-    expect(youngdu?.rect).toEqual({ x: 35, y: 0, w: 262, h: 112 });
-    expect(youngdu?.tone).toBe('primary');
+  it('좌표가 적힌 상자는 그 자리에, 첫 주인공은 파랑·둘째는 초록', () => {
+    const a = layout.nodes.find((n) => n.person.id === 'a');
+    expect(a?.rect).toEqual({ x: 40, y: 0, w: 300, h: 136 });
+    expect(a?.tone).toBe('primary');
+    expect(layout.nodes.find((n) => n.person.id === 'b')?.tone).toBe('green');
   });
 
-  it('좌표 없는 구성원은 회색 판 안에 격자로 채운다', () => {
-    const yeonhee = layout.nodes.find((n) => n.person.id === 'yeonhee');
-    const somok = layout.nodes.find((n) => n.person.id === 'somok');
-    expect(yeonhee?.rect.x).toBe(PANEL_PAD);
-    expect(yeonhee?.rect.y).toBe(190 + PANEL_HEAD);
-    expect(somok!.rect.y - yeonhee!.rect.y).toBe(MEMBER_HEIGHT + 8);
+  it('좌표 없는 구성원은 회색 판 안에 격자로(흰 카드)', () => {
+    const c = layout.nodes.find((n) => n.person.id === 'c')!;
+    const d = layout.nodes.find((n) => n.person.id === 'd')!;
+    expect(c.rect.x).toBe(PANEL_PAD);
+    expect(c.rect.y).toBe(200 + PANEL_HEAD);
+    expect(d.rect.y - c.rect.y).toBe(MEMBER_HEIGHT + 12);
+    expect(c.tone).toBe('white');
   });
 
   it('선 끝이 묶음 id 면 회색 판을 가리킨다', () => {
     const line = layout.lines.find((l) => l.label === '동료');
-    // 강영두 아래(112) → 사무소 판 위(190)
-    expect(line?.points.map(([, y]) => y)).toEqual([112, 190]);
+    // 주인공 아래(136) → 판 위(200)
+    expect(line?.lines[0].map(([, y]) => y)).toEqual([136, 200]);
   });
 
-  it('높이를 안 적으면 가장 아래 상자에 맞춘다', () => {
-    expect(layout.height).toBeGreaterThan(400);
+  it('피그마에서 가져온 선 모양(route)이 있으면 그대로 쓴다', () => {
+    const withRoute = buildCanvasLayout({
+      ...base,
+      links: [
+        {
+          ...base.links[0],
+          route: {
+            lines: [
+              [
+                [10, 10],
+                [10, 50],
+                [90, 50],
+              ],
+            ],
+            badge: [50, 50],
+          },
+        },
+      ],
+    });
+    expect(withRoute.lines[0].lines[0]).toHaveLength(3);
+    expect(withRoute.lines[0].badge).toEqual([50, 50]);
   });
 });
 
 describe('캔버스 모드 검사', () => {
   it('판도 좌표도 없는 구성원은 저장 전에 막는다', () => {
     const broken = structuredClone(daeonsil) as unknown as {
-      groups: { box?: unknown }[];
+      groups: { box?: unknown; members: { at?: unknown }[] }[];
     }[];
-    delete broken[0].groups[1].box;
+    delete broken[0].groups[0].box;
+    delete broken[0].groups[0].members[0].at;
     const result = bookGuideSectionsSchema.safeParse(broken);
     expect(result.success).toBe(false);
     expect(result.error?.issues[0].message).toContain('자리가 없어요');
