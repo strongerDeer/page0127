@@ -616,4 +616,42 @@ console.log(`✓ 메모 ${memoRows.length}개 · 문장 ${quoteRows.length}개`)
   console.log(`✓ 취향 분석 (${TASTE.personality_type}, 근거 ${evidence.length}권)`);
 }
 
+/**
+ * 6) 제작자 팔로우 — 라운지 "새로운 기록"이 비지 않도록 체험 계정이 제작자를 팔로우한다.
+ *    체험 계정이 한 팔로우는 남에게 안 보이고 팔로워 수에도 안 잡힌다(20261121000200).
+ *    service_role 로 넣으므로 팔로우 알림은 가지 않는다(알림은 /api/follows 가 만든다).
+ *    DEMO_FOLLOW_USERNAMES=a,b 로 바꿀 수 있다. 없는 아이디는 건너뛴다.
+ */
+{
+  const usernames = (env.DEMO_FOLLOW_USERNAMES ?? "stronger_khj")
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean);
+  const { error: clearError } = await supabase
+    .from("follows")
+    .delete()
+    .eq("follower_id", userId);
+  if (clearError) fail("팔로우 비우기", clearError);
+
+  const { data: targets, error: targetError } = await supabase
+    .from("profiles")
+    .select("id, username")
+    .in("username", usernames);
+  if (targetError) fail("팔로우 대상 조회", targetError);
+  for (const name of usernames) {
+    if (!targets?.some((t) => t.username === name)) {
+      console.warn(`  · 건너뜀: @${name} 계정이 없어요`);
+    }
+  }
+  if (targets?.length) {
+    const { error } = await supabase.from("follows").insert(
+      targets.map((t) => ({ follower_id: userId, following_id: t.id })),
+    );
+    if (error) fail("팔로우 넣기", error);
+  }
+  console.log(
+    `✓ 팔로우 ${targets?.length ?? 0}명 (${(targets ?? []).map((t) => "@" + t.username).join(", ")})`,
+  );
+}
+
 console.log("\n끝났어요. /demo 로 들어가 「체험 계정으로 둘러보기」로 확인해 보세요.");

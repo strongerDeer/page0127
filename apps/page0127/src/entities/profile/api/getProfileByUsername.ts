@@ -1,6 +1,8 @@
 import { cache } from 'react';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
+import { isDemoUser } from '@/shared/lib/demo/demoAccount';
 
 import { PROFILE_PUBLIC_COLUMNS } from './profileColumns';
 
@@ -30,6 +32,13 @@ export const getProfileByUsername = cache(
 
     if (error) {
       console.error('프로필 조회 실패:', error.message);
+      return null;
+    }
+
+    // 체험 계정의 서재는 체험 중인 사람에게만 보인다. 다른 사람·로그아웃한 사람에게는
+    // "없는 서재"(404)다 — 책은 RLS 로 이미 0권이라, 그대로 두면 빈 서재가 열려 검색에도
+    // 걸릴 수 있다. 로그인 확인은 체험 계정일 때만 한다(다른 서재는 추가 비용 없음).
+    if (data?.is_demo && !isDemoUser(await getCurrentUser())) {
       return null;
     }
 
