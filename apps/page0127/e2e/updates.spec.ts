@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 /**
  * 홈(소개를 합친 첫 화면)과 공지·업데이트 페이지 — 2026-10-25 홈 개편.
- * 소개는 홈이 맡고, 예전 /about 은 공지·업데이트(/updates)로 옮겼다.
+ * 연출은 홈이, 평평한 설명은 /about 이, 배포 이력은 /updates 가 맡는다.
  */
 
 test('홈 첫 화면 제목이 JS 를 기다리지 않고 보이고, h1 은 하나다', async ({
@@ -66,7 +66,15 @@ test('푸터에서 공지·업데이트로 갈 수 있다', async ({ page }) => 
   );
 });
 
-test('예전 소개 주소(/about)는 공지·업데이트로 옮겨 간다', async ({ page }) => {
+test('서비스 소개(/about)는 정의 문장과 자주 묻는 질문을 보여 준다', async ({
+  page,
+}) => {
   await page.goto('/about');
-  await expect(page).toHaveURL(/\/updates$/);
+  await expect(page).toHaveURL(/\/about$/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'page0127. 소개'
+  );
+  await expect(
+    page.getByRole('heading', { name: '자주 묻는 질문' })
+  ).toBeVisible();
 });

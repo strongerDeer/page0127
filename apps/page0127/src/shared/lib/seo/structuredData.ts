@@ -55,6 +55,57 @@ export const buildOrganizationJsonLd = ({
   sameAs: [...sameAs],
 });
 
+type WebApplicationJsonLdInput = {
+  name: string;
+  url: string;
+  description: string;
+};
+
+/**
+ * "이 사이트는 어떤 종류의 서비스인가" — 웹에서 바로 쓰는 앱(WebApplication).
+ *
+ * - WebSite가 "주소"라면 WebApplication은 "제품"이다. AI 검색이 "독서 기록 앱 추천" 같은
+ *   질문에 답할 때 분야·가격·플랫폼을 사실로 집어 갈 수 있게 한다.
+ * - offers.price '0' = 무료. 숫자가 아니라 문자열로 두는 것이 schema.org 예시 방식이다.
+ * - 별점(aggregateRating)은 넣지 않는다. 실제 리뷰 없이 넣으면 구글 정책 위반이다.
+ */
+export const buildWebApplicationJsonLd = ({
+  name,
+  url,
+  description,
+}: WebApplicationJsonLdInput) => ({
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name,
+  url,
+  description,
+  applicationCategory: 'LifestyleApplication',
+  operatingSystem: 'Web',
+  browserRequirements: 'Requires JavaScript',
+  inLanguage: 'ko-KR',
+  isAccessibleForFree: true,
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'KRW' },
+});
+
+type FaqItem = { question: string; answer: string };
+
+/**
+ * 자주 묻는 질문(FAQPage).
+ *
+ * - 질문·답이 짝지어진 데이터라 AI가 "무료인가요?" 같은 질문에 그대로 인용하기 좋다.
+ * - ⚠️ 화면에 실제로 보이는 질문·답과 같아야 한다(숨긴 FAQ는 정책 위반). 그래서
+ *   화면과 이 함수가 같은 배열(serviceIntro.ts)을 받는다.
+ */
+export const buildFaqPageJsonLd = (items: readonly FaqItem[]) => ({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: items.map(({ question, answer }) => ({
+    '@type': 'Question',
+    name: question,
+    acceptedAnswer: { '@type': 'Answer', text: answer },
+  })),
+});
+
 // <script> 안에 넣을 문자열로 직렬화한다.
 // `<`를 유니코드 이스케이프로 바꾸는 이유: 값에 `</script>`가 섞이면 태그가 거기서 닫힌다.
 // JSON 파서는 <를 다시 `<`로 읽으므로 데이터 자체는 그대로다. (Next.js 공식 가이드 방식)

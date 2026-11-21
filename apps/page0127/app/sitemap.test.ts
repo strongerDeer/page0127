@@ -16,6 +16,7 @@ describe('sitemap', () => {
     expect(paths).toEqual([
       '/',
       '/books/all',
+      '/about',
       '/updates',
       '/contact',
       '/privacy',
