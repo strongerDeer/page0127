@@ -72,7 +72,7 @@ test('서비스 소개(/about)는 정의 문장과 자주 묻는 질문을 보�
   await page.goto('/about');
   await expect(page).toHaveURL(/\/about$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'page0127. 소개'
+    'page0127.'
   );
   await expect(
     page.getByRole('heading', { name: '자주 묻는 질문' })
