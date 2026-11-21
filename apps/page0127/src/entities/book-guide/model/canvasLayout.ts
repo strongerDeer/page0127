@@ -27,6 +27,26 @@ import type {
 export const LEAD_WIDTH = 300;
 export const LEAD_HEIGHT = 136;
 export const MEMBER_HEIGHT = 100;
+
+/**
+ * 구성원 카드 글자 치수 — CanvasPeople 의 클래스와 같은 값(바꾸면 둘 다).
+ * 여백은 글자 기준으로 늘 같다: 위아래 18, 이름 줄 32, 설명 줄마다 28(+이름과 4).
+ * 설명 한 줄이면 18+32+4+28+18 = 100 — 피그마 카드 높이와 딱 맞는다.
+ */
+export const MEMBER_PAD_Y = 18;
+export const MEMBER_NAME_LINE = 32;
+export const MEMBER_ROLE_GAP = 4;
+export const MEMBER_ROLE_LINE = 28;
+
+/** 글자가 차지하는 높이 — 카드는 이보다 작아지지 않는다(글자가 넘쳐 여백이 줄지 않게) */
+export const memberContentHeight = (person: GuidePerson) => {
+  const lines = person.role ? person.role.split('\n').length : 0;
+  return (
+    MEMBER_PAD_Y * 2 +
+    MEMBER_NAME_LINE +
+    (lines ? MEMBER_ROLE_GAP + lines * MEMBER_ROLE_LINE : 0)
+  );
+};
 export const PANEL_PAD = 14;
 /** 판 위쪽 묶음 이름 줄 높이 — 첫 카드가 판 위에서 53px 아래 */
 export const PANEL_HEAD = 53;
@@ -214,8 +234,10 @@ export const buildCanvasLayout = (section: PeopleSection): CanvasLayout => {
     const cols = group.cols ?? 1;
     if (group.box) {
       const rows = Math.ceil(free.length / cols);
+      // 격자 한 칸 높이 = 기본 100, 설명이 길면 가장 긴 사람에 맞춘다(칸 높이가 고르게)
+      const cellH = Math.max(MEMBER_HEIGHT, ...free.map(memberContentHeight));
       const autoH =
-        PANEL_HEAD + rows * (MEMBER_HEIGHT + CELL_GAP) - CELL_GAP + PANEL_PAD;
+        PANEL_HEAD + rows * (cellH + CELL_GAP) - CELL_GAP + PANEL_PAD;
       const box = withHeight(group.box, Math.max(autoH, PANEL_HEAD + 8));
       panels.push({
         key: group.id ?? `g${gi}`,
@@ -233,14 +255,17 @@ export const buildCanvasLayout = (section: PeopleSection): CanvasLayout => {
         const row = Math.floor(k / cols);
         rects.set(m.id, {
           x: Math.round(box.x + PANEL_PAD + col * (cellW + CELL_GAP)),
-          y: box.y + PANEL_HEAD + row * (MEMBER_HEIGHT + CELL_GAP),
+          y: box.y + PANEL_HEAD + row * (cellH + CELL_GAP),
           w: Math.round(cellW),
-          h: MEMBER_HEIGHT,
+          h: cellH,
         });
       });
     }
     group.members.forEach((m) => {
-      if (m.at) rects.set(m.id, withHeight(m.at, MEMBER_HEIGHT));
+      if (m.at) {
+        const r = withHeight(m.at, MEMBER_HEIGHT);
+        rects.set(m.id, { ...r, h: Math.max(r.h, memberContentHeight(m)) });
+      }
       const rect = rects.get(m.id);
       // 판도 좌표도 없는 구성원은 그릴 자리가 없다 — 스키마가 저장 전에 막는다
       if (!rect) return;

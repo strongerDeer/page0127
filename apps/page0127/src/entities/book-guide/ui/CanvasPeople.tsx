@@ -106,11 +106,15 @@ const PersonBox = ({
   return (
     <div
       className={cn(
-        'absolute flex flex-col justify-center',
+        'absolute flex flex-col',
+        node.isLead && 'justify-center',
         node.isLead
-          ? // 주인공 칸만 떠 있는 그림자(피그마 drop shadow 와 같은 값)
+          ? // 주인공 칸만 떠 있는 그림자(피그마 drop shadow 와 같은 값). 글자는 가운데
             'items-center rounded-3xl px-5 text-center shadow-[0_16px_40px_rgb(20_41_78/0.14)]'
-          : 'rounded-2xl px-4',
+          : // 구성원: 글자 기준 여백을 모든 카드에 똑같이 — 위 18·왼쪽 16 에서 시작(위쪽 맞춤).
+            // 가운데 맞춤이면 설명 줄 수·카드 높이에 따라 글자 위치가 카드마다 달라진다.
+            // 치수는 canvasLayout 의 MEMBER_* 와 같은 값
+            'justify-start rounded-2xl px-4 py-[18px]',
         tone.box
       )}
       style={{
@@ -123,10 +127,10 @@ const PersonBox = ({
         className={cn(
           // 글자는 줄바꿈 없이(피그마와 같은 줄 수) — 데이터의 \n 만 줄을 바꾼다.
           // p 에 직접 건다: 전역 p 스타일(pre-wrap)이 부모 값을 덮는다
-          'leading-tight whitespace-pre',
+          'whitespace-pre',
           node.isLead
-            ? 'text-[36px] font-extrabold tracking-[-0.01em]'
-            : 'text-[26px] font-bold'
+            ? 'text-[36px] leading-tight font-extrabold tracking-[-0.01em]'
+            : 'text-[26px] leading-8 font-bold'
         )}
       >
         {person.name}
@@ -137,8 +141,10 @@ const PersonBox = ({
       {person.role && (
         <p
           className={cn(
-            'mt-1 leading-snug whitespace-pre',
-            node.isLead ? 'text-[22px] font-medium' : 'text-xl',
+            'mt-1 whitespace-pre',
+            node.isLead
+              ? 'text-[22px] leading-snug font-medium'
+              : 'text-xl leading-7',
             tone.role
           )}
         >
@@ -200,7 +206,8 @@ export const CanvasPeople = ({ section }: { section: PeopleSection }) => {
             ...borderStyle(panel.border),
           }}
         >
-          <h4 className='px-6 pt-5 text-[22px] font-bold whitespace-nowrap text-text-body'>
+          {/* 왼쪽 30 = 판 안쪽 여백(14) + 카드 글자 여백(16) — 묶음 이름과 카드 글자가 한 줄에 선다 */}
+          <h4 className='px-[30px] pt-5 text-[22px] font-bold whitespace-nowrap text-text-body'>
             {panel.name}
           </h4>
         </div>
