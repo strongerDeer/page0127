@@ -54,6 +54,50 @@ describe('proxy에서 다른 응답을 반환할 때의 세션', () => {
   });
 });
 
+describe('proxy 체험 계정 읽기 전용', () => {
+  const demoUser = { id: 'demo', app_metadata: { demo: true } };
+
+  it('체험 계정의 /api 쓰기는 라우트에 닿기 전에 403 으로 돌려보낸다', async () => {
+    vi.stubEnv('HERO_AB', 'off');
+    mocks.updateSession.mockResolvedValue({
+      response: NextResponse.next(),
+      user: demoUser,
+    });
+    const result = await proxy(
+      new NextRequest('https://page0127.com/api/books', { method: 'POST' })
+    );
+    expect(result.status).toBe(403);
+    expect(await result.json()).toMatchObject({ code: 'DEMO_READ_ONLY' });
+    expect(mocks.checkApiRateLimit).not.toHaveBeenCalled();
+  });
+
+  it('체험 계정의 읽기 요청은 그대로 통과한다', async () => {
+    vi.stubEnv('HERO_AB', 'off');
+    mocks.updateSession.mockResolvedValue({
+      response: NextResponse.next(),
+      user: demoUser,
+    });
+    mocks.checkApiRateLimit.mockResolvedValue(null);
+    const result = await proxy(
+      new NextRequest('https://page0127.com/api/books')
+    );
+    expect(result.status).toBe(200);
+  });
+
+  it('일반 사용자의 쓰기는 막지 않는다', async () => {
+    vi.stubEnv('HERO_AB', 'off');
+    mocks.updateSession.mockResolvedValue({
+      response: NextResponse.next(),
+      user: { id: 'reader', app_metadata: {} },
+    });
+    mocks.checkApiRateLimit.mockResolvedValue(null);
+    const result = await proxy(
+      new NextRequest('https://page0127.com/api/books', { method: 'POST' })
+    );
+    expect(result.status).toBe(200);
+  });
+});
+
 describe('proxy matcher — 정적 파일에는 proxy(세션 확인)를 태우지 않는다', () => {
   // Next 는 matcher 문자열을 path-to-regexp 로 바꿔 쓰지만, 이 패턴은 "/(...)" 하나뿐이라
   // 앞의 "/" 를 붙인 정규식으로 같은 판정을 재현할 수 있다.

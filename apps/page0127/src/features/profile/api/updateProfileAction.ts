@@ -2,6 +2,10 @@
 
 import { createClient } from '@/shared/config/supabase/server';
 import {
+  DEMO_READ_ONLY_MESSAGE,
+  isDemoUser,
+} from '@/shared/lib/demo/demoAccount';
+import {
   extractOwnedProfileImagePath,
   MAX_PROFILE_IMAGE_BYTES,
   MAX_PROFILE_IMAGE_LABEL,
@@ -65,6 +69,10 @@ export const updateProfileAction = async (
   } = await supabase.auth.getUser();
   if (!user) {
     return { status: 'error', message: '로그인이 필요합니다.' };
+  }
+  // 체험 계정은 읽기만 된다(shared/lib/demo/demoAccount)
+  if (isDemoUser(user)) {
+    return { status: 'error', message: DEMO_READ_ONLY_MESSAGE };
   }
 
   // 2. 현재 프로필은 서버가 직접 조회한다.

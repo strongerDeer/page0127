@@ -5,6 +5,10 @@ import { redirect } from 'next/navigation';
 
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { createClient } from '@/shared/config/supabase/server';
+import {
+  DEMO_READ_ONLY_MESSAGE,
+  isDemoUser,
+} from '@/shared/lib/demo/demoAccount';
 
 import { validateUsername } from '@/entities/profile/model/username';
 
@@ -55,6 +59,10 @@ export const completeOnboardingAction = async (
   } = await supabase.auth.getUser();
   if (!user) {
     return { status: 'error', message: '로그인이 필요합니다.' };
+  }
+  // 체험 계정은 읽기만 된다(shared/lib/demo/demoAccount)
+  if (isDemoUser(user)) {
+    return { status: 'error', message: DEMO_READ_ONLY_MESSAGE };
   }
 
   // 화면의 체크박스를 서버에서 한 번 더 본다 — 버튼 비활성화는 우회할 수 있다

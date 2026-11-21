@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 
+import { DemoBanner } from '@/features/demo-account';
 import { SignupTracker } from '@/features/onboarding';
 import { PendingShelfClaimer } from '@/features/shelf-preview/ui/PendingShelfClaimer';
 
@@ -33,6 +34,8 @@ export const AppShellLayout = ({ user, children }: AppShellLayoutProps) => {
       >
         본문 바로가기
       </a>
+      {/* 리뷰어용 체험 계정 — 지금 체험 중이고 저장은 안 된다는 것을 늘 보여 준다 */}
+      {user?.isDemo && <DemoBanner />}
       <Gnb user={user} />
       {/*
         탭바 높이 확보는 이제 푸터가 맡는다 — 본문 다음에 푸터가 오므로
