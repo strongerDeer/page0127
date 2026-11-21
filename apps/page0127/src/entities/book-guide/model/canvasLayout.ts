@@ -1,6 +1,8 @@
 import { GUIDE_CANVAS_WIDTH } from './bookGuideSchema';
 
 import type {
+  GuideBorder,
+  GuideColor,
   GuideLinkKind,
   GuidePerson,
   GuideRect,
@@ -39,7 +41,13 @@ export type CanvasNode = {
   isLead: boolean;
 };
 
-export type CanvasPanel = { key: string; name: string; rect: Rect };
+export type CanvasPanel = {
+  key: string;
+  name: string;
+  rect: Rect;
+  fill?: GuideColor;
+  border?: GuideBorder;
+};
 
 export type CanvasLine = {
   key: string;
@@ -156,7 +164,13 @@ export const buildCanvasLayout = (section: PeopleSection): CanvasLayout => {
       const autoH =
         PANEL_HEAD + rows * (MEMBER_HEIGHT + CELL_GAP) - CELL_GAP + PANEL_PAD;
       const box = withHeight(group.box, Math.max(autoH, PANEL_HEAD + 8));
-      panels.push({ key: group.id ?? `g${gi}`, name: group.name, rect: box });
+      panels.push({
+        key: group.id ?? `g${gi}`,
+        name: group.name,
+        rect: box,
+        fill: group.fill,
+        border: group.border,
+      });
       if (group.id) rects.set(group.id, box);
 
       const cellW =

@@ -3,11 +3,17 @@ import { cn } from '@repo/ui';
 import { buildCanvasLayout } from '../model/canvasLayout';
 
 import type {
+  GuideBorder,
+  GuideColor,
+  GuideFont,
   GuideLinkKind,
   GuideTone,
   PeopleSection,
 } from '../model/bookGuideSchema';
 import type { CanvasNode } from '../model/canvasLayout';
+import type { CSSProperties } from 'react';
+
+import styles from './CanvasPeople.module.css';
 
 /**
  * 캔버스 모드 관계도 — 좌표대로 상자를 놓고 SVG 로 선을 긋는다 (서버 컴포넌트, JS 0)
@@ -61,6 +67,25 @@ const badgeClass: Record<GuideLinkKind, string> = {
   work: 'border-text-body text-text-body',
 };
 
+/** 토큰 이름 → CSS 변수. 팔레트(GUIDE_COLORS) 밖 값은 스키마가 막는다 */
+const tokenColor = (color: GuideColor) => `var(--${color})`;
+
+/** 테두리가 있으면 tone 의 기본 테두리(클래스)를 인라인 값이 덮는다 */
+const borderStyle = (border?: GuideBorder): CSSProperties =>
+  border
+    ? {
+        borderColor: tokenColor(border.color),
+        borderWidth: border.width,
+        borderStyle: border.style ?? 'solid',
+      }
+    : {};
+
+/** 명조는 시스템 글꼴만 — 내려받는 웹폰트 없음(스키마 GUIDE_FONTS 주석 참고) */
+const SERIF_STACK =
+  '"AppleMyungjo", "Noto Serif KR", "Nanum Myeongjo", "Batang", serif';
+const fontStyle = (font?: GuideFont): CSSProperties =>
+  font === 'serif' ? { fontFamily: SERIF_STACK } : {};
+
 const rectStyle = ({ rect }: Pick<CanvasNode, 'rect'>) => ({
   left: rect.x,
   top: rect.y,
@@ -68,9 +93,16 @@ const rectStyle = ({ rect }: Pick<CanvasNode, 'rect'>) => ({
   height: rect.h,
 });
 
-const PersonBox = ({ node }: { node: CanvasNode }) => {
+const PersonBox = ({
+  node,
+  canvasFont,
+}: {
+  node: CanvasNode;
+  canvasFont?: GuideFont;
+}) => {
   const tone = toneClass[node.tone];
   const { person } = node;
+  const font = person.font ?? canvasFont;
   return (
     <div
       className={cn(
@@ -81,7 +113,11 @@ const PersonBox = ({ node }: { node: CanvasNode }) => {
           : 'rounded-2xl px-4',
         tone.box
       )}
-      style={rectStyle(node)}
+      style={{
+        ...rectStyle(node),
+        ...borderStyle(person.border),
+        ...fontStyle(font),
+      }}
     >
       <p
         className={cn(
@@ -123,16 +159,46 @@ export const CanvasPeople = ({ section }: { section: PeopleSection }) => {
     ].map((p) => [p.id, p.name])
   );
 
+  const canvasFont = section.canvas?.font;
+  const background = section.canvas?.background;
+
   return (
     <div
-      className='relative'
-      style={{ width: layout.width, height: layout.height }}
+      className={cn('relative', background?.image && styles.lightScope)}
+      style={{
+        width: layout.width,
+        height: layout.height,
+        backgroundColor: background?.color
+          ? tokenColor(background.color)
+          : undefined,
+        ...fontStyle(canvasFont),
+      }}
     >
+      {background?.image && (
+        // 꾸밈 그림 — 글자는 전부 HTML 이라 alt 비움. next/image 는 캔버스 zoom 과 겹쳐 크기 계산이 어긋나 쓰지 않는다
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={background.image}
+          alt=''
+          aria-hidden='true'
+          loading='lazy'
+          decoding='async'
+          className={cn(
+            'pointer-events-none absolute inset-0 size-full select-none',
+            background.fit === 'contain' ? 'object-contain' : 'object-cover'
+          )}
+          style={{ opacity: background.opacity ?? 1 }}
+        />
+      )}
       {layout.panels.map((panel) => (
         <div
           key={panel.key}
           className='absolute rounded-2xl bg-sunken'
-          style={rectStyle(panel)}
+          style={{
+            ...rectStyle(panel),
+            backgroundColor: panel.fill ? tokenColor(panel.fill) : undefined,
+            ...borderStyle(panel.border),
+          }}
         >
           <h4 className='px-6 pt-5 text-[22px] font-bold whitespace-nowrap text-text-body'>
             {panel.name}
@@ -163,7 +229,7 @@ export const CanvasPeople = ({ section }: { section: PeopleSection }) => {
       </svg>
 
       {layout.nodes.map((node) => (
-        <PersonBox key={node.person.id} node={node} />
+        <PersonBox key={node.person.id} node={node} canvasFont={canvasFont} />
       ))}
 
       {layout.lines.map(

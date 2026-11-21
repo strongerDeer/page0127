@@ -1,4 +1,6 @@
 import type {
+  GuideBorder,
+  GuideColor,
   GuideLinkKind,
   GuidePerson,
   GuideTone,
@@ -61,6 +63,8 @@ type Shape = Box & {
   fill?: string;
   stroke?: string;
   strokeWidth: number;
+  /** stroke-dasharray — 있으면 대시/점선 테두리 */
+  dash?: string;
 };
 type Text = {
   x: number;
@@ -68,6 +72,70 @@ type Text = {
   size: number;
   weight: number;
   value: string;
+  /** 명조 계열 글꼴(Myeongjo·Serif·Batang) */
+  serif: boolean;
+};
+
+/**
+ * 토큰 팔레트의 라이트 값 — 피그마 색을 가장 가까운 토큰으로 맞출 때 쓴다.
+ * packages/design-tokens/tokens/semantic.json 과 같은 값(테스트가 지킨다).
+ */
+export const TOKEN_HEX: Record<GuideColor, string> = {
+  primary: '#1e69cb',
+  'guide-green': '#00c96b',
+  'text-strong': '#14294e',
+  'text-body': '#3b4e70',
+  'text-subtle': '#5f6f8f',
+  'chart-7': '#7a5cf0',
+  'rank-up': '#bf3f0d',
+  line: '#dfe3e8',
+  'line-soft': '#eceff2',
+  card: '#ffffff',
+  sunken: '#f6f7f8',
+  accent: '#e3eefc',
+};
+
+const rgb = (hex: string) => {
+  const n = parseInt(hex.slice(1, 7), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+};
+
+/**
+ * 가장 가까운 토큰 색(RGB 거리). 피그마에서 손으로 고른 비슷한 색(#15294d·#e1e6ed 등)이
+ * 시스템 색으로 모인다. 너무 먼 색이면 경고에 쓰라고 거리도 돌려준다.
+ */
+/** 예전 시스템 색 — 거리가 비슷해도 정해진 토큰으로(semantic.json 의 secondary·muted 설명 참고) */
+const LEGACY_HEX: Record<string, GuideColor> = { '#f1f3f5': 'sunken' };
+
+export const nearestToken = (
+  hex: string
+): { color: GuideColor; distance: number } => {
+  const legacy = LEGACY_HEX[hex.toLowerCase()];
+  if (legacy) return { color: legacy, distance: 0 };
+  const [r, g, b] = rgb(hex);
+  let best: { color: GuideColor; distance: number } = {
+    color: 'line',
+    distance: Infinity,
+  };
+  for (const [color, value] of Object.entries(TOKEN_HEX) as [
+    GuideColor,
+    string,
+  ][]) {
+    const [r2, g2, b2] = rgb(value);
+    const distance = Math.hypot(r - r2, g - g2, b - b2);
+    if (distance < best.distance) best = { color, distance };
+  }
+  return best;
+};
+
+/** 이 거리보다 멀면 "토큰에 없는 색" 경고 — 눈으로 보면 다른 색 */
+const FAR_COLOR = 40;
+
+const dashStyle = (dash?: string): GuideBorder['style'] => {
+  if (!dash) return undefined;
+  const first = parseFloat(dash);
+  // 0 길이(동그란 점) 또는 아주 짧은 대시 = 점선
+  return first <= 2 ? 'dotted' : 'dashed';
 };
 type Stroke = { color: string; subpaths: Pt[][] };
 
@@ -207,16 +275,18 @@ export const figmaSvgToPeopleSection = (svg: string): FigmaSvgResult => {
     rx: number,
     fill?: string,
     stroke?: string,
-    sw = 0
+    sw = 0,
+    dash?: string
   ) => {
     const dup = shapes.find((s) => sameBox(s, b));
     if (dup) {
       dup.fill ??= fill;
       dup.stroke ??= stroke;
       dup.strokeWidth ||= sw;
+      dup.dash ??= dash;
       return;
     }
-    shapes.push({ ...b, rx, fill, stroke, strokeWidth: sw });
+    shapes.push({ ...b, rx, fill, stroke, strokeWidth: sw, dash });
   };
 
   for (const tag of svg.match(/<rect\b[^>]*>/g) ?? []) {
@@ -228,7 +298,8 @@ export const figmaSvgToPeopleSection = (svg: string): FigmaSvgResult => {
       num(tag, 'rx'),
       lower(attr(tag, 'fill')),
       lower(attr(tag, 'stroke')),
-      num(tag, 'stroke-width')
+      num(tag, 'stroke-width'),
+      attr(tag, 'stroke-dasharray')
     );
   }
 
@@ -246,7 +317,8 @@ export const figmaSvgToPeopleSection = (svg: string): FigmaSvgResult => {
         Math.min(b.h / 2, 16),
         fill,
         stroke,
-        num(tag, 'stroke-width')
+        num(tag, 'stroke-width'),
+        attr(tag, 'stroke-dasharray')
       );
     } else if (stroke && COLOR_KIND[stroke]) {
       strokes.push({ color: stroke, subpaths });
@@ -284,6 +356,9 @@ export const figmaSvgToPeopleSection = (svg: string): FigmaSvgResult => {
         .map((s) => decode(s[2]))
         .filter((v) => v.trim())
         .join('\n'),
+      serif: /myeongjo|myungjo|serif|batang|명조|바탕/i.test(
+        attr(head, 'font-family') ?? ''
+      ),
     });
   }
   for (const t of texts) {
@@ -299,8 +374,14 @@ export const figmaSvgToPeopleSection = (svg: string): FigmaSvgResult => {
   const leads = rest.filter(
     (s) => s.rx >= 20 && (s.fill === '#1e69cb' || s.fill === '#00c96b')
   );
+  // 판: 모서리 20 이상 + 채움(흰색 아님). 기본은 회색(#f6f7f8), 다른 색이면 fill 로 옮긴다
   const panels = rest.filter(
-    (s) => s.rx >= 20 && s.fill === '#f6f7f8' && !leads.includes(s)
+    (s) =>
+      s.rx >= 20 &&
+      !!s.fill &&
+      s.fill.startsWith('#') &&
+      s.fill !== '#ffffff' &&
+      !leads.includes(s)
   );
   const cards = rest.filter((s) => !leads.includes(s) && !panels.includes(s));
   if (!leads.length) {
@@ -342,8 +423,38 @@ export const figmaSvgToPeopleSection = (svg: string): FigmaSvgResult => {
           .join('\n'),
       }),
       tone,
+      // 이름 글자가 명조면 상자 글꼴도 명조
+      ...(nameT.serif && { font: 'serif' as const }),
       at: { x: 0, y: 0, w: Math.round(b.w), h: Math.round(b.h) },
     };
+  };
+
+  const toToken = (hex: string, what: string): GuideColor => {
+    const { color, distance } = nearestToken(hex);
+    if (distance > FAR_COLOR) {
+      warnings.push(
+        `${what} 색 ${hex} 은 토큰에 없는 색이라 가장 가까운 "${color}" 로 바꿨어요.`
+      );
+    }
+    return color;
+  };
+
+  /** 테두리 — tone 이 원래 그리는 테두리와 다를 때만 border 로 남긴다(데이터를 짧게) */
+  const borderOf = (
+    s: Shape,
+    tone: GuideTone | 'panel',
+    what: string
+  ): GuideBorder | undefined => {
+    if (!s.stroke || !s.stroke.startsWith('#') || !s.strokeWidth) return;
+    const color = toToken(s.stroke, what);
+    const width = Math.min(6, Math.max(1, Math.round(s.strokeWidth)));
+    const style = dashStyle(s.dash);
+    const isDefault =
+      !style &&
+      ((tone === 'outline' && color === 'guide-green' && width === 4) ||
+        (tone === 'line' && color === 'line' && width === 2));
+    if (isDefault) return;
+    return { color, width, ...(style && { style }) };
   };
 
   // 좌표 원점 — 관계도 맨 위(상자·선·배지 중 가장 위)
@@ -386,6 +497,16 @@ export const figmaSvgToPeopleSection = (svg: string): FigmaSvgResult => {
           ? 'line'
           : 'white';
 
+  /** 카드 → 사람(색·테두리 포함) */
+  const cardPerson = (c: Shape): GuidePerson | null => {
+    const tone = cardTone(c);
+    const p = toPerson(c, tone);
+    if (!p) return null;
+    const border = borderOf(c, tone, `"${p.name}" 카드 테두리`);
+    if (border) p.border = border;
+    return p;
+  };
+
   const groups: PeopleSection['groups'] = [];
   const panelId = new Map<Box, string>();
   for (const panel of panels.sort((a, b) => a.y - b.y || a.x - b.x)) {
@@ -401,7 +522,7 @@ export const figmaSvgToPeopleSection = (svg: string): FigmaSvgResult => {
       .filter((c) => inside([c.x + c.w / 2, c.y + c.h / 2], panel))
       .sort((a, b) => a.y - b.y || a.x - b.x)
       .flatMap((c) => {
-        const p = toPerson(c, cardTone(c));
+        const p = cardPerson(c);
         if (!p) return [];
         p.at = place(c);
         nodeOf.set(c, p.id);
@@ -414,14 +535,26 @@ export const figmaSvgToPeopleSection = (svg: string): FigmaSvgResult => {
       warnings.push(`"${name}" 판 안에 사람 카드가 없어요.`);
       continue;
     }
-    groups.push({ id, name, box: place(panel), members });
+    const fill =
+      panel.fill && panel.fill !== '#f6f7f8'
+        ? toToken(panel.fill, `"${name}" 판`)
+        : undefined;
+    const border = borderOf(panel, 'panel', `"${name}" 판 테두리`);
+    groups.push({
+      id,
+      name,
+      box: place(panel),
+      ...(fill && fill !== 'sunken' && { fill }),
+      ...(border && { border }),
+      members,
+    });
   }
 
   const loose = cards
     .filter((c) => !nodeOf.has(c))
     .sort((a, b) => a.y - b.y || a.x - b.x)
     .flatMap((c) => {
-      const p = toPerson(c, cardTone(c));
+      const p = cardPerson(c);
       if (!p) return [];
       p.at = place(c);
       nodeOf.set(c, p.id);

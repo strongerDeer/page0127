@@ -43,6 +43,41 @@ export const GUIDE_TONES = [
   'sunken',
 ] as const;
 
+/**
+ * 테두리·배경에 쓰는 색 — 디자인 시스템 semantic 토큰 이름 그대로(CSS 변수 `var(--이름)`).
+ * hex 를 받지 않는 이유: 다크 모드에서 토큰은 알아서 바뀌고, 시스템 색을 바꾸면 모든 가이드가 따라온다.
+ * (HJ 11/21 "토큰 팔레트에서 고르기")
+ */
+export const GUIDE_COLORS = [
+  'primary',
+  'guide-green',
+  'text-strong',
+  'text-body',
+  'text-subtle',
+  'chart-7',
+  'rank-up',
+  'line',
+  'line-soft',
+  'card',
+  'sunken',
+  'accent',
+] as const;
+
+export const GUIDE_BORDER_STYLES = ['solid', 'dashed', 'dotted'] as const;
+
+/** 상자·판 테두리. 있으면 tone 의 기본 테두리 대신 이 값을 쓴다 */
+const borderSchema = z.object({
+  color: z.enum(GUIDE_COLORS),
+  width: z.number().int().min(1).max(6),
+  style: z.enum(GUIDE_BORDER_STYLES).optional(),
+});
+
+/**
+ * 글꼴 — 기본(Pretendard)과 명조 둘만. 한글 웹폰트는 몇 MB라 종류를 늘리면 페이지가 느려진다.
+ * 명조는 시스템 글꼴(AppleMyungjo·Noto Serif KR·바탕)이라 내려받는 파일이 없다.
+ */
+export const GUIDE_FONTS = ['sans', 'serif'] as const;
+
 const personSchema = z.object({
   /** 관계선이 가리키는 키 — 같은 가이드 안에서만 유일하면 된다 */
   id: text(40),
@@ -53,6 +88,9 @@ const personSchema = z.object({
   /** 줄바꿈(\n)은 그대로 보여 준다 */
   role: text(60).optional(),
   tone: z.enum(GUIDE_TONES).optional(),
+  border: borderSchema.optional(),
+  /** 없으면 캔버스 글꼴(canvas.font)을 따른다 */
+  font: z.enum(GUIDE_FONTS).optional(),
   at: rectSchema.optional(),
 });
 
@@ -76,6 +114,9 @@ const peopleSectionSchema = z
           box: rectSchema.optional(),
           /** 판 안 격자 열 수 */
           cols: z.number().int().min(1).max(4).optional(),
+          /** 판 면 색 — 없으면 sunken(회색) */
+          fill: z.enum(GUIDE_COLORS).optional(),
+          border: borderSchema.optional(),
           members: z.array(personSchema).min(1).max(12),
         })
       )
@@ -119,6 +160,26 @@ const peopleSectionSchema = z
       .object({
         /** 없으면 가장 아래 상자에 맞춘다 */
         height: z.number().int().min(120).max(2000).optional(),
+        /** 캔버스 전체 기본 글꼴 */
+        font: z.enum(GUIDE_FONTS).optional(),
+        /**
+         * 밑에 까는 배경 — 색 또는 그림 한 장(둘 다 가능, 그림이 위).
+         * 그림 주소는 어드민에서 올린 파일만(저장 액션이 버킷 주소인지 검사).
+         * 그림이 있으면 다크 모드에서도 캔버스만 밝은 색으로 고정한다(밝은 그림 위 흰 글자 방지).
+         */
+        background: z
+          .object({
+            color: z.enum(GUIDE_COLORS).optional(),
+            image: z
+              .url({ protocol: /^https?$/ })
+              .max(500)
+              .optional(),
+            /** cover=캔버스를 꽉 채움(잘릴 수 있음), contain=그림 전체 보이기 */
+            fit: z.enum(['cover', 'contain']).optional(),
+            /** 그림 진하기 0.1~1 — 글자 위에서 흐리게 깔 때 */
+            opacity: z.number().min(0.1).max(1).optional(),
+          })
+          .optional(),
       })
       .optional(),
   })
@@ -236,3 +297,8 @@ export const parseBookGuideSections = (
   const result = bookGuideSectionsSchema.safeParse(value);
   return result.success ? result.data : null;
 };
+export type GuideColor = (typeof GUIDE_COLORS)[number];
+export type GuideBorder = z.infer<typeof borderSchema>;
+export type GuideFont = (typeof GUIDE_FONTS)[number];
+export type GuideCanvas = NonNullable<PeopleSection['canvas']>;
+export type GuideBackground = NonNullable<GuideCanvas['background']>;

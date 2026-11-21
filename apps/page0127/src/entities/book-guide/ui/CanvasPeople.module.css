@@ -1,0 +1,23 @@
+/*
+ * 배경 그림을 깐 캔버스는 다크 모드에서도 라이트 색으로 고정한다.
+ * 이유: 그림은 다크 모드를 모른다 — 밝은 그림 위에 다크용 흰 글자·검은 카드가 올라가면 안 읽힌다.
+ * 원리: Tailwind 가 @theme inline 이라 bg-card 같은 유틸이 var(--card) 를 그 자리에서 읽는다.
+ *       그래서 이 상자 안에서만 semantic 변수를 라이트 값(primitive)으로 다시 정의하면 된다.
+ * 다크 오버라이드 목록은 packages/design-tokens/tokens/dark.json 과 맞춘다.
+ */
+@media (prefers-color-scheme: dark) {
+  .lightScope {
+    --text-strong: var(--navy-900);
+    --text-body: var(--navy-700);
+    --text-subtle: var(--navy-600);
+    --card: var(--gray-0);
+    --sunken: var(--gray-50);
+    --line: var(--gray-300);
+    --line-soft: var(--gray-200);
+    --primary: var(--blue-600);
+    --primary-foreground: var(--gray-0);
+    --accent: var(--blue-50);
+    --rank-up: var(--orange-600);
+    color: var(--navy-900);
+  }
+}

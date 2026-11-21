@@ -34,4 +34,40 @@ describe('BookGuide', () => {
     expect(html).toContain('<polyline');
     expect(html).toContain('안문자 — 손녀 — 리사');
   });
+
+  it('테두리·글꼴·배경은 토큰 CSS 변수로 그린다(hex 없음)', () => {
+    const people = structuredClone(sections[0]);
+    if (people.type !== 'people') throw new Error('관계도가 아님');
+    people.leads[0].border = { color: 'chart-7', width: 3, style: 'dashed' };
+    people.leads[0].font = 'serif';
+    people.canvas = {
+      ...people.canvas,
+      background: {
+        color: 'accent',
+        image:
+          'https://example.supabase.co/storage/v1/object/public/banner-art/guide/a.webp',
+        opacity: 0.3,
+      },
+    };
+    const out = renderToStaticMarkup(
+      <BookGuide sections={bookGuideSectionsSchema.parse([people])} />
+    );
+    expect(out).toContain('border-color:var(--chart-7)');
+    expect(out).toContain('border-style:dashed');
+    expect(out).toContain('AppleMyungjo');
+    expect(out).toContain('background-color:var(--accent)');
+    // 꾸밈 그림 — 검색·낭독기에는 안 읽히게
+    expect(out).toMatch(/<img[^>]*alt=""[^>]*aria-hidden="true"/);
+    expect(out).toContain('opacity:0.3');
+  });
+
+  it('팔레트 밖 색·외부 프로토콜은 스키마가 막는다', () => {
+    const people = structuredClone(daeonsil[0]) as Record<string, unknown>;
+    const bad = (patch: object) =>
+      bookGuideSectionsSchema.safeParse([{ ...people, ...patch }]).success;
+    expect(bad({ canvas: { background: { color: '#ff0000' } } })).toBe(false);
+    expect(
+      bad({ canvas: { background: { image: 'javascript:alert(1)' } } })
+    ).toBe(false);
+  });
 });

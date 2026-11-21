@@ -8,9 +8,84 @@ import { revalidateBookInfoPages } from '@/shared/lib/cache/revalidateBookInfoPa
 
 import { bookGuideSectionsSchema } from '@/entities/book-guide';
 
+import type { BookGuideSection } from '@/entities/book-guide';
+
 export type GuideActionResult = { ok: true } | { ok: false; message: string };
 
 const uuid = /^[0-9a-f-]{36}$/i;
+
+/**
+ * 배경 그림은 홈 배너 그림과 같은 공개 버킷(banner-art)의 guide/ 폴더에 둔다.
+ * 새 버킷을 만들면 마이그레이션·운영 push 가 따로 필요해서, 한도(1MB·PNG/WEBP/JPG)가 같은 버킷을 같이 쓴다.
+ */
+const GUIDE_ART_BUCKET = 'banner-art';
+const GUIDE_ART_FOLDER = 'guide';
+const MAX_GUIDE_ART_BYTES = 1024 * 1024;
+const ART_EXTENSION_BY_TYPE: Record<string, string> = {
+  'image/webp': 'webp',
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+};
+
+const guideArtPrefix = () => {
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  return base
+    ? `${base}/storage/v1/object/public/${GUIDE_ART_BUCKET}/${GUIDE_ART_FOLDER}/`
+    : null;
+};
+
+/** 아무 외부 주소나 책 정보 페이지에 뜨지 않게 — 이 화면에서 올린 그림만 받는다 */
+const findForeignImage = (sections: BookGuideSection[]): string | null => {
+  const prefix = guideArtPrefix();
+  for (const section of sections) {
+    if (section.type !== 'people') continue;
+    const image = section.canvas?.background?.image;
+    if (image && (!prefix || !image.startsWith(prefix))) return section.title;
+  }
+  return null;
+};
+
+/**
+ * 관계도 배경 그림을 올리고 공개 주소를 돌려준다(저장은 따로 — 주소만 편집 중인 데이터에 담긴다).
+ * 브라우저가 1760px(880 캔버스의 2배) WEBP 로 줄여 보내므로 보통 수백 KB.
+ */
+export async function uploadGuideArt(
+  formData: FormData
+): Promise<{ ok: true; url: string } | { ok: false; message: string }> {
+  await assertAdmin();
+  const file = formData.get('file');
+  if (!(file instanceof File)) return { ok: false, message: '파일이 없어요.' };
+  const ext = ART_EXTENSION_BY_TYPE[file.type];
+  if (!ext) {
+    return { ok: false, message: 'PNG·WEBP·JPG 그림만 올릴 수 있어요.' };
+  }
+  if (file.size > MAX_GUIDE_ART_BYTES) {
+    return { ok: false, message: '그림이 너무 커요. 1MB 이하로 올려 주세요.' };
+  }
+
+  const supabase = createAdminClient();
+  const path = `${GUIDE_ART_FOLDER}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage
+    .from(GUIDE_ART_BUCKET)
+    .upload(path, file, {
+      contentType: file.type,
+      // 파일 이름이 매번 새로라 내용이 바뀌지 않는다 — 오래 캐시해도 된다
+      cacheControl: '31536000',
+      upsert: false,
+    });
+  if (error) {
+    console.error('[admin] 가이드 그림 업로드 실패:', error.message);
+    return {
+      ok: false,
+      message: '그림을 올리지 못했어요. 다시 시도해 주세요.',
+    };
+  }
+  return {
+    ok: true,
+    url: supabase.storage.from(GUIDE_ART_BUCKET).getPublicUrl(path).data
+      .publicUrl,
+  };
+}
 
 /**
  * 읽기 가이드 저장 — 편집기가 만든 sections 를 서버에서 한 번 더 검사하고 저장한다.
@@ -38,6 +113,14 @@ export async function saveBookGuide(input: {
     return {
       ok: false,
       message: `저장하지 못했어요: ${issue.path.join('.')} — ${issue.message}`,
+    };
+  }
+
+  const foreign = findForeignImage(parsed.data);
+  if (foreign) {
+    return {
+      ok: false,
+      message: `"${foreign}" 배경 그림은 이 화면에서 올린 파일만 쓸 수 있어요.`,
     };
   }
 

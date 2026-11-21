@@ -17,6 +17,8 @@ import {
   updateGroup,
   updatePerson,
 } from '../model/editPeopleSection';
+import { CanvasSettings } from './CanvasSettings';
+import { BorderPicker, ColorSwatches, FontPicker } from './StylePickers';
 
 import type { GuideTone, PeopleSection } from '@/entities/book-guide';
 
@@ -236,13 +238,8 @@ export const CanvasEditor = ({
       </div>
 
       {/* 오른쪽 — 고른 상자의 글자·색 */}
-      <aside className='flex w-full shrink-0 flex-col gap-3 rounded-xl border border-line bg-card p-4 lg:w-64'>
-        {!selected && (
-          <p className='text-sm text-text-subtle'>
-            상자를 눌러 고르세요. 끌어서 옮기고, 오른쪽 아래 모서리로 크기를
-            바꿔요. 방향키로 1px, Shift+방향키로 한 칸씩 움직여요.
-          </p>
-        )}
+      <aside className='flex w-full shrink-0 flex-col gap-3 rounded-xl border border-line bg-card p-4 lg:w-72'>
+        {!selected && <CanvasSettings section={section} onChange={onChange} />}
 
         {selectedPerson && (
           <>
@@ -303,6 +300,19 @@ export const CanvasEditor = ({
                 ))}
               </div>
             </div>
+            <BorderPicker
+              value={selectedPerson.border}
+              onChange={(border) =>
+                onChange(updatePerson(section, selectedPerson.id, { border }))
+              }
+            />
+            <FontPicker
+              value={selectedPerson.font}
+              inheritLabel='캔버스 따라감'
+              onChange={(font) =>
+                onChange(updatePerson(section, selectedPerson.id, { font }))
+              }
+            />
             {selectedInGroup && selectedPerson.at && (
               <Button
                 variant='outline'
@@ -350,6 +360,20 @@ export const CanvasEditor = ({
                 ))}
               </div>
             </div>
+            <ColorSwatches
+              label='판 색'
+              value={selectedGroup.fill}
+              noneLabel='기본 회색'
+              onChange={(fill) =>
+                onChange(updateGroup(section, selected.index, { fill }))
+              }
+            />
+            <BorderPicker
+              value={selectedGroup.border}
+              onChange={(border) =>
+                onChange(updateGroup(section, selected.index, { border }))
+              }
+            />
           </>
         )}
       </aside>

@@ -1,6 +1,9 @@
 import { GUIDE_CANVAS_WIDTH } from '@/entities/book-guide';
 
 import type {
+  GuideBackground,
+  GuideFont,
+  GuideGroup,
   GuidePerson,
   GuideRect,
   PeopleSection,
@@ -46,6 +49,14 @@ const dropRoutes = (s: PeopleSection) => {
   for (const link of s.links) delete link.route;
 };
 
+/** undefined 로 지운 필드는 JSON 에서도 빠지게 — 저장된 데이터에 "키: undefined" 흔적이 남지 않는다 */
+const assignPatch = <T extends object>(target: T, patch: Partial<T>) => {
+  Object.assign(target, patch);
+  for (const key of Object.keys(patch) as (keyof T)[]) {
+    if (patch[key] === undefined) delete target[key];
+  }
+};
+
 export const updatePerson = (
   section: PeopleSection,
   id: string,
@@ -55,11 +66,7 @@ export const updatePerson = (
   if ('at' in patch) dropRoutes(next);
   const person = allPeople(next).find((p) => p.id === id);
   if (!person) return section;
-  Object.assign(person, patch);
-  // undefined 로 지운 필드는 JSON 에서도 빠지게
-  for (const key of Object.keys(patch) as (keyof GuidePerson)[]) {
-    if (patch[key] === undefined) delete person[key];
-  }
+  assignPatch(person, patch);
   return next;
 };
 
@@ -99,12 +106,31 @@ export const moveGroupBox = (
 export const updateGroup = (
   section: PeopleSection,
   groupIndex: number,
-  patch: { name?: string; cols?: number }
+  patch: Partial<Pick<GuideGroup, 'name' | 'cols' | 'fill' | 'border'>>
 ): PeopleSection => {
   const next = structuredClone(section);
   const group = next.groups[groupIndex];
   if (!group) return section;
-  Object.assign(group, patch);
+  assignPatch(group, patch);
+  return next;
+};
+
+/**
+ * 캔버스 전체 설정(글꼴·배경) 바꾸기. background 는 안쪽 필드만 덮어쓴다.
+ * 배경 필드가 다 비면 background 자체를 지운다.
+ */
+export const updateCanvas = (
+  section: PeopleSection,
+  patch: { font?: GuideFont; background?: Partial<GuideBackground> }
+): PeopleSection => {
+  const next = structuredClone(section);
+  const canvas = (next.canvas ??= {});
+  if ('font' in patch) assignPatch(canvas, { font: patch.font });
+  if (patch.background) {
+    const background = (canvas.background ??= {});
+    assignPatch(background, patch.background);
+    if (Object.keys(background).length === 0) delete canvas.background;
+  }
   return next;
 };
 

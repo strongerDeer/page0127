@@ -5,6 +5,8 @@ import {
   moveGroupBox,
   movePerson,
   toCanvas,
+  updateCanvas,
+  updateGroup,
   updatePerson,
 } from './editPeopleSection';
 
@@ -68,5 +70,42 @@ describe('편집기 데이터 바꾸기', () => {
     const next = toCanvas(auto);
     expect(next.canvas).toEqual({});
     expect(next.groups[0].box).toMatchObject({ x: 0, y: 160 });
+  });
+});
+
+describe('스타일 바꾸기', () => {
+  it('테두리를 넣고 undefined 로 지우면 키도 사라진다', () => {
+    const id = section.leads[0].id;
+    const withBorder = updatePerson(section, id, {
+      border: { color: 'primary', width: 2 },
+    });
+    expect(withBorder.leads[0].border).toEqual({ color: 'primary', width: 2 });
+    const cleared = updatePerson(withBorder, id, { border: undefined });
+    expect('border' in cleared.leads[0]).toBe(false);
+  });
+
+  it('판 색은 updateGroup 으로', () => {
+    const next = updateGroup(section, 0, { fill: 'accent' });
+    expect(next.groups[0].fill).toBe('accent');
+    expect(section.groups[0].fill).toBeUndefined();
+  });
+
+  it('배경은 안쪽 필드만 덮고, 다 비면 background 를 지운다', () => {
+    const a = updateCanvas(section, {
+      background: { image: 'https://x/a.webp' },
+    });
+    const b = updateCanvas(a, { background: { opacity: 0.3 } });
+    expect(b.canvas?.background).toEqual({
+      image: 'https://x/a.webp',
+      opacity: 0.3,
+    });
+    const c = updateCanvas(b, {
+      background: { image: undefined, opacity: undefined },
+    });
+    expect(c.canvas?.background).toBeUndefined();
+  });
+
+  it('캔버스 글꼴', () => {
+    expect(updateCanvas(section, { font: 'serif' }).canvas?.font).toBe('serif');
   });
 });

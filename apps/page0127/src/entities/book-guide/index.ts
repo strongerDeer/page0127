@@ -2,6 +2,10 @@
 export { getBookGuide } from './api/getBookGuide';
 export type {
   BookGuideSection,
+  GuideBackground,
+  GuideBorder,
+  GuideColor,
+  GuideFont,
   GuideGroup,
   GuideLink,
   GuideLinkKind,
@@ -14,7 +18,10 @@ export type {
 } from './model/bookGuideSchema';
 export {
   bookGuideSectionsSchema,
+  GUIDE_BORDER_STYLES,
   GUIDE_CANVAS_WIDTH,
+  GUIDE_COLORS,
+  GUIDE_FONTS,
   GUIDE_TONES,
   parseBookGuideSections,
 } from './model/bookGuideSchema';
