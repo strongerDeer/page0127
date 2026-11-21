@@ -1,6 +1,7 @@
-import { cn } from '@repo/ui';
+import { Card, cn } from '@repo/ui';
 
 import { buildPeopleLayout } from '../model/peopleLayout';
+import { ZoomableDiagram } from './ZoomableDiagram';
 
 import type {
   BookGuideSection,
@@ -36,18 +37,20 @@ const linkKindLabel: Record<GuideLinkKind, string> = {
 
 type PersonNameProps = {
   person: GuidePerson;
-  /** tint 면 위에서는 subtle 이 대비 4.5:1 에 못 미쳐(4.4) 한 단계 진한 body 를 쓴다 */
+  /** accent 면 위 — 시스템이 짝지어 둔 accent-foreground 로(subtle 은 4.4 로 대비 미달이었다) */
   onTint?: boolean;
 };
 
 const PersonName = ({ person, onTint = false }: PersonNameProps) => (
   <>
-    <span className='font-bold text-text-strong'>{person.name}</span>
+    <span className={cn('font-bold', !onTint && 'text-text-strong')}>
+      {person.name}
+    </span>
     {person.role && (
       <span
         className={cn(
           'text-sm',
-          onTint ? 'text-text-body' : 'text-text-subtle'
+          onTint ? 'text-accent-foreground' : 'text-text-subtle'
         )}
       >
         {person.role}
@@ -69,8 +72,9 @@ const LinkBadge = ({
 }) => (
   <span
     className={cn(
-      'whitespace-nowrap rounded-full border-[1.5px] bg-card px-2 text-xs font-bold leading-5 text-primary',
-      lineStyle(link.kind),
+      // 색은 시스템이 대비를 검산해 둔 accent 짝(ReadCountBadge 와 같은 이유 — 임의 투명도 X)
+      'whitespace-nowrap rounded-full border border-accent-foreground bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground',
+      linkBorder[link.kind],
       className
     )}
   >
@@ -86,9 +90,9 @@ type GroupCardProps = {
 };
 
 const GroupCard = ({ name, members, targetId, notes }: GroupCardProps) => (
-  <div className='rounded-xl bg-sunken px-4 py-3'>
+  <Card className='gap-2 px-4 py-3'>
     <h4 className='text-sm font-medium text-text-subtle'>{name}</h4>
-    <ul className='mt-2 flex flex-col gap-1.5'>
+    <ul className='flex flex-col gap-1.5'>
       {members.map((person) => (
         <li key={person.id} className='flex flex-wrap items-center gap-x-2'>
           {/* 가지 선이 가리키는 사람 — 이름 앞 점으로 표시 */}
@@ -111,7 +115,7 @@ const GroupCard = ({ name, members, targetId, notes }: GroupCardProps) => (
         </li>
       ))}
     </ul>
-  </div>
+  </Card>
 );
 
 /**
@@ -142,7 +146,7 @@ const BranchGroups = ({
             className={cn(
               'absolute top-0 border-l-2',
               side === 'left' ? 'left-0' : 'right-0',
-              isLast ? 'h-[3.25rem]' : 'bottom-0',
+              isLast ? 'h-13' : 'bottom-0',
               lineStyle(group.link.kind)
             )}
           />
@@ -150,7 +154,7 @@ const BranchGroups = ({
           <span
             aria-hidden='true'
             className={cn(
-              'absolute top-[3.25rem] w-6 border-t-2',
+              'absolute top-13 w-6 border-t-2',
               side === 'left' ? 'left-0' : 'right-0',
               lineStyle(group.link.kind)
             )}
@@ -177,7 +181,7 @@ const BranchGroups = ({
 );
 
 const LeadBox = ({ person }: { person: GuidePerson }) => (
-  <div className='flex min-h-[5.5rem] flex-col items-center justify-center gap-0.5 rounded-xl bg-primary/10 px-3 py-3 text-center'>
+  <div className='flex min-h-22 flex-col items-center justify-center gap-0.5 rounded-xl bg-accent px-3 py-3 text-center text-accent-foreground'>
     <PersonName person={person} onTint />
   </div>
 );
@@ -189,18 +193,18 @@ const PeopleBlock = ({ section }: { section: PeopleSection }) => {
   const rightHasGroups = Boolean(right && right.groups.length > 0);
 
   return (
-    <>
+    <ZoomableDiagram label={section.title}>
       {/* 1. 중심 인물 — 둘이면 가운데 관계선으로 잇는다 */}
       <div
         className={cn(
           'grid items-stretch',
-          right ? 'grid-cols-[1fr_auto_1fr]' : 'grid-cols-1 sm:max-w-xs'
+          right ? 'grid-cols-[1fr_auto_1fr]' : 'grid-cols-1 max-w-xs'
         )}
       >
         <LeadBox person={left.lead} />
         {right && (
           <>
-            <div className='relative flex w-14 items-center justify-center self-stretch sm:w-24'>
+            <div className='relative flex w-24 items-center justify-center self-stretch'>
               {layout.leadLink && (
                 <>
                   <span
@@ -219,26 +223,10 @@ const PeopleBlock = ({ section }: { section: PeopleSection }) => {
         )}
       </div>
 
-      {/* 2. 가지 — PC 는 두 갈래 나란히, 모바일은 세로로 이어 붙인다.
-          모바일에서 오른쪽 가지 선은 왼쪽 가지 옆을 지나 내려간다(통과선) */}
+      {/* 2. 가지 — 두 갈래를 나란히. 좁은 화면은 그림 전체를 줄인다(ZoomableDiagram) */}
       {(left.groups.length > 0 || rightHasGroups) && (
-        <div className='-mt-3 grid sm:grid-cols-2 sm:gap-6'>
-          <div className={cn('relative', rightHasGroups && 'pr-12 sm:pr-0')}>
-            {rightHasGroups && (
-              <span
-                aria-hidden='true'
-                className={cn(
-                  'absolute top-0 right-6 bottom-0 border-r-2 sm:hidden',
-                  lineStyle(right.groups[0].link.kind)
-                )}
-              />
-            )}
-            <BranchGroups
-              branch={left}
-              side='left'
-              notes={layout.memberNotes}
-            />
-          </div>
+        <div className='-mt-4 grid grid-cols-2 gap-6'>
+          <BranchGroups branch={left} side='left' notes={layout.memberNotes} />
           {right && rightHasGroups && (
             <BranchGroups
               branch={right}
@@ -251,7 +239,7 @@ const PeopleBlock = ({ section }: { section: PeopleSection }) => {
 
       {/* 3. 중심 인물과 직접 이어지지 않은 그룹 — 선 없이 */}
       {layout.looseGroups.length > 0 && (
-        <div className='grid gap-2 sm:grid-cols-2 lg:grid-cols-3'>
+        <div className='grid grid-cols-2 gap-2'>
           {layout.looseGroups.map((group) => (
             <GroupCard
               key={group.name}
@@ -276,7 +264,7 @@ const PeopleBlock = ({ section }: { section: PeopleSection }) => {
           ))}
         </p>
       )}
-    </>
+    </ZoomableDiagram>
   );
 };
 
