@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { cn } from '@repo/ui';
 import { Maximize2, X } from 'lucide-react';
 
-import { GUIDE_CANVAS_WIDTH } from '../model/bookGuideSchema';
+import { GUIDE_CANVAS_WIDTH } from '../model/types';
 
 /** 관계도를 그리는 기준 폭 — 인스타 카드(1080)에서 좌우 여백 100 을 뺀 폭. 화면에선 이 그림을 통째로 줄인다 */
 export const DIAGRAM_WIDTH = GUIDE_CANVAS_WIDTH;

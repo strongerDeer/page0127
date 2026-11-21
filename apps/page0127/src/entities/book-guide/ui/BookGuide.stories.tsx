@@ -1,5 +1,4 @@
-import daeonsil from '../model/__fixtures__/daeonsil.json';
-import { bookGuideSectionsSchema } from '../model/bookGuideSchema';
+import { daeonsilSections } from '../guides/daeonsil.data';
 import { BookGuide } from './BookGuide';
 
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
@@ -9,7 +8,7 @@ const meta = {
   component: BookGuide,
   args: {
     // 인스타에 올린 『대온실 수리 보고서』 카드 9장을 옮긴 샘플
-    sections: bookGuideSectionsSchema.parse(daeonsil),
+    sections: daeonsilSections,
   },
   decorators: [
     (Story) => (
@@ -30,9 +29,8 @@ export const 대온실_수리_보고서: Story = {};
  * 그림 주소는 실제로는 어드민에서 올린 버킷 주소만 저장된다. 스토리는 public 그림을 빌려 쓴다.
  */
 const styled = (() => {
-  const sections = bookGuideSectionsSchema.parse(daeonsil);
-  const people = structuredClone(sections[0]);
-  if (people.type !== 'people') return sections;
+  const people = structuredClone(daeonsilSections[0]);
+  if (people.type !== 'people') return daeonsilSections;
   people.canvas = {
     ...people.canvas,
     font: 'serif',

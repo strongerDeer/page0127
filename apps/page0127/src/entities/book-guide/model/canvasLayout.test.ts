@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest';
 
-import daeonsil from './__fixtures__/daeonsil.json';
-import { bookGuideSectionsSchema } from './bookGuideSchema';
 import {
   buildCanvasLayout,
   MEMBER_HEIGHT,
@@ -10,7 +8,7 @@ import {
   routeLine,
 } from './canvasLayout';
 
-import type { PeopleSection } from './bookGuideSchema';
+import type { PeopleSection } from './types';
 
 const box = (x: number, y: number, w: number, h: number) => ({ x, y, w, h });
 
@@ -147,18 +145,5 @@ describe('buildCanvasLayout', () => {
     });
     expect(withRoute.lines[0].lines[0]).toHaveLength(3);
     expect(withRoute.lines[0].badge).toEqual([50, 50]);
-  });
-});
-
-describe('캔버스 모드 검사', () => {
-  it('판도 좌표도 없는 구성원은 저장 전에 막는다', () => {
-    const broken = structuredClone(daeonsil) as unknown as {
-      groups: { box?: unknown; members: { at?: unknown }[] }[];
-    }[];
-    delete broken[0].groups[0].box;
-    delete broken[0].groups[0].members[0].at;
-    const result = bookGuideSectionsSchema.safeParse(broken);
-    expect(result.success).toBe(false);
-    expect(result.error?.issues[0].message).toContain('자리가 없어요');
   });
 });

@@ -1,5 +1,5 @@
-// entities/book-guide public API — 읽기 가이드(인물관계도·연표·산책 코스)
-export { getBookGuide } from './api/getBookGuide';
+// entities/book-guide public API — 읽기 가이드(책마다 코드 파일, guides/)
+export { hasBookGuide, loadBookGuide } from './guides';
 export type {
   BookGuideSection,
   GuideBackground,
@@ -15,17 +15,7 @@ export type {
   PeopleSection,
   PlacesSection,
   TimelineSection,
-} from './model/bookGuideSchema';
-export {
-  bookGuideSectionsSchema,
-  GUIDE_BORDER_STYLES,
-  GUIDE_CANVAS_WIDTH,
-  GUIDE_COLORS,
-  GUIDE_FONTS,
-  GUIDE_TONES,
-  parseBookGuideSections,
-} from './model/bookGuideSchema';
-export type { CanvasLayout } from './model/canvasLayout';
-export { buildCanvasLayout } from './model/canvasLayout';
+} from './model/types';
+export { GUIDE_CANVAS_WIDTH } from './model/types';
 export { BookGuide } from './ui/BookGuide';
 export { CanvasPeople } from './ui/CanvasPeople';

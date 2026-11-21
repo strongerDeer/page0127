@@ -8,7 +8,6 @@ import {
   ImageIcon,
   LayoutDashboard,
   LineChart,
-  Network,
   Quote,
   Receipt,
   Users,
@@ -26,7 +25,6 @@ const NAV = [
   { href: '/admin/members', label: '회원 관리', icon: Users },
   { href: '/admin/banners', label: '메인 배너', icon: ImageIcon },
   { href: '/admin/sentences', label: '오늘의 문장', icon: Quote },
-  { href: '/admin/guides', label: '읽기 가이드', icon: Network },
 ];
 
 export const AdminNav = () => {

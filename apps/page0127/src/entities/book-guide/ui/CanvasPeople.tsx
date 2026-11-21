@@ -2,6 +2,7 @@ import { cn } from '@repo/ui';
 
 import { buildCanvasLayout } from '../model/canvasLayout';
 
+import type { CanvasNode } from '../model/canvasLayout';
 import type {
   GuideBorder,
   GuideColor,
@@ -9,8 +10,7 @@ import type {
   GuideLinkKind,
   GuideTone,
   PeopleSection,
-} from '../model/bookGuideSchema';
-import type { CanvasNode } from '../model/canvasLayout';
+} from '../model/types';
 import type { CSSProperties } from 'react';
 
 import styles from './CanvasPeople.module.css';
@@ -67,7 +67,7 @@ const badgeClass: Record<GuideLinkKind, string> = {
   work: 'border-text-body text-text-body',
 };
 
-/** 토큰 이름 → CSS 변수. 팔레트(GUIDE_COLORS) 밖 값은 스키마가 막는다 */
+/** 토큰 이름 → CSS 변수. 팔레트(GuideColor) 밖 값은 타입이 막는다 */
 const tokenColor = (color: GuideColor) => `var(--${color})`;
 
 /** 테두리가 있으면 tone 의 기본 테두리(클래스)를 인라인 값이 덮는다 */

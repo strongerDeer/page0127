@@ -1,4 +1,4 @@
-import { GUIDE_CANVAS_WIDTH } from './bookGuideSchema';
+import { GUIDE_CANVAS_WIDTH } from './types';
 
 import type {
   GuideBorder,
@@ -8,7 +8,7 @@ import type {
   GuideRect,
   GuideTone,
   PeopleSection,
-} from './bookGuideSchema';
+} from './types';
 
 /**
  * 캔버스 모드 배치 — JSON 에 적힌 좌표대로 상자를 놓고, 상자 사이 선의 경로를 계산한다.
