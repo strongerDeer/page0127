@@ -12,6 +12,7 @@ import { decodeHtmlEntities } from '@/shared/lib/htmlEntities';
 import { RATING_MAX, summarizeRatings, toCoverSource } from '@/entities/book';
 import { catalogVisibilityFilter } from '@/entities/book/api/catalogVisibility';
 import { BookSourceCredit } from '@/entities/book/ui/BookSourceCredit';
+import { BookGuide, getBookGuide } from '@/entities/book-guide';
 
 import { getPublicReaderTotal } from '@/widgets/book/api/getBookReaders';
 import {
@@ -167,10 +168,11 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
 
   if (!book) notFound();
 
-  // 통계와 리더 수는 서로 독립 → 병렬
-  const [stats, readerTotal] = await Promise.all([
+  // 통계·리더 수·읽기 가이드는 서로 독립 → 병렬
+  const [stats, readerTotal, guide] = await Promise.all([
     getBookStats(book.isbn),
     getPublicReaderTotal(createAnonClient(), book.isbn),
+    getBookGuide(createAnonClient(), book.id),
   ]);
 
   return (
@@ -277,6 +279,9 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
               </p>
             </section>
           )}
+
+          {/* 읽기 가이드 — 인스타 카드와 같은 데이터를 HTML 로. 발행된 책에만 있다 */}
+          {guide && <BookGuide sections={guide} />}
 
           <GlobalBookCommentSection globalBookId={book.id} />
 
