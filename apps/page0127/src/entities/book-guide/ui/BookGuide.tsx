@@ -1,5 +1,7 @@
 import { cn } from '@repo/ui';
 
+import { buildPeopleLayout } from '../model/peopleLayout';
+
 import type {
   BookGuideSection,
   GuideLinkKind,
@@ -8,14 +10,15 @@ import type {
   PlacesSection,
   TimelineSection,
 } from '../model/bookGuideSchema';
+import type { Branch, LinkRef, MemberNote } from '../model/peopleLayout';
 
 /**
  * 읽기 가이드 — 책 정보 페이지 본문에 붙는 칸 (서버 컴포넌트, 브라우저 JS 없음)
  *
- * 왜 그림이 아니라 글자로 그리나:
+ * 왜 이미지가 아니라 HTML 로 그리나:
  *   같은 내용이 인스타에는 이미지로 나가지만, 여기서는 검색엔진이 읽어야 한다.
  *   이름·관계·연도가 전부 HTML 글자라 "대온실 수리 보고서 인물관계도" 같은 검색에 걸린다.
- *   휴대폰 폭에서 선 그림은 글씨가 작아지므로 그룹 목록 + 관계 배지로 푼다.
+ *   관계선은 CSS 테두리로 그린다 — 배치(누가 누구 밑에)는 buildPeopleLayout 이 서버에서 정한다.
  */
 
 /** 관계 종류 → 배지 테두리 모양. 카드의 선 모양(실선·점선·파선)과 같은 약속이다 */
@@ -53,90 +56,225 @@ const PersonName = ({ person, onTint = false }: PersonNameProps) => (
   </>
 );
 
+/** 선 한 줄의 모양 — 관계 종류마다 실선·점선·파선 */
+const lineStyle = (kind: GuideLinkKind) =>
+  cn('border-primary', linkBorder[kind]);
+
+const LinkBadge = ({
+  link,
+  className,
+}: {
+  link: LinkRef;
+  className?: string;
+}) => (
+  <span
+    className={cn(
+      'whitespace-nowrap rounded-full border-[1.5px] bg-card px-2 text-xs font-bold leading-5 text-primary',
+      lineStyle(link.kind),
+      className
+    )}
+  >
+    {link.label}
+  </span>
+);
+
+type GroupCardProps = {
+  name: string;
+  members: GuidePerson[];
+  targetId?: string;
+  notes: Map<string, MemberNote[]>;
+};
+
+const GroupCard = ({ name, members, targetId, notes }: GroupCardProps) => (
+  <div className='rounded-xl bg-sunken px-4 py-3'>
+    <h4 className='text-sm font-medium text-text-subtle'>{name}</h4>
+    <ul className='mt-2 flex flex-col gap-1.5'>
+      {members.map((person) => (
+        <li key={person.id} className='flex flex-wrap items-center gap-x-2'>
+          {/* 가지 선이 가리키는 사람 — 이름 앞 점으로 표시 */}
+          {person.id === targetId && (
+            <span
+              aria-hidden='true'
+              className='size-1.5 shrink-0 rounded-full bg-primary'
+            />
+          )}
+          <PersonName person={person} />
+          {notes.get(person.id)?.map((note) => (
+            <span
+              key={`${note.otherName}-${note.label}`}
+              className='flex items-center gap-1 text-xs text-text-body'
+            >
+              <LinkBadge link={note} />
+              {note.otherName}
+            </span>
+          ))}
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+/**
+ * 가지 — 중심 인물 아래로 내려오는 선(rail)에 그룹이 매달린다.
+ * 선은 CSS 테두리라 JS 없이 서버 HTML 에 그대로 있다.
+ * side: 왼쪽 인물은 왼쪽 선, 오른쪽 인물은 오른쪽 선(카드의 좌우 대칭과 같은 그림).
+ */
+const BranchGroups = ({
+  branch,
+  side,
+  notes,
+}: {
+  branch: Branch;
+  side: 'left' | 'right';
+  notes: Map<string, MemberNote[]>;
+}) => (
+  <ul className={side === 'left' ? 'ml-6' : 'mr-6'}>
+    {branch.groups.map((group, i) => {
+      const isLast = i === branch.groups.length - 1;
+      return (
+        <li
+          key={group.name}
+          className={cn('relative pt-9', side === 'left' ? 'pl-6' : 'pr-6')}
+        >
+          {/* 세로선 — 마지막 그룹에서는 가로 눈금까지만 */}
+          <span
+            aria-hidden='true'
+            className={cn(
+              'absolute top-0 border-l-2',
+              side === 'left' ? 'left-0' : 'right-0',
+              isLast ? 'h-[3.25rem]' : 'bottom-0',
+              lineStyle(group.link.kind)
+            )}
+          />
+          {/* 가로 눈금 — 선에서 그룹 상자로 */}
+          <span
+            aria-hidden='true'
+            className={cn(
+              'absolute top-[3.25rem] w-6 border-t-2',
+              side === 'left' ? 'left-0' : 'right-0',
+              lineStyle(group.link.kind)
+            )}
+          />
+          <LinkBadge
+            link={group.link}
+            className={cn(
+              'absolute top-2',
+              side === 'left'
+                ? 'left-0 -translate-x-1/2'
+                : 'right-0 translate-x-1/2'
+            )}
+          />
+          <GroupCard
+            name={group.name}
+            members={group.members}
+            targetId={group.targetId}
+            notes={notes}
+          />
+        </li>
+      );
+    })}
+  </ul>
+);
+
+const LeadBox = ({ person }: { person: GuidePerson }) => (
+  <div className='flex min-h-[5.5rem] flex-col items-center justify-center gap-0.5 rounded-xl bg-primary/10 px-3 py-3 text-center'>
+    <PersonName person={person} onTint />
+  </div>
+);
+
 const PeopleBlock = ({ section }: { section: PeopleSection }) => {
-  const people = new Map(
-    [...section.leads, ...section.groups.flatMap((g) => g.members)].map((p) => [
-      p.id,
-      p,
-    ])
-  );
+  const layout = buildPeopleLayout(section);
+  const [left, right] = layout.branches;
   const usedKinds = [...new Set(section.links.map((l) => l.kind))];
+  const rightHasGroups = Boolean(right && right.groups.length > 0);
 
   return (
     <>
-      {/* 중심 인물 — 큰 면은 tint 로(쨍한 채움 X) */}
-      <ul className='grid gap-2 sm:grid-cols-2'>
-        {section.leads.map((person) => (
-          <li
-            key={person.id}
-            className='flex flex-col gap-0.5 rounded-xl bg-primary/10 px-4 py-3'
-          >
-            <PersonName person={person} onTint />
-          </li>
-        ))}
-      </ul>
-
-      {section.groups.length > 0 && (
-        <div className='grid gap-2 sm:grid-cols-2 lg:grid-cols-3'>
-          {section.groups.map((group) => (
-            <div key={group.name} className='rounded-xl bg-sunken px-4 py-3'>
-              <h4 className='text-sm font-medium text-text-subtle'>
-                {group.name}
-              </h4>
-              <ul className='mt-2 flex flex-col gap-1.5'>
-                {group.members.map((person) => (
-                  <li key={person.id} className='flex flex-wrap gap-x-2'>
-                    <PersonName person={person} />
-                  </li>
-                ))}
-              </ul>
+      {/* 1. 중심 인물 — 둘이면 가운데 관계선으로 잇는다 */}
+      <div
+        className={cn(
+          'grid items-stretch',
+          right ? 'grid-cols-[1fr_auto_1fr]' : 'grid-cols-1 sm:max-w-xs'
+        )}
+      >
+        <LeadBox person={left.lead} />
+        {right && (
+          <>
+            <div className='relative flex w-14 items-center justify-center self-stretch sm:w-24'>
+              {layout.leadLink && (
+                <>
+                  <span
+                    aria-hidden='true'
+                    className={cn(
+                      'absolute inset-x-0 top-1/2 border-t-2',
+                      lineStyle(layout.leadLink.kind)
+                    )}
+                  />
+                  <LinkBadge link={layout.leadLink} className='relative' />
+                </>
+              )}
             </div>
+            <LeadBox person={right.lead} />
+          </>
+        )}
+      </div>
+
+      {/* 2. 가지 — PC 는 두 갈래 나란히, 모바일은 세로로 이어 붙인다.
+          모바일에서 오른쪽 가지 선은 왼쪽 가지 옆을 지나 내려간다(통과선) */}
+      {(left.groups.length > 0 || rightHasGroups) && (
+        <div className='-mt-3 grid sm:grid-cols-2 sm:gap-6'>
+          <div className={cn('relative', rightHasGroups && 'pr-12 sm:pr-0')}>
+            {rightHasGroups && (
+              <span
+                aria-hidden='true'
+                className={cn(
+                  'absolute top-0 right-6 bottom-0 border-r-2 sm:hidden',
+                  lineStyle(right.groups[0].link.kind)
+                )}
+              />
+            )}
+            <BranchGroups
+              branch={left}
+              side='left'
+              notes={layout.memberNotes}
+            />
+          </div>
+          {right && rightHasGroups && (
+            <BranchGroups
+              branch={right}
+              side='right'
+              notes={layout.memberNotes}
+            />
+          )}
+        </div>
+      )}
+
+      {/* 3. 중심 인물과 직접 이어지지 않은 그룹 — 선 없이 */}
+      {layout.looseGroups.length > 0 && (
+        <div className='grid gap-2 sm:grid-cols-2 lg:grid-cols-3'>
+          {layout.looseGroups.map((group) => (
+            <GroupCard
+              key={group.name}
+              name={group.name}
+              members={group.members}
+              notes={layout.memberNotes}
+            />
           ))}
         </div>
       )}
 
-      {section.links.length > 0 && (
-        <div>
-          <h4 className='text-sm font-medium text-text-subtle'>관계</h4>
-          {/* "강영두 – 소꿉친구 – 은혜" 를 한 줄씩. 문장으로도 읽히게 배지에 sr 텍스트를 단다 */}
-          <ul className='mt-2 flex flex-wrap gap-x-5 gap-y-2'>
-            {section.links.map((link) => (
-              <li
-                key={`${link.from}-${link.to}-${link.label}`}
-                className='flex items-center gap-1.5 text-sm text-text-body'
-              >
-                <span>{people.get(link.from)?.name}</span>
-                <span
-                  className={cn(
-                    'rounded-full border-[1.5px] border-primary px-2 text-xs font-bold text-primary',
-                    linkBorder[link.kind]
-                  )}
-                >
-                  <span className='sr-only'>(</span>
-                  {link.label}
-                  <span className='sr-only'>)</span>
-                </span>
-                <span>{people.get(link.to)?.name}</span>
-              </li>
-            ))}
-          </ul>
-          {usedKinds.length > 1 && (
-            <p className='mt-2 flex gap-3 text-xs text-text-subtle'>
-              {usedKinds.map((kind) => (
-                <span key={kind} className='flex items-center gap-1'>
-                  <span
-                    aria-hidden='true'
-                    className={cn(
-                      'inline-block w-5 border-t-2 border-primary',
-                      linkBorder[kind]
-                    )}
-                  />
-                  {linkKindLabel[kind]}
-                </span>
-              ))}
-            </p>
-          )}
-        </div>
+      {usedKinds.length > 1 && (
+        <p className='flex gap-3 text-xs text-text-subtle'>
+          {usedKinds.map((kind) => (
+            <span key={kind} className='flex items-center gap-1'>
+              <span
+                aria-hidden='true'
+                className={cn('inline-block w-5 border-t-2', lineStyle(kind))}
+              />
+              {linkKindLabel[kind]}
+            </span>
+          ))}
+        </p>
       )}
     </>
   );
