@@ -94,6 +94,12 @@ const clamp = (v: number, lo: number, hi: number) =>
 const ALIGN_TOLERANCE = 4;
 /** 상자 사이 틈이 이보다 좁으면 꺾을 자리가 없다 — 겹친 구간에 곧은 선 */
 const MIN_ELBOW_GAP = 32;
+/**
+ * 관계 배지(높이 32)가 줄기에 앉을 때 위아래로 남길 선 길이.
+ * 줄기가 이것보다 짧으면 배지가 상자나 갈라지는 선에 붙어 위아래 길이가 달라 보인다.
+ */
+const BADGE_HEIGHT = 32;
+const BADGE_MARGIN = 14;
 
 /**
  * 두 상자를 잇는 선 경로 — 선은 언제나 상자 **가운데**에서 나가 상대 상자 **가운데**로 들어간다.
@@ -141,7 +147,14 @@ export const routeLine = (
         badge: [x, (y1 + y2) / 2],
       };
     }
-    const my = Math.round((y1 + y2) / 2);
+    // 꺾는 높이: 틈 절반. 단, 배지 위아래로 선이 같은 길이(BADGE_MARGIN) 이상 남도록 줄기를 확보
+    const dir = above ? 1 : -1;
+    const gap = Math.abs(y2 - y1);
+    const trunk = Math.min(
+      Math.max(gap / 2, BADGE_HEIGHT + BADGE_MARGIN * 2),
+      gap - 16
+    );
+    const my = Math.round(y1 + dir * trunk);
     return {
       points: [
         [acx, y1],
@@ -210,6 +223,8 @@ export const buildCanvasLayout = (section: PeopleSection): CanvasLayout => {
   const rects = new Map<string, Rect>();
   const nodes: CanvasNode[] = [];
   const panels: CanvasPanel[] = [];
+  /** 글자가 넘쳐 데이터 높이보다 커진 상자 id — 피그마 선 모양을 못 쓴다 */
+  const grown = new Set<string>();
 
   // 1. 중심 인물 — 좌표 없으면 맨 위 왼쪽/오른쪽(하나면 가운데)
   section.leads.forEach((lead, i) => {
@@ -264,7 +279,9 @@ export const buildCanvasLayout = (section: PeopleSection): CanvasLayout => {
     group.members.forEach((m) => {
       if (m.at) {
         const r = withHeight(m.at, MEMBER_HEIGHT);
-        rects.set(m.id, { ...r, h: Math.max(r.h, memberContentHeight(m)) });
+        const h = Math.max(r.h, memberContentHeight(m));
+        if (h > r.h) grown.add(m.id);
+        rects.set(m.id, { ...r, h });
       }
       const rect = rects.get(m.id);
       // 판도 좌표도 없는 구성원은 그릴 자리가 없다 — 스키마가 저장 전에 막는다
@@ -282,8 +299,9 @@ export const buildCanvasLayout = (section: PeopleSection): CanvasLayout => {
   // 3. 선 — 양 끝 상자를 알면 경로가 정해진다
   const lines: CanvasLine[] = section.links.flatMap((link, i) => {
     const key = `${link.from}-${link.to}-${i}`;
-    // 피그마에서 가져온 모양이 있으면 그대로
-    if (link.route) {
+    // 피그마에서 가져온 모양이 있으면 그대로 — 단, 글자가 넘쳐 양 끝 상자가 늘어났으면
+    // 피그마 선은 옛 상자 크기 기준이라 어긋난다 → 자동(가운데) 긋기로
+    if (link.route && !grown.has(link.from) && !grown.has(link.to)) {
       return [
         {
           key,
