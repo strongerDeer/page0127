@@ -49,6 +49,7 @@ export const RESERVED_USERNAMES: ReadonlySet<string> = new Set([
   'onboarding',
   'library',
   'icons',
+  'demo',
   // public/ 폴더 — /[username]/... 하위 주소와 겹칠 수 있다
   'badges',
   'brand',

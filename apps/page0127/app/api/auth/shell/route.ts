@@ -19,7 +19,7 @@ export async function GET() {
   try {
     const supabase = await getSupabaseClient();
     const user = await getVerifiedUser(supabase.auth);
-    const response = successResponse(user ? await getShellUser(user.id) : null);
+    const response = successResponse(user ? await getShellUser(user) : null);
     response.headers.set('Cache-Control', 'private, no-store');
     return response;
   } catch {

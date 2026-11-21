@@ -32,6 +32,8 @@ export async function GET(request: NextRequest) {
     const { data: profiles, error } = await supabase
       .from('profiles')
       .select('id, nickname, username, bio, photo_url')
+      // 리뷰어용 체험 계정은 사람 찾기에 나오지 않는다(shared/lib/demo/demoAccount)
+      .eq('is_demo', false)
       // 감싸지 않으면 q 에 쉼표를 넣어 다른 컬럼 조건을 덧붙일 수 있다(postgrestFilter.ts)
       .or(
         `nickname.ilike.${quotePostgrestValue(`%${query}%`)},username.ilike.${quotePostgrestValue(`%${query}%`)}`

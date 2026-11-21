@@ -3,6 +3,10 @@
 import { revalidatePath } from 'next/cache';
 
 import { createClient } from '@/shared/config/supabase/server';
+import {
+  DEMO_READ_ONLY_MESSAGE,
+  isDemoUser,
+} from '@/shared/lib/demo/demoAccount';
 
 import {
   normalizeUsername,
@@ -47,6 +51,10 @@ export const updateUsernameAction = async (
   } = await supabase.auth.getUser();
   if (!user) {
     return { status: 'error', message: '로그인이 필요합니다.' };
+  }
+  // 체험 계정은 읽기만 된다(shared/lib/demo/demoAccount)
+  if (isDemoUser(user)) {
+    return { status: 'error', message: DEMO_READ_ONLY_MESSAGE };
   }
 
   // 형식·예약어를 먼저 본다 (중복은 DB 만 안다)
@@ -123,8 +131,7 @@ export const updateUsernameAction = async (
  * 그래서 이건 편의 기능이고, 최종 판정은 언제나 저장 결과다.
  */
 export type UsernameAvailability =
-  | { available: true }
-  | { available: false; message: string };
+  { available: true } | { available: false; message: string };
 
 export const checkUsernameAvailability = async (
   raw: string
@@ -151,7 +158,10 @@ export const checkUsernameAvailability = async (
 
   if (error) {
     console.error('아이디 중복 확인 실패:', error.message);
-    return { available: false, message: '확인에 실패했어요. 잠시 후 다시 시도해 주세요.' };
+    return {
+      available: false,
+      message: '확인에 실패했어요. 잠시 후 다시 시도해 주세요.',
+    };
   }
 
   // 지금 내 아이디면 "쓸 수 있다"로 본다 (바꾸지 않는 선택지)
