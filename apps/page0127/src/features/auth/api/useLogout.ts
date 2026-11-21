@@ -35,6 +35,13 @@ export const useLogout = () => {
     // 1. 세션 무효화 (서버)
     // 2. 로컬 스토리지에서 토큰 삭제 (클라이언트)
     // 3. 모든 auth 상태 초기화
+    // 체험 계정이었는지는 로그아웃 전에 읽어 둔다(쿠키의 세션만 읽어 네트워크 왕복 없음).
+    // 체험 서재는 체험 중인 사람에게만 열리므로, 로그아웃하면 그 자리가 404 가 된다.
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const wasDemo = session?.user.app_metadata?.demo === true;
+
     const { error } = await supabase.auth.signOut();
 
     if (error) {
@@ -56,7 +63,7 @@ export const useLogout = () => {
     // 보던 곳이 로그인 없이도 볼 수 있는 페이지면 그 자리에 머문다.
     // 책 소개·남의 서재를 구경하다 로그아웃했다고 홈으로 쫓아낼 이유가 없다.
     // 보호 페이지(내 서재·설정 등)에 있었다면 더는 볼 수 없으므로 홈으로 보낸다.
-    if (isProtectedPath(window.location.pathname)) {
+    if (wasDemo || isProtectedPath(window.location.pathname)) {
       router.push('/');
     }
 
