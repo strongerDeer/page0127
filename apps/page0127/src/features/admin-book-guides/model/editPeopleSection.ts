@@ -57,6 +57,16 @@ const assignPatch = <T extends object>(target: T, patch: Partial<T>) => {
   }
 };
 
+/**
+ * 피그마에서 가져온 선 모양을 모두 버리고 자동 긋기(상자 가운데끼리)로 돌린다.
+ * 피그마에서 손으로 그은 선이 상자 가운데에서 살짝 비껴 있을 때 한 번에 정돈한다.
+ */
+export const resetRoutes = (section: PeopleSection): PeopleSection => {
+  const next = structuredClone(section);
+  dropRoutes(next);
+  return next;
+};
+
 export const updatePerson = (
   section: PeopleSection,
   id: string,

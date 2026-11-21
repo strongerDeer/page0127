@@ -8,7 +8,7 @@ import { CanvasEditor } from './CanvasEditor';
 import type { PeopleSection } from '@/entities/book-guide';
 import type { Meta, StoryObj } from '@storybook/nextjs-vite';
 
-const sample = bookGuideSectionsSchema.parse(daeonsil)[1] as PeopleSection;
+const sample = bookGuideSectionsSchema.parse(daeonsil)[0] as PeopleSection;
 
 /** 편집기는 상태를 바깥에서 받는다 — 스토리에서는 useState 로 감싼다 */
 const Stateful = () => {
@@ -24,4 +24,4 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const 낙원하숙_사람들: Story = {};
+export const 영두_곁의_사람들: Story = {};

@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { resizeAvatarFile } from '@/shared/lib/resizeAvatar';
 
 import { uploadGuideArt } from '../api/guideActions';
-import { updateCanvas } from '../model/editPeopleSection';
+import { resetRoutes, updateCanvas } from '../model/editPeopleSection';
 import { ColorSwatches, FontPicker } from './StylePickers';
 
 import type { PeopleSection } from '@/entities/book-guide';
@@ -58,6 +58,21 @@ export const CanvasSettings = ({
         방향키로 1px, Shift+방향키로 한 칸씩 움직여요.
       </p>
       <h3 className='mt-1 text-sm font-bold'>캔버스 전체</h3>
+      {section.links.some((l) => l.route) && (
+        <div className='flex flex-col gap-1'>
+          <Button
+            size='sm'
+            variant='outline'
+            onClick={() => onChange(resetRoutes(section))}
+          >
+            선 가운데로 다시 긋기
+          </Button>
+          <p className='text-xs text-text-subtle'>
+            피그마에서 그은 선을 버리고, 모든 선을 상자 가운데끼리 다시 이어요.
+            상자를 옮겨도 이렇게 바뀌어요.
+          </p>
+        </div>
+      )}
       <FontPicker
         value={section.canvas?.font}
         onChange={(font) => onChange(updateCanvas(section, { font }))}

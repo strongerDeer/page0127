@@ -70,11 +70,21 @@ export type CanvasLayout = {
 const clamp = (v: number, lo: number, hi: number) =>
   Math.min(Math.max(v, lo), hi);
 
+/** 가운데끼리 이 정도 안쪽으로 어긋나면 그냥 곧은 선(눈으로 구분 안 되는 꺾임을 만들지 않는다) */
+const ALIGN_TOLERANCE = 4;
+/** 상자 사이 틈이 이보다 좁으면 꺾을 자리가 없다 — 겹친 구간에 곧은 선 */
+const MIN_ELBOW_GAP = 32;
+
 /**
- * 두 상자를 잇는 선 경로.
- * 1. 가로로 겹치면(위아래 관계) → 세로 직선
- * 2. 세로로 겹치면(옆 관계) → 가로 직선
- * 3. 둘 다 아니면 → a 에서 세로로 나가 b 높이에서 꺾어 가로로 들어간다(ㄱ자)
+ * 두 상자를 잇는 선 경로 — 선은 언제나 상자 **가운데**에서 나가 상대 상자 **가운데**로 들어간다.
+ * 1. 위아래로 놓였으면 → 세로선. 가운데가 어긋나면 틈의 절반 높이에서 한 번 옆으로 비킨다(ㄹ자)
+ * 2. 옆으로 놓였으면 → 가로선. 가운데 높이가 어긋나면 틈의 절반에서 비킨다
+ * 3. 대각선 자리면 → a 의 위/아래 가운데에서 나가 b 의 가운데 높이로 꺾는다(ㄱ자)
+ *
+ * 왜 ㄹ자인가(HJ 11/21 "선은 딱딱 가운데 정렬"): 겹친 구간에 곧은 선을 그으면 한쪽 상자에는
+ * 가장자리로 들어가 삐뚤어 보인다. 꺾이더라도 양 끝이 가운데면 정돈돼 보인다.
+ * 같은 상자에서 나가는 선들은 같은 높이에서 갈라져 자연스러운 갈래선이 된다.
+ * 배지는 a 쪽 줄기(나가는 세로선)의 가운데 — 갈래선 배지가 한 자리에 겹쳐 하나로 보인다.
  */
 export const routeLine = (
   a: Rect,
@@ -82,38 +92,81 @@ export const routeLine = (
 ): { points: [number, number][]; badge: [number, number] } => {
   const acx = a.x + a.w / 2;
   const acy = a.y + a.h / 2;
+  const bcx = b.x + b.w / 2;
   const bcy = b.y + b.h / 2;
 
+  const above = a.y + a.h <= b.y; // a 가 b 위
+  const below = b.y + b.h <= a.y; // a 가 b 아래
   const xLo = Math.max(a.x, b.x);
   const xHi = Math.min(a.x + a.w, b.x + b.w);
-  if (xLo < xHi) {
-    // 겹친 구간 안에서 a 의 가운데에 가장 가까운 x — 모서리에 딱 붙지 않게 12px 띄운다
-    const x = xHi - xLo > 24 ? clamp(acx, xLo + 12, xHi - 12) : (xLo + xHi) / 2;
-    const down = a.y < b.y;
-    const y1 = down ? a.y + a.h : a.y;
-    const y2 = down ? b.y : b.y + b.h;
+  if ((above || below) && xLo < xHi) {
+    const y1 = above ? a.y + a.h : a.y;
+    const y2 = above ? b.y : b.y + b.h;
+    if (
+      Math.abs(acx - bcx) <= ALIGN_TOLERANCE ||
+      Math.abs(y2 - y1) < MIN_ELBOW_GAP
+    ) {
+      // 곧은 선: 가운데가 같으면 그 x, 틈이 좁으면 겹친 구간 안에서 a 가운데에 가장 가까운 x
+      const x =
+        Math.abs(acx - bcx) <= ALIGN_TOLERANCE
+          ? acx
+          : xHi - xLo > 24
+            ? clamp(acx, xLo + 12, xHi - 12)
+            : (xLo + xHi) / 2;
+      return {
+        points: [
+          [x, y1],
+          [x, y2],
+        ],
+        badge: [x, (y1 + y2) / 2],
+      };
+    }
+    const my = Math.round((y1 + y2) / 2);
     return {
       points: [
-        [x, y1],
-        [x, y2],
+        [acx, y1],
+        [acx, my],
+        [bcx, my],
+        [bcx, y2],
       ],
-      badge: [x, (y1 + y2) / 2],
+      badge: [acx, (y1 + my) / 2],
     };
   }
 
+  const left = a.x + a.w <= b.x; // a 가 b 왼쪽
+  const right = b.x + b.w <= a.x;
   const yLo = Math.max(a.y, b.y);
   const yHi = Math.min(a.y + a.h, b.y + b.h);
-  if (yLo < yHi) {
-    const y = yHi - yLo > 24 ? clamp(acy, yLo + 12, yHi - 12) : (yLo + yHi) / 2;
-    const right = a.x < b.x;
-    const x1 = right ? a.x + a.w : a.x;
-    const x2 = right ? b.x : b.x + b.w;
+  if ((left || right) && yLo < yHi) {
+    const x1 = left ? a.x + a.w : a.x;
+    const x2 = left ? b.x : b.x + b.w;
+    if (
+      Math.abs(acy - bcy) <= ALIGN_TOLERANCE ||
+      Math.abs(x2 - x1) < MIN_ELBOW_GAP
+    ) {
+      const y =
+        Math.abs(acy - bcy) <= ALIGN_TOLERANCE
+          ? acy
+          : yHi - yLo > 24
+            ? clamp(acy, yLo + 12, yHi - 12)
+            : (yLo + yHi) / 2;
+      return {
+        points: [
+          [x1, y],
+          [x2, y],
+        ],
+        badge: [(x1 + x2) / 2, y],
+      };
+    }
+    const mx = Math.round((x1 + x2) / 2);
     return {
       points: [
-        [x1, y],
-        [x2, y],
+        [x1, acy],
+        [mx, acy],
+        [mx, bcy],
+        [x2, bcy],
       ],
-      badge: [(x1 + x2) / 2, y],
+      badge: [(x1 + mx) / 2, acy],
     };
   }
 

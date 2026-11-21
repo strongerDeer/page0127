@@ -4,6 +4,7 @@ import {
   fitRect,
   moveGroupBox,
   movePerson,
+  resetRoutes,
   toCanvas,
   updateCanvas,
   updateGroup,
@@ -108,4 +109,21 @@ describe('스타일 바꾸기', () => {
   it('캔버스 글꼴', () => {
     expect(updateCanvas(section, { font: 'serif' }).canvas?.font).toBe('serif');
   });
+});
+
+it('resetRoutes: 피그마 선 모양을 지워 자동(가운데) 긋기로', () => {
+  const withRoute: PeopleSection = {
+    ...section,
+    links: [
+      {
+        from: section.leads[0].id,
+        to: section.groups[0].members[0].id,
+        kind: 'bond',
+        route: { lines: [] },
+      },
+    ],
+  };
+  const next = resetRoutes(withRoute);
+  expect(next.links.every((l) => !('route' in l))).toBe(true);
+  expect(withRoute.links[0].route).toBeDefined();
 });
