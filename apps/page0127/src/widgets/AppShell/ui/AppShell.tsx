@@ -15,7 +15,7 @@ export const AppShell = async ({ children }: { children: React.ReactNode }) => {
     redirect('/login');
   }
 
-  const shellUser = await getShellUser(user.id);
+  const shellUser = await getShellUser(user);
 
   return <AppShellLayout user={shellUser}>{children}</AppShellLayout>;
 };

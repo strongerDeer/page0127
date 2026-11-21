@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { isDemoUser } from '@/shared/lib/demo/demoAccount';
 
 import { isCurrentYearGoal, shouldClaimGoal } from '../model/claim';
 import { isValidGoal } from '../model/pendingShelf';
@@ -24,6 +25,8 @@ export const claimReadingGoalAction = async (
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return false;
+  // 체험 계정은 읽기만 된다 — 맛보기 목표를 옮기지 않는다
+  if (isDemoUser(user)) return false;
 
   const { data: profile, error: readError } = await supabase
     .from('profiles')

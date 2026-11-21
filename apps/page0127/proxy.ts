@@ -1,7 +1,13 @@
-import { type NextRequest } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
 import { updateSession } from '@/shared/config/supabase/middleware';
 import { copyAuthResponse } from '@/shared/config/supabase/response';
+import {
+  DEMO_READ_ONLY_CODE,
+  DEMO_READ_ONLY_MESSAGE,
+  isDemoBlockedRequest,
+  isDemoUser,
+} from '@/shared/lib/demo/demoAccount';
 import {
   HERO_VARIANT_COOKIE,
   HERO_VARIANT_MAX_AGE_SEC,
@@ -59,6 +65,24 @@ export async function proxy(request: NextRequest) {
   }
 
   if (response.status === 503) return response;
+
+  // 체험 계정은 읽기만 된다 — /api 쓰기를 라우트에 닿기 전에 돌려보낸다.
+  // 라우트 중 16곳은 RLS 를 건너뛰는 service_role 로 쓰기 때문에 DB 정책만으로는 못 막는다.
+  if (
+    isDemoUser(user) &&
+    isDemoBlockedRequest({
+      method: request.method,
+      pathname: request.nextUrl.pathname,
+    })
+  ) {
+    return copyAuthResponse(
+      response,
+      NextResponse.json(
+        { error: DEMO_READ_ONLY_MESSAGE, code: DEMO_READ_ONLY_CODE },
+        { status: 403 }
+      )
+    );
+  }
 
   if (request.nextUrl.pathname.startsWith('/api/')) {
     const rateLimitResponse = await checkApiRateLimit(request, user);

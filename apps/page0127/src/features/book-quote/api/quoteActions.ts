@@ -1,6 +1,10 @@
 'use server';
 
 import { createClient } from '@/shared/config/supabase/server';
+import {
+  DEMO_READ_ONLY_MESSAGE,
+  isDemoUser,
+} from '@/shared/lib/demo/demoAccount';
 
 import { parseQuoteInput } from '@/entities/quote';
 
@@ -40,6 +44,7 @@ export const addQuoteAction = async (
 
   const { supabase, user } = await requireUser();
   if (!user) return { ok: false, message: '로그인이 필요합니다.' };
+  if (isDemoUser(user)) return { ok: false, message: DEMO_READ_ONLY_MESSAGE };
 
   // 내 서재에 있는 책에만 적는다 — 아무 ISBN 에나 문장을 쌓지 않도록
   const { count } = await supabase
@@ -74,6 +79,7 @@ export const updateQuoteAction = async (
 
   const { supabase, user } = await requireUser();
   if (!user) return { ok: false, message: '로그인이 필요합니다.' };
+  if (isDemoUser(user)) return { ok: false, message: DEMO_READ_ONLY_MESSAGE };
 
   const { data, error } = await supabase
     .from('book_quotes')
@@ -101,6 +107,7 @@ export const deleteQuoteAction = async (
 
   const { supabase, user } = await requireUser();
   if (!user) return { ok: false, message: '로그인이 필요합니다.' };
+  if (isDemoUser(user)) return { ok: false, message: DEMO_READ_ONLY_MESSAGE };
 
   const { error } = await supabase
     .from('book_quotes')
@@ -146,6 +153,7 @@ export const addQuotesAction = async (
 
   const { supabase, user } = await requireUser();
   if (!user) return { ok: false, message: '로그인이 필요합니다.' };
+  if (isDemoUser(user)) return { ok: false, message: DEMO_READ_ONLY_MESSAGE };
 
   const { count } = await supabase
     .from('books')

@@ -1,6 +1,10 @@
 'use server';
 
 import { createClient } from '@/shared/config/supabase/server';
+import {
+  DEMO_READ_ONLY_MESSAGE,
+  isDemoUser,
+} from '@/shared/lib/demo/demoAccount';
 
 /**
  * useActionState가 관리할 상태 타입
@@ -50,6 +54,10 @@ export const updateReadingGoalAction = async (
 
   if (!user) {
     return { status: 'error', message: '로그인이 필요합니다.' };
+  }
+  // 체험 계정은 읽기만 된다(shared/lib/demo/demoAccount)
+  if (isDemoUser(user)) {
+    return { status: 'error', message: DEMO_READ_ONLY_MESSAGE };
   }
 
   const { error } = await supabase

@@ -2,6 +2,7 @@
 
 import { checkYes24SpineOnServer } from '@/shared/api/book-provider/checkYes24SpineOnServer';
 import { createClient } from '@/shared/config/supabase/server';
+import { isDemoUser } from '@/shared/lib/demo/demoAccount';
 import { missingSpineCandidate } from '@/shared/lib/spineImage';
 
 /**
@@ -32,6 +33,8 @@ export const fillMissingSpineAction = async (
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return 'error';
+  // 체험 계정의 책은 시드 그대로 둔다(쓰기 금지) — YES24 확인도 하지 않는다
+  if (isDemoUser(user)) return 'none';
 
   const { data: book, error: readError } = await supabase
     .from('books')

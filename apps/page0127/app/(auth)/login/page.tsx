@@ -13,10 +13,12 @@ import {
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 import { detectInAppBrowser } from '@/shared/lib/auth/inAppBrowser';
 import { toPostLoginPath } from '@/shared/lib/auth/onboardingRedirect';
+import { isDemoLoginEnabled } from '@/shared/lib/demo/demoAccount';
 
 import { ensureProfile } from '@/entities/profile/api/getProfile';
 
 import { OAuthLoginButtons } from '@/features/auth/ui/OAuthLoginButtons';
+import { DemoLoginButton } from '@/features/demo-account';
 import { restoreLoginShelf } from '@/features/shelf-preview/api/restoreLoginShelf';
 import { PendingShelfNotice } from '@/features/shelf-preview/ui/PendingShelfNotice';
 import { ResumeLogin } from '@/features/shelf-preview/ui/ResumeLogin';
@@ -34,7 +36,7 @@ export const metadata: Metadata = {
 };
 
 type LoginPageProps = {
-  searchParams: Promise<{ redirect?: string; shelf?: string }>;
+  searchParams: Promise<{ redirect?: string; shelf?: string; demo?: string }>;
 };
 
 /**
@@ -45,7 +47,7 @@ type LoginPageProps = {
  * 페이지가 이미 서버에서 파라미터를 받을 수 있으므로 그럴 이유가 없다.
  */
 const LoginPage = async ({ searchParams }: LoginPageProps) => {
-  const { redirect, shelf } = await searchParams;
+  const { redirect, shelf, demo } = await searchParams;
   const transfer = await restoreLoginShelf(shelf);
   const user = await getCurrentUser();
   if (user) {
@@ -89,6 +91,12 @@ const LoginPage = async ({ searchParams }: LoginPageProps) => {
           {/* 홈 맛보기에서 "저장하기"를 누르고 왔다면 그 맥락을 잇는다 (없으면 안 보인다) */}
           <PendingShelfNotice transfer={transfer} />
           <OAuthLoginButtons next={redirect} inAppBrowser={inAppBrowser} />
+          {/* 이력서·포트폴리오 리뷰어용 — 가입 없이 기록·통계·취향 분석을 볼 수 있다(읽기 전용) */}
+          {isDemoLoginEnabled() && (
+            <div className='mt-6 border-t border-line pt-6'>
+              <DemoLoginButton failed={demo === 'failed'} />
+            </div>
+          )}
           {/* 약관 링크는 실제 페이지로 연결한다 (기존 href='#' 죽은 링크) */}
           <p className='mt-4 text-center text-sm text-balance break-keep text-text-subtle'>
             로그인하면{' '}

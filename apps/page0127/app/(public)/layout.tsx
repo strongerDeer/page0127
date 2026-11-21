@@ -12,7 +12,7 @@ import { AppShellLayout, getShellUser } from '@/widgets/AppShell';
 const PublicLayout = async ({ children }: { children: React.ReactNode }) => {
   const user = await getCurrentUser();
 
-  const shellUser = user ? await getShellUser(user.id) : null;
+  const shellUser = user ? await getShellUser(user) : null;
 
   return <AppShellLayout user={shellUser}>{children}</AppShellLayout>;
 };
