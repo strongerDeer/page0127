@@ -298,3 +298,50 @@ BEGIN
     ORDER BY c.c_rank;
 END;
 $$;
+
+-- =====================================================
+-- 체험 입구 /demo — 'demo' 를 예약어에 추가
+-- =====================================================
+--
+-- 이력서에는 page0127.com/demo 를 적고, 이 정적 경로로 온 사람에게만 체험 버튼을 보인다.
+-- Next.js 는 정적 경로를 /[username] 보다 먼저 매칭하므로 아이디가 'demo' 인 사람의 서재는
+-- 열리지 않게 된다 → 예약어로 막고, 이미 쓰는 행은 20261107000100 과 같은 규칙으로 바꾼다.
+-- (reservedRoutes.test.ts 가 TS 목록과 이 정의가 같은지 확인한다)
+CREATE OR REPLACE FUNCTION is_reserved_username(candidate text)
+RETURNS boolean
+LANGUAGE sql
+IMMUTABLE
+AS $$
+  SELECT lower(candidate) = ANY (ARRAY[
+    -- 실제 라우트 (app/ 최상위 세그먼트, route group 은 벗긴 이름)
+    'admin', 'api', 'auth', 'login', 'logout', 'settings',
+    'books', 'dashboard', 'feed', 'notifications', 'search',
+    'about', 'contact', 'privacy', 'terms',
+    'updates', 'onboarding', 'library', 'icons', 'demo',
+    -- public/ 폴더 — /[username]/... 하위 주소와 겹칠 수 있다
+    'badges', 'brand', 'images', 'illustrations',
+    -- Next.js 파일 규칙이 만드는 최상위 경로
+    'sitemap', 'sitemap.xml', 'robots', 'robots.txt',
+    'opengraph-image', 'icon', 'favicon', 'favicon.ico',
+    '_next', 'static', 'public', 'well-known', 'manifest', 'offline',
+    -- 아직 없지만 만들면 충돌하는 것들 — 미리 잡아둔다
+    'help', 'support', 'blog', 'pricing', 'signup', 'register',
+    'me', 'new', 'edit', 'delete', 'account', 'profile', 'user', 'users',
+    'home', 'explore',
+    'null', 'undefined', 'page0127'
+  ]);
+$$;
+
+UPDATE profiles
+SET username = 'reader' || substr(md5(id::text), 1, 8)
+WHERE is_reserved_username(username);
+
+ALTER TABLE profiles
+  DROP CONSTRAINT IF EXISTS profiles_username_not_reserved;
+
+ALTER TABLE profiles
+  ADD CONSTRAINT profiles_username_not_reserved
+  CHECK (username IS NULL OR NOT is_reserved_username(username));
+
+REVOKE ALL ON FUNCTION is_reserved_username(text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION is_reserved_username(text) TO anon, authenticated, service_role;

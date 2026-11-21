@@ -91,8 +91,11 @@ const LoginPage = async ({ searchParams }: LoginPageProps) => {
           {/* 홈 맛보기에서 "저장하기"를 누르고 왔다면 그 맥락을 잇는다 (없으면 안 보인다) */}
           <PendingShelfNotice transfer={transfer} />
           <OAuthLoginButtons next={redirect} inAppBrowser={inAppBrowser} />
-          {/* 이력서·포트폴리오 리뷰어용 — 가입 없이 기록·통계·취향 분석을 볼 수 있다(읽기 전용) */}
-          {isDemoLoginEnabled() && (
+          {/*
+            이력서·포트폴리오 리뷰어용 — 가입 없이 기록·통계·취향 분석을 볼 수 있다(읽기 전용).
+            /demo 로 들어온 사람(?demo=1)과 체험 로그인에 실패해 돌아온 사람(?demo=failed)에게만 보인다.
+          */}
+          {isDemoLoginEnabled() && (demo === '1' || demo === 'failed') && (
             <div className='mt-6 border-t border-line pt-6'>
               <DemoLoginButton failed={demo === 'failed'} />
             </div>
