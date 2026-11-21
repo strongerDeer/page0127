@@ -28,6 +28,13 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
       priority: 0.8,
     },
     {
+      // 서비스 소개 — "page0127.은 무엇인가"를 평평한 글로 담은 페이지(AI·검색 인용용)
+      url: `${siteUrl}/about`,
+      lastModified,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
       url: `${siteUrl}/updates`,
       lastModified,
       changeFrequency: 'monthly',

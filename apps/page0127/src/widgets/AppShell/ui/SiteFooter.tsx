@@ -12,6 +12,7 @@ import { INSTAGRAM_URL } from '@/shared/config/social';
  * 이용약관도 같은 이유로 로그인 후에 닿아야 한다.
  */
 const footerLinks = [
+  { href: '/about', label: '서비스 소개' },
   { href: '/books/all', label: '전체 도서' },
   { href: '/updates', label: '공지·업데이트' },
   { href: '/contact', label: '문의' },

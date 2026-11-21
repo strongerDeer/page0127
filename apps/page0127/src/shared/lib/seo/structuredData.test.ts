@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  buildFaqPageJsonLd,
   buildOrganizationJsonLd,
+  buildWebApplicationJsonLd,
   buildWebSiteJsonLd,
   serializeJsonLd,
 } from './structuredData';
@@ -57,6 +59,45 @@ describe('buildOrganizationJsonLd', () => {
       url: 'https://page0127.com',
       logo: 'https://page0127.com/icon.png',
       sameAs: ['https://www.instagram.com/page0127._/'],
+    });
+  });
+});
+
+describe('buildWebApplicationJsonLd', () => {
+  it('무료 웹 서비스라는 사실(가격 0·플랫폼 Web)을 담는다', () => {
+    const out = buildWebApplicationJsonLd({
+      name: 'page0127.',
+      url: 'https://page0127.com',
+      description: '설명',
+    });
+
+    expect(out['@type']).toBe('WebApplication');
+    expect(out.operatingSystem).toBe('Web');
+    expect(out.isAccessibleForFree).toBe(true);
+    expect(out.offers).toEqual({
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'KRW',
+    });
+    // 실제 리뷰 없이 별점을 넣으면 구글 정책 위반 — 넣지 않는다
+    expect(out).not.toHaveProperty('aggregateRating');
+  });
+});
+
+describe('buildFaqPageJsonLd', () => {
+  it('질문·답 배열을 FAQPage의 Question/Answer로 옮긴다', () => {
+    expect(
+      buildFaqPageJsonLd([{ question: '무료인가요?', answer: '네.' }])
+    ).toEqual({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: '무료인가요?',
+          acceptedAnswer: { '@type': 'Answer', text: '네.' },
+        },
+      ],
     });
   });
 });

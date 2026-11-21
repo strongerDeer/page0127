@@ -39,6 +39,12 @@ export type Profile = {
    */
   onboarded_at: string | null;
 
+  /**
+   * 리뷰어용 공용 체험 계정인가. 서버 소유 컬럼(사용자가 못 바꾼다, 20261121000100).
+   * 체험 계정의 서재는 체험 계정 본인에게만 열린다 — getProfileByUsername 참고.
+   */
+  is_demo?: boolean;
+
   /** 닉네임 */
   nickname: string | null;
 
