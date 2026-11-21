@@ -432,11 +432,48 @@ const catalog = new Map(
     .map((row) => [row.isbn, row]),
 );
 
-const books = BOOKS.filter((book) => {
+let books = BOOKS.filter((book) => {
   if (catalog.has(book.isbn)) return true;
   console.warn(`  · 건너뜀: ${book.isbn} 은 승인된 카탈로그에 없어요`);
   return false;
 });
+
+/**
+ * 카탈로그가 얇은 DB(dev·스테이징)용 대체 — 12권도 안 되면 그 DB 에 있는 승인된 책(표지 있는 것)으로
+ * 빈자리를 채운다. 상태·날짜·별점은 원래 자리 것을 쓰고, 그 책에 맞춰 쓴 한줄평·메모·문장은 뺀다.
+ * 운영처럼 목록의 책이 다 있으면 이 단계는 돌지 않는다(취향 분석 글이 실제 책과 맞도록).
+ */
+if (books.length < 12) {
+  const { data: extraRows, error: extraError } = await supabase
+    .from("global_books")
+    .select(
+      "isbn, title, author, publisher, cover_image, category, spine_image, thickness_mm, review_status",
+    )
+    .eq("review_status", "approved")
+    .not("cover_image", "is", null)
+    .not("isbn", "in", `(${isbns.join(",")})`)
+    .limit(BOOKS.length);
+  if (extraError) fail("대체 책 조회", extraError);
+  const extras = [...(extraRows ?? [])];
+  books = BOOKS.flatMap((book) => {
+    if (catalog.has(book.isbn)) return [book];
+    const sub = extras.shift();
+    if (!sub) return [];
+    catalog.set(sub.isbn, sub);
+    console.warn(`  · 대체: ${book.isbn} → ${sub.isbn} 『${sub.title}』`);
+    return [
+      {
+        isbn: sub.isbn,
+        status: book.status,
+        start: book.start,
+        done: book.done,
+        rating: book.rating,
+        lifeBook: book.lifeBook,
+        readCount: book.readCount,
+      },
+    ];
+  });
+}
 if (books.length < 12) {
   fail(
     "책 고르기",
@@ -579,4 +616,4 @@ console.log(`✓ 메모 ${memoRows.length}개 · 문장 ${quoteRows.length}개`)
   console.log(`✓ 취향 분석 (${TASTE.personality_type}, 근거 ${evidence.length}권)`);
 }
 
-console.log("\n끝났어요. 로그인 화면의 「체험 계정으로 둘러보기」로 확인해 보세요.");
+console.log("\n끝났어요. /demo 로 들어가 「체험 계정으로 둘러보기」로 확인해 보세요.");
