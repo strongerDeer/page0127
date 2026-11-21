@@ -39,8 +39,6 @@
   "accent-foreground":  { "$value": "{blue.700}",   "$type": "color" },
   "ring":               { "$value": "{blue.600}",   "$type": "color" },
   "rank-up":            { "$value": "{orange.600}", "$type": "color", "$description": "순위 상승·포인트 강조 전용 코랄 오렌지 (primary 블루의 보색). 다른 용도로 쓰지 않는다" },
-  "guide-green":        { "$value": "{green.500}", "$type": "color", "$description": "읽기 가이드 관계도 주인공 칸 면 전용. 다크에서도 같은 색 — 글자는 on-guide-green" },
-  "on-guide-green":     { "$value": "{navy.900}", "$type": "color", "$description": "guide-green 위 글자. 다크에서도 고정(text-strong 은 다크에서 밝아져 초록 위에서 안 읽힌다)" },
   "destructive":        { "$value": "{red.600}",    "$type": "color", "$description": "삭제·탈퇴 전용. 그 외 경고·에러 표시에는 쓰지 않는다" },
   "overlay":            { "$value": "#00000080", "$type": "color", "$description": "모달·드로어 뒤를 덮는 막. 검정 50% — 팔레트 색이 아니라 화면을 가리는 용도라 primitive 를 참조하지 않는다" },
 
