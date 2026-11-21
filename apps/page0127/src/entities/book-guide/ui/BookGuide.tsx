@@ -31,11 +31,24 @@ const linkKindLabel: Record<GuideLinkKind, string> = {
   work: '일',
 };
 
-const PersonName = ({ person }: { person: GuidePerson }) => (
+type PersonNameProps = {
+  person: GuidePerson;
+  /** tint 면 위에서는 subtle 이 대비 4.5:1 에 못 미쳐(4.4) 한 단계 진한 body 를 쓴다 */
+  onTint?: boolean;
+};
+
+const PersonName = ({ person, onTint = false }: PersonNameProps) => (
   <>
     <span className='font-bold text-text-strong'>{person.name}</span>
     {person.role && (
-      <span className='text-sm text-text-subtle'>{person.role}</span>
+      <span
+        className={cn(
+          'text-sm',
+          onTint ? 'text-text-body' : 'text-text-subtle'
+        )}
+      >
+        {person.role}
+      </span>
     )}
   </>
 );
@@ -58,7 +71,7 @@ const PeopleBlock = ({ section }: { section: PeopleSection }) => {
             key={person.id}
             className='flex flex-col gap-0.5 rounded-xl bg-primary/10 px-4 py-3'
           >
-            <PersonName person={person} />
+            <PersonName person={person} onTint />
           </li>
         ))}
       </ul>
