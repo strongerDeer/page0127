@@ -17,7 +17,7 @@ export const buildLlmsTxt = (baseUrl: string) =>
     '',
     `> ${SERVICE_DEFINITION}`,
     '',
-    ...SERVICE_FACTS.map((fact) => `- ${fact}`),
+    ...SERVICE_FACTS.map((f) => `- ${f.label}: ${f.value} (${f.note})`),
     '',
     '## 주요 기능',
     '',

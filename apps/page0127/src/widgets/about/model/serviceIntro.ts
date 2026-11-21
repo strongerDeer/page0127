@@ -16,15 +16,33 @@ export const SERVICE_NAME = 'page0127.';
 export const SERVICE_DEFINITION =
   'page0127.은 읽은 책을 기록하고, 쌓인 책장으로 AI 독서 취향 분석과 다음 책 추천을 받는 무료 웹 독서 기록 서비스입니다.';
 
-/** 한 줄 요약 아래에 붙는 짧은 사실들 */
-export const SERVICE_FACTS = [
-  '가격: 무료 (지금은 베타 서비스)',
-  '이용 방법: 웹 브라우저 (PC·모바일), 홈 화면에 추가하면 앱처럼 열림',
-  '가입: 카카오 또는 구글 계정',
-  '만든 사람: 혼자 만드는 개인 프로젝트, 2025년 11월 시작',
-] as const;
+export type ServiceFact = {
+  label: string;
+  value: string;
+  /** 값 아래 작은 글씨 — 카드에서 한 줄로 끝나도록 짧게 */
+  note: string;
+};
+
+/** 한눈에 보기 — 화면에서는 작은 카드 4개, llms.txt 에서는 목록 */
+export const SERVICE_FACTS: ServiceFact[] = [
+  { label: '가격', value: '무료', note: '지금은 베타 서비스' },
+  { label: '이용', value: '웹 브라우저', note: 'PC·모바일, 홈 화면에 추가 가능' },
+  { label: '가입', value: '카카오 · 구글', note: '10초면 끝나요' },
+  { label: '시작', value: '2025년 11월', note: '혼자 만드는 개인 프로젝트' },
+];
+
+export type ServiceFeatureId =
+  | 'record'
+  | 'ai'
+  | 'sentence'
+  | 'calendar'
+  | 'share'
+  | 'chemistry'
+  | 'badge';
 
 export type ServiceFeature = {
+  /** 화면에서 아이콘을 고르는 열쇠 (글자는 바뀌어도 아이콘은 유지) */
+  id: ServiceFeatureId;
   title: string;
   description: string;
 };
@@ -32,36 +50,43 @@ export type ServiceFeature = {
 /** 주요 기능 — 홈 1~7장의 기능을 평평한 글로 옮긴 것 */
 export const SERVICE_FEATURES: ServiceFeature[] = [
   {
+    id: 'record',
     title: '책 기록',
     description:
       '책을 검색하거나 바코드를 찍어 담고, 별점·한줄평·읽은 날짜를 남겨요. 표나 CSV로 여러 권을 한 번에 옮겨 올 수도 있어요.',
   },
   {
+    id: 'ai',
     title: 'AI 독서 취향 분석과 책 추천',
     description:
       '별점을 남긴 완독 책이 다섯 권 모이면 AI가 독서 성향과 취향 노트를 써 주고, 다음에 읽을 책을 추천해요.',
   },
   {
+    id: 'sentence',
     title: '간직한 문장',
     description:
       '책마다 밑줄 그은 문장을 모아 두고, 하루 한 번 오늘의 문장을 펼쳐요. 마음에 든 문장은 카드 이미지로 만들 수 있어요.',
   },
   {
+    id: 'calendar',
     title: '독서 캘린더와 통계',
     description:
       '언제 무엇을 읽었는지 캘린더로 보고, 월별 완독 수·평점 분포·여덟 분야 독서 균형을 확인해요.',
   },
   {
+    id: 'share',
     title: '공개 서재와 공유',
     description:
       'page0127.com/아이디 주소 하나로 내 책장을 보여 주고, 인스타그램 스토리에 올릴 이미지를 바로 만들어요.',
   },
   {
+    id: 'chemistry',
     title: '독서 케미',
     description:
       '다른 사람의 책장과 나란히 놓고 겹치는 책과 취향을 확인해요.',
   },
   {
+    id: 'badge',
     title: '배지와 라운지',
     description:
       '기록할수록 배지가 모이고, 팔로우한 사람과 올해 읽은 권수를 겨루는 리더보드가 있어요.',
