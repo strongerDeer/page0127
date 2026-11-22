@@ -21,8 +21,8 @@ describe('sitemap', () => {
       '/contact',
       '/privacy',
       '/terms',
-      '/stories',
-      '/stories/daeonsil-repair-report',
+      '/blog',
+      '/blog/daeonsil-repair-report',
     ]);
   });
 
@@ -30,11 +30,11 @@ describe('sitemap', () => {
     createClient.mockRejectedValue(new Error('DB unavailable'));
 
     const story = (await sitemap()).find(({ url }) =>
-      url.endsWith('/stories/daeonsil-repair-report')
+      url.endsWith('/blog/daeonsil-repair-report')
     );
 
     expect(story?.images?.[0]).toMatch(
-      /\/stories\/daeonsil\/character-map\.webp$/
+      /\/images\/stories\/daeonsil\/character-map\.webp$/
     );
   });
 

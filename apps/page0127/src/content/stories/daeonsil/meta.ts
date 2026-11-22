@@ -25,7 +25,7 @@ export const daeonsil: StoryMeta = {
   publishedAt: '2026-11-23',
   characterMap: {
     full: {
-      src: '/stories/daeonsil/character-map.webp',
+      src: '/images/stories/daeonsil/character-map.webp',
       width: 1024,
       height: 1536,
       alt: '대온실 수리 보고서 인물관계도 — 강영두를 중심으로 현재(2023), 낙원하숙(2003), 과거 기록(1909년부터), 작품 속 동화의 인물들',

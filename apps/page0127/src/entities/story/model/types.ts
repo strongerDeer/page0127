@@ -20,7 +20,7 @@ export type StoryCharacterGroup = {
 };
 
 export type StoryMeta = {
-  /** 주소: /stories/{slug} — 영문 소문자·숫자·하이픈 */
+  /** 주소: /blog/{slug} (blog 는 이미 아이디 예약어라 DB 작업이 필요 없다) — 영문 소문자·숫자·하이픈 */
   slug: string;
   /** 페이지 h1·검색 제목. 사람들이 찾는 말("독후감", "인물관계도")을 그대로 넣는다 */
   title: string;

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: '책 이야기 | page0127.',
   description:
     '읽은 책의 독후감과 인물관계도를 모았어요. 등장인물이 많은 소설도 한 장으로 정리해 두었어요.',
-  alternates: { canonical: '/stories' },
+  alternates: { canonical: '/blog' },
 };
 
 /**

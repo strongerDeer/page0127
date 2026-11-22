@@ -24,7 +24,7 @@ type PageProps = {
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
 /**
- * 책 이야기 한 편 — HJ 의 독후감 + 인물관계도 (/stories/[slug])
+ * 책 이야기 한 편 — HJ 의 독후감 + 인물관계도 (/blog/[slug])
  *
  * 정적 생성(SSG): 이야기 목록이 코드(entities/story)에 있으니 빌드 때 전부 미리 만든다.
  * - generateStaticParams: 만들 주소 목록
@@ -114,7 +114,7 @@ export default async function StoryPage({ params }: PageProps) {
       <article className='mx-auto flex max-w-[720px] flex-col gap-10'>
         <header className='flex flex-col gap-3'>
           <nav aria-label='현재 위치' className='text-sm text-text-subtle'>
-            <Link href='/stories' className='hover:text-text-strong'>
+            <Link href='/blog' className='hover:text-text-strong'>
               책 이야기
             </Link>
             <span aria-hidden='true'> › </span>

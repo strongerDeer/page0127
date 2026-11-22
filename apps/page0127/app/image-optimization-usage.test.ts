@@ -34,9 +34,9 @@ const EXEMPT_FILES: string[] = [
   'src/entities/notification/ui/BookEnvelopeArtwork.tsx',
   // 홈 표지의 앱 아이콘 — 미리 줄여 둔 로컬 96px WebP 하나만 그린다(unoptimized)
   'src/widgets/about/ui/AboutHero.tsx',
-  // 책 이야기 인물관계도 — public/stories 의 미리 줄인 로컬 WebP 만 그린다(unoptimized)
+  // 책 이야기 인물관계도 — public/images/stories 의 미리 줄인 로컬 WebP 만 그린다(unoptimized)
   'src/widgets/story/ui/CharacterMap.tsx',
-  'app/(static)/stories/page.tsx',
+  'app/(static)/blog/page.tsx',
 ];
 
 const collectFiles = (dir: string): string[] => {

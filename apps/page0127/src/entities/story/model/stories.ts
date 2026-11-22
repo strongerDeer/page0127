@@ -31,4 +31,4 @@ export const getStoryBySlug = (slug: string) =>
 export const getStoryByBookId = (bookId: string) =>
   STORIES.find((story) => story.bookId === bookId) ?? null;
 
-export const storyPath = (slug: string) => `/stories/${slug}`;
+export const storyPath = (slug: string) => `/blog/${slug}`;

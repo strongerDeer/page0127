@@ -26,11 +26,11 @@ describe('책 이야기 목록', () => {
     }
   });
 
-  it('그림은 public/stories 의 로컬 파일이고 alt 가 있다(이미지 검색용)', () => {
+  it('그림은 public/images/stories 의 로컬 파일이고 alt 가 있다(이미지 검색용)', () => {
     for (const story of STORIES) {
       const images = [story.characterMap.full, ...story.characterMap.cards];
       for (const image of images) {
-        expect(image.src.startsWith('/stories/')).toBe(true);
+        expect(image.src.startsWith('/images/stories/')).toBe(true);
         expect(image.alt.length).toBeGreaterThan(10);
       }
     }
