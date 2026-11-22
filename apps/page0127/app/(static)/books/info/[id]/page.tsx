@@ -11,7 +11,10 @@ import { decodeHtmlEntities } from '@/shared/lib/htmlEntities';
 
 import { RATING_MAX, summarizeRatings, toCoverSource } from '@/entities/book';
 import { catalogVisibilityFilter } from '@/entities/book/api/catalogVisibility';
-import { bookMetaTitle } from '@/entities/book/model/bookMetaTitle';
+import {
+  bookMetaTitle,
+  stripSubtitle,
+} from '@/entities/book/model/bookMetaTitle';
 import { BookSourceCredit } from '@/entities/book/ui/BookSourceCredit';
 
 import { getPublicReaderTotal } from '@/widgets/book/api/getBookReaders';
@@ -203,7 +206,9 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
             sizes='200px'
             priority
             large
-            decorative
+            // 이 페이지의 대표 이미지 — 장식(alt="")으로 두면 검색엔진이 "alt 없음"으로 세고
+            // 이미지 검색에도 안 걸린다(Bing 사이트 검사 94페이지 경고). 옆 h1 과 겹치지 않게 "표지"를 붙인다
+            alt={`${stripSubtitle(book.title)} 표지`}
           />
 
           {/* 완독한 독자 프로필 (왼쪽 컬럼 배치) — 수는 캐시, 이어진 리더 얼굴은 브라우저에서 */}
