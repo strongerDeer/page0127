@@ -80,7 +80,8 @@ export const SERVICE_FEATURES: ServiceFeature[] = [
   {
     id: 'chemistry',
     title: '독서 케미',
-    description: '다른 사람의 책장과 나란히 놓고 겹치는 책과 취향을 확인해요.',
+    description:
+      '다른 사람의 서재에서 "독서 케미"를 누르면 두 책장을 나란히 놓고, AI가 독서 궁합(케미) 점수와 함께 겹치는 책·취향을 풀어 줘요. 결과는 스토리 이미지로도 나눌 수 있어요.',
   },
   {
     id: 'badge',
@@ -114,6 +115,11 @@ export const SERVICE_FAQ: ServiceFaq[] = [
     question: 'AI 독서 취향 분석은 언제 볼 수 있나요?',
     answer:
       '별점을 남긴 완독 책이 다섯 권 모이면 볼 수 있어요. 책이 쌓일수록 분석이 더 또렷해져요.',
+  },
+  {
+    question: '다른 사람과 독서 궁합(케미)도 볼 수 있나요?',
+    answer:
+      '네. 상대의 공개 서재에서 "독서 케미"를 누르면 AI가 두 사람의 완독 목록을 비교해 케미 점수와 해설을 보여 줘요. 두 사람 모두 평가한 완독 책이 다섯 권 이상 있어야 해요.',
   },
   {
     question: '다른 곳에 기록한 책을 옮겨 올 수 있나요?',
