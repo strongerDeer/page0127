@@ -11,6 +11,10 @@ import { decodeHtmlEntities } from '@/shared/lib/htmlEntities';
 
 import { RATING_MAX, summarizeRatings, toCoverSource } from '@/entities/book';
 import { catalogVisibilityFilter } from '@/entities/book/api/catalogVisibility';
+import {
+  bookMetaTitle,
+  stripSubtitle,
+} from '@/entities/book/model/bookMetaTitle';
 import { BookSourceCredit } from '@/entities/book/ui/BookSourceCredit';
 
 import { getPublicReaderTotal } from '@/widgets/book/api/getBookReaders';
@@ -81,9 +85,8 @@ export async function generateMetadata({
 
   if (!book) notFound();
 
-  const title = book.author
-    ? `${book.title} - ${book.author} | page0127.`
-    : `${book.title} | page0127.`;
+  // 부제·옮긴이까지 넣으면 100자가 넘어 검색 결과에서 잘린다 — 책 이름과 첫 저자만
+  const title = bookMetaTitle(book);
   // 알라딘 소개글은 HTML 엔티티가 이스케이프돼 있다 — 메타에도 디코딩해 넣는다
   // 소개글의 줄바꿈은 미리보기에서 빈 줄 덩어리가 된다 — 공백 하나로 접는다
   const description = book.description
@@ -203,7 +206,9 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
             sizes='200px'
             priority
             large
-            decorative
+            // 이 페이지의 대표 이미지 — 장식(alt="")으로 두면 검색엔진이 "alt 없음"으로 세고
+            // 이미지 검색에도 안 걸린다(Bing 사이트 검사 94페이지 경고). 옆 h1 과 겹치지 않게 "표지"를 붙인다
+            alt={`${stripSubtitle(book.title)} 표지`}
           />
 
           {/* 완독한 독자 프로필 (왼쪽 컬럼 배치) — 수는 캐시, 이어진 리더 얼굴은 브라우저에서 */}
