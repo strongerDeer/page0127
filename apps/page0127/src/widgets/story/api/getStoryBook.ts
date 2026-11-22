@@ -12,18 +12,25 @@ import { catalogVisibilityFilter } from '@/entities/book/api/catalogVisibility';
  * 보여야 하므로 null 을 돌려주고, 카드는 meta 의 제목·저자로 그린다.
  */
 export const getStoryBook = cache(async (bookId: string) => {
-  const supabase = createAnonClient();
-  const { data, error } = await supabase
-    .from('global_books')
-    .select('id, title, author, publisher, cover_image, provider_item_id')
-    .eq('id', bookId)
-    .eq('review_status', 'approved')
-    .or(catalogVisibilityFilter(null))
-    .maybeSingle();
+  // 빌드 때 미리 그리는 페이지라 DB 설정이 없는 빌드(CI 타입·빌드 검사)에서도 돌아간다.
+  // createAnonClient 는 env 가 없으면 throw 한다 → 그때도 표지 없이 글자 표지로 그린다
+  // (운영 빌드에는 env 가 있고, revalidate 로 하루 안에 다시 읽는다).
+  try {
+    const supabase = createAnonClient();
+    const { data, error } = await supabase
+      .from('global_books')
+      .select('id, title, author, publisher, cover_image, provider_item_id')
+      .eq('id', bookId)
+      .eq('review_status', 'approved')
+      .or(catalogVisibilityFilter(null))
+      .maybeSingle();
 
-  if (error) {
-    console.warn(`[stories] 책 조회 실패 (id=${bookId}): ${error.message}`);
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.warn(
+      `[blog] 책 조회 실패 (id=${bookId}): ${error instanceof Error ? error.message : String(error)}`
+    );
     return null;
   }
-  return data;
 });
