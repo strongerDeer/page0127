@@ -1,6 +1,9 @@
 import { after } from 'next/server';
 
-import webpush from 'web-push';
+// web-push 4.x 는 ESM 전용이고 default export 가 없다 — default import 를 쓰면
+// 런타임에 undefined 가 된다(타입은 @types/web-push 3.x 라 빌드는 통과해 버림).
+// named import 로만 가져온다. push.test.ts 가 이 계약을 지킨다.
+import { sendNotification, setVapidDetails } from 'web-push';
 
 import { createAdminClient } from '@/shared/config/supabase/admin';
 
@@ -73,7 +76,7 @@ export const sendPushForNotifications = async (
   const vapid = readVapidKeys();
   if (!vapid || notifications.length === 0) return { sent: 0, removed: 0 };
 
-  webpush.setVapidDetails(vapid.subject, vapid.publicKey, vapid.privateKey);
+  setVapidDetails(vapid.subject, vapid.publicKey, vapid.privateKey);
 
   const admin = createAdminClient();
   const nudgeUsers = [
@@ -173,7 +176,7 @@ export const sendPushForNotifications = async (
       .filter((sub) => sub.user_id === notification.user_id)
       .map(async (sub) => {
         try {
-          await webpush.sendNotification(
+          await sendNotification(
             {
               endpoint: sub.endpoint,
               keys: { p256dh: sub.p256dh, auth: sub.auth },

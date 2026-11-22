@@ -55,6 +55,25 @@ const eslintConfig = defineConfig([
   {
     rules: {
       // ========================================
+      // import 제한
+      // ========================================
+      // web-push 4.x 는 ESM 전용이라 default export 가 없다. 타입(@types/web-push 3.x)은
+      // default import 를 허용해서 빌드는 통과하지만 런타임에 undefined 가 된다(2026-11-22 장애).
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'web-push',
+              importNames: ['default'],
+              message:
+                "web-push 는 default export 가 없습니다. import { setVapidDetails, sendNotification } from 'web-push' 처럼 쓰세요.",
+            },
+          ],
+        },
+      ],
+
+      // ========================================
       // React 규칙
       // ========================================
       // 함수 컴포넌트는 화살표 함수 사용 (실무 표준)
