@@ -26,19 +26,17 @@ export type ServiceFact = {
 /** 한눈에 보기 — 화면에서는 작은 카드 4개, llms.txt 에서는 목록 */
 export const SERVICE_FACTS: ServiceFact[] = [
   { label: '가격', value: '무료', note: '지금은 베타 서비스' },
-  { label: '이용', value: '웹 브라우저', note: 'PC·모바일, 홈 화면에 추가 가능' },
+  {
+    label: '이용',
+    value: '웹 브라우저',
+    note: 'PC·모바일, 홈 화면에 추가 가능',
+  },
   { label: '가입', value: '카카오 · 구글', note: '10초면 끝나요' },
   { label: '시작', value: '2025년 11월', note: '혼자 만드는 개인 프로젝트' },
 ];
 
 export type ServiceFeatureId =
-  | 'record'
-  | 'ai'
-  | 'sentence'
-  | 'calendar'
-  | 'share'
-  | 'chemistry'
-  | 'badge';
+  'record' | 'ai' | 'sentence' | 'calendar' | 'share' | 'chemistry' | 'badge';
 
 export type ServiceFeature = {
   /** 화면에서 아이콘을 고르는 열쇠 (글자는 바뀌어도 아이콘은 유지) */
@@ -53,7 +51,7 @@ export const SERVICE_FEATURES: ServiceFeature[] = [
     id: 'record',
     title: '책 기록',
     description:
-      '책을 검색하거나 바코드를 찍어 담고, 별점·한줄평·읽은 날짜를 남겨요. 표나 CSV로 여러 권을 한 번에 옮겨 올 수도 있어요.',
+      '책을 검색하거나 바코드를 찍어 담고, 별점·한줄평·읽은 날짜를 남겨요. 표나 CSV로 여러 권을 한 번에 옮겨 오고, 내 기록을 파일로 내보낼 수도 있어요.',
   },
   {
     id: 'ai',
@@ -82,8 +80,7 @@ export const SERVICE_FEATURES: ServiceFeature[] = [
   {
     id: 'chemistry',
     title: '독서 케미',
-    description:
-      '다른 사람의 책장과 나란히 놓고 겹치는 책과 취향을 확인해요.',
+    description: '다른 사람의 책장과 나란히 놓고 겹치는 책과 취향을 확인해요.',
   },
   {
     id: 'badge',
@@ -122,6 +119,11 @@ export const SERVICE_FAQ: ServiceFaq[] = [
     question: '다른 곳에 기록한 책을 옮겨 올 수 있나요?',
     answer:
       '네. 엑셀이나 CSV 표를 붙여 넣으면 여러 권을 한 번에 담을 수 있어요.',
+  },
+  {
+    question: '내 기록을 파일로 받을 수 있나요?',
+    answer:
+      '네. 설정에서 담은 책과 별점·한줄평·메모를 CSV나 Markdown 파일로 언제든 받을 수 있어요. 서비스를 닫게 되면 최소 30일 전에 알리고, 그동안 내보내기를 열어 둘게요.',
   },
   {
     question: '내 서재를 다른 사람이 볼 수 있나요?',
