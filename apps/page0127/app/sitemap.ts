@@ -1,6 +1,7 @@
 import { createClient } from '@/shared/config/supabase/server';
 
 import { catalogVisibilityFilter } from '@/entities/book/api/catalogVisibility';
+import { STORIES, storyPath } from '@/entities/story';
 
 import type { MetadataRoute } from 'next';
 
@@ -58,6 +59,21 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
       changeFrequency: 'yearly',
       priority: 0.2,
     },
+    {
+      url: `${siteUrl}/stories`,
+      lastModified,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    // 책 이야기(독후감·인물관계도) — 목록이 코드라 DB 가 실패해도 항상 나간다.
+    // images: 이미지 사이트맵 — "○○ 인물관계도" 이미지 검색에 그림을 알린다
+    ...STORIES.map((story) => ({
+      url: `${siteUrl}${storyPath(story.slug)}`,
+      lastModified: new Date(story.updatedAt ?? story.publishedAt),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+      images: [`${siteUrl}${story.characterMap.full.src}`],
+    })),
   ];
 
   // 등록된 책들의 정보 페이지

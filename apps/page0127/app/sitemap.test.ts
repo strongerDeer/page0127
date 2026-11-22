@@ -21,7 +21,21 @@ describe('sitemap', () => {
       '/contact',
       '/privacy',
       '/terms',
+      '/stories',
+      '/stories/daeonsil-repair-report',
     ]);
+  });
+
+  it('책 이야기 주소에 인물관계도 이미지를 함께 알린다', async () => {
+    createClient.mockRejectedValue(new Error('DB unavailable'));
+
+    const story = (await sitemap()).find(({ url }) =>
+      url.endsWith('/stories/daeonsil-repair-report')
+    );
+
+    expect(story?.images?.[0]).toMatch(
+      /\/stories\/daeonsil\/character-map\.webp$/
+    );
   });
 
   it('책 정보와 공개 책이 있는 서재의 검색용 URL을 유지한다', async () => {

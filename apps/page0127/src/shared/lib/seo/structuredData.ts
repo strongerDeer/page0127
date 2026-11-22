@@ -106,6 +106,56 @@ export const buildFaqPageJsonLd = (items: readonly FaqItem[]) => ({
   })),
 });
 
+type StoryArticleJsonLdInput = {
+  title: string;
+  description: string;
+  url: string;
+  image: string;
+  datePublished: string;
+  dateModified?: string;
+  siteName: string;
+  siteUrl: string;
+  book: { title: string; author: string; url: string };
+};
+
+/**
+ * 책 이야기(독후감 + 인물관계도) 한 편 — Article 안에 다루는 책(about: Book)을 단다.
+ *
+ * - about 의 Book 은 "이 글이 어떤 책에 대한 글인가"를 검색엔진·AI 에 알려 준다.
+ *   책 정보 페이지 주소(url)를 함께 넣어 두 페이지가 같은 책이라는 걸 잇는다.
+ * - 별점(Review/rating)은 넣지 않는다 — 한 사람의 별점을 리뷰 스니펫으로 올리는 건
+ *   자기 사이트 리뷰 정책에 걸릴 수 있다.
+ */
+export const buildStoryArticleJsonLd = ({
+  title,
+  description,
+  url,
+  image,
+  datePublished,
+  dateModified,
+  siteName,
+  siteUrl,
+  book,
+}: StoryArticleJsonLdInput) => ({
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: title,
+  description,
+  url,
+  image: [image],
+  datePublished,
+  dateModified: dateModified ?? datePublished,
+  inLanguage: 'ko-KR',
+  author: { '@type': 'Organization', name: siteName, url: siteUrl },
+  publisher: { '@type': 'Organization', name: siteName, url: siteUrl },
+  about: {
+    '@type': 'Book',
+    name: book.title,
+    author: { '@type': 'Person', name: book.author },
+    url: book.url,
+  },
+});
+
 // <script> 안에 넣을 문자열로 직렬화한다.
 // `<`를 유니코드 이스케이프로 바꾸는 이유: 값에 `</script>`가 섞이면 태그가 거기서 닫힌다.
 // JSON 파서는 <를 다시 `<`로 읽으므로 데이터 자체는 그대로다. (Next.js 공식 가이드 방식)
