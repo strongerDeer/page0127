@@ -101,6 +101,8 @@ export type AnalyticsEvent =
    * rows: 읽은 줄 수, selected: 담기로 고른 수, added·skipped·failed: 서버 결과
    */
   | 'book_import'
+  /** 설정에서 내 기록을 파일로 내려받았다. format: 'csv' | 'md' */
+  | 'records_export'
   /** AI 취향 분석을 실행했다 */
   | 'taste_analysis_run'
   /** 공유를 눌렀다. method 로 네이티브 공유/링크 복사를 구분한다 */
