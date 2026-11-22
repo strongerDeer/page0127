@@ -8,6 +8,12 @@ export const SITE_INFO = {
   name: 'page0127.',
   since: '2025년 11월',
   lastUpdated: '2026년 10월 27일',
+  /**
+   * 개인정보처리방침만 따로 바뀐 날(적용일). 약관은 그대로라 lastUpdated 와 나눈다.
+   * 처리방침 13조: 맡기는 곳이 늘면 적용 7일 전부터 알린다 → 공지(CHANGELOG)는 그보다 7일 앞에 둔다.
+   * 2026-11-30: Microsoft Clarity(화면 이용 기록) 추가.
+   */
+  privacyLastUpdated: '2026년 11월 30일',
   contact: {
     // 카카오톡 1:1 오픈채팅 — 방문자가 링크로 들어와 1:1 대화, 운영자는 카카오톡 알림으로 수신
     kakaoOpenChatUrl: 'https://open.kakao.com/o/scK1DkFi',
@@ -36,6 +42,12 @@ export type ChangelogEntry = {
 };
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    date: '2026.11.22',
+    title: '개인정보처리방침이 11월 30일부터 바뀌어요',
+    description:
+      '화면을 더 편하게 고치기 위해 Microsoft Clarity로 화면 이용 기록(클릭·스크롤)을 살펴봐요. 입력한 글자는 가려지고, 운영 콘솔은 기록하지 않아요.',
+  },
   {
     date: '2026.11.16',
     title: '문장 카드와 케미 카드를 스토리로 나눠요',

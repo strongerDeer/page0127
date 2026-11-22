@@ -13,6 +13,8 @@ type DocPageProps = {
   description?: string;
   /** 최종 수정일을 노출할지 — 약관·개인정보처럼 개정 이력이 중요한 문서만 */
   showUpdatedAt?: boolean;
+  /** 문서마다 수정일이 다를 때 — 비우면 SITE_INFO.lastUpdated */
+  updatedAt?: string;
   children: React.ReactNode;
 };
 
@@ -20,6 +22,7 @@ export const DocPage = ({
   title,
   description,
   showUpdatedAt,
+  updatedAt = SITE_INFO.lastUpdated,
   children,
 }: DocPageProps) => {
   return (
@@ -29,7 +32,7 @@ export const DocPage = ({
         {description && <p className='mt-2 text-text-body'>{description}</p>}
         {showUpdatedAt && (
           <p className='mt-3 text-xs text-text-subtle'>
-            최종 수정일: {SITE_INFO.lastUpdated}
+            최종 수정일: {updatedAt}
           </p>
         )}
       </header>

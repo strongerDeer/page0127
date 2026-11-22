@@ -38,6 +38,8 @@ const ExternalLink = ({ href }: { href: string }) => (
  * - AI 분석: OpenAI
  * - 도서 정보: YES24 Open API
  * - 사용 통계: Google Analytics 4 (NEXT_PUBLIC_GA_ID 설정 시)
+ * - 화면 이용 기록(히트맵·세션 녹화): Microsoft Clarity (NEXT_PUBLIC_CLARITY_ID 설정 시,
+ *   입력칸 마스킹 기본, 관리자 기기 제외 — shared/lib/analytics/MicrosoftClarity.tsx)
  * - 성능 측정: 자체 RUM(quality_rum_samples) + Vercel Speed Insights
  * - 오류 모니터링: Sentry (us 리전, userInfo 수집 끔)
  * - 댓글 신고: comment_reports (신고자·사유·상세)
@@ -53,6 +55,7 @@ const PrivacyPage = () => {
       title='개인정보처리방침'
       description='page0127.이 어떤 정보를 왜 처리하고, 어떻게 보호하는지 안내합니다.'
       showUpdatedAt
+      updatedAt={SITE_INFO.privacyLastUpdated}
     >
       <DocSection title='1. 수집하는 정보'>
         <p className='font-medium text-text-strong'>
@@ -87,6 +90,7 @@ const PrivacyPage = () => {
           items={[
             '로그인 상태를 유지하기 위한 인증 쿠키',
             '어떤 화면이 많이 쓰이는지에 대한 이용 통계 (Google Analytics, Vercel Analytics)',
+            '화면 이용 기록 — 화면에서 어디를 누르고 얼마나 스크롤했는지, 기기·브라우저 정보 (Microsoft Clarity). 입력칸에 쓴 글자는 가려진 채로 기록됩니다',
             '서비스에 접속한 날짜와 그날 첫 접속 시각',
             'AI 분석을 쓴 기록 — 언제 어떤 분석을 했는지 (한 사람이 쓸 수 있는 횟수를 제한하기 위해)',
             '로그인하지 않은 상태의 IP 주소 — 짧은 시간에 요청이 몰리는 것을 막기 위해 잠깐 쓰고, 하루 안에 지웁니다',
@@ -111,7 +115,7 @@ const PrivacyPage = () => {
             '알림 보내기 — 팔로우·좋아요·댓글, 오래 읽고 있는 책, 주간 회상 (알림을 켜면 기기 푸시로도)',
             '공개로 설정한 책장을 다른 사람에게 보여 주기',
             '신고된 댓글을 확인하고 조치하기',
-            '서비스 개선 (어떤 기능이 쓰이는지 이용 통계로 확인)',
+            '서비스 개선 (어떤 기능이 쓰이는지 이용 통계로 확인하고, 화면 이용 기록으로 불편한 곳 찾기)',
             '오류를 찾아 고치고, 느린 화면을 개선하기',
             '과도한 요청과 AI 사용량을 제한해 서비스를 안정적으로 운영하기',
           ]}
@@ -170,6 +174,14 @@ const PrivacyPage = () => {
                 <td className='py-2.5 pr-4'>사용 현황·성능 측정</td>
                 <td className='py-2.5'>
                   페이지 조회, 기기·브라우저 및 성능 정보
+                </td>
+              </tr>
+              <tr className='border-b border-line-soft'>
+                <td className='py-2.5 pr-4'>Microsoft Clarity</td>
+                <td className='py-2.5 pr-4'>화면 이용 기록 분석</td>
+                <td className='py-2.5'>
+                  클릭·스크롤 등 화면 사용 흐름, 기기·브라우저 정보 (입력한
+                  글자는 가려집니다)
                 </td>
               </tr>
               <tr className='border-b border-line-soft'>
@@ -242,6 +254,16 @@ const PrivacyPage = () => {
                 <td className='py-2.5 pr-4'>이용 통계</td>
                 <td className='py-2.5'>
                   <ExternalLink href='https://policies.google.com/privacy' />
+                </td>
+              </tr>
+              <tr className='border-b border-line-soft'>
+                <td className='py-2.5 pr-4'>Microsoft (미국)</td>
+                <td className='py-2.5 pr-4'>
+                  화면 이용 기록, 기기·브라우저 정보
+                </td>
+                <td className='py-2.5 pr-4'>화면 사용성 분석</td>
+                <td className='py-2.5'>
+                  <ExternalLink href='https://privacy.microsoft.com/privacystatement' />
                 </td>
               </tr>
               <tr className='border-b border-line-soft'>
@@ -324,10 +346,10 @@ const PrivacyPage = () => {
       <DocSection title='8. 쿠키'>
         <p>
           로그인 상태를 유지하기 위해 인증 쿠키를 씁니다. 브라우저에서 쿠키를
-          지우면 로그아웃됩니다. Google Analytics가 설정된 경우 서비스 이용
-          통계를 위한 쿠키 또는 유사 기술이 사용될 수 있으며, 브라우저 설정에서
-          쿠키를 차단하거나 삭제할 수 있습니다. 광고를 노출하기 위한 쿠키는 쓰지
-          않습니다.
+          지우면 로그아웃됩니다. Google Analytics와 Microsoft Clarity가 설정된
+          경우 서비스 이용 통계와 화면 이용 기록을 위한 쿠키 또는 유사 기술이
+          사용될 수 있으며, 브라우저 설정에서 쿠키를 차단하거나 삭제할 수
+          있습니다. 광고를 노출하기 위한 쿠키는 쓰지 않습니다.
         </p>
       </DocSection>
 
@@ -395,9 +417,9 @@ const PrivacyPage = () => {
 
       <DocSection title='13. 처리방침이 바뀌면'>
         <p>
-          이 방침은 {SITE_INFO.lastUpdated}부터 적용됩니다. 내용이 바뀌면 이
-          페이지를 고치고 최종 수정일을 갱신합니다. 수집하는 정보나 맡기는 곳이
-          늘어나는 것처럼 중요한 변경은 적용 7일 전부터 서비스 안에서 알려
+          이 방침은 {SITE_INFO.privacyLastUpdated}부터 적용됩니다. 내용이 바뀌면
+          이 페이지를 고치고 최종 수정일을 갱신합니다. 수집하는 정보나 맡기는
+          곳이 늘어나는 것처럼 중요한 변경은 적용 7일 전부터 서비스 안에서 알려
           드립니다.
         </p>
       </DocSection>
