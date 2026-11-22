@@ -1,6 +1,7 @@
 import { shortDate } from '@/shared/lib/admin/dateRange';
 
 import { createAdminEvent, deleteAdminEvent } from '../api/eventActions';
+import { EventSubmitButton } from './EventSubmitButton';
 
 import type { AdminEvent } from '../api/getAdminEvents';
 
@@ -21,6 +22,7 @@ type AdminEventsPanelProps = {
  * 숫자가 튄 날 이유를 나중에 기억에 기대지 않고 바로 보려고. 유입분석 일별 차트에는 세로선으로도 찍힌다.
  *
  * 서버 컴포넌트 + server action 폼이라 JS 없이도 추가·삭제가 된다.
+ * "기록" 버튼만 클라이언트 컴포넌트(EventSubmitButton) — 저장 중 잠가서 연타 중복 등록을 막는다.
  */
 export const AdminEventsPanel = ({
   events,
@@ -113,12 +115,7 @@ export const AdminEventsPanel = ({
           placeholder='예: 인스타 개인 스토리에 공유'
           className='min-w-0 flex-1 rounded border border-line bg-transparent px-2 py-1 text-sm'
         />
-        <button
-          type='submit'
-          className='rounded border border-line px-3 py-1 text-sm font-medium hover:bg-accent'
-        >
-          기록
-        </button>
+        <EventSubmitButton />
       </form>
     </div>
   );
