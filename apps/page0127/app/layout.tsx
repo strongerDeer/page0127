@@ -3,6 +3,7 @@ import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 import { GoogleAnalytics } from '@/shared/lib/analytics/GoogleAnalytics';
+import { MicrosoftClarity } from '@/shared/lib/analytics/MicrosoftClarity';
 import { ServiceWorkerRegistrar } from '@/shared/lib/pwa/ServiceWorkerRegistrar';
 import { WebVitalsReporter } from '@/shared/lib/rum/WebVitalsReporter';
 import { QueryProvider } from '@/shared/providers/QueryProvider';
@@ -157,6 +158,9 @@ const RootLayout = ({
         </QueryProvider>
         {/* GA4 — 측정 ID(NEXT_PUBLIC_GA_ID) 설정 시에만 로드 */}
         <GoogleAnalytics />
+        {/* Microsoft Clarity — 히트맵·세션 녹화. 프로젝트 ID(NEXT_PUBLIC_CLARITY_ID) 설정 시에만 로드.
+            GA 가 "어디서 나갔나"를 세면, Clarity 는 "왜 나갔나"를 장면으로 보여 준다 */}
+        <MicrosoftClarity />
         {/* 자체 RUM — 실사용자 CWV를 우리 DB(quality_rum_samples)에 쌓아 품질
             대시보드에서 랩 수치와 나란히 본다. CrUX는 트래픽 임계 미달로 비어 있다.
             → apps/page0127/docs/rum-field-metrics.md */}

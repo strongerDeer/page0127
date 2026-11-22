@@ -174,6 +174,9 @@ const nextConfig: NextConfig = {
       // 로컬·비-Vercel 환경에선 이 도메인에서 스크립트를 받으므로 허용한다.
       // (데이터 비콘은 /_vercel/… 동일 출처라 connect-src는 'self'로 충분)
       'https://va.vercel-scripts.com',
+      // Microsoft Clarity — 설치 코드는 www.clarity.ms/tag/<ID>, 본 스크립트는
+      // scripts.clarity.ms 에서 온다. 호스트가 둘이라 와일드카드로 연다.
+      'https://*.clarity.ms',
     ].join(' ');
     const contentSecurityPolicy = [
       "default-src 'self'",
@@ -185,7 +188,7 @@ const nextConfig: NextConfig = {
       // 프로필 사진 출처: 구글(googleusercontent)·카카오(kakaocdn).
       // remotePatterns 와 짝을 이룬다 — 한쪽만 열면 next/image 가 통과시킨 뒤
       // 브라우저가 막거나, 그 반대가 되어 조용히 깨진다.
-      `img-src 'self' data: blob: https://image.yes24.com ${supabaseOrigin} https://*.googleusercontent.com https://*.kakaocdn.net https://www.googletagmanager.com https://www.google-analytics.com`,
+      `img-src 'self' data: blob: https://image.yes24.com ${supabaseOrigin} https://*.googleusercontent.com https://*.kakaocdn.net https://www.googletagmanager.com https://www.google-analytics.com https://*.clarity.ms https://c.bing.com`,
       // Pretendard woff 폰트(jsdelivr)
       "font-src 'self' https://cdn.jsdelivr.net",
       // API·Sentry 터널(self) + Supabase REST/realtime(wss) + GA 비콘
@@ -195,7 +198,9 @@ const nextConfig: NextConfig = {
       //   주 수집 경로(google-analytics.com)와 **호스트가 달라** 빠뜨리기 쉽고,
       //   빠지면 이벤트는 멀쩡한데 인구통계·관심사·교차기기만 조용히 빈다.
       //   2026-08-06 운영에서 체류가 쌓인 뒤 4건 차단되는 것을 확인하고 열었다.
-      `connect-src 'self' ${supabaseOrigin} ${supabaseSocketOrigin} https://cdn.jsdelivr.net https://www.google-analytics.com https://www.googletagmanager.com https://www.google.com`,
+      // + *.clarity.ms·c.bing.com: Clarity 녹화 데이터 업로드(x.clarity.ms 등 여러 호스트)와
+      //   Bing 연동 픽셀(img-src 에도 같은 두 출처를 열었다). Microsoft 공식 CSP 안내 그대로다.
+      `connect-src 'self' ${supabaseOrigin} ${supabaseSocketOrigin} https://cdn.jsdelivr.net https://www.google-analytics.com https://www.googletagmanager.com https://www.google.com https://*.clarity.ms https://c.bing.com`,
       // 클릭재킹 방지(X-Frame-Options의 현대적 대응) + 기타 하드닝
       "frame-ancestors 'self'",
       "base-uri 'self'",
