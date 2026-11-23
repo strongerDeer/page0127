@@ -8,12 +8,21 @@ import { getPublishedStories } from '@/entities/story/server';
 
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: '책 이야기 | page0127.',
-  description:
-    '읽은 책의 독후감과 인물관계도를 모았어요. 등장인물이 많은 소설도 한 장으로 정리해 두었어요.',
-  alternates: { canonical: '/blog' },
-};
+/**
+ * 글이 하나도 없을 때는 noindex — "첫 이야기를 준비하고 있어요" 한 줄짜리 빈 목록이
+ * 색인되면 얇은 페이지로 남는다. 첫 글을 공개하면 저장 때 이 페이지를 다시 만들어 풀린다.
+ * getPublishedStories 는 unstable_cache 라 page 와 두 번 불러도 DB 는 한 번이다.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const stories = await getPublishedStories();
+  return {
+    title: '책 이야기 | page0127.',
+    description:
+      '읽은 책의 독후감과 인물관계도를 모았어요. 등장인물이 많은 소설도 한 장으로 정리해 두었어요.',
+    alternates: { canonical: '/blog' },
+    ...(stories.length === 0 && { robots: { index: false, follow: true } }),
+  };
+}
 
 /**
  * 책 이야기 목록 (/blog) — 정적 페이지(ISR). 어드민에서 글을 저장하면 다시 만든다.

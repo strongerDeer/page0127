@@ -26,6 +26,8 @@ export async function GET(_request: NextRequest) {
       user ? { id: user.id, email: user.email } : null
     );
     response.headers.set('Cache-Control', 'private, no-store');
+    // robots 에서 크롤링은 허용했지만(렌더링 리소스) JSON 이 검색 결과에 뜨면 안 된다
+    response.headers.set('X-Robots-Tag', 'noindex');
     return response;
   } catch {
     const response = errorResponse(

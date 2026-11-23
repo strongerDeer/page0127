@@ -41,7 +41,9 @@ const naverSiteVerification = [
   '1d82b46eae27cbe45ae54398b7c9908b7f5dfcd9', // https://page0127.com
 ];
 
-const siteTitle = 'page0127. - 책장을 보면, 그 사람이 보인다';
+// "독서 기록"을 제목에 넣는다 — Bing "독서기록" 상위 10곳 중 9곳이 제목에 이 말을 쓰고,
+// 홈 제목엔 없었다(2026-11-23). 브랜드 문구는 뒤에 그대로 남긴다.
+const siteTitle = 'page0127. - 독서 기록, 책장을 보면 그 사람이 보인다';
 const siteDescription =
   '읽은 책을 한 권씩 기록해 보세요. 책장이 쌓이면 AI가 나도 몰랐던 독서 취향을 들려주고, 다음에 읽을 책까지 건네드립니다.';
 

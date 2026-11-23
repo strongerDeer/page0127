@@ -8,7 +8,7 @@ describe('robots', () => {
     const rules = Array.isArray(result.rules) ? result.rules[0] : result.rules;
 
     expect(rules.allow).toEqual(
-      expect.arrayContaining(['/books/all', '/books/info/'])
+      expect.arrayContaining(['/books/all', '/books/info/', '/api/auth/me'])
     );
     expect(rules.disallow).toEqual(
       expect.arrayContaining([

@@ -9,6 +9,8 @@ import { ArrowRight, BookOpen, Crown } from 'lucide-react';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
+import { stripSubtitle } from '@/entities/book/model/bookMetaTitle';
+
 import { withLifeBook } from '../model/lifeBook';
 import { toPendingLoginPath } from '../model/loginTransfer';
 import { readPendingShelf, writePendingShelf } from '../model/pendingShelf';
@@ -208,7 +210,9 @@ export const LifeBookHero = ({
                     <CoverImage
                       src={leader.coverSrc}
                       fallbackSrc={leader.coverFallback}
-                      alt=''
+                      // 버튼 이름은 aria-label 이 정하니 화면낭독기는 alt 를 두 번 읽지 않는다.
+                      // alt 는 검색엔진·이미지 검색용 — 비우면 Bing 사이트 검사가 "alt 없음"으로 센다(2026-11-23)
+                      alt={`${stripSubtitle(leader.book.title)} 표지`}
                       width={96}
                       height={144}
                       fallback={

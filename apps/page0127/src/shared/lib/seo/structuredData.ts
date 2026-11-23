@@ -157,6 +157,83 @@ export const buildStoryArticleJsonLd = ({
   },
 });
 
+type BookJsonLdInput = {
+  title: string;
+  /** "김종봉, 제갈현열 (지은이)" 처럼 여러 명·역할이 섞인 원문 그대로 */
+  author: string | null;
+  isbn: string;
+  publisher: string | null;
+  /** YYYY-MM-DD 또는 YYYY-MM. 비어 있으면 뺀다 */
+  pubDate: string | null;
+  image: string | null;
+  url: string;
+};
+
+/**
+ * 책 정보 페이지 한 권(Book).
+ *
+ * - 메타 설명은 출판사 소개라 서점 페이지와 같은 문장이다. JSON-LD 는 "이 페이지는 이 ISBN 의
+ *   책에 관한 페이지"라는 사실을 타입으로 알려 줘서, 문장이 같아도 어떤 책인지는 확실히 잇는다.
+ * - 별점(aggregateRating)은 넣지 않는다 — 아직 평가한 사람이 한두 명이라 리뷰 스니펫으로 올리면
+ *   자기 사이트 리뷰 정책에 걸릴 수 있다(책 이야기 Article 과 같은 이유). 독자가 늘면 다시 본다.
+ */
+export const buildBookJsonLd = ({
+  title,
+  author,
+  isbn,
+  publisher,
+  pubDate,
+  image,
+  url,
+}: BookJsonLdInput) => ({
+  '@context': 'https://schema.org',
+  '@type': 'Book',
+  name: title,
+  ...(author && { author: { '@type': 'Person', name: author } }),
+  isbn,
+  ...(publisher && { publisher: { '@type': 'Organization', name: publisher } }),
+  ...(pubDate && { datePublished: pubDate }),
+  ...(image && { image }),
+  url,
+  inLanguage: 'ko-KR',
+});
+
+type ProfilePageJsonLdInput = {
+  /** 화면에 보이는 이름(닉네임) */
+  name: string;
+  username: string;
+  description: string;
+  url: string;
+  image: string | null;
+};
+
+/**
+ * 공개 서재 한 곳(ProfilePage) — "이 페이지는 한 사람의 프로필"이라고 알린다.
+ *
+ * - mainEntity 는 사람(Person). alternateName 에 아이디를 넣어 닉네임과 주소(@아이디)를 잇는다.
+ * - 화면에 보이는 정보(이름·소개·프로필 사진)만 넣는다. 이메일 같은 비공개 정보는 넣지 않는다.
+ */
+export const buildProfilePageJsonLd = ({
+  name,
+  username,
+  description,
+  url,
+  image,
+}: ProfilePageJsonLdInput) => ({
+  '@context': 'https://schema.org',
+  '@type': 'ProfilePage',
+  url,
+  inLanguage: 'ko-KR',
+  mainEntity: {
+    '@type': 'Person',
+    name,
+    alternateName: username,
+    description,
+    url,
+    ...(image && { image }),
+  },
+});
+
 // <script> 안에 넣을 문자열로 직렬화한다.
 // `<`를 유니코드 이스케이프로 바꾸는 이유: 값에 `</script>`가 섞이면 태그가 거기서 닫힌다.
 // JSON 파서는 <를 다시 `<`로 읽으므로 데이터 자체는 그대로다. (Next.js 공식 가이드 방식)

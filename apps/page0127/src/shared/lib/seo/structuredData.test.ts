@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  buildBookJsonLd,
   buildFaqPageJsonLd,
   buildOrganizationJsonLd,
+  buildProfilePageJsonLd,
   buildWebApplicationJsonLd,
   buildWebSiteJsonLd,
   serializeJsonLd,
@@ -99,5 +101,65 @@ describe('buildFaqPageJsonLd', () => {
         },
       ],
     });
+  });
+});
+
+describe('buildBookJsonLd', () => {
+  it('ISBN·저자·출판사를 담고 별점은 넣지 않는다', () => {
+    const ld = buildBookJsonLd({
+      title: '혼모노',
+      author: '성해나',
+      isbn: '9788936439934',
+      publisher: '창비',
+      pubDate: '2025-03-28',
+      image: 'https://example.com/cover.jpg',
+      url: 'https://page0127.com/books/info/abc',
+    });
+    expect(ld).toMatchObject({
+      '@type': 'Book',
+      name: '혼모노',
+      isbn: '9788936439934',
+      author: { '@type': 'Person', name: '성해나' },
+      publisher: { '@type': 'Organization', name: '창비' },
+      datePublished: '2025-03-28',
+    });
+    expect(ld).not.toHaveProperty('aggregateRating');
+  });
+
+  it('비어 있는 값은 키째 뺀다', () => {
+    const ld = buildBookJsonLd({
+      title: '책',
+      author: null,
+      isbn: '1',
+      publisher: null,
+      pubDate: null,
+      image: null,
+      url: 'https://page0127.com/books/info/x',
+    });
+    expect(ld).not.toHaveProperty('author');
+    expect(ld).not.toHaveProperty('publisher');
+    expect(ld).not.toHaveProperty('datePublished');
+    expect(ld).not.toHaveProperty('image');
+  });
+});
+
+describe('buildProfilePageJsonLd', () => {
+  it('사람(Person)을 mainEntity 로, 아이디를 alternateName 으로 담는다', () => {
+    const ld = buildProfilePageJsonLd({
+      name: '효카소',
+      username: 'hyocasso',
+      description: '효카소님의 책장',
+      url: 'https://page0127.com/hyocasso',
+      image: null,
+    });
+    expect(ld).toMatchObject({
+      '@type': 'ProfilePage',
+      mainEntity: {
+        '@type': 'Person',
+        name: '효카소',
+        alternateName: 'hyocasso',
+      },
+    });
+    expect(ld.mainEntity).not.toHaveProperty('image');
   });
 });

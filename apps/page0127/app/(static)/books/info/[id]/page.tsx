@@ -8,6 +8,8 @@ import { ArrowLeft, Star } from 'lucide-react';
 
 import { createAnonClient } from '@/shared/config/supabase/anon';
 import { decodeHtmlEntities } from '@/shared/lib/htmlEntities';
+import { JsonLd } from '@/shared/lib/seo/JsonLd';
+import { buildBookJsonLd } from '@/shared/lib/seo/structuredData';
 
 import { RATING_MAX, summarizeRatings, toCoverSource } from '@/entities/book';
 import { catalogVisibilityFilter } from '@/entities/book/api/catalogVisibility';
@@ -29,6 +31,8 @@ import { StoryLinkCard } from '@/widgets/story';
 
 import type { GlobalBook } from '@/entities/book';
 import type { Metadata } from 'next';
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -177,8 +181,20 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
     getPublicReaderTotal(createAnonClient(), book.isbn),
   ]);
 
+  // 어떤 책(ISBN)에 관한 페이지인지 검색엔진·AI 에 타입으로 알린다 — 설명은 structuredData.ts
+  const bookJsonLd = buildBookJsonLd({
+    title: stripSubtitle(book.title),
+    author: book.author,
+    isbn: book.isbn,
+    publisher: book.publisher,
+    pubDate: book.pub_date,
+    image: book.cover_image,
+    url: `${siteUrl}/books/info/${encodeURIComponent(id)}`,
+  });
+
   return (
     <PageContainer>
+      <JsonLd data={bookJsonLd} />
       {/* 헤더 — 뒤로가기는 버튼 박스가 아니라 조용한 텍스트 링크.
           담기 버튼이 둘이라 좁은 폰에서는 버튼 줄이 아래로 내려간다(flex-wrap) */}
       <div className='mb-6 flex flex-wrap items-center justify-between gap-3'>
