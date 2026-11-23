@@ -24,7 +24,11 @@ const PRETENDARD_CSS =
 
 // 스크립트로 넣은 스타일시트는 렌더링을 막지 않는다(파서가 기다리지 않는다).
 // CSP script-src 에 'unsafe-inline' 이 이미 있어 인라인 스크립트가 허용된다.
-const loadPretendardScript = `(function(){var l=document.createElement('link');l.rel='stylesheet';l.href=${JSON.stringify(PRETENDARD_CSS)};document.head.appendChild(l);})();`;
+//
+// 붙이는 시점은 window load 뒤다(2026-11-23). 한글 제목이 많은 전체 도서는 글꼴 조각을
+// 13개(약 336KB) 받는데, 바로 붙이면 첫 화면 표지(LCP)·JS 와 같은 시간에 대역폭을 나눠 썼다.
+// font-display: swap 이라 그 전에도 시스템 글꼴로 글자는 다 보인다 — 바뀌는 순간만 조금 늦어진다.
+const loadPretendardScript = `(function(){function a(){var l=document.createElement('link');l.rel='stylesheet';l.href=${JSON.stringify(PRETENDARD_CSS)};document.head.appendChild(l);}if(document.readyState==='complete')a();else window.addEventListener('load',a,{once:true});})();`;
 
 // 사이트 절대 URL — sitemap/robots/OG 이미지가 절대 경로를 만들 때 공통으로 참조
 // (환경변수 미설정 시 로컬 기본값으로 폴백)
@@ -136,7 +140,7 @@ const RootLayout = ({
         {/* 책 표지 이미지 서버 — 목록·상세의 LCP 가 YES24 표지라(2026-11-16 CI 실측)
             첫 표지 요청 전에 연결(DNS·TLS)을 미리 열어 둔다. 이미지는 CORS 요청이 아니라 crossOrigin 없음 */}
         <link rel='preconnect' href='https://image.yes24.com' />
-        {/* 폰트 CSS 는 화면 그리기를 막지 않게 스크립트로 붙인다.
+        {/* 폰트 CSS 는 화면 그리기를 막지 않게, 페이지 load 뒤에 스크립트로 붙인다.
             <link rel='stylesheet'> 로 두면 이 CSS 를 다 받을 때까지 첫 글자가
             안 뜬다(모바일 실측 0.8~0.9초). 어차피 font-display: swap 이라 폰트가
             오기 전엔 시스템 글꼴로 보이므로, CSS 만 기다리게 할 이유가 없다. */}
