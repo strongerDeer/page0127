@@ -5,7 +5,12 @@ import {
   getFollowCountMap,
   pickFollowCounts,
 } from '../../../_helpers/followCounts';
-import { errorResponse, successResponse } from '../../../_helpers/response';
+import { checkFollowListAccess } from '../../../_helpers/followListAccess';
+import {
+  errorResponse,
+  successResponse,
+  unauthorizedResponse,
+} from '../../../_helpers/response';
 
 /**
  * GET /api/follows/:userId/followers
@@ -13,7 +18,7 @@ import { errorResponse, successResponse } from '../../../_helpers/response';
  *
  * 학습 포인트:
  * - JOIN 쿼리: follows 테이블과 profiles 테이블 조인
- * - 팔로우 여부 추가: 현재 로그인한 사용자가 각 팔로워를 팔로우하는지 확인
+ * - 권한: 본인만 (API 403 + follows RLS 두 겹)
  */
 export async function GET(
   request: NextRequest,
@@ -23,9 +28,13 @@ export async function GET(
     const supabase = await getSupabaseClient();
     const { userId } = await params;
 
-    // 현재 로그인한 사용자 (팔로우 여부 확인용, 선택적)
+    // 명단은 본인만 본다 — 숫자는 /stats 로 누구나 (_helpers/followListAccess.ts)
     const { user } = await getCurrentUser();
-    const _currentUserId = user?.id;
+    const access = checkFollowListAccess(user?.id, userId);
+    if (access === 'unauthorized') return unauthorizedResponse();
+    if (access === 'forbidden') {
+      return errorResponse('팔로워 목록은 본인만 볼 수 있어요.', 403);
+    }
 
     // 팔로워 목록 조회 (간단한 버전 - 프로필만)
     const { data: followers, error } = await supabase

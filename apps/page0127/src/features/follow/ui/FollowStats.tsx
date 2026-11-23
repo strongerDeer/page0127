@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useEffectEvent } from 'react';
+import { type ReactNode, useEffect, useEffectEvent } from 'react';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Users } from 'lucide-react';
@@ -18,6 +18,7 @@ import type { FollowStats as FollowStatsData } from '@/entities/follow';
  * - React Query로 통계 데이터 페칭
  * - BroadcastChannel로 다른 탭의 팔로우 이벤트 수신
  * - 실시간 통계 업데이트
+ * - 숫자는 누구나 본다. 명단(onXxxClick)은 본인 서재에서만 넘긴다 — 없으면 글자로 그린다
  */
 type FollowStatsProps = {
   userId: string;
@@ -67,22 +68,40 @@ export const FollowStats = ({
       className='flex items-center gap-4 text-sm'
       aria-busy={isLoading || undefined}
     >
-      <button
-        onClick={onFollowersClick}
-        className='flex items-center gap-1 transition-colors hover:text-primary'
-      >
+      <StatItem onClick={onFollowersClick}>
         <Users className='h-4 w-4' />
         <span className='font-medium'>{followers}</span>
         <span className='text-text-body'>팔로워</span>
-      </button>
+      </StatItem>
 
-      <button
-        onClick={onFollowingClick}
-        className='flex items-center gap-1 transition-colors hover:text-primary'
-      >
+      <StatItem onClick={onFollowingClick}>
         <span className='font-medium'>{following}</span>
         <span className='text-text-body'>팔로잉</span>
-      </button>
+      </StatItem>
     </div>
   );
 };
+
+/**
+ * 누를 곳이 있을 때만 버튼으로 그린다.
+ * 남의 서재처럼 명단을 볼 수 없는 곳에서 버튼을 두면, 눌러도 아무 일 없는 가짜 버튼이 되고
+ * 스크린리더도 "버튼"이라고 읽어 준다 → 그냥 글자(span)로 둔다.
+ */
+const StatItem = ({
+  onClick,
+  children,
+}: {
+  onClick?: () => void;
+  children: ReactNode;
+}) =>
+  onClick ? (
+    <button
+      type='button'
+      onClick={onClick}
+      className='flex items-center gap-1 transition-colors hover:text-primary'
+    >
+      {children}
+    </button>
+  ) : (
+    <span className='flex items-center gap-1'>{children}</span>
+  );

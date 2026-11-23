@@ -276,10 +276,16 @@ export const PublicLibraryHeader = ({
               )}
               <div className='mt-2 flex flex-wrap items-center gap-x-4 gap-y-2'>
                 <span className='text-sm text-text-body'>@{username}</span>
+                {/* 숫자는 누구나, 명단(모달)은 본인만 — 남의 서재에선 숫자만 글자로 보인다.
+                    API(403)·DB(follows RLS)도 같은 규칙이다 (2026-11-23) */}
                 <FollowStats
                   userId={profile.id}
-                  onFollowersClick={() => setFollowersModalOpen(true)}
-                  onFollowingClick={() => setFollowingModalOpen(true)}
+                  onFollowersClick={
+                    isOwnProfile ? () => setFollowersModalOpen(true) : undefined
+                  }
+                  onFollowingClick={
+                    isOwnProfile ? () => setFollowingModalOpen(true) : undefined
+                  }
                   initialStats={followSnapshot?.stats}
                 />
               </div>
@@ -389,20 +395,24 @@ export const PublicLibraryHeader = ({
         </div>
       )}
 
-      <FollowListModal
-        userId={profile.id}
-        type='followers'
-        open={followersModalOpen}
-        onOpenChange={setFollowersModalOpen}
-        currentUserId={currentUserId}
-      />
-      <FollowListModal
-        userId={profile.id}
-        type='following'
-        open={followingModalOpen}
-        onOpenChange={setFollowingModalOpen}
-        currentUserId={currentUserId}
-      />
+      {isOwnProfile && (
+        <>
+          <FollowListModal
+            userId={profile.id}
+            type='followers'
+            open={followersModalOpen}
+            onOpenChange={setFollowersModalOpen}
+            currentUserId={currentUserId}
+          />
+          <FollowListModal
+            userId={profile.id}
+            type='following'
+            open={followingModalOpen}
+            onOpenChange={setFollowingModalOpen}
+            currentUserId={currentUserId}
+          />
+        </>
+      )}
     </>
   );
 };
