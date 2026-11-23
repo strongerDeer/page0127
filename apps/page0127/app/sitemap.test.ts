@@ -74,8 +74,15 @@ describe('sitemap', () => {
   });
 
   it('책 정보와 공개 책이 있는 서재의 검색용 URL을 유지한다', async () => {
+    // book-1: 리더 2명 → 색인 / book-2: 리더 1명 → 제외 / book-3: 리더 0명이지만 "이 책 이야기" 댓글 → 색인
     const publicOnly = vi.fn().mockReturnValue({
-      limit: vi.fn().mockResolvedValue({ data: [{ user_id: 'owner-1' }] }),
+      limit: vi.fn().mockResolvedValue({
+        data: [
+          { user_id: 'owner-1', isbn: 'isbn-1', status: 'completed' },
+          { user_id: 'owner-2', isbn: 'isbn-1', status: 'reading' },
+          { user_id: 'owner-1', isbn: 'isbn-2', status: 'completed' },
+        ],
+      }),
     });
     // 검색 노출을 끈 서재는 DB 조건(search_indexable = true)으로 빠진다
     const indexableOnly = vi.fn().mockResolvedValue({
@@ -94,7 +101,11 @@ describe('sitemap', () => {
             // 승인된 서점 책만 — 직접 등록 책은 등록한 사람에게만 보이므로 뺀다
             const order = () => ({
               limit: async () => ({
-                data: [{ id: 'book-1', created_at: '2026-10-20' }],
+                data: [
+                  { id: 'book-1', isbn: 'isbn-1', created_at: '2026-10-20' },
+                  { id: 'book-2', isbn: 'isbn-2', created_at: '2026-10-20' },
+                  { id: 'book-3', isbn: 'isbn-3', created_at: '2026-10-20' },
+                ],
               }),
             });
             return {
@@ -110,6 +121,12 @@ describe('sitemap', () => {
             };
           }
           if (table === 'books') return { eq: publicOnly };
+          if (table === 'book_comments')
+            return {
+              not: () => ({
+                limit: async () => ({ data: [{ global_book_id: 'book-3' }] }),
+              }),
+            };
           if (table === 'profiles') return { in: owners };
           throw new Error(`Unexpected table: ${table}`);
         },
@@ -119,11 +136,13 @@ describe('sitemap', () => {
     const paths = (await sitemap()).map(({ url }) => new URL(url).pathname);
 
     expect(paths).toContain('/books/info/book-1');
+    expect(paths).not.toContain('/books/info/book-2');
+    expect(paths).toContain('/books/info/book-3');
     expect(paths).toContain('/reader');
     expect(paths).not.toContain('/null');
     expect(paths).not.toContain('/login');
     expect(publicOnly).toHaveBeenCalledWith('is_public', true);
-    expect(owners).toHaveBeenCalledWith('id', ['owner-1']);
+    expect(owners).toHaveBeenCalledWith('id', ['owner-1', 'owner-2']);
     expect(indexableOnly).toHaveBeenCalledWith('search_indexable', true);
   });
 });
