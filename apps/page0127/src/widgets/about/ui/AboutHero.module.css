@@ -283,6 +283,11 @@
   animation: roll 9s cubic-bezier(0.7, 0, 0.2, 1) infinite;
 }
 
+/* 단어 글자는 data-word 에서 — h1 텍스트에 중복 단어가 섞이지 않게(AboutHero.tsx 주석) */
+.roll > span::before {
+  content: attr(data-word);
+}
+
 @keyframes roll {
   0%,
   28% {

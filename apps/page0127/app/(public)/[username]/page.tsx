@@ -8,6 +8,8 @@ import { ErrorBoundary } from '@repo/ui';
 import { createClient } from '@/shared/config/supabase/server';
 import { checkUsageLimit } from '@/shared/lib/aiUsage';
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
+import { JsonLd } from '@/shared/lib/seo/JsonLd';
+import { buildProfilePageJsonLd } from '@/shared/lib/seo/structuredData';
 
 import {
   getCurrentLibraryYear,
@@ -40,6 +42,8 @@ import type { Book } from '@/entities/book';
 import type { Profile } from '@/entities/profile/types';
 import type { AuthUser } from '@/shared/lib/auth/getVerifiedUser';
 import type { Metadata } from 'next';
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
 type PageProps = {
   params: Promise<{ username: string }>;
@@ -230,8 +234,20 @@ const LibraryPage = async ({ params }: PageProps) => {
     notFound();
   }
 
+  // 공개 서재 = 한 사람의 프로필 페이지 — 화면에 보이는 이름·소개·사진만 넣는다.
+  // Suspense 밖(프로필만 읽은 시점)에 두어 첫 HTML 에 바로 실린다
+  const name = toDisplayName(profile);
+  const profileJsonLd = buildProfilePageJsonLd({
+    name,
+    username,
+    description: profile.bio?.trim() || `${name}님의 책장`,
+    url: `${siteUrl}/${encodeURIComponent(username)}`,
+    image: profile.photo_url,
+  });
+
   return (
     <>
+      <JsonLd data={profileJsonLd} />
       <Suspense fallback={<PublicLibrarySkeleton />}>
         <LibraryContent
           profile={profile}

@@ -97,9 +97,12 @@ export const AboutHero = ({
                       읽은 책을 꽂아 두면,
                       <br />
                       책장이 <span className='sr-only'>{ROLLING_WORDS[0]}</span>
+                      {/* 굴러가는 단어는 CSS(::before + data-word)로만 그린다. 글자를 DOM 에 두면
+                          aria-hidden 이어도 검색엔진은 h1 을 "책장이 취향을취향을계절을마음을취향을…"으로
+                          읽는다(2026-11-23 점검). h1 텍스트는 위 sr-only 단어 하나만 남는다 */}
                       <span aria-hidden='true' className={styles.roll}>
                         {[...ROLLING_WORDS, ROLLING_WORDS[0]].map((w, i) => (
-                          <span key={i}>{w}</span>
+                          <span key={i} data-word={w} />
                         ))}
                       </span>{' '}
                       말해 줍니다
