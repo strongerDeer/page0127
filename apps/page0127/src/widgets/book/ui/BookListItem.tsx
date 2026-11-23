@@ -9,6 +9,7 @@ import { shelfSpineWidthPx } from '@/entities/book/model/spineWidth';
 import { bookInfoHref } from '../model/bookInfoHref';
 import { BookCoverPreview, BookSpineImage } from './BookCoverPreview';
 import { BookLikeButton } from './BookLikeButton';
+import { DeferredCover } from './DeferredCover';
 
 import type { Book, GlobalBook } from '@/entities/book';
 
@@ -46,6 +47,12 @@ type BookItemProps = {
    * 목록 전체에 주면 책 20권이 서로 대역폭을 다퉈 오히려 늦어진다.
    */
   priority?: boolean;
+  /**
+   * true 면 priority 가 아닌 표지를 화면 가까이 와서야 받는다(DeferredCover).
+   * 전체 도서처럼 한 화면에 표지가 많은 목록에서만 켠다 — 크롬이 화면 밖 lazy 표지
+   * 20권을 첫 로드에 같이 받아 LCP 표지가 늦어졌다(2026-11-23).
+   */
+  deferOffscreenCover?: boolean;
 };
 
 type BookListItemCoverProps = {
@@ -68,6 +75,7 @@ type BookListItemCoverProps = {
   rank?: number;
   variant?: BookItemVariant;
   priority?: boolean;
+  deferOffscreenCover?: boolean;
 };
 
 type BookListItemContentProps = {
@@ -96,7 +104,25 @@ const BookListItemCover = ({
   rank,
   variant = 'default',
   priority = false,
+  deferOffscreenCover = false,
 }: BookListItemCoverProps) => {
+  const coverImage = (
+    <CoverImage
+      src={cover}
+      fallbackSrc={coverFallback}
+      alt={title}
+      width={400}
+      height={400}
+      priority={priority}
+      fallback={
+        <div className={styles.fallback}>
+          <p className={styles.fallbackTitle}>{title}</p>
+          {author && <p className={styles.fallbackAuthor}>{author}</p>}
+        </div>
+      }
+    />
+  );
+
   const inner = (
     <div className={styles.perspective}>
       <div className={styles.cover}>
@@ -125,20 +151,11 @@ const BookListItemCover = ({
 
           {/* 앞 표지 — 이미지가 없으면 제목·저자를 조판해 표지를 생성한다
               (기존에는 존재하지 않는 /images/placeholder-cover.png 를 가리켜 깨졌다) */}
-          <CoverImage
-            src={cover}
-            fallbackSrc={coverFallback}
-            alt={title}
-            width={400}
-            height={400}
-            priority={priority}
-            fallback={
-              <div className={styles.fallback}>
-                <p className={styles.fallbackTitle}>{title}</p>
-                {author && <p className={styles.fallbackAuthor}>{author}</p>}
-              </div>
-            }
-          />
+          {deferOffscreenCover && !priority && cover ? (
+            <DeferredCover>{coverImage}</DeferredCover>
+          ) : (
+            coverImage
+          )}
 
           {/* 읽음 뱃지 */}
           {isRead && (
@@ -218,6 +235,7 @@ export const BookListItem = ({
   isLoggedIn = true,
   variant = 'default',
   priority = false,
+  deferOffscreenCover = false,
 }: BookItemProps) => {
   const isRead =
     isReadProp ?? ('status' in book && book.status === 'completed');
@@ -246,6 +264,7 @@ export const BookListItem = ({
         rank={rank}
         variant={variant}
         priority={priority}
+        deferOffscreenCover={deferOffscreenCover}
       />
       <BookListItem.Content
         id={book.id}

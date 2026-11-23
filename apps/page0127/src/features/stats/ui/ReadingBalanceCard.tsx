@@ -2,6 +2,8 @@
 
 import dynamic from 'next/dynamic';
 
+import { RenderWhenNear } from '@/shared/ui/RenderWhenNear';
+
 import { BALANCE_CATEGORIES, type ReadingBalance } from '@/entities/book';
 
 import {
@@ -14,13 +16,15 @@ import {
   radarAxes,
 } from '../model/balanceCopy';
 
-// 레이더는 recharts — 브라우저 측정(ResponsiveContainer)이 필요해 SSR 에서 뺀다
+const ChartSkeleton = () => (
+  <div className='h-full animate-pulse rounded-lg bg-muted' />
+);
+
+// 레이더는 recharts — 브라우저 측정(ResponsiveContainer)이 필요해 SSR 에서 뺀다.
+// 청크는 RenderWhenNear 가 화면 가까이서 그리기 시작할 때 받는다
 const CategoryRadarChart = dynamic(
   () => import('./CategoryRadarChart').then((m) => m.CategoryRadarChart),
-  {
-    ssr: false,
-    loading: () => <div className='h-full animate-pulse rounded-lg bg-muted' />,
-  }
+  { ssr: false, loading: ChartSkeleton }
 );
 
 type ReadingBalanceCardProps = {
@@ -62,9 +66,12 @@ export const ReadingBalanceCard = ({
       {/* 모바일은 짧은 라벨·좁은 여백(radarLayout)이라 폭이 남는다 — 높이 260 이면 폭과 비슷해져
           레이더가 가장 크게 그려진다(220 이면 높이가 막아 지름 127px 에 머물렀다) */}
       {hasRadar && (
-        <div className='h-[260px] md:h-[340px]'>
+        <RenderWhenNear
+          className='h-[260px] md:h-[340px]'
+          placeholder={<ChartSkeleton />}
+        >
           <CategoryRadarChart data={axes} height='100%' />
-        </div>
+        </RenderWhenNear>
       )}
 
       <div className='min-w-0'>

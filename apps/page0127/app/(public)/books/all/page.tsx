@@ -220,6 +220,8 @@ export default async function GlobalBooksPage(props: {
             book={book}
             // 모바일 2열 기준 첫 화면 두 줄(4권)만 먼저 받는다 — LCP 표지가 여기 있다
             priority={index < FIRST_SCREEN_BOOKS}
+            // 나머지 표지는 화면 가까이 와서 받는다 — 첫 표지에 대역폭을 몰아 준다
+            deferOffscreenCover
             isReadProp={myReadIsbns.has(book.isbn)}
             isReadingProp={myReadingIsbns.has(book.isbn)}
             isLikedProp={myLikedIds.has(book.id)}

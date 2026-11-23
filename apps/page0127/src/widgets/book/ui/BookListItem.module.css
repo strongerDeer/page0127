@@ -135,6 +135,16 @@
   );
 }
 
+/* 아직 받지 않은 첫 화면 밖 표지 자리(DeferredCover) — 보통 판형으로 자리만 잡는다.
+   표지가 뜨기 전 잠깐 보이므로 눈에 띄지 않는 옅은 면으로 둔다 */
+.coverPlaceholder {
+  display: block;
+  height: 100%;
+  aspect-ratio: 1 / 1.45;
+  border-radius: 2px 6px 6px 2px;
+  background-color: var(--sunken);
+}
+
 /* 표지 이미지가 없는 책 — 제목·저자를 조판해 표지를 만든다 */
 .fallback {
   /* 이미지가 없으므로 폭을 알 수 없다. 일반적인 판형(1:1.45)으로 세운다 */

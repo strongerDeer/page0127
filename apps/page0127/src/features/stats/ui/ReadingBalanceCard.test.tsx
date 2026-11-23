@@ -16,6 +16,17 @@ vi.mock('next/dynamic', () => ({
     ),
 }));
 
+// 화면 가까이서 그리는 상자는 서버 렌더에서 자리 표시만 낸다 — 이 테스트는 카드 모양을 보므로 바로 그린다
+vi.mock('@/shared/ui/RenderWhenNear', () => ({
+  RenderWhenNear: ({
+    children,
+    className,
+  }: {
+    children: React.ReactNode;
+    className?: string;
+  }) => <div className={className}>{children}</div>,
+}));
+
 const books = (category: string, count: number) =>
   Array.from({ length: count }, () => createTestBook({ category }));
 

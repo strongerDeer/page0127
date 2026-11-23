@@ -192,3 +192,9 @@ export const buildTrendPayload = (records: QualityRecord[]): TrendPayload => {
     desktop: byFf('desktop'),
   };
 };
+
+// LCP(실제)는 모바일만 잰다(packages/quality run.ts). 데스크탑은 스로틀이 없어
+// 랩 LCP와 실제 값이 거의 같으므로, 빈 칸이 '측정 실패'로 읽히지 않게 이유를 적는다.
+export const DESKTOP_REAL_LCP_NOTE =
+  '데스크탑은 랩 LCP로 충분해 따로 재지 않아요. LCP(랩) 탭을 보세요.';
+
