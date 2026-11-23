@@ -14,6 +14,7 @@ import { INSTAGRAM_URL } from '@/shared/config/social';
 const footerLinks = [
   { href: '/about', label: '서비스 소개' },
   { href: '/books/all', label: '전체 도서' },
+  { href: '/blog', label: '책 이야기' },
   { href: '/updates', label: '공지·업데이트' },
   { href: '/contact', label: '문의' },
   { href: '/privacy', label: '개인정보처리방침' },
