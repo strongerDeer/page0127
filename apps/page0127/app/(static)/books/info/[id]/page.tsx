@@ -14,10 +14,15 @@ import { buildBookJsonLd } from '@/shared/lib/seo/structuredData';
 import { RATING_MAX, summarizeRatings, toCoverSource } from '@/entities/book';
 import { catalogVisibilityFilter } from '@/entities/book/api/catalogVisibility';
 import {
+  buildBookMetaDescription,
+  isBookIndexable,
+} from '@/entities/book/model/bookIndexing';
+import {
   bookMetaTitle,
   stripSubtitle,
 } from '@/entities/book/model/bookMetaTitle';
 import { BookSourceCredit } from '@/entities/book/ui/BookSourceCredit';
+import { getLatestStoryForBook } from '@/entities/story/server';
 
 import { getPublicReaderTotal } from '@/widgets/book/api/getBookReaders';
 import {
@@ -92,14 +97,35 @@ export async function generateMetadata({
 
   // 부제·옮긴이까지 넣으면 100자가 넘어 검색 결과에서 잘린다 — 책 이름과 첫 저자만
   const title = bookMetaTitle(book);
-  // 알라딘 소개글은 HTML 엔티티가 이스케이프돼 있다 — 메타에도 디코딩해 넣는다
-  // 소개글의 줄바꿈은 미리보기에서 빈 줄 덩어리가 된다 — 공백 하나로 접는다
-  const description = book.description
-    ? decodeHtmlEntities(book.description)
-        .replace(/\s+/g, ' ')
-        .trim()
-        .slice(0, 150)
-    : `${book.title}을(를) 읽은 사람들의 기록을 page0127.에서 확인해 보세요.`;
+
+  // 아래 세 조회는 본문(page)도 똑같이 부른다 — cache()·unstable_cache 로 한 번만 돈다
+  const [stats, readerTotal, story, commentCount] = await Promise.all([
+    getBookStats(book.isbn),
+    getReaderTotal(book.isbn),
+    getLatestStoryForBook(book.id),
+    getBookCommentCount(book.id),
+  ]);
+  const readerCount = readerTotal ?? 0;
+
+  // 출판사 소개 글 대신 page0127 만의 정보(리더 수·평균 별점)로 — model/bookIndexing.ts
+  const description = buildBookMetaDescription({
+    title: stripSubtitle(book.title),
+    author: book.author,
+    readerCount,
+    avgRating: stats.avgRating,
+    ratingCount: stats.ratingCount,
+  });
+
+  // 리더 2명 이상, 또는 "이 책 이야기" 댓글·블로그 책 이야기가 있는 책만 검색 결과에 올린다
+  // (sitemap 과 같은 기준). 조회가 깨졌으면(null) 판단을 미루고 색인을 막지 않는다 —
+  // 일시 장애로 noindex 가 ISR 캐시에 1시간 굳으면 안 된다
+  const indexable =
+    readerTotal === null ||
+    commentCount === null ||
+    isBookIndexable({
+      readerCount,
+      hasStory: Boolean(story) || commentCount > 0,
+    });
 
   return {
     title,
@@ -117,10 +143,13 @@ export async function generateMetadata({
     },
     // 루트 레이아웃의 twitter 제목(홈 문구)이 물려 오지 않게 이 책의 제목을 적는다
     twitter: { card: 'summary_large_image', title, description },
+    // noindex, follow: 검색 결과엔 안 올리되 안의 링크(서재·다른 책)는 따라가게 둔다
+    ...(indexable ? {} : { robots: { index: false, follow: true } }),
   };
 }
 
-async function getBookStats(isbn: string) {
+/** generateMetadata 와 page 가 같은 통계를 두 번 읽지 않게 요청 안에서 묶는다 */
+const getBookStats = cache(async (isbn: string) => {
   const supabase = createAnonClient();
 
   // is_public 을 명시하는 이유: RLS 는 익명 방문자만 걸러준다.
@@ -167,7 +196,30 @@ async function getBookStats(isbn: string) {
     avgRating: average,
     ratingCount: ratedCount,
   };
-}
+});
+
+/**
+ * "이 책 이야기"(책 정보 댓글) 수 — 색인 판단용. 목록 자체는 브라우저가 따로 받는다.
+ * RLS 가 가려진 댓글(is_hidden)을 이미 뺀다. 실패하면 null.
+ */
+const getBookCommentCount = async (
+  globalBookId: string
+): Promise<number | null> => {
+  const { count, error } = await createAnonClient()
+    .from('book_comments')
+    .select('id', { count: 'exact', head: true })
+    .eq('global_book_id', globalBookId);
+  if (error) {
+    console.warn(`[books/info] 이야기 수 조회 실패: ${error.message}`);
+    return null;
+  }
+  return count ?? 0;
+};
+
+/** 리더 수 — 메타데이터(색인 판단·설명)와 본문이 함께 쓴다 */
+const getReaderTotal = cache((isbn: string) =>
+  getPublicReaderTotal(createAnonClient(), isbn)
+);
 
 export default async function GlobalBookDetailPage({ params }: PageProps) {
   const { id } = await params;
@@ -178,7 +230,7 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
   // 통계와 리더 수는 서로 독립 → 병렬
   const [stats, readerTotal] = await Promise.all([
     getBookStats(book.isbn),
-    getPublicReaderTotal(createAnonClient(), book.isbn),
+    getReaderTotal(book.isbn),
   ]);
 
   // 어떤 책(ISBN)에 관한 페이지인지 검색엔진·AI 에 타입으로 알린다 — 설명은 structuredData.ts

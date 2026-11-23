@@ -45,6 +45,13 @@ export type Profile = {
    */
   is_demo?: boolean;
 
+  /**
+   * 서재를 검색엔진에 노출하는가 (기본 true, 20261123000200).
+   * false 면 서재·하위 페이지에 noindex, sitemap 제외. 링크로 보는 건 그대로다.
+   * 판정은 isSearchIndexable() 로 — 값이 없을 때(옛 캐시·목 데이터)도 기본값을 따른다.
+   */
+  search_indexable?: boolean;
+
   /** 닉네임 */
   nickname: string | null;
 

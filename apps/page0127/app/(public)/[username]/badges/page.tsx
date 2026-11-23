@@ -9,6 +9,7 @@ import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 import { toDisplayName } from '@/entities/profile/model/displayName';
+import { libraryRobots } from '@/entities/profile/model/searchIndexable';
 import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTasteHistory';
 
 import { BadgeCollection } from '@/features/badge';
@@ -38,6 +39,8 @@ export const generateMetadata = async ({
     alternates: { canonical: `/${username}/badges` },
     openGraph: { title: shareTitle, description, type: 'profile' },
     twitter: { card: 'summary_large_image', title: shareTitle, description },
+    // 서재 주인이 검색 노출을 끄면 하위 페이지도 함께 noindex
+    ...libraryRobots(profile),
   };
 };
 
