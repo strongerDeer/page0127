@@ -2,7 +2,12 @@
 
 import { useMemo, useRef, useState } from 'react';
 
-import { METRIC_ORDER, METRICS, PAGE_PALETTE } from '../lib/metrics';
+import {
+  DESKTOP_REAL_LCP_NOTE,
+  METRIC_ORDER,
+  METRICS,
+  PAGE_PALETTE,
+} from '../lib/metrics';
 
 import type { FormFactor, MetricKey, TrendPayload } from '../lib/metrics';
 
@@ -75,7 +80,9 @@ const Panel = ({
     return (
       <PanelShell label={label} cond={cond}>
         <p className='px-2 py-10 text-center text-sm text-text-subtle'>
-          {label} 측정 데이터가 아직 없습니다.
+          {ff === 'desktop' && metric === 'lcpReal'
+            ? DESKTOP_REAL_LCP_NOTE
+            : `${label} 측정 데이터가 아직 없습니다.`}
         </p>
       </PanelShell>
     );

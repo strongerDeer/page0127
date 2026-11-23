@@ -1,4 +1,5 @@
 import {
+  DESKTOP_REAL_LCP_NOTE,
   METRIC_ORDER,
   METRICS,
   PAGE_PALETTE,
@@ -165,7 +166,19 @@ const GridTable = ({
                                   }}
                                 />
                               )}
-                              {last == null ? '–' : def.format(last)}
+                              {last == null ? (
+                                <span
+                                  title={
+                                    ff === 'desktop' && mk === 'lcpReal'
+                                      ? DESKTOP_REAL_LCP_NOTE
+                                      : undefined
+                                  }
+                                >
+                                  –
+                                </span>
+                              ) : (
+                                def.format(last)
+                              )}
                             </span>
                             <span
                               className={`text-xs font-medium tabular-nums ${DIR_TEXT[dir]}`}
