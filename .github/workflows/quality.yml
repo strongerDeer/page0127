@@ -1,15 +1,14 @@
 name: quality
 
-# 주 1회(월 06:17 KST) 자동 + 필요 시 수동으로 배포된 page0127의 품질을 측정해
+# 주 1회(월 06시대 KST) 자동 + 필요 시 수동으로 배포된 page0127의 품질을 측정해
 # Supabase(quality_records/field_history)에 쌓는다. 측정은 무거워(Chrome+빌드) CI에서만 돈다.
+#
+# 왜 schedule 이 없나: GitHub cron 은 이 저장소에서 5~9시간씩 늦거나 아예 건너뛰었다
+# (2026-11: 11/16 예약 실행 누락, 11/23도 3시간 넘게 지연). 그래서 주간 실행은 Vercel Cron
+# (/api/cron/trigger-quality, apps/page0127/vercel.json 의 '0 21 * * 0' = 월 06시대 KST)이
+# GitHub API 로 아래 workflow_dispatch 를 눌러 준다. schedule 을 같이 두면 늦게 도착한
+# GitHub 예약 실행이 한 주에 두 번 측정·저장하게 돼서 뺐다.
 on:
-  schedule:
-    # 매주 월 06:17 KST = UTC 일요일 21:17. cron 은 UTC 기준이라 요일이 하루 앞(0=일)이다.
-    #
-    # 왜 정각이 아닌가: 예전엔 '0 0 * * 1'(월 09:00 KST)이었는데 실제 시작은 11~12시였다.
-    # UTC 00:00 정각엔 전 세계 schedule 이 몰려 GitHub 가 2~3시간씩 미룬다.
-    # 정각을 피하고 10시 확인까지 4시간 여유를 둬서, 늦어져도 확인 전에 끝나게 한다.
-    - cron: '17 21 * * 0'
   workflow_dispatch: {}
 
 # 기본 토큰은 읽기만. 이슈를 여는 notify job 에서만 issues: write 를 준다(최소 권한).
