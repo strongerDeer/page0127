@@ -12,6 +12,7 @@ import { getBookReadings } from '@/entities/book/api/getBookReadings';
 import { getPublicBookRecord } from '@/entities/book/api/getPublicBookRecord';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 import { toDisplayName } from '@/entities/profile/model/displayName';
+import { libraryRobots } from '@/entities/profile/model/searchIndexable';
 import { getBookQuotes } from '@/entities/quote';
 
 import { ArchiveToggleButton } from '@/features/book/ui/ArchiveToggleButton';
@@ -103,6 +104,8 @@ export const generateMetadata = async ({
       title,
       description: shareDescription,
     },
+    // 서재 주인이 검색 노출을 끄면 책 기록 페이지도 함께 noindex
+    ...libraryRobots(profile),
   };
 };
 

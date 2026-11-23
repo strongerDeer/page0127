@@ -28,6 +28,7 @@ import {
 import { getFollowSnapshot } from '@/entities/follow/api/getFollowSnapshot';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 import { toDisplayName } from '@/entities/profile/model/displayName';
+import { libraryRobots } from '@/entities/profile/model/searchIndexable';
 import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTasteHistory';
 
 import { getBadgeActivity } from '@/features/badge/api/getBadgeActivity';
@@ -116,6 +117,8 @@ export const generateMetadata = async ({
     },
     openGraph: { title: shareTitle, description, type: 'profile' },
     twitter: { card: 'summary_large_image', title: shareTitle, description },
+    // 주인이 "검색엔진에 내 서재 보이기"를 끄면 noindex (설정 화면, 기본 켜짐)
+    ...libraryRobots(profile),
   };
 };
 

@@ -136,7 +136,10 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
         .from('profiles')
         .select('username, updated_at')
         .in('id', ownerIds.slice(0, MAX_LIBRARY_URLS))
-        .not('username', 'is', null);
+        .not('username', 'is', null)
+        // 주인이 "검색엔진에 내 서재 보이기"를 끈 서재는 알리지 않는다(기본 켜짐).
+        // 서재 페이지에도 같은 기준으로 noindex 가 붙는다 — libraryRobots()
+        .eq('search_indexable', true);
 
       libraryRoutes = (owners ?? [])
         .filter((p): p is { username: string; updated_at: string | null } =>

@@ -5,10 +5,12 @@ import { PageContainer } from '@repo/ui';
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { getProfile } from '@/entities/profile/api/getProfile';
+import { isSearchIndexable } from '@/entities/profile/model/searchIndexable';
 
 import { LinkedAccountsSection } from '@/features/auth/ui/LinkedAccountsSection';
 import { ExportRecordsSection } from '@/features/book-export';
 import { ProfileSettingsForm } from '@/features/profile/ui/ProfileSettingsForm';
+import { SearchVisibilitySetting } from '@/features/profile/ui/SearchVisibilitySetting';
 import { PushNotificationSection } from '@/features/push';
 import { NudgeSettings } from '@/features/reading-nudge';
 
@@ -51,6 +53,8 @@ export default async function SettingsPage() {
         {/* 이 기기에서 잠금화면 알림 받기 — 기기마다 따로 켠다 */}
         <PushNotificationSection />
         <NudgeSettings userId={user.id} />
+        {/* 공개 서재를 검색 결과에 올릴지 — 기본 켜짐, 끄면 noindex·sitemap 제외 */}
+        <SearchVisibilitySetting initialValue={isSearchIndexable(profile)} />
         {/* 계정 삭제 바로 위 — 지우기 전에 받아 둘 수 있게 */}
         <ExportRecordsSection />
       </ProfileSettingsForm>

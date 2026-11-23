@@ -13,7 +13,7 @@ export const SITE_INFO = {
    * 2026-11-22: Microsoft Clarity(화면 이용 기록) 추가. 처리방침 13조는 큰 변경을 7일 전에
    * 알린다고 약속하지만, 가입자가 거의 없는 베타라 배포일에 바로 적용하고 /updates 에 알렸다.
    */
-  privacyLastUpdated: '2026년 11월 22일',
+  privacyLastUpdated: '2026년 11월 23일',
   contact: {
     // 카카오톡 1:1 오픈채팅 — 방문자가 링크로 들어와 1:1 대화, 운영자는 카카오톡 알림으로 수신
     kakaoOpenChatUrl: 'https://open.kakao.com/o/scK1DkFi',

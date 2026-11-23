@@ -15,4 +15,4 @@
 // 배열을 join 하지 않고 리터럴 한 줄로 둔다 — supabase-js 는 select 에 넘긴 문자열 **리터럴**을
 // 해석해 반환 타입을 만든다. join 결과는 그냥 `string` 이라 타입 추론이 GenericStringError 로 깨진다.
 export const PROFILE_PUBLIC_COLUMNS =
-  'id, username, username_changed_at, onboarded_at, nickname, bio, photo_url, reading_goal, created_at, updated_at, is_demo';
+  'id, username, username_changed_at, onboarded_at, nickname, bio, photo_url, reading_goal, created_at, updated_at, is_demo, search_indexable';

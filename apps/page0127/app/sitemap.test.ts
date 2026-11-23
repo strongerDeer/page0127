@@ -77,13 +77,15 @@ describe('sitemap', () => {
     const publicOnly = vi.fn().mockReturnValue({
       limit: vi.fn().mockResolvedValue({ data: [{ user_id: 'owner-1' }] }),
     });
+    // 검색 노출을 끈 서재는 DB 조건(search_indexable = true)으로 빠진다
+    const indexableOnly = vi.fn().mockResolvedValue({
+      data: [
+        { username: 'reader', updated_at: '2026-10-20' },
+        { username: null, updated_at: null },
+      ],
+    });
     const owners = vi.fn().mockReturnValue({
-      not: vi.fn().mockResolvedValue({
-        data: [
-          { username: 'reader', updated_at: '2026-10-20' },
-          { username: null, updated_at: null },
-        ],
-      }),
+      not: vi.fn().mockReturnValue({ eq: indexableOnly }),
     });
     createClient.mockResolvedValue({
       from: (table: string) => ({
@@ -122,5 +124,6 @@ describe('sitemap', () => {
     expect(paths).not.toContain('/login');
     expect(publicOnly).toHaveBeenCalledWith('is_public', true);
     expect(owners).toHaveBeenCalledWith('id', ['owner-1']);
+    expect(indexableOnly).toHaveBeenCalledWith('search_indexable', true);
   });
 });
