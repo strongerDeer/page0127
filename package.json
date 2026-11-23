@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
-    "turbo": "^2.11.11",
+    "turbo": "^2.11.13",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11"
   },
