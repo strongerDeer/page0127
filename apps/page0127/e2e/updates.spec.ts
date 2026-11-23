@@ -51,7 +51,8 @@ test('상단 메뉴에는 홈·소개가 없다 — 로고가 홈이다(데스�
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/');
   const nav = page.getByRole('navigation', { name: '주요 메뉴' });
-  await expect(nav.getByRole('link')).toHaveText(['전체 도서']);
+  // 책 이야기는 2026-11-23 추가(그전엔 사이트맵에만 있고 사람이 닿을 링크가 없었다)
+  await expect(nav.getByRole('link')).toHaveText(['전체 도서', '책 이야기']);
 });
 
 test('푸터에서 공지·업데이트로 갈 수 있다', async ({ page }) => {

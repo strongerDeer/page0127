@@ -10,6 +10,7 @@ import { ProfileDropdown } from '@/features/profile';
 import { GnbNav } from './GnbNav';
 import { GnbSearch } from './GnbSearch';
 import { MobileBookSearch } from './MobileBookSearch';
+import { MobileTocMenu } from './MobileTocMenu';
 
 /**
  * 통합 GNB — 로그인 전/후 모두 같은 상단 바를 쓴다.
@@ -34,7 +35,7 @@ export const Gnb = ({ user }: GnbProps) => {
   return (
     // 그림자는 "떠 있는 것"에만 — sticky 헤더는 1px 선으로 충분하다
     <header className='sticky top-0 z-40 border-b border-line bg-card'>
-      <div className='page-width flex h-16 items-center gap-3 lg:gap-6'>
+      <div className='page-width flex h-16 items-center gap-2 sm:gap-3 lg:gap-6'>
         {/*
           베타 표기는 GNB 에 둔다 — 모든 화면이 지나는 유일한 자리다.
           랜딩에만 적으면 로그인해서 쓰는 사람은 자기가 베타를 쓰는 줄 모른다.
@@ -68,7 +69,7 @@ export const Gnb = ({ user }: GnbProps) => {
           {user ? (
             <>
               <NotificationDropdown userId={user.userId} />
-              <Button asChild size='sm' className='ml-1'>
+              <Button asChild size='sm' className='md:ml-1'>
                 <IntentPrefetchLink
                   href='/books/add'
                   {...coachTarget('add-book')}
@@ -78,7 +79,7 @@ export const Gnb = ({ user }: GnbProps) => {
                   <span className='sr-only md:hidden'>도서 추가</span>
                 </IntentPrefetchLink>
               </Button>
-              <div className='ml-1'>
+              <div className='md:ml-1'>
                 <ProfileDropdown
                   photoUrl={user.photoUrl}
                   displayName={user.displayName}
@@ -96,6 +97,15 @@ export const Gnb = ({ user }: GnbProps) => {
               </Button>
             </>
           )}
+
+          {/*
+            모바일 목차 — 주 메뉴(GnbNav)가 숨는 768px 아래에서만 보인다.
+            ☰ 가 하나 늘면서 로그인 상태 360px 폭에서 12px 넘쳤다 → 모바일에서만 간격을 줄였다(gap-2, ml-1 → md:ml-1).
+          */}
+          <MobileTocMenu
+            isLoggedIn={!!user}
+            username={user?.username ?? null}
+          />
         </div>
       </div>
     </header>

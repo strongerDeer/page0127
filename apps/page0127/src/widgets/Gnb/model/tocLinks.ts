@@ -1,0 +1,66 @@
+/**
+ * 모바일 "목차" 메뉴의 항목 — 순수 함수로 떼어 두어 테스트하기 쉽게 한다.
+ *
+ * 역할 분담 (2026-11-23 HJ, A안):
+ * - 하단 탭바(BottomTabBar): 로그인한 사람이 매일 쓰는 곳(내 서재·라운지·리더 찾기·알림)
+ * - 목차: 그 밖의 모든 곳. 모바일에선 GnbNav 가 숨겨져서 여기가 아니면 푸터까지 내려야 했다.
+ *
+ * 라운지·리더 찾기·알림은 탭바에 이미 있으니 목차에 다시 넣지 않는다(같은 메뉴 두 벌 X).
+ */
+export type TocLink = {
+  href: string;
+  label: string;
+};
+
+export type TocGroups = {
+  /** 로그인했을 때만 — 내 공간 */
+  account: TocLink[];
+  /** 누구에게나 — 둘러볼 곳 */
+  main: TocLink[];
+  /** 작게 — 자주 안 가지만 찾을 수 있어야 하는 곳 */
+  sub: TocLink[];
+};
+
+type GetTocGroupsParams = {
+  isLoggedIn: boolean;
+  /** 로그인했어도 username 이 아직 없는 드문 과도 상태가 있다 — 그땐 내 서재를 감춘다 */
+  username: string | null;
+};
+
+export const getTocGroups = ({
+  isLoggedIn,
+  username,
+}: GetTocGroupsParams): TocGroups => ({
+  account: isLoggedIn
+    ? [
+        ...(username ? [{ href: `/${username}`, label: '내 서재' }] : []),
+        { href: '/settings', label: '설정' },
+      ]
+    : [],
+  main: [
+    { href: '/books/all', label: '전체 도서' },
+    { href: '/blog', label: '책 이야기' },
+    { href: '/about', label: '서비스 소개' },
+  ],
+  sub: [
+    { href: '/updates', label: '공지·업데이트' },
+    { href: '/contact', label: '문의' },
+  ],
+});
+
+/**
+ * 지금 페이지인가.
+ * - /books/all, /blog 처럼 아래에 상세가 있는 곳은 하위 경로(/blog/글)도 같은 칸으로 본다.
+ * - 내 서재(/{username})는 정확히 일치할 때만 — 하위(/{username}/{bookId})는 책 상세라 다르다.
+ *   하단 탭바(navItems.isNavItemActive)와 같은 규칙이다.
+ */
+export const isTocLinkActive = (
+  pathname: string,
+  link: TocLink,
+  username: string | null
+): boolean => {
+  if (username && link.href === `/${username}`) {
+    return pathname === link.href;
+  }
+  return pathname === link.href || pathname.startsWith(`${link.href}/`);
+};
