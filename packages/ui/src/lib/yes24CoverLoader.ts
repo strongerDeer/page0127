@@ -16,7 +16,7 @@
  */
 
 const COVER_PATH = /^\/goods\/(\d+)(?:\/(?:M|L|XL))?$/;
-const HOST = 'image.yes24.com';
+const HOST = "image.yes24.com";
 
 /** M 사본의 실제 폭. 요청 폭이 이 이하면 M 으로 충분하다 */
 const M_WIDTH = 151;
@@ -41,7 +41,7 @@ export const parseYes24CoverItemId = (src?: string | null): string | null => {
 
   try {
     const { hostname, pathname, protocol } = new URL(src);
-    if (protocol !== 'https:' || hostname !== HOST) return null;
+    if (protocol !== "https:" || hostname !== HOST) return null;
     return COVER_PATH.exec(pathname)?.[1] ?? null;
   } catch {
     return null;
@@ -69,11 +69,11 @@ export const toYes24CoverBase = (itemId: string): string =>
  */
 export const pickYes24CoverSize = (
   width: number,
-  allowXL = false
-): 'M' | 'L' | 'XL' => {
-  if (width <= M_WIDTH) return 'M';
-  if (allowXL && width > XL_FROM_WIDTH) return 'XL';
-  return 'L';
+  allowXL = false,
+): "M" | "L" | "XL" => {
+  if (width <= M_WIDTH) return "M";
+  if (allowXL && width > XL_FROM_WIDTH) return "XL";
+  return "L";
 };
 
 type LoaderArgs = { src: string; width: number };
@@ -107,4 +107,31 @@ export const yes24LargeCoverLoader = (args: LoaderArgs): string =>
 export const yes24SmallCoverLoader = ({ src }: LoaderArgs): string => {
   const itemId = parseYes24CoverItemId(src);
   return itemId ? `${toYes24CoverBase(itemId)}/M` : src;
+};
+
+const SPINE_PATH = /^\/goods\/(\d+)\/SIDE(?:\/(?:M|L|XL))?$/;
+
+/**
+ * 화면에 그릴 책등 주소 — YES24 책등이면 L 사본(높이 400px)으로 바꾼다.
+ *
+ * DB 에는 원본 `/SIDE/XL`(폭 ~100 x 높이 1200, 8~51KB)을 저장하지만, 화면의 책등은
+ * 높이 150~190px 짜리 띠다(홈 케미 책장 160px, 전체 도서 hover 책등 최대 190px).
+ * 2배 화면에서도 380px 이면 충분하니 L(3~5KB)로 덮인다 — 3배 화면만 최대 1.4배 확대.
+ *
+ * 2026-11-23 실측(운영): 홈 책등 15장·전체 도서 24장을 XL 로 받아 홈 이미지 +330KB,
+ * 전체 도서 +586KB 회귀가 났다(quality 리포트). 같은 책등 L 은 XL 의 약 1/6.
+ *
+ * ⚠️ YES24 는 책등이 아니면 주소를 그대로 둔다. `/SIDE/M`·`/SIDE` 는 XL 과 같은
+ * 파일을 주므로(실측) 작은 사본은 L 하나뿐이다.
+ * 비율은 XL 과 같아서 isSpineShaped(폭÷높이) 판정에 영향이 없다.
+ */
+export const toYes24SpineDisplaySrc = (src: string): string => {
+  try {
+    const { hostname, pathname, protocol } = new URL(src);
+    if (protocol !== "https:" || hostname !== HOST) return src;
+    const itemId = SPINE_PATH.exec(pathname)?.[1];
+    return itemId ? `https://${HOST}/goods/${itemId}/SIDE/L` : src;
+  } catch {
+    return src;
+  }
 };
