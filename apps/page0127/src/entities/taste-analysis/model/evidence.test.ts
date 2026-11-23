@@ -8,14 +8,19 @@ import {
 } from './evidence';
 
 const books = [
-  { id: 'id-1', title: '데이터 삽질 끝에 UX가 보였다', cover_image: 'c1' },
+  {
+    id: 'id-1',
+    title: '데이터 삽질 끝에 UX가 보였다',
+    cover_image: 'c1',
+    provider_item_id: '111',
+  },
   { id: 'id-2', title: '모순', cover_image: null },
   { id: 'id-3', title: '피로사회', cover_image: 'c3' },
 ];
 const LIKED = ['UX 디자인', '관계'];
 
 describe('toTasteEvidence', () => {
-  it('번호로 책을 찾아 저장할 모양으로 바꾼다 — 제목·표지는 실제 책 것', () => {
+  it('번호로 책을 찾아 저장할 모양으로 바꾼다 — 제목·표지·상품번호는 실제 책 것', () => {
     const [item] = toTasteEvidence(
       [
         {
@@ -31,6 +36,8 @@ describe('toTasteEvidence', () => {
       book_id: 'id-1',
       title: '데이터 삽질 끝에 UX가 보였다',
       cover_image: 'c1',
+      // 상품번호가 있어야 화면이 작은 YES24 사본을 고른다(Storage 500px 사본 대신)
+      provider_item_id: '111',
       reason: '현장에서 바로 쓰는 지식을 찾는 결',
       topics: ['UX 디자인'],
     });

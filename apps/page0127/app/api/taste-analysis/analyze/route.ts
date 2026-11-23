@@ -196,6 +196,8 @@ export async function POST(request: NextRequest) {
         id: book.id,
         title: book.title,
         cover_image: book.cover_image,
+        // 표지를 작은 YES24 사본으로 그리려면 상품번호도 함께 남겨야 한다
+        provider_item_id: book.provider_item_id ?? null,
       })),
       aiResponse.preference_profile?.liked?.topics ?? []
     );
@@ -350,9 +352,7 @@ export async function POST(request: NextRequest) {
 async function selectBooksForAnalysis(
   supabase: SupabaseClient,
   userId: string
-): Promise<
-  { recentBooks: Book[]; lastingBooks: Book[] } | { error: unknown }
-> {
+): Promise<{ recentBooks: Book[]; lastingBooks: Book[] } | { error: unknown }> {
   // 평가(rating) 있는 완독 책 — 0("평가 안 함")도 게이트에선 센다(analysisGate)
   const ratedCompleted = () =>
     supabase

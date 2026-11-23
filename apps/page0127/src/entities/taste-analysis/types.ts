@@ -27,6 +27,12 @@ export type TasteEvidence = {
   book_id: string;
   title: string;
   cover_image: string | null;
+  /**
+   * YES24 상품번호 — toCoverSource 가 작은 YES24 사본(M·L)을 고르는 열쇠.
+   * 없으면 cover_image(Storage 500px 사본일 수 있다)를 그대로 쓴다.
+   * 2026-11-23 이전에 저장된 분석에는 없다(옵션).
+   */
+  provider_item_id?: string | null;
   /** 이 책에서 본 결 (한 줄) */
   reason: string;
   /** 이 책이 근거가 된 좋아하는 주제 — preference_profile.liked.topics 의 부분집합 */
