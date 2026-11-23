@@ -25,6 +25,7 @@ import {
   BookInfoReaders,
 } from '@/widgets/book/ui/BookInfoPersonal';
 import { GlobalBookCommentSection } from '@/widgets/book/ui/GlobalBookCommentSection';
+import { StoryLinkCard } from '@/widgets/story';
 
 import type { GlobalBook } from '@/entities/book';
 import type { Metadata } from 'next';
@@ -272,6 +273,9 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
 
           {/* 나의 기록 (로그인 + 서재에 있을 때만 — 브라우저에서) */}
           <BookInfoMyMemo isbn={book.isbn} />
+
+          {/* 책 이야기(독후감·인물관계도)가 있는 책만 — 공개 글 목록 캐시 한 벌을 나눠 본다 */}
+          <StoryLinkCard bookId={book.id} />
 
           {/* 책 소개 — 카드가 아니라 구분선으로 시작하는 본문 섹션 */}
           {book.description && (

@@ -1,6 +1,8 @@
 import { createClient } from '@/shared/config/supabase/server';
 
 import { catalogVisibilityFilter } from '@/entities/book/api/catalogVisibility';
+import { absoluteImageUrl, storyPath } from '@/entities/story';
+import { getPublishedStories } from '@/entities/story/server';
 
 import type { MetadataRoute } from 'next';
 
@@ -15,6 +17,34 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 const MAX_BOOK_URLS = 1000;
 // 공개 서재도 같은 이유로 상한을 둔다
 const MAX_LIBRARY_URLS = 1000;
+
+const getStoryRoutes = async (
+  lastModified: Date
+): Promise<MetadataRoute.Sitemap> => {
+  try {
+    const stories = await getPublishedStories();
+    if (stories.length === 0) return [];
+    return [
+      {
+        url: `${siteUrl}/blog`,
+        lastModified: new Date(stories[0]?.updatedAt ?? lastModified),
+        changeFrequency: 'weekly',
+        priority: 0.7,
+      },
+      ...stories.map((story) => ({
+        url: `${siteUrl}${storyPath(story.slug)}`,
+        lastModified: new Date(story.updatedAt),
+        changeFrequency: 'monthly' as const,
+        priority: 0.7,
+        ...(story.mapImage && {
+          images: [absoluteImageUrl(story.mapImage.src, siteUrl)],
+        }),
+      })),
+    ];
+  } catch {
+    return [];
+  }
+};
 
 const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
   const lastModified = new Date();
@@ -59,6 +89,12 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
       priority: 0.2,
     },
   ];
+
+  // 책 이야기(독후감·인물관계도) — 어드민에서 공개한 글. 글이 하나도 없으면 빈 목록(/blog)도 알리지 않는다.
+  // images: 이미지 사이트맵 — "○○ 인물관계도" 이미지 검색에 그림을 알린다.
+  // 아래 책·서재 조회와 따로 감싼다 — 한쪽이 실패해도 다른 쪽은 나가게.
+  const storyRoutes = await getStoryRoutes(lastModified);
+  staticRoutes.push(...storyRoutes);
 
   // 등록된 책들의 정보 페이지
   // DB 조회에 실패해도 sitemap 자체는 살아야 한다 (정적 경로는 항상 나간다)

@@ -34,6 +34,11 @@ const EXEMPT_FILES: string[] = [
   'src/entities/notification/ui/BookEnvelopeArtwork.tsx',
   // 홈 표지의 앱 아이콘 — 미리 줄여 둔 로컬 96px WebP 하나만 그린다(unoptimized)
   'src/widgets/about/ui/AboutHero.tsx',
+  // 책 이야기 인물관계도 — 업로드 때 브라우저가 미리 줄인 WebP(우리 story-images 버킷)나
+  // public/images/stories 의 로컬 파일만 받고, 늘 unoptimized 로 그려 변환 한도를 쓰지 않는다.
+  // 그림 주소는 어드민 저장 때 이 두 곳만 허용한다(features/admin-stories/model/storyForm.ts)
+  'src/widgets/story/ui/CharacterMap.tsx',
+  'app/(static)/blog/page.tsx',
 ];
 
 const collectFiles = (dir: string): string[] => {

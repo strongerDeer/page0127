@@ -2,10 +2,36 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import sitemap from './sitemap';
 
-const { createClient } = vi.hoisted(() => ({ createClient: vi.fn() }));
+const { createClient, getPublishedStories } = vi.hoisted(() => ({
+  createClient: vi.fn(),
+  getPublishedStories: vi.fn(),
+}));
 vi.mock('@/shared/config/supabase/server', () => ({ createClient }));
+vi.mock('@/entities/story/server', () => ({ getPublishedStories }));
 
-beforeEach(() => vi.resetAllMocks());
+const STORY = {
+  id: 'story-1',
+  slug: 'daeonsil-repair-report',
+  bookId: 'book-1',
+  bookTitle: '대온실 수리 보고서',
+  author: '김금희',
+  title: '대온실 수리 보고서 독후감과 인물관계도',
+  description: '',
+  rating: 0,
+  mapImage: {
+    src: '/images/stories/daeonsil/character-map.webp',
+    width: 1024,
+    height: 1536,
+    alt: '인물관계도',
+  },
+  publishedAt: '2026-11-23T00:00:00Z',
+  updatedAt: '2026-11-23T00:00:00Z',
+};
+
+beforeEach(() => {
+  vi.resetAllMocks();
+  getPublishedStories.mockResolvedValue([STORY]);
+});
 
 describe('sitemap', () => {
   it('DB 장애에도 공개 정적 주소는 유지하고 로그인·이동된 주소는 제외한다', async () => {
@@ -21,7 +47,30 @@ describe('sitemap', () => {
       '/contact',
       '/privacy',
       '/terms',
+      '/blog',
+      '/blog/daeonsil-repair-report',
     ]);
+  });
+
+  it('책 이야기 주소에 인물관계도 이미지를 절대 주소로 함께 알린다', async () => {
+    createClient.mockRejectedValue(new Error('DB unavailable'));
+
+    const story = (await sitemap()).find(({ url }) =>
+      url.endsWith('/blog/daeonsil-repair-report')
+    );
+
+    expect(story?.images?.[0]).toMatch(
+      /^https?:\/\/.+\/images\/stories\/daeonsil\/character-map\.webp$/
+    );
+  });
+
+  it('공개한 책 이야기가 없거나 조회에 실패하면 /blog 를 알리지 않는다', async () => {
+    createClient.mockRejectedValue(new Error('DB unavailable'));
+    getPublishedStories.mockRejectedValue(new Error('stories down'));
+
+    const paths = (await sitemap()).map(({ url }) => new URL(url).pathname);
+
+    expect(paths.some((path) => path.startsWith('/blog'))).toBe(false);
   });
 
   it('책 정보와 공개 책이 있는 서재의 검색용 URL을 유지한다', async () => {
