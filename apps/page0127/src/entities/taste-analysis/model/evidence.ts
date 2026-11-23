@@ -10,6 +10,7 @@ export type EvidenceSource = {
   id: string;
   title: string;
   cover_image: string | null;
+  provider_item_id?: string | null;
 };
 
 /**
@@ -72,6 +73,7 @@ export const toTasteEvidence = (
       book_id: source.id,
       title: source.title,
       cover_image: source.cover_image,
+      provider_item_id: source.provider_item_id ?? null,
       reason: clip(text),
       topics: Array.isArray(topics)
         ? [
