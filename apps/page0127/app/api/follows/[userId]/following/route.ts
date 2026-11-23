@@ -5,7 +5,12 @@ import {
   getFollowCountMap,
   pickFollowCounts,
 } from '../../../_helpers/followCounts';
-import { errorResponse, successResponse } from '../../../_helpers/response';
+import { checkFollowListAccess } from '../../../_helpers/followListAccess';
+import {
+  errorResponse,
+  successResponse,
+  unauthorizedResponse,
+} from '../../../_helpers/response';
 
 /**
  * GET /api/follows/:userId/following
@@ -14,6 +19,7 @@ import { errorResponse, successResponse } from '../../../_helpers/response';
  * 학습 포인트:
  * - followers와 반대 방향 JOIN
  * - following_id 기준으로 프로필 조회
+ * - 권한: 본인만 (API 403 + follows RLS 두 겹)
  */
 export async function GET(
   request: NextRequest,
@@ -23,9 +29,13 @@ export async function GET(
     const supabase = await getSupabaseClient();
     const { userId } = await params;
 
-    // 현재 로그인한 사용자
+    // 명단은 본인만 본다 — 숫자는 /stats 로 누구나 (_helpers/followListAccess.ts)
     const { user } = await getCurrentUser();
-    const _currentUserId = user?.id;
+    const access = checkFollowListAccess(user?.id, userId);
+    if (access === 'unauthorized') return unauthorizedResponse();
+    if (access === 'forbidden') {
+      return errorResponse('팔로잉 목록은 본인만 볼 수 있어요.', 403);
+    }
 
     // 팔로잉 목록 조회 (간단한 버전 - 프로필만)
     const { data: following, error } = await supabase

@@ -3,6 +3,10 @@ import { NextRequest } from 'next/server';
 import { quotePostgrestValue } from '@/shared/lib/postgrestFilter';
 
 import { getCurrentUser, getSupabaseClient } from '../../_helpers/auth';
+import {
+  getFollowCountMap,
+  pickFollowCounts,
+} from '../../_helpers/followCounts';
 import { errorResponse, successResponse } from '../../_helpers/response';
 
 /**
@@ -66,35 +70,12 @@ export async function GET(request: NextRequest) {
       followMap = new Map(follows?.map((f) => [f.following_id, true]) || []);
     }
 
-    // 팔로워/팔로잉 수 조회 (배치 처리)
-    const profileIds = profiles.map((p) => p.id);
-
-    const { data: followerCounts } = await supabase
-      .from('follows')
-      .select('following_id')
-      .in('following_id', profileIds);
-
-    const { data: followingCounts } = await supabase
-      .from('follows')
-      .select('follower_id')
-      .in('follower_id', profileIds);
-
-    // 카운트 맵 생성
-    const followerCountMap = new Map<string, number>();
-    followerCounts?.forEach((f) => {
-      followerCountMap.set(
-        f.following_id,
-        (followerCountMap.get(f.following_id) || 0) + 1
-      );
-    });
-
-    const followingCountMap = new Map<string, number>();
-    followingCounts?.forEach((f) => {
-      followingCountMap.set(
-        f.follower_id,
-        (followingCountMap.get(f.follower_id) || 0) + 1
-      );
-    });
+    // 팔로워/팔로잉 수 — user_follow_stats 뷰에서 일괄 조회.
+    // follows 를 직접 세면 RLS(내가 낀 행만, 2026-11-23) 때문에 남의 숫자가 0 으로 나온다
+    const countMap = await getFollowCountMap(
+      supabase,
+      profiles.map((p) => p.id)
+    );
 
     // 결과 조합
     const results = profiles.map((profile) => ({
@@ -103,8 +84,7 @@ export async function GET(request: NextRequest) {
       username: profile.username,
       bio: profile.bio,
       photo_url: profile.photo_url,
-      followers_count: followerCountMap.get(profile.id) || 0,
-      following_count: followingCountMap.get(profile.id) || 0,
+      ...pickFollowCounts(countMap, profile.id),
       is_following: followMap.get(profile.id) || false,
     }));
 
