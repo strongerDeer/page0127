@@ -8,6 +8,8 @@ import Link from 'next/link';
 import { Button, Card, CardContent, CardHeader, CardTitle } from '@repo/ui';
 import { ChevronDown, Plus } from 'lucide-react';
 
+import { RenderWhenNear } from '@/shared/ui/RenderWhenNear';
+
 import { calculateReadingBalance } from '@/entities/book';
 
 import { ShareSheetButton } from '@/features/share';
@@ -42,6 +44,10 @@ import type { RatingFilter } from '@/features/stats/model/useLibraryFilters';
 
 // 연도별 추이는 recharts(압축 약 90KB) — 프로필 첫 화면 JS 에 실리지 않게 나중에 불러온다.
 // 브라우저 측정(ResponsiveContainer)이 필요해 SSR 에서도 뺀다. 자리는 차트 높이(300px)만큼 잡아 둔다(CLS)
+// dynamic 만으로는 hydration 직후 바로 받으므로, RenderWhenNear 로 화면 가까이서 그린다(2026-11-23)
+const TrendChartSkeleton = () => (
+  <div className='h-[300px] animate-pulse rounded-lg bg-muted' />
+);
 const YearlyTrendChart = dynamic(
   () =>
     import('@/features/stats/ui/YearlyTrendChart').then(
@@ -49,9 +55,7 @@ const YearlyTrendChart = dynamic(
     ),
   {
     ssr: false,
-    loading: () => (
-      <div className='h-[300px] animate-pulse rounded-lg bg-muted' />
-    ),
+    loading: TrendChartSkeleton,
   }
 );
 
@@ -437,7 +441,9 @@ export const LibraryView = ({
                       </p>
                     </CardHeader>
                     <CardContent className='pb-6'>
-                      <YearlyTrendChart data={overallStats.yearlyTrend} />
+                      <RenderWhenNear placeholder={<TrendChartSkeleton />}>
+                        <YearlyTrendChart data={overallStats.yearlyTrend} />
+                      </RenderWhenNear>
                     </CardContent>
                   </Card>
                 </div>
