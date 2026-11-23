@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import { toYes24SpineDisplaySrc } from '@repo/ui';
+
 import { isSpineShaped } from '@/entities/book/model/spineShape';
 import { SPINE_TONE_COLORS, spineTone } from '@/entities/book/model/spineTone';
 
@@ -54,7 +56,8 @@ export const ShelfSpine = ({
     <span className={`h-full shrink-0 ${className}`}>
       {book?.spineImage ? (
         <SafeCover
-          src={book.spineImage}
+          // 저장된 원본은 /SIDE/XL(높이 1200) — 160px 띠에는 L(400px)이면 충분하다
+          src={toYes24SpineDisplaySrc(book.spineImage)}
           small
           alt=''
           width={24}

@@ -29,9 +29,11 @@ test('표지 경계와 미리보기의 크기·키보드·화면 가장자리', 
   // 줄 끝 카드에서도 패널 전체를 화면 안에 배치한다.
   const index = Math.min(5, (await links.count()) - 1);
   const edge = links.nth(index);
+  // 누워 있는(안 보이는) 책등은 닿기 전엔 받지 않는다 — 크롬이 lazy 여도 다 받던 문제(2026-11-23)
+  await expect(edge.locator('img[data-spine]')).toHaveCount(0);
   await edge.hover();
   await expect(preview).toBeVisible();
-  // 사파리는 누워 있는 lazy 책등을 안 불러온다 → hover 순간 eager 로 바꿔 받는다.
+  // hover 순간 책등을 바로(eager) 받는다 — 사파리도 누운 lazy 이미지를 안 받으므로 eager 여야 한다.
   const spine = edge.locator('img[data-spine]');
   if (await spine.count()) {
     await expect(spine).toHaveAttribute('loading', 'eager');

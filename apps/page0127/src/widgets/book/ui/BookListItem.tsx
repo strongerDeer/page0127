@@ -1,14 +1,13 @@
-import Image from 'next/image';
 import Link from 'next/link';
 
-import { CoverImage, isPreOptimizedImageSrc } from '@repo/ui';
+import { CoverImage } from '@repo/ui';
 
 import { toCoverSource } from '@/entities/book';
 import { SPINE_TONE_COLORS, spineTone } from '@/entities/book/model/spineTone';
 import { shelfSpineWidthPx } from '@/entities/book/model/spineWidth';
 
 import { bookInfoHref } from '../model/bookInfoHref';
-import { BookCoverPreview } from './BookCoverPreview';
+import { BookCoverPreview, BookSpineImage } from './BookCoverPreview';
 import { BookLikeButton } from './BookLikeButton';
 
 import type { Book, GlobalBook } from '@/entities/book';
@@ -102,21 +101,12 @@ const BookListItemCover = ({
     <div className={styles.perspective}>
       <div className={styles.cover}>
         <div className={styles.bookImg}>
-          {/* 책등 이미지 — 평소엔 옆으로 90도 누워 있다가 hover 때 앞으로 돈다.
-              사파리는 이렇게 누운(화면상 너비 0) lazy 이미지를 "안 보인다"고 보고
-              끝까지 불러오지 않는다(2026-10-31, /books/all). 그래서 표지에 포인터·포커스가
-              닿는 순간 BookCoverPreview 가 data-spine 이미지를 eager 로 바꿔 불러온다.
-              터치 기기는 뒤집기가 없으니 지금처럼 안 받는다. */}
+          {/* 책등 — 평소엔 옆으로 90도 누워 있다가 hover 때 앞으로 돈다.
+              사진은 표지에 포인터·포커스가 닿은 뒤에야 BookSpineImage 가 그린다
+              (누워 있는 동안 크롬이 lazy 이미지를 다 받던 문제, 2026-11-23 — BookCoverPreview 참고). */}
           <div data-spine-face='' className={styles.flipCover}>
             {spine ? (
-              <Image
-                src={spine}
-                alt=''
-                width='400'
-                height='400'
-                data-spine=''
-                unoptimized={isPreOptimizedImageSrc(spine)}
-              />
+              <BookSpineImage src={spine} />
             ) : (
               // 책등 이미지가 없는 책 — 서재 책장과 같은 규칙(세로 제목 + 책마다 고정된 밝은 색).
               // 회색 빈 띠는 "깨진 책"으로 읽혔다(2026-11-04 HJ, 숨결이 바람 될 때·책 먹는 법).

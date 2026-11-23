@@ -10,54 +10,67 @@
  * 경로를 코드와 문서에서 다르게 만들지 않으려는 것이다.
  */
 
-export { cn } from './lib/cn';
-export { isPreOptimizedImageSrc } from './lib/imageOptimization';
+export { cn } from "./lib/cn";
+export { isPreOptimizedImageSrc } from "./lib/imageOptimization";
 export {
   parseYes24CoverItemId,
   toYes24CoverBase,
+  toYes24SpineDisplaySrc,
   yes24CoverLoader,
-} from './lib/yes24CoverLoader';
+} from "./lib/yes24CoverLoader";
 
 /* Action */
-export { Button, buttonVariants } from './components/button';
+export { Button, buttonVariants } from "./components/button";
 
 /* Form */
-export { Input } from './components/input';
-export { Label } from './components/label';
-export * from './components/select';
-export { Switch } from './components/switch';
-export { Textarea } from './components/textarea';
+export { Input } from "./components/input";
+export { Label } from "./components/label";
+export * from "./components/select";
+export { Switch } from "./components/switch";
+export { Textarea } from "./components/textarea";
 
 /* Overlay */
-export * from './components/alert-dialog';
-export * from './components/dialog';
-export * from './components/dropdown-menu';
-export { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from './components/popover';
+export * from "./components/alert-dialog";
+export * from "./components/dialog";
+export * from "./components/dropdown-menu";
+export {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+  PopoverTrigger,
+} from "./components/popover";
 
 /* Feedback */
-export { Progress } from './components/progress';
-export { Skeleton } from './components/skeleton';
-export { Toaster } from './components/sonner';
-export { StatePanel } from './components/StatePanel';
+export { Progress } from "./components/progress";
+export { Skeleton } from "./components/skeleton";
+export { Toaster } from "./components/sonner";
+export { StatePanel } from "./components/StatePanel";
 
 /* Navigation */
-export * from './components/pagination';
-export { SegmentedControl, SegmentedControlItem, segmentedItemClassName } from './components/SegmentedControl';
+export * from "./components/pagination";
+export {
+  SegmentedControl,
+  SegmentedControlItem,
+  segmentedItemClassName,
+} from "./components/SegmentedControl";
 
 /* Surface */
-export { Avatar, AvatarFallback, AvatarImage } from './components/avatar';
-export * from './components/card';
-export { PageContainer } from './components/PageContainer';
-export { PageHeader } from './components/PageHeader';
-export { ScrollArea, ScrollBar } from './components/scroll-area';
+export { Avatar, AvatarFallback, AvatarImage } from "./components/avatar";
+export * from "./components/card";
+export { PageContainer } from "./components/PageContainer";
+export { PageHeader } from "./components/PageHeader";
+export { ScrollArea, ScrollBar } from "./components/scroll-area";
 
 /* Feedback — 상태 표시 */
-export { ErrorBoundary } from './components/ErrorBoundary';
-export { ErrorFallback } from './components/ErrorFallback';
-export { Spinner } from './components/Spinner';
+export { ErrorBoundary } from "./components/ErrorBoundary";
+export { ErrorFallback } from "./components/ErrorFallback";
+export { Spinner } from "./components/Spinner";
 
 /* Domain — 이 서비스가 책을 다루기 때문에 존재하는 것들.
    범용 컴포넌트 라이브러리라면 없었을 자리다. */
-export { BookCover } from './components/BookCover';
-export { CoverImage } from './components/CoverImage';
-export { ReadCountBadge, shouldShowReadCount } from './components/ReadCountBadge';
+export { BookCover } from "./components/BookCover";
+export { CoverImage } from "./components/CoverImage";
+export {
+  ReadCountBadge,
+  shouldShowReadCount,
+} from "./components/ReadCountBadge";
