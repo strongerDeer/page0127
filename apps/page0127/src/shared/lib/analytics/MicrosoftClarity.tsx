@@ -13,9 +13,11 @@ import {
  * GoogleAnalytics 와 같은 규칙을 따른다.
  * - 프로젝트 ID(NEXT_PUBLIC_CLARITY_ID)가 있을 때만, 운영에서만 넣는다.
  *   → ID 를 Vercel 환경변수에 넣는 순간이 "녹화 시작" 스위치다(코드 배포와 분리).
- * - next/script afterInteractive: 하이드레이션이 끝난 뒤 실행해 첫 화면 그리기와 경쟁하지 않는다.
- *   lazyOnload(브라우저 유휴 시간)까지 미루면 몇 초 만에 나가는 방문자가 녹화에서 빠지는데,
- *   "가입 후 첫 책에서 왜 나가나"를 보는 데는 바로 그 짧은 세션이 제일 중요해서 고르지 않았다.
+ * - next/script lazyOnload: 페이지가 다 뜨고 브라우저가 한가해진 뒤에 붙인다.
+ *   처음엔 afterInteractive(하이드레이션 직후)였는데, 2026-11-23 Clarity 허용/차단 A/B 측정
+ *   (모바일·CPU 4x, 5회 번갈아 중앙값)에서 TBT 가 library +70·profile +84·bookinfo +33ms
+ *   늘어 있었다. 녹화 스크립트가 첫 로드의 메인 스레드 작업과 겹친 것이다.
+ *   대가: 몇 초 만에 나가는 아주 짧은 방문은 녹화에서 빠질 수 있다(HJ 가 알고 고름).
  *
  * 제외 규칙
  * - 관리자 기기: 스크립트를 아예 붙이지 않는다. 운영 콘솔에는 다른 사람의 정보가 보이는데,
@@ -35,7 +37,7 @@ export const MicrosoftClarity = () => {
   // clarity() 호출을 큐(c[a].q)에 쌓아 두었다가, 본 스크립트가 도착하면 한꺼번에 처리한다.
   // 그래서 스크립트가 오기 전에 부른 clarity('set', …)도 잃어버리지 않는다.
   return (
-    <Script id='clarity-init' strategy='afterInteractive'>
+    <Script id='clarity-init' strategy='lazyOnload'>
       {`
         var isAdminDevice = false;
         try {
