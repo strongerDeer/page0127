@@ -1,4 +1,3 @@
-import createMDX from '@next/mdx';
 import { withSentryConfig } from '@sentry/nextjs/config';
 
 import type { NextConfig } from 'next';
@@ -274,12 +273,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-// 책 이야기(src/content/stories/*/index.mdx)를 import 할 수 있게 한다.
-// 페이지 파일로 쓰지 않고 import 만 하므로 pageExtensions 는 건드리지 않는다.
-// 태그별 모양은 이 앱 루트의 mdx-components.tsx 가 정한다(App Router 필수 파일).
-const withMDX = createMDX({});
-
-export default withSentryConfig(withMDX(nextConfig), {
+export default withSentryConfig(nextConfig, {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 

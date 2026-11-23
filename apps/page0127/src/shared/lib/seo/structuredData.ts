@@ -110,7 +110,8 @@ type StoryArticleJsonLdInput = {
   title: string;
   description: string;
   url: string;
-  image: string;
+  /** 관계도 그림이 없는 글은 비운다 */
+  image?: string;
   datePublished: string;
   dateModified?: string;
   siteName: string;
@@ -142,7 +143,7 @@ export const buildStoryArticleJsonLd = ({
   headline: title,
   description,
   url,
-  image: [image],
+  ...(image && { image: [image] }),
   datePublished,
   dateModified: dateModified ?? datePublished,
   inLanguage: 'ko-KR',

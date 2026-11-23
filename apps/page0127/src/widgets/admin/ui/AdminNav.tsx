@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import {
   BookCheck,
+  BookOpenText,
   Bug,
   Flag,
   Gauge,
@@ -25,6 +26,7 @@ const NAV = [
   { href: '/admin/members', label: '회원 관리', icon: Users },
   { href: '/admin/banners', label: '메인 배너', icon: ImageIcon },
   { href: '/admin/sentences', label: '오늘의 문장', icon: Quote },
+  { href: '/admin/stories', label: '책 이야기', icon: BookOpenText },
 ];
 
 export const AdminNav = () => {

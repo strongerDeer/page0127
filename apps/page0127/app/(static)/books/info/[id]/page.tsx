@@ -274,7 +274,7 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
           {/* 나의 기록 (로그인 + 서재에 있을 때만 — 브라우저에서) */}
           <BookInfoMyMemo isbn={book.isbn} />
 
-          {/* 책 이야기(독후감·인물관계도)가 있는 책만 — 목록이 코드라 DB 조회 없음, 캐시 유지 */}
+          {/* 책 이야기(독후감·인물관계도)가 있는 책만 — 공개 글 목록 캐시 한 벌을 나눠 본다 */}
           <StoryLinkCard bookId={book.id} />
 
           {/* 책 소개 — 카드가 아니라 구분선으로 시작하는 본문 섹션 */}

@@ -1,12 +1,10 @@
 /**
- * 책 이야기 한 편의 정보 — HJ 가 읽은 책의 독후감 + 인물관계도.
+ * 책 이야기 한 편 — HJ 가 읽은 책의 독후감 + 인물관계도 (stories 테이블).
  *
- * 글(독후감)은 같은 폴더의 index.mdx, 나머지(제목·책·그림·등장인물)는 meta.ts 에 둔다.
- * 둘을 나눈 이유: 책 정보 페이지는 "이 책에 이야기가 있나?"만 알면 되는데,
- * meta 를 MDX 안에 두면 그 질문 하나에 글 전체를 불러와야 한다.
+ * 어드민(/admin/stories)에서 쓰고 저장하면 바로 /blog 에 보인다(HJ 2026-11-23 C안).
  */
 export type StoryImage = {
-  /** public/ 기준 경로. 미리 webp 로 줄여 둔 파일 — Vercel 이미지 변환을 쓰지 않는다 */
+  /** story-images 버킷 공개 URL 또는 public/ 기준 경로(/images/stories/...). 업로드 때 미리 줄인 WEBP */
   src: string;
   width: number;
   height: number;
@@ -19,28 +17,33 @@ export type StoryCharacterGroup = {
   people: { name: string; role: string }[];
 };
 
-export type StoryMeta = {
-  /** 주소: /blog/{slug} (blog 는 이미 아이디 예약어라 DB 작업이 필요 없다) — 영문 소문자·숫자·하이픈 */
+/** 목록·책 정보 카드·사이트맵용 — 본문은 뺀다 */
+export type StorySummary = {
+  id: string;
+  /** 주소: /blog/{slug} — 영문 소문자·숫자·하이픈 */
   slug: string;
-  /** 페이지 h1·검색 제목. 사람들이 찾는 말("독후감", "인물관계도")을 그대로 넣는다 */
-  title: string;
-  /** 검색 결과·공유 미리보기 설명 (120자 안쪽) */
-  description: string;
   /** global_books.id — 책 정보 페이지(/books/info/[id])와 서로 잇는 열쇠 */
   bookId: string;
   bookTitle: string;
   author: string;
-  /** HJ 의 별점 (0~5, 서재 별점과 같은 척도) */
+  /** 페이지 h1·검색 제목 */
+  title: string;
+  /** 검색 결과·공유 미리보기 설명 */
+  description: string;
+  /** 0 이면 별점을 그리지 않는다 */
   rating: number;
-  /** YYYY-MM-DD */
+  /** 관계도 전체 그림. 없으면 관계도 칸을 그리지 않는다 */
+  mapImage: StoryImage | null;
+  /** ISO 시각. 공개 글은 늘 있다 */
   publishedAt: string;
-  updatedAt?: string;
-  /** 인물관계도 — 원본 1장(PC·이미지 검색·확대)과 모바일용 카드 */
-  characterMap: {
-    full: StoryImage;
-    /** 비어 있으면 모바일에서도 원본 1장을 보여 준다 */
-    cards: StoryImage[];
-  };
+  updatedAt: string;
+};
+
+export type Story = StorySummary & {
+  /** 독후감 본문(마크다운) */
+  body: string;
+  /** 모바일용 분할 카드 — 비어 있으면 모바일에서도 원본 1장 */
+  mapCards: StoryImage[];
   /** 그림과 같은 내용을 글자로 — 검색엔진·AI 가 읽는 부분 */
   characters: StoryCharacterGroup[];
 };
