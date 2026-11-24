@@ -215,6 +215,7 @@ export const ActivityCard = ({
         <CommentSection
           target={{ type: 'book', id: activity.book.id }}
           initialOpen={initialCommentsOpen}
+          initialCount={activity.commentCount}
         />
         {/* 마지막으로 이 스레드를 본 뒤 남이 단 댓글 — 열면 사라진다 */}
         {activity.newCommentCount > 0 && (

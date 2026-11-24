@@ -17,6 +17,11 @@ import type { CommentTarget } from '@/entities/comment';
 type CommentSectionProps = {
   target: CommentTarget;
   initialOpen?: boolean; // 초기 펼침 상태
+  /**
+   * 목록 API가 이미 세어 둔 댓글 수(대댓글 포함). 주면 접혀 있는 동안 댓글을 조회하지 않는다.
+   * 피드 카드 20장이 개수 하나 때문에 카드마다 /comments 를 부르던 것(N+1, 함수 호출 20번)을 막는다.
+   */
+  initialCount?: number;
 };
 
 /**
@@ -31,23 +36,28 @@ type CommentSectionProps = {
 export const CommentSection = ({
   target,
   initialOpen = false,
+  initialCount,
 }: CommentSectionProps) => {
   const { currentUser } = useCurrentUserContext();
   const currentUserId = currentUser?.id ?? null;
   const [isExpanded, setIsExpanded] = useState(initialOpen);
 
-  // 댓글 개수 조회
-  const { data: comments = [] } = useQuery({
+  // 댓글 개수 조회 — initialCount 가 있으면 펼칠 때 처음 받는다(펼친 뒤엔 캐시가 남아
+  // 접어도 쓰기·삭제 후 invalidate 된 최신 개수를 보여 준다).
+  const { data: comments } = useQuery({
     queryKey: commentKeys.byTarget(target),
     queryFn: () => commentApi.getComments(target),
+    enabled: isExpanded || initialCount === undefined,
   });
 
   // useMemo 불필요: comments가 바뀌면 어차피 다시 계산해야 하고,
   // 댓글 수십 개를 더하는 연산은 매우 빠르다 → 캐싱 비용이 이득보다 크다
-  const totalCount = comments.reduce(
-    (count, comment) => count + 1 + (comment.replies?.length || 0),
-    0
-  );
+  const totalCount = comments
+    ? comments.reduce(
+        (count, comment) => count + 1 + (comment.replies?.length || 0),
+        0
+      )
+    : (initialCount ?? 0);
 
   return (
     // display:contents — 토글 버튼과 패널이 부모(액션 바 flex)의 아이템으로 직접

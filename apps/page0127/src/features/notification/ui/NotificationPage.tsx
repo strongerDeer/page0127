@@ -107,14 +107,14 @@ export const NotificationPage = ({
   const [envelope, setEnvelope] = useState<NotificationWithActor | null>(null);
   const [dismissedInitial, setDismissedInitial] = useState(false);
   const initialEnvelope = useQuery({
-    queryKey: ['notification-envelope', currentUser?.id, initialEnvelopeId],
+    queryKey: ['notification-envelope', initialEnvelopeId],
     queryFn: async () =>
       (
         await apiClient.get<NotificationWithActor[]>(
           `/notifications?envelope=${initialEnvelopeId}`
         )
       ).data[0] ?? null,
-    enabled: Boolean(currentUser && initialEnvelopeId),
+    enabled: Boolean(initialEnvelopeId),
   });
   const selectedEnvelope =
     envelope ??
@@ -168,7 +168,10 @@ export const NotificationPage = ({
       return allPages.flat().length;
     },
     initialPageParam: 0,
-    enabled: !!currentUser,
+    // 로그인 확인(useCurrentUser → /api/auth/me)을 기다리지 않는다.
+    // 이 페이지는 (protected) 레이아웃의 AppShell 이 서버에서 이미 로그인을 확인했고,
+    // 로그아웃·탈퇴는 queryClient.clear() 로 캐시를 비운다. 예전엔 enabled: !!currentUser 라
+    // me 응답(~0.8s) 뒤에야 목록 요청이 출발해 모바일 LCP 가 그만큼 늦었다(2026-11-24 측정 3.5s).
   });
 
   // useEffectEvent: 교차 시점 콜백을 분리한다.
