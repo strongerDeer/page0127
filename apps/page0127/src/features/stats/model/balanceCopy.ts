@@ -26,11 +26,9 @@ export const getBalanceSummary = (balance: ReadingBalance): string => {
       ? `분야 정보가 없는 책 ${balance.unclassified}권은 아직 셀 수 없어요`
       : '완독한 책이 쌓이면 분야가 채워져요';
   }
-  const top = balance.ranked
-    .slice(0, 2)
-    .map(({ category }) => category)
-    .join('·');
-  return `${BALANCE_CATEGORIES.length}개 분야 중 ${balance.readCount}개를 읽었어요. ${top}${subjectParticle(top)} ${balance.topShare}%`;
+  // 1위 분야 비율만 — 예전 '상위 2개 합'은 분야가 2개뿐이면 늘 100%라 뜻이 없었다(2026-11-24)
+  const { category: top, share } = balance.ranked[0];
+  return `${BALANCE_CATEGORIES.length}개 분야 중 ${balance.readCount}개를 읽었어요. ${top}${subjectParticle(top)} ${share}%`;
 };
 
 export const getBalanceDelta = (balance: ReadingBalance): string | null => {
