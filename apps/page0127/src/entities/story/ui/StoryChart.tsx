@@ -52,7 +52,7 @@ const Figure = ({
 );
 
 /** 사람 한 명 — 머리 + 몸. 채운 비율만큼 진하게(SVG 안의 SVG 는 자기 너비로 잘린다 → id 없이 부분 채우기) */
-const PERSON = 'M30 22a14 14 0 1 1 0.01 0Z M8 98V62a22 22 0 0 1 44 0v36Z';
+const PERSON = 'M30 8a14 14 0 1 1 -0.01 0Z M8 98V62a22 22 0 0 1 44 0v36Z';
 
 const Person = ({ fill }: { fill: number }) => (
   <svg viewBox='0 0 60 100' aria-hidden className='h-auto w-full'>
