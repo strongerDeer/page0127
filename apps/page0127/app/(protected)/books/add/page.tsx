@@ -24,6 +24,7 @@ import { BookSourceCredit } from '@/entities/book/ui/BookSourceCredit';
 import { notifyNewBadges } from '@/features/badge';
 import { useBookCRUD } from '@/features/book/api/useBookCRUD';
 import { useBookSearch } from '@/features/book/api/useBookSearch';
+import { onNewBookEntryRequest } from '@/features/book/lib/newBookEntry';
 import { resolveReadCount } from '@/features/book/lib/resolveReadCount';
 import { BarcodeScanDialog } from '@/features/book/ui/BarcodeScanDialog';
 import {
@@ -506,6 +507,15 @@ const AddBookPage = () => {
     setManualDraft(EMPTY_MANUAL_BOOK);
     if (isManual) closeManual();
   };
+
+  // 헤더 "도서 추가"(+)를 눌렀을 때 — 같은 주소라 페이지가 다시 마운트되지 않으므로
+  // 신호를 받아 직접 초기화한다. 완독 결과 카드일 때만 "한 권 더 기록"과 같게 동작하고,
+  // 입력 중에는 그대로 둔다 — 실수로 눌러 적던 기록이 날아가지 않게(2026-11-24 HJ).
+  // useEffectEvent: 리스너는 한 번만 달고, 실행 시점의 최신 saved 를 읽는다.
+  const onNewBookEntry = useEffectEvent(() => {
+    if (saved) handleRecordAnother();
+  });
+  useEffect(() => onNewBookEntryRequest(() => onNewBookEntry()), []);
 
   return (
     <ErrorBoundary>

@@ -1,12 +1,11 @@
 import { Button } from '@repo/ui';
-import { Plus } from 'lucide-react';
 
 import { IntentPrefetchLink } from '@/shared/ui/IntentPrefetchLink';
 
 import { NotificationDropdown } from '@/features/notification';
-import { coachTarget } from '@/features/onboarding';
 import { ProfileDropdown } from '@/features/profile';
 
+import { AddBookButton } from './AddBookButton';
 import { GnbNav } from './GnbNav';
 import { GnbSearch } from './GnbSearch';
 import { MobileBookSearch } from './MobileBookSearch';
@@ -69,16 +68,7 @@ export const Gnb = ({ user }: GnbProps) => {
           {user ? (
             <>
               <NotificationDropdown userId={user.userId} />
-              <Button asChild size='sm' className='md:ml-1'>
-                <IntentPrefetchLink
-                  href='/books/add'
-                  {...coachTarget('add-book')}
-                >
-                  <Plus aria-hidden='true' />
-                  <span className='hidden md:inline'>도서 추가</span>
-                  <span className='sr-only md:hidden'>도서 추가</span>
-                </IntentPrefetchLink>
-              </Button>
+              <AddBookButton />
               <div className='md:ml-1'>
                 <ProfileDropdown
                   photoUrl={user.photoUrl}
