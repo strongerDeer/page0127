@@ -173,6 +173,23 @@ describe('본문에서 뽑기', () => {
     });
   });
 
+  it('책장(shelf)이 먼저면 첫 무리의 읽은 비율을 쓴다', () => {
+    const shelf = [
+      '```chart',
+      'type: shelf',
+      SOURCE,
+      '- 성인(만 19세 이상): 38.5 / 2.4 / 6',
+      '- 학생: 94.6 / 31.5',
+      '```',
+    ].join('\n');
+    expect(findLeadStat(shelf)).toEqual({
+      value: 38.5,
+      unit: '%',
+      label: '1년 동안 책을 읽은 성인',
+      people: 3.85,
+    });
+  });
+
   it('차트가 없으면 null', () => {
     expect(findLeadStat('그냥 글')).toBeNull();
   });
