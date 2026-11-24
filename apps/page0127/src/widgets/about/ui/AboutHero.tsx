@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { Button } from '@repo/ui';
 
+import { CarrotBookmark } from '@/features/daily-sentence';
 import { ShareSheetButton } from '@/features/share';
 
 import { BeltLink } from './BeltLink';
@@ -70,6 +71,9 @@ export const AboutHero = ({
             <span className={styles.leafChapter}>제1장</span>
             <span className={styles.leafTitle}>왜 page0127.인가요</span>
           </div>
+
+          {/* 오늘의 문장 입구 — 책장 사이에 꽂힌 당근(HJ 2026-11-24). 표지(lid)보다 먼저 그려 표지 뒤에 깔린다 */}
+          <CarrotBookmark />
 
           <div data-cover-lid='' className={styles.cover}>
             <div className={styles.front} style={frontStyle}>

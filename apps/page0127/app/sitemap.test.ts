@@ -43,6 +43,7 @@ describe('sitemap', () => {
       '/',
       '/books/all',
       '/about',
+      '/sentence',
       '/updates',
       '/contact',
       '/privacy',

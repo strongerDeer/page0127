@@ -9,12 +9,24 @@ import { AppShellLayout, getShellUser } from '@/widgets/AppShell';
  * - 접근 제어(리디렉션)는 없다 — 로그인 여부는 GNB 우측 영역만 바꾼다
  * - 로그인 전/후 셸이 같아야 서비스가 하나의 화면 언어를 갖는다
  */
-const PublicLayout = async ({ children }: { children: React.ReactNode }) => {
+const PublicLayout = async ({
+  children,
+  modal,
+}: {
+  children: React.ReactNode;
+  /** @modal 칸 — 사이트 안에서 연 /sentence 를 모달로 띄운다(Intercepting Route). 평소엔 비어 있다 */
+  modal: React.ReactNode;
+}) => {
   const user = await getCurrentUser();
 
   const shellUser = user ? await getShellUser(user) : null;
 
-  return <AppShellLayout user={shellUser}>{children}</AppShellLayout>;
+  return (
+    <AppShellLayout user={shellUser}>
+      {children}
+      {modal}
+    </AppShellLayout>
+  );
 };
 
 export default PublicLayout;

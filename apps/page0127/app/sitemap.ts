@@ -75,6 +75,13 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
       priority: 0.7,
     },
     {
+      // 오늘의 문장 뽑기 — 비회원도 뽑을 수 있는 공개 페이지(문장 본문은 HTML 에 없다)
+      url: `${siteUrl}/sentence`,
+      lastModified,
+      changeFrequency: 'daily',
+      priority: 0.6,
+    },
+    {
       url: `${siteUrl}/updates`,
       lastModified,
       changeFrequency: 'monthly',

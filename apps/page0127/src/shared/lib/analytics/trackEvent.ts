@@ -43,6 +43,10 @@ declare global {
  */
 export type AnalyticsEvent =
   | 'cta_click'
+  /**
+   * 오늘의 문장을 펼쳤다(DailySentenceDraw). member: 회원인지, place: 'modal'(홈·서재에서 연 창) | 'page'(/sentence 직접)
+   */
+  | 'daily_sentence_draw'
   /** 홈 맛보기 히어로를 봤다(마운트 한 번) — 맛보기 깔때기의 분모 */
   | 'shelf_preview_view'
   /** 홈 맛보기에서 책을 골랐다. source: 'picks' | 'search', count: 고른 뒤 권수 */
