@@ -334,8 +334,9 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
           결말·인물의 정체는 쓰지 않기(스포일러 없음).
         </p>
         <p className={HINT}>
-          차트: ```chart 블록에 type(number·people·bar·column·slope·my-record)과
-          값을 적으면 그림이 돼요. 출처(source)가 없으면 저장되지 않아요.{' '}
+          차트: ```chart 블록에
+          type(number·people·bar·column·slope·shelf·age-table·my-record)과 값을
+          적으면 그림이 돼요. 출처(source)가 없으면 저장되지 않아요.{' '}
           <button
             type='button'
             onClick={() =>

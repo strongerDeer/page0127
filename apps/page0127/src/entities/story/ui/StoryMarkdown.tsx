@@ -5,9 +5,11 @@ import ReactMarkdown, {
 
 import { parseChartBlock } from '../model/chartBlock';
 import {
+  AgeTableChart,
   BarChart,
   ChartError,
   ColumnChart,
+  ShelfCompareChart,
   SingleStatChart,
   SlopeChart,
 } from './StoryChart';
@@ -141,6 +143,10 @@ export const StoryMarkdown = ({
           return <ColumnChart spec={spec} />;
         case 'slope':
           return <SlopeChart spec={spec} />;
+        case 'shelf':
+          return <ShelfCompareChart spec={spec} />;
+        case 'age-table':
+          return <AgeTableChart spec={spec} />;
         case 'my-record':
           return renderMyRecord ? (
             <div className='mt-8'>{renderMyRecord(spec)}</div>

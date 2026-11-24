@@ -1,6 +1,12 @@
 import { formatChartValue } from '../model/chartBlock';
 
-import type { SeriesChart, SingleChart } from '../model/chartBlock';
+import type {
+  AgeTableChart as AgeTableSpec,
+  SeriesChart,
+  ShelfChart,
+  ShelfGroup,
+  SingleChart,
+} from '../model/chartBlock';
 
 /**
  * 본문 차트 블록 그리기 — 서버·브라우저(어드민 미리보기) 어디서든 그려지도록 훅을 쓰지 않는다.
@@ -54,15 +60,47 @@ const Figure = ({
 /** 사람 한 명 — 머리 + 몸. 채운 비율만큼 진하게(SVG 안의 SVG 는 자기 너비로 잘린다 → id 없이 부분 채우기) */
 const PERSON = 'M30 8a14 14 0 1 1 -0.01 0Z M8 98V62a22 22 0 0 1 44 0v36Z';
 
-const Person = ({ fill }: { fill: number }) => (
+const Person = ({
+  fill,
+  tone = 'fill-primary',
+}: {
+  fill: number;
+  /** 채운 색 — 나이별 표에서는 막대(primary)와 헷갈리지 않게 진한 잉크 */
+  tone?: string;
+}) => (
   <svg viewBox='0 0 60 100' aria-hidden className='h-auto w-full'>
     <path d={PERSON} className='fill-text-subtle/25' />
     {fill > 0 && (
       <svg width={60 * fill} height={100} viewBox={`0 0 ${60 * fill} 100`}>
-        <path d={PERSON} className='fill-primary' />
+        <path d={PERSON} className={tone} />
       </svg>
     )}
   </svg>
+);
+
+/** 100 명 기준 비율 → 사람 10명 (한 명 = 10%) */
+const TenPeople = ({
+  rate,
+  tone,
+  className,
+}: {
+  rate: number;
+  tone?: string;
+  className: string;
+}) => (
+  <div
+    role='img'
+    aria-label={`10명 중 ${formatChartValue(rate / 10)}명`}
+    className={`grid grid-cols-10 ${className}`}
+  >
+    {Array.from({ length: 10 }, (_, index) => (
+      <Person
+        key={index}
+        tone={tone}
+        fill={Math.max(0, Math.min(1, rate / 10 - index))}
+      />
+    ))}
+  </div>
 );
 
 const BigNumber = ({ value, unit }: { value: number; unit: string }) => (
@@ -73,7 +111,6 @@ const BigNumber = ({ value, unit }: { value: number; unit: string }) => (
 );
 
 export const SingleStatChart = ({ spec }: { spec: SingleChart }) => {
-  const people = spec.value / 10;
   return (
     <Figure title={spec.title} note={spec.note} source={spec.source} tinted>
       <div className='flex flex-wrap items-baseline gap-3'>
@@ -85,18 +122,7 @@ export const SingleStatChart = ({ spec }: { spec: SingleChart }) => {
         )}
       </div>
       {spec.type === 'people' && (
-        <div
-          role='img'
-          aria-label={`10명 중 ${formatChartValue(people)}명`}
-          className='grid max-w-[420px] grid-cols-10 gap-1.5'
-        >
-          {Array.from({ length: 10 }, (_, index) => (
-            <Person
-              key={index}
-              fill={Math.max(0, Math.min(1, people - index))}
-            />
-          ))}
-        </div>
+        <TenPeople rate={spec.value} className='max-w-[420px] gap-1.5' />
       )}
     </Figure>
   );
@@ -242,6 +268,232 @@ export const SlopeChart = ({ spec }: { spec: SeriesChart }) => {
           </g>
         ))}
       </svg>
+    </Figure>
+  );
+};
+
+/* ───────────── 책장 비교 (shelf) ───────────── */
+
+/** 책장 한 줄에 꽂는 책등 수 — 33권(학생 읽은 사람 평균)이 두 줄에 들어가는 개수 */
+const SPINES_PER_ROW = 17;
+
+/**
+ * 책등 하나 = 1권.
+ * fill: 채운 비율(전체 평균), ghost: 읽은 사람 평균까지 남은 칸이면 점선 테두리.
+ * 2.4권이면 세 번째 책등은 40% 만 채우고 나머지는 점선.
+ */
+const Spine = ({ fill, ghost }: { fill: number; ghost: boolean }) => (
+  <svg viewBox='0 0 12 34' aria-hidden className='block h-auto w-full'>
+    {ghost && fill < 1 && (
+      <rect
+        x='0.75'
+        y='0.75'
+        width='10.5'
+        height='32.5'
+        rx='1.5'
+        fill='none'
+        strokeWidth='1.2'
+        strokeDasharray='2 2'
+        className='stroke-primary'
+      />
+    )}
+    {fill > 0 && (
+      <>
+        <rect
+          width={12 * fill}
+          height='34'
+          rx={fill < 1 ? 1 : 2}
+          className='fill-primary'
+        />
+        {/* 책등 위쪽 띠 — 책처럼 보이게 */}
+        <rect
+          x='2'
+          y='6'
+          width={Math.max(0, Math.min(8, 12 * fill - 2))}
+          height='1.5'
+          className='fill-card/70'
+        />
+      </>
+    )}
+  </svg>
+);
+
+const Shelf = ({ group }: { group: ShelfGroup }) => {
+  const slots = Math.ceil(Math.max(group.average, group.readers ?? 0));
+  const ghosts = group.readers === null ? 0 : Math.ceil(group.readers);
+  const spines = Array.from({ length: slots }, (_, index) => ({
+    fill: Math.max(0, Math.min(1, group.average - index)),
+    ghost: index < ghosts,
+  }));
+  const rows = Array.from(
+    { length: Math.ceil(spines.length / SPINES_PER_ROW) },
+    (_, row) => spines.slice(row * SPINES_PER_ROW, (row + 1) * SPINES_PER_ROW)
+  );
+  return (
+    <div
+      role='img'
+      aria-label={`전체 평균 ${formatChartValue(group.average)}권${group.readers === null ? '' : `, 읽은 사람 평균 ${formatChartValue(group.readers)}권`}`}
+      className='flex flex-col gap-1'
+    >
+      {rows.map((row, index) => (
+        // 17칸 격자 — 좁은 폰(320px)에서는 책등이 같이 줄어든다
+        <div
+          key={index}
+          className='grid max-w-[252px] items-end gap-[3px] border-b-[3px] border-text-subtle/35 pt-2'
+          style={{
+            gridTemplateColumns: `repeat(${SPINES_PER_ROW}, minmax(0, 1fr))`,
+          }}
+        >
+          {row.map((spine, column) => (
+            <Spine key={column} fill={spine.fill} ghost={spine.ghost} />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const GroupLabel = ({ children }: { children: React.ReactNode }) => (
+  <p className='mt-4 mb-1.5 text-xs text-text-subtle first:mt-0'>{children}</p>
+);
+
+const DashedBook = () => (
+  <span
+    aria-hidden
+    className='inline-block h-3.5 w-2.5 shrink-0 rounded-[2px] border-[1.5px] border-dashed border-primary'
+  />
+);
+
+export const ShelfCompareChart = ({ spec }: { spec: ShelfChart }) => (
+  <Figure title={spec.title} note={spec.note} source={spec.source}>
+    <div
+      className={`grid gap-4 ${spec.groups.length > 1 ? 'sm:grid-cols-2' : ''}`}
+    >
+      {spec.groups.map((group) => (
+        <div key={group.label} className='rounded-xl bg-muted p-4'>
+          <p className='mb-4 text-[15px] font-bold break-keep text-text-strong'>
+            {group.label}
+            {group.sub && (
+              <span className='ml-1.5 text-xs font-normal text-text-subtle'>
+                {group.sub}
+              </span>
+            )}
+          </p>
+
+          <GroupLabel>10명 중 책을 읽은 사람</GroupLabel>
+          <BigNumber value={group.rate} unit='%' />
+          <TenPeople rate={group.rate} className='mt-3 max-w-[260px] gap-1' />
+
+          <GroupLabel>1년에 읽은 책 · 책등 하나 = 1권</GroupLabel>
+          <p className='flex flex-wrap items-baseline gap-2'>
+            <BigNumber value={group.average} unit='권' />
+            <span className='text-sm text-text-subtle'>전체 평균</span>
+          </p>
+          <div className='mt-2'>
+            <Shelf group={group} />
+          </div>
+          {group.readers !== null && (
+            <p className='mt-2.5 flex items-center gap-1.5 text-sm text-text-body'>
+              <DashedBook />
+              읽은 사람만 보면 {formatChartValue(group.readers)}권
+            </p>
+          )}
+        </div>
+      ))}
+    </div>
+    <p className='text-xs leading-relaxed break-keep text-text-subtle'>
+      채운 책등 = 전체 평균(안 읽은 사람 포함)
+      {spec.groups.some((group) => group.readers !== null) &&
+        ', 점선 책등 = 읽은 사람만 볼 때 더해지는 권수'}
+    </p>
+  </Figure>
+);
+
+/* ───────────── 나이별 표 (age-table) ───────────── */
+
+/** 비율(사람)은 진한 잉크, 권수(막대)는 primary — 두 숫자가 같은 그림으로 보이지 않게 */
+const RATE_TONE = 'fill-text-strong';
+
+export const AgeTableChart = ({ spec }: { spec: AgeTableSpec }) => {
+  const decimals = spec.rows.some(
+    (row) => row.value !== null && !Number.isInteger(row.value)
+  );
+  const rateDecimals = spec.rows.some((row) => !Number.isInteger(row.rate));
+  const linePos = spec.line === null ? null : (spec.line / spec.max) * 100;
+  return (
+    <Figure title={spec.title} note={spec.note} source={spec.source}>
+      <div className='text-sm'>
+        <div className='hidden grid-cols-[5.5rem_1fr_1fr] gap-x-5 border-b border-line pb-2 text-xs text-text-subtle sm:grid'>
+          <span>나이</span>
+          <span>10명 중 읽은 사람</span>
+          <span>1년 평균 (안 읽은 사람 포함)</span>
+        </div>
+        <ul>
+          {spec.rows.map((row) => (
+            <li
+              key={row.label}
+              className='grid grid-cols-[4.25rem_1fr] items-center gap-x-3 gap-y-2 border-b border-line-soft py-3 sm:grid-cols-[5.5rem_1fr_1fr] sm:gap-x-5'
+            >
+              <span className='row-span-2 break-keep text-text-body sm:row-span-1'>
+                {row.label}
+              </span>
+              <span className='flex items-center gap-2'>
+                <TenPeople
+                  rate={row.rate}
+                  tone={RATE_TONE}
+                  className='w-[100px] shrink-0 gap-[2px]'
+                />
+                <span className='font-semibold tabular-nums text-text-strong'>
+                  {formatChartValue(row.rate, rateDecimals)}%
+                </span>
+              </span>
+              {row.value === null ? (
+                <span className='text-xs text-text-subtle'>자료 없음</span>
+              ) : (
+                <span className='flex items-center gap-2'>
+                  <span className='relative h-2.5 flex-1 rounded-full bg-muted'>
+                    <span
+                      className='block h-full rounded-full bg-primary'
+                      style={{ width: `${(row.value / spec.max) * 100}%` }}
+                    />
+                    {linePos !== null && (
+                      <span
+                        aria-hidden
+                        className='absolute -top-1.5 -bottom-1.5 w-0.5 -translate-x-1/2 bg-text-strong'
+                        style={{ left: `${linePos}%` }}
+                      />
+                    )}
+                  </span>
+                  <span className='w-12 shrink-0 text-right font-semibold tabular-nums text-text-strong'>
+                    {formatChartValue(row.value, decimals)}
+                    {spec.unit}
+                  </span>
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <ul className='flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-text-subtle'>
+        <li className='flex items-center gap-1.5'>
+          <span className='w-2.5'>
+            <Person fill={1} tone={RATE_TONE} />
+          </span>
+          읽은 사람 비율
+        </li>
+        <li className='flex items-center gap-1.5'>
+          <span aria-hidden className='h-2.5 w-5 rounded-full bg-primary' />
+          1년 평균 권수 (막대 끝 {formatChartValue(spec.max)}
+          {spec.unit})
+        </li>
+        {spec.line !== null && (
+          <li className='flex items-center gap-1.5'>
+            <span aria-hidden className='h-3.5 w-0.5 bg-text-strong' />
+            {spec.lineLabel ||
+              `기준선 ${formatChartValue(spec.line)}${spec.unit}`}
+          </li>
+        )}
+      </ul>
     </Figure>
   );
 };
