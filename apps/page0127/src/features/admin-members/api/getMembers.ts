@@ -1,6 +1,10 @@
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 import { getAdminEmails, isAdminEmail } from '@/shared/lib/admin/config';
+import {
+  type AttributionLike,
+  signupChannelLabel,
+} from '@/shared/lib/attribution/signupChannel';
 import { toKstDateKey } from '@/shared/lib/date';
 import { applyTokenSearch } from '@/shared/lib/tokenSearch';
 
@@ -42,6 +46,11 @@ export type MemberRow = {
   suspended: boolean;
   /** 'google' | 'kakao' 등. Auth 조회 실패 시 null */
   provider: string | null;
+  /**
+   * 처음 들어온 길("인스타그램", "네이버", "기타 (brunch.co.kr)").
+   * 2026-11-24(signup_attributions) 이전 가입자·쿠키가 없던 가입은 '기록 없음'.
+   */
+  signupChannel: string;
   /** 최근 접속일(KST). 30일 안 방문 기록 → 없으면 마지막 로그인 시각으로 대신한다 */
   lastSeen: string | null;
   /** 최근 30일 중 들어온 날 수 */
@@ -136,9 +145,10 @@ export async function getMembers(opts: {
 
   // 4) 화면에 나올 사람만 책 수·Auth 정보를 붙인다(Auth 는 한 명씩 불러야 해서 비싸다)
   const shownIds = [...pageMembers, ...excludedSorted].map((m) => m.id);
-  const [bookCounts, authInfo] = await Promise.all([
+  const [bookCounts, authInfo, attributions] = await Promise.all([
     getBookCounts(shownIds),
     getAuthInfo(shownIds),
+    getAttributions(shownIds),
   ]);
 
   const toRow = (m: (typeof withVisits)[number]): MemberRow => {
@@ -154,6 +164,7 @@ export async function getMembers(opts: {
       bookCount: bookCounts.get(p.id) ?? 0,
       suspended: isCurrentlySuspended(p.status, p.suspended_until, now),
       provider: auth?.provider ?? null,
+      signupChannel: signupChannelLabel(attributions.get(p.id) ?? null),
       lastSeen:
         m.lastVisit ??
         (auth?.lastSignInAt ? toKstDateKey(new Date(auth.lastSignInAt)) : null),
@@ -242,6 +253,25 @@ async function readRecentVisits(
 }
 
 /** 등록 책 수 — 화면에 나올 사람만 */
+/** 가입 때 저장한 첫 방문 출처(signup_attributions). 실패하면 빈 Map — 전부 '기록 없음'으로 보인다 */
+async function getAttributions(
+  ids: string[]
+): Promise<Map<string, NonNullable<AttributionLike>>> {
+  const map = new Map<string, NonNullable<AttributionLike>>();
+  if (ids.length === 0) return map;
+  const { data, error } = await createAdminClient()
+    .from('signup_attributions')
+    .select('user_id, source, medium, referrer_host')
+    .in('user_id', ids);
+  if (error) {
+    console.error('[admin] 가입 출처 조회 실패:', error.message);
+    return map;
+  }
+  for (const r of data)
+    map.set(r.user_id as string, r as NonNullable<AttributionLike>);
+  return map;
+}
+
 async function getBookCounts(ids: string[]): Promise<Map<string, number>> {
   const counts = new Map<string, number>();
   if (ids.length === 0) return counts;

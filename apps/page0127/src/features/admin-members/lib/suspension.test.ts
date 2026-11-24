@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { computeBan, isCurrentlySuspended, isSelfSuspension } from './suspension';
+import {
+  computeBan,
+  isCurrentlySuspended,
+  isSelfSuspension,
+} from './suspension';
 
 describe('computeBan', () => {
   it('영구 정지: 긴 기간 + suspendedUntil null', () => {

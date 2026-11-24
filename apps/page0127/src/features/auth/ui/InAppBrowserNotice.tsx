@@ -7,6 +7,7 @@ import { Check, ExternalLink, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
+import { VIA_PARAM } from '@/shared/lib/attribution/firstTouch';
 import { externalOpenUrl } from '@/shared/lib/auth/inAppBrowser';
 
 import type { InAppApp, InAppBrowser } from '@/shared/lib/auth/inAppBrowser';
@@ -43,8 +44,15 @@ export const InAppBrowserNotice = ({ browser }: InAppBrowserNoticeProps) => {
     return () => clearTimeout(timer);
   }, [copied]);
 
+  // 바깥 브라우저는 새 브라우저라 첫 방문 쿠키가 없다 — 어느 앱에서 왔는지 주소에 실어 보낸다
+  const urlWithVia = (): string => {
+    const url = new URL(window.location.href);
+    if (browser.app !== 'other') url.searchParams.set(VIA_PARAM, browser.app);
+    return url.toString();
+  };
+
   const handleOpen = () => {
-    const target = externalOpenUrl(browser, window.location.href);
+    const target = externalOpenUrl(browser, urlWithVia());
     if (!target) return;
     trackEvent('cta_click', {
       location: 'in_app_notice',
@@ -55,7 +63,7 @@ export const InAppBrowserNotice = ({ browser }: InAppBrowserNoticeProps) => {
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(urlWithVia());
       setCopied(true);
       toast.success('링크를 복사했어요. 사파리나 크롬에 붙여 넣어 주세요.');
     } catch {

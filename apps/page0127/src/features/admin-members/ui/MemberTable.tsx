@@ -35,7 +35,10 @@ export const MemberTable = ({ rows }: MemberTableProps) => {
           <tr className='border-b border-line text-xs text-text-subtle'>
             <th className={`${th} w-10 text-right`}>#</th>
             <th className={`${th} text-left`}>회원</th>
-            <th className={`${th} text-left`}>가입 경로</th>
+            <th className={`${th} text-left`} title='처음 들어온 사이트·앱'>
+              들어온 길
+            </th>
+            <th className={`${th} text-left`}>로그인</th>
             <th className={`${th} text-left`}>가입일</th>
             <th className={`${th} text-left`}>최근 접속</th>
             <th
@@ -88,6 +91,13 @@ export const MemberTable = ({ rows }: MemberTableProps) => {
                 <div className='mt-0.5 text-xs text-text-subtle'>
                   {m.maskedEmail}
                 </div>
+              </td>
+              <td className={`${td} whitespace-nowrap`}>
+                {m.signupChannel === '기록 없음' ? (
+                  <span className='text-text-subtle'>-</span>
+                ) : (
+                  m.signupChannel
+                )}
               </td>
               <td className={`${td} text-text-subtle`}>
                 {providerLabel(m.provider)}

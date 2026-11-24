@@ -3,6 +3,13 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { updateSession } from '@/shared/config/supabase/middleware';
 import { copyAuthResponse } from '@/shared/config/supabase/response';
 import {
+  buildFirstTouch,
+  FIRST_TOUCH_COOKIE,
+  FIRST_TOUCH_MAX_AGE_SEC,
+  serializeFirstTouch,
+  shouldRecordFirstTouch,
+} from '@/shared/lib/attribution/firstTouch';
+import {
   DEMO_READ_ONLY_CODE,
   DEMO_READ_ONLY_MESSAGE,
   isDemoBlockedRequest,
@@ -66,6 +73,36 @@ export async function proxy(request: NextRequest) {
 
   if (response.status === 503) return response;
 
+  // 첫 방문 유입 — 처음 온 비로그인 방문자의 출처를 쿠키에 적어 두고, 가입할 때 DB 로 옮긴다
+  // (auth/callback → recordSignupAttribution). 로그인 상태·봇·API·prefetch 는 건너뛴다.
+  const userAgent = request.headers.get('user-agent');
+  if (
+    shouldRecordFirstTouch({
+      method: request.method,
+      pathname: request.nextUrl.pathname,
+      hasCookie: request.cookies.has(FIRST_TOUCH_COOKIE),
+      isLoggedIn: Boolean(user),
+      userAgent,
+      isPrefetchOrRsc: isPrefetchOrRsc(request),
+    })
+  ) {
+    const firstTouch = buildFirstTouch({
+      url: request.nextUrl,
+      referer: request.headers.get('referer'),
+      userAgent,
+      siteHost: request.nextUrl.host,
+      now: new Date(),
+    });
+    response.cookies.set(FIRST_TOUCH_COOKIE, serializeFirstTouch(firstTouch), {
+      path: '/',
+      maxAge: FIRST_TOUCH_MAX_AGE_SEC,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      // 서버(가입 콜백)만 읽는다
+      httpOnly: true,
+    });
+  }
+
   // 체험 계정은 읽기만 된다 — /api 쓰기를 라우트에 닿기 전에 돌려보낸다.
   // 라우트 중 16곳은 RLS 를 건너뛰는 service_role 로 쓰기 때문에 DB 정책만으로는 못 막는다.
   if (
@@ -93,6 +130,19 @@ export async function proxy(request: NextRequest) {
 
   return response;
 }
+
+/**
+ * 사람이 주소창·링크로 연 "문서" 요청이 아닌 것 — Next 의 RSC·prefetch, 이미지·스크립트 요청.
+ * sec-fetch-dest 가 없는 옛 브라우저는 문서로 본다.
+ */
+const isPrefetchOrRsc = (request: NextRequest): boolean => {
+  const h = request.headers;
+  if (h.get('rsc') === '1' || h.has('next-router-prefetch')) return true;
+  if ((h.get('purpose') ?? h.get('sec-purpose') ?? '').includes('prefetch'))
+    return true;
+  const dest = h.get('sec-fetch-dest');
+  return dest !== null && dest !== 'document';
+};
 
 export const config = {
   matcher: [
