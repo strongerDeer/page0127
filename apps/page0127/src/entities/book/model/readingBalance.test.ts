@@ -58,13 +58,13 @@ describe('calculateReadingBalance', () => {
     expect(calculateReadingBalance(books('소설', 8)).score).toBe(0);
   });
 
-  it('8권 미만이면 점수를 내지 않는다 — 8개 분야를 다 채울 수 없어 100점에 닿지 못한다', () => {
-    // 7권을 전부 다른 분야로 읽어도 최고 94점 · 3권이면 53점이라 "한 우물"과 구분되지 않았다
-    const seven = BALANCE_CATEGORIES.slice(0, 7).map((category) =>
-      createTestBook({ category })
-    );
-    expect(calculateReadingBalance(seven).score).toBeNull();
-    expect(calculateReadingBalance(books('소설', 3)).score).toBeNull();
+  it('3권 미만이면 점수를 내지 않는다 — 안 읽은 분야는 0으로 보고 계산한다', () => {
+    expect(calculateReadingBalance(books('소설', 2)).score).toBeNull();
+    // 자기계발 2 · 인문 1 → 31점(8개 분야 기준이라 적은 권수면 낮게 나온다)
+    expect(
+      calculateReadingBalance([...books('자기계발', 2), ...books('인문', 1)])
+        .score
+    ).toBe(31);
   });
 
   it('기타(분류 불명)와 완독이 아닌 책은 세지 않는다', () => {

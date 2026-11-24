@@ -61,16 +61,16 @@ describe('ReadingBalanceCard', () => {
     expect(html).not.toContain('고른 정도');
   });
 
-  it('8권 전엔 점수 대신 몇 권 남았는지', () => {
+  it('3권 전엔 점수 대신 몇 권 남았는지', () => {
     const html = renderToStaticMarkup(
       <ReadingBalanceCard
         balance={calculateReadingBalance([
-          ...books('자기계발', 2),
+          ...books('자기계발', 1),
           ...books('인문', 1),
         ])}
       />
     );
-    expect(html).toContain('8권을 읽으면 점수가 나와요 · 3/8권');
+    expect(html).toContain('3권을 읽으면 점수가 나와요 · 2/3권');
     expect(html).toContain('role="progressbar"');
   });
 

@@ -97,7 +97,7 @@ export const ReadingBalanceCard = ({
         {hasBooks && (
           <>
             {/* 균형 점수 — 이름표 · 점수 · 늘 보이는 설명(시안 S1, 게이지는 불필요해 뺌).
-                8권 전엔 점수 대신 몇 권 남았는지(MIN_BOOKS_FOR_SCORE) */}
+                3권 전엔 점수 대신 몇 권 남았는지(MIN_BOOKS_FOR_SCORE) */}
             <div className='mt-5'>
               <p className='text-xs font-medium text-text-subtle'>균형 점수</p>
               {balance.score !== null ? (
