@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage, Button } from '@repo/ui';
 import {
   BookOpen,
   Check,
+  Handshake,
   Heart,
   type LucideIcon,
   Mail,
@@ -31,6 +32,7 @@ const notificationPresentation = {
   reading_nudge: { Icon: Mail, label: '책 봉투' },
   reading_reminder: { Icon: BookOpen, label: '독서 리마인더' },
   weekly_recap: { Icon: Sparkles, label: '주간 회상' },
+  chemistry: { Icon: Handshake, label: '독서 케미' },
 } satisfies Record<NotificationType, { Icon: LucideIcon; label: string }>;
 
 type NotificationItemProps = {

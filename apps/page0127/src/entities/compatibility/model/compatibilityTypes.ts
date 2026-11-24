@@ -21,7 +21,8 @@ export const COMPATIBILITY_TYPE_BANDS: CompatibilityTypeBand[] = [
   {
     min: 90,
     name: '영혼의 책벗',
-    tagline: '책장이 거울처럼 닮았어요. 서로의 다음 책이 궁금하지 않을 정도로요.',
+    tagline:
+      '책장이 거울처럼 닮았어요. 서로의 다음 책이 궁금하지 않을 정도로요.',
   },
   {
     min: 75,

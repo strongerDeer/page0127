@@ -223,6 +223,8 @@ export async function POST(request: NextRequest) {
       .insert({
         user_id_1: userId1,
         user_id_2: userId2,
+        // 분석한 사람만 본다 — 상대에게는 결과 화면의 "알리기"를 눌러야 보인다(shared_at)
+        requested_by: user.id,
         compatibility_score: score,
         compatibility_type: typeBand.name,
         compatibility_description: aiResponse.compatibility_description,

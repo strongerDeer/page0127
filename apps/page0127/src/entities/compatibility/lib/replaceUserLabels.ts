@@ -54,14 +54,17 @@ export const replaceUserLabels = (
   text: string,
   names: UserLabelNames
 ): string =>
-  text.replace(/user([12])(은|는|이|가|을|를|과|와)?/g, (_match, index, josa) => {
-    const name = index === '1' ? names.first : names.second;
+  text.replace(
+    /user([12])(은|는|이|가|을|를|과|와)?/g,
+    (_match, index, josa) => {
+      const name = index === '1' ? names.first : names.second;
 
-    if (!josa) return name;
+      if (!josa) return name;
 
-    // '나' + 주격조사는 '내가'가 된다 ('나가'가 아니다)
-    if (name === '나' && SUBJECT_JOSA.has(josa)) return '내가';
+      // '나' + 주격조사는 '내가'가 된다 ('나가'가 아니다)
+      if (name === '나' && SUBJECT_JOSA.has(josa)) return '내가';
 
-    const [withBatchim, withoutBatchim] = JOSA_PAIRS[josa];
-    return name + (hasBatchim(name) ? withBatchim : withoutBatchim);
-  });
+      const [withBatchim, withoutBatchim] = JOSA_PAIRS[josa];
+      return name + (hasBatchim(name) ? withBatchim : withoutBatchim);
+    }
+  );
