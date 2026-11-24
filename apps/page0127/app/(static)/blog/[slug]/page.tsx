@@ -17,13 +17,14 @@ import {
   getPublishedStory,
 } from '@/entities/story/server';
 
+import { MyRecordBlock } from '@/features/story-my-record';
+
 import {
   CharacterList,
   CharacterMap,
   getStoryBook,
   MoreStories,
   StoryBookCard,
-  StoryMyRecord,
 } from '@/widgets/story';
 
 import type { Metadata } from 'next';
@@ -40,7 +41,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
  * 두 가지 글:
  * - 책 한 권 글: 책 카드 + 독후감 + 인물관계도 + 등장인물 (전과 같다)
  * - 독서 이야기(bookId 없음): 책 카드·별점·"독후감" 제목 없이 본문(차트 블록 포함)만
- * 본문 속 "내 기록" 블록만 브라우저에서 채운다(StoryMyRecord) — 페이지는 계속 정적이다.
+ * 본문 속 "내 기록" 블록만 브라우저에서 채운다(MyRecordBlock) — 페이지는 계속 정적이다.
  *
  * 글은 어드민(/admin/stories)에서 쓰고 stories 테이블에 저장한다(HJ 2026-11-23 C안).
  * 정적 페이지(ISR)로 캐시해 두고, 저장할 때만 다시 만든다(on-demand revalidation).
@@ -172,7 +173,7 @@ export default async function StoryPage({ params }: PageProps) {
           {bookId && <h2 className='heading-2 mb-5'>독후감</h2>}
           <StoryMarkdown
             body={story.body}
-            renderMyRecord={() => <StoryMyRecord />}
+            renderMyRecord={() => <MyRecordBlock />}
           />
         </section>
 
