@@ -17,7 +17,9 @@ export default function BookNotFound() {
     <div className='flex min-h-screen items-center justify-center p-4'>
       <Card className='w-full max-w-md'>
         <CardHeader>
-          <CardTitle className='text-foreground'>책을 찾을 수 없습니다</CardTitle>
+          <CardTitle className='text-foreground'>
+            책을 찾을 수 없습니다
+          </CardTitle>
         </CardHeader>
         <CardContent className='space-y-4'>
           <p className='text-muted-foreground'>
@@ -25,14 +27,12 @@ export default function BookNotFound() {
           </p>
 
           <div className='flex gap-2'>
-            <Link href='/books' className='flex-1'>
-              <Button className='w-full'>내 서재</Button>
-            </Link>
-            <Link href='/books/add' className='flex-1'>
-              <Button variant='outline' className='w-full'>
-                도서 추가
-              </Button>
-            </Link>
+            <Button asChild className='flex-1'>
+              <Link href='/books'>내 서재</Link>
+            </Button>
+            <Button asChild variant='outline' className='flex-1'>
+              <Link href='/books/add'>도서 추가</Link>
+            </Button>
           </div>
         </CardContent>
       </Card>

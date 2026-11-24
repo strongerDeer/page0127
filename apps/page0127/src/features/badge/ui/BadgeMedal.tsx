@@ -3,6 +3,7 @@
 import {
   badgeArtFallbackSrc,
   badgeArtSrcSet,
+  badgeAtlasStyle,
   badgeCoverArt,
 } from '../model/badgeCoverArt';
 import {
@@ -92,12 +93,8 @@ export const BadgeMedal = ({
               decoding='async'
               className={styles.atlas}
               draggable={false}
-              style={{
-                width: `${art.crop ? (art.width / art.crop.width) * 100 : art.columns * 100}%`,
-                height: `${art.crop ? (art.height / art.crop.height) * 100 : art.rows * 100}%`,
-                left: `${art.crop ? -(art.crop.x / art.crop.width) * 100 : -art.column * 100}%`,
-                top: `${art.crop ? -(art.crop.y / art.crop.height) * 100 : -art.row * 100}%`,
-              }}
+              // 가로·세로 같은 배율 — 칸 비율이 달라도 그림이 늘어나지 않는다
+              style={badgeAtlasStyle(art)}
             />
           </picture>
         </span>

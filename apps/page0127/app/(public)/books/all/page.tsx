@@ -187,22 +187,20 @@ export default async function GlobalBooksPage(props: {
 
         {/* 정렬 옵션 (간단하게 구현) */}
         <div className='flex shrink-0 gap-2'>
-          <Link href={`?sort=created_at&order=desc${qParam}`}>
-            <Button
-              variant={sort === 'created_at' ? 'secondary' : 'ghost'}
-              size='sm'
-            >
-              최신순
-            </Button>
-          </Link>
-          <Link href={`?sort=title&order=asc${qParam}`}>
-            <Button
-              variant={sort === 'title' ? 'secondary' : 'ghost'}
-              size='sm'
-            >
-              제목순
-            </Button>
-          </Link>
+          <Button
+            asChild
+            variant={sort === 'created_at' ? 'secondary' : 'ghost'}
+            size='sm'
+          >
+            <Link href={`?sort=created_at&order=desc${qParam}`}>최신순</Link>
+          </Button>
+          <Button
+            asChild
+            variant={sort === 'title' ? 'secondary' : 'ghost'}
+            size='sm'
+          >
+            <Link href={`?sort=title&order=asc${qParam}`}>제목순</Link>
+          </Button>
         </div>
       </div>
 

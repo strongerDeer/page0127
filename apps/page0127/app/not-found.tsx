@@ -34,14 +34,12 @@ export default function NotFound() {
           </p>
 
           <div className='flex gap-2'>
-            <Link href='/' className='flex-1'>
-              <Button className='w-full'>홈으로</Button>
-            </Link>
-            <Link href='/books' className='flex-1'>
-              <Button variant='outline' className='w-full'>
-                내 서재
-              </Button>
-            </Link>
+            <Button asChild className='flex-1'>
+              <Link href='/'>홈으로</Link>
+            </Button>
+            <Button asChild variant='outline' className='flex-1'>
+              <Link href='/books'>내 서재</Link>
+            </Button>
           </div>
         </CardContent>
       </Card>

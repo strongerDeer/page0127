@@ -122,11 +122,9 @@ export const CompatibilityView = ({
       <PageHeader
         className='mb-8'
         above={
-          <Link href={`/${username}`}>
-            <Button variant='outline' size='sm'>
-              ← {targetName} 님의 서재로
-            </Button>
-          </Link>
+          <Button asChild variant='outline' size='sm'>
+            <Link href={`/${username}`}>← {targetName} 님의 서재로</Link>
+          </Button>
         }
         title='독서 케미'
         description={`${targetName} 님과 나, 얼마나 닮은 독서가일까요?`}

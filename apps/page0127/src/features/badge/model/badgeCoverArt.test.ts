@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-import { badgeCoverArt } from './badgeCoverArt';
+import { badgeAtlasStyle, badgeCoverArt } from './badgeCoverArt';
 import { badgePresentation } from './badgePresentation';
 import { computeBadges } from './badges';
 
@@ -41,5 +41,25 @@ describe('배지 표지 아트', () => {
       cells.add(`${art.src}:${art.row}:${art.column}`);
     }
     expect(cells.size).toBe(31);
+  });
+});
+
+describe('badgeAtlasStyle', () => {
+  // 이 assertion 이 잠그는 것: 시트를 가로·세로 같은 배율로 키운다 — height 는 늘 auto
+  // (따로 늘리면 Lighthouse "이미지 가로세로 비율" 감점, 2026-11-24)
+  it('높이는 원본 비율을 따르고(auto), 칸이 표지 폭 이상을 덮는다', () => {
+    const art = badgeCoverArt('unwritten');
+    const style = badgeAtlasStyle(art);
+    expect(style.height).toBe('auto');
+    const widthCqw = parseFloat(style.width);
+    expect(widthCqw / art.columns).toBeGreaterThanOrEqual(100);
+  });
+
+  it('crop 칸 하나가 표지를 빈틈없이 덮는다(폭·높이 모두)', () => {
+    const art = badgeCoverArt('worn-out');
+    const crop = art.crop!;
+    const perCqw = parseFloat(badgeAtlasStyle(art).width) / art.width;
+    expect(crop.width * perCqw).toBeGreaterThanOrEqual(99.99);
+    expect(crop.height * perCqw).toBeGreaterThanOrEqual((4 / 3) * 98 - 0.01);
   });
 });

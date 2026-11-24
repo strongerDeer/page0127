@@ -132,3 +132,35 @@ export const badgeArtSrcSet = (src: string, format: 'avif' | 'webp') =>
 /** srcSet 을 모르는 브라우저용 — 모바일에서 가장 많이 고르는 480 WebP */
 export const badgeArtFallbackSrc = (src: string) =>
   `${sizedBase(src)}-480.webp`;
+
+/**
+ * 시트(아틀라스)에서 표지 한 칸만 보이게 놓는 위치 — **가로·세로 같은 배율**로 키운다.
+ *
+ * 왜(2026-11-24): 예전엔 폭은 "칸 폭 기준", 높이는 "칸 높이 기준"으로 따로 늘려서, 표지 칸 비율과
+ * 그림 칸 비율이 다르면 그림이 1~7% 늘어났다(Lighthouse 권장사항 "이미지 가로세로 비율" 감점,
+ * companion 표시 0.60 vs 원본 0.56). 이제 폭에만 맞추고 높이는 원본 비율(height:auto)을 따른다.
+ * 칸이 표지보다 조금 길면 위아래가 살짝 잘린다(가운데 정렬) — 늘어나는 것보다 낫다.
+ *
+ * 단위: .cover 가 `container-type: inline-size` 라 cqw = 표지 폭. top 의 50% 는 표지 높이.
+ */
+/** 표지 높이(cqw) — .book 이 3:4 이고 .cover 가 아래 2% 를 비운다(BadgeMedal.module.css). */
+const COVER_HEIGHT_CQW = (4 / 3) * 98;
+
+export const badgeAtlasStyle = (art: CoverArt) => {
+  const cell = art.crop ?? {
+    x: (art.width / art.columns) * art.column,
+    y: (art.height / art.rows) * art.row,
+    width: art.width / art.columns,
+    height: art.height / art.rows,
+  };
+  // 칸이 표지를 빈틈없이 덮는 배율(object-fit: cover 와 같은 계산). 시트 1px 이 몇 cqw 인지.
+  const perCqw = Math.max(100 / cell.width, COVER_HEIGHT_CQW / cell.height);
+  const round = (n: number) => Math.round(n * 1000) / 1000;
+  return {
+    width: `${round(art.width * perCqw)}cqw`,
+    height: 'auto',
+    // 칸 가운데를 표지 가운데에 맞춘다(폭 50cqw, 높이 50%)
+    left: `${round(50 - (cell.x + cell.width / 2) * perCqw)}cqw`,
+    top: `calc(50% - ${round((cell.y + cell.height / 2) * perCqw)}cqw)`,
+  };
+};

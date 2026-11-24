@@ -67,11 +67,11 @@ export const TasteAnalysisResult = ({
       <PageHeader
         className='mb-8'
         above={
-          <Link href={`/${username}`}>
-            <Button variant='outline' size='sm'>
+          <Button asChild variant='outline' size='sm'>
+            <Link href={`/${username}`}>
               <ArrowLeft className='h-4 w-4' />내 서재로
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         }
         title='독서 취향 분석'
         description={`${new Date(analysis.created_at).toLocaleDateString(

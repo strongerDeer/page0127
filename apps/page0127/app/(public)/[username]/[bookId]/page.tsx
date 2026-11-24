@@ -168,9 +168,9 @@ const BookDetailPage = async ({ params }: PageProps) => {
   return (
     <PageContainer>
       <div className='mb-6 flex flex-wrap items-center justify-between gap-3'>
-        <Link href={`/${username}`}>
-          <Button variant='outline'>← {username}님의 서재로</Button>
-        </Link>
+        <Button asChild variant='outline'>
+          <Link href={`/${username}`}>← {username}님의 서재로</Link>
+        </Button>
 
         <div className='flex gap-2'>
           {/* 공개된 기록만 공유한다 — 비공개 링크는 남이 열면 404 라 공유해도 소용없다.
@@ -189,9 +189,9 @@ const BookDetailPage = async ({ params }: PageProps) => {
           {isOwner && (
             <>
               <ArchiveToggleButton bookId={book.id} isPublic={book.is_public} />
-              <Link href={`/${username}/${book.id}/edit`}>
-                <Button variant='outline'>수정</Button>
-              </Link>
+              <Button asChild variant='outline'>
+                <Link href={`/${username}/${book.id}/edit`}>수정</Link>
+              </Button>
               <DeleteBookButton bookId={book.id} redirectTo={`/${username}`} />
             </>
           )}

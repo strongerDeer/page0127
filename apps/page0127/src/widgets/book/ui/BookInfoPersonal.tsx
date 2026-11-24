@@ -110,9 +110,9 @@ export const BookInfoGuestCta = () => {
       <p className='text-sm text-text-subtle'>
         읽은 책을 기록하면, 몰랐던 취향이 보이기 시작합니다.
       </p>
-      <Link href='/login'>
-        <Button className='mt-1'>내 책장 만들기</Button>
-      </Link>
+      <Button asChild className='mt-1'>
+        <Link href='/login'>내 책장 만들기</Link>
+      </Button>
     </div>
   );
 };
