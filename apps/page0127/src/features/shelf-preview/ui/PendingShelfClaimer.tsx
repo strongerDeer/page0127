@@ -9,7 +9,11 @@ import { toast } from 'sonner';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { clearLoginStart, readLoginStart } from '@/shared/lib/auth/loginStart';
 
-import { bookApi, fillMissingSpine } from '@/entities/book';
+import {
+  bookApi,
+  fillMissingPageCountAction,
+  fillMissingSpine,
+} from '@/entities/book';
 
 import { claimReadingGoalAction } from '../api/claimReadingGoalAction';
 import {
@@ -49,6 +53,8 @@ export const PendingShelfClaimer = () => {
   const claim = (pending: PendingShelf, asked: boolean) => {
     const run = async () => {
       const created: ClaimedBook[] = [];
+      // 맛보기 책은 쪽수 없이 온다 — 담은 뒤 서버가 YES24 상세로 채운다(쪽수 0쪽 방지)
+      const pageFills: Promise<unknown>[] = [];
       const result = await claimPendingBooks(pending.books, {
         findExisting: async (b) =>
           (await bookApi.getBookByISBN(b.isbn, b.provider_item_id)).length > 0,
@@ -57,6 +63,7 @@ export const PendingShelfClaimer = () => {
           const book = await bookApi.createBook(toBookInput(b, isLifeBook));
           // 맛보기 책은 전체 도서의 책등 값을 그대로 들고 온다 — 비어 있으면 YES24 에서 확인해 채운다
           void fillMissingSpine(book);
+          pageFills.push(fillMissingPageCountAction(book.id).catch(() => null));
           if (book.status === 'completed')
             created.push({ id: book.id, title: book.title, isLifeBook });
         },
@@ -79,6 +86,10 @@ export const PendingShelfClaimer = () => {
       if (failure) toast.error(failure);
       if (added > 0 || goalSet) router.refresh();
       if (created.length > 0) setClaimed(created);
+      // 쪽수는 담기와 따로 끝난다 — 하나라도 채워졌으면 서재 쪽수·예상 시간을 다시 그린다
+      void Promise.all(pageFills).then((results) => {
+        if (results.includes('filled')) router.refresh();
+      });
     };
     void run();
   };

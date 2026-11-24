@@ -522,10 +522,12 @@
   --crown-fill: #f5c22b;
   --crown-stroke: #b8860b;
   position: absolute;
-  top: -21px;
+  /* 처음 32×23 에서 0.8배로 줄였다(HJ, 2026-11-24 — 표지 위에서 너무 컸다).
+     아래로 2px 표지에 걸치는 건 그대로 둔다 */
+  top: -16.4px;
   left: 50%;
-  width: 32px;
-  height: 23px;
+  width: 25.6px;
+  height: 18.4px;
   transform: translateX(-50%);
   pointer-events: none;
   z-index: 2;

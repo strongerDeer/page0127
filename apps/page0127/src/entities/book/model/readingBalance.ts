@@ -40,8 +40,6 @@ export type ReadingBalance = {
   unclassified: number;
   /** 1권 이상 분야 수 */
   readCount: number;
-  /** 상위 2개 분야 비율 0~100 정수 */
-  topShare: number;
   /** 0~100, 완독이 3권 미만이면 null */
   score: number | null;
   zero: BalanceCategory[];
@@ -49,8 +47,12 @@ export type ReadingBalance = {
   prev: { readCountDelta: number; newCategories: BalanceCategory[] } | null;
 };
 
-/** 이보다 적으면 점수가 한 권에 크게 흔들려 의미가 없다 */
-const MIN_BOOKS_FOR_SCORE = 3;
+/**
+ * 이보다 적으면 점수가 한 권에 크게 흔들려 의미가 없다.
+ * 분모가 늘 '8개 분야'라 책이 적으면 점수가 낮게 나온다(3권 최고 53점) — 8권부터로 올렸다가,
+ * 처음부터 점수가 보이는 게 낫다고 3권으로 되돌리고 대신 설명 줄을 붙였다(HJ, 2026-11-24).
+ */
+export const MIN_BOOKS_FOR_SCORE = 3;
 
 /**
  * 원본 분류 문자열에서 서점 대분류 이름만 뽑는다.
@@ -116,8 +118,6 @@ export const calculateReadingBalance = (
     }));
 
   const readCount = ranked.length;
-  const topTwo = ranked.slice(0, 2).reduce((sum, { count }) => sum + count, 0);
-  const topShare = total > 0 ? Math.round((topTwo / total) * 100) : 0;
 
   const entropy = ranked.reduce((sum, { count }) => {
     const p = count / total;
@@ -148,7 +148,6 @@ export const calculateReadingBalance = (
     total,
     unclassified,
     readCount,
-    topShare,
     score,
     zero: categories
       .filter(({ count }) => count === 0)

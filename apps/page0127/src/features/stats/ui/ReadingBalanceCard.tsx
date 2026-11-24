@@ -4,13 +4,19 @@ import dynamic from 'next/dynamic';
 
 import { RenderWhenNear } from '@/shared/ui/RenderWhenNear';
 
-import { BALANCE_CATEGORIES, type ReadingBalance } from '@/entities/book';
+import {
+  BALANCE_CATEGORIES,
+  MIN_BOOKS_FOR_SCORE,
+  type ReadingBalance,
+} from '@/entities/book';
 
 import {
+  BALANCE_SCORE_HELP,
   categoryColor,
   categoryInk,
   getBalanceDelta,
   getBalanceLabel,
+  getBalanceScoreWait,
   getBalanceSummary,
   nextCategories,
   radarAxes,
@@ -90,18 +96,50 @@ export const ReadingBalanceCard = ({
 
         {hasBooks && (
           <>
-            <div className='mt-5 flex items-baseline gap-2'>
-              {balance.score !== null && (
-                <strong className='text-4xl font-bold text-text-strong'>
-                  {balance.score}
-                </strong>
+            {/* 균형 점수 — 이름표 · 점수 · 늘 보이는 설명(시안 S1, 게이지는 불필요해 뺌).
+                3권 전엔 점수 대신 몇 권 남았는지(MIN_BOOKS_FOR_SCORE) */}
+            <div className='mt-5'>
+              <p className='text-xs font-medium text-text-subtle'>균형 점수</p>
+              {balance.score !== null ? (
+                <>
+                  <div className='mt-1 flex flex-wrap items-baseline gap-x-2'>
+                    <strong className='text-4xl font-bold text-text-strong tabular-nums'>
+                      {balance.score}
+                      <span className='ml-0.5 text-base font-medium'>점</span>
+                    </strong>
+                    <span className='text-sm text-text-subtle'>
+                      / 100 ·{' '}
+                      <b className='text-text-body'>
+                        {getBalanceLabel(balance.score)}
+                      </b>
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className='mt-1 break-keep text-base font-bold text-text-body'>
+                    {getBalanceScoreWait(balance)}
+                  </p>
+                  <div
+                    role='progressbar'
+                    aria-label='균형 점수까지 읽은 권수'
+                    aria-valuemin={0}
+                    aria-valuemax={MIN_BOOKS_FOR_SCORE}
+                    aria-valuenow={balance.total}
+                    className='mt-2 h-2 overflow-hidden rounded-full bg-sunken'
+                  >
+                    <div
+                      className='h-full rounded-full bg-primary'
+                      style={{
+                        width: `${(balance.total / MIN_BOOKS_FOR_SCORE) * 100}%`,
+                      }}
+                    />
+                  </div>
+                </>
               )}
-              <span className='text-sm text-text-subtle'>
-                {balance.score !== null && '/100 고른 정도 · '}
-                <b className='text-text-body'>
-                  {getBalanceLabel(balance.score)}
-                </b>
-              </span>
+              <p className='mt-2 break-keep text-xs text-text-subtle'>
+                {BALANCE_SCORE_HELP}
+              </p>
             </div>
 
             {/* 식단 띠 — 100% 가로 막대. 칸마다 권수·비율은 툴팁, 화면낭독기는 아래 문장으로.
