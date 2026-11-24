@@ -52,7 +52,7 @@ export const YearSummary = ({
   year,
   today,
   completed,
-  target,
+  target: goalTarget,
   totalPages,
   averageRating,
   lifeBookCount,
@@ -61,6 +61,10 @@ export const YearSummary = ({
   onSetGoal,
   goalShare,
 }: YearSummaryProps) => {
+  // 방문자에게 목표는 "달성했을 때만" 보인다(HJ, 2026-11-24).
+  // 남의 서재에서 "목표까지 5권 · 지금 속도면 21권 🥹"는 응원이 아니라 성적표로 읽힌다.
+  // 못 채운 목표는 없는 셈(target 0)으로 돌리면 문구·막대가 '목표 없음' 흐름을 그대로 탄다
+  const target = isOwner || completed >= goalTarget ? goalTarget : 0;
   const pace = getReadingPace({ completed, target, year, today });
   const message = getPaceMessage({ pace, completed, target, isOwner });
   const hasGoal = target > 0;

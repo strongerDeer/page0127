@@ -13,6 +13,7 @@ import { RenderWhenNear } from '@/shared/ui/RenderWhenNear';
 import { calculateReadingBalance } from '@/entities/book';
 
 import { ShareSheetButton } from '@/features/share';
+import { bookendCategory } from '@/features/stats/model/orderByCategory';
 import {
   hasActiveShelfFilter,
   useLibraryFilters,
@@ -23,7 +24,6 @@ import { RatingSummaryCard } from '@/features/stats/ui/RatingSummaryCard';
 import { ReadingBalanceCard } from '@/features/stats/ui/ReadingBalanceCard';
 import { YearSummary } from '@/features/stats/ui/YearSummary';
 
-import { CategoryBookShelf } from '@/widgets/book/ui/CategoryBookShelf';
 import { LifeBooksShelf } from '@/widgets/book/ui/LifeBooksShelf';
 import { PublicBookShelf } from '@/widgets/book/ui/PublicBookShelf';
 import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
@@ -40,6 +40,8 @@ import { WishlistShelf } from './WishlistShelf';
 import type { Book } from '@/entities/book';
 import type { BookStats, OverallStats } from '@/entities/book';
 import type { DailySentence } from '@/entities/daily-sentence';
+import type { ReadingGoal } from '@/entities/profile/types';
+import type { SentenceMonthCounts } from '@/entities/quote';
 import type { RatingFilter } from '@/features/stats/model/useLibraryFilters';
 
 // 연도별 추이는 recharts(압축 약 90KB) — 프로필 첫 화면 JS 에 실리지 않게 나중에 불러온다.
@@ -126,6 +128,10 @@ type LibraryViewProps = {
   calendarTodaySlot?: ReactNode;
   /** 캘린더 패널 맨 아래(주인: 내가 모은 문장·주간 회상 링크) */
   calendarFooterSlot?: ReactNode;
+  /** 방문자 캘린더의 "N월에 모은 문장 N개" — 개수만 */
+  sentenceMonthCounts?: SentenceMonthCounts;
+  /** 해마다 정한 목표 — 연도별 완독 추이에 겹쳐 그린다 */
+  readingGoals?: ReadingGoal[];
   /** 배지 줄 — 취향 묶음 맨 아래에 둔다(HJ, 2026-11-11). 예전엔 프로필 바로 아래였다 */
   badgeSlot?: ReactNode;
 
@@ -182,6 +188,8 @@ export const LibraryView = ({
   sentenceDraws = [],
   calendarTodaySlot,
   calendarFooterSlot,
+  sentenceMonthCounts,
+  readingGoals = [],
   badgeSlot,
   showWishlist = false,
   isWishlistView = false,
@@ -339,16 +347,24 @@ export const LibraryView = ({
           onRemoveRatingFilter={filters.clearRating}
           onSearchChange={filters.setSearch}
           onResetAll={filters.resetAll}
-          // 책장형은 PublicBookShelf/CategoryBookShelf가 username으로 직접 링크를 계산하지만,
+          // 책장형은 PublicBookShelf가 username으로 직접 링크를 계산하지만,
           // 피드형(BookFeedGrid)은 DashboardBookList 내부에서 렌더링되므로
           // bookHref를 통해 공개 서재/내 서재 링크를 구분해 넘겨야 한다
           bookHref={bookHref}
-          renderBooks={(filteredBooks) =>
+          renderBooks={(filteredBooks, { groupByCategory }) =>
             isAllView ? (
-              <CategoryBookShelf books={filteredBooks} username={username} />
+              // 전체 보기는 한 책장에 이어 꽂는다 — 분야순이면 경계마다 북엔드(HJ, 2026-11-24).
+              // 예전엔 분야마다 선반을 새로 시작해 반쯤 빈 줄이 여럿 생겼다
+              <PublicBookShelf
+                books={filteredBooks}
+                username={username}
+                groupBy={groupByCategory ? bookendCategory : undefined}
+                compact
+              />
             ) : (
               <PublicBookShelf
                 books={filteredBooks}
+                groupBy={groupByCategory ? bookendCategory : undefined}
                 // 조건이 걸리면 읽는 중 책을 덧붙이지 않는다 — 조건을 거치지 않은 책이 섞인다
                 readingBooks={hasActiveShelfFilter(filters) ? [] : readingBooks}
                 plateLabel={String(selectedYear)}
@@ -385,6 +401,7 @@ export const LibraryView = ({
     bookHref,
     todaySlot: calendarTodaySlot,
     footerSlot: calendarFooterSlot,
+    sentenceMonthCounts,
   };
   // 빈 서재에서 오늘의 문장만 펼칠 때 쓰는 캘린더 — 월별 막대 없이 혼자 달을 들고 있다
   const calendar = <ReadingCalendar key={selectedYear} {...calendarProps} />;
@@ -417,13 +434,29 @@ export const LibraryView = ({
             {badgeSlot}
           </>
         ) : isAllView ? (
-          /* ── 전체(누적) 뷰 ── */
+          /* ── 전체(누적) 뷰 ── 연도 보기와 같은 서재·기록·취향 세 묶음(HJ, 2026-11-24).
+             방문자의 첫 화면이 전체가 되면서 길이가 문제가 됐다 → 같은 바로가기 탭으로 오간다.
+             서재 = 지금까지 무엇을 읽었나 / 기록 = 해마다 얼마나 / 취향 = 어떤 독자인가 */
           <div className='space-y-6'>
             {emptyNotice}
 
-            {collapseWhenEmpty(
+            {isLibraryEmpty ? (
+              // 빈 서재 — 묶음·탭 없이 예전처럼 "통계 미리 보기" 하나로 접는다(연도 보기와 같은 규칙)
               <>
-                <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
+                {collapseWhenEmpty(
+                  <>
+                    <ReadingJourneyCard data={overallStats.journey} />
+                    <YearlyTrendChart data={overallStats.yearlyTrend} />
+                    {bookShelf}
+                  </>
+                )}
+                {badgeSlot}
+              </>
+            ) : (
+              <>
+                <LibrarySectionNav />
+
+                <LibraryGroup id='library-shelf' title='서재'>
                   <Card className='rounded-2xl bg-card py-6 shadow-none'>
                     <CardHeader>
                       <CardTitle>지금까지의 기록</CardTitle>
@@ -433,56 +466,65 @@ export const LibraryView = ({
                     </CardContent>
                   </Card>
 
-                  <Card className='rounded-2xl bg-card py-6 shadow-none lg:col-span-2'>
-                    <CardHeader className='pb-4'>
-                      <CardTitle>연도별 완독 추이</CardTitle>
-                      <p className='text-sm text-muted-foreground'>
-                        올해를 강조해 연도별 완독 권수를 비교합니다
-                      </p>
-                    </CardHeader>
-                    <CardContent className='pb-6'>
-                      <RenderWhenNear placeholder={<TrendChartSkeleton />}>
-                        <YearlyTrendChart data={overallStats.yearlyTrend} />
-                      </RenderWhenNear>
-                    </CardContent>
-                  </Card>
-                </div>
+                  {/* ── 인생책 (평점 10점) ── 서재 요약과 책장 사이의 감정적 하이라이트 */}
+                  <LifeBooksShelf
+                    books={books}
+                    title={lifeBooksTitle}
+                    username={username}
+                  />
 
-                {/* ── 인생책 (평점 10점) ── 서재 요약과 상세 통계 사이의 감정적 하이라이트 */}
-                <LifeBooksShelf
-                  books={books}
-                  title={lifeBooksTitle}
-                  username={username}
-                />
+                  {bookShelf}
+                </LibraryGroup>
 
-                {/* 연도 탭과 같은 균형 카드 — 읽은 분야만 레이더 + 띠 + 고른 정도 + 안 읽은 분야.
-                예전 '카테고리 취향'은 9축 고정 레이더라 연도 탭과 모양이 달랐다.
-                books 는 이미 재독 합침이다(PublicLibraryContent 의 visibleBooks — 주인은 비공개 포함) */}
-                <ReadingBalanceCard
-                  // 가린 비공개 책은 분야를 모른다 — 균형에서는 뺀다
-                  balance={calculateReadingBalance(
-                    books.filter((book) => !book.is_masked)
-                  )}
-                />
+                <LibraryGroup id='library-record' title='기록'>
+                  <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
+                    <Card className='rounded-2xl bg-card py-6 shadow-none'>
+                      <CardHeader className='pb-4'>
+                        <CardTitle>연도별 완독 추이</CardTitle>
+                        <p className='text-sm text-muted-foreground'>
+                          올해를 강조해 연도별 완독 권수를 비교합니다
+                        </p>
+                      </CardHeader>
+                      <CardContent className='pb-6'>
+                        <RenderWhenNear placeholder={<TrendChartSkeleton />}>
+                          <YearlyTrendChart
+                            data={overallStats.yearlyTrend}
+                            // 목표는 주인에게만 — 방문자 차트는 완독 권수만(HJ, 2026-11-24)
+                            goals={isOwner ? readingGoals : undefined}
+                          />
+                        </RenderWhenNear>
+                      </CardContent>
+                    </Card>
 
-                <Card className='rounded-2xl bg-card py-6 shadow-none'>
-                  <CardHeader className='pb-4'>
-                    <CardTitle>평점 분포</CardTitle>
-                    <p className='text-sm text-muted-foreground'>
-                      전체 완독 기준입니다
-                    </p>
-                  </CardHeader>
-                  <CardContent className='pb-6'>
-                    <OverallDistribution
-                      ratings={overallStats.ratingDistribution}
-                    />
-                  </CardContent>
-                </Card>
+                    <Card className='rounded-2xl bg-card py-6 shadow-none'>
+                      <CardHeader className='pb-4'>
+                        <CardTitle>평점 분포</CardTitle>
+                        <p className='text-sm text-muted-foreground'>
+                          전체 완독 기준입니다
+                        </p>
+                      </CardHeader>
+                      <CardContent className='pb-6'>
+                        <OverallDistribution
+                          ratings={overallStats.ratingDistribution}
+                        />
+                      </CardContent>
+                    </Card>
+                  </div>
+                </LibraryGroup>
 
-                {bookShelf}
+                <LibraryGroup id='library-taste' title='취향'>
+                  {/* 연도 탭과 같은 균형 카드 — books 는 이미 재독 합침이다
+                  (PublicLibraryContent 의 visibleBooks — 주인은 비공개 포함).
+                  가린 비공개 책은 분야를 모른다 — 균형에서는 뺀다 */}
+                  <ReadingBalanceCard
+                    balance={calculateReadingBalance(
+                      books.filter((book) => !book.is_masked)
+                    )}
+                  />
+                  {badgeSlot}
+                </LibraryGroup>
               </>
             )}
-            {badgeSlot}
           </div>
         ) : /* ── 연도 뷰 ── 서재 · 기록 · 취향 세 묶음(HJ, 2026-11-11)
              서재 = 무엇을 읽고 있고 읽었나 / 기록 = 언제 읽었나 / 취향 = 어떤 독자인가.

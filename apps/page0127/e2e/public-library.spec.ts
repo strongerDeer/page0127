@@ -46,18 +46,19 @@ test('비로그인 케미 안내는 조건을 채운 서재에서만 보이고 �
   ).toHaveAttribute('href', '/');
 });
 
-test('방문자도 올해 서재·독서 캘린더를 보고, 비공개 책 펼치기는 없다', async ({
+test('방문자는 전체 서재부터 보고, 연도를 고르면 독서 캘린더가 나온다 — 비공개 책 펼치기는 없다', async ({
   page,
 }) => {
   const path = await findLibraryPath(page);
   test.skip(!path, '이 DB 에는 공개 서재가 없다');
   await page.goto(path!);
 
-  // 기본 탭 = 올해(비었으면 최근 해) — '전체'가 선택돼 있으면 안 된다
-  await expect(
-    page.getByRole('button', { name: '전체', exact: true })
-  ).toHaveAttribute('aria-pressed', 'false');
+  // 방문자 기본 탭 = 전체(HJ, 2026-11-24) — 주인은 올해
+  const allTab = page.getByRole('button', { name: '전체', exact: true });
+  await expect(allTab).toHaveAttribute('aria-pressed', 'true');
 
+  // 연도로 들어가면 캘린더 — 연도 탭은 폰에선 셀렉트라 주소로 바로 연다
+  await page.goto(`${path!}?year=${new Date().getFullYear()}`);
   await expect(
     page.getByRole('heading', { name: '독서 캘린더' })
   ).toBeVisible();

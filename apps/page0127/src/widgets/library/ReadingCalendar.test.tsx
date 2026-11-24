@@ -170,7 +170,20 @@ describe('ReadingCalendar · 그날 패널 (B안)', () => {
     expect(html).toContain('aria-label="10월 12일, 오늘의 문장"');
   });
 
-  it('오늘 자리가 없으면(풀이 빈 서재·방문자) 기록이 없다고 알린다', () => {
+  it('오늘 자리가 없는 주인(풀이 빈 서재)에겐 오늘 기록이 없다고 알린다', () => {
+    const html = renderToStaticMarkup(
+      <ReadingCalendar
+        books={[]}
+        year={2026}
+        today='2026-10-13'
+        isOwner
+        bookHref={href}
+      />
+    );
+    expect(html).toContain('오늘은 아직 기록이 없어요.');
+  });
+
+  it('방문자는 오늘 칸 대신 "이 달 한눈에"부터 — 기록하는 법 안내도 없다', () => {
     const html = renderToStaticMarkup(
       <ReadingCalendar
         books={[]}
@@ -180,7 +193,49 @@ describe('ReadingCalendar · 그날 패널 (B안)', () => {
         bookHref={href}
       />
     );
-    expect(html).toContain('오늘은 아직 기록이 없어요.');
+    expect(html).not.toContain('오늘은 아직 기록이 없어요.');
+    expect(html).toContain('10월 한눈에');
+    expect(html).toContain('이 달엔 아직 기록이 없어요');
+    expect(html).not.toContain('표지가 꽂혀요');
+    // 빈 오늘 칸은 방문자에게 눌리지 않는다
+    expect(html).toMatch(/disabled=""[^>]*aria-current="date"/);
+  });
+
+  it('방문자에겐 이 달 모은 문장 개수만 — 없으면 줄이 없다', () => {
+    const render = (counts: Record<string, number>) =>
+      renderToStaticMarkup(
+        <ReadingCalendar
+          books={[]}
+          year={2026}
+          today='2026-10-13'
+          isOwner={false}
+          bookHref={href}
+          sentenceMonthCounts={counts}
+        />
+      );
+    expect(render({ '2026-10': 5 })).toContain('10월에 모은 문장');
+    expect(render({ '2026-10': 5 })).toContain('5개');
+    expect(render({ '2026-09': 2 })).not.toContain('모은 문장');
+  });
+
+  it('주인이 고른 날의 완독 책엔 한줄평까지 보인다', () => {
+    const html = renderToStaticMarkup(
+      <ReadingCalendar
+        books={[
+          createTestBook({
+            id: 'a',
+            title: '오늘 끝낸 책',
+            completed_date: '2026-10-13',
+            one_line_review: '마지막 장이 오래 남는다',
+          }),
+        ]}
+        year={2026}
+        today='2026-10-13'
+        isOwner
+        bookHref={href}
+      />
+    );
+    expect(html).toContain('“마지막 장이 오래 남는다”');
   });
 
   it('날짜를 안 고른 달은 "이 달 요약" — 완독·읽기 시작 권수와 완독한 책', () => {

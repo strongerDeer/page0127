@@ -38,6 +38,9 @@ const IMAGE_SPINE_PX = 24;
 /** 표지로 세우는 책(5점·인생책)의 폭 — CSS `.noImage.cover` 와 같다 */
 const COVER_PX = { normal: 170, compact: 149 } as const;
 
+/** 북엔드가 첫 권 앞에 더하는 폭 — CSS `.bookend` 폭 64 + 오른쪽 6 + 왼쪽 12 */
+export const BOOKEND_PX = 82;
+
 /** 끝칸(도서 추가) 어림 폭 */
 export const TRAILING_SLOT_PX = 60;
 

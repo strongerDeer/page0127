@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { createTestBook } from '@/entities/book/model/createTestBook';
 import { shelfSpineWidthPx } from '@/entities/book/model/spineWidth';
 
-import { PublicBookShelf } from './PublicBookShelf';
+import { findBookends, PublicBookShelf } from './PublicBookShelf';
 
 import type { Book } from '@/entities/book';
 
@@ -199,5 +199,38 @@ describe('PublicBookShelf — 끝칸(trailingSlot)', () => {
     );
 
     expect(html.split('<li').length - 1).toBe(1);
+  });
+});
+
+describe('PublicBookShelf 북엔드(분야순)', () => {
+  const books = [
+    makeBook({ id: 'a1', category: '소설' }),
+    makeBook({ id: 'a2', category: '소설' }),
+    makeBook({ id: 'b1', category: '인문' }),
+  ];
+  const byCategory = (book: Book) => book.category ?? '기타';
+
+  it('이어진 같은 값마다 첫 권 순번에 이름·권수를 단다', () => {
+    expect([...findBookends(books, byCategory)]).toEqual([
+      [0, { label: '소설', count: 2 }],
+      [2, { label: '인문', count: 1 }],
+    ]);
+  });
+
+  it('북엔드는 첫 권과 같은 칸(li) 안에 선다 — 줄 끝에 혼자 남지 않게', () => {
+    const html = renderToStaticMarkup(
+      <PublicBookShelf books={books} groupBy={byCategory} />
+    );
+    expect((html.match(/data-bookend/g) ?? []).length).toBe(2);
+    // li 를 연 직후 북엔드가 오고, 같은 li 안에 첫 권 링크가 이어진다
+    expect(html).toMatch(
+      /<li[^>]*><span data-bookend[^>]*>.*?소설.*?2권.*?<a /
+    );
+  });
+
+  it('groupBy 가 없으면 북엔드를 그리지 않는다', () => {
+    expect(
+      renderToStaticMarkup(<PublicBookShelf books={books} />)
+    ).not.toContain('data-bookend');
   });
 });

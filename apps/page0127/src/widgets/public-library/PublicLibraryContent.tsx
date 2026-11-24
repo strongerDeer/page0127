@@ -39,7 +39,8 @@ import type { Book } from '@/entities/book';
 import type { OverallStats } from '@/entities/book';
 import type { DailySentence } from '@/entities/daily-sentence';
 import type { FollowSnapshot } from '@/entities/follow';
-import type { Profile } from '@/entities/profile/types';
+import type { Profile, ReadingGoal } from '@/entities/profile/types';
+import type { SentenceMonthCounts } from '@/entities/quote';
 import type { PublicTasteHistoryItem } from '@/entities/taste-analysis/types';
 import type { BadgeActivity } from '@/features/badge/model/badges';
 import type { ReactNode } from 'react';
@@ -70,6 +71,10 @@ type PublicLibraryContentProps = {
   calendarTodaySlot?: ReactNode;
   /** 독서 캘린더 패널 맨 아래 — 주인 서재의 내가 모은 문장·주간 회상 링크 */
   calendarFooterSlot?: ReactNode;
+  /** 방문자에게만 — 달마다 모은 문장 개수(글은 나만 보기) */
+  sentenceMonthCounts?: SentenceMonthCounts;
+  /** 해마다 정한 목표 — 전체 보기의 연도별 완독 추이에 겹쳐 그린다 */
+  readingGoals?: ReadingGoal[];
 };
 
 /**
@@ -99,6 +104,8 @@ export const PublicLibraryContent = ({
   sentenceDraws = [],
   calendarTodaySlot,
   calendarFooterSlot,
+  sentenceMonthCounts,
+  readingGoals = [],
 }: PublicLibraryContentProps) => {
   // 폰에서 등록하다 책등 확인을 놓친 책을 주인이 서재를 열 때 뒤에서 채운다
   useRepairMissingSpines(books, isOwnProfile);
@@ -110,8 +117,12 @@ export const PublicLibraryContent = ({
   // 위시리스트는 내 서재에서만, 연도와 무관한 별도 탭이다
   const isWishlistView = isOwnProfile && yearParam === 'wishlist';
   const parsedYear = yearParam ? Number(yearParam) : NaN;
-  // 기본은 올해(비었으면 가장 최근 해) — '전체'는 ?year=all 로만 들어간다
-  const isAllView = yearParam === 'all' || isWishlistView;
+  // 기본 보기 — 주인은 올해(비었으면 가장 최근 해): 매일 들르는 입구(오늘의 문장·캘린더 오늘 칸)가 연도 보기에 있다.
+  // 방문자는 전체: 남의 서재는 "올해 몇 권"보다 "어떤 책을 읽어 온 사람인가"가 먼저다(HJ, 2026-11-24)
+  const isAllView =
+    yearParam === 'all' ||
+    isWishlistView ||
+    (!isOwnProfile && yearParam === null);
   const defaultYear = useMemo(
     () => resolveDefaultLibraryYear(books, currentYear),
     [books, currentYear]
@@ -310,6 +321,8 @@ export const PublicLibraryContent = ({
           sentenceDraws={sentenceDraws}
           calendarTodaySlot={calendarTodaySlot}
           calendarFooterSlot={calendarFooterSlot}
+          sentenceMonthCounts={sentenceMonthCounts}
+          readingGoals={readingGoals}
           // 뱃지 — 통계와 같은 공개 책으로 계산해 주인·방문자가 같은 뱃지를 본다. 전부는 상세 페이지에서.
           // 프로필 바로 아래에 있다가 '취향' 묶음 맨 아래로 내려갔다(HJ, 2026-11-11)
           badgeSlot={

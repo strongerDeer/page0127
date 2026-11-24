@@ -36,6 +36,7 @@ import {
 import { mapToMainCategory } from '@/shared/lib/categoryMapper';
 import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
 
+import { CATEGORY_SORT, orderByCategory } from '../model/orderByCategory';
 import { BookFeedGrid } from './BookFeedGrid';
 import { BookGridItem } from './BookGridItem';
 import {
@@ -82,7 +83,10 @@ type DashboardBookListProps = {
   /** 책 목록 커스텀 렌더러 — 제공 시 기본 그리드 대신 사용
    *  filteredBooks(필터 적용된 전체 목록)를 받아 ReactNode 반환
    *  예: 선반(shelf) 레이아웃, 테이블 뷰 등 */
-  renderBooks?: (filteredBooks: Book[]) => React.ReactNode;
+  renderBooks?: (
+    filteredBooks: Book[],
+    options: { groupByCategory: boolean }
+  ) => React.ReactNode;
 
   /** 전체 필터 초기화 핸들러 — 제공 시 필터 활성화 상태에서 초기화 버튼 표시 */
   onResetAll?: () => void;
@@ -176,7 +180,8 @@ export const DashboardBookList = ({
 
   // React Compiler 자동 메모이제이션 → 손으로 쓰던 useMemo·deps 배열 제거 (Day 65)
   // Compiler가 books·필터 조건 의존성을 자동 추적해 같은 입력이면 캐시 반환한다
-  const filteredBooks = books
+  const isCategorySort = sortOption === CATEGORY_SORT;
+  const sortedBooks = books
     .filter((book) => {
       // 1. 카테고리 필터 확인
       if (selectedCategories.length > 0) {
@@ -213,12 +218,15 @@ export const DashboardBookList = ({
       // 정렬 로직
       const [field, order] = sortOption.split('-');
 
-      if (field === 'created_at') {
+      // 분야순 — 분야 안에서는 최신순. 분야끼리 묶는 건 아래 orderByCategory 가 한다
+      if (field === 'created_at' || field === 'category') {
         // '최신순'/'오래된순'은 등록 시각이 아니라 완독일 기준이어야 한다.
         // completed_date가 없는 예외 케이스만 created_at으로 대체한다.
         const dateA = new Date(a.completed_date ?? a.created_at).getTime();
         const dateB = new Date(b.completed_date ?? b.created_at).getTime();
-        return order === 'desc' ? dateB - dateA : dateA - dateB;
+        return order === 'desc' || field === 'category'
+          ? dateB - dateA
+          : dateA - dateB;
       }
 
       if (field === 'rating') {
@@ -235,6 +243,10 @@ export const DashboardBookList = ({
 
       return 0;
     });
+
+  const filteredBooks = isCategorySort
+    ? orderByCategory(sortedBooks)
+    : sortedBooks;
 
   // 페이지네이션 계산
   const totalPages = Math.ceil(filteredBooks.length / BOOKS_PER_PAGE);
@@ -393,6 +405,8 @@ export const DashboardBookList = ({
             <SelectItem value='rating-asc'>별점 낮은순</SelectItem>
             <SelectItem value='title-asc'>제목순 (ㄱ-ㅎ)</SelectItem>
             <SelectItem value='title-desc'>제목순 (ㅎ-ㄱ)</SelectItem>
+            {/* 같은 분야끼리 붙여 꽂고 경계에 칸막이 — 책장에서만 칸막이가 보인다 */}
+            <SelectItem value={CATEGORY_SORT}>분야순</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -462,7 +476,7 @@ export const DashboardBookList = ({
               />
             ) : renderBooks ? (
               // 커스텀 렌더러: 선반 레이아웃 등 외부에서 주입
-              renderBooks(filteredBooks)
+              renderBooks(filteredBooks, { groupByCategory: isCategorySort })
             ) : (
               <div className='grid grid-cols-3 gap-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6'>
                 {paginatedBooks.map((book) => (

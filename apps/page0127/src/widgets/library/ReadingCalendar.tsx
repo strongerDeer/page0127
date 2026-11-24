@@ -20,6 +20,7 @@ import { CHART_COLORS } from '@/features/stats/model/balanceCopy';
 
 import type { Book, CalendarDay } from '@/entities/book';
 import type { DailySentence } from '@/entities/daily-sentence';
+import type { SentenceMonthCounts } from '@/entities/quote';
 
 type ReadingCalendarProps = {
   /** 방문자 = 공개 책만, 주인 = 비공개 포함(반투명) */
@@ -50,6 +51,11 @@ type ReadingCalendarProps = {
   todaySlot?: ReactNode;
   /** 패널 맨 아래 — 주인 서재의 내가 모은 문장 한 줄·주간 회상 링크 */
   footerSlot?: ReactNode;
+  /**
+   * 방문자에게만 — 달마다 모은 문장 개수('YYYY-MM' → 개수).
+   * 문장 글은 나만 보기라 개수만 서버에서 접어 넘긴다(HJ, 2026-11-24)
+   */
+  sentenceMonthCounts?: SentenceMonthCounts;
 };
 
 export type CalendarView = { year: number; month: number };
@@ -100,6 +106,7 @@ export const ReadingCalendar = ({
   sentenceDraws = [],
   todaySlot,
   footerSlot,
+  sentenceMonthCounts,
 }: ReadingCalendarProps) => {
   const [ownView, ownDispatch] = useReducer(monthReducer, {
     year,
@@ -115,16 +122,25 @@ export const ReadingCalendar = ({
       ownDispatch(action);
     }
   };
-  // 고른 날짜(YYYY-MM-DD). 처음엔 오늘 — 서재에 들어오면 오늘 칸이 바로 열려 있다
-  const [selectedDate, setSelectedDate] = useState<string | null>(today);
+  // 고른 날짜(YYYY-MM-DD).
+  // 주인은 처음엔 오늘 — 서재에 들어오면 오늘 칸(오늘의 문장 펼치기)이 바로 열려 있다.
+  // 방문자는 아무 날도 안 고른 채 "이 달 한눈에"부터 — 남의 서재에서 "오늘은 아직 기록이 없어요"는
+  // 주인에게 하는 말이고, 빈 패널이 첫인상이 된다(HJ, 2026-11-24)
+  const [selectedDate, setSelectedDate] = useState<string | null>(
+    isOwner ? today : null
+  );
 
   const month = buildCalendarMonth(books, view.year, view.month);
   const days = month.weeks.flat().filter((d): d is CalendarDay => !!d);
-  // 달을 넘기면: 고른 날이 이 달에 없으면 오늘(이 달이면), 그것도 아니면 아무 날도 안 고른 상태
+  // 달을 넘기면: 고른 날이 이 달에 없으면 (주인은) 오늘(이 달이면), 그것도 아니면 아무 날도 안 고른 상태
   const selected =
     days.find((d) => d.date === selectedDate) ??
-    days.find((d) => d.date === today) ??
+    (isOwner && selectedDate !== null
+      ? days.find((d) => d.date === today)
+      : undefined) ??
     null;
+  const monthKey = `${view.year}-${String(view.month).padStart(2, '0')}`;
+  const monthSentenceCount = sentenceMonthCounts?.[monthKey] ?? 0;
   // 날짜 → 그날 펼친 문장. 하루 한 줄이라 Map 하나로 찾는다
   const sentenceByDate = new Map(
     sentenceDraws.map((sentence) => [sentence.draw_date, sentence])
@@ -256,9 +272,13 @@ export const ReadingCalendar = ({
                 <button
                   key={day.date}
                   type='button'
-                  // 책이 없어도 문장을 펼친 날·오늘(펼치기 자리)은 누를 수 있다
-                  disabled={covers.length === 0 && !sentence && !isToday}
-                  onClick={() => setSelectedDate(day.date)}
+                  // 책이 없어도 문장을 펼친 날·오늘(펼치기 자리)은 누를 수 있다 — 펼치기는 주인 것이라
+                  // 방문자에게 빈 오늘 칸은 눌러도 "기록 없음"뿐이다
+                  disabled={
+                    covers.length === 0 && !sentence && !(isToday && isOwner)
+                  }
+                  // 고른 날을 다시 누르면 선택을 풀고 "이 달 한눈에"로 돌아간다
+                  onClick={() => setSelectedDate(isSelected ? null : day.date)}
                   aria-pressed={isSelected}
                   // 오늘은 '선택'과 다른 상태 — 스크린리더엔 aria-current로, 눈엔 날짜 숫자 파란 원으로 알린다
                   aria-current={isToday ? 'date' : undefined}
@@ -360,8 +380,20 @@ export const ReadingCalendar = ({
           today={today}
           sentence={selectedSentence}
           todaySlot={todaySlot}
-          footerSlot={footerSlot}
+          footerSlot={
+            footerSlot ??
+            (monthSentenceCount > 0 ? (
+              <p className='flex items-center gap-1.5 text-xs text-text-subtle'>
+                <Bookmark aria-hidden className='size-3.5' />
+                {view.month}월에 모은 문장{' '}
+                <b className='font-medium text-text-strong'>
+                  {monthSentenceCount}개
+                </b>
+              </p>
+            ) : null)
+          }
           bookHref={bookHref}
+          isOwner={isOwner}
         />
       </div>
     </section>
@@ -378,6 +410,7 @@ type DayPanelProps = {
   todaySlot?: ReactNode;
   footerSlot?: ReactNode;
   bookHref: (book: Book) => string;
+  isOwner: boolean;
 };
 
 /**
@@ -394,6 +427,7 @@ const DayPanel = ({
   todaySlot,
   footerSlot,
   bookHref,
+  isOwner,
 }: DayPanelProps) => {
   const isToday = day?.date === today;
   const hasBooks =
@@ -411,7 +445,9 @@ const DayPanel = ({
           : `${month}월 한눈에`}
       </h3>
 
-      {!day && <MonthOverview days={monthDays} bookHref={bookHref} />}
+      {!day && (
+        <MonthOverview days={monthDays} bookHref={bookHref} isOwner={isOwner} />
+      )}
 
       {showTodaySlot && todaySlot}
 
@@ -446,6 +482,8 @@ const DayPanel = ({
           heading='완독한 책'
           books={day.completions.map(({ book }) => book)}
           bookHref={bookHref}
+          // 그날 고른 책은 한 권씩 크게 본다 — 한줄평까지(HJ, 2026-11-24)
+          showReview
           trailing={(book) =>
             isRated(book.rating)
               ? book.is_life_book
@@ -483,6 +521,7 @@ const DayPanel = ({
 type MonthOverviewProps = {
   days: CalendarDay[];
   bookHref: (book: Book) => string;
+  isOwner: boolean;
 };
 
 /**
@@ -491,7 +530,7 @@ type MonthOverviewProps = {
  * 한 해 흐름은 아래 월별 완독 카드가, 한 달은 여기가 맡는다 — 같은 정보를 두 번 그리지 않는다.
  * 숫자는 이미 계산된 날(CalendarDay)들에서 다시 모은다 → 추가 조회 없음.
  */
-const MonthOverview = ({ days, bookHref }: MonthOverviewProps) => {
+const MonthOverview = ({ days, bookHref, isOwner }: MonthOverviewProps) => {
   const completions = days.flatMap((d) =>
     d.completions.map(({ book }) => ({ book, day: d.day }))
   );
@@ -510,9 +549,12 @@ const MonthOverview = ({ days, bookHref }: MonthOverviewProps) => {
         <p className='mt-1 text-sm font-bold text-text-strong'>
           이 달엔 아직 기록이 없어요
         </p>
-        <p className='break-keep text-xs text-text-subtle'>
-          책을 다 읽으면 그날 칸에 표지가 꽂혀요.
-        </p>
+        {/* 기록하는 법은 주인에게만 — 방문자에겐 할 일이 아니다 */}
+        {isOwner && (
+          <p className='break-keep text-xs text-text-subtle'>
+            책을 다 읽으면 그날 칸에 표지가 꽂혀요.
+          </p>
+        )}
       </div>
     );
   }
@@ -578,6 +620,8 @@ type CalendarBookListProps = {
   bookHref: (book: Book) => string;
   /** 줄 오른쪽 끝 — 점수·'N일째' 등 */
   trailing: (book: Book) => string | null;
+  /** 저자 아래에 한줄평 — 그날 고른 책 목록에서만 */
+  showReview?: boolean;
 };
 
 const CalendarBookList = ({
@@ -585,6 +629,7 @@ const CalendarBookList = ({
   books,
   bookHref,
   trailing,
+  showReview = false,
 }: CalendarBookListProps) => (
   <div>
     <h4 className='text-xs font-medium text-text-subtle'>{heading}</h4>
@@ -613,6 +658,11 @@ const CalendarBookList = ({
                 <span className='block truncate text-sm text-text-subtle'>
                   {book.author}
                 </span>
+                {showReview && book.one_line_review && (
+                  <span className='mt-1 line-clamp-2 block break-keep text-sm text-text-body'>
+                    “{book.one_line_review}”
+                  </span>
+                )}
               </span>
               {!book.is_public && (
                 <span className='text-xs text-text-subtle'>비공개</span>

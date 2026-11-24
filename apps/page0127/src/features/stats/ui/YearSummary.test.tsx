@@ -78,6 +78,24 @@ describe('YearSummary', () => {
     expect(html).not.toContain('목표 정하기');
   });
 
+  it('방문자에게 못 채운 목표는 보이지 않는다 — 남의 서재에서 성적표가 된다', () => {
+    const html = render({ isOwner: false, onSetGoal: undefined });
+    expect(html).not.toContain('목표 40권');
+    expect(html).not.toContain('지금 속도면');
+    expect(html).not.toContain('data-pace-marker');
+    expect(html).toContain('권씩 읽고 있어요');
+  });
+
+  it('방문자에게도 달성한 목표는 보인다', () => {
+    const html = render({
+      isOwner: false,
+      onSetGoal: undefined,
+      completed: 40,
+    });
+    expect(html).toContain('목표 달성');
+    expect(html).toContain('목표 40권 · 100%');
+  });
+
   it('쪽수를 모르면(0쪽) 높이·시간 환산을 보여 주지 않는다 — "0cm · 영화 0편"은 의미가 없다', () => {
     const html = render({ totalPages: 0 });
     expect(html).not.toContain('쌓으면');
