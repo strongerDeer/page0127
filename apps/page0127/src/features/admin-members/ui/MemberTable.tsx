@@ -2,7 +2,11 @@ import Link from 'next/link';
 
 import { toKstDateKey } from '@/shared/lib/date';
 
-import { ACTIVE_WINDOW_DAYS, providerLabel } from '../lib/memberStats';
+import {
+  ACTIVE_WINDOW_DAYS,
+  describeLastSeen,
+  providerLabel,
+} from '../lib/memberStats';
 
 import type {
   MemberExclusion,
@@ -15,6 +19,56 @@ const EXCLUSION_LABEL: Record<MemberExclusion, string> = {
   test: '테스트',
 };
 
+/**
+ * 로그인 수단은 글자 대신 색 라벨로 — 로고 없이 카카오는 노랑, 구글은 파랑 (HJ, 2026-11-24).
+ * 카카오 노랑은 다크 모드에서도 같은 색(브랜드 색)이고 글자는 진한 갈색으로 고정한다.
+ */
+const PROVIDER_STYLE: Record<string, string> = {
+  kakao: 'bg-[#fee500] text-[#3a1d1d]',
+  google: 'bg-accent text-accent-foreground',
+};
+
+const ProviderLabel = ({ provider }: { provider: string | null }) => (
+  <span
+    className={`rounded px-1.5 py-0.5 text-xs font-medium ${
+      (provider && PROVIDER_STYLE[provider]) ?? 'bg-sunken text-text-subtle'
+    }`}
+  >
+    {providerLabel(provider)}
+  </span>
+);
+
+/** 7일 안 접속은 점 + "N일 전", 그보다 오래면 흐린 날짜만 — 훑어보기만 해도 누가 요즘 오는지 보이게 */
+const LastSeen = ({
+  lastSeen,
+  today,
+}: {
+  lastSeen: string | null;
+  today: string;
+}) => {
+  const v = describeLastSeen(lastSeen, today);
+  if (v.kind === 'none') return <span className='text-text-subtle'>-</span>;
+  if (v.kind === 'old')
+    return (
+      <span className='text-text-subtle' title={lastSeen ?? undefined}>
+        {v.short}
+      </span>
+    );
+  return (
+    <span
+      className='inline-flex items-center gap-1.5'
+      title={lastSeen ?? undefined}
+    >
+      <span
+        aria-hidden
+        className={`h-1.5 w-1.5 rounded-full ${v.today ? 'bg-[#34d399]' : 'bg-[#74b0ff]'}`}
+      />
+      <span className='font-medium text-text-strong'>{v.relative}</span>
+      <span className='text-[11px] text-text-subtle'>{v.short}</span>
+    </span>
+  );
+};
+
 // 칸 공통 — 숫자 칸은 오른쪽, 글 칸은 왼쪽 정렬. 머리글도 같은 쪽으로 맞춘다
 const th = 'whitespace-nowrap px-3 py-2 font-normal';
 const td = 'whitespace-nowrap px-3 py-2.5';
@@ -25,6 +79,8 @@ type MemberTableProps = {
 };
 
 export const MemberTable = ({ rows }: MemberTableProps) => {
+  // 서버에서 그린다 — "오늘"은 KST 기준 날짜
+  const today = toKstDateKey(new Date());
   if (rows.length === 0) {
     return <p className='text-sm text-text-subtle'>가입자가 없습니다.</p>;
   }
@@ -99,13 +155,15 @@ export const MemberTable = ({ rows }: MemberTableProps) => {
                   m.signupChannel
                 )}
               </td>
-              <td className={`${td} text-text-subtle`}>
-                {providerLabel(m.provider)}
+              <td className={td}>
+                <ProviderLabel provider={m.provider} />
               </td>
               <td className={`${td} tabular-nums`}>
                 {toKstDateKey(new Date(m.createdAt))}
               </td>
-              <td className={`${td} tabular-nums`}>{m.lastSeen ?? '-'}</td>
+              <td className={`${td} tabular-nums`}>
+                <LastSeen lastSeen={m.lastSeen} today={today} />
+              </td>
               <td className={`${td} text-right tabular-nums`}>
                 {m.activeDays}일
               </td>

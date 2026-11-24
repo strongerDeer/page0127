@@ -76,3 +76,38 @@ export const providerLabel = (provider: string | null | undefined): string => {
       return provider ?? '-';
   }
 };
+
+/** 최근 접속을 "얼마나 최근인가"로 강조하는 기간 — 이 안이면 점과 "N일 전"을 붙인다 */
+export const RECENT_SEEN_DAYS = 7;
+
+export type LastSeenView =
+  | { kind: 'none' }
+  /** 7일 안 — "오늘·어제·N일 전" + 짧은 날짜. today 면 점을 더 진하게 */
+  | { kind: 'recent'; relative: string; short: string; today: boolean }
+  /** 그보다 오래 — 흐린 날짜만 */
+  | { kind: 'old'; short: string };
+
+const dayNumber = (dateKey: string): number =>
+  Date.UTC(
+    Number(dateKey.slice(0, 4)),
+    Number(dateKey.slice(5, 7)) - 1,
+    Number(dateKey.slice(8, 10))
+  ) / 86_400_000;
+
+/**
+ * 최근 접속(KST 'YYYY-MM-DD')을 회원 목록에서 훑어보기 좋은 모양으로 바꾼다.
+ * 날짜끼리만 빼서(시각 무시) "어제 23시 접속"이 자정 지나 "0일 전"으로 보이는 일이 없다.
+ * 해가 바뀌면 짧은 날짜에 연도를 붙인다(11/02 가 올해인지 작년인지 헷갈리지 않게).
+ */
+export const describeLastSeen = (
+  lastSeen: string | null,
+  today: string
+): LastSeenView => {
+  if (!lastSeen) return { kind: 'none' };
+  const diff = dayNumber(today) - dayNumber(lastSeen);
+  const sameYear = lastSeen.slice(0, 4) === today.slice(0, 4);
+  const short = `${sameYear ? '' : `${lastSeen.slice(2, 4)}.`}${lastSeen.slice(5, 7)}/${lastSeen.slice(8, 10)}`;
+  if (diff < 0 || diff >= RECENT_SEEN_DAYS) return { kind: 'old', short };
+  const relative = diff === 0 ? '오늘' : diff === 1 ? '어제' : `${diff}일 전`;
+  return { kind: 'recent', relative, short, today: diff === 0 };
+};

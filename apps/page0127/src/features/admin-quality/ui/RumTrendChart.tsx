@@ -12,6 +12,7 @@ import {
   YAxis,
 } from 'recharts';
 
+import { adminInk } from '@/shared/lib/admin/adminChartColors';
 import { chartInk } from '@/shared/lib/chartStyles';
 
 import type { RumWindow } from '../api/getQualityDashboard';
@@ -59,7 +60,9 @@ export const RumTrendChart = ({ rum }: { rum: RumWindow | null }) => {
         <h2 className='text-sm font-medium'>
           자체 RUM — {label} 일별 p75 (실사용자)
         </h2>
-        <span className='text-xs text-text-subtle'>최근 {rum.windowDays}일</span>
+        <span className='text-xs text-text-subtle'>
+          최근 {rum.windowDays}일
+        </span>
       </div>
       <p className='mb-3 text-xs text-text-subtle'>
         점선은 CWV 양호 기준({formatMs(goodThreshold)}). 표본이 없는 날은 점을
@@ -96,7 +99,7 @@ export const RumTrendChart = ({ rum }: { rum: RumWindow | null }) => {
           <Line
             type='monotone'
             dataKey='p75'
-            stroke={chartInk.primary}
+            stroke={adminInk.primary}
             connectNulls={false}
             dot
           />

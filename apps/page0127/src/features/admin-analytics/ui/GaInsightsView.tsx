@@ -3,6 +3,7 @@ import {
   type DateRange,
   shortDate,
 } from '@/shared/lib/admin/dateRange';
+import { DonutShare } from '@/shared/ui/AdminDonutShare';
 
 import {
   CHANNELS,
@@ -175,26 +176,28 @@ export const GaInsightsView = ({
             title: e.title,
           }))}
         />
-        <ShareBars
+        <DonutShare
           title='처음 온 사람 / 다시 온 사람'
           caption='사람 추정(한국) 기준. 가입하지 않은 방문자도 셉니다 — 회원 재방문은 대시보드에서. 한 사람이 기간 안에 처음 오고 또 오면 양쪽에 다 잡혀 합이 사용자 수보다 클 수 있어요.'
           items={toBars(reports.newVsReturning).filter(
             (b) => b.key !== '(not set)' && b.key !== ''
           )}
+          centerLabel='명(중복)'
           emptyText='데이터 없음'
         />
       </Section>
 
       <Section title='어디서 오나?'>
-        <ShareBars
+        <DonutShare
           title='들어온 길 (채널)'
-          caption='세션 기준. GA 가 방문마다 어떤 길로 왔는지 자동으로 분류한 것'
+          caption='세션 기준. GA 가 방문마다 어떤 길로 왔는지 자동으로 분류한 것 — 이름에 마우스를 올리면 풀이가 보여요'
           items={reports.channel.rows.map((r) => ({
             key: r.raw[0],
             label: r.labels[0],
-            sub: CHANNELS[r.raw[0]]?.desc,
+            hint: CHANNELS[r.raw[0]]?.desc,
             value: r.values[0],
           }))}
+          centerLabel='세션'
         />
         <ReportTableCard
           def={defOf('sourceMedium')}
@@ -258,7 +261,11 @@ export const GaInsightsView = ({
       </Section>
 
       <Section title='어떤 환경에서 보나?'>
-        <ShareBars title='기기' items={toBars(reports.device)} />
+        <DonutShare
+          title='기기'
+          items={toBars(reports.device)}
+          centerLabel='세션'
+        />
         <ShareBars
           title='요일'
           caption='사람 추정 기준 하루 평균. 기간에 요일마다 든 날 수가 달라 합계 대신 평균으로 견줍니다(오늘은 집계 중이라 뺌)'
@@ -269,6 +276,7 @@ export const GaInsightsView = ({
             display: `평균 ${w.avg.toFixed(1)}명 · ${w.count}일`,
           }))}
           emptyText='끝난 날이 없어 아직 요일 평균을 낼 수 없어요'
+          highlightMax
         />
       </Section>
 

@@ -43,6 +43,15 @@ type AdminSentenceManagerProps = {
   sentences: AdminSentence[] | null;
 };
 
+/** 목록 정렬 — 최근 넣은 순(기본) / 뽑힘 많은 순 / 한 번도 안 뽑힌 것만 */
+type SortMode = 'recent' | 'draws' | 'never';
+
+const SORT_LABEL: Record<SortMode, string> = {
+  recent: '최근 넣은 순',
+  draws: '뽑힘 많은 순',
+  never: '안 뽑힌 문장만',
+};
+
 /** 다이얼로그가 무엇을 하는 중인가 — 닫힘 / 새로 추가 / 이 문장 수정 */
 type Editing = null | 'new' | AdminSentence;
 
@@ -61,6 +70,7 @@ export const AdminSentenceManager = ({
 }: AdminSentenceManagerProps) => {
   const [editing, setEditing] = useState<Editing>(null);
   const [query, setQuery] = useState('');
+  const [sort, setSort] = useState<SortMode>('recent');
 
   const activeCount = sentences?.filter((s) => s.is_active).length ?? 0;
   const missingCovers =
@@ -68,15 +78,22 @@ export const AdminSentenceManager = ({
 
   // 문장·책 제목·저자로 거른다 — 풀이 커져도 고칠 문장을 바로 찾게
   const visible = useMemo(() => {
+    if (!sentences) return sentences;
     const q = query.trim().toLowerCase();
-    if (!sentences || !q) return sentences;
-    return sentences.filter((s) =>
-      [s.text, s.book_title, s.author ?? '', s.translator ?? '']
-        .join(' ')
-        .toLowerCase()
-        .includes(q)
+    const filtered = sentences.filter(
+      (s) =>
+        (sort !== 'never' || s.draw_count === 0) &&
+        (!q ||
+          [s.text, s.book_title, s.author ?? '', s.translator ?? '']
+            .join(' ')
+            .toLowerCase()
+            .includes(q))
     );
-  }, [sentences, query]);
+    // 서버가 최근 넣은 순으로 주므로 'recent' 는 그대로 둔다. sort 는 원본을 건드리지 않게 복사본에서
+    return sort === 'draws'
+      ? [...filtered].sort((a, b) => b.draw_count - a.draw_count)
+      : filtered;
+  }, [sentences, query, sort]);
 
   return (
     <div className='flex flex-col gap-4'>
@@ -89,6 +106,18 @@ export const AdminSentenceManager = ({
           aria-label='문장 찾기'
           className='h-9 max-w-xs'
         />
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as SortMode)}
+          aria-label='문장 정렬'
+          className='h-9 rounded-md border border-line bg-background px-2 text-sm'
+        >
+          {(Object.keys(SORT_LABEL) as SortMode[]).map((m) => (
+            <option key={m} value={m}>
+              {SORT_LABEL[m]}
+            </option>
+          ))}
+        </select>
         <span className='text-xs text-text-subtle'>
           활성 {activeCount}개 · 전체 {sentences?.length ?? 0}개
           {activeCount === 0 &&

@@ -54,3 +54,6 @@ export const MONTHLY_BUDGET_KRW = 14000;
 export const MONTHLY_BUDGET_CENTS = Math.round(
   (MONTHLY_BUDGET_KRW / USD_TO_KRW) * 100
 );
+
+/** 이 비율부터 예산을 미리 보게 한다 — 100% 에서 알면 이미 넘은 뒤다. 홈 "오늘 볼 것"과 AI 비용 게이지 경고선이 같이 쓴다 */
+export const AI_BUDGET_WARN_PERCENT = 80;

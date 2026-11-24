@@ -1,3 +1,5 @@
+import { Sparkline } from '@/shared/ui/AdminSparkline';
+
 import type { AdminOverview } from '@/features/admin-overview/api/getOverview';
 
 type OverviewCardsProps = {
@@ -10,20 +12,48 @@ type MetricProps = {
   value: number | string | null;
   /** 값 아래 한 줄. 단위나 기준을 밝힌다 */
   hint?: string;
+  /** 숫자 옆 ▲▼ — 지금 값 − 앞 값. 이름은 접근성 문구에 쓴다 (예: '그제') */
+  delta?: { diff: number; against: string };
+  /** 카드 아래 작은 추세선 */
+  spark?: { values: number[]; label: string };
 };
 
-const Metric = ({ label, value, hint }: MetricProps) => (
+/** ▲ 3 / ▼ 2 / ― 0 — 색은 오르면 민트, 내리면 빨강 대신 퍼플(경고가 아니라 변화라서) */
+const Delta = ({ diff, against }: { diff: number; against: string }) => {
+  const up = diff > 0;
+  const down = diff < 0;
+  return (
+    <span
+      className={`ml-2 text-xs font-medium tabular-nums ${
+        up
+          ? 'text-[#0f9e74] dark:text-[#34d399]'
+          : down
+            ? 'text-[#6a49ee] dark:text-[#a993f7]'
+            : 'text-text-subtle'
+      }`}
+      title={`${against} 대비`}
+    >
+      <span aria-hidden>{up ? '▲' : down ? '▼' : '―'}</span>
+      <span className='sr-only'>{`${against} 대비 ${up ? '증가' : down ? '감소' : '같음'}`}</span>{' '}
+      {Math.abs(diff)}
+    </span>
+  );
+};
+
+const Metric = ({ label, value, hint, delta, spark }: MetricProps) => (
   <div className='rounded-lg border border-line p-4'>
     <p className='text-xs text-text-subtle'>{label}</p>
     {/* tabular-nums: 숫자가 바뀌어도 자리가 흔들리지 않는다 */}
-    <p className='mt-1 text-2xl font-bold tabular-nums text-text-strong'>
+    <p className='mt-1 flex items-baseline text-2xl font-bold tabular-nums text-text-strong'>
       {value === null
         ? '—'
         : typeof value === 'number'
           ? value.toLocaleString('ko-KR')
           : value}
+      {value !== null && delta && <Delta {...delta} />}
     </p>
     {hint && <p className='mt-0.5 text-xs text-text-subtle'>{hint}</p>}
+    {spark && <Sparkline values={spark.values} label={spark.label} />}
   </div>
 );
 
@@ -62,11 +92,29 @@ export const OverviewCards = ({ overview }: OverviewCardsProps) => {
             label='DAU (어제)'
             value={activity?.dau ?? null}
             hint={activity ? `오늘 ${activity.today}명 (진행 중)` : undefined}
+            delta={
+              activity
+                ? { diff: activity.dau - activity.prevDau, against: '그제' }
+                : undefined
+            }
+            spark={
+              activity
+                ? { values: activity.dauSeries, label: '최근 14일 DAU' }
+                : undefined
+            }
           />
           <Metric
             label='WAU (최근 7일)'
             value={activity?.wau ?? null}
             hint='7일 안에 하루라도 온 사람'
+            delta={
+              activity
+                ? {
+                    diff: activity.wau - activity.prevWau,
+                    against: '그 전 7일',
+                  }
+                : undefined
+            }
           />
           <Metric
             label='MAU (최근 30일)'

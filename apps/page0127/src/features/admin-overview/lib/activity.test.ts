@@ -31,6 +31,23 @@ describe('summarizeActivity', () => {
     expect(s.stickiness).toBeCloseTo(5 / 30 / 3);
   });
 
+  it('14일 DAU 추세와 그제 DAU·그 전 주 WAU 를 낸다', () => {
+    const visits = [
+      ...v('a', '2026-10-25', '2026-10-26', '2026-10-15'),
+      ...v('b', '2026-10-25', '2026-10-13'),
+      ...v('c', '2026-10-12'),
+    ];
+    const s = summarizeActivity(visits, period);
+    expect(s.dauSeries).toHaveLength(14);
+    // 마지막 칸 = 어제(10/26), 첫 칸 = 10/13
+    expect(s.dauSeries.at(-1)).toBe(1);
+    expect(s.dauSeries.at(-2)).toBe(2);
+    expect(s.dauSeries[0]).toBe(1);
+    expect(s.prevDau).toBe(2);
+    // 그 전 7일 = 10/13~10/19 → a, b
+    expect(s.prevWau).toBe(2);
+  });
+
   it('방문이 없으면 고착도는 null', () => {
     expect(summarizeActivity([], period).stickiness).toBeNull();
   });

@@ -10,6 +10,7 @@ import {
   YAxis,
 } from 'recharts';
 
+import { adminInk } from '@/shared/lib/admin/adminChartColors';
 import { chartInk } from '@/shared/lib/chartStyles';
 
 import type { FieldHistoryRow } from '../api/getQualityDashboard';
@@ -40,7 +41,7 @@ export const FieldTrendChart = ({ rows }: { rows: FieldHistoryRow[] }) => {
           <Line
             type='monotone'
             dataKey='good'
-            stroke={chartInk.primary}
+            stroke={adminInk.primary}
             connectNulls={false}
             dot
           />
@@ -48,4 +49,4 @@ export const FieldTrendChart = ({ rows }: { rows: FieldHistoryRow[] }) => {
       </ResponsiveContainer>
     </section>
   );
-}
+};

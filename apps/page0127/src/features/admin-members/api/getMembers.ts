@@ -293,30 +293,45 @@ async function getBookCounts(ids: string[]): Promise<Map<string, number>> {
   }
 }
 
+/** Auth 관리 API 한 쪽 최대 크기 */
+const AUTH_PAGE_SIZE = 1000;
+
 /**
  * 가입 경로·마지막 로그인은 profiles 가 아니라 auth.users 에 있다.
- * Auth 관리 API 는 id 목록 조회를 지원하지 않아 한 명씩 병렬로 부른다(한 페이지 최대 50회 + 제외 계정 몇 개).
+ *
+ * 예전에는 회원마다 getUserById 를 병렬로 불렀다(한 화면 50명 = Auth API 50번).
+ * Sentry 가 이를 "N+1 API Call"로 잡았다(2026-11-24). Auth 관리 API 는 id 목록 조회가 없어서,
+ * 대신 listUsers 로 전체를 1,000명씩 읽고 필요한 사람만 고른다 — 회원 1,000명까지는 1번이다.
+ * 회원이 수만 명이 되면 이 방식도 무거워지니, 그때는 provider·마지막 로그인을 profiles 에 복사한다.
  */
 async function getAuthInfo(ids: string[]) {
-  const supabase = createAdminClient();
-  const results = await Promise.all(
-    ids.map((id) => supabase.auth.admin.getUserById(id))
-  );
-
   const map = new Map<
     string,
     { provider: string | null; lastSignInAt: string | null }
   >();
-  results.forEach(({ data, error }, i) => {
-    if (error || !data.user) {
-      console.error('[admin] Auth 회원 정보 조회 실패:', error?.message);
-      return;
-    }
-    const provider = data.user.app_metadata.provider;
-    map.set(ids[i], {
-      provider: typeof provider === 'string' ? provider : null,
-      lastSignInAt: data.user.last_sign_in_at ?? null,
+  if (ids.length === 0) return map;
+
+  const wanted = new Set(ids);
+  const supabase = createAdminClient();
+  for (let page = 1; ; page += 1) {
+    const { data, error } = await supabase.auth.admin.listUsers({
+      page,
+      perPage: AUTH_PAGE_SIZE,
     });
-  });
-  return map;
+    if (error) {
+      console.error('[admin] Auth 회원 목록 조회 실패:', error.message);
+      return map;
+    }
+    for (const user of data.users) {
+      if (!wanted.has(user.id)) continue;
+      const provider = user.app_metadata.provider;
+      map.set(user.id, {
+        provider: typeof provider === 'string' ? provider : null,
+        lastSignInAt: user.last_sign_in_at ?? null,
+      });
+    }
+    // 다 찾았거나 마지막 쪽이면 그만 읽는다
+    if (map.size === wanted.size || data.users.length < AUTH_PAGE_SIZE)
+      return map;
+  }
 }

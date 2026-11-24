@@ -1,3 +1,5 @@
+import { AI_BUDGET_WARN_PERCENT } from '@/shared/lib/admin/config';
+
 /**
  * 홈 맨 위 "오늘 볼 것" — 사람이 손을 대야 하는 것만 고른다.
  *
@@ -20,8 +22,7 @@ export type AttentionItem = {
   href: string;
 };
 
-/** 이 비율부터 예산을 미리 보게 한다 — 100% 에서 알면 이미 넘은 뒤다 */
-export const AI_BUDGET_WARN_PERCENT = 80;
+// 예산 경고 비율은 AI 비용 게이지 경고선과 같은 값이라 shared/lib/admin/config 에 둔다
 
 export const buildAttention = (s: AttentionSources): AttentionItem[] => {
   const items: AttentionItem[] = [];

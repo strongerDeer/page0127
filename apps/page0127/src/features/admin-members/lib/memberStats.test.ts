@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  describeLastSeen,
   formatKstDateTime,
   maskEmail,
   providerLabel,
@@ -52,5 +53,41 @@ describe('providerLabel', () => {
     expect(providerLabel('kakao')).toBe('카카오');
     expect(providerLabel('github')).toBe('github');
     expect(providerLabel(undefined)).toBe('-');
+  });
+});
+
+describe('describeLastSeen', () => {
+  const today = '2026-11-24';
+  it('오늘·어제·N일 전은 recent', () => {
+    expect(describeLastSeen('2026-11-24', today)).toEqual({
+      kind: 'recent',
+      relative: '오늘',
+      short: '11/24',
+      today: true,
+    });
+    expect(describeLastSeen('2026-11-23', today)).toMatchObject({
+      relative: '어제',
+      today: false,
+    });
+    expect(describeLastSeen('2026-11-18', today)).toMatchObject({
+      kind: 'recent',
+      relative: '6일 전',
+    });
+  });
+  it('7일 이상 지나면 old (날짜만)', () => {
+    expect(describeLastSeen('2026-11-17', today)).toEqual({
+      kind: 'old',
+      short: '11/17',
+    });
+  });
+  it('해가 다르면 연도를 붙인다', () => {
+    expect(describeLastSeen('2025-12-30', '2026-01-02')).toMatchObject({
+      kind: 'recent',
+      relative: '3일 전',
+      short: '25.12/30',
+    });
+  });
+  it('없으면 none', () => {
+    expect(describeLastSeen(null, today)).toEqual({ kind: 'none' });
   });
 });
