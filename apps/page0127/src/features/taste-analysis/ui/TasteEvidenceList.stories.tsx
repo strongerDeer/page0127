@@ -38,7 +38,7 @@ const meta = {
       </div>
     ),
   ],
-  args: { evidence: EVIDENCE, variant: 'full' },
+  args: { evidence: EVIDENCE },
 } satisfies Meta<typeof TasteEvidenceList>;
 
 export default meta;
@@ -46,9 +46,3 @@ type Story = StoryObj<typeof meta>;
 
 /** 분석 결과 상세 — 표지·제목·근거 한 줄·주제 */
 export const Full: Story = { name: '상세 (full)' };
-
-/** 서재 상단 취향 카드 — 표지만, 누르면 그 책 기록으로 */
-export const Compact: Story = {
-  name: '카드 (compact)',
-  args: { variant: 'compact', bookHref: (id: string) => `/hyejin/${id}` },
-};

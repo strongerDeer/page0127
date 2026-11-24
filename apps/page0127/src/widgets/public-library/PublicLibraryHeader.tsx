@@ -16,7 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@repo/ui';
-import { Loader2, Sparkles } from 'lucide-react';
+import { ChevronRight, Loader2, Sparkles, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/client';
@@ -38,7 +38,6 @@ import { FollowButton, FollowListModal, FollowStats } from '@/features/follow';
 import { coachTarget } from '@/features/onboarding';
 import { toLockedAnalysisMessage } from '@/features/rating-nudge';
 import { ShareButton, ShareSheetButton } from '@/features/share';
-import { TasteProfileCard } from '@/features/taste-analysis/ui/TasteProfileCard';
 
 import { type ReaderCard, toIdentityLabel } from './model/readerCard';
 
@@ -157,12 +156,13 @@ export const PublicLibraryHeader = ({
     }
   };
 
-  // 분석 버튼은 취향 카드 안으로 들어간다 — 카드가 결과와 다음 행동을 같이 보여 준다
+  // 분석 버튼은 주인 버튼 줄 맨 오른쪽(주 버튼 자리) — 예전엔 오른쪽 취향 카드 안에 있었는데,
+  // 카드의 성향 이름이 왼쪽 명함과 겹쳐서 카드를 없애고 명함 하나로 합쳤다(2026-11-24 HJ).
+  // 분석 전엔 버튼 글자("취향 분석 3/5권")가 카드의 남은 권수 안내를 대신한다.
   const analyzeButton = isOwnProfile ? (
     <Button
       onClick={handleAnalyzeTaste}
       disabled={isAnalyzing}
-      size='sm'
       // 아직 열리지 않은 기능은 한 단계 낮춰 보인다 — 누르면 몇 권 남았는지 안내한다
       variant={isTasteAnalysisUnlocked ? 'default' : 'outline'}
       className={isTasteAnalysisUnlocked ? undefined : 'shadow-none'}
@@ -178,8 +178,8 @@ export const PublicLibraryHeader = ({
     </Button>
   ) : undefined;
 
-  // 방문자에게 분석 결과가 없으면 카드를 숨기고 프로필이 전체 폭을 쓴다
-  const hasTasteCard = isOwnProfile || analysisHistory.length > 0;
+  // 주인이 보는 AI 성향 이름은 상세(근거·추천)로 가는 입구다 — 예전 카드의 "자세히 ›" 자리
+  const latestAnalysisId = analysisHistory[0]?.id;
   const { identity } = readerCard;
 
   return (
@@ -187,11 +187,7 @@ export const PublicLibraryHeader = ({
       {/* 스카이 틴트 띠 — 공개 서재의 '전시장 입구'. 화면 끝까지 꽉 채운다(둥근 카드로 띄우지 않는다).
           왼쪽은 누구인지, 오른쪽은 어떤 독자인지 */}
       <header className='bg-accent'>
-        <div
-          className={`page-width grid items-start gap-6 py-8 md:py-10 ${
-            hasTasteCard ? 'lg:grid-cols-[1fr_400px]' : ''
-          }`}
-        >
+        <div className='page-width py-8 md:py-10'>
           {/* 사진 위, 정보 아래. 한줄 소개는 사진 옆 말풍선으로 — 주인이 직접 건네는 말처럼 읽힌다 */}
           <div className='flex min-w-0 flex-col items-start gap-4'>
             <div className='flex w-full items-center gap-4'>
@@ -237,14 +233,31 @@ export const PublicLibraryHeader = ({
             */}
               {identity ? (
                 <>
-                  <p className='mb-1 flex items-center gap-1.5 text-sm font-medium text-primary'>
-                    <span
-                      aria-hidden
-                      className='size-2 rounded-full'
-                      style={{ backgroundColor: identity.color }}
-                    />
-                    {toIdentityLabel(identity)}
-                  </p>
+                  {isOwnProfile &&
+                  identity.source === 'analysis' &&
+                  latestAnalysisId ? (
+                    <IntentPrefetchLink
+                      href={`/dashboard/taste-analysis/${latestAnalysisId}`}
+                      className='mb-1 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline'
+                    >
+                      <span
+                        aria-hidden
+                        className='size-2 rounded-full'
+                        style={{ backgroundColor: identity.color }}
+                      />
+                      {toIdentityLabel(identity)}
+                      <ChevronRight aria-hidden className='size-4' />
+                    </IntentPrefetchLink>
+                  ) : (
+                    <p className='mb-1 flex items-center gap-1.5 text-sm font-medium text-primary'>
+                      <span
+                        aria-hidden
+                        className='size-2 rounded-full'
+                        style={{ backgroundColor: identity.color }}
+                      />
+                      {toIdentityLabel(identity)}
+                    </p>
+                  )}
                   <p className='heading-1 break-keep text-balance'>
                     {identity.name}
                   </p>
@@ -291,12 +304,27 @@ export const PublicLibraryHeader = ({
               </div>
 
               <div className='mt-4 flex flex-wrap items-center gap-2'>
-                {!isOwnProfile && (
-                  <FollowButton
-                    userId={profile.id}
-                    initialIsFollowing={followSnapshot?.isFollowing}
-                  />
-                )}
+                {/*
+                  로그인 안 한 방문자의 팔로우는 로그인 화면으로 보낸다 — 독서 케미 링크와 같은 동작.
+                  예전엔 버튼이 바로 API 를 불러서 잠깐 '언팔로우'로 뒤집혔다가 401 로 되돌아가며
+                  실패 토스트가 떴다(2026-11-24 HJ). 인증이 필요한 행동은 실패 후 알리지 말고 먼저 막는다.
+                */}
+                {!isOwnProfile &&
+                  (currentUserId ? (
+                    <FollowButton
+                      userId={profile.id}
+                      initialIsFollowing={followSnapshot?.isFollowing}
+                    />
+                  ) : (
+                    <Button asChild>
+                      <IntentPrefetchLink
+                        href={`/login?redirect=${encodeURIComponent(`/${username}`)}`}
+                      >
+                        <UserPlus aria-hidden className='h-4 w-4' />
+                        팔로우
+                      </IntentPrefetchLink>
+                    </Button>
+                  ))}
 
                 {!isOwnProfile &&
                   compatibilityBookCount >= COMPATIBILITY_MIN_BOOKS && (
@@ -341,22 +369,11 @@ export const PublicLibraryHeader = ({
                       title={`${displayName}님의 책장`}
                     />
                   ))}
+
+                {analyzeButton}
               </div>
             </div>
           </div>
-
-          {hasTasteCard && (
-            <TasteProfileCard
-              history={analysisHistory}
-              // 명함이 이미 AI 성향 이름을 크게 말한다 — 카드는 근거(주제·변화)만 보여 준다
-              showType={identity?.source !== 'analysis'}
-              username={username}
-              isOwner={isOwnProfile}
-              action={analyzeButton}
-              analyzableBookCount={analyzableBookCount}
-              minBooks={TASTE_ANALYSIS_MIN_BOOKS}
-            />
-          )}
         </div>
       </header>
 

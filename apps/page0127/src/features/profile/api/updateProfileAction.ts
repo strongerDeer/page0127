@@ -12,6 +12,8 @@ import {
   PROFILE_STORAGE_BUCKET,
 } from '@/shared/lib/profileStorage';
 
+import { BIO_MAX_LENGTH } from '../model/bioLimit';
+
 // 아바타가 저장되는 Supabase Storage 버킷
 const BUCKET = PROFILE_STORAGE_BUCKET;
 
@@ -93,6 +95,15 @@ export const updateProfileAction = async (
   // 3. 텍스트 필드 수집 (FormData 값은 항상 문자열)
   const nickname = ((formData.get('nickname') as string) ?? '').trim();
   const bio = ((formData.get('bio') as string) ?? '').trim();
+
+  // 입력칸의 maxLength 는 브라우저 약속일 뿐이라 서버에서 다시 막는다.
+  // 이미지 업로드보다 먼저 검사해야 저장이 실패했는데 사진만 바뀌는 일이 없다.
+  if (bio.length > BIO_MAX_LENGTH) {
+    return {
+      status: 'error',
+      message: `한줄 소개는 ${BIO_MAX_LENGTH}자 이하로 적어 주세요.`,
+    };
+  }
 
   // 4. 아바타 입력 수집
   // - avatar: 새로 선택한 파일 (없으면 size 0인 빈 File 또는 null)

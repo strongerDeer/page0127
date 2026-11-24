@@ -118,7 +118,7 @@ export const FollowButton = ({
   if (isLoading) {
     return (
       <Button variant={variant} size={size} disabled aria-busy>
-        <Loader2 aria-hidden className='mr-2 h-4 w-4 animate-spin' />
+        <Loader2 aria-hidden className='h-4 w-4 animate-spin' />
         팔로우
       </Button>
     );
@@ -134,9 +134,9 @@ export const FollowButton = ({
       {/* 낙관적 업데이트로 상태가 즉시 뒤집히므로 대기 스피너를 띄우지 않는다.
           연타 방지는 disabled가 맡는다. */}
       {isFollowing ? (
-        <UserMinus className='mr-2 h-4 w-4' />
+        <UserMinus aria-hidden className='h-4 w-4' />
       ) : (
-        <UserPlus className='mr-2 h-4 w-4' />
+        <UserPlus aria-hidden className='h-4 w-4' />
       )}
       {isFollowing ? '언팔로우' : '팔로우'}
     </Button>
