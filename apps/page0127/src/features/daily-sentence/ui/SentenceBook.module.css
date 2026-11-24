@@ -1130,16 +1130,9 @@
     font-size: 13px;
   }
 
+  /* 모바일은 쪽이 길어서 7칸은 빼고 "n번 뽑았어요" 한 줄 + 가입 버튼만(HJ 11/24) */
   .week {
-    gap: 4px;
-  }
-
-  .day {
-    font-size: 13px;
-  }
-
-  .day b {
-    font-size: 16px;
+    display: none;
   }
 
   .rec {
