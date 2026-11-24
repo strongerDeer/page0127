@@ -43,7 +43,15 @@ type SentenceBookProps = TodaySentenceState & {
   variant: 'page' | 'modal';
   /** 모달 닫기 — 회원이 뽑은 뒤 "닫기" 버튼 */
   onClose?: () => void;
+  /**
+   * 열리자마자 당근을 뽑는다 — 홈 당근을 누르면 모달에서 한 번 더 누르지 않고 바로 펼친다(HJ 11/24).
+   * 오늘 이미 뽑았으면 그냥 결과를 보여 준다.
+   */
+  autoStart?: boolean;
 };
+
+/** 모달이 떠오르는 동안(약 0.2초)은 기다렸다가 당근을 뽑는다 */
+const AUTO_START_MS = 350;
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -121,6 +129,7 @@ export const SentenceBook = ({
   libraryHref,
   variant,
   onClose,
+  autoStart = false,
 }: SentenceBookProps) => {
   const { result, score, seed, todayKey, guestDays, fetchDraw, commit } =
     useDailySentenceDraw({
@@ -204,6 +213,16 @@ export const SentenceBook = ({
     }, 1000);
   };
 
+  // 자동 시작 — 타이머가 도는 동안 바뀐 최신 상태로 판단하려고 ref 로 넘긴다
+  const latest = useRef({ open: () => {}, drawn: false });
+  useEffect(() => {
+    if (!autoStart) return;
+    const id = setTimeout(() => {
+      if (!latest.current.drawn) latest.current.open();
+    }, AUTO_START_MS);
+    return () => clearTimeout(id);
+  }, [autoStart]);
+
   const open = () => {
     if (phase !== 'closed') return;
     const reduced = prefersReducedMotion();
@@ -275,6 +294,10 @@ export const SentenceBook = ({
     open();
   };
 
+  useEffect(() => {
+    latest.current = { open, drawn: Boolean(result) };
+  });
+
   const copy = async () => {
     if (!result) return;
     const text = `“${result.sentence.text.replace(/\s*\n\s*/g, ' ')}”\n— ${formatSentenceSource(result.sentence)}\n\n오늘의 문장 · ${window.location.origin}/sentence`;
@@ -317,7 +340,12 @@ export const SentenceBook = ({
 
   return (
     <div ref={rootRef} className={styles.root} data-variant={variant}>
-      <div ref={deskRef} className={styles.desk} data-phase={shown}>
+      <div
+        ref={deskRef}
+        className={styles.desk}
+        data-phase={shown}
+        data-auto={autoStart ? '' : undefined}
+      >
         {shown !== 'result' && (
           <section className={styles.coverScene} aria-label='오늘의 문장 표지'>
             <div className={styles.book}>
