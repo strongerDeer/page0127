@@ -26,9 +26,15 @@ export const APP = {
       name: "detail",
       path: "/stronger_khj/80a21270-ed22-4e3a-a1e9-17f65b361c54",
     },
-    // bookinfo: 공개 책 정보(로그인 없이 공유·검색으로 들어오는 화면). 고정 책 ID(백년목2, /books/all 첫 책)로 시계열 유지.
+    // bookinfo: 공개 책 정보(로그인 없이 공유·검색으로 들어오는 화면). 고정 책 ID로 시계열 유지.
     // 책이 지워지면 404 로 점수가 0 이 되니 그때 config 에서 교체한다.
-    { name: "bookinfo", path: "/books/info/20796404-2d51-44ac-a11b-faf9cd4ea596" },
+    // ⚠️ 검색에 노출되는 책(bookIndexing.ts: 리더 2명+·이야기)이어야 한다. noindex 책이면 SEO 가
+    // is-crawlable 감점으로 69점이 나와 진짜 문제를 가린다(2026-11-24: 백년목2 리더 1명 → 사고외주로 교체).
+    // 리더가 줄어 noindex 가 되면 sitemap.xml 의 /books/info 중 하나로 다시 바꾼다.
+    {
+      name: "bookinfo",
+      path: "/books/info/b356ceea-952d-4fc3-b831-847cd67a51c2",
+    },
   ] satisfies PageAnchor[],
 };
 

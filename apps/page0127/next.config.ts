@@ -90,6 +90,15 @@ const nextConfig: NextConfig = {
   outputFileTracingExcludes: {
     '/**': ['../../node_modules/@img/**', '../../node_modules/sharp/**'],
   },
+  // 제목·설명(meta)을 스트리밍하지 않고 <head> 에 넣어 보낼 봇 목록.
+  // Next 기본 목록(HTML_LIMITED_BOT_UA_RE)은 Googlebot 을 뺀다 — JS 를 실행해 본문 끝에 붙은
+  // meta 도 읽는다는 이유다. 그런데 서재(/[username])처럼 매번 새로 그리는 페이지는 meta 가
+  // <body> 끝에 붙고(2026-11-24 실측: Googlebot UA 로 받은 HTML), 렌더 뒤에도 head 로 옮겨지지
+  // 않아 Lighthouse 가 "설명 없음"으로 감점했다. 구글도 head 를 보장받도록 Googlebot 을 더한다.
+  // 대가: 그 봇에게만 generateMetadata 가 끝날 때까지 첫 바이트가 늦어진다(사람 방문자는 그대로).
+  // 기본 목록은 Next 16.4.6 의 값을 그대로 옮겼다 — Next 를 올릴 때 새로 생긴 봇이 있는지 비교한다.
+  htmlLimitedBots:
+    /Googlebot|[\w-]+-Google|Google-[\w-]+|Chrome-Lighthouse|Slurp|DuckDuckBot|baiduspider|yandex|sogou|bitlybot|tumblr|vkShare|quora link preview|redditbot|ia_archiver|Bingbot|BingPreview|applebot|facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|SkypeUriPreview|Yeti|googleweblight/i,
   experimental: {
     // 프로필 이미지 한도는 4MB(MAX_PROFILE_IMAGE_BYTES). multipart 메타데이터와
     // 나머지 폼 필드 여유를 더해 4.5mb로 둔다.
