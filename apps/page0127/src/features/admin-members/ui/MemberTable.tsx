@@ -4,22 +4,27 @@ import { toKstDateKey } from '@/shared/lib/date';
 
 import { ACTIVE_WINDOW_DAYS, providerLabel } from '../lib/memberStats';
 
-import type { MemberRow } from '@/features/admin-members/api/getMembers';
+import type {
+  MemberExclusion,
+  MemberRow,
+} from '@/features/admin-members/api/getMembers';
+
+const EXCLUSION_LABEL: Record<MemberExclusion, string> = {
+  admin: '운영자',
+  demo: '체험',
+  test: '테스트',
+};
 
 // 칸 공통 — 숫자 칸은 오른쪽, 글 칸은 왼쪽 정렬. 머리글도 같은 쪽으로 맞춘다
 const th = 'whitespace-nowrap px-3 py-2 font-normal';
 const td = 'whitespace-nowrap px-3 py-2.5';
 
 type MemberTableProps = {
+  /** 번호는 각 행의 number(가입 순서) — 정렬을 바꿔도 사람마다 그대로다 */
   rows: MemberRow[];
-  /**
-   * 첫 줄 번호. 목록이 최신 가입순이라 맨 위가 가장 큰 번호(= 전체 회원 수)이고
-   * 아래로 1씩 줄어든다 — 마지막 페이지 맨 아래가 1번(첫 가입자)이다.
-   */
-  firstNumber: number;
 };
 
-export const MemberTable = ({ rows, firstNumber }: MemberTableProps) => {
+export const MemberTable = ({ rows }: MemberTableProps) => {
   if (rows.length === 0) {
     return <p className='text-sm text-text-subtle'>가입자가 없습니다.</p>;
   }
@@ -44,13 +49,13 @@ export const MemberTable = ({ rows, firstNumber }: MemberTableProps) => {
           </tr>
         </thead>
         <tbody>
-          {rows.map((m, i) => (
+          {rows.map((m) => (
             <tr
               key={m.id}
               className='border-b border-line/60 align-middle hover:bg-accent'
             >
               <td className={`${td} text-right text-xs text-text-subtle`}>
-                {firstNumber - i}
+                {m.number ?? '-'}
               </td>
               <td className={`${td} min-w-40`}>
                 <div className='flex items-baseline gap-1.5'>
@@ -60,6 +65,14 @@ export const MemberTable = ({ rows, firstNumber }: MemberTableProps) => {
                   >
                     {m.nickname ?? m.username ?? m.id.slice(0, 8)}
                   </Link>
+                  {m.excludedAs && (
+                    <span
+                      className='shrink-0 rounded bg-sunken px-1.5 py-0.5 text-[11px] text-text-subtle'
+                      title='회원 수·지표에서 빠지는 계정'
+                    >
+                      {EXCLUSION_LABEL[m.excludedAs]}
+                    </span>
+                  )}
                   {m.username && (
                     <a
                       href={`/${m.username}`}
