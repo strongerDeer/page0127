@@ -33,7 +33,7 @@ import { LibraryView } from '@/widgets/library/LibraryView';
 import { pickFanCovers } from './model/fanCovers';
 import { toReaderCard } from './model/readerCard';
 import { PublicLibraryHeader } from './PublicLibraryHeader';
-import { VisitorChemiCard, VisitorSignupBanner } from './VisitorCta';
+import { VisitorSignupBanner } from './VisitorCta';
 
 import type { Book } from '@/entities/book';
 import type { OverallStats } from '@/entities/book';
@@ -283,16 +283,6 @@ export const PublicLibraryContent = ({
         )}
 
         {recapSlot}
-
-        {/* 비로그인 방문자에게만 — 로그인한 다른 사용자는 이미 자기 책장이 있다 */}
-        {isVisitor && (
-          <VisitorChemiCard
-            name={ownerName}
-            username={username}
-            eligibleBookCount={compatibilityBookCount}
-            photoUrl={profile.photo_url}
-          />
-        )}
 
         <LibraryView
           overallStats={overallStats}
