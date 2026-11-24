@@ -28,6 +28,9 @@
   --carrot: #ec6f14;
   --serif: "AppleMyungjo", "Noto Serif KR", "Nanum Myeongjo", "Batang", serif;
 
+  /* 종이 결 — SentenceBook 가 캔버스 노이즈로 덮어쓴다. 그 전·실패 시엔 결 없이 */
+  --grain: none;
+
   container: sentence-book / inline-size;
   position: relative;
   color: var(--ink);
@@ -236,6 +239,9 @@
 
 /* 뽑힌 당근 — body 에 portal 로 붙어 화면 맨 앞에서 포물선을 그린다 */
 .fly {
+  /* 날아오를 높이 — SentenceBook 가 당근 위치에 맞춰 넣는다 */
+  --up: 120px;
+
   position: fixed;
   z-index: 1000;
   pointer-events: none;
@@ -269,6 +275,10 @@
 }
 
 .spark {
+  /* 튀는 방향 — SentenceBook 가 10방향으로 넣는다 */
+  --dx: 0px;
+  --dy: 0px;
+
   position: absolute;
   z-index: 6;
   width: 10px;
@@ -501,6 +511,10 @@
 
 /* 넘어가는 책장 — 오른쪽에서 왼쪽으로, 간격이 점점 짧아지며 후루룩 */
 .flip {
+  /* 장마다 시작 시각·멈춤 각도 — SentenceBook 가 넣는다 */
+  --d: 0.95s;
+  --end: -176deg;
+
   position: absolute;
   top: 3px;
   bottom: 3px;
@@ -686,6 +700,9 @@
 
 /* 문장 복사 — 형광펜이 줄마다 그어진다 */
 .hl {
+  /* 몇 번째 줄인지 — 형광펜이 줄마다 늦게 그어진다 */
+  --i: 0;
+
   background: linear-gradient(
       transparent 58%,
       rgb(95 224 207 / 0.55) 58% 92%,
