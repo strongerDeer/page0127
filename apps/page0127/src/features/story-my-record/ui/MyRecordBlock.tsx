@@ -77,7 +77,7 @@ export const MyRecordBlock = () => {
           끝까지 읽은 책을 기록하면, 올해 내 숫자가 여기에 나와요
         </p>
         <p className='text-sm leading-relaxed break-keep text-text-body'>
-          page0127은 끝까지 읽은 책만 서재에 꽂아요. 올해 몇 권을 완독했는지
+          page0127.은 끝까지 읽은 책만 서재에 꽂아요. 올해 몇 권을 완독했는지
           바로 볼 수 있어요.
         </p>
         <div className='flex justify-end'>
@@ -107,7 +107,7 @@ export const MyRecordBlock = () => {
       </div>
     );
 
-  const { year, completed, goal } = record;
+  const { year, completed, goal, username } = record;
 
   return (
     <div className='flex flex-col gap-2'>
@@ -130,9 +130,27 @@ export const MyRecordBlock = () => {
             </p>
           )}
           <p className='text-xs break-keep text-text-subtle'>
-            page0127은 끝까지 읽은 책만 세요. 조사는 1권이라도 읽거나 들은
+            page0127.은 끝까지 읽은 책만 세요. 조사는 1권이라도 읽거나 들은
             사람을 세서 기준이 더 넓어요.
           </p>
+          {/* 아이디를 아직 안 정한 사람(온보딩 전)은 서재 주소가 없어 버튼을 두지 않는다 */}
+          {username && (
+            <div className='flex justify-end'>
+              <Button asChild variant='outline' size='sm'>
+                <Link
+                  href={`/${username}`}
+                  onClick={() =>
+                    trackEvent('cta_click', {
+                      location: 'blog_my_record',
+                      label: '내 서재 보기',
+                    })
+                  }
+                >
+                  내 서재 보기
+                </Link>
+              </Button>
+            </div>
+          )}
         </div>
       </section>
     </div>
