@@ -24,7 +24,6 @@ import { RatingSummaryCard } from '@/features/stats/ui/RatingSummaryCard';
 import { ReadingBalanceCard } from '@/features/stats/ui/ReadingBalanceCard';
 import { YearSummary } from '@/features/stats/ui/YearSummary';
 
-import { LifeBooksShelf } from '@/widgets/book/ui/LifeBooksShelf';
 import { PublicBookShelf } from '@/widgets/book/ui/PublicBookShelf';
 import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
 import { ViewTabs } from '@/widgets/dashboard/ViewTabs';
@@ -102,9 +101,6 @@ type LibraryViewProps = {
   /** 전체 뷰의 책장 제목 (서재 성격에 따라 다르게) */
   allShelfTitle?: string;
 
-  /** 전체 뷰의 인생책 섹션 제목 (소유자 "내 인생책" / 방문자 "OO님의 인생책") */
-  lifeBooksTitle?: string;
-
   /** 공개 서재에서 책 링크에 쓸 username (내 서재는 생략) */
   username?: string;
 
@@ -180,7 +176,6 @@ export const LibraryView = ({
   goalTarget,
   onViewChange,
   allShelfTitle = '서재 전체',
-  lifeBooksTitle = '인생책',
   username,
   isOwner = false,
   onSetGoal,
@@ -466,13 +461,8 @@ export const LibraryView = ({
                     </CardContent>
                   </Card>
 
-                  {/* ── 인생책 (평점 10점) ── 서재 요약과 책장 사이의 감정적 하이라이트 */}
-                  <LifeBooksShelf
-                    books={books}
-                    title={lifeBooksTitle}
-                    username={username}
-                  />
-
+                  {/* 인생책은 따로 칸을 두지 않는다 — 책장 표지에 왕관을 씌운다(HJ, 2026-11-24).
+                      칸과 책장에 같은 표지가 두 번씩 늘어났다 */}
                   {bookShelf}
                 </LibraryGroup>
 
