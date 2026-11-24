@@ -32,8 +32,10 @@ export const APP = {
   ] satisfies PageAnchor[],
 };
 
-// Lighthouse 반복 횟수(중앙값). 느린4G LCP/SI 노이즈를 걷어낸다. LH_RUNS로 조정.
-export const LIGHTHOUSE_RUNS = Math.max(1, Number(process.env.LH_RUNS ?? 3));
+// Lighthouse 반복 횟수(중앙값). 느린4G LCP/SI·TBT 노이즈를 걷어낸다. LH_RUNS로 조정.
+// 3 → 5 (2026-11-24): 같은 배포본을 두 번 쟀더니 프로필 TBT가 602ms(회귀 경보) → 회귀 0건으로
+// 갈렸다. 3회 중앙값은 한 번 튄 값에 끌려가기 쉬워 헛경보가 났다. 실행은 3~4분 길어진다.
+export const LIGHTHOUSE_RUNS = Math.max(1, Number(process.env.LH_RUNS ?? 5));
 
 // 실제 스로틀(devtools) LCP 측정 횟수 — mobile만. 0이면 끈다. LH_REAL_RUNS로 조정.
 // 실제로 느리게 로드하므로 1회가 시뮬레이션보다 오래 걸린다(페이지당 약 15~25초).
