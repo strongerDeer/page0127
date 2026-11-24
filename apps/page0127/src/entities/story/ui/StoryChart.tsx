@@ -108,20 +108,24 @@ const isStrong = (spec: SeriesChart, label: string, index: number) => {
   return spec.type === 'bar' || index === spec.items.length - 1;
 };
 
-const valueText = (value: number, unit: string) =>
-  `${formatChartValue(value)}${unit}`;
+/** 항목 중 하나라도 소수면 모두 소수 한 자리로 (55 → 55.0) */
+const valueText = (spec: SeriesChart, value: number) =>
+  `${formatChartValue(
+    value,
+    spec.items.some((item) => !Number.isInteger(item.value))
+  )}${spec.unit}`;
 
 export const BarChart = ({ spec }: { spec: SeriesChart }) => (
   <Figure
     title={spec.title}
-    note={spec.note || `막대 끝 = ${valueText(spec.max, spec.unit)}`}
+    note={spec.note || `막대 끝 = ${formatChartValue(spec.max)}${spec.unit}`}
     source={spec.source}
   >
     <ul className='flex flex-col gap-3.5'>
       {spec.items.map((item, index) => (
         <li
           key={item.label}
-          title={`${item.label} ${valueText(item.value, spec.unit)}`}
+          title={`${item.label} ${valueText(spec, item.value)}`}
           className='grid grid-cols-[5.5rem_1fr_3.75rem] items-center gap-3 text-sm'
         >
           <span className='break-keep text-text-body'>{item.label}</span>
@@ -132,7 +136,7 @@ export const BarChart = ({ spec }: { spec: SeriesChart }) => (
             />
           </span>
           <span className='text-right font-semibold tabular-nums text-text-strong'>
-            {valueText(item.value, spec.unit)}
+            {valueText(spec, item.value)}
           </span>
         </li>
       ))}
@@ -154,11 +158,11 @@ export const ColumnChart = ({ spec }: { spec: SeriesChart }) => (
           {spec.items.map((item, index) => (
             <li
               key={item.label}
-              title={`${item.label} ${valueText(item.value, spec.unit)}`}
+              title={`${item.label} ${valueText(spec, item.value)}`}
               className='flex w-16 shrink-0 flex-col items-center justify-end gap-1.5'
             >
               <span className='text-sm font-semibold tabular-nums text-text-strong'>
-                {valueText(item.value, spec.unit)}
+                {valueText(spec, item.value)}
               </span>
               <span
                 className={`block w-10 rounded-t ${isStrong(spec, item.label, index) ? 'bg-primary' : 'bg-text-subtle/35'}`}
@@ -191,7 +195,7 @@ export const SlopeChart = ({ spec }: { spec: SeriesChart }) => {
       <svg
         viewBox='0 0 520 200'
         role='img'
-        aria-label={`${from.label} ${valueText(from.value, spec.unit)}에서 ${to.label} ${valueText(to.value, spec.unit)}`}
+        aria-label={`${from.label} ${valueText(spec, from.value)}에서 ${to.label} ${valueText(spec, to.value)}`}
         className='mx-auto h-auto w-full max-w-[520px]'
       >
         <line x1='100' y1='20' x2='100' y2='170' className='stroke-line' />
@@ -224,7 +228,7 @@ export const SlopeChart = ({ spec }: { spec: SeriesChart }) => {
               fontWeight='700'
               className='fill-text-strong'
             >
-              {valueText(item.value, spec.unit)}
+              {valueText(spec, item.value)}
             </text>
             <text
               x={x}

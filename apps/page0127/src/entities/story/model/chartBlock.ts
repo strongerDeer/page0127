@@ -256,9 +256,15 @@ export const findLeadStat = (body: string): StoryLeadStat | null => {
   return null;
 };
 
-/** 숫자 표시 — 소수점이 있으면 한 자리, 천 단위 쉼표 */
-export const formatChartValue = (value: number): string =>
+/**
+ * 숫자 표시 — 소수점이 있으면 한 자리, 천 단위 쉼표.
+ * oneDecimal: 같은 차트 안에 소수가 하나라도 있으면 정수도 "55.0"처럼 맞춘다(자릿수가 들쭉날쭉하지 않게)
+ */
+export const formatChartValue = (
+  value: number,
+  oneDecimal = !Number.isInteger(value)
+): string =>
   value.toLocaleString('ko-KR', {
     maximumFractionDigits: 1,
-    minimumFractionDigits: Number.isInteger(value) ? 0 : 1,
+    minimumFractionDigits: oneDecimal ? 1 : 0,
   });
