@@ -95,11 +95,11 @@ const NotificationListBody = ({
 
 const NotificationListFooter = ({ onClose }: NotificationListFooterProps) => (
   <div className='border-t p-2'>
-    <Link href='/notifications' onClick={onClose}>
-      <Button variant='ghost' className='w-full' size='sm'>
+    <Button asChild variant='ghost' className='w-full' size='sm'>
+      <Link href='/notifications' onClick={onClose}>
         모든 알림 보기
-      </Button>
-    </Link>
+      </Link>
+    </Button>
   </div>
 );
 
