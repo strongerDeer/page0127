@@ -8,6 +8,8 @@ import { IntentPrefetchLink } from '@/shared/ui/IntentPrefetchLink';
 // GNB 주 메뉴 — 활성 표시에 usePathname이 필요해서 이 부분만 Client
 type GnbNavProps = {
   isLoggedIn: boolean;
+  /** 로그인 사용자의 아이디 — '내 서재' 링크. 아직 없으면(드문 과도 상태) 메뉴에서 뺀다 */
+  username: string | null;
 };
 
 type GnbLink = {
@@ -15,10 +17,14 @@ type GnbLink = {
   label: string;
 };
 
-export const GnbNav = ({ isLoggedIn }: GnbNavProps) => {
+export const GnbNav = ({ isLoggedIn, username }: GnbNavProps) => {
   const pathname = usePathname();
 
+  const myLibrary = isLoggedIn && username ? `/${username}` : null;
+
   const links: GnbLink[] = [
+    // 내 서재 — 예전엔 프로필 드롭다운 안에만 있어 PC 에서 한 번 더 눌러야 했다(2026-11-24 HJ, A안)
+    ...(myLibrary ? [{ href: myLibrary, label: '내 서재' }] : []),
     // '홈'은 두지 않는다 — 로고가 언제나 홈으로 간다(2026-10-25 HJ)
     // 소개는 홈에 합쳐졌다(2026-10-25). 남은 공지·업데이트 이력은 푸터에서만 닿는다.
     { href: '/books/all', label: '전체 도서' },
@@ -44,8 +50,11 @@ export const GnbNav = ({ isLoggedIn }: GnbNavProps) => {
       className='hidden shrink-0 items-center gap-1 md:flex'
     >
       {links.map((link) => {
+        // 내 서재는 정확히 일치할 때만 — 하위(/{username}/{bookId})는 책 상세라 다르다(탭바와 같은 규칙)
         const active =
-          pathname === link.href || pathname.startsWith(`${link.href}/`);
+          link.href === myLibrary
+            ? pathname === link.href
+            : pathname === link.href || pathname.startsWith(`${link.href}/`);
         return (
           <IntentPrefetchLink
             key={link.href}
