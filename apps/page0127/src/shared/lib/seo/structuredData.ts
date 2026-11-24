@@ -116,7 +116,8 @@ type StoryArticleJsonLdInput = {
   dateModified?: string;
   siteName: string;
   siteUrl: string;
-  book: { title: string; author: string; url: string };
+  /** 다루는 책. 책 없는 글(독서 이야기)은 null — about 을 뺀다 */
+  book: { title: string; author: string; url: string } | null;
 };
 
 /**
@@ -149,12 +150,14 @@ export const buildStoryArticleJsonLd = ({
   inLanguage: 'ko-KR',
   author: { '@type': 'Organization', name: siteName, url: siteUrl },
   publisher: { '@type': 'Organization', name: siteName, url: siteUrl },
-  about: {
-    '@type': 'Book',
-    name: book.title,
-    author: { '@type': 'Person', name: book.author },
-    url: book.url,
-  },
+  ...(book && {
+    about: {
+      '@type': 'Book',
+      name: book.title,
+      author: { '@type': 'Person', name: book.author },
+      url: book.url,
+    },
+  }),
 });
 
 type BookJsonLdInput = {

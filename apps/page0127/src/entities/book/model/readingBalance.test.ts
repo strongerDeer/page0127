@@ -32,7 +32,7 @@ describe('calculateReadingBalance', () => {
     expect(balance.readCount).toBe(5);
   });
 
-  it('많이 읽은 순 · 상위 2개 비율 · 0권 분야', () => {
+  it('많이 읽은 순 · 분야별 비율 · 0권 분야', () => {
     const balance = calculateReadingBalance(SAMPLE);
     expect(balance.ranked.map((r) => [r.category, r.count])).toEqual([
       ['소설/시/희곡', 5],
@@ -42,7 +42,6 @@ describe('calculateReadingBalance', () => {
       ['과학/IT', 1],
     ]);
     expect(balance.ranked[0].share).toBe(36);
-    expect(balance.topShare).toBe(64);
     expect(balance.zero).toEqual(['인문학', '사회/역사', '예술/생활']);
   });
 
@@ -56,11 +55,16 @@ describe('calculateReadingBalance', () => {
       createTestBook({ category })
     );
     expect(calculateReadingBalance(even).score).toBe(100);
-    expect(calculateReadingBalance(books('소설', 5)).score).toBe(0);
+    expect(calculateReadingBalance(books('소설', 8)).score).toBe(0);
   });
 
-  it('3권 미만이면 점수를 내지 않는다', () => {
+  it('3권 미만이면 점수를 내지 않는다 — 안 읽은 분야는 0으로 보고 계산한다', () => {
     expect(calculateReadingBalance(books('소설', 2)).score).toBeNull();
+    // 자기계발 2 · 인문 1 → 31점(8개 분야 기준이라 적은 권수면 낮게 나온다)
+    expect(
+      calculateReadingBalance([...books('자기계발', 2), ...books('인문', 1)])
+        .score
+    ).toBe(31);
   });
 
   it('기타(분류 불명)와 완독이 아닌 책은 세지 않는다', () => {

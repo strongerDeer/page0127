@@ -40,4 +40,28 @@ describe('toStory', () => {
     expect(story.author).toBe('');
     expect(story.rating).toBe(0);
   });
+
+  it('책 없는 글은 bookId null·제목 빈칸, 첫 숫자(lead_stat)를 읽는다', () => {
+    const story = toStory({
+      ...row,
+      book_id: null,
+      book_title: '',
+      map_image: null,
+      lead_stat: { value: 38.5, unit: '%', label: '성인', people: 3.85 },
+    });
+    expect(story.bookId).toBeNull();
+    expect(story.bookTitle).toBe('');
+    expect(story.leadStat).toEqual({
+      value: 38.5,
+      unit: '%',
+      label: '성인',
+      people: 3.85,
+    });
+  });
+
+  it('lead_stat 모양이 틀리면 null', () => {
+    expect(
+      toStory({ ...row, map_image: null, lead_stat: { value: 'x' } }).leadStat
+    ).toBeNull();
+  });
 });

@@ -2,6 +2,7 @@ import type {
   Story,
   StoryCharacterGroup,
   StoryImage,
+  StoryLeadStat,
   StorySummary,
 } from './types';
 
@@ -15,13 +16,15 @@ import type {
 export type StoryRow = {
   id: string;
   slug: string;
-  book_id: string;
-  book_title: string;
+  /** 책 없는 글(독서 이야기)은 null — 20261124000600 */
+  book_id: string | null;
+  book_title: string | null;
   book_author: string | null;
   title: string;
   description: string | null;
   rating: number | null;
   map_image: unknown;
+  lead_stat?: unknown;
   published_at: string | null;
   updated_at: string;
   created_at?: string;
@@ -31,7 +34,7 @@ export type StoryRow = {
 };
 
 export const STORY_SUMMARY_COLUMNS =
-  'id, slug, book_id, book_title, book_author, title, description, rating, map_image, published_at, updated_at';
+  'id, slug, book_id, book_title, book_author, title, description, rating, map_image, lead_stat, published_at, updated_at';
 export const STORY_COLUMNS = `${STORY_SUMMARY_COLUMNS}, body, map_cards, characters`;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -44,6 +47,19 @@ export const toStoryImage = (value: unknown): StoryImage | null => {
   if (typeof width !== 'number' || typeof height !== 'number') return null;
   if (width <= 0 || height <= 0) return null;
   return { src, width, height, alt: typeof alt === 'string' ? alt : '' };
+};
+
+export const toLeadStat = (value: unknown): StoryLeadStat | null => {
+  if (!isRecord(value)) return null;
+  const { value: number, unit, label, people } = value;
+  if (typeof number !== 'number' || !Number.isFinite(number)) return null;
+  return {
+    value: number,
+    unit: typeof unit === 'string' ? unit : '',
+    label: typeof label === 'string' ? label : '',
+    people:
+      typeof people === 'number' && people >= 0 && people <= 10 ? people : null,
+  };
 };
 
 const toStoryImages = (value: unknown): StoryImage[] =>
@@ -74,13 +90,14 @@ export const toCharacterGroups = (value: unknown): StoryCharacterGroup[] => {
 export const toStorySummary = (row: StoryRow): StorySummary => ({
   id: row.id,
   slug: row.slug,
-  bookId: row.book_id,
-  bookTitle: row.book_title,
+  bookId: row.book_id ?? null,
+  bookTitle: row.book_id ? (row.book_title ?? '') : '',
   author: row.book_author ?? '',
   title: row.title,
   description: row.description ?? '',
   rating: row.rating ?? 0,
   mapImage: toStoryImage(row.map_image),
+  leadStat: toLeadStat(row.lead_stat),
   publishedAt: row.published_at ?? row.created_at ?? row.updated_at,
   updatedAt: row.updated_at,
 });

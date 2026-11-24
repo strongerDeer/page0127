@@ -4,6 +4,7 @@ import { calculateReadingBalance } from '@/entities/book';
 import { createTestBook } from '@/entities/book/model/createTestBook';
 
 import {
+  balanceBandIndex,
   categoryColor,
   getBalanceDelta,
   getBalanceLabel,
@@ -23,14 +24,33 @@ describe('balanceCopy', () => {
     expect(getBalanceLabel(70)).toBe('고르게 읽는 중');
   });
 
-  it('요약 — 읽은 분야 수와 상위 두 분야', () => {
+  it('게이지 구간 경계는 문구 경계와 같다', () => {
+    expect(balanceBandIndex(0)).toBe(0);
+    expect(balanceBandIndex(39)).toBe(0);
+    expect(balanceBandIndex(40)).toBe(1);
+    expect(balanceBandIndex(69)).toBe(1);
+    expect(balanceBandIndex(70)).toBe(2);
+    expect(balanceBandIndex(100)).toBe(2);
+  });
+
+  it('요약 — 읽은 분야 수와 1위 분야 비율', () => {
     const balance = calculateReadingBalance([
       ...books('소설', 5),
       ...books('자기계발', 4),
       ...books('에세이', 2),
     ]);
     expect(getBalanceSummary(balance)).toBe(
-      '8개 분야 중 3개를 읽었어요. 소설/시/희곡·자기계발이 82%'
+      '8개 분야 중 3개를 읽었어요. 소설/시/희곡이 45%'
+    );
+  });
+
+  it('분야가 2개여도 100%라고 하지 않는다 — 예전 상위 2개 합은 늘 100%였다', () => {
+    const balance = calculateReadingBalance([
+      ...books('자기계발', 2),
+      ...books('인문', 1),
+    ]);
+    expect(getBalanceSummary(balance)).toBe(
+      '8개 분야 중 2개를 읽었어요. 자기계발이 67%'
     );
   });
 

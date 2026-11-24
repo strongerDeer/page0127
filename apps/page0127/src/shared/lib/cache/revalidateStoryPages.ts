@@ -6,7 +6,7 @@ import { STORIES_CACHE_TAG } from './cacheTags';
  * 책 이야기 글을 저장·공개·삭제한 뒤 부른다 — 배포 없이 다음 방문자부터 새 글이 보인다.
  *
  * 왜 여러 곳을 버리나: 글 하나가 네 곳에 나온다.
- * - /blog 목록, /blog/[slug] 본문 (ISR 페이지)
+ * - /blog 목록, /blog/[slug] 본문과 공유 이미지 (ISR)
  * - 책 정보 페이지의 "책 이야기" 카드 (/books/info/[id], ISR)
  * - 위 페이지들이 함께 쓰는 공개 글 데이터 캐시 (unstable_cache, STORIES_CACHE_TAG)
  *
@@ -16,7 +16,8 @@ import { STORIES_CACHE_TAG } from './cacheTags';
 export const revalidateStoryPages = () => {
   revalidateTag(STORIES_CACHE_TAG, { expire: 0 });
   revalidatePath('/(static)/blog', 'page');
-  revalidatePath('/(static)/blog/[slug]', 'page');
+  // 'layout' — 글 페이지와 그 아래 공유 이미지(opengraph-image)까지 함께 버린다(첫 차트 숫자가 바뀌면 이미지도)
+  revalidatePath('/(static)/blog/[slug]', 'layout');
   revalidatePath('/(static)/books/info/[id]', 'page');
   revalidatePath('/admin/stories');
 };

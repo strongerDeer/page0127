@@ -142,4 +142,46 @@ describe('validateStoryInput', () => {
       validateStoryInput(input({ mapCards: [card] }), SUPABASE, '책').ok
     ).toBe(false);
   });
+
+  it('책 없는 글: 별점은 0 으로, 그림 대체 글은 글 제목으로', () => {
+    const result = validateStoryInput(
+      input({
+        title: '한국 독서 통계',
+        rating: 5,
+        mapImage: { src: BUCKET_SRC, width: 10, height: 10, alt: '' },
+      }),
+      SUPABASE,
+      ''
+    );
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.rating).toBe(0);
+    expect(result.value.map_image?.alt).toBe('한국 독서 통계');
+  });
+
+  it('본문 차트: 틀린 블록은 저장을 막고, 첫 숫자는 lead_stat 으로', () => {
+    const broken = validateStoryInput(
+      input({ body: '```chart\ntype: number\nvalue: 38.5\n```' }),
+      SUPABASE,
+      ''
+    );
+    expect(broken).toEqual({
+      ok: false,
+      message: '본문 1번째 차트: source: 에 출처를 적어 주세요.',
+    });
+
+    const ok = validateStoryInput(
+      input({
+        body: '```chart\ntype: number\nvalue: 38.5\nunit: %\nlabel: 성인\nsource: 문체부\n```',
+      }),
+      SUPABASE,
+      ''
+    );
+    expect(ok.ok && ok.value.lead_stat).toEqual({
+      value: 38.5,
+      unit: '%',
+      label: '성인',
+      people: null,
+    });
+  });
 });
