@@ -50,7 +50,7 @@ export async function DELETE() {
     //    profiles 행은 4단계 CASCADE로 함께 사라지므로 지금 읽어둬야 한다.
     const { data: profile } = await admin
       .from('profiles')
-      .select('photo_url, created_at')
+      .select('photo_url, created_at, is_test, is_demo')
       .eq('id', user.id)
       .single();
     // 탈퇴 기록용 책 수 — books 도 CASCADE 로 사라지므로 지금 센다
@@ -76,14 +76,18 @@ export async function DELETE() {
 
     // 5. 탈퇴 기록 (best-effort) — 누구인지 알 수 있는 값은 남기지 않고 통계용 값만.
     //    삭제가 성공한 뒤에 남겨야 "실패했는데 탈퇴로 집계"되는 일이 없다.
-    const provider = user.app_metadata?.provider;
-    const { error: logError } = await admin.from('account_deletions').insert({
-      signed_up_at: profile?.created_at ?? null,
-      book_count: bookCount ?? 0,
-      provider: typeof provider === 'string' ? provider : null,
-    });
-    if (logError) {
-      console.error('탈퇴 기록 저장 실패(계정은 이미 삭제됨):', logError);
+    //    테스트 계정(is_test)의 탈퇴는 운영자가 탈퇴 흐름을 시험한 것이라 남기지 않는다 —
+    //    남기면 "탈퇴 N명"이 실제 이탈이 아닌 테스트로 부푼다. 체험 계정은 쓰기가 막혀 여기 오지 않지만 같이 거른다.
+    if (!profile?.is_test && !profile?.is_demo) {
+      const provider = user.app_metadata?.provider;
+      const { error: logError } = await admin.from('account_deletions').insert({
+        signed_up_at: profile?.created_at ?? null,
+        book_count: bookCount ?? 0,
+        provider: typeof provider === 'string' ? provider : null,
+      });
+      if (logError) {
+        console.error('탈퇴 기록 저장 실패(계정은 이미 삭제됨):', logError);
+      }
     }
 
     // 6. DB 밖 자원인 Storage 프로필 이미지 정리 (best-effort)

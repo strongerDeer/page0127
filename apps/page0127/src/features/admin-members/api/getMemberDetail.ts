@@ -25,6 +25,10 @@ export type MemberDetail = {
   suspendedUntil: string | null;
   provider: string | null;
   lastSignInAt: string | null;
+  /** 체험 계정(is_demo) — 시드 스크립트가 켜며 어드민에서 바꾸지 않는다 */
+  isDemo: boolean;
+  /** 운영자 테스트 계정(is_test) — 회원 수·지표·탈퇴 기록에서 빠진다 */
+  isTest: boolean;
   /** 이 회원에 대한 최근 관리자 행위(정지·해제·이메일 열람) */
   recentActions: AdminActionLog[];
 };
@@ -38,7 +42,7 @@ export async function getMemberDetail(
   const { data: p, error } = await supabase
     .from('profiles')
     .select(
-      'id, email, nickname, username, created_at, status, suspended_until'
+      'id, email, nickname, username, created_at, status, suspended_until, is_demo, is_test'
     )
     .eq('id', id)
     .single();
@@ -87,6 +91,8 @@ export async function getMemberDetail(
     suspendedUntil: p.suspended_until,
     provider: typeof provider === 'string' ? provider : null,
     lastSignInAt: authUser.data.user?.last_sign_in_at ?? null,
+    isDemo: p.is_demo === true,
+    isTest: p.is_test === true,
     recentActions: (actions.data ?? []).map((a) => ({
       id: a.id,
       adminEmail: a.admin_email,

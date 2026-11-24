@@ -7,11 +7,14 @@ import {
 } from '@/features/admin-members/lib/memberStats';
 import { RevealEmail } from '@/features/admin-members/ui/RevealEmail';
 import { SuspendForm } from '@/features/admin-members/ui/SuspendForm';
+import { TestAccountToggle } from '@/features/admin-members/ui/TestAccountToggle';
 
 const ACTION_LABEL: Record<string, string> = {
   suspend: '정지',
   unsuspend: '정지 해제',
   view_email: '이메일 열람',
+  mark_test: '테스트 계정 표시',
+  unmark_test: '테스트 계정 해제',
 };
 
 export default async function AdminMemberDetailPage({
@@ -60,6 +63,8 @@ export default async function AdminMemberDetailPage({
       </dl>
 
       <SuspendForm userId={m.id} suspended={m.suspended} />
+
+      <TestAccountToggle userId={m.id} isTest={m.isTest} isDemo={m.isDemo} />
 
       <div>
         <h2 className='mb-2 text-sm font-medium'>최근 관리 기록</h2>
