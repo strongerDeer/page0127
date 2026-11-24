@@ -40,6 +40,7 @@ import { WishlistShelf } from './WishlistShelf';
 import type { Book } from '@/entities/book';
 import type { BookStats, OverallStats } from '@/entities/book';
 import type { DailySentence } from '@/entities/daily-sentence';
+import type { ReadingGoal } from '@/entities/profile/types';
 import type { SentenceMonthCounts } from '@/entities/quote';
 import type { RatingFilter } from '@/features/stats/model/useLibraryFilters';
 
@@ -129,6 +130,8 @@ type LibraryViewProps = {
   calendarFooterSlot?: ReactNode;
   /** 방문자 캘린더의 "N월에 모은 문장 N개" — 개수만 */
   sentenceMonthCounts?: SentenceMonthCounts;
+  /** 해마다 정한 목표 — 연도별 완독 추이에 겹쳐 그린다 */
+  readingGoals?: ReadingGoal[];
   /** 배지 줄 — 취향 묶음 맨 아래에 둔다(HJ, 2026-11-11). 예전엔 프로필 바로 아래였다 */
   badgeSlot?: ReactNode;
 
@@ -186,6 +189,7 @@ export const LibraryView = ({
   calendarTodaySlot,
   calendarFooterSlot,
   sentenceMonthCounts,
+  readingGoals = [],
   badgeSlot,
   showWishlist = false,
   isWishlistView = false,
@@ -475,7 +479,12 @@ export const LibraryView = ({
                       </CardHeader>
                       <CardContent className='pb-6'>
                         <RenderWhenNear placeholder={<TrendChartSkeleton />}>
-                          <YearlyTrendChart data={overallStats.yearlyTrend} />
+                          <YearlyTrendChart
+                            data={overallStats.yearlyTrend}
+                            goals={readingGoals}
+                            // 방문자에겐 채운 목표만 — 연도 요약과 같은 규칙(HJ, 2026-11-24)
+                            showUnmetGoals={isOwner}
+                          />
                         </RenderWhenNear>
                       </CardContent>
                     </Card>

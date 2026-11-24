@@ -27,6 +27,7 @@ import {
 } from '@/entities/daily-sentence';
 import { getFollowSnapshot } from '@/entities/follow/api/getFollowSnapshot';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
+import { getReadingGoals } from '@/entities/profile/api/getReadingGoals';
 import { toDisplayName } from '@/entities/profile/model/displayName';
 import { libraryRobots } from '@/entities/profile/model/searchIndexable';
 import { getSentenceMonthCounts } from '@/entities/quote/server';
@@ -267,6 +268,7 @@ const LibraryContent = async ({
     sentenceDraws,
     hasSentencePool,
     sentenceMonthCounts,
+    readingGoals,
   ] = await Promise.all([
     getBooks(profile.id, !isOwnProfile),
     isOwnProfile ? Promise.resolve([]) : getMaskedPrivateBooks(profile.id),
@@ -283,6 +285,7 @@ const LibraryContent = async ({
     isOwnProfile
       ? Promise.resolve(undefined)
       : getSentenceMonthCounts(profile.id),
+    getReadingGoals(profile.id),
   ]);
   const todaySentence =
     sentenceDraws.find((sentence) => sentence.draw_date === today) ?? null;
@@ -355,6 +358,7 @@ const LibraryContent = async ({
       followSnapshot={followSnapshot}
       sentenceDraws={sentenceDraws}
       sentenceMonthCounts={sentenceMonthCounts}
+      readingGoals={readingGoals}
       // 서재 위쪽 카드 셋(오늘의 문장·주간 회상·내가 모은 문장)은 독서 캘린더 패널로 옮겼다(HJ B안, 2026-11-10).
       // 오늘의 문장 — 오늘 칸 패널. 풀이 비었고 오늘 펼친 것도 없으면 넣지 않는다
       calendarTodaySlot={

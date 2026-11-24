@@ -39,7 +39,7 @@ import type { Book } from '@/entities/book';
 import type { OverallStats } from '@/entities/book';
 import type { DailySentence } from '@/entities/daily-sentence';
 import type { FollowSnapshot } from '@/entities/follow';
-import type { Profile } from '@/entities/profile/types';
+import type { Profile, ReadingGoal } from '@/entities/profile/types';
 import type { SentenceMonthCounts } from '@/entities/quote';
 import type { PublicTasteHistoryItem } from '@/entities/taste-analysis/types';
 import type { BadgeActivity } from '@/features/badge/model/badges';
@@ -73,6 +73,8 @@ type PublicLibraryContentProps = {
   calendarFooterSlot?: ReactNode;
   /** 방문자에게만 — 달마다 모은 문장 개수(글은 나만 보기) */
   sentenceMonthCounts?: SentenceMonthCounts;
+  /** 해마다 정한 목표 — 전체 보기의 연도별 완독 추이에 겹쳐 그린다 */
+  readingGoals?: ReadingGoal[];
 };
 
 /**
@@ -103,6 +105,7 @@ export const PublicLibraryContent = ({
   calendarTodaySlot,
   calendarFooterSlot,
   sentenceMonthCounts,
+  readingGoals = [],
 }: PublicLibraryContentProps) => {
   // 폰에서 등록하다 책등 확인을 놓친 책을 주인이 서재를 열 때 뒤에서 채운다
   useRepairMissingSpines(books, isOwnProfile);
@@ -319,6 +322,7 @@ export const PublicLibraryContent = ({
           calendarTodaySlot={calendarTodaySlot}
           calendarFooterSlot={calendarFooterSlot}
           sentenceMonthCounts={sentenceMonthCounts}
+          readingGoals={readingGoals}
           // 뱃지 — 통계와 같은 공개 책으로 계산해 주인·방문자가 같은 뱃지를 본다. 전부는 상세 페이지에서.
           // 프로필 바로 아래에 있다가 '취향' 묶음 맨 아래로 내려갔다(HJ, 2026-11-11)
           badgeSlot={
