@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -16,14 +16,23 @@ import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
 import { dailyScore, formatSentenceSource } from '@/entities/daily-sentence';
 
 import { drawDailySentenceAction } from '../api/drawDailySentenceAction';
+import { CarrotSvg } from './CarrotSvg';
 
 import type { DailyScore, DailySentence } from '@/entities/daily-sentence';
+import type { CSSProperties, ReactNode } from 'react';
 
 import styles from './DailySentenceBook.module.css';
 
-/** 책장이 넘어가는 연출 길이 — 서재 카드(DailySentenceCard)와 같다 */
-const OPENING_MS = 2200;
+/**
+ * 연출 길이 — HJ 11/24 "화면 너무 빨리 넘어간다"
+ * 책장 넘김(서재 카드 2.2초보다 조금 길게) → 다 넘긴 면을 잠깐 → 책이 사라지며 결과로
+ */
+const OPENING_MS = 2600;
+const HOLD_MS = 600;
+const LEAVE_MS = 450;
 const TURNING_PAGES = 4;
+/** 결과가 하나씩 나타나는 간격(점수 → 한마디 → 세 운 → 문장) */
+const RISE_STEP_MS = 350;
 
 /** 비회원 브라우저 열쇠 — 오늘의 문장·점수를 "이 브라우저"에 묶는다. 개인정보가 아닌 무작위 문자열 */
 const GUEST_KEY = 'page0127:sentence-key';
@@ -90,6 +99,10 @@ export const DailySentenceDraw = ({
     bookHref: string | null;
   } | null>(today ? { sentence: today, bookHref: todayBookHref } : null);
   const [opening, setOpening] = useState(false);
+  // 책장을 다 넘긴 뒤 책이 사라지는 중 — 이때 결과는 아직 안 그린다
+  const [leaving, setLeaving] = useState(false);
+  // 이번 화면에서 막 펼쳤는지 — 막 펼쳤을 때만 결과를 하나씩 띄운다(다시 열면 바로)
+  const [justDrawn, setJustDrawn] = useState(false);
 
   const todayKey = toKstDateKey(new Date());
   // 비회원이 오늘 이미 펼쳤으면(이 브라우저) 그 결과를 그대로 보여 준다
@@ -133,15 +146,23 @@ export const DailySentenceDraw = ({
   const handleOpen = () => {
     setOpening(true);
     startTransition(async () => {
+      const reduced = prefersReducedMotion();
       const [outcome] = await Promise.all([
         memberId ? drawDailySentenceAction() : drawAsGuest(),
-        wait(prefersReducedMotion() ? 0 : OPENING_MS),
+        wait(reduced ? 0 : OPENING_MS + HOLD_MS),
       ]);
-      setOpening(false);
       if (!outcome.ok) {
+        setOpening(false);
         toast.error(outcome.message);
         return;
       }
+      if (!reduced) {
+        setLeaving(true);
+        await wait(LEAVE_MS);
+      }
+      setOpening(false);
+      setLeaving(false);
+      setJustDrawn(!reduced);
       setDrawn({ sentence: outcome.sentence, bookHref: outcome.bookHref });
       trackEvent('daily_sentence_draw', { member: Boolean(memberId), place });
       // 뒤 화면(서재 배너·캘린더 책갈피)을 다시 그린다 — 모달이 떠 있어도 그대로 유지된다
@@ -152,51 +173,64 @@ export const DailySentenceDraw = ({
   const dateLabel = `${Number(todayKey.slice(5, 7))}월 ${Number(todayKey.slice(8, 10))}일`;
 
   if (state === 'open' && result) {
+    // 막 펼쳤으면 하나씩 띄운다 — n 번째 조각의 지연
+    const rise = (n: number) =>
+      justDrawn
+        ? {
+            className: styles.rise,
+            style: { animationDelay: `${n * RISE_STEP_MS}ms` },
+          }
+        : {};
     return (
       <section
         aria-labelledby='sentence-draw-heading'
-        className={`grid gap-5 ${styles.reveal}`}
+        className='grid gap-5'
         aria-live='polite'
       >
-        <div className='text-center'>
-          <p className='text-xs font-medium text-text-subtle'>
-            {dateLabel} · 오늘의 독서운
-          </p>
-          {score && <ScoreBlock score={score} />}
-        </div>
+        <p className='flex items-center justify-center gap-1.5 text-xs font-medium text-text-subtle'>
+          <CarrotSvg className='h-5 w-3' />
+          {dateLabel} · 오늘의 독서운
+        </p>
 
-        <figure className='grid grid-cols-[auto_1fr] items-start gap-4 rounded-2xl bg-sunken p-5'>
-          <BookCover
-            src={result.sentence.cover_image}
-            title={result.sentence.book_title}
-            author={result.sentence.author}
-            size='md'
-            small
-            decorative
-          />
-          <div className='min-w-0'>
-            <blockquote
-              id='sentence-draw-heading'
-              className='whitespace-pre-wrap break-keep text-base font-semibold leading-relaxed text-text-strong'
-            >
-              {result.sentence.text}
-            </blockquote>
-            <figcaption className='mt-3 text-sm text-text-subtle'>
+        {score && <ScoreBlock score={score} animate={justDrawn} rise={rise} />}
+
+        <figure
+          {...rise(3)}
+          className={`${styles.paper} ${rise(3).className ?? ''} grid gap-4 px-5 pt-5 pb-4`}
+        >
+          <blockquote
+            id='sentence-draw-heading'
+            className='whitespace-pre-wrap break-keep text-[17px] font-bold leading-[1.75]'
+          >
+            {result.sentence.text}
+          </blockquote>
+          <figcaption
+            className={`${styles.paperMeta} grid grid-cols-[auto_1fr_auto] items-center gap-3 pt-3 text-[13px]`}
+          >
+            <BookCover
+              src={result.sentence.cover_image}
+              title={result.sentence.book_title}
+              author={result.sentence.author}
+              size='xs'
+              small
+              decorative
+            />
+            <span className='min-w-0'>
               {formatSentenceSource(result.sentence)}
-            </figcaption>
+            </span>
             {result.bookHref && (
               <Link
                 href={result.bookHref}
-                className='mt-2 inline-flex items-center gap-0.5 text-sm font-medium text-text-strong underline-offset-4 hover:underline'
+                className='inline-flex items-center gap-0.5 whitespace-nowrap font-medium text-[#14294e] underline-offset-4 hover:underline'
               >
                 이 책 보러 가기
                 <ChevronRight className='size-4' aria-hidden />
               </Link>
             )}
-          </div>
+          </figcaption>
         </figure>
 
-        <div className='grid gap-2'>
+        <div {...rise(4)} className={`${rise(4).className ?? ''} grid gap-2`}>
           {memberId ? (
             onClose ? (
               <Button onClick={onClose}>내 캘린더에 남았어요 · 닫기</Button>
@@ -235,17 +269,27 @@ export const DailySentenceDraw = ({
       </div>
 
       <div
-        className={`${styles.stage} ${styles.large}`}
+        className={`${styles.stage} ${styles.large} ${styles.creamStage} ${leaving ? styles.leaving : ''}`}
         data-state={state}
         aria-hidden
       >
-        <div className={styles.cover}>
-          <span className={styles.coverTitle}>
-            오늘의
-            <br />
-            문장
-          </span>
-          <span className={styles.ribbon} />
+        {/* 크림 책 + 책장 사이 당근 — 홈 당근 책갈피와 이어지게(HJ 11/24 시안 C) */}
+        <div className={`${styles.cover} ${styles.cream}`}>
+          <div className={styles.creamPagesBack} />
+          <div className={styles.creamCarrot}>
+            <CarrotSvg />
+          </div>
+          <div className={styles.creamPagesFront} />
+          <div className={styles.creamFront}>
+            <span className={styles.coverTitle}>
+              오늘의
+              <br />
+              문장
+            </span>
+            <div className={styles.creamMini}>
+              <CarrotSvg />
+            </div>
+          </div>
         </div>
         <div className={styles.spread}>
           <div className={`${styles.page} ${styles.left}`} />
@@ -268,33 +312,162 @@ export const DailySentenceDraw = ({
   );
 };
 
-/** 총점 + 세부 셋(가장 높은 항목만 민트) */
-const ScoreBlock = ({ score }: { score: DailyScore }) => {
-  const top = Math.max(...score.items.map((item) => item.value));
+type Rise = (n: number) => {
+  className?: string;
+  style?: CSSProperties;
+};
+
+/** 0 → 목표까지 숫자가 올라간다(ease-out). animate 가 아니면 바로 목표값 */
+const useCountUp = (target: number, animate: boolean, ms = 700) => {
+  const [value, setValue] = useState(animate ? 0 : target);
+  useEffect(() => {
+    if (!animate) return;
+    let frame = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const k = Math.min(1, (now - start) / ms);
+      setValue(Math.round(target * (1 - (1 - k) ** 3)));
+      if (k < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [target, animate, ms]);
+  return animate ? value : target;
+};
+
+/** 막 그려졌으면 잠시 뒤 true — 원형 게이지가 0에서 차오르게 */
+const useFilled = (animate: boolean) => {
+  const [filled, setFilled] = useState(!animate);
+  useEffect(() => {
+    if (!animate) return;
+    // 첫 페인트(빈 원)가 화면에 나간 뒤에 채워야 transition 이 걸린다 — 한 프레임으로는 페인트 전에 바뀔 수 있다
+    const timer = setTimeout(() => setFilled(true), 60);
+    return () => clearTimeout(timer);
+  }, [animate]);
+  return filled;
+};
+
+type ScoreTone = 'best' | 'good' | 'okay';
+
+/** 점수 구간 색 — 90점 이상 브랜드 파랑, 80점대 민트, 그 아래(바닥 70점) 보라 */
+const scoreTone = (value: number): ScoreTone =>
+  value >= 90 ? 'best' : value >= 80 ? 'good' : 'okay';
+
+type GaugeProps = {
+  value: number;
+  size: number;
+  stroke: number;
+  tone: ScoreTone;
+  animate: boolean;
+  delayMs?: number;
+  children: ReactNode;
+};
+
+/** 원형 게이지(라이트하우스형) — 0~100 을 원 둘레로 */
+const Gauge = ({
+  value,
+  size,
+  stroke,
+  tone,
+  animate,
+  delayMs = 0,
+  children,
+}: GaugeProps) => {
+  const filled = useFilled(animate);
+  const r = (size - stroke) / 2;
+  const length = 2 * Math.PI * r;
+  const offset = filled ? length * (1 - value / 100) : length;
   return (
-    <div className='mx-auto mt-2 grid max-w-xs gap-3'>
-      <p className='flex items-baseline justify-center gap-2'>
-        <span className='text-5xl font-bold leading-none text-text-strong tabular-nums'>
-          {score.total}
-        </span>
-        <span className='text-left text-sm text-text-subtle'>
-          점<br />
-          {score.comment}
-        </span>
-      </p>
-      <dl className='grid gap-2'>
-        {score.items.map((item) => (
-          <div
-            key={item.key}
-            className='grid grid-cols-[3.25rem_1fr_1.75rem] items-center gap-2.5 text-sm'
+    <div className={styles.gauge} style={{ width: size, height: size }}>
+      <svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        aria-hidden
+      >
+        <circle
+          className={styles.gaugeTrack}
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill='none'
+          strokeWidth={stroke}
+        />
+        <circle
+          className={styles.gaugeArc}
+          data-tone={tone}
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill='none'
+          strokeWidth={stroke}
+          strokeDasharray={length}
+          strokeDashoffset={offset}
+          style={{ transitionDelay: `${delayMs}ms` }}
+        />
+      </svg>
+      <div className={styles.gaugeValue}>{children}</div>
+    </div>
+  );
+};
+
+/** 총점(큰 원) + 한마디 + 세 운(작은 원) — HJ 11/24 시안 R1, 원 색은 점수 구간(G3) */
+const ScoreBlock = ({
+  score,
+  animate,
+  rise,
+}: {
+  score: DailyScore;
+  animate: boolean;
+  rise: Rise;
+}) => {
+  const total = useCountUp(score.total, animate, 1000);
+  return (
+    <div className='grid justify-items-center gap-4 text-center'>
+      <div className='grid justify-items-center gap-2.5'>
+        <Gauge
+          value={score.total}
+          size={132}
+          stroke={10}
+          tone={scoreTone(score.total)}
+          animate={animate}
+        >
+          <p
+            className='text-[40px] font-bold leading-none text-text-strong tabular-nums'
+            aria-label={`${score.total}점`}
           >
-            <dt className='text-left text-text-subtle'>{item.label}</dt>
-            <dd className={styles.bar} data-top={item.value === top}>
-              <span style={{ width: `${item.value}%` }} />
+            {total}
+          </p>
+          <span className='mt-1 text-[13px] text-text-subtle'>점</span>
+        </Gauge>
+        <p
+          {...rise(1)}
+          className={`${rise(1).className ?? ''} text-sm text-text-subtle`}
+        >
+          {score.comment}
+        </p>
+      </div>
+      <dl
+        {...rise(2)}
+        className={`${rise(2).className ?? ''} grid w-full grid-cols-3 gap-2`}
+      >
+        {score.items.map((item, i) => (
+          <div key={item.key} className='grid justify-items-center gap-1.5'>
+            <dd className='order-1'>
+              <Gauge
+                value={item.value}
+                size={56}
+                stroke={5}
+                tone={scoreTone(item.value)}
+                animate={animate}
+                delayMs={2 * RISE_STEP_MS + i * 150}
+              >
+                <span className='text-[17px] font-bold text-text-strong tabular-nums'>
+                  {item.value}
+                </span>
+              </Gauge>
             </dd>
-            <dd className='text-right font-medium text-text-strong tabular-nums'>
-              {item.value}
-            </dd>
+            <dt className='order-2 text-xs text-text-subtle'>{item.label}</dt>
           </div>
         ))}
       </dl>

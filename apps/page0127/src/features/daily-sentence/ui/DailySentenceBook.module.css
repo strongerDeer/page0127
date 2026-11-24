@@ -198,41 +198,205 @@
   margin-bottom: 42px;
 }
 
-/* 세부 운 막대 — 남색, 가장 높은 항목만 민트(민트는 점·막대 같은 작은 면에만) */
-.bar {
-  position: relative;
-  height: 7px;
-  border-radius: 999px;
-  background: var(--line);
-  overflow: hidden;
+/* ---------- /sentence 페이지·모달 전용: 크림 책 + 책장 사이 당근 (HJ 11/24 시안 C) ----------
+ * .cover 자리에 책 한 권을 쌓는다: 뒤쪽 책장 · 당근 · 앞쪽 책장 · 앞표지.
+ * 앞표지 위로 책장 두 겹만 살짝 보이고, 당근 밑동을 앞쪽 책장이 덮어서 "책장 사이에 끼운" 모양이 된다.
+ * 책장은 앞표지 왼쪽 끝에 맞추고 오른쪽만 1~2px 길게(T1). 두께는 위쪽 책장으로만 보여 주고
+ * 표지 오른쪽·아래 흰 종이는 없앤다. 표지 테두리는 책장과 같은 색.
+ * 펼칠 때는 공용 규칙(.stage[data-state] .cover)이 이 묶음째로 치운다.
+ */
+.cream {
+  background: none;
+  box-shadow: none;
 }
 
-.bar > span {
+.cream::before {
+  content: none;
+}
+
+.creamPagesBack,
+.creamPagesFront {
   position: absolute;
-  inset: 0 auto 0 0;
-  border-radius: inherit;
-  background: var(--navy-900);
-  animation: grow 0.8s ease both;
+  height: 12px;
+  border: 1px solid #e6dcc6;
+  border-bottom: 0;
+  border-radius: 3px 7px 0 0;
+  background: #fffdf7;
 }
 
-.bar[data-top="true"] > span {
-  background: var(--teal-500);
+.creamPagesBack {
+  top: -6px;
+  left: 0;
+  right: -2px;
 }
 
-@keyframes grow {
-  from {
-    width: 0;
-  }
+.creamPagesFront {
+  z-index: 2;
+  top: -3px;
+  left: 0;
+  right: -1px;
 }
 
-@media (prefers-color-scheme: dark) {
-  .bar > span {
-    background: var(--gray-0);
-  }
+.creamCarrot {
+  z-index: 1;
+  position: absolute;
+  left: 44px;
+  top: -36px;
+  width: 34px;
+  aspect-ratio: 60 / 98;
+  transform: rotate(4deg);
+  transition: transform 0.5s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.creamCarrot svg,
+.creamMini svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.creamFront {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: 3px 8px 8px 3px;
+  border: 1px solid #e6dcc6;
+  background: #fbf3e6;
+  box-shadow: 6px 10px 16px rgb(20 41 78 / 0.16);
+}
+
+.creamFront::before {
+  /* 책등 선 */
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid rgb(20 41 78 / 0.12);
+}
+
+.creamFront .coverTitle {
+  color: #14294e;
+}
+
+.creamMini {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 18px;
+  aspect-ratio: 60 / 98;
+  transform: rotate(18deg);
+}
+
+.stage[data-state="opening"] .creamCarrot {
+  transform: translateY(-16px) rotate(-8deg);
+}
+
+/* 큰 책은 조금 천천히 넘긴다 — 0.4s 부터 0.35s 간격, 한 장 1.1s (서재 카드는 그대로) */
+.large[data-state="opening"] .turning {
+  animation-duration: 1.1s;
+  animation-delay: 0.4s;
+}
+
+.large[data-state="opening"] .turning:nth-child(4) {
+  animation-delay: 0.75s;
+}
+
+.large[data-state="opening"] .turning:nth-child(5) {
+  animation-delay: 1.1s;
+}
+
+.large[data-state="opening"] .turning:nth-child(6) {
+  animation-delay: 1.45s;
+}
+
+/* 다 넘긴 펼친 면을 잠깐 보여 준 뒤 결과로 바뀌기 직전 */
+.leaving {
+  opacity: 0;
+  transform: scale(1.3) translateY(-6px);
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s ease;
+}
+
+/* ---------- 결과: 점수 → 세 운 → 문장 순으로 하나씩 ---------- */
+.rise {
+  animation: arrive 0.5s ease both;
+}
+
+/* 원형 게이지(라이트하우스형) — 점수 구간 색(HJ 11/24 G3): 90점 이상 브랜드 파랑, 80점대 민트, 70점대 보라.
+ * 선(링)으로만 칠하니 민트도 큰 면이 되지 않는다. */
+.gauge {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.gauge svg {
+  display: block;
+  transform: rotate(-90deg);
+}
+
+.gaugeTrack {
+  stroke: var(--line);
+}
+
+.gaugeArc {
+  stroke: var(--violet-500);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+
+.gaugeArc[data-tone="best"] {
+  stroke: var(--blue-500);
+}
+
+.gaugeArc[data-tone="good"] {
+  stroke: var(--teal-500);
+}
+
+.gaugeValue {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+}
+
+/* 문장 종이 카드 — 테마와 상관없이 종이색(책장과 같은 계열) */
+.paper {
+  border-radius: 14px;
+  background: #fbf8f1;
+  color: #14294e;
+}
+
+.paper blockquote::before {
+  content: "\201C";
+  display: block;
+  margin-bottom: 6px;
+  color: #c9b98f;
+  font-size: 34px;
+  line-height: 0.6;
+}
+
+.paperMeta {
+  border-top: 1px dashed #e4dccb;
+  color: #5b6b85;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bar > span {
+  .creamCarrot,
+  .leaving,
+  .gaugeArc {
+    transition: none;
+  }
+
+  .rise {
     animation: none;
   }
+}
+
+/* 당근이 책 위로 고개를 내미는 만큼 위에 자리를 비운다 */
+.creamStage {
+  margin-top: 48px;
 }
