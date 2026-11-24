@@ -373,3 +373,57 @@ describe('analyze — 측정 환경 변경(environmentChanges)', () => {
     expect(result.regressions.some((r) => r.metric === 'performance')).toBe(true);
   });
 });
+
+describe("analyze — 러너 CPU 차이(cpuChange)", () => {
+  const env = (benchmarkIndex: number) => ({
+    chromeVersion: "157.0.0.0",
+    lighthouseVersion: "13.6.0",
+    runnerImage: "20261116.202.1",
+    benchmarkIndex,
+  });
+  // 2026-11-24 #37 실제 사례: 성능지수 3011→2466, 모바일 TBT 293→519
+  const tbtRegressed = (): QualityRecord => {
+    const curr = nextDeploy();
+    curr.pages[0].cwv.tbt = 519;
+    return curr;
+  };
+  const prevWith = (idx: number): QualityRecord => {
+    const prev = structuredClone(base);
+    prev.pages[0].cwv.tbt = 293;
+    prev.environment = env(idx);
+    return prev;
+  };
+
+  it("성능지수가 15% 넘게 다르면 모바일 TBT 회귀를 보류로 옮긴다", () => {
+    const curr = { ...tbtRegressed(), environment: env(2466) };
+    const result = analyze([prevWith(3011), curr]);
+    expect(result.cpuChange).toBe("러너 성능지수 3011→2466(-18%)");
+    expect(result.regressions.some((r) => r.metric === "tbt")).toBe(false);
+    expect(result.suppressedRegressions.map((r) => r.metric)).toEqual(["tbt"]);
+    expect(result.environmentChanges).toContain(
+      "러너 성능지수 3011→2466(-18%)",
+    );
+  });
+
+  it("차이가 15% 아래면 TBT 회귀를 그대로 잡는다", () => {
+    const curr = { ...tbtRegressed(), environment: env(2700) }; // -10%
+    const result = analyze([prevWith(3011), curr]);
+    expect(result.cpuChange).toBeNull();
+    expect(result.regressions.some((r) => r.metric === "tbt")).toBe(true);
+  });
+
+  it("CPU 가 달라도 TBT 말고 다른 회귀(LCP·전송량 등)는 지우지 않는다", () => {
+    const curr = { ...tbtRegressed(), environment: env(2466) };
+    curr.pages[0].weight = { totalKb: 2000, imageKb: 400, scriptKb: 300 }; // 전송량 2배
+    const result = analyze([prevWith(3011), curr]);
+    expect(result.regressions.some((r) => r.metric === "weight")).toBe(true);
+  });
+
+  it("직전 성능지수가 없으면(옛 기록) 비교하지 않는다", () => {
+    const prev = prevWith(0);
+    const curr = { ...tbtRegressed(), environment: env(2466) };
+    const result = analyze([prev, curr]);
+    expect(result.cpuChange).toBeNull();
+    expect(result.regressions.some((r) => r.metric === "tbt")).toBe(true);
+  });
+});

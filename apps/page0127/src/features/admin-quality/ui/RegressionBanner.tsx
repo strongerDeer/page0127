@@ -1,4 +1,7 @@
-import { detectEnvironmentChanges } from '@repo/quality/environment';
+import {
+  detectCpuChange,
+  detectEnvironmentChanges,
+} from '@repo/quality/environment';
 
 import type { QualityRecord } from '@repo/quality/types';
 
@@ -10,7 +13,21 @@ type Props = {
 
 export const RegressionBanner = ({ record, previous }: Props) => {
   const regressions = record.regressions ?? [];
-  if (regressions.length === 0) return null;
+  // 러너 CPU 가 크게 달라 보류한 모바일 TBT 변동 — 회귀는 아니지만 숨기지 않고 알린다.
+  const cpuChange = previous ? detectCpuChange(previous, record) : null;
+  const heldTbt = cpuChange
+    ? (record.suppressedRegressions ?? []).filter((r) => r.metric === 'tbt')
+    : [];
+
+  if (regressions.length === 0) {
+    if (heldTbt.length === 0) return null;
+    return (
+      <section className='rounded-lg border border-line-soft bg-card p-4 text-sm text-text-body'>
+        러너 CPU가 직전과 달라({cpuChange}) TBT 변동 {heldTbt.length}건은 회귀로
+        보지 않고 보류했어요: {heldTbt.map((r) => r.detail).join(' · ')}
+      </section>
+    );
+  }
 
   // 환경이 바뀐 주엔 TBT·점수가 도구 탓으로 크게 출렁인다(10/1 Chrome 업데이트만으로
   // 모바일 점수 9~20점 하락). 예전엔 이 사실이 자연어 분석에만 있어서, 분석이

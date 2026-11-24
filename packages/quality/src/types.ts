@@ -164,7 +164,9 @@ export type MeasureEnvironment = {
   chromeVersion: string; // 해석 실패 시 'unknown'
   lighthouseVersion: string;
   runnerImage: string; // GitHub 러너 이미지 버전(ImageVersion). 러너 밖이면 'local'
-  benchmarkIndex: number; // Lighthouse 기기 성능 지수(높을수록 빠름). 실행마다 출렁여 비교엔 안 쓴다
+  // Lighthouse 기기 성능 지수(높을수록 빠름). 같은 러너에선 몇 % 출렁이므로
+  // 15% 넘게 다를 때만 "다른 컴퓨터"로 본다(environment.ts detectCpuChange).
+  benchmarkIndex: number;
 };
 
 export type QualityRecord = {
@@ -195,7 +197,7 @@ export type QualityRecord = {
   // 사후에 JSON만으로 "그 주에 무엇이 회귀였나"를 답할 수 있게 한다.
   // 2026-07-09부터 기록 — 그 이전 레코드엔 없다(undefined ≠ "회귀 0건").
   regressions?: RegressionRecord[];
-  suppressedRegressions?: RegressionRecord[]; // 동일 배포본 재측정 시 관찰용(코드 회귀 아님)
+  suppressedRegressions?: RegressionRecord[]; // 동일 배포본 재측정·러너 CPU 차이(모바일 TBT) 때 관찰용(코드 회귀 아님)
 };
 
 // analyze.ts 의 Regression 과 같은 모양. 저장 스키마가 분석 모듈에 의존하지 않도록
