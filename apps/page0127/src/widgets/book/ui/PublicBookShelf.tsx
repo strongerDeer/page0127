@@ -303,6 +303,23 @@ export const PublicBookShelf = ({
           noImage
         )}
 
+        {/* 인생책 왕관 — 표지 가운데 위에 얹는다(HJ, 2026-11-24). 전체 보기의 인생책 칸을 없애고
+            책장에서 5점 표지와 구분하는 표시다. 이름은 말풍선의 sr-only "인생책"이 읽어 준다.
+            가린 책(is_masked)엔 씌우지 않는다 — 무슨 책인지 가렸는데 인생책인지는 드러나면 안 된다 */}
+        {book.is_life_book && isCoverView && !isMasked && (
+          <svg
+            data-crown
+            aria-hidden='true'
+            viewBox='0 0 36 26'
+            className={styles.crown}
+          >
+            <path d='M3 9 L10 15 L18 3 L26 15 L33 9 L30 23 H6 Z' />
+            <circle cx='3' cy='8' r='2.2' />
+            <circle cx='18' cy='2.6' r='2.2' />
+            <circle cx='33' cy='8' r='2.2' />
+          </svg>
+        )}
+
         {/* 회독 뱃지. 표지는 자리가 있어 "n회독"을 그대로 쓰고,
                   책등(50px)은 숫자만 원형으로 얹는다 */}
         {isReread &&
@@ -331,7 +348,7 @@ export const PublicBookShelf = ({
           className={styles.tip}
         >
           {/* 3줄 자르기는 안쪽 칸에서 — 여백(padding)이 있는 칸에서 자르면
-                    4번째 줄이 아래 여백으로 비친다. 인생책은 화면엔 글자를 붙이지 않고(사용자 결정 10/15)
+                    4번째 줄이 아래 여백으로 비친다. 인생책은 말풍선에 글자를 붙이지 않고(사용자 결정 10/15, 표지엔 왕관 11/24)
                     화면낭독기에만 읽힌다 — 이 말풍선이 링크의 설명(aria-describedby)이다 */}
           <span data-tip-text className={styles.tipText}>
             {isMasked ? privateLabel : book.title}

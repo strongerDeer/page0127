@@ -234,3 +234,33 @@ describe('PublicBookShelf 북엔드(분야순)', () => {
     ).not.toContain('data-bookend');
   });
 });
+
+describe('PublicBookShelf 인생책 왕관', () => {
+  it('인생책 표지에만 왕관을 씌운다 — 5점 표지와 구분', () => {
+    const html = renderToStaticMarkup(
+      <PublicBookShelf
+        books={[
+          makeBook({ id: 'life', is_life_book: true, rating: 5 }),
+          makeBook({ id: 'five', rating: 5 }),
+        ]}
+      />
+    );
+    expect((html.match(/data-crown/g) ?? []).length).toBe(1);
+  });
+
+  it('가린 책(비공개)에는 왕관이 없다 — 인생책인지도 드러내지 않는다', () => {
+    const html = renderToStaticMarkup(
+      <PublicBookShelf
+        books={[
+          makeBook({
+            id: 'masked',
+            is_life_book: true,
+            is_masked: true,
+            is_public: false,
+          }),
+        ]}
+      />
+    );
+    expect(html).not.toContain('data-crown');
+  });
+});
