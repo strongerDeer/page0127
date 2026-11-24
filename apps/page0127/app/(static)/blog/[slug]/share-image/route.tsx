@@ -8,7 +8,7 @@ import {
   StageBookTitle,
   StageCard,
 } from '@/shared/lib/og/StageCard';
-import { OG_COLORS, OG_SIZE, truncate } from '@/shared/lib/og/theme';
+import { OG_COLORS, truncate } from '@/shared/lib/og/theme';
 
 import { formatChartValue } from '@/entities/story/model/chartBlock';
 import { getPublishedStory } from '@/entities/story/server';
@@ -18,6 +18,11 @@ import { getStoryBook } from '@/widgets/story';
 import type { StoryLeadStat } from '@/entities/story';
 
 // 책 이야기 한 편의 공유 이미지 — 글을 저장하면 코드가 그린다(HJ 2026-11-24: 썸네일 직접 안 만들기).
+//
+// opengraph-image.tsx(파일 규칙)가 아니라 라우트로 둔 이유: 파일 규칙의 주소는 빌드마다 정해진 하나라,
+// 글을 고쳐도 og:image 주소가 그대로였다. 그러면 CDN·카카오톡이 옛 그림(브랜드 카드)을 계속 보여 준다
+// (2026-11-24 독서 통계 글: 새 그림은 38.5% 로 잘 그려지는데 카톡 미리보기는 브랜드 카드).
+// 글 페이지 메타데이터가 이 주소 뒤에 ?v=수정 시각 을 붙인다 → 저장할 때마다 새 주소 = 새 그림.
 //
 // 다른 공유 카드와 같은 "파란 무대 + 흰 띠" 틀을 쓴다. 카톡은 이미지 아래에 글 제목을 또 보여 주므로
 // 무대에는 제목 대신 그 아래에 없는 것을 세운다:
@@ -30,13 +35,7 @@ import type { StoryLeadStat } from '@/entities/story';
 //
 // runtime 을 지정하지 않는다(= Node.js) — 이유는 app/opengraph-image.tsx 참조.
 
-export const alt = '책 이야기 | page0127.';
-export const size = OG_SIZE;
-export const contentType = 'image/png';
-/** 글 페이지와 같은 하루 — 저장하면 revalidateStoryPages 가 페이지와 함께 다시 만든다 */
-export const revalidate = 86400;
-
-type Props = {
+type Context = {
   params: Promise<{ slug: string }>;
 };
 
@@ -129,7 +128,7 @@ const StatStage = ({ stat }: { stat: StoryLeadStat }) => (
   </div>
 );
 
-const Image = async ({ params }: Props) => {
+export const GET = async (_request: Request, { params }: Context) => {
   const { slug } = await params;
   const story = await getPublishedStory(slug).catch((error: unknown) => {
     console.error('책 이야기 OG 조회 실패:', error);
@@ -158,5 +157,3 @@ const Image = async ({ params }: Props) => {
 
   return renderOg(<BrandStage cta={CTA_TALK} />);
 };
-
-export default Image;

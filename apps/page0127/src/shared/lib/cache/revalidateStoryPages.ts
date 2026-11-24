@@ -16,7 +16,7 @@ import { STORIES_CACHE_TAG } from './cacheTags';
 export const revalidateStoryPages = () => {
   revalidateTag(STORIES_CACHE_TAG, { expire: 0 });
   revalidatePath('/(static)/blog', 'page');
-  // 'layout' — 글 페이지와 그 아래 공유 이미지(opengraph-image)까지 함께 버린다(첫 차트 숫자가 바뀌면 이미지도)
+  // 'layout' — 글 페이지와 그 아래 경로까지 함께 버린다. 공유 이미지는 주소에 수정 시각(?v=)이 붙어 저장하면 새 주소가 된다
   revalidatePath('/(static)/blog/[slug]', 'layout');
   revalidatePath('/(static)/books/info/[id]', 'page');
   revalidatePath('/admin/stories');

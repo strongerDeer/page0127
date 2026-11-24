@@ -4,6 +4,7 @@ import {
   absoluteImageUrl,
   formatStoryDate,
   formatStoryShortDate,
+  storyShareImagePath,
 } from './paths';
 
 describe('책 이야기 날짜·주소', () => {
@@ -20,5 +21,20 @@ describe('책 이야기 날짜·주소', () => {
     expect(absoluteImageUrl('https://s.co/a.webp', 'https://x.com')).toBe(
       'https://s.co/a.webp'
     );
+  });
+});
+
+describe('storyShareImagePath', () => {
+  it('수정 시각을 붙여 저장할 때마다 주소가 바뀐다', () => {
+    expect(storyShareImagePath('a', '2026-11-24T01:00:00Z')).toBe(
+      '/blog/a/share-image?v=1795482000000'
+    );
+    expect(storyShareImagePath('a', '2026-11-24T02:00:00Z')).not.toBe(
+      storyShareImagePath('a', '2026-11-24T01:00:00Z')
+    );
+  });
+
+  it('시각을 못 읽으면 버전 없이', () => {
+    expect(storyShareImagePath('a', '')).toBe('/blog/a/share-image');
   });
 });

@@ -1,5 +1,15 @@
 export const storyPath = (slug: string) => `/blog/${slug}`;
 
+/**
+ * 글 공유 이미지(og:image) 주소 — 뒤에 수정 시각을 붙여 저장할 때마다 주소가 바뀌게 한다.
+ * 주소가 같으면 CDN·카카오톡이 옛 그림을 계속 보여 준다(2026-11-24).
+ */
+export const storyShareImagePath = (slug: string, updatedAt: string) => {
+  const version = new Date(updatedAt).getTime();
+  const base = `${storyPath(slug)}/share-image`;
+  return Number.isNaN(version) ? base : `${base}?v=${version}`;
+};
+
 /** 상대 경로(/images/...)는 사이트 주소를 붙여 절대 주소로 — JSON-LD·사이트맵·OG 는 절대 주소가 필요하다 */
 export const absoluteImageUrl = (src: string, siteUrl: string) =>
   /^https?:\/\//.test(src) ? src : `${siteUrl}${src}`;
