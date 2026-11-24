@@ -26,6 +26,14 @@ const GUEST_DAYS = 'page0127:sentence-days';
  */
 export const LAST_DRAWN_KEY = 'page0127:sentence-drawn';
 
+/**
+ * 홈 당근을 누른 시각(sessionStorage) — 모달이 이걸 보고 뜨자마자 당근을 뽑는다.
+ * 주소에 ?draw=1 을 붙이면 홈에서 가로채기 이동이 멈춰서(Next 16, 같은 단계 (.)sentence + 쿼리) 주소 대신 쓴다.
+ */
+export const AUTO_DRAW_KEY = 'page0127:sentence-auto';
+/** 누르고 이 안에 모달이 떠야 자동으로 뽑는다 — 오래된 표시로 나중에 연 모달이 혼자 뽑히지 않게 */
+export const AUTO_DRAW_TTL_MS = 10_000;
+
 const KEEP_DAYS = 14;
 
 export type DrawnSentence = {

@@ -562,7 +562,9 @@
 }
 
 .desk:not([data-phase="closed"]) .bubble,
-.desk:not([data-phase="closed"]) .below {
+.desk:not([data-phase="closed"]) .below,
+.desk[data-auto] .bubble,
+.desk[data-auto] .below {
   opacity: 0;
 }
 

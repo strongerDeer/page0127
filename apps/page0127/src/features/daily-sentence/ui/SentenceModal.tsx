@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+
 import { usePathname, useRouter } from 'next/navigation';
 
 import {
@@ -9,6 +11,7 @@ import {
   DialogTitle,
 } from '@repo/ui';
 
+import { AUTO_DRAW_KEY, AUTO_DRAW_TTL_MS } from '../model/useDailySentenceDraw';
 import { SentenceBook } from './SentenceBook';
 
 import type { TodaySentenceState } from '../api/getTodaySentenceState';
@@ -24,12 +27,35 @@ import type { TodaySentenceState } from '../api/getTodaySentenceState';
  * 없으면 이전 상태를 유지하므로, 모달에서 "이 책 보러 가기"를 누르면 모달이 남는다.
  * (흔한 해법인 @modal/[...catchAll] 은 strict route matching 에서 route handler 주소와 부딪혀 빌드가 실패한다)
  */
-export const SentenceModal = (props: TodaySentenceState) => {
-  const router = useRouter();
-  const pathname = usePathname();
-  const close = () => router.back();
+/** 방금 홈 당근을 눌러서 열렸나 — 모달은 사이트 안 이동에서만 그려져서 서버 렌더가 없다 */
+const readAutoDraw = () => {
+  try {
+    const at = Number(sessionStorage.getItem(AUTO_DRAW_KEY));
+    return at > 0 && Date.now() - at < AUTO_DRAW_TTL_MS;
+  } catch {
+    return false;
+  }
+};
 
+export const SentenceModal = (props: TodaySentenceState) => {
+  const pathname = usePathname();
+  // 칸은 닫힌 뒤에도 남아 있을 수 있어서, 표시는 창이 새로 뜰 때마다(아래 컴포넌트가 붙을 때) 읽는다
   if (pathname !== '/sentence') return null;
+  return <SentenceDialog {...props} />;
+};
+
+const SentenceDialog = (props: TodaySentenceState) => {
+  const router = useRouter();
+  const close = () => router.back();
+  const [autoStart] = useState(readAutoDraw);
+  // 한 번 쓴 표시는 지운다 — 서재 배너에서 다시 열면 평소처럼 당근부터
+  useEffect(() => {
+    try {
+      sessionStorage.removeItem(AUTO_DRAW_KEY);
+    } catch {
+      // 저장소가 막힌 브라우저 — 지울 것도 없다
+    }
+  }, []);
 
   return (
     <Dialog open onOpenChange={(open) => !open && close()}>
@@ -42,7 +68,12 @@ export const SentenceModal = (props: TodaySentenceState) => {
         <DialogDescription className='sr-only'>
           책 사이 당근을 뽑으면 오늘의 문장과 독서운이 나와요.
         </DialogDescription>
-        <SentenceBook {...props} variant='modal' onClose={close} />
+        <SentenceBook
+          {...props}
+          variant='modal'
+          onClose={close}
+          autoStart={autoStart}
+        />
       </DialogContent>
     </Dialog>
   );
