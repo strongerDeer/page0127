@@ -17,10 +17,13 @@ import {
   getPublishedStory,
 } from '@/entities/story/server';
 
+import { MyRecordBlock } from '@/features/story-my-record';
+
 import {
   CharacterList,
   CharacterMap,
   getStoryBook,
+  MoreStories,
   StoryBookCard,
 } from '@/widgets/story';
 
@@ -33,7 +36,12 @@ type PageProps = {
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
 /**
- * 책 이야기 한 편 — HJ 의 독후감 + 인물관계도 (/blog/[slug])
+ * 책 이야기 한 편 (/blog/[slug]) — "책 관련 이야기 블로그"(HJ 2026-11-24)
+ *
+ * 두 가지 글:
+ * - 책 한 권 글: 책 카드 + 독후감 + 인물관계도 + 등장인물 (전과 같다)
+ * - 독서 이야기(bookId 없음): 책 카드·별점·"독후감" 제목 없이 본문(차트 블록 포함)만
+ * 본문 속 "내 기록" 블록만 브라우저에서 채운다(MyRecordBlock) — 페이지는 계속 정적이다.
  *
  * 글은 어드민(/admin/stories)에서 쓰고 stories 테이블에 저장한다(HJ 2026-11-23 C안).
  * 정적 페이지(ISR)로 캐시해 두고, 저장할 때만 다시 만든다(on-demand revalidation).
@@ -69,17 +77,7 @@ export async function generateMetadata({
       type: 'article',
       publishedTime: story.publishedAt,
       modifiedTime: story.updatedAt ?? story.publishedAt,
-      // 공유 미리보기에도 관계도 그림을 쓴다 — 이 글에서 가장 눈에 띄는 것
-      ...(story.mapImage && {
-        images: [
-          {
-            url: story.mapImage.src,
-            width: story.mapImage.width,
-            height: story.mapImage.height,
-            alt: story.mapImage.alt,
-          },
-        ],
-      }),
+      // 공유 이미지는 같은 폴더의 opengraph-image.tsx 가 그린다(책 표지·첫 차트 숫자)
     },
     twitter: {
       card: 'summary_large_image',
@@ -94,14 +92,16 @@ export default async function StoryPage({ params }: PageProps) {
   const story = await getPublishedStory(slug);
   if (!story) notFound();
 
-  const book = await getStoryBook(story.bookId);
-  const { mapImage } = story;
+  const { bookId, mapImage } = story;
+  const book = bookId ? await getStoryBook(bookId) : null;
   const hasCharacters = story.characters.length > 0;
+  // 목차는 칸이 둘 이상일 때만 뜻이 있다 — 본문만 있는 독서 이야기는 그리지 않는다
   const toc = [
-    ['#review', '독후감'],
+    ['#review', bookId ? '독후감' : '본문'],
     ...(mapImage ? [['#character-map', '인물관계도']] : []),
     ...(hasCharacters ? [['#characters', '등장인물']] : []),
   ];
+  const mapTitle = story.bookTitle || story.title;
 
   const jsonLd = buildStoryArticleJsonLd({
     title: story.title,
@@ -112,11 +112,13 @@ export default async function StoryPage({ params }: PageProps) {
     dateModified: story.updatedAt,
     siteName: 'page0127.',
     siteUrl,
-    book: {
-      title: story.bookTitle,
-      author: story.author,
-      url: `${siteUrl}/books/info/${story.bookId}`,
-    },
+    book: bookId
+      ? {
+          title: story.bookTitle,
+          author: story.author,
+          url: `${siteUrl}/books/info/${bookId}`,
+        }
+      : null,
   });
 
   return (
@@ -128,8 +130,12 @@ export default async function StoryPage({ params }: PageProps) {
             <Link href='/blog' className='hover:text-text-strong'>
               책 이야기
             </Link>
-            <span aria-hidden='true'> › </span>
-            {story.bookTitle}
+            {story.bookTitle && (
+              <>
+                <span aria-hidden='true'> › </span>
+                {story.bookTitle}
+              </>
+            )}
           </nav>
           <h1 className='heading-1 break-keep'>{story.title}</h1>
           <p className='text-sm text-text-subtle'>
@@ -139,29 +145,38 @@ export default async function StoryPage({ params }: PageProps) {
           </p>
         </header>
 
-        <StoryBookCard
-          bookId={story.bookId}
-          bookTitle={story.bookTitle}
-          author={story.author}
-          rating={story.rating}
-          book={book}
-        />
+        {bookId && (
+          <StoryBookCard
+            bookId={bookId}
+            bookTitle={story.bookTitle}
+            author={story.author}
+            rating={story.rating}
+            book={book}
+          />
+        )}
 
-        <nav aria-label='목차' className='flex flex-wrap gap-2'>
-          {toc.map(([href, label]) => (
-            <a
-              key={href}
-              href={href}
-              className='rounded-full border border-line px-3 py-1 text-sm text-text-subtle transition-colors hover:text-text-strong'
-            >
-              {label}
-            </a>
-          ))}
-        </nav>
+        {toc.length > 1 && (
+          <nav aria-label='목차' className='flex flex-wrap gap-2'>
+            {toc.map(([href, label]) => (
+              <a
+                key={href}
+                href={href}
+                className='rounded-full border border-line px-3 py-1 text-sm text-text-subtle transition-colors hover:text-text-strong'
+              >
+                {label}
+              </a>
+            ))}
+          </nav>
+        )}
 
         <section id='review' className='scroll-mt-20'>
-          <h2 className='heading-2 mb-5'>독후감</h2>
-          <StoryMarkdown body={story.body} />
+          {bookId && <h2 className='heading-2 mb-5'>독후감</h2>}
+          <StoryMarkdown
+            body={story.body}
+            renderMyRecord={(spec) => (
+              <MyRecordBlock rate={spec.rate} label={spec.label} />
+            )}
+          />
         </section>
 
         {mapImage && (
@@ -169,26 +184,30 @@ export default async function StoryPage({ params }: PageProps) {
             id='character-map'
             className='flex scroll-mt-20 flex-col gap-4'
           >
-            <h2 className='heading-2'>{story.bookTitle} 인물관계도</h2>
+            <h2 className='heading-2'>{mapTitle} 인물관계도</h2>
             <CharacterMap full={mapImage} cards={story.mapCards} />
           </section>
         )}
 
         {hasCharacters && (
           <section id='characters' className='scroll-mt-20'>
-            <h2 className='heading-2 mb-5'>{story.bookTitle} 등장인물</h2>
+            <h2 className='heading-2 mb-5'>{mapTitle} 등장인물</h2>
             <CharacterList groups={story.characters} />
           </section>
         )}
 
-        <StoryBookCard
-          variant='end'
-          bookId={story.bookId}
-          bookTitle={story.bookTitle}
-          author={story.author}
-          rating={story.rating}
-          book={book}
-        />
+        {bookId && (
+          <StoryBookCard
+            variant='end'
+            bookId={bookId}
+            bookTitle={story.bookTitle}
+            author={story.author}
+            rating={story.rating}
+            book={book}
+          />
+        )}
+
+        <MoreStories currentId={story.id} />
       </article>
     </PageContainer>
   );

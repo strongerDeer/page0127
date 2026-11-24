@@ -142,7 +142,8 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
 
     const readersByIsbn = countReadersByIsbn(publicBooks ?? []);
     const storyBookIds = new Set([
-      ...stories.map((story) => story.bookId),
+      // 책 없는 글(독서 이야기)은 bookId 가 null — 책 페이지 색인 판단에서 뺀다
+      ...stories.flatMap((story) => (story.bookId ? [story.bookId] : [])),
       ...(comments ?? []).map((c) => c.global_book_id as string),
     ]);
 

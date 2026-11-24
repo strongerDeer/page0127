@@ -31,3 +31,7 @@ export const formatStoryShortDate = (iso: string) => {
   }).format(date);
   return parts.replaceAll('-', '.');
 };
+
+/** 목록·공유 카드의 글 종류 — 따로 칸을 두지 않고 "책이 연결됐나"로 가른다(HJ 2026-11-24) */
+export const storyKindLabel = (story: { bookId: string | null }) =>
+  story.bookId ? '책 한 권' : '독서 이야기';

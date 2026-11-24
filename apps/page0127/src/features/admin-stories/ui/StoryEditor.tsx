@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { BookCover } from '@repo/ui';
 import { ExternalLink, ImagePlus, Trash2, X } from 'lucide-react';
 
-import { StoryMarkdown,storyPath } from '@/entities/story';
+import { StoryMarkdown, storyPath } from '@/entities/story';
 
 import { BookPicker } from '@/features/admin-sentences/ui/BookPicker';
 
@@ -30,6 +30,24 @@ const INPUT =
   'w-full rounded-md border border-line bg-transparent px-3 py-2 text-sm';
 const LABEL = 'flex flex-col gap-1 text-sm';
 const HINT = 'text-xs text-text-subtle';
+
+/** 본문 차트 블록 예시 — "예시 넣기" 버튼이 본문 끝에 붙인다 (문법: entities/story/model/chartBlock.ts) */
+const CHART_EXAMPLE = `\`\`\`chart
+type: people
+value: 38.5
+unit: %
+label: 1년에 책을 1권 이상 읽은 성인
+note: 종합독서율 — 1년 동안 일반 도서를 1권 이상 읽거나 들은 사람의 비율
+source: 문화체육관광부 「2025 국민 독서실태 조사」 · 2026.3.6
+\`\`\``;
+
+/** 어드민 미리보기의 내 기록 자리 — 로그인한 HJ 의 숫자 대신 자리만 보여 준다 */
+const MyRecordPreview = () => (
+  <div className='mt-2 rounded-2xl border border-dashed border-line p-5 text-sm text-text-subtle'>
+    내 기록 칸 — 공개 페이지에서는 로그인한 사람의 올해 완독 수가, 로그인 안 한
+    사람에게는 &quot;내 서재 만들기&quot; 버튼이 보여요.
+  </div>
+);
 
 const CHARACTERS_PLACEHOLDER = `# 현재 · 2023
 강영두: 대온실 수리 보고서를 쓰는 사람
@@ -60,7 +78,7 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
   const [tab, setTab] = useState<'write' | 'preview'>('write');
 
   const [book, setBook] = useState<BookState>(
-    story
+    story?.bookId
       ? {
           kind: 'linked',
           id: story.bookId,
@@ -200,13 +218,26 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
                 책 정보
               </Link>
             )}
+            <button
+              type='button'
+              onClick={() => {
+                setBook(null);
+                setRating(0);
+              }}
+              aria-label='책 연결 빼기'
+              className='rounded p-1 text-text-subtle hover:bg-accent'
+            >
+              <X className='size-4' aria-hidden />
+            </button>
           </div>
         )}
         <BookPicker
           onPick={(picked) => setBook({ kind: 'picked', book: picked })}
         />
         <p className={HINT}>
-          고른 책의 책 정보 페이지에 이 글로 가는 카드가 생겨요.
+          고른 책의 책 정보 페이지에 이 글로 가는 카드가 생겨요. 독서 통계처럼
+          책과 상관없는 글이면 고르지 않아도 돼요(목록에 &quot;독서
+          이야기&quot;로 나와요).
         </p>
       </section>
 
@@ -250,7 +281,8 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
           <select
             value={rating}
             onChange={(e) => setRating(Number(e.target.value))}
-            className={INPUT}
+            disabled={!book}
+            className={`${INPUT} disabled:opacity-50`}
           >
             <option value={0}>안 보이기</option>
             {[1, 2, 3, 4, 5].map((n) => (
@@ -276,7 +308,7 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
       {/* 본문 */}
       <section className='flex flex-col gap-2'>
         <div className='flex items-center justify-between'>
-          <h2 className='text-sm font-medium'>독후감</h2>
+          <h2 className='text-sm font-medium'>본문</h2>
           <div className='flex gap-1 lg:hidden' role='tablist'>
             {(
               [
@@ -301,19 +333,40 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
           빈 줄로 문단을 나눠요. ## 소제목, &gt; 인용, **굵게**, - 목록.
           결말·인물의 정체는 쓰지 않기(스포일러 없음).
         </p>
+        <p className={HINT}>
+          차트: ```chart 블록에 type(number·people·bar·column·slope·my-record)과
+          값을 적으면 그림이 돼요. 출처(source)가 없으면 저장되지 않아요.{' '}
+          <button
+            type='button'
+            onClick={() =>
+              setBody((current) =>
+                current.trim()
+                  ? `${current.trimEnd()}\n\n${CHART_EXAMPLE}\n`
+                  : `${CHART_EXAMPLE}\n`
+              )
+            }
+            className='underline'
+          >
+            예시 넣기
+          </button>
+        </p>
         <div className='grid gap-4 lg:grid-cols-2'>
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
             rows={20}
-            placeholder='여기에 독후감을 써 주세요.'
+            placeholder='여기에 글을 써 주세요.'
             className={`${INPUT} font-mono leading-relaxed ${tab === 'preview' ? 'max-lg:hidden' : ''}`}
           />
           <div
             className={`min-h-40 rounded-md border border-dashed border-line p-4 ${tab === 'write' ? 'max-lg:hidden' : ''}`}
           >
             {body.trim() ? (
-              <StoryMarkdown body={body} />
+              <StoryMarkdown
+                body={body}
+                preview
+                renderMyRecord={() => <MyRecordPreview />}
+              />
             ) : (
               <p className={HINT}>미리보기가 여기에 보여요.</p>
             )}
@@ -472,7 +525,7 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
         <button
           type='button'
           onClick={onSave}
-          disabled={busy || !book || Boolean(slugError)}
+          disabled={busy || Boolean(slugError)}
           className='rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50'
         >
           {isPending ? '저장 중…' : '저장'}
