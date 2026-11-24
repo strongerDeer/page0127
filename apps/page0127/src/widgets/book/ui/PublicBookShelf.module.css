@@ -479,3 +479,36 @@
 .books li.slot > * {
   height: var(--shelf-book-h);
 }
+
+/*
+  북엔드 — 분야순 정렬에서 묶음 첫 권 앞에 서는 정사각 블록(HJ 시안, 2026-11-24).
+  브랜드 블루 면, 모서리 없음. 첫 권과 같은 li 안에 있어 줄이 바뀌어도 혼자 남지 않는다.
+*/
+.books li .bookend {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  box-sizing: border-box;
+  width: 64px;
+  height: 64px;
+  margin: 0 6px 0 12px;
+  padding: 7px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 2px 0 5px var(--shelf-shadow-soft);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25;
+  word-break: keep-all;
+}
+
+.books li:first-child .bookend {
+  margin-left: 0;
+}
+
+.books li .bookendCount {
+  margin-top: 2px;
+  font-weight: 500;
+  opacity: 0.8;
+}

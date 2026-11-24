@@ -13,6 +13,7 @@ import { RenderWhenNear } from '@/shared/ui/RenderWhenNear';
 import { calculateReadingBalance } from '@/entities/book';
 
 import { ShareSheetButton } from '@/features/share';
+import { bookendCategory } from '@/features/stats/model/orderByCategory';
 import {
   hasActiveShelfFilter,
   useLibraryFilters,
@@ -23,7 +24,6 @@ import { RatingSummaryCard } from '@/features/stats/ui/RatingSummaryCard';
 import { ReadingBalanceCard } from '@/features/stats/ui/ReadingBalanceCard';
 import { YearSummary } from '@/features/stats/ui/YearSummary';
 
-import { CategoryBookShelf } from '@/widgets/book/ui/CategoryBookShelf';
 import { LifeBooksShelf } from '@/widgets/book/ui/LifeBooksShelf';
 import { PublicBookShelf } from '@/widgets/book/ui/PublicBookShelf';
 import { ReadingJourneyCard } from '@/widgets/dashboard/ReadingJourneyCard';
@@ -347,16 +347,24 @@ export const LibraryView = ({
           onRemoveRatingFilter={filters.clearRating}
           onSearchChange={filters.setSearch}
           onResetAll={filters.resetAll}
-          // 책장형은 PublicBookShelf/CategoryBookShelf가 username으로 직접 링크를 계산하지만,
+          // 책장형은 PublicBookShelf가 username으로 직접 링크를 계산하지만,
           // 피드형(BookFeedGrid)은 DashboardBookList 내부에서 렌더링되므로
           // bookHref를 통해 공개 서재/내 서재 링크를 구분해 넘겨야 한다
           bookHref={bookHref}
-          renderBooks={(filteredBooks) =>
+          renderBooks={(filteredBooks, { groupByCategory }) =>
             isAllView ? (
-              <CategoryBookShelf books={filteredBooks} username={username} />
+              // 전체 보기는 한 책장에 이어 꽂는다 — 분야순이면 경계마다 북엔드(HJ, 2026-11-24).
+              // 예전엔 분야마다 선반을 새로 시작해 반쯤 빈 줄이 여럿 생겼다
+              <PublicBookShelf
+                books={filteredBooks}
+                username={username}
+                groupBy={groupByCategory ? bookendCategory : undefined}
+                compact
+              />
             ) : (
               <PublicBookShelf
                 books={filteredBooks}
+                groupBy={groupByCategory ? bookendCategory : undefined}
                 // 조건이 걸리면 읽는 중 책을 덧붙이지 않는다 — 조건을 거치지 않은 책이 섞인다
                 readingBooks={hasActiveShelfFilter(filters) ? [] : readingBooks}
                 plateLabel={String(selectedYear)}
@@ -481,9 +489,8 @@ export const LibraryView = ({
                         <RenderWhenNear placeholder={<TrendChartSkeleton />}>
                           <YearlyTrendChart
                             data={overallStats.yearlyTrend}
-                            goals={readingGoals}
-                            // 방문자에겐 채운 목표만 — 연도 요약과 같은 규칙(HJ, 2026-11-24)
-                            showUnmetGoals={isOwner}
+                            // 목표는 주인에게만 — 방문자 차트는 완독 권수만(HJ, 2026-11-24)
+                            goals={isOwner ? readingGoals : undefined}
                           />
                         </RenderWhenNear>
                       </CardContent>

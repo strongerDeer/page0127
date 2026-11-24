@@ -285,7 +285,8 @@ const LibraryContent = async ({
     isOwnProfile
       ? Promise.resolve(undefined)
       : getSentenceMonthCounts(profile.id),
-    getReadingGoals(profile.id),
+    // 연도별 추이의 목표는 주인에게만 그린다(HJ, 2026-11-24) — 방문자면 조회하지 않는다
+    isOwnProfile ? getReadingGoals(profile.id) : Promise.resolve([]),
   ]);
   const todaySentence =
     sentenceDraws.find((sentence) => sentence.draw_date === today) ?? null;

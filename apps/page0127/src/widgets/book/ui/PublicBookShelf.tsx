@@ -20,6 +20,7 @@ import { spineTone } from '@/entities/book/model/spineTone';
 import { shelfSpineWidthPx } from '@/entities/book/model/spineWidth';
 
 import {
+  BOOKEND_PX,
   estimateShelfItemWidth,
   packShelfRows,
   SHELF_ROW_GAP,
@@ -66,6 +67,32 @@ type PublicBookShelfProps = {
    * 만들어 넣는다. 선반이 "도서 추가"라는 기능까지 알게 되면 렌더링만 하는 역할이 흐려진다.
    */
   trailingSlot?: ReactNode;
+  /**
+   * 같은 값이 이어지는 책들의 첫 권 앞에 북엔드(이름·권수 정사각 블록)를 세운다.
+   * 예: 정렬 "분야순"에서 분야 이름. 묶는 순서는 부르는 쪽이 정해 넘긴다 — 선반은 이어진 칸만 센다.
+   */
+  groupBy?: (book: Book) => string;
+};
+
+type Bookend = { label: string; count: number };
+
+/** 이어진 같은 값마다 첫 권의 순번 → 북엔드. 순서를 바꾸지 않고 경계만 찾는다 */
+export const findBookends = (
+  books: Book[],
+  groupBy: (book: Book) => string
+): Map<number, Bookend> => {
+  const bookends = new Map<number, Bookend>();
+  let current: Bookend | null = null;
+  books.forEach((book, index) => {
+    const label = groupBy(book);
+    if (current && current.label === label) {
+      current.count += 1;
+      return;
+    }
+    current = { label, count: 1 };
+    bookends.set(index, current);
+  });
+  return bookends;
 };
 
 /**
@@ -84,6 +111,7 @@ export const PublicBookShelf = ({
   readingBooks = [],
   plateLabel,
   trailingSlot,
+  groupBy,
 }: PublicBookShelfProps) => {
   const [imgSrc, setImgSrc] = useState<Record<string, string>>({});
   const shelfRef = useRef<HTMLDivElement>(null);
@@ -124,10 +152,21 @@ export const PublicBookShelf = ({
     return <StatePanel message='조건에 맞는 책이 없어요.' />;
   }
 
+  // 북엔드는 완독 책끼리만 — 끝에 붙는 읽는 중 책은 묶음에 넣지 않는다
+  const bookends = groupBy ? findBookends(books, groupBy) : new Map();
+
   // 읽는 중인 책은 선반 끝에 — 책장만 봐도 "지금 읽고 있는 책"이 보이게
   const shelfItems = [
-    ...books.map((book) => ({ book, isReading: false })),
-    ...readingBooks.map((book) => ({ book, isReading: true })),
+    ...books.map((book, index) => ({
+      book,
+      isReading: false,
+      bookend: bookends.get(index) as Bookend | undefined,
+    })),
+    ...readingBooks.map((book) => ({
+      book,
+      isReading: true,
+      bookend: undefined,
+    })),
   ];
 
   // 말풍선을 띄울 때 실제 위치를 재서 책장 밖으로 나가는 만큼 안쪽으로 민다
@@ -144,7 +183,11 @@ export const PublicBookShelf = ({
     tip.style.setProperty('--tip-shift', `${shift}px`);
   };
 
-  const renderItem = ({ book, isReading }: (typeof shelfItems)[number]) => {
+  const renderItem = ({
+    book,
+    isReading,
+    bookend,
+  }: (typeof shelfItems)[number]) => {
     // 최고 평가(5점·인생책)만 표지를 크게 세우고 나머지는 책등으로 꽂는다
     const isCoverView = isTopRated(book.rating, book.is_life_book);
     // 책등만 여기서 대체한다 — onError 로 대체된 뒤에는 로컬 이미지(no-book.jpg)가
@@ -306,6 +349,13 @@ export const PublicBookShelf = ({
 
     return (
       <li key={book.id} onMouseEnter={placeTip} onFocus={placeTip}>
+        {/* 북엔드는 첫 권과 같은 칸에 — 따로 세우면 줄 끝에 북엔드만 남고 책은 다음 줄로 넘어간다 */}
+        {bookend && (
+          <span data-bookend className={styles.bookend}>
+            <span className={styles.bookendLabel}>{bookend.label}</span>
+            <span className={styles.bookendCount}>{bookend.count}권</span>
+          </span>
+        )}
         {isMasked ? (
           // 가린 책은 갈 곳이 없다 — 링크 대신 초점만 받는 칸으로 두고 말풍선으로 알린다
           <span
@@ -343,7 +393,10 @@ export const PublicBookShelf = ({
   const rows = shouldVirtualize
     ? packShelfRows(
         [
-          ...shelfItems.map(({ book }) => estimateShelfItemWidth(book, size)),
+          ...shelfItems.map(
+            ({ book, bookend }) =>
+              estimateShelfItemWidth(book, size) + (bookend ? BOOKEND_PX : 0)
+          ),
           ...(trailing ? [TRAILING_SLOT_PX] : []),
         ],
         shelfWidth,
