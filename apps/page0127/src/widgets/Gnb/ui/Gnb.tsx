@@ -1,12 +1,11 @@
 import { Button } from '@repo/ui';
-import { Plus } from 'lucide-react';
 
 import { IntentPrefetchLink } from '@/shared/ui/IntentPrefetchLink';
 
 import { NotificationDropdown } from '@/features/notification';
-import { coachTarget } from '@/features/onboarding';
 import { ProfileDropdown } from '@/features/profile';
 
+import { AddBookButton } from './AddBookButton';
 import { GnbNav } from './GnbNav';
 import { GnbSearch } from './GnbSearch';
 import { MobileBookSearch } from './MobileBookSearch';
@@ -59,16 +58,7 @@ export const Gnb = ({ user }: GnbProps) => {
           {user ? (
             <>
               <NotificationDropdown userId={user.userId} />
-              <Button asChild size='sm' className='md:ml-1'>
-                <IntentPrefetchLink
-                  href='/books/add'
-                  {...coachTarget('add-book')}
-                >
-                  <Plus aria-hidden='true' />
-                  <span className='hidden md:inline'>도서 추가</span>
-                  <span className='sr-only md:hidden'>도서 추가</span>
-                </IntentPrefetchLink>
-              </Button>
+              <AddBookButton />
               {/*
                 프로필 드롭다운은 데스크톱에서만 — 모바일에선 같은 내용(내 서재·설정·로그아웃)이
                 ☰ 목차 안에 있다. 320px 폰에서 머리글이 40px 넘쳐 페이지가 좌우로 흔들려서
