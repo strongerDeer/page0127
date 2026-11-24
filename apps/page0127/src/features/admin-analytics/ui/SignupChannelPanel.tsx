@@ -1,4 +1,4 @@
-import { ShareBars } from './ShareBars';
+import { DonutShare } from '@/shared/ui/AdminDonutShare';
 
 import type { SignupChannelsResult } from '../api/getSignupChannels';
 
@@ -20,7 +20,7 @@ export const SignupChannelPanel = ({
     );
   }
   return (
-    <ShareBars
+    <DonutShare
       title={`이 기간 가입자 ${result.total}명이 처음 들어온 길`}
       caption='첫 방문 때 출처를 기억했다가 가입할 때 저장합니다. 운영자·체험·테스트 계정 제외. 2026-11-24 전 가입자는 기록 없음.'
       items={result.rows.map((r) => ({
@@ -29,6 +29,8 @@ export const SignupChannelPanel = ({
         value: r.count,
         display: `${r.count}명`,
       }))}
+      centerLabel='가입'
+      centerValue={result.total}
       emptyText='이 기간 가입자 없음'
     />
   );

@@ -1,4 +1,4 @@
-import { chartInk } from '@/shared/lib/chartStyles';
+import { adminInk } from '@/shared/lib/admin/adminChartColors';
 
 export type ShareBarItem = {
   key: string;
@@ -19,6 +19,8 @@ type ShareBarsProps = {
   caption?: string;
   items: ShareBarItem[];
   emptyText?: string;
+  /** 가장 큰 항목 막대만 민트로 — 요일처럼 "언제가 제일 많나"를 보는 칸 */
+  highlightMax?: boolean;
 };
 
 /**
@@ -26,13 +28,14 @@ type ShareBarsProps = {
  *
  * recharts 대신 HTML 로 그린 이유: 항목 이름이 길고(페이지 경로·채널 풀이) 줄바꿈이 필요한데,
  * SVG 축 라벨은 줄바꿈이 안 된다. HTML 이면 글자가 그대로 읽히고(스크린리더·복사) 폭에 맞게 접힌다.
- * 막대는 단일 계열이라 색 하나(그린)만 쓴다 — 색이 아니라 길이가 정보다.
+ * 막대는 단일 계열이라 색 하나(블루)만 쓴다 — 색이 아니라 길이가 정보다.
  */
 export const ShareBars = ({
   title,
   caption,
   items,
   emptyText = '데이터 없음',
+  highlightMax = false,
 }: ShareBarsProps) => {
   const max = Math.max(0, ...items.map((i) => i.value));
   const total = items.reduce((a, i) => a + i.value, 0);
@@ -69,8 +72,11 @@ export const ShareBars = ({
                     className='h-1.5 rounded-full'
                     style={{
                       width: `${max > 0 ? (item.value / max) * 100 : 0}%`,
-                      // bg-primary 는 앱 버튼 색(블루)이라 차트 공용 그린과 어긋난다 — 같은 색 상수를 쓴다
-                      backgroundColor: chartInk.primary,
+                      // 어드민 차트 공용 블루
+                      backgroundColor:
+                        highlightMax && max > 0 && item.value === max
+                          ? adminInk.mint
+                          : adminInk.primary,
                     }}
                   />
                 </div>

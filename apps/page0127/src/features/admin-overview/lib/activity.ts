@@ -19,6 +19,22 @@ export type ActivitySummary = {
   mau: number;
   /** 30일 평균 DAU ÷ MAU. MAU 가 0 이면 null */
   stickiness: number | null;
+  /** 어제까지 14일 DAU — 카드 안 추세선 */
+  dauSeries: number[];
+  /** 그제 DAU — DAU 카드 증감 */
+  prevDau: number;
+  /** 그 전 7일 WAU — WAU 카드 증감 */
+  prevWau: number;
+};
+
+/** 추세선 길이 — 2주면 요일 패턴이 두 번 보여 "주말이라 낮은지" 구분된다 */
+export const SPARK_DAYS = 14;
+
+/** 'YYYY-MM-DD' 에 n 일 더하기 (UTC 로 계산해 시간대·서머타임 영향 없음) */
+export const addDays = (dateKey: string, n: number): string => {
+  const d = new Date(`${dateKey}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
 };
 
 const uniqueUsers = (visits: Visit[], from: string, to: string): Set<string> =>
@@ -43,6 +59,20 @@ export const summarizeActivity = (
     wau: uniqueUsers(visits, p.weekStart, p.yesterday).size,
     mau,
     stickiness: mau === 0 ? null : dauSum / 30 / mau,
+    dauSeries: Array.from({ length: SPARK_DAYS }, (_, i) => {
+      const day = addDays(p.yesterday, i - (SPARK_DAYS - 1));
+      return uniqueUsers(visits, day, day).size;
+    }),
+    prevDau: uniqueUsers(
+      visits,
+      addDays(p.yesterday, -1),
+      addDays(p.yesterday, -1)
+    ).size,
+    prevWau: uniqueUsers(
+      visits,
+      addDays(p.weekStart, -7),
+      addDays(p.weekStart, -1)
+    ).size,
   };
 };
 

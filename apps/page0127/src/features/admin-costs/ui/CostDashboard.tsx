@@ -1,4 +1,9 @@
-import { MONTHLY_BUDGET_KRW, USD_TO_KRW } from '@/shared/lib/admin/config';
+import { adminInk } from '@/shared/lib/admin/adminChartColors';
+import {
+  AI_BUDGET_WARN_PERCENT,
+  MONTHLY_BUDGET_KRW,
+  USD_TO_KRW,
+} from '@/shared/lib/admin/config';
 
 import {
   budgetBasisCents,
@@ -48,6 +53,11 @@ export const CostDashboard = ({ summary, actual }: CostDashboardProps) => {
     actual.ok ? actual.costs.daily : null
   );
 
+  const maxDaily = Math.max(
+    0,
+    ...daily.map((d) => Math.max(d.appCents, d.actualCents ?? 0))
+  );
+
   return (
     <div className='flex flex-col gap-6'>
       {/* 예산 게이지 */}
@@ -56,16 +66,57 @@ export const CostDashboard = ({ summary, actual }: CostDashboardProps) => {
           이번 달 AI 비용 ·{' '}
           {actual.ok ? '실제 청구 (로컬·운영·테스트 합산)' : '운영 앱 기록'}
         </div>
-        <div className='mt-1 text-lg font-medium'>
-          {formatUsd(usage.usd)} ≈ {formatKrw(usage.krw)} /{' '}
-          {formatKrw(usage.budgetKrw)} ({usage.percent}%)
+        <div className='mt-1 flex flex-wrap items-baseline gap-x-2'>
+          <span className='text-2xl font-bold tabular-nums text-text-strong'>
+            {formatKrw(usage.krw)}
+          </span>
+          <span className='text-sm text-text-subtle tabular-nums'>
+            / {formatKrw(usage.budgetKrw)} · {formatUsd(usage.usd)}
+          </span>
         </div>
-        <div className='mt-2 h-2 w-full border border-line'>
+        {/* 예산 게이지 — 경고선(80%)을 그어 두고, 넘으면 색이 바뀐다 (HJ, 2026-11-24) */}
+        <div
+          className='relative mt-3 h-3 w-full rounded-full bg-sunken'
+          role='meter'
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.min(usage.percent, 100)}
+          aria-label={`예산의 ${usage.percent}% 사용`}
+        >
           <div
-            className='h-full bg-primary'
-            style={{ width: `${Math.min(usage.percent, 100)}%` }}
+            className='h-full rounded-full'
+            style={{
+              width: `${Math.min(usage.percent, 100)}%`,
+              background:
+                usage.percent >= AI_BUDGET_WARN_PERCENT
+                  ? '#f0a94c'
+                  : `linear-gradient(90deg, ${adminInk.mint}, ${adminInk.primary})`,
+            }}
+          />
+          <span
+            aria-hidden
+            className='absolute -top-1 -bottom-1 w-0.5 rounded bg-text-strong/60'
+            style={{ left: `${AI_BUDGET_WARN_PERCENT}%` }}
           />
         </div>
+        <p className='mt-1.5 text-xs tabular-nums'>
+          <span
+            className={
+              usage.percent >= 100
+                ? 'font-medium text-destructive'
+                : usage.percent >= AI_BUDGET_WARN_PERCENT
+                  ? 'font-medium text-[#8a4b00] dark:text-[#f0a94c]'
+                  : 'text-text-subtle'
+            }
+          >
+            {usage.percent}%
+            {usage.percent >= 100
+              ? ' · 예산 넘음'
+              : usage.percent >= AI_BUDGET_WARN_PERCENT
+                ? ` · 경고선(${AI_BUDGET_WARN_PERCENT}%) 넘음`
+                : ` · 경고선 ${AI_BUDGET_WARN_PERCENT}%까지 여유`}
+          </span>
+        </p>
         <p className='mt-2 text-xs text-text-subtle'>
           {actual.ok
             ? `운영 앱 기록 ${formatUsd(summary.monthTotalCents / 100)} · 그 밖(로컬·테스트 등) ${formatUsd(otherCents / 100)}. OpenAI 청구는 반영이 몇 시간 늦을 수 있어 앱 기록보다 작으면 앱 기록으로 계산해요.`
@@ -75,17 +126,34 @@ export const CostDashboard = ({ summary, actual }: CostDashboardProps) => {
 
       {/* 기능별 분해 */}
       <section className='grid gap-4 sm:grid-cols-2'>
-        {(['taste', 'compatibility'] as const).map((f) => (
-          <div key={f} className='rounded border border-line p-4'>
-            <div className='text-sm font-medium'>
-              {f === 'taste' ? '취향 분석' : '케미 분석'}
+        {(['taste', 'compatibility'] as const).map((f) => {
+          const cents = summary.byFeature[f].cents;
+          const share =
+            summary.monthTotalCents > 0 ? cents / summary.monthTotalCents : 0;
+          const color = f === 'taste' ? adminInk.primary : adminInk.violet;
+          return (
+            <div key={f} className='rounded border border-line p-4'>
+              <div className='flex items-center gap-2 text-sm font-medium'>
+                <span
+                  aria-hidden
+                  className='h-2.5 w-2.5 rounded-sm'
+                  style={{ backgroundColor: color }}
+                />
+                {f === 'taste' ? '취향 분석' : '케미 분석'}
+              </div>
+              <div className='mt-1 text-sm text-text-subtle tabular-nums'>
+                {summary.byFeature[f].count}회 · {formatUsd(cents / 100)} · 앱
+                기록의 {Math.round(share * 100)}%
+              </div>
+              <div className='mt-2 h-1.5 rounded-full bg-sunken'>
+                <div
+                  className='h-full rounded-full'
+                  style={{ width: `${share * 100}%`, backgroundColor: color }}
+                />
+              </div>
             </div>
-            <div className='mt-1 text-sm text-text-subtle'>
-              {summary.byFeature[f].count}회 ·{' '}
-              {formatUsd(summary.byFeature[f].cents / 100)}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </section>
 
       {/* 일별 추이 */}
@@ -110,7 +178,21 @@ export const CostDashboard = ({ summary, actual }: CostDashboardProps) => {
               {daily.map((d) => (
                 <tr key={d.date}>
                   <td className='py-0.5 text-text-subtle'>{d.date}</td>
-                  <td className='text-right'>{formatUsd(d.appCents / 100)}</td>
+                  <td className='text-right tabular-nums'>
+                    {/* 숫자 옆 짧은 막대 — 어느 날 많이 썼나를 표를 읽지 않고 본다 */}
+                    <span className='inline-flex items-center justify-end gap-2'>
+                      <span className='hidden h-1.5 w-24 rounded-full bg-sunken sm:inline-block'>
+                        <span
+                          className='block h-full rounded-full'
+                          style={{
+                            width: `${maxDaily > 0 ? (Math.max(d.appCents, d.actualCents ?? 0) / maxDaily) * 100 : 0}%`,
+                            backgroundColor: adminInk.primary,
+                          }}
+                        />
+                      </span>
+                      {formatUsd(d.appCents / 100)}
+                    </span>
+                  </td>
                   {d.actualCents !== null && (
                     <td className='text-right'>
                       {formatUsd(d.actualCents / 100)}

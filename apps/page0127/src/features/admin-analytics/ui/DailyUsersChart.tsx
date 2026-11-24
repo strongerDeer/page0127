@@ -11,6 +11,7 @@ import {
   YAxis,
 } from 'recharts';
 
+import { adminInk } from '@/shared/lib/admin/adminChartColors';
 import { chartInk, chartTooltipStyle } from '@/shared/lib/chartStyles';
 
 import type { DailyPoint } from '../lib/insights';
@@ -42,7 +43,7 @@ export const DailyUsersChart = ({
           <span
             aria-hidden='true'
             className='inline-block h-0.5 w-3'
-            style={{ background: chartInk.primary }}
+            style={{ background: adminInk.primary }}
           />
           사람 추정
         </span>
@@ -69,8 +70,8 @@ export const DailyUsersChart = ({
       <AreaChart data={points} margin={{ top: 12, right: 8, left: -16 }}>
         <defs>
           <linearGradient id='dailyUsersFill' x1='0' y1='0' x2='0' y2='1'>
-            <stop offset='0%' stopColor={chartInk.primary} stopOpacity={0.25} />
-            <stop offset='100%' stopColor={chartInk.primary} stopOpacity={0} />
+            <stop offset='0%' stopColor={adminInk.primary} stopOpacity={0.25} />
+            <stop offset='100%' stopColor={adminInk.primary} stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid
@@ -126,7 +127,7 @@ export const DailyUsersChart = ({
         <Area
           type='monotone'
           dataKey='users'
-          stroke={chartInk.primary}
+          stroke={adminInk.primary}
           strokeWidth={2}
           fill='url(#dailyUsersFill)'
           dot={false}
