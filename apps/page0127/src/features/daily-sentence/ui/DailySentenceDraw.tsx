@@ -6,7 +6,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { BookCover, Button } from '@repo/ui';
-import { BookOpen, ChevronRight } from 'lucide-react';
+import {
+  BookOpen,
+  ChevronRight,
+  Compass,
+  Hourglass,
+  Quote,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
@@ -18,7 +24,12 @@ import { dailyScore, formatSentenceSource } from '@/entities/daily-sentence';
 import { drawDailySentenceAction } from '../api/drawDailySentenceAction';
 import { CarrotSvg } from './CarrotSvg';
 
-import type { DailyScore, DailySentence } from '@/entities/daily-sentence';
+import type {
+  DailyScore,
+  DailyScoreItem,
+  DailySentence,
+} from '@/entities/daily-sentence';
+import type { LucideIcon } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
 
 import styles from './DailySentenceBook.module.css';
@@ -200,12 +211,12 @@ export const DailySentenceDraw = ({
         >
           <blockquote
             id='sentence-draw-heading'
-            className='whitespace-pre-wrap break-keep text-[17px] font-bold leading-[1.75]'
+            className='whitespace-pre-wrap break-keep text-[17px] font-bold leading-[1.75] text-text-strong'
           >
             {result.sentence.text}
           </blockquote>
           <figcaption
-            className={`${styles.paperMeta} grid grid-cols-[auto_1fr_auto] items-center gap-3 pt-3 text-[13px]`}
+            className={`${styles.paperMeta} grid grid-cols-[auto_1fr_auto] items-center gap-3 pt-3 text-[13px] text-text-subtle`}
           >
             <BookCover
               src={result.sentence.cover_image}
@@ -221,7 +232,7 @@ export const DailySentenceDraw = ({
             {result.bookHref && (
               <Link
                 href={result.bookHref}
-                className='inline-flex items-center gap-0.5 whitespace-nowrap font-medium text-[#14294e] underline-offset-4 hover:underline'
+                className='inline-flex items-center gap-0.5 whitespace-nowrap font-medium text-text-strong underline-offset-4 hover:underline'
               >
                 이 책 보러 가기
                 <ChevronRight className='size-4' aria-hidden />
@@ -412,6 +423,13 @@ const Gauge = ({
 };
 
 /** 총점(큰 원) + 한마디 + 세 운(작은 원) — HJ 11/24 시안 R1, 원 색은 점수 구간(G3) */
+/** 세 운 아이콘 — 몰입=모래시계, 발견=나침반, 문장=따옴표 (HJ 11/24 L2) */
+const ITEM_ICON: Record<DailyScoreItem['key'], LucideIcon> = {
+  focus: Hourglass,
+  discover: Compass,
+  sentence: Quote,
+};
+
 const ScoreBlock = ({
   score,
   animate,
@@ -423,54 +441,61 @@ const ScoreBlock = ({
 }) => {
   const total = useCountUp(score.total, animate, 1000);
   return (
-    <div className='grid justify-items-center gap-4 text-center'>
-      <div className='grid justify-items-center gap-2.5'>
+    <div className='grid justify-items-center gap-3 text-center'>
+      {/* 큰 원 왼쪽 + 세 운 오른쪽 세로 (HJ 11/24) */}
+      <div className='flex items-center justify-center gap-5'>
         <Gauge
           value={score.total}
-          size={132}
+          size={124}
           stroke={10}
           tone={scoreTone(score.total)}
           animate={animate}
         >
           <p
-            className='text-[40px] font-bold leading-none text-text-strong tabular-nums'
+            className='text-[38px] font-bold leading-none text-text-strong tabular-nums'
             aria-label={`${score.total}점`}
           >
             {total}
           </p>
-          <span className='mt-1 text-[13px] text-text-subtle'>점</span>
+          <span className='mt-1 text-xs text-text-subtle'>점</span>
         </Gauge>
-        <p
+        <dl
           {...rise(1)}
-          className={`${rise(1).className ?? ''} text-sm text-text-subtle`}
+          className={`${rise(1).className ?? ''} grid gap-2 text-left`}
         >
-          {score.comment}
-        </p>
+          {score.items.map((item, i) => {
+            const Icon = ITEM_ICON[item.key];
+            return (
+              <div key={item.key} className='flex items-center gap-2.5'>
+                <dd>
+                  <Gauge
+                    value={item.value}
+                    size={44}
+                    stroke={4}
+                    tone={scoreTone(item.value)}
+                    animate={animate}
+                    delayMs={RISE_STEP_MS + i * 150}
+                  >
+                    <span className='text-[13px] font-bold text-text-strong tabular-nums'>
+                      {item.value}
+                    </span>
+                  </Gauge>
+                </dd>
+                <dt className='flex items-center gap-1.5 text-[13px] text-text-subtle'>
+                  <Icon className='size-[15px]' aria-hidden />
+                  {item.label}
+                </dt>
+              </div>
+            );
+          })}
+        </dl>
       </div>
-      <dl
+      <p
         {...rise(2)}
-        className={`${rise(2).className ?? ''} grid w-full grid-cols-3 gap-2`}
+        className={`${rise(2).className ?? ''} text-sm text-text-subtle`}
       >
-        {score.items.map((item, i) => (
-          <div key={item.key} className='grid justify-items-center gap-1.5'>
-            <dd className='order-1'>
-              <Gauge
-                value={item.value}
-                size={56}
-                stroke={5}
-                tone={scoreTone(item.value)}
-                animate={animate}
-                delayMs={2 * RISE_STEP_MS + i * 150}
-              >
-                <span className='text-[17px] font-bold text-text-strong tabular-nums'>
-                  {item.value}
-                </span>
-              </Gauge>
-            </dd>
-            <dt className='order-2 text-xs text-text-subtle'>{item.label}</dt>
-          </div>
-        ))}
-      </dl>
+        {score.comment}
+      </p>
     </div>
   );
 };
