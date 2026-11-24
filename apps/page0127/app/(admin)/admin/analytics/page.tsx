@@ -10,6 +10,7 @@ import {
 } from '@/shared/lib/admin/dateRange';
 
 import { getGaEvents } from '@/features/admin-analytics/api/getGaEvents';
+import { getGaRealtime } from '@/features/admin-analytics/api/getGaRealtime';
 import { getGaReports } from '@/features/admin-analytics/api/getGaReports';
 import { getSearchQueries } from '@/features/admin-analytics/api/getSearchQueries';
 import { getSignupChannels } from '@/features/admin-analytics/api/getSignupChannels';
@@ -19,6 +20,7 @@ import {
   Section,
 } from '@/features/admin-analytics/ui/GaInsightsView';
 import { HeroAbPanel } from '@/features/admin-analytics/ui/HeroAbPanel';
+import { RealtimePanel } from '@/features/admin-analytics/ui/RealtimePanel';
 import { SearchQueryTable } from '@/features/admin-analytics/ui/SearchQueryTable';
 import { SetupNotice } from '@/features/admin-analytics/ui/SetupNotice';
 import { SignupChannelPanel } from '@/features/admin-analytics/ui/SignupChannelPanel';
@@ -59,6 +61,8 @@ export default async function AdminAnalyticsPage({
   const notesPromise = getAdminEvents(range);
   // 실제 가입자의 첫 방문 출처 — DB 라 GA 한도와 무관, 나란히
   const signupChannelsPromise = getSignupChannels(range);
+  // 실시간은 기간과 무관하고 쿼터도 따로라 보고서를 기다리지 않는다
+  const realtimePromise = getGaRealtime();
 
   return (
     <section className='space-y-6'>
@@ -77,6 +81,10 @@ export default async function AdminAnalyticsPage({
           </a>
         </p>
       </div>
+
+      <Suspense fallback={<Skeleton className='h-20' />}>
+        <RealtimeBlock promise={realtimePromise} />
+      </Suspense>
 
       <PeriodPicker
         basePath='/admin/analytics'
@@ -150,6 +158,12 @@ const BlockSkeleton = ({ tall = false }: { tall?: boolean }) => (
     <Skeleton className={tall ? 'h-64' : 'h-32'} />
   </div>
 );
+
+const RealtimeBlock = async ({
+  promise,
+}: {
+  promise: ReturnType<typeof getGaRealtime>;
+}) => <RealtimePanel result={await promise} />;
 
 const SignupChannelBlock = async ({
   promise,

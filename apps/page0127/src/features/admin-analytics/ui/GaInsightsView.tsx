@@ -175,6 +175,14 @@ export const GaInsightsView = ({
             title: e.title,
           }))}
         />
+        <ShareBars
+          title='처음 온 사람 / 다시 온 사람'
+          caption='사람 추정(한국) 기준. 가입하지 않은 방문자도 셉니다 — 회원 재방문은 대시보드에서. 한 사람이 기간 안에 처음 오고 또 오면 양쪽에 다 잡혀 합이 사용자 수보다 클 수 있어요.'
+          items={toBars(reports.newVsReturning).filter(
+            (b) => b.key !== '(not set)' && b.key !== ''
+          )}
+          emptyText='데이터 없음'
+        />
       </Section>
 
       <Section title='어디서 오나?'>
