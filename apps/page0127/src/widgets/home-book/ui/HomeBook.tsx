@@ -430,11 +430,14 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
       pages[1].toggleAttribute('data-lit', lit);
       twin?.toggleAttribute('data-lit', lit);
 
-      // 목차: 책 안에 있을 때만 버튼을 띄우고, 지금 쪽을 표시한다
+      // 목차: 책 안에 있을 때만 버튼을 띄우고, 지금 쪽을 표시한다.
+      // 책 위에 배너(체험 계정 안내 등)가 보이는 동안은 숨긴다 — 버튼 자리(top)는 머리글 높이
+      // 기준이라, 배너가 머리글을 밀어 내린 동안엔 배너 글자 위에 겹쳤다(2026-11-24 모바일 점검).
+      // 배너가 없으면 처음부터 r.top === gnb 라 지금과 똑같이 보인다.
       const r = root.getBoundingClientRect();
       toolsRef.current?.toggleAttribute(
         'data-show',
-        r.top < vh * 0.5 && r.bottom > vh * 0.5
+        r.top <= gnb + 2 && r.top < vh * 0.5 && r.bottom > vh * 0.5
       );
       // 남은 쪽 두께 — 책 속에 들어온 뒤 남은 장 수 × 3px, 넘길수록 얇아진다(시안 .edges)
       if (edgesRef.current)

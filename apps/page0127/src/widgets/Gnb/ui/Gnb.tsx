@@ -36,23 +36,13 @@ export const Gnb = ({ user }: GnbProps) => {
     // 그림자는 "떠 있는 것"에만 — sticky 헤더는 1px 선으로 충분하다
     <header className='sticky top-0 z-40 border-b border-line bg-card'>
       <div className='page-width flex h-16 items-center gap-2 sm:gap-3 lg:gap-6'>
-        {/*
-          베타 표기는 GNB 에 둔다 — 모든 화면이 지나는 유일한 자리다.
-          랜딩에만 적으면 로그인해서 쓰는 사람은 자기가 베타를 쓰는 줄 모른다.
-          정식 오픈 때 이 span 하나만 지우면 된다.
-        */}
-        <div className='flex shrink-0 items-baseline gap-1.5'>
-          {/* 로고는 언제나 홈 — 내 서재는 메뉴·프로필에서 간다 */}
-          <IntentPrefetchLink
-            href='/'
-            className='text-lg font-bold text-primary'
-          >
-            page0127.
-          </IntentPrefetchLink>
-          <span className='rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-medium leading-none text-primary'>
-            베타
-          </span>
-        </div>
+        {/* 로고는 언제나 홈 — 내 서재는 메뉴·프로필에서 간다 */}
+        <IntentPrefetchLink
+          href='/'
+          className='shrink-0 text-lg font-bold text-primary'
+        >
+          page0127.
+        </IntentPrefetchLink>
 
         <GnbNav isLoggedIn={!!user} />
 
@@ -79,7 +69,12 @@ export const Gnb = ({ user }: GnbProps) => {
                   <span className='sr-only md:hidden'>도서 추가</span>
                 </IntentPrefetchLink>
               </Button>
-              <div className='md:ml-1'>
+              {/*
+                프로필 드롭다운은 데스크톱에서만 — 모바일에선 같은 내용(내 서재·설정·로그아웃)이
+                ☰ 목차 안에 있다. 320px 폰에서 머리글이 40px 넘쳐 페이지가 좌우로 흔들려서
+                아이콘 하나를 목차로 옮겼다(2026-11-24 HJ, C안).
+              */}
+              <div className='hidden md:ml-1 md:block'>
                 <ProfileDropdown
                   photoUrl={user.photoUrl}
                   displayName={user.displayName}
@@ -103,8 +98,15 @@ export const Gnb = ({ user }: GnbProps) => {
             ☰ 가 하나 늘면서 로그인 상태 360px 폭에서 12px 넘쳤다 → 모바일에서만 간격을 줄였다(gap-2, ml-1 → md:ml-1).
           */}
           <MobileTocMenu
-            isLoggedIn={!!user}
-            username={user?.username ?? null}
+            user={
+              user
+                ? {
+                    photoUrl: user.photoUrl,
+                    displayName: user.displayName,
+                    username: user.username,
+                  }
+                : null
+            }
           />
         </div>
       </div>

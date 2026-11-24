@@ -327,7 +327,9 @@ export const ReadingCalendar = ({
                     </span>
                   )}
 
-                  {/* 완독·읽기 시작 표지 — 같은 날 여러 권이면 겹쳐 쌓고 +N */}
+                  {/* 완독·읽기 시작 표지 — 같은 날 여러 권이면 겹쳐 쌓고 +N.
+                      모바일(칸 높이 56px)은 20×30 — 26×38 이면 표지 윗변이 날짜 숫자 줄까지 올라와
+                      좁은 폰에서 숫자를 덮었다(2026-11-24 모바일 점검) */}
                   {covers.length > 0 && (
                     <span className='absolute bottom-1.5 right-1 flex'>
                       {covers
@@ -335,7 +337,7 @@ export const ReadingCalendar = ({
                         .map(({ book, outline }, i) => (
                           <span
                             key={book.id}
-                            className={`relative block h-[38px] w-[26px] lg:h-[50px] lg:w-[34px] ${i > 0 ? '-ml-4 lg:-ml-5' : ''} ${
+                            className={`relative block h-[30px] w-[20px] sm:h-[38px] sm:w-[26px] lg:h-[50px] lg:w-[34px] ${i > 0 ? '-ml-3 sm:-ml-4 lg:-ml-5' : ''} ${
                               book.is_public ? '' : 'opacity-50'
                             }`}
                             style={{ outline }}

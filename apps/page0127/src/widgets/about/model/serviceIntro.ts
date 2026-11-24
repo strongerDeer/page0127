@@ -25,7 +25,7 @@ export type ServiceFact = {
 
 /** 한눈에 보기 — 화면에서는 작은 카드 4개, llms.txt 에서는 목록 */
 export const SERVICE_FACTS: ServiceFact[] = [
-  { label: '가격', value: '무료', note: '지금은 베타 서비스' },
+  { label: '가격', value: '무료', note: '모든 기능 무료' },
   {
     label: '이용',
     value: '웹 브라우저',
