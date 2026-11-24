@@ -97,7 +97,10 @@ export const AdminNav = ({ badges = {} }: AdminNavProps) => {
           {group.items.map((item) => (
             <AdminNavLink
               key={item.href}
-              item={item}
+              href={item.href}
+              label={item.label}
+              // 아이콘은 여기(서버)서 그려서 JSX 로 넘긴다 — 컴포넌트 함수는 클라이언트로 못 넘긴다
+              icon={<item.icon className='h-4 w-4' aria-hidden />}
               count={item.badge ? badges[item.badge] : undefined}
             />
           ))}
