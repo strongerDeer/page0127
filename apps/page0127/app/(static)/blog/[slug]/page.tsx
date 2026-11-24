@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 
 import { PageContainer } from '@repo/ui';
 
+import { OG_SIZE } from '@/shared/lib/og/theme';
 import { JsonLd } from '@/shared/lib/seo/JsonLd';
 import { buildStoryArticleJsonLd } from '@/shared/lib/seo/structuredData';
 
@@ -11,6 +12,7 @@ import {
   formatStoryDate,
   StoryMarkdown,
   storyPath,
+  storyShareImagePath,
 } from '@/entities/story';
 import {
   getPublishedStories,
@@ -66,6 +68,14 @@ export async function generateMetadata({
 
   const path = storyPath(story.slug);
   const title = `${story.title} | page0127.`;
+  // 공유 이미지는 share-image/route.tsx 가 그린다(책 표지·첫 차트 숫자). 주소에 수정 시각을 붙여
+  // 글을 저장하면 카톡·CDN 이 새 그림을 받게 한다
+  const image = {
+    url: storyShareImagePath(story.slug, story.updatedAt),
+    width: OG_SIZE.width,
+    height: OG_SIZE.height,
+    alt: `${story.title} | page0127.`,
+  };
 
   return {
     title,
@@ -77,12 +87,13 @@ export async function generateMetadata({
       type: 'article',
       publishedTime: story.publishedAt,
       modifiedTime: story.updatedAt ?? story.publishedAt,
-      // 공유 이미지는 같은 폴더의 opengraph-image.tsx 가 그린다(책 표지·첫 차트 숫자)
+      images: [image],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description: story.description,
+      images: [image],
     },
   };
 }

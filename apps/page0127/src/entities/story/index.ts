@@ -5,6 +5,7 @@ export {
   formatStoryShortDate,
   storyKindLabel,
   storyPath,
+  storyShareImagePath,
 } from './model/paths';
 export { toCharacterGroups, toStoryImage } from './model/toStory';
 export type {
