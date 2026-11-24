@@ -5,8 +5,7 @@ import {
 } from '@/entities/book';
 
 /**
- * 균형 점수 세 구간 — 게이지 칸과 문구가 같은 경계를 쓴다.
- * short 는 게이지 아래 칸 이름, label 은 점수 옆 문장.
+ * 균형 점수 세 구간 — label 은 점수 옆 문장.
  * 문구는 진행형 — "기울었다" 같은 판단은 쓰지 않는다(2026-10-08 반려 기록)
  */
 export const BALANCE_BANDS = [

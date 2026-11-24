@@ -11,9 +11,7 @@ import {
 } from '@/entities/book';
 
 import {
-  BALANCE_BANDS,
   BALANCE_SCORE_HELP,
-  balanceBandIndex,
   categoryColor,
   categoryInk,
   getBalanceDelta,
@@ -34,58 +32,6 @@ const CategoryRadarChart = dynamic(
   () => import('./CategoryRadarChart').then((m) => m.CategoryRadarChart),
   { ssr: false, loading: ChartSkeleton }
 );
-
-/**
- * 균형 점수 게이지 — 세 구간(한 우물 · 넓혀 가는 중 · 고르게)을 칸으로 나누고
- * 점수까지 칸을 채운다. 숫자만 있을 땐 점수인지 몰랐다(HJ 시안 S1, 2026-11-24).
- * 칸 폭은 구간 너비(40 · 30 · 30)라 채운 끝이 0~100 자리와 맞는다.
- */
-const BalanceGauge = ({ score }: { score: number }) => {
-  const current = balanceBandIndex(score);
-  return (
-    <div
-      role='meter'
-      aria-label='균형 점수'
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-valuenow={score}
-      aria-valuetext={`${score}점, ${BALANCE_BANDS[current].label}`}
-      className='mt-3 grid gap-1.5'
-      style={{
-        gridTemplateColumns: BALANCE_BANDS.map(
-          ({ min, max }) => `${max - min + 1}fr`
-        ).join(' '),
-      }}
-    >
-      {BALANCE_BANDS.map(({ min, max, short }, index) => {
-        // 이 칸을 얼마나 채우나 — 점수가 칸보다 크면 꽉, 작으면 비움
-        const fill = Math.min(
-          1,
-          Math.max(0, (score - min + 1) / (max - min + 1))
-        );
-        return (
-          <div key={short} className='grid min-w-0 gap-1'>
-            <div className='h-2 overflow-hidden rounded-full bg-sunken'>
-              <div
-                className='h-full rounded-full bg-primary'
-                style={{ width: `${fill * 100}%` }}
-              />
-            </div>
-            <span
-              className={`truncate text-xs ${
-                index === current
-                  ? 'font-bold text-primary'
-                  : 'text-text-subtle'
-              }`}
-            >
-              {short}
-            </span>
-          </div>
-        );
-      })}
-    </div>
-  );
-};
 
 type ReadingBalanceCardProps = {
   /** 연도 탭의 해 — 없으면 전체 탭("지금까지", 작년 비교 없이) */
@@ -150,7 +96,7 @@ export const ReadingBalanceCard = ({
 
         {hasBooks && (
           <>
-            {/* 균형 점수 — 이름표 · 점수 · 게이지 · 늘 보이는 설명(시안 S1).
+            {/* 균형 점수 — 이름표 · 점수 · 늘 보이는 설명(시안 S1, 게이지는 불필요해 뺌).
                 8권 전엔 점수 대신 몇 권 남았는지(MIN_BOOKS_FOR_SCORE) */}
             <div className='mt-5'>
               <p className='text-xs font-medium text-text-subtle'>균형 점수</p>
@@ -168,7 +114,6 @@ export const ReadingBalanceCard = ({
                       </b>
                     </span>
                   </div>
-                  <BalanceGauge score={balance.score} />
                 </>
               ) : (
                 <>
