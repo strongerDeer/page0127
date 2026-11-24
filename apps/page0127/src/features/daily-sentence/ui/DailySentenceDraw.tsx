@@ -195,8 +195,8 @@ export const DailySentenceDraw = ({
         {score && <ScoreBlock score={score} animate={justDrawn} rise={rise} />}
 
         <figure
-          {...rise(3)}
-          className={`${styles.paper} ${rise(3).className ?? ''} grid gap-4 px-5 pt-5 pb-4`}
+          {...rise(2)}
+          className={`${styles.paper} ${rise(2).className ?? ''} grid gap-4 px-5 pt-5 pb-4`}
         >
           <blockquote
             id='sentence-draw-heading'
@@ -230,7 +230,7 @@ export const DailySentenceDraw = ({
           </figcaption>
         </figure>
 
-        <div {...rise(4)} className={`${rise(4).className ?? ''} grid gap-2`}>
+        <div {...rise(3)} className={`${rise(3).className ?? ''} grid gap-2`}>
           {memberId ? (
             onClose ? (
               <Button onClick={onClose}>내 캘린더에 남았어요 · 닫기</Button>
@@ -413,7 +413,7 @@ const Gauge = ({
 
 /** 총점(큰 원) + 한마디 + 세 운(작은 원) — HJ 11/24 시안 R1, 원 색은 점수 구간(G3) */
 /**
- * 총점(큰 원, 원 안에 "총점") + 한 줄 평은 큰 원 아래 왼쪽 칸 · 세 운(작은 원)은 오른쪽 세로 — HJ 11/24
+ * 점수는 하나만 — 큰 원 + 한 줄 평 (HJ 11/24: 몰입·발견·문장운 세부는 빼기로)
  * 원 색은 점수 구간(90↑ 파랑 · 80대 민트 · 70대 보라)
  */
 const ScoreBlock = ({
@@ -427,54 +427,28 @@ const ScoreBlock = ({
 }) => {
   const total = useCountUp(score.total, animate, 1000);
   return (
-    <div className='flex items-center justify-center gap-9'>
-      <div className='grid w-[148px] justify-items-center gap-3 text-center'>
-        <Gauge
-          value={score.total}
-          size={124}
-          stroke={10}
-          tone={scoreTone(score.total)}
-          animate={animate}
-        >
-          <span className='mb-1 text-xs text-text-subtle'>총점</span>
-          <p
-            className='text-[38px] font-bold leading-none text-text-strong tabular-nums'
-            aria-label={`총점 ${score.total}점`}
-          >
-            {total}
-          </p>
-        </Gauge>
-        <p
-          {...rise(2)}
-          className={`${rise(2).className ?? ''} break-keep text-[13px] leading-snug text-text-subtle`}
-        >
-          {score.comment}
-        </p>
-      </div>
-      <dl
-        {...rise(1)}
-        className={`${rise(1).className ?? ''} grid gap-3.5 text-left`}
+    <div className='grid justify-items-center gap-3 text-center'>
+      <Gauge
+        value={score.total}
+        size={132}
+        stroke={10}
+        tone={scoreTone(score.total)}
+        animate={animate}
       >
-        {score.items.map((item, i) => (
-          <div key={item.key} className='flex items-center gap-3'>
-            <dd>
-              <Gauge
-                value={item.value}
-                size={46}
-                stroke={4}
-                tone={scoreTone(item.value)}
-                animate={animate}
-                delayMs={RISE_STEP_MS + i * 150}
-              >
-                <span className='text-sm font-bold text-text-strong tabular-nums'>
-                  {item.value}
-                </span>
-              </Gauge>
-            </dd>
-            <dt className='text-[13px] text-text-subtle'>{item.label}</dt>
-          </div>
-        ))}
-      </dl>
+        <p
+          className='text-[40px] font-bold leading-none text-text-strong tabular-nums'
+          aria-label={`${score.total}점`}
+        >
+          {total}
+        </p>
+        <span className='mt-1 text-[13px] text-text-subtle'>점</span>
+      </Gauge>
+      <p
+        {...rise(1)}
+        className={`${rise(1).className ?? ''} break-keep text-sm text-text-subtle`}
+      >
+        {score.comment}
+      </p>
     </div>
   );
 };
