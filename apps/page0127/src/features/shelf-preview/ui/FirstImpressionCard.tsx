@@ -7,7 +7,7 @@ type FirstImpressionCardProps = { type: ReadingPersonalityType };
  *
  * 학습 포인트:
  * - "첫인상"이라 부른다. 가입 뒤 AI 취향 노트가 다른 타입을 골라도 거짓말이 되지 않는다.
- * - 성향 색은 왼쪽 띠에만 쓴다(TasteProfileCard 와 같은 문법). 카탈로그엔 흰 바탕 글자로
+ * - 성향 색은 왼쪽 띠에만 쓴다(예전 서재 취향 카드와 같은 문법). 카탈로그엔 흰 바탕 글자로
  *   쓰면 대비가 모자란 연한 색(#74b0ff)도 있어서, 이름 글자는 본문 색으로 둔다.
  */
 export const FirstImpressionCard = ({ type }: FirstImpressionCardProps) => (

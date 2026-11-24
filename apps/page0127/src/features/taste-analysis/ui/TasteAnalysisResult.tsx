@@ -113,7 +113,7 @@ export const TasteAnalysisResult = ({
           )}
           {evidence.length > 0 && (
             <div className='mt-6 border-t border-line-soft pt-5'>
-              <TasteEvidenceList evidence={evidence} variant='full' />
+              <TasteEvidenceList evidence={evidence} />
             </div>
           )}
         </CardContent>

@@ -89,15 +89,14 @@ export const SiteFooter = ({ className }: SiteFooterProps) => {
         </div>
 
         {/*
-          베타 고지는 푸터에 둔다 — 이제 모든 화면에 붙고, 무엇보다
+          피드백 안내는 푸터에 둔다 — 모든 화면에 붙고, 무엇보다
           **문의 링크 바로 옆**이다. "이상하면 말해 달라"와 "말하는 방법"이
           떨어져 있으면 둘 다 소용이 없다.
-          정식 오픈 때 이 문단만 지운다.
+          (베타 고지는 2026-11-24 HJ 결정으로 뺐다 — 안내 문장만 남김)
         */}
         <div className='mt-8 border-t border-line-soft pt-6'>
           <p className='text-xs text-text-subtle'>
-            page0127.은 지금 베타 서비스입니다. 기능과 화면이 예고 없이 바뀔 수
-            있어요. 이상한 점을 발견하면{' '}
+            이상한 점을 발견하면{' '}
             <Link
               // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
               prefetch={false}

@@ -20,6 +20,7 @@ import {
 } from '@/features/profile/api/updateProfileAction';
 import { UsernameChangeDialog } from '@/features/profile/ui/UsernameChangeDialog';
 
+import { BIO_MAX_LENGTH } from '../model/bioLimit';
 import { AvatarUpload } from './AvatarUpload';
 
 import type { Profile } from '@/entities/profile/types';
@@ -89,9 +90,7 @@ const ProfileSettingsFormUsername = ({
         <UsernameChangeDialog currentUsername={username} />
       )}
     </div>
-    <p className='text-xs text-text-subtle'>
-      공개 서재 주소 /{username}
-    </p>
+    <p className='text-xs text-text-subtle'>공개 서재 주소 /{username}</p>
     {changedAt ? (
       <p className='text-xs text-text-subtle'>
         아이디는 한 번만 바꿀 수 있어요. 이미 변경해서 더는 바꿀 수 없습니다.
@@ -297,11 +296,13 @@ export const ProfileSettingsForm = ({
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder='자신을 소개하는 한줄을 작성해보세요.'
-              rows={3}
-              maxLength={200}
+              rows={2}
+              maxLength={BIO_MAX_LENGTH}
               className='resize-none'
             />
-            <p className='text-xs text-muted-foreground'>{bio.length}/200자</p>
+            <p className='text-xs text-muted-foreground'>
+              {bio.length}/{BIO_MAX_LENGTH}자
+            </p>
           </div>
 
           {/* 저장 버튼 */}

@@ -31,10 +31,12 @@ describe('SiteFooter', () => {
     expect(html).toContain('rel="noopener noreferrer"');
   });
 
-  it('베타 서비스임을 알리고 문의로 유도한다', () => {
-    // 고지와 "말하는 방법"이 떨어져 있으면 둘 다 소용이 없다.
-    expect(html).toContain('베타');
+  it('이상한 점을 문의로 알려 달라고 안내한다', () => {
+    // 안내와 "말하는 방법"이 떨어져 있으면 둘 다 소용이 없다.
+    expect(html).toContain('이상한 점을 발견하면');
     expect(html).toContain('문의');
+    // 베타 표기는 2026-11-24 HJ 결정으로 모든 화면에서 뺐다
+    expect(html).not.toContain('베타');
   });
 
   it('탭바에 가리지 않도록 여백을 덧붙일 수 있다', () => {

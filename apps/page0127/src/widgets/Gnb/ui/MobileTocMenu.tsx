@@ -5,10 +5,15 @@ import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { Menu, X } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui';
+import { LogOut, Menu, X } from 'lucide-react';
 
 import { cn } from '@/shared/lib/utils';
 import { IntentPrefetchLink } from '@/shared/ui/IntentPrefetchLink';
+
+import { nameInitials } from '@/entities/profile/model/displayName';
+
+import { useLogout } from '@/features/auth/api/useLogout';
 
 import { getTocGroups, isTocLinkActive } from '../model/tocLinks';
 
@@ -26,14 +31,28 @@ import type { TocLink } from '../model/tocLinks';
  * 옆에서 밀려 들어오는 시트와 섞인다. 접근성(포커스 가두기·Esc·스크롤 잠금·aria-modal)은
  * Radix 원본이 그대로 주므로, 모양만 여기서 새로 입힌다.
  */
-type MobileTocMenuProps = {
-  isLoggedIn: boolean;
+type MobileTocUser = {
+  photoUrl: string | null;
+  displayName: string;
   username: string | null;
 };
 
-export const MobileTocMenu = ({ isLoggedIn, username }: MobileTocMenuProps) => {
+type MobileTocMenuProps = {
+  /** null 이면 비로그인 방문자 */
+  user: MobileTocUser | null;
+};
+
+/**
+ * 모바일에선 상단 바의 프로필 아바타(ProfileDropdown)를 숨기고, 그 역할을 목차 맨 위가 맡는다
+ * (2026-11-24 HJ, C안). 320px 폰에서 상단 바가 40px 넘쳐 페이지가 좌우로 흔들렸기 때문이다.
+ * 드롭다운에 있던 것(이름·내 서재·설정·로그아웃)이 여기 그대로 있어야 잃는 기능이 없다.
+ */
+export const MobileTocMenu = ({ user }: MobileTocMenuProps) => {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const { logout } = useLogout();
+  const isLoggedIn = !!user;
+  const username = user?.username ?? null;
 
   // 페이지가 바뀌면 닫는다 — 뒤로 가기처럼 메뉴 링크를 거치지 않은 이동도 포함.
   // useEffect 로 닫으면 새 페이지가 한 번 "열린 채로" 그려진 뒤 닫힌다.
@@ -118,15 +137,40 @@ export const MobileTocMenu = ({ isLoggedIn, username }: MobileTocMenuProps) => {
             aria-label='전체 메뉴'
             className='flex flex-1 flex-col gap-4 overflow-y-auto px-3 pb-6'
           >
-            {account.length > 0 && (
-              <ul className='border-b border-line pb-4'>
-                {account.map((link) => renderLink(link, 'main'))}
-              </ul>
+            {user && (
+              <div className='border-b border-line pb-4'>
+                {/* 누구로 로그인했는지 — 데스크톱 드롭다운의 이름 줄과 같은 역할 */}
+                <div className='mb-2 flex items-center gap-3 px-3'>
+                  <Avatar className='size-9'>
+                    <AvatarImage src={user.photoUrl || undefined} alt='' />
+                    <AvatarFallback>
+                      {nameInitials(user.displayName)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className='min-w-0 truncate text-sm font-semibold text-text-strong'>
+                    {user.displayName}
+                  </span>
+                </div>
+                <ul>{account.map((link) => renderLink(link, 'main'))}</ul>
+              </div>
             )}
             <ul>{main.map((link) => renderLink(link, 'main'))}</ul>
             <ul className='border-t border-line pt-4'>
               {sub.map((link) => renderLink(link, 'sub'))}
             </ul>
+            {user && (
+              <button
+                type='button'
+                onClick={() => {
+                  setOpen(false);
+                  logout();
+                }}
+                className='mt-auto flex h-10 items-center gap-2 rounded-md px-3 text-sm text-destructive transition-colors hover:bg-sunken'
+              >
+                <LogOut aria-hidden='true' className='size-4' />
+                로그아웃
+              </button>
+            )}
           </nav>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

@@ -219,9 +219,11 @@ const FieldMessage = ({ state }: { state: FieldState }) => {
 
   if (state.kind === 'available') {
     return (
-      <p role='status' className='flex items-center gap-1.5 text-xs text-primary'>
-        <Check aria-hidden className='size-3.5' />
-        쓸 수 있는 아이디예요.
+      <p
+        role='status'
+        className='flex items-center gap-1.5 text-xs text-primary'
+      >
+        <Check aria-hidden className='size-3.5' />쓸 수 있는 아이디예요.
       </p>
     );
   }
