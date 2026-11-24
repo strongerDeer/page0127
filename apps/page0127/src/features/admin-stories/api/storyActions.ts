@@ -13,7 +13,7 @@ import type { StoryInput } from '../model/storyForm';
 /**
  * 책 이야기 저장 (Server Actions) — 어드민 글쓰기 화면이 부른다.
  *
- * 흐름: assertAdmin → 책 확인 → 값 검사 → stories 에 저장(service role) → 공개 페이지 캐시 버리기.
+ * 흐름: assertAdmin → 책 확인(없어도 됨) → 값 검사 → stories 에 저장(service role) → 공개 페이지 캐시 버리기.
  * 마지막 단계 덕분에 배포 없이 다음 방문자부터 새 글이 보인다(HJ 2026-11-23 C안).
  *
  * 저장됐는지 화면에 알려 주려고 throw 대신 { ok, message } 를 돌려준다(오늘의 문장과 같은 방식).
@@ -31,8 +31,13 @@ const fail = (message: string): { ok: false; message: string } => ({
 
 type BookRef = { id: string; title: string; author: string | null };
 
-/** 책을 새로 골랐으면 전체 도서에 넣고(없을 때만) id 를 찾는다. 아니면 연결된 책을 다시 확인한다 */
-async function resolveBook(input: StoryInput): Promise<BookRef | string> {
+/**
+ * 책을 새로 골랐으면 전체 도서에 넣고(없을 때만) id 를 찾는다. 아니면 연결된 책을 다시 확인한다.
+ * 둘 다 없으면 책 없는 글(독서 이야기) — null. 실패는 화면에 보여 줄 문장(string).
+ */
+async function resolveBook(
+  input: StoryInput
+): Promise<BookRef | null | string> {
   const supabase = createAdminClient();
   if (input.isbn) {
     try {
@@ -55,7 +60,8 @@ async function resolveBook(input: StoryInput): Promise<BookRef | string> {
       .maybeSingle();
     return data ?? '연결된 책을 찾지 못했어요. 책을 다시 골라 주세요.';
   }
-  return '책을 골라 주세요.';
+  if (input.bookId) return '잘못된 요청입니다.';
+  return null;
 }
 
 export async function saveStory(input: StoryInput): Promise<StoryActionResult> {
@@ -68,7 +74,7 @@ export async function saveStory(input: StoryInput): Promise<StoryActionResult> {
   const checked = validateStoryInput(
     input,
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    book.title
+    book?.title ?? ''
   );
   if (!checked.ok) return fail(checked.message);
 
@@ -90,9 +96,10 @@ export async function saveStory(input: StoryInput): Promise<StoryActionResult> {
 
   const row = {
     ...checked.value,
-    book_id: book.id,
-    book_title: book.title,
-    book_author: book.author ?? '',
+    // 책 없는 글은 세 칸 모두 비운다 — DB CHECK(stories_book_fields_match)와 같은 규칙
+    book_id: book?.id ?? null,
+    book_title: book?.title ?? '',
+    book_author: book?.author ?? '',
     published_at: publishedAt,
   };
 

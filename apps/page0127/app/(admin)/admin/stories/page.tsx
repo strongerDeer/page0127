@@ -15,8 +15,8 @@ export default async function AdminStoriesPage() {
         <div>
           <h1 className='mb-1 text-base font-medium'>책 이야기</h1>
           <p className='text-xs text-text-subtle'>
-            독후감·인물관계도(/blog). 저장하면 배포 없이 바로 공개 페이지에
-            반영돼요.
+            독후감·인물관계도·독서 이야기(/blog). 저장하면 배포 없이 바로 공개
+            페이지에 반영돼요.
           </p>
         </div>
         <Link
@@ -51,7 +51,7 @@ export default async function AdminStoriesPage() {
                     {story.title}
                   </span>
                   <span className='block truncate text-xs text-text-subtle'>
-                    {story.bookTitle} · /blog/{story.slug}
+                    {story.bookTitle || '독서 이야기'} · /blog/{story.slug}
                   </span>
                 </span>
                 <span className='shrink-0 text-xs text-text-subtle'>

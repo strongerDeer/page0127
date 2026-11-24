@@ -1,4 +1,14 @@
-import type { StoryCharacterGroup, StoryImage } from '@/entities/story';
+import {
+  extractChartBlocks,
+  findLeadStat,
+  parseChartBlock,
+} from '@/entities/story/model/chartBlock';
+
+import type {
+  StoryCharacterGroup,
+  StoryImage,
+  StoryLeadStat,
+} from '@/entities/story';
 
 /**
  * 어드민 책 이야기 폼 — 저장 전에 서버가 검사하는 순수 함수 모음(테스트 대상).
@@ -15,7 +25,7 @@ export type StoryInput = {
   id?: string;
   /** 책을 새로 골랐을 때만 — 서버가 전체 도서(global_books)에 넣고 id 를 찾는다 */
   isbn?: string;
-  /** 이미 연결된 책 */
+  /** 이미 연결된 책. isbn·bookId 둘 다 없으면 책 없는 글(독서 이야기) */
   bookId?: string;
   slug: string;
   title: string;
@@ -38,6 +48,8 @@ export type ValidStory = {
   map_image: StoryImage | null;
   map_cards: StoryImage[];
   characters: StoryCharacterGroup[];
+  /** 본문 첫 숫자 차트 — 목록·공유 이미지용(서버가 계산) */
+  lead_stat: StoryLeadStat | null;
   is_published: boolean;
 };
 
@@ -160,12 +172,26 @@ export const formatCharactersText = (groups: StoryCharacterGroup[]): string =>
     )
     .join('\n\n');
 
-/** 공개하려면 독후감 본문이나 관계도 중 하나는 있어야 한다 — 빈 글이 검색에 오르지 않게 */
+/** 본문 차트 블록이 모두 그려지는지 — 틀린 블록은 공개 페이지에서 조용히 빠지므로 저장 때 막는다 */
+export const validateChartBlocks = (body: string): string | null => {
+  for (const [index, block] of extractChartBlocks(body).entries()) {
+    const result = parseChartBlock(block);
+    if (!result.ok) return `본문 ${index + 1}번째 차트: ${result.error}`;
+  }
+  return null;
+};
+
+/**
+ * 공개하려면 본문이나 관계도 중 하나는 있어야 한다 — 빈 글이 검색에 오르지 않게.
+ * bookTitle 이 '' 이면 책 없는 글 — 별점은 0 으로 저장한다(DB CHECK 와 같은 규칙).
+ */
 export const validateStoryInput = (
   input: StoryInput,
   supabaseUrl: string | undefined,
   bookTitle: string
 ): Result<ValidStory> => {
+  // 그림 대체 글: 책이 있으면 "책 제목 인물관계도", 없으면 글 제목
+  const altBase = bookTitle ? `${bookTitle} 인물관계도` : input.title.trim();
   const slug = input.slug.trim();
   const slugError = validateSlug(slug);
   if (slugError) return { ok: false, message: slugError };
@@ -185,6 +211,8 @@ export const validateStoryInput = (
   const body = input.body.replace(/\r\n/g, '\n').trim();
   if (body.length > BODY_MAX)
     return { ok: false, message: '본문이 너무 길어요.' };
+  const chartError = validateChartBlocks(body);
+  if (chartError) return { ok: false, message: chartError };
 
   const rating = Number(input.rating);
   if (!Number.isInteger(rating) || rating < 0 || rating > 5)
@@ -192,11 +220,7 @@ export const validateStoryInput = (
 
   let mapImage: StoryImage | null = null;
   if (input.mapImage) {
-    const checked = sanitizeImage(
-      input.mapImage,
-      supabaseUrl,
-      `${bookTitle} 인물관계도`
-    );
+    const checked = sanitizeImage(input.mapImage, supabaseUrl, altBase);
     if (!checked.ok) return checked;
     mapImage = checked.value;
   }
@@ -205,11 +229,7 @@ export const validateStoryInput = (
     return { ok: false, message: `카드는 ${MAX_CARDS}장까지 올릴 수 있어요.` };
   const mapCards: StoryImage[] = [];
   for (const [index, card] of input.mapCards.entries()) {
-    const checked = sanitizeImage(
-      card,
-      supabaseUrl,
-      `${bookTitle} 인물관계도 ${index + 1}`
-    );
+    const checked = sanitizeImage(card, supabaseUrl, `${altBase} ${index + 1}`);
     if (!checked.ok) return checked;
     mapCards.push(checked.value);
   }
@@ -222,7 +242,7 @@ export const validateStoryInput = (
   if (input.isPublished && !body && !mapImage)
     return {
       ok: false,
-      message: '공개하려면 독후감이나 관계도 그림이 하나는 있어야 해요.',
+      message: '공개하려면 본문이나 관계도 그림이 하나는 있어야 해요.',
     };
 
   return {
@@ -232,10 +252,11 @@ export const validateStoryInput = (
       title,
       description,
       body,
-      rating,
+      rating: bookTitle ? rating : 0,
       map_image: mapImage,
       map_cards: mapCards,
       characters: parseCharactersText(input.charactersText),
+      lead_stat: findLeadStat(body),
       is_published: Boolean(input.isPublished),
     },
   };

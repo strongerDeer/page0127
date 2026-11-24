@@ -1,4 +1,19 @@
-import ReactMarkdown, { type Components } from 'react-markdown';
+import ReactMarkdown, {
+  type Components,
+  type ExtraProps,
+} from 'react-markdown';
+
+import { parseChartBlock } from '../model/chartBlock';
+import {
+  BarChart,
+  ChartError,
+  ColumnChart,
+  SingleStatChart,
+  SlopeChart,
+} from './StoryChart';
+
+import type { MyRecordChart } from '../model/chartBlock';
+import type { ReactNode } from 'react';
 
 /**
  * 독후감 본문(마크다운) → 서비스 스타일. 공개 페이지(서버)와 어드민 미리보기(브라우저)가 같이 쓴다.
@@ -62,8 +77,81 @@ const components: Components = {
 /** 본문에 그림은 넣지 않는다 — 그림은 관계도·카드 칸으로 올린다(크기·alt 를 관리할 수 있게) */
 const DISALLOWED = ['img'];
 
-export const StoryMarkdown = ({ body }: { body: string }) => (
-  <ReactMarkdown components={components} disallowedElements={DISALLOWED}>
-    {body}
-  </ReactMarkdown>
-);
+/** ```chart 코드 블록이면 그 안의 글자, 아니면 null */
+const chartSource = (node: ExtraProps['node']): string | null => {
+  const code = node?.children[0];
+  if (code?.type !== 'element' || code.tagName !== 'code') return null;
+  const className = code.properties.className;
+  const classes = Array.isArray(className) ? className : [];
+  if (!classes.includes('language-chart')) return null;
+  return code.children
+    .map((child) => (child.type === 'text' ? child.value : ''))
+    .join('');
+};
+
+type StoryMarkdownProps = {
+  body: string;
+  /** 어드민 미리보기 — 틀린 차트 블록의 이유를 보여 준다(공개 페이지는 조용히 건너뛴다) */
+  preview?: boolean;
+  /**
+   * 내 기록 블록(type: my-record)을 그릴 컴포넌트.
+   *
+   * 왜 밖에서 받나: 내 기록은 로그인을 확인하고 API 를 부르는 브라우저 컴포넌트라 features 층에 있다.
+   * entities 가 features 를 import 하면 FSD 규칙(아래 층은 위 층을 모른다)이 깨지므로,
+   * 페이지(app)가 끼워 넣는다 — "의존성 주입". 안 넘기면 그 블록은 그리지 않는다.
+   */
+  renderMyRecord?: (spec: MyRecordChart) => ReactNode;
+};
+
+/**
+ * 본문 마크다운 → 서비스 스타일 + 차트 블록.
+ *
+ * 차트는 ```chart 코드 블록으로 적는다(문법: model/chartBlock.ts). react-markdown 은 코드 블록을
+ * pre > code.language-chart 로 넘겨 주므로, pre 를 갈아 끼워 그 자리에 차트를 그린다.
+ * 다른 언어의 코드 블록은 평범한 코드로 둔다.
+ */
+export const StoryMarkdown = ({
+  body,
+  preview = false,
+  renderMyRecord,
+}: StoryMarkdownProps) => {
+  const withCharts: Components = {
+    ...components,
+    pre: ({ node, children }) => {
+      const source = chartSource(node);
+      if (source === null)
+        return (
+          <pre className='mt-5 overflow-x-auto rounded-lg bg-muted p-4 text-sm'>
+            {children}
+          </pre>
+        );
+
+      const result = parseChartBlock(source);
+      if (!result.ok)
+        return preview ? <ChartError message={result.error} /> : null;
+
+      const { spec } = result;
+      switch (spec.type) {
+        case 'number':
+        case 'people':
+          return <SingleStatChart spec={spec} />;
+        case 'bar':
+          return <BarChart spec={spec} />;
+        case 'column':
+          return <ColumnChart spec={spec} />;
+        case 'slope':
+          return <SlopeChart spec={spec} />;
+        case 'my-record':
+          return renderMyRecord ? (
+            <div className='mt-8'>{renderMyRecord(spec)}</div>
+          ) : null;
+      }
+    },
+  };
+
+  return (
+    <ReactMarkdown components={withCharts} disallowedElements={DISALLOWED}>
+      {body}
+    </ReactMarkdown>
+  );
+};
