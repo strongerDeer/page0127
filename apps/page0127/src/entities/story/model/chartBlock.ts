@@ -28,6 +28,12 @@ import type { StoryLeadStat } from './types';
  *   column    세로 막대(연도 비교)    - 항목: 값 (2~10개)
  *   slope     두 시점을 잇는 선       - 항목: 값 (꼭 2개)
  *   my-record 로그인한 사람의 올해 완독 수   rate(선택) · label(선택)
+ *   shelf     무리별 사람 10명 + 책장(책등 1권씩)  - 이름(설명): 읽은 비율 / 전체 평균 / 읽은 사람 평균(선택) (1~2개)
+ *   age-table 나이(무리)별 한 줄씩: 사람 10명 + 권수 막대  - 이름: 읽은 비율 / 권수(모르면 -) (1~10개)
+ *             line·line-label(선택) = 막대 위 기준선(예: 전체 평균 7권)
+ *
+ * 값이 여러 개인 항목은 " / " 로 나눈다. 이름 끝 괄호는 작은 설명으로 따로 보인다
+ * ("성인(만 19세 이상)" → 성인 + 만 19세 이상).
  *
  * 순수 함수라 테스트로 문법을 지킨다(chartBlock.test.ts). 틀린 블록은 공개 페이지에서는
  * 그리지 않고, 어드민 미리보기에서만 이유를 보여 준다.
@@ -68,7 +74,45 @@ export type MyRecordChart = {
   label: string;
 };
 
-export type ChartSpec = SingleChart | SeriesChart | MyRecordChart;
+/** shelf 한 무리 — 성인·학생처럼 비교할 대상 */
+export type ShelfGroup = {
+  label: string;
+  /** 이름 뒤 괄호 속 설명 — "만 19세 이상" */
+  sub: string;
+  /** 1권이라도 읽은 사람 비율(%) — 사람 10명 그림 */
+  rate: number;
+  /** 전체 평균 권수(안 읽은 사람 포함) — 채운 책등 */
+  average: number;
+  /** 읽은 사람만의 평균 권수 — 점선 책등. 모르면 null */
+  readers: number | null;
+};
+
+export type ShelfChart = Common & {
+  type: 'shelf';
+  groups: ShelfGroup[];
+};
+
+export type AgeTableRow = {
+  label: string;
+  /** 읽은 사람 비율(%) */
+  rate: number;
+  /** 권수(막대). 발표된 값이 없으면 null → "자료 없음" */
+  value: number | null;
+};
+
+export type AgeTableChart = Common & {
+  type: 'age-table';
+  unit: string;
+  /** 막대 끝 값 */
+  max: number;
+  /** 기준선 값(예: 전체 평균). 없으면 선을 긋지 않는다 */
+  line: number | null;
+  lineLabel: string;
+  rows: AgeTableRow[];
+};
+
+export type ChartSpec =
+  SingleChart | SeriesChart | MyRecordChart | ShelfChart | AgeTableChart;
 
 export type ChartParseResult =
   { ok: true; spec: ChartSpec } | { ok: false; error: string };
@@ -80,7 +124,12 @@ export const CHART_TYPES = [
   'column',
   'slope',
   'my-record',
+  'shelf',
+  'age-table',
 ] as const;
+
+/** 책장 한 무리에 그릴 수 있는 책등 수 — 넘으면 책장이 끝없이 길어진다 */
+export const SHELF_MAX_BOOKS = 60;
 
 const MAX_ITEMS: Record<SeriesChart['type'], [number, number]> = {
   bar: [1, 12],
@@ -108,6 +157,8 @@ export const niceMax = (largest: number): number => {
 export const parseChartBlock = (text: string): ChartParseResult => {
   const fields = new Map<string, string>();
   const items: ChartItem[] = [];
+  /** 값이 여러 개인 항목(shelf·age-table)용 — " / " 로 나누기 전 글자 */
+  const rawItems: { label: string; raw: string }[] = [];
 
   for (const raw of text.split(/\r?\n/)) {
     const line = raw.trim();
@@ -127,6 +178,7 @@ export const parseChartBlock = (text: string): ChartParseResult => {
       if (!label || value === null)
         return { ok: false, error: `항목의 숫자를 읽지 못했어요: ${line}` };
       items.push({ label, value });
+      rawItems.push({ label, raw: body.slice(at + 1).trim() });
       continue;
     }
 
@@ -165,7 +217,12 @@ export const parseChartBlock = (text: string): ChartParseResult => {
   if (!common.source)
     return { ok: false, error: 'source: 에 출처를 적어 주세요.' };
 
+  if (type === 'shelf') return parseShelf(common, rawItems);
+
   const unit = fields.get('unit') ?? '';
+
+  if (type === 'age-table')
+    return parseAgeTable(common, unit, fields, rawItems);
 
   if (type === 'number' || type === 'people') {
     const value = toNumber(fields.get('value') ?? '');
@@ -226,6 +283,115 @@ export const parseChartBlock = (text: string): ChartParseResult => {
       max: givenMax ?? (unit === '%' ? 100 : niceMax(largest)),
       highlight,
       items,
+    },
+  };
+};
+
+/** "38.5 / 2.4 / 6" → [38.5, 2.4, 6]. "-" 나 빈칸은 null(모르는 값) */
+const splitValues = (raw: string): (number | null)[] =>
+  raw.split('/').map((part) => {
+    const text = part.trim();
+    return text === '' || text === '-' ? null : toNumber(text);
+  });
+
+/** "성인(만 19세 이상)" → { label: 성인, sub: 만 19세 이상 } */
+export const splitLabel = (raw: string): { label: string; sub: string } => {
+  const match = /^(.+?)\s*[(（](.+)[)）]$/.exec(raw);
+  return match
+    ? { label: match[1].trim(), sub: match[2].trim() }
+    : { label: raw, sub: '' };
+};
+
+const isRate = (value: number | null): value is number =>
+  value !== null && value >= 0 && value <= 100;
+
+const parseShelf = (
+  common: Common,
+  rawItems: { label: string; raw: string }[]
+): ChartParseResult => {
+  if (rawItems.length < 1 || rawItems.length > 2)
+    return { ok: false, error: 'shelf 는 항목을 1~2개 적어 주세요.' };
+
+  const groups: ShelfGroup[] = [];
+  for (const item of rawItems) {
+    const [rate, average, readers = null, ...rest] = splitValues(item.raw);
+    const line = `- ${item.label}: ${item.raw}`;
+    if (rest.length > 0 || average === undefined)
+      return {
+        ok: false,
+        error: `shelf 항목은 "- 이름: 읽은 비율 / 전체 평균 / 읽은 사람 평균"이에요: ${line}`,
+      };
+    if (!isRate(rate))
+      return { ok: false, error: `읽은 비율은 0~100 사이 숫자예요: ${line}` };
+    if (average === null || average < 0 || average > SHELF_MAX_BOOKS)
+      return {
+        ok: false,
+        error: `전체 평균은 0~${SHELF_MAX_BOOKS} 사이 숫자예요: ${line}`,
+      };
+    if (readers !== null && (readers < average || readers > SHELF_MAX_BOOKS))
+      return {
+        ok: false,
+        error: `읽은 사람 평균은 전체 평균 이상, ${SHELF_MAX_BOOKS} 이하예요: ${line}`,
+      };
+    groups.push({ ...splitLabel(item.label), rate, average, readers });
+  }
+  return { ok: true, spec: { ...common, type: 'shelf', groups } };
+};
+
+const parseAgeTable = (
+  common: Common,
+  unit: string,
+  fields: Map<string, string>,
+  rawItems: { label: string; raw: string }[]
+): ChartParseResult => {
+  if (rawItems.length < 1 || rawItems.length > 10)
+    return { ok: false, error: 'age-table 은 항목을 1~10개 적어 주세요.' };
+
+  const rows: AgeTableRow[] = [];
+  for (const item of rawItems) {
+    const values = splitValues(item.raw);
+    const line = `- ${item.label}: ${item.raw}`;
+    if (values.length !== 2)
+      return {
+        ok: false,
+        error: `age-table 항목은 "- 이름: 읽은 비율 / 권수"예요(권수를 모르면 -): ${line}`,
+      };
+    const [rate, value] = values;
+    if (!isRate(rate))
+      return { ok: false, error: `읽은 비율은 0~100 사이 숫자예요: ${line}` };
+    if (value !== null && value < 0)
+      return { ok: false, error: `권수는 0 이상이어야 해요: ${line}` };
+    rows.push({ label: item.label, rate, value });
+  }
+
+  const known = rows.flatMap((row) => (row.value === null ? [] : [row.value]));
+  if (known.length === 0)
+    return { ok: false, error: 'age-table 에 권수가 하나는 있어야 해요.' };
+
+  const rawLine = fields.get('line');
+  const line = rawLine === undefined ? null : toNumber(rawLine);
+  if (rawLine !== undefined && (line === null || line < 0))
+    return { ok: false, error: 'line 은 0 이상 숫자예요.' };
+
+  const largest = Math.max(...known, line ?? 0);
+  const rawMax = fields.get('max');
+  const givenMax = rawMax === undefined ? null : toNumber(rawMax);
+  if (rawMax !== undefined && (givenMax === null || givenMax < largest))
+    return {
+      ok: false,
+      error: `max 는 가장 큰 값(${largest}) 이상이어야 해요.`,
+    };
+
+  return {
+    ok: true,
+    spec: {
+      ...common,
+      type: 'age-table',
+      unit,
+      max: givenMax ?? niceMax(largest),
+      line,
+      lineLabel: fields.get('line-label') ?? '',
+      rows,
     },
   };
 };

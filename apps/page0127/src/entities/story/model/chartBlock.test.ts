@@ -6,6 +6,7 @@ import {
   formatChartValue,
   niceMax,
   parseChartBlock,
+  splitLabel,
   toNumber,
 } from './chartBlock';
 
@@ -202,5 +203,115 @@ describe('formatChartValue', () => {
     expect(formatChartValue(55, true)).toBe('55.0');
     expect(formatChartValue(38.5)).toBe('38.5');
     expect(formatChartValue(1234)).toBe('1,234');
+  });
+});
+
+describe('shelf (책장 비교)', () => {
+  it('비율 / 전체 평균 / 읽은 사람 평균 + 괄호 설명', () => {
+    const result = parseChartBlock(
+      [
+        'type: shelf',
+        'title: 성인과 학생',
+        SOURCE,
+        '- 성인(만 19세 이상): 38.5 / 2.4 / 6',
+        '- 학생: 94.6 / 31.5',
+      ].join('\n')
+    );
+    expect(
+      result.ok && result.spec.type === 'shelf' && result.spec.groups
+    ).toEqual([
+      {
+        label: '성인',
+        sub: '만 19세 이상',
+        rate: 38.5,
+        average: 2.4,
+        readers: 6,
+      },
+      { label: '학생', sub: '', rate: 94.6, average: 31.5, readers: null },
+    ]);
+  });
+
+  it('읽은 사람 평균이 전체 평균보다 작거나, 책이 너무 많으면 거절', () => {
+    const block = (line: string) =>
+      parseChartBlock(['type: shelf', SOURCE, line].join('\n'));
+    expect(block('- 성인: 38.5 / 2.4 / 1').ok).toBe(false);
+    expect(block('- 성인: 38.5 / 80').ok).toBe(false);
+    expect(block('- 성인: 120 / 2.4').ok).toBe(false);
+    expect(block('- 성인: 38.5').ok).toBe(false);
+  });
+
+  it('무리는 1~2개', () => {
+    const lines = ['- 가: 10 / 1', '- 나: 10 / 1', '- 다: 10 / 1'];
+    expect(
+      parseChartBlock(['type: shelf', SOURCE, ...lines].join('\n')).ok
+    ).toBe(false);
+  });
+});
+
+describe('age-table (나이별 표)', () => {
+  it('비율 / 권수, 모르는 권수는 -, 기준선', () => {
+    const result = parseChartBlock(
+      [
+        'type: age-table',
+        'unit: 권',
+        'max: 15',
+        'line: 7.0',
+        'line-label: 13세 이상 전체 평균 약 7권',
+        SOURCE,
+        '- 13~19세: 69.8 / 11.7',
+        '- 60세 이상: 30.0 / -',
+      ].join('\n')
+    );
+    expect(result).toEqual({
+      ok: true,
+      spec: {
+        type: 'age-table',
+        title: '',
+        note: '',
+        source: '문화체육관광부 「2025 국민 독서실태 조사」',
+        unit: '권',
+        max: 15,
+        line: 7,
+        lineLabel: '13세 이상 전체 평균 약 7권',
+        rows: [
+          { label: '13~19세', rate: 69.8, value: 11.7 },
+          { label: '60세 이상', rate: 30, value: null },
+        ],
+      },
+    });
+  });
+
+  it('max 를 안 적으면 가장 큰 값으로 끝을 잡는다', () => {
+    const result = parseChartBlock(
+      ['type: age-table', SOURCE, '- 20대: 60 / 9.4'].join('\n')
+    );
+    expect(
+      result.ok && result.spec.type === 'age-table' && result.spec.max
+    ).toBe(20);
+  });
+
+  it('값이 두 개가 아니거나 권수가 하나도 없으면 거절', () => {
+    expect(
+      parseChartBlock(['type: age-table', SOURCE, '- 20대: 60'].join('\n')).ok
+    ).toBe(false);
+    expect(
+      parseChartBlock(['type: age-table', SOURCE, '- 20대: 60 / -'].join('\n'))
+        .ok
+    ).toBe(false);
+    expect(
+      parseChartBlock(
+        ['type: age-table', 'max: 5', SOURCE, '- 20대: 60 / 9.4'].join('\n')
+      ).ok
+    ).toBe(false);
+  });
+});
+
+describe('splitLabel', () => {
+  it('끝 괄호만 설명으로', () => {
+    expect(splitLabel('학생(초등 4학년~고등 3학년)')).toEqual({
+      label: '학생',
+      sub: '초등 4학년~고등 3학년',
+    });
+    expect(splitLabel('성인 전체')).toEqual({ label: '성인 전체', sub: '' });
   });
 });
