@@ -5,7 +5,7 @@ import type {
   QualityRecord,
   RegressionRecord,
 } from './types.ts';
-import { detectEnvironmentChanges } from './environment.ts';
+import { detectCpuChange, detectEnvironmentChanges } from './environment.ts';
 
 // 'unmeasured' = 직전 또는 이번 값이 0(측정 실패)이라 비교할 수 없음.
 export type TrendLabel = 'improving' | 'degrading' | 'flat' | 'unmeasured';
@@ -21,8 +21,12 @@ export type Analysis = {
   sameDeployment: boolean;
   trend: { performance: TrendLabel; bundle: TrendLabel; weight: TrendLabel };
   regressions: Regression[];
-  // sameDeployment일 때, 회귀로 잡혔을 변동을 관찰용으로 보존(노이즈, 코드 회귀 아님).
+  // 회귀로 잡혔을 변동을 관찰용으로 보존(노이즈, 코드 회귀 아님).
+  // - sameDeployment: 전부
+  // - cpuChange: 모바일 TBT 만(CPU 속도에 가장 민감한 지표)
   suppressedRegressions: Regression[];
+  // 러너 CPU 성능지수가 직전과 15% 넘게 다름(예: '러너 성능지수 3011→2466(-18%)'). 없으면 null.
+  cpuChange: string | null;
   // 직전 측정과 달라진 측정 환경(예: 'Chrome 153→154'). 비어 있으면 같거나 비교 불가.
   // 회귀를 지우지는 않는다 — 코드도 같이 바뀌었을 수 있다. 해석할 때 먼저 짚게 한다.
   environmentChanges: string[];
@@ -207,6 +211,7 @@ export const analyze = (history: QualityRecord[]): Analysis => {
       trend: { performance: 'flat', bundle: 'flat', weight: 'flat' },
       regressions: [],
       suppressedRegressions: [],
+      cpuChange: null,
       environmentChanges: [],
     };
   }
@@ -250,6 +255,15 @@ export const analyze = (history: QualityRecord[]): Analysis => {
     current.gitRef === prev.gitRef && current.gitRef !== 'unknown';
   const common = commonPageNames(prev, current);
 
+  // 러너 CPU 가 크게 다르면 모바일 TBT 는 코드와 무관하게 같이 움직인다(CPU 4x 스로틀 위에
+  // 기기 차이가 곱해진다). TBT 만 보류하고 LCP·점수·전송량·번들 회귀는 그대로 잡는다 —
+  // 2026-11-24 HJ 결정. 데스크탑은 성능지수를 기록하지 않아 판단할 근거가 없으니 건드리지 않는다.
+  const cpuChange = detectCpuChange(prev, current);
+  const isCpuNoise = (r: Regression): boolean =>
+    cpuChange !== null &&
+    r.metric === 'tbt' &&
+    (r.formFactor ?? 'mobile') === 'mobile';
+
   return {
     isBaseline: false,
     current,
@@ -271,8 +285,13 @@ export const analyze = (history: QualityRecord[]): Analysis => {
         false
       ),
     },
-    regressions: sameDeployment ? [] : regressions,
-    suppressedRegressions: sameDeployment ? regressions : [],
+    regressions: sameDeployment
+      ? []
+      : regressions.filter((r) => !isCpuNoise(r)),
+    suppressedRegressions: sameDeployment
+      ? regressions
+      : regressions.filter(isCpuNoise),
+    cpuChange,
     environmentChanges: detectEnvironmentChanges(prev, current),
   };
 };

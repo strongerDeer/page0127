@@ -46,4 +46,23 @@ describe('RegressionBanner', () => {
     expect(html).toContain('회귀 1건 감지');
     expect(html).not.toContain('측정 환경');
   });
+
+  it('회귀가 없어도 러너 CPU 차이로 보류한 TBT 가 있으면 알린다', () => {
+    const record = {
+      regressions: [],
+      suppressedRegressions: [
+        { metric: 'tbt', detail: 'library TBT 293→519ms' },
+      ],
+      environment: { ...env('157.0.0.0', '13.6.0'), benchmarkIndex: 2466 },
+    } as unknown as QualityRecord;
+    const html = renderToStaticMarkup(
+      <RegressionBanner
+        record={record}
+        previous={make({ ...env('157.0.0.0', '13.6.0'), benchmarkIndex: 3011 })}
+      />
+    );
+    expect(html).toContain('러너 성능지수 3011→2466(-18%)');
+    expect(html).toContain('library TBT 293→519ms');
+    expect(html).not.toContain('회귀 1건 감지');
+  });
 });
