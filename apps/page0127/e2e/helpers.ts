@@ -17,6 +17,8 @@ const STATIC_PATHS = new Set([
   'feed',
   // 책 이야기 목록(/blog) — 사이트맵에 /blog 한 단계 주소로 나온다
   'blog',
+  // 오늘의 문장 뽑기(/sentence)
+  'sentence',
 ]);
 
 /** 사이트맵에서 공개 서재 하나 (`/{username}`) */
