@@ -5,6 +5,7 @@ import { revalidateBookInfoPages } from '@/shared/lib/cache/revalidateBookInfoPa
 
 import { bookSelect, withPersonalMemo } from '@/entities/book/api/bookMemo';
 import { ensureProviderCatalog } from '@/entities/book/api/ensureProviderCatalog';
+import { pickBookUpdate } from '@/entities/book/model/bookUpdateFields';
 import { isNewlyCompleted } from '@/entities/book/model/completion';
 
 import { createActivity } from '../../_helpers/activity';
@@ -83,8 +84,9 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
     const { data, error } = await supabase
       .from('books')
+      // 받은 본문을 통째로 넣지 않고 허용한 칸만 넣는다(Mass Assignment 방지 — bookUpdateFields)
       .update({
-        ...body,
+        ...pickBookUpdate(body),
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
