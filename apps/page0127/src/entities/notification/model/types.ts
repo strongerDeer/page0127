@@ -11,6 +11,7 @@
  * - reading_reminder: 2주 넘게 읽는 중인 책 (나에게 오는 알림, actor = 본인)
  * - reading_nudge: 다른 독자가 보내는 책 봉투 (추천·같이 읽기 문구를 포함)
  * - weekly_recap: 주간 회상 (나에게 오는 알림, actor = 본인, 대상 없음 → 내 서재)
+ * - chemistry: 독서 케미 결과를 상대에게 알림 (actor = 분석한 사람 → actor 서재의 케미 화면)
  */
 export type NotificationType =
   | 'follow'
@@ -18,7 +19,8 @@ export type NotificationType =
   | 'like'
   | 'reading_reminder'
   | 'weekly_recap'
-  | 'reading_nudge';
+  | 'reading_nudge'
+  | 'chemistry';
 
 /** 다른 사람이 아니라 서비스가 '나'에게 보내는 알림 — 크론이 문장을 message 에 적어 둔다 */
 export const SELF_NOTICE_TYPES: readonly NotificationType[] = [

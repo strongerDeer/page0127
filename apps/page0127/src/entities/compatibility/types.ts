@@ -73,6 +73,12 @@ export type CompatibilityAnalysis = {
 
   /** 생성일 */
   created_at: string;
+
+  /** 분석한 사람 — null 이면 이 칸이 생기기 전 결과(두 사람 모두 본다) */
+  requested_by: string | null;
+
+  /** 상대에게 알린 시각 — null 이면 분석한 사람만 본다 */
+  shared_at: string | null;
 };
 
 /**

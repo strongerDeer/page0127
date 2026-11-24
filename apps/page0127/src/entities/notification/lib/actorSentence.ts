@@ -27,6 +27,8 @@ export const toActorSentence = (
   switch (type) {
     case 'reading_nudge':
       return '님이 같이 읽자고 콕 찔렀어요';
+    case 'chemistry':
+      return '님이 나와의 독서 케미 결과를 보냈어요';
     case 'follow':
       return '님이 팔로우했습니다';
     case 'comment':

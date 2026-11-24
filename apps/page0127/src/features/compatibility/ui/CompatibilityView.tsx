@@ -22,12 +22,14 @@ import {
 } from '@repo/ui';
 import { BookCover, PageContainer, PageHeader } from '@repo/ui';
 import {
+  Bell,
   BookCopy,
   BookOpen,
   Check,
   Gift,
   Heart,
   Inbox,
+  Loader2,
   Sprout,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -43,6 +45,7 @@ import { toCoverSource } from '@/entities/book';
 import { replaceUserLabels } from '@/entities/compatibility/lib/replaceUserLabels';
 import { COMPATIBILITY_MIN_BOOKS as MIN_BOOKS } from '@/entities/compatibility/model/analysisGate';
 import { getCompatibilityTypeByScore } from '@/entities/compatibility/model/compatibilityTypes';
+import { toShareViewState } from '@/entities/compatibility/model/share';
 
 import { ShareSheetButton } from '@/features/share';
 
@@ -348,6 +351,13 @@ const CompatibilityResult = ({
               loadingMessages={CHEMISTRY_LOADING}
             />
           </div>
+          <ShareWithPartner
+            analysis={analysis}
+            viewerId={
+              isCurrentUserFirst ? analysis.user_id_1 : analysis.user_id_2
+            }
+            targetName={targetName}
+          />
         </CardContent>
       </Card>
 
@@ -518,5 +528,75 @@ const RecommendationList = ({
         </div>
       </CardContent>
     </Card>
+  );
+};
+
+// ─── 상대에게 알리기 (2026-11-24 HJ A안) ───
+
+/**
+ * 결과는 분석한 사람만 본다. 여기서 "○○ 님에게 알리기"를 누르면 상대도 같은 결과를 보고 알림을 받는다.
+ * 결과를 먼저 보고 나서 알릴지 고르게 한 이유: 분석 전에 물으면 결과가 어색해도 이미 보낸 뒤다.
+ */
+const ShareWithPartner = ({
+  analysis,
+  viewerId,
+  targetName,
+}: {
+  analysis: CompatibilityAnalysis;
+  viewerId: string;
+  targetName: string;
+}) => {
+  const router = useRouter();
+  const [isSending, setIsSending] = useState(false);
+  const state = toShareViewState(analysis, viewerId);
+
+  if (state === 'none') return null;
+
+  if (state === 'received') {
+    return (
+      <p className='mt-4 text-sm text-text-subtle'>
+        {targetName} 님이 보내 준 결과예요
+      </p>
+    );
+  }
+
+  if (state === 'shared') {
+    return (
+      <p className='mt-4 inline-flex items-center gap-1.5 text-sm text-text-subtle'>
+        <Check aria-hidden className='size-4 text-primary' />
+        {targetName} 님에게 알렸어요
+      </p>
+    );
+  }
+
+  const share = async () => {
+    setIsSending(true);
+    try {
+      await apiClient.post('/compatibility/share', {
+        analysisId: analysis.id,
+      });
+      toast.success(`${targetName} 님에게 알렸어요`);
+      router.refresh();
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, '알리지 못했어요.'));
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  return (
+    <div className='mt-4 flex flex-col items-center gap-1.5'>
+      <Button variant='outline' onClick={share} disabled={isSending}>
+        {isSending ? (
+          <Loader2 aria-hidden className='size-4 animate-spin' />
+        ) : (
+          <Bell aria-hidden className='size-4' />
+        )}
+        {targetName} 님에게 알리기
+      </Button>
+      <p className='text-xs text-text-subtle'>
+        알리기 전까지는 나만 볼 수 있어요
+      </p>
+    </div>
   );
 };

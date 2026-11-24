@@ -14,6 +14,11 @@ export const notificationHref = (
 ): string | null => {
   // actor_id(uuid)로 보내면 /[username] 조회에 걸리지 않아 404가 된다 → username 이 없으면 이동하지 않는다
   if (notification.type === 'follow') return profileHref(actorUsername);
+  // 케미 결과는 두 사람 짝으로 저장된다 — 받은 사람이 보낸 사람 서재의 케미 화면을 열면 같은 결과가 보인다
+  if (notification.type === 'chemistry') {
+    const href = profileHref(actorUsername);
+    return href ? `${href}/compatibility` : null;
+  }
   if (notification.type === 'reading_nudge' && !notification.target_id)
     return profileHref(actorUsername);
 
