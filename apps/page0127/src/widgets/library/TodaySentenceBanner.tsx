@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { ChevronRight } from 'lucide-react';
 
 type TodaySentenceBannerProps = {
@@ -6,7 +8,8 @@ type TodaySentenceBannerProps = {
 };
 
 /**
- * 서재 맨 위 — 오늘의 문장을 아직 안 펼친 날에만 뜨는 배너. 누르면 캘린더 오늘 칸으로 내려간다.
+ * 서재 맨 위 — 오늘의 문장을 아직 안 펼친 날에만 뜨는 배너. 누르면 오늘의 문장 모달이 뜬다
+ * (/sentence 를 @modal/(.)sentence 가 가로챈다, HJ 2026-11-24). 펼치면 서버가 다시 그려 배너가 빠지고 캘린더에 책갈피가 찍힌다.
  *
  * 펼친 뒤에는 부모가 그리지 않는다(매일 보는 자리라 할 일이 끝나면 비워 둔다 — HJ, 2026-11-12).
  * 펼친 문장은 캘린더 오늘 칸에서 다시 본다.
@@ -18,8 +21,9 @@ export const TodaySentenceBanner = ({ today }: TodaySentenceBannerProps) => {
   const day = Number(today.slice(8, 10));
 
   return (
-    <a
-      href='#reading-calendar'
+    <Link
+      href='/sentence'
+      scroll={false}
       className='tint-blue group flex items-center gap-4 overflow-hidden rounded-2xl border border-line-soft py-4 pl-5 pr-5 text-text-strong transition-colors hover:border-primary/30'
     >
       <span className='min-w-0 flex-1'>
@@ -38,7 +42,7 @@ export const TodaySentenceBanner = ({ today }: TodaySentenceBannerProps) => {
         </span>
       </span>
       <ClosedBook />
-    </a>
+    </Link>
   );
 };
 
