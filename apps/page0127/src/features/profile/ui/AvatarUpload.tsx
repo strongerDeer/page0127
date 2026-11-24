@@ -152,8 +152,8 @@ export const AvatarUpload = ({
 
       {/* 안내 문구 */}
       <p className='text-xs text-muted-foreground'>
-        JPG, PNG, WEBP, GIF (최대 {MAX_PROFILE_IMAGE_LABEL}) · 저장 버튼을 눌러야
-        업로드됩니다
+        JPG, PNG, WEBP, GIF (최대 {MAX_PROFILE_IMAGE_LABEL}) · 저장 버튼을
+        눌러야 업로드됩니다
       </p>
     </div>
   );
