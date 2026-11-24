@@ -52,6 +52,30 @@ describe('ReadingBalanceCard', () => {
     expect(html).not.toContain('기울');
   });
 
+  it('점수는 이름표 · 점수 · 게이지 · 설명과 함께 — 숫자만 있을 땐 점수인지 몰랐다', () => {
+    const balance = calculateReadingBalance(THREE);
+    const html = renderToStaticMarkup(<ReadingBalanceCard balance={balance} />);
+    expect(html).toContain('균형 점수');
+    expect(html).toContain('role="meter"');
+    expect(html).toContain(`aria-valuenow="${balance.score}"`);
+    expect(html).toContain('분야 수가 아니라, 읽은 권수가');
+    expect(html).not.toContain('고른 정도');
+  });
+
+  it('8권 전엔 점수 대신 몇 권 남았는지', () => {
+    const html = renderToStaticMarkup(
+      <ReadingBalanceCard
+        balance={calculateReadingBalance([
+          ...books('자기계발', 2),
+          ...books('인문', 1),
+        ])}
+      />
+    );
+    expect(html).toContain('8권을 읽으면 점수가 나와요 · 3/8권');
+    expect(html).toContain('role="progressbar"');
+    expect(html).not.toContain('role="meter"');
+  });
+
   it('연도 없이 쓰면(전체 탭) "지금까지 독서 균형" — 작년 대비 문장은 없다', () => {
     const html = renderToStaticMarkup(
       <ReadingBalanceCard balance={calculateReadingBalance(THREE)} />
@@ -78,7 +102,8 @@ describe('ReadingBalanceCard', () => {
       />
     );
     expect(html).toMatch(/title="소설\/시\/희곡[^"]*"[^>]*flex-grow:5/);
-    expect(html).not.toMatch(/width:\d+%/);
+    // 띠 칸(title 이 붙은 칸)만 본다 — 균형 점수 게이지는 0~100 자리라 % 폭이 맞다
+    expect(html).not.toMatch(/title="[^"]*"[^>]*width:\d+%/);
   });
 
   it('좁은 칸(25% 미만)의 이름은 모바일에서 숨긴다 — 칸끼리 글자가 붙었다(컴퓨터 2인문학 2)', () => {

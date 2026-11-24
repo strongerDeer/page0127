@@ -4,6 +4,7 @@ import { calculateReadingBalance } from '@/entities/book';
 import { createTestBook } from '@/entities/book/model/createTestBook';
 
 import {
+  balanceBandIndex,
   categoryColor,
   getBalanceDelta,
   getBalanceLabel,
@@ -21,6 +22,15 @@ describe('balanceCopy', () => {
     expect(getBalanceLabel(20)).toBe('한 우물을 깊이 파는 중');
     expect(getBalanceLabel(48)).toBe('조금씩 넓혀 가는 중');
     expect(getBalanceLabel(70)).toBe('고르게 읽는 중');
+  });
+
+  it('게이지 구간 경계는 문구 경계와 같다', () => {
+    expect(balanceBandIndex(0)).toBe(0);
+    expect(balanceBandIndex(39)).toBe(0);
+    expect(balanceBandIndex(40)).toBe(1);
+    expect(balanceBandIndex(69)).toBe(1);
+    expect(balanceBandIndex(70)).toBe(2);
+    expect(balanceBandIndex(100)).toBe(2);
   });
 
   it('요약 — 읽은 분야 수와 1위 분야 비율', () => {

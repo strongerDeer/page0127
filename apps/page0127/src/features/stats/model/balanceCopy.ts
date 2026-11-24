@@ -1,12 +1,38 @@
-import { BALANCE_CATEGORIES, type ReadingBalance } from '@/entities/book';
+import {
+  BALANCE_CATEGORIES,
+  MIN_BOOKS_FOR_SCORE,
+  type ReadingBalance,
+} from '@/entities/book';
 
-/** 문구는 진행형 — "기울었다" 같은 판단은 쓰지 않는다(2026-10-08 반려 기록) */
+/**
+ * 균형 점수 세 구간 — 게이지 칸과 문구가 같은 경계를 쓴다.
+ * short 는 게이지 아래 칸 이름, label 은 점수 옆 문장.
+ * 문구는 진행형 — "기울었다" 같은 판단은 쓰지 않는다(2026-10-08 반려 기록)
+ */
+export const BALANCE_BANDS = [
+  { min: 0, max: 39, short: '한 우물', label: '한 우물을 깊이 파는 중' },
+  { min: 40, max: 69, short: '넓혀 가는 중', label: '조금씩 넓혀 가는 중' },
+  { min: 70, max: 100, short: '고르게', label: '고르게 읽는 중' },
+] as const;
+
+export const balanceBandIndex = (score: number): number =>
+  BALANCE_BANDS.findIndex(({ max }) => score <= max);
+
 export const getBalanceLabel = (score: number | null): string => {
   if (score === null) return '책이 더 쌓이면 보여요';
-  if (score < 40) return '한 우물을 깊이 파는 중';
-  if (score < 70) return '조금씩 넓혀 가는 중';
-  return '고르게 읽는 중';
+  return BALANCE_BANDS[balanceBandIndex(score)].label;
 };
+
+/**
+ * 점수 아래 늘 보이는 한 줄 — 숫자만 있을 땐 점수인지도 몰랐다(HJ, 2026-11-24).
+ * "분야를 몇 개 찍었나"로 오해하지 않게 권수 비율이라는 걸 먼저 말한다.
+ */
+export const BALANCE_SCORE_HELP =
+  '분야 수가 아니라, 읽은 권수가 8개 분야에 얼마나 고르게 나뉘었는지예요. 한 분야만이면 0점, 8개 분야를 같은 권수로 읽으면 100점이에요.';
+
+/** 점수가 아직 없을 때 — 몇 권 남았는지 상태만 말한다(지시형 X) */
+export const getBalanceScoreWait = (balance: ReadingBalance): string =>
+  `${MIN_BOOKS_FOR_SCORE}권을 읽으면 점수가 나와요 · ${balance.total}/${MIN_BOOKS_FOR_SCORE}권`;
 
 /**
  * 받침 유무로 '이/가'를 고른다.

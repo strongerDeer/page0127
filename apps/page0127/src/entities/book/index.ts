@@ -126,6 +126,7 @@ export type { BalanceCategory, ReadingBalance } from './model/readingBalance';
 export {
   BALANCE_CATEGORIES,
   calculateReadingBalance,
+  MIN_BOOKS_FOR_SCORE,
 } from './model/readingBalance';
 export type { ReadingPace, ReadingPaceState } from './model/readingPace';
 export { getReadingPace, resolveGoalTarget } from './model/readingPace';
