@@ -6,13 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { BookCover, Button } from '@repo/ui';
-import {
-  BookOpen,
-  ChevronRight,
-  Compass,
-  Hourglass,
-  Quote,
-} from 'lucide-react';
+import { BookOpen, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
@@ -24,12 +18,7 @@ import { dailyScore, formatSentenceSource } from '@/entities/daily-sentence';
 import { drawDailySentenceAction } from '../api/drawDailySentenceAction';
 import { CarrotSvg } from './CarrotSvg';
 
-import type {
-  DailyScore,
-  DailyScoreItem,
-  DailySentence,
-} from '@/entities/daily-sentence';
-import type { LucideIcon } from 'lucide-react';
+import type { DailyScore, DailySentence } from '@/entities/daily-sentence';
 import type { CSSProperties, ReactNode } from 'react';
 
 import styles from './DailySentenceBook.module.css';
@@ -423,13 +412,10 @@ const Gauge = ({
 };
 
 /** 총점(큰 원) + 한마디 + 세 운(작은 원) — HJ 11/24 시안 R1, 원 색은 점수 구간(G3) */
-/** 세 운 아이콘 — 몰입=모래시계, 발견=나침반, 문장=따옴표 (HJ 11/24 L2) */
-const ITEM_ICON: Record<DailyScoreItem['key'], LucideIcon> = {
-  focus: Hourglass,
-  discover: Compass,
-  sentence: Quote,
-};
-
+/**
+ * 총점(큰 원, 원 안에 "총점") + 한 줄 평은 큰 원 아래 왼쪽 칸 · 세 운(작은 원)은 오른쪽 세로 — HJ 11/24
+ * 원 색은 점수 구간(90↑ 파랑 · 80대 민트 · 70대 보라)
+ */
 const ScoreBlock = ({
   score,
   animate,
@@ -441,9 +427,8 @@ const ScoreBlock = ({
 }) => {
   const total = useCountUp(score.total, animate, 1000);
   return (
-    <div className='grid justify-items-center gap-3 text-center'>
-      {/* 큰 원 왼쪽 + 세 운 오른쪽 세로 (HJ 11/24) */}
-      <div className='flex items-center justify-center gap-5'>
+    <div className='flex items-center justify-center gap-9'>
+      <div className='grid w-[148px] justify-items-center gap-3 text-center'>
         <Gauge
           value={score.total}
           size={124}
@@ -451,51 +436,45 @@ const ScoreBlock = ({
           tone={scoreTone(score.total)}
           animate={animate}
         >
+          <span className='mb-1 text-xs text-text-subtle'>총점</span>
           <p
             className='text-[38px] font-bold leading-none text-text-strong tabular-nums'
-            aria-label={`${score.total}점`}
+            aria-label={`총점 ${score.total}점`}
           >
             {total}
           </p>
-          <span className='mt-1 text-xs text-text-subtle'>점</span>
         </Gauge>
-        <dl
-          {...rise(1)}
-          className={`${rise(1).className ?? ''} grid gap-2 text-left`}
+        <p
+          {...rise(2)}
+          className={`${rise(2).className ?? ''} break-keep text-[13px] leading-snug text-text-subtle`}
         >
-          {score.items.map((item, i) => {
-            const Icon = ITEM_ICON[item.key];
-            return (
-              <div key={item.key} className='flex items-center gap-2.5'>
-                <dd>
-                  <Gauge
-                    value={item.value}
-                    size={44}
-                    stroke={4}
-                    tone={scoreTone(item.value)}
-                    animate={animate}
-                    delayMs={RISE_STEP_MS + i * 150}
-                  >
-                    <span className='text-[13px] font-bold text-text-strong tabular-nums'>
-                      {item.value}
-                    </span>
-                  </Gauge>
-                </dd>
-                <dt className='flex items-center gap-1.5 text-[13px] text-text-subtle'>
-                  <Icon className='size-[15px]' aria-hidden />
-                  {item.label}
-                </dt>
-              </div>
-            );
-          })}
-        </dl>
+          {score.comment}
+        </p>
       </div>
-      <p
-        {...rise(2)}
-        className={`${rise(2).className ?? ''} text-sm text-text-subtle`}
+      <dl
+        {...rise(1)}
+        className={`${rise(1).className ?? ''} grid gap-3.5 text-left`}
       >
-        {score.comment}
-      </p>
+        {score.items.map((item, i) => (
+          <div key={item.key} className='flex items-center gap-3'>
+            <dd>
+              <Gauge
+                value={item.value}
+                size={46}
+                stroke={4}
+                tone={scoreTone(item.value)}
+                animate={animate}
+                delayMs={RISE_STEP_MS + i * 150}
+              >
+                <span className='text-sm font-bold text-text-strong tabular-nums'>
+                  {item.value}
+                </span>
+              </Gauge>
+            </dd>
+            <dt className='text-[13px] text-text-subtle'>{item.label}</dt>
+          </div>
+        ))}
+      </dl>
     </div>
   );
 };
