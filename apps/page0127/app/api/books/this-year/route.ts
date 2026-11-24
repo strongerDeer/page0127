@@ -16,7 +16,7 @@ import type { ThisYearRecord } from '@/features/story-my-record/model/types';
  * 서버에서 그리지 않고 이 API 로 따로 받는다(로그인을 서버에서 읽으면 ISR 이 깨진다).
  *
  * 왜 /api/books/stats 를 쓰지 않나: 그건 내 책을 전부(select *) 받아 월별·분야별까지 계산한다.
- * 여기서는 숫자 두 개면 되므로 DB 가 세게(count) 하고 행은 받지 않는다.
+ * 여기서는 숫자 두 개(+서재 주소용 아이디)면 되므로 DB 가 세게(count) 하고 행은 받지 않는다.
  *
  * 완독 연도 규칙은 서재와 같다(getCompletedYear): 완독 날짜가 있으면 그 연도, 없으면 완독 연도 칸.
  * 두 칸은 DB CHECK 로 함께 찰 수 없어서 OR 로 세도 한 권이 두 번 세지지 않는다.
@@ -30,7 +30,7 @@ export async function GET() {
     const year = getCurrentLibraryYear();
 
     // 두 쿼리는 서로 기다릴 필요가 없다 — 동시에 보내 왕복 한 번 시간으로 끝낸다
-    const [completedResult, goalResult] = await Promise.all([
+    const [completedResult, goalResult, profileResult] = await Promise.all([
       supabase
         .from('books')
         .select('id', { count: 'exact', head: true })
@@ -45,15 +45,23 @@ export async function GET() {
         .eq('user_id', user!.id)
         .eq('year', year)
         .maybeSingle(),
+      // "내 서재 보기" 버튼 주소 — 글 페이지는 정적이라 머리글처럼 서버에서 아이디를 받지 못한다
+      supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', user!.id)
+        .maybeSingle(),
     ]);
 
     if (completedResult.error) throw completedResult.error;
     if (goalResult.error) throw goalResult.error;
+    if (profileResult.error) throw profileResult.error;
 
     const body: ThisYearRecord = {
       year,
       completed: completedResult.count ?? 0,
       goal: (goalResult.data?.target as number | undefined) ?? null,
+      username: (profileResult.data?.username as string | null) ?? null,
     };
     return successResponse(body);
   } catch (error) {

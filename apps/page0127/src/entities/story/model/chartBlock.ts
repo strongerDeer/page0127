@@ -403,7 +403,8 @@ export const extractChartBlocks = (body: string): string[] =>
   );
 
 /**
- * 목록·공유 이미지에 쓸 첫 숫자 — 본문의 첫 number·people 차트.
+ * 목록·공유 이미지에 쓸 첫 숫자 — 본문의 첫 number·people·shelf 차트.
+ * shelf 는 첫 무리의 읽은 비율을 사람 그림으로 쓴다("1년 동안 책을 읽은 성인 38.5%").
  * 저장할 때 한 번 계산해 stories.lead_stat 에 넣는다.
  */
 export const findLeadStat = (body: string): StoryLeadStat | null => {
@@ -418,6 +419,15 @@ export const findLeadStat = (body: string): StoryLeadStat | null => {
         label: spec.label,
         people: spec.type === 'people' ? spec.value / 10 : null,
       };
+    if (spec.type === 'shelf') {
+      const [first] = spec.groups;
+      return {
+        value: first.rate,
+        unit: '%',
+        label: `1년 동안 책을 읽은 ${first.label}`,
+        people: first.rate / 10,
+      };
+    }
   }
   return null;
 };

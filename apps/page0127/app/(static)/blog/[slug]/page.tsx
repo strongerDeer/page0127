@@ -173,9 +173,7 @@ export default async function StoryPage({ params }: PageProps) {
           {bookId && <h2 className='heading-2 mb-5'>독후감</h2>}
           <StoryMarkdown
             body={story.body}
-            renderMyRecord={(spec) => (
-              <MyRecordBlock rate={spec.rate} label={spec.label} />
-            )}
+            renderMyRecord={() => <MyRecordBlock />}
           />
         </section>
 
