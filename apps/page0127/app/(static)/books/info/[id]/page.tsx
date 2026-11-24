@@ -266,12 +266,19 @@ export default async function GlobalBookDetailPage({ params }: PageProps) {
         <div className='space-y-6'>
           {/* 표지가 컬럼 한 칸을 통째로 차지하는 자리 — size='full'.
               판형 비율은 시스템이 정하므로 여기서 aspect 를 적지 않는다.
-              대체 조판 글자 크기도 size='full' 이면 BookCover 가 키운다 */}
+              대체 조판 글자 크기도 size='full' 이면 BookCover 가 키운다.
+
+              모바일(1열)에서는 폭을 데스크탑 컬럼과 같은 200px 로 묶고 가운데 둔다.
+              그냥 두면 슬롯이 화면 폭을 다 차지하고, 넓은 판형(.book-cover-fit[data-wide]
+              → 슬롯의 120%)은 화면보다 넓어져 양옆이 잘렸다(예: 100 인생 그림책, 390px 에서 410px).
+              200px 이면 넘쳐도 양옆 여백 안에 머문다(280·320·360·390px 실측). max-w-full 은
+              컬럼이 200px 보다 좁아지는 극단적인 화면에서도 슬롯이 컬럼을 넘지 않게 하는 안전장치 */}
           <BookCover
             {...toCoverSource(book)}
             title={book.title}
             author={book.author}
             size='full'
+            className='mx-auto w-[200px] max-w-full md:w-full'
             sizes='200px'
             priority
             large
