@@ -46,6 +46,8 @@ import { getCompatibilityTypeByScore } from '@/entities/compatibility/model/comp
 
 import { ShareSheetButton } from '@/features/share';
 
+import { ChemistryLoading } from './ChemistryLoading';
+
 import type {
   CompatibilityAnalysis,
   MutualRecommendation,
@@ -130,7 +132,10 @@ export const CompatibilityView = ({
         description={`${targetName} 님과 나, 얼마나 닮은 독서가일까요?`}
       />
 
-      {analysis ? (
+      {/* 분석 중에는 인트로·결과 대신 책장 로딩 화면 — 처음 분석이든 다시 분석이든 같다 */}
+      {isAnalyzing ? (
+        <ChemistryLoading targetName={targetName} />
+      ) : analysis ? (
         <CompatibilityResult
           analysis={analysis}
           targetName={targetName}
@@ -138,7 +143,6 @@ export const CompatibilityView = ({
           recommendationsForMe={recommendationsForMe}
           recommendationsForTarget={recommendationsForTarget}
           isCurrentUserFirst={isCurrentUserFirst}
-          isAnalyzing={isAnalyzing}
           compatibilityRemaining={compatibilityRemaining}
           onReanalyze={() => setIsDialogOpen(true)}
         />
@@ -150,7 +154,6 @@ export const CompatibilityView = ({
           hasEnoughBooks={hasEnoughBooks}
           compatibilityRemaining={compatibilityRemaining}
           canAnalyze={canAnalyze}
-          isAnalyzing={isAnalyzing}
           onAnalyze={() => setIsDialogOpen(true)}
         />
       )}
@@ -186,7 +189,6 @@ type CompatibilityIntroProps = {
   hasEnoughBooks: boolean;
   compatibilityRemaining: number;
   canAnalyze: boolean;
-  isAnalyzing: boolean;
   onAnalyze: () => void;
 };
 
@@ -197,7 +199,6 @@ const CompatibilityIntro = ({
   hasEnoughBooks,
   compatibilityRemaining,
   canAnalyze,
-  isAnalyzing,
   onAnalyze,
 }: CompatibilityIntroProps) => (
   <Card>
@@ -227,12 +228,8 @@ const CompatibilityIntro = ({
         />
       </div>
 
-      <Button
-        size='lg'
-        disabled={!canAnalyze || isAnalyzing}
-        onClick={onAnalyze}
-      >
-        {isAnalyzing ? '두 분의 책장을 나란히 읽는 중이에요…' : '케미 분석하기'}
+      <Button size='lg' disabled={!canAnalyze} onClick={onAnalyze}>
+        케미 분석하기
       </Button>
       {!hasEnoughBooks ? (
         <p className='mt-3 text-sm text-text-subtle'>
@@ -289,7 +286,6 @@ type CompatibilityResultProps = {
   recommendationsForMe: MutualRecommendation[];
   recommendationsForTarget: MutualRecommendation[];
   isCurrentUserFirst: boolean;
-  isAnalyzing: boolean;
   compatibilityRemaining: number;
   onReanalyze: () => void;
 };
@@ -301,7 +297,6 @@ const CompatibilityResult = ({
   recommendationsForMe,
   recommendationsForTarget,
   isCurrentUserFirst,
-  isAnalyzing,
   compatibilityRemaining,
   onReanalyze,
 }: CompatibilityResultProps) => {
@@ -452,10 +447,10 @@ const CompatibilityResult = ({
         <Button
           variant='outline'
           size='sm'
-          disabled={isAnalyzing || compatibilityRemaining <= 0}
+          disabled={compatibilityRemaining <= 0}
           onClick={onReanalyze}
         >
-          {isAnalyzing ? '분석 중이에요…' : '다시 분석하기'}
+          다시 분석하기
         </Button>
       </div>
     </div>
