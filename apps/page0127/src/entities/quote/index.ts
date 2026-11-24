@@ -18,4 +18,5 @@ export {
   type QuoteShelfBook,
   type QuoteShelfGroup,
 } from './model/quoteShelf';
+export type { SentenceMonthCounts } from './model/sentenceMonthCounts';
 export type { BookQuote, RandomQuote } from './model/types';

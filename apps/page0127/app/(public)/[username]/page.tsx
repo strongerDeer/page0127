@@ -29,6 +29,7 @@ import { getFollowSnapshot } from '@/entities/follow/api/getFollowSnapshot';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
 import { toDisplayName } from '@/entities/profile/model/displayName';
 import { libraryRobots } from '@/entities/profile/model/searchIndexable';
+import { getSentenceMonthCounts } from '@/entities/quote/server';
 import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTasteHistory';
 
 import { getBadgeActivity } from '@/features/badge/api/getBadgeActivity';
@@ -265,6 +266,7 @@ const LibraryContent = async ({
     followSnapshot,
     sentenceDraws,
     hasSentencePool,
+    sentenceMonthCounts,
   ] = await Promise.all([
     getBooks(profile.id, !isOwnProfile),
     isOwnProfile ? Promise.resolve([]) : getMaskedPrivateBooks(profile.id),
@@ -277,6 +279,10 @@ const LibraryContent = async ({
       ? getDailySentences(supabase, profile.id)
       : Promise.resolve([]),
     isOwnProfile ? hasDailySentences(supabase) : Promise.resolve(false),
+    // 방문자에겐 글 대신 달마다 모은 문장 "개수"만(HJ, 2026-11-24). 주인은 패널에 문장이 직접 나온다
+    isOwnProfile
+      ? Promise.resolve(undefined)
+      : getSentenceMonthCounts(profile.id),
   ]);
   const todaySentence =
     sentenceDraws.find((sentence) => sentence.draw_date === today) ?? null;
@@ -348,6 +354,7 @@ const LibraryContent = async ({
       badgeActivity={badgeActivity}
       followSnapshot={followSnapshot}
       sentenceDraws={sentenceDraws}
+      sentenceMonthCounts={sentenceMonthCounts}
       // 서재 위쪽 카드 셋(오늘의 문장·주간 회상·내가 모은 문장)은 독서 캘린더 패널로 옮겼다(HJ B안, 2026-11-10).
       // 오늘의 문장 — 오늘 칸 패널. 풀이 비었고 오늘 펼친 것도 없으면 넣지 않는다
       calendarTodaySlot={
