@@ -1,0 +1,166 @@
+/*
+ * 서재 상단 배너(독서 케미 · AI 취향 분석) — 흰 종이 카드 + 책 그림
+ *
+ * 2026-11-24 HJ: 버튼 두 개(독서 케미·취향 분석)가 약해 보이고 상단이 허전함 →
+ * 하늘색 띠 오른쪽(모바일은 프로필 아래)에 배너 한 장. 시안 F(흰 카드) + G(책 그림) + 종이 질감.
+ * 그림은 카드 모서리에 붙지 않게 자기 칸(.art) 안 가운데에 둔다.
+ */
+
+.card {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 12px;
+  align-items: start;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 24px;
+  color: var(--navy-900);
+  /* 종이 — 아주 살짝 따뜻한 흰색 + 미세한 결(SVG 노이즈 한 장, 180px 반복) + 오른쪽 위 옅은 파랑 빛 */
+  background-color: #fffdf8;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .3 0 0 0 0 .22 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(120% 90% at 100% 0%, #f3f6ff 0, transparent 55%);
+  box-shadow:
+    inset 0 0 0 1px rgb(120 100 70 / 0.08),
+    0 1px 2px rgb(20 41 78 / 0.05),
+    0 24px 48px -24px rgb(20 41 78 / 0.26);
+}
+
+@media (min-width: 640px) {
+  .card {
+    column-gap: 32px;
+    align-items: center;
+    padding: 40px 40px 40px 44px;
+  }
+}
+
+/* 글자 묶음 — 모바일에선 제목만 그림 옆, 설명·버튼은 아래 한 줄 전체 */
+.text {
+  display: contents;
+}
+
+@media (min-width: 640px) {
+  .text {
+    display: block;
+    grid-row: 1;
+  }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 9999px;
+  background: #eef3ff;
+  color: #2457d6;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.title {
+  margin-top: 14px;
+  /* 폰에서도 두 줄 그대로 — 글자와 그림 칸이 화면 폭에 맞춰 함께 줄어든다(320px: 15px·72px) */
+  font-size: clamp(0.9375rem, 4.6vw, 1.25rem);
+  white-space: nowrap;
+  line-height: 1.36;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+}
+
+@media (min-width: 640px) {
+  .title {
+    font-size: 1.5625rem;
+    white-space: normal;
+  }
+}
+
+.sub {
+  grid-column: 1 / -1;
+  margin-top: 12px;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #55627f;
+  word-break: keep-all;
+}
+
+.actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.actions > * {
+  flex: 1;
+}
+
+@media (min-width: 640px) {
+  .actions {
+    margin-top: 24px;
+  }
+
+  .actions > * {
+    flex: none;
+  }
+}
+
+/* 그림 칸 — 둥근 옅은 파랑 빛 안 가운데. 칸 크기가 곧 여백이다 */
+.art {
+  grid-column: 2;
+  grid-row: 1;
+  display: grid;
+  place-items: center;
+  width: clamp(72px, 24vw, 108px);
+  height: clamp(72px, 24vw, 108px);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #e7eeff, #f2f5ff 70%, transparent);
+}
+
+.art svg {
+  width: 90%;
+  height: auto;
+  overflow: visible;
+}
+
+@media (min-width: 640px) {
+  .art {
+    grid-row: 1;
+    width: 196px;
+    height: 196px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .card {
+    background-color: var(--navy-800);
+    background-image: radial-gradient(
+      120% 90% at 100% 0%,
+      rgb(80 120 220 / 0.18) 0,
+      transparent 55%
+    );
+    color: var(--gray-0);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+  }
+
+  .chip {
+    background: rgb(91 140 255 / 0.18);
+    color: #b9ccff;
+  }
+
+  .sub {
+    color: rgb(255 255 255 / 0.7);
+  }
+
+  .art {
+    background: radial-gradient(
+      closest-side,
+      rgb(91 140 255 / 0.22),
+      transparent
+    );
+  }
+}

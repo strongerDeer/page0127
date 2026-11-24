@@ -16,15 +16,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@repo/ui';
-import { ChevronRight, Loader2, Sparkles, UserPlus } from 'lucide-react';
+import { ArrowRight, ChevronRight, Loader2, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/client';
 import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
-import {
-  MONTHLY_LIMIT,
-  USAGE_LIMIT_EXCEEDED_MESSAGE,
-} from '@/shared/lib/aiUsageMessages';
+import { USAGE_LIMIT_EXCEEDED_MESSAGE } from '@/shared/lib/aiUsageMessages';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { IntentPrefetchLink } from '@/shared/ui/IntentPrefetchLink';
 
@@ -39,6 +36,8 @@ import { coachTarget } from '@/features/onboarding';
 import { toLockedAnalysisMessage } from '@/features/rating-nudge';
 import { ShareButton, ShareSheetButton } from '@/features/share';
 
+import { LibraryFeatureBanner } from './LibraryFeatureBanner';
+import { toTasteBannerDescription } from './model/featureBanner';
 import { type ReaderCard, toIdentityLabel } from './model/readerCard';
 
 import type { FollowSnapshot } from '@/entities/follow';
@@ -156,9 +155,8 @@ export const PublicLibraryHeader = ({
     }
   };
 
-  // 분석 버튼은 주인 버튼 줄 맨 오른쪽(주 버튼 자리) — 예전엔 오른쪽 취향 카드 안에 있었는데,
-  // 카드의 성향 이름이 왼쪽 명함과 겹쳐서 카드를 없애고 명함 하나로 합쳤다(2026-11-24 HJ).
-  // 분석 전엔 버튼 글자("취향 분석 3/5권")가 카드의 남은 권수 안내를 대신한다.
+  // 분석 버튼은 상단 배너(LibraryFeatureBanner) 안 주 버튼 자리 — 버튼 줄에선 약해 보였다(2026-11-24 HJ).
+  // 분석 전엔 버튼 글자("취향 분석 3/5권")와 배너 설명 줄이 남은 권수를 알린다.
   const analyzeButton = isOwnProfile ? (
     <Button
       onClick={handleAnalyzeTaste}
@@ -172,9 +170,15 @@ export const PublicLibraryHeader = ({
       {isAnalyzing
         ? '분석 중… (최대 1분)'
         : isTasteAnalysisUnlocked
-          ? `${analysisHistory.length > 0 ? '다시 분석' : '취향 분석'} (${tasteAnalysisRemaining}/${MONTHLY_LIMIT} 남음)`
+          ? // 남은 횟수는 배너 설명 줄("이번 달 n번 남음")로 옮겼다
+            analysisHistory.length > 0
+            ? '다시 분석'
+            : '취향 분석'
           : // 5권이 모이기 전에 "3/3 남음"을 보이면 지금 바로 쓸 수 있는 것처럼 읽힌다
             `취향 분석 (${analyzableBookCount}/${TASTE_ANALYSIS_MIN_BOOKS}권)`}
+      {!isAnalyzing && isTasteAnalysisUnlocked && (
+        <ArrowRight aria-hidden className='h-4 w-4' />
+      )}
     </Button>
   ) : undefined;
 
@@ -182,12 +186,84 @@ export const PublicLibraryHeader = ({
   const latestAnalysisId = analysisHistory[0]?.id;
   const { identity } = readerCard;
 
+  // 상단 배너 — 주인은 AI 취향 분석, 방문자는 독서 케미(양쪽 책이 모자라면 배너 없음).
+  // 아래에 따로 있던 비로그인용 "독서 케미는?" 카드와 버튼 줄의 '독서 케미' 버튼을 이 한 장으로 모았다.
+  const featureBanner = isOwnProfile ? (
+    <LibraryFeatureBanner
+      kind='taste'
+      title={
+        <>
+          내 책장이 말해 주는
+          <br />
+          나의 독서 성향
+        </>
+      }
+      description={toTasteBannerDescription({
+        unlocked: isTasteAnalysisUnlocked,
+        booksToUnlock: TASTE_ANALYSIS_MIN_BOOKS - analyzableBookCount,
+        lastAnalyzedAt: analysisHistory[0]?.created_at ?? null,
+        remaining: tasteAnalysisRemaining,
+        bookLabel: TASTE_ANALYSIS_BOOK_LABEL,
+      })}
+      actions={
+        <>
+          {latestAnalysisId && (
+            <Button asChild variant='outline' className='shadow-none'>
+              <IntentPrefetchLink
+                href={`/dashboard/taste-analysis/${latestAnalysisId}`}
+              >
+                결과 보기
+              </IntentPrefetchLink>
+            </Button>
+          )}
+          {analyzeButton}
+        </>
+      }
+    />
+  ) : compatibilityBookCount >= COMPATIBILITY_MIN_BOOKS ? (
+    <LibraryFeatureBanner
+      kind='chemistry'
+      title={
+        <>
+          나와 이 서재,
+          <br />
+          얼마나 닮았을까?
+        </>
+      }
+      description='겹치는 책과 취향을 AI가 찾아 줘요'
+      actions={
+        <Button asChild>
+          {/* 비로그인이면 케미 페이지가 로그인으로 보냈다가 돌아온다 */}
+          <IntentPrefetchLink
+            href={`/${username}/compatibility`}
+            onClick={() =>
+              trackEvent('cta_click', {
+                location: 'library_chemi',
+                label: '독서 케미',
+              })
+            }
+          >
+            케미 보기
+            <ArrowRight aria-hidden className='h-4 w-4' />
+          </IntentPrefetchLink>
+        </Button>
+      }
+    />
+  ) : null;
+
   return (
     <>
       {/* 스카이 틴트 띠 — 공개 서재의 '전시장 입구'. 화면 끝까지 꽉 채운다(둥근 카드로 띄우지 않는다).
           왼쪽은 누구인지, 오른쪽은 어떤 독자인지 */}
       <header className='bg-accent'>
-        <div className='page-width py-8 md:py-10'>
+        {/* 넓은 화면: 왼쪽 명함 · 오른쪽 배너. 좁은 화면: 명함 아래 배너 */}
+        <div
+          className={`page-width grid items-center gap-8 py-8 md:py-10 ${
+            featureBanner
+              ? 'lg:grid-cols-[minmax(0,1fr)_540px] lg:gap-16 lg:py-14'
+              : ''
+          }`}
+        >
           {/* 사진 위, 정보 아래. 한줄 소개는 사진 옆 말풍선으로 — 주인이 직접 건네는 말처럼 읽힌다 */}
           <div className='flex min-w-0 flex-col items-start gap-4'>
             <div className='flex w-full items-center gap-4'>
@@ -326,15 +402,6 @@ export const PublicLibraryHeader = ({
                     </Button>
                   ))}
 
-                {!isOwnProfile &&
-                  compatibilityBookCount >= COMPATIBILITY_MIN_BOOKS && (
-                    <Button asChild variant='outline' className='shadow-none'>
-                      <IntentPrefetchLink href={`/${username}/compatibility`}>
-                        <Sparkles className='h-4 w-4' />
-                        독서 케미
-                      </IntentPrefetchLink>
-                    </Button>
-                  )}
                 {isOwnProfile && (
                   <Button asChild variant='outline' className='shadow-none'>
                     <IntentPrefetchLink href='/settings'>
@@ -369,11 +436,10 @@ export const PublicLibraryHeader = ({
                       title={`${displayName}님의 책장`}
                     />
                   ))}
-
-                {analyzeButton}
               </div>
             </div>
           </div>
+          {featureBanner}
         </div>
       </header>
 

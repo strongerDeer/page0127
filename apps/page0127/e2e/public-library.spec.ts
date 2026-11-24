@@ -18,14 +18,11 @@ test('비로그인 케미 안내는 조건을 채운 서재에서만 보이고 �
 
   // 서재 본문이 준비된 뒤, 케미가 열리는 서재에서만 안내를 확인한다.
   await page.getByRole('region', { name: '나도 내 책장 만들기' }).waitFor();
-  const chemi = page.getByRole('link', { name: /독서 케미는\?/ });
-  const headerChemi = page.getByRole('link', {
-    name: '독서 케미',
-    exact: true,
-  });
-  if (await chemi.count()) {
-    await expect(chemi).toHaveCount(1);
-    await expect(headerChemi).toBeVisible();
+  // 케미는 상단 배너 한 장(2026-11-24) — 아래 카드·버튼 줄의 '독서 케미' 버튼은 배너로 모였다
+  const chemiBanner = page.getByRole('region', { name: '독서 케미' });
+  if (await chemiBanner.count()) {
+    await expect(chemiBanner).toHaveCount(1);
+    const chemi = chemiBanner.getByRole('link', { name: /케미 보기/ });
     await expect(chemi).toHaveAttribute('href', `${path}/compatibility`);
     await chemi.click();
     await expect(page).toHaveURL(
@@ -34,8 +31,6 @@ test('비로그인 케미 안내는 조건을 채운 서재에서만 보이고 �
       )
     );
     await page.goBack();
-  } else {
-    await expect(headerChemi).toHaveCount(0);
   }
 
   // 페이지 끝 배너
