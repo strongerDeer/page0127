@@ -45,7 +45,7 @@ type MobileTocMenuProps = {
 /**
  * 모바일에선 상단 바의 프로필 아바타(ProfileDropdown)를 숨기고, 그 역할을 목차 맨 위가 맡는다
  * (2026-11-24 HJ, C안). 320px 폰에서 상단 바가 40px 넘쳐 페이지가 좌우로 흔들렸기 때문이다.
- * 드롭다운에 있던 것(이름·내 서재·설정·로그아웃)이 여기 그대로 있어야 잃는 기능이 없다.
+ * 드롭다운에 있던 것(이름·설정·로그아웃)이 여기 있어야 잃는 기능이 없다. 내 서재는 하단 탭바 첫 칸이다.
  */
 export const MobileTocMenu = ({ user }: MobileTocMenuProps) => {
   const pathname = usePathname();
@@ -64,7 +64,7 @@ export const MobileTocMenu = ({ user }: MobileTocMenuProps) => {
     setOpen(false);
   }
 
-  const { account, main, sub } = getTocGroups({ isLoggedIn, username });
+  const { account, main, sub } = getTocGroups({ isLoggedIn });
 
   const renderLink = (link: TocLink, size: 'main' | 'sub') => {
     const active = isTocLinkActive(pathname, link, username);

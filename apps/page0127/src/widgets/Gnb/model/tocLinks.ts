@@ -5,7 +5,7 @@
  * - 하단 탭바(BottomTabBar): 로그인한 사람이 매일 쓰는 곳(내 서재·라운지·리더 찾기·알림)
  * - 목차: 그 밖의 모든 곳. 모바일에선 GnbNav 가 숨겨져서 여기가 아니면 푸터까지 내려야 했다.
  *
- * 라운지·리더 찾기·알림은 탭바에 이미 있으니 목차에 다시 넣지 않는다(같은 메뉴 두 벌 X).
+ * 내 서재·라운지·리더 찾기·알림은 탭바에 이미 있으니 목차에 다시 넣지 않는다(같은 메뉴 두 벌 X).
  */
 export type TocLink = {
   href: string;
@@ -23,20 +23,13 @@ export type TocGroups = {
 
 type GetTocGroupsParams = {
   isLoggedIn: boolean;
-  /** 로그인했어도 username 이 아직 없는 드문 과도 상태가 있다 — 그땐 내 서재를 감춘다 */
-  username: string | null;
 };
 
 export const getTocGroups = ({
   isLoggedIn,
-  username,
 }: GetTocGroupsParams): TocGroups => ({
-  account: isLoggedIn
-    ? [
-        ...(username ? [{ href: `/${username}`, label: '내 서재' }] : []),
-        { href: '/settings', label: '설정' },
-      ]
-    : [],
+  // 내 서재는 하단 탭바 첫 칸에 있어 목차엔 두지 않는다(2026-11-24 HJ, 메뉴 겹침 정리 A안)
+  account: isLoggedIn ? [{ href: '/settings', label: '설정' }] : [],
   main: [
     { href: '/books/all', label: '전체 도서' },
     { href: '/blog', label: '책 이야기' },

@@ -43,7 +43,7 @@ export const Gnb = ({ user }: GnbProps) => {
           page0127.
         </IntentPrefetchLink>
 
-        <GnbNav isLoggedIn={!!user} />
+        <GnbNav isLoggedIn={!!user} username={user?.username ?? null} />
 
         {/* 검색 — 책 서비스의 GNB에서 검색창은 장식이 아니라 중심이다 */}
         {/* min-w-0: 폭이 모자랄 때 줄어드는 쪽은 검색창이다(메뉴는 shrink-0) */}
@@ -57,7 +57,14 @@ export const Gnb = ({ user }: GnbProps) => {
 
           {user ? (
             <>
-              <NotificationDropdown userId={user.userId} />
+              {/*
+                알림 종은 데스크톱 머리글에만 — 모바일은 하단 탭바 '알림' 칸이 같은 일을 하고
+                읽지 않은 수 배지도 거기 붙는다(2026-11-24 HJ, 메뉴 겹침 정리 A안).
+                display:none 으로만 숨겨 실시간 구독·앱 아이콘 숫자(useAppBadge)는 모바일에서도 그대로 돈다.
+              */}
+              <div className='hidden md:block'>
+                <NotificationDropdown userId={user.userId} />
+              </div>
               <AddBookButton />
               {/*
                 프로필 드롭다운은 데스크톱에서만 — 모바일에선 같은 내용(내 서재·설정·로그아웃)이

@@ -9,7 +9,6 @@ describe('getTocGroups', () => {
     // 모바일에선 GnbNav 가 숨는다 — 목차가 없으면 이 세 곳은 푸터로만 닿았다(2026-11-23).
     const { account, main, sub } = getTocGroups({
       isLoggedIn: false,
-      username: null,
     });
 
     expect(account).toEqual([]);
@@ -17,22 +16,14 @@ describe('getTocGroups', () => {
     expect(hrefs(sub)).toEqual(['/updates', '/contact']);
   });
 
-  it('로그인하면 내 서재·설정이 위에 붙는다', () => {
-    const { account } = getTocGroups({ isLoggedIn: true, username: 'hj' });
-
-    expect(hrefs(account)).toEqual(['/hj', '/settings']);
-  });
-
-  it('username 이 아직 없으면 내 서재는 감춘다', () => {
-    const { account } = getTocGroups({ isLoggedIn: true, username: null });
-
+  it('로그인하면 설정이 위에 붙는다 — 내 서재는 하단 탭바에 있어 다시 넣지 않는다', () => {
+    const { account } = getTocGroups({ isLoggedIn: true });
     expect(hrefs(account)).toEqual(['/settings']);
   });
 
   it('하단 탭바에 있는 곳(라운지·리더 찾기·알림)은 다시 넣지 않는다', () => {
     const { account, main, sub } = getTocGroups({
       isLoggedIn: true,
-      username: 'hj',
     });
     const all = hrefs([...account, ...main, ...sub]);
 
