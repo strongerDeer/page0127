@@ -44,7 +44,7 @@ declare global {
 export type AnalyticsEvent =
   | 'cta_click'
   /**
-   * 오늘의 문장을 펼쳤다(DailySentenceDraw). member: 회원인지, place: 'modal'(홈·서재에서 연 창) | 'page'(/sentence 직접)
+   * 오늘의 문장을 펼쳤다(SentenceBook). member: 회원인지, place: 'modal'(서재에서 연 창) | 'landing'(/sentence 랜딩, 11/24부터) | 'page'(11/24 이전 /sentence)
    */
   | 'daily_sentence_draw'
   /** 홈 맛보기 히어로를 봤다(마운트 한 번) — 맛보기 깔때기의 분모 */

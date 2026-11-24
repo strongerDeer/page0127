@@ -597,3 +597,20 @@
     animation: none;
   }
 }
+
+/*
+ * 홈 책 모드 · 좁은 화면: 머리글 줄 오른쪽의 책 도구(소리·목차·건너뛰기, 36px)와
+ * 표지 위로 고개를 내민 당근·말풍선이 겹치지 않게 위를 비운다 (HJ 2026-11-24 A안).
+ * 키 작은 폰(375×667 등)은 그만큼 책을 조금 줄인다 — 아래 버튼·안내(약 135px)까지 한 화면에 들어오게.
+ */
+@media (max-width: 640px) {
+  :global([data-book="on"]) .stage {
+    padding-top: 88px;
+  }
+}
+
+@media (max-width: 520px) {
+  :global([data-book="on"]) .book {
+    --bw: min(74vw, 300px, calc((100svh - 290px) * 0.7));
+  }
+}

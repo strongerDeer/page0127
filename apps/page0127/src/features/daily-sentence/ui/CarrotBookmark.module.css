@@ -37,6 +37,15 @@
   white-space: nowrap;
   pointer-events: none;
   transition: transform 0.3s ease;
+  /* 하이드레이션 뒤에 붙으므로 살짝 떠오르며 나타난다 */
+  animation: bubble-in 0.35s ease both;
+}
+
+@keyframes bubble-in {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
 }
 
 .bubble::after {
@@ -52,6 +61,12 @@
 .carrot:hover,
 .carrot:focus-visible {
   transform: translateY(-12px) rotate(-3deg);
+}
+
+/* 오늘 이미 뽑았으면 당근은 움직이지 않는다 — 다시 보러 가는 입구로만 */
+.carrot[data-drawn]:hover,
+.carrot[data-drawn]:focus-visible {
+  transform: none;
 }
 
 .carrot:hover .bubble,
@@ -80,5 +95,6 @@
   .carrot,
   .bubble {
     transition: none;
+    animation: none;
   }
 }
