@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server';
 
+import { createAdminClient } from '@/shared/config/supabase/admin';
+
 import { getCurrentUser, getSupabaseClient } from '../../../_helpers/auth';
 import {
   buildCommentTree,
@@ -126,7 +128,9 @@ export async function POST(request: NextRequest, { params }: Params) {
         target_id: id,
         target_type: 'book',
       } as const;
-      const { error: notifyError } = await supabase
+      // 알림은 서버만 만든다(service_role) — 위에서 실제로 팔로우·댓글·좋아요가 저장된 뒤에만 온다.
+      // 사용자 키로 쓰게 두면 REST 를 직접 불러 아무에게나 가짜 알림을 무제한 넣을 수 있다.
+      const { error: notifyError } = await createAdminClient()
         .from('notifications')
         .insert(notification);
       // 종 아이콘에 들어간 알림만 푸시로도 보낸다 (응답 뒤에 돈다)
@@ -153,7 +157,9 @@ export async function POST(request: NextRequest, { params }: Params) {
           target_id: id,
           target_type: 'book',
         } as const;
-        const { error: notifyError } = await supabase
+        // 알림은 서버만 만든다(service_role) — 위에서 실제로 팔로우·댓글·좋아요가 저장된 뒤에만 온다.
+        // 사용자 키로 쓰게 두면 REST 를 직접 불러 아무에게나 가짜 알림을 무제한 넣을 수 있다.
+        const { error: notifyError } = await createAdminClient()
           .from('notifications')
           .insert(notification);
         // 종 아이콘에 들어간 알림만 푸시로도 보낸다 (응답 뒤에 돈다)

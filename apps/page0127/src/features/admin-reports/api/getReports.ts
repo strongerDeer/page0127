@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/shared/config/supabase/admin';
+import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 
 /** 어드민 신고 목록 한 줄 */
 export type ReportRow = {
@@ -48,6 +49,9 @@ type RawComment = {
  * 스키마 캐시에서 실패하기 때문이다.
  */
 export const getReports = async (): Promise<ReportRow[]> => {
+  // 레이아웃의 확인만으로는 부족하다 — 레이아웃과 페이지는 병렬로 렌더링돼서, 레이아웃이 404 를
+  // 던져도 이 함수의 결과가 응답(RSC 데이터)에 실릴 수 있다. 데이터를 꺼내는 곳에서 다시 확인한다.
+  await assertAdmin();
   const supabase = createAdminClient();
 
   const { data: reports, error } = await supabase
@@ -127,6 +131,9 @@ export const getReports = async (): Promise<ReportRow[]> => {
 
 /** 미처리 건수 — 어드민 네비게이션 뱃지에 쓴다 */
 export const getPendingReportCount = async (): Promise<number> => {
+  // 레이아웃의 확인만으로는 부족하다 — 레이아웃과 페이지는 병렬로 렌더링돼서, 레이아웃이 404 를
+  // 던져도 이 함수의 결과가 응답(RSC 데이터)에 실릴 수 있다. 데이터를 꺼내는 곳에서 다시 확인한다.
+  await assertAdmin();
   const supabase = createAdminClient();
   const { count, error } = await supabase
     .from('reports')

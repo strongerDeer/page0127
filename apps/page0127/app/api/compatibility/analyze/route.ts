@@ -214,7 +214,11 @@ export async function POST(request: NextRequest) {
       completion.usage?.prompt_tokens || 0,
       completion.usage?.completion_tokens || 0
     );
-    const { data: analysis, error: analysisError } = await supabase
+    // 결과는 서버만 쓴다(service_role). 사용자 키로 쓰게 두면 두 사람 중 한 명이 AI 를 거치지 않고
+    // 점수·설명을 직접 넣어 상대에게 보여 줄 수 있다 — 사용자 INSERT 정책은 마이그레이션에서 지운다.
+    // user_id_1·2 는 위에서 로그인 사용자와 검증한 상대 id 로 정했으니 서버가 정한 값이다.
+    const admin = createAdminClient();
+    const { data: analysis, error: analysisError } = await admin
       .from('compatibility_analyses')
       .insert({
         user_id_1: userId1,
@@ -280,7 +284,7 @@ export async function POST(request: NextRequest) {
     ];
 
     if (recommendations.length > 0) {
-      const { error: recError } = await supabase
+      const { error: recError } = await admin
         .from('mutual_recommendations')
         .insert(recommendations);
 

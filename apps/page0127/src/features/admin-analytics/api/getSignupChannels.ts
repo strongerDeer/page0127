@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/shared/config/supabase/admin';
+import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 import { type DateRange, toUtcBounds } from '@/shared/lib/admin/dateRange';
 import {
   getAdminUserIds,
@@ -24,6 +25,9 @@ export type SignupChannelsResult =
 export const getSignupChannels = async (
   range: DateRange
 ): Promise<SignupChannelsResult> => {
+  // 레이아웃의 확인만으로는 부족하다 — 레이아웃과 페이지는 병렬로 렌더링돼서, 레이아웃이 404 를
+  // 던져도 이 함수의 결과가 응답(RSC 데이터)에 실릴 수 있다. 데이터를 꺼내는 곳에서 다시 확인한다.
+  await assertAdmin();
   const supabase = createAdminClient();
   const { gte, lt } = toUtcBounds(range);
   const excluded = await getAdminUserIds();
