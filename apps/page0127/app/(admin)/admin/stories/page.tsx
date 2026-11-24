@@ -2,12 +2,38 @@ import Link from 'next/link';
 
 import { Plus } from 'lucide-react';
 
+import {
+  kstToday,
+  parseDateRange,
+  type RangeSearchParams,
+} from '@/shared/lib/admin/dateRange';
+
 import { formatStoryShortDate } from '@/entities/story';
 
+import { getStoryViews } from '@/features/admin-analytics/api/getStoryViews';
 import { getAdminStories } from '@/features/admin-stories/api/getAdminStories';
 
-export default async function AdminStoriesPage() {
-  const stories = await getAdminStories();
+import { PeriodPicker } from '@/widgets/admin/ui/PeriodPicker';
+
+// 조회수는 GA 를 매번 새로 묻는다 — 관리자만 보는 화면이라 호출 수가 적다
+export const dynamic = 'force-dynamic';
+
+type AdminStoriesPageProps = { searchParams: Promise<RangeSearchParams> };
+
+/** 1,234 · 0 은 "—" (GA 에 아직 기록이 없는 글) */
+const formatCount = (value: number | undefined) =>
+  value ? value.toLocaleString('ko-KR') : '—';
+
+export default async function AdminStoriesPage({
+  searchParams,
+}: AdminStoriesPageProps) {
+  const now = new Date();
+  const range = parseDateRange(await searchParams, now);
+  // 글 목록(DB)과 조회수(GA)는 서로 기다릴 필요가 없다
+  const [stories, views] = await Promise.all([
+    getAdminStories(),
+    getStoryViews(range),
+  ]);
 
   return (
     <section>
@@ -25,6 +51,20 @@ export default async function AdminStoriesPage() {
         >
           <Plus className='size-4' aria-hidden />새 글
         </Link>
+      </div>
+
+      <div className='mb-3 flex flex-col gap-1.5'>
+        <PeriodPicker
+          basePath='/admin/stories'
+          range={range}
+          maxDate={kstToday(now)}
+        />
+        <p className='text-xs text-text-subtle'>
+          조회 = 기간 안 페이지뷰 · 사람 수 (GA, 한국 접속만 · 하루쯤 늦게
+          반영될 수 있어요)
+          {views.status === 'unconfigured' && ' — GA 설정이 없어 못 불러왔어요'}
+          {views.status === 'error' && ' — 지금은 GA 를 불러오지 못했어요'}
+        </p>
       </div>
 
       {stories === null ? (
@@ -54,6 +94,17 @@ export default async function AdminStoriesPage() {
                     {story.bookTitle || '독서 이야기'} · /blog/{story.slug}
                   </span>
                 </span>
+                {views.status === 'ok' && (
+                  <span className='w-20 shrink-0 text-right text-xs tabular-nums text-text-body'>
+                    <b className='font-semibold text-text-strong'>
+                      {formatCount(views.bySlug.get(story.slug)?.views)}
+                    </b>{' '}
+                    조회
+                    <span className='block text-text-subtle'>
+                      {formatCount(views.bySlug.get(story.slug)?.users)}명
+                    </span>
+                  </span>
+                )}
                 <span className='shrink-0 text-xs text-text-subtle'>
                   {formatStoryShortDate(story.updatedAt)} 수정
                 </span>
