@@ -1,15 +1,13 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 
-import { BookCover, Button, isPreOptimizedImageSrc } from '@repo/ui';
+import { BookCover, Button } from '@repo/ui';
 import { ArrowRight } from 'lucide-react';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import { toCoverSource } from '@/entities/book';
-import { COMPATIBILITY_MIN_BOOKS } from '@/entities/compatibility/model/analysisGate';
 
 import type { Book } from '@/entities/book';
 
@@ -17,88 +15,11 @@ import type { Book } from '@/entities/book';
  * 남의 공개 서재에 들어온 비로그인 방문자를 위한 가입 길.
  *
  * 공유 링크로 들어온 사람이 실제 유입인데 예전엔 "나도 만들기" 류의 길이 없었다.
- * - 프로필 바로 아래: 구경하며 생기는 호기심("이 사람과 나는?")을 건드린다
  * - 페이지 끝: 다 본 사람에게 다음 행동을 준다
+ * (프로필 아래 "독서 케미는?" 카드는 2026-11-24 상단 배너 LibraryFeatureBanner 로 옮겼다)
  * 하단 고정 바는 쓰지 않는다 — 구경하며 읽는 화면을 계속 가리고, 헤더의 [시작하기]가 이미 따라다닌다.
- * 케미 카드는 상대방의 케미 페이지로 보내며 비로그인이면 로그인 후 돌아온다.
  * 하단 가입 배너는 홈의 맛보기(고르고 → 저장 → 로그인)로 보낸다.
  */
-
-type VisitorChemiCardProps = {
-  /** 서재 주인의 표시 이름 */
-  name: string;
-  username: string;
-  eligibleBookCount: number;
-  /** 주인 프로필 사진 — 없으면 이름 첫 글자 */
-  photoUrl: string | null;
-};
-
-/**
- * 프로필 아래 케미 카드.
- * 흰 줄 카드라 눈에 띄지 않았다 → 주인 얼굴과 "나(?)"를 겹쳐 그리고 파란 버튼으로 행동을 분명히.
- */
-export const VisitorChemiCard = ({
-  name,
-  photoUrl,
-  username,
-  eligibleBookCount,
-}: VisitorChemiCardProps) => {
-  if (eligibleBookCount < COMPATIBILITY_MIN_BOOKS) return null;
-  return (
-    <Link
-      href={`/${username}/compatibility`}
-      onClick={() =>
-        trackEvent('cta_click', {
-          location: 'library_chemi',
-          label: '독서 케미',
-        })
-      }
-      className='group flex flex-col gap-4 rounded-3xl border border-primary/25 bg-linear-to-r from-card via-card to-accent px-5 py-5 transition hover:border-primary/50 hover:shadow-sm sm:flex-row sm:items-center sm:gap-5 sm:px-6'
-    >
-      <span
-        data-chemi-duo
-        aria-hidden
-        className='relative block h-12 w-20 shrink-0'
-      >
-        <span
-          data-owner-avatar
-          className='absolute left-0 top-0 flex size-12 items-center justify-center overflow-hidden rounded-full border-[3px] border-card bg-primary/10 text-lg font-bold text-primary'
-        >
-          {photoUrl ? (
-            <Image
-              src={photoUrl}
-              alt=''
-              fill
-              sizes='48px'
-              className='object-cover'
-              unoptimized={isPreOptimizedImageSrc(photoUrl)}
-            />
-          ) : (
-            name.charAt(0).toUpperCase()
-          )}
-        </span>
-        <span className='absolute left-8 top-0 flex size-12 items-center justify-center rounded-full border-[3px] border-card bg-accent text-xl font-extrabold text-primary'>
-          ?
-        </span>
-      </span>
-
-      <span className='min-w-0 flex-1'>
-        <span className='block break-keep text-lg font-bold text-text-strong'>
-          {name}님과 나, 독서 케미는?
-        </span>
-        <span className='mt-0.5 block break-keep text-sm text-text-subtle'>
-          양쪽 모두 평가를 남긴 완독 책이 {COMPATIBILITY_MIN_BOOKS}권 이상이면
-          취향을 비교할 수 있어요
-        </span>
-      </span>
-
-      <span className='inline-flex shrink-0 items-center gap-1.5 self-start rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition group-hover:bg-primary/90 sm:self-auto'>
-        케미 알아보기
-        <ArrowRight aria-hidden className='size-4' />
-      </span>
-    </Link>
-  );
-};
 
 type VisitorSignupBannerProps = {
   name: string;
