@@ -2,6 +2,8 @@ import { cache } from 'react';
 
 import { createClient } from '@/shared/config/supabase/server';
 
+import { fillEvidenceProviderIds } from '../model/fillEvidenceProviderIds';
+
 import type { PublicTasteHistoryItem } from '../types';
 
 /**
@@ -25,6 +27,24 @@ export const getPublicTasteHistory = cache(
       console.error('취향 이력 조회 실패:', error.message);
       return [];
     }
-    return (data as PublicTasteHistoryItem[] | null) ?? [];
+    const items = (data as PublicTasteHistoryItem[] | null) ?? [];
+
+    // 옛 분석의 근거 책 표지를 YES24 작은 사본으로 — 번호를 못 찾아도 화면은 그대로
+    return fillEvidenceProviderIds(items, async (bookIds) => {
+      const { data: rows, error: lookupError } = await supabase
+        .from('books')
+        .select('id, provider_item_id')
+        .in('id', bookIds);
+      if (lookupError) {
+        console.error('근거 책 상품번호 조회 실패:', lookupError.message);
+        return new Map();
+      }
+      return new Map(
+        (rows ?? []).map((row) => [
+          row.id as string,
+          row.provider_item_id as string | null,
+        ])
+      );
+    });
   }
 );

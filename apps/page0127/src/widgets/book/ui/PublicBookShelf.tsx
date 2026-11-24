@@ -13,7 +13,9 @@ import {
   isTopRated,
   PRIVATE_BOOK_TITLE,
   toCoverSource,
+  toSpineSource,
 } from '@/entities/book';
+import { isSpineShaped } from '@/entities/book/model/spineShape';
 import { spineTone } from '@/entities/book/model/spineTone';
 import { shelfSpineWidthPx } from '@/entities/book/model/spineWidth';
 
@@ -104,8 +106,18 @@ export const PublicBookShelf = ({
     return `/books/${book.id}`;
   };
 
-  const onError = (bookId: string) => {
-    setImgSrc((prev) => ({ ...prev, [bookId]: '/images/no-book.jpg' }));
+  // 책등 대체 순서: YES24 작은 사본 → 저장된 사본(fallbackSrc) → 이미지 없음 그림.
+  // 지금 그리는 주소가 대체 사본이 아니고 대체 사본이 있으면 그쪽으로, 아니면 no-book.jpg.
+  const onSpineFail = (
+    bookId: string,
+    failedSrc: string,
+    fallback: string | null
+  ) => {
+    setImgSrc((prev) => ({
+      ...prev,
+      [bookId]:
+        fallback && failedSrc !== fallback ? fallback : '/images/no-book.jpg',
+    }));
   };
 
   if (books.length === 0 && readingBooks.length === 0) {
@@ -138,7 +150,9 @@ export const PublicBookShelf = ({
     // 책등만 여기서 대체한다 — onError 로 대체된 뒤에는 로컬 이미지(no-book.jpg)가
     // 들어온다. 최적화 여부 판정은 실제로 그릴 src 기준이어야 한다.
     // 표지는 CoverImage 가 YES24 → Storage 사본 → 이미지 없음 순으로 대체한다.
-    const renderedSpine = imgSrc[book.id] || book.spine_image;
+    // 책등은 YES24 작은 사본(SIDE/L)을 먼저 받는다(toSpineSource). 실패하면 저장된 사본.
+    const spineSource = toSpineSource(book);
+    const renderedSpine = imgSrc[book.id] || spineSource.src;
     // 여러 번 읽은 책은 조금 크게 — 뱃지가 잘 안 보이는 책등에서도
     // "이 책은 다르다"가 실루엣만으로 읽힌다
     const isReread = book.read_count > 1;
@@ -222,7 +236,20 @@ export const PublicBookShelf = ({
             sizes='170px'
             alt={book.title}
             unoptimized={isPreOptimizedImageSrc(renderedSpine)}
-            onError={() => onError(book.id)}
+            onError={() =>
+              onSpineFail(book.id, renderedSpine, spineSource.fallbackSrc)
+            }
+            // YES24 는 책등이 없는 상품에도 회색 대체 그림(420x600)을 200 으로 준다.
+            // 작은 사본으로 바꿔 받은 경우에만, 책등 모양이 아니면 저장된 사본으로 되돌린다.
+            // (저장된 사본 자체가 넓적한 건 그대로 둔다 — 2026-11-20 HJ 결정)
+            onLoad={(event) => {
+              if (
+                spineSource.fallbackSrc &&
+                renderedSpine !== spineSource.fallbackSrc &&
+                !isSpineShaped(event.currentTarget)
+              )
+                onSpineFail(book.id, renderedSpine, spineSource.fallbackSrc);
+            }}
             // ⚠️ 책등 이미지에 폭을 강제하지 않는다.
             // 두께(thickness_mm)로 폭을 고정했던 적이 있다(2026-09-29). 박스가
             // 원본 비율보다 넓어서 `cover` 는 위아래가 잘리고(평균 55% 손실),

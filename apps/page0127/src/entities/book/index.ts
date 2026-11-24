@@ -72,6 +72,8 @@ export { readingDayCount, readingSince } from './model/readingSince';
 // 표지 주소 — YES24 가 먼저, Storage 사본은 대체용
 export type { CoverSource } from './model/coverSource';
 export { toCoverSource } from './model/coverSource';
+export type { SpineSource } from './model/spineSource';
+export { toSpineSource } from './model/spineSource';
 
 // 방문자에게 비공개 책을 "북커버 씌운 책"으로 보여 주기
 export {
