@@ -84,13 +84,13 @@ export const ChemistryLoading = ({
         <h2 className='mb-8 heading-2'>두 분의 책장을 나란히 읽고 있어요</h2>
 
         {/* 그림은 장식이라 스크린 리더에서 숨기고, 아래 문구만 읽힌다 */}
-        <div aria-hidden className='mx-auto mb-6 w-full max-w-sm space-y-2'>
+        <div aria-hidden className='mx-auto mb-6 w-full max-w-56 space-y-1.5'>
           {shelves.map((shelf) => (
             <div key={shelf.key}>
               <p className='mb-1 text-center text-xs text-text-subtle'>
                 {shelf.label}
               </p>
-              <div className='flex h-16 items-end justify-center gap-1 border-b-2 border-line px-2'>
+              <div className='flex h-10 items-end justify-center gap-0.5 border-b-2 border-line px-1'>
                 {SPINE_HEIGHTS[shelf.key].map((height, i) => {
                   const isVisible = i < visibleSpines;
                   const isLit = isVisible && MATCH_INDEXES.has(i);
@@ -99,7 +99,7 @@ export const ChemistryLoading = ({
                       key={i}
                       style={{ height: `${height}%` }}
                       className={[
-                        'w-3.5 rounded-t-sm transition-all duration-500 motion-reduce:transition-none',
+                        'w-2 rounded-t-[1px] transition-all duration-500 motion-reduce:transition-none',
                         // 빈 자리는 옅은 윤곽만 — 남은 칸이 보여야 '얼마나 남았나'가 읽힌다
                         isVisible
                           ? isLit
