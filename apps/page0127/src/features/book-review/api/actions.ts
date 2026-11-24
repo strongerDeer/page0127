@@ -53,6 +53,8 @@ export async function reviewBook(
             : '검수 처리에 실패했습니다.',
       };
     revalidatePath('/admin/books');
+    // 메뉴 배지(어드민 레이아웃)의 대기 숫자도 같이 줄인다
+    revalidatePath('/admin', 'layout');
     revalidatePath('/books/requests');
     revalidatePath('/books');
     // 승인되면 캐시된 404 가, 반려되면 캐시된 책 페이지가 남아 있다
@@ -104,6 +106,8 @@ export async function resubmitBook(
       };
     revalidatePath('/books/requests');
     revalidatePath('/admin/books');
+    // 메뉴 배지(어드민 레이아웃)의 대기 숫자도 같이 줄인다
+    revalidatePath('/admin', 'layout');
     revalidatePath('/books');
     revalidateBookInfoPages();
     return { ok: true, message: '수정한 정보를 다시 검수 요청했어요.' };

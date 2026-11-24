@@ -31,6 +31,7 @@ const reports = (over: Partial<Reports>): Reports => ({
   humanDaily: empty,
   shares: empty,
   appUsage: empty,
+  newVsReturning: empty,
   daily: empty,
   channel: empty,
   sourceMedium: empty,

@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { createClient } from '@/shared/config/supabase/server';
+import { FIRST_TOUCH_COOKIE } from '@/shared/lib/attribution/firstTouch';
+import { recordSignupAttribution } from '@/shared/lib/attribution/recordSignupAttribution';
 import { toAuthErrorReason } from '@/shared/lib/auth/authErrorReason';
 import { isBannedRedirect } from '@/shared/lib/auth/isBannedRedirect';
 import { toLinkFailurePath } from '@/shared/lib/auth/linkFlow';
@@ -46,7 +48,16 @@ export async function GET(request: NextRequest) {
         onboardedAt: profile.onboarded_at,
         next,
       });
-      return NextResponse.redirect(`${origin}${redirectTo}`);
+      // 처음 들어온 길(proxy 가 심은 쿠키)을 방금 가입한 사람에게 붙인다 — 어드민 "들어온 길"
+      const canClear = await recordSignupAttribution({
+        userId: data.user.id,
+        profileCreatedAt: profile.created_at,
+        cookieValue: request.cookies.get(FIRST_TOUCH_COOKIE)?.value,
+      });
+      const response = NextResponse.redirect(`${origin}${redirectTo}`);
+      // 로그인하면 proxy 가 더 심지 않는다 — 쓸 일이 끝난 쿠키는 지운다
+      if (canClear) response.cookies.delete(FIRST_TOUCH_COOKIE);
+      return response;
     }
   }
 

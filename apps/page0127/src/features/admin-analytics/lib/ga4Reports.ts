@@ -27,7 +27,8 @@ export type ReportKey =
   | 'humanSummary'
   | 'humanDaily'
   | 'shares'
-  | 'appUsage';
+  | 'appUsage'
+  | 'newVsReturning';
 
 export type ReportDef = {
   key: ReportKey;
@@ -234,6 +235,16 @@ export const REPORTS: ReportDef[] = [
     dimensionFilter: SHARE_FILTER,
   },
   {
+    // 새로 온 사람 vs 다시 온 사람 — 대시보드 재방문은 로그인 회원만 세서, 가입 안 한 방문자의 재방문은 여기서만 보인다.
+    // 사람 추정(한국) 필터를 건다 — 해외 봇은 거의 다 '새 방문자'라 비율을 왜곡한다
+    key: 'newVsReturning',
+    title: '새 방문자 / 다시 온 방문자',
+    dimensions: ['newVsReturning'],
+    metrics: [users],
+    limit: 3,
+    dimensionFilter: HUMAN_FILTER,
+  },
+  {
     // 홈 화면 앱 — GoogleAnalytics 의 ga-init 이 보내는 이벤트(2026-10-27 부터 쌓임)
     key: 'appUsage',
     title: '홈 화면 앱',
@@ -369,6 +380,11 @@ const SHARE_CAMPAIGNS: Record<string, string> = {
   share_book: '책 공유',
 };
 
+const NEW_VS_RETURNING: Record<string, string> = {
+  new: '처음 온 사람',
+  returning: '다시 온 사람',
+};
+
 export const translateDimension = (
   dimension: string,
   value: string
@@ -390,6 +406,8 @@ export const translateDimension = (
       return SHARE_SOURCES[value] ?? value;
     case 'sessionCampaignName':
       return SHARE_CAMPAIGNS[value] ?? value;
+    case 'newVsReturning':
+      return NEW_VS_RETURNING[value] ?? value;
     default:
       return value;
   }

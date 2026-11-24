@@ -37,9 +37,12 @@ export async function hideComment(
     })
     .eq('comment_id', commentId)
     .eq('status', 'pending');
-  if (statusError) throw new Error(`신고 상태 갱신 실패: ${statusError.message}`);
+  if (statusError)
+    throw new Error(`신고 상태 갱신 실패: ${statusError.message}`);
 
   revalidatePath('/admin/reports');
+  // 메뉴 배지(어드민 레이아웃)의 대기 숫자도 같이 줄인다
+  revalidatePath('/admin', 'layout');
 }
 
 /** 숨김을 되돌린다. 신고는 '반려'로 남긴다 — 지우지 않아야 이력이 남는다 */
@@ -64,9 +67,12 @@ export async function unhideComment(
       handled_at: new Date().toISOString(),
     })
     .eq('id', reportId);
-  if (statusError) throw new Error(`신고 상태 갱신 실패: ${statusError.message}`);
+  if (statusError)
+    throw new Error(`신고 상태 갱신 실패: ${statusError.message}`);
 
   revalidatePath('/admin/reports');
+  // 메뉴 배지(어드민 레이아웃)의 대기 숫자도 같이 줄인다
+  revalidatePath('/admin', 'layout');
 }
 
 /** 문제없는 신고를 반려한다 (댓글은 그대로 둔다) */
@@ -85,4 +91,6 @@ export async function rejectReport(reportId: string): Promise<void> {
   if (error) throw new Error(`신고 반려 실패: ${error.message}`);
 
   revalidatePath('/admin/reports');
+  // 메뉴 배지(어드민 레이아웃)의 대기 숫자도 같이 줄인다
+  revalidatePath('/admin', 'layout');
 }
