@@ -195,3 +195,12 @@ describe('숫자 다루기', () => {
     expect(formatChartValue(38.5)).toBe('38.5');
   });
 });
+
+describe('formatChartValue', () => {
+  it('같은 차트에 소수가 있으면 정수도 한 자리로 맞춘다', () => {
+    expect(formatChartValue(55)).toBe('55');
+    expect(formatChartValue(55, true)).toBe('55.0');
+    expect(formatChartValue(38.5)).toBe('38.5');
+    expect(formatChartValue(1234)).toBe('1,234');
+  });
+});

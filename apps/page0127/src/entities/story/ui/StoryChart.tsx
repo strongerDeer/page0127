@@ -52,7 +52,7 @@ const Figure = ({
 );
 
 /** 사람 한 명 — 머리 + 몸. 채운 비율만큼 진하게(SVG 안의 SVG 는 자기 너비로 잘린다 → id 없이 부분 채우기) */
-const PERSON = 'M30 22a14 14 0 1 1 0.01 0Z M8 98V62a22 22 0 0 1 44 0v36Z';
+const PERSON = 'M30 8a14 14 0 1 1 -0.01 0Z M8 98V62a22 22 0 0 1 44 0v36Z';
 
 const Person = ({ fill }: { fill: number }) => (
   <svg viewBox='0 0 60 100' aria-hidden className='h-auto w-full'>
@@ -108,20 +108,24 @@ const isStrong = (spec: SeriesChart, label: string, index: number) => {
   return spec.type === 'bar' || index === spec.items.length - 1;
 };
 
-const valueText = (value: number, unit: string) =>
-  `${formatChartValue(value)}${unit}`;
+/** 항목 중 하나라도 소수면 모두 소수 한 자리로 (55 → 55.0) */
+const valueText = (spec: SeriesChart, value: number) =>
+  `${formatChartValue(
+    value,
+    spec.items.some((item) => !Number.isInteger(item.value))
+  )}${spec.unit}`;
 
 export const BarChart = ({ spec }: { spec: SeriesChart }) => (
   <Figure
     title={spec.title}
-    note={spec.note || `막대 끝 = ${valueText(spec.max, spec.unit)}`}
+    note={spec.note || `막대 끝 = ${formatChartValue(spec.max)}${spec.unit}`}
     source={spec.source}
   >
     <ul className='flex flex-col gap-3.5'>
       {spec.items.map((item, index) => (
         <li
           key={item.label}
-          title={`${item.label} ${valueText(item.value, spec.unit)}`}
+          title={`${item.label} ${valueText(spec, item.value)}`}
           className='grid grid-cols-[5.5rem_1fr_3.75rem] items-center gap-3 text-sm'
         >
           <span className='break-keep text-text-body'>{item.label}</span>
@@ -132,7 +136,7 @@ export const BarChart = ({ spec }: { spec: SeriesChart }) => (
             />
           </span>
           <span className='text-right font-semibold tabular-nums text-text-strong'>
-            {valueText(item.value, spec.unit)}
+            {valueText(spec, item.value)}
           </span>
         </li>
       ))}
@@ -144,37 +148,40 @@ const COLUMN_HEIGHT = 160;
 
 export const ColumnChart = ({ spec }: { spec: SeriesChart }) => (
   <Figure title={spec.title} note={spec.note} source={spec.source}>
+    {/* 막대가 적으면 가운데, 많으면 가로 스크롤 — w-max+mx-auto 라 넘칠 때 왼쪽이 잘리지 않는다 */}
     <div className='overflow-x-auto'>
-      <ul
-        className='flex items-end gap-6 border-b border-line px-2 sm:gap-9'
-        style={{ height: COLUMN_HEIGHT + 40 }}
-      >
-        {spec.items.map((item, index) => (
-          <li
-            key={item.label}
-            title={`${item.label} ${valueText(item.value, spec.unit)}`}
-            className='flex w-16 shrink-0 flex-col items-center justify-end gap-1.5'
-          >
-            <span className='text-sm font-semibold tabular-nums text-text-strong'>
-              {valueText(item.value, spec.unit)}
-            </span>
-            <span
-              className={`block w-10 rounded-t ${isStrong(spec, item.label, index) ? 'bg-primary' : 'bg-text-subtle/35'}`}
-              style={{ height: (item.value / spec.max) * COLUMN_HEIGHT }}
-            />
-          </li>
-        ))}
-      </ul>
-      <ul className='flex gap-6 px-2 pt-2 sm:gap-9'>
-        {spec.items.map((item) => (
-          <li
-            key={item.label}
-            className='w-16 shrink-0 text-center text-xs text-text-subtle'
-          >
-            {item.label}
-          </li>
-        ))}
-      </ul>
+      <div className='mx-auto w-max'>
+        <ul
+          className='flex items-end gap-6 border-b border-line px-4 sm:gap-9 sm:px-6'
+          style={{ height: COLUMN_HEIGHT + 40 }}
+        >
+          {spec.items.map((item, index) => (
+            <li
+              key={item.label}
+              title={`${item.label} ${valueText(spec, item.value)}`}
+              className='flex w-16 shrink-0 flex-col items-center justify-end gap-1.5'
+            >
+              <span className='text-sm font-semibold tabular-nums text-text-strong'>
+                {valueText(spec, item.value)}
+              </span>
+              <span
+                className={`block w-10 rounded-t ${isStrong(spec, item.label, index) ? 'bg-primary' : 'bg-text-subtle/35'}`}
+                style={{ height: (item.value / spec.max) * COLUMN_HEIGHT }}
+              />
+            </li>
+          ))}
+        </ul>
+        <ul className='flex gap-6 px-4 pt-2 sm:gap-9 sm:px-6'>
+          {spec.items.map((item) => (
+            <li
+              key={item.label}
+              className='w-16 shrink-0 text-center text-xs text-text-subtle'
+            >
+              {item.label}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   </Figure>
 );
@@ -188,8 +195,8 @@ export const SlopeChart = ({ spec }: { spec: SeriesChart }) => {
       <svg
         viewBox='0 0 520 200'
         role='img'
-        aria-label={`${from.label} ${valueText(from.value, spec.unit)}에서 ${to.label} ${valueText(to.value, spec.unit)}`}
-        className='h-auto w-full max-w-[520px]'
+        aria-label={`${from.label} ${valueText(spec, from.value)}에서 ${to.label} ${valueText(spec, to.value)}`}
+        className='mx-auto h-auto w-full max-w-[520px]'
       >
         <line x1='100' y1='20' x2='100' y2='170' className='stroke-line' />
         <line x1='420' y1='20' x2='420' y2='170' className='stroke-line' />
@@ -221,7 +228,7 @@ export const SlopeChart = ({ spec }: { spec: SeriesChart }) => {
               fontWeight='700'
               className='fill-text-strong'
             >
-              {valueText(item.value, spec.unit)}
+              {valueText(spec, item.value)}
             </text>
             <text
               x={x}
