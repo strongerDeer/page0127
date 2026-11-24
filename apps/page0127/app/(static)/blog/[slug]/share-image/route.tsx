@@ -157,4 +157,3 @@ export const GET = async (_request: Request, { params }: Context) => {
 
   return renderOg(<BrandStage cta={CTA_TALK} />);
 };
-
