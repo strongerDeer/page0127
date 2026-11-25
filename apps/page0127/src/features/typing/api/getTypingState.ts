@@ -23,9 +23,8 @@ export type TypingState = {
 };
 
 type RankRpcRow = {
-  user_id: string;
   nickname: string;
-  username: string | null;
+  is_me: boolean;
   value: number;
 };
 
@@ -44,9 +43,8 @@ const fetchRanking = async (
     return [];
   }
   return ((data ?? []) as RankRpcRow[]).map((row) => ({
-    userId: row.user_id,
     nickname: row.nickname,
-    username: row.username,
+    isMe: row.is_me,
     value: row.value,
   }));
 };

@@ -43,8 +43,8 @@ export type TypingBoard = 'steady' | 'speed';
 
 /** 랭킹 한 줄 — get_typing_ranking() */
 export type TypingRankRow = {
-  userId: string;
+  /** 남의 닉네임은 DB가 가려서 준다("책**"). 내 줄만 그대로 */
   nickname: string;
-  username: string | null;
+  isMe: boolean;
   value: number;
 };

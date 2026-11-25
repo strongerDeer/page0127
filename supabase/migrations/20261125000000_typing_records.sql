@@ -155,9 +155,8 @@ CREATE OR REPLACE FUNCTION public.get_typing_ranking(
   p_limit integer DEFAULT 100
 )
 RETURNS TABLE (
-  user_id uuid,
   nickname text,
-  username text,
+  is_me boolean,
   value integer
 )
 LANGUAGE sql
@@ -178,9 +177,19 @@ AS $$
     WHERE r.work = p_work
     GROUP BY r.user_id
   )
-  SELECT s.user_id, COALESCE(NULLIF(btrim(p.nickname), ''), p.username, '독자') AS nickname, p.username, s.value
+  -- 남의 닉네임은 첫 글자만 보이고 나머지는 *(최대 4개)로 가려서 내보낸다(누구나 부르는 함수라 DB에서 가린다).
+  -- 내 줄만 닉네임 그대로 + is_me. user_id·아이디(username)는 내보내지 않는다.
+  SELECT
+    CASE WHEN s.user_id = auth.uid() THEN n.name
+      ELSE left(n.name, 1) || repeat('*', LEAST(GREATEST(char_length(n.name) - 1, 1), 4))
+    END AS nickname,
+    COALESCE(s.user_id = auth.uid(), false) AS is_me,
+    s.value
   FROM scores s
   JOIN public.profiles p ON p.id = s.user_id
+  CROSS JOIN LATERAL (
+    SELECT COALESCE(NULLIF(btrim(p.nickname), ''), '독자') AS name
+  ) n
   WHERE p.typing_rank_opt_in
     AND NOT COALESCE(p.is_test, false)
     AND s.value IS NOT NULL

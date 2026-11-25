@@ -1,9 +1,12 @@
-import { ArrowUpRight, ChevronDown } from 'lucide-react';
+import Link from 'next/link';
+
+import { ArrowUpRight, ChevronDown, Plus } from 'lucide-react';
 
 import {
   LITTLE_PRINCE_FACTS,
   LITTLE_PRINCE_FAQ,
   LITTLE_PRINCE_INTRO,
+  LITTLE_PRINCE_ISBN,
   LITTLE_PRINCE_STORE_URL,
 } from '@/entities/typing';
 
@@ -11,8 +14,14 @@ import {
  * 『어린 왕자』 책 정보 + 자주 묻는 질문 한 카드 (서버 컴포넌트) — 짧게(HJ 11/25 "너무 긴가..?").
  *
  * 소개 두 줄 + 기본 정보 + 서점 링크. 검색엔진이 읽을 글은 이 카드와 FAQ 가 맡는다.
- * 서점 링크(LITTLE_PRINCE_STORE_URL)가 비어 있으면 버튼을 그리지 않는다.
+ * 서점 링크(LITTLE_PRINCE_STORE_URL)·ISBN 이 비어 있으면 그 버튼은 그리지 않는다.
+ * "내 서재에 담기"는 기존 담기 화면(/books/add?isbn=&title=)으로 보낸다 — 검색 없이 그 책 폼이 열린다.
+ * 비회원은 담기 화면이 로그인으로 돌려보낸다.
  */
+const ADD_HREF = LITTLE_PRINCE_ISBN
+  ? `/books/add?${new URLSearchParams({ isbn: LITTLE_PRINCE_ISBN, title: '어린 왕자' })}`
+  : null;
+
 export const TypingBookIntro = () => (
   <section
     aria-labelledby='typing-book-intro'
@@ -38,16 +47,28 @@ export const TypingBookIntro = () => (
           ))}
         </dl>
       </div>
-      {LITTLE_PRINCE_STORE_URL && (
-        <a
-          href={LITTLE_PRINCE_STORE_URL}
-          target='_blank'
-          rel='noopener noreferrer'
-          className='inline-flex shrink-0 items-center justify-center gap-1 rounded-xl border border-line-soft bg-card px-4 py-2.5 text-sm font-bold text-text-strong hover:bg-accent'
-        >
-          YES24에서 보기
-          <ArrowUpRight aria-hidden className='size-4' />
-        </a>
+      {(LITTLE_PRINCE_STORE_URL || ADD_HREF) && (
+        <div className='flex shrink-0 gap-2'>
+          {LITTLE_PRINCE_STORE_URL && (
+            <a
+              href={LITTLE_PRINCE_STORE_URL}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='inline-flex flex-1 items-center justify-center gap-1 rounded-xl border border-line-soft bg-card px-4 py-2.5 text-sm font-bold text-text-strong hover:bg-accent sm:flex-none'
+            >
+              YES24에서 보기
+              <ArrowUpRight aria-hidden className='size-4' />
+            </a>
+          )}
+          {ADD_HREF && (
+            <Link
+              href={ADD_HREF}
+              className='inline-flex flex-1 items-center justify-center gap-1 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground hover:opacity-90 sm:flex-none'
+            >
+              <Plus aria-hidden className='size-4' />내 서재에 담기
+            </Link>
+          )}
+        </div>
       )}
     </div>
 

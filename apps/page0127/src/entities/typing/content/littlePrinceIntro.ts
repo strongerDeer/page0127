@@ -18,6 +18,9 @@ export const LITTLE_PRINCE_INTRO =
 /** 서점 링크(YES24) — HJ가 고른 판본 주소. 비어 있으면 버튼을 숨긴다 */
 export const LITTLE_PRINCE_STORE_URL: string | null = null;
 
+/** "내 서재에 담기"에 쓰는 판본 ISBN — 위 서점 링크와 같은 판본. 비어 있으면 버튼을 숨긴다 */
+export const LITTLE_PRINCE_ISBN: string | null = null;
+
 export const LITTLE_PRINCE_FAQ: { question: string; answer: string }[] = [
   {
     question: '온라인 필사는 어떻게 하나요?',

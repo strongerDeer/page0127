@@ -19,22 +19,22 @@ const BOARDS: {
   note: string;
 }[] = [
   {
-    key: 'steady',
-    label: '꾸준함',
-    unit: '쪽',
-    note: '이번 주(월요일 0시부터) 끝까지 쓴 쪽 수예요. 같은 쪽은 한 주에 한 번만 세요.',
-  },
-  {
     key: 'speed',
     label: '타수',
     unit: '타',
     note: '정확도 95% 이상으로 끝까지 쓴 쪽의 최고 평균 타수예요.',
   },
+  {
+    key: 'steady',
+    label: '꾸준함',
+    unit: '쪽',
+    note: '이번 주(월요일 0시부터) 끝까지 쓴 쪽 수예요. 같은 쪽은 한 주에 한 번만 세요.',
+  },
 ];
 
 /**
- * 필사 랭킹 — 탭 두 개(꾸준함·타수, HJ 2026-11-25 "둘 다").
- * 순위에는 참여를 켠 사람만 닉네임으로 나온다. 기본은 꺼짐.
+ * 필사 랭킹 — 탭 두 개(타수·꾸준함, HJ 2026-11-25 "둘 다" · 타수 먼저).
+ * 순위에는 참여를 켠 사람만, 닉네임 첫 글자만 보이게("책**") 나온다. 내 이름만 그대로. 기본은 꺼짐.
  */
 export const TypingRankingCard = ({
   memberId,
@@ -48,13 +48,13 @@ export const TypingRankingCard = ({
   loginHref: string;
 }) => {
   const router = useRouter();
-  const [board, setBoard] = useState<TypingBoard>('steady');
+  const [board, setBoard] = useState<TypingBoard>('speed');
   const [optIn, setOptIn] = useState(rankOptIn);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const current = BOARDS.find((b) => b.key === board)!;
-  const lines = rankLines(rankings[board], memberId);
+  const lines = rankLines(rankings[board]);
 
   const toggle = (next: boolean) => {
     setOptIn(next);
@@ -104,7 +104,7 @@ export const TypingRankingCard = ({
               </li>
             ) : (
               <li
-                key={line.row.userId}
+                key={line.index}
                 className={`grid grid-cols-[2rem_1fr_auto] items-center gap-2 rounded-lg px-3 py-2 text-sm ${
                   line.isMe ? 'bg-accent font-bold text-text-strong' : ''
                 }`}
@@ -136,14 +136,15 @@ export const TypingRankingCard = ({
           <div className='flex items-center justify-between gap-3'>
             <div>
               <p className='text-sm font-bold text-text-strong'>
-                내 닉네임으로 순위에 참여
+                순위에 참여하기
               </p>
               <p className='text-xs text-text-subtle'>
-                끄면 기록은 나만 보고, 순위에는 나오지 않아요.
+                다른 사람에게는 닉네임 첫 글자만 보여요(책**). 끄면 순위에
+                나오지 않아요.
               </p>
             </div>
             <Switch
-              aria-label='내 닉네임으로 순위에 참여'
+              aria-label='순위에 참여하기'
               checked={optIn}
               disabled={isPending}
               onCheckedChange={toggle}
