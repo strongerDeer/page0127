@@ -73,8 +73,14 @@ const PLACEHOLDER = { width: 420, height: 600, bytes: 4975 };
 // ─── 인자 ──────────────────────────────────────────────────────────────
 
 const argv = process.argv.slice(2);
-const hasFlag = (name) => argv.includes(name);
+/** 아래에서 읽은 옵션 이름 — 모르는 옵션 검사에 쓴다 */
+const knownOptions = new Set();
+const hasFlag = (name) => {
+  knownOptions.add(name);
+  return argv.includes(name);
+};
 const getOption = (name, fallback) => {
+  knownOptions.add(name);
   const i = argv.indexOf(name);
   return i !== -1 && argv[i + 1] ? argv[i + 1] : fallback;
 };
@@ -106,6 +112,18 @@ const CANDIDATES = getOption('--candidates', null);
 const MERGE_INTO = getOption('--merge-into', null);
 const LIMIT = Number(getOption('--limit', '0')) || null;
 const ENV_FILE = getOption('--env', 'apps/page0127/.env.local');
+
+/**
+ * 모르는 옵션이면 멈춘다.
+ * 왜: 옛 버전 스크립트에 새 모드 이름(--merge-into 등)을 주면 무시되고 **기본 백필 모드**가 돈다.
+ * --dry-run 이 없으면 그대로 운영 DB 에 쓴다(2026-11-25 git pull 전에 실행해서 겪을 뻔함).
+ */
+const unknownOptions = argv.filter((arg) => arg.startsWith('--') && !knownOptions.has(arg));
+if (unknownOptions.length) {
+  console.error(`모르는 옵션입니다: ${unknownOptions.join(', ')} — 아무것도 하지 않고 멈춥니다.`);
+  console.error('새 모드라면 git pull 로 스크립트를 최신으로 받았는지 확인하세요.');
+  process.exit(1);
+}
 
 // ─── 환경 ──────────────────────────────────────────────────────────────
 
