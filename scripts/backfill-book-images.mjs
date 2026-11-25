@@ -29,6 +29,8 @@
  *   node scripts/backfill-book-images.mjs --audit-page-counts 쪽수 빈 책·ISBN13 아닌 전체 도서를 세기만 한다(읽기 전용)
  *   node scripts/backfill-book-images.mjs --fill-page-counts --include-demo  체험 계정 책도 쪽수를 채운다
  *   node scripts/backfill-book-images.mjs --fix-global-isbns  전체 도서의 ISBN10·알라딘 K코드를 YES24 ISBN13 으로 바꾼다
+ *   node scripts/backfill-book-images.mjs --candidates 옛[,옛]  전체 도서 행의 제목으로 YES24 후보(ISBN13·출판사·출간일)를 보여 준다
+ *   node scripts/backfill-book-images.mjs --merge-into 옛=새   같은 책인 전체 도서 두 행을 새 행으로 합친다(좋아요·댓글 등 옮김)
  *
  * `--aladin-urls` 는 위의 백필과 별개 모드다. 백필은 "받아 온 것만 덮어쓴다" 규칙이라
  * YES24 에 책등이 없는 책은 알라딘 책등 주소가 그대로 남았다(2026-09-30 실측:
@@ -71,8 +73,14 @@ const PLACEHOLDER = { width: 420, height: 600, bytes: 4975 };
 // ─── 인자 ──────────────────────────────────────────────────────────────
 
 const argv = process.argv.slice(2);
-const hasFlag = (name) => argv.includes(name);
+/** 아래에서 읽은 옵션 이름 — 모르는 옵션 검사에 쓴다 */
+const knownOptions = new Set();
+const hasFlag = (name) => {
+  knownOptions.add(name);
+  return argv.includes(name);
+};
 const getOption = (name, fallback) => {
+  knownOptions.add(name);
   const i = argv.indexOf(name);
   return i !== -1 && argv[i + 1] ? argv[i + 1] : fallback;
 };
@@ -98,8 +106,24 @@ const AUDIT_PAGE_COUNTS = hasFlag('--audit-page-counts');
 const INCLUDE_DEMO = hasFlag('--include-demo');
 /** 전체 도서 isbn 칸의 ISBN10·알라딘 K코드를 YES24 ISBN13 으로 바꾼다(--reidentify 를 행마다) */
 const FIX_GLOBAL_ISBNS = hasFlag('--fix-global-isbns');
+/** `옛[,옛]` — 전체 도서 행의 제목으로 YES24 를 검색해 후보를 보여 준다(읽기 전용) */
+const CANDIDATES = getOption('--candidates', null);
+/** `옛isbn=새isbn` — 같은 책인 전체 도서 두 행을 새 행으로 합친다 */
+const MERGE_INTO = getOption('--merge-into', null);
 const LIMIT = Number(getOption('--limit', '0')) || null;
 const ENV_FILE = getOption('--env', 'apps/page0127/.env.local');
+
+/**
+ * 모르는 옵션이면 멈춘다.
+ * 왜: 옛 버전 스크립트에 새 모드 이름(--merge-into 등)을 주면 무시되고 **기본 백필 모드**가 돈다.
+ * --dry-run 이 없으면 그대로 운영 DB 에 쓴다(2026-11-25 git pull 전에 실행해서 겪을 뻔함).
+ */
+const unknownOptions = argv.filter((arg) => arg.startsWith('--') && !knownOptions.has(arg));
+if (unknownOptions.length) {
+  console.error(`모르는 옵션입니다: ${unknownOptions.join(', ')} — 아무것도 하지 않고 멈춥니다.`);
+  console.error('새 모드라면 git pull 로 스크립트를 최신으로 받았는지 확인하세요.');
+  process.exit(1);
+}
 
 // ─── 환경 ──────────────────────────────────────────────────────────────
 
@@ -634,6 +658,8 @@ const searchYes24 = async (query, page = 1) => {
     new URLSearchParams({ query, category: 'BOOK', page: String(page), pageSize: '20' });
 
   const res = await fetch(url, { headers: { 'X-Api-Key': env.YES24_API_KEY } });
+  // YES24 검색은 결과가 0건이면 404 를 준다 — 오류가 아니라 "없음"이다(상세 조회 fetchYes24 와 같은 처리).
+  if (res.status === 404) return [];
   if (!res.ok) throw new Error(`YES24 HTTP ${res.status}`);
 
   const body = await res.json();
@@ -1310,6 +1336,187 @@ const fixGlobalIsbns = async () => {
   }
 };
 
+// ─── YES24 후보 보기 (--candidates, 읽기 전용) ──────────────────────────
+
+/**
+ * 자동으로 ISBN13 을 못 찾은 행을 사람이 고르도록, 제목으로 YES24 를 검색해 후보를 늘어놓는다.
+ * 리커버·특별판은 옛 상품번호가 검색에서 빠지는 일이 많다 — 괄호 속 판 이름을 뗀 제목으로도 찾는다.
+ * 고른 ISBN13 은 --reidentify 옛=새 (새 행이 없을 때) 또는 --merge-into 옛=새 (이미 있을 때) 로 쓴다.
+ */
+const showCandidates = async (spec) => {
+  const isbns = spec.split(',').map((v) => v.trim()).filter(Boolean);
+  for (const isbn of isbns) {
+    const { data: row, error } = await supabase
+      .from('global_books')
+      .select('isbn, title, author, publisher, provider_item_id')
+      .eq('isbn', isbn)
+      .maybeSingle();
+    if (error) throw new Error(`global_books 조회 실패: ${error.message}`);
+    if (!row) {
+      console.log(`× ${isbn} — 전체 도서에 없음`);
+      continue;
+    }
+    console.log(`■ ${row.isbn} ${row.title} / ${row.author} / ${row.publisher} (상품번호 ${row.provider_item_id ?? '-'})`);
+
+    const plain = (row.title ?? '').replace(/\s*\(.*?\)\s*/g, ' ').trim();
+    const queries = [...new Set([row.title, plain, `${plain} ${firstAuthor(row.author)}`])].filter(Boolean);
+    const seen = new Set();
+    for (const q of queries) {
+      const items = await searchYes24(q);
+      await sleep(REQUEST_INTERVAL_MS);
+      if (!items.length) console.log(`   (검색 "${q}" → 결과 없음)`);
+      for (const item of items) {
+        if (!item.isbn13 || seen.has(item.itemId)) continue;
+        seen.add(item.itemId);
+        const { count } = await supabase
+          .from('global_books')
+          .select('isbn', { count: 'exact', head: true })
+          .eq('isbn', item.isbn13);
+        console.log(
+          `   ${item.isbn13}  상품 ${String(item.itemId).padEnd(10)} ${(item.title ?? '').slice(0, 30)} / ${item.publisher ?? ''} (${item.publishDate ?? ''})` +
+            (count ? '  ← 전체 도서에 이미 있음(→ --merge-into)' : '')
+        );
+      }
+    }
+    console.log('');
+  }
+};
+
+// ─── 전체 도서 두 행 합치기 (--merge-into 옛=새) ──────────────────────────
+
+/**
+ * 같은 책이 전체 도서에 두 행(옛 식별자·새 ISBN13)으로 갈라진 것을 새 행으로 합친다.
+ *
+ * ⚠️ 옛 행을 바로 지우면 안 된다. 아래 테이블이 global_books.id 를 참조하고 대부분
+ * ON DELETE CASCADE 라, 지우는 순간 좋아요·책 댓글이 같이 사라진다(stories 는 RESTRICT 라 아예 막힌다).
+ * 그래서 **참조를 먼저 새 행 id 로 옮기고**, 아무도 가리키지 않게 된 뒤에 지운다.
+ * (2026-09-29 병합 마이그레이션은 이 단계 없이 지웠다 — 그때는 참조가 없었다.)
+ *
+ * book_likes 는 (user_id, book_id) 가 기본키라, 두 행 모두에 좋아요한 사람은 옛 좋아요를 지운다.
+ * 참조 테이블 조회가 하나라도 실패하면 **아무것도 지우지 않고 멈춘다** — 확인 못 한 참조를 cascade 로 날리지 않는다.
+ */
+const mergeInto = async (spec) => {
+  const [oldIsbn, newIsbn] = spec.split('=').map((v) => v?.trim());
+  if (!oldIsbn || !/^97[89]\d{10}$/.test(newIsbn ?? '') || oldIsbn === newIsbn) {
+    throw new Error('형식: --merge-into 옛식별자=새ISBN13');
+  }
+
+  const find = async (isbn) => {
+    const { data, error } = await supabase
+      .from('global_books')
+      .select('id, isbn, title, sub_title, author, publisher, cover_image, spine_image, thickness_mm, provider_item_id, source')
+      .eq('isbn', isbn)
+      .maybeSingle();
+    if (error) throw new Error(`global_books 조회 실패: ${error.message}`);
+    return data;
+  };
+  const oldRow = await find(oldIsbn);
+  const newRow = await find(newIsbn);
+  if (!oldRow) throw new Error(`${oldIsbn} 이 전체 도서에 없습니다(이미 합쳤을 수 있음)`);
+  if (!newRow) throw new Error(`${newIsbn} 이 전체 도서에 없습니다 — 이 경우는 --reidentify 를 쓰세요`);
+
+  console.log(`옛 행: ${oldRow.isbn} ${oldRow.title} / ${oldRow.publisher} (id ${oldRow.id})`);
+  console.log(`새 행: ${newRow.isbn} ${newRow.title} / ${newRow.publisher} (id ${newRow.id})`);
+  console.log('');
+
+  // 1) id 로 잇는 테이블
+  const idRefs = [
+    { table: 'book_comments', column: 'global_book_id' },
+    { table: 'book_review_history', column: 'global_book_id' },
+    { table: 'stories', column: 'book_id' },
+    { table: 'reading_envelopes', column: 'catalog_book_id' },
+  ];
+
+  // 좋아요: 두 행 모두에 누른 사람의 옛 좋아요는 지우고 나머지만 옮긴다
+  const { data: oldLikes, error: likesError } = await supabase
+    .from('book_likes')
+    .select('user_id')
+    .eq('book_id', oldRow.id);
+  if (likesError) throw new Error(`book_likes 조회 실패: ${likesError.message} — 멈춤`);
+  const { data: newLikes, error: newLikesError } = await supabase
+    .from('book_likes')
+    .select('user_id')
+    .eq('book_id', newRow.id);
+  if (newLikesError) throw new Error(`book_likes 조회 실패: ${newLikesError.message} — 멈춤`);
+  const likedBoth = new Set(newLikes.map((r) => r.user_id));
+  const dupLikeUsers = oldLikes.filter((r) => likedBoth.has(r.user_id)).map((r) => r.user_id);
+  console.log(`  book_likes  ${oldLikes.length}행 (그중 두 행 모두 좋아요 ${dupLikeUsers.length}명 → 옛 것 삭제)`);
+
+  const idCounts = [];
+  for (const { table, column } of idRefs) {
+    const { count, error } = await supabase
+      .from(table)
+      .select('*', { count: 'exact', head: true })
+      .eq(column, oldRow.id);
+    if (error) throw new Error(`${table}.${column} 조회 실패: ${error.message} — 아무것도 지우지 않고 멈춤`);
+    console.log(`  ${table}.${column}  ${count ?? 0}행`);
+    idCounts.push({ table, column, count: count ?? 0 });
+  }
+
+  // 2) isbn 으로 잇는 테이블 — 사용자 책은 '책 자체' 정보도 새 행에 맞춘다(평점·완독일 등은 그대로)
+  const bookPatch = {
+    isbn: newRow.isbn,
+    title: newRow.title,
+    sub_title: newRow.sub_title,
+    author: newRow.author,
+    publisher: newRow.publisher,
+    provider_item_id: newRow.provider_item_id,
+    source: newRow.source,
+  };
+  if (newRow.cover_image) bookPatch.cover_image = newRow.cover_image;
+  if (newRow.spine_image) bookPatch.spine_image = newRow.spine_image;
+  if (newRow.thickness_mm) bookPatch.thickness_mm = newRow.thickness_mm;
+  const isbnRefs = [
+    { table: 'books', column: 'isbn', patch: bookPatch },
+    { table: 'reading_records', column: 'book_isbn', patch: { book_isbn: newIsbn } },
+    { table: 'book_recommendations', column: 'isbn', patch: { isbn: newIsbn } },
+    { table: 'mutual_recommendations', column: 'isbn', patch: { isbn: newIsbn } },
+  ];
+  const isbnCounts = [];
+  for (const ref of isbnRefs) {
+    const { count, error } = await supabase
+      .from(ref.table)
+      .select('*', { count: 'exact', head: true })
+      .eq(ref.column, oldIsbn);
+    // reidentify 와 같다 — 환경마다 없는 칸이 있다(로컬 reading_records). isbn 칸은 cascade 와 무관해 건너뛰어도 안전
+    if (error) {
+      console.log(`  ${ref.table}.${ref.column}  건너뜀 (${error.message})`);
+      continue;
+    }
+    console.log(`  ${ref.table}.${ref.column}  ${count ?? 0}행`);
+    isbnCounts.push({ ...ref, count: count ?? 0 });
+  }
+  console.log(`  global_books  옛 행 삭제`);
+  console.log('');
+  if (DRY_RUN) return;
+
+  if (dupLikeUsers.length) {
+    const { error } = await supabase
+      .from('book_likes')
+      .delete()
+      .eq('book_id', oldRow.id)
+      .in('user_id', dupLikeUsers);
+    if (error) throw new Error(`book_likes 중복 삭제 실패: ${error.message}`);
+  }
+  {
+    const { error } = await supabase.from('book_likes').update({ book_id: newRow.id }).eq('book_id', oldRow.id);
+    if (error) throw new Error(`book_likes 옮기기 실패: ${error.message}`);
+  }
+  for (const { table, column, count } of idCounts) {
+    if (!count) continue;
+    const { error } = await supabase.from(table).update({ [column]: newRow.id }).eq(column, oldRow.id);
+    if (error) throw new Error(`${table} 옮기기 실패: ${error.message}`);
+  }
+  for (const { table, column, patch, count } of isbnCounts) {
+    if (!count) continue;
+    const { error } = await supabase.from(table).update(patch).eq(column, oldIsbn);
+    if (error) throw new Error(`${table} 옮기기 실패: ${error.message}`);
+  }
+  const { error: deleteError } = await supabase.from('global_books').delete().eq('id', oldRow.id);
+  if (deleteError) throw new Error(`옛 행 삭제 실패: ${deleteError.message}`);
+  console.log('✓ 합침');
+};
+
 const main = async () => {
   console.log(`대상 DB : ${env.NEXT_PUBLIC_SUPABASE_URL}`);
   console.log(
@@ -1357,6 +1564,14 @@ const main = async () => {
   }
   if (FIX_GLOBAL_ISBNS) {
     await fixGlobalIsbns();
+    return;
+  }
+  if (CANDIDATES) {
+    await showCandidates(CANDIDATES);
+    return;
+  }
+  if (MERGE_INTO) {
+    await mergeInto(MERGE_INTO);
     return;
   }
 

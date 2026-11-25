@@ -11,6 +11,7 @@
  *   NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
  *   DEMO_ACCOUNT_EMAIL   체험 계정 이메일 — 앱의 "체험 계정으로 둘러보기" 버튼도 같은 값을 쓴다.
  *                        메일은 보내지 않으니 받을 수 없는 주소여도 된다(예: demo@page0127.test).
+ *   YES24_API_KEY        (선택) 있으면 책마다 쪽수를 YES24 상세에서 받아 넣는다. 없으면 쪽수 0쪽으로 보인다.
  *
  * 하는 일 (몇 번을 돌려도 같은 결과 = 멱등):
  *   1) 체험 계정이 없으면 만든다. app_metadata.demo = true 를 붙인다.
@@ -487,6 +488,40 @@ for (const table of ["taste_analyses", "book_quotes", "books"]) {
   if (error) fail(`${table} 비우기`, error);
 }
 
+/**
+ * 쪽수 — 카탈로그(global_books)에는 쪽수 칸이 없어서 그대로 담으면 서재 "읽은 쪽수 0쪽"이 된다
+ * (2026-11-25 운영 체험 계정 20권 전부 비어 있었다). YES24 상세(detail=Y)에서 받는다.
+ * 키가 없거나 조회가 실패하면 쪽수 없이 넣고 알려 준다 — 시드 자체는 멈추지 않는다.
+ */
+const pageCountByIsbn = new Map();
+if (env.YES24_API_KEY) {
+  for (const book of books) {
+    try {
+      const url =
+        "https://apis.yes24.com/v1/goods/itemDetail?" +
+        new URLSearchParams({ searchType: "ISBN13", query: book.isbn, detail: "Y" });
+      const res = await fetch(url, { headers: { "X-Api-Key": env.YES24_API_KEY } });
+      if (res.ok) {
+        const body = await res.json();
+        const pages = Number(body?.data?.items?.[0]?.pages);
+        if (pages > 0) pageCountByIsbn.set(book.isbn, pages);
+      }
+    } catch {
+      // 한 권 실패는 넘어간다 — 아래에서 빈 권수를 알려 준다
+    }
+    // YES24 Basic 10 RPS — 여유 있게 초당 5건
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+  const missingPages = books.length - pageCountByIsbn.size;
+  console.log(
+    `✓ 쪽수 ${pageCountByIsbn.size}권` + (missingPages ? ` (못 받은 ${missingPages}권은 비워 둠)` : ""),
+  );
+} else {
+  console.warn(
+    "  · YES24_API_KEY 가 없어 쪽수 없이 넣어요 — 나중에 backfill-book-images.mjs --fill-page-counts --include-demo 로 채우세요",
+  );
+}
+
 const bookRows = books.map((book) => {
   const g = catalog.get(book.isbn);
   return {
@@ -500,6 +535,7 @@ const bookRows = books.map((book) => {
     category: g.category,
     spine_image: g.spine_image,
     thickness_mm: g.thickness_mm,
+    page_count: pageCountByIsbn.get(book.isbn) ?? null,
     status: book.status,
     start_date: book.start ?? null,
     completed_date: book.done ?? null,
