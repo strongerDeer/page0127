@@ -27,6 +27,8 @@
  *   node scripts/backfill-book-images.mjs --clear-placeholder-spines  회색 대체 이미지로 저장된 책등을 비운다
  *   node scripts/backfill-book-images.mjs --fill-page-counts  서재 책의 빈 쪽수를 YES24 상세에서 채운다
  *   node scripts/backfill-book-images.mjs --audit-page-counts 쪽수 빈 책·ISBN13 아닌 전체 도서를 세기만 한다(읽기 전용)
+ *   node scripts/backfill-book-images.mjs --fill-page-counts --include-demo  체험 계정 책도 쪽수를 채운다
+ *   node scripts/backfill-book-images.mjs --fix-global-isbns  전체 도서의 ISBN10·알라딘 K코드를 YES24 ISBN13 으로 바꾼다
  *
  * `--aladin-urls` 는 위의 백필과 별개 모드다. 백필은 "받아 온 것만 덮어쓴다" 규칙이라
  * YES24 에 책등이 없는 책은 알라딘 책등 주소가 그대로 남았다(2026-09-30 실측:
@@ -92,6 +94,10 @@ const CLEAR_PLACEHOLDER_SPINES = hasFlag('--clear-placeholder-spines');
 const FILL_PAGE_COUNTS = hasFlag('--fill-page-counts');
 /** 읽기 전용 점검 — 쪽수 빈 서재 책과 ISBN 칸이 ISBN13 이 아닌 전체 도서 행을 보여 준다 */
 const AUDIT_PAGE_COUNTS = hasFlag('--audit-page-counts');
+/** --fill-page-counts 에서 체험 계정 책도 채운다(쪽수는 사용자 기록이 아니라 책 정보라 시드를 해치지 않는다) */
+const INCLUDE_DEMO = hasFlag('--include-demo');
+/** 전체 도서 isbn 칸의 ISBN10·알라딘 K코드를 YES24 ISBN13 으로 바꾼다(--reidentify 를 행마다) */
+const FIX_GLOBAL_ISBNS = hasFlag('--fix-global-isbns');
 const LIMIT = Number(getOption('--limit', '0')) || null;
 const ENV_FILE = getOption('--env', 'apps/page0127/.env.local');
 
@@ -1064,7 +1070,7 @@ const fillPageCounts = async () => {
   let skippedDemo = 0;
   const unresolvedRows = [];
   for (const row of rows) {
-    if (demoIds.has(row.user_id)) {
+    if (!INCLUDE_DEMO && demoIds.has(row.user_id)) {
       skippedDemo += 1;
       continue;
     }
@@ -1205,6 +1211,105 @@ const auditPageCounts = async () => {
   );
 };
 
+// ─── 전체 도서 ISBN 바로잡기 (--fix-global-isbns) ──────────────────────
+
+/** 상품번호가 똑같은 YES24 검색 결과를 찾는다(제목 검색 세 쪽까지). 없으면 null */
+const findByItemId = async (title, itemId) => {
+  for (let page = 1; page <= 3; page += 1) {
+    const items = await searchYes24(title, page);
+    const hit = items.find((item) => String(item.itemId) === String(itemId));
+    if (hit) return hit;
+    if (items.length < 20) return null;
+    await sleep(REQUEST_INTERVAL_MS);
+  }
+  return null;
+};
+
+/**
+ * global_books 의 isbn 칸이 ISBN13 이 아닌 행(ISBN10·알라딘 K코드)을 YES24 ISBN13 으로 바꾼다.
+ *
+ * 왜 필요한가: 2026-09 알라딘→YES24 이전 때 표지·상품번호·출처는 YES24 로 바꿨지만
+ * isbn 칸은 그대로 남았다(2026-11-25 점검: 257개 중 93개). 맛보기로 이 책을 담으면
+ * 이상한 isbn 이 서재로 복사되고, YES24 는 ISBN13 으로만 상세를 주므로 쪽수 채우기가 실패한다.
+ *
+ * 안전장치:
+ * - 새 ISBN13 의 YES24 상품번호가 **지금 저장된 상품번호와 같을 때만** 바꾼다.
+ *   ISBN10 을 계산으로 바꾼 값이 리커버판 등 다른 상품이면 건너뛰고 알려 준다.
+ * - 실제 변경은 --reidentify 와 같은 경로 — 같은 행 id 를 유지해 좋아요·책 댓글이 살아 있다.
+ *   같은 ISBN13 행이 이미 따로 있으면(병합 필요) reidentify 가 멈추고, 여기서는 그 책만 건너뛴다.
+ * - 한 행씩 처리하므로 중간에 끊겨도 다시 돌리면 남은 행만 이어서 한다.
+ */
+const fixGlobalIsbns = async () => {
+  const { data: rows, error } = await supabase
+    .from('global_books')
+    .select('isbn, title, provider_item_id, source')
+    .order('isbn');
+  if (error) throw new Error(`global_books 조회 실패: ${error.message}`);
+
+  let targets = rows.filter((r) => !/^97[89]\d{10}$/.test(r.isbn ?? ''));
+  if (LIMIT) targets = targets.slice(0, LIMIT);
+  console.log(`ISBN13 이 아닌 전체 도서: ${targets.length}개`);
+  console.log('');
+
+  const result = { fixed: 0, noItemId: 0, notFound: 0, mismatch: 0, failed: 0 };
+  const skipped = [];
+
+  for (const row of targets) {
+    const label = `${(row.isbn ?? '').padEnd(12)} ${(row.title ?? '').slice(0, 24)}`;
+    if (!row.provider_item_id) {
+      result.noItemId += 1;
+      skipped.push(`${label} — 상품번호 없음`);
+      continue;
+    }
+
+    try {
+      // 1) 새 ISBN13 후보 — ISBN10 은 계산, K코드는 상품번호가 같은 검색 결과에서
+      let candidate = resolveIsbn13(row.isbn).isbn13;
+      if (!candidate) {
+        const hit = await findByItemId(row.title ?? '', row.provider_item_id);
+        candidate = hit?.isbn13 ?? null;
+        await sleep(REQUEST_INTERVAL_MS);
+      }
+      if (!candidate) {
+        result.notFound += 1;
+        skipped.push(`${label} — 검색에서 상품번호 ${row.provider_item_id} 를 못 찾음`);
+        continue;
+      }
+
+      // 2) 그 ISBN13 이 정말 같은 상품인지 확인
+      const item = await fetchYes24(candidate);
+      await sleep(REQUEST_INTERVAL_MS);
+      if (!item || String(item.itemId) !== String(row.provider_item_id)) {
+        result.mismatch += 1;
+        skipped.push(
+          `${label} — ${candidate} 의 상품번호(${item?.itemId ?? '없음'})가 저장값(${row.provider_item_id})과 다름`
+        );
+        continue;
+      }
+
+      // 3) 같은 행 id 를 유지한 채 isbn 과 참조를 바꾼다
+      console.log(`▶ ${label} → ${candidate}`);
+      await reidentify(`${row.isbn}=${candidate}`);
+      result.fixed += 1;
+    } catch (err) {
+      result.failed += 1;
+      skipped.push(`${label} — ${err.message ?? err}`);
+    }
+    await sleep(REQUEST_INTERVAL_MS);
+  }
+
+  console.log('');
+  console.log('─'.repeat(60));
+  console.log(
+    `바꿈 ${result.fixed}개${DRY_RUN ? '(예정)' : ''} · 상품번호 없음 ${result.noItemId} · 못 찾음 ${result.notFound} · 다른 상품 ${result.mismatch} · 실패(병합 필요 등) ${result.failed}`
+  );
+  if (skipped.length) {
+    console.log('');
+    console.log('건너뛴 행:');
+    skipped.forEach((line) => console.log(`  ${line}`));
+  }
+};
+
 const main = async () => {
   console.log(`대상 DB : ${env.NEXT_PUBLIC_SUPABASE_URL}`);
   console.log(
@@ -1248,6 +1353,10 @@ const main = async () => {
   }
   if (AUDIT_PAGE_COUNTS) {
     await auditPageCounts();
+    return;
+  }
+  if (FIX_GLOBAL_ISBNS) {
+    await fixGlobalIsbns();
     return;
   }
 
