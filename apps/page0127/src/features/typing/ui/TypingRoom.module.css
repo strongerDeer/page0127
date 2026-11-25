@@ -293,8 +293,7 @@
 .picture {
   margin-top: 8px;
 }
-.picture svg,
-.picture [data-empty] {
+.picture img {
   display: block;
   margin: 0 auto;
   border-radius: 8px;
@@ -302,16 +301,11 @@
   padding: 10px;
   box-shadow: inset 0 0 0 1px #d8c8a6;
 }
-.picture svg {
-  width: min(220px, 60%);
+.picture img {
+  width: min(300px, 70%);
   height: auto;
   box-sizing: content-box;
-}
-.picture [data-empty] {
-  padding: 22px;
-  color: var(--soft);
-  font-size: 13px;
-  text-align: center;
+  image-rendering: pixelated;
 }
 .picture figcaption {
   margin-top: 4px;
