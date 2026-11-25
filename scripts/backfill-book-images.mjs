@@ -658,6 +658,8 @@ const searchYes24 = async (query, page = 1) => {
     new URLSearchParams({ query, category: 'BOOK', page: String(page), pageSize: '20' });
 
   const res = await fetch(url, { headers: { 'X-Api-Key': env.YES24_API_KEY } });
+  // YES24 검색은 결과가 0건이면 404 를 준다 — 오류가 아니라 "없음"이다(상세 조회 fetchYes24 와 같은 처리).
+  if (res.status === 404) return [];
   if (!res.ok) throw new Error(`YES24 HTTP ${res.status}`);
 
   const body = await res.json();
@@ -1362,6 +1364,7 @@ const showCandidates = async (spec) => {
     for (const q of queries) {
       const items = await searchYes24(q);
       await sleep(REQUEST_INTERVAL_MS);
+      if (!items.length) console.log(`   (검색 "${q}" → 결과 없음)`);
       for (const item of items) {
         if (!item.isbn13 || seen.has(item.itemId)) continue;
         seen.add(item.itemId);
