@@ -14,34 +14,37 @@ import s from './LittlePrinceCover.module.css';
  */
 
 // ── 도트 그림 데이터(30 × 42 칸) ──────────────────────────────
+// 흰 종이 + 연보라 작은 별 + 노란 별·달 — 누구나 떠올리는 『어린 왕자』의 분위기만 빌린다.
+// 인물(어린 왕자)·원작 그림의 모양은 그리지 않는다.
 type Px = [x: number, y: number, w: number, h: number, fill: string];
 
-const SKY: Px[] = [
-  [0, 0, 30, 14, '#1b2452'],
-  [0, 14, 30, 10, '#212c62'],
-  [0, 24, 30, 10, '#283574'],
-  [0, 34, 30, 8, '#2f3d82'],
+const PAPER = '#fbf8f1';
+const STAR = '#f2c94c';
+
+/** 노란 별(십자 모양 5칸) — twinkle 은 천천히 깜빡인다 */
+const STARS: { x: number; y: number; big: boolean; twinkle: boolean }[] = [
+  { x: 25, y: 13, big: true, twinkle: true },
+  { x: 4, y: 26, big: true, twinkle: false },
+  { x: 4, y: 36, big: true, twinkle: true },
+  { x: 12, y: 15, big: false, twinkle: true },
+  { x: 27, y: 19, big: false, twinkle: false },
+  { x: 10, y: 20, big: false, twinkle: true },
+  { x: 2, y: 31, big: false, twinkle: false },
 ];
 
-/** 반짝이는 별(twinkle)과 가만히 있는 별 */
-const STARS: { x: number; y: number; twinkle: boolean }[] = [
-  { x: 3, y: 13, twinkle: true },
-  { x: 25, y: 12, twinkle: false },
-  { x: 6, y: 19, twinkle: false },
-  { x: 22, y: 17, twinkle: true },
-  { x: 27, y: 22, twinkle: false },
-  { x: 2, y: 26, twinkle: true },
-  { x: 11, y: 15, twinkle: false },
-  { x: 21, y: 9, twinkle: true },
-  { x: 26, y: 30, twinkle: true },
-  { x: 4, y: 33, twinkle: false },
+/** 둥근 달 두 개 */
+const MOONS: Px[] = [
+  [4, 17, 2, 1, STAR],
+  [3, 18, 4, 2, STAR],
+  [4, 20, 2, 1, STAR],
+  [20, 15, 2, 2, STAR],
 ];
 
-/** 둥근 작은 별(행성) — 원을 칸으로 깎는다. 한 번만 계산해 두는 모듈 상수 */
+/** 연보라 작은 별(행성) — 원을 칸으로 깎고, 왼쪽 위는 밝게·오른쪽 아래는 어둡게 */
 const PLANET: Px[] = (() => {
-  const cx = 15;
-  const cy = 29;
-  const r = 7;
+  const cx = 18;
+  const cy = 31;
+  const r = 9;
   const rows: Px[] = [];
   for (let y = Math.ceil(cy - r); y < cy + r; y++) {
     const dy = y + 0.5 - cy;
@@ -49,33 +52,32 @@ const PLANET: Px[] = (() => {
     const x0 = Math.round(cx - half);
     const x1 = Math.round(cx + half);
     if (x1 <= x0) continue;
-    rows.push([x0, y, x1 - x0, 1, '#e9b872']);
-    // 오른쪽 아래 그늘
-    if (dy > -2) {
-      const shade = Math.max(Math.round(half * 0.45), 1);
-      rows.push([x1 - shade, y, shade, 1, '#c98f4f']);
+    rows.push([x0, y, x1 - x0, 1, '#b8b0cc']);
+    if (dy < 0) {
+      const light = Math.max(Math.round(half * 0.5), 1);
+      rows.push([x0, y, light, 1, '#cbc4dc']);
+    } else {
+      const shade = Math.max(Math.round(half * 0.5), 1);
+      rows.push([x1 - shade, y, shade, 1, '#a39abb']);
     }
   }
   return rows;
 })();
 
 const DETAILS: Px[] = [
-  // 분화구
-  [11, 30, 2, 1, '#d29a5a'],
-  [17, 33, 2, 1, '#b97f43'],
-  // 작은 화산(왼쪽 위)
-  [10, 23, 3, 1, '#8a5a3a'],
-  [11, 22, 1, 1, '#8a5a3a'],
-  [11, 21, 1, 1, '#f08a4b'],
-  // 장미 줄기·잎·꽃
-  [17, 19, 1, 3, '#4c9a5a'],
-  [18, 20, 1, 1, '#4c9a5a'],
-  [16, 17, 3, 2, '#d9485f'],
-  [17, 16, 1, 1, '#ef7186'],
-  // 별똥별
-  [22, 27, 1, 1, '#fff4d6'],
-  [23, 26, 1, 1, '#c9d2f5'],
-  [24, 25, 1, 1, '#8f9bd6'],
+  // 작은 화산 두 개(왼쪽·오른쪽 위)
+  [11, 24, 3, 1, '#8e86a6'],
+  [12, 23, 1, 1, '#8e86a6'],
+  [23, 23, 3, 1, '#8e86a6'],
+  [24, 22, 1, 1, '#8e86a6'],
+  // 꽃 두 송이
+  [16, 21, 1, 1, '#4f9a5b'],
+  [16, 20, 1, 1, '#d6505f'],
+  [20, 21, 1, 1, '#4f9a5b'],
+  [20, 20, 1, 1, '#d6505f'],
+  // 별 표면의 자국
+  [17, 29, 2, 1, '#8e86a6'],
+  [20, 34, 2, 1, '#8e86a6'],
 ];
 
 /** 표지를 열면 보이는 첫 문장 — 본문 첫 쪽에서 그대로 가져온다(번역을 고쳐도 어긋나지 않게) */
@@ -142,19 +144,27 @@ export const LittlePrinceCover = ({
               preserveAspectRatio='none'
               shapeRendering='crispEdges'
             >
-              {[...SKY, ...PLANET, ...DETAILS].map(([x, y, w, h, fill], i) => (
-                <rect key={i} x={x} y={y} width={w} height={h} fill={fill} />
-              ))}
-              {STARS.map(({ x, y, twinkle }) => (
-                <rect
+              <rect width={30} height={42} fill={PAPER} />
+              {[...MOONS, ...PLANET, ...DETAILS].map(
+                ([x, y, w, h, fill], i) => (
+                  <rect key={i} x={x} y={y} width={w} height={h} fill={fill} />
+                )
+              )}
+              {STARS.map(({ x, y, big, twinkle }) => (
+                <g
                   key={`${x}-${y}`}
                   className={twinkle ? s.twinkle : undefined}
-                  x={x}
-                  y={y}
-                  width={1}
-                  height={1}
-                  fill='#ffe08a'
-                />
+                  fill={STAR}
+                >
+                  {big ? (
+                    <>
+                      <rect x={x} y={y - 1} width={1} height={3} />
+                      <rect x={x - 1} y={y} width={3} height={1} />
+                    </>
+                  ) : (
+                    <rect x={x} y={y} width={1} height={1} />
+                  )}
+                </g>
               ))}
             </svg>
             <span className={s.title}>

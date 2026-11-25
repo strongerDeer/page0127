@@ -12,11 +12,11 @@ export const LITTLE_PRINCE_FACTS: { label: string; value: string }[] = [
   { label: '분량', value: '27장 · 짧은 장편 동화' },
 ];
 
-export const LITTLE_PRINCE_INTRO: string[] = [
-  '사막에 불시착한 비행사가 아주 작은 별에서 온 어린 왕자를 만나는 이야기예요. 어린 왕자는 자기 별에 두고 온 장미, 여행하며 만난 이상한 어른들, 그리고 지구에서 사귄 여우 이야기를 하나씩 들려줘요.',
-  '어린이 책처럼 보이지만, 어른이 되면서 잊어버린 것들에 대해 묻는 책이에요. "가장 중요한 건 눈에 보이지 않아"라는 여우의 말처럼, 읽을 때마다 다른 문장이 마음에 걸려요.',
-  '그래서 필사하기 좋은 책이에요. 문장이 짧고 쉬워서 처음 필사하는 사람도 부담이 없고, 천천히 따라 치다 보면 눈으로 읽을 때 지나친 문장이 다시 보여요.',
-];
+export const LITTLE_PRINCE_INTRO =
+  '사막에 불시착한 비행사가 아주 작은 별에서 온 어린 왕자를 만나는 이야기예요. 어린이 책처럼 보이지만 어른이 되면서 잊어버린 것들을 묻는 책이라, 문장이 짧고 쉬워서 처음 필사하기에도 좋아요.';
+
+/** 서점 링크(YES24) — HJ가 고른 판본 주소. 비어 있으면 버튼을 숨긴다 */
+export const LITTLE_PRINCE_STORE_URL: string | null = null;
 
 export const LITTLE_PRINCE_FAQ: { question: string; answer: string }[] = [
   {

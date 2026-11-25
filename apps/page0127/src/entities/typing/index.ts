@@ -9,6 +9,7 @@ export {
   LITTLE_PRINCE_FACTS,
   LITTLE_PRINCE_FAQ,
   LITTLE_PRINCE_INTRO,
+  LITTLE_PRINCE_STORE_URL,
 } from './content/littlePrinceIntro';
 export type { TypingProgress, TypingSheet } from './model/pages';
 export {

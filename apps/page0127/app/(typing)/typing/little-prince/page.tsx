@@ -9,7 +9,6 @@ import { LITTLE_PRINCE_FAQ } from '@/entities/typing';
 import {
   LittlePrinceCover,
   TypingBookIntro,
-  TypingFaq,
   TypingProgressCard,
   TypingRankingCard,
   TypingRoom,
@@ -181,7 +180,6 @@ const TypingLittlePrincePage = async () => {
         </div>
 
         <TypingBookIntro />
-        <TypingFaq />
 
         <p className='text-xs leading-relaxed text-text-subtle'>
           본문은 앙투안 드 생텍쥐페리 『어린 왕자』(1943) 프랑스어 원문을

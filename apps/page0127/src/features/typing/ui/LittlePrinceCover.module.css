@@ -88,7 +88,8 @@
   inset: 0;
   overflow: hidden;
   border-radius: 4px 8px 8px 4px;
-  background: #1b2452;
+  background: #fbf8f1;
+  box-shadow: inset 0 0 0 1px rgb(60 50 80 / 0.08);
   transform-origin: left center;
   transform: rotateY(0deg);
   transition: transform 0.5s cubic-bezier(0.3, 0.7, 0.2, 1);
@@ -102,8 +103,8 @@
   width: 12px;
   background: linear-gradient(
     to right,
-    rgb(0 0 0 / 0.35),
-    rgb(255 255 255 / 0.12) 55%,
+    rgb(0 0 0 / 0.12),
+    rgb(255 255 255 / 0.4) 55%,
     transparent
   );
   z-index: 2;
@@ -116,7 +117,7 @@
   background: linear-gradient(
     calc(115deg + var(--ry) * 2),
     transparent 30%,
-    rgb(255 255 255 / 0.16) 48%,
+    rgb(255 255 255 / 0.5) 48%,
     transparent 62%
   );
   z-index: 3;
@@ -151,7 +152,7 @@
     opacity: 1;
   }
   50% {
-    opacity: 0.25;
+    opacity: 0.35;
   }
 }
 
@@ -161,35 +162,35 @@
   left: 0;
   right: 0;
   z-index: 1;
-  text-align: center;
-  color: #fff4d6;
+  padding: 0 14px 0 18px;
+  text-align: left;
+  color: #4a4848;
 }
 .titleMain {
   display: block;
   font-size: 22px;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  text-shadow: 2px 2px 0 #0d1330;
+  letter-spacing: 0.02em;
+  font-family: "Nanum Myeongjo", "Noto Serif KR", "AppleMyungjo", serif;
 }
 .titleSub {
   display: block;
   margin-top: 4px;
   font-size: 9.5px;
   letter-spacing: 0.04em;
-  color: #c9d2f5;
+  color: #8a8692;
 }
 .badge {
   position: absolute;
-  left: 0;
-  right: 0;
+  left: 18px;
   bottom: 9px;
   z-index: 1;
-  text-align: center;
+  text-align: left;
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  color: #fff4d6;
-  opacity: 0.85;
+  letter-spacing: 0.04em;
+  color: #6b6775;
+  font-style: italic;
 }
 
 .hint {
