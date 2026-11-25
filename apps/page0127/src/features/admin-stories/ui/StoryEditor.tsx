@@ -366,6 +366,7 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
               <StoryMarkdown
                 body={body}
                 preview
+                headingLevel={book?.kind === 'linked' ? 3 : 2}
                 renderMyRecord={() => <MyRecordPreview />}
               />
             ) : (

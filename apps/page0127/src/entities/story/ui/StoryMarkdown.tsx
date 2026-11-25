@@ -28,16 +28,7 @@ import type { ReactNode } from 'react';
  * 쓰는 사람이 운영자뿐이어도 <script> 가 공개 페이지에 섞일 길을 아예 두지 않는다.
  */
 const components: Components = {
-  // 본문 안 제목은 페이지 h1·섹션 h2 아래 단계로 맞춘다 — #, ## 모두 소제목(h3)
-  h1: ({ children }) => (
-    <h3 className='heading-2 mt-10 first:mt-0'>{children}</h3>
-  ),
-  h2: ({ children }) => (
-    <h3 className='heading-2 mt-10 first:mt-0'>{children}</h3>
-  ),
-  h3: ({ children }) => (
-    <h4 className='mt-8 text-lg font-semibold text-text-strong'>{children}</h4>
-  ),
+  // 본문 안 제목 단계(#, ##, ###)는 StoryMarkdown 이 headingLevel 에 맞춰 덮어쓴다(아래 headingComponents)
   p: ({ children }) => (
     <p className='mt-5 break-keep text-[17px] leading-[1.9] text-text-body first:mt-0'>
       {children}
@@ -76,6 +67,31 @@ const components: Components = {
   hr: () => <hr className='my-10 border-line' />,
 };
 
+/**
+ * 본문 #·## 을 몇 단계 제목으로 그릴지.
+ *
+ * 왜 바꿀 수 있게 했나: 책 없는 글(숫자로 보는 독서)은 페이지에 h1 뒤 h2 가 하나도 없었다 —
+ * 검색엔진이 글의 큰 갈래를 읽을 단서가 h2 다. 책 글은 페이지가 "독후감" h2 를 먼저 달아 두므로
+ * 본문 소제목은 그 아래(h3)여야 단계가 맞는다. 그래서 페이지가 고른다. 겉모양은 둘 다 같다.
+ */
+const headingComponents = (level: 2 | 3): Components => {
+  const Top = level === 2 ? 'h2' : 'h3';
+  const Sub = level === 2 ? 'h3' : 'h4';
+  return {
+    h1: ({ children }) => (
+      <Top className='heading-2 mt-10 first:mt-0'>{children}</Top>
+    ),
+    h2: ({ children }) => (
+      <Top className='heading-2 mt-10 first:mt-0'>{children}</Top>
+    ),
+    h3: ({ children }) => (
+      <Sub className='mt-8 text-lg font-semibold text-text-strong'>
+        {children}
+      </Sub>
+    ),
+  };
+};
+
 /** 본문에 그림은 넣지 않는다 — 그림은 관계도·카드 칸으로 올린다(크기·alt 를 관리할 수 있게) */
 const DISALLOWED = ['img'];
 
@@ -103,6 +119,11 @@ type StoryMarkdownProps = {
    * 페이지(app)가 끼워 넣는다 — "의존성 주입". 안 넘기면 그 블록은 그리지 않는다.
    */
   renderMyRecord?: (spec: MyRecordChart) => ReactNode;
+  /**
+   * 본문 #·## 의 제목 단계. 기본 3(h3) — 페이지에 이미 h2 가 있을 때(책 글의 "독후감").
+   * 책 없는 글처럼 본문 소제목이 글의 큰 갈래면 2.
+   */
+  headingLevel?: 2 | 3;
 };
 
 /**
@@ -116,9 +137,11 @@ export const StoryMarkdown = ({
   body,
   preview = false,
   renderMyRecord,
+  headingLevel = 3,
 }: StoryMarkdownProps) => {
   const withCharts: Components = {
     ...components,
+    ...headingComponents(headingLevel),
     pre: ({ node, children }) => {
       const source = chartSource(node);
       if (source === null)
