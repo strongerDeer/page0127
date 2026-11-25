@@ -173,7 +173,7 @@ export const PixelPicture = ({
       ) : (
         <div data-empty>그림 자리 · 준비 중</div>
       )}
-      <figcaption>{picture.caption} · page0127.이 그린 도트 그림</figcaption>
+      <figcaption>{picture.caption}</figcaption>
     </figure>
   );
 };
