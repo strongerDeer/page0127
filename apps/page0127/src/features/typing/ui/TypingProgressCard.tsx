@@ -82,14 +82,14 @@ export const TypingProgressCard = ({
                 : state === 'half'
                   ? '쓰는 중'
                   : state === 'locked'
-                    ? '번역 중'
+                    ? '준비 중'
                     : '안 씀'}
             </span>
           </li>
         ))}
       </ol>
       <p className='text-xs text-text-subtle'>
-        진한 칸은 다 쓴 장, 연한 칸은 쓰는 중인 장, 흐린 칸은 번역 중인
+        진한 칸은 다 쓴 장, 연한 칸은 쓰는 중인 장, 흐린 칸은 준비 중인
         장이에요.
       </p>
     </section>

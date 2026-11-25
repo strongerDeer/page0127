@@ -367,7 +367,7 @@ export const TypingRoom = ({
                       aria-label={
                         open
                           ? `${no}장${state === 'full' ? ' (다 씀)' : ''}`
-                          : `${no}장 (번역 중)`
+                          : `${no}장 (준비 중)`
                       }
                       onClick={() => {
                         const pages = FULL_SHEETS.map((x, i) => ({
@@ -385,7 +385,7 @@ export const TypingRoom = ({
                   );
                 })}
               </div>
-              <span>회색 칸은 번역 중이라 곧 공개돼요.</span>
+              <span>회색 칸은 준비 중이라 곧 공개돼요.</span>
             </>
           )}
           {mode === 'famous' && (
