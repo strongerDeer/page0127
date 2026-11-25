@@ -169,4 +169,6 @@ OUT['portrait']=im
 
 OUT_DIR=os.path.join(os.path.dirname(__file__),'..','public','typing','pixel')
 for k,im in OUT.items():
+    if k not in ('boabeast','portrait'):
+        continue  # 나머지는 HJ 일러스트 시트로 교체됨(2026-11-25)
     im.save(os.path.join(OUT_DIR,f'{k}.webp'),lossless=True,quality=100,method=6)
