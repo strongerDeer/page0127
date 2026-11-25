@@ -12,21 +12,25 @@ import { rankLines } from '../model/rankRows';
 
 import type { TypingBoard, TypingRankRow } from '@/entities/typing';
 
-const BOARDS: { key: TypingBoard; label: string; unit: string; note: string }[] =
-  [
-    {
-      key: 'steady',
-      label: '꾸준함',
-      unit: '쪽',
-      note: '이번 주(월요일 0시부터) 끝까지 쓴 쪽 수예요. 같은 쪽은 한 주에 한 번만 세요.',
-    },
-    {
-      key: 'speed',
-      label: '타수',
-      unit: '타',
-      note: '정확도 95% 이상으로 끝까지 쓴 쪽의 최고 평균 타수예요.',
-    },
-  ];
+const BOARDS: {
+  key: TypingBoard;
+  label: string;
+  unit: string;
+  note: string;
+}[] = [
+  {
+    key: 'steady',
+    label: '꾸준함',
+    unit: '쪽',
+    note: '이번 주(월요일 0시부터) 끝까지 쓴 쪽 수예요. 같은 쪽은 한 주에 한 번만 세요.',
+  },
+  {
+    key: 'speed',
+    label: '타수',
+    unit: '타',
+    note: '정확도 95% 이상으로 끝까지 쓴 쪽의 최고 평균 타수예요.',
+  },
+];
 
 /**
  * 필사 랭킹 — 탭 두 개(꾸준함·타수, HJ 2026-11-25 "둘 다").

@@ -83,7 +83,9 @@ export type TypingProgress = {
 };
 
 /** 다 쓴 쪽 열쇠들로 진행도를 낸다 */
-export const computeProgress = (doneKeys: ReadonlySet<string>): TypingProgress => {
+export const computeProgress = (
+  doneKeys: ReadonlySet<string>
+): TypingProgress => {
   const doneChars = FULL_SHEETS.filter((s) => doneKeys.has(s.key)).reduce(
     (sum, s) => sum + s.text.length,
     0
@@ -98,7 +100,10 @@ export const computeProgress = (doneKeys: ReadonlySet<string>): TypingProgress =
     return done > 0 ? ('half' as const) : ('none' as const);
   });
   return {
-    percent: Math.min(100, Math.floor((doneChars / estimateTotalChars()) * 100)),
+    percent: Math.min(
+      100,
+      Math.floor((doneChars / estimateTotalChars()) * 100)
+    ),
     doneChars,
     chapters,
     doneChapters: chapters.filter((c) => c === 'full').length,
@@ -110,7 +115,9 @@ export const firstUnwrittenIndex = (
   doneKeys: ReadonlySet<string>,
   from = 0
 ): number => {
-  const i = FULL_SHEETS.findIndex((s, idx) => idx >= from && !doneKeys.has(s.key));
+  const i = FULL_SHEETS.findIndex(
+    (s, idx) => idx >= from && !doneKeys.has(s.key)
+  );
   if (i >= 0) return i;
   const fromStart = FULL_SHEETS.findIndex((s) => !doneKeys.has(s.key));
   return fromStart >= 0 ? fromStart : 0;

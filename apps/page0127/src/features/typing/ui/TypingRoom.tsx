@@ -121,7 +121,8 @@ export const TypingRoom = ({
     return () => window.clearInterval(id);
   }, [startedAt, result]);
 
-  const elapsed = startedAt === null ? 0 : (result?.durationMs ?? now - startedAt);
+  const elapsed =
+    startedAt === null ? 0 : (result?.durationMs ?? now - startedAt);
   const judge = judgeTyping(value, sheet.text, composing);
   const accuracy = seen.typed.size
     ? Math.round(((seen.typed.size - seen.missed.size) / seen.typed.size) * 100)
@@ -146,8 +147,7 @@ export const TypingRoom = ({
   );
   const wrongSet = new Set(judge.wrong);
 
-  const lastSettledWrong =
-    judge.settled > 0 && wrongSet.has(judge.settled - 1);
+  const lastSettledWrong = judge.settled > 0 && wrongSet.has(judge.settled - 1);
   const face: Face = result
     ? 'happy'
     : startedAt === null
@@ -274,7 +274,7 @@ export const TypingRoom = ({
       : '틀린 글자는 빨간 칸으로 보여요. 지우고 다시 쳐도 돼요.';
 
   return (
-    <div className={s.window}>
+    <div id='typing-room' className={s.window}>
       <div className={s.titlebar}>
         <svg viewBox='0 0 16 16' aria-hidden>
           <rect x='2' y='2' width='12' height='12' fill='#fff' />
@@ -341,10 +341,13 @@ export const TypingRoom = ({
                           : `${no}장 (번역 중)`
                       }
                       onClick={() => {
-                        const pages = FULL_SHEETS.map((x, i) => ({ x, i })).filter(
-                          ({ x }) => x.chapter === no
+                        const pages = FULL_SHEETS.map((x, i) => ({
+                          x,
+                          i,
+                        })).filter(({ x }) => x.chapter === no);
+                        const todo = pages.find(
+                          ({ x }) => !doneKeys.has(x.key)
                         );
-                        const todo = pages.find(({ x }) => !doneKeys.has(x.key));
                         goTo('chapter', (todo ?? pages[0]).i);
                       }}
                     >
@@ -552,7 +555,12 @@ export const TypingRoom = ({
                 </div>
                 <div className={s.reportFace}>
                   {/* eslint-disable-next-line @next/next/no-img-element -- 도트 그림 */}
-                  <img src='/typing/kid-happy.webp' alt='' width={150} height={150} />
+                  <img
+                    src='/typing/kid-happy.webp'
+                    alt=''
+                    width={150}
+                    height={150}
+                  />
                 </div>
               </div>
               <p className={s.saveNote} role='status'>

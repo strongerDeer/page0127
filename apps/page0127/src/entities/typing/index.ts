@@ -5,6 +5,11 @@ export {
   LITTLE_PRINCE_TOTAL_CHAPTERS,
   LITTLE_PRINCE_WORK,
 } from './content/littlePrince';
+export {
+  LITTLE_PRINCE_FACTS,
+  LITTLE_PRINCE_FAQ,
+  LITTLE_PRINCE_INTRO,
+} from './content/littlePrinceIntro';
 export type { TypingProgress, TypingSheet } from './model/pages';
 export {
   computeProgress,
