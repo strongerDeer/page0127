@@ -26,6 +26,7 @@
  *   node scripts/backfill-book-images.mjs --fill-spines   비어 있는 책등만 YES24 에서 확인해 채운다
  *   node scripts/backfill-book-images.mjs --clear-placeholder-spines  회색 대체 이미지로 저장된 책등을 비운다
  *   node scripts/backfill-book-images.mjs --fill-page-counts  서재 책의 빈 쪽수를 YES24 상세에서 채운다
+ *   node scripts/backfill-book-images.mjs --audit-page-counts 쪽수 빈 책·ISBN13 아닌 전체 도서를 세기만 한다(읽기 전용)
  *
  * `--aladin-urls` 는 위의 백필과 별개 모드다. 백필은 "받아 온 것만 덮어쓴다" 규칙이라
  * YES24 에 책등이 없는 책은 알라딘 책등 주소가 그대로 남았다(2026-09-30 실측:
@@ -89,6 +90,8 @@ const FILL_SPINES = hasFlag('--fill-spines');
 const CLEAR_PLACEHOLDER_SPINES = hasFlag('--clear-placeholder-spines');
 /** 서재 책(books)의 빈 쪽수를 YES24 상세(detail=Y)로 채운다 (YES24 API 키 필요) */
 const FILL_PAGE_COUNTS = hasFlag('--fill-page-counts');
+/** 읽기 전용 점검 — 쪽수 빈 서재 책과 ISBN 칸이 ISBN13 이 아닌 전체 도서 행을 보여 준다 */
+const AUDIT_PAGE_COUNTS = hasFlag('--audit-page-counts');
 const LIMIT = Number(getOption('--limit', '0')) || null;
 const ENV_FILE = getOption('--env', 'apps/page0127/.env.local');
 
@@ -1157,6 +1160,51 @@ const fillPageCounts = async () => {
   );
 };
 
+// ─── 쪽수·ISBN 점검 (--audit-page-counts, 읽기 전용) ─────────────────────
+
+/**
+ * 아무것도 쓰지 않고 두 가지를 센다.
+ * 1. books 중 page_count 가 빈 책 — 출처별·체험 계정 여부별로
+ * 2. global_books 중 isbn 칸이 ISBN13 이 아닌 행(알라딘 K코드 등) — 맛보기로 담으면
+ *    YES24 에 ISBN 으로 물을 수 없어 쪽수가 또 빈다. 바로잡기는 --reidentify 옛=새ISBN13.
+ */
+const auditPageCounts = async () => {
+  const { data: demoRows } = await supabase.from('profiles').select('id').eq('is_demo', true);
+  const demoIds = new Set((demoRows ?? []).map((r) => r.id));
+
+  const { data: books, error } = await supabase
+    .from('books')
+    .select('id, user_id, isbn, title, source, provider_item_id')
+    .is('page_count', null);
+  if (error) throw new Error(`books 조회 실패: ${error.message}`);
+
+  const real = books.filter((b) => !demoIds.has(b.user_id));
+  console.log(`[1] 쪽수가 빈 서재 책: ${books.length}권 (체험 계정 ${books.length - real.length}권 제외 → ${real.length}권)`);
+  const bySource = {};
+  real.forEach((b) => {
+    bySource[b.source ?? '(없음)'] = (bySource[b.source ?? '(없음)'] ?? 0) + 1;
+  });
+  Object.entries(bySource).forEach(([src, n]) => console.log(`    출처 ${src.padEnd(8)} ${n}권`));
+  real.forEach((b) =>
+    console.log(
+      `    · ${(b.title ?? '').slice(0, 26).padEnd(26)} isbn=${b.isbn ?? '-'} 출처=${b.source ?? '-'} 상품번호=${b.provider_item_id ?? '-'}`
+    )
+  );
+  console.log('');
+
+  const { data: globals, error: gError } = await supabase
+    .from('global_books')
+    .select('isbn, title, source, provider_item_id');
+  if (gError) throw new Error(`global_books 조회 실패: ${gError.message}`);
+  const odd = globals.filter((g) => !/^97[89]\d{10}$/.test(g.isbn ?? ''));
+  console.log(`[2] 전체 도서 중 ISBN 칸이 ISBN13 이 아닌 행: ${odd.length}개 / ${globals.length}개`);
+  odd.forEach((g) =>
+    console.log(
+      `    · ${(g.title ?? '').slice(0, 26).padEnd(26)} isbn=${g.isbn} 출처=${g.source ?? '-'} 상품번호=${g.provider_item_id ?? '-'}`
+    )
+  );
+};
+
 const main = async () => {
   console.log(`대상 DB : ${env.NEXT_PUBLIC_SUPABASE_URL}`);
   console.log(
@@ -1196,6 +1244,10 @@ const main = async () => {
   }
   if (FILL_PAGE_COUNTS) {
     await fillPageCounts();
+    return;
+  }
+  if (AUDIT_PAGE_COUNTS) {
+    await auditPageCounts();
     return;
   }
 
