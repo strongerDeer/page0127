@@ -1,5 +1,5 @@
 /*
- * 『어린 왕자』 필사본 표지 — page0127.이 그린 도트 표지(원작 표지·삽화 X)
+ * 『어린 왕자』 필사 페이지 표지 — 직접 그린 도트 표지(원작 표지·삽화 X)
  *
  * 인터랙션 세 가지
  *  1) 마우스를 따라 책이 살짝 기운다(--rx, --ry: TSX 가 pointermove 로 넣는다)
@@ -180,19 +180,6 @@
   letter-spacing: 0.04em;
   color: #8a8692;
 }
-.badge {
-  position: absolute;
-  left: 18px;
-  bottom: 9px;
-  z-index: 1;
-  text-align: left;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: #6b6775;
-  font-style: italic;
-}
-
 .hint {
   margin-top: 14px;
   font-size: 12px;

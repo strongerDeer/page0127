@@ -7,7 +7,7 @@ import { FULL_SHEETS } from '@/entities/typing';
 import s from './LittlePrinceCover.module.css';
 
 /**
- * 『어린 왕자』 필사본 표지 — page0127.이 그린 도트 표지.
+ * 『어린 왕자』 필사 페이지 표지 — 직접 그린 도트 표지.
  *
  * 원작 표지·삽화·인물은 쓰지 않는다(재단이 상표로 관리). 밤하늘 + 둥근 작은 별 + 장미 한 송이만.
  * 마우스를 따라 기울고, 올려 두면 표지가 열리며 첫 문장이 보이고, 누르면 필사 창으로 내려간다.
@@ -171,7 +171,6 @@ export const LittlePrinceCover = ({
               <span className={s.titleMain}>어린 왕자</span>
               <span className={s.titleSub}>앙투안 드 생텍쥐페리</span>
             </span>
-            <span className={s.badge}>page0127. 필사본</span>
           </span>
         </span>
       </button>
