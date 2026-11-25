@@ -468,7 +468,7 @@ export const TypingRoom = ({
             <div className={`${s.art} ${s.raised}`}>
               {/* eslint-disable-next-line @next/next/no-img-element -- 150px 도트 그림, 픽셀 그대로 키워야 해서 최적화를 거치지 않는다 */}
               <img
-                src={`/typing/kid-${face}.png`}
+                src={`/typing/kid-${face}.webp`}
                 alt=''
                 width={150}
                 height={150}
@@ -552,7 +552,7 @@ export const TypingRoom = ({
                 </div>
                 <div className={s.reportFace}>
                   {/* eslint-disable-next-line @next/next/no-img-element -- 도트 그림 */}
-                  <img src='/typing/kid-happy.png' alt='' width={150} height={150} />
+                  <img src='/typing/kid-happy.webp' alt='' width={150} height={150} />
                 </div>
               </div>
               <p className={s.saveNote} role='status'>
