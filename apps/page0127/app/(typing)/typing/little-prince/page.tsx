@@ -175,12 +175,6 @@ const TypingLittlePrincePage = async () => {
         </div>
 
         <TypingBookIntro />
-
-        <p className='text-xs leading-relaxed text-text-subtle'>
-          본문은 앙투안 드 생텍쥐페리 『어린 왕자』(1943)예요. 원작은 한국에서
-          저작권 보호 기간이 끝났어요. 그림은 원작 삽화가 아닌 도트 그림이에요.
-          타수는 한글 자판을 누른 횟수(겹받침·이중모음은 2타)로 세요.
-        </p>
       </main>
     </div>
   );
