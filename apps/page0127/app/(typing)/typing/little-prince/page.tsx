@@ -39,6 +39,9 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   keywords: [
     '어린 왕자 필사',
+    '어린 왕자 온라인 필사',
+    '어린왕자 필사',
+    '어린왕자 온라인 필사',
     '온라인 필사',
     '필사 사이트',
     '타자 연습',
