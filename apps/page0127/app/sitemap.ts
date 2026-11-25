@@ -82,6 +82,13 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
       priority: 0.6,
     },
     {
+      // 『어린 왕자』 온라인 필사 — 비회원도 쳐 볼 수 있는 공개 페이지(장은 나눠서 공개)
+      url: `${siteUrl}/typing/little-prince`,
+      lastModified,
+      changeFrequency: 'weekly',
+      priority: 0.6,
+    },
+    {
       url: `${siteUrl}/updates`,
       lastModified,
       changeFrequency: 'monthly',
