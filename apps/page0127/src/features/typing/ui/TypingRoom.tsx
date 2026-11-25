@@ -102,6 +102,13 @@ export const TypingRoom = ({
   const [, startSaving] = useTransition();
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [focusTick, setFocusTick] = useState(0);
+
+  // 쪽을 넘기거나 장·명문장을 고른 뒤 화면을 다시 누르지 않아도 바로 이어 치게
+  useEffect(() => {
+    if (focusTick === 0 || result) return;
+    inputRef.current?.focus({ preventScroll: true });
+  }, [focusTick, result]);
   const paperRef = useRef<HTMLDivElement>(null);
   const [perLine, setPerLine] = useState(26);
   // 실제 글꼴로 잰 "이 줄이 들어가나" 함수. 재기 전(서버 그림·첫 화면)에는 글자 수(perLine)로 어림한다.
@@ -279,7 +286,9 @@ export const TypingRoom = ({
     if (nextMode === 'famous') setFamousIndex(index);
     else setFullIndex(index);
     resetTyping();
-    inputRef.current?.focus();
+    // 결과 창이 떠 있는 동안 입력칸은 disabled 라 지금 focus() 하면 무시된다.
+    // 결과가 닫히고 다음 쪽이 그려진 뒤(아래 effect) 입력칸으로 커서를 돌려준다.
+    setFocusTick((n) => n + 1);
   };
 
   const goNext = () => {
@@ -550,7 +559,7 @@ export const TypingRoom = ({
             className={s.btn}
             onClick={() => {
               resetTyping();
-              inputRef.current?.focus();
+              setFocusTick((n) => n + 1);
             }}
           >
             다 시
@@ -616,7 +625,7 @@ export const TypingRoom = ({
                   className={s.btn}
                   onClick={() => {
                     resetTyping();
-                    inputRef.current?.focus();
+                    setFocusTick((n) => n + 1);
                   }}
                 >
                   다 시
