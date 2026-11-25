@@ -619,10 +619,10 @@ const pickSameBook = (row, items) => {
   return matches.length === 1 ? matches[0] : null;
 };
 
-const searchYes24 = async (query) => {
+const searchYes24 = async (query, page = 1) => {
   const url =
     'https://apis.yes24.com/v1/goods/itemList?' +
-    new URLSearchParams({ query, category: 'BOOK', page: '1', pageSize: '20' });
+    new URLSearchParams({ query, category: 'BOOK', page: String(page), pageSize: '20' });
 
   const res = await fetch(url, { headers: { 'X-Api-Key': env.YES24_API_KEY } });
   if (!res.ok) throw new Error(`YES24 HTTP ${res.status}`);
@@ -1092,8 +1092,13 @@ const fillPageCounts = async () => {
     if (!row.provider_item_id || !row.title) continue;
     let found = null;
     try {
-      const items = await searchYes24(row.title);
-      found = items.find((item) => String(item.itemId) === String(row.provider_item_id));
+      // 같은 제목의 다른 판본·굿즈가 많으면 첫 쪽에 없을 수 있다 → 세 쪽(60건)까지 본다
+      for (let page = 1; page <= 3 && !found; page += 1) {
+        const items = await searchYes24(row.title, page);
+        found = items.find((item) => String(item.itemId) === String(row.provider_item_id));
+        if (items.length < 20) break;
+        if (!found) await sleep(REQUEST_INTERVAL_MS);
+      }
     } catch (err) {
       console.log(`    × ${row.title.slice(0, 26)} 상품번호로 찾기 실패 (${err.message ?? err})`);
     }
