@@ -1047,7 +1047,7 @@ const fillPageCounts = async () => {
 
   let query = supabase
     .from('books')
-    .select('id, user_id, isbn, title, source')
+    .select('id, user_id, isbn, title, source, provider_item_id')
     .is('page_count', null)
     .not('isbn', 'is', null)
     // source 가 비어 있는 옛 행도 대상이다 — neq 만 쓰면 null 이 빠진다
@@ -1059,7 +1059,7 @@ const fillPageCounts = async () => {
   // ISBN13 기준으로 묶는다 — 같은 책을 여러 사람이 담았으면 한 번만 묻는다
   const targets = new Map(); // isbn13 → { title, ids: [] }
   let skippedDemo = 0;
-  let unresolved = 0;
+  const unresolvedRows = [];
   for (const row of rows) {
     if (demoIds.has(row.user_id)) {
       skippedDemo += 1;
@@ -1067,7 +1067,7 @@ const fillPageCounts = async () => {
     }
     const { isbn13 } = resolveIsbn13(row.isbn);
     if (!isbn13) {
-      unresolved += 1;
+      unresolvedRows.push(row);
       continue;
     }
     const entry = targets.get(isbn13) ?? { title: row.title ?? '', ids: [] };
@@ -1076,7 +1076,13 @@ const fillPageCounts = async () => {
   }
   const bookCount = [...targets.values()].reduce((n, t) => n + t.ids.length, 0);
   console.log(`쪽수가 빈 책: ${bookCount}권 (ISBN ${targets.size}개)`);
-  console.log(`  제외 — 체험 계정 ${skippedDemo}권 · ISBN13 못 구함 ${unresolved}권`);
+  console.log(`  제외 — 체험 계정 ${skippedDemo}권 · ISBN13 못 구함 ${unresolvedRows.length}권`);
+  // ISBN13 이 아닌 값이 무엇인지 보여 준다 — 다음 처리 방법을 정하는 근거
+  unresolvedRows.forEach((r) =>
+    console.log(
+      `    ? isbn="${r.isbn}" 상품번호=${r.provider_item_id ?? '-'} 출처=${r.source ?? '-'} ${(r.title ?? '').slice(0, 26)}`
+    )
+  );
   console.log('');
 
   let filledBooks = 0;
