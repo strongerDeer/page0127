@@ -1,0 +1,567 @@
+/*
+  필사 창 — 2000년대 타자 연습 프로그램 느낌(HJ 2026-11-25 시안 v6~v7).
+  바깥 페이지는 page0127. 디자인 토큰을 따르고, 이 창 하나만 "옛날 프로그램"이라는 물건으로 둔다.
+  그래서 색을 토큰이 아닌 고정값으로 쓰고, 다크 모드에서도 같은 베이지 창으로 보인다(화면 속 화면).
+  바깥 창은 각진 입체 테두리, 안쪽 칸은 둥근 모서리(HJ).
+*/
+.window {
+  scroll-margin-top: 24px;
+  --win: #e2cfa9;
+  --face: #ecdcbb;
+  --hi: #fff7e6;
+  --lo: #a98b5f;
+  --dk: #6b5233;
+  --paper: #fdfcf6;
+  --rule: #efe8d6;
+  --ink: #262019;
+  --soft: #6d604e;
+  --src: #3b3fc4;
+  --miss: #e0324f;
+  --navy: #0f2350;
+  --lcd: #24392d;
+  --lcd-on: #e6f59a;
+  --bar: #a6f2f4;
+  --font:
+    Gulim, "굴림", Dotum, "돋움", "Apple SD Gothic Neo", "Noto Sans KR",
+    sans-serif;
+  position: relative;
+  color: var(--ink);
+  font-family: var(--font);
+  background: var(--win);
+  padding: 4px;
+  box-shadow:
+    inset 1px 1px 0 var(--hi),
+    inset -1px -1px 0 var(--dk),
+    inset 2px 2px 0 #f3e6c9,
+    inset -2px -2px 0 var(--lo),
+    0 18px 40px -24px rgb(60 40 10 / 0.45);
+  color-scheme: light;
+}
+
+.raised {
+  background: var(--win);
+  box-shadow:
+    inset 1px 1px 0 var(--hi),
+    inset -1px -1px 0 var(--dk),
+    inset 2px 2px 0 #f3e6c9,
+    inset -2px -2px 0 var(--lo);
+}
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px 5px 10px;
+  color: #fff;
+  background: linear-gradient(90deg, #7a5a35, #b48c5c);
+  font-size: 14px;
+  font-weight: 700;
+}
+.titlebar svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tbBtn {
+  display: grid;
+  width: 20px;
+  height: 18px;
+  place-items: center;
+  color: #000;
+  font: 700 11px/1 var(--font);
+}
+
+.inner {
+  background: var(--face);
+  padding: 8px 10px 10px;
+}
+
+/* 방식 탭 */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-bottom: 8px;
+}
+.tab {
+  cursor: pointer;
+  border: 0;
+  border-radius: 7px 7px 0 0;
+  background: var(--win);
+  padding: 6px 12px 5px;
+  color: #3a2c1a;
+  font: 700 13px var(--font);
+  box-shadow:
+    inset 1px 1px 0 var(--hi),
+    inset -1px 0 0 var(--dk),
+    inset -2px 0 0 var(--lo);
+}
+.tab[aria-pressed="true"] {
+  background: var(--navy);
+  color: #fff;
+  box-shadow: none;
+}
+.tab:focus-visible,
+.btn:focus-visible,
+.chip:focus-visible,
+.chb:focus-visible {
+  outline: 2px dashed var(--navy);
+  outline-offset: 2px;
+}
+
+.sub {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 8px;
+  font-size: 13px;
+  color: var(--soft);
+}
+.sub b {
+  color: var(--ink);
+}
+.chgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+  gap: 4px;
+}
+.chb {
+  height: 30px;
+  cursor: pointer;
+  border: 0;
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 700 13px var(--font);
+  box-shadow: inset 0 0 0 1px #cdb88f;
+}
+.chb[data-state="full"] {
+  background: #d9ebc6;
+  color: #3b6b1f;
+}
+.chb[aria-pressed="true"] {
+  background: var(--navy);
+  color: #fff;
+  box-shadow: none;
+}
+.chb:disabled {
+  cursor: not-allowed;
+  background: #e6dcc6;
+  color: #b3a487;
+  box-shadow: none;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip {
+  cursor: pointer;
+  border: 0;
+  border-radius: 7px;
+  background: var(--paper);
+  padding: 5px 10px;
+  color: var(--ink);
+  font: 700 13px var(--font);
+  box-shadow: inset 0 0 0 1px #cdb88f;
+}
+.chip small {
+  margin-right: 4px;
+  color: var(--soft);
+}
+.chip[aria-pressed="true"] {
+  background: var(--navy);
+  color: #fff;
+  box-shadow: none;
+}
+.chip[aria-pressed="true"] small {
+  color: #c9d6f5;
+}
+.chip[data-done="true"]::after {
+  content: " ✓";
+  color: #3b6b1f;
+}
+.chip[aria-pressed="true"][data-done="true"]::after {
+  color: #bfe3a3;
+}
+
+/* 본문 + 오른쪽 기둥 */
+.main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 196px;
+  gap: 10px;
+}
+@media (max-width: 720px) {
+  .main {
+    grid-template-columns: 1fr;
+  }
+}
+
+.frame {
+  border-radius: 10px;
+  padding: 4px;
+}
+.paper {
+  position: relative;
+  cursor: text;
+  border-radius: 8px;
+  background: var(--paper);
+  padding: 14px 16px 12px;
+  box-shadow:
+    inset 1px 1px 0 var(--lo),
+    inset -1px -1px 0 var(--hi),
+    inset 2px 2px 0 var(--dk);
+}
+.head {
+  margin-bottom: 4px;
+  color: var(--src);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.head b {
+  display: block;
+  color: var(--ink);
+  font-weight: 400;
+}
+/* 줄 묶음 — 스크롤 없이, 지금 줄이 위에서 두 번째에 오도록 창을 민다(옛 프로그램처럼) */
+.lines {
+  min-height: calc(4 * (2 * 1.6em + 20px));
+}
+.pair {
+  border-radius: 4px;
+  padding: 8px 4px;
+  font-size: clamp(15px, 3.4vw, 18px);
+  letter-spacing: 0.02em;
+  line-height: 1.6;
+  white-space: pre;
+}
+.pair + .pair {
+  margin-top: 4px;
+}
+.pair[data-current="true"] {
+  background: rgb(224 164 58 / 0.1);
+}
+.src {
+  color: var(--src);
+}
+.src .done {
+  color: #a5a8e0;
+}
+.typed {
+  min-height: 1.6em;
+  color: var(--ink);
+}
+.wrong {
+  background: var(--miss);
+  color: #fff;
+}
+.composing {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.caret {
+  display: inline-block;
+  width: 0.62em;
+  height: 1.1em;
+  vertical-align: -0.15em;
+  background: var(--ink);
+  animation: blink 1s steps(1) infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+.input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  resize: none;
+  border: 0;
+  opacity: 0;
+  font-size: 16px; /* iOS 확대 방지 */
+}
+
+.picture {
+  margin-top: 8px;
+}
+.picture svg,
+.picture [data-empty] {
+  display: block;
+  margin: 0 auto;
+  border-radius: 8px;
+  background: var(--paper);
+  padding: 10px;
+  box-shadow: inset 0 0 0 1px #d8c8a6;
+}
+.picture svg {
+  width: min(220px, 60%);
+  height: auto;
+  box-sizing: content-box;
+}
+.picture [data-empty] {
+  padding: 22px;
+  color: var(--soft);
+  font-size: 13px;
+  text-align: center;
+}
+.picture figcaption {
+  margin-top: 4px;
+  color: var(--soft);
+  font-size: 12px;
+  text-align: center;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+@media (max-width: 720px) {
+  .side {
+    display: grid;
+    grid-template-columns: 112px 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 8px;
+  }
+  .side .badge {
+    grid-column: 1 / -1;
+  }
+}
+.badge {
+  border-radius: 7px;
+  background: var(--lcd);
+  padding: 6px;
+  color: var(--lcd-on);
+  font-size: 15px;
+  font-weight: 800;
+  text-align: center;
+  box-shadow:
+    inset 1px 1px 0 #000,
+    inset -1px -1px 0 var(--hi);
+}
+.art {
+  overflow: hidden;
+  border-radius: 10px;
+  background: #cfdcee;
+}
+.art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  image-rendering: pixelated;
+}
+.clock {
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+}
+.clockLabel {
+  margin-bottom: 6px;
+  color: #3a2c1a;
+  font-size: 15px;
+  font-weight: 800;
+}
+.lcd {
+  border-radius: 7px;
+  background: var(--lcd);
+  padding: 10px 4px 9px;
+  color: var(--lcd-on);
+  font-size: clamp(24px, 5vw, 32px);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  text-shadow: 0 0 5px rgb(230 245 154 / 0.35);
+  box-shadow:
+    inset 1px 1px 0 #000,
+    inset -1px -1px 0 var(--hi);
+}
+.work {
+  margin-top: 10px;
+  padding-left: 4px;
+  font-size: 14px;
+  text-align: left;
+}
+.counter {
+  margin-top: 8px;
+  border: 1px solid #cdb88f;
+  border-left: 4px solid #e0a43a;
+  border-radius: 7px;
+  background: var(--paper);
+  padding: 3px 8px;
+  font-size: 14px;
+  text-align: left;
+}
+
+/* 아래 검은 상태 줄 */
+.statusFrame {
+  margin-top: 10px;
+  border-radius: 10px;
+  padding: 4px;
+}
+.status {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 6px 18px;
+  border-radius: 7px;
+  background: #000;
+  padding: 10px 16px;
+  color: #ffe27a;
+  font-size: 14px;
+  white-space: pre;
+}
+.meter {
+  height: 16px;
+  background: #111;
+}
+.meter i {
+  display: block;
+  height: 100%;
+  background: var(--bar);
+  transition: width 0.2s;
+}
+.meter[data-white] i {
+  background: #fff;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+}
+.hint {
+  flex: 1 1 260px;
+  margin: 0;
+  color: var(--soft);
+  font-size: 13px;
+}
+.btn {
+  cursor: pointer;
+  border: 0;
+  border-radius: 7px;
+  background: var(--win);
+  padding: 6px 16px;
+  color: #2b2418;
+  font: 700 14px var(--font);
+  letter-spacing: 0.15em;
+  box-shadow:
+    inset 1px 1px 0 var(--hi),
+    inset -1px -1px 0 var(--dk),
+    inset 2px 2px 0 #f3e6c9,
+    inset -2px -2px 0 var(--lo);
+}
+.btn:active {
+  box-shadow:
+    inset 1px 1px 0 var(--dk),
+    inset -1px -1px 0 var(--hi),
+    inset 2px 2px 0 var(--lo);
+}
+.btnMain {
+  background: var(--navy);
+  color: #fff;
+  letter-spacing: 0.02em;
+  box-shadow:
+    inset 1px 1px 0 #5d7fc4,
+    inset -1px -1px 0 #000,
+    inset -2px -2px 0 #0a1838;
+}
+
+/* 결과 창 — 필사 창 위에 뜨는 옛날 대화상자 */
+.dialogBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  background: rgb(60 40 10 / 0.25);
+  padding: 16px;
+}
+.dialog {
+  width: min(460px, 100%);
+  padding: 4px;
+}
+.dialogBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--face);
+  padding: 14px;
+}
+.report {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 104px;
+  gap: 10px;
+}
+.reportText {
+  border-radius: 10px;
+  background: #f6ecd6;
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.9;
+  box-shadow: inset 0 0 0 1px #cdb88f;
+}
+.reportText strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+.reportText span {
+  display: inline-block;
+  width: 5.2em;
+}
+.reportFace {
+  overflow: hidden;
+  border-radius: 10px;
+  background: #cfdcee;
+}
+.reportFace img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  image-rendering: pixelated;
+}
+.saveNote {
+  margin: 0;
+  border-radius: 10px;
+  background: var(--paper);
+  padding: 10px 12px;
+  color: var(--soft);
+  font-size: 13px;
+  line-height: 1.6;
+  box-shadow: inset 0 0 0 1px #d8c8a6;
+}
+.saveNote a {
+  color: var(--navy);
+  font-weight: 700;
+  text-decoration: underline;
+}
+.dialogButtons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caret {
+    animation: none;
+  }
+  .meter i {
+    transition: none;
+  }
+}

@@ -44,6 +44,7 @@ describe('sitemap', () => {
       '/books/all',
       '/about',
       '/sentence',
+      '/typing/little-prince',
       '/updates',
       '/contact',
       '/privacy',
