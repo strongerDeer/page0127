@@ -25,6 +25,7 @@
  *   node scripts/backfill-book-images.mjs --adopt-orphans  global_books 짝이 없는 책에 짝을 만든다
  *   node scripts/backfill-book-images.mjs --fill-spines   비어 있는 책등만 YES24 에서 확인해 채운다
  *   node scripts/backfill-book-images.mjs --clear-placeholder-spines  회색 대체 이미지로 저장된 책등을 비운다
+ *   node scripts/backfill-book-images.mjs --fill-page-counts  서재 책의 빈 쪽수를 YES24 상세에서 채운다
  *
  * `--aladin-urls` 는 위의 백필과 별개 모드다. 백필은 "받아 온 것만 덮어쓴다" 규칙이라
  * YES24 에 책등이 없는 책은 알라딘 책등 주소가 그대로 남았다(2026-09-30 실측:
@@ -86,6 +87,8 @@ const ADOPT_ORPHANS = hasFlag('--adopt-orphans');
 const FILL_SPINES = hasFlag('--fill-spines');
 /** 확인 없이 저장된 YES24 책등 주소 중 회색 대체 이미지인 것을 비운다 (API 키 불필요) */
 const CLEAR_PLACEHOLDER_SPINES = hasFlag('--clear-placeholder-spines');
+/** 서재 책(books)의 빈 쪽수를 YES24 상세(detail=Y)로 채운다 (YES24 API 키 필요) */
+const FILL_PAGE_COUNTS = hasFlag('--fill-page-counts');
 const LIMIT = Number(getOption('--limit', '0')) || null;
 const ENV_FILE = getOption('--env', 'apps/page0127/.env.local');
 
@@ -1016,6 +1019,109 @@ const clearPlaceholderSpines = async () => {
   console.log(`회색 대체 이미지 비움 ${cleared}개 · 확인 못 함 ${unreachable}개`);
 };
 
+// ─── 비어 있는 쪽수 채우기 (--fill-page-counts) ────────────────────────
+
+/**
+ * 서재 책(books) 중 쪽수가 빈 책을 골라 YES24 상세에서 쪽수를 받아 채운다.
+ *
+ * 왜 필요한가: 가입 맛보기에서 고른 책은 전체 도서(global_books, 쪽수 칸 없음)나 검색 목록
+ * (쪽수는 detail=Y 로만 온다)에서 와서 page_count 가 비어 들어갔다. 서재 "읽은 쪽수 0쪽 ·
+ * 예상 독서 시간 0시간"의 원인이다(HJ, 2026-11-24). #505 부터는 담은 직후 서버 액션
+ * fillMissingPageCountAction 이 채우지만, 그 전에 담긴 책은 비어 있다 → 이 모드로 한 번 채운다.
+ *
+ * 규칙 (fillMissingPageCountAction 과 같다):
+ * - 직접 등록(source='manual') 책은 묻지 않는다 — ISBN 이 서점 것이 아닐 수 있다.
+ * - `.is('page_count', null)` 을 걸고 쓴다 — 그사이 사용자가 직접 넣은 값은 덮지 않는다.
+ * - 체험 계정(profiles.is_demo)의 책은 시드 그대로 둔다. service_role 은 DB 의 체험 계정
+ *   쓰기 막기 트리거를 지나가므로 여기서 직접 뺀다.
+ * - 같은 ISBN 을 여러 사람이 담았으면 YES24 는 한 번만 묻는다.
+ * - YES24 에 없거나 쪽수가 없는 책은 그대로 둔다(다시 돌리면 또 본다).
+ */
+const fillPageCounts = async () => {
+  const { data: demoRows, error: demoError } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('is_demo', true);
+  if (demoError) throw new Error(`체험 계정 조회 실패: ${demoError.message}`);
+  const demoIds = new Set((demoRows ?? []).map((r) => r.id));
+
+  let query = supabase
+    .from('books')
+    .select('id, user_id, isbn, title, source')
+    .is('page_count', null)
+    .not('isbn', 'is', null)
+    // source 가 비어 있는 옛 행도 대상이다 — neq 만 쓰면 null 이 빠진다
+    .or('source.is.null,source.neq.manual');
+  if (LIMIT) query = query.limit(LIMIT);
+  const { data: rows, error } = await query;
+  if (error) throw new Error(`books 조회 실패: ${error.message}`);
+
+  // ISBN13 기준으로 묶는다 — 같은 책을 여러 사람이 담았으면 한 번만 묻는다
+  const targets = new Map(); // isbn13 → { title, ids: [] }
+  let skippedDemo = 0;
+  let unresolved = 0;
+  for (const row of rows) {
+    if (demoIds.has(row.user_id)) {
+      skippedDemo += 1;
+      continue;
+    }
+    const { isbn13 } = resolveIsbn13(row.isbn);
+    if (!isbn13) {
+      unresolved += 1;
+      continue;
+    }
+    const entry = targets.get(isbn13) ?? { title: row.title ?? '', ids: [] };
+    entry.ids.push(row.id);
+    targets.set(isbn13, entry);
+  }
+  const bookCount = [...targets.values()].reduce((n, t) => n + t.ids.length, 0);
+  console.log(`쪽수가 빈 책: ${bookCount}권 (ISBN ${targets.size}개)`);
+  console.log(`  제외 — 체험 계정 ${skippedDemo}권 · ISBN13 못 구함 ${unresolved}권`);
+  console.log('');
+
+  let filledBooks = 0;
+  let noPage = 0;
+  let failed = 0;
+  for (const [isbn13, { title, ids }] of targets) {
+    const label = `${isbn13} ${title.slice(0, 26).padEnd(26)}`;
+    let page = null;
+    try {
+      const item = await fetchYes24(isbn13);
+      page = Number(item?.pages) > 0 ? Number(item.pages) : null;
+    } catch (err) {
+      failed += 1;
+      console.log(`  × ${label} 실패 (${err.message ?? err})`);
+      await sleep(REQUEST_INTERVAL_MS);
+      continue;
+    }
+    if (!page) {
+      noPage += 1;
+      console.log(`  - ${label} YES24 에 쪽수 없음`);
+    } else {
+      console.log(`  ✓ ${label} ${page}쪽 → ${ids.length}권`);
+      if (!DRY_RUN) {
+        const { data: updated, error: updateError } = await supabase
+          .from('books')
+          .update({ page_count: page })
+          .in('id', ids)
+          .is('page_count', null)
+          .select('id');
+        if (updateError) throw new Error(`books 갱신 실패: ${updateError.message}`);
+        filledBooks += updated?.length ?? 0;
+      } else {
+        filledBooks += ids.length;
+      }
+    }
+    await sleep(REQUEST_INTERVAL_MS);
+  }
+
+  console.log('');
+  console.log('─'.repeat(60));
+  console.log(
+    `쪽수 채움 ${filledBooks}권${DRY_RUN ? '(예정)' : ''} · YES24 에 쪽수 없음 ${noPage}개 · 실패 ${failed}개`
+  );
+};
+
 const main = async () => {
   console.log(`대상 DB : ${env.NEXT_PUBLIC_SUPABASE_URL}`);
   console.log(
@@ -1051,6 +1157,10 @@ const main = async () => {
   }
   if (CLEAR_PLACEHOLDER_SPINES) {
     await clearPlaceholderSpines();
+    return;
+  }
+  if (FILL_PAGE_COUNTS) {
+    await fillPageCounts();
     return;
   }
 
