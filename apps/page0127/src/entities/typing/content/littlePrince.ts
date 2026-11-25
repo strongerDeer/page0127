@@ -803,16 +803,16 @@ export const LITTLE_PRINCE_CHAPTERS: TypingChapter[] = [
  */
 export const LITTLE_PRINCE_FAMOUS: TypingPassage[] = [
   {
-    id: 'fox-tame',
-    chapter: '21장',
-    label: '여우, 길들인다는 것',
-    text: '너는 아직 나에게 수많은 다른 아이들과 다를 게 없는 아이일 뿐이야. 하지만 네가 나를 길들이면 우리는 서로가 필요해질 거야. 너는 나에게 세상에 하나뿐인 아이가 되고, 나는 너에게 세상에 하나뿐인 여우가 될 거야.',
-  },
-  {
     id: 'fox-secret',
     chapter: '21장',
     label: '여우의 비밀',
     text: '내 비밀은 이거야. 아주 간단해. 마음으로 봐야 잘 보인다는 것. 가장 중요한 건 눈에 보이지 않아. 네 장미가 그토록 소중한 건, 네가 그 장미에게 들인 시간 때문이야.',
+  },
+  {
+    id: 'fox-tame',
+    chapter: '21장',
+    label: '여우, 길들인다는 것',
+    text: '너는 아직 나에게 수많은 다른 아이들과 다를 게 없는 아이일 뿐이야. 하지만 네가 나를 길들이면 우리는 서로가 필요해질 거야. 너는 나에게 세상에 하나뿐인 아이가 되고, 나는 너에게 세상에 하나뿐인 여우가 될 거야.',
   },
   {
     id: 'fox-four',
