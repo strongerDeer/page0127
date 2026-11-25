@@ -4,7 +4,7 @@ import {
   LITTLE_PRINCE_SOURCE_LENGTHS,
 } from '../content/littlePrince';
 
-import type { TypingPassage, TypingPictureKey } from './types';
+import type { TypingPage, TypingPassage, TypingPictureKey } from './types';
 
 /** 필사 화면 한 장 — 전문의 한 쪽이거나 명문장 한 대목 */
 export type TypingSheet = {
@@ -25,17 +25,45 @@ export const pageKey = (chapter: number, index: number) =>
 export const famousKey = (id: string) => `f:${id}`;
 
 /** 번역이 끝난 전문 쪽 전부(1장 1쪽부터 차례로) */
+/**
+ * 쪽 묶기 — 원고는 약 240자씩 끊어 두었지만, 화면 줄이 넓어서(글자 폭으로 줄바꿈) 한 쪽이 두 줄이면 끝났다
+ * (HJ 11/25 "장수가 너무 짧은거 아냐?"). 그래서 이어지는 쪽을 SHEET_TARGET 자 안에서 합친다.
+ * 그림이 붙은 쪽은 그림이 쪽 끝에 와야 하므로 그 쪽에서 묶음을 닫는다.
+ */
+const SHEET_TARGET = 520;
+
+const mergePages = (pages: TypingPage[]): TypingPage[] => {
+  const out: TypingPage[] = [];
+  let buf: TypingPage | null = null;
+  for (const page of pages) {
+    if (buf && buf.text.length + 1 + page.text.length <= SHEET_TARGET) {
+      buf = { text: `${buf.text} ${page.text}`, picture: page.picture };
+    } else {
+      if (buf) out.push(buf);
+      buf = { ...page };
+    }
+    if (buf.picture) {
+      out.push(buf);
+      buf = null;
+    }
+  }
+  if (buf) out.push(buf);
+  return out;
+};
+
 export const FULL_SHEETS: TypingSheet[] = LITTLE_PRINCE_CHAPTERS.flatMap(
-  (chapter) =>
-    chapter.pages.map((page, index) => ({
+  (chapter) => {
+    const pages = mergePages(chapter.pages);
+    return pages.map((page, index) => ({
       key: pageKey(chapter.no, index),
       kind: 'page' as const,
       text: page.text,
       picture: page.picture,
       title: `${chapter.no}장 ${index + 1}쪽`,
-      counter: `${index + 1}쪽 / ${chapter.no}장 총 ${chapter.pages.length}쪽`,
+      counter: `${index + 1}쪽 / ${chapter.no}장 총 ${pages.length}쪽`,
       chapter: chapter.no,
-    }))
+    }));
+  }
 );
 
 export const famousSheet = (
@@ -91,12 +119,11 @@ export const computeProgress = (
     0
   );
   const chapters = LITTLE_PRINCE_SOURCE_LENGTHS.map((_, i) => {
-    const chapter = LITTLE_PRINCE_CHAPTERS.find((c) => c.no === i + 1);
-    if (!chapter) return 'locked' as const;
-    const done = chapter.pages.filter((_, p) =>
-      doneKeys.has(pageKey(chapter.no, p))
-    ).length;
-    if (done === chapter.pages.length) return 'full' as const;
+    // 묶은 뒤의 쪽(FULL_SHEETS) 기준으로 센다
+    const sheets = FULL_SHEETS.filter((s) => s.chapter === i + 1);
+    if (sheets.length === 0) return 'locked' as const;
+    const done = sheets.filter((s) => doneKeys.has(s.key)).length;
+    if (done === sheets.length) return 'full' as const;
     return done > 0 ? ('half' as const) : ('none' as const);
   });
   return {
