@@ -21,6 +21,7 @@ export {
   FULL_SHEETS,
   OPEN_CHAPTERS,
   splitLines,
+  splitLinesToFit,
 } from './model/pages';
 export { judgeTyping, strokesOf, strokesPerMinute } from './model/strokes';
 export type {

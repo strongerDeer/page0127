@@ -10,6 +10,7 @@ import {
   firstUnwrittenIndex,
   FULL_SHEETS,
   splitLines,
+  splitLinesToFit,
 } from './pages';
 import { judgeTyping, strokesOf, strokesPerMinute } from './strokes';
 
@@ -104,5 +105,24 @@ describe('splitLines', () => {
     expect(lines[0].start).toBe(0);
     expect(lines.at(-1)?.end).toBe(text.length);
     lines.slice(0, -1).forEach((l) => expect(text[l.end - 1]).toBe(' '));
+  });
+});
+
+describe('splitLinesToFit', () => {
+  const text = '어른들은 숫자를 좋아한다. 새 친구 이야기를 하면';
+  it('들어가는 만큼 낱말 단위로 채우고, 원문을 빠짐없이 덮는다', () => {
+    const lines = splitLinesToFit(text, (l) => l.length <= 12);
+    expect(lines[0].start).toBe(0);
+    expect(lines.at(-1)?.end).toBe(text.length);
+    lines.forEach((l) =>
+      expect(text.slice(l.start, l.end).trimEnd().length).toBeLessThanOrEqual(
+        12
+      )
+    );
+    lines.slice(0, -1).forEach((l) => expect(text[l.end - 1]).toBe(' '));
+  });
+  it('한 낱말이 줄보다 길면 글자 단위로 자른다', () => {
+    const lines = splitLinesToFit('가나다라마바사', (l) => l.length <= 3);
+    expect(lines.map((l) => l.end - l.start)).toEqual([3, 3, 1]);
   });
 });

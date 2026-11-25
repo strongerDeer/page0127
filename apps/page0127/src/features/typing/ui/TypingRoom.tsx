@@ -22,6 +22,7 @@ import {
   LITTLE_PRINCE_TOTAL_CHAPTERS,
   OPEN_CHAPTERS,
   splitLines,
+  splitLinesToFit,
   strokesPerMinute,
 } from '@/entities/typing';
 
@@ -103,13 +104,38 @@ export const TypingRoom = ({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const paperRef = useRef<HTMLDivElement>(null);
   const [perLine, setPerLine] = useState(26);
+  // 실제 글꼴로 잰 "이 줄이 들어가나" 함수. 재기 전(서버 그림·첫 화면)에는 글자 수(perLine)로 어림한다.
+  const [fits, setFits] = useState<((line: string) => boolean) | null>(null);
 
   useEffect(() => {
     const el = paperRef.current;
     if (!el) return;
-    const observer = new ResizeObserver(([entry]) =>
-      setPerLine(perLineFor(entry.contentRect.width))
-    );
+    const ctx = document.createElement('canvas').getContext('2d');
+    const measure = () => {
+      const width = el.getBoundingClientRect().width;
+      setPerLine(perLineFor(width));
+      const pair = el.querySelector<HTMLElement>(`.${s.pair}`);
+      if (!ctx || !pair) return;
+      const st = getComputedStyle(pair);
+      const fontSize = parseFloat(st.fontSize);
+      const letter = parseFloat(st.letterSpacing) || 0;
+      // 칸 폭 - 좌우 여백 - 커서 한 칸(0.62em) - 여유 2px
+      const avail =
+        pair.clientWidth -
+        parseFloat(st.paddingLeft) -
+        parseFloat(st.paddingRight) -
+        fontSize * 0.62 -
+        2;
+      ctx.font = `${st.fontWeight} ${st.fontSize} ${st.fontFamily}`;
+      setFits(
+        () => (line: string) =>
+          ctx.measureText(line).width + letter * line.length <= avail
+      );
+    };
+    measure();
+    // 웹 글꼴이 늦게 오면 폭이 바뀌므로 다시 잰다
+    void document.fonts?.ready.then(measure);
+    const observer = new ResizeObserver(measure);
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
@@ -131,8 +157,11 @@ export const TypingRoom = ({
   const typedCount = Math.min(value.length, sheet.text.length);
 
   const lines = useMemo(
-    () => splitLines(sheet.text, perLine),
-    [sheet.text, perLine]
+    () =>
+      fits
+        ? splitLinesToFit(sheet.text, fits)
+        : splitLines(sheet.text, perLine),
+    [sheet.text, perLine, fits]
   );
   const currentLine = Math.max(
     0,

@@ -144,3 +144,34 @@ export const splitLines = (
   }
   return lines;
 };
+
+/**
+ * 실제 글자 폭으로 줄을 나눈다 — fits(줄) 이 true 인 동안 낱말 단위로 늘린다.
+ * 띄어쓰기에서 끊고, 공백은 앞 줄 끝에 붙인다(splitLines 와 같은 모양). 한 낱말이 한 줄보다 길면 글자 단위로 자른다.
+ */
+export const splitLinesToFit = (
+  text: string,
+  fits: (line: string) => boolean
+): { start: number; end: number }[] => {
+  const lines: { start: number; end: number }[] = [];
+  let i = 0;
+  while (i < text.length) {
+    let end = i;
+    // 낱말(공백 포함) 단위로 붙여 본다
+    while (end < text.length) {
+      const space = text.indexOf(' ', end);
+      const next = space === -1 ? text.length : space + 1;
+      // 줄 끝 공백은 폭에 넣지 않는다
+      if (!fits(text.slice(i, next).trimEnd())) break;
+      end = next;
+    }
+    if (end === i) {
+      // 낱말 하나가 너무 길다 → 들어가는 만큼만 글자로 자른다
+      end = i + 1;
+      while (end < text.length && fits(text.slice(i, end + 1))) end++;
+    }
+    lines.push({ start: i, end });
+    i = end;
+  }
+  return lines;
+};
