@@ -118,7 +118,11 @@ const TypingLittlePrincePage = async () => {
         </Link>
         <Link
           href={state.memberId ? (state.libraryHref ?? '/') : LOGIN_HREF}
-          className='rounded-lg px-2.5 py-1.5 text-sm text-text-subtle hover:bg-accent hover:text-text-strong'
+          className={
+            state.memberId
+              ? 'rounded-lg px-2.5 py-1.5 text-sm text-text-subtle hover:bg-accent hover:text-text-strong'
+              : 'rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90'
+          }
         >
           {state.memberId ? '내 서재' : '로그인'}
         </Link>

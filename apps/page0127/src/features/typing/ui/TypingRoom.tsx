@@ -606,6 +606,11 @@ export const TypingRoom = ({
                 )}
               </p>
               <div className={s.dialogButtons}>
+                {result.save === 'guest' && (
+                  <Link href={loginHref} className={`${s.btn} ${s.btnLink}`}>
+                    로그인하고 기록 남기기
+                  </Link>
+                )}
                 <button
                   type='button'
                   className={s.btn}

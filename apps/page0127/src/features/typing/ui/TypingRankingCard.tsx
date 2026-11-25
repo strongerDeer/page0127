@@ -151,15 +151,15 @@ export const TypingRankingCard = ({
             />
           </div>
         ) : (
-          <p className='text-sm text-text-subtle'>
+          <div className='text-sm text-text-subtle'>
+            <p>로그인하면 내 기록이 쌓이고 순위에도 참여할 수 있어요.</p>
             <Link
               href={loginHref}
-              className='font-bold text-primary underline-offset-4 hover:underline'
+              className='mt-3 inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90'
             >
-              로그인
+              로그인하고 랭킹 참여
             </Link>
-            하면 내 기록이 쌓이고 순위에도 참여할 수 있어요.
-          </p>
+          </div>
         )}
         {error && (
           <p role='alert' className='mt-2 text-sm text-text-body'>
