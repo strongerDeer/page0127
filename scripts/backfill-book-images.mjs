@@ -1085,6 +1085,30 @@ const fillPageCounts = async () => {
   );
   console.log('');
 
+  // ISBN 칸에 알라딘 K코드가 남은 책 — YES24 상품번호가 있으면 제목으로 검색해
+  // **상품번호가 똑같은 결과**만 골라 ISBN13 을 얻는다(추측으로 다른 판본을 붙이지 않는다).
+  // isbn 칸 자체는 고치지 않는다 — 쪽수만 채운다.
+  for (const row of unresolvedRows) {
+    if (!row.provider_item_id || !row.title) continue;
+    let found = null;
+    try {
+      const items = await searchYes24(row.title);
+      found = items.find((item) => String(item.itemId) === String(row.provider_item_id));
+    } catch (err) {
+      console.log(`    × ${row.title.slice(0, 26)} 상품번호로 찾기 실패 (${err.message ?? err})`);
+    }
+    await sleep(REQUEST_INTERVAL_MS);
+    if (!found?.isbn13) {
+      console.log(`    - ${row.title.slice(0, 26)} 검색 결과에 상품번호 ${row.provider_item_id} 없음`);
+      continue;
+    }
+    console.log(`    = ${row.title.slice(0, 26)} 상품번호 ${row.provider_item_id} → ISBN13 ${found.isbn13}`);
+    const entry = targets.get(found.isbn13) ?? { title: row.title, ids: [] };
+    entry.ids.push(row.id);
+    targets.set(found.isbn13, entry);
+  }
+  if (unresolvedRows.length) console.log('');
+
   let filledBooks = 0;
   let noPage = 0;
   let failed = 0;
