@@ -81,9 +81,9 @@ export type ShelfGroup = {
   sub: string;
   /** 1권이라도 읽은 사람 비율(%) — 사람 10명 그림 */
   rate: number;
-  /** 전체 평균 권수(안 읽은 사람 포함) — 채운 책등 */
+  /** 전체 평균 권수(안 읽은 사람 포함) — 파랗게 채운 책등 */
   average: number;
-  /** 읽은 사람만의 평균 권수 — 점선 책등. 모르면 null */
+  /** 읽은 사람만의 평균 권수 — 민트로 더해 그리는 책등. 모르면 null */
   readers: number | null;
 };
 

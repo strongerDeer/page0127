@@ -64,3 +64,35 @@ describe('StoryMarkdown 차트 블록', () => {
     ).toContain('내 기록 38.5');
   });
 });
+
+describe('StoryMarkdown 제목 단계', () => {
+  it('기본은 ## 을 h3 로(책 글: 페이지에 "독후감" h2 가 먼저 있다)', () => {
+    const html = render('## 소제목\n\n### 작은 제목');
+    expect(html).toContain('<h3');
+    expect(html).toContain('<h4');
+    expect(html).not.toContain('<h2');
+  });
+
+  it('headingLevel 2 면 ## 은 h2, ### 은 h3(책 없는 글)', () => {
+    const html = render('## 소제목\n\n### 작은 제목', { headingLevel: 2 });
+    expect(html).toContain('<h2 class="heading-2');
+    expect(html).toContain('<h3 class="mt-8');
+  });
+});
+
+describe('StoryMarkdown 책장 차트', () => {
+  const shelf = [
+    '```chart',
+    'type: shelf',
+    SOURCE,
+    '- 성인: 38.5 / 2.4 / 6',
+    '```',
+  ].join('\n');
+
+  it('읽은 사람만 볼 때 더해지는 책등은 점선이 아니라 민트로 채운다', () => {
+    const html = render(shelf);
+    expect(html).toContain('fill-mint');
+    expect(html).not.toContain('stroke-dasharray');
+    expect(html).toContain('민트 책등');
+  });
+});

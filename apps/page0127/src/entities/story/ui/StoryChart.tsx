@@ -279,51 +279,47 @@ const SPINES_PER_ROW = 17;
 
 /**
  * 책등 하나 = 1권.
- * fill: 채운 비율(전체 평균), ghost: 읽은 사람 평균까지 남은 칸이면 점선 테두리.
- * 2.4권이면 세 번째 책등은 40% 만 채우고 나머지는 점선.
+ * fill: 파랗게 채운 비율(전체 평균), extra: 읽은 사람 평균까지 더해지는 칸이면 민트로 채운다.
+ * 2.4권이면 세 번째 책등은 40% 파랑 + 60% 민트.
+ *
+ * 왜 점선이 아니라 민트인가: 점선 책등은 "안 읽은 책"처럼 보였다(HJ, 2026-11-25).
+ * 더해지는 권수도 읽은 책이라 채운 책으로 그리고, 색으로만 나눈다 — 인스타 카드와 같은 표현.
  */
-const Spine = ({ fill, ghost }: { fill: number; ghost: boolean }) => (
-  <svg viewBox='0 0 12 34' aria-hidden className='block h-auto w-full'>
-    {ghost && fill < 1 && (
-      <rect
-        x='0.75'
-        y='0.75'
-        width='10.5'
-        height='32.5'
-        rx='1.5'
-        fill='none'
-        strokeWidth='1.2'
-        strokeDasharray='2 2'
-        className='stroke-primary'
-      />
-    )}
-    {fill > 0 && (
-      <>
+const Spine = ({ fill, extra }: { fill: number; extra: boolean }) => {
+  const filled = extra ? 1 : fill;
+  return (
+    <svg viewBox='0 0 12 34' aria-hidden className='block h-auto w-full'>
+      {extra && fill < 1 && (
+        <rect width='12' height='34' rx='2' className='fill-mint' />
+      )}
+      {fill > 0 && (
         <rect
           width={12 * fill}
           height='34'
           rx={fill < 1 ? 1 : 2}
           className='fill-primary'
         />
-        {/* 책등 위쪽 띠 — 책처럼 보이게 */}
+      )}
+      {filled > 0 && (
+        // 책등 위쪽 띠 — 책처럼 보이게
         <rect
           x='2'
           y='6'
-          width={Math.max(0, Math.min(8, 12 * fill - 2))}
+          width={Math.max(0, Math.min(8, 12 * filled - 2))}
           height='1.5'
           className='fill-card/70'
         />
-      </>
-    )}
-  </svg>
-);
+      )}
+    </svg>
+  );
+};
 
 const Shelf = ({ group }: { group: ShelfGroup }) => {
   const slots = Math.ceil(Math.max(group.average, group.readers ?? 0));
-  const ghosts = group.readers === null ? 0 : Math.ceil(group.readers);
+  const readerSlots = group.readers === null ? 0 : Math.ceil(group.readers);
   const spines = Array.from({ length: slots }, (_, index) => ({
     fill: Math.max(0, Math.min(1, group.average - index)),
-    ghost: index < ghosts,
+    extra: index < readerSlots,
   }));
   const rows = Array.from(
     { length: Math.ceil(spines.length / SPINES_PER_ROW) },
@@ -345,7 +341,7 @@ const Shelf = ({ group }: { group: ShelfGroup }) => {
           }}
         >
           {row.map((spine, column) => (
-            <Spine key={column} fill={spine.fill} ghost={spine.ghost} />
+            <Spine key={column} fill={spine.fill} extra={spine.extra} />
           ))}
         </div>
       ))}
@@ -357,10 +353,10 @@ const GroupLabel = ({ children }: { children: React.ReactNode }) => (
   <p className='mt-4 mb-1.5 text-xs text-text-subtle first:mt-0'>{children}</p>
 );
 
-const DashedBook = () => (
+const MintBook = () => (
   <span
     aria-hidden
-    className='inline-block h-3.5 w-2.5 shrink-0 rounded-[2px] border-[1.5px] border-dashed border-primary'
+    className='inline-block h-3.5 w-2.5 shrink-0 rounded-[2px] bg-mint'
   />
 );
 
@@ -394,7 +390,7 @@ export const ShelfCompareChart = ({ spec }: { spec: ShelfChart }) => (
           </div>
           {group.readers !== null && (
             <p className='mt-2.5 flex items-center gap-1.5 text-sm text-text-body'>
-              <DashedBook />
+              <MintBook />
               읽은 사람만 보면 {formatChartValue(group.readers)}권
             </p>
           )}
@@ -402,9 +398,9 @@ export const ShelfCompareChart = ({ spec }: { spec: ShelfChart }) => (
       ))}
     </div>
     <p className='text-xs leading-relaxed break-keep text-text-subtle'>
-      채운 책등 = 전체 평균(안 읽은 사람 포함)
+      파란 책등 = 전체 평균(안 읽은 사람 포함)
       {spec.groups.some((group) => group.readers !== null) &&
-        ', 점선 책등 = 읽은 사람만 볼 때 더해지는 권수'}
+        ', 민트 책등 = 읽은 사람만 볼 때 더해지는 권수'}
     </p>
   </Figure>
 );

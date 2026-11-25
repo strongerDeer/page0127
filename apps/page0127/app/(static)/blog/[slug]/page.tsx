@@ -184,6 +184,8 @@ export default async function StoryPage({ params }: PageProps) {
           {bookId && <h2 className='heading-2 mb-5'>독후감</h2>}
           <StoryMarkdown
             body={story.body}
+            // 책 글은 위 "독후감" h2 아래라 h3, 책 없는 글은 본문 소제목이 곧 h2
+            headingLevel={bookId ? 3 : 2}
             renderMyRecord={() => <MyRecordBlock />}
           />
         </section>
