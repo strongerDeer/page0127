@@ -126,3 +126,18 @@ describe('splitLinesToFit', () => {
     expect(lines.map((l) => l.end - l.start)).toEqual([3, 3, 1]);
   });
 });
+
+describe('본문 — 키보드로 칠 수 있는 글자만', () => {
+  // 한글 완성형 + 키보드에 있는 ASCII(공백·영문·숫자·" ' . , ? ! ( ) - 등)만 허용한다.
+  // 「」 “” … — 같은 문자는 자판으로 칠 수 없어 필사가 막힌다.
+  const TYPABLE = /^[가-힣\x20-\x7E]*$/;
+  const texts = [
+    ...FULL_SHEETS.map((s) => s.text),
+    ...FAMOUS_SHEETS.map((s) => s.text),
+  ];
+
+  it.each(texts.map((t) => [t.slice(0, 20), t]))('%s…', (_, text) => {
+    const bad = [...text].filter((ch) => !TYPABLE.test(ch));
+    expect(bad).toEqual([]);
+  });
+});

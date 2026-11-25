@@ -7,7 +7,6 @@ import { buildFaqPageJsonLd } from '@/shared/lib/seo/structuredData';
 import { LITTLE_PRINCE_FAQ } from '@/entities/typing';
 
 import {
-  LittlePrinceCover,
   TypingBookIntro,
   TypingProgressCard,
   TypingRankingCard,
@@ -126,21 +125,14 @@ const TypingLittlePrincePage = async () => {
       </header>
 
       <main className='mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 pb-20 pt-8 sm:px-6 sm:pt-12'>
-        <section
-          className='relative overflow-hidden rounded-3xl border border-line-soft px-6 py-10 text-center sm:px-10 sm:py-12'
-          style={{
-            backgroundImage:
-              'linear-gradient(135deg, var(--tint-warm-from), var(--tint-warm-to))',
-          }}
-        >
-          <LittlePrinceCover />
-          <p className='mt-6 inline-flex rounded-full bg-card/80 px-3 py-1 text-xs font-bold text-primary'>
+        <section className='px-2 pt-2 text-center sm:pt-4'>
+          <p className='inline-flex rounded-full bg-accent px-3 py-1 text-xs font-bold text-primary'>
             키보드로 하는 필사 · 긴 글 타자 연습
           </p>
           <h1 className='mt-3 text-3xl font-bold leading-tight tracking-tight text-text-strong text-balance sm:text-4xl'>
             『어린 왕자』 온라인 필사
           </h1>
-          <p className='mx-auto mt-3 max-w-2xl text-base leading-relaxed text-text-body text-pretty'>
+          <p className='mx-auto mt-3 max-w-2xl break-keep text-base leading-relaxed text-text-body text-balance'>
             그때 그 타자 연습처럼, 이번엔 필사로. 파란 줄을 보고 바로 아래에
             똑같이 따라 쳐 보세요. 처음부터 이어 써도, 장을 골라도, 명문장만
             짧게 써도 좋아요.
@@ -154,7 +146,7 @@ const TypingLittlePrincePage = async () => {
             ].map((item) => (
               <li
                 key={item}
-                className='rounded-full border border-line-soft bg-card/70 px-3 py-1 text-text-body'
+                className='rounded-full border border-line-soft bg-card px-3 py-1 text-text-body'
               >
                 {item}
               </li>
