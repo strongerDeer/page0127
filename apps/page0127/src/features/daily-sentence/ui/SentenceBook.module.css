@@ -21,7 +21,6 @@
   --line: #dbe3ee;
   --blue: var(--blue-500, #2d78db);
   --page: #f3f5f9;
-  --page-edge: #e3e8f0;
   --paper: #fbfcfe;
   --chip: #fff;
   --btn: #2563c9;
@@ -44,7 +43,6 @@
     --sub: #9aa8c2;
     --line: #2a3550;
     --page: #172238;
-    --page-edge: #22304a;
     --paper: #1a263d;
     --chip: #1b2740;
   }
@@ -581,17 +579,19 @@
 }
 
 /* ---------- 2) 결과 — 종이 한 쪽 ---------- */
+/*
+ * 결과 = 종이 한 장이 칸을 꽉 채운다(HJ 11/25 A안).
+ * 책상 테두리·책장 두께·그림자가 거슬린다고 해서 모서리·그림자를 빼고, 결과 단계에선 책상도 종이색으로 맞춘다
+ * (막 뽑았을 때 leaf-in 이 작게 시작해도 뒤에 하늘색이 비치지 않게).
+ */
+.desk[data-phase="result"] {
+  background: var(--page);
+}
+
 .leaf {
   position: absolute;
-  inset: 18px;
-  border-radius: 6px 12px 12px 6px;
+  inset: 0;
   background: var(--page);
-  box-shadow:
-    inset 14px 0 18px -16px rgb(20 41 78 / 0.35),
-    6px 0 0 -1px var(--page-edge),
-    9px 0 0 -2px var(--page),
-    10px 0 0 -2px var(--page-edge),
-    0 18px 40px -16px rgb(20 41 78 / 0.3);
   display: grid;
   grid-template-rows: auto 1fr auto;
   padding: 18px clamp(18px, 4cqw, 40px) 16px;
@@ -662,6 +662,11 @@
 
 .runhead span:last-child {
   color: var(--sub);
+}
+
+/* 모달은 오른쪽 위에 닫기(✕)가 있어서 날짜와 겹치지 않게 비켜 둔다 */
+.root[data-variant="modal"] .runhead {
+  padding-right: 28px;
 }
 
 .body {
@@ -1158,10 +1163,6 @@
 
   .foot {
     font-size: 13.5px;
-  }
-
-  .leaf {
-    inset: 12px;
   }
 }
 
