@@ -103,6 +103,13 @@ export const TypingRoom = ({
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [focusTick, setFocusTick] = useState(0);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  const isResultOpen = result !== null;
+  // 결과 창이 뜨면 버튼이 아니라 창 자체에 포커스 — 치던 흐름의 스페이스가 버튼을 누르지 않게
+  useEffect(() => {
+    if (isResultOpen) dialogRef.current?.focus({ preventScroll: true });
+  }, [isResultOpen]);
 
   // 쪽을 넘기거나 장·명문장을 고른 뒤 화면을 다시 누르지 않아도 바로 이어 치게
   useEffect(() => {
@@ -570,6 +577,16 @@ export const TypingRoom = ({
       {result && (
         <div className={s.dialogBackdrop}>
           <div
+            ref={dialogRef}
+            tabIndex={-1}
+            onKeyDown={(e) => {
+              // 창 자체에 포커스가 있을 때만 Enter 로 넘긴다(버튼 위 Enter 는 그 버튼 몫).
+              // 스페이스는 받지 않는다 — 마지막 글자 뒤 습관처럼 누른 띄어쓰기로 결과가 넘어가 버리지 않게.
+              if (e.key === 'Enter' && e.target === e.currentTarget) {
+                e.preventDefault();
+                goNext();
+              }
+            }}
             className={`${s.dialog} ${s.raised}`}
             role='dialog'
             aria-modal='true'
@@ -634,9 +651,8 @@ export const TypingRoom = ({
                   type='button'
                   className={`${s.btn} ${s.btnMain}`}
                   onClick={goNext}
-                  autoFocus
                 >
-                  {mode === 'famous' ? '다음 문장' : '다음 쪽'}
+                  {mode === 'famous' ? '다음 문장' : '다음 쪽'} · Enter
                 </button>
               </div>
             </div>
