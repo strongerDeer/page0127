@@ -19,7 +19,7 @@ import type { Metadata } from 'next';
 /**
  * /typing/little-prince — 『어린 왕자』 온라인 필사 (HJ, 2026-11-25)
  *
- * 옛날 한글 타자 연습으로 쳐 보던 그 책을, 이번엔 필사로. 전문 이어 쓰기 · 장 고르기 · 명문장만.
+ * 옛날 한글 타자 연습으로 쳐 보던 그 책을, 이번엔 필사로. 명문장만(기본) · 전문 이어 쓰기 · 장 고르기.
  * 바깥(머리글·소개·진행도·랭킹)은 page0127. 디자인 그대로, 가운데 필사 창 하나만 레트로 프로그램 모양이다.
  * 오늘의 문장(/sentence)처럼 사이트 GNB 없이 전용 머리글만 둔다 — 이 페이지만 써도 되는 형태.
  *
@@ -30,7 +30,7 @@ const LOGIN_HREF = `/login?next=${encodeURIComponent(PATH)}`;
 
 const TITLE = '『어린 왕자』 온라인 필사 · 긴 글 타자 연습';
 const DESCRIPTION =
-  '『어린 왕자』를 한 쪽씩 따라 치는 온라인 필사이자 한글 긴 글 타자 연습이에요. 타수·정확도를 재고, 처음부터 이어 쓰기·장 고르기·명문장만 쓰기를 고를 수 있어요. 로그인하면 진행도와 랭킹이 남아요.';
+  '『어린 왕자』를 한 쪽씩 따라 치는 온라인 필사이자 한글 긴 글 타자 연습이에요. 타수·정확도를 재고, 명문장만 짧게 쓰거나, 처음부터 이어 쓰거나, 장을 골라 쓸 수 있어요. 로그인하면 진행도와 랭킹이 남아요.';
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
 export const metadata: Metadata = {
@@ -138,8 +138,8 @@ const TypingLittlePrincePage = async () => {
           </h1>
           <p className='mx-auto mt-3 max-w-2xl break-keep text-base leading-relaxed text-text-body text-balance'>
             그때 그 타자 연습처럼, 이번엔 필사로. 파란 줄을 보고 바로 아래에
-            똑같이 따라 쳐 보세요. 처음부터 이어 써도, 장을 골라도, 명문장만
-            짧게 써도 좋아요.
+            똑같이 따라 쳐 보세요. 명문장 한 대목부터 가볍게 시작하고, 처음부터
+            이어 써도, 장을 골라 써도 좋아요.
           </p>
           <ul className='mt-5 flex flex-wrap justify-center gap-2 text-sm'>
             {[

@@ -50,9 +50,9 @@ const VISIBLE_PAIRS = 4;
 const CPM_BAR_MAX = 600;
 
 const MODES: { key: Mode; label: string }[] = [
+  { key: 'famous', label: '명문장만' },
   { key: 'full', label: '전문 이어 쓰기' },
   { key: 'chapter', label: '장 고르기' },
-  { key: 'famous', label: '명문장만' },
 ];
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -80,7 +80,7 @@ export const TypingRoom = ({
 }) => {
   const router = useRouter();
   const [doneKeys, setDoneKeys] = useState(() => new Set(initialDoneKeys));
-  const [mode, setMode] = useState<Mode>('full');
+  const [mode, setMode] = useState<Mode>('famous'); // 기본은 짧은 명문장(HJ 2026-11-25);
   const [fullIndex, setFullIndex] = useState(() =>
     firstUnwrittenIndex(new Set(initialDoneKeys))
   );
