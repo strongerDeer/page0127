@@ -89,8 +89,7 @@ export const TypingProgressCard = ({
         ))}
       </ol>
       <p className='text-xs text-text-subtle'>
-        진한 칸은 다 쓴 장, 연한 칸은 쓰는 중인 장, 흐린 칸은 준비 중인
-        장이에요.
+        진한 칸은 다 쓴 장, 연한 칸은 쓰는 중인 장이에요.
       </p>
     </section>
   );

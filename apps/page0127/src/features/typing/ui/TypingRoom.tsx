@@ -385,7 +385,6 @@ export const TypingRoom = ({
                   );
                 })}
               </div>
-              <span>회색 칸은 준비 중이라 곧 공개돼요.</span>
             </>
           )}
           {mode === 'famous' && (

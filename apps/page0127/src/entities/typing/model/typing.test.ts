@@ -74,11 +74,15 @@ describe('본문 데이터', () => {
 });
 
 describe('진행도', () => {
-  it('아무것도 안 썼으면 0%, 번역 전 장은 잠김', () => {
+  it('아무것도 안 썼으면 0%, 27장 모두 열려 있음', () => {
     const p = computeProgress(new Set());
     expect(p.percent).toBe(0);
     expect(p.chapters).toHaveLength(27);
-    expect(p.chapters[26]).toBe('locked');
+    expect(p.chapters.every((c) => c === 'none')).toBe(true);
+  });
+  it('전부 쓰면 100%', () => {
+    const p = computeProgress(new Set(FULL_SHEETS.map((s) => s.key)));
+    expect(p.percent).toBe(100);
   });
   it('1장을 다 쓰면 1장이 full, 2장 한 쪽만 쓰면 half', () => {
     const keys = new Set(

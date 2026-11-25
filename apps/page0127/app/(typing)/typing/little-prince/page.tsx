@@ -139,7 +139,7 @@ const TypingLittlePrincePage = async () => {
           </p>
           <ul className='mt-5 flex flex-wrap justify-center gap-2 text-sm'>
             {[
-              '전문 27장 · 지금 1~6장 공개',
+              '전문 27장 모두 공개',
               '타수·정확도 측정',
               '쪽마다 도트 그림',
               '로그인하면 진행도·랭킹 기록',
