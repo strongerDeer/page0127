@@ -207,7 +207,9 @@ export const TypingRoom = ({
     const observer = new ResizeObserver(measure);
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+    // started: 시작 화면에는 종이(paperRef)가 없다. 방식을 고르고 종이가 생긴 뒤에 다시 재야
+    // 실제 폭으로 줄을 나눈다 — 안 그러면 기본 26자로 나눠 모바일에서 줄이 넘친다.
+  }, [started]);
 
   // 시계 — 치기 시작해서 끝날 때까지만 돈다
   useEffect(() => {
@@ -470,7 +472,7 @@ export const TypingRoom = ({
         : '틀린 글자는 빨간 칸으로 보여요. 지우고 다시 쳐도 돼요.';
 
   return (
-    <div id='typing-room' className={s.window}>
+    <div id='typing-room' className={s.window} data-started={started}>
       <div className={s.titlebar}>
         <svg viewBox='0 0 16 16' aria-hidden>
           <rect x='2' y='2' width='12' height='12' fill='#fff' />
@@ -604,7 +606,7 @@ export const TypingRoom = ({
           </div>
         )}
 
-        <div className={s.main}>
+        <div className={s.main} data-started={started}>
           {!started ? (
             <div className={`${s.frame} ${s.raised}`}>
               <div className={`${s.paper} ${s.menuPaper}`}>
