@@ -32,6 +32,7 @@ type RankRpcRow = {
   is_guest: boolean;
   value: number;
   page_key: string | null;
+  is_mobile: boolean;
 };
 
 const fetchRanking = async (
@@ -57,6 +58,7 @@ const fetchRanking = async (
     isGuest: row.is_guest,
     value: row.value,
     pageKey: row.page_key,
+    isMobile: row.is_mobile ?? false,
   }));
 };
 

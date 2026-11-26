@@ -55,4 +55,6 @@ export type TypingRankRow = {
   value: number;
   /** 타수 탭: 그 최고 타수를 낸 쪽 열쇠('2-10', 'f:fox-secret'). 꾸준함 탭은 null */
   pageKey: string | null;
+  /** 그 최고 타수를 폰으로 냈는가 — 순위표에 "모바일" 표시(나누지 않고 표시만, HJ 2026-11-26) */
+  isMobile: boolean;
 };

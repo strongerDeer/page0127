@@ -18,6 +18,7 @@ import {
   strokesOf,
 } from '@/entities/typing';
 
+import { deviceFromHeaders } from '../lib/device';
 import { GUEST_COOKIE, isGuestId } from '../lib/guestCookie';
 import {
   createGuestToken,
@@ -143,6 +144,8 @@ export const submitGuestTypingAction = async (input: {
   if (!name.ok) return name;
 
   const ip = await clientIp();
+  const h = await headers();
+  const device = deviceFromHeaders((name) => h.get(name));
   const admin = createAdminClient();
 
   // IP 분당 횟수 — 기존 레이트 리밋 표를 같이 쓴다(등급 이름을 앞에 붙여 다른 API 와 카운터를 나눈다)
@@ -169,6 +172,7 @@ export const submitGuestTypingAction = async (input: {
     p_cpm: cpm,
     p_accuracy: accuracy,
     p_duration_ms: Math.min(elapsedMs, 3_600_000),
+    p_device: device,
   });
   if (error) {
     if (error.message.includes('too many guests'))

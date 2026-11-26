@@ -29,7 +29,7 @@ const BOARDS: {
     key: 'speed',
     label: '타수',
     unit: '타',
-    note: '정확도 95% 이상으로 끝까지 쓴 쪽의 최고 평균 타수예요. 비회원도 닉네임으로 오를 수 있어요.',
+    note: '정확도 95% 이상으로 끝까지 쓴 쪽의 최고 평균 타수예요. 비회원도 닉네임으로 오를 수 있고, 폰으로 낸 기록엔 "모바일" 표시가 붙어요.',
   },
   {
     key: 'steady',
@@ -130,6 +130,11 @@ export const TypingRankingCard = ({
                       {line.row.nickname}
                       {line.isMe && ' (나)'}
                     </span>
+                    {line.row.isMobile && (
+                      <span className='shrink-0 rounded bg-sunken px-1.5 py-0.5 text-[0.6875rem] font-normal text-text-subtle'>
+                        모바일
+                      </span>
+                    )}
                     {line.row.isGuest && (
                       <span className='shrink-0 rounded bg-sunken px-1.5 py-0.5 text-[0.6875rem] font-normal text-text-subtle'>
                         비회원

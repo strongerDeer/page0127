@@ -5,6 +5,8 @@
 --   - 비회원도 닉네임 + 타수만으로 "타수" 탭에 오른다. "꾸준함"(이번 주 쪽 수)은 회원만.
 --   - 회원 표(typing_records)·auth 는 건드리지 않고 비회원 전용 표를 따로 둔다.
 --   - 순위표에는 회원과 같이 닉네임 첫 글자만 보이고("책**"), 작은 "비회원" 표시가 붙는다.
+--   - 순위표는 PC·모바일을 나누지 않고, 폰으로 낸 최고 타수 줄에 "모바일" 표시만 붙인다(HJ "표시만").
+--     기기는 서버가 요청 헤더(Sec-CH-UA-Mobile·User-Agent)로 정해서 넘긴다.
 --
 -- 비회원은 "한 사람"이라는 증거(계정)가 없으므로 다음으로 막는다:
 --   1) 가짜 타수 — 서버 액션이 서명한 시작 토큰으로 "서버 시계" 경과 시간을 재서,
@@ -34,6 +36,8 @@ CREATE TABLE IF NOT EXISTS public.typing_guest_scores (
   duration_ms integer NOT NULL CHECK (duration_ms BETWEEN 1000 AND 3600000),
   -- IP 그대로가 아니라 서버 비밀값을 섞은 해시(sha256 hex) — 도배 제한에만 쓴다
   ip_hash text NOT NULL CHECK (ip_hash ~ '^[0-9a-f]{64}$'),
+  -- 최고 타수를 낸 기기
+  device text NOT NULL DEFAULT 'pc' CHECK (device IN ('pc', 'mobile')),
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY (guest_id, work, page_key)
@@ -64,7 +68,8 @@ CREATE OR REPLACE FUNCTION public.record_typing_guest_page(
   p_chars integer,
   p_cpm integer,
   p_accuracy integer,
-  p_duration_ms integer
+  p_duration_ms integer,
+  p_device text
 )
 RETURNS void
 LANGUAGE plpgsql
@@ -99,14 +104,15 @@ BEGIN
   END IF;
 
   INSERT INTO public.typing_guest_scores AS g
-    (guest_id, work, page_key, nickname, chars, best_cpm, accuracy, duration_ms, ip_hash)
+    (guest_id, work, page_key, nickname, chars, best_cpm, accuracy, duration_ms, ip_hash, device)
   VALUES
-    (p_guest_id, p_work, p_page_key, v_nickname, p_chars, p_cpm, p_accuracy, p_duration_ms, p_ip_hash)
+    (p_guest_id, p_work, p_page_key, v_nickname, p_chars, p_cpm, p_accuracy, p_duration_ms, p_ip_hash, p_device)
   ON CONFLICT (guest_id, work, page_key) DO UPDATE SET
     -- 더 빠를 때만 기록을 바꾼다
     best_cpm = GREATEST(g.best_cpm, EXCLUDED.best_cpm),
     accuracy = CASE WHEN EXCLUDED.best_cpm > g.best_cpm THEN EXCLUDED.accuracy ELSE g.accuracy END,
     duration_ms = CASE WHEN EXCLUDED.best_cpm > g.best_cpm THEN EXCLUDED.duration_ms ELSE g.duration_ms END,
+    device = CASE WHEN EXCLUDED.best_cpm > g.best_cpm THEN EXCLUDED.device ELSE g.device END,
     nickname = EXCLUDED.nickname,
     ip_hash = EXCLUDED.ip_hash,
     updated_at = now();
@@ -118,13 +124,79 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.record_typing_guest_page(uuid, text, text, text, text, integer, integer, integer, integer) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.record_typing_guest_page(uuid, text, text, text, text, integer, integer, integer, integer) TO service_role;
+REVOKE ALL ON FUNCTION public.record_typing_guest_page(uuid, text, text, text, text, integer, integer, integer, integer, text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.record_typing_guest_page(uuid, text, text, text, text, integer, integer, integer, integer, text) TO service_role;
 
 -- =====================================================
--- 3. 랭킹 — 타수 탭에 비회원을 섞는다
+-- 3. 회원 기록에도 "최고 타수를 낸 기기"를 남긴다
 -- =====================================================
--- 돌려주는 칸(is_guest·page_key)과 인자(p_guest_id)가 바뀌므로 CREATE OR REPLACE 로는 안 된다
+ALTER TABLE public.typing_records
+  ADD COLUMN IF NOT EXISTS best_device text
+  CHECK (best_device IS NULL OR best_device IN ('pc', 'mobile'));
+
+-- 인자가 하나 늘어서(p_device) 지우고 다시 만든다 — 같은 이름의 함수가 둘 생기면 호출이 모호해진다.
+DROP FUNCTION IF EXISTS public.record_typing_page(text, text, integer, integer, integer, integer);
+
+CREATE OR REPLACE FUNCTION public.record_typing_page(
+  p_work text,
+  p_page_key text,
+  p_chars integer,
+  p_cpm integer,
+  p_accuracy integer,
+  p_duration_ms integer,
+  p_device text DEFAULT 'pc'
+)
+RETURNS void
+LANGUAGE plpgsql
+VOLATILE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_user uuid := auth.uid();
+  v_best integer := CASE WHEN p_accuracy >= 95 THEN p_cpm ELSE NULL END;
+  v_device text := CASE WHEN p_device = 'mobile' THEN 'mobile' ELSE 'pc' END;
+BEGIN
+  IF v_user IS NULL THEN
+    RAISE EXCEPTION 'login required' USING ERRCODE = '42501';
+  END IF;
+  -- 한 글자에 최소 40ms(분당 1500자) — 붙여넣기·자동 입력 같은 기록은 받지 않는다
+  IF p_duration_ms < p_chars * 40 THEN
+    RAISE EXCEPTION 'too fast' USING ERRCODE = '22023';
+  END IF;
+
+  INSERT INTO public.typing_records AS r
+    (user_id, work, page_key, chars, cpm, accuracy, duration_ms, best_cpm, best_device)
+  VALUES
+    (v_user, p_work, p_page_key, p_chars, p_cpm, p_accuracy, p_duration_ms, v_best,
+     CASE WHEN v_best IS NULL THEN NULL ELSE v_device END)
+  ON CONFLICT (user_id, work, page_key) DO UPDATE SET
+    chars = EXCLUDED.chars,
+    cpm = EXCLUDED.cpm,
+    accuracy = EXCLUDED.accuracy,
+    duration_ms = EXCLUDED.duration_ms,
+    best_cpm = CASE
+      WHEN EXCLUDED.best_cpm IS NULL THEN r.best_cpm
+      WHEN r.best_cpm IS NULL THEN EXCLUDED.best_cpm
+      ELSE GREATEST(r.best_cpm, EXCLUDED.best_cpm)
+    END,
+    -- 최고 타수가 새로 바뀔 때만 그 기기로 바꾼다
+    best_device = CASE
+      WHEN EXCLUDED.best_cpm IS NOT NULL AND (r.best_cpm IS NULL OR EXCLUDED.best_cpm > r.best_cpm)
+        THEN EXCLUDED.best_device
+      ELSE r.best_device
+    END,
+    completed_at = now();
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.record_typing_page(text, text, integer, integer, integer, integer, text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.record_typing_page(text, text, integer, integer, integer, integer, text) TO authenticated;
+
+-- =====================================================
+-- 4. 랭킹 — 타수 탭에 비회원을 섞는다
+-- =====================================================
+-- 돌려주는 칸(is_guest·page_key·is_mobile)과 인자(p_guest_id)가 바뀌므로 CREATE OR REPLACE 로는 안 된다
 -- (인자가 다르면 같은 이름의 함수가 하나 더 생겨 호출이 모호해진다) → 지우고 다시 만든다.
 DROP FUNCTION IF EXISTS public.get_typing_ranking(text, text, integer);
 
@@ -141,7 +213,8 @@ RETURNS TABLE (
   is_me boolean,
   is_guest boolean,
   value integer,
-  page_key text
+  page_key text,
+  is_mobile boolean
 )
 LANGUAGE sql
 STABLE
@@ -153,7 +226,8 @@ AS $$
   ),
   -- 타수: 사람마다 최고 타수 한 줄 + 그 기록을 낸 쪽(page_key) — 랭킹에 "어느 쪽을 쳤는지" 보여 준다(HJ 2026-11-26)
   member_speed AS (
-    SELECT DISTINCT ON (r.user_id) r.user_id, r.best_cpm AS value, r.page_key
+    SELECT DISTINCT ON (r.user_id) r.user_id, r.best_cpm AS value, r.page_key,
+      COALESCE(r.best_device = 'mobile', false) AS is_mobile
     FROM public.typing_records r
     WHERE p_board = 'speed' AND r.work = p_work AND r.best_cpm IS NOT NULL
     ORDER BY r.user_id, r.best_cpm DESC, r.completed_at DESC
@@ -162,7 +236,8 @@ AS $$
   member_steady AS (
     SELECT r.user_id,
       count(*) FILTER (WHERE r.completed_at >= (SELECT ts FROM week_start))::integer AS value,
-      NULL::text AS page_key
+      NULL::text AS page_key,
+      false AS is_mobile
     FROM public.typing_records r
     WHERE p_board <> 'speed' AND r.work = p_work
     GROUP BY r.user_id
@@ -179,6 +254,7 @@ AS $$
       false AS is_guest,
       s.value,
       s.page_key,
+      s.is_mobile,
       s.user_id::text AS tie
     FROM member_scores s
     JOIN public.profiles p ON p.id = s.user_id
@@ -198,6 +274,7 @@ AS $$
       true AS is_guest,
       g.best_cpm AS value,
       g.page_key,
+      g.device = 'mobile' AS is_mobile,
       g.guest_id::text AS tie
     FROM public.typing_guest_scores g
     WHERE p_board = 'speed' AND g.work = p_work
@@ -217,7 +294,8 @@ AS $$
     e.is_me,
     e.is_guest,
     e.value,
-    e.page_key
+    e.page_key,
+    e.is_mobile
   FROM everyone e
   ORDER BY e.value DESC, e.tie
   LIMIT LEAST(GREATEST(p_limit, 1), 200);
