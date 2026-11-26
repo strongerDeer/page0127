@@ -1,0 +1,16 @@
+/*
+  필사 페이지 바탕 — 옅은 크림 종이 질감(HJ 2026-11-26 A안 "페이지 바탕 전체").
+  240px 노이즈 SVG 한 장을 한 번만 그려 타일로 반복한다. 자바스크립트·실시간 filter·fixed 배경을 쓰지 않아
+  스크롤할 때 다시 그리지 않는다. 다크 모드는 무늬 없이 기본 바탕 그대로.
+*/
+.paper {
+  background-color: #faf6ee;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='240'%20height='240'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='.85'%20numOctaves='3'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20values='0%200%200%200%20.35%20%200%200%200%200%20.27%20%200%200%200%200%20.15%20%200%200%200%20.09%200'/%3E%3C/filter%3E%3Crect%20width='100%25'%20height='100%25'%20filter='url%28%23n%29'/%3E%3C/svg%3E");
+}
+
+@media (prefers-color-scheme: dark) {
+  .paper {
+    background-color: var(--background);
+    background-image: none;
+  }
+}

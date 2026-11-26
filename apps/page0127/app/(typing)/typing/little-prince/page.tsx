@@ -16,6 +16,8 @@ import { StandaloneShell } from '@/widgets/StandaloneShell';
 
 import type { Metadata } from 'next';
 
+import paperStyles from './page.module.css';
+
 /**
  * /typing/little-prince — 『어린 왕자』 온라인 필사 (HJ, 2026-11-25)
  *
@@ -99,7 +101,7 @@ const TypingLittlePrincePage = async () => {
       title='온라인 필사'
       loginHref={LOGIN_HREF}
       emphasizeLogin
-      bodyClassName='bg-background'
+      bodyClassName={`${paperStyles.paper} overflow-x-clip`}
     >
       <JsonLd data={pageJsonLd} />
       <JsonLd data={faqJsonLd} />
