@@ -7,6 +7,9 @@
   --lcd: #24392d;
   --lcd-on: #e6f59a;
   position: relative;
+  /* 큰 화면 스크롤 걸림(필사 창과 한 쌍) — 맨 위로 올라올 때도 표지에 딱 맞는다 */
+  scroll-snap-align: start;
+  scroll-margin-top: 80px;
   display: flex;
   flex-direction: column;
   align-items: center;

@@ -6,6 +6,7 @@
 */
 .window {
   scroll-margin-top: 24px;
+  scroll-snap-align: start;
   --win: #e2cfa9;
   --face: #ecdcbb;
   --hi: #fff7e6;
