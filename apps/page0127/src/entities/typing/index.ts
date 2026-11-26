@@ -23,7 +23,12 @@ export {
   splitLines,
   splitLinesToFit,
 } from './model/pages';
-export { judgeTyping, strokesOf, strokesPerMinute } from './model/strokes';
+export {
+  accuracyOf,
+  judgeTyping,
+  strokesOf,
+  strokesPerMinute,
+} from './model/strokes';
 export type {
   TypingBoard,
   TypingPictureKey,

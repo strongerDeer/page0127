@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import {
+  accuracyOf,
   FAMOUS_SHEETS,
   firstUnwrittenIndex,
   FULL_SHEETS,
@@ -169,10 +170,6 @@ export const TypingRoom = ({
   const [composing, setComposing] = useState(false);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [now, setNow] = useState(0);
-  // 한 번이라도 판정한 위치 / 한 번이라도 틀린 위치 — 고쳐 써도 정확도에는 남는다
-  const [seen, setSeen] = useState<{ typed: Set<number>; missed: Set<number> }>(
-    () => ({ typed: new Set(), missed: new Set() })
-  );
   const [result, setResult] = useState<Result | null>(null);
   const [, startSaving] = useTransition();
 
@@ -241,9 +238,7 @@ export const TypingRoom = ({
   const elapsed =
     startedAt === null ? 0 : (result?.durationMs ?? now - startedAt);
   const judge = judgeTyping(value, sheet.text, composing);
-  const accuracy = seen.typed.size
-    ? Math.round(((seen.typed.size - seen.missed.size) / seen.typed.size) * 100)
-    : 100;
+  const accuracy = accuracyOf(judge);
   const cpm = result?.cpm ?? strokesPerMinute(judge.correctStrokes, elapsed);
   const typedCount = Math.min(value.length, sheet.text.length);
 
@@ -281,7 +276,6 @@ export const TypingRoom = ({
     setComposing(false);
     setStartedAt(null);
     setNow(0);
-    setSeen({ typed: new Set(), missed: new Set() });
     setResult(null);
     setRankAction({ status: 'idle' });
     guestTokenRef.current = null;
@@ -366,14 +360,7 @@ export const TypingRoom = ({
   const finish = (finalValue: string, at: number, from: number) => {
     const durationMs = Math.max(1000, at - from);
     const finalJudge = judgeTyping(finalValue, sheet.text, false);
-    const finalSeen = track(finalValue, false);
-    const finalAccuracy = finalSeen.typed.size
-      ? Math.round(
-          ((finalSeen.typed.size - finalSeen.missed.size) /
-            finalSeen.typed.size) *
-            100
-        )
-      : 100;
+    const finalAccuracy = accuracyOf(finalJudge);
     const finalCpm = strokesPerMinute(finalJudge.correctStrokes, durationMs);
     const base = { cpm: finalCpm, accuracy: finalAccuracy, durationMs };
 
@@ -402,18 +389,6 @@ export const TypingRoom = ({
     });
   };
 
-  /** 판정한 위치를 기억에 더한다(틀렸다 고친 글자도 정확도에 남게) */
-  const track = (nextValue: string, isComposing: boolean) => {
-    const j = judgeTyping(nextValue, sheet.text, isComposing);
-    const typed = new Set(seen.typed);
-    const missed = new Set(seen.missed);
-    for (let i = 0; i < j.settled; i++) typed.add(i);
-    j.wrong.forEach((i) => missed.add(i));
-    const next = { typed, missed };
-    setSeen(next);
-    return next;
-  };
-
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     if (result) return;
     const next = e.target.value.replace(/\n/g, '').slice(0, sheet.text.length);
@@ -425,7 +400,6 @@ export const TypingRoom = ({
     const isComposing =
       (e.nativeEvent as InputEvent).isComposing === true || composing;
     setValue(next);
-    track(next, isComposing);
     if (!isComposing && next.length >= sheet.text.length)
       finish(next, t, startedAt ?? t);
   };
@@ -437,7 +411,6 @@ export const TypingRoom = ({
       .replace(/\n/g, '')
       .slice(0, sheet.text.length);
     setValue(next);
-    track(next, false);
     const t = Date.now();
     if (next.length >= sheet.text.length) finish(next, t, startedAt ?? t);
   };
