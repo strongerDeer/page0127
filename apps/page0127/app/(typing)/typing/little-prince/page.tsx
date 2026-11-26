@@ -8,6 +8,7 @@ import {
   TypingHero,
   TypingProgressCard,
   TypingRankingCard,
+  TypingRankStrip,
   TypingRoom,
 } from '@/features/typing';
 import { getTypingState } from '@/features/typing/api/getTypingState';
@@ -106,27 +107,32 @@ const TypingLittlePrincePage = async () => {
       <JsonLd data={pageJsonLd} />
       <JsonLd data={faqJsonLd} />
       <main className='mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 pb-20 pt-8 sm:px-6 sm:pt-12'>
-        <TypingHero targetId='typing-room' />
+        <TypingHero targetId='typing-start' />
 
-        <TypingRoom
-          memberId={state.memberId}
-          rankOptIn={state.rankOptIn}
-          initialDoneKeys={doneKeys}
-          loginHref={LOGIN_HREF}
-        />
-
-        <div className='grid gap-6 md:grid-cols-2'>
-          <TypingProgressCard
-            doneKeys={doneKeys}
+        {/* 치기 전에 1~3위를 먼저 보여 준다(HJ 2026-11-26 A안). 표지 단추는 띠부터 보이게 여기로 내린다 */}
+        <div id='typing-start' className='flex scroll-mt-6 flex-col gap-3'>
+          <TypingRankStrip rows={state.rankings.speed} />
+          <TypingRoom
             memberId={state.memberId}
-            loginHref={LOGIN_HREF}
+            rankOptIn={state.rankOptIn}
+            initialDoneKeys={doneKeys}
+            speedRanking={state.rankings.speed}
           />
+        </div>
+
+        {/* 랭킹 먼저, 진행도 다음(HJ 2026-11-26) */}
+        <div className='grid gap-6 md:grid-cols-2'>
           <TypingRankingCard
             // 결과 창에서 순위 참여를 켜면 새로 고친 값으로 스위치를 다시 그린다
             key={String(state.rankOptIn)}
             memberId={state.memberId}
             rankOptIn={state.rankOptIn}
             rankings={state.rankings}
+            loginHref={LOGIN_HREF}
+          />
+          <TypingProgressCard
+            doneKeys={doneKeys}
+            memberId={state.memberId}
             loginHref={LOGIN_HREF}
           />
         </div>

@@ -12,7 +12,6 @@ import {
   useTransition,
 } from 'react';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import {
@@ -40,10 +39,12 @@ import {
   GUEST_NICKNAME_MAX,
   validateGuestNickname,
 } from '../model/guestNickname';
+import { placeFor } from '../model/rankRows';
 import { PixelPicture } from './PixelPicture';
 import { RetroListDialog, RetroListPanel } from './RetroListDialog';
 
-import type { TypingSheet } from '@/entities/typing';
+import type { RankPlace } from '../model/rankRows';
+import type { TypingRankRow, TypingSheet } from '@/entities/typing';
 
 import s from './TypingRoom.module.css';
 
@@ -107,13 +108,14 @@ export const TypingRoom = ({
   memberId,
   rankOptIn,
   initialDoneKeys,
-  loginHref,
+  speedRanking,
 }: {
   memberId: string | null;
   /** 회원의 순위 참여 여부 — 결과 창에서 "랭킹에 반영되는지"를 바로 알려 준다 */
   rankOptIn: boolean;
   initialDoneKeys: string[];
-  loginHref: string;
+  /** 타수 랭킹(상위 100) — 결과 창에서 "지금 기록이면 몇 위"를 바로 계산한다 */
+  speedRanking: TypingRankRow[];
 }) => {
   const router = useRouter();
   // 처음엔 방식 고르는 시작 화면. 하나를 고르면 바로 친다(HJ 2026-11-26)
@@ -493,7 +495,7 @@ export const TypingRoom = ({
   }));
 
   const hint = !started
-    ? '어떤 방식으로 써 볼지 고르면 바로 시작해요.'
+    ? '목록에서 고르고 「시작」을 누르면 필사가 시작돼요.'
     : result
       ? '끝까지 썼어요!'
       : startedAt === null
@@ -524,24 +526,27 @@ export const TypingRoom = ({
       </div>
 
       <div className={s.inner}>
-        <div className={s.tabs} role='group' aria-label='필사 방식'>
-          {MODES.map((m) => (
-            <button
-              key={m.key}
-              type='button'
-              className={s.tab}
-              aria-pressed={started && mode === m.key}
-              onClick={() =>
-                goTo(
-                  m.key,
-                  m.key === 'famous' ? 0 : firstUnwrittenIndex(doneKeys)
-                )
-              }
-            >
-              {m.label}
-            </button>
-          ))}
-        </div>
+        {/* 탭은 시작한 뒤에만 — 시작 전엔 팝업 하나에서만 고른다(HJ 2026-11-26) */}
+        {started && (
+          <div className={s.tabs} role='group' aria-label='필사 방식'>
+            {MODES.map((m) => (
+              <button
+                key={m.key}
+                type='button'
+                className={s.tab}
+                aria-pressed={started && mode === m.key}
+                onClick={() =>
+                  goTo(
+                    m.key,
+                    m.key === 'famous' ? 0 : firstUnwrittenIndex(doneKeys)
+                  )
+                }
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {started && (
           <div className={s.sub}>
@@ -582,7 +587,10 @@ export const TypingRoom = ({
                     key='mode'
                     className={s.startPanel}
                     title='필사 방식 고르기'
-                    confirmLabel='다음'
+                    // 전문은 다음 단계 없이 바로 시작이라 단추 이름도 "시작"
+                    confirmLabelFor={(i) =>
+                      MODES[i].key === 'full' ? '시작' : '다음'
+                    }
                     initial={startModeIndex}
                     items={MODES.map((m) => ({
                       key: m.key,
@@ -842,6 +850,9 @@ export const TypingRoom = ({
                   <MemberRankNote
                     optIn={optIn}
                     accuracy={result.accuracy}
+                    place={placeFor(speedRanking, result.cpm)}
+                    myBest={speedRanking.find((r) => r.isMe)?.value ?? null}
+                    cpm={result.cpm}
                     action={rankAction}
                     onTurnOn={turnOnRank}
                   />
@@ -849,6 +860,7 @@ export const TypingRoom = ({
                 {result.save === 'guest' && (
                   <GuestRankForm
                     accuracy={result.accuracy}
+                    place={placeFor(speedRanking, result.cpm)}
                     nickname={nickname}
                     onNicknameChange={(v) => {
                       setNickname(v);
@@ -857,7 +869,6 @@ export const TypingRoom = ({
                     }}
                     action={rankAction}
                     onSubmit={submitGuestRank}
-                    loginHref={loginHref}
                   />
                 )}
               </div>
@@ -899,24 +910,37 @@ export const TypingRoom = ({
 const MemberRankNote = ({
   optIn,
   accuracy,
+  place,
+  myBest,
+  cpm,
   action,
   onTurnOn,
 }: {
   optIn: boolean;
   accuracy: number;
+  place: RankPlace;
+  /** 타수 랭킹에 이미 있는 내 최고 타수 — 이번 기록이 그보다 낮으면 순위는 그대로다 */
+  myBest: number | null;
+  cpm: number;
   action: RankAction;
   onTurnOn: () => void;
 }) => {
+  // 안내는 짧게 한 줄(HJ 2026-11-26 "내용 좀 간단하게")
+  const qualifies = accuracy >= SPEED_RANK_MIN_ACCURACY;
+  // 이번 기록으로 순위가 바뀌는 경우에만 "몇 위"를 말한다
+  const newBest = myBest === null || cpm > myBest;
   if (!optIn)
     return (
       <>
-        <p>
-          내 기록에 남겼어요. 지금은 <b>순위 참여가 꺼져 있어서</b> 랭킹에는
-          보이지 않아요.
-        </p>
         <div className={s.noteRow}>
-          <span className={s.noteSub}>
-            켜면 다른 사람에게는 닉네임 첫 글자만 보여요(책**).
+          <span>
+            {qualifies && place.rank !== null ? (
+              <>
+                순위 참여를 켜면 <b>{place.rank}위</b>예요!
+              </>
+            ) : (
+              '기록을 남겼어요. 순위 참여는 꺼져 있어요.'
+            )}
           </span>
           <button
             type='button'
@@ -934,68 +958,56 @@ const MemberRankNote = ({
     );
   return (
     <p>
-      {action.status === 'done'
-        ? '순위 참여를 켰어요. '
-        : '내 기록에 남겼어요. '}
-      {accuracy >= SPEED_RANK_MIN_ACCURACY
-        ? '꾸준함·타수 랭킹에 반영돼요.'
-        : `꾸준함 랭킹에 반영돼요. 타수 랭킹은 정확도 ${SPEED_RANK_MIN_ACCURACY}% 이상일 때만 올라가요.`}
+      {!qualifies ? (
+        <RankChase place={place} />
+      ) : newBest && place.rank !== null ? (
+        <RankNow place={place} />
+      ) : (
+        '기록을 남겼어요.'
+      )}
     </p>
   );
 };
 
-/** 비회원 결과 창 — 닉네임으로 타수 랭킹에 올리기(HJ 2026-11-26 A안) */
+/** 비회원 결과 창 — 닉네임으로 타수 랭킹에 올리기(HJ 2026-11-26 A안, 안내는 짧게) */
 const GuestRankForm = ({
   accuracy,
+  place,
   nickname,
   onNicknameChange,
   action,
   onSubmit,
-  loginHref,
 }: {
   accuracy: number;
+  place: RankPlace;
   nickname: string;
   onNicknameChange: (value: string) => void;
   action: RankAction;
   onSubmit: () => void;
-  loginHref: string;
 }) => {
-  // 로그인 권유는 버튼 줄 대신 안내 칸 안에 — 버튼이 네 개가 되면 줄이 깨진다
-  const login = (
-    <div className={s.noteRow}>
-      <span className={s.noteSub}>
-        로그인하면 진행도와 꾸준함 순위까지 쌓여요.
-      </span>
-      <Link
-        href={loginHref}
-        className={`${s.btn} ${s.btnSmall} ${s.btnLink} ${s.btnMain}`}
-      >
-        로그인하고 기록 남기기
-      </Link>
-    </div>
-  );
+  // 안내 문구는 최소로 — 로그인 권유는 머리글 로그인 단추가 맡는다(HJ 2026-11-26 "텍스트가 너무 많아")
   if (accuracy < SPEED_RANK_MIN_ACCURACY)
     return (
       <>
         <p>
-          정확도 {SPEED_RANK_MIN_ACCURACY}% 이상이면 닉네임으로 타수 랭킹에 올릴
-          수 있어요. 한 번 더 도전해 볼까요?
+          <RankChase place={place} />
         </p>
-        {login}
       </>
     );
   if (action.status === 'done')
     return (
       <>
         <p>
-          <b>{nickname}</b> 님의 기록을 타수 랭킹에 올렸어요! 아래 랭킹에서
-          확인해 보세요.
+          <b>{nickname}</b> 님,{' '}
+          {place.rank !== null ? <b>{place.rank}위</b> : '랭킹'}에 올랐어요! 🎉
         </p>
-        {login}
       </>
     );
   return (
     <>
+      <p>
+        <RankNow place={place} />
+      </p>
       <form
         className={s.noteRow}
         onSubmit={(e) => {
@@ -1003,30 +1015,51 @@ const GuestRankForm = ({
           onSubmit();
         }}
       >
-        <label className={s.nickLabel}>
-          <span>닉네임으로 타수 랭킹에 올리기</span>
-          <input
-            className={s.nickInput}
-            value={nickname}
-            onChange={(e) => onNicknameChange(e.target.value)}
-            maxLength={GUEST_NICKNAME_MAX}
-            placeholder='2~10자'
-            autoComplete='nickname'
-            enterKeyHint='send'
-          />
-        </label>
+        <input
+          className={s.nickInput}
+          aria-label='닉네임으로 타수 랭킹에 올리기'
+          value={nickname}
+          onChange={(e) => onNicknameChange(e.target.value)}
+          maxLength={GUEST_NICKNAME_MAX}
+          placeholder='닉네임 2~10자'
+          autoComplete='nickname'
+          enterKeyHint='send'
+        />
         <button
           type='submit'
           className={`${s.btn} ${s.btnSmall}`}
           disabled={action.status === 'sending'}
         >
-          {action.status === 'sending' ? '올리는 중…' : '랭킹에 올리기'}
+          {action.status === 'sending' ? '올리는 중…' : '이름 올리기'}
         </button>
       </form>
       {action.status === 'error' && (
         <p className={s.noteError}>{action.message}</p>
       )}
-      {login}
     </>
   );
 };
+
+/** "지금 기록이면 3위! (바로 위까지 14타)" — 순위를 모르면 그냥 올리기를 권한다 */
+const RankNow = ({ place }: { place: RankPlace }) =>
+  place.rank === null ? (
+    <>타수 랭킹에 이름을 올려 보세요!</>
+  ) : (
+    <>
+      🏆 지금 기록이면 <b>{place.rank}위</b>!
+      {place.gapToNext !== null && ` (바로 위까지 ${place.gapToNext}타)`}
+    </>
+  );
+
+/** 정확도가 모자란 기록에 "이것만 넘기면 몇 위" — 다시 도전할 이유를 준다 */
+const RankChase = ({ place }: { place: RankPlace }) =>
+  place.rank === null ? (
+    <>
+      정확도 {SPEED_RANK_MIN_ACCURACY}%를 넘기면 타수 랭킹에 올라요. 한 번 더?
+    </>
+  ) : (
+    <>
+      정확도 {SPEED_RANK_MIN_ACCURACY}%만 넘기면 <b>{place.rank}위</b>! 한 번
+      더?
+    </>
+  );
