@@ -7,10 +7,17 @@ import { useRouter } from 'next/navigation';
 
 import { SegmentedControl, SegmentedControlItem, Switch } from '@repo/ui';
 
+import { FAMOUS_SHEETS, FULL_SHEETS } from '@/entities/typing';
+
 import { setTypingRankOptInAction } from '../api/typingActions';
 import { rankLines } from '../model/rankRows';
 
 import type { TypingBoard, TypingRankRow } from '@/entities/typing';
+
+/** 쪽 열쇠 → "2장 10쪽" / "명문장 · 21장 여우의 비밀" — 타수 탭에서 어느 쪽을 쳤는지 보여 준다 */
+const SHEET_TITLES = new Map(
+  [...FULL_SHEETS, ...FAMOUS_SHEETS].map((sheet) => [sheet.key, sheet.title])
+);
 
 const BOARDS: {
   key: TypingBoard;
@@ -22,7 +29,7 @@ const BOARDS: {
     key: 'speed',
     label: '타수',
     unit: '타',
-    note: '정확도 95% 이상으로 끝까지 쓴 쪽의 최고 평균 타수예요.',
+    note: '정확도 95% 이상으로 끝까지 쓴 쪽의 최고 평균 타수예요. 비회원도 닉네임으로 오를 수 있어요.',
   },
   {
     key: 'steady',
@@ -35,6 +42,7 @@ const BOARDS: {
 /**
  * 필사 랭킹 — 탭 두 개(타수·꾸준함, HJ 2026-11-25 "둘 다" · 타수 먼저).
  * 순위에는 참여를 켠 사람만, 닉네임 첫 글자만 보이게("책**") 나온다. 내 이름만 그대로. 기본은 꺼짐.
+ * 타수 탭에는 비회원(닉네임만)도 섞이고 "비회원" 표시가 붙는다. 그 타수를 낸 쪽도 함께 보인다(HJ 2026-11-26).
  */
 export const TypingRankingCard = ({
   memberId,
@@ -116,9 +124,23 @@ export const TypingRankingCard = ({
                 >
                   {line.rank}
                 </span>
-                <span className='truncate text-text-body'>
-                  {line.row.nickname}
-                  {line.isMe && ' (나)'}
+                <span className='flex min-w-0 flex-col'>
+                  <span className='flex min-w-0 items-center gap-1.5'>
+                    <span className='truncate text-text-body'>
+                      {line.row.nickname}
+                      {line.isMe && ' (나)'}
+                    </span>
+                    {line.row.isGuest && (
+                      <span className='shrink-0 rounded bg-sunken px-1.5 py-0.5 text-[0.6875rem] font-normal text-text-subtle'>
+                        비회원
+                      </span>
+                    )}
+                  </span>
+                  {line.row.pageKey && SHEET_TITLES.has(line.row.pageKey) && (
+                    <span className='truncate text-xs font-normal text-text-subtle'>
+                      {SHEET_TITLES.get(line.row.pageKey)}
+                    </span>
+                  )}
                 </span>
                 <span className='font-bold tabular-nums text-text-strong'>
                   {line.row.value.toLocaleString()}
@@ -152,7 +174,10 @@ export const TypingRankingCard = ({
           </div>
         ) : (
           <div className='text-sm text-text-subtle'>
-            <p>로그인하면 내 기록이 쌓이고 순위에도 참여할 수 있어요.</p>
+            <p>
+              비회원도 정확도 95% 이상이면 결과 창에서 닉네임으로 타수 랭킹에
+              올릴 수 있어요. 로그인하면 진행도와 꾸준함 순위까지 쌓여요.
+            </p>
             <Link
               href={loginHref}
               className='mt-3 inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90'

@@ -23,7 +23,7 @@ import type { Metadata } from 'next';
  * 바깥(머리글·소개·진행도·랭킹)은 page0127. 디자인 그대로, 가운데 필사 창 하나만 레트로 프로그램 모양이다.
  * 오늘의 문장(/sentence)처럼 사이트 GNB 없이 전용 머리글만 둔다 — 이 페이지만 써도 되는 형태.
  *
- * 기록은 로그인한 계정만 남는다. 비회원도 쳐 볼 수는 있다.
+ * 진행도는 로그인한 계정만 남는다. 비회원도 쳐 볼 수 있고, 닉네임으로 타수 랭킹에는 오를 수 있다(HJ 2026-11-26).
  */
 const PATH = '/typing/little-prince';
 const LOGIN_HREF = `/login?next=${encodeURIComponent(PATH)}`;
@@ -160,6 +160,7 @@ const TypingLittlePrincePage = async () => {
 
         <TypingRoom
           memberId={state.memberId}
+          rankOptIn={state.rankOptIn}
           initialDoneKeys={doneKeys}
           loginHref={LOGIN_HREF}
         />
@@ -171,6 +172,8 @@ const TypingLittlePrincePage = async () => {
             loginHref={LOGIN_HREF}
           />
           <TypingRankingCard
+            // 결과 창에서 순위 참여를 켜면 새로 고친 값으로 스위치를 다시 그린다
+            key={String(state.rankOptIn)}
             memberId={state.memberId}
             rankOptIn={state.rankOptIn}
             rankings={state.rankings}

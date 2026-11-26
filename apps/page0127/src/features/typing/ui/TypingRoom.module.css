@@ -569,3 +569,149 @@
 .dialog:focus {
   outline: none;
 }
+
+/* 시작 화면 — 옛 타자 프로그램 첫 메뉴처럼 번호 달린 세 방식(HJ 2026-11-26) */
+.menuPaper {
+  cursor: default;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(4 * (2 * 1.6em + 20px) + 40px);
+}
+.menuTitle {
+  margin: 0 0 12px;
+  color: var(--src);
+  font-size: 15px;
+  font-weight: 700;
+}
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  cursor: pointer;
+  border: 0;
+  border-radius: 8px;
+  background: var(--face);
+  padding: 12px 14px;
+  color: var(--ink);
+  font-family: var(--font);
+  text-align: left;
+  box-shadow:
+    inset 1px 1px 0 var(--hi),
+    inset -1px -1px 0 var(--dk),
+    inset 2px 2px 0 #f3e6c9,
+    inset -2px -2px 0 var(--lo);
+}
+.menuItem:hover {
+  background: #f3e6c9;
+}
+.menuItem:active {
+  box-shadow:
+    inset 1px 1px 0 var(--dk),
+    inset -1px -1px 0 var(--hi),
+    inset 2px 2px 0 var(--lo);
+}
+.menuItem:focus-visible {
+  outline: 2px dashed var(--navy);
+  outline-offset: 2px;
+}
+.menuNo {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: var(--navy);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+}
+.menuText {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+.menuText b {
+  font-size: 16px;
+}
+.menuText span {
+  color: var(--soft);
+  font-size: 13px;
+}
+
+/* 결과 창 — 랭킹 반영 안내·닉네임 입력 */
+.saveNote p {
+  margin: 0;
+}
+.saveNote b {
+  color: var(--ink);
+}
+.noteRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+.noteSub {
+  color: var(--soft);
+  font-size: 12px;
+}
+.noteError {
+  margin-top: 6px !important;
+  color: var(--miss);
+  font-weight: 700;
+}
+.nickLabel {
+  display: flex;
+  flex: 1 1 180px;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--ink);
+  font-weight: 700;
+}
+.nickInput {
+  width: 100%;
+  border: 0;
+  border-radius: 6px;
+  background: #fff;
+  padding: 7px 10px;
+  color: var(--ink);
+  font: 400 15px var(--font);
+  box-shadow:
+    inset 1px 1px 0 var(--lo),
+    inset -1px -1px 0 var(--hi),
+    inset 2px 2px 0 var(--dk);
+}
+.nickInput:focus-visible {
+  outline: 2px dashed var(--navy);
+  outline-offset: 2px;
+}
+.btnSmall {
+  padding: 6px 12px;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+.btnSmall:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.btnQuit {
+  margin-right: auto;
+}
+/* 안내 칸 안 링크 밑줄 규칙이 버튼 모양 링크까지 덮지 않게 */
+.saveNote a.btn {
+  text-decoration: none;
+}
+.saveNote a.btnMain {
+  color: #fff;
+}
