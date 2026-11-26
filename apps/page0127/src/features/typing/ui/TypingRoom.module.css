@@ -480,8 +480,10 @@
 }
 .reportText strong {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   font-size: 15px;
+  /* 제목이 두 줄로 꺾여도 줄 사이가 벌어지지 않게(본문 1.9 를 물려받지 않는다, HJ 2026-11-26) */
+  line-height: 1.45;
 }
 .reportText span {
   display: inline-block;
@@ -504,7 +506,8 @@
   margin: 0;
   border-radius: 10px;
   background: var(--paper);
-  padding: 10px 12px;
+  /* 위 기록 칸(.reportText)과 같은 안쪽 여백 */
+  padding: 12px 14px;
   color: var(--soft);
   font-size: 13px;
   line-height: 1.6;
@@ -566,6 +569,10 @@
 /* 결과 창 — 랭킹 반영 안내·닉네임 입력 */
 .saveNote p {
   margin: 0;
+}
+/* 첫 줄이 단추 줄(.noteRow)이면 위 여백(8px)이 더해져 위아래가 어긋났다 → 첫 줄은 위 여백 없이 */
+.saveNote > :first-child {
+  margin-top: 0;
 }
 .saveNote b {
   color: var(--ink);
