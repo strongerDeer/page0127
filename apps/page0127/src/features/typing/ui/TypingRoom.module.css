@@ -139,7 +139,7 @@
   height: 30px;
   cursor: pointer;
   border: 0;
-  border-radius: 6px;
+  border-radius: 7px;
   background: var(--paper);
   color: var(--ink);
   font: 700 13px var(--font);
@@ -215,7 +215,7 @@
 .paper {
   position: relative;
   cursor: text;
-  border-radius: 8px;
+  border-radius: 7px;
   background: var(--paper);
   padding: 14px 16px 12px;
   box-shadow:
@@ -301,7 +301,7 @@
 .picture img {
   display: block;
   margin: 0 auto;
-  border-radius: 8px;
+  border-radius: 7px;
   background: var(--paper);
   padding: 10px;
   box-shadow: inset 0 0 0 1px #d8c8a6;
@@ -601,7 +601,7 @@
   width: 100%;
   cursor: pointer;
   border: 0;
-  border-radius: 8px;
+  border-radius: 7px;
   background: var(--face);
   padding: 12px 14px;
   color: var(--ink);
@@ -650,7 +650,7 @@
   place-items: center;
   width: 30px;
   height: 30px;
-  border-radius: 6px;
+  border-radius: 7px;
   background: var(--navy);
   color: #fff;
   font-size: 15px;
@@ -705,7 +705,7 @@
 .nickInput {
   width: 100%;
   border: 0;
-  border-radius: 6px;
+  border-radius: 7px;
   background: #fff;
   padding: 7px 10px;
   color: var(--ink);
