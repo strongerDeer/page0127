@@ -11,9 +11,25 @@
  */
 import { getMyLibraryLinks } from '@/entities/profile/model/myLibraryLinks';
 
+import type { MyLibraryLinkKey } from '@/entities/profile/model/myLibraryLinks';
+
+/** 목차 줄 앞 아이콘 — 그림은 TocMenu 가 고른다(모델엔 React 를 두지 않는다) */
+export type TocIcon =
+  | MyLibraryLinkKey
+  | 'settings'
+  | 'allBooks'
+  | 'stories'
+  | 'sentence'
+  | 'typing'
+  | 'about'
+  | 'updates'
+  | 'contact';
+
 export type TocLink = {
   href: string;
   label: string;
+  /** 줄 앞 아이콘(2026-11-26 HJ: 폰에도 PC 프로필 메뉴처럼 아이콘) */
+  icon?: TocIcon;
   /**
    * true 면 Next Link 대신 일반 a 로 페이지를 새로 불러온다.
    * /sentence 는 서재 배너용 가로채기 라우트(@modal/(.)sentence)가 Link 이동을 모달로 바꾸는데,
@@ -48,25 +64,34 @@ export const getTocGroups = ({
     ? [
         ...getMyLibraryLinks(username)
           .filter((link) => link.key !== 'library')
-          .map(({ href, label }) => ({ href, label })),
-        { href: '/settings', label: '설정' },
+          .map(({ key, href, label }) => ({ href, label, icon: key })),
+        { href: '/settings', label: '설정', icon: 'settings' },
       ]
     : [],
   main: isLoggedIn
     ? []
     : [
-        { href: '/books/all', label: '전체 도서' },
-        { href: '/blog', label: '책 이야기' },
+        { href: '/books/all', label: '전체 도서', icon: 'allBooks' },
+        { href: '/blog', label: '책 이야기', icon: 'stories' },
       ],
   daily: [
-    { href: '/sentence', label: '오늘의 문장 뽑기', fullPageLoad: true },
-    { href: '/typing/little-prince', label: '어린 왕자 온라인 필사' },
+    {
+      href: '/sentence',
+      label: '오늘의 문장 뽑기',
+      icon: 'sentence',
+      fullPageLoad: true,
+    },
+    {
+      href: '/typing/little-prince',
+      label: '어린 왕자 온라인 필사',
+      icon: 'typing',
+    },
   ],
   // 서비스 소개·공지·문의는 "잘 안 보여도 되는 곳"(2026-11-26 HJ) — 작은 글씨로 맨 아래
   sub: [
-    { href: '/about', label: '서비스 소개' },
-    { href: '/updates', label: '공지·업데이트' },
-    { href: '/contact', label: '문의' },
+    { href: '/about', label: '서비스 소개', icon: 'about' },
+    { href: '/updates', label: '공지·업데이트', icon: 'updates' },
+    { href: '/contact', label: '문의', icon: 'contact' },
   ],
 });
 

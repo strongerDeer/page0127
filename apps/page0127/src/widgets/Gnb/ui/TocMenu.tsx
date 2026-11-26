@@ -6,7 +6,24 @@ import { usePathname } from 'next/navigation';
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui';
-import { LogOut, Menu, X } from 'lucide-react';
+import {
+  Award,
+  BookOpen,
+  BookText,
+  CalendarDays,
+  Carrot,
+  Info,
+  Keyboard,
+  LibraryBig,
+  LogOut,
+  Mail,
+  Megaphone,
+  Menu,
+  Quote,
+  Settings,
+  Sparkles,
+  X,
+} from 'lucide-react';
 
 import { cn } from '@/shared/lib/utils';
 import { IntentPrefetchLink } from '@/shared/ui/IntentPrefetchLink';
@@ -17,7 +34,25 @@ import { useLogout } from '@/features/auth/api/useLogout';
 
 import { getTocGroups, isTocLinkActive } from '../model/tocLinks';
 
-import type { TocLink } from '../model/tocLinks';
+import type { TocIcon, TocLink } from '../model/tocLinks';
+import type { LucideIcon } from 'lucide-react';
+
+// PC 프로필 메뉴(ProfileDropdown)와 같은 그림을 쓴다 — 같은 곳은 같은 아이콘
+const TOC_ICONS: Record<TocIcon, LucideIcon> = {
+  library: BookOpen,
+  quotes: Quote,
+  recap: CalendarDays,
+  badges: Award,
+  taste: Sparkles,
+  settings: Settings,
+  allBooks: LibraryBig,
+  stories: BookText,
+  sentence: Carrot,
+  typing: Keyboard,
+  about: Info,
+  updates: Megaphone,
+  contact: Mail,
+};
 
 /**
  * "목차" 메뉴 — 상단 바 오른쪽 끝 ☰ 를 누르면 오른쪽에서 열리는 시트.
@@ -49,6 +84,20 @@ type TocMenuProps = {
  * (2026-11-24 HJ, C안). 320px 폰에서 상단 바가 40px 넘쳐 페이지가 좌우로 흔들렸기 때문이다.
  * 드롭다운에 있던 것(이름·설정·로그아웃)이 여기 있어야 잃는 기능이 없다. 내 서재는 하단 탭바 첫 칸이다.
  */
+const LinkIcon = ({ link, size }: { link: TocLink; size: 'main' | 'sub' }) => {
+  if (!link.icon) return null;
+  const Icon = TOC_ICONS[link.icon];
+  return (
+    <Icon
+      aria-hidden='true'
+      className={cn(
+        'mr-3 shrink-0 text-text-subtle',
+        size === 'main' ? 'size-5' : 'size-4'
+      )}
+    />
+  );
+};
+
 export const TocMenu = ({ user }: TocMenuProps) => {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -96,6 +145,7 @@ export const TocMenu = ({ user }: TocMenuProps) => {
                 className='absolute left-0 size-1.5 rounded-full bg-mint'
               />
             )}
+            <LinkIcon link={link} size={size} />
             {link.label}
           </a>
         ) : (
@@ -119,6 +169,7 @@ export const TocMenu = ({ user }: TocMenuProps) => {
                 className='absolute left-0 size-1.5 rounded-full bg-mint'
               />
             )}
+            <LinkIcon link={link} size={size} />
             {link.label}
           </IntentPrefetchLink>
         )}
