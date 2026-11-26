@@ -47,6 +47,13 @@ const FRAMES: string[] = (() => {
   return frames;
 })();
 
+/** 참여 방법 — 이벤트 랜딩처럼 세 단계로 */
+const STEPS = [
+  { title: '방식 고르기', text: '명문장만 · 전문 이어 쓰기 · 장 고르기' },
+  { title: '파란 줄 따라 치기', text: '바로 아래 줄에 똑같이' },
+  { title: '랭킹에 이름 올리기', text: '비회원도 닉네임으로' },
+];
+
 const STEP_MS = 85;
 const START_DELAY_MS = 450;
 
@@ -83,6 +90,18 @@ export const TypingHero = ({ targetId }: { targetId: string }) => {
 
   return (
     <section className={s.hero} data-done={done || undefined}>
+      {/* 주인공 — HJ가 그린 타자 치는 아이(2026-11-26), 배경을 투명하게 한 움직이는 webp */}
+      {/* eslint-disable-next-line @next/next/no-img-element -- 움직이는 webp 는 next/image 최적화 대상이 아님 */}
+      <img
+        src='/typing/hero-typing.webp'
+        width={720}
+        height={227}
+        alt='책상에서 타자기를 치는 아이'
+        className={s.visual}
+        fetchPriority='high'
+        decoding='async'
+      />
+
       <p className={s.badge}>
         <span className={s.badgeDot} aria-hidden />
         타자 연습을 겸한
@@ -124,15 +143,22 @@ export const TypingHero = ({ targetId }: { targetId: string }) => {
       </div>
 
       <div className={s.after}>
-        <p className={s.desc}>
-          그때 그 타자 연습처럼, 이번엔 필사로. 파란 줄을 보고 바로 아래에
-          똑같이 따라 쳐 보세요. 명문장 한 대목부터 가볍게 시작하고, 처음부터
-          이어 써도, 장을 골라 써도 좋아요.
-        </p>
+        <p className={s.desc}>그때 그 타자 연습처럼, 이번엔 필사로.</p>
         <button type='button' className={s.cta} onClick={scrollToRoom}>
           필사 시작하기
           <span aria-hidden>↓</span>
         </button>
+        <ol className={s.steps}>
+          {STEPS.map((step, i) => (
+            <li key={step.title}>
+              <span className={s.stepNo}>{i + 1}</span>
+              <span>
+                <b>{step.title}</b>
+                <small>{step.text}</small>
+              </span>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );
