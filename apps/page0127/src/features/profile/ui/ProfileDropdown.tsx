@@ -27,7 +27,6 @@ import {
   Award,
   BookOpen,
   CalendarDays,
-  ChevronDown,
   LogOut,
   Quote,
   Settings,
@@ -80,14 +79,16 @@ export const ProfileDropdown = ({
         <button
           type='button'
           aria-label={`${displayName} 메뉴`}
-          className='flex items-center gap-1 rounded-full text-text-subtle hover:text-text-strong focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2'
+          // 동그라미만 둔다 — 바로 옆 ☰ 가 이미 "메뉴" 신호라 ▾ 까지 두면 겹쳐 보였다(2026-11-26 HJ A안).
+          // 테두리는 키보드로 왔을 때만(focus-visible). focus 로 두면 마우스로 눌러도 굵은 파란 고리가 남았다.
+          // 마우스를 올리면 살짝 어두워져 누를 수 있는 곳임을 알린다.
+          // 얇은 회색 테두리는 늘 둔다 — 흰 바탕 프로필 그림이 머리글 흰 바탕에 묻혀 동그라미가 안 보였다(HJ "테두리 필요").
+          className='rounded-full border border-line transition-[filter] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 data-[state=open]:brightness-95'
         >
           <Avatar>
             <AvatarImage src={photoUrl || undefined} alt='' />
             <AvatarFallback>{initial}</AvatarFallback>
           </Avatar>
-          {/* 동그라미만 있으면 눌러서 열리는 메뉴인 줄 몰라서 ▾ 를 붙였다(2026-11-26 점검) */}
-          <ChevronDown aria-hidden='true' className='size-4' />
         </button>
       </DropdownMenuTrigger>
 
