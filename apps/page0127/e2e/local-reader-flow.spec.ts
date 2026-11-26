@@ -131,7 +131,7 @@ test('디자인 점검: 페이지 공통 폭과 흰색 면 및 모바일 보기 
       ['manage', '/library/manage', '서재 관리'],
       ['add-book', '/books/add', '도서 추가'],
       ['import-books', '/books/import', '여러 권 한 번에 담기'],
-      ['recap', '/books/recap', '지난 회상'],
+      ['recap', '/books/recap', '주간 회상'],
     ]) {
       await page.goto(path);
       await expect(
