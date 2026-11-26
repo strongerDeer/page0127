@@ -124,6 +124,8 @@ export const TypingRoom = ({
   const [nickname, setNickname] = useState('');
   // 비회원 시작 토큰 — 첫 글자를 칠 때 서버가 서명해 준다. 화면에 그리지 않으므로 ref
   const guestTokenRef = useRef<{ key: string; token: string } | null>(null);
+  // 쪽을 새로 펼치거나 "다시"를 누를 때마다 올려서 아래 effect 가 토큰을 새로 받게 한다
+  const [tokenTick, setTokenTick] = useState(0);
 
   useEffect(() => {
     if (memberId) return;
@@ -144,6 +146,23 @@ export const TypingRoom = ({
 
   const sheet: TypingSheet =
     mode === 'famous' ? FAMOUS_SHEETS[famousIndex] : FULL_SHEETS[fullIndex];
+
+  // 비회원 시작 토큰은 "쪽이 화면에 펼쳐질 때" 미리 받는다(첫 글자를 칠 때가 아니라).
+  // 첫 글자에 맞춰 요청하면 서버 응답이 늦을 때(콜드 스타트·개발 서버 컴파일 수 초) 서버가 찍는
+  // 시작 시각이 실제보다 늦어지고, 서버가 잰 시간이 짧아져 정상 기록이 "너무 빠름"으로 거절됐다
+  // (HJ 2026-11-26 489타 거절). 미리 받으면 서버 시작 시각 ≤ 실제 시작이라 거절될 일이 없다.
+  // 기다렸다 치는 만큼 상한이 느슨해질 뿐이라 속이는 데 도움이 되지 않는다.
+  useEffect(() => {
+    if (memberId || !started) return;
+    const key = sheet.key;
+    let alive = true;
+    void startGuestTypingAction(key).then((res) => {
+      if (alive && res.ok) guestTokenRef.current = { key, token: res.token };
+    });
+    return () => {
+      alive = false;
+    };
+  }, [memberId, started, sheet.key, tokenTick]);
 
   // 타이핑 상태 — 쪽이 바뀌면 resetTyping 으로 모두 비운다
   const [value, setValue] = useState('');
@@ -266,6 +285,7 @@ export const TypingRoom = ({
     setResult(null);
     setRankAction({ status: 'idle' });
     guestTokenRef.current = null;
+    setTokenTick((n) => n + 1);
   };
 
   /** 결과 창 "종료" — 방식 고르는 시작 화면으로 돌아간다 */
@@ -401,13 +421,6 @@ export const TypingRoom = ({
     if (startedAt === null && next.length > 0) {
       setStartedAt(t);
       setNow(t);
-      // 비회원은 시작 시각을 서버에 맡겨 둔다 — 랭킹에 올릴 때 서버 시계로 걸린 시간을 잰다
-      if (!memberId) {
-        const key = sheet.key;
-        void startGuestTypingAction(key).then((res) => {
-          if (res.ok) guestTokenRef.current = { key, token: res.token };
-        });
-      }
     }
     const isComposing =
       (e.nativeEvent as InputEvent).isComposing === true || composing;

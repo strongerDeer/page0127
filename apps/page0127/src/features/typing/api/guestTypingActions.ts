@@ -138,7 +138,19 @@ export const submitGuestTypingAction = async (input: {
   const totalStrokes = [...sheet.text].reduce((n, c) => n + strokesOf(c), 0);
   const cap = Math.min(1500, maxCpmFor(totalStrokes, elapsedMs));
   const cpm = Math.round(Number(input.cpm));
-  if (!(cpm >= 1 && cpm <= cap)) return { ok: false, message: FAIL };
+  if (!(cpm >= 1 && cpm <= cap)) {
+    // 정상 사용자가 걸리면 원인을 찾을 수 있게 남긴다(경과 시간·상한·보낸 값)
+    console.warn('비회원 필사 타수 상한 초과:', {
+      page: sheet.key,
+      elapsedMs,
+      cap,
+      cpm,
+    });
+    return {
+      ok: false,
+      message: '기록을 확인하지 못했어요. 이 쪽을 처음부터 다시 쳐 주세요.',
+    };
+  }
 
   const name = validateGuestNickname(input.nickname);
   if (!name.ok) return name;
