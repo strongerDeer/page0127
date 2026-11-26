@@ -30,14 +30,18 @@
   font-family: var(--font);
   background: var(--win);
   padding: 4px;
+  /* 바깥 틀도 둥글게(HJ 2026-11-26) — 14px = 안쪽 칸 10px + 틈 4px 라 안팎 곡선이 나란하다 */
+  border-radius: 14px;
   box-shadow:
     inset 1px 1px 0 var(--hi),
     inset -1px -1px 0 var(--dk),
     inset 2px 2px 0 #f3e6c9,
     inset -2px -2px 0 var(--lo),
-    /* 바닥에 은은하게 깔리는 그림자(HJ: 단단한 그림자 X, 은은하게) */ 0 1px 2px
-      rgb(60 40 10 / 0.06),
-    0 24px 48px -28px rgb(60 40 10 / 0.28);
+    /* 입체: 아래로 4px 두께(옆면) + 겹겹이 옅게 깔리는 그림자. 단단한 오프셋 그림자는 X(HJ "은은하게") */
+    0 4px 0 #b99a6a,
+    0 5px 0 #8f7148,
+    0 10px 16px -6px rgb(60 40 10 / 0.18),
+    0 30px 60px -24px rgb(60 40 10 / 0.3);
   color-scheme: light;
 }
 
@@ -59,6 +63,7 @@
   background: linear-gradient(90deg, #7a5a35, #b48c5c);
   font-size: 14px;
   font-weight: 700;
+  border-radius: 10px 10px 0 0;
 }
 .titlebar svg {
   width: 16px;
@@ -739,4 +744,3 @@
     display: none;
   }
 }
-
