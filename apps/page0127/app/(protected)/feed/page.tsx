@@ -2,9 +2,11 @@ import { Suspense } from 'react';
 
 import { redirect } from 'next/navigation';
 
-import { ErrorBoundary, PageContainer, PageHeader } from '@repo/ui';
+import { Button, ErrorBoundary, PageContainer, PageHeader } from '@repo/ui';
+import { UserRoundSearch } from 'lucide-react';
 
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
+import { IntentPrefetchLink } from '@/shared/ui/IntentPrefetchLink';
 
 import { ActivityFeed } from '@/widgets/activity';
 import { LoungeLayout, ReadingPromptGate } from '@/widgets/lounge';
@@ -24,10 +26,19 @@ export default async function LoungePage() {
 
   return (
     <PageContainer className='space-y-8'>
-      <PageHeader
-        title='라운지'
-        description='서로의 책장이, 다음 한 권의 자극이 되도록.'
-      />
+      {/* 리더 찾기는 메뉴 칸에서 빠지고 라운지 안으로 들어왔다(2026-11-26 HJ, 메뉴 네 칸 정리) */}
+      <div className='flex flex-wrap items-end justify-between gap-3'>
+        <PageHeader
+          title='라운지'
+          description='서로의 책장이, 다음 한 권의 자극이 되도록.'
+        />
+        <Button asChild variant='outline' size='sm'>
+          <IntentPrefetchLink href='/search'>
+            <UserRoundSearch aria-hidden='true' className='mr-1.5 size-4' />
+            리더 찾기
+          </IntentPrefetchLink>
+        </Button>
+      </div>
       <LoungeLayout
         battle={
           <ErrorBoundary

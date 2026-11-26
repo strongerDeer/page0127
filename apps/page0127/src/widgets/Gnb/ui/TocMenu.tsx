@@ -20,10 +20,12 @@ import { getTocGroups, isTocLinkActive } from '../model/tocLinks';
 import type { TocLink } from '../model/tocLinks';
 
 /**
- * 모바일 "목차" 메뉴 — 상단 바 오른쪽 끝 ☰ 를 누르면 오른쪽에서 열리는 시트.
+ * "목차" 메뉴 — 상단 바 오른쪽 끝 ☰ 를 누르면 오른쪽에서 열리는 시트.
  *
- * 왜 필요한가: 데스크톱 주 메뉴(GnbNav)는 768px 아래에서 숨겨진다. 그래서 모바일에선
- * 전체 도서·책 이야기·소개에 가려면 푸터까지 내려야 했다(2026-11-23 HJ).
+ * 처음엔 폰 전용이었다(데스크톱 주 메뉴가 768px 아래에서 숨어서, 2026-11-23 HJ).
+ * 2026-11-26 부터 PC 에도 보인다 — 메뉴 칸을 네 개로 줄이면서 하루 한 번(오늘의 문장·필사)과
+ * 소개·공지·문의를 PC·폰 모두 여기서 닿게 했다(기기를 바꿔도 같은 자리).
+ * PC 에선 내 이름·내 서재 묶음·로그아웃은 숨긴다 — 프로필 메뉴(ProfileDropdown)가 같은 일을 한다.
  *
  * 왜 @repo/ui 의 DialogContent 가 아니라 Radix 원본인가:
  * DialogContent 는 "가운데 뜨는 모달" 모양(가운데 정렬·확대 애니메이션)이 박혀 있다.
@@ -31,15 +33,15 @@ import type { TocLink } from '../model/tocLinks';
  * 옆에서 밀려 들어오는 시트와 섞인다. 접근성(포커스 가두기·Esc·스크롤 잠금·aria-modal)은
  * Radix 원본이 그대로 주므로, 모양만 여기서 새로 입힌다.
  */
-type MobileTocUser = {
+type TocUser = {
   photoUrl: string | null;
   displayName: string;
   username: string | null;
 };
 
-type MobileTocMenuProps = {
+type TocMenuProps = {
   /** null 이면 비로그인 방문자 */
-  user: MobileTocUser | null;
+  user: TocUser | null;
 };
 
 /**
@@ -47,7 +49,7 @@ type MobileTocMenuProps = {
  * (2026-11-24 HJ, C안). 320px 폰에서 상단 바가 40px 넘쳐 페이지가 좌우로 흔들렸기 때문이다.
  * 드롭다운에 있던 것(이름·설정·로그아웃)이 여기 있어야 잃는 기능이 없다. 내 서재는 하단 탭바 첫 칸이다.
  */
-export const MobileTocMenu = ({ user }: MobileTocMenuProps) => {
+export const TocMenu = ({ user }: TocMenuProps) => {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const { logout } = useLogout();
@@ -130,19 +132,19 @@ export const MobileTocMenu = ({ user }: MobileTocMenuProps) => {
         <button
           type='button'
           aria-label='메뉴 열기'
-          className='flex size-9 items-center justify-center rounded-full text-text-subtle transition-colors hover:bg-sunken hover:text-text-strong md:hidden'
+          className='flex size-9 items-center justify-center rounded-full text-text-subtle transition-colors hover:bg-sunken hover:text-text-strong'
         >
           <Menu aria-hidden='true' className='size-5' />
         </button>
       </DialogPrimitive.Trigger>
 
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className='fixed inset-0 z-50 bg-overlay data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 md:hidden' />
+        <DialogPrimitive.Overlay className='fixed inset-0 z-50 bg-overlay data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0' />
         <DialogPrimitive.Content
           // 설명 문단이 없는 시트 — 없다고 명시해야 Radix 가 콘솔 경고를 내지 않는다
           aria-describedby={undefined}
           className={cn(
-            'fixed inset-y-0 right-0 z-50 flex w-[min(20rem,85vw)] flex-col border-l border-line bg-card md:hidden',
+            'fixed inset-y-0 right-0 z-50 flex w-[min(20rem,85vw)] flex-col border-l border-line bg-card',
             // 아이폰 홈 바·노치에 가리지 않게
             'pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)]',
             'duration-200 data-[state=open]:animate-in data-[state=open]:slide-in-from-right data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right motion-reduce:animate-none'
@@ -166,7 +168,8 @@ export const MobileTocMenu = ({ user }: MobileTocMenuProps) => {
             className='flex flex-1 flex-col gap-4 overflow-y-auto px-3 pb-6'
           >
             {user && (
-              <div className='border-b border-line pb-4'>
+              // PC 에선 프로필 메뉴가 같은 목록을 보여 준다 → 폰에서만
+              <div className='border-b border-line pb-4 md:hidden'>
                 {/* 누구로 로그인했는지 — 데스크톱 드롭다운의 이름 줄과 같은 역할 */}
                 <div className='mb-2 flex items-center gap-3 px-3'>
                   <Avatar className='size-9'>
@@ -182,9 +185,14 @@ export const MobileTocMenu = ({ user }: MobileTocMenuProps) => {
                 <ul>{account.map((link) => renderLink(link, 'main'))}</ul>
               </div>
             )}
-            <ul>{main.map((link) => renderLink(link, 'main'))}</ul>
+            {/* 비로그인 폰만 — PC 는 상단 메뉴에 같은 칸이 있다 */}
+            {main.length > 0 && (
+              <ul className='border-b border-line pb-4 md:hidden'>
+                {main.map((link) => renderLink(link, 'main'))}
+              </ul>
+            )}
             {/* 하루 한 번 하는 놀이 묶음 — 이름표로 묶음임을 알린다(2026-11-26 HJ C안) */}
-            <div className='border-t border-line pt-4'>
+            <div>
               <p
                 id='toc-daily'
                 className='mb-1 px-3 text-xs font-semibold text-text-subtle'
@@ -205,7 +213,7 @@ export const MobileTocMenu = ({ user }: MobileTocMenuProps) => {
                   setOpen(false);
                   logout();
                 }}
-                className='mt-auto flex h-10 items-center gap-2 rounded-md px-3 text-sm text-destructive transition-colors hover:bg-sunken'
+                className='mt-auto flex h-10 items-center gap-2 rounded-md px-3 text-sm text-destructive transition-colors hover:bg-sunken md:hidden'
               >
                 <LogOut aria-hidden='true' className='size-4' />
                 로그아웃

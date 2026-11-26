@@ -1,12 +1,16 @@
 /**
- * 모바일 "목차" 메뉴의 항목 — 순수 함수로 떼어 두어 테스트하기 쉽게 한다.
+ * ☰ "목차" 메뉴의 항목 — 순수 함수로 떼어 두어 테스트하기 쉽게 한다.
  *
- * 역할 분담 (2026-11-23 HJ, A안):
- * - 하단 탭바(BottomTabBar): 로그인한 사람이 매일 쓰는 곳(내 서재·라운지·리더 찾기·알림)
- * - 목차: 그 밖의 모든 곳. 모바일에선 GnbNav 가 숨겨져서 여기가 아니면 푸터까지 내려야 했다.
+ * 역할 분담 (2026-11-26 HJ, PC = 폰):
+ * - 메뉴 네 칸(PC 상단 글자·폰 하단 탭): 내 서재·라운지·전체 도서·책 이야기
+ * - 내 서재에 딸린 곳(문장 서랍·주간 회상·배지·AI 취향 분석·설정): PC 프로필 메뉴 / 폰 목차 맨 위
+ * - 목차: 하루 한 번(오늘의 문장·온라인 필사)과 잘 안 가는 곳(소개·공지·문의). PC 에도 ☰ 가 있다.
  *
- * 내 서재·라운지·리더 찾기·알림은 탭바에 이미 있으니 목차에 다시 넣지 않는다(같은 메뉴 두 벌 X).
+ * 메뉴 칸에 이미 있는 곳은 목차에 다시 넣지 않는다(같은 메뉴 두 벌 X).
+ * 단 비로그인 폰은 하단 탭이 없어서 전체 도서·책 이야기를 목차에 둔다(main).
  */
+import { getMyLibraryLinks } from '@/entities/profile/model/myLibraryLinks';
+
 export type TocLink = {
   href: string;
   label: string;
@@ -19,11 +23,11 @@ export type TocLink = {
 };
 
 export type TocGroups = {
-  /** 로그인했을 때만 — 내 공간 */
+  /** 로그인했을 때만 — 내 서재에 딸린 곳(폰 목차 맨 위, PC 는 프로필 메뉴가 같은 일을 한다) */
   account: TocLink[];
-  /** 누구에게나 — 둘러볼 곳 */
+  /** 비로그인 폰만 — 하단 탭이 없어 여기서 둘러볼 곳으로 간다 */
   main: TocLink[];
-  /** 누구에게나 — 하루 한 번 하는 놀이(오늘의 문장·온라인 필사, 2026-11-26 HJ C안) */
+  /** 누구에게나 — 하루 한 번 하는 놀이(오늘의 문장·온라인 필사) */
   daily: TocLink[];
   /** 작게 — 자주 안 가지만 찾을 수 있어야 하는 곳 */
   sub: TocLink[];
@@ -31,7 +35,7 @@ export type TocGroups = {
 
 type GetTocGroupsParams = {
   isLoggedIn: boolean;
-  /** 로그인한 사람의 아이디 — 문장 서랍(/{username}/quotes) 주소에 쓴다 */
+  /** 로그인한 사람의 아이디 — 문장 서랍(/{username}/quotes) 같은 주소에 쓴다 */
   username?: string | null;
 };
 
@@ -39,28 +43,28 @@ export const getTocGroups = ({
   isLoggedIn,
   username = null,
 }: GetTocGroupsParams): TocGroups => ({
-  // 내 서재는 하단 탭바 첫 칸에 있어 목차엔 두지 않는다(2026-11-24 HJ, 메뉴 겹침 정리 A안).
-  // 문장 서랍은 서재 캘린더 아래까지 내려가야만 닿아서 여기에도 둔다(2026-11-26 HJ)
+  // 내 서재는 폰 하단 탭 첫 칸이라 빼고, 나머지는 PC 프로필 메뉴와 같은 목록
   account: isLoggedIn
     ? [
-        ...(username
-          ? [{ href: `/${username}/quotes`, label: '문장 서랍' }]
-          : []),
+        ...getMyLibraryLinks(username)
+          .filter((link) => link.key !== 'library')
+          .map(({ href, label }) => ({ href, label })),
         { href: '/settings', label: '설정' },
       ]
     : [],
-  main: [
-    { href: '/books/all', label: '전체 도서' },
-    { href: '/blog', label: '책 이야기' },
-    { href: '/about', label: '서비스 소개' },
-  ],
-  // PC 상단 메뉴엔 넣지 않는다 — 로그인하면 7칸이 돼 768~1024px 에서 검색창이 너무 줄어든다.
-  // PC 는 홈 당근·서재 배너·푸터로 들어간다. 목차에서 /sentence 를 누르면 서재 배너처럼 모달로 뜬다.
+  main: isLoggedIn
+    ? []
+    : [
+        { href: '/books/all', label: '전체 도서' },
+        { href: '/blog', label: '책 이야기' },
+      ],
   daily: [
     { href: '/sentence', label: '오늘의 문장 뽑기', fullPageLoad: true },
     { href: '/typing/little-prince', label: '어린 왕자 온라인 필사' },
   ],
+  // 서비스 소개·공지·문의는 "잘 안 보여도 되는 곳"(2026-11-26 HJ) — 작은 글씨로 맨 아래
   sub: [
+    { href: '/about', label: '서비스 소개' },
     { href: '/updates', label: '공지·업데이트' },
     { href: '/contact', label: '문의' },
   ],

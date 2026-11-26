@@ -15,30 +15,31 @@ type GnbNavProps = {
 type GnbLink = {
   href: string;
   label: string;
+  /** 이 주소들에서도 이 칸을 켠다 — 라운지 안에서 들어가는 리더 찾기(/search) */
+  alsoActiveOn?: string[];
 };
+
+const isUnder = (pathname: string, base: string) =>
+  pathname === base || pathname.startsWith(`${base}/`);
 
 export const GnbNav = ({ isLoggedIn, username }: GnbNavProps) => {
   const pathname = usePathname();
 
   const myLibrary = isLoggedIn && username ? `/${username}` : null;
 
+  // 메뉴 네 칸 — 폰 하단 탭(navItems)과 같은 칸이다(2026-11-26 HJ, "모바일이랑 통일성").
+  // - 리더 찾기는 라운지 안으로 옮겼다(라운지 머리의 버튼). /search 에선 라운지 칸이 켜진다.
+  // - 문장 서랍·주간 회상·배지·AI 취향 분석은 서재 안 내용이라 프로필 메뉴에서 닿는다.
+  // - 하루 한 번(오늘의 문장·필사)과 소개·공지·문의는 ☰ 목차에 있다.
+  // '홈'은 두지 않는다 — 로고가 언제나 홈으로 간다(2026-10-25 HJ)
   const links: GnbLink[] = [
-    // 내 서재 — 예전엔 프로필 드롭다운 안에만 있어 PC 에서 한 번 더 눌러야 했다(2026-11-24 HJ, A안)
     ...(myLibrary ? [{ href: myLibrary, label: '내 서재' }] : []),
-    // '홈'은 두지 않는다 — 로고가 언제나 홈으로 간다(2026-10-25 HJ)
-    // 소개는 홈에 합쳐졌다(2026-10-25). 남은 공지·업데이트 이력은 푸터에서만 닿는다.
-    { href: '/books/all', label: '전체 도서' },
-    // 책 이야기(독후감·인물관계도)는 2026-11-23 전까지 사이트맵에만 있고 사람이 닿을 링크가 없었다.
-    { href: '/blog', label: '책 이야기' },
-    // 라운지·리더 찾기는 로그인해야 볼 수 있는 영역이라 비로그인 방문자에겐 노출하지 않는다.
-    // '검색'이라 쓰지 않는 이유: 바로 옆 GnbSearch는 책을 찾는 입력창이라 헷갈린다.
-    // '리더 찾기'인 이유: 이제 검색어 없이도 추천 리더를 둘러볼 수 있다(검색은 그중 하나).
+    // 라운지는 로그인해야 볼 수 있는 영역이라 비로그인 방문자에겐 노출하지 않는다.
     ...(isLoggedIn
-      ? [
-          { href: '/feed', label: '라운지' },
-          { href: '/search', label: '리더 찾기' },
-        ]
+      ? [{ href: '/feed', label: '라운지', alsoActiveOn: ['/search'] }]
       : []),
+    { href: '/books/all', label: '전체 도서' },
+    { href: '/blog', label: '책 이야기' },
   ];
 
   return (
@@ -54,7 +55,8 @@ export const GnbNav = ({ isLoggedIn, username }: GnbNavProps) => {
         const active =
           link.href === myLibrary
             ? pathname === link.href
-            : pathname === link.href || pathname.startsWith(`${link.href}/`);
+            : isUnder(pathname, link.href) ||
+              (link.alsoActiveOn ?? []).some((base) => isUnder(pathname, base));
         return (
           <IntentPrefetchLink
             key={link.href}

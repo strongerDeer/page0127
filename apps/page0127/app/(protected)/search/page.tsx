@@ -1,4 +1,7 @@
+import Link from 'next/link';
+
 import { PageContainer, PageHeader } from '@repo/ui';
+import { ChevronLeft } from 'lucide-react';
 
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
@@ -25,6 +28,16 @@ export default async function SearchPage() {
       <PageHeader
         title='리더 찾기'
         description='닉네임으로 리더를 찾아보세요'
+        // 메뉴 칸이 아니라 라운지 안에서 들어오는 곳이 됐다(2026-11-26 HJ) → 돌아갈 길
+        above={
+          <Link
+            href='/feed'
+            className='inline-flex items-center gap-0.5 text-sm text-text-subtle hover:text-text-strong'
+          >
+            <ChevronLeft aria-hidden='true' className='size-4' />
+            라운지로
+          </Link>
+        }
       />
 
       <UserSearch

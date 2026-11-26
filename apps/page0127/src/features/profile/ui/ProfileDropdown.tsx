@@ -23,11 +23,31 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@repo/ui';
-import { BookOpen, LogOut, Quote, Settings } from 'lucide-react';
+import {
+  Award,
+  BookOpen,
+  CalendarDays,
+  ChevronDown,
+  LogOut,
+  Quote,
+  Settings,
+  Sparkles,
+} from 'lucide-react';
 
 import { nameInitials } from '@/entities/profile/model/displayName';
+import { getMyLibraryLinks } from '@/entities/profile/model/myLibraryLinks';
 
 import { useLogout } from '@/features/auth/api/useLogout';
+
+import type { MyLibraryLinkKey } from '@/entities/profile/model/myLibraryLinks';
+
+const MY_LIBRARY_ICONS: Record<MyLibraryLinkKey, typeof BookOpen> = {
+  library: BookOpen,
+  quotes: Quote,
+  recap: CalendarDays,
+  badges: Award,
+  taste: Sparkles,
+};
 
 type ProfileDropdownProps = {
   /** 사용자 프로필 이미지 URL */
@@ -57,11 +77,17 @@ export const ProfileDropdown = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className='flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2'>
+        <button
+          type='button'
+          aria-label={`${displayName} 메뉴`}
+          className='flex items-center gap-1 rounded-full text-text-subtle hover:text-text-strong focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2'
+        >
           <Avatar>
-            <AvatarImage src={photoUrl || undefined} alt={displayName} />
+            <AvatarImage src={photoUrl || undefined} alt='' />
             <AvatarFallback>{initial}</AvatarFallback>
           </Avatar>
+          {/* 동그라미만 있으면 눌러서 열리는 메뉴인 줄 몰라서 ▾ 를 붙였다(2026-11-26 점검) */}
+          <ChevronDown aria-hidden='true' className='size-4' />
         </button>
       </DropdownMenuTrigger>
 
@@ -69,31 +95,23 @@ export const ProfileDropdown = ({
         <DropdownMenuLabel>{displayName}</DropdownMenuLabel>
         <DropdownMenuSeparator />
 
-        {/* 내 서재 — 공개 서재와 같은 화면이라 항목을 하나로 합쳤다 */}
-        {username && (
-          <DropdownMenuItem asChild>
-            <Link
-              href={`/${username}`}
-              className='flex cursor-pointer items-center'
-            >
-              <BookOpen className='mr-2 h-4 w-4' />
-              <span>내 서재</span>
-            </Link>
-          </DropdownMenuItem>
-        )}
+        {/*
+          내 서재와 거기 딸린 곳 — 문장 서랍·주간 회상·배지·AI 취향 분석은 서재 안 내용이라
+          상단 메뉴 칸 대신 여기서 닿는다(2026-11-26 HJ). 폰 ☰ 목차와 같은 목록(getMyLibraryLinks).
+        */}
+        {getMyLibraryLinks(username).map(({ key, href, label }) => {
+          const Icon = MY_LIBRARY_ICONS[key];
+          return (
+            <DropdownMenuItem key={key} asChild>
+              <Link href={href} className='flex cursor-pointer items-center'>
+                <Icon className='mr-2 h-4 w-4' />
+                <span>{label}</span>
+              </Link>
+            </DropdownMenuItem>
+          );
+        })}
 
-        {/* 문장 서랍 — 서재 캘린더 아래까지 내려가야만 닿아서 여기에도 둔다(2026-11-26 HJ) */}
-        {username && (
-          <DropdownMenuItem asChild>
-            <Link
-              href={`/${username}/quotes`}
-              className='flex cursor-pointer items-center'
-            >
-              <Quote className='mr-2 h-4 w-4' />
-              <span>문장 서랍</span>
-            </Link>
-          </DropdownMenuItem>
-        )}
+        <DropdownMenuSeparator />
 
         {/* 설정 */}
         <DropdownMenuItem asChild>
