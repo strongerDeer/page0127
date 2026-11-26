@@ -10,11 +10,13 @@ import {
 } from '@/shared/lib/admin/dateRange';
 
 import { getGaEvents } from '@/features/admin-analytics/api/getGaEvents';
+import { getGaEventTimeline } from '@/features/admin-analytics/api/getGaEventTimeline';
 import { getGaRealtime } from '@/features/admin-analytics/api/getGaRealtime';
 import { getGaReports } from '@/features/admin-analytics/api/getGaReports';
 import { getSearchQueries } from '@/features/admin-analytics/api/getSearchQueries';
 import { getSignupChannels } from '@/features/admin-analytics/api/getSignupChannels';
 import { EventFunnelPanel } from '@/features/admin-analytics/ui/EventFunnelPanel';
+import { EventTimelinePanel } from '@/features/admin-analytics/ui/EventTimelinePanel';
 import {
   GaInsightsView,
   Section,
@@ -56,6 +58,10 @@ export default async function AdminAnalyticsPage({
   // Search Console 은 GA 한도와 무관해서 나란히 둔다
   const gaPromise = getGaReports(range);
   const eventsPromise = gaPromise.then(() => getGaEvents(range));
+  // 이벤트 현황도 같은 이유로 깔때기 다음에 — 실패해도 앞 칸은 이미 그려져 있다
+  const timelinePromise = eventsPromise.then(() =>
+    getGaEventTimeline(range, now)
+  );
   const searchPromise = getSearchQueries(range);
   // 운영 기록(인스타 공유 등) — DB 라 GA 한도와 무관, 나란히
   const notesPromise = getAdminEvents(range);
@@ -126,6 +132,15 @@ export default async function AdminAnalyticsPage({
           range={range}
         />
       </Suspense>
+
+      <Section title='어떤 이벤트가 언제 났나?' cols={1}>
+        <Suspense
+          key={`tl-${range.from}-${range.to}`}
+          fallback={<Skeleton className='h-64' />}
+        >
+          <EventTimelineBlock promise={timelinePromise} />
+        </Suspense>
+      </Section>
 
       <Section title='가입 유도가 효과 있나?' cols={1}>
         <Suspense
@@ -245,6 +260,23 @@ const GaEventsBlock = async ({
       source='GA4'
       missing={events.status === 'unconfigured' ? events.missing : undefined}
       error={events.status === 'error' ? events.message : undefined}
+    />
+  );
+};
+
+const EventTimelineBlock = async ({
+  promise,
+}: {
+  promise: ReturnType<typeof getGaEventTimeline>;
+}) => {
+  const result = await promise;
+  return result.status === 'ok' ? (
+    <EventTimelinePanel result={result} />
+  ) : (
+    <SetupNotice
+      source='GA4'
+      missing={result.status === 'unconfigured' ? result.missing : undefined}
+      error={result.status === 'error' ? result.message : undefined}
     />
   );
 };

@@ -38,6 +38,7 @@ declare global {
  *   활성화  book_add → book_complete      ← 비어 있던 구간
  *   차별화  taste_analysis_run
  *   확산    share_click
+ *   새 기능  daily_sentence_* · typing_*      ← 어드민 유입분석 '이벤트 현황'(eventCatalog.ts)에 함께 적는다
  *
  * ⚠️ 이름을 바꾸면 GA4 에 쌓인 과거 데이터와 이어지지 않는다. 새 이름은 새 이벤트다.
  */
@@ -47,6 +48,23 @@ export type AnalyticsEvent =
    * 오늘의 문장을 펼쳤다(SentenceBook). member: 회원인지, place: 'modal'(서재에서 연 창) | 'landing'(/sentence 랜딩, 11/24부터) | 'page'(11/24 이전 /sentence)
    */
   | 'daily_sentence_draw'
+  /** 오늘의 문장 결과에서 문장을 복사했다(복사가 막힌 브라우저는 세지 않는다). member, place */
+  | 'daily_sentence_copy'
+  /**
+   * 어린 왕자 온라인 필사 — 시작 창에서 방식을 골라 들어갔다.
+   * mode: 'full'(전문 이어 쓰기) | 'chapter'(장 고르기) | 'famous'(명문장), member: 회원인지
+   */
+  | 'typing_start'
+  /**
+   * 한 쪽(명문장은 한 대목)을 끝까지 쳤다. mode, chapter(명문장은 없음), cpm, accuracy,
+   * assisted: 자동 입력 흔적이 있었는지(랭킹 제외 대상), member.
+   * ⚠️ 친 문장·닉네임은 보내지 않는다
+   */
+  | 'typing_page_complete'
+  /** 한 장을 다 썼다 — 회원은 그 장의 모든 쪽이 채워진 순간, 비회원은 장의 마지막 쪽을 끝낸 순간. chapter, member */
+  | 'typing_chapter_complete'
+  /** 타수 랭킹에 이름을 올렸다 — 비회원 닉네임 등록 또는 회원 순위 참여 켜기. member */
+  | 'typing_rank_join'
   /** 홈 맛보기 히어로를 봤다(마운트 한 번) — 맛보기 깔때기의 분모 */
   | 'shelf_preview_view'
   /** 홈 맛보기에서 책을 골랐다. source: 'picks' | 'search', count: 고른 뒤 권수 */

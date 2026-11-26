@@ -12,6 +12,7 @@ import {
   toRangeQuery,
 } from '@/shared/lib/admin/dateRange';
 
+import { getGaEventTotals } from '@/features/admin-analytics/api/getGaEventTotals';
 import { getCostSummary } from '@/features/admin-costs/api/getCostSummary';
 import { getOpenAiCosts } from '@/features/admin-costs/api/getOpenAiCosts';
 import {
@@ -23,14 +24,17 @@ import {
   getRecentAdminEvents,
 } from '@/features/admin-events/api/getAdminEvents';
 import { AdminEventsPanel } from '@/features/admin-events/ui/AdminEventsPanel';
+import { getFeatureUsage } from '@/features/admin-overview/api/getFeatureUsage';
 import { getFunnel } from '@/features/admin-overview/api/getFunnel';
 import { getOverview } from '@/features/admin-overview/api/getOverview';
 import { getRetention } from '@/features/admin-overview/api/getRetention';
 import { getTrends } from '@/features/admin-overview/api/getTrends';
 import { buildAttention } from '@/features/admin-overview/lib/attention';
+import { FEATURE_EVENT_NAMES } from '@/features/admin-overview/lib/featureUsage';
 import { sumPoints } from '@/features/admin-overview/lib/trend';
 import { peakHour } from '@/features/admin-overview/lib/visitHours';
 import { AttentionList } from '@/features/admin-overview/ui/AttentionList';
+import { FeatureUsageCards } from '@/features/admin-overview/ui/FeatureUsageCards';
 import { FunnelPanel } from '@/features/admin-overview/ui/FunnelPanel';
 import { OverviewCards } from '@/features/admin-overview/ui/OverviewCards';
 import { RetentionPanel } from '@/features/admin-overview/ui/RetentionPanel';
@@ -192,6 +196,15 @@ const RetentionSection = async ({ range }: RangeProps) => {
   );
 };
 
+/** 새 기능 카드 — DB 숫자와 GA 깔때기를 나란히. GA 가 실패해도 DB 숫자는 보인다 */
+const FeatureUsageSection = async ({ range }: RangeProps) => {
+  const [usage, ga] = await Promise.all([
+    getFeatureUsage(range),
+    getGaEventTotals(range, FEATURE_EVENT_NAMES),
+  ]);
+  return <FeatureUsageCards usage={usage} ga={ga} periodLabel={range.label} />;
+};
+
 const FunnelSection = async ({ range }: RangeProps) => {
   const funnel = await getFunnel(range);
   if (!funnel) {
@@ -255,6 +268,12 @@ export default async function AdminHomePage({
         <ErrorBoundary fallback={<FailNotice />}>
           <Suspense key={rangeKey} fallback={<Skeleton height='h-40' />}>
             <TrendSection range={range} />
+          </Suspense>
+        </ErrorBoundary>
+
+        <ErrorBoundary fallback={<FailNotice />}>
+          <Suspense key={rangeKey} fallback={<Skeleton height='h-56' />}>
+            <FeatureUsageSection range={range} />
           </Suspense>
         </ErrorBoundary>
 

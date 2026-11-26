@@ -14,6 +14,8 @@ import {
 
 import { useRouter } from 'next/navigation';
 
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
+
 import {
   accuracyOf,
   chapterPagesOf,
@@ -356,6 +358,7 @@ export const TypingRoom = ({
         // 저장 못 해도 다음에 다시 적으면 된다
       }
       setRankAction({ status: 'done' });
+      trackEvent('typing_rank_join', { member: false });
       router.refresh();
     });
   };
@@ -371,6 +374,7 @@ export const TypingRoom = ({
       }
       setOptIn(true);
       setRankAction({ status: 'done' });
+      trackEvent('typing_rank_join', { member: true });
       router.refresh();
     });
   };
@@ -404,6 +408,28 @@ export const TypingRoom = ({
       : Promise.resolve(null);
     if (ticket) tokenRef.current = { key: ticket.key, token: finished };
 
+    // GA — 친 문장·닉네임은 보내지 않는다(숫자와 방식만)
+    const member = Boolean(memberId);
+    trackEvent('typing_page_complete', {
+      mode,
+      chapter: sheet.chapter ?? undefined,
+      cpm: finalCpm,
+      accuracy: finalAccuracy,
+      assisted,
+      member,
+    });
+    // 비회원은 진행도가 없으니 "장의 마지막 쪽을 끝냈다"로 장 완료를 센다
+    if (!member && sheet.chapter !== null && mode !== 'famous') {
+      const chapterSheets = FULL_SHEETS.filter(
+        (x) => x.chapter === sheet.chapter
+      );
+      if (chapterSheets.at(-1)?.key === sheet.key)
+        trackEvent('typing_chapter_complete', {
+          chapter: sheet.chapter,
+          member,
+        });
+    }
+
     if (!memberId) {
       setResult({ ...base, save: 'guest' });
       return;
@@ -420,6 +446,13 @@ export const TypingRoom = ({
         assisted,
       });
       if (saved.ok) {
+        // 회원은 이번 쪽으로 그 장의 모든 쪽이 채워진 순간을 장 완료로 센다(다시 쓴 장은 세지 않는다)
+        const chapter = sheet.chapter;
+        if (chapter !== null && !doneKeys.has(key)) {
+          const after = chapterPagesOf(chapter, new Set(doneKeys).add(key));
+          if (after.done === after.total)
+            trackEvent('typing_chapter_complete', { chapter, member: true });
+        }
         setDoneKeys((prev) => new Set(prev).add(key));
         setResult((r) => (r ? { ...r, save: 'saved' } : r));
         router.refresh(); // 진행도·랭킹을 서버 값으로 다시 그린다
@@ -505,6 +538,10 @@ export const TypingRoom = ({
       return goTo('full', firstUnwrittenIndex(doneKeys, fullIndex + 1));
     return goTo('chapter', (fullIndex + 1) % FULL_SHEETS.length);
   };
+
+  /** 시작 창에서 방식을 골라 들어갔다 — 시작 창에서 고를 때마다(탭 전환·다음 쪽은 세지 않는다) */
+  const trackStart = (startMode: Mode) =>
+    trackEvent('typing_start', { mode: startMode, member: Boolean(memberId) });
 
   /** 장을 고르면 그 장에서 아직 안 쓴 첫 쪽으로(다 썼으면 첫 쪽) */
   const pickChapter = (no: number) => {
@@ -656,9 +693,10 @@ export const TypingRoom = ({
                     onConfirm={(i) => {
                       const key = MODES[i].key;
                       setStartModeIndex(i);
-                      if (key === 'full')
+                      if (key === 'full') {
+                        trackStart('full');
                         goTo('full', firstUnwrittenIndex(doneKeys));
-                      else setStartStep(key);
+                      } else setStartStep(key);
                     }}
                   />
                 )}
@@ -673,7 +711,10 @@ export const TypingRoom = ({
                     initial={0}
                     items={famousItems}
                     onCancel={() => setStartStep('mode')}
-                    onConfirm={(i) => goTo('famous', i)}
+                    onConfirm={(i) => {
+                      trackStart('famous');
+                      goTo('famous', i);
+                    }}
                   />
                 )}
                 {startStep === 'chapter' && (
@@ -690,7 +731,10 @@ export const TypingRoom = ({
                     }
                     items={chapterItems}
                     onCancel={() => setStartStep('mode')}
-                    onConfirm={(i) => pickChapter(i + 1)}
+                    onConfirm={(i) => {
+                      trackStart('chapter');
+                      pickChapter(i + 1);
+                    }}
                   />
                 )}
               </div>

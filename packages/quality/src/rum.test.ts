@@ -21,6 +21,20 @@ describe('normalizeRoute', () => {
     );
   });
 
+  // 2026-11-26: 목록에 없던 새 페이지가 서재(/[username]) 성능으로 섞였다
+  it('하루 한 번 페이지·블로그·체험은 서재로 접지 않는다', () => {
+    expect(normalizeRoute('/sentence')).toBe('/sentence');
+    expect(normalizeRoute('/typing/little-prince')).toBe(
+      '/typing/little-prince'
+    );
+    expect(normalizeRoute('/blog/korea-reading-stats-2025')).toBe(
+      '/blog/[slug]'
+    );
+    expect(normalizeRoute('/demo')).toBe('/demo');
+    expect(normalizeRoute('/library/manage')).toBe('/library/manage');
+    expect(normalizeRoute('/admin/sentences')).toBe('/admin/sentences');
+  });
+
   it('첫 세그먼트가 알려진 라우트가 아니면 사용자 프로필로 접는다', () => {
     expect(normalizeRoute('/dreamfulbud')).toBe('/[username]');
     expect(
@@ -84,7 +98,9 @@ describe('normalizeRoute', () => {
 
   // 카디널리티가 방문 수만큼 늘어나면 "어느 화면이 느린가"를 그룹핑할 수 없다.
   it('깊거나 낯선 경로도 유계 문자열로 접는다', () => {
-    expect(normalizeRoute('/books/a/b/c/d/e/f/g')).toBe('/books/[id]/[id]/[id]');
+    expect(normalizeRoute('/books/a/b/c/d/e/f/g')).toBe(
+      '/books/[id]/[id]/[id]'
+    );
     expect(normalizeRoute('/dreamfulbud/a/b/c/d')).toBe('/[username]/[bookId]');
   });
 });
