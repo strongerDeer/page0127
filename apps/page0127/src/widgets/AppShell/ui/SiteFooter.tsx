@@ -15,6 +15,8 @@ const footerLinks = [
   { href: '/about', label: '서비스 소개' },
   { href: '/books/all', label: '전체 도서' },
   { href: '/blog', label: '책 이야기' },
+  { href: '/sentence', label: '오늘의 문장' },
+  { href: '/typing/little-prince', label: '온라인 필사' },
   { href: '/updates', label: '공지·업데이트' },
   { href: '/contact', label: '문의' },
   { href: '/privacy', label: '개인정보처리방침' },
