@@ -31,12 +31,12 @@ describe('toEventsRequest', () => {
 describe('parseEvents', () => {
   it('dateRange 열로 현재/이전을 가르고, 빠진 이벤트는 0 으로 채운다', () => {
     const out = parseEvents([
-      row(['signup_start', 'current'], [10, 8]),
-      row(['signup_start', 'previous'], [4, 3]),
+      row(['login_start', 'current'], [10, 8]),
+      row(['login_start', 'previous'], [4, 3]),
       row(['sign_up', 'current'], [2, 2]),
     ]);
     expect(out).toHaveLength(FUNNEL_EVENTS.length);
-    const start = out.find((e) => e.name === 'signup_start');
+    const start = out.find((e) => e.name === 'login_start');
     expect(start?.count).toEqual({ current: 10, previous: 4 });
     expect(start?.users).toEqual({ current: 8, previous: 3 });
     expect(out.find((e) => e.name === 'book_add')?.count).toEqual({

@@ -6,6 +6,7 @@ import { Heart } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import { activityKeys } from '@/entities/activity';
 import { bookLikeApi } from '@/entities/like';
@@ -72,6 +73,10 @@ export const BookRecordLikeButton = ({
       );
 
       return { previousFeeds };
+    },
+    // 누른 쪽만 센다 — 좋아요 취소는 세지 않는다
+    onSuccess: (_data, currentlyLiked) => {
+      if (!currentlyLiked) trackEvent('like_add');
     },
     onError: (error, _vars, context) => {
       if (context?.previousFeeds) {

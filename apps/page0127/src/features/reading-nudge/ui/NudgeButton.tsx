@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { createClient } from '@/shared/config/supabase/client';
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import { getSeoulToday } from '@/entities/book/model/libraryPeriod';
 import {
@@ -90,6 +91,8 @@ export const NudgeButton = ({
       void cache.invalidateQueries({
         queryKey: ['reading-nudge-sent', currentUserId],
       });
+      // 받는 사람은 보내지 않는다 — 앞섰는지·뒤졌는지만
+      trackEvent('league_nudge', { context });
       toast.success(`${recipientName}님을 콕 찔렀어요.`);
     },
     onError: (error) => {

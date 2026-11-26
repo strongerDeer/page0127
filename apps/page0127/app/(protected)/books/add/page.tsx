@@ -422,6 +422,8 @@ const AddBookPage = () => {
           ok: false as const,
           message: '문장을 저장하지 못했어요.',
         }));
+        if (quoteResult.ok)
+          trackEvent('quote_save', { edit: false, from: 'register' });
         if (!quoteResult.ok)
           toast.error(
             `책은 등록했어요. ${quoteResult.message} 책 상세의 내가 모은 문장에서 다시 적어 주세요.`
@@ -440,6 +442,10 @@ const AddBookPage = () => {
         status: formData.status,
         read_count: readCount,
       });
+      // 담으면서 한 줄 독후감을 같이 남겼는지 — 글은 보내지 않는다
+      if (formData.one_line_review?.trim()) {
+        trackEvent('review_save', { edit: false, from: 'register' });
+      }
       if (formData.status === 'completed') {
         trackEvent('book_complete', { from: 'register' });
       }

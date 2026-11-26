@@ -6,6 +6,7 @@ import { Button, cn } from '@repo/ui';
 import { BellRing } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
 
 import { usePushSubscription } from '../api/usePushSubscription';
@@ -43,6 +44,7 @@ export const PushPromptCard = ({ className }: { className?: string }) => {
   const handleEnable = async () => {
     try {
       const result = await enable();
+      trackEvent('push_enable', { place: 'prompt', result });
       if (result === 'ok') {
         toast.success('이제 이 기기로 알림을 보내 드릴게요.');
       } else {

@@ -8,6 +8,8 @@ import { Spinner } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
 import { Search, X } from 'lucide-react';
 
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
+
 import { userApi, userKeys } from '@/entities/user';
 
 import { UserCard } from '@/features/follow/ui/UserCard';
@@ -39,6 +41,8 @@ export const UserSearch = ({ currentUserId, emptyState }: UserSearchProps) => {
   const handleSearch = () => {
     if (searchQuery.trim().length > 0) {
       setActiveQuery(searchQuery.trim());
+      // 리더 이름은 보내지 않는다
+      trackEvent('reader_search');
     }
   };
 

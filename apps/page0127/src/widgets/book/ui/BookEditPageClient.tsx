@@ -98,6 +98,11 @@ export const BookEditPageClient = ({
     // 저장 **전에** 판정해야 한다 — updateBook 이 성공하면 book 은 이미 새 상태다.
     // 판정 규칙은 서버가 활동 기록을 만들 때 쓰는 것과 같은 함수를 쓴다.
     const justCompleted = isNewlyCompleted(book?.status, formData.status);
+    // 한 줄 독후감이 새로 생기거나 바뀌었는지 — 글은 보내지 않는다
+    const nextReview = formData.one_line_review?.trim() ?? '';
+    const reviewChanged =
+      nextReview !== '' && nextReview !== (book?.one_line_review ?? '').trim();
+    const reviewIsNew = !(book?.one_line_review ?? '').trim();
 
     // 책을 다시 선택했다면 도서 자체 정보(제목/저자/표지 등)도 함께 갱신
     const updates: Partial<BookInput> = { ...formData };
@@ -124,6 +129,9 @@ export const BookEditPageClient = ({
     const result = await updateBook(id, updates);
 
     if (result) {
+      if (reviewChanged) {
+        trackEvent('review_save', { edit: !reviewIsNew, from: 'edit' });
+      }
       if (justCompleted) {
         trackEvent('book_complete', { from: 'edit' });
         // 이 완독으로 새 뱃지를 받았으면 축하 토스트 — 이동을 막지 않도록 기다리지 않는다

@@ -1,8 +1,8 @@
-import Link from 'next/link';
-
 import { CoverImage } from '@repo/ui';
 import { ChevronRight } from 'lucide-react';
 
+import { CtaLink } from '@/shared/lib/analytics/CtaLink';
+import { TrackView } from '@/shared/lib/analytics/TrackView';
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { toCoverSource } from '@/entities/book';
@@ -86,6 +86,8 @@ export const WeeklyRecapCard = async () => {
       aria-labelledby='weekly-recap-heading'
       className='rounded-xl border border-line px-7 py-6'
     >
+      {/* 카드가 보였다 — 어떤 종류의 회상이 나왔는지만 */}
+      <TrackView event='recap_view' params={{ kind: card.kind }} />
       <div className='flex items-baseline justify-between gap-3'>
         <h2
           id='weekly-recap-heading'
@@ -93,13 +95,14 @@ export const WeeklyRecapCard = async () => {
         >
           {toHeading(card, count)}
         </h2>
-        <Link
+        <CtaLink
+          location='recap_more'
           href='/books/recap'
           className='inline-flex shrink-0 items-center text-xs text-text-subtle hover:text-text-strong'
         >
           모아 보기
           <ChevronRight className='size-3.5' aria-hidden />
-        </Link>
+        </CtaLink>
       </div>
 
       <div className='mt-4 flex items-start gap-4'>

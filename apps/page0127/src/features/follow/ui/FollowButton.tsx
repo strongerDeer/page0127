@@ -6,6 +6,7 @@ import { Loader2, UserMinus, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { followBroadcast } from '@/shared/lib/broadcastChannel';
 
 import { followApi, followKeys } from '@/entities/follow';
@@ -72,6 +73,7 @@ export const FollowButton = ({
     onSuccess: () => {
       // 다른 탭에 팔로우 이벤트 전송
       followBroadcast.sendFollowEvent('follow', userId);
+      trackEvent('follow_add');
       toast.success('팔로우했습니다.');
     },
     onError: (error, _vars, context) => {
@@ -91,6 +93,7 @@ export const FollowButton = ({
     onSuccess: () => {
       // 다른 탭에 언팔로우 이벤트 전송
       followBroadcast.sendFollowEvent('unfollow', userId);
+      trackEvent('follow_remove');
       toast.success('언팔로우했습니다.');
     },
     onError: (error, _vars, context) => {

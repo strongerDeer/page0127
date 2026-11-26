@@ -3,6 +3,7 @@
 import { useCallback, useReducer, useRef } from 'react';
 
 import { getBookDetail, searchBooks } from '@/shared/api/book';
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import { parseIsbn } from '@/features/book/lib/parseIsbn';
 
@@ -146,6 +147,14 @@ export const useBookSearch = () => {
         maxResults: ITEMS_PER_PAGE,
       });
       if (requestId !== requestIdRef.current) return; // 뒤늦게 온 옛 응답 — 버린다
+      // 첫 쪽만 센다(쪽 넘김은 같은 검색). 검색어는 보내지 않는다 — 찾았는지만.
+      // 입력이 멈출 때마다 자동 검색이라 횟수는 "입력 묶음" 수에 가깝다
+      if (page === 1) {
+        trackEvent('book_search', {
+          has_results:
+            response.items.length + (response.catalogItems?.length ?? 0) > 0,
+        });
+      }
 
       // 검색 성공: 결과 저장, loading OFF
       // items 는 ISBN 없는 항목(세트 상품 등)이 걸러진 뒤라 totalResults 보다 적을 수 있다
