@@ -14,6 +14,7 @@ export {
 } from './content/littlePrinceIntro';
 export type { TypingProgress, TypingSheet } from './model/pages';
 export {
+  chapterPagesOf,
   computeProgress,
   estimateTotalChars,
   FAMOUS_SHEETS,

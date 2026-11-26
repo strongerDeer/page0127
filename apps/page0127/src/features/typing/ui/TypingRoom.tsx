@@ -16,6 +16,7 @@ import { useRouter } from 'next/navigation';
 
 import {
   accuracyOf,
+  chapterPagesOf,
   FAMOUS_SHEETS,
   firstUnwrittenIndex,
   FULL_SHEETS,
@@ -483,11 +484,12 @@ export const TypingRoom = ({
     goTo('chapter', (todo ?? pages[0]).i);
   };
 
-  const chapterState = (no: number) => {
-    const pages = FULL_SHEETS.filter((x) => x.chapter === no);
-    const done = pages.filter((x) => doneKeys.has(x.key)).length;
-    return done === pages.length ? 'full' : done > 0 ? 'half' : 'none';
-  };
+  // 지금 쓰는 장의 다 쓴 쪽 수 — 오른쪽 칸·결과 창에서 "몇 쪽 남았나"를 보여 준다.
+  // 진행도는 회원만 남으므로 비회원에게는 보이지 않는다(늘 0쪽이라 헷갈린다)
+  const sheetChapter =
+    memberId && mode === 'full' && sheet.chapter !== null
+      ? chapterPagesOf(sheet.chapter, doneKeys)
+      : null;
 
   /** 목록 창에 넣을 장·명문장 줄 */
   const chapterItems = Array.from(
@@ -499,10 +501,11 @@ export const TypingRoom = ({
       key: String(no),
       label: `${no}장`,
       disabled: !open,
+      // 장마다 다 쓴 쪽 수(HJ 2026-11-26) — 다 쓴 장은 ✓
       note: !open
         ? '준비 중'
-        : chapterState(no) === 'full'
-          ? '✓ 다 씀'
+        : memberId
+          ? chapterNote(chapterPagesOf(no, doneKeys))
           : undefined,
     };
   });
@@ -768,6 +771,13 @@ export const TypingRoom = ({
               </div>
               <div className={s.work}>어린 왕자</div>
               <div className={s.counter}>{sheet.counter}</div>
+              {sheetChapter && (
+                <div className={s.chapterDone}>
+                  {sheetChapter.done === sheetChapter.total ? '✓ ' : ''}
+                  {sheet.chapter}장 다 쓴 쪽 {sheetChapter.done}/
+                  {sheetChapter.total}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -842,7 +852,15 @@ export const TypingRoom = ({
             <div className={s.dialogBody}>
               <div className={s.report}>
                 <div className={s.reportText}>
-                  <strong>{sheet.title} 끝까지 썼어요 ✍️</strong>
+                  <strong>
+                    {sheet.title} 끝까지 썼어요 ✍️
+                    {sheetChapter &&
+                      sheetChapter.done === sheetChapter.total && (
+                        <span className={s.chapterClear}>
+                          {sheet.chapter}장을 다 썼어요! 🎉
+                        </span>
+                      )}
+                  </strong>
                   <span>평균타수</span>: {result.cpm}타
                   <br />
                   <span>정확도</span>: {result.accuracy}%
@@ -1104,3 +1122,7 @@ const RankChase = ({ place }: { place: RankPlace }) =>
       더?
     </>
   );
+
+/** 장 고르기 목록 줄 오른쪽 — "2/5쪽", 다 쓴 장은 "✓ 5/5쪽" */
+const chapterNote = ({ done, total }: { done: number; total: number }) =>
+  done === total ? `✓ ${done}/${total}쪽` : `${done}/${total}쪽`;

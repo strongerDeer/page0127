@@ -98,6 +98,10 @@ describe('진행도', () => {
     expect(p.chapters[0]).toBe('full');
     expect(p.chapters[1]).toBe('half');
     expect(p.doneChapters).toBe(1);
+    // 장별 다 쓴 쪽 / 전체 쪽(HJ 2026-11-26)
+    expect(p.chapterPages[0]).toEqual({ done: 5, total: 5 });
+    expect(p.chapterPages[1]).toEqual({ done: 1, total: 8 });
+    expect(p.chapterPages[2]).toEqual({ done: 0, total: 3 });
     expect(p.percent).toBeGreaterThan(0);
   });
   it('이어 쓰기는 안 쓴 첫 쪽으로, 다 썼으면 처음으로', () => {

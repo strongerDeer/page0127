@@ -107,7 +107,21 @@ export type TypingProgress = {
   doneChars: number;
   /** 장별 상태 — 'full' 다 씀, 'half' 쓰는 중, 'none' 안 씀, 'locked' 번역 전 */
   chapters: ('full' | 'half' | 'none' | 'locked')[];
+  /** 장별 다 쓴 쪽 수 / 전체 쪽 수 — 번역 전 장은 total 0 (HJ 2026-11-26 "한 쪽만 쳐서 다 쓴 건지 모르잖아") */
+  chapterPages: { done: number; total: number }[];
   doneChapters: number;
+};
+
+/** 한 장의 다 쓴 쪽 / 전체 쪽 */
+export const chapterPagesOf = (
+  chapterNo: number,
+  doneKeys: ReadonlySet<string>
+): { done: number; total: number } => {
+  const sheets = FULL_SHEETS.filter((s) => s.chapter === chapterNo);
+  return {
+    done: sheets.filter((s) => doneKeys.has(s.key)).length,
+    total: sheets.length,
+  };
 };
 
 /** 다 쓴 쪽 열쇠들로 진행도를 낸다 */
@@ -118,12 +132,13 @@ export const computeProgress = (
     (sum, s) => sum + s.text.length,
     0
   );
-  const chapters = LITTLE_PRINCE_SOURCE_LENGTHS.map((_, i) => {
-    // 묶은 뒤의 쪽(FULL_SHEETS) 기준으로 센다
-    const sheets = FULL_SHEETS.filter((s) => s.chapter === i + 1);
-    if (sheets.length === 0) return 'locked' as const;
-    const done = sheets.filter((s) => doneKeys.has(s.key)).length;
-    if (done === sheets.length) return 'full' as const;
+  // 묶은 뒤의 쪽(FULL_SHEETS) 기준으로 센다
+  const chapterPages = LITTLE_PRINCE_SOURCE_LENGTHS.map((_, i) =>
+    chapterPagesOf(i + 1, doneKeys)
+  );
+  const chapters = chapterPages.map(({ done, total }) => {
+    if (total === 0) return 'locked' as const;
+    if (done === total) return 'full' as const;
     return done > 0 ? ('half' as const) : ('none' as const);
   });
   return {
@@ -133,6 +148,7 @@ export const computeProgress = (
     ),
     doneChars,
     chapters,
+    chapterPages,
     doneChapters: chapters.filter((c) => c === 'full').length,
   };
 };
