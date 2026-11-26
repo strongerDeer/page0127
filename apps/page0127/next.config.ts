@@ -136,32 +136,34 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '**.kakaocdn.net' },
     ],
   },
-  // 짧은 유입 주소 — 인스타 프로필 링크 칸은 주소를 그대로 보여 줘서 utm 을 달면 길고 지저분하다.
-  // 그래서 프로필엔 page0127.com/ig 만 두고, 여기서 utm 이 붙은 홈으로 넘긴다(GA 가 utm 으로 출처를 읽는다).
-  // 아이디는 3자 이상(USERNAME_MIN_LENGTH)이라 2자 경로 'ig' 가 서재(/[username])와 겹칠 일이 없다.
+  // 짧은 유입 주소 — 인스타·스레드 프로필 링크 칸은 주소를 그대로 보여 줘서 utm 을 달면 길고 지저분하다.
+  // 그래서 프로필엔 page0127.com/ig(인스타)·/th(스레드) 만 두고, 여기서 utm 이 붙은 주소로 넘긴다(GA 가 utm 으로 출처를 읽는다).
+  // 아이디는 3자 이상(USERNAME_MIN_LENGTH)이라 2자 경로 'ig'·'th' 가 서재(/[username])와 겹칠 일이 없다.
   // permanent: false(307) — 브라우저가 기억하지 않아서 나중에 utm 값을 바꿔도 바로 반영된다.
-  // 프로필에 링크를 여러 개 걸 때는 /ig/{이름} 으로 나누고, utm_content 로 어느 링크인지 구분한다.
+  // 프로필에 링크를 여러 개 걸 때는 /{앞자리}/{이름} 으로 나누고, utm_content 로 어느 링크인지 구분한다.
   async redirects() {
-    const instagramProfileUtm =
-      'utm_source=instagram&utm_medium=social&utm_campaign=profile';
-    // [짧은 주소 뒤 이름, 도착 경로] — 새 링크는 여기 한 줄만 추가하면 된다.
-    const instagramLinks: ReadonlyArray<[string, string]> = [
+    // [짧은 주소 앞자리, utm_source] — 플랫폼마다 출처를 따로 잡아야 GA 에서 인스타·스레드가 섞이지 않는다.
+    const profileSources: ReadonlyArray<[string, string]> = [
+      ['ig', 'instagram'],
+      ['th', 'threads'],
+    ];
+    // [짧은 주소 뒤 이름, 도착 경로] — 새 링크는 여기 한 줄만 추가하면 모든 플랫폼에 생긴다.
+    const profileLinks: ReadonlyArray<[string, string]> = [
       ['sentence', '/sentence'],
       ['typing', '/typing/little-prince'],
       ['blog', '/blog'],
     ];
-    return [
-      {
-        source: '/ig',
-        destination: `/?${instagramProfileUtm}`,
-        permanent: false,
-      },
-      ...instagramLinks.map(([name, path]) => ({
-        source: `/ig/${name}`,
-        destination: `${path}?${instagramProfileUtm}&utm_content=${name}`,
-        permanent: false,
-      })),
-    ];
+    return profileSources.flatMap(([prefix, source]) => {
+      const utm = `utm_source=${source}&utm_medium=social&utm_campaign=profile`;
+      return [
+        { source: `/${prefix}`, destination: `/?${utm}`, permanent: false },
+        ...profileLinks.map(([name, path]) => ({
+          source: `/${prefix}/${name}`,
+          destination: `${path}?${utm}&utm_content=${name}`,
+          permanent: false,
+        })),
+      ];
+    });
   },
   // 모든 응답에 붙는 보안 헤더.
   async headers() {
