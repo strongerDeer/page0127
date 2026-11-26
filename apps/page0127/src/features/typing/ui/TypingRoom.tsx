@@ -28,6 +28,7 @@ import {
 } from '@/entities/typing';
 
 import {
+  finishGuestTypingAction,
   startGuestTypingAction,
   submitGuestTypingAction,
 } from '../api/guestTypingActions';
@@ -126,10 +127,12 @@ export const TypingRoom = ({
     status: 'idle',
   });
   const [nickname, setNickname] = useState('');
-  // 비회원 시작 토큰 — 첫 글자를 칠 때 서버가 서명해 준다. 화면에 그리지 않으므로 ref
-  const guestTokenRef = useRef<{ key: string; token: string } | null>(null);
-  // 쪽을 새로 펼치거나 "다시"를 누를 때마다 올려서 아래 effect 가 토큰을 새로 받게 한다
-  const [tokenTick, setTokenTick] = useState(0);
+  // 비회원 토큰 — 첫 글자에 시작 토큰, 마지막 글자에 끝 토큰을 서버가 서명해 준다.
+  // 서버가 "첫 글자 ~ 마지막 글자"를 직접 재서 타수를 확인한다. 화면에 그리지 않으므로 ref, 응답을 기다리는 Promise 로 둔다
+  const guestTokenRef = useRef<{
+    key: string;
+    token: Promise<string | null>;
+  } | null>(null);
   // 시작 팝업 단계 — 방식 → 명문장·장 목록
   const [startStep, setStartStep] = useState<'mode' | 'famous' | 'chapter'>(
     'mode'
@@ -155,23 +158,6 @@ export const TypingRoom = ({
 
   const sheet: TypingSheet =
     mode === 'famous' ? FAMOUS_SHEETS[famousIndex] : FULL_SHEETS[fullIndex];
-
-  // 비회원 시작 토큰은 "쪽이 화면에 펼쳐질 때" 미리 받는다(첫 글자를 칠 때가 아니라).
-  // 첫 글자에 맞춰 요청하면 서버 응답이 늦을 때(콜드 스타트·개발 서버 컴파일 수 초) 서버가 찍는
-  // 시작 시각이 실제보다 늦어지고, 서버가 잰 시간이 짧아져 정상 기록이 "너무 빠름"으로 거절됐다
-  // (HJ 2026-11-26 489타 거절). 미리 받으면 서버 시작 시각 ≤ 실제 시작이라 거절될 일이 없다.
-  // 기다렸다 치는 만큼 상한이 느슨해질 뿐이라 속이는 데 도움이 되지 않는다.
-  useEffect(() => {
-    if (memberId || !started) return;
-    const key = sheet.key;
-    let alive = true;
-    void startGuestTypingAction(key).then((res) => {
-      if (alive && res.ok) guestTokenRef.current = { key, token: res.token };
-    });
-    return () => {
-      alive = false;
-    };
-  }, [memberId, started, sheet.key, tokenTick]);
 
   // 타이핑 상태 — 쪽이 바뀌면 resetTyping 으로 모두 비운다
   const [value, setValue] = useState('');
@@ -287,7 +273,6 @@ export const TypingRoom = ({
     setResult(null);
     setRankAction({ status: 'idle' });
     guestTokenRef.current = null;
-    setTokenTick((n) => n + 1);
   };
 
   /** 결과 창 "종료" — 방식 고르는 시작 화면으로 돌아간다 */
@@ -319,8 +304,8 @@ export const TypingRoom = ({
       setRankAction({ status: 'error', message: check.message });
       return;
     }
-    const started = guestTokenRef.current;
-    if (!started || started.key !== sheet.key) {
+    const ticket = guestTokenRef.current;
+    if (!ticket || ticket.key !== sheet.key) {
       setRankAction({
         status: 'error',
         message: '시작 기록이 없어요. 다시 쳐 주세요.',
@@ -329,8 +314,16 @@ export const TypingRoom = ({
     }
     setRankAction({ status: 'sending' });
     startSaving(async () => {
+      const token = await ticket.token;
+      if (!token) {
+        setRankAction({
+          status: 'error',
+          message: '기록을 확인하지 못했어요. 다시 쳐 주세요.',
+        });
+        return;
+      }
       const res = await submitGuestTypingAction({
-        token: started.token,
+        token,
         nickname: check.nickname,
         cpm: result.cpm,
         accuracy: result.accuracy,
@@ -373,6 +366,21 @@ export const TypingRoom = ({
     const base = { cpm: finalCpm, accuracy: finalAccuracy, durationMs };
 
     if (!memberId) {
+      // 마지막 글자 순간을 서버에 찍어 둔다(결과 창에서 머무는 시간은 필사 시간이 아니다)
+      const ticket = guestTokenRef.current;
+      if (ticket?.key === sheet.key)
+        guestTokenRef.current = {
+          key: ticket.key,
+          token: ticket.token
+            .then((t) =>
+              t
+                ? finishGuestTypingAction(t).then((r) =>
+                    r.ok ? r.token : null
+                  )
+                : null
+            )
+            .catch(() => null),
+        };
       setResult({ ...base, save: 'guest' });
       return;
     }
@@ -404,6 +412,16 @@ export const TypingRoom = ({
     if (startedAt === null && next.length > 0) {
       setStartedAt(t);
       setNow(t);
+      // 비회원: 첫 글자 순간을 서버에 찍어 둔다
+      if (!memberId) {
+        const key = sheet.key;
+        guestTokenRef.current = {
+          key,
+          token: startGuestTypingAction(key)
+            .then((r) => (r.ok ? r.token : null))
+            .catch(() => null),
+        };
+      }
     }
     const isComposing =
       (e.nativeEvent as InputEvent).isComposing === true || composing;

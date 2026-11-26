@@ -12,7 +12,14 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
  * 형식: base64url(JSON{k: 쪽 열쇠, g: 비회원 id, t: 시작 ms}) + '.' + base64url(HMAC-SHA256)
  * 순수 함수로 두고 비밀값은 인자로 받는다 → 테스트에서 시계·비밀값을 마음대로 넣는다.
  */
-export type GuestTokenPayload = { k: string; g: string; t: number };
+export type GuestTokenPayload = {
+  k: string;
+  g: string;
+  /** 첫 글자를 친 순간 서버가 받은 시각(ms) */
+  t: number;
+  /** 마지막 글자를 친 순간 서버가 받은 시각(ms) — 끝 토큰에만 있다 */
+  e?: number;
+};
 
 const b64url = (buf: Buffer) => buf.toString('base64url');
 
@@ -44,22 +51,31 @@ export const verifyGuestToken = (
     if (
       typeof p?.k !== 'string' ||
       typeof p?.g !== 'string' ||
-      typeof p?.t !== 'number'
+      typeof p?.t !== 'number' ||
+      (p.e !== undefined && typeof p.e !== 'number')
     )
       return null;
-    return { k: p.k, g: p.g, t: p.t };
+    return p.e === undefined
+      ? { k: p.k, g: p.g, t: p.t }
+      : { k: p.k, g: p.g, t: p.t, e: p.e };
   } catch {
     return null;
   }
 };
 
 /**
- * 서버가 잰 경과 시간으로 낼 수 있는 최대 타수.
- * 쪽 전체 타수를 경과 시간에 다 쳤다고 봐도 이보다 빠를 수는 없다.
- * 시작 요청이 첫 글자보다 조금 늦게 서버에 닿는 만큼(네트워크 지연)은 여유(slackMs)로 봐준다.
+ * 서버가 잰 "첫 글자 ~ 마지막 글자" 시간으로 낼 수 있는 최대 타수.
+ * 그 시간 동안 쪽 전체를 쳤다면 이보다 빠를 수 없다.
+ * 끝 요청이 마지막 글자보다 늦게 서버에 닿는 만큼(네트워크 지연·콜드 스타트)은 시간을 빼서(slackMs) 봐준다.
+ *
+ * 예전에는 "시작 ~ 이름 올리기를 누른 순간"으로 쟀다 → 결과 창에서 닉네임을 고민한 시간까지 필사 시간이 되어
+ * 정상 기록(418타)이 "그 시간에 나올 수 없는 타수"로 거절됐다(HJ 2026-11-26).
  */
 export const maxCpmFor = (
   totalStrokes: number,
-  serverElapsedMs: number,
-  slackMs = 2000
-): number => Math.floor(totalStrokes / ((serverElapsedMs + slackMs) / 60_000));
+  serverWindowMs: number,
+  slackMs = 3000
+): number =>
+  Math.floor(
+    totalStrokes / (Math.max(serverWindowMs - slackMs, 1000) / 60_000)
+  );
