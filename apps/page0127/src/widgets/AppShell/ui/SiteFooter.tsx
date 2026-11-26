@@ -25,7 +25,8 @@ const footerGroups = [
   {
     title: '하루 한 번',
     links: [
-      { href: '/sentence', label: '오늘의 문장' },
+      // 가로채기 라우트(서재 배너용 모달)를 피해 페이지로 — 메뉴는 그곳으로 가는 길이라(2026-11-26 HJ)
+      { href: '/sentence', label: '오늘의 문장', fullPageLoad: true },
       { href: '/typing/little-prince', label: '온라인 필사' },
     ],
   },
@@ -115,6 +116,14 @@ export const SiteFooter = ({ className }: SiteFooterProps) => {
                           aria-hidden='true'
                           className='mx-3 h-3 w-px shrink-0 bg-line'
                         />
+                        {'fullPageLoad' in link && link.fullPageLoad ? (
+                          <a
+                            href={link.href}
+                            className='whitespace-nowrap transition-colors hover:text-text-strong'
+                          >
+                            {link.label}
+                          </a>
+                        ) : (
                         <Link
                           // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
                           prefetch={false}
@@ -123,6 +132,7 @@ export const SiteFooter = ({ className }: SiteFooterProps) => {
                         >
                           {link.label}
                         </Link>
+                        )}
                       </li>
                     ))}
                   </ul>

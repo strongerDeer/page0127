@@ -10,6 +10,12 @@
 export type TocLink = {
   href: string;
   label: string;
+  /**
+   * true 면 Next Link 대신 일반 a 로 페이지를 새로 불러온다.
+   * /sentence 는 서재 배너용 가로채기 라우트(@modal/(.)sentence)가 Link 이동을 모달로 바꾸는데,
+   * 메뉴는 "그곳으로 가기"라 페이지로 보낸다(2026-11-26 HJ A안). 가로채기는 소프트 내비게이션에서만 일어난다.
+   */
+  fullPageLoad?: boolean;
 };
 
 export type TocGroups = {
@@ -40,7 +46,7 @@ export const getTocGroups = ({
   // PC 상단 메뉴엔 넣지 않는다 — 로그인하면 7칸이 돼 768~1024px 에서 검색창이 너무 줄어든다.
   // PC 는 홈 당근·서재 배너·푸터로 들어간다. 목차에서 /sentence 를 누르면 서재 배너처럼 모달로 뜬다.
   daily: [
-    { href: '/sentence', label: '오늘의 문장 뽑기' },
+    { href: '/sentence', label: '오늘의 문장 뽑기', fullPageLoad: true },
     { href: '/typing/little-prince', label: '어린 왕자 온라인 필사' },
   ],
   sub: [
