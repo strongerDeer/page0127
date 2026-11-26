@@ -11,7 +11,7 @@ import { INSTAGRAM_URL } from '@/shared/config/social';
  * 그때 문의할 곳이 화면에 없으면 대부분 말없이 떠난다. 개인정보처리방침·
  * 이용약관도 같은 이유로 로그인 후에 닿아야 한다.
  */
-// 링크가 9개로 늘어 한 줄이 꽉 차서 묶음 셋으로 나눴다(2026-11-26 HJ A안).
+// 링크가 9개로 늘어 한 줄이 꽉 차서 묶음 셋으로 나눴다(2026-11-26 HJ A안, 묶음마다 한 줄).
 // 개인정보처리방침·이용약관은 법적으로 닿아야 하지만 자주 누르지 않아 맨 아래 © 줄로 내렸다.
 const footerGroups = [
   {
@@ -94,28 +94,39 @@ export const SiteFooter = ({ className }: SiteFooterProps) => {
           {/* aria-label: 여러 nav 중 푸터 링크임을 스크린 리더에 구분 */}
           <nav
             aria-label='푸터 링크'
-            // 묶음 사이는 넓게(gap-x), 묶음 안 줄은 촘촘하게(gap-y-3) — 묶음이 한눈에 갈라져 보이게
-            className='grid grid-cols-3 gap-x-6 sm:gap-x-12 md:gap-x-16'
+            // 묶음마다 한 줄(제목 아래 링크를 | 로 이어서) — 3열은 폴더블 접은 화면(280px)에서 빠듯해서(2026-11-26 HJ)
+            className='flex flex-col gap-5'
           >
             {footerGroups.map((group) => (
-              <div key={group.title} className='min-w-0'>
+              <div key={group.title}>
                 <p className='text-sm font-semibold text-text-strong'>
                   {group.title}
                 </p>
-                <ul className='mt-4 flex flex-col gap-3 text-sm text-text-subtle'>
-                  {group.links.map((link) => (
-                    <li key={link.href}>
-                      <Link
-                        // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
-                        prefetch={false}
-                        href={link.href}
-                        className='whitespace-nowrap transition-colors hover:text-text-strong'
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                {/*
+                  칸이 모자라면 링크 단위로 줄이 바뀐다(whitespace-nowrap — 글자 중간에서 안 끊기게).
+                  구분선은 모든 링크 앞에 두고, 목록을 왼쪽으로 24px 당긴 뒤 바깥 칸에서 잘라 낸다 →
+                  줄 맨 앞에 오는 구분선은 늘 잘려서 "| 책 이야기"처럼 보이지 않는다(폴더블 280px).
+                */}
+                <div className='mt-2 overflow-hidden'>
+                  <ul className='-ml-6 flex flex-wrap items-center gap-y-1 text-sm text-text-subtle'>
+                    {group.links.map((link) => (
+                      <li key={link.href} className='flex items-center'>
+                        <span
+                          aria-hidden='true'
+                          className='mx-3 h-3 w-px shrink-0 bg-line'
+                        />
+                        <Link
+                          // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
+                          prefetch={false}
+                          href={link.href}
+                          className='whitespace-nowrap transition-colors hover:text-text-strong'
+                        >
+                          {link.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             ))}
           </nav>
