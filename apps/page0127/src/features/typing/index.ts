@@ -3,4 +3,5 @@ export { TypingBookIntro } from './ui/TypingBookIntro';
 export { TypingHero } from './ui/TypingHero';
 export { TypingProgressCard } from './ui/TypingProgressCard';
 export { TypingRankingCard } from './ui/TypingRankingCard';
+export { TypingRankStrip } from './ui/TypingRankStrip';
 export { TypingRoom } from './ui/TypingRoom';

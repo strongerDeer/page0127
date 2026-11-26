@@ -40,10 +40,12 @@ import {
   GUEST_NICKNAME_MAX,
   validateGuestNickname,
 } from '../model/guestNickname';
+import { placeFor } from '../model/rankRows';
 import { PixelPicture } from './PixelPicture';
 import { RetroListDialog, RetroListPanel } from './RetroListDialog';
 
-import type { TypingSheet } from '@/entities/typing';
+import type { RankPlace } from '../model/rankRows';
+import type { TypingRankRow, TypingSheet } from '@/entities/typing';
 
 import s from './TypingRoom.module.css';
 
@@ -108,12 +110,15 @@ export const TypingRoom = ({
   rankOptIn,
   initialDoneKeys,
   loginHref,
+  speedRanking,
 }: {
   memberId: string | null;
   /** 회원의 순위 참여 여부 — 결과 창에서 "랭킹에 반영되는지"를 바로 알려 준다 */
   rankOptIn: boolean;
   initialDoneKeys: string[];
   loginHref: string;
+  /** 타수 랭킹(상위 100) — 결과 창에서 "지금 기록이면 몇 위"를 바로 계산한다 */
+  speedRanking: TypingRankRow[];
 }) => {
   const router = useRouter();
   // 처음엔 방식 고르는 시작 화면. 하나를 고르면 바로 친다(HJ 2026-11-26)
@@ -848,6 +853,9 @@ export const TypingRoom = ({
                   <MemberRankNote
                     optIn={optIn}
                     accuracy={result.accuracy}
+                    place={placeFor(speedRanking, result.cpm)}
+                    myBest={speedRanking.find((r) => r.isMe)?.value ?? null}
+                    cpm={result.cpm}
                     action={rankAction}
                     onTurnOn={turnOnRank}
                   />
@@ -855,6 +863,7 @@ export const TypingRoom = ({
                 {result.save === 'guest' && (
                   <GuestRankForm
                     accuracy={result.accuracy}
+                    place={placeFor(speedRanking, result.cpm)}
                     nickname={nickname}
                     onNicknameChange={(v) => {
                       setNickname(v);
@@ -905,20 +914,38 @@ export const TypingRoom = ({
 const MemberRankNote = ({
   optIn,
   accuracy,
+  place,
+  myBest,
+  cpm,
   action,
   onTurnOn,
 }: {
   optIn: boolean;
   accuracy: number;
+  place: RankPlace;
+  /** 타수 랭킹에 이미 있는 내 최고 타수 — 이번 기록이 그보다 낮으면 순위는 그대로다 */
+  myBest: number | null;
+  cpm: number;
   action: RankAction;
   onTurnOn: () => void;
 }) => {
+  const qualifies = accuracy >= SPEED_RANK_MIN_ACCURACY;
+  // 이번 기록으로 순위가 바뀌는 경우에만 "몇 위"를 말한다
+  const newBest = myBest === null || cpm > myBest;
   if (!optIn)
     return (
       <>
         <p>
-          내 기록에 남겼어요. 지금은 <b>순위 참여가 꺼져 있어서</b> 랭킹에는
-          보이지 않아요.
+          내 기록에 남겼어요.{' '}
+          {qualifies && place.rank !== null ? (
+            <>
+              순위 참여를 켜면 <b>타수 랭킹 {place.rank}위</b>예요!
+            </>
+          ) : (
+            <>
+              지금은 <b>순위 참여가 꺼져 있어서</b> 랭킹에는 보이지 않아요.
+            </>
+          )}
         </p>
         <div className={s.noteRow}>
           <span className={s.noteSub}>
@@ -943,9 +970,26 @@ const MemberRankNote = ({
       {action.status === 'done'
         ? '순위 참여를 켰어요. '
         : '내 기록에 남겼어요. '}
-      {accuracy >= SPEED_RANK_MIN_ACCURACY
-        ? '꾸준함·타수 랭킹에 반영돼요.'
-        : `꾸준함 랭킹에 반영돼요. 타수 랭킹은 정확도 ${SPEED_RANK_MIN_ACCURACY}% 이상일 때만 올라가요.`}
+      {!qualifies ? (
+        <>
+          꾸준함 랭킹에 반영돼요.{' '}
+          <RankChase
+            place={place}
+            prefix={`정확도만 ${SPEED_RANK_MIN_ACCURACY}%를 넘기면`}
+          />
+          {place.rank === null &&
+            `타수 랭킹은 정확도 ${SPEED_RANK_MIN_ACCURACY}% 이상일 때만 올라가요.`}
+        </>
+      ) : newBest && place.rank !== null ? (
+        <>
+          꾸준함·타수 랭킹에 반영돼요. 지금 <b>타수 랭킹 {place.rank}위</b>
+          예요!{' '}
+          {place.gapToNext !== null &&
+            `바로 위까지 ${place.gapToNext}타 남았어요.`}
+        </>
+      ) : (
+        '꾸준함·타수 랭킹에 반영돼요.'
+      )}
     </p>
   );
 };
@@ -953,6 +997,7 @@ const MemberRankNote = ({
 /** 비회원 결과 창 — 닉네임으로 타수 랭킹에 올리기(HJ 2026-11-26 A안) */
 const GuestRankForm = ({
   accuracy,
+  place,
   nickname,
   onNicknameChange,
   action,
@@ -960,6 +1005,7 @@ const GuestRankForm = ({
   loginHref,
 }: {
   accuracy: number;
+  place: RankPlace;
   nickname: string;
   onNicknameChange: (value: string) => void;
   action: RankAction;
@@ -984,8 +1030,15 @@ const GuestRankForm = ({
     return (
       <>
         <p>
-          정확도 {SPEED_RANK_MIN_ACCURACY}% 이상이면 닉네임으로 타수 랭킹에 올릴
-          수 있어요. 한 번 더 도전해 볼까요?
+          {place.rank === null ? (
+            `정확도 ${SPEED_RANK_MIN_ACCURACY}% 이상이면 닉네임으로 타수 랭킹에 올릴 수 있어요. `
+          ) : (
+            <RankChase
+              place={place}
+              prefix={`정확도만 ${SPEED_RANK_MIN_ACCURACY}%를 넘기면`}
+            />
+          )}
+          한 번 더 도전해 볼까요?
         </p>
         {login}
       </>
@@ -994,14 +1047,23 @@ const GuestRankForm = ({
     return (
       <>
         <p>
-          <b>{nickname}</b> 님의 기록을 타수 랭킹에 올렸어요! 아래 랭킹에서
-          확인해 보세요.
+          <b>{nickname}</b> 님의 기록을 타수 랭킹
+          {place.rank !== null && <b> {place.rank}위</b>}에 올렸어요! 아래
+          랭킹에서 확인해 보세요.
         </p>
         {login}
       </>
     );
   return (
     <>
+      {place.rank !== null && (
+        <p>
+          지금 기록이면 <b>타수 랭킹 {place.rank}위</b>예요!{' '}
+          {place.gapToNext !== null &&
+            `바로 위까지 ${place.gapToNext}타 남았어요. `}
+          닉네임을 남기고 이름을 올려 보세요.
+        </p>
+      )}
       <form
         className={s.noteRow}
         onSubmit={(e) => {
@@ -1036,3 +1098,11 @@ const GuestRankForm = ({
     </>
   );
 };
+
+/** 아직 못 오른 기록에 "이것만 넘기면 몇 위" — 다시 도전할 이유를 준다 */
+const RankChase = ({ place, prefix }: { place: RankPlace; prefix: string }) =>
+  place.rank === null ? null : (
+    <>
+      {prefix} <b>타수 랭킹 {place.rank}위</b>예요!{' '}
+    </>
+  );
