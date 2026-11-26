@@ -105,11 +105,7 @@ const TypingLittlePrincePage = async () => {
       <main className='mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 pb-20 pt-8 sm:px-6 sm:pt-12'>
         <section className='px-2 pt-2 text-center sm:pt-4'>
           <p className='inline-flex rounded-full bg-accent px-3 py-1 text-xs font-bold text-primary'>
-            {/* 재미 요소(HJ 2026-11-26): 타자 연습을 지우고 필사라고 우긴다 */}
-            <s className='mr-1 font-medium text-text-subtle decoration-2'>
-              타자 연습
-            </s>
-            온라인 필사라고 우겨 봅니다
+            타자 연습을 겸한 온라인 필사
           </p>
           <h1 className='mt-3 text-3xl font-bold leading-tight tracking-tight text-text-strong text-balance sm:text-4xl'>
             『어린 왕자』 온라인 필사
