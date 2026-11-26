@@ -11,14 +11,34 @@ import { INSTAGRAM_URL } from '@/shared/config/social';
  * 그때 문의할 곳이 화면에 없으면 대부분 말없이 떠난다. 개인정보처리방침·
  * 이용약관도 같은 이유로 로그인 후에 닿아야 한다.
  */
-const footerLinks = [
-  { href: '/about', label: '서비스 소개' },
-  { href: '/books/all', label: '전체 도서' },
-  { href: '/blog', label: '책 이야기' },
-  { href: '/sentence', label: '오늘의 문장' },
-  { href: '/typing/little-prince', label: '온라인 필사' },
-  { href: '/updates', label: '공지·업데이트' },
-  { href: '/contact', label: '문의' },
+// 링크가 9개로 늘어 한 줄이 꽉 차서 묶음 셋으로 나눴다(2026-11-26 HJ A안).
+// 개인정보처리방침·이용약관은 법적으로 닿아야 하지만 자주 누르지 않아 맨 아래 © 줄로 내렸다.
+const footerGroups = [
+  {
+    title: '둘러보기',
+    links: [
+      { href: '/about', label: '서비스 소개' },
+      { href: '/books/all', label: '전체 도서' },
+      { href: '/blog', label: '책 이야기' },
+    ],
+  },
+  {
+    title: '하루 한 번',
+    links: [
+      { href: '/sentence', label: '오늘의 문장' },
+      { href: '/typing/little-prince', label: '온라인 필사' },
+    ],
+  },
+  {
+    title: '도움말',
+    links: [
+      { href: '/updates', label: '공지·업데이트' },
+      { href: '/contact', label: '문의' },
+    ],
+  },
+];
+
+const legalLinks = [
   { href: '/privacy', label: '개인정보처리방침' },
   { href: '/terms', label: '이용약관' },
 ];
@@ -53,7 +73,7 @@ export const SiteFooter = ({ className }: SiteFooterProps) => {
   return (
     <footer className={cn('border-t border-line bg-card', className)}>
       <div className='page-width py-10'>
-        <div className='flex flex-col gap-6 md:flex-row md:items-start md:justify-between'>
+        <div className='flex flex-col gap-10 md:flex-row md:items-start md:justify-between'>
           <div>
             <p className='text-base font-bold text-primary'>page0127.</p>
             <p className='mt-2 text-sm text-text-subtle'>
@@ -74,18 +94,29 @@ export const SiteFooter = ({ className }: SiteFooterProps) => {
           {/* aria-label: 여러 nav 중 푸터 링크임을 스크린 리더에 구분 */}
           <nav
             aria-label='푸터 링크'
-            className='flex flex-wrap gap-x-6 gap-y-2 text-sm text-text-subtle'
+            // 묶음 사이는 넓게(gap-x), 묶음 안 줄은 촘촘하게(gap-y-3) — 묶음이 한눈에 갈라져 보이게
+            className='grid grid-cols-3 gap-x-6 sm:gap-x-12 md:gap-x-16'
           >
-            {footerLinks.map((link) => (
-              <Link
-                // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
-                prefetch={false}
-                key={link.href}
-                href={link.href}
-                className='transition-colors hover:text-text-strong'
-              >
-                {link.label}
-              </Link>
+            {footerGroups.map((group) => (
+              <div key={group.title} className='min-w-0'>
+                <p className='text-sm font-semibold text-text-strong'>
+                  {group.title}
+                </p>
+                <ul className='mt-4 flex flex-col gap-3 text-sm text-text-subtle'>
+                  {group.links.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        // 목록 링크는 미리 불러오지 않는다 (Vercel CPU — 00_docs 남은 작업 참고)
+                        prefetch={false}
+                        href={link.href}
+                        className='whitespace-nowrap transition-colors hover:text-text-strong'
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
           </nav>
         </div>
@@ -109,7 +140,21 @@ export const SiteFooter = ({ className }: SiteFooterProps) => {
             </Link>
             로 알려 주시면 큰 도움이 됩니다.
           </p>
-          <p className='mt-3 text-xs text-text-subtle'>© 2026 page0127.</p>
+          <div className='mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-text-subtle'>
+            <p>© 2026 page0127.</p>
+            <nav aria-label='약관' className='flex items-center gap-3'>
+              {legalLinks.map((link) => (
+                <Link
+                  prefetch={false}
+                  key={link.href}
+                  href={link.href}
+                  className='underline-offset-2 transition-colors hover:text-text-strong hover:underline'
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
         </div>
       </div>
     </footer>
