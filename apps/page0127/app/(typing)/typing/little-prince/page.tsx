@@ -116,7 +116,6 @@ const TypingLittlePrincePage = async () => {
             memberId={state.memberId}
             rankOptIn={state.rankOptIn}
             initialDoneKeys={doneKeys}
-            loginHref={LOGIN_HREF}
             speedRanking={state.rankings.speed}
           />
         </div>
