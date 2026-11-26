@@ -46,7 +46,14 @@
   line-height: 1.2;
   letter-spacing: -0.02em;
 }
+/* 덩어리 사이 간격은 띄어쓰기 한 칸만큼 */
 .lines {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 0.3em;
+}
+.part {
   position: relative;
   display: inline-block;
   text-align: left;
@@ -157,10 +164,10 @@
   .desc {
     font-size: 14px;
   }
-  /* 좁은 화면은 띄어쓰기에서만 줄을 바꾼다 — 원문 줄과 덮어 쓰는 줄이 같은 곳에서 꺾인다 */
+  /* 좁은 화면은 덩어리마다 한 줄 — 각 줄 가운데 정렬 */
   .lines {
-    white-space: normal;
-    word-break: keep-all;
+    flex-direction: column;
+    align-items: center;
   }
   .title {
     font-size: 34px;

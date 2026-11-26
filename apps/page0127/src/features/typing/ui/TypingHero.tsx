@@ -16,7 +16,12 @@ import s from './TypingHero.module.css';
  * 움직임 줄이기 설정이면 처음부터 다 친 상태로 보인다.
  */
 
-const TITLE = '『어린 왕자』 온라인 필사';
+/** 제목을 덩어리로 나눠 둔다 — 넓은 화면은 한 줄, 좁은 화면은 덩어리마다 한 줄씩 가운데 정렬 */
+const TITLE_PARTS = ['『어린 왕자』', '온라인 필사'];
+const TITLE = TITLE_PARTS.join(' ');
+const PART_STARTS = TITLE_PARTS.map((_, i) =>
+  TITLE_PARTS.slice(0, i).reduce((n, part) => n + part.length + 1, 0)
+);
 const GOAL = 300;
 
 const INITIALS = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
@@ -87,12 +92,23 @@ export const TypingHero = ({ targetId }: { targetId: string }) => {
       <h1 className={s.title}>
         <span className='sr-only'>{TITLE}</span>
         <span className={s.lines} aria-hidden>
-          {/* 원문 줄 — 흐린 파란 글자, 자리를 미리 잡아 둬 글자가 늘어나도 줄이 흔들리지 않는다 */}
-          <span className={s.source}>{TITLE}</span>
-          <span className={s.typed}>
-            {typed}
-            <span className={s.caret} />
-          </span>
+          {TITLE_PARTS.map((part, i) => {
+            const start = PART_STARTS[i];
+            const caretHere =
+              typed.length >= start &&
+              (i === TITLE_PARTS.length - 1 ||
+                typed.length < PART_STARTS[i + 1]);
+            return (
+              <span key={part} className={s.part}>
+                {/* 원문 줄 — 흐린 파란 글자, 자리를 미리 잡아 둬 글자가 늘어나도 줄이 흔들리지 않는다 */}
+                <span className={s.source}>{part}</span>
+                <span className={s.typed}>
+                  {typed.slice(start, start + part.length)}
+                  {caretHere && <span className={s.caret} />}
+                </span>
+              </span>
+            );
+          })}
         </span>
       </h1>
 
