@@ -18,46 +18,52 @@ export const ResolutionLog = () => {
         </span>
       </summary>
       <p className='mt-1 text-xs text-text-subtle'>
-        Resolve 한 오류의 원인과 해결.
+        Resolve 한 오류와 지켜보는 오류의 원인·대응.
         src/features/admin-errors/lib/resolutions.ts 에서 관리합니다
       </p>
       <ul className='mt-2 space-y-2'>
-        {RESOLUTIONS.map((r) => (
-          <li key={r.shortId} className='rounded-lg border border-line p-4'>
-            <div className='flex flex-wrap items-baseline gap-x-3 text-sm'>
-              <span className='font-medium'>{r.title}</span>
-              <span className='text-xs text-text-subtle'>
-                {r.shortId} · {r.resolvedAt} 해결
-              </span>
-            </div>
-            <p className='mt-1 text-xs text-text-subtle'>{r.culprit}</p>
-            <dl className='mt-2 space-y-1 text-sm'>
-              <div>
-                <dt className='inline font-medium'>원인 </dt>
-                <dd className='inline text-text-subtle'>{r.cause}</dd>
+        {RESOLUTIONS.map((r) => {
+          const watching = r.status === 'watching';
+          return (
+            <li key={r.shortId} className='rounded-lg border border-line p-4'>
+              <div className='flex flex-wrap items-baseline gap-x-3 text-sm'>
+                <span className='font-medium'>{r.title}</span>
+                <span className='text-xs text-text-subtle'>
+                  {r.shortId} · {r.resolvedAt}{' '}
+                  {watching ? '기록 · 지켜보는 중' : '해결'}
+                </span>
               </div>
-              <div>
-                <dt className='inline font-medium'>해결 </dt>
-                <dd className='inline text-text-subtle'>{r.fix}</dd>
-              </div>
-            </dl>
-            {r.prs.length > 0 && (
-              <div className='mt-2 flex gap-2 text-xs'>
-                {r.prs.map((n) => (
-                  <a
-                    key={n}
-                    href={`${REPO_PULL}${n}`}
-                    target='_blank'
-                    rel='noreferrer'
-                    className='underline'
-                  >
-                    PR #{n}
-                  </a>
-                ))}
-              </div>
-            )}
-          </li>
-        ))}
+              <p className='mt-1 text-xs text-text-subtle'>{r.culprit}</p>
+              <dl className='mt-2 space-y-1 text-sm'>
+                <div>
+                  <dt className='inline font-medium'>원인 </dt>
+                  <dd className='inline text-text-subtle'>{r.cause}</dd>
+                </div>
+                <div>
+                  <dt className='inline font-medium'>
+                    {watching ? '대응 ' : '해결 '}
+                  </dt>
+                  <dd className='inline text-text-subtle'>{r.fix}</dd>
+                </div>
+              </dl>
+              {r.prs.length > 0 && (
+                <div className='mt-2 flex gap-2 text-xs'>
+                  {r.prs.map((n) => (
+                    <a
+                      key={n}
+                      href={`${REPO_PULL}${n}`}
+                      target='_blank'
+                      rel='noreferrer'
+                      className='underline'
+                    >
+                      PR #{n}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </details>
   );
