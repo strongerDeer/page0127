@@ -115,21 +115,6 @@ const TypingLittlePrincePage = async () => {
             똑같이 따라 쳐 보세요. 명문장 한 대목부터 가볍게 시작하고, 처음부터
             이어 써도, 장을 골라 써도 좋아요.
           </p>
-          <ul className='mt-5 flex flex-wrap justify-center gap-2 text-sm'>
-            {[
-              '전문 27장 모두 공개',
-              '타수·정확도 측정',
-              '쪽마다 도트 그림',
-              '로그인하면 진행도·랭킹 기록',
-            ].map((item) => (
-              <li
-                key={item}
-                className='rounded-full border border-line-soft bg-card px-3 py-1 text-text-body'
-              >
-                {item}
-              </li>
-            ))}
-          </ul>
         </section>
 
         <TypingRoom
