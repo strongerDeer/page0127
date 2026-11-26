@@ -24,6 +24,8 @@ import {
 import { Lock, Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
+
 import {
   countQuoteChars,
   normalizeQuoteText,
@@ -265,6 +267,11 @@ const QuoteForm = ({
         toast.error(result.message ?? '다시 시도해 주세요.');
         return;
       }
+      // 문장 내용은 보내지 않는다 — 새로 남겼는지 고쳤는지만
+      trackEvent('quote_save', {
+        edit: initial !== undefined,
+        from: 'book',
+      });
       toast.success(successMessage);
       onDone();
       router.refresh();

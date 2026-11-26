@@ -3,6 +3,8 @@
 import { Switch } from '@repo/ui';
 import { toast } from 'sonner';
 
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
+
 import { InstallGuideLink } from '@/features/pwa-install';
 
 import { usePushSubscription } from '../api/usePushSubscription';
@@ -33,10 +35,12 @@ export const PushNotificationSection = () => {
     try {
       if (!checked) {
         await disable();
+        trackEvent('push_disable');
         toast.success('이 기기의 푸시 알림을 껐어요.');
         return;
       }
       const result = await enable();
+      trackEvent('push_enable', { place: 'settings', result });
       if (result === 'ok') {
         toast.success('이제 이 기기로 알림을 보내 드릴게요.');
       } else if (result !== 'available') {

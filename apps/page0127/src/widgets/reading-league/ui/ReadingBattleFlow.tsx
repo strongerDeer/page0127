@@ -3,6 +3,8 @@ import { useState } from 'react';
 
 import { Button } from '@repo/ui';
 
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
+
 import { BattleReaderDiscovery } from './BattleReaderDiscovery';
 
 import type { RecommendedReaderCard } from '@/features/user/api/getRecommendedReaders';
@@ -64,7 +66,12 @@ export const ReadingBattleFlow = ({
     );
   return (
     <>
-      <div hidden={discovering}>{renderSelf(() => setDiscovering(true))}</div>
+      <div hidden={discovering}>
+        {renderSelf(() => {
+          trackEvent('league_discover');
+          setDiscovering(true);
+        })}
+      </div>
       {discovering && (
         <BattleReaderDiscovery
           readers={recommendations}

@@ -2,6 +2,7 @@ import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/client';
 import { API_ENDPOINTS } from '@/shared/config/endpoints';
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import { badgePresentation } from '../model/badgePresentation';
 import { BadgeMedal } from './BadgeMedal';
@@ -26,6 +27,11 @@ export const notifyNewBadges = async (
     );
     const [first, ...rest] = data.badges;
     if (!first) return;
+
+    // 배지마다 한 번 — 어떤 배지가 많이 나오는지 본다(id 는 배지 종류, 회원 정보 아님)
+    for (const badge of data.badges) {
+      trackEvent('badge_earn', { badge: badge.id, kind: badge.kind });
+    }
 
     const names = data.badges.map((badge) => badgePresentation(badge).title);
     toast.success(

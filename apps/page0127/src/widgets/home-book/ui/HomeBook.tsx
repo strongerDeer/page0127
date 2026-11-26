@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { useLocalStorage } from '@/shared/lib/hooks/useLocalStorage';
 
 import {
@@ -175,6 +176,7 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
     const on = !sound;
     soundRef.current = on;
     setSound(on);
+    trackEvent('home_sound_toggle', { on });
     if (on) playPageSound('turn');
   };
 
@@ -238,6 +240,10 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
     let twin: HTMLElement | null = null;
     let cur = 0;
     let lastCur = -1;
+    // GA — 이번 방문에서 가장 깊이 넘긴 쪽. 더 깊이 갈 때만 보낸다(앞뒤로 오가며 같은 쪽을 다시 세지 않게)
+    let deepest = 0;
+    // 목차·건너뛰기로 뛰는 중이면 지나가는 쪽은 via: 'jump' — 직접 넘긴 것과 가른다
+    let jumpTo: number | null = null;
     // 넘김 안내는 1장에서만(표지는 AboutHero 가 버튼 아래에 띄운다). 두 쪽 넘게 넘겨 본 뒤엔 다시 띄우지 않는다
     let turnedEnough = false;
     // 폰에서 검색창에 글을 쓰는 동안은 쪽을 고정한다 — 키보드가 올라오며 브라우저가 스크롤을 옮겨도 넘어가지 않게
@@ -451,6 +457,15 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
         r.bottom > vh * 0.5 && cur === 1 && !turnedEnough
       );
       if (cur !== lastCur) {
+        if (cur > deepest) {
+          deepest = cur;
+          trackEvent('home_page_turn', {
+            page: cur,
+            total: TURNS,
+            via: jumpTo === null ? 'turn' : 'jump',
+          });
+        }
+        if (cur === jumpTo) jumpTo = null;
         if (lastCur >= 0 && soundRef.current)
           playPageSound(soundForTurn(lastCur, cur, TURNS));
         lastCur = cur;
@@ -543,6 +558,15 @@ export const HomeBook = ({ chapters, children }: HomeBookProps) => {
       const k = indexOfHash(href);
       if (k < 0) return;
       e.preventDefault();
+      trackEvent('home_book_jump', {
+        to: k,
+        from: a.closest('#book-toc')
+          ? 'toc'
+          : href === '#book-back'
+            ? 'skip'
+            : 'link',
+      });
+      jumpTo = k;
       tocRef.current?.hidePopover?.();
       jump(k, true);
       history.replaceState(null, '', href);

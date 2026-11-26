@@ -40,6 +40,7 @@ import {
   MONTHLY_LIMIT,
   USAGE_LIMIT_EXCEEDED_MESSAGE,
 } from '@/shared/lib/aiUsageMessages';
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import { toCoverSource } from '@/entities/book';
 import { replaceUserLabels } from '@/entities/compatibility/lib/replaceUserLabels';
@@ -112,6 +113,7 @@ export const CompatibilityView = ({
         force,
       });
       toast.success('케미 분석이 완료되었습니다!');
+      trackEvent('chemistry_run', { rerun: force });
       router.refresh();
     } catch (error) {
       toast.error(
@@ -576,6 +578,7 @@ const ShareWithPartner = ({
         analysisId: analysis.id,
       });
       toast.success(`${targetName} 님에게 알렸어요`);
+      trackEvent('chemistry_notify');
       router.refresh();
     } catch (error) {
       toast.error(getApiErrorMessage(error, '알리지 못했어요.'));

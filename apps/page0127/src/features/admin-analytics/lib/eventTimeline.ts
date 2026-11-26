@@ -34,6 +34,17 @@ export const EVENT_GROUPS: {
     ],
   },
   {
+    key: 'home',
+    label: '홈 책·케미',
+    events: [
+      { name: 'home_page_turn', label: '홈 책 넘김' },
+      { name: 'home_book_jump', label: '목차·건너뛰기' },
+      { name: 'home_sound_toggle', label: '넘김 소리' },
+      { name: 'chemistry_run', label: '케미 분석' },
+      { name: 'chemistry_notify', label: '케미 알리기' },
+    ],
+  },
+  {
     key: 'signup',
     label: '가입',
     events: [
@@ -55,6 +66,32 @@ export const EVENT_GROUPS: {
       { name: 'rating_nudge_save', label: '별점 남김' },
       { name: 'taste_analysis_run', label: '취향 분석' },
       { name: 'records_export', label: '기록 내려받기' },
+      { name: 'quote_save', label: '문장 저장' },
+      { name: 'review_save', label: '한 줄 독후감' },
+      { name: 'book_search', label: '도서 검색' },
+    ],
+  },
+  {
+    key: 'social',
+    label: '소셜·리그',
+    events: [
+      { name: 'follow_add', label: '팔로우' },
+      { name: 'follow_remove', label: '언팔로우' },
+      { name: 'like_add', label: '좋아요' },
+      { name: 'comment_post', label: '댓글' },
+      { name: 'reader_search', label: '리더 검색' },
+      { name: 'league_discover', label: '리그 비교 열기' },
+      { name: 'league_nudge', label: '콕 찌르기' },
+    ],
+  },
+  {
+    key: 'return',
+    label: '다시 오게',
+    events: [
+      { name: 'recap_view', label: '주간 회상' },
+      { name: 'badge_earn', label: '배지 받음' },
+      { name: 'push_enable', label: '알림 켜기' },
+      { name: 'push_disable', label: '알림 끄기' },
     ],
   },
   {
@@ -62,6 +99,8 @@ export const EVENT_GROUPS: {
     label: '공유·앱',
     events: [
       { name: 'share_click', label: '공유' },
+      { name: 'install_guide_open', label: '설치 방법 열기' },
+      { name: 'install_prompt', label: '설치 창 답함' },
       { name: 'app_open', label: '홈 화면 앱 열기' },
       { name: 'app_install', label: '앱 설치' },
     ],

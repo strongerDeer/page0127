@@ -30,15 +30,26 @@ declare global {
  * 이 서비스의 활성화는 첫 책을 꽂고 완독을 찍는 순간인데, 그 두 지점이 계측
  * 밖에 있었다.
  *
- *   랜딩    cta_click · signup_start · shelf_preview_view → shelf_preview_pick → shelf_preview_save | shelf_preview_goal
+ *   랜딩    cta_click · shelf_preview_view → shelf_preview_pick → shelf_preview_save | shelf_preview_goal
  *   로그인  login_start                     ← 맛보기 저장 뒤 로그인 화면에서 떠났는지 가른다
- *   가입    sign_up                         ← signup_start 는 클릭일 뿐, 이건 온보딩 완료
+ *   가입    sign_up                         ← 온보딩 완료(가입 버튼 클릭은 cta_click·login_start 가 센다)
  *   첫 책   first_books_save | first_books_skip ← 가입 직후 책 고르기(맛보기 없이 가입한 사람)
  *   담기    shelf_preview_claim             ← 맛보기 보관분이 서재에 들어갔다 (book_add 는 /books/add 에서만 나간다)
  *   활성화  book_add → book_complete      ← 비어 있던 구간
  *   차별화  taste_analysis_run
  *   확산    share_click
- *   새 기능  daily_sentence_* · typing_*      ← 어드민 유입분석 '이벤트 현황'(eventCatalog.ts)에 함께 적는다
+ *   새 기능  daily_sentence_* · typing_*      ← 어드민 유입분석 '이벤트 현황'(eventTimeline.ts EVENT_GROUPS)에 함께 적는다
+ *   홈 책    home_page_turn · home_book_jump · home_sound_toggle
+ *   케미     chemistry_run · chemistry_notify
+ *   다시 오게 push_enable · push_disable · install_guide_open · install_prompt · recap_view · badge_earn
+ *   소셜     follow_add · follow_remove · like_add · comment_post · league_discover · league_nudge
+ *   기록     quote_save · review_save
+ *   검색     book_search · reader_search
+ *
+ * 개인정보: 회원 id·상대 id·글 내용·검색어는 보내지 않는다. 종류·개수·참거짓만.
+ *
+ * 2026-11-26: 정의만 있고 아무 데서도 안 보내던 signup_start·scroll_depth 를 지웠다(어드민 표에 늘 0).
+ * 스크롤은 GA '향상된 측정'(scroll, 90%)이 코드 없이 센다.
  *
  * ⚠️ 이름을 바꾸면 GA4 에 쌓인 과거 데이터와 이어지지 않는다. 새 이름은 새 이벤트다.
  */
@@ -65,6 +76,54 @@ export type AnalyticsEvent =
   | 'typing_chapter_complete'
   /** 타수 랭킹에 이름을 올렸다 — 비회원 닉네임 등록 또는 회원 순위 참여 켜기. member */
   | 'typing_rank_join'
+  /**
+   * 홈 "책 넘김"(HomeBook)에서 이번 방문 중 가장 깊은 쪽에 닿았다 — 더 깊이 갈 때만 한 번씩.
+   * page: 닿은 쪽(0부터), total: 전체 넘김 수, via: 'turn'(직접 넘김) | 'jump'(목차·건너뛰기로 지나감)
+   */
+  | 'home_page_turn'
+  /** 홈 책의 목차·건너뛰기를 눌렀다. to: 간 쪽, from: 'toc' | 'skip' | 'link' */
+  | 'home_book_jump'
+  /** 홈 책 넘김 소리를 켜거나 껐다. on */
+  | 'home_sound_toggle'
+  /** 독서 케미(궁합) 분석을 끝까지 받았다. rerun: 다시 분석인지 */
+  | 'chemistry_run'
+  /** 케미 결과를 상대에게 알렸다(기본은 나만 보기). 상대가 누군지는 보내지 않는다 */
+  | 'chemistry_notify'
+  /**
+   * 알림 켜기를 눌렀다. place: 'prompt'(권유 카드) | 'settings'(설정),
+   * result: 'ok'(켜짐) 또는 안 된 까닭(PushSupport — 'denied'·'not-configured' 등)
+   */
+  | 'push_enable'
+  /** 설정에서 알림을 껐다 */
+  | 'push_disable'
+  /** 앱 설치 방법 창을 열었다(InstallGuideLink) */
+  | 'install_guide_open'
+  /** 브라우저 설치 창에 답했다(안드로이드·PC 크롬). outcome: 'accepted' | 'dismissed' */
+  | 'install_prompt'
+  /** 주간 회상 카드가 보였다(할 말이 있을 때만 그려진다). kind: 'this-week' | 'years-ago' | 'still-reading' */
+  | 'recap_view'
+  /** 새 배지를 받았다(배지마다 한 번). badge: 배지 종류 id, kind */
+  | 'badge_earn'
+  /** 팔로우했다. from: 'league'(리그에서 비교하려고) — 없으면 일반 팔로우 버튼 */
+  | 'follow_add'
+  /** 언팔로우했다 */
+  | 'follow_remove'
+  /** 좋아요를 눌렀다(취소는 세지 않는다) */
+  | 'like_add'
+  /** 댓글을 남겼다. on: 'book' | 'globalBook', reply: 답글인지. 내용은 보내지 않는다 */
+  | 'comment_post'
+  /** 리그에서 "다른 리더와 비교하기"를 눌러 추천 리더를 열었다 */
+  | 'league_discover'
+  /** 리그에서 콕 찌르기를 보냈다. context: 'ahead' | 'behind' | 'tied'(보낸 사람 기준) */
+  | 'league_nudge'
+  /** 기억에 남는 문장을 저장했다. edit: 고쳤는지, from: 'book'(책 상세) | 'register'(담으면서) */
+  | 'quote_save'
+  /** 한 줄 독후감을 새로 남기거나 바꿨다. edit, from: 'edit' | 'register' */
+  | 'review_save'
+  /** 도서 검색 결과가 왔다(첫 쪽만, 자동 검색이라 입력이 멈출 때마다). has_results. 검색어는 보내지 않는다 */
+  | 'book_search'
+  /** 리더 찾기에서 검색했다. 이름은 보내지 않는다 */
+  | 'reader_search'
   /** 홈 맛보기 히어로를 봤다(마운트 한 번) — 맛보기 깔때기의 분모 */
   | 'shelf_preview_view'
   /** 홈 맛보기에서 책을 골랐다. source: 'picks' | 'search', count: 고른 뒤 권수 */
@@ -73,8 +132,6 @@ export type AnalyticsEvent =
   | 'shelf_preview_save'
   /** 맛보기 0권 [목표 저장하기] — 로그인으로 간다. target: 목표 권수 */
   | 'shelf_preview_goal'
-  | 'scroll_depth'
-  | 'signup_start'
   /** 로그인 화면에서 소셜 로그인 버튼을 눌렀다. method: 공급자(google·kakao) */
   | 'login_start'
   /**

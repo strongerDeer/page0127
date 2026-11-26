@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import { commentApi, commentKeys } from '@/entities/comment';
 
@@ -52,6 +53,11 @@ export const CommentForm = ({
       // 댓글 목록 쿼리 무효화
       queryClient.invalidateQueries({
         queryKey: commentKeys.byTarget(target),
+      });
+      // 내용은 보내지 않는다 — 답글인지만
+      trackEvent('comment_post', {
+        on: target.type,
+        reply: parentCommentId !== null,
       });
       setContent('');
       onSuccess?.();

@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { useInstallPrompt } from '@/shared/lib/pwa/installPrompt';
 
 import {
@@ -56,7 +57,13 @@ export const InstallGuideLink = ({ className = '' }: InstallGuideLinkProps) => {
   const [open, setOpen] = useState(false);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (next) trackEvent('install_guide_open');
+        setOpen(next);
+      }}
+    >
       <DialogTrigger asChild>
         <button
           type='button'
@@ -86,6 +93,7 @@ const InstallGuideBody = ({ onDone }: { onDone: () => void }) => {
   const handleInstall = async () => {
     if (!promptInstall) return;
     const outcome = await promptInstall();
+    trackEvent('install_prompt', { outcome });
     if (outcome === 'accepted') {
       toast.success('홈 화면에 추가했어요. 이제 앱처럼 열 수 있어요');
       onDone();

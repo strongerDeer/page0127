@@ -5,6 +5,7 @@ import { UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { followBroadcast } from '@/shared/lib/broadcastChannel';
 
 import { followApi, followKeys } from '@/entities/follow';
@@ -24,6 +25,7 @@ export const FollowToCompareButton = ({
     onSuccess: async () => {
       cache.setQueryData(followKeys.isFollowing(userId), true);
       followBroadcast.sendFollowEvent('follow', userId);
+      trackEvent('follow_add', { from: 'league' });
       void cache.invalidateQueries({ queryKey: followKeys.all });
       await onFollowed();
     },
