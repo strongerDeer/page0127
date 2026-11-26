@@ -129,23 +129,6 @@ export const TypingRoom = ({
   // 쪽을 새로 펼치거나 "다시"를 누를 때마다 올려서 아래 effect 가 토큰을 새로 받게 한다
   const [tokenTick, setTokenTick] = useState(0);
 
-  // 큰 화면(마우스)에서는 스크롤이 필사 창 근처에 오면 창 위쪽에 딱 걸리게 한다(HJ 2026-11-26).
-  // proximity 라 멀리서는 자유롭게 스크롤된다. 폰은 자판이 올라올 때 화면이 튀지 않게 뺀다.
-  // CSS 모듈은 html 선택자를 쓸 수 없어서 이 페이지에 있는 동안만 html 에 직접 건다.
-  useEffect(() => {
-    const mq = window.matchMedia('(min-width: 768px) and (pointer: fine)');
-    const root = document.documentElement;
-    const apply = () => {
-      root.style.scrollSnapType = mq.matches ? 'y proximity' : '';
-    };
-    apply();
-    mq.addEventListener('change', apply);
-    return () => {
-      mq.removeEventListener('change', apply);
-      root.style.scrollSnapType = '';
-    };
-  }, []);
-
   useEffect(() => {
     if (memberId) return;
     try {
