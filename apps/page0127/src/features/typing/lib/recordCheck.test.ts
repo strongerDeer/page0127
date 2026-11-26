@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { strokesOf } from '@/entities/typing';
 
-import { checkTypingRecord, isAssistedInput, MAX_CPM } from './recordCheck';
+import { isAssistedInput } from './assistedInput';
+import { checkTypingRecord, MAX_CPM } from './recordCheck';
 
 const TEXT = '나는 너를 길들였어. 너는 내게 하나뿐인 여우야.';
 const STROKES = [...TEXT].reduce((n, c) => n + strokesOf(c), 0);

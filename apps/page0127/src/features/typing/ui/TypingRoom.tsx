@@ -37,7 +37,7 @@ import {
   recordTypingPageAction,
   setTypingRankOptInAction,
 } from '../api/typingActions';
-import { isAssistedInput } from '../lib/recordCheck';
+import { isAssistedInput } from '../lib/assistedInput';
 import {
   GUEST_NICKNAME_MAX,
   validateGuestNickname,
