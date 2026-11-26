@@ -52,7 +52,11 @@
 .desk {
   position: relative;
   overflow: hidden;
-  height: var(--desk-h, clamp(620px, calc(100svh - 57px), 860px));
+  /*
+   * 페이지: 머리글(59px) 아래를 끝까지 채운다 — 예전엔 860px 상한이 있어서 큰 화면에서 아래에 바탕색 띠가 보였다(HJ 11/26).
+   * 높이 상한은 배경 칸이 아니라 안쪽(책 크기)에 건다.
+   */
+  height: var(--desk-h, max(620px, calc(100svh - 59px)));
   perspective: 1600px;
   background: radial-gradient(
     ellipse at 50% 35%,
@@ -109,6 +113,15 @@
     inset -6px 0 0 #fff,
     inset 0 -1px 0 #cfd8e6,
     0 24px 40px -12px rgb(20 41 78 / 0.35);
+}
+
+/* 페이지 + 넓은 칸: 화면이 높으면 책도 같이 커진다(330 → 최대 420px, HJ 11/26 B안).
+   (100svh - 360px) 는 머리글·당근·아래 버튼·여백 몫, 0.702 는 책 비율 330/470.
+   모달은 높이가 760px 로 정해져 있어 그대로 둔다 */
+@container sentence-book (min-width: 601px) {
+  .root[data-variant="page"] .book {
+    width: min(44cqw, max(330px, calc((100svh - 360px) * 0.702)), 420px);
+  }
 }
 
 /* 표지 아래 첫 쪽 — 표지가 넘어가면 문장이 비친다 */
