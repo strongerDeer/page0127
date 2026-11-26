@@ -520,7 +520,7 @@ export const computeBadges = ({
         id: 'day-0127',
         kind: 'hidden',
         name: '0127의 날',
-        description: '1월 27일에 완독 — page0127의 날',
+        description: '1월 27일에 완독 — page0127.의 날',
       },
       first((book) => book.completed_date?.endsWith('-01-27') ?? false)
     ),

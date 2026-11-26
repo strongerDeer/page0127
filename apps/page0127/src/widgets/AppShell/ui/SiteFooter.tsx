@@ -78,7 +78,7 @@ export const SiteFooter = ({ className }: SiteFooterProps) => {
           <div>
             <p className='text-base font-bold text-primary'>page0127.</p>
             <p className='mt-2 text-sm text-text-subtle'>
-              읽은 책이 모여 책장이 됩니다.
+              읽은 책이 쌓여 책장이 됩니다.
             </p>
             {/* 외부 링크: 새 탭 + noopener(열린 창이 window.opener로 이 페이지를 조작하지 못하게) */}
             <a

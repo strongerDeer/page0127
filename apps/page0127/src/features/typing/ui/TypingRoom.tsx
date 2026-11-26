@@ -92,7 +92,7 @@ const MODES: { key: Mode; label: string }[] = [
 
 /** 시작 화면 설명 — 옛 타자 프로그램이 처음에 메뉴부터 띄우던 것처럼(HJ 2026-11-26) */
 const MODE_DESCRIPTIONS: Record<Mode, string> = {
-  famous: `가장 사랑받는 대목 ${FAMOUS_SHEETS.length}개를 짧게 한 대목씩`,
+  famous: `명문장 ${FAMOUS_SHEETS.length}개를 짧게 한 대목씩`,
   full: '1장부터 차례로, 쓰던 곳에서 이어서',
   chapter: `${LITTLE_PRINCE_TOTAL_CHAPTERS}장 가운데 쓰고 싶은 장을 골라서`,
 };

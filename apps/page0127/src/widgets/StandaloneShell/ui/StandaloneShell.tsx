@@ -48,7 +48,7 @@ export const StandaloneShell = async ({
         <Link
           href='/'
           className='flex min-w-0 items-center gap-2.5 text-text-strong'
-          aria-label='page0127 홈으로'
+          aria-label='page0127. 홈으로'
         >
           <Image
             src='/brand/app-icon-96.webp'
