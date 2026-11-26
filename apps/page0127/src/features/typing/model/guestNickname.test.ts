@@ -20,11 +20,24 @@ describe('비회원 닉네임 검사', () => {
     expect(validateGuestNickname(undefined).ok).toBe(false);
   });
 
-  it('공백·기호·이모지·자모만 쓴 이름은 거절한다(DB CHECK 와 같은 규칙)', () => {
+  it('공백·기호·이모지는 거절한다(DB CHECK 와 같은 규칙)', () => {
     expect(validateGuestNickname('어린 왕자').ok).toBe(false);
     expect(validateGuestNickname('여우!').ok).toBe(false);
     expect(validateGuestNickname('여우🦊').ok).toBe(false);
-    expect(validateGuestNickname('ㅋㅋㅋ').ok).toBe(false);
+  });
+
+  it('자음·모음만 쓴 이름도 받는다(HJ 2026-11-26 B안)', () => {
+    expect(validateGuestNickname('ㅎㅎㅎ')).toEqual({
+      ok: true,
+      nickname: 'ㅎㅎㅎ',
+    });
+    expect(validateGuestNickname('ㅋㅋ여우').ok).toBe(true);
+    expect(validateGuestNickname('ㅏㅣ').ok).toBe(true);
+  });
+
+  it('자음으로 쓴 욕설은 거절한다', () => {
+    expect(validateGuestNickname('ㅅㅂ').ok).toBe(false);
+    expect(validateGuestNickname('ㅂㅅㅂㅅ').ok).toBe(false);
   });
 
   it('운영자 사칭·욕설은 거절한다(대소문자 무관)', () => {
