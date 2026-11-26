@@ -33,8 +33,11 @@ type PanelProps = {
   /** 없으면 취소 단추를 그리지 않는다 */
   onCancel?: () => void;
   confirmLabel?: string;
+<<<<<<< HEAD
   /** 고른 줄에 따라 확인 단추 이름을 바꿀 때 — "다음"/"시작" */
   confirmLabelFor?: (index: number) => string;
+=======
+>>>>>>> origin/claude/project-thread-xbbdl2
   cancelLabel?: string;
   /** 처음 그려질 때 목록에 포커스를 줄지(시작 화면은 페이지 맨 아래에 있어 false) */
   autoFocus?: boolean;
@@ -48,7 +51,10 @@ export const RetroListPanel = ({
   onConfirm,
   onCancel,
   confirmLabel = '확인',
+<<<<<<< HEAD
   confirmLabelFor,
+=======
+>>>>>>> origin/claude/project-thread-xbbdl2
   cancelLabel = '취소',
   autoFocus = false,
   className,
