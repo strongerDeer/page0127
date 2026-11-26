@@ -5,37 +5,47 @@ import { getTocGroups, isTocLinkActive } from './tocLinks';
 const hrefs = (links: { href: string }[]) => links.map((l) => l.href);
 
 describe('getTocGroups', () => {
-  it('로그인 안 한 방문자도 전체 도서·책 이야기·소개와 하루 한 번 놀이로 갈 수 있다', () => {
-    // 모바일에선 GnbNav 가 숨는다 — 목차가 없으면 이 세 곳은 푸터로만 닿았다(2026-11-23).
+  it('비로그인: 하단 탭이 없는 폰을 위해 전체 도서·책 이야기, 그리고 하루 한 번·소개 묶음', () => {
     const { account, main, daily, sub } = getTocGroups({
       isLoggedIn: false,
     });
 
     expect(account).toEqual([]);
-    expect(hrefs(main)).toEqual(['/books/all', '/blog', '/about']);
+    expect(hrefs(main)).toEqual(['/books/all', '/blog']);
     expect(hrefs(daily)).toEqual(['/sentence', '/typing/little-prince']);
-    expect(hrefs(sub)).toEqual(['/updates', '/contact']);
+    expect(hrefs(sub)).toEqual(['/about', '/updates', '/contact']);
   });
 
-  it('로그인하면 문장 서랍·설정이 위에 붙는다 — 내 서재는 하단 탭바에 있어 다시 넣지 않는다', () => {
+  it('로그인: 맨 위에 내 서재에 딸린 곳(PC 프로필 메뉴와 같은 목록)과 설정', () => {
     const { account } = getTocGroups({ isLoggedIn: true, username: 'hj' });
-    expect(hrefs(account)).toEqual(['/hj/quotes', '/settings']);
+    expect(hrefs(account)).toEqual([
+      '/hj/quotes',
+      '/books/recap',
+      '/hj/badges',
+      '/dashboard/taste-analysis',
+      '/settings',
+    ]);
   });
 
-  it('아이디를 아직 모르면(가입 직후) 문장 서랍은 빼고 설정만', () => {
+  it('아이디를 아직 모르면(가입 직후) 아이디가 들어가는 주소는 뺀다', () => {
     const { account } = getTocGroups({ isLoggedIn: true, username: null });
-    expect(hrefs(account)).toEqual(['/settings']);
+    expect(hrefs(account)).toEqual([
+      '/books/recap',
+      '/dashboard/taste-analysis',
+      '/settings',
+    ]);
   });
 
-  it('하단 탭바에 있는 곳(라운지·리더 찾기·알림)은 다시 넣지 않는다', () => {
-    const { account, main, sub } = getTocGroups({
+  it('메뉴 네 칸(내 서재·라운지·전체 도서·책 이야기)은 로그인하면 목차에 다시 넣지 않는다', () => {
+    const { account, main, daily, sub } = getTocGroups({
       isLoggedIn: true,
+      username: 'hj',
     });
-    const all = hrefs([...account, ...main, ...sub]);
+    const all = hrefs([...account, ...main, ...daily, ...sub]);
 
-    expect(all).not.toContain('/feed');
-    expect(all).not.toContain('/search');
-    expect(all).not.toContain('/notifications');
+    for (const href of ['/hj', '/feed', '/books/all', '/blog']) {
+      expect(all).not.toContain(href);
+    }
   });
 });
 

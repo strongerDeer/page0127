@@ -9,7 +9,7 @@ import { AddBookButton } from './AddBookButton';
 import { GnbNav } from './GnbNav';
 import { GnbSearch } from './GnbSearch';
 import { MobileBookSearch } from './MobileBookSearch';
-import { MobileTocMenu } from './MobileTocMenu';
+import { TocMenu } from './TocMenu';
 
 /**
  * 통합 GNB — 로그인 전/후 모두 같은 상단 바를 쓴다.
@@ -58,16 +58,13 @@ export const Gnb = ({ user }: GnbProps) => {
           {user ? (
             <>
               {/*
-                알림 종은 데스크톱 머리글에만 — 모바일은 하단 탭바 '알림' 칸이 같은 일을 하고
-                읽지 않은 수 배지도 거기 붙는다(2026-11-24 HJ, 메뉴 겹침 정리 A안).
-                display:none 으로만 숨겨 실시간 구독·앱 아이콘 숫자(useAppBadge)는 모바일에서도 그대로 돈다.
+                알림 종은 PC·폰 모두 머리글에 — 하단 탭이 PC 상단 메뉴와 같은 네 칸이 되면서
+                알림 칸이 빠졌다(2026-11-26 HJ). 읽지 않은 수 배지도 이 종에 붙는다.
               */}
-              <div className='hidden md:block'>
-                <NotificationDropdown userId={user.userId} />
-              </div>
+              <NotificationDropdown userId={user.userId} />
               <AddBookButton />
               {/*
-                프로필 드롭다운은 데스크톱에서만 — 모바일에선 같은 내용(내 서재·설정·로그아웃)이
+                프로필 드롭다운은 데스크톱에서만 — 모바일에선 같은 내용(내 서재 묶음·설정·로그아웃)이
                 ☰ 목차 안에 있다. 320px 폰에서 머리글이 40px 넘쳐 페이지가 좌우로 흔들려서
                 아이콘 하나를 목차로 옮겼다(2026-11-24 HJ, C안).
               */}
@@ -91,10 +88,10 @@ export const Gnb = ({ user }: GnbProps) => {
           )}
 
           {/*
-            모바일 목차 — 주 메뉴(GnbNav)가 숨는 768px 아래에서만 보인다.
-            ☰ 가 하나 늘면서 로그인 상태 360px 폭에서 12px 넘쳤다 → 모바일에서만 간격을 줄였다(gap-2, ml-1 → md:ml-1).
+            ☰ 목차 — PC·폰 모두(2026-11-26 HJ). 하루 한 번(오늘의 문장·필사)과 소개·공지·문의가 여기 있다.
+            폰에선 프로필 아바타 대신 목차 맨 위가 내 이름·내 서재 묶음·로그아웃을 맡는다.
           */}
-          <MobileTocMenu
+          <TocMenu
             user={
               user
                 ? {

@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 import { cn } from '@/shared/lib/utils';
 
 import { getShellUser, SiteFooter } from '@/widgets/AppShell';
-import { MobileTocMenu } from '@/widgets/Gnb';
+import { TocMenu } from '@/widgets/Gnb';
 
 /**
  * 단독 랜딩 셸 — /sentence(오늘의 문장)·/typing/little-prince(온라인 필사) 공용
@@ -73,8 +73,8 @@ export const StandaloneShell = async ({
           >
             {shellUser ? '내 서재' : '로그인'}
           </Link>
-          {/* 768px 아래에서만 보인다 — 사이트 다른 화면과 같은 목차 */}
-          <MobileTocMenu
+          {/* 사이트 다른 화면과 같은 목차(PC·폰 모두) */}
+          <TocMenu
             user={
               shellUser
                 ? {
