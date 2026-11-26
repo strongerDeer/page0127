@@ -104,8 +104,9 @@ const TypingLittlePrincePage = async () => {
       <JsonLd data={faqJsonLd} />
       <main className='mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 pb-20 pt-8 sm:px-6 sm:pt-12'>
         <section className='px-2 pt-2 text-center sm:pt-4'>
-          <p className='inline-flex rounded-full bg-accent px-3 py-1 text-xs font-bold text-primary'>
-            타자 연습을 겸한 온라인 필사
+          <p className='inline-flex gap-1 rounded-full bg-accent px-3 py-1 text-xs font-medium text-text-body'>
+            타자 연습을 겸한
+            <strong className='font-bold text-primary'>온라인 필사</strong>
           </p>
           <h1 className='mt-3 text-3xl font-bold leading-tight tracking-tight text-text-strong text-balance sm:text-4xl'>
             『어린 왕자』 온라인 필사
