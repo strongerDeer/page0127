@@ -62,3 +62,75 @@
     animation: none;
   }
 }
+
+/*
+ * 문장 서랍 카드(HJ A안, 2026-11-26 — 인스타 캐러셀 5번 카드 모양).
+ * 테두리 없이 미색 면 + 아주 옅은 그림자만. 문장은 잘리지 않게 다 보여 준다.
+ */
+.card {
+  background: #faf5ea;
+  color: #2c2416;
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgb(60 45 20 / 0.08);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgb(60 45 20 / 0.1);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--ring, #2563eb);
+  outline-offset: 2px;
+}
+
+/* 이번 주 7칸 — 흰 칸, 오늘만 남색 얇은 선 */
+.weekDay {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 10px 0 8px;
+  border-radius: 14px;
+  background: var(--card, #fff);
+  font-size: 11px;
+  color: var(--text-subtle, #7a8499);
+}
+
+.weekDay b {
+  font-size: 13px;
+  color: var(--text-strong, #1b2a4a);
+  font-variant-numeric: tabular-nums;
+}
+
+.weekDay[data-today] {
+  box-shadow: inset 0 0 0 1.5px var(--text-strong, #1b2a4a);
+}
+
+.weekDay[data-future] {
+  opacity: 0.55;
+}
+
+.carrot {
+  width: 18px;
+  height: 29px;
+}
+
+.emptyMark {
+  width: 18px;
+  height: 18px;
+  margin: 5.5px 0;
+  border: 1.5px dashed currentColor;
+  border-radius: 50%;
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .card:hover {
+    transition: none;
+    transform: none;
+  }
+}

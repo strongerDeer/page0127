@@ -6,6 +6,7 @@ import { ChevronLeft, Lock } from 'lucide-react';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
+import { toKstDateKey } from '@/shared/lib/date';
 
 import { getDailySentences } from '@/entities/daily-sentence';
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
@@ -92,7 +93,10 @@ const QuotesPage = async ({ params, searchParams }: PageProps) => {
       {current === 'mine' ? (
         <MyQuotesList username={username} groups={groups} />
       ) : (
-        <DailySentenceHistory draws={draws} />
+        <DailySentenceHistory
+          draws={draws}
+          todayKey={toKstDateKey(new Date())}
+        />
       )}
     </PageContainer>
   );

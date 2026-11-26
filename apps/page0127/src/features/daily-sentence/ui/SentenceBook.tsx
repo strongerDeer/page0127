@@ -14,7 +14,12 @@ import Link from 'next/link';
 
 import { toast } from 'sonner';
 
-import { dailyScore, formatSentenceSource } from '@/entities/daily-sentence';
+import {
+  dailyScore,
+  formatSentenceSource,
+  WEEKDAYS,
+  weekOf,
+} from '@/entities/daily-sentence';
 
 import { useDailySentenceDraw } from '../model/useDailySentenceDraw';
 import { CarrotSvg } from './CarrotSvg';
@@ -67,19 +72,6 @@ const flipDelays = Array.from({ length: FLIPS }, (_, i) => {
   for (let k = 0; k < i; k += 1) delay += Math.max(0.045, 0.17 - k * 0.014);
   return delay;
 });
-
-const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'];
-
-/** 오늘(KST 'YYYY-MM-DD')이 든 주의 월~일 날짜 */
-const weekOf = (todayKey: string) => {
-  const today = new Date(`${todayKey}T00:00:00Z`);
-  const mondayOffset = (today.getUTCDay() + 6) % 7;
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(today);
-    d.setUTCDate(today.getUTCDate() - mondayOffset + i);
-    return d.toISOString().slice(0, 10);
-  });
-};
 
 /** 다음 문장(한국 시간 자정)까지 — 시·분만(HJ 11/24 "초는 과하다") */
 const untilNextSentence = () => {
