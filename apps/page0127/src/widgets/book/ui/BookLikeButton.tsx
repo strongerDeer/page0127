@@ -8,6 +8,8 @@ import { Button } from '@repo/ui';
 import { Heart } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { isDemoReadOnlyError } from '@/shared/api/demoReadOnly';
+
 import { bookApi } from '@/entities/book';
 
 type BookLikeButtonProps = {
@@ -55,11 +57,14 @@ export const BookLikeButton = ({
         const data = await bookApi.toggleLike(bookId); // ② 서버 처리
         setLiked(data.liked); // ③ 성공: 실제 기준 상태 갱신
         router.refresh();
-      } catch {
+      } catch (error) {
         // ④ 실패: 롤백 코드 없음! liked를 안 건드렸으니 transition 종료 시
         //    optimisticLiked가 자동으로 원래 값(false)으로 복귀한다.
         //    단, "왜 돌아왔는지" 알림은 자동이 아니므로 toast는 직접 띄운다.
-        toast.error('좋아요 처리 중 오류가 발생했습니다.');
+        // 체험 계정이면 인터셉터가 이미 안내했다 — 실패 문구를 겹치지 않는다
+        if (!isDemoReadOnlyError(error)) {
+          toast.error('좋아요 처리 중 오류가 발생했습니다.');
+        }
       }
     });
   };
@@ -85,7 +90,9 @@ export const BookLikeButton = ({
       <Heart
         className={`h-5 w-5 transition-colors ${
           // 화면엔 기준값(liked)이 아니라 낙관적 오버레이(optimisticLiked)를 그린다
-          optimisticLiked ? 'fill-rank-up text-rank-up' : 'text-muted-foreground'
+          optimisticLiked
+            ? 'fill-rank-up text-rank-up'
+            : 'text-muted-foreground'
         }`}
       />
     </Button>

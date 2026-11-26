@@ -1,4 +1,8 @@
 import { createClient } from '@/shared/config/supabase/client';
+import {
+  DEMO_READ_ONLY_MESSAGE,
+  isDemoUser,
+} from '@/shared/lib/demo/demoAccount';
 import { resizeAvatarFile } from '@/shared/lib/resizeAvatar';
 
 /**
@@ -53,6 +57,9 @@ export const uploadManualCover = async (file: File): Promise<string> => {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error('로그인이 필요해요.');
+  // Storage 업로드는 proxy·DB 트리거를 지나지 않는다 — 체험 계정은 여기서 멈춘다
+  // (안 막으면 책 저장은 거절돼도 사진 파일만 버킷에 남는다)
+  if (isDemoUser(user)) throw new Error(DEMO_READ_ONLY_MESSAGE);
 
   const path = `manual/${user.id}/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage

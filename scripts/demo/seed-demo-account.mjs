@@ -398,6 +398,29 @@ const ensureUser = async () => {
 const userId = await ensureUser();
 console.log(`✓ 체험 계정 ${DEMO_EMAIL} (${userId})`);
 
+/**
+ * 1-1) 소셜 연결 검사 — 체험 계정엔 email 로그인 하나만 있어야 한다.
+ *
+ * 설정의 "연결하기"(linkIdentity)는 브라우저가 Supabase Auth 로 바로 보내서
+ * proxy·서버 액션·DB 트리거 어느 겹도 지나지 않는다. 화면에서 버튼을 잠갔지만
+ * 그 전에 누가 연결했거나 화면을 우회했으면 여기서 드러난다.
+ * 시드는 계속 진행하고 경고만 한다 — 끊는 건 사람이 확인하고 대시보드에서 한다.
+ */
+{
+  const { data, error } = await supabase.auth.admin.getUserById(userId);
+  if (error) fail("연결된 로그인 수단 조회", error);
+  const linked = (data.user.identities ?? [])
+    .map((identity) => identity.provider)
+    .filter((provider) => provider !== "email");
+  if (linked.length > 0) {
+    console.warn(
+      `⚠ 체험 계정에 소셜 로그인이 붙어 있어요: ${linked.join(", ")} — Supabase 대시보드 Authentication → Users 에서 확인 후 끊어 주세요`,
+    );
+  } else {
+    console.log("✓ 소셜 연결 없음(email 로그인만)");
+  }
+}
+
 /** 2) 프로필 */
 {
   const { error } = await supabase.from("profiles").upsert({

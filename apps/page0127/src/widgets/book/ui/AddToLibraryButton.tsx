@@ -8,6 +8,8 @@ import { useMutation } from '@tanstack/react-query';
 import { Bookmark, Check, PenLine } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { isDemoReadOnlyError } from '@/shared/api/demoReadOnly';
+
 import { bookApi, fillMissingSpine } from '@/entities/book';
 import { GlobalBook } from '@/entities/book';
 
@@ -84,7 +86,9 @@ export const AddToLibraryButton = ({
       if (onAdded) onAdded();
       else router.refresh();
     },
-    onError: () => {
+    onError: (error) => {
+      // 체험 계정이면 인터셉터가 이미 안내했다 — 실패 문구를 겹치지 않는다
+      if (isDemoReadOnlyError(error)) return;
       toast.error('책 담기 중 오류가 발생했습니다.');
     },
   });

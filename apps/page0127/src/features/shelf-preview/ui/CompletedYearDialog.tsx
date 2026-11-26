@@ -17,6 +17,7 @@ import {
 import { Crown } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { isDemoReadOnlyError } from '@/shared/api/demoReadOnly';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import { bookApi, type BookRating } from '@/entities/book';
@@ -103,15 +104,26 @@ export const CompletedYearDialog = ({
 
     setIsSaving(true);
     let failed = 0;
+    let demoBlocked = false;
     let rated = 0;
     // 한 권씩 차례로 — 담기와 같은 이유(레이트 리밋), 한 권의 실패가 나머지를 막지 않는다
     for (const { id, update } of answers) {
       try {
         await bookApi.updateBook(id, update);
         if (update.rating !== undefined) rated += 1;
-      } catch {
+      } catch (error) {
+        // 체험 계정은 모든 권이 같은 이유로 막힌다 — 더 보내지 않는다
+        if (isDemoReadOnlyError(error)) {
+          demoBlocked = true;
+          break;
+        }
         failed += 1;
       }
+    }
+    // 안내는 인터셉터가 띄웠다 — "N권은 저장하지 못했어요"를 겹치지 않는다
+    if (demoBlocked) {
+      setIsSaving(false);
+      return;
     }
     trackEvent('shelf_preview_years', {
       asked: books.length,
