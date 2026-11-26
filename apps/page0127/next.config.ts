@@ -140,14 +140,27 @@ const nextConfig: NextConfig = {
   // 그래서 프로필엔 page0127.com/ig 만 두고, 여기서 utm 이 붙은 홈으로 넘긴다(GA 가 utm 으로 출처를 읽는다).
   // 아이디는 3자 이상(USERNAME_MIN_LENGTH)이라 2자 경로 'ig' 가 서재(/[username])와 겹칠 일이 없다.
   // permanent: false(307) — 브라우저가 기억하지 않아서 나중에 utm 값을 바꿔도 바로 반영된다.
+  // 프로필에 링크를 여러 개 걸 때는 /ig/{이름} 으로 나누고, utm_content 로 어느 링크인지 구분한다.
   async redirects() {
+    const instagramProfileUtm =
+      'utm_source=instagram&utm_medium=social&utm_campaign=profile';
+    // [짧은 주소 뒤 이름, 도착 경로] — 새 링크는 여기 한 줄만 추가하면 된다.
+    const instagramLinks: ReadonlyArray<[string, string]> = [
+      ['sentence', '/sentence'],
+      ['typing', '/typing/little-prince'],
+      ['blog', '/blog'],
+    ];
     return [
       {
         source: '/ig',
-        destination:
-          '/?utm_source=instagram&utm_medium=social&utm_campaign=profile',
+        destination: `/?${instagramProfileUtm}`,
         permanent: false,
       },
+      ...instagramLinks.map(([name, path]) => ({
+        source: `/ig/${name}`,
+        destination: `${path}?${instagramProfileUtm}&utm_content=${name}`,
+        permanent: false,
+      })),
     ];
   },
   // 모든 응답에 붙는 보안 헤더.
