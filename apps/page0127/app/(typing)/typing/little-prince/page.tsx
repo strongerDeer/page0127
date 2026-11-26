@@ -99,7 +99,7 @@ const TypingLittlePrincePage = async () => {
       title='온라인 필사'
       loginHref={LOGIN_HREF}
       emphasizeLogin
-      bodyClassName='bg-background'
+      bodyClassName='bg-background overflow-x-clip'
     >
       <JsonLd data={pageJsonLd} />
       <JsonLd data={faqJsonLd} />

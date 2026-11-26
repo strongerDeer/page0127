@@ -35,7 +35,9 @@
     inset -1px -1px 0 var(--dk),
     inset 2px 2px 0 #f3e6c9,
     inset -2px -2px 0 var(--lo),
-    0 18px 40px -24px rgb(60 40 10 / 0.45);
+    /* 옛 프로그램 창처럼 오른쪽 아래로 떨어지는 단단한 그림자 + 바닥에 깔리는 부드러운 그림자(HJ "심심함") */
+    8px 8px 0 rgb(107 82 51 / 0.22),
+    0 40px 70px -30px rgb(60 40 10 / 0.5);
   color-scheme: light;
 }
 
@@ -219,7 +221,8 @@
   box-shadow:
     inset 1px 1px 0 var(--lo),
     inset -1px -1px 0 var(--hi),
-    inset 2px 2px 0 var(--dk);
+    inset 2px 2px 0 var(--dk),
+    inset 0 10px 18px -12px rgb(60 40 10 / 0.25);
 }
 .head {
   margin-bottom: 4px;
@@ -610,10 +613,27 @@
     inset 2px 2px 0 #f3e6c9,
     inset -2px -2px 0 var(--lo);
 }
+.menuItem {
+  transition:
+    transform 0.15s ease-out,
+    background-color 0.15s ease-out,
+    filter 0.15s ease-out;
+}
 .menuItem:hover {
-  background: #f3e6c9;
+  background: #f6ecd4;
+  transform: translate(-2px, -2px);
+  filter: drop-shadow(4px 4px 0 rgb(107 82 51 / 0.28));
+}
+.menuItem:hover .menuNo {
+  background: var(--src);
+}
+.menuItem:hover .menuText b::after {
+  content: " ▸";
+  color: var(--src);
 }
 .menuItem:active {
+  transform: none;
+  filter: none;
   box-shadow:
     inset 1px 1px 0 var(--dk),
     inset -1px -1px 0 var(--hi),
@@ -624,6 +644,7 @@
   outline-offset: 2px;
 }
 .menuNo {
+  transition: background-color 0.15s ease-out;
   display: grid;
   flex: none;
   place-items: center;
@@ -807,5 +828,15 @@
   /* 시작 화면엔 0타·100% 상태 줄도 필요 없다 */
   .window[data-started="false"] .statusFrame {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menuItem,
+  .menuNo {
+    transition: none;
+  }
+  .menuItem:hover {
+    transform: none;
   }
 }
