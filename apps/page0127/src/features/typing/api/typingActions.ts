@@ -1,5 +1,7 @@
 'use server';
 
+import { headers } from 'next/headers';
+
 import { createClient } from '@/shared/config/supabase/server';
 import {
   DEMO_READ_ONLY_MESSAGE,
@@ -11,6 +13,8 @@ import {
   FULL_SHEETS,
   LITTLE_PRINCE_WORK,
 } from '@/entities/typing';
+
+import { deviceFromHeaders } from '../lib/device';
 
 /**
  * 온라인 필사 기록 (Server Actions)
@@ -54,6 +58,7 @@ export const recordTypingPageAction = async (input: {
   if (!user) return { ok: false, message: '로그인하면 기록이 남아요.' };
   if (isDemoUser(user)) return { ok: false, message: DEMO_READ_ONLY_MESSAGE };
 
+  const h = await headers();
   const { error } = await supabase.rpc('record_typing_page', {
     p_work: LITTLE_PRINCE_WORK,
     p_page_key: sheet.key,
@@ -61,6 +66,8 @@ export const recordTypingPageAction = async (input: {
     p_cpm: cpm,
     p_accuracy: accuracy,
     p_duration_ms: durationMs,
+    // 순위표 "모바일" 표시용 — 화면 값 대신 요청 헤더로 정한다
+    p_device: deviceFromHeaders((name) => h.get(name)),
   });
   if (error) {
     console.warn('필사 기록 저장 실패:', error.message);

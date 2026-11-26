@@ -5,6 +5,7 @@ import {
   type CompositionEvent,
   type ReactNode,
   useEffect,
+  useEffectEvent,
   useMemo,
   useRef,
   useState,
@@ -26,7 +27,18 @@ import {
   strokesPerMinute,
 } from '@/entities/typing';
 
-import { recordTypingPageAction } from '../api/typingActions';
+import {
+  startGuestTypingAction,
+  submitGuestTypingAction,
+} from '../api/guestTypingActions';
+import {
+  recordTypingPageAction,
+  setTypingRankOptInAction,
+} from '../api/typingActions';
+import {
+  GUEST_NICKNAME_MAX,
+  validateGuestNickname,
+} from '../model/guestNickname';
 import { PixelPicture } from './PixelPicture';
 
 import type { TypingSheet } from '@/entities/typing';
@@ -35,6 +47,19 @@ import s from './TypingRoom.module.css';
 
 type Mode = 'full' | 'chapter' | 'famous';
 type Face = 'base' | 'focus' | 'happy' | 'sad';
+
+/** 비회원 랭킹 올리기 / 회원 순위 참여 켜기 — 결과 창 안에서 하는 일 */
+type RankAction =
+  | { status: 'idle' }
+  | { status: 'sending' }
+  | { status: 'done' }
+  | { status: 'error'; message: string };
+
+/** 비회원 닉네임을 다음에도 채워 두는 곳(이 브라우저에만) */
+const NICKNAME_STORAGE_KEY = 'p0127:typing-guest-nickname';
+
+/** 타수 랭킹에 오르는 정확도 기준 — DB 와 같다 */
+const SPEED_RANK_MIN_ACCURACY = 95;
 
 type Result = {
   cpm: number;
@@ -55,6 +80,13 @@ const MODES: { key: Mode; label: string }[] = [
   { key: 'chapter', label: '장 고르기' },
 ];
 
+/** 시작 화면 설명 — 옛 타자 프로그램이 처음에 메뉴부터 띄우던 것처럼(HJ 2026-11-26) */
+const MODE_DESCRIPTIONS: Record<Mode, string> = {
+  famous: `가장 사랑받는 대목 ${FAMOUS_SHEETS.length}개를 짧게 한 대목씩`,
+  full: '1장부터 차례로, 쓰던 곳에서 이어서',
+  chapter: `${LITTLE_PRINCE_TOTAL_CHAPTERS}장 가운데 쓰고 싶은 장을 골라서`,
+};
+
 const pad = (n: number) => String(n).padStart(2, '0');
 const clock = (ms: number) => {
   const sec = Math.floor(ms / 1000);
@@ -71,14 +103,38 @@ const perLineFor = (width: number) =>
 
 export const TypingRoom = ({
   memberId,
+  rankOptIn,
   initialDoneKeys,
   loginHref,
 }: {
   memberId: string | null;
+  /** 회원의 순위 참여 여부 — 결과 창에서 "랭킹에 반영되는지"를 바로 알려 준다 */
+  rankOptIn: boolean;
   initialDoneKeys: string[];
   loginHref: string;
 }) => {
   const router = useRouter();
+  // 처음엔 방식 고르는 시작 화면. 하나를 고르면 바로 친다(HJ 2026-11-26)
+  const [started, setStarted] = useState(false);
+  const windowRef = useRef<HTMLDivElement>(null);
+  const [optIn, setOptIn] = useState(rankOptIn);
+  const [rankAction, setRankAction] = useState<RankAction>({
+    status: 'idle',
+  });
+  const [nickname, setNickname] = useState('');
+  // 비회원 시작 토큰 — 첫 글자를 칠 때 서버가 서명해 준다. 화면에 그리지 않으므로 ref
+  const guestTokenRef = useRef<{ key: string; token: string } | null>(null);
+
+  useEffect(() => {
+    if (memberId) return;
+    try {
+      const saved = window.localStorage.getItem(NICKNAME_STORAGE_KEY);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 브라우저 저장소는 마운트 뒤에만 읽을 수 있다(서버 그림과 어긋나지 않게)
+      if (saved) setNickname(saved);
+    } catch {
+      // 사생활 보호 모드 등 — 비워 둔다
+    }
+  }, [memberId]);
   const [doneKeys, setDoneKeys] = useState(() => new Set(initialDoneKeys));
   const [mode, setMode] = useState<Mode>('famous'); // 기본은 짧은 명문장(HJ 2026-11-25);
   const [fullIndex, setFullIndex] = useState(() =>
@@ -152,7 +208,9 @@ export const TypingRoom = ({
     const observer = new ResizeObserver(measure);
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+    // started: 시작 화면에는 종이(paperRef)가 없다. 방식을 고르고 종이가 생긴 뒤에 다시 재야
+    // 실제 폭으로 줄을 나눈다 — 안 그러면 기본 26자로 나눠 모바일에서 줄이 넘친다.
+  }, [started]);
 
   // 시계 — 치기 시작해서 끝날 때까지만 돈다
   useEffect(() => {
@@ -206,6 +264,82 @@ export const TypingRoom = ({
     setNow(0);
     setSeen({ typed: new Set(), missed: new Set() });
     setResult(null);
+    setRankAction({ status: 'idle' });
+    guestTokenRef.current = null;
+  };
+
+  /** 결과 창 "종료" — 방식 고르는 시작 화면으로 돌아간다 */
+  const closeToMenu = () => {
+    resetTyping();
+    setStarted(false);
+  };
+
+  // Esc 는 결과 창 어디서든 "종료". 버튼이 잠깐 disabled 되면 포커스가 창 밖(body)으로 빠지므로
+  // 창의 onKeyDown 이 아니라 window 에서 듣는다. useEffectEvent: closeToMenu 는 매번 새 함수지만
+  // "다시 구독할 이유"는 아니다 — 결과 창이 열리고 닫힐 때만 구독을 바꾼다.
+  const onEscape = useEffectEvent(() => closeToMenu());
+  useEffect(() => {
+    if (!isResultOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      onEscape();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isResultOpen]);
+
+  /** 비회원: 닉네임으로 타수 랭킹에 올리기 */
+  const submitGuestRank = () => {
+    if (!result || rankAction.status === 'sending') return;
+    const check = validateGuestNickname(nickname);
+    if (!check.ok) {
+      setRankAction({ status: 'error', message: check.message });
+      return;
+    }
+    const started = guestTokenRef.current;
+    if (!started || started.key !== sheet.key) {
+      setRankAction({
+        status: 'error',
+        message: '시작 기록이 없어요. 다시 쳐 주세요.',
+      });
+      return;
+    }
+    setRankAction({ status: 'sending' });
+    startSaving(async () => {
+      const res = await submitGuestTypingAction({
+        token: started.token,
+        nickname: check.nickname,
+        cpm: result.cpm,
+        accuracy: result.accuracy,
+      });
+      if (!res.ok) {
+        setRankAction({ status: 'error', message: res.message });
+        return;
+      }
+      try {
+        window.localStorage.setItem(NICKNAME_STORAGE_KEY, check.nickname);
+      } catch {
+        // 저장 못 해도 다음에 다시 적으면 된다
+      }
+      setRankAction({ status: 'done' });
+      router.refresh();
+    });
+  };
+
+  /** 회원: 결과 창에서 바로 순위 참여 켜기 */
+  const turnOnRank = () => {
+    setRankAction({ status: 'sending' });
+    startSaving(async () => {
+      const res = await setTypingRankOptInAction(true);
+      if (!res.ok) {
+        setRankAction({ status: 'error', message: res.message });
+        return;
+      }
+      setOptIn(true);
+      setRankAction({ status: 'done' });
+      router.refresh();
+    });
   };
 
   /** at·from 은 이벤트 핸들러에서 잰 시각 — 렌더 중에 Date.now() 를 부르지 않는다 */
@@ -267,6 +401,13 @@ export const TypingRoom = ({
     if (startedAt === null && next.length > 0) {
       setStartedAt(t);
       setNow(t);
+      // 비회원은 시작 시각을 서버에 맡겨 둔다 — 랭킹에 올릴 때 서버 시계로 걸린 시간을 잰다
+      if (!memberId) {
+        const key = sheet.key;
+        void startGuestTypingAction(key).then((res) => {
+          if (res.ok) guestTokenRef.current = { key, token: res.token };
+        });
+      }
     }
     const isComposing =
       (e.nativeEvent as InputEvent).isComposing === true || composing;
@@ -288,7 +429,21 @@ export const TypingRoom = ({
     if (next.length >= sheet.text.length) finish(next, t, startedAt ?? t);
   };
 
+  /** 필사 창을 화면 맨 위에 맞춘다 — 치는 동안 창 전체(원문·입력·상태 줄)가 한 화면에 보이게(HJ 2026-11-26) */
+  const fitWindowToScreen = () => {
+    const el = windowRef.current;
+    if (!el) return;
+    // 이미 위쪽에 거의 맞아 있으면 움직이지 않는다(다음 쪽마다 덜컹거리지 않게)
+    if (Math.abs(el.getBoundingClientRect().top - 24) < 48) return;
+    const reduce = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+    el.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+  };
+
   const goTo = (nextMode: Mode, index: number) => {
+    fitWindowToScreen();
+    setStarted(true);
     setMode(nextMode);
     if (nextMode === 'famous') setFamousIndex(index);
     else setFullIndex(index);
@@ -306,20 +461,37 @@ export const TypingRoom = ({
     return goTo('chapter', (fullIndex + 1) % FULL_SHEETS.length);
   };
 
+  /** 장을 고르면 그 장에서 아직 안 쓴 첫 쪽으로(다 썼으면 첫 쪽) */
+  const pickChapter = (no: number) => {
+    const pages = FULL_SHEETS.map((x, i) => ({ x, i })).filter(
+      ({ x }) => x.chapter === no
+    );
+    if (pages.length === 0) return;
+    const todo = pages.find(({ x }) => !doneKeys.has(x.key));
+    goTo('chapter', (todo ?? pages[0]).i);
+  };
+
   const chapterState = (no: number) => {
     const pages = FULL_SHEETS.filter((x) => x.chapter === no);
     const done = pages.filter((x) => doneKeys.has(x.key)).length;
     return done === pages.length ? 'full' : done > 0 ? 'half' : 'none';
   };
 
-  const hint = result
-    ? '끝까지 썼어요!'
-    : startedAt === null
-      ? '종이를 누르고 타이핑을 시작하면 시간이 재기 시작해요. Enter 없이 띄어쓰기만 맞추면 돼요.'
-      : '틀린 글자는 빨간 칸으로 보여요. 지우고 다시 쳐도 돼요.';
+  const hint = !started
+    ? '어떤 방식으로 써 볼지 고르면 바로 시작해요.'
+    : result
+      ? '끝까지 썼어요!'
+      : startedAt === null
+        ? '종이를 누르고 타이핑을 시작하면 시간이 재기 시작해요. Enter 없이 띄어쓰기만 맞추면 돼요.'
+        : '틀린 글자는 빨간 칸으로 보여요. 지우고 다시 쳐도 돼요.';
 
   return (
-    <div id='typing-room' className={s.window}>
+    <div
+      id='typing-room'
+      ref={windowRef}
+      className={s.window}
+      data-started={started}
+    >
       <div className={s.titlebar}>
         <svg viewBox='0 0 16 16' aria-hidden>
           <rect x='2' y='2' width='12' height='12' fill='#fff' />
@@ -343,7 +515,7 @@ export const TypingRoom = ({
               key={m.key}
               type='button'
               className={s.tab}
-              aria-pressed={mode === m.key}
+              aria-pressed={started && mode === m.key}
               onClick={() =>
                 goTo(
                   m.key,
@@ -356,159 +528,228 @@ export const TypingRoom = ({
           ))}
         </div>
 
-        <div className={s.sub}>
-          {mode === 'full' && (
-            <span>
-              이어서 쓰는 곳: <b>{sheet.title}</b> · 다 쓰면 다음 쪽으로
-              넘어가요
-            </span>
-          )}
-          {mode === 'chapter' && (
-            <>
-              <div className={s.chgrid} role='group' aria-label='장 고르기'>
-                {Array.from(
-                  { length: LITTLE_PRINCE_TOTAL_CHAPTERS },
-                  (_, i) => i + 1
-                ).map((no) => {
-                  const open = OPEN_CHAPTERS.includes(no);
-                  const state = open ? chapterState(no) : 'locked';
-                  return (
-                    <button
-                      key={no}
-                      type='button'
-                      className={s.chb}
-                      disabled={!open}
-                      data-state={state}
-                      aria-pressed={sheet.chapter === no}
-                      aria-label={
-                        open
-                          ? `${no}장${state === 'full' ? ' (다 씀)' : ''}`
-                          : `${no}장 (준비 중)`
-                      }
-                      onClick={() => {
-                        const pages = FULL_SHEETS.map((x, i) => ({
-                          x,
-                          i,
-                        })).filter(({ x }) => x.chapter === no);
-                        const todo = pages.find(
-                          ({ x }) => !doneKeys.has(x.key)
-                        );
-                        goTo('chapter', (todo ?? pages[0]).i);
-                      }}
-                    >
-                      {state === 'full' ? '✓' : no}
-                    </button>
-                  );
-                })}
-              </div>
-            </>
-          )}
-          {mode === 'famous' && (
-            <div className={s.chips} role='group' aria-label='명문장 고르기'>
-              {FAMOUS_SHEETS.map((f, i) => (
-                <button
-                  key={f.key}
-                  type='button'
-                  className={s.chip}
-                  aria-pressed={i === famousIndex}
-                  data-done={doneKeys.has(f.key)}
-                  onClick={() => goTo('famous', i)}
-                >
-                  {f.title.replace('명문장 · ', '')}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className={s.main}>
-          <div>
-            <div className={`${s.frame} ${s.raised}`}>
-              <div
-                ref={paperRef}
-                className={s.paper}
-                onClick={() => inputRef.current?.focus()}
-              >
-                <div className={s.head}>
-                  어린 왕자
-                  <b>{sheet.title}</b>
-                </div>
-                <div className={s.lines} aria-hidden>
-                  {lines
-                    .slice(firstVisible, firstVisible + VISIBLE_PAIRS)
-                    .map((line, k) => {
-                      const lineIndex = firstVisible + k;
-                      const isCurrent = !result && lineIndex === currentLine;
-                      const src: ReactNode[] = [];
-                      const typed: ReactNode[] = [];
-                      for (let i = line.start; i < line.end; i++) {
-                        const ch = sheet.text[i];
-                        src.push(
-                          i < judge.settled ? (
-                            <span key={i} className={s.done}>
-                              {ch}
-                            </span>
-                          ) : (
-                            ch
-                          )
-                        );
-                        if (i < typedCount) {
-                          const v = value[i];
-                          typed.push(
-                            i >= judge.settled ? (
-                              <span key={i} className={s.composing}>
-                                {v}
-                              </span>
-                            ) : wrongSet.has(i) ? (
-                              <span key={i} className={s.wrong}>
-                                {v}
-                              </span>
-                            ) : (
-                              v
-                            )
-                          );
+        {started && (
+          <div className={s.sub}>
+            {mode === 'full' && (
+              <span>
+                이어서 쓰는 곳: <b>{sheet.title}</b> · 다 쓰면 다음 쪽으로
+                넘어가요
+              </span>
+            )}
+            {mode === 'chapter' && (
+              <>
+                <div className={s.chgrid} role='group' aria-label='장 고르기'>
+                  {Array.from(
+                    { length: LITTLE_PRINCE_TOTAL_CHAPTERS },
+                    (_, i) => i + 1
+                  ).map((no) => {
+                    const open = OPEN_CHAPTERS.includes(no);
+                    const state = open ? chapterState(no) : 'locked';
+                    return (
+                      <button
+                        key={no}
+                        type='button'
+                        className={s.chb}
+                        disabled={!open}
+                        data-state={state}
+                        aria-pressed={sheet.chapter === no}
+                        aria-label={
+                          open
+                            ? `${no}장${state === 'full' ? ' (다 씀)' : ''}`
+                            : `${no}장 (준비 중)`
                         }
-                      }
-                      if (isCurrent && !composing)
-                        typed.push(<span key='caret' className={s.caret} />);
-                      return (
-                        <div
-                          key={lineIndex}
-                          className={s.pair}
-                          data-current={isCurrent}
-                        >
-                          <div className={s.src}>{src}</div>
-                          <div className={s.typed}>{typed}</div>
-                        </div>
-                      );
-                    })}
+                        onClick={() => pickChapter(no)}
+                      >
+                        {state === 'full' ? '✓' : no}
+                      </button>
+                    );
+                  })}
                 </div>
-                <textarea
-                  ref={inputRef}
-                  className={s.input}
-                  value={value}
-                  aria-label={`${sheet.title}. 다음 문장을 똑같이 입력하세요: ${sheet.text}`}
-                  autoComplete='off'
-                  autoCorrect='off'
-                  autoCapitalize='off'
-                  spellCheck={false}
-                  disabled={!!result}
-                  onChange={handleChange}
-                  onCompositionStart={() => setComposing(true)}
-                  onCompositionEnd={handleCompositionEnd}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') e.preventDefault();
-                  }}
-                  // 붙여넣기·끌어 놓기는 막는다 — 랭킹 공정성
-                  onPaste={(e) => e.preventDefault()}
-                  onDrop={(e) => e.preventDefault()}
-                />
+                {/* 모바일은 27개 버튼 대신 고르기 상자 하나(HJ 2026-11-26) — CSS 가 폭에 따라 둘 중 하나만 보인다 */}
+                <select
+                  className={s.pickSelect}
+                  aria-label='장 고르기'
+                  value={sheet.chapter ?? ''}
+                  onChange={(e) => pickChapter(Number(e.target.value))}
+                >
+                  {Array.from(
+                    { length: LITTLE_PRINCE_TOTAL_CHAPTERS },
+                    (_, i) => i + 1
+                  ).map((no) => {
+                    const open = OPEN_CHAPTERS.includes(no);
+                    return (
+                      <option key={no} value={no} disabled={!open}>
+                        {no}장
+                        {!open
+                          ? ' (준비 중)'
+                          : chapterState(no) === 'full'
+                            ? ' ✓ 다 씀'
+                            : ''}
+                      </option>
+                    );
+                  })}
+                </select>
+              </>
+            )}
+            {mode === 'famous' && (
+              <div className={s.chips} role='group' aria-label='명문장 고르기'>
+                {FAMOUS_SHEETS.map((f, i) => (
+                  <button
+                    key={f.key}
+                    type='button'
+                    className={s.chip}
+                    aria-pressed={i === famousIndex}
+                    data-done={doneKeys.has(f.key)}
+                    onClick={() => goTo('famous', i)}
+                  >
+                    {f.title.replace('명문장 · ', '')}
+                  </button>
+                ))}
               </div>
-            </div>
-            {sheet.picture && (
-              <PixelPicture name={sheet.picture} className={s.picture} />
+            )}
+            {mode === 'famous' && (
+              <select
+                className={s.pickSelect}
+                aria-label='명문장 고르기'
+                value={famousIndex}
+                onChange={(e) => goTo('famous', Number(e.target.value))}
+              >
+                {FAMOUS_SHEETS.map((f, i) => (
+                  <option key={f.key} value={i}>
+                    {f.title.replace('명문장 · ', '')}
+                    {doneKeys.has(f.key) ? ' ✓' : ''}
+                  </option>
+                ))}
+              </select>
             )}
           </div>
+        )}
+
+        <div className={s.main} data-started={started}>
+          {!started ? (
+            <div className={`${s.frame} ${s.raised}`}>
+              <div className={`${s.paper} ${s.menuPaper}`}>
+                <p className={s.menuTitle}>어떤 방식으로 써 볼까요?</p>
+                <div
+                  className={s.menu}
+                  role='group'
+                  aria-label='필사 방식 고르기'
+                >
+                  {MODES.map((m, i) => (
+                    <button
+                      key={m.key}
+                      type='button'
+                      className={s.menuItem}
+                      onClick={() =>
+                        goTo(
+                          m.key,
+                          m.key === 'famous' ? 0 : firstUnwrittenIndex(doneKeys)
+                        )
+                      }
+                    >
+                      <span className={s.menuNo}>{i + 1}</span>
+                      <span className={s.menuText}>
+                        <b>{m.label}</b>
+                        <span>
+                          {m.key === 'full' && doneKeys.size > 0
+                            ? `${FULL_SHEETS[firstUnwrittenIndex(doneKeys)].title}부터 이어서`
+                            : MODE_DESCRIPTIONS[m.key]}
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div className={`${s.frame} ${s.raised}`}>
+                <div
+                  ref={paperRef}
+                  className={s.paper}
+                  onClick={() => inputRef.current?.focus()}
+                >
+                  <div className={s.head}>
+                    어린 왕자
+                    <b>{sheet.title}</b>
+                  </div>
+                  <div className={s.lines} aria-hidden>
+                    {lines
+                      .slice(firstVisible, firstVisible + VISIBLE_PAIRS)
+                      .map((line, k) => {
+                        const lineIndex = firstVisible + k;
+                        const isCurrent = !result && lineIndex === currentLine;
+                        const src: ReactNode[] = [];
+                        const typed: ReactNode[] = [];
+                        for (let i = line.start; i < line.end; i++) {
+                          const ch = sheet.text[i];
+                          src.push(
+                            i < judge.settled ? (
+                              <span key={i} className={s.done}>
+                                {ch}
+                              </span>
+                            ) : (
+                              ch
+                            )
+                          );
+                          if (i < typedCount) {
+                            const v = value[i];
+                            typed.push(
+                              i >= judge.settled ? (
+                                <span key={i} className={s.composing}>
+                                  {v}
+                                </span>
+                              ) : wrongSet.has(i) ? (
+                                <span key={i} className={s.wrong}>
+                                  {v}
+                                </span>
+                              ) : (
+                                v
+                              )
+                            );
+                          }
+                        }
+                        if (isCurrent && !composing)
+                          typed.push(<span key='caret' className={s.caret} />);
+                        return (
+                          <div
+                            key={lineIndex}
+                            className={s.pair}
+                            data-current={isCurrent}
+                          >
+                            <div className={s.src}>{src}</div>
+                            <div className={s.typed}>{typed}</div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                  <textarea
+                    ref={inputRef}
+                    className={s.input}
+                    value={value}
+                    aria-label={`${sheet.title}. 다음 문장을 똑같이 입력하세요: ${sheet.text}`}
+                    autoComplete='off'
+                    autoCorrect='off'
+                    autoCapitalize='off'
+                    spellCheck={false}
+                    disabled={!!result}
+                    onChange={handleChange}
+                    onCompositionStart={() => setComposing(true)}
+                    onCompositionEnd={handleCompositionEnd}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') e.preventDefault();
+                    }}
+                    // 붙여넣기·끌어 놓기는 막는다 — 랭킹 공정성
+                    onPaste={(e) => e.preventDefault()}
+                    onDrop={(e) => e.preventDefault()}
+                  />
+                </div>
+              </div>
+              {sheet.picture && (
+                <PixelPicture name={sheet.picture} className={s.picture} />
+              )}
+            </div>
+          )}
 
           <div className={s.side}>
             <div className={s.badge}>목표 300타</div>
@@ -561,16 +802,18 @@ export const TypingRoom = ({
 
         <div className={s.footer}>
           <p className={s.hint}>{hint}</p>
-          <button
-            type='button'
-            className={s.btn}
-            onClick={() => {
-              resetTyping();
-              setFocusTick((n) => n + 1);
-            }}
-          >
-            다 시
-          </button>
+          {started && (
+            <button
+              type='button'
+              className={s.btn}
+              onClick={() => {
+                resetTyping();
+                setFocusTick((n) => n + 1);
+              }}
+            >
+              다 시
+            </button>
+          )}
         </div>
       </div>
 
@@ -617,26 +860,42 @@ export const TypingRoom = ({
                   />
                 </div>
               </div>
-              <p className={s.saveNote} role='status'>
-                {result.save === 'saving' && '기록을 남기는 중이에요…'}
-                {result.save === 'saved' &&
-                  '내 기록에 남겼어요. 진행도와 랭킹에 반영돼요.'}
-                {result.save === 'error' &&
-                  (result.message ?? '기록을 저장하지 못했어요.')}
-                {result.save === 'guest' && (
-                  <>
-                    지금 쓴 기록은 남지 않아요.{' '}
-                    <Link href={loginHref}>로그인하면</Link> 진행도와 랭킹에
-                    기록이 쌓여요.
-                  </>
+              <div className={s.saveNote} role='status'>
+                {result.save === 'saving' && <p>기록을 남기는 중이에요…</p>}
+                {result.save === 'error' && (
+                  <p>{result.message ?? '기록을 저장하지 못했어요.'}</p>
                 )}
-              </p>
+                {result.save === 'saved' && (
+                  <MemberRankNote
+                    optIn={optIn}
+                    accuracy={result.accuracy}
+                    action={rankAction}
+                    onTurnOn={turnOnRank}
+                  />
+                )}
+                {result.save === 'guest' && (
+                  <GuestRankForm
+                    accuracy={result.accuracy}
+                    nickname={nickname}
+                    onNicknameChange={(v) => {
+                      setNickname(v);
+                      if (rankAction.status === 'error')
+                        setRankAction({ status: 'idle' });
+                    }}
+                    action={rankAction}
+                    onSubmit={submitGuestRank}
+                    loginHref={loginHref}
+                  />
+                )}
+              </div>
               <div className={s.dialogButtons}>
-                {result.save === 'guest' && (
-                  <Link href={loginHref} className={`${s.btn} ${s.btnLink}`}>
-                    로그인하고 기록 남기기
-                  </Link>
-                )}
+                <button
+                  type='button'
+                  className={`${s.btn} ${s.btnQuit}`}
+                  onClick={closeToMenu}
+                >
+                  종 료
+                </button>
                 <button
                   type='button'
                   className={s.btn}
@@ -660,5 +919,141 @@ export const TypingRoom = ({
         </div>
       )}
     </div>
+  );
+};
+
+/** 회원 결과 창 — 이번 기록이 랭킹에 반영되는지 바로 알려 준다(HJ 2026-11-26: 참여 토글이 아래에 있어 모르겠다) */
+const MemberRankNote = ({
+  optIn,
+  accuracy,
+  action,
+  onTurnOn,
+}: {
+  optIn: boolean;
+  accuracy: number;
+  action: RankAction;
+  onTurnOn: () => void;
+}) => {
+  if (!optIn)
+    return (
+      <>
+        <p>
+          내 기록에 남겼어요. 지금은 <b>순위 참여가 꺼져 있어서</b> 랭킹에는
+          보이지 않아요.
+        </p>
+        <div className={s.noteRow}>
+          <span className={s.noteSub}>
+            켜면 다른 사람에게는 닉네임 첫 글자만 보여요(책**).
+          </span>
+          <button
+            type='button'
+            className={`${s.btn} ${s.btnSmall}`}
+            disabled={action.status === 'sending'}
+            onClick={onTurnOn}
+          >
+            순위 참여 켜기
+          </button>
+        </div>
+        {action.status === 'error' && (
+          <p className={s.noteError}>{action.message}</p>
+        )}
+      </>
+    );
+  return (
+    <p>
+      {action.status === 'done'
+        ? '순위 참여를 켰어요. '
+        : '내 기록에 남겼어요. '}
+      {accuracy >= SPEED_RANK_MIN_ACCURACY
+        ? '꾸준함·타수 랭킹에 반영돼요.'
+        : `꾸준함 랭킹에 반영돼요. 타수 랭킹은 정확도 ${SPEED_RANK_MIN_ACCURACY}% 이상일 때만 올라가요.`}
+    </p>
+  );
+};
+
+/** 비회원 결과 창 — 닉네임으로 타수 랭킹에 올리기(HJ 2026-11-26 A안) */
+const GuestRankForm = ({
+  accuracy,
+  nickname,
+  onNicknameChange,
+  action,
+  onSubmit,
+  loginHref,
+}: {
+  accuracy: number;
+  nickname: string;
+  onNicknameChange: (value: string) => void;
+  action: RankAction;
+  onSubmit: () => void;
+  loginHref: string;
+}) => {
+  // 로그인 권유는 버튼 줄 대신 안내 칸 안에 — 버튼이 네 개가 되면 줄이 깨진다
+  const login = (
+    <div className={s.noteRow}>
+      <span className={s.noteSub}>
+        로그인하면 진행도와 꾸준함 순위까지 쌓여요.
+      </span>
+      <Link
+        href={loginHref}
+        className={`${s.btn} ${s.btnSmall} ${s.btnLink} ${s.btnMain}`}
+      >
+        로그인하고 기록 남기기
+      </Link>
+    </div>
+  );
+  if (accuracy < SPEED_RANK_MIN_ACCURACY)
+    return (
+      <>
+        <p>
+          정확도 {SPEED_RANK_MIN_ACCURACY}% 이상이면 닉네임으로 타수 랭킹에 올릴
+          수 있어요. 한 번 더 도전해 볼까요?
+        </p>
+        {login}
+      </>
+    );
+  if (action.status === 'done')
+    return (
+      <>
+        <p>
+          <b>{nickname}</b> 님의 기록을 타수 랭킹에 올렸어요! 아래 랭킹에서
+          확인해 보세요.
+        </p>
+        {login}
+      </>
+    );
+  return (
+    <>
+      <form
+        className={s.noteRow}
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
+        }}
+      >
+        <label className={s.nickLabel}>
+          <span>닉네임으로 타수 랭킹에 올리기</span>
+          <input
+            className={s.nickInput}
+            value={nickname}
+            onChange={(e) => onNicknameChange(e.target.value)}
+            maxLength={GUEST_NICKNAME_MAX}
+            placeholder='2~10자'
+            autoComplete='nickname'
+            enterKeyHint='send'
+          />
+        </label>
+        <button
+          type='submit'
+          className={`${s.btn} ${s.btnSmall}`}
+          disabled={action.status === 'sending'}
+        >
+          {action.status === 'sending' ? '올리는 중…' : '랭킹에 올리기'}
+        </button>
+      </form>
+      {action.status === 'error' && (
+        <p className={s.noteError}>{action.message}</p>
+      )}
+      {login}
+    </>
   );
 };

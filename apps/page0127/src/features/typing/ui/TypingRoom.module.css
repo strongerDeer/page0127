@@ -200,7 +200,8 @@
 }
 @media (max-width: 720px) {
   .main {
-    grid-template-columns: 1fr;
+    /* 1fr 은 최소 폭이 내용 폭(auto)이라 긴 줄이 칸을 밀어낸다 → minmax(0, 1fr) */
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -568,4 +569,242 @@
 }
 .dialog:focus {
   outline: none;
+}
+
+/* 시작 화면 — 옛 타자 프로그램 첫 메뉴처럼 번호 달린 세 방식(HJ 2026-11-26) */
+.menuPaper {
+  cursor: default;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(4 * (2 * 1.6em + 20px) + 40px);
+}
+.menuTitle {
+  margin: 0 0 12px;
+  color: var(--src);
+  font-size: 15px;
+  font-weight: 700;
+}
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  cursor: pointer;
+  border: 0;
+  border-radius: 8px;
+  background: var(--face);
+  padding: 12px 14px;
+  color: var(--ink);
+  font-family: var(--font);
+  text-align: left;
+  box-shadow:
+    inset 1px 1px 0 var(--hi),
+    inset -1px -1px 0 var(--dk),
+    inset 2px 2px 0 #f3e6c9,
+    inset -2px -2px 0 var(--lo);
+}
+.menuItem:hover {
+  background: #f3e6c9;
+}
+.menuItem:active {
+  box-shadow:
+    inset 1px 1px 0 var(--dk),
+    inset -1px -1px 0 var(--hi),
+    inset 2px 2px 0 var(--lo);
+}
+.menuItem:focus-visible {
+  outline: 2px dashed var(--navy);
+  outline-offset: 2px;
+}
+.menuNo {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: var(--navy);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+}
+.menuText {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+.menuText b {
+  font-size: 16px;
+}
+.menuText span {
+  color: var(--soft);
+  font-size: 13px;
+}
+
+/* 결과 창 — 랭킹 반영 안내·닉네임 입력 */
+.saveNote p {
+  margin: 0;
+}
+.saveNote b {
+  color: var(--ink);
+}
+.noteRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+.noteSub {
+  color: var(--soft);
+  font-size: 12px;
+}
+.noteError {
+  margin-top: 6px !important;
+  color: var(--miss);
+  font-weight: 700;
+}
+.nickLabel {
+  display: flex;
+  flex: 1 1 180px;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--ink);
+  font-weight: 700;
+}
+.nickInput {
+  width: 100%;
+  border: 0;
+  border-radius: 6px;
+  background: #fff;
+  padding: 7px 10px;
+  color: var(--ink);
+  font: 400 15px var(--font);
+  box-shadow:
+    inset 1px 1px 0 var(--lo),
+    inset -1px -1px 0 var(--hi),
+    inset 2px 2px 0 var(--dk);
+}
+.nickInput:focus-visible {
+  outline: 2px dashed var(--navy);
+  outline-offset: 2px;
+}
+.btnSmall {
+  padding: 6px 12px;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+.btnSmall:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.btnQuit {
+  margin-right: auto;
+}
+/* 안내 칸 안 링크 밑줄 규칙이 버튼 모양 링크까지 덮지 않게 */
+.saveNote a.btn {
+  text-decoration: none;
+}
+.saveNote a.btnMain {
+  color: #fff;
+}
+
+/* 모바일 — 명문장·장 목록은 고르기 상자, 캐릭터·시계는 본문 위 한 줄(HJ 2026-11-26) */
+.pickSelect {
+  /* 내용만큼만 — 꽉 찬 폭이면 버튼처럼 무거워 보인다(HJ 2026-11-26 "조그만 셀렉창") */
+  display: none;
+  align-self: flex-start;
+  width: auto;
+  max-width: 100%;
+  cursor: pointer;
+  border: 0;
+  border-radius: 6px;
+  background: var(--paper);
+  padding: 4px 6px;
+  color: var(--ink);
+  font: 700 13px var(--font);
+  box-shadow: inset 0 0 0 1px #cdb88f;
+}
+.pickSelect:focus-visible {
+  outline: 2px dashed var(--navy);
+  outline-offset: 2px;
+}
+@media (max-width: 720px) {
+  .chips,
+  .chgrid {
+    display: none;
+  }
+  .pickSelect {
+    display: block;
+  }
+  .main .side {
+    order: -1;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .main .side .badge,
+  .main .side .clockLabel,
+  .main .side .work {
+    display: none;
+  }
+  .main .side .art {
+    flex: none;
+    width: 64px;
+    height: 64px;
+  }
+  .main .side .clock {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+  }
+  .main .side .lcd {
+    flex: none;
+    padding: 8px 10px;
+    font-size: 22px;
+  }
+  .main .side .counter {
+    flex: 1;
+    margin-top: 0;
+    font-size: 13px;
+  }
+}
+
+/* 모바일 군더더기 걷어내기(HJ 2026-11-26) — 막대·긴 안내문을 빼고, 시작 화면엔 캐릭터 줄도 뺀다 */
+@media (max-width: 720px) {
+  .main[data-started="false"] .side {
+    display: none;
+  }
+  .status {
+    grid-template-columns: auto auto;
+    justify-content: space-between;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .meter {
+    display: none;
+  }
+  .hint {
+    display: none;
+  }
+  .footer {
+    justify-content: flex-end;
+  }
+}
+@media (max-width: 720px) {
+  /* 시작 화면엔 0타·100% 상태 줄도 필요 없다 */
+  .window[data-started="false"] .statusFrame {
+    display: none;
+  }
 }
