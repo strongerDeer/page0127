@@ -10,6 +10,7 @@ import { QueryProvider } from '@/shared/providers/QueryProvider';
 
 import { CurrentUserProvider } from '@/entities/user';
 
+import { RecordingExclusionReporter } from '@/widgets/visit/RecordingExclusionReporter';
 import { VisitReporter } from '@/widgets/visit/VisitReporter';
 
 import type { Metadata, Viewport } from 'next';
@@ -163,6 +164,8 @@ const RootLayout = ({
                 재방문율은 지금부터 쌓지 않으면 소급 계산이 불가능하다.
                 CurrentUserProvider 안쪽이어야 한다(로그인 상태를 읽는다). */}
             <VisitReporter />
+            {/* 운영자 계정으로 로그인한 기기는 Clarity 녹화에서 뺀다(체험 계정은 demo 태그) */}
+            <RecordingExclusionReporter />
           </CurrentUserProvider>
         </QueryProvider>
         {/* GA4 — 측정 ID(NEXT_PUBLIC_GA_ID) 설정 시에만 로드 */}
