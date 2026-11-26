@@ -445,6 +445,16 @@ export const TypingRoom = ({
     return goTo('chapter', (fullIndex + 1) % FULL_SHEETS.length);
   };
 
+  /** 장을 고르면 그 장에서 아직 안 쓴 첫 쪽으로(다 썼으면 첫 쪽) */
+  const pickChapter = (no: number) => {
+    const pages = FULL_SHEETS.map((x, i) => ({ x, i })).filter(
+      ({ x }) => x.chapter === no
+    );
+    if (pages.length === 0) return;
+    const todo = pages.find(({ x }) => !doneKeys.has(x.key));
+    goTo('chapter', (todo ?? pages[0]).i);
+  };
+
   const chapterState = (no: number) => {
     const pages = FULL_SHEETS.filter((x) => x.chapter === no);
     const done = pages.filter((x) => doneKeys.has(x.key)).length;
@@ -527,22 +537,37 @@ export const TypingRoom = ({
                             ? `${no}장${state === 'full' ? ' (다 씀)' : ''}`
                             : `${no}장 (준비 중)`
                         }
-                        onClick={() => {
-                          const pages = FULL_SHEETS.map((x, i) => ({
-                            x,
-                            i,
-                          })).filter(({ x }) => x.chapter === no);
-                          const todo = pages.find(
-                            ({ x }) => !doneKeys.has(x.key)
-                          );
-                          goTo('chapter', (todo ?? pages[0]).i);
-                        }}
+                        onClick={() => pickChapter(no)}
                       >
                         {state === 'full' ? '✓' : no}
                       </button>
                     );
                   })}
                 </div>
+                {/* 모바일은 27개 버튼 대신 고르기 상자 하나(HJ 2026-11-26) — CSS 가 폭에 따라 둘 중 하나만 보인다 */}
+                <select
+                  className={s.pickSelect}
+                  aria-label='장 고르기'
+                  value={sheet.chapter ?? ''}
+                  onChange={(e) => pickChapter(Number(e.target.value))}
+                >
+                  {Array.from(
+                    { length: LITTLE_PRINCE_TOTAL_CHAPTERS },
+                    (_, i) => i + 1
+                  ).map((no) => {
+                    const open = OPEN_CHAPTERS.includes(no);
+                    return (
+                      <option key={no} value={no} disabled={!open}>
+                        {no}장
+                        {!open
+                          ? ' (준비 중)'
+                          : chapterState(no) === 'full'
+                            ? ' ✓ 다 씀'
+                            : ''}
+                      </option>
+                    );
+                  })}
+                </select>
               </>
             )}
             {mode === 'famous' && (
@@ -560,6 +585,21 @@ export const TypingRoom = ({
                   </button>
                 ))}
               </div>
+            )}
+            {mode === 'famous' && (
+              <select
+                className={s.pickSelect}
+                aria-label='명문장 고르기'
+                value={famousIndex}
+                onChange={(e) => goTo('famous', Number(e.target.value))}
+              >
+                {FAMOUS_SHEETS.map((f, i) => (
+                  <option key={f.key} value={i}>
+                    {f.title.replace('명문장 · ', '')}
+                    {doneKeys.has(f.key) ? ' ✓' : ''}
+                  </option>
+                ))}
+              </select>
             )}
           </div>
         )}

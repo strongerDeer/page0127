@@ -200,7 +200,8 @@
 }
 @media (max-width: 720px) {
   .main {
-    grid-template-columns: 1fr;
+    /* 1fr 은 최소 폭이 내용 폭(auto)이라 긴 줄이 칸을 밀어낸다 → minmax(0, 1fr) */
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -714,4 +715,65 @@
 }
 .saveNote a.btnMain {
   color: #fff;
+}
+
+/* 모바일 — 명문장·장 목록은 고르기 상자, 캐릭터·시계는 본문 위 한 줄(HJ 2026-11-26) */
+.pickSelect {
+  display: none;
+  width: 100%;
+  cursor: pointer;
+  border: 0;
+  border-radius: 7px;
+  background: var(--paper);
+  padding: 8px 10px;
+  color: var(--ink);
+  font: 700 14px var(--font);
+  box-shadow: inset 0 0 0 1px #cdb88f;
+}
+.pickSelect:focus-visible {
+  outline: 2px dashed var(--navy);
+  outline-offset: 2px;
+}
+@media (max-width: 720px) {
+  .chips,
+  .chgrid {
+    display: none;
+  }
+  .pickSelect {
+    display: block;
+  }
+  .main .side {
+    order: -1;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .main .side .badge,
+  .main .side .clockLabel,
+  .main .side .work {
+    display: none;
+  }
+  .main .side .art {
+    flex: none;
+    width: 64px;
+    height: 64px;
+  }
+  .main .side .clock {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+  }
+  .main .side .lcd {
+    flex: none;
+    padding: 8px 10px;
+    font-size: 22px;
+  }
+  .main .side .counter {
+    flex: 1;
+    margin-top: 0;
+    font-size: 13px;
+  }
 }
