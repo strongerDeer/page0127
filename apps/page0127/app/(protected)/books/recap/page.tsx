@@ -18,12 +18,14 @@ import { RecapArchive } from '@/widgets/recap/ui/RecapArchive';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: '지난 회상 | page0127.',
+  title: '주간 회상 | page0127.',
   robots: { index: false },
 };
 
 /**
- * 지난 회상 — 내 서재 회상 카드의 "지난 회상 보기"로 들어온다.
+ * 주간 회상 — 내 서재 회상 카드의 "모아 보기", 프로필 메뉴·목차의 "주간 회상"으로 들어온다.
+ *
+ * 이름: 알림·푸시·메뉴가 모두 '주간 회상'이라 페이지 제목도 같게 둔다(2026-11-26 HJ "다 일관되게").
  *
  * 왜 /books 아래인가: 최상위(/recap)는 /{username} 과 겹쳐 'recap' 이라는 아이디를 쓰는
  * 사람의 서재를 가린다. /books 는 이미 로그인 전용이고(protectedRoutes), 정적 세그먼트라
@@ -45,7 +47,7 @@ const RecapArchivePage = async () => {
   return (
     <PageContainer className='space-y-6'>
       <PageHeader
-        title='지난 회상'
+        title='주간 회상'
         description={
           <>
             이번 주와 지난 {RECAP_ARCHIVE_WEEKS}주 동안 끝내고 담은 책을 주마다

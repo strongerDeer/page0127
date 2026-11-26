@@ -97,7 +97,7 @@ export const WeeklyRecapCard = async () => {
           href='/books/recap'
           className='inline-flex shrink-0 items-center text-xs text-text-subtle hover:text-text-strong'
         >
-          지난 회상
+          모아 보기
           <ChevronRight className='size-3.5' aria-hidden />
         </Link>
       </div>
