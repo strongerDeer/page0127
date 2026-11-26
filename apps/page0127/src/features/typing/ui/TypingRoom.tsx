@@ -129,6 +129,13 @@ export const TypingRoom = ({
   const [started, setStarted] = useState(false);
   const windowRef = useRef<HTMLDivElement>(null);
   const [optIn, setOptIn] = useState(rankOptIn);
+  // 순위 참여는 랭킹 카드와 필사 창 두 곳에서 켤 수 있다 → 한쪽에서 바꾸면 router.refresh 로 새 값이 내려온다.
+  // useState 첫 값만 쓰면 그 새 값을 못 받아 "켜져 있는데 결과 창은 꺼짐"이 된다(HJ 2026-11-26) → 받은 값이 바뀌면 맞춘다
+  const [syncedOptIn, setSyncedOptIn] = useState(rankOptIn);
+  if (rankOptIn !== syncedOptIn) {
+    setSyncedOptIn(rankOptIn);
+    setOptIn(rankOptIn);
+  }
   const [rankAction, setRankAction] = useState<RankAction>({
     status: 'idle',
   });
