@@ -66,7 +66,11 @@ export const TypingProgressCard = ({
         {progress.chapters.map((state, i) => (
           <li
             key={i}
-            title={`${i + 1}장`}
+            title={
+              progress.chapterPages[i].total
+                ? `${i + 1}장 ${progress.chapterPages[i].done}/${progress.chapterPages[i].total}쪽`
+                : `${i + 1}장`
+            }
             className={`rounded-md py-1 text-center text-xs tabular-nums ${
               state === 'full'
                 ? 'bg-primary font-bold text-primary-foreground'
@@ -78,6 +82,12 @@ export const TypingProgressCard = ({
             }`}
           >
             {i + 1}
+            {/* 다 쓴 쪽 / 전체 쪽(HJ 2026-11-26) — 회원만(비회원은 늘 0이라 빼 둔다) */}
+            {memberId && progress.chapterPages[i].total > 0 && (
+              <span className='block text-[0.625rem] font-normal leading-tight opacity-80'>
+                {progress.chapterPages[i].done}/{progress.chapterPages[i].total}
+              </span>
+            )}
             <span className='sr-only'>
               장{' '}
               {state === 'full'
@@ -93,6 +103,7 @@ export const TypingProgressCard = ({
       </ol>
       <p className='text-xs text-text-subtle'>
         진한 칸은 다 쓴 장, 연한 칸은 쓰는 중인 장이에요.
+        {memberId && ' 숫자는 다 쓴 쪽 / 전체 쪽이에요.'}
       </p>
     </section>
   );

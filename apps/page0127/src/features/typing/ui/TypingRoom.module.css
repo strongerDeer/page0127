@@ -340,6 +340,20 @@
   font-size: 14px;
   text-align: left;
 }
+/* 지금 장의 다 쓴 쪽 수(HJ 2026-11-26) */
+.chapterDone {
+  margin-top: 6px;
+  color: var(--soft);
+  font-size: 12px;
+  text-align: left;
+}
+/* 결과 창 — 이 쪽으로 장을 끝냈을 때 한 줄 */
+.chapterClear {
+  display: block;
+  margin-top: 2px;
+  color: var(--navy);
+  font-size: 14px;
+}
 
 /* 아래 검은 상태 줄 */
 .statusFrame {
