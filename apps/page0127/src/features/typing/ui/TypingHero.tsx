@@ -10,7 +10,7 @@ import s from './TypingHero.module.css';
  * 1. 파란 원문 줄(흐린 글자)이 먼저 깔리고, 그 위를 한글 자판으로 치듯 한 글자씩 덮어 쓴다.
  *    글자마다 초성 → 초성+중성 → 완성 순서로 조합돼, 옛 타자 연습의 "쳐지는" 느낌을 낸다.
  * 2. LCD 계기판의 타수가 치는 만큼 올라가 목표에 닿는다.
- * 3. 다 치면 도트 그림이 하나씩 떠오르고, 설명·시작 버튼이 나타난다.
+ * 3. 다 치면 설명·시작 버튼이 나타난다(도트 그림 등장·상자 배경은 HJ가 과하다고 해 뺐다).
  *
  * 검색·스크린 리더용 제목은 h1 안 sr-only 로 처음부터 온전히 있고, 움직이는 글자는 aria-hidden.
  * 움직임 줄이기 설정이면 처음부터 다 친 상태로 보인다.
@@ -41,16 +41,6 @@ const FRAMES: string[] = (() => {
   }
   return frames;
 })();
-
-/** 떠오르는 도트 그림 — 어린 왕자 초상은 홍보·장식에 쓰지 않는다(HJ) */
-const FLOATERS = [
-  { name: 'fox', w: 246, h: 167, pos: s.f1 },
-  { name: 'baobab', w: 350, h: 284, pos: s.f2 },
-  { name: 'sheep', w: 236, h: 208, pos: s.f3 },
-  { name: 'lamplighter', w: 216, h: 312, pos: s.f4 },
-  { name: 'well', w: 300, h: 209, pos: s.f5 },
-  { name: 'king', w: 212, h: 283, pos: s.f6 },
-] as const;
 
 const STEP_MS = 85;
 const START_DELAY_MS = 450;
@@ -88,22 +78,6 @@ export const TypingHero = ({ targetId }: { targetId: string }) => {
 
   return (
     <section className={s.hero} data-done={done || undefined}>
-      <div className={s.floaters} aria-hidden>
-        {FLOATERS.map((f, idx) => (
-          // eslint-disable-next-line @next/next/no-img-element -- 장식용 정적 webp
-          <img
-            key={f.name}
-            src={`/typing/pixel/${f.name}.webp`}
-            width={f.w}
-            height={f.h}
-            alt=''
-            className={`${s.floater} ${f.pos}`}
-            style={{ animationDelay: `${idx * 140}ms, ${idx * 140 + 600}ms` }}
-            decoding='async'
-          />
-        ))}
-      </div>
-
       <p className={s.badge}>
         <span className={s.badgeDot} aria-hidden />
         타자 연습을 겸한

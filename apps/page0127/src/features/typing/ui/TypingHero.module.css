@@ -1,29 +1,15 @@
 /*
   온라인 필사 표지 — 이벤트 페이지 느낌(HJ 2026-11-26 B안).
-  아래 필사 창과 한 세트로 보이게 같은 베이지·남색·LCD 색을 고정값으로 쓴다(다크 모드에서도 같은 종이).
+  상자·배경 없이 페이지 위에 바로 놓는다(HJ). 글자색은 토큰, 원문 줄 파랑·LCD 만 필사 창과 같은 고정값.
 */
 .hero {
-  --paper: #fbf5e6;
-  --grid: rgb(169 139 95 / 0.18);
-  --line: #e2cfa9;
-  --ink: #262019;
-  --soft: #6d604e;
   --src: #3b3fc4;
-  --navy: #0f2350;
   --lcd: #24392d;
   --lcd-on: #e6f59a;
   position: relative;
-  overflow: hidden;
-  isolation: isolate;
-  padding: 56px 20px 48px;
-  border: 1px solid var(--line);
-  border-radius: 28px;
-  background:
-    radial-gradient(circle, var(--grid) 1px, transparent 1.4px) 0 0 / 18px 18px,
-    radial-gradient(120% 80% at 50% 0%, #fffdf6 0%, var(--paper) 60%);
-  color: var(--ink);
+  padding: 16px 8px 8px;
+  color: var(--text-strong);
   text-align: center;
-  color-scheme: light;
 }
 
 /* ── 배지 ── */
@@ -32,13 +18,12 @@
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-soft);
   border-radius: 999px;
-  background: #fff;
-  color: var(--soft);
+  background: var(--card);
+  color: var(--text-subtle);
   font-size: 13px;
   font-weight: 500;
-  box-shadow: 0 6px 16px -10px rgb(60 40 10 / 0.35);
   animation: rise 0.5s ease-out both;
 }
 .badge strong {
@@ -131,7 +116,7 @@
 .desc {
   max-width: 34rem;
   margin: 22px auto 0;
-  color: var(--soft);
+  color: var(--text-body);
   font-size: 15px;
   line-height: 1.7;
   word-break: keep-all;
@@ -144,13 +129,13 @@
   margin-top: 22px;
   padding: 12px 22px;
   border-radius: 12px;
-  background: var(--navy);
+  background: var(--primary);
   color: #fff;
   font-size: 15px;
   font-weight: 700;
   box-shadow:
     inset 0 -3px 0 rgb(0 0 0 / 0.35),
-    0 10px 22px -12px rgb(15 35 80 / 0.7);
+    0 10px 22px -12px rgb(15 35 80 / 0.5);
   transition: transform 0.15s ease-out;
 }
 .cta:hover {
@@ -168,83 +153,7 @@
   outline-offset: 3px;
 }
 
-/* ── 떠오르는 도트 그림 ── */
-.floaters {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-}
-.floater {
-  position: absolute;
-  height: auto;
-  image-rendering: pixelated;
-  opacity: 0;
-  filter: drop-shadow(0 6px 6px rgb(60 40 10 / 0.18));
-}
-.hero[data-done] .floater {
-  animation:
-    pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both,
-    bob 4s ease-in-out infinite;
-}
-.f1 {
-  left: 3%;
-  top: 16%;
-  width: 120px;
-}
-.f2 {
-  right: 3%;
-  top: 8%;
-  width: 128px;
-}
-.f3 {
-  left: 7%;
-  bottom: 10%;
-  width: 92px;
-}
-.f4 {
-  right: 8%;
-  bottom: 8%;
-  width: 74px;
-}
-.f5 {
-  left: 18%;
-  top: 4%;
-  width: 74px;
-}
-.f6 {
-  right: 22%;
-  bottom: 3%;
-  width: 60px;
-}
-
 @media (max-width: 640px) {
-  .hero {
-    padding: 40px 14px 36px;
-    border-radius: 20px;
-  }
-  .f4,
-  .f5,
-  .f6 {
-    display: none;
-  }
-  .f1 {
-    left: -10px;
-    top: auto;
-    bottom: 8px;
-    width: 72px;
-  }
-  .f2 {
-    right: -8px;
-    top: 6px;
-    width: 70px;
-  }
-  .f3 {
-    right: 8px;
-    left: auto;
-    bottom: 8px;
-    width: 56px;
-  }
   .desc {
     font-size: 14px;
   }
@@ -269,27 +178,6 @@
     transform: translateY(8px);
   }
 }
-@keyframes pop {
-  from {
-    opacity: 0;
-    transform: translateY(14px) scale(0.6);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-@keyframes bob {
-  0%,
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  50% {
-    opacity: 1;
-    transform: translateY(-6px);
-  }
-}
 @keyframes nudge {
   0%,
   100% {
@@ -304,12 +192,8 @@
   .badge,
   .badgeDot,
   .caret,
-  .cta span,
-  .hero[data-done] .floater {
+  .cta span {
     animation: none;
-  }
-  .hero[data-done] .floater {
-    opacity: 1;
   }
   .after {
     transition: none;
