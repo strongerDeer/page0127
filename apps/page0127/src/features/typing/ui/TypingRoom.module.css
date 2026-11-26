@@ -739,33 +739,18 @@
   color: #fff;
 }
 
-/* 모바일 — 명문장·장 목록은 고르기 상자, 캐릭터·시계는 본문 위 한 줄(HJ 2026-11-26) */
-.pickSelect {
-  /* 내용만큼만 — 꽉 찬 폭이면 버튼처럼 무거워 보인다(HJ 2026-11-26 "조그만 셀렉창") */
+/* 모바일 — 명문장·장 목록은 옛 목록 창(RetroListDialog), 캐릭터·시계는 본문 위 한 줄(HJ 2026-11-26) */
+/* 목록 창 단추와 우선순위가 같아 .sub 로 한 단계 올린다 */
+.sub .pickSelect {
   display: none;
-  align-self: flex-start;
-  width: auto;
-  max-width: 100%;
-  cursor: pointer;
-  border: 0;
-  border-radius: 6px;
-  background: var(--paper);
-  padding: 4px 6px;
-  color: var(--ink);
-  font: 700 13px var(--font);
-  box-shadow: inset 0 0 0 1px #cdb88f;
-}
-.pickSelect:focus-visible {
-  outline: 2px dashed var(--navy);
-  outline-offset: 2px;
 }
 @media (max-width: 720px) {
   .chips,
   .chgrid {
     display: none;
   }
-  .pickSelect {
-    display: block;
+  .sub .pickSelect {
+    display: inline-flex;
   }
   .main .side {
     order: -1;

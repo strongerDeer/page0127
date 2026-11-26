@@ -1,0 +1,232 @@
+/*
+  옛 "긴 글 고르기" 창 느낌의 목록 창(HJ 2026-11-26 B안).
+  모양을 베끼지 않고 색·질감만: 베이지 입체 창, 제목판, 짙은 초록 목록·연두 글자, 고른 줄 주황 띠.
+  필사 창과 같은 고정색이라 다크 모드에서도 그대로다.
+*/
+.trigger,
+.dialog {
+  --win: #e2cfa9;
+  --face: #ecdcbb;
+  --hi: #fff7e6;
+  --lo: #a98b5f;
+  --dk: #6b5233;
+  --ink: #262019;
+  --list: #1f3a2c;
+  --list-on: #dff28c;
+  --pick: #e0662b;
+  --font:
+    Gulim, "굴림", Dotum, "돋움", "Apple SD Gothic Neo", "Noto Sans KR",
+    sans-serif;
+}
+
+/* ── 고르기 단추: 작은 LCD 칸처럼 ── */
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  align-self: flex-start;
+  max-width: 100%;
+  cursor: pointer;
+  border: 0;
+  border-radius: 6px;
+  background: var(--list);
+  padding: 6px 8px 6px 12px;
+  color: var(--list-on);
+  font: 700 13px var(--font);
+  box-shadow:
+    inset 1px 1px 0 #000,
+    inset -1px -1px 0 var(--hi);
+}
+.triggerLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.triggerIcon {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 18px;
+  border-radius: 3px;
+  background: var(--face);
+  color: var(--dk);
+  font-size: 11px;
+  box-shadow:
+    inset 1px 1px 0 var(--hi),
+    inset -1px -1px 0 var(--lo);
+}
+.trigger:focus-visible {
+  outline: 2px dashed #0f2350;
+  outline-offset: 2px;
+}
+
+/* ── 창 ── */
+.dialog {
+  width: min(92vw, 460px);
+  max-height: min(80svh, 560px);
+  margin: auto;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--ink);
+  overflow: visible;
+}
+.dialog::backdrop {
+  background: rgb(30 20 8 / 0.35);
+}
+.dialog[open] {
+  animation: pop 0.16s ease-out;
+}
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: inherit;
+  border-radius: 4px;
+  background: var(--win);
+  padding: 10px;
+  box-shadow:
+    inset 1px 1px 0 var(--hi),
+    inset -1px -1px 0 var(--dk),
+    inset 2px 2px 0 #f3e6c9,
+    inset -2px -2px 0 var(--lo),
+    0 24px 48px -24px rgb(30 20 8 / 0.45);
+}
+
+/* 제목판 — 오목하게 박힌 이름표 */
+.plate {
+  align-self: center;
+  margin: 2px 0 0;
+  border-radius: 4px;
+  background: var(--face);
+  padding: 5px 28px;
+  font: 800 15px var(--font);
+  letter-spacing: 0.08em;
+  box-shadow:
+    inset 1px 1px 0 var(--lo),
+    inset -1px -1px 0 var(--hi);
+}
+
+.body {
+  display: flex;
+  gap: 10px;
+  min-height: 0;
+}
+
+/* ── 목록: 짙은 초록 화면 ── */
+.list {
+  flex: 1;
+  min-width: 0;
+  max-height: 340px;
+  margin: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 3px;
+  background: var(--list);
+  padding: 4px;
+  list-style: none;
+  font: 700 14px/1 var(--font);
+  box-shadow:
+    inset 1px 1px 0 #000,
+    inset 2px 2px 0 rgb(0 0 0 / 0.35),
+    inset -1px -1px 0 var(--hi);
+  scrollbar-color: var(--lo) var(--list);
+}
+.list:focus-visible {
+  /* 창이 열리면 목록에 바로 포커스가 가서, 굵은 점선 대신 화면 안쪽 옅은 점선만 */
+  outline: 1px dotted rgb(223 242 140 / 0.5);
+  outline-offset: -3px;
+}
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  padding: 7px 10px;
+  color: var(--list-on);
+  user-select: none;
+}
+.row small {
+  flex: none;
+  font-size: 12px;
+  opacity: 0.7;
+}
+.row:hover {
+  background: rgb(223 242 140 / 0.1);
+}
+.row[aria-selected="true"] {
+  background: var(--pick);
+  color: #fff;
+}
+.row[aria-selected="true"] small {
+  opacity: 0.9;
+}
+.row[aria-disabled] {
+  cursor: not-allowed;
+  color: rgb(223 242 140 / 0.35);
+}
+.row[aria-disabled]:hover {
+  background: none;
+}
+
+/* ── 오른쪽 볼록 단추 ── */
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 84px;
+}
+.btn {
+  cursor: pointer;
+  border: 0;
+  border-radius: 4px;
+  background: var(--face);
+  padding: 9px 0;
+  color: var(--ink);
+  font: 700 14px var(--font);
+  box-shadow:
+    inset 1px 1px 0 var(--hi),
+    inset -1px -1px 0 var(--dk),
+    inset -2px -2px 0 var(--lo);
+}
+.btn:first-child {
+  color: #0f2350;
+  font-weight: 800;
+}
+.btn:active {
+  box-shadow:
+    inset 1px 1px 0 var(--dk),
+    inset 2px 2px 0 var(--lo),
+    inset -1px -1px 0 var(--hi);
+}
+.btn:focus-visible {
+  outline: 2px dashed #0f2350;
+  outline-offset: 2px;
+}
+
+/* 좁은 화면은 단추를 아래 한 줄로 */
+@media (max-width: 420px) {
+  .body {
+    flex-direction: column;
+  }
+  .buttons {
+    flex-direction: row-reverse;
+    width: auto;
+  }
+  .btn {
+    flex: 1;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dialog[open] {
+    animation: none;
+  }
+}

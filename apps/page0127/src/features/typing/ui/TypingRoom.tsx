@@ -41,6 +41,7 @@ import {
   validateGuestNickname,
 } from '../model/guestNickname';
 import { PixelPicture } from './PixelPicture';
+import { RetroListDialog } from './RetroListDialog';
 
 import type { TypingSheet } from '@/entities/typing';
 
@@ -568,30 +569,29 @@ export const TypingRoom = ({
                     );
                   })}
                 </div>
-                {/* 모바일은 27개 버튼 대신 고르기 상자 하나(HJ 2026-11-26) — CSS 가 폭에 따라 둘 중 하나만 보인다 */}
-                <select
-                  className={s.pickSelect}
-                  aria-label='장 고르기'
-                  value={sheet.chapter ?? ''}
-                  onChange={(e) => pickChapter(Number(e.target.value))}
-                >
-                  {Array.from(
+                {/* 모바일은 27개 버튼 대신 옛 프로그램 목록 창 하나(HJ 2026-11-26 B안) — CSS 가 폭에 따라 둘 중 하나만 보인다 */}
+                <RetroListDialog
+                  title='장 고르기'
+                  triggerClassName={s.pickSelect}
+                  value={(sheet.chapter ?? 1) - 1}
+                  onPick={(i) => pickChapter(i + 1)}
+                  items={Array.from(
                     { length: LITTLE_PRINCE_TOTAL_CHAPTERS },
                     (_, i) => i + 1
                   ).map((no) => {
                     const open = OPEN_CHAPTERS.includes(no);
-                    return (
-                      <option key={no} value={no} disabled={!open}>
-                        {no}장
-                        {!open
-                          ? ' (준비 중)'
-                          : chapterState(no) === 'full'
-                            ? ' ✓ 다 씀'
-                            : ''}
-                      </option>
-                    );
+                    return {
+                      key: String(no),
+                      label: `${no}장`,
+                      disabled: !open,
+                      note: !open
+                        ? '준비 중'
+                        : chapterState(no) === 'full'
+                          ? '✓ 다 씀'
+                          : undefined,
+                    };
                   })}
-                </select>
+                />
               </>
             )}
             {mode === 'famous' && (
@@ -611,19 +611,17 @@ export const TypingRoom = ({
               </div>
             )}
             {mode === 'famous' && (
-              <select
-                className={s.pickSelect}
-                aria-label='명문장 고르기'
+              <RetroListDialog
+                title='명문장 고르기'
+                triggerClassName={s.pickSelect}
                 value={famousIndex}
-                onChange={(e) => goTo('famous', Number(e.target.value))}
-              >
-                {FAMOUS_SHEETS.map((f, i) => (
-                  <option key={f.key} value={i}>
-                    {f.title.replace('명문장 · ', '')}
-                    {doneKeys.has(f.key) ? ' ✓' : ''}
-                  </option>
-                ))}
-              </select>
+                onPick={(i) => goTo('famous', i)}
+                items={FAMOUS_SHEETS.map((f) => ({
+                  key: f.key,
+                  label: f.title.replace('명문장 · ', ''),
+                  note: doneKeys.has(f.key) ? '✓' : undefined,
+                }))}
+              />
             )}
           </div>
         )}
