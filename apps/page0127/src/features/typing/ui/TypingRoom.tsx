@@ -879,6 +879,8 @@ export const TypingRoom = ({
                   <GuestRankForm
                     accuracy={result.accuracy}
                     place={placeFor(speedRanking, result.cpm)}
+                    myBest={speedRanking.find((r) => r.isMe)?.value ?? null}
+                    cpm={result.cpm}
                     nickname={nickname}
                     onNicknameChange={(v) => {
                       setNickname(v);
@@ -980,6 +982,8 @@ const MemberRankNote = ({
         <RankChase place={place} />
       ) : newBest && place.rank !== null ? (
         <RankNow place={place} />
+      ) : !newBest && myBest !== null ? (
+        <BestKept best={myBest} />
       ) : (
         '기록을 남겼어요.'
       )}
@@ -991,6 +995,8 @@ const MemberRankNote = ({
 const GuestRankForm = ({
   accuracy,
   place,
+  myBest,
+  cpm,
   nickname,
   onNicknameChange,
   action,
@@ -998,6 +1004,9 @@ const GuestRankForm = ({
 }: {
   accuracy: number;
   place: RankPlace;
+  /** 이 브라우저(비회원 쿠키)로 이미 올린 최고 타수 */
+  myBest: number | null;
+  cpm: number;
   nickname: string;
   onNicknameChange: (value: string) => void;
   action: RankAction;
@@ -1020,6 +1029,13 @@ const GuestRankForm = ({
           {place.rank !== null ? <b>{place.rank}위</b> : '랭킹'}에 올랐어요! 🎉
         </p>
       </>
+    );
+  // 랭킹엔 한 사람당 최고 기록만 보이므로, 최고 기록을 넘겼을 때만 이름 올리기를 권한다(HJ 2026-11-26)
+  if (myBest !== null && cpm <= myBest)
+    return (
+      <p>
+        <BestKept best={myBest} />
+      </p>
     );
   return (
     <>
@@ -1057,6 +1073,13 @@ const GuestRankForm = ({
     </>
   );
 };
+
+/** 최고 기록을 못 넘긴 기록 — 랭킹엔 최고 기록만 보인다는 것과 넘길 목표를 함께 */
+const BestKept = ({ best }: { best: number }) => (
+  <>
+    랭킹엔 최고 기록만 보여요. <b>{best}타</b>를 넘기면 순위가 올라가요!
+  </>
+);
 
 /** "지금 기록이면 3위! (바로 위까지 14타)" — 순위를 모르면 그냥 올리기를 권한다 */
 const RankNow = ({ place }: { place: RankPlace }) =>
