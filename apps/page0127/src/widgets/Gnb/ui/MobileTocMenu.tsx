@@ -70,6 +70,31 @@ export const MobileTocMenu = ({ user }: MobileTocMenuProps) => {
     const active = isTocLinkActive(pathname, link, username);
     return (
       <li key={link.href}>
+        {link.fullPageLoad ? (
+          // 가로채기 라우트를 피해 페이지로 — 일반 a 는 전체 페이지를 새로 불러온다(tocLinks 의 fullPageLoad 참고)
+          <a
+            href={link.href}
+            aria-current={active ? 'page' : undefined}
+            onClick={() => setOpen(false)}
+          className={cn(
+            'relative flex items-center rounded-md px-3 transition-colors hover:bg-sunken',
+            size === 'main'
+              ? 'h-12 text-base text-text-strong'
+              : 'h-10 text-sm text-text-subtle hover:text-text-strong',
+            active && 'font-semibold text-text-strong'
+          )}
+        
+          >
+          {/* 지금 페이지 표시 — 민트는 면이 아니라 점으로만 쓴다(브랜드 규칙) */}
+          {active && (
+            <span
+              aria-hidden='true'
+              className='absolute left-0 size-1.5 rounded-full bg-mint'
+            />
+          )}
+          {link.label}
+          </a>
+        ) : (
         <IntentPrefetchLink
           href={link.href}
           aria-current={active ? 'page' : undefined}
@@ -92,6 +117,7 @@ export const MobileTocMenu = ({ user }: MobileTocMenuProps) => {
           )}
           {link.label}
         </IntentPrefetchLink>
+        )}
       </li>
     );
   };
