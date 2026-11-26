@@ -191,7 +191,7 @@ export const ReadingCalendar = ({
 
       {/* 넓은 화면: 왼쪽 달력 + 오른쪽 그날 패널 / 폰: 달력 아래에 패널 (HJ B안, 2026-11-10) */}
       <div className='mt-3 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]'>
-        <div className='min-w-0'>
+        <div className='flex min-w-0 flex-col'>
           {/* 월 칩 — 공개 완독이 있는 달에 점. 달마다 몇 권인지는 아래 월별 완독 카드가 막대로 보여 준다 */}
           <div className='grid grid-cols-12 gap-0.5'>
             {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => {
@@ -370,7 +370,8 @@ export const ReadingCalendar = ({
             })}
           </div>
 
-          <div className='mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2'>
+          {/* 넓은 화면에서는 오른쪽 패널 맨 아래 줄과 같은 높이에 오도록 바닥에 붙이고 패널 안쪽 여백(p-4)만큼 띄운다 */}
+          <div className='mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 lg:mt-auto lg:pb-4 lg:pt-3'>
             <p className='text-xs text-text-subtle'>
               {view.month}월{' '}
               <b className='text-text-strong'>{summary.count}권</b> 완독
