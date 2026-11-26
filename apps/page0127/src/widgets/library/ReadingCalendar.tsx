@@ -16,6 +16,7 @@ import {
 } from '@/entities/book';
 import { formatSentenceSource } from '@/entities/daily-sentence';
 
+import { CarrotSproutSvg } from '@/features/daily-sentence';
 import { CHART_COLORS } from '@/features/stats/model/balanceCopy';
 
 import type { Book, CalendarDay } from '@/entities/book';
@@ -298,12 +299,10 @@ export const ReadingCalendar = ({
                     {day.day}
                   </span>
 
-                  {/* 오늘의 문장을 펼친 날 — 날짜 옆 작은 책갈피(서재 책갈피와 같은 민트) */}
+                  {/* 오늘의 문장을 뽑은 날 — 날짜 바로 옆에 당근 윗부분이 쏙(HJ, 2026-11-26 — 민트 책갈피 대신).
+                      칸 오른쪽 끝에 두면 다음 날 숫자 옆처럼 읽혀서 날짜 쪽에 붙였다. 폰은 칸이 좁아 숫자 아래 */}
                   {sentence && (
-                    <Bookmark
-                      aria-hidden
-                      className='absolute right-1 top-1 size-3 fill-current text-[var(--teal-500)]'
-                    />
+                    <CarrotSproutSvg className='absolute left-1 top-6 h-3.5 w-[19px] sm:left-7 sm:top-1.5 sm:h-4 sm:w-[22px]' />
                   )}
 
                   {/* 기간 막대 — 시작일을 적은 책만. 줄마다 3px */}

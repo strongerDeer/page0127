@@ -6,4 +6,3 @@ export { dailyScore } from './model/dailyScore';
 export { sentenceBookHref } from './model/sentenceBookHref';
 export { formatSentenceSource } from './model/sentenceSource';
 export type { DailySentence } from './model/types';
-export { WEEKDAYS, weekOf } from './model/weekOf';

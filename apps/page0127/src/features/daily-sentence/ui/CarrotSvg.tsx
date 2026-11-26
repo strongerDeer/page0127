@@ -71,3 +71,35 @@ const GROOVES: ReadonlyArray<readonly [number, number, number]> = [
   [14, 28, 63],
   [27, 38, 79],
 ];
+
+/**
+ * 땅 위로 쏙 나온 당근 윗부분 — 서재 독서 캘린더에서 오늘의 문장을 뽑은 날 표시
+ * (HJ, 2026-11-26 — 민트 책갈피 대신 "뽑기 이미지"). 잎 세 장 + 몸통 어깨까지만 잘라 보인다.
+ */
+export const CarrotSproutSvg = ({ className }: CarrotSvgProps) => (
+  <svg aria-hidden='true' viewBox='0 2 60 44' className={className}>
+    <rect
+      x='11'
+      y='11'
+      width='18'
+      height='29'
+      rx='9'
+      transform='rotate(-12 20 38)'
+      fill='#2f8f4e'
+    />
+    <rect
+      x='31'
+      y='11'
+      width='18'
+      height='29'
+      rx='9'
+      transform='rotate(12 40 38)'
+      fill='#2f8f4e'
+    />
+    <rect x='21' y='5' width='18' height='35' rx='9' fill='#38a05a' />
+    <path
+      d='M30 30 C49 30 57 38 57 51 L3 51 C3 38 11 30 30 30 Z'
+      fill='#f2862b'
+    />
+  </svg>
+);
