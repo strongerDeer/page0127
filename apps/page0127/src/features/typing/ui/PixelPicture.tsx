@@ -4,7 +4,7 @@ import type { TypingPictureKey } from '@/entities/typing';
  * 필사 쪽 아래에 보여 주는 그림.
  * 원작 삽화를 따라 그리지 않는다(원작 그림·캐릭터는 재단이 상표로 관리).
  * 그림은 HJ가 만든 일러스트 시트(2026-11-25)를 잘라 배경을 투명하게 한 webp(public/typing/pixel/).
- * boa·boabeast·portrait 는 두 번째 시트(2026-11-26)에서 잘랐다.
+ * boa·boabeast 는 두 번째 시트(2026-11-26)에서 잘랐다.
  */
 const PICTURES: Record<
   TypingPictureKey,
@@ -13,7 +13,7 @@ const PICTURES: Record<
   hat: { width: 459, height: 158, caption: '그림 1호' },
   boa: { width: 444, height: 141, caption: '그림 2호 — 보아뱀 속의 코끼리' },
   boabeast: { width: 474, height: 241, caption: '보아뱀이 맹수를 삼키는 그림' },
-  portrait: { width: 227, height: 250, caption: '어린 왕자의 초상' },
+  portrait: { width: 297, height: 364, caption: '어린 왕자의 초상' },
   sheep: { width: 236, height: 208, caption: '양' },
   sheep2: { width: 265, height: 236, caption: '뿔 달린 숫양' },
   sheep3: { width: 280, height: 212, caption: '너무 늙은 양' },
