@@ -33,6 +33,7 @@ type PanelProps = {
   /** 없으면 취소 단추를 그리지 않는다 */
   onCancel?: () => void;
   confirmLabel?: string;
+  cancelLabel?: string;
   /** 처음 그려질 때 목록에 포커스를 줄지(시작 화면은 페이지 맨 아래에 있어 false) */
   autoFocus?: boolean;
   className?: string;
@@ -45,6 +46,7 @@ export const RetroListPanel = ({
   onConfirm,
   onCancel,
   confirmLabel = '확인',
+  cancelLabel = '취소',
   autoFocus = false,
   className,
 }: PanelProps) => {
@@ -131,7 +133,7 @@ export const RetroListPanel = ({
           </button>
           {onCancel && (
             <button type='button' className={s.btn} onClick={onCancel}>
-              취소
+              {cancelLabel}
             </button>
           )}
         </div>
