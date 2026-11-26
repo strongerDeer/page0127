@@ -40,6 +40,8 @@ type ProfileSettingsFormProps = {
    * 하므로 자리를 여기로 정해 둔다.
    */
   children?: React.ReactNode;
+  /** 체험 계정이면 계정 삭제를 미리 막는다(눌러도 서버가 403 으로 막는다) */
+  isDemo?: boolean;
 };
 
 type ProfileSettingsFormPhotoProps = {
@@ -49,6 +51,7 @@ type ProfileSettingsFormPhotoProps = {
 
 type ProfileSettingsFormDangerZoneProps = {
   username: string | null;
+  isDemo?: boolean;
 };
 
 type ProfileSettingsFormMyAccountProps = {
@@ -147,16 +150,30 @@ const ProfileSettingsFormMyAccount = ({
 
 // 파괴적 액션은 빨간 패널로 소리치지 않는다 — 한 줄로 조용히 두고,
 // 실제 경고는 확인 다이얼로그가 맡는다 (토스 설정 화면 문법)
+//
+// 체험 계정은 공용 계정이라 삭제할 수 없다. 서버(proxy)가 어차피 403 으로 막지만,
+// 되돌릴 수 없는 작업을 아이디까지 입력하게 한 뒤에 거절하면 헛수고라 버튼부터 잠근다.
+// 섹션 자체는 남겨 둔다 — 리뷰어가 "탈퇴 기능이 있다"는 건 볼 수 있게.
 const ProfileSettingsFormDangerZone = ({
   username,
-}: ProfileSettingsFormDangerZoneProps) => (
-  <div className='mt-6 flex items-center justify-between gap-4 rounded-2xl bg-sunken px-5 py-4'>
-    <p className='text-sm text-text-subtle'>
-      계정을 삭제하면 독서 기록과 계정 정보가 영구적으로 사라집니다.
-    </p>
-    <DeleteAccountDialog username={username} />
-  </div>
-);
+  isDemo = false,
+}: ProfileSettingsFormDangerZoneProps) => {
+  const descriptionId = useId();
+  return (
+    <div className='mt-6 flex items-center justify-between gap-4 rounded-2xl bg-sunken px-5 py-4'>
+      <p id={descriptionId} className='text-sm text-text-subtle'>
+        {isDemo
+          ? '체험 계정은 삭제할 수 없어요.'
+          : '계정을 삭제하면 독서 기록과 계정 정보가 영구적으로 사라집니다.'}
+      </p>
+      <DeleteAccountDialog
+        username={username}
+        disabled={isDemo}
+        describedBy={isDemo ? descriptionId : undefined}
+      />
+    </div>
+  );
+};
 
 // useActionState 초기 상태 (아직 제출 전)
 const initialState: ProfileActionState = { status: 'idle', message: '' };
@@ -176,6 +193,7 @@ export const ProfileSettingsForm = ({
   profile,
   email,
   children,
+  isDemo = false,
 }: ProfileSettingsFormProps) => {
   const router = useRouter();
   const { logout } = useLogout();
@@ -329,7 +347,10 @@ export const ProfileSettingsForm = ({
           계정 삭제는 화면에서 항상 마지막이어야 한다 */}
       {children}
 
-      <ProfileSettingsForm.DangerZone username={profile.username} />
+      <ProfileSettingsForm.DangerZone
+        username={profile.username}
+        isDemo={isDemo}
+      />
     </form>
   );
 };

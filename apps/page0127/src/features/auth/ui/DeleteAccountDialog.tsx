@@ -23,9 +23,14 @@ import { AlertTriangle, Info } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/client';
+import { isDemoReadOnlyError } from '@/shared/api/demoReadOnly';
 type DeleteAccountDialogProps = {
   /** 공개 서재 주소에 쓰이는 아이디. 확인 문구로 이걸 받는다 */
   username: string | null;
+  /** 체험 계정처럼 삭제할 수 없는 계정이면 버튼을 잠근다 */
+  disabled?: boolean;
+  /** 잠근 이유를 적은 문단의 id — 스크린 리더가 버튼과 함께 읽는다 */
+  describedBy?: string;
 };
 
 /**
@@ -37,7 +42,11 @@ type DeleteAccountDialogProps = {
  * - 안전 장치: 잘못된 입력 시 삭제 불가
  * - 비동기 처리: API 호출 후 로그아웃 및 리다이렉트
  */
-export const DeleteAccountDialog = ({ username }: DeleteAccountDialogProps) => {
+export const DeleteAccountDialog = ({
+  username,
+  disabled = false,
+  describedBy,
+}: DeleteAccountDialogProps) => {
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -93,6 +102,8 @@ export const DeleteAccountDialog = ({ username }: DeleteAccountDialogProps) => {
         toast.error('계정 삭제에 실패했습니다.');
       }
     } catch (error) {
+      // 버튼을 잠가 두지만 혹시 열려도 — 체험 안내는 인터셉터가 띄운다
+      if (isDemoReadOnlyError(error)) return;
       console.error('계정 삭제 오류:', error);
       toast.error('계정 삭제 중 오류가 발생했습니다.');
     } finally {
@@ -108,6 +119,8 @@ export const DeleteAccountDialog = ({ username }: DeleteAccountDialogProps) => {
           variant='outline'
           size='sm'
           className='shrink-0 text-destructive'
+          disabled={disabled}
+          aria-describedby={describedBy}
         >
           계정 삭제
         </Button>

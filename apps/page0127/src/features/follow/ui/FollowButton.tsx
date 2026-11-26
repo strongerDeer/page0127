@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, UserMinus, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
+import { toastApiError } from '@/shared/api/demoReadOnly';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { followBroadcast } from '@/shared/lib/broadcastChannel';
 
@@ -78,7 +78,7 @@ export const FollowButton = ({
     },
     onError: (error, _vars, context) => {
       rollbackToggle(context?.previous);
-      toast.error(getApiErrorMessage(error, '팔로우에 실패했습니다.'));
+      toastApiError(error, '팔로우에 실패했습니다.');
     },
     // 팔로워 수·목록 등 나머지 팔로우 쿼리를 서버 값으로 맞춘다
     onSettled: () => {
@@ -98,7 +98,7 @@ export const FollowButton = ({
     },
     onError: (error, _vars, context) => {
       rollbackToggle(context?.previous);
-      toast.error(getApiErrorMessage(error, '언팔로우에 실패했습니다.'));
+      toastApiError(error, '언팔로우에 실패했습니다.');
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: followKeys.all });

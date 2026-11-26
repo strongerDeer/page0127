@@ -35,7 +35,7 @@ import {
 import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/client';
-import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
+import { toastApiError } from '@/shared/api/demoReadOnly';
 import {
   MONTHLY_LIMIT,
   USAGE_LIMIT_EXCEEDED_MESSAGE,
@@ -116,9 +116,7 @@ export const CompatibilityView = ({
       trackEvent('chemistry_run', { rerun: force });
       router.refresh();
     } catch (error) {
-      toast.error(
-        getApiErrorMessage(error, '케미 분석 중 오류가 발생했습니다.')
-      );
+      toastApiError(error, '케미 분석 중 오류가 발생했습니다.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -581,7 +579,7 @@ const ShareWithPartner = ({
       trackEvent('chemistry_notify');
       router.refresh();
     } catch (error) {
-      toast.error(getApiErrorMessage(error, '알리지 못했어요.'));
+      toastApiError(error, '알리지 못했어요.');
     } finally {
       setIsSending(false);
     }

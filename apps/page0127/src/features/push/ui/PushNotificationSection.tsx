@@ -3,6 +3,7 @@
 import { Switch } from '@repo/ui';
 import { toast } from 'sonner';
 
+import { isDemoReadOnlyError } from '@/shared/api/demoReadOnly';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import { InstallGuideLink } from '@/features/pwa-install';
@@ -47,6 +48,8 @@ export const PushNotificationSection = () => {
         toast.error(UNAVAILABLE_COPY[result]);
       }
     } catch (error) {
+      // 체험 계정이면 인터셉터가 이미 안내했다 — 실패 문구를 겹치지 않는다
+      if (isDemoReadOnlyError(error)) return;
       console.error('푸시 알림 설정 실패:', error);
       toast.error('푸시 알림 설정에 실패했어요. 잠시 후 다시 시도해 주세요.');
     }

@@ -18,6 +18,7 @@ import {
 } from '@repo/ui';
 import { toast } from 'sonner';
 
+import { isDemoReadOnlyError } from '@/shared/api/demoReadOnly';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { resolveSpineImageUrl } from '@/shared/lib/spineImage';
 
@@ -210,8 +211,11 @@ export const BookImportFlow = () => {
         );
       }
       router.push('/books');
-    } catch {
-      toast.error('책을 담지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+    } catch (error) {
+      // 체험 계정이면 인터셉터가 이미 안내했다 — 실패 문구를 겹치지 않는다
+      if (!isDemoReadOnlyError(error)) {
+        toast.error('책을 담지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+      }
       setStep('review');
     }
   };

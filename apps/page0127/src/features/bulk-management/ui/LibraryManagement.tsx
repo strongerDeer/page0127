@@ -165,7 +165,9 @@ export const LibraryManagement = ({ userId }: { userId: string }) => {
     });
     if (!result) {
       patchVisibility(ids, !isPublic);
-      toast.error('공개 범위를 바꾸지 못했어요. 다시 시도해주세요.');
+      if (!bulk.wasDemoBlocked()) {
+        toast.error('공개 범위를 바꾸지 못했어요. 다시 시도해주세요.');
+      }
       return;
     }
     if (!isUndo) setSelected(new Set());

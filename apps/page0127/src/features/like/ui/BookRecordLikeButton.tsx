@@ -3,9 +3,8 @@
 import { Button } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Heart } from 'lucide-react';
-import { toast } from 'sonner';
 
-import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
+import { toastApiError } from '@/shared/api/demoReadOnly';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import { activityKeys } from '@/entities/activity';
@@ -82,7 +81,7 @@ export const BookRecordLikeButton = ({
       if (context?.previousFeeds) {
         queryClient.setQueryData(activityKeys.feeds(), context.previousFeeds);
       }
-      toast.error(getApiErrorMessage(error, '좋아요에 실패했습니다.'));
+      toastApiError(error, '좋아요에 실패했습니다.');
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: activityKeys.feeds() });

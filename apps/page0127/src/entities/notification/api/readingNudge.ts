@@ -1,4 +1,5 @@
 import { apiClient } from '@/shared/api/client';
+import { isDemoReadOnlyError } from '@/shared/api/demoReadOnly';
 
 import { getSeoulToday } from '@/entities/book/model/libraryPeriod';
 
@@ -80,5 +81,9 @@ export const setNudgePreference = async (
   const { error } = await client
     .from('reading_nudge_settings')
     .upsert({ user_id: userId, ...preference });
-  if (error) throw new Error('메시지 수신 설정을 저장하지 못했어요.');
+  if (error) {
+    // 체험 계정 거절은 그대로 올려 보낸다 — 화면이 일반 실패와 구분해 안내한다
+    if (isDemoReadOnlyError(error)) throw error;
+    throw new Error('메시지 수신 설정을 저장하지 못했어요.');
+  }
 };

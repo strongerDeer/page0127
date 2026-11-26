@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+import { isDemoReadOnlyError, notifyDemoReadOnly } from './demoReadOnly';
+
 /**
  * axios 클라이언트 인스턴스
  *
@@ -55,6 +57,11 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    // 체험 계정 쓰기 거절(proxy 403) — 화면이 어디든 같은 안내를 띄운다(demoReadOnly.ts)
+    if (isDemoReadOnlyError(error)) {
+      notifyDemoReadOnly();
+    }
+
     // 인증 에러 처리
     // ('/auth/me'는 비로그인에도 200 + null을 주므로 여기로 오지 않는다)
     if (error.response?.status === 401) {

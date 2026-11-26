@@ -24,7 +24,7 @@ export const ArchiveToggleButton = ({
   isPublic,
 }: ArchiveToggleButtonProps) => {
   const router = useRouter();
-  const { updateBook, isLoading } = useBookCRUD();
+  const { updateBook, isLoading, wasDemoBlocked } = useBookCRUD();
   const [currentIsPublic, setCurrentIsPublic] = useState(isPublic);
 
   const handleToggle = async () => {
@@ -35,7 +35,7 @@ export const ArchiveToggleButton = ({
       setCurrentIsPublic(next);
       toast.success(next ? '공개로 전환했어요.' : '비공개로 바꿨어요.');
       router.refresh();
-    } else {
+    } else if (!wasDemoBlocked()) {
       toast.error('전환 중 오류가 발생했습니다.');
     }
   };
