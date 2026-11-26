@@ -58,6 +58,12 @@ export const judgeTyping = (
   return { settled, correctStrokes, wrong };
 };
 
+/** 정확도(%) — 지금 남아 있는 글자만 본다. 틀렸다 고친 글자는 맞은 것으로 친다(HJ 2026-11-26, 옛 타자 프로그램 방식) */
+export const accuracyOf = (judge: TypingJudge): number =>
+  judge.settled
+    ? Math.round(((judge.settled - judge.wrong.length) / judge.settled) * 100)
+    : 100;
+
 /** 분당 타수. 3초 이전엔 값이 널뛰므로 0 으로 둔다 */
 export const strokesPerMinute = (strokes: number, elapsedMs: number): number =>
   elapsedMs < 3000 ? 0 : Math.round(strokes / (elapsedMs / 60_000));

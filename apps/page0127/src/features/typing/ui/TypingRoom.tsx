@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import {
+  accuracyOf,
   FAMOUS_SHEETS,
   firstUnwrittenIndex,
   FULL_SHEETS,
@@ -124,6 +125,8 @@ export const TypingRoom = ({
   const [nickname, setNickname] = useState('');
   // 비회원 시작 토큰 — 첫 글자를 칠 때 서버가 서명해 준다. 화면에 그리지 않으므로 ref
   const guestTokenRef = useRef<{ key: string; token: string } | null>(null);
+  // 쪽을 새로 펼치거나 "다시"를 누를 때마다 올려서 아래 effect 가 토큰을 새로 받게 한다
+  const [tokenTick, setTokenTick] = useState(0);
 
   useEffect(() => {
     if (memberId) return;
@@ -145,15 +148,28 @@ export const TypingRoom = ({
   const sheet: TypingSheet =
     mode === 'famous' ? FAMOUS_SHEETS[famousIndex] : FULL_SHEETS[fullIndex];
 
+  // 비회원 시작 토큰은 "쪽이 화면에 펼쳐질 때" 미리 받는다(첫 글자를 칠 때가 아니라).
+  // 첫 글자에 맞춰 요청하면 서버 응답이 늦을 때(콜드 스타트·개발 서버 컴파일 수 초) 서버가 찍는
+  // 시작 시각이 실제보다 늦어지고, 서버가 잰 시간이 짧아져 정상 기록이 "너무 빠름"으로 거절됐다
+  // (HJ 2026-11-26 489타 거절). 미리 받으면 서버 시작 시각 ≤ 실제 시작이라 거절될 일이 없다.
+  // 기다렸다 치는 만큼 상한이 느슨해질 뿐이라 속이는 데 도움이 되지 않는다.
+  useEffect(() => {
+    if (memberId || !started) return;
+    const key = sheet.key;
+    let alive = true;
+    void startGuestTypingAction(key).then((res) => {
+      if (alive && res.ok) guestTokenRef.current = { key, token: res.token };
+    });
+    return () => {
+      alive = false;
+    };
+  }, [memberId, started, sheet.key, tokenTick]);
+
   // 타이핑 상태 — 쪽이 바뀌면 resetTyping 으로 모두 비운다
   const [value, setValue] = useState('');
   const [composing, setComposing] = useState(false);
   const [startedAt, setStartedAt] = useState<number | null>(null);
   const [now, setNow] = useState(0);
-  // 한 번이라도 판정한 위치 / 한 번이라도 틀린 위치 — 고쳐 써도 정확도에는 남는다
-  const [seen, setSeen] = useState<{ typed: Set<number>; missed: Set<number> }>(
-    () => ({ typed: new Set(), missed: new Set() })
-  );
   const [result, setResult] = useState<Result | null>(null);
   const [, startSaving] = useTransition();
 
@@ -222,9 +238,7 @@ export const TypingRoom = ({
   const elapsed =
     startedAt === null ? 0 : (result?.durationMs ?? now - startedAt);
   const judge = judgeTyping(value, sheet.text, composing);
-  const accuracy = seen.typed.size
-    ? Math.round(((seen.typed.size - seen.missed.size) / seen.typed.size) * 100)
-    : 100;
+  const accuracy = accuracyOf(judge);
   const cpm = result?.cpm ?? strokesPerMinute(judge.correctStrokes, elapsed);
   const typedCount = Math.min(value.length, sheet.text.length);
 
@@ -262,10 +276,10 @@ export const TypingRoom = ({
     setComposing(false);
     setStartedAt(null);
     setNow(0);
-    setSeen({ typed: new Set(), missed: new Set() });
     setResult(null);
     setRankAction({ status: 'idle' });
     guestTokenRef.current = null;
+    setTokenTick((n) => n + 1);
   };
 
   /** 결과 창 "종료" — 방식 고르는 시작 화면으로 돌아간다 */
@@ -346,14 +360,7 @@ export const TypingRoom = ({
   const finish = (finalValue: string, at: number, from: number) => {
     const durationMs = Math.max(1000, at - from);
     const finalJudge = judgeTyping(finalValue, sheet.text, false);
-    const finalSeen = track(finalValue, false);
-    const finalAccuracy = finalSeen.typed.size
-      ? Math.round(
-          ((finalSeen.typed.size - finalSeen.missed.size) /
-            finalSeen.typed.size) *
-            100
-        )
-      : 100;
+    const finalAccuracy = accuracyOf(finalJudge);
     const finalCpm = strokesPerMinute(finalJudge.correctStrokes, durationMs);
     const base = { cpm: finalCpm, accuracy: finalAccuracy, durationMs };
 
@@ -382,18 +389,6 @@ export const TypingRoom = ({
     });
   };
 
-  /** 판정한 위치를 기억에 더한다(틀렸다 고친 글자도 정확도에 남게) */
-  const track = (nextValue: string, isComposing: boolean) => {
-    const j = judgeTyping(nextValue, sheet.text, isComposing);
-    const typed = new Set(seen.typed);
-    const missed = new Set(seen.missed);
-    for (let i = 0; i < j.settled; i++) typed.add(i);
-    j.wrong.forEach((i) => missed.add(i));
-    const next = { typed, missed };
-    setSeen(next);
-    return next;
-  };
-
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     if (result) return;
     const next = e.target.value.replace(/\n/g, '').slice(0, sheet.text.length);
@@ -401,18 +396,10 @@ export const TypingRoom = ({
     if (startedAt === null && next.length > 0) {
       setStartedAt(t);
       setNow(t);
-      // 비회원은 시작 시각을 서버에 맡겨 둔다 — 랭킹에 올릴 때 서버 시계로 걸린 시간을 잰다
-      if (!memberId) {
-        const key = sheet.key;
-        void startGuestTypingAction(key).then((res) => {
-          if (res.ok) guestTokenRef.current = { key, token: res.token };
-        });
-      }
     }
     const isComposing =
       (e.nativeEvent as InputEvent).isComposing === true || composing;
     setValue(next);
-    track(next, isComposing);
     if (!isComposing && next.length >= sheet.text.length)
       finish(next, t, startedAt ?? t);
   };
@@ -424,7 +411,6 @@ export const TypingRoom = ({
       .replace(/\n/g, '')
       .slice(0, sheet.text.length);
     setValue(next);
-    track(next, false);
     const t = Date.now();
     if (next.length >= sheet.text.length) finish(next, t, startedAt ?? t);
   };

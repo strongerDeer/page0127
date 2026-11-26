@@ -12,7 +12,12 @@ import {
   splitLines,
   splitLinesToFit,
 } from './pages';
-import { judgeTyping, strokesOf, strokesPerMinute } from './strokes';
+import {
+  accuracyOf,
+  judgeTyping,
+  strokesOf,
+  strokesPerMinute,
+} from './strokes';
 
 describe('strokesOf — 한글 자판 타수', () => {
   it('받침 없는 글자는 2타, 받침 있으면 3타', () => {
@@ -143,5 +148,18 @@ describe('본문 — 키보드로 칠 수 있는 글자만', () => {
   it.each(texts.map((t) => [t.slice(0, 20), t]))('%s…', (_, text) => {
     const bad = [...text].filter((ch) => !TYPABLE.test(ch));
     expect(bad).toEqual([]);
+  });
+});
+
+describe('accuracyOf — 최종 결과만 본다', () => {
+  it('틀렸다 고친 글자는 맞은 것으로 친다', () => {
+    // 중간에 "나눈" 으로 틀렸어도 최종 입력이 원문과 같으면 100%
+    expect(accuracyOf(judgeTyping('나는 별', '나는 별', false))).toBe(100);
+  });
+  it('남아 있는 틀린 글자만 뺀다', () => {
+    expect(accuracyOf(judgeTyping('나눈 별', '나는 별', false))).toBe(75);
+  });
+  it('아직 친 글자가 없으면 100', () => {
+    expect(accuracyOf(judgeTyping('', '나는 별', false))).toBe(100);
   });
 });

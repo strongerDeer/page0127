@@ -5,6 +5,7 @@ import { LITTLE_PRINCE_FAQ } from '@/entities/typing';
 
 import {
   TypingBookIntro,
+  TypingHero,
   TypingProgressCard,
   TypingRankingCard,
   TypingRoom,
@@ -103,34 +104,7 @@ const TypingLittlePrincePage = async () => {
       <JsonLd data={pageJsonLd} />
       <JsonLd data={faqJsonLd} />
       <main className='mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 pb-20 pt-8 sm:px-6 sm:pt-12'>
-        <section className='px-2 pt-2 text-center sm:pt-4'>
-          <p className='inline-flex rounded-full bg-accent px-3 py-1 text-xs font-bold text-primary'>
-            키보드로 하는 필사 · 긴 글 타자 연습
-          </p>
-          <h1 className='mt-3 text-3xl font-bold leading-tight tracking-tight text-text-strong text-balance sm:text-4xl'>
-            『어린 왕자』 온라인 필사
-          </h1>
-          <p className='mx-auto mt-3 max-w-2xl break-keep text-base leading-relaxed text-text-body text-balance'>
-            그때 그 타자 연습처럼, 이번엔 필사로. 파란 줄을 보고 바로 아래에
-            똑같이 따라 쳐 보세요. 명문장 한 대목부터 가볍게 시작하고, 처음부터
-            이어 써도, 장을 골라 써도 좋아요.
-          </p>
-          <ul className='mt-5 flex flex-wrap justify-center gap-2 text-sm'>
-            {[
-              '전문 27장 모두 공개',
-              '타수·정확도 측정',
-              '쪽마다 도트 그림',
-              '로그인하면 진행도·랭킹 기록',
-            ].map((item) => (
-              <li
-                key={item}
-                className='rounded-full border border-line-soft bg-card px-3 py-1 text-text-body'
-              >
-                {item}
-              </li>
-            ))}
-          </ul>
-        </section>
+        <TypingHero targetId='typing-room' />
 
         <TypingRoom
           memberId={state.memberId}
