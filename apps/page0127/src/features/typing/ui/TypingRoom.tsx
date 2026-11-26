@@ -493,7 +493,7 @@ export const TypingRoom = ({
   }));
 
   const hint = !started
-    ? '어떤 방식으로 써 볼지 고르면 바로 시작해요.'
+    ? '목록에서 고르고 「시작」을 누르면 필사가 시작돼요.'
     : result
       ? '끝까지 썼어요!'
       : startedAt === null
@@ -524,24 +524,27 @@ export const TypingRoom = ({
       </div>
 
       <div className={s.inner}>
-        <div className={s.tabs} role='group' aria-label='필사 방식'>
-          {MODES.map((m) => (
-            <button
-              key={m.key}
-              type='button'
-              className={s.tab}
-              aria-pressed={started && mode === m.key}
-              onClick={() =>
-                goTo(
-                  m.key,
-                  m.key === 'famous' ? 0 : firstUnwrittenIndex(doneKeys)
-                )
-              }
-            >
-              {m.label}
-            </button>
-          ))}
-        </div>
+        {/* 탭은 시작한 뒤에만 — 시작 전엔 팝업 하나에서만 고른다(HJ 2026-11-26) */}
+        {started && (
+          <div className={s.tabs} role='group' aria-label='필사 방식'>
+            {MODES.map((m) => (
+              <button
+                key={m.key}
+                type='button'
+                className={s.tab}
+                aria-pressed={started && mode === m.key}
+                onClick={() =>
+                  goTo(
+                    m.key,
+                    m.key === 'famous' ? 0 : firstUnwrittenIndex(doneKeys)
+                  )
+                }
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {started && (
           <div className={s.sub}>
@@ -582,7 +585,10 @@ export const TypingRoom = ({
                     key='mode'
                     className={s.startPanel}
                     title='필사 방식 고르기'
-                    confirmLabel='다음'
+                    // 전문은 다음 단계 없이 바로 시작이라 단추 이름도 "시작"
+                    confirmLabelFor={(i) =>
+                      MODES[i].key === 'full' ? '시작' : '다음'
+                    }
                     initial={startModeIndex}
                     items={MODES.map((m) => ({
                       key: m.key,
