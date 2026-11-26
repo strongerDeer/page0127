@@ -58,4 +58,18 @@ describe('클라이언트 컴포넌트의 서버 전용 import', () => {
 
     expect(offenders).toEqual([]);
   });
+
+  // Sentry 는 화면이 뜬 뒤 import() 로 받는다(src/shared/lib/sentry/clientSentry.ts, 2026-11-26).
+  // 클라이언트 파일이 하나라도 정적으로 import 하면 Sentry(압축 약 50KB)가 다시 모든 페이지
+  // 공통 청크로 들어와, 폰에서 첫 화면 전 긴 작업이 늘어난다. 이것도 빌드·화면은 멀쩡하다.
+  it("'@sentry/nextjs' 를 정적으로 import 하지 않는다", () => {
+    const browserEntry = join(APP_ROOT, 'instrumentation-client.ts');
+    const offenders = [...clientFiles, browserEntry]
+      .filter((file) =>
+        readFileSync(file, 'utf8').includes("from '@sentry/nextjs'")
+      )
+      .map((file) => file.slice(APP_ROOT.length));
+
+    expect(offenders).toEqual([]);
+  });
 });
