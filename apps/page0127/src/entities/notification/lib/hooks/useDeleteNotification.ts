@@ -11,6 +11,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import { isDemoReadOnlyError } from '@/shared/api/demoReadOnly';
+
 import { deleteNotification } from '../../api/notificationApi';
 import { notificationKeys } from '../../model/queryKeys';
 import {
@@ -46,8 +48,10 @@ export function useDeleteNotification() {
 
       return { snapshot };
     },
-    onError: (_error, _notificationId, context) => {
+    onError: (error, _notificationId, context) => {
       if (context) restoreNotificationCache(queryClient, context.snapshot);
+      // 체험 계정이면 인터셉터가 이미 안내했다 — 실패 문구를 겹치지 않는다
+      if (isDemoReadOnlyError(error)) return;
       toast.error('알림 삭제에 실패했습니다.');
     },
     onSettled: () => {

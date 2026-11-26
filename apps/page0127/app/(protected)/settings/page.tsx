@@ -54,7 +54,7 @@ export default async function SettingsPage() {
         {/* 연결 목록은 브라우저에서 세션으로 읽는다 — 서버에서 미리 받아 내리면
             연결/해제 직후 값이 어긋난다.
             위치는 '내 계정' 아래, '계정 삭제' 위다 (ProfileSettingsForm 참조) */}
-        <LinkedAccountsSection />
+        <LinkedAccountsSection isDemo={isDemoUser(user)} />
         {/* 이 기기에서 잠금화면 알림 받기 — 기기마다 따로 켠다 */}
         <PushNotificationSection />
         <NudgeSettings userId={user.id} />

@@ -12,6 +12,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import { isDemoReadOnlyError } from '@/shared/api/demoReadOnly';
+
 import { markAllAsRead, markAsRead } from '../../api/notificationApi';
 import { notificationKeys } from '../../model/queryKeys';
 import {
@@ -51,8 +53,10 @@ export function useMarkAsRead() {
 
       return { snapshot };
     },
-    onError: (_error, _notificationId, context) => {
+    onError: (error, _notificationId, context) => {
       if (context) restoreNotificationCache(queryClient, context.snapshot);
+      // 체험 계정이면 인터셉터가 이미 안내했다 — 실패 문구를 겹치지 않는다
+      if (isDemoReadOnlyError(error)) return;
       toast.error('알림 읽음 처리에 실패했습니다.');
     },
     // 성공이든 실패든 마지막엔 서버 값으로 맞춘다
@@ -80,8 +84,10 @@ export function useMarkAllAsRead() {
 
       return { snapshot };
     },
-    onError: (_error, _vars, context) => {
+    onError: (error, _vars, context) => {
       if (context) restoreNotificationCache(queryClient, context.snapshot);
+      // 체험 계정이면 인터셉터가 이미 안내했다 — 실패 문구를 겹치지 않는다
+      if (isDemoReadOnlyError(error)) return;
       toast.error('알림 읽음 처리에 실패했습니다.');
     },
     onSettled: () => {

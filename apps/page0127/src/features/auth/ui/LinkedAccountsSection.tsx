@@ -52,7 +52,22 @@ const useLinkResultToast = () => {
  * 대부분의 사용자는 여기 올 일이 없다 — 같은 이메일이면 Supabase 가 알아서
  * 붙여 준다. 구글과 카카오에 **다른 이메일**을 쓴 사람이 계정을 직접 합치는 자리다.
  */
-export const LinkedAccountsSection = () => {
+type LinkedAccountsSectionProps = {
+  /**
+   * 체험 계정이면 연결·끊기를 잠근다.
+   * 연결(linkIdentity)은 브라우저 → Supabase Auth 로 바로 가서 proxy·서버 액션·DB 트리거를
+   * 모두 비켜 간다. 공용 계정에 누군가의 카카오가 붙으면 그 사람은 이후 체험 서재로 로그인하고,
+   * 그 카카오로는 새로 가입할 수도 없다. 그래서 화면에서 먼저 막는다.
+   */
+  isDemo?: boolean;
+};
+
+const DEMO_LINK_BLOCKED_MESSAGE = '체험 계정은 소셜 계정을 연결할 수 없어요.';
+const DEMO_LINK_BLOCKED_ID = 'linked-accounts-demo-blocked';
+
+export const LinkedAccountsSection = ({
+  isDemo = false,
+}: LinkedAccountsSectionProps) => {
   const { rows, isPending, error, pendingProvider, link, unlink } =
     useLinkedAccounts();
 
@@ -61,8 +76,13 @@ export const LinkedAccountsSection = () => {
   return (
     <section className='mt-6 rounded-2xl bg-sunken px-5 py-4'>
       <h2 className='text-sm font-medium text-text-strong'>연결된 계정</h2>
-      <p className='mt-1 text-sm text-text-subtle'>
-        연결해 두면 어느 쪽으로 로그인해도 같은 서재로 들어옵니다.
+      <p
+        id={isDemo ? DEMO_LINK_BLOCKED_ID : undefined}
+        className='mt-1 text-sm text-text-subtle'
+      >
+        {isDemo
+          ? DEMO_LINK_BLOCKED_MESSAGE
+          : '연결해 두면 어느 쪽으로 로그인해도 같은 서재로 들어옵니다.'}
       </p>
 
       {/* 목록을 읽기 전에는 빈 자리를 두지 않는다 — 갑자기 항목이 튀어나오면
@@ -91,11 +111,15 @@ export const LinkedAccountsSection = () => {
                     type='button'
                     variant='outline'
                     size='sm'
-                    disabled={!canUnlink || isPending}
+                    disabled={isDemo || !canUnlink || isPending}
                     // 비활성 버튼은 title 이 안 뜨는 브라우저가 있어 aria 로도 남긴다
                     title={canUnlink ? undefined : UNLINK_BLOCKED_MESSAGE}
                     aria-describedby={
-                      canUnlink ? undefined : `unlink-blocked-${provider}`
+                      isDemo
+                        ? DEMO_LINK_BLOCKED_ID
+                        : canUnlink
+                          ? undefined
+                          : `unlink-blocked-${provider}`
                     }
                     onClick={() => unlink(provider)}
                   >
@@ -110,7 +134,8 @@ export const LinkedAccountsSection = () => {
                     type='button'
                     variant='outline'
                     size='sm'
-                    disabled={isPending}
+                    disabled={isDemo || isPending}
+                    aria-describedby={isDemo ? DEMO_LINK_BLOCKED_ID : undefined}
                     onClick={() => link(provider)}
                   >
                     {isPending ? (
@@ -128,7 +153,7 @@ export const LinkedAccountsSection = () => {
 
       {/* 마지막 하나를 못 끊는 이유는 항상 글로도 보여 준다 —
           비활성 버튼만 두면 사용자는 고장으로 읽는다 */}
-      {rows?.some((r) => r.isLinked && !r.canUnlink) && (
+      {!isDemo && rows?.some((r) => r.isLinked && !r.canUnlink) && (
         <p
           id={`unlink-blocked-${rows.find((r) => r.isLinked && !r.canUnlink)?.provider}`}
           className='mt-3 text-xs text-text-subtle'
