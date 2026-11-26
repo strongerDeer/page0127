@@ -374,7 +374,7 @@ export const SentenceBook = ({
               >
                 <CarrotSvg />
               </button>
-              <div aria-hidden>
+              <div className={styles.flips} aria-hidden>
                 {flipDelays.map((delay, i) => (
                   <i
                     key={delay}
