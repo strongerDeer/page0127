@@ -7,7 +7,7 @@ import { Textarea } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
+import { toastApiError } from '@/shared/api/demoReadOnly';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import { commentApi, commentKeys } from '@/entities/comment';
@@ -64,7 +64,7 @@ export const CommentForm = ({
       toast.success('댓글이 작성되었습니다.');
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, '댓글 작성에 실패했습니다.'));
+      toastApiError(error, '댓글 작성에 실패했습니다.');
     },
   });
 

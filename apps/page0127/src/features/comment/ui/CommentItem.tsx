@@ -3,12 +3,29 @@
 import { useState } from 'react';
 
 import { Button } from '@repo/ui';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Avatar, AvatarFallback, AvatarImage, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Textarea } from '@repo/ui';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Textarea,
+} from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Flag, MoreVertical, Pencil, Reply, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
+import { toastApiError } from '@/shared/api/demoReadOnly';
 import { RelativeTime } from '@/shared/ui/RelativeTime';
 
 import { Comment, commentApi, commentKeys } from '@/entities/comment';
@@ -68,7 +85,7 @@ export const CommentItem = ({
       toast.success('댓글이 수정되었습니다.');
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, '댓글 수정에 실패했습니다.'));
+      toastApiError(error, '댓글 수정에 실패했습니다.');
     },
   });
 
@@ -84,7 +101,7 @@ export const CommentItem = ({
       toast.success('댓글이 삭제되었습니다.');
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, '댓글 삭제에 실패했습니다.'));
+      toastApiError(error, '댓글 삭제에 실패했습니다.');
     },
   });
 

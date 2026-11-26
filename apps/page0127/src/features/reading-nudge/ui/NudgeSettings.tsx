@@ -1,7 +1,12 @@
 'use client';
 import { Button, Switch } from '@repo/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
+import {
+  isDemoReadOnlyError,
+  notifyDemoReadOnly,
+} from '@/shared/api/demoReadOnly';
 import { createClient } from '@/shared/config/supabase/client';
 
 import {
@@ -21,6 +26,15 @@ export const NudgeSettings = ({ userId }: { userId: string }) => {
     mutationFn: (preference: { enabled: boolean; push_enabled: boolean }) =>
       setNudgePreference(createClient(), userId, preference),
     onSuccess: () => cache.invalidateQueries({ queryKey }),
+    // 예전엔 실패해도 아무 말이 없어 스위치만 제자리로 돌아갔다.
+    // Supabase 로 바로 쓰는 곳이라 apiClient 인터셉터를 지나지 않는다 → 여기서 직접 가른다
+    onError: (error) => {
+      if (isDemoReadOnlyError(error)) {
+        notifyDemoReadOnly();
+        return;
+      }
+      toast.error(error.message);
+    },
   });
   return (
     // 설정의 다른 섹션(연결된 계정·푸시 알림)과 같은 모양 — 테두리 대신 옅은 바탕, 위 간격 mt-6.

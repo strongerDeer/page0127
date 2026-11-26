@@ -17,7 +17,7 @@ import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/client';
-import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
+import { toastApiError } from '@/shared/api/demoReadOnly';
 
 import {
   REASON_REQUIRING_DETAIL,
@@ -51,7 +51,8 @@ export const ReportCommentDialog = ({
   const [detail, setDetail] = useState('');
 
   const needsDetail = reason === REASON_REQUIRING_DETAIL;
-  const canSubmit = reason !== null && (!needsDetail || detail.trim().length > 0);
+  const canSubmit =
+    reason !== null && (!needsDetail || detail.trim().length > 0);
 
   const reportMutation = useMutation({
     mutationFn: async () =>
@@ -70,7 +71,7 @@ export const ReportCommentDialog = ({
       close();
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, '신고에 실패했습니다.'));
+      toastApiError(error, '신고에 실패했습니다.');
     },
   });
 
@@ -82,7 +83,10 @@ export const ReportCommentDialog = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(next) => (next ? onOpenChange(true) : close())}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => (next ? onOpenChange(true) : close())}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>댓글 신고</DialogTitle>

@@ -100,7 +100,12 @@ const AddBookPage = () => {
     totalResults,
     itemsPerPage,
   } = useBookSearch();
-  const { createBook, getBookByISBN, isLoading: isCreating } = useBookCRUD();
+  const {
+    createBook,
+    getBookByISBN,
+    isLoading: isCreating,
+    wasDemoBlocked,
+  } = useBookCRUD();
 
   // 직접 등록 입력값. 검색어(?title=)가 있으면 제목칸을 채워 둔다 — 찾다가 없어서 온 것이므로
   const [manualDraft, setManualDraft] = useState<ManualBookDraft>(() => ({
@@ -496,7 +501,7 @@ const AddBookPage = () => {
       // 버튼이 되살아나 보이는 중간 렌더가 없다. 반대로 여기서 풀지 않으면
       // `한 권 더 기록` 으로 돌아온 다음 폼의 등록 버튼이 죽은 채로 남는다.
       setIsFinishing(false);
-    } else {
+    } else if (!wasDemoBlocked()) {
       toast.error('도서 등록에 실패했습니다.');
     }
   };

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { PageContainer } from '@repo/ui';
 
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
+import { isDemoUser } from '@/shared/lib/demo/demoAccount';
 
 import { getProfile } from '@/entities/profile/api/getProfile';
 import { isSearchIndexable } from '@/entities/profile/model/searchIndexable';
@@ -45,7 +46,11 @@ export default async function SettingsPage() {
 
   return (
     <PageContainer>
-      <ProfileSettingsForm profile={profile} email={user.email ?? null}>
+      <ProfileSettingsForm
+        profile={profile}
+        email={user.email ?? null}
+        isDemo={isDemoUser(user)}
+      >
         {/* 연결 목록은 브라우저에서 세션으로 읽는다 — 서버에서 미리 받아 내리면
             연결/해제 직후 값이 어긋난다.
             위치는 '내 계정' 아래, '계정 삭제' 위다 (ProfileSettingsForm 참조) */}

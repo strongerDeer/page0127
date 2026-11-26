@@ -1,6 +1,8 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
+
+import { isDemoReadOnlyError } from '@/shared/api/demoReadOnly';
 
 import { bookApi } from '@/entities/book';
 
@@ -18,6 +20,9 @@ import type { Book, BookInput } from '@/entities/book';
 export const useBookCRUD = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 마지막 실패가 체험 계정 거절이었나 — 함수들이 null/false 만 돌려줘서 호출부가 따로 물어본다.
+  // ref 인 이유: await 직후 같은 핸들러 안에서 읽어야 한다(state 는 다음 렌더에야 바뀐다)
+  const demoBlocked = useRef(false);
 
   /**
    * C: 도서 추가
@@ -30,6 +35,7 @@ export const useBookCRUD = () => {
       const data = await bookApi.createBook(bookData);
       return data;
     } catch (err) {
+      demoBlocked.current = isDemoReadOnlyError(err);
       const message =
         err instanceof Error
           ? err.message
@@ -57,6 +63,7 @@ export const useBookCRUD = () => {
       const data = await bookApi.getBooks(status, sortBy, order);
       return data;
     } catch (err) {
+      demoBlocked.current = isDemoReadOnlyError(err);
       const message =
         err instanceof Error
           ? err.message
@@ -74,28 +81,27 @@ export const useBookCRUD = () => {
    * 수정 페이지의 useEffect 의존성으로 사용되므로 함수 참조를 고정한다.
    * 참조가 렌더마다 바뀌면 로딩 상태 변경 → 재렌더 → 재조회가 반복된다.
    */
-  const getBookById = useCallback(
-    async (id: string): Promise<Book | null> => {
-      setIsLoading(true);
-      setError(null);
+  const getBookById = useCallback(async (id: string): Promise<Book | null> => {
+    setIsLoading(true);
+    setError(null);
 
-      try {
-        const data = await bookApi.getBookById(id);
-        return data;
-      } catch (err) {
-        const message =
-          err instanceof Error
-            ? err.message
-            : '도서 조회 중 오류가 발생했습니다.';
-        setError(message);
-        console.error(err);
-        return null;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
+    try {
+      const data = await bookApi.getBookById(id);
+      return data;
+    } catch (err) {
+      demoBlocked.current = isDemoReadOnlyError(err);
+      demoBlocked.current = isDemoReadOnlyError(err);
+      const message =
+        err instanceof Error
+          ? err.message
+          : '도서 조회 중 오류가 발생했습니다.';
+      setError(message);
+      console.error(err);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   /**
    * U: 도서 정보 수정
@@ -111,6 +117,7 @@ export const useBookCRUD = () => {
       const data = await bookApi.updateBook(id, updates);
       return data;
     } catch (err) {
+      demoBlocked.current = isDemoReadOnlyError(err);
       const message =
         err instanceof Error
           ? err.message
@@ -134,6 +141,7 @@ export const useBookCRUD = () => {
       await bookApi.deleteBook(id);
       return true;
     } catch (err) {
+      demoBlocked.current = isDemoReadOnlyError(err);
       const message =
         err instanceof Error
           ? err.message
@@ -163,6 +171,7 @@ export const useBookCRUD = () => {
       const data = await bookApi.getBookByISBN(isbn, providerItemId);
       return data;
     } catch (err) {
+      demoBlocked.current = isDemoReadOnlyError(err);
       const message =
         err instanceof Error
           ? err.message
@@ -184,5 +193,7 @@ export const useBookCRUD = () => {
     getBookByISBN,
     updateBook,
     deleteBook,
+    /** 방금 실패가 체험 계정 거절이면 true — 안내는 인터셉터가 띄웠으니 실패 토스트를 생략한다 */
+    wasDemoBlocked: () => demoBlocked.current,
   };
 };

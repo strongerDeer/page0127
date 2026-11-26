@@ -20,7 +20,7 @@ import { ArrowRight, ChevronRight, Loader2, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/client';
-import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
+import { toastApiError } from '@/shared/api/demoReadOnly';
 import { USAGE_LIMIT_EXCEEDED_MESSAGE } from '@/shared/lib/aiUsageMessages';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { IntentPrefetchLink } from '@/shared/ui/IntentPrefetchLink';
@@ -147,9 +147,7 @@ export const PublicLibraryHeader = ({
       router.refresh();
       router.push('/dashboard/taste-analysis');
     } catch (error) {
-      toast.error(
-        getApiErrorMessage(error, '취향 분석 중 오류가 발생했습니다.')
-      );
+      toastApiError(error, '취향 분석 중 오류가 발생했습니다.');
     } finally {
       setIsAnalyzing(false);
     }

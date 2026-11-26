@@ -47,7 +47,7 @@ export const BookEditPageClient = ({
   username,
 }: BookEditPageClientProps) => {
   const router = useRouter();
-  const { getBookById, updateBook, isLoading } = useBookCRUD();
+  const { getBookById, updateBook, isLoading, wasDemoBlocked } = useBookCRUD();
   const [book, setBook] = useState<Book | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -150,7 +150,7 @@ export const BookEditPageClient = ({
           provider_item_id: reselectedBook.providerItemId,
         });
       }
-    } else {
+    } else if (!wasDemoBlocked()) {
       toast.error('도서 수정에 실패했습니다.');
     }
 

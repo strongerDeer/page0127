@@ -2,9 +2,8 @@
 import { Button } from '@repo/ui';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { UserPlus } from 'lucide-react';
-import { toast } from 'sonner';
 
-import { getApiErrorMessage } from '@/shared/api/getApiErrorMessage';
+import { toastApiError } from '@/shared/api/demoReadOnly';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { followBroadcast } from '@/shared/lib/broadcastChannel';
 
@@ -30,9 +29,7 @@ export const FollowToCompareButton = ({
       await onFollowed();
     },
     onError: (error) => {
-      toast.error(
-        getApiErrorMessage(error, '팔로우하지 못했어요. 다시 시도해 주세요.')
-      );
+      toastApiError(error, '팔로우하지 못했어요. 다시 시도해 주세요.');
       void cache.invalidateQueries({ queryKey: followKeys.all });
     },
   });
