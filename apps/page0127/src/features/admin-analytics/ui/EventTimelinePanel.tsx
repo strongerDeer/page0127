@@ -31,7 +31,7 @@ const Cell = ({
       <span
         title={title}
         aria-label={title}
-        className='block size-3 rounded-[3px] bg-line/70 sm:size-3.5'
+        className='block h-3 w-full min-w-3 rounded-[3px] bg-line/70 sm:h-3.5 sm:min-w-3.5'
         style={
           level > 0
             ? {
@@ -59,18 +59,19 @@ const Grid = ({
   header: (i: number) => string;
 }) => (
   <div className='overflow-x-auto'>
-    <table className='border-separate border-spacing-0 text-sm'>
+    {/* 칸 수가 적은 날짜별(7일)도 카드 폭을 꽉 채우게 칸이 늘어난다 — 왼쪽에만 붙으면 오른쪽이 비어 보인다(HJ 2026-11-26) */}
+    <table className='w-full border-separate border-spacing-0 text-sm'>
       <thead>
         <tr className='text-[10px] text-text-subtle'>
-          <th className='sticky left-0 bg-background' />
+          <th className='sticky left-0 w-36 bg-background' />
           {Array.from({ length: columns }, (_, i) => (
             <th key={i} className='p-0 text-left font-normal'>
-              <span className='block w-3 overflow-visible whitespace-nowrap sm:w-3.5'>
+              <span className='block min-w-3 overflow-visible whitespace-nowrap sm:min-w-3.5'>
                 {header(i)}
               </span>
             </th>
           ))}
-          <th className='pl-2 text-right font-normal'>합계</th>
+          <th className='w-12 pl-2 text-right font-normal'>합계</th>
         </tr>
       </thead>
       <tbody>
@@ -184,9 +185,12 @@ export const EventTimelinePanel = ({
           groups={groups}
           columns={result.days.length}
           columnTitle={(i) => shortDate(result.days[i])}
-          // 날짜 머리글은 7일마다(첫 칸 포함) — 칸이 좁아 매일 적으면 겹친다
+          // 2주 이하면 매일, 길면 7일마다(첫 칸 포함) — 칸이 좁아 매일 적으면 겹친다
           header={(i) =>
-            i % 7 === 0 ? String(Number(result.days[i].slice(8, 10))) : ''
+            result.days.length <= 14 || i % 7 === 0
+              ? // 날 숫자만 — 월은 위 기간 표기에 있고, 폰에서 'MM/DD' 는 칸끼리 겹친다
+                String(Number(result.days[i].slice(8, 10)))
+              : ''
           }
         />
       ) : (
