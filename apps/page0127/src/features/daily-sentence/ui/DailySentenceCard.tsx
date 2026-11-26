@@ -1,25 +1,13 @@
-'use client';
-
-import { useState, useTransition } from 'react';
-
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 import { BookCover, Button } from '@repo/ui';
 import { BookOpen, ChevronRight, Lock } from 'lucide-react';
-import { toast } from 'sonner';
 
 import { formatSentenceSource } from '@/entities/daily-sentence';
-
-import { drawDailySentenceAction } from '../api/drawDailySentenceAction';
 
 import type { DailySentence } from '@/entities/daily-sentence';
 
 import styles from './DailySentenceBook.module.css';
-
-/** 책장이 넘어가는 연출 길이 — 서버 응답이 더 빨라도 이만큼은 보여 준다 */
-const OPENING_MS = 2200;
-const TURNING_PAGES = 4;
 
 type DailySentenceCardProps = {
   /** 오늘 이미 펼친 문장 — 없으면 닫힌 책과 펼치기 버튼 */
@@ -28,51 +16,17 @@ type DailySentenceCardProps = {
   todayBookHref?: string | null;
 };
 
-type BookState = 'closed' | 'opening' | 'open';
-
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const prefersReducedMotion = () =>
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
 /**
- * 서재 상단 "오늘의 문장" 카드 (Client Component) — 주인에게만.
+ * 독서 캘린더 오늘 칸의 "오늘의 문장" 카드 — 주인에게만.
  *
- * 펼치는 순간 기록된다(저장 버튼 없음, HJ 2026-11-09). 연출(약 2초)과 서버 요청을
- * Promise.all 로 함께 기다린다 — 응답이 빨라도 책장은 끝까지 넘어가고, 느려도 연출이
- * 끝난 뒤 바로 문장이 나온다. 모션 줄이기 설정이면 연출을 건너뛴다.
- *
- * 펼친 뒤 router.refresh() 로 서버 컴포넌트를 다시 그려 캘린더 북마크까지 맞춘다.
+ * 펼치기 버튼은 /sentence 링크라 @modal/(.)sentence 가 가로채 당근 책 모달을 띄운다.
+ * 서재 배너·홈 당근과 같은 SentenceBook 연출로 맞췄다(HJ A안, 2026-11-26 — 예전엔 이 카드 안에서 바로 뽑았다).
+ * 모달에서 뽑으면 router.refresh() 로 서버가 다시 그려 today 가 채워지고, 카드는 오늘 문장을 보여 준다.
  */
 export const DailySentenceCard = ({
-  today,
-  todayBookHref = null,
+  today: sentence,
+  todayBookHref: bookHref = null,
 }: DailySentenceCardProps) => {
-  const router = useRouter();
-  const [sentence, setSentence] = useState(today);
-  const [bookHref, setBookHref] = useState(todayBookHref);
-  const [state, setState] = useState<BookState>(today ? 'open' : 'closed');
-  const [, startTransition] = useTransition();
-
-  const handleOpen = () => {
-    setState('opening');
-    startTransition(async () => {
-      const [result] = await Promise.all([
-        drawDailySentenceAction(),
-        wait(prefersReducedMotion() ? 0 : OPENING_MS),
-      ]);
-      if (!result.ok) {
-        toast.error(result.message);
-        setState('closed');
-        return;
-      }
-      setSentence(result.sentence);
-      setBookHref(result.bookHref);
-      setState('open');
-      router.refresh();
-    });
-  };
-
   return (
     // 독서 캘린더의 오늘 패널 안에 들어간다(HJ B안, 2026-11-10) — 테두리·큰 제목은 패널이 맡는다
     <section aria-labelledby='daily-sentence-heading'>
@@ -90,11 +44,11 @@ export const DailySentenceCard = ({
       </div>
 
       <div className='mt-3 flex flex-col gap-4 sm:flex-row sm:items-center lg:flex-col lg:items-start'>
-        {state === 'open' && sentence ? (
+        {sentence ? (
           // 펼친 뒤에는 빈 책장 그림 대신 그 책의 표지 — 표지가 없으면 BookCover 가 제목을 조판한다
           <SentenceBookCover sentence={sentence} href={bookHref} />
         ) : (
-          <div className={styles.stage} data-state={state} aria-hidden>
+          <div className={styles.stage} aria-hidden>
             <div className={styles.cover}>
               <span className={styles.coverTitle}>
                 오늘의
@@ -103,17 +57,10 @@ export const DailySentenceCard = ({
               </span>
               <span className={styles.ribbon} />
             </div>
-            <div className={styles.spread}>
-              <div className={`${styles.page} ${styles.left}`} />
-              <div className={`${styles.page} ${styles.right}`} />
-              {Array.from({ length: TURNING_PAGES }, (_, i) => (
-                <div key={i} className={styles.turning} />
-              ))}
-            </div>
           </div>
         )}
 
-        {state === 'open' && sentence ? (
+        {sentence ? (
           // 문장이 바뀌는 순간 스크린 리더에도 읽어 준다
           <div className={`min-w-0 ${styles.reveal}`} aria-live='polite'>
             <blockquote className='whitespace-pre-wrap break-keep text-base font-bold leading-relaxed text-text-strong'>
@@ -140,13 +87,11 @@ export const DailySentenceCard = ({
             <p className='mt-1 break-keep text-sm text-text-subtle'>
               펼친 문장은 독서 캘린더에 책갈피로 남아요.
             </p>
-            <Button
-              className='mt-4'
-              onClick={handleOpen}
-              disabled={state === 'opening'}
-            >
-              <BookOpen aria-hidden />
-              {state === 'opening' ? '펼치는 중…' : '오늘의 문장 펼치기'}
+            <Button asChild className='mt-4'>
+              <Link href='/sentence' scroll={false}>
+                <BookOpen aria-hidden />
+                오늘의 문장 펼치기
+              </Link>
             </Button>
           </div>
         )}
