@@ -520,6 +520,22 @@
   color: var(--sub);
 }
 
+/*
+ * 넘어가는 책장 묶음 — 표지와 같은 3D 공간에 둔다(HJ 11/26 A안).
+ * preserve-3d 가 없으면 책장이 이 칸 평면에 납작하게 눌려서, 3D 로 넘어간 표지(-179°)가 늘 앞에 보였다
+ * (다 넘어가도 왼쪽이 크림 면지). 확대 단계에선 .book 의 opacity 가 3D 를 납작하게 해서 z-index 순서로 바뀌는데,
+ * z-index 4(표지 3 위)라 그때도 넘어간 책장이 위에 있다 → 확대할 때 색이 갑자기 바뀌지 않는다.
+ * translateZ(1px) 는 아직 안 넘어간 책장이 첫 쪽(.inner)·책장 두께(.edges)와 같은 평면에서 겹쳐 깜빡이지 않게.
+ */
+.flips {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  transform-style: preserve-3d;
+  transform: translateZ(1px);
+  pointer-events: none;
+}
+
 /* 넘어가는 책장 — 오른쪽에서 왼쪽으로, 간격이 점점 짧아지며 후루룩 */
 .flip {
   /* 장마다 시작 시각·멈춤 각도 — SentenceBook 가 넣는다 */
