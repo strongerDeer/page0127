@@ -22,7 +22,8 @@ export const TypingRankStrip = ({ rows }: { rows: TypingRankRow[] }) => {
         </h2>
         <a
           href='#typing-ranking'
-          className='shrink-0 text-xs text-text-subtle underline-offset-2 hover:underline sm:order-last sm:ml-auto'
+          // 글자는 작게, 누르는 칸은 넉넉히(높이 18 → 42px) — 위아래 여백을 음수 마진으로 상쇄해 줄 높이는 그대로
+          className='-my-3 shrink-0 py-3 text-xs text-text-subtle underline-offset-2 hover:underline sm:order-last sm:ml-auto'
         >
           전체 순위 보기
         </a>

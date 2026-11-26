@@ -29,14 +29,14 @@ const BOARDS: {
     key: 'speed',
     label: '타수',
     unit: '타',
-    // 한 사람당 최고 기록 한 줄만 보인다는 걸 먼저 알린다(HJ 2026-11-26)
-    note: '한 사람당 최고 기록 하나만 보여요. 정확도 95% 이상으로 끝까지 쓴 쪽의 평균 타수이고, 폰으로 낸 기록엔 "모바일" 표시가 붙어요.',
+    // 한 사람당 최고 기록 한 줄만 보인다는 걸 먼저 알린다 — 안내는 한 줄로(HJ 2026-11-26 "텍스트 너무 많아")
+    note: '한 사람당 최고 기록만, 정확도 95% 이상일 때 올라가요.',
   },
   {
     key: 'steady',
     label: '꾸준함',
     unit: '쪽',
-    note: '이번 주(월요일 0시부터) 끝까지 쓴 쪽 수예요. 같은 쪽은 한 주에 한 번만 세요.',
+    note: '이번 주(월요일부터) 끝까지 쓴 쪽 수예요.',
   },
 ];
 
@@ -170,8 +170,7 @@ export const TypingRankingCard = ({
                 순위에 참여하기
               </p>
               <p className='text-xs text-text-subtle'>
-                다른 사람에게는 닉네임 첫 글자만 보여요(책**). 끄면 순위에
-                나오지 않아요.
+                다른 사람에게는 닉네임 첫 글자만 보여요(책**).
               </p>
             </div>
             <Switch
@@ -183,10 +182,7 @@ export const TypingRankingCard = ({
           </div>
         ) : (
           <div className='text-sm text-text-subtle'>
-            <p>
-              비회원도 정확도 95% 이상이면 결과 창에서 닉네임으로 타수 랭킹에
-              올릴 수 있어요. 로그인하면 진행도와 꾸준함 순위까지 쌓여요.
-            </p>
+            <p>비회원도 결과 창에서 닉네임으로 올릴 수 있어요.</p>
             <Link
               href={loginHref}
               className='mt-3 inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90'
