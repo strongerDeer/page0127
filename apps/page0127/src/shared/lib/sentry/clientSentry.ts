@@ -14,7 +14,7 @@
  *    Sentry 가 다시 공통 청크로 들어온다. 클라이언트에서는 captureClientException 을 쓴다.
  */
 
-type SentryModule = typeof import('@sentry/nextjs');
+type SentryModule = typeof import('./sentryBrowser');
 
 /** load 뒤 이 시간 안에 한가한 틈이 없어도 켠다 (너무 늦으면 오류를 놓친다) */
 const IDLE_TIMEOUT_MS = 3000;
@@ -52,7 +52,7 @@ const initSentry = (Sentry: SentryModule) => {
 
 /** Sentry 를 (한 번만) 받아서 켠다. 여러 번 불러도 같은 Promise 를 돌려준다. */
 export const loadSentry = (): Promise<SentryModule> => {
-  sentryPromise ??= import('@sentry/nextjs').then((Sentry) => {
+  sentryPromise ??= import('./sentryBrowser').then((Sentry) => {
     initSentry(Sentry);
     loadedSentry = Sentry;
     stopEarlyErrorQueue();
