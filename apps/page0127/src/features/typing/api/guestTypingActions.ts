@@ -35,8 +35,9 @@ import type { TypingActionResult } from './typingActions';
  * 흐름:
  *   1) 첫 글자를 치는 순간 startGuestTypingAction → 서버가 "이 쪽을 지금 시작" 토큰을 서명해 준다.
  *      비회원 쿠키(무작위 id)가 없으면 이때 만든다.
- *   2) 결과 창에서 닉네임을 적고 올리면 submitGuestTypingAction →
- *      토큰 서명·쿠키 일치 → 서버 시계로 잰 경과 시간의 최대 타수 이하인지 → 닉네임 → IP 분당 횟수 →
+ *   2) 마지막 글자를 치는 순간 finishGuestTypingAction → 그 토큰에 "지금 끝" 시각을 더해 다시 서명한다.
+ *   3) 결과 창에서 닉네임을 적고 올리면 submitGuestTypingAction →
+ *      토큰 서명·쿠키 일치 → 서버 시계로 잰 "첫 글자 ~ 마지막 글자" 시간의 최대 타수 이하인지 → 닉네임 → IP 분당 횟수 →
  *      DB 함수(정확도 95%↑, 40ms/글자, 같은 IP 하루 새 비회원 3명)까지 통과해야 남는다.
  *
  * 비회원은 계정이 없으니 DB 함수를 service_role 로만 부른다(anon 에 열면 이 검사를 건너뛸 수 있다).
@@ -96,6 +97,27 @@ export const startGuestTypingAction = async (
   return { ok: true, token };
 };
 
+/** 마지막 글자를 친 순간 — 시작 토큰에 끝 시각을 더해 다시 서명한다(결과 창에서 머문 시간은 세지 않게) */
+export const finishGuestTypingAction = async (
+  token: string
+): Promise<GuestStartResult> => {
+  const secret = secretFor('typing-guest-token-v1');
+  const payload = verifyGuestToken(String(token), secret);
+  const guestId = (await cookies()).get(GUEST_COOKIE)?.value;
+  if (
+    !payload ||
+    payload.e !== undefined ||
+    !SHEETS.has(payload.k) ||
+    !isGuestId(guestId) ||
+    payload.g !== guestId
+  )
+    return { ok: false, message: '처음부터 다시 쳐 주세요.' };
+  const now = Date.now();
+  if (now - payload.t > TOKEN_TTL_MS)
+    return { ok: false, message: '시간이 너무 지났어요. 다시 쳐 주세요.' };
+  return { ok: true, token: createGuestToken({ ...payload, e: now }, secret) };
+};
+
 export const submitGuestTypingAction = async (input: {
   token: string;
   nickname: string;
@@ -120,11 +142,18 @@ export const submitGuestTypingAction = async (input: {
   const sheet = payload ? SHEETS.get(payload.k) : undefined;
   const jar = await cookies();
   const guestId = jar.get(GUEST_COOKIE)?.value;
-  if (!payload || !sheet || !isGuestId(guestId) || payload.g !== guestId)
+  if (
+    !payload ||
+    payload.e === undefined ||
+    !sheet ||
+    !isGuestId(guestId) ||
+    payload.g !== guestId
+  )
     return { ok: false, message: '처음부터 다시 쳐 주세요.' };
 
-  const elapsedMs = Date.now() - payload.t;
-  if (elapsedMs > TOKEN_TTL_MS)
+  // 첫 글자 ~ 마지막 글자(서버 시계). 결과 창에서 닉네임을 고민한 시간은 들어가지 않는다
+  const elapsedMs = payload.e - payload.t;
+  if (elapsedMs < 0 || Date.now() - payload.e > TOKEN_TTL_MS)
     return { ok: false, message: '시간이 너무 지났어요. 다시 쳐 주세요.' };
 
   const accuracy = Math.round(Number(input.accuracy));
@@ -183,7 +212,7 @@ export const submitGuestTypingAction = async (input: {
     p_chars: sheet.text.length,
     p_cpm: cpm,
     p_accuracy: accuracy,
-    p_duration_ms: Math.min(elapsedMs, 3_600_000),
+    p_duration_ms: Math.max(1000, Math.min(elapsedMs, 3_600_000)),
     p_device: device,
   });
   if (error) {
