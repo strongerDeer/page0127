@@ -32,7 +32,7 @@ jobs:
   lighthouse:
     name: Lighthouse (${{ matrix.form-factor }})
     runs-on: ubuntu-latest
-    # 6페이지 × 5회 = 30번(2026-11-24 3→5회, TBT 헛경보 줄이기). 평소 5~6분.
+    # 8페이지 × 5회 = 40번(2026-11-24 3→5회, 11-26 6→8페이지: 오늘의 문장·필사). 평소 7~8분.
     # mobile 은 실제 스로틀 LCP(LH_REAL_RUNS, 기본 1회)를 페이지마다 한 번 더 재서 +2~3분.
     timeout-minutes: 30
     strategy:

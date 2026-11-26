@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from 'react';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { SegmentedControl, SegmentedControlItem, Switch } from '@repo/ui';
+
+import { CtaLink } from '@/shared/lib/analytics/CtaLink';
 
 import { FAMOUS_SHEETS, FULL_SHEETS } from '@/entities/typing';
 
@@ -183,12 +184,13 @@ export const TypingRankingCard = ({
         ) : (
           <div className='text-sm text-text-subtle'>
             <p>비회원도 결과 창에서 닉네임으로 올릴 수 있어요.</p>
-            <Link
+            <CtaLink
+              location='typing_rank_login'
               href={loginHref}
               className='mt-3 inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90'
             >
               로그인하고 랭킹 참여
-            </Link>
+            </CtaLink>
           </div>
         )}
         {error && (

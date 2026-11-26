@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { CtaLink } from '@/shared/lib/analytics/CtaLink';
 
 import { computeProgress } from '@/entities/typing';
 
@@ -53,12 +53,13 @@ export const TypingProgressCard = ({
             로그인하면 다 쓴 쪽이 계정에 남아서, 폰과 PC 어디서든 이어 쓸 수
             있어요.
           </p>
-          <Link
+          <CtaLink
+            location='typing_progress_login'
             href={loginHref}
             className='mt-3 inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90'
           >
             로그인하고 이어 쓰기
-          </Link>
+          </CtaLink>
         </div>
       )}
 

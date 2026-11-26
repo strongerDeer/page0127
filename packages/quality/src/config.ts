@@ -35,6 +35,10 @@ export const APP = {
       name: "bookinfo",
       path: "/books/info/b356ceea-952d-4fc3-b831-847cd67a51c2",
     },
+    // 하루 한 번 쓰는 단독 페이지(2026-11-26 추가). 첫 주는 비교할 지난 기록이 없어 점수만 쌓이고
+    // 회귀 경보는 둘째 주부터 난다(analyze.ts 가 두 기록에 다 있는 페이지끼리만 비교).
+    { name: "sentence", path: "/sentence" },
+    { name: "typing", path: "/typing/little-prince" },
   ] satisfies PageAnchor[],
 };
 

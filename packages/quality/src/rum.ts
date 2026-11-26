@@ -48,20 +48,28 @@ export type RumSample = {
 // 그래서 **알려진 라우트만 통과시키고 나머지는 자리표시자로 접는다.** 허용목록 방식이라
 // 새 라우트가 생기면 여기서 누락돼 `[id]`로 접힐 뿐, 카디널리티가 터지지 않는다.
 
+// ⚠️ 새 최상위 라우트를 만들면 여기에도 넣는다. 빠지면 그 페이지 방문이 `/[username]`(서재)
+// 성능으로 잡힌다(2026-11-26: /sentence·/typing·/blog 가 서재로 섞여 있었다).
 const ROOT_ROUTES = new Set([
   "about",
   "admin",
   "auth",
+  "blog",
   "books",
   "contact",
   "dashboard",
+  "demo",
   "feed",
+  "library",
   "login",
   "notifications",
+  "onboarding",
   "privacy",
   "search",
+  "sentence",
   "settings",
   "terms",
+  "typing",
   "updates",
 ]);
 
@@ -70,18 +78,26 @@ const CHILD_ROUTES: Record<string, Set<string>> = {
   admin: new Set([
     "analytics",
     "banners",
+    "books",
     "costs",
     "errors",
     "members",
     "quality",
+    "reports",
+    "sentences",
+    "stories",
   ]),
   auth: new Set(["auth-code-error", "callback", "suspended"]),
   books: new Set(["add", "all", "info"]),
   dashboard: new Set(["taste-analysis"]),
+  library: new Set(["manage"]),
+  // 작품 이름(little-prince)은 몇 개 안 되고 사람마다 다르지 않아 그대로 둔다
+  typing: new Set(["little-prince"]),
 };
 
 /** 부모 세그먼트 → 그 아래 동적 세그먼트에 붙일 이름. 없으면 '[id]'. */
 const DYNAMIC_LABEL: Record<string, string> = {
+  blog: "[slug]",
   books: "[id]",
   feed: "[activityId]",
   members: "[id]",

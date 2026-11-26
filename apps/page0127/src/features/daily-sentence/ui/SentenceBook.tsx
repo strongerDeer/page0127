@@ -14,6 +14,8 @@ import Link from 'next/link';
 
 import { toast } from 'sonner';
 
+import { trackEvent } from '@/shared/lib/analytics/trackEvent';
+
 import { dailyScore, formatSentenceSource } from '@/entities/daily-sentence';
 
 import { useDailySentenceDraw } from '../model/useDailySentenceDraw';
@@ -131,12 +133,13 @@ export const SentenceBook = ({
   onClose,
   autoStart = false,
 }: SentenceBookProps) => {
+  const place = variant === 'modal' ? 'modal' : 'landing';
   const { result, score, seed, todayKey, guestDays, fetchDraw, commit } =
     useDailySentenceDraw({
       memberId,
       today,
       todayBookHref,
-      place: variant === 'modal' ? 'modal' : 'landing',
+      place,
     });
   const [, startTransition] = useTransition();
 
@@ -309,7 +312,13 @@ export const SentenceBook = ({
     }
     setCopied(ok ? 'done' : 'blocked');
     setSwipeKey((k) => k + 1);
+    if (ok)
+      trackEvent('daily_sentence_copy', { member: Boolean(memberId), place });
   };
+
+  /** 결과 화면 버튼 — 기존 CTA 위치별 클릭 보고서(cta_click · location)에 함께 쌓인다 */
+  const trackCta = (location: string) =>
+    trackEvent('cta_click', { location, member: Boolean(memberId), place });
 
   const dateLabel = `${Number(todayKey.slice(5, 7))}월 ${Number(todayKey.slice(8, 10))}일`;
   const shortDate = `${todayKey.slice(5, 7)}.${todayKey.slice(8, 10)}`;
@@ -522,7 +531,11 @@ export const SentenceBook = ({
                       : '문장 복사'}
                 </button>
                 {result.bookHref && (
-                  <Link className={styles.pill} href={result.bookHref}>
+                  <Link
+                    className={styles.pill}
+                    href={result.bookHref}
+                    onClick={() => trackCta('sentence_book')}
+                  >
                     이 책 보러 가기
                   </Link>
                 )}
@@ -569,7 +582,11 @@ export const SentenceBook = ({
                           닫기
                         </button>
                       ) : libraryHref ? (
-                        <Link className={styles.joinBtn} href={libraryHref}>
+                        <Link
+                          className={styles.joinBtn}
+                          href={libraryHref}
+                          onClick={() => trackCta('sentence_calendar')}
+                        >
                           내 서재 캘린더 보기 <span aria-hidden>→</span>
                         </Link>
                       ) : null}
@@ -584,6 +601,7 @@ export const SentenceBook = ({
                       <Link
                         className={styles.joinBtn}
                         href='/login?next=/sentence'
+                        onClick={() => trackCta('sentence_join')}
                       >
                         가입하고 문장 모으기 <span aria-hidden>→</span>
                       </Link>

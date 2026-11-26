@@ -4,6 +4,11 @@ import {
   missingGoogleConfig,
 } from '@/shared/lib/google/serviceAccount';
 
+import {
+  parseRealtimeEvents,
+  type RealtimeEventRow,
+  toRealtimeEventsRequest,
+} from '../lib/eventTimeline';
 import { fetchWithGaRetry } from '../lib/gaRetry';
 
 import type { GaRow } from '../lib/ga4Reports';
@@ -17,6 +22,8 @@ export type GaRealtimeResult =
       activeUsers: number;
       /** 지금 보고 있는 화면(페이지 제목) 상위 5개 */
       pages: { title: string; users: number }[];
+      /** 지난 30분에 난 이벤트(이벤트 현황 목록에 있는 것만), 많은 순 */
+      events: RealtimeEventRow[];
     }
   | { status: 'unconfigured'; missing: string[] }
   | { status: 'error'; message: string };
@@ -59,13 +66,14 @@ export async function getGaRealtime(): Promise<GaRealtimeResult> {
       return ((await res.json()) as { rows?: GaRow[] }).rows ?? [];
     };
 
-    const [total, byPage] = await Promise.all([
+    const [total, byPage, byEvent] = await Promise.all([
       run({ metrics: [{ name: 'activeUsers' }] }),
       run({
         dimensions: [{ name: 'unifiedScreenName' }],
         metrics: [{ name: 'activeUsers' }],
         limit: 5,
       }),
+      run(toRealtimeEventsRequest()),
     ]);
 
     return {
@@ -75,6 +83,7 @@ export async function getGaRealtime(): Promise<GaRealtimeResult> {
         title: r.dimensionValues?.[0]?.value || '(알 수 없음)',
         users: Number(r.metricValues?.[0]?.value ?? 0),
       })),
+      events: parseRealtimeEvents(byEvent),
     };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
