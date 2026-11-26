@@ -6,7 +6,6 @@
 */
 .window {
   scroll-margin-top: 24px;
-  scroll-snap-align: start;
   --win: #e2cfa9;
   --face: #ecdcbb;
   --hi: #fff7e6;
@@ -117,9 +116,7 @@
   box-shadow: none;
 }
 .tab:focus-visible,
-.btn:focus-visible,
-.chip:focus-visible,
-.chb:focus-visible {
+.btn:focus-visible {
   outline: 2px dashed var(--navy);
   outline-offset: 2px;
 }
@@ -134,70 +131,6 @@
 }
 .sub b {
   color: var(--ink);
-}
-.chgrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
-  gap: 4px;
-}
-.chb {
-  height: 30px;
-  cursor: pointer;
-  border: 0;
-  border-radius: 7px;
-  background: var(--paper);
-  color: var(--ink);
-  font: 700 13px var(--font);
-  box-shadow: inset 0 0 0 1px #cdb88f;
-}
-.chb[data-state="full"] {
-  background: #d9ebc6;
-  color: #3b6b1f;
-}
-.chb[aria-pressed="true"] {
-  background: var(--navy);
-  color: #fff;
-  box-shadow: none;
-}
-.chb:disabled {
-  cursor: not-allowed;
-  background: #e6dcc6;
-  color: #b3a487;
-  box-shadow: none;
-}
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.chip {
-  cursor: pointer;
-  border: 0;
-  border-radius: 7px;
-  background: var(--paper);
-  padding: 5px 10px;
-  color: var(--ink);
-  font: 700 13px var(--font);
-  box-shadow: inset 0 0 0 1px #cdb88f;
-}
-.chip small {
-  margin-right: 4px;
-  color: var(--soft);
-}
-.chip[aria-pressed="true"] {
-  background: var(--navy);
-  color: #fff;
-  box-shadow: none;
-}
-.chip[aria-pressed="true"] small {
-  color: #c9d6f5;
-}
-.chip[data-done="true"]::after {
-  content: " ✓";
-  color: #3b6b1f;
-}
-.chip[aria-pressed="true"][data-done="true"]::after {
-  color: #bfe3a3;
 }
 
 /* 본문 + 오른쪽 기둥 */
@@ -583,14 +516,18 @@
 /* 시작 화면 — 빈 종이 위에 목록 창이 떠 있는 상태(HJ 2026-11-26) */
 .menuPaper {
   cursor: default;
-  display: grid;
-  place-items: center;
+  /* grid 로 두면 팝업 폭이 칸을 밀어내서 flex 로 가운데 둔다 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 360px;
   /* 뒤 종이는 살짝 눌러 팝업이 떠 보이게 */
   background: color-mix(in srgb, var(--paper) 80%, var(--win));
 }
 .startPanel {
-  width: min(100%, 460px);
+  /* 칸 크기가 내용에 맞춰 줄지 않게 폭을 고정(장 목록처럼 짧은 줄만 있을 때) */
+  width: 460px;
+  max-width: 100%;
   box-shadow:
     inset 1px 1px 0 #fff7e6,
     inset -1px -1px 0 #6b5233,
@@ -668,19 +605,8 @@
   color: #fff;
 }
 
-/* 모바일 — 명문장·장 목록은 옛 목록 창(RetroListDialog), 캐릭터·시계는 본문 위 한 줄(HJ 2026-11-26) */
-/* 목록 창 단추와 우선순위가 같아 .sub 로 한 단계 올린다 */
-.sub .pickSelect {
-  display: none;
-}
+/* 모바일 — 캐릭터·시계는 본문 위 한 줄(HJ 2026-11-26) */
 @media (max-width: 720px) {
-  .chips,
-  .chgrid {
-    display: none;
-  }
-  .sub .pickSelect {
-    display: inline-flex;
-  }
   .main .side {
     order: -1;
     display: flex;

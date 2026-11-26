@@ -128,23 +128,11 @@ export const TypingRoom = ({
   const guestTokenRef = useRef<{ key: string; token: string } | null>(null);
   // 쪽을 새로 펼치거나 "다시"를 누를 때마다 올려서 아래 effect 가 토큰을 새로 받게 한다
   const [tokenTick, setTokenTick] = useState(0);
-
-  // 큰 화면(마우스)에서는 스크롤이 필사 창 근처에 오면 창 위쪽에 딱 걸리게 한다(HJ 2026-11-26).
-  // proximity 라 멀리서는 자유롭게 스크롤된다. 폰은 자판이 올라올 때 화면이 튀지 않게 뺀다.
-  // CSS 모듈은 html 선택자를 쓸 수 없어서 이 페이지에 있는 동안만 html 에 직접 건다.
-  useEffect(() => {
-    const mq = window.matchMedia('(min-width: 768px) and (pointer: fine)');
-    const root = document.documentElement;
-    const apply = () => {
-      root.style.scrollSnapType = mq.matches ? 'y proximity' : '';
-    };
-    apply();
-    mq.addEventListener('change', apply);
-    return () => {
-      mq.removeEventListener('change', apply);
-      root.style.scrollSnapType = '';
-    };
-  }, []);
+  // 시작 팝업 단계 — 방식 → 명문장·장 목록
+  const [startStep, setStartStep] = useState<'mode' | 'famous' | 'chapter'>(
+    'mode'
+  );
+  const [startModeIndex, setStartModeIndex] = useState(0);
 
   useEffect(() => {
     if (memberId) return;
@@ -481,6 +469,29 @@ export const TypingRoom = ({
     return done === pages.length ? 'full' : done > 0 ? 'half' : 'none';
   };
 
+  /** 목록 창에 넣을 장·명문장 줄 */
+  const chapterItems = Array.from(
+    { length: LITTLE_PRINCE_TOTAL_CHAPTERS },
+    (_, i) => i + 1
+  ).map((no) => {
+    const open = OPEN_CHAPTERS.includes(no);
+    return {
+      key: String(no),
+      label: `${no}장`,
+      disabled: !open,
+      note: !open
+        ? '준비 중'
+        : chapterState(no) === 'full'
+          ? '✓ 다 씀'
+          : undefined,
+    };
+  });
+  const famousItems = FAMOUS_SHEETS.map((f) => ({
+    key: f.key,
+    label: f.title.replace('명문장 · ', ''),
+    note: doneKeys.has(f.key) ? '✓' : undefined,
+  }));
+
   const hint = !started
     ? '어떤 방식으로 써 볼지 고르면 바로 시작해요.'
     : result
@@ -540,87 +551,21 @@ export const TypingRoom = ({
                 넘어가요
               </span>
             )}
+            {/* 장·명문장은 긴 칩 줄 대신 목록 창 단추 하나(HJ 2026-11-26 A안) */}
             {mode === 'chapter' && (
-              <>
-                <div className={s.chgrid} role='group' aria-label='장 고르기'>
-                  {Array.from(
-                    { length: LITTLE_PRINCE_TOTAL_CHAPTERS },
-                    (_, i) => i + 1
-                  ).map((no) => {
-                    const open = OPEN_CHAPTERS.includes(no);
-                    const state = open ? chapterState(no) : 'locked';
-                    return (
-                      <button
-                        key={no}
-                        type='button'
-                        className={s.chb}
-                        disabled={!open}
-                        data-state={state}
-                        aria-pressed={sheet.chapter === no}
-                        aria-label={
-                          open
-                            ? `${no}장${state === 'full' ? ' (다 씀)' : ''}`
-                            : `${no}장 (준비 중)`
-                        }
-                        onClick={() => pickChapter(no)}
-                      >
-                        {state === 'full' ? '✓' : no}
-                      </button>
-                    );
-                  })}
-                </div>
-                {/* 모바일은 27개 버튼 대신 옛 프로그램 목록 창 하나(HJ 2026-11-26 B안) — CSS 가 폭에 따라 둘 중 하나만 보인다 */}
-                <RetroListDialog
-                  title='장 고르기'
-                  triggerClassName={s.pickSelect}
-                  value={(sheet.chapter ?? 1) - 1}
-                  onPick={(i) => pickChapter(i + 1)}
-                  items={Array.from(
-                    { length: LITTLE_PRINCE_TOTAL_CHAPTERS },
-                    (_, i) => i + 1
-                  ).map((no) => {
-                    const open = OPEN_CHAPTERS.includes(no);
-                    return {
-                      key: String(no),
-                      label: `${no}장`,
-                      disabled: !open,
-                      note: !open
-                        ? '준비 중'
-                        : chapterState(no) === 'full'
-                          ? '✓ 다 씀'
-                          : undefined,
-                    };
-                  })}
-                />
-              </>
-            )}
-            {mode === 'famous' && (
-              <div className={s.chips} role='group' aria-label='명문장 고르기'>
-                {FAMOUS_SHEETS.map((f, i) => (
-                  <button
-                    key={f.key}
-                    type='button'
-                    className={s.chip}
-                    aria-pressed={i === famousIndex}
-                    data-done={doneKeys.has(f.key)}
-                    onClick={() => goTo('famous', i)}
-                  >
-                    {f.title.replace('명문장 · ', '')}
-                  </button>
-                ))}
-              </div>
+              <RetroListDialog
+                title='장 고르기'
+                value={(sheet.chapter ?? 1) - 1}
+                onPick={(i) => pickChapter(i + 1)}
+                items={chapterItems}
+              />
             )}
             {mode === 'famous' && (
               <RetroListDialog
                 title='명문장 고르기'
-                triggerClassName={s.pickSelect}
                 value={famousIndex}
                 onPick={(i) => goTo('famous', i)}
-                items={FAMOUS_SHEETS.map((f) => ({
-                  key: f.key,
-                  label: f.title.replace('명문장 · ', ''),
-                  note: doneKeys.has(f.key) ? '✓' : undefined,
-                }))}
+                items={famousItems}
               />
             )}
           </div>
@@ -631,27 +576,62 @@ export const TypingRoom = ({
             <div className={`${s.frame} ${s.raised}`}>
               {/* 시작 화면 — 옛 타자 프로그램처럼 목록 창이 떠 있는 상태에서 방식을 고른다(HJ 2026-11-26) */}
               <div className={`${s.paper} ${s.menuPaper}`}>
-                <RetroListPanel
-                  className={s.startPanel}
-                  title='필사 방식 고르기'
-                  confirmLabel='시작'
-                  initial={0}
-                  items={MODES.map((m) => ({
-                    key: m.key,
-                    label: m.label,
-                    desc:
-                      m.key === 'full' && doneKeys.size > 0
-                        ? `${FULL_SHEETS[firstUnwrittenIndex(doneKeys)].title}부터 이어서`
-                        : MODE_DESCRIPTIONS[m.key],
-                  }))}
-                  onConfirm={(i) => {
-                    const key = MODES[i].key;
-                    goTo(
-                      key,
-                      key === 'famous' ? 0 : firstUnwrittenIndex(doneKeys)
-                    );
-                  }}
-                />
+                {/* 방식 → (명문장·장이면) 같은 팝업에서 대목·장까지 고르고 바로 시작(HJ 2026-11-26 A안) */}
+                {startStep === 'mode' && (
+                  <RetroListPanel
+                    key='mode'
+                    className={s.startPanel}
+                    title='필사 방식 고르기'
+                    confirmLabel='다음'
+                    initial={startModeIndex}
+                    items={MODES.map((m) => ({
+                      key: m.key,
+                      label: m.label,
+                      desc:
+                        m.key === 'full' && doneKeys.size > 0
+                          ? `${FULL_SHEETS[firstUnwrittenIndex(doneKeys)].title}부터 이어서`
+                          : MODE_DESCRIPTIONS[m.key],
+                    }))}
+                    onConfirm={(i) => {
+                      const key = MODES[i].key;
+                      setStartModeIndex(i);
+                      if (key === 'full')
+                        goTo('full', firstUnwrittenIndex(doneKeys));
+                      else setStartStep(key);
+                    }}
+                  />
+                )}
+                {startStep === 'famous' && (
+                  <RetroListPanel
+                    key='famous'
+                    className={s.startPanel}
+                    title='명문장 고르기'
+                    confirmLabel='시작'
+                    cancelLabel='이전'
+                    autoFocus
+                    initial={0}
+                    items={famousItems}
+                    onCancel={() => setStartStep('mode')}
+                    onConfirm={(i) => goTo('famous', i)}
+                  />
+                )}
+                {startStep === 'chapter' && (
+                  <RetroListPanel
+                    key='chapter'
+                    className={s.startPanel}
+                    title='장 고르기'
+                    confirmLabel='시작'
+                    cancelLabel='이전'
+                    autoFocus
+                    initial={
+                      (FULL_SHEETS[firstUnwrittenIndex(doneKeys)].chapter ??
+                        1) - 1
+                    }
+                    items={chapterItems}
+                    onCancel={() => setStartStep('mode')}
+                    onConfirm={(i) => pickChapter(i + 1)}
+                  />
+                )}
               </div>
             </div>
           ) : (
