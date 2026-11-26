@@ -23,7 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@repo/ui';
-import { BookOpen, LogOut, Settings } from 'lucide-react';
+import { BookOpen, LogOut, Quote, Settings } from 'lucide-react';
 
 import { nameInitials } from '@/entities/profile/model/displayName';
 
@@ -78,6 +78,19 @@ export const ProfileDropdown = ({
             >
               <BookOpen className='mr-2 h-4 w-4' />
               <span>내 서재</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
+
+        {/* 문장 서랍 — 서재 캘린더 아래까지 내려가야만 닿아서 여기에도 둔다(2026-11-26 HJ) */}
+        {username && (
+          <DropdownMenuItem asChild>
+            <Link
+              href={`/${username}/quotes`}
+              className='flex cursor-pointer items-center'
+            >
+              <Quote className='mr-2 h-4 w-4' />
+              <span>문장 서랍</span>
             </Link>
           </DropdownMenuItem>
         )}

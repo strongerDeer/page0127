@@ -17,8 +17,13 @@ describe('getTocGroups', () => {
     expect(hrefs(sub)).toEqual(['/updates', '/contact']);
   });
 
-  it('로그인하면 설정이 위에 붙는다 — 내 서재는 하단 탭바에 있어 다시 넣지 않는다', () => {
-    const { account } = getTocGroups({ isLoggedIn: true });
+  it('로그인하면 문장 서랍·설정이 위에 붙는다 — 내 서재는 하단 탭바에 있어 다시 넣지 않는다', () => {
+    const { account } = getTocGroups({ isLoggedIn: true, username: 'hj' });
+    expect(hrefs(account)).toEqual(['/hj/quotes', '/settings']);
+  });
+
+  it('아이디를 아직 모르면(가입 직후) 문장 서랍은 빼고 설정만', () => {
+    const { account } = getTocGroups({ isLoggedIn: true, username: null });
     expect(hrefs(account)).toEqual(['/settings']);
   });
 

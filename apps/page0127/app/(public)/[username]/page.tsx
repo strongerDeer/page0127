@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { ErrorBoundary } from '@repo/ui';
+import { ChevronRight } from 'lucide-react';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { checkUsageLimit } from '@/shared/lib/aiUsage';
@@ -34,7 +35,7 @@ import { getSentenceMonthCounts } from '@/entities/quote/server';
 import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTasteHistory';
 
 import { getBadgeActivity } from '@/features/badge/api/getBadgeActivity';
-import { DailySentenceCard } from '@/features/daily-sentence';
+import { CarrotSproutSvg, DailySentenceCard } from '@/features/daily-sentence';
 
 import { LIBRARY_BOOK_COLUMNS } from '@/widgets/public-library/model/libraryBookColumns';
 import { toReaderCard } from '@/widgets/public-library/model/readerCard';
@@ -370,29 +371,36 @@ const LibraryContent = async ({
           />
         ) : null
       }
-      // 패널 맨 아래 — 내가 모은 문장 하나(나만 보기)와 문장 서랍·주간 회상으로 가는 길
+      // 패널 맨 아래 — 내가 모은 문장 하나(나만 보기)
       calendarFooterSlot={
         isOwnProfile ? (
-          <div className='flex flex-col gap-3'>
-            <ErrorBoundary fallback={null}>
-              <Suspense fallback={null}>
-                <RandomQuoteCard username={username} />
-              </Suspense>
-            </ErrorBoundary>
-            <div className='flex flex-wrap gap-x-4 gap-y-1'>
-              <Link
-                href={`/${username}/quotes`}
-                className='text-xs font-medium text-text-subtle hover:text-text-strong'
-              >
-                문장 서랍 ›
-              </Link>
-              <Link
-                href='/books/recap'
-                className='text-xs font-medium text-text-subtle hover:text-text-strong'
-              >
-                주간 회상 보기 ›
-              </Link>
-            </div>
+          <ErrorBoundary fallback={null}>
+            <Suspense fallback={null}>
+              <RandomQuoteCard username={username} />
+            </Suspense>
+          </ErrorBoundary>
+        ) : null
+      }
+      // 달력 바로 아래 완독 줄 오른쪽 — 문장 서랍·주간 회상으로 가는 길.
+      // 예전엔 패널 맨 아래 작은 회색 글씨라 잘 안 보였다(HJ, 2026-11-26)
+      calendarSummaryLinks={
+        isOwnProfile ? (
+          <div className='flex items-center gap-4'>
+            <Link
+              href={`/${username}/quotes`}
+              className='inline-flex items-center gap-1.5 text-sm font-semibold text-text-strong hover:text-primary'
+            >
+              <CarrotSproutSvg className='h-3.5 w-[19px]' />
+              문장 서랍
+              <ChevronRight aria-hidden className='size-3.5' />
+            </Link>
+            <Link
+              href='/books/recap'
+              className='inline-flex items-center gap-0.5 text-sm font-medium text-text-subtle hover:text-text-strong'
+            >
+              주간 회상
+              <ChevronRight aria-hidden className='size-3.5' />
+            </Link>
           </div>
         ) : null
       }

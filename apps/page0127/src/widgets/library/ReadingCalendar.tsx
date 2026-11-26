@@ -50,8 +50,13 @@ type ReadingCalendarProps = {
    * 펼치기·애니메이션·서버 액션은 그 카드(features/daily-sentence)가 맡는다.
    */
   todaySlot?: ReactNode;
-  /** 패널 맨 아래 — 주인 서재의 내가 모은 문장 한 줄·주간 회상 링크 */
+  /** 패널 맨 아래 — 주인 서재의 내가 모은 문장 한 줄 */
   footerSlot?: ReactNode;
+  /**
+   * 달력 아래 "N월 N권 완독" 줄 오른쪽 — 주인 서재의 문장 서랍·주간 회상 바로가기.
+   * 패널 맨 아래 작은 회색 링크로는 잘 안 보여서 달력 바로 아래로 옮겼다(HJ, 2026-11-26)
+   */
+  summaryLinks?: ReactNode;
   /**
    * 방문자에게만 — 달마다 모은 문장 개수('YYYY-MM' → 개수).
    * 문장 글은 나만 보기라 개수만 서버에서 접어 넘긴다(HJ, 2026-11-24)
@@ -107,6 +112,7 @@ export const ReadingCalendar = ({
   sentenceDraws = [],
   todaySlot,
   footerSlot,
+  summaryLinks,
   sentenceMonthCounts,
 }: ReadingCalendarProps) => {
   const [ownView, ownDispatch] = useReducer(monthReducer, {
@@ -364,14 +370,17 @@ export const ReadingCalendar = ({
             })}
           </div>
 
-          <p className='mt-3 text-xs text-text-subtle'>
-            {view.month}월 <b className='text-text-strong'>{summary.count}권</b>{' '}
-            완독
-            {summary.pages > 0 && ` · ${summary.pages.toLocaleString()}쪽`}
-            {isOwner &&
-              summary.privateCount > 0 &&
-              ` · 그중 나만 보기 ${summary.privateCount}권`}
-          </p>
+          <div className='mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2'>
+            <p className='text-xs text-text-subtle'>
+              {view.month}월{' '}
+              <b className='text-text-strong'>{summary.count}권</b> 완독
+              {summary.pages > 0 && ` · ${summary.pages.toLocaleString()}쪽`}
+              {isOwner &&
+                summary.privateCount > 0 &&
+                ` · 그중 나만 보기 ${summary.privateCount}권`}
+            </p>
+            {summaryLinks}
+          </div>
         </div>
 
         <DayPanel
