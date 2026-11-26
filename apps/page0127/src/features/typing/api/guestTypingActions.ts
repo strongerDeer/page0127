@@ -5,6 +5,11 @@ import { cookies, headers } from 'next/headers';
 import { createHash, createHmac, randomUUID } from 'node:crypto';
 
 import { createAdminClient } from '@/shared/config/supabase/admin';
+import { createClient } from '@/shared/config/supabase/server';
+import {
+  DEMO_READ_ONLY_MESSAGE,
+  isDemoUser,
+} from '@/shared/lib/demo/demoAccount';
 
 import {
   FAMOUS_SHEETS,
@@ -96,6 +101,17 @@ export const submitGuestTypingAction = async (input: {
   cpm: number;
   accuracy: number;
 }): Promise<TypingActionResult> => {
+  // 로그인한 계정은 비회원 길로 올리지 않는다 — 회원 기록(typing_records)이 따로 있다.
+  // 체험 계정(읽기 전용)도 여기서 막는다(app/demo-server-actions.test.ts 안전망).
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user)
+    return isDemoUser(user)
+      ? { ok: false, message: DEMO_READ_ONLY_MESSAGE }
+      : { ok: false, message: '로그인한 계정은 기록이 자동으로 남아요.' };
+
   const payload = verifyGuestToken(
     String(input.token),
     secretFor('typing-guest-token-v1')
