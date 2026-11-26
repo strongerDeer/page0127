@@ -196,17 +196,11 @@
     monospace;
 }
 
-/* ── 다 친 뒤에 나오는 설명·버튼 ── */
+/* ── 설명·버튼 ── 처음부터 보인다(HJ 2026-11-26 A안).
+   예전엔 제목 타이핑이 끝난 뒤(4~5초) 나와서 폰 첫 화면 아래가 비었고 LCP 도 4.5초로 늦었다.
+   제목 타이핑 연출은 그대로, 이 묶음만 짧게 떠오르며 바로 나온다. */
 .after {
-  opacity: 0;
-  transform: translateY(10px);
-  transition:
-    opacity 0.5s ease-out,
-    transform 0.5s ease-out;
-}
-.hero[data-done] .after {
-  opacity: 1;
-  transform: none;
+  animation: rise 0.5s ease-out both;
 }
 .desc {
   max-width: 34rem;
@@ -301,6 +295,6 @@
     animation: none;
   }
   .after {
-    transition: none;
+    animation: none;
   }
 }
