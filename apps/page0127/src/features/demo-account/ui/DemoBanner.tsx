@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { useLogout } from '@/features/auth/api/useLogout';
@@ -46,6 +47,13 @@ export const DemoBanner = () => {
         >
           가입하고 내 서재 만들기
         </button>
+        {/* 데이터를 어떻게 모으고 보는지 — 운영 화면을 예시 숫자로 구경(/demo/admin) */}
+        <Link
+          href='/demo/admin'
+          className='font-medium text-text-subtle underline underline-offset-4 hover:text-foreground'
+        >
+          운영 화면 구경
+        </Link>
       </div>
     </div>
   );
