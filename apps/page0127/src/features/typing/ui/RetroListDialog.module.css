@@ -4,6 +4,7 @@
   필사 창과 같은 고정색이라 다크 모드에서도 그대로다.
 */
 .trigger,
+.panel,
 .dialog {
   --win: #e2cfa9;
   --face: #ecdcbb;
@@ -147,6 +148,18 @@
   padding: 7px 10px;
   color: var(--list-on);
   user-select: none;
+}
+.rowText {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+}
+.desc {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.3;
+  opacity: 0.75;
 }
 .row small {
   flex: none;

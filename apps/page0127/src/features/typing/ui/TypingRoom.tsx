@@ -41,7 +41,7 @@ import {
   validateGuestNickname,
 } from '../model/guestNickname';
 import { PixelPicture } from './PixelPicture';
-import { RetroListDialog } from './RetroListDialog';
+import { RetroListDialog, RetroListPanel } from './RetroListDialog';
 
 import type { TypingSheet } from '@/entities/typing';
 
@@ -629,37 +629,29 @@ export const TypingRoom = ({
         <div className={s.main} data-started={started}>
           {!started ? (
             <div className={`${s.frame} ${s.raised}`}>
+              {/* 시작 화면 — 옛 타자 프로그램처럼 목록 창이 떠 있는 상태에서 방식을 고른다(HJ 2026-11-26) */}
               <div className={`${s.paper} ${s.menuPaper}`}>
-                <p className={s.menuTitle}>어떤 방식으로 써 볼까요?</p>
-                <div
-                  className={s.menu}
-                  role='group'
-                  aria-label='필사 방식 고르기'
-                >
-                  {MODES.map((m, i) => (
-                    <button
-                      key={m.key}
-                      type='button'
-                      className={s.menuItem}
-                      onClick={() =>
-                        goTo(
-                          m.key,
-                          m.key === 'famous' ? 0 : firstUnwrittenIndex(doneKeys)
-                        )
-                      }
-                    >
-                      <span className={s.menuNo}>{i + 1}</span>
-                      <span className={s.menuText}>
-                        <b>{m.label}</b>
-                        <span>
-                          {m.key === 'full' && doneKeys.size > 0
-                            ? `${FULL_SHEETS[firstUnwrittenIndex(doneKeys)].title}부터 이어서`
-                            : MODE_DESCRIPTIONS[m.key]}
-                        </span>
-                      </span>
-                    </button>
-                  ))}
-                </div>
+                <RetroListPanel
+                  className={s.startPanel}
+                  title='필사 방식 고르기'
+                  confirmLabel='시작'
+                  initial={0}
+                  items={MODES.map((m) => ({
+                    key: m.key,
+                    label: m.label,
+                    desc:
+                      m.key === 'full' && doneKeys.size > 0
+                        ? `${FULL_SHEETS[firstUnwrittenIndex(doneKeys)].title}부터 이어서`
+                        : MODE_DESCRIPTIONS[m.key],
+                  }))}
+                  onConfirm={(i) => {
+                    const key = MODES[i].key;
+                    goTo(
+                      key,
+                      key === 'famous' ? 0 : firstUnwrittenIndex(doneKeys)
+                    );
+                  }}
+                />
               </div>
             </div>
           ) : (

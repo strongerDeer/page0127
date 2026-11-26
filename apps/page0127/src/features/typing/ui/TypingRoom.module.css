@@ -35,8 +35,8 @@
     inset -1px -1px 0 var(--dk),
     inset 2px 2px 0 #f3e6c9,
     inset -2px -2px 0 var(--lo),
-    /* 바닥에 은은하게 깔리는 그림자(HJ: 단단한 그림자 X, 은은하게) */
-    0 1px 2px rgb(60 40 10 / 0.06),
+    /* 바닥에 은은하게 깔리는 그림자(HJ: 단단한 그림자 X, 은은하게) */ 0 1px 2px
+      rgb(60 40 10 / 0.06),
     0 24px 48px -28px rgb(60 40 10 / 0.28);
   color-scheme: light;
 }
@@ -575,99 +575,23 @@
   outline: none;
 }
 
-/* 시작 화면 — 옛 타자 프로그램 첫 메뉴처럼 번호 달린 세 방식(HJ 2026-11-26) */
+/* 시작 화면 — 빈 종이 위에 목록 창이 떠 있는 상태(HJ 2026-11-26) */
 .menuPaper {
   cursor: default;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: calc(4 * (2 * 1.6em + 20px) + 40px);
-}
-.menuTitle {
-  margin: 0 0 12px;
-  color: var(--src);
-  font-size: 15px;
-  font-weight: 700;
-}
-.menu {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.menuItem {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  cursor: pointer;
-  border: 0;
-  border-radius: 7px;
-  background: var(--face);
-  padding: 12px 14px;
-  color: var(--ink);
-  font-family: var(--font);
-  text-align: left;
-  box-shadow:
-    inset 1px 1px 0 var(--hi),
-    inset -1px -1px 0 var(--dk),
-    inset 2px 2px 0 #f3e6c9,
-    inset -2px -2px 0 var(--lo);
-}
-.menuItem {
-  transition:
-    transform 0.15s ease-out,
-    background-color 0.15s ease-out,
-    filter 0.15s ease-out;
-}
-.menuItem:hover {
-  background: #f6ecd4;
-  transform: translateY(-1px);
-  filter: drop-shadow(0 6px 10px rgb(60 40 10 / 0.12));
-}
-.menuItem:hover .menuNo {
-  background: var(--src);
-}
-.menuItem:hover .menuText b::after {
-  content: " ▸";
-  color: var(--src);
-}
-.menuItem:active {
-  transform: none;
-  filter: none;
-  box-shadow:
-    inset 1px 1px 0 var(--dk),
-    inset -1px -1px 0 var(--hi),
-    inset 2px 2px 0 var(--lo);
-}
-.menuItem:focus-visible {
-  outline: 2px dashed var(--navy);
-  outline-offset: 2px;
-}
-.menuNo {
-  transition: background-color 0.15s ease-out;
   display: grid;
-  flex: none;
   place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 7px;
-  background: var(--navy);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
+  min-height: 360px;
+  /* 뒤 종이는 살짝 눌러 팝업이 떠 보이게 */
+  background: color-mix(in srgb, var(--paper) 80%, var(--win));
 }
-.menuText {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 2px;
-}
-.menuText b {
-  font-size: 16px;
-}
-.menuText span {
-  color: var(--soft);
-  font-size: 13px;
+.startPanel {
+  width: min(100%, 460px);
+  box-shadow:
+    inset 1px 1px 0 #fff7e6,
+    inset -1px -1px 0 #6b5233,
+    inset 2px 2px 0 #f3e6c9,
+    inset -2px -2px 0 #a98b5f,
+    0 18px 36px -18px rgb(60 40 10 / 0.35);
 }
 
 /* 결과 창 — 랭킹 반영 안내·닉네임 입력 */
@@ -816,12 +740,3 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .menuItem,
-  .menuNo {
-    transition: none;
-  }
-  .menuItem:hover {
-    transform: none;
-  }
-}
