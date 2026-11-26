@@ -122,8 +122,10 @@ type LibraryViewProps = {
   sentenceDraws?: DailySentence[];
   /** 캘린더 오늘 패널에 넣을 것(주인: 오늘의 문장 펼치기) */
   calendarTodaySlot?: ReactNode;
-  /** 캘린더 패널 맨 아래(주인: 내가 모은 문장·주간 회상 링크) */
+  /** 캘린더 패널 맨 아래(주인: 내가 모은 문장 한 줄) */
   calendarFooterSlot?: ReactNode;
+  /** 달력 아래 완독 줄 오른쪽(주인: 문장 서랍·주간 회상 바로가기) */
+  calendarSummaryLinks?: ReactNode;
   /** 방문자 캘린더의 "N월에 모은 문장 N개" — 개수만 */
   sentenceMonthCounts?: SentenceMonthCounts;
   /** 해마다 정한 목표 — 연도별 완독 추이에 겹쳐 그린다 */
@@ -183,6 +185,7 @@ export const LibraryView = ({
   sentenceDraws = [],
   calendarTodaySlot,
   calendarFooterSlot,
+  calendarSummaryLinks,
   sentenceMonthCounts,
   readingGoals = [],
   badgeSlot,
@@ -396,6 +399,7 @@ export const LibraryView = ({
     bookHref,
     todaySlot: calendarTodaySlot,
     footerSlot: calendarFooterSlot,
+    summaryLinks: calendarSummaryLinks,
     sentenceMonthCounts,
   };
   // 빈 서재에서 오늘의 문장만 펼칠 때 쓰는 캘린더 — 월별 막대 없이 혼자 달을 들고 있다

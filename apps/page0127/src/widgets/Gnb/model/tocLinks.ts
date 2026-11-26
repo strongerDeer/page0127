@@ -31,13 +31,24 @@ export type TocGroups = {
 
 type GetTocGroupsParams = {
   isLoggedIn: boolean;
+  /** 로그인한 사람의 아이디 — 문장 서랍(/{username}/quotes) 주소에 쓴다 */
+  username?: string | null;
 };
 
 export const getTocGroups = ({
   isLoggedIn,
+  username = null,
 }: GetTocGroupsParams): TocGroups => ({
-  // 내 서재는 하단 탭바 첫 칸에 있어 목차엔 두지 않는다(2026-11-24 HJ, 메뉴 겹침 정리 A안)
-  account: isLoggedIn ? [{ href: '/settings', label: '설정' }] : [],
+  // 내 서재는 하단 탭바 첫 칸에 있어 목차엔 두지 않는다(2026-11-24 HJ, 메뉴 겹침 정리 A안).
+  // 문장 서랍은 서재 캘린더 아래까지 내려가야만 닿아서 여기에도 둔다(2026-11-26 HJ)
+  account: isLoggedIn
+    ? [
+        ...(username
+          ? [{ href: `/${username}/quotes`, label: '문장 서랍' }]
+          : []),
+        { href: '/settings', label: '설정' },
+      ]
+    : [],
   main: [
     { href: '/books/all', label: '전체 도서' },
     { href: '/blog', label: '책 이야기' },

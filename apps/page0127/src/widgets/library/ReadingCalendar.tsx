@@ -16,6 +16,7 @@ import {
 } from '@/entities/book';
 import { formatSentenceSource } from '@/entities/daily-sentence';
 
+import { CarrotSproutSvg } from '@/features/daily-sentence';
 import { CHART_COLORS } from '@/features/stats/model/balanceCopy';
 
 import type { Book, CalendarDay } from '@/entities/book';
@@ -49,8 +50,13 @@ type ReadingCalendarProps = {
    * 펼치기·애니메이션·서버 액션은 그 카드(features/daily-sentence)가 맡는다.
    */
   todaySlot?: ReactNode;
-  /** 패널 맨 아래 — 주인 서재의 내가 모은 문장 한 줄·주간 회상 링크 */
+  /** 패널 맨 아래 — 주인 서재의 내가 모은 문장 한 줄 */
   footerSlot?: ReactNode;
+  /**
+   * 달력 아래 "N월 N권 완독" 줄 오른쪽 — 주인 서재의 문장 서랍·주간 회상 바로가기.
+   * 패널 맨 아래 작은 회색 링크로는 잘 안 보여서 달력 바로 아래로 옮겼다(HJ, 2026-11-26)
+   */
+  summaryLinks?: ReactNode;
   /**
    * 방문자에게만 — 달마다 모은 문장 개수('YYYY-MM' → 개수).
    * 문장 글은 나만 보기라 개수만 서버에서 접어 넘긴다(HJ, 2026-11-24)
@@ -106,6 +112,7 @@ export const ReadingCalendar = ({
   sentenceDraws = [],
   todaySlot,
   footerSlot,
+  summaryLinks,
   sentenceMonthCounts,
 }: ReadingCalendarProps) => {
   const [ownView, ownDispatch] = useReducer(monthReducer, {
@@ -184,7 +191,7 @@ export const ReadingCalendar = ({
 
       {/* 넓은 화면: 왼쪽 달력 + 오른쪽 그날 패널 / 폰: 달력 아래에 패널 (HJ B안, 2026-11-10) */}
       <div className='mt-3 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]'>
-        <div className='min-w-0'>
+        <div className='flex min-w-0 flex-col'>
           {/* 월 칩 — 공개 완독이 있는 달에 점. 달마다 몇 권인지는 아래 월별 완독 카드가 막대로 보여 준다 */}
           <div className='grid grid-cols-12 gap-0.5'>
             {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => {
@@ -298,12 +305,10 @@ export const ReadingCalendar = ({
                     {day.day}
                   </span>
 
-                  {/* 오늘의 문장을 펼친 날 — 날짜 옆 작은 책갈피(서재 책갈피와 같은 민트) */}
+                  {/* 오늘의 문장을 뽑은 날 — 날짜 바로 옆에 당근 윗부분이 쏙(HJ, 2026-11-26 — 민트 책갈피 대신).
+                      칸 오른쪽 끝에 두면 다음 날 숫자 옆처럼 읽혀서 날짜 쪽에 붙였다. 폰은 칸이 좁아 숫자 아래 */}
                   {sentence && (
-                    <Bookmark
-                      aria-hidden
-                      className='absolute right-1 top-1 size-3 fill-current text-[var(--teal-500)]'
-                    />
+                    <CarrotSproutSvg className='absolute left-1 top-6 h-3.5 w-[19px] sm:left-7 sm:top-1.5 sm:h-4 sm:w-[22px]' />
                   )}
 
                   {/* 기간 막대 — 시작일을 적은 책만. 줄마다 3px */}
@@ -365,14 +370,18 @@ export const ReadingCalendar = ({
             })}
           </div>
 
-          <p className='mt-3 text-xs text-text-subtle'>
-            {view.month}월 <b className='text-text-strong'>{summary.count}권</b>{' '}
-            완독
-            {summary.pages > 0 && ` · ${summary.pages.toLocaleString()}쪽`}
-            {isOwner &&
-              summary.privateCount > 0 &&
-              ` · 그중 나만 보기 ${summary.privateCount}권`}
-          </p>
+          {/* 넓은 화면에서는 오른쪽 패널 맨 아래 줄과 같은 높이에 오도록 바닥에 붙이고 패널 안쪽 여백(p-4)만큼 띄운다 */}
+          <div className='mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 lg:mt-auto lg:pb-4 lg:pt-3'>
+            <p className='text-xs text-text-subtle'>
+              {view.month}월{' '}
+              <b className='text-text-strong'>{summary.count}권</b> 완독
+              {summary.pages > 0 && ` · ${summary.pages.toLocaleString()}쪽`}
+              {isOwner &&
+                summary.privateCount > 0 &&
+                ` · 그중 나만 보기 ${summary.privateCount}권`}
+            </p>
+            {summaryLinks}
+          </div>
         </div>
 
         <DayPanel

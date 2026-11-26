@@ -64,7 +64,10 @@ export const MobileTocMenu = ({ user }: MobileTocMenuProps) => {
     setOpen(false);
   }
 
-  const { account, main, daily, sub } = getTocGroups({ isLoggedIn });
+  const { account, main, daily, sub } = getTocGroups({
+    isLoggedIn,
+    username,
+  });
 
   const renderLink = (link: TocLink, size: 'main' | 'sub') => {
     const active = isTocLinkActive(pathname, link, username);
@@ -76,47 +79,46 @@ export const MobileTocMenu = ({ user }: MobileTocMenuProps) => {
             href={link.href}
             aria-current={active ? 'page' : undefined}
             onClick={() => setOpen(false)}
-          className={cn(
-            'relative flex items-center rounded-md px-3 transition-colors hover:bg-sunken',
-            size === 'main'
-              ? 'h-12 text-base text-text-strong'
-              : 'h-10 text-sm text-text-subtle hover:text-text-strong',
-            active && 'font-semibold text-text-strong'
-          )}
-        
+            className={cn(
+              'relative flex items-center rounded-md px-3 transition-colors hover:bg-sunken',
+              size === 'main'
+                ? 'h-12 text-base text-text-strong'
+                : 'h-10 text-sm text-text-subtle hover:text-text-strong',
+              active && 'font-semibold text-text-strong'
+            )}
           >
-          {/* 지금 페이지 표시 — 민트는 면이 아니라 점으로만 쓴다(브랜드 규칙) */}
-          {active && (
-            <span
-              aria-hidden='true'
-              className='absolute left-0 size-1.5 rounded-full bg-mint'
-            />
-          )}
-          {link.label}
+            {/* 지금 페이지 표시 — 민트는 면이 아니라 점으로만 쓴다(브랜드 규칙) */}
+            {active && (
+              <span
+                aria-hidden='true'
+                className='absolute left-0 size-1.5 rounded-full bg-mint'
+              />
+            )}
+            {link.label}
           </a>
         ) : (
-        <IntentPrefetchLink
-          href={link.href}
-          aria-current={active ? 'page' : undefined}
-          // 지금 페이지를 다시 누르면 주소가 안 바뀌어 위의 자동 닫기가 안 돈다 → 직접 닫는다
-          onClick={() => setOpen(false)}
-          className={cn(
-            'relative flex items-center rounded-md px-3 transition-colors hover:bg-sunken',
-            size === 'main'
-              ? 'h-12 text-base text-text-strong'
-              : 'h-10 text-sm text-text-subtle hover:text-text-strong',
-            active && 'font-semibold text-text-strong'
-          )}
-        >
-          {/* 지금 페이지 표시 — 민트는 면이 아니라 점으로만 쓴다(브랜드 규칙) */}
-          {active && (
-            <span
-              aria-hidden='true'
-              className='absolute left-0 size-1.5 rounded-full bg-mint'
-            />
-          )}
-          {link.label}
-        </IntentPrefetchLink>
+          <IntentPrefetchLink
+            href={link.href}
+            aria-current={active ? 'page' : undefined}
+            // 지금 페이지를 다시 누르면 주소가 안 바뀌어 위의 자동 닫기가 안 돈다 → 직접 닫는다
+            onClick={() => setOpen(false)}
+            className={cn(
+              'relative flex items-center rounded-md px-3 transition-colors hover:bg-sunken',
+              size === 'main'
+                ? 'h-12 text-base text-text-strong'
+                : 'h-10 text-sm text-text-subtle hover:text-text-strong',
+              active && 'font-semibold text-text-strong'
+            )}
+          >
+            {/* 지금 페이지 표시 — 민트는 면이 아니라 점으로만 쓴다(브랜드 규칙) */}
+            {active && (
+              <span
+                aria-hidden='true'
+                className='absolute left-0 size-1.5 rounded-full bg-mint'
+              />
+            )}
+            {link.label}
+          </IntentPrefetchLink>
         )}
       </li>
     );
