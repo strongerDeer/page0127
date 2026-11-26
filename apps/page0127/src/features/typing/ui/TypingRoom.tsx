@@ -29,14 +29,15 @@ import {
 } from '@/entities/typing';
 
 import {
-  finishGuestTypingAction,
-  startGuestTypingAction,
+  finishTypingAction,
+  startTypingAction,
   submitGuestTypingAction,
 } from '../api/guestTypingActions';
 import {
   recordTypingPageAction,
   setTypingRankOptInAction,
 } from '../api/typingActions';
+import { isAssistedInput } from '../lib/recordCheck';
 import {
   GUEST_NICKNAME_MAX,
   validateGuestNickname,
@@ -70,6 +71,10 @@ type Result = {
   cpm: number;
   accuracy: number;
   durationMs: number;
+  /** 친 글 — 비회원이 결과 창에서 올릴 때 서버가 정확도를 다시 센다 */
+  typed: string;
+  /** 자동 입력 흔적(가짜 이벤트·한 번에 여러 글자) — 랭킹엔 올리지 않는다 */
+  assisted: boolean;
   save: 'saving' | 'saved' | 'guest' | 'error';
   message?: string;
 };
@@ -128,12 +133,14 @@ export const TypingRoom = ({
     status: 'idle',
   });
   const [nickname, setNickname] = useState('');
-  // 비회원 토큰 — 첫 글자에 시작 토큰, 마지막 글자에 끝 토큰을 서버가 서명해 준다.
+  // 시간 토큰(회원·비회원) — 첫 글자에 시작 토큰, 마지막 글자에 끝 토큰을 서버가 서명해 준다.
   // 서버가 "첫 글자 ~ 마지막 글자"를 직접 재서 타수를 확인한다. 화면에 그리지 않으므로 ref, 응답을 기다리는 Promise 로 둔다
-  const guestTokenRef = useRef<{
+  const tokenRef = useRef<{
     key: string;
     token: Promise<string | null>;
   } | null>(null);
+  // 이번 쪽에서 자동 입력 흔적이 있었는가(HJ 2026-11-26 B안)
+  const assistedRef = useRef(false);
   // 시작 팝업 단계 — 방식 → 명문장·장 목록
   const [startStep, setStartStep] = useState<'mode' | 'famous' | 'chapter'>(
     'mode'
@@ -273,7 +280,8 @@ export const TypingRoom = ({
     setNow(0);
     setResult(null);
     setRankAction({ status: 'idle' });
-    guestTokenRef.current = null;
+    tokenRef.current = null;
+    assistedRef.current = false;
   };
 
   /** 결과 창 "종료" — 방식 고르는 시작 화면으로 돌아간다 */
@@ -305,7 +313,7 @@ export const TypingRoom = ({
       setRankAction({ status: 'error', message: check.message });
       return;
     }
-    const ticket = guestTokenRef.current;
+    const ticket = tokenRef.current;
     if (!ticket || ticket.key !== sheet.key) {
       setRankAction({
         status: 'error',
@@ -325,9 +333,11 @@ export const TypingRoom = ({
       }
       const res = await submitGuestTypingAction({
         token,
+        pageKey: ticket.key,
         nickname: check.nickname,
+        typed: result.typed,
         cpm: result.cpm,
-        accuracy: result.accuracy,
+        assisted: result.assisted,
       });
       if (!res.ok) {
         setRankAction({ status: 'error', message: res.message });
@@ -364,24 +374,30 @@ export const TypingRoom = ({
     const finalJudge = judgeTyping(finalValue, sheet.text, false);
     const finalAccuracy = accuracyOf(finalJudge);
     const finalCpm = strokesPerMinute(finalJudge.correctStrokes, durationMs);
-    const base = { cpm: finalCpm, accuracy: finalAccuracy, durationMs };
+    const assisted = assistedRef.current;
+    const base = {
+      cpm: finalCpm,
+      accuracy: finalAccuracy,
+      durationMs,
+      typed: finalValue,
+      assisted,
+    };
+
+    // 마지막 글자 순간을 서버에 찍어 둔다(결과 창에서 머무는 시간은 필사 시간이 아니다)
+    const ticket =
+      tokenRef.current?.key === sheet.key ? tokenRef.current : null;
+    const finished = ticket
+      ? ticket.token
+          .then((t) =>
+            t
+              ? finishTypingAction(t).then((r) => (r.ok ? r.token : null))
+              : null
+          )
+          .catch(() => null)
+      : Promise.resolve(null);
+    if (ticket) tokenRef.current = { key: ticket.key, token: finished };
 
     if (!memberId) {
-      // 마지막 글자 순간을 서버에 찍어 둔다(결과 창에서 머무는 시간은 필사 시간이 아니다)
-      const ticket = guestTokenRef.current;
-      if (ticket?.key === sheet.key)
-        guestTokenRef.current = {
-          key: ticket.key,
-          token: ticket.token
-            .then((t) =>
-              t
-                ? finishGuestTypingAction(t).then((r) =>
-                    r.ok ? r.token : null
-                  )
-                : null
-            )
-            .catch(() => null),
-        };
       setResult({ ...base, save: 'guest' });
       return;
     }
@@ -390,9 +406,11 @@ export const TypingRoom = ({
     startSaving(async () => {
       const saved = await recordTypingPageAction({
         pageKey: key,
+        token: await finished,
+        typed: finalValue,
         cpm: finalCpm,
-        accuracy: finalAccuracy,
         durationMs,
+        assisted,
       });
       if (saved.ok) {
         setDoneKeys((prev) => new Set(prev).add(key));
@@ -413,19 +431,26 @@ export const TypingRoom = ({
     if (startedAt === null && next.length > 0) {
       setStartedAt(t);
       setNow(t);
-      // 비회원: 첫 글자 순간을 서버에 찍어 둔다
-      if (!memberId) {
-        const key = sheet.key;
-        guestTokenRef.current = {
-          key,
-          token: startGuestTypingAction(key)
-            .then((r) => (r.ok ? r.token : null))
-            .catch(() => null),
-        };
-      }
+      // 첫 글자 순간을 서버에 찍어 둔다(회원·비회원 모두 — 서버가 타수를 확인한다)
+      const key = sheet.key;
+      tokenRef.current = {
+        key,
+        token: startTypingAction(key)
+          .then((r) => (r.ok ? r.token : null))
+          .catch(() => null),
+      };
     }
     const isComposing =
       (e.nativeEvent as InputEvent).isComposing === true || composing;
+    // 자동 입력 흔적 — 스크립트가 만든 이벤트이거나 조합 없이 한 번에 여러 글자가 들어왔다
+    if (
+      isAssistedInput({
+        trusted: e.nativeEvent.isTrusted,
+        composing: isComposing,
+        added: next.length - value.length,
+      })
+    )
+      assistedRef.current = true;
     setValue(next);
     if (!isComposing && next.length >= sheet.text.length)
       finish(next, t, startedAt ?? t);
@@ -882,7 +907,12 @@ export const TypingRoom = ({
                 {result.save === 'error' && (
                   <p>{result.message ?? '기록을 저장하지 못했어요.'}</p>
                 )}
-                {result.save === 'saved' && (
+                {/* 자동 입력 흔적이 있으면 순위 안내 대신 한 줄만(HJ 2026-11-26 B안) */}
+                {result.assisted &&
+                  (result.save === 'saved' || result.save === 'guest') && (
+                    <p>자동 입력이 있어 이번 기록은 랭킹에 안 올라가요.</p>
+                  )}
+                {result.save === 'saved' && !result.assisted && (
                   <MemberRankNote
                     optIn={optIn}
                     accuracy={result.accuracy}
@@ -893,7 +923,7 @@ export const TypingRoom = ({
                     onTurnOn={turnOnRank}
                   />
                 )}
-                {result.save === 'guest' && (
+                {result.save === 'guest' && !result.assisted && (
                   <GuestRankForm
                     accuracy={result.accuracy}
                     place={placeFor(speedRanking, result.cpm)}
