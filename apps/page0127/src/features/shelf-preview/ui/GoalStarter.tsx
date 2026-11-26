@@ -39,7 +39,7 @@ export const GoalStarter = () => {
   return (
     <div>
       <p className='break-keep text-sm font-medium text-text-body md:text-base'>
-        아직 읽은 책이 없나요? 올해 목표부터 같이 세워봐요!
+        아직 읽은 책이 없나요? 올해 목표부터 같이 세워 봐요.
       </p>
       <Button
         type='button'
