@@ -3,7 +3,8 @@
 import { useEffect } from 'react';
 
 import { ErrorFallback } from '@repo/ui';
-import * as Sentry from '@sentry/nextjs';
+
+import { captureClientException } from '@/shared/lib/sentry/clientSentry';
 
 import './globals.css';
 
@@ -36,7 +37,7 @@ const goHomeWithReload = () => {
 const GlobalError = ({ error, reset }: GlobalErrorProps) => {
   useEffect(() => {
     // layout 에러는 가장 치명적이라 반드시 Sentry로 전송 + 콘솔에도 남긴다
-    Sentry.captureException(error);
+    captureClientException(error);
     console.error('Global (root layout) Error:', error);
   }, [error]);
 

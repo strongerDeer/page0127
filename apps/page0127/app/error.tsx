@@ -3,7 +3,8 @@
 import { useEffect } from 'react';
 
 import { ErrorFallback } from '@repo/ui';
-import * as Sentry from '@sentry/nextjs';
+
+import { captureClientException } from '@/shared/lib/sentry/clientSentry';
 /**
  * 전역 에러 페이지 (Next.js 파일 규칙)
  *
@@ -37,7 +38,7 @@ const goHomeWithReload = () => {
 const Error = ({ error, reset }: ErrorProps) => {
   useEffect(() => {
     // 프로덕션 에러 추적: Sentry로 전송 + 로컬 콘솔에도 남긴다
-    Sentry.captureException(error);
+    captureClientException(error);
     console.error('Global Error:', error);
   }, [error]);
 
