@@ -14,7 +14,7 @@ export const SERVICE_NAME = 'page0127.';
 
 /** 정의 문장 — 메타 설명·JSON-LD·llms.txt 첫 줄에 그대로 쓴다 */
 export const SERVICE_DEFINITION =
-  'page0127.은 읽은 책을 기록하고, 쌓인 책장으로 AI 독서 취향 분석과 다음 책 추천을 받는 무료 웹 독서 기록 서비스입니다.';
+  'page0127.은 읽은 책으로 내 책장을 만들어 앱 설치 없이 링크 하나로 보여 주는 무료 웹 독서 기록 서비스입니다. 책장이 쌓이면 AI가 독서 취향을 분석하고 다음 책을 추천합니다.';
 
 export type ServiceFact = {
   label: string;

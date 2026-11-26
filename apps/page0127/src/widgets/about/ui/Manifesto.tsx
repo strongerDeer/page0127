@@ -2,10 +2,10 @@ import { toWords } from '../model/wordFill';
 
 const WORDS = toWords([
   {
-    text: '다 읽고 나면 기억은 흐려지고, 기록은 메모 앱에, SNS에, 사진첩에 흩어집니다. 그래서 ',
+    text: '다 읽고 나면 기억은 흐려지고, 기록은 메모 앱에, SNS에, 사진첩에 흩어져요. 그래서 ',
   },
-  { text: '한곳에 꽂아 두기로', key: true },
-  { text: ' 했어요.' },
+  { text: '내 서재에 꽂아', key: true },
+  { text: ' 나를 보여 주기로 했어요.' },
 ]);
 
 /**

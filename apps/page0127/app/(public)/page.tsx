@@ -88,7 +88,7 @@ const webSiteJsonLd = buildWebSiteJsonLd({
   name: 'page0127.',
   url: siteUrl,
   description:
-    '읽은 책을 한 권씩 기록하면 AI가 독서 취향을 분석하고 다음에 읽을 책을 추천해 주는 독서 기록 서비스',
+    '읽은 책으로 내 책장을 만들어 앱 설치 없이 링크 하나로 보여 주는 무료 웹 독서 기록 서비스',
 });
 
 // 브랜드 정보(JSON-LD) — sameAs로 공식 인스타그램 계정을 이 사이트와 같은 브랜드로 묶는다.
