@@ -14,6 +14,8 @@
  *    Sentry 가 다시 공통 청크로 들어온다. 클라이언트에서는 captureClientException 을 쓴다.
  */
 
+import { isDemoReadOnlyRejection } from '@/shared/config/sentryDemoFilter';
+
 type SentryModule = typeof import('./sentryBrowser');
 
 /** load 뒤 이 시간 안에 한가한 틈이 없어도 켠다 (너무 늦으면 오류를 놓친다) */
@@ -47,6 +49,10 @@ const initSentry = (Sentry: SentryModule) => {
     // 화면을 보지 않고 오류 이벤트만 쓴다. 오류 전송은 이 설정과 무관하게 그대로다.
     integrations: (defaults) =>
       defaults.filter((integration) => integration.name !== 'BrowserSession'),
+
+    // 체험 계정 쓰기 거절은 의도된 403 이라 이슈·알림으로 올리지 않는다(sentryDemoFilter 참고)
+    beforeSend: (event, hint) =>
+      isDemoReadOnlyRejection(hint.originalException) ? null : event,
   });
 };
 

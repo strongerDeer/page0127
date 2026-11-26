@@ -129,8 +129,12 @@ export const NotificationList = ({
       onClose?.();
       return;
     }
+    // 읽음 처리는 기다리지 않는다 — 실패해도(오프라인·체험 계정) 이동은 해야 한다.
+    // mutate 는 실패를 onError(토스트·캐시 되돌리기)로만 알리고 throw 하지 않는다.
+    // (예전 mutateAsync 는 실패하면 여기서 멈춰 이동을 안 했고, 아무도 catch 하지 않아
+    //  "처리 안 된 Promise 거절"로 Sentry 에 올라갔다 — 2026-11-26)
     if (!notification.is_read) {
-      await markAsReadMutation.mutateAsync(notification.id);
+      markAsReadMutation.mutate(notification.id);
     }
 
     // 알림 타입별 페이지 이동 — 갈 곳은 notificationHref 한 곳에서 정한다(푸시 클릭과 공유)
@@ -140,16 +144,17 @@ export const NotificationList = ({
     onClose?.();
   };
 
-  const handleMarkAllAsRead = async () => {
-    await markAllAsReadMutation.mutateAsync();
+  // 실패는 각 훅의 onError 가 토스트로 알린다 — 여기서 기다릴 이유가 없다
+  const handleMarkAllAsRead = () => {
+    markAllAsReadMutation.mutate();
   };
 
-  const handleDelete = async (notificationId: string) => {
-    await deleteNotificationMutation.mutateAsync(notificationId);
+  const handleDelete = (notificationId: string) => {
+    deleteNotificationMutation.mutate(notificationId);
   };
 
-  const handleMarkAsReadSingle = async (notificationId: string) => {
-    await markAsReadMutation.mutateAsync(notificationId);
+  const handleMarkAsReadSingle = (notificationId: string) => {
+    markAsReadMutation.mutate(notificationId);
   };
 
   const hasUnread = (unreadCount?.count ?? 0) > 0;
