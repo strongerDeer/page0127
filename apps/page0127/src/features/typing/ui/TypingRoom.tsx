@@ -116,6 +116,7 @@ export const TypingRoom = ({
   const router = useRouter();
   // 처음엔 방식 고르는 시작 화면. 하나를 고르면 바로 친다(HJ 2026-11-26)
   const [started, setStarted] = useState(false);
+  const windowRef = useRef<HTMLDivElement>(null);
   const [optIn, setOptIn] = useState(rankOptIn);
   const [rankAction, setRankAction] = useState<RankAction>({
     status: 'idle',
@@ -428,7 +429,20 @@ export const TypingRoom = ({
     if (next.length >= sheet.text.length) finish(next, t, startedAt ?? t);
   };
 
+  /** 필사 창을 화면 맨 위에 맞춘다 — 치는 동안 창 전체(원문·입력·상태 줄)가 한 화면에 보이게(HJ 2026-11-26) */
+  const fitWindowToScreen = () => {
+    const el = windowRef.current;
+    if (!el) return;
+    // 이미 위쪽에 거의 맞아 있으면 움직이지 않는다(다음 쪽마다 덜컹거리지 않게)
+    if (Math.abs(el.getBoundingClientRect().top - 24) < 48) return;
+    const reduce = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+    el.scrollIntoView({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+  };
+
   const goTo = (nextMode: Mode, index: number) => {
+    fitWindowToScreen();
     setStarted(true);
     setMode(nextMode);
     if (nextMode === 'famous') setFamousIndex(index);
@@ -472,7 +486,12 @@ export const TypingRoom = ({
         : '틀린 글자는 빨간 칸으로 보여요. 지우고 다시 쳐도 돼요.';
 
   return (
-    <div id='typing-room' className={s.window} data-started={started}>
+    <div
+      id='typing-room'
+      ref={windowRef}
+      className={s.window}
+      data-started={started}
+    >
       <div className={s.titlebar}>
         <svg viewBox='0 0 16 16' aria-hidden>
           <rect x='2' y='2' width='12' height='12' fill='#fff' />
