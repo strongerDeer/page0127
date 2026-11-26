@@ -74,11 +74,15 @@ describe('본문 데이터', () => {
 });
 
 describe('진행도', () => {
-  it('아무것도 안 썼으면 0%, 번역 전 장은 잠김', () => {
+  it('아무것도 안 썼으면 0%, 27장 모두 열려 있음', () => {
     const p = computeProgress(new Set());
     expect(p.percent).toBe(0);
     expect(p.chapters).toHaveLength(27);
-    expect(p.chapters[26]).toBe('locked');
+    expect(p.chapters.every((c) => c === 'none')).toBe(true);
+  });
+  it('전부 쓰면 100%', () => {
+    const p = computeProgress(new Set(FULL_SHEETS.map((s) => s.key)));
+    expect(p.percent).toBe(100);
   });
   it('1장을 다 쓰면 1장이 full, 2장 한 쪽만 쓰면 half', () => {
     const keys = new Set(
@@ -124,5 +128,20 @@ describe('splitLinesToFit', () => {
   it('한 낱말이 줄보다 길면 글자 단위로 자른다', () => {
     const lines = splitLinesToFit('가나다라마바사', (l) => l.length <= 3);
     expect(lines.map((l) => l.end - l.start)).toEqual([3, 3, 1]);
+  });
+});
+
+describe('본문 — 키보드로 칠 수 있는 글자만', () => {
+  // 한글 완성형 + 키보드에 있는 ASCII(공백·영문·숫자·" ' . , ? ! ( ) - 등)만 허용한다.
+  // 「」 “” … — 같은 문자는 자판으로 칠 수 없어 필사가 막힌다.
+  const TYPABLE = /^[가-힣\x20-\x7E]*$/;
+  const texts = [
+    ...FULL_SHEETS.map((s) => s.text),
+    ...FAMOUS_SHEETS.map((s) => s.text),
+  ];
+
+  it.each(texts.map((t) => [t.slice(0, 20), t]))('%s…', (_, text) => {
+    const bad = [...text].filter((ch) => !TYPABLE.test(ch));
+    expect(bad).toEqual([]);
   });
 });

@@ -7,7 +7,6 @@ import { buildFaqPageJsonLd } from '@/shared/lib/seo/structuredData';
 import { LITTLE_PRINCE_FAQ } from '@/entities/typing';
 
 import {
-  LittlePrinceCover,
   TypingBookIntro,
   TypingProgressCard,
   TypingRankingCard,
@@ -20,7 +19,7 @@ import type { Metadata } from 'next';
 /**
  * /typing/little-prince — 『어린 왕자』 온라인 필사 (HJ, 2026-11-25)
  *
- * 옛날 한글 타자 연습으로 쳐 보던 그 책을, 이번엔 필사로. 전문 이어 쓰기 · 장 고르기 · 명문장만.
+ * 옛날 한글 타자 연습으로 쳐 보던 그 책을, 이번엔 필사로. 명문장만(기본) · 전문 이어 쓰기 · 장 고르기.
  * 바깥(머리글·소개·진행도·랭킹)은 page0127. 디자인 그대로, 가운데 필사 창 하나만 레트로 프로그램 모양이다.
  * 오늘의 문장(/sentence)처럼 사이트 GNB 없이 전용 머리글만 둔다 — 이 페이지만 써도 되는 형태.
  *
@@ -31,7 +30,7 @@ const LOGIN_HREF = `/login?next=${encodeURIComponent(PATH)}`;
 
 const TITLE = '『어린 왕자』 온라인 필사 · 긴 글 타자 연습';
 const DESCRIPTION =
-  '『어린 왕자』를 한 쪽씩 따라 치는 온라인 필사이자 한글 긴 글 타자 연습이에요. 타수·정확도를 재고, 처음부터 이어 쓰기·장 고르기·명문장만 쓰기를 고를 수 있어요. 로그인하면 진행도와 랭킹이 남아요.';
+  '『어린 왕자』를 한 쪽씩 따라 치는 온라인 필사이자 한글 긴 글 타자 연습이에요. 타수·정확도를 재고, 명문장만 짧게 쓰거나, 처음부터 이어 쓰거나, 장을 골라 쓸 수 있어요. 로그인하면 진행도와 랭킹이 남아요.';
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
 export const metadata: Metadata = {
@@ -119,42 +118,39 @@ const TypingLittlePrincePage = async () => {
         </Link>
         <Link
           href={state.memberId ? (state.libraryHref ?? '/') : LOGIN_HREF}
-          className='rounded-lg px-2.5 py-1.5 text-sm text-text-subtle hover:bg-accent hover:text-text-strong'
+          className={
+            state.memberId
+              ? 'rounded-lg px-2.5 py-1.5 text-sm text-text-subtle hover:bg-accent hover:text-text-strong'
+              : 'rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90'
+          }
         >
           {state.memberId ? '내 서재' : '로그인'}
         </Link>
       </header>
 
       <main className='mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 pb-20 pt-8 sm:px-6 sm:pt-12'>
-        <section
-          className='relative overflow-hidden rounded-3xl border border-line-soft px-6 py-10 text-center sm:px-10 sm:py-12'
-          style={{
-            backgroundImage:
-              'linear-gradient(135deg, var(--tint-warm-from), var(--tint-warm-to))',
-          }}
-        >
-          <LittlePrinceCover />
-          <p className='mt-6 inline-flex rounded-full bg-card/80 px-3 py-1 text-xs font-bold text-primary'>
+        <section className='px-2 pt-2 text-center sm:pt-4'>
+          <p className='inline-flex rounded-full bg-accent px-3 py-1 text-xs font-bold text-primary'>
             키보드로 하는 필사 · 긴 글 타자 연습
           </p>
           <h1 className='mt-3 text-3xl font-bold leading-tight tracking-tight text-text-strong text-balance sm:text-4xl'>
             『어린 왕자』 온라인 필사
           </h1>
-          <p className='mx-auto mt-3 max-w-2xl text-base leading-relaxed text-text-body text-pretty'>
+          <p className='mx-auto mt-3 max-w-2xl break-keep text-base leading-relaxed text-text-body text-balance'>
             그때 그 타자 연습처럼, 이번엔 필사로. 파란 줄을 보고 바로 아래에
-            똑같이 따라 쳐 보세요. 처음부터 이어 써도, 장을 골라도, 명문장만
-            짧게 써도 좋아요.
+            똑같이 따라 쳐 보세요. 명문장 한 대목부터 가볍게 시작하고, 처음부터
+            이어 써도, 장을 골라 써도 좋아요.
           </p>
           <ul className='mt-5 flex flex-wrap justify-center gap-2 text-sm'>
             {[
-              '전문 27장 · 지금 1~6장 공개',
+              '전문 27장 모두 공개',
               '타수·정확도 측정',
               '쪽마다 도트 그림',
               '로그인하면 진행도·랭킹 기록',
             ].map((item) => (
               <li
                 key={item}
-                className='rounded-full border border-line-soft bg-card/70 px-3 py-1 text-text-body'
+                className='rounded-full border border-line-soft bg-card px-3 py-1 text-text-body'
               >
                 {item}
               </li>
@@ -183,12 +179,6 @@ const TypingLittlePrincePage = async () => {
         </div>
 
         <TypingBookIntro />
-
-        <p className='text-xs leading-relaxed text-text-subtle'>
-          본문은 앙투안 드 생텍쥐페리 『어린 왕자』(1943)예요. 원작은 한국에서
-          저작권 보호 기간이 끝났어요. 그림은 원작 삽화가 아닌 도트 그림이에요.
-          타수는 한글 자판을 누른 횟수(겹받침·이중모음은 2타)로 세요.
-        </p>
       </main>
     </div>
   );

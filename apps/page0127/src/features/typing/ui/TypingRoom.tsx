@@ -50,9 +50,9 @@ const VISIBLE_PAIRS = 4;
 const CPM_BAR_MAX = 600;
 
 const MODES: { key: Mode; label: string }[] = [
+  { key: 'famous', label: '명문장만' },
   { key: 'full', label: '전문 이어 쓰기' },
   { key: 'chapter', label: '장 고르기' },
-  { key: 'famous', label: '명문장만' },
 ];
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -80,7 +80,7 @@ export const TypingRoom = ({
 }) => {
   const router = useRouter();
   const [doneKeys, setDoneKeys] = useState(() => new Set(initialDoneKeys));
-  const [mode, setMode] = useState<Mode>('full');
+  const [mode, setMode] = useState<Mode>('famous'); // 기본은 짧은 명문장(HJ 2026-11-25);
   const [fullIndex, setFullIndex] = useState(() =>
     firstUnwrittenIndex(new Set(initialDoneKeys))
   );
@@ -102,6 +102,20 @@ export const TypingRoom = ({
   const [, startSaving] = useTransition();
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [focusTick, setFocusTick] = useState(0);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  const isResultOpen = result !== null;
+  // 결과 창이 뜨면 버튼이 아니라 창 자체에 포커스 — 치던 흐름의 스페이스가 버튼을 누르지 않게
+  useEffect(() => {
+    if (isResultOpen) dialogRef.current?.focus({ preventScroll: true });
+  }, [isResultOpen]);
+
+  // 쪽을 넘기거나 장·명문장을 고른 뒤 화면을 다시 누르지 않아도 바로 이어 치게
+  useEffect(() => {
+    if (focusTick === 0 || result) return;
+    inputRef.current?.focus({ preventScroll: true });
+  }, [focusTick, result]);
   const paperRef = useRef<HTMLDivElement>(null);
   const [perLine, setPerLine] = useState(26);
   // 실제 글꼴로 잰 "이 줄이 들어가나" 함수. 재기 전(서버 그림·첫 화면)에는 글자 수(perLine)로 어림한다.
@@ -279,7 +293,9 @@ export const TypingRoom = ({
     if (nextMode === 'famous') setFamousIndex(index);
     else setFullIndex(index);
     resetTyping();
-    inputRef.current?.focus();
+    // 결과 창이 떠 있는 동안 입력칸은 disabled 라 지금 focus() 하면 무시된다.
+    // 결과가 닫히고 다음 쪽이 그려진 뒤(아래 effect) 입력칸으로 커서를 돌려준다.
+    setFocusTick((n) => n + 1);
   };
 
   const goNext = () => {
@@ -385,7 +401,6 @@ export const TypingRoom = ({
                   );
                 })}
               </div>
-              <span>회색 칸은 준비 중이라 곧 공개돼요.</span>
             </>
           )}
           {mode === 'famous' && (
@@ -551,7 +566,7 @@ export const TypingRoom = ({
             className={s.btn}
             onClick={() => {
               resetTyping();
-              inputRef.current?.focus();
+              setFocusTick((n) => n + 1);
             }}
           >
             다 시
@@ -562,6 +577,16 @@ export const TypingRoom = ({
       {result && (
         <div className={s.dialogBackdrop}>
           <div
+            ref={dialogRef}
+            tabIndex={-1}
+            onKeyDown={(e) => {
+              // 창 자체에 포커스가 있을 때만 Enter 로 넘긴다(버튼 위 Enter 는 그 버튼 몫).
+              // 스페이스는 받지 않는다 — 마지막 글자 뒤 습관처럼 누른 띄어쓰기로 결과가 넘어가 버리지 않게.
+              if (e.key === 'Enter' && e.target === e.currentTarget) {
+                e.preventDefault();
+                goNext();
+              }
+            }}
             className={`${s.dialog} ${s.raised}`}
             role='dialog'
             aria-modal='true'
@@ -607,12 +632,17 @@ export const TypingRoom = ({
                 )}
               </p>
               <div className={s.dialogButtons}>
+                {result.save === 'guest' && (
+                  <Link href={loginHref} className={`${s.btn} ${s.btnLink}`}>
+                    로그인하고 기록 남기기
+                  </Link>
+                )}
                 <button
                   type='button'
                   className={s.btn}
                   onClick={() => {
                     resetTyping();
-                    inputRef.current?.focus();
+                    setFocusTick((n) => n + 1);
                   }}
                 >
                   다 시
@@ -621,9 +651,8 @@ export const TypingRoom = ({
                   type='button'
                   className={`${s.btn} ${s.btnMain}`}
                   onClick={goNext}
-                  autoFocus
                 >
-                  {mode === 'famous' ? '다음 문장' : '다음 쪽'}
+                  {mode === 'famous' ? '다음 문장' : '다음 쪽'} · Enter
                 </button>
               </div>
             </div>

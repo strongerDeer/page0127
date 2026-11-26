@@ -48,15 +48,18 @@ export const TypingProgressCard = ({
           </div>
         </>
       ) : (
-        <p className='rounded-xl bg-sunken px-4 py-5 text-sm text-text-body'>
+        <div className='rounded-xl bg-sunken px-4 py-5 text-sm text-text-body'>
+          <p>
+            로그인하면 다 쓴 쪽이 계정에 남아서, 폰과 PC 어디서든 이어 쓸 수
+            있어요.
+          </p>
           <Link
             href={loginHref}
-            className='font-bold text-primary underline-offset-4 hover:underline'
+            className='mt-3 inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90'
           >
-            로그인
+            로그인하고 이어 쓰기
           </Link>
-          하면 다 쓴 쪽이 계정에 남아서, 폰과 PC 어디서든 이어 쓸 수 있어요.
-        </p>
+        </div>
       )}
 
       <ol className='grid grid-cols-9 gap-1.5' aria-label='장별 진행'>
@@ -89,8 +92,7 @@ export const TypingProgressCard = ({
         ))}
       </ol>
       <p className='text-xs text-text-subtle'>
-        진한 칸은 다 쓴 장, 연한 칸은 쓰는 중인 장, 흐린 칸은 준비 중인
-        장이에요.
+        진한 칸은 다 쓴 장, 연한 칸은 쓰는 중인 장이에요.
       </p>
     </section>
   );

@@ -8,7 +8,11 @@ export type TypingPictureKey =
   | 'sheep2'
   | 'sheep3'
   | 'box'
-  | 'baobab';
+  | 'baobab'
+  | 'king'
+  | 'lamplighter'
+  | 'fox'
+  | 'well';
 
 export type TypingPage = {
   text: string;
