@@ -5,14 +5,15 @@ import { getTocGroups, isTocLinkActive } from './tocLinks';
 const hrefs = (links: { href: string }[]) => links.map((l) => l.href);
 
 describe('getTocGroups', () => {
-  it('로그인 안 한 방문자도 전체 도서·책 이야기·소개로 갈 수 있다', () => {
+  it('로그인 안 한 방문자도 전체 도서·책 이야기·소개와 하루 한 번 놀이로 갈 수 있다', () => {
     // 모바일에선 GnbNav 가 숨는다 — 목차가 없으면 이 세 곳은 푸터로만 닿았다(2026-11-23).
-    const { account, main, sub } = getTocGroups({
+    const { account, main, daily, sub } = getTocGroups({
       isLoggedIn: false,
     });
 
     expect(account).toEqual([]);
     expect(hrefs(main)).toEqual(['/books/all', '/blog', '/about']);
+    expect(hrefs(daily)).toEqual(['/sentence', '/typing/little-prince']);
     expect(hrefs(sub)).toEqual(['/updates', '/contact']);
   });
 

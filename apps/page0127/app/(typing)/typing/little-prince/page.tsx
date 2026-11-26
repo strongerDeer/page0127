@@ -1,6 +1,3 @@
-import Image from 'next/image';
-import Link from 'next/link';
-
 import { JsonLd } from '@/shared/lib/seo/JsonLd';
 import { buildFaqPageJsonLd } from '@/shared/lib/seo/structuredData';
 
@@ -13,6 +10,8 @@ import {
   TypingRoom,
 } from '@/features/typing';
 import { getTypingState } from '@/features/typing/api/getTypingState';
+
+import { StandaloneShell } from '@/widgets/StandaloneShell';
 
 import type { Metadata } from 'next';
 
@@ -95,39 +94,14 @@ const TypingLittlePrincePage = async () => {
   const doneKeys = state.records.map((r) => r.page_key);
 
   return (
-    <div className='min-h-svh bg-background'>
+    <StandaloneShell
+      title='온라인 필사'
+      loginHref={LOGIN_HREF}
+      emphasizeLogin
+      bodyClassName='bg-background'
+    >
       <JsonLd data={pageJsonLd} />
       <JsonLd data={faqJsonLd} />
-      <header className='relative z-10 flex items-center justify-between gap-3 border-b border-line-soft bg-card px-4 py-3 sm:px-6'>
-        <Link
-          href='/'
-          className='flex items-center gap-2.5 text-text-strong'
-          aria-label='page0127 홈으로'
-        >
-          <Image
-            src='/brand/app-icon-96.webp'
-            alt=''
-            width={28}
-            height={28}
-            unoptimized
-            className='size-7'
-          />
-          <span className='text-lg font-bold text-primary'>page0127.</span>
-          <span aria-hidden className='h-4 w-px bg-line-soft' />
-          <span className='text-base font-bold'>온라인 필사</span>
-        </Link>
-        <Link
-          href={state.memberId ? (state.libraryHref ?? '/') : LOGIN_HREF}
-          className={
-            state.memberId
-              ? 'rounded-lg px-2.5 py-1.5 text-sm text-text-subtle hover:bg-accent hover:text-text-strong'
-              : 'rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground hover:bg-primary/90'
-          }
-        >
-          {state.memberId ? '내 서재' : '로그인'}
-        </Link>
-      </header>
-
       <main className='mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 pb-20 pt-8 sm:px-6 sm:pt-12'>
         <section className='px-2 pt-2 text-center sm:pt-4'>
           <p className='inline-flex rounded-full bg-accent px-3 py-1 text-xs font-bold text-primary'>
@@ -180,7 +154,7 @@ const TypingLittlePrincePage = async () => {
 
         <TypingBookIntro />
       </main>
-    </div>
+    </StandaloneShell>
   );
 };
 

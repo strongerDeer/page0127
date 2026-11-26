@@ -64,7 +64,7 @@ export const MobileTocMenu = ({ user }: MobileTocMenuProps) => {
     setOpen(false);
   }
 
-  const { account, main, sub } = getTocGroups({ isLoggedIn });
+  const { account, main, daily, sub } = getTocGroups({ isLoggedIn });
 
   const renderLink = (link: TocLink, size: 'main' | 'sub') => {
     const active = isTocLinkActive(pathname, link, username);
@@ -155,6 +155,18 @@ export const MobileTocMenu = ({ user }: MobileTocMenuProps) => {
               </div>
             )}
             <ul>{main.map((link) => renderLink(link, 'main'))}</ul>
+            {/* 하루 한 번 하는 놀이 묶음 — 이름표로 묶음임을 알린다(2026-11-26 HJ C안) */}
+            <div className='border-t border-line pt-4'>
+              <p
+                id='toc-daily'
+                className='mb-1 px-3 text-xs font-semibold text-text-subtle'
+              >
+                하루 한 번
+              </p>
+              <ul aria-labelledby='toc-daily'>
+                {daily.map((link) => renderLink(link, 'main'))}
+              </ul>
+            </div>
             <ul className='border-t border-line pt-4'>
               {sub.map((link) => renderLink(link, 'sub'))}
             </ul>

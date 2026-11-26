@@ -17,6 +17,8 @@ export type TocGroups = {
   account: TocLink[];
   /** 누구에게나 — 둘러볼 곳 */
   main: TocLink[];
+  /** 누구에게나 — 하루 한 번 하는 놀이(오늘의 문장·온라인 필사, 2026-11-26 HJ C안) */
+  daily: TocLink[];
   /** 작게 — 자주 안 가지만 찾을 수 있어야 하는 곳 */
   sub: TocLink[];
 };
@@ -34,6 +36,12 @@ export const getTocGroups = ({
     { href: '/books/all', label: '전체 도서' },
     { href: '/blog', label: '책 이야기' },
     { href: '/about', label: '서비스 소개' },
+  ],
+  // PC 상단 메뉴엔 넣지 않는다 — 로그인하면 7칸이 돼 768~1024px 에서 검색창이 너무 줄어든다.
+  // PC 는 홈 당근·서재 배너·푸터로 들어간다. 목차에서 /sentence 를 누르면 서재 배너처럼 모달로 뜬다.
+  daily: [
+    { href: '/sentence', label: '오늘의 문장 뽑기' },
+    { href: '/typing/little-prince', label: '어린 왕자 온라인 필사' },
   ],
   sub: [
     { href: '/updates', label: '공지·업데이트' },
