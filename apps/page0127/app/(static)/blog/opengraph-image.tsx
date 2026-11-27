@@ -1,7 +1,7 @@
 import { renderOg } from '@/shared/lib/og/render';
 import {
-  CROP_TOP,
-  STAGE_GUTTER,
+  OBJECT_TOP,
+  STAGE_CENTER,
   StageCard,
   StageCrop,
   StageSlogan,
@@ -10,7 +10,7 @@ import { OG_SIZE } from '@/shared/lib/og/theme';
 
 // 책 이야기(/blog) 공유 그림 (2026-11-27)
 //
-// 홈과 같은 틀(파란 무대 + 왼쪽 슬로건 + 흰 띠)에서 오른쪽에 **인물 관계도 한 장**을 크게 세운다
+// 홈과 같은 틀(파란 무대 + 위 가운데 슬로건 + 흰 띠)에서 슬로건 아래 가운데에 **인물 관계도 한 장**을 세운다
 // (HJ 2026-11-27 "인물 관계도 이미지로, 참고 이미지 심플하게"). 첫 글 『대온실 수리 보고서』 관계도를
 // 동그라미·선·관계 이름표 자리만 남겼다. 글자는 모두 빼고 스켈레톤(막대)으로 —
 // 작아서 안 읽히는 이름보다 "관계도 모양"이 먼저 읽히게(HJ 2026-11-27 "실제 텍스트는 빼고 스켈레톤").
@@ -21,7 +21,8 @@ export const alt = '책 이야기 | page0127.';
 export const size = OG_SIZE;
 export const contentType = 'image/png';
 
-const PAPER = { width: 470, height: 600 } as const;
+/** 서재 창(LibraryWindow)과 같은 폭 */
+const PAPER = { width: 414, height: 600 } as const;
 /** 색은 파랑 한 갈래만 — 종이는 흰색, 사람은 옅은 파랑, 주인공만 한 단계 진하게 */
 const PAPER_BG = '#ffffff';
 const NODE = '#d6e6fd';
@@ -42,11 +43,11 @@ type Person = {
  * (HJ 2026-11-27 "여백 고려, 다이어그램 좀 더 단순하게, 컬러 단순화"). 관계 이름표·무리 색면은 뺐다.
  */
 const PEOPLE: readonly Person[] = [
-  { x: 235, y: 205, r: 44, main: true },
-  { x: 105, y: 150, r: 30 },
-  { x: 365, y: 150, r: 30 },
-  { x: 105, y: 290, r: 30 },
-  { x: 365, y: 290, r: 30 },
+  { x: 207, y: 185, r: 40, main: true },
+  { x: 92, y: 135, r: 27 },
+  { x: 322, y: 135, r: 27 },
+  { x: 92, y: 260, r: 27 },
+  { x: 322, y: 260, r: 27 },
 ];
 
 const Node = ({ p }: { p: Person }) => (
@@ -89,8 +90,8 @@ const RelationMap = () => (
     style={{
       display: 'flex',
       position: 'absolute',
-      right: STAGE_GUTTER,
-      top: CROP_TOP,
+      left: STAGE_CENTER - PAPER.width / 2,
+      top: OBJECT_TOP,
       width: PAPER.width,
       height: PAPER.height,
       borderRadius: 18,
@@ -127,7 +128,7 @@ const RelationMap = () => (
         display: 'flex',
         position: 'absolute',
         left: 0,
-        top: 44,
+        top: 38,
         width: PAPER.width,
         justifyContent: 'center',
       }}

@@ -1,16 +1,18 @@
 import { BrandSymbol } from '@/shared/lib/brand/BrandSymbol';
 import { renderOg } from '@/shared/lib/og/render';
 import {
-  STAGE_GUTTER,
+  OBJECT_TOP,
+  STAGE_CENTER,
   STAGE_HEIGHT,
   StageCard,
+  StageSlogan,
 } from '@/shared/lib/og/StageCard';
-import { OG_COLORS, OG_SIZE } from '@/shared/lib/og/theme';
+import { OG_SIZE } from '@/shared/lib/og/theme';
 
 // 오늘의 문장(/sentence) 링크 미리보기 (2026-11-27)
 //
-// 홈 카드(BrandStage)와 같은 틀 — 파란 무대 + 왼쪽 슬로건 + 흰 띠 — 에서
-// 오른쪽 책 무리 대신 **랜딩의 당근 꽂힌 책**(크림 문고판 + 위로 삐죽 나온 당근)을 세운다(HJ 2026-11-27).
+// 홈 카드(BrandStage)와 같은 틀 — 파란 무대 + 위 가운데 슬로건 + 흰 띠 — 에서
+// 슬로건 아래 가운데에 **랜딩의 당근 꽂힌 책**(크림 문고판 + 위로 삐죽 나온 당근)을 세운다(HJ 2026-11-27).
 // 받는 사람이 미리보기만 보고도 "책에서 당근을 뽑는 곳"으로 알아보게.
 // 랜딩 표지(SentenceBook.module.css)의 색·문구를 옮겼다. 책은 크게 키워 윗부분만 보이고, 아래는 무대 바닥선(흰 띠)에서 잘린다.
 // runtime 을 지정하지 않는다(= Node.js) — 이유는 app/opengraph-image.tsx 참조.
@@ -20,18 +22,16 @@ export const size = OG_SIZE;
 export const contentType = 'image/png';
 
 /**
- * 책을 확대해 윗부분만 보여 준다(HJ 2026-11-27 "확대해서, 흰 띠에서 잘리게").
- * 책 아래쪽은 무대 바닥선(흰 띠 경계)에서 잘린다 — 표지 윗부분 + 당근만 크게 보인다.
+ * 책 윗부분만 보여 준다(HJ 2026-11-27 "흰 띠에서 잘리게").
+ * 책 아래쪽은 무대 바닥선(흰 띠 경계)에서 잘린다. 가운데 정렬로 바꾸며 1.5 → 1.08배(전체 0.8배 기준).
  */
-const SCALE = 1.5;
+const SCALE = 1.08;
 /** 문고판 판형(3:4) — 무대보다 길어서 아래가 잘린다 */
 const BOOK = { width: 300 * SCALE, height: 400 * SCALE } as const;
-/** 책 윗변 — 무대 위에서부터. 위로 당근 머리가 들어갈 자리를 남긴다 */
-const BOOK_TOP = 130;
-/** 책 오른쪽 끝 — 흰 띠 워드마크의 오른쪽 선과 맞춘다 */
-const BOOK_RIGHT = STAGE_GUTTER;
 /** 당근 — 책 위 오른쪽에서 몸통 절반이 책 뒤로 숨는다 */
 const CARROT = { width: 84 * SCALE, height: 137 * SCALE } as const;
+/** 책 윗변 — 당근 머리 끝이 다른 카드 그림의 윗변(OBJECT_TOP)쯤에 오게 */
+const BOOK_TOP = OBJECT_TOP - 10 + CARROT.height / 2;
 
 const COLORS = {
   cream: '#f6efe2',
@@ -96,7 +96,7 @@ const CarrotBook = () => (
       style={{
         display: 'flex',
         position: 'absolute',
-        right: BOOK_RIGHT,
+        left: STAGE_CENTER - BOOK.width / 2,
         top: BOOK_TOP - CARROT.height / 2,
         width: BOOK.width,
         height: BOOK.height + CARROT.height / 2,
@@ -197,26 +197,7 @@ const CarrotBook = () => (
 const Image = () =>
   renderOg(
     <StageCard cta='오늘의 문장 뽑기'>
-      {/* 슬로건 — 왼쪽, 무대 안에서 세로 가운데. 홈 카드(BrandStage)와 같은 자리·크기 */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          position: 'absolute',
-          left: STAGE_GUTTER,
-          top: 0,
-          height: STAGE_HEIGHT,
-          fontSize: 80,
-          fontWeight: 800,
-          color: OG_COLORS.paper,
-          letterSpacing: -2.5,
-          lineHeight: 1.2,
-        }}
-      >
-        <div>당근을 뽑으면,</div>
-        <div>오늘의 한 문장</div>
-      </div>
+      <StageSlogan lines={['당근을 뽑으면,', '오늘의 한 문장']} />
       <CarrotBook />
     </StageCard>
   );

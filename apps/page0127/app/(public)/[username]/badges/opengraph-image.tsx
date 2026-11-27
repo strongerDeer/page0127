@@ -31,9 +31,9 @@ const readBadge = (n: number) =>
  * satori 는 회전한 요소를 overflow 로 자르지 못해 모서리가 흰 띠로 삐져나온다.
  */
 const BOOKS = [
-  { n: 2, w: 250, h: 333, left: 560, top: 190 },
-  { n: 3, w: 250, h: 333, left: 890, top: 190 },
-  { n: 1, w: 300, h: 400, left: 700, top: 120 },
+  { n: 2, w: 180, h: 240, left: 392, top: 286 },
+  { n: 3, w: 180, h: 240, left: 628, top: 286 },
+  { n: 1, w: 216, h: 288, left: 492, top: 236 },
 ] as const;
 
 const Image = () =>

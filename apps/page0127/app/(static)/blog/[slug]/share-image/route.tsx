@@ -3,7 +3,6 @@ import { renderOg } from '@/shared/lib/og/render';
 import {
   BrandStage,
   FeatureStage,
-  STAGE_GUTTER,
   STAGE_HEIGHT,
   STAGE_TEXT_SOFT,
   StageBookTitle,
@@ -49,7 +48,7 @@ const CTA_TALK = '독서 이야기 읽기';
 
 /** 무대 위 사람 10명 — satori 는 SVG 부분 채우기가 불안해 칸마다 둥근 막대로 그린다 */
 const PeopleRow = ({ filled }: { filled: number }) => (
-  <div style={{ display: 'flex', marginTop: 36 }}>
+  <div style={{ display: 'flex', marginTop: 28 }}>
     {Array.from({ length: 10 }, (_, index) => {
       const ratio = Math.max(0, Math.min(1, filled - index));
       return (
@@ -57,10 +56,10 @@ const PeopleRow = ({ filled }: { filled: number }) => (
           key={index}
           style={{
             display: 'flex',
-            width: 44,
-            height: 74,
-            marginRight: index === 9 ? 0 : 12,
-            borderRadius: '22px 22px 8px 8px',
+            width: 35,
+            height: 59,
+            marginRight: index === 9 ? 0 : 10,
+            borderRadius: '18px 18px 6px 6px',
             background: 'rgba(255, 255, 255, 0.25)',
             overflow: 'hidden',
           }}
@@ -68,7 +67,7 @@ const PeopleRow = ({ filled }: { filled: number }) => (
           <div
             style={{
               display: 'flex',
-              width: 44 * ratio,
+              width: 35 * ratio,
               height: '100%',
               background: OG_COLORS.paper,
             }}
@@ -85,9 +84,11 @@ const StatStage = ({ stat }: { stat: StoryLeadStat }) => (
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
+      alignItems: 'center',
       position: 'absolute',
-      left: STAGE_GUTTER,
+      left: 0,
       top: 0,
+      width: '100%',
       height: STAGE_HEIGHT,
       color: OG_COLORS.paper,
     }}
@@ -96,7 +97,7 @@ const StatStage = ({ stat }: { stat: StoryLeadStat }) => (
       <div
         style={{
           display: 'flex',
-          fontSize: 150,
+          fontSize: 120,
           fontWeight: 800,
           lineHeight: 1,
           letterSpacing: -4,
@@ -108,8 +109,8 @@ const StatStage = ({ stat }: { stat: StoryLeadStat }) => (
         style={{
           display: 'flex',
           marginLeft: 8,
-          marginBottom: 14,
-          fontSize: 56,
+          marginBottom: 11,
+          fontSize: 45,
           fontWeight: 700,
         }}
       >
@@ -120,8 +121,8 @@ const StatStage = ({ stat }: { stat: StoryLeadStat }) => (
       <div
         style={{
           display: 'flex',
-          marginTop: 18,
-          fontSize: 34,
+          marginTop: 14,
+          fontSize: 27,
           fontWeight: 500,
           color: STAGE_TEXT_SOFT,
         }}

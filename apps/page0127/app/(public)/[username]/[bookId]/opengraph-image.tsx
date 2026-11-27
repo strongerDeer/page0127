@@ -36,7 +36,7 @@ type Props = {
 /** 폭 기준 상한 (한글 글자 수). 한줄평은 글자 칸에서 두 줄 안쪽이다 */
 /** 한줄평 한 줄 폭(한글 글자 수) — 글자 칸 784px ÷ 50px. 세 줄까지 고르게, 넘치면 말줄임 */
 const REVIEW_LINE_WIDTH = 15;
-const REVIEW_LINES = 3;
+const REVIEW_LINES = 2;
 const NAME_MAX_WIDTH = 10;
 
 const Image = async ({ params }: Props) => {
@@ -77,7 +77,7 @@ const Image = async ({ params }: Props) => {
             {score !== null ? (
               <RatingStars
                 score={score}
-                size={48}
+                size={34}
                 onColor={OG_COLORS.paper}
                 offColor='rgba(255, 255, 255, 0.3)'
               />
@@ -86,13 +86,13 @@ const Image = async ({ params }: Props) => {
               <div
                 style={{
                   display: 'flex',
-                  marginLeft: rated ? 18 : 0,
-                  padding: '6px 18px',
+                  marginLeft: rated ? 12 : 0,
+                  padding: '4px 14px',
                   borderRadius: 999,
                   // brand/accent — 카드에서 유일한 비(非)블루라 "특별하다"가 색으로 읽힌다
                   background: OG_COLORS.mint,
                   color: OG_COLORS.ink,
-                  fontSize: 28,
+                  fontSize: 22,
                   fontWeight: 700,
                 }}
               >
@@ -107,12 +107,13 @@ const Image = async ({ params }: Props) => {
             style={{
               display: 'flex',
               flexDirection: 'column',
-              marginTop: hasBadgeRow ? 28 : 0,
+              alignItems: 'center',
+              marginTop: hasBadgeRow ? 14 : 0,
               width: FEATURE_COLUMN_WIDTH,
-              fontSize: 50,
+              fontSize: 40,
               fontWeight: 800,
-              letterSpacing: -1,
-              lineHeight: 1.35,
+              letterSpacing: -0.8,
+              lineHeight: 1.3,
             }}
           >
             {balancedWrap(`“${review}”`, REVIEW_LINE_WIDTH, REVIEW_LINES).map(
@@ -128,7 +129,7 @@ const Image = async ({ params }: Props) => {
           <StageBookTitle
             title={book.title}
             author={book.author}
-            marginTop={hasBadgeRow ? 28 : 0}
+            marginTop={hasBadgeRow ? 14 : 0}
           />
         )}
       </FeatureStage>
