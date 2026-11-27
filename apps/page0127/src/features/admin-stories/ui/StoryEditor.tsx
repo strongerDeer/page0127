@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -13,6 +13,7 @@ import {
   StoryMarkdown,
   storyPath,
 } from '@/entities/story';
+import { withImageSize } from '@/entities/story/model/bodyImage';
 
 import { BookPicker } from '@/features/admin-sentences/ui/BookPicker';
 
@@ -81,6 +82,7 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
   );
   const [uploading, setUploading] = useState(false);
   const [tab, setTab] = useState<'write' | 'preview'>('write');
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
 
   const [book, setBook] = useState<BookState>(
     story?.bookId
@@ -108,6 +110,9 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
   const [coverImage, setCoverImage] = useState<StoryImage | null>(
     story?.coverImage ?? null
   );
+  const [shareImage, setShareImage] = useState<StoryImage | null>(
+    story?.shareImage ?? null
+  );
   const [coverPosition, setCoverPosition] = useState(
     story?.coverPosition ?? DEFAULT_COVER_POSITION
   );
@@ -122,13 +127,15 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
 
   const onUpload = async (
     files: FileList | null,
-    target: 'map' | 'cards' | 'cover'
+    target: 'map' | 'cards' | 'cover' | 'share'
   ) => {
     if (!files?.length) return;
     setUploading(true);
     setMessage(null);
     try {
-      if (target === 'cover') {
+      if (target === 'share') {
+        setShareImage(await uploadStoryImageFile(files[0], title));
+      } else if (target === 'cover') {
         const image = await uploadStoryImageFile(
           files[0],
           coverImage?.alt || title
@@ -166,6 +173,40 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
     }
   };
 
+  /**
+   * 본문 "그림 넣기" — 올린 뒤 커서 자리에 마크다운 그림 한 줄을 넣는다.
+   * 앞뒤에 빈 줄을 둬서 그림이 문단 사이에 따로 선다. 주소 끝 #가로x세로 는 자리 잡기용(CLS).
+   */
+  const onInsertBodyImage = async (files: FileList | null) => {
+    const file = files?.[0];
+    if (!file) return;
+    // 업로드를 기다리는 사이 커서가 움직여도 누른 순간의 자리에 넣는다
+    const at = bodyRef.current?.selectionStart ?? body.length;
+    setUploading(true);
+    setMessage(null);
+    try {
+      const image = await uploadStoryImageFile(file, '');
+      const line = `![그림 설명](${withImageSize(image.src, image)} "캡션(없으면 지우기)")`;
+      setBody((current) => {
+        const before = current.slice(0, at).replace(/\s*$/, '');
+        const after = current.slice(at).replace(/^\s*/, '');
+        return [before, line, after].filter(Boolean).join('\n\n');
+      });
+      setMessage({
+        ok: true,
+        text: '그림을 넣었어요. "그림 설명"과 "캡션"을 고쳐 주세요.',
+      });
+    } catch (error) {
+      setMessage({
+        ok: false,
+        text:
+          error instanceof Error ? error.message : '그림을 올리지 못했어요.',
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const onSave = () => {
     const input: StoryInput = {
       id: story?.id,
@@ -179,6 +220,7 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
       mapImage,
       mapCards,
       coverImage,
+      shareImage: coverImage ? shareImage : null,
       coverPosition,
       isReview,
       charactersText,
@@ -366,12 +408,16 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
       {/* 대표 이미지 */}
       <CoverImageField
         image={coverImage}
+        shareImage={shareImage}
+        onShareUpload={(files) => void onUpload(files, 'share')}
+        onShareRemove={() => setShareImage(null)}
         position={coverPosition}
         busy={busy}
         uploading={uploading}
         onUpload={(files) => void onUpload(files, 'cover')}
         onRemove={() => {
           setCoverImage(null);
+          setShareImage(null);
           setCoverPosition(DEFAULT_COVER_POSITION);
         }}
         onAltChange={(alt) =>
@@ -408,6 +454,26 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
           빈 줄로 문단을 나눠요. ## 소제목, &gt; 인용, **굵게**, - 목록.
           결말·인물의 정체는 쓰지 않기(스포일러 없음).
         </p>
+        <div className='flex flex-wrap items-center gap-2'>
+          <label className='inline-flex cursor-pointer items-center gap-1 rounded-md border border-line px-3 py-1.5 text-xs hover:bg-accent'>
+            <ImagePlus className='size-3.5' aria-hidden />
+            그림 넣기
+            <input
+              type='file'
+              accept='image/png,image/webp,image/jpeg'
+              className='sr-only'
+              disabled={busy}
+              onChange={(e) => {
+                void onInsertBodyImage(e.target.files);
+                e.target.value = '';
+              }}
+            />
+          </label>
+          <span className={HINT}>
+            쓰기 칸에서 커서를 둔 자리에 들어가요. 그림 설명(alt)은 검색·화면
+            읽기에, 따옴표 안 캡션은 그림 아래 작은 글씨로 나와요.
+          </span>
+        </div>
         <p className={HINT}>
           차트: ```chart 블록에
           type(number·people·bar·column·slope·shelf·age-table·my-record)과 값을
@@ -428,6 +494,7 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
         </p>
         <div className='grid gap-4 lg:grid-cols-2'>
           <textarea
+            ref={bodyRef}
             value={body}
             onChange={(e) => setBody(e.target.value)}
             rows={20}

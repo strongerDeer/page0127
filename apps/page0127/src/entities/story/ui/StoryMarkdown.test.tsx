@@ -96,3 +96,27 @@ describe('StoryMarkdown 책장 차트', () => {
     expect(html).toContain('민트 책등');
   });
 });
+
+describe('StoryMarkdown 본문 그림', () => {
+  it('허용 주소 그림은 크기·캡션과 함께, <p> 안에서도 올바른 태그로 그린다', () => {
+    const html = render(
+      '글\n\n![키보드 위의 책](/images/stories/typing/desk.webp#1200x630 "타자 연습 그때 그 화면")'
+    );
+    expect(html).toContain(
+      '<img src="/images/stories/typing/desk.webp#1200x630"'
+    );
+    expect(html).toContain('alt="키보드 위의 책"');
+    expect(html).toContain('width="1200"');
+    expect(html).toContain('height="630"');
+    expect(html).toContain('타자 연습 그때 그 화면');
+    expect(html).not.toMatch(/<p>[^]*<(figure|div)/);
+  });
+
+  it('다른 주소 그림은 공개 페이지에서 그리지 않고, 미리보기에서는 이유를 보여 준다', () => {
+    const body = '![x](https://evil.com/track.png)';
+    expect(render(body)).not.toContain('<img');
+    const preview = render(body, { preview: true });
+    expect(preview).not.toContain('<img');
+    expect(preview).toContain('공개 페이지에 나오지 않아요');
+  });
+});

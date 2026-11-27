@@ -3,6 +3,7 @@ import ReactMarkdown, {
   type ExtraProps,
 } from 'react-markdown';
 
+import { isAllowedImageSrc, readImageSize } from '../model/bodyImage';
 import { parseChartBlock } from '../model/chartBlock';
 import {
   AgeTableChart,
@@ -92,8 +93,57 @@ const headingComponents = (level: 2 | 3): Components => {
   };
 };
 
-/** 본문에 그림은 넣지 않는다 — 그림은 관계도·카드 칸으로 올린다(크기·alt 를 관리할 수 있게) */
-const DISALLOWED = ['img'];
+/**
+ * 본문 그림(HJ 2026-11-27 A안) — 어드민 "그림 넣기"가 `![설명](버킷 주소#가로x세로 "캡션")` 을 넣는다.
+ *
+ * - 허용 주소(우리 버킷·public/images/stories)만 그린다. 다른 주소는 아무것도 그리지 않는다
+ *   (어드민 미리보기에서는 왜 안 보이는지 알려 준다). 저장 검사도 같은 함수로 막는다.
+ * - 마크다운 그림은 <p> 안에 들어간다. <figure>·<div> 는 <p> 안에 둘 수 없어(하이드레이션 경고)
+ *   겉을 block 으로 바꾼 <span> 으로 감싼다.
+ * - 주소 끝 #가로x세로 로 width/height 를 줘서, 그림이 뜨기 전에 자리를 잡는다(CLS 0).
+ * - next/image 를 쓰지 않는다 — 이미 줄여 올린 파일이라 변환이 필요 없고(이미지 최적화 한도 X), 크기를 모르는 그림도 있다.
+ */
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+const StoryImage = ({
+  src,
+  alt,
+  title,
+  preview,
+}: {
+  src?: unknown;
+  alt?: string;
+  title?: string;
+  preview: boolean;
+}) => {
+  const url = typeof src === 'string' ? src : '';
+  if (!isAllowedImageSrc(url, SUPABASE_URL))
+    return preview ? (
+      <span className='mt-6 block rounded-lg border border-dashed border-destructive p-3 text-sm text-destructive'>
+        이 그림은 공개 페이지에 나오지 않아요 — &quot;그림 넣기&quot;로 올린
+        그림만 보여요.
+      </span>
+    ) : null;
+  const size = readImageSize(url);
+  return (
+    <span className='mt-8 mb-2 block'>
+      {/* eslint-disable-next-line @next/next/no-img-element -- 위 설명: 미리 줄인 파일, 변환 안 씀 */}
+      <img
+        src={url}
+        alt={alt ?? ''}
+        {...(size ?? {})}
+        loading='lazy'
+        decoding='async'
+        className='mx-auto block h-auto max-w-full rounded-xl border border-line-soft'
+      />
+      {title && (
+        <span className='mt-2 block text-center text-sm break-keep text-text-subtle'>
+          {title}
+        </span>
+      )}
+    </span>
+  );
+};
 
 /** ```chart 코드 블록이면 그 안의 글자, 아니면 null */
 const chartSource = (node: ExtraProps['node']): string | null => {
@@ -142,6 +192,9 @@ export const StoryMarkdown = ({
   const withCharts: Components = {
     ...components,
     ...headingComponents(headingLevel),
+    img: ({ src, alt, title }) => (
+      <StoryImage src={src} alt={alt} title={title} preview={preview} />
+    ),
     pre: ({ node, children }) => {
       const source = chartSource(node);
       if (source === null)
@@ -178,9 +231,5 @@ export const StoryMarkdown = ({
     },
   };
 
-  return (
-    <ReactMarkdown components={withCharts} disallowedElements={DISALLOWED}>
-      {body}
-    </ReactMarkdown>
-  );
+  return <ReactMarkdown components={withCharts}>{body}</ReactMarkdown>;
 };

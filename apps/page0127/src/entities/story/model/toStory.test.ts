@@ -94,4 +94,27 @@ describe('toStory', () => {
         .coverPosition
     ).toBe('50% 50%');
   });
+
+  it('공유용 그림은 cover_image.share 에서 읽는다', () => {
+    const share = {
+      src: '/images/stories/s.webp',
+      width: 1200,
+      height: 630,
+      alt: '',
+    };
+    const story = toStory({
+      ...row,
+      map_image: null,
+      cover_image: {
+        src: '/images/stories/c.webp',
+        width: 10,
+        height: 10,
+        alt: '',
+        share,
+      },
+    });
+    expect(story.shareImage).toEqual(share);
+    expect(story.coverImage?.src).toBe('/images/stories/c.webp');
+    expect(toStory({ ...row, map_image: null }).shareImage).toBeNull();
+  });
 });

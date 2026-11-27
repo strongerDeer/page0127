@@ -1,4 +1,8 @@
 import {
+  findBodyImageSrcs,
+  isAllowedImageSrc,
+} from '@/entities/story/model/bodyImage';
+import {
   extractChartBlocks,
   findLeadStat,
   parseChartBlock,
@@ -17,7 +21,11 @@ import type {
  * 저장 전에 같은 메시지를 보여 준다.
  */
 
-export const STORY_IMAGE_BUCKET = 'story-images';
+// 그림 주소 규칙은 공개 페이지 본문 그림과 같이 쓰려고 entities 로 옮겼다(2026-11-27)
+export {
+  isAllowedImageSrc,
+  STORY_IMAGE_BUCKET,
+} from '@/entities/story/model/bodyImage';
 
 /** 클라이언트 → 서버 액션으로 보내는 값 */
 export type StoryInput = {
@@ -36,6 +44,8 @@ export type StoryInput = {
   mapCards: StoryImage[];
   /** 대표 이미지 — 목록 썸네일·공유 미리보기 */
   coverImage: StoryImage | null;
+  /** 공유 미리보기 전용 가로 그림 — 대표 이미지가 있을 때만 */
+  shareImage?: StoryImage | null;
   /** 목록 정사각형 썸네일에서 보일 곳 "가로% 세로%" */
   coverPosition: string;
   /** 책을 연결한 글이 독후감인가 — 책 없는 글은 저장할 때 true 로 둔다(뜻 없음) */
@@ -53,7 +63,8 @@ export type ValidStory = {
   rating: number;
   map_image: StoryImage | null;
   map_cards: StoryImage[];
-  cover_image: StoryImage | null;
+  /** 대표 이미지 + 공유 그림(share) — 새 DB 칸 없이 jsonb 안에 함께 둔다 */
+  cover_image: (StoryImage & { share?: StoryImage }) | null;
   cover_position: string;
   is_review: boolean;
   characters: StoryCharacterGroup[];
@@ -81,22 +92,6 @@ export const validateSlug = (slug: string): string | null => {
   if (!SLUG.test(slug))
     return '주소는 영문 소문자·숫자와 하이픈(-)만 쓸 수 있어요. 예: daeonsil-repair-report';
   return null;
-};
-
-/**
- * 그림 주소는 두 곳만 받는다 — 이 화면에서 올린 story-images 버킷, 리포의 public/images/stories.
- * 아무 외부 주소나 공개 페이지에 뜨지 않게 하고, 늘 미리 줄인 파일만 그리게 한다(변환 한도 X).
- */
-export const isAllowedImageSrc = (
-  src: string,
-  supabaseUrl: string | undefined
-): boolean => {
-  if (/^\/images\/stories\/[a-z0-9/_-]+\.(webp|png|jpe?g)$/i.test(src))
-    return true;
-  if (!supabaseUrl) return false;
-  return src.startsWith(
-    `${supabaseUrl}/storage/v1/object/public/${STORY_IMAGE_BUCKET}/`
-  );
 };
 
 const toSize = (value: unknown) =>
@@ -224,6 +219,14 @@ export const validateStoryInput = (
     return { ok: false, message: '본문이 너무 길어요.' };
   const chartError = validateChartBlocks(body);
   if (chartError) return { ok: false, message: chartError };
+  // 본문 그림은 "그림 넣기"로 올린 것만 — 공개 페이지는 다른 주소를 그리지 않으므로 저장 때 알려 준다
+  if (
+    findBodyImageSrcs(body).some((src) => !isAllowedImageSrc(src, supabaseUrl))
+  )
+    return {
+      ok: false,
+      message: '본문 그림은 "그림 넣기" 버튼으로 올린 것만 쓸 수 있어요.',
+    };
 
   const rating = Number(input.rating);
   if (!Number.isInteger(rating) || rating < 0 || rating > 5)
@@ -256,6 +259,17 @@ export const validateStoryInput = (
     if (!checked.ok) return checked;
     coverImage = checked.value;
   }
+  let shareImage: StoryImage | null = null;
+  if (input.shareImage) {
+    if (!coverImage)
+      return {
+        ok: false,
+        message: '공유용 그림은 대표 이미지가 있을 때만 쓸 수 있어요.',
+      };
+    const checked = sanitizeImage(input.shareImage, supabaseUrl, title);
+    if (!checked.ok) return checked;
+    shareImage = checked.value;
+  }
   const coverPosition = input.coverPosition?.trim() || '50% 50%';
   if (!COVER_POSITION.test(coverPosition))
     return { ok: false, message: '대표 이미지 위치를 다시 골라 주세요.' };
@@ -276,7 +290,9 @@ export const validateStoryInput = (
       rating: bookTitle ? rating : 0,
       map_image: mapImage,
       map_cards: mapCards,
-      cover_image: coverImage,
+      cover_image: coverImage
+        ? { ...coverImage, ...(shareImage ? { share: shareImage } : {}) }
+        : null,
       cover_position: coverPosition,
       // 책 없는 글은 종류를 고르지 않는다 — 기본값(true)으로 둬서 나중에 책을 붙이면 독후감부터
       is_review: bookTitle ? input.isReview !== false : true,
