@@ -17,11 +17,20 @@ import {
 import { toCoverSource } from '@/entities/book';
 import { getPersonalityColor } from '@/entities/taste-analysis/model/personalityTypes';
 
+import { ShareSheetButton } from '@/features/share';
+
 import { TasteEvidenceList } from './TasteEvidenceList';
 import { TasteHistoryTrail } from './TasteHistoryTrail';
 
 import type { TasteAnalysisWithRecommendations } from '@/entities/taste-analysis/types';
 import type { ComponentProps } from 'react';
+
+/** 공유 이미지를 그리는 동안 — 근거 책 표지를 받아 그려서 1~2초 걸린다 */
+const TASTE_LOADING = {
+  title: '취향 분석 이미지를 그리고 있어요',
+  wait: '성향과 근거 책을 옮겨 적는 중…',
+  slow: '책 표지를 하나씩 붙이는 중이에요. 조금만 기다려 주세요.',
+};
 
 type TasteAnalysisResultProps = {
   analysis: TasteAnalysisWithRecommendations;
@@ -116,6 +125,20 @@ export const TasteAnalysisResult = ({
               <TasteEvidenceList evidence={evidence} />
             </div>
           )}
+          {/* 공유 — 이미지는 성향·설명 첫 문장·공개 근거 책 3권(HJ B안, 2026-11-27).
+              이 화면은 본인만 열리므로 링크는 내 서재로 보낸다(서재 머리 카드에 같은 성향이 보인다) */}
+          <div className='mt-6 flex justify-center border-t border-line-soft pt-5'>
+            <ShareSheetButton
+              path={`/${username}`}
+              imagePath={`/dashboard/taste-analysis/${analysis.id}/story-image`}
+              fileName={`page0127-taste-${username}.png`}
+              title={`${personality_type} · AI 독서 성향`}
+              sheetTitle='취향 분석 공유하기'
+              triggerLabel='취향 분석 공유하기'
+              loadingMessages={TASTE_LOADING}
+              description='이미지에는 공개한 책만 담겨요. 링크는 내 서재로 가요.'
+            />
+          </div>
         </CardContent>
       </Card>
 

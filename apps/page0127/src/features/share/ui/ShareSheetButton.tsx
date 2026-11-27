@@ -17,6 +17,8 @@ import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import { ShareButton } from './ShareButton';
 
+import type { ReactNode } from 'react';
+
 type ShareSheetButtonProps = {
   /**
    * 공유할 페이지 경로 — 링크 공유에 쓴다.
@@ -41,6 +43,11 @@ type ShareSheetButtonProps = {
   compact?: boolean;
   /** 시트 설명 — 기본은 이미지·링크 둘 다 있을 때의 문구 */
   description?: string;
+  /**
+   * 버튼을 직접 그릴 때 — 오늘의 문장처럼 화면만의 버튼 모양(종이 위 알약)이 따로 있는 곳.
+   * 받은 open 을 누를 때 부르면 같은 시트가 열린다. 주면 triggerLabel·prominent·compact 는 쓰지 않는다.
+   */
+  renderTrigger?: (open: () => void) => ReactNode;
 };
 
 type LoadingMessages = {
@@ -116,6 +123,7 @@ export const ShareSheetButton = ({
   prominent = false,
   compact = false,
   description = '이미지는 스토리·게시물에, 링크는 메시지로 보내기 좋아요.',
+  renderTrigger,
 }: ShareSheetButtonProps) => {
   // 지표의 path — 링크가 없는 공유(문장 카드)는 이미지 경로로 센다
   const trackPath = path ?? imagePath;
@@ -205,7 +213,9 @@ export const ShareSheetButton = ({
 
   return (
     <>
-      {triggerLabel ? (
+      {renderTrigger ? (
+        renderTrigger(() => setOpen(true))
+      ) : triggerLabel ? (
         <Button
           variant={prominent ? 'secondary' : 'outline'}
           size={prominent ? 'lg' : 'sm'}

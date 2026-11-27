@@ -12,11 +12,14 @@ import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import { dailyScore, formatSentenceSource } from '@/entities/daily-sentence';
+
+import { ShareSheetButton } from '@/features/share';
 
 import { useDailySentenceDraw } from '../model/useDailySentenceDraw';
 import { CarrotSvg } from './CarrotSvg';
@@ -59,6 +62,13 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const prefersReducedMotion = () =>
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/** 공유 이미지를 그리는 동안 — 문장 한 장이라 금방 끝난다 */
+const SENTENCE_LOADING = {
+  title: '오늘의 문장을 옮겨 적고 있어요',
+  wait: '종이에 문장을 적는 중…',
+  slow: '당근을 꽂는 중이에요. 조금만 기다려 주세요.',
+};
 
 /** 점수 구간 색 — 90↑ 브랜드 파랑, 80대 민트, 70대 보라 */
 const scoreTone = (value: number) =>
@@ -530,6 +540,29 @@ export const SentenceBook = ({
                       ? '복사가 막혔어요'
                       : '문장 복사'}
                 </button>
+                {/* 공유 — 이미지 주소는 문장 번호 + 점수 + 날짜(HJ A안). 글자는 서버가 번호로 읽는다.
+                    링크는 /sentence — 받은 사람이 자기 문장을 뽑는다(내 결과 화면이 아니다) */}
+                {score && (
+                  <ShareSheetButton
+                    path='/sentence'
+                    imagePath={`/sentence/story-image?id=${result.sentence.sentence_id}&score=${score.total}&d=${todayKey}`}
+                    fileName={`page0127-sentence-${todayKey}.png`}
+                    title='오늘의 문장'
+                    sheetTitle='오늘의 문장 공유하기'
+                    loadingMessages={SENTENCE_LOADING}
+                    description='이미지는 스토리에, 링크는 친구가 자기 문장을 뽑아 보기 좋아요.'
+                    renderTrigger={(openSheet) => (
+                      <button
+                        type='button'
+                        className={styles.pill}
+                        onClick={openSheet}
+                      >
+                        <Share2 aria-hidden className='size-3.5' />
+                        공유
+                      </button>
+                    )}
+                  />
+                )}
                 {result.bookHref && (
                   <Link
                     className={styles.pill}
