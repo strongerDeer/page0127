@@ -39,10 +39,32 @@ export type CheerStoryCardProps = {
 };
 
 /**
+ * 흰 선 무늬 한 장(1080×1920) — 화면의 96px 무늬 칸을 2.2배로 키워 깐다.
+ * satori 는 CSS mask 를 못 그려서, 가림(위는 투명 → 아래로 보이게)까지 SVG 안에서 한다.
+ */
+const PATTERN_TILE =
+  "<path d='M20 10v16M12 18h16M14.5 12.5l11 11M25.5 12.5l-11 11'/>" +
+  "<path d='M70 52l9 15H61z' stroke-linejoin='round'/>" +
+  "<path d='M70 67v4'/><path d='M76 14v8M72 18h8'/><path d='M26 66v8M22 70h8'/>" +
+  "<circle cx='50' cy='32' r='1.4' fill='#fff'/><circle cx='8' cy='46' r='1.2' fill='#fff'/>" +
+  "<circle cx='46' cy='86' r='1.4' fill='#fff'/><circle cx='90' cy='88' r='1.2' fill='#fff'/>";
+
+export const CHEER_PATTERN_SRC = `data:image/svg+xml;utf8,${encodeURIComponent(
+  `<svg xmlns='http://www.w3.org/2000/svg' width='${STORY_SIZE.width}' height='${STORY_SIZE.height}'>` +
+    "<defs><pattern id='p' width='96' height='96' patternUnits='userSpaceOnUse' patternTransform='scale(2.2)'>" +
+    `<g fill='none' stroke='#fff' stroke-width='1.6' stroke-linecap='round'>${PATTERN_TILE}</g></pattern>` +
+    "<linearGradient id='g' x1='0' y1='0' x2='0' y2='1'>" +
+    "<stop offset='0.24' stop-color='#fff' stop-opacity='0'/><stop offset='0.5' stop-color='#fff' stop-opacity='1'/>" +
+    "</linearGradient><mask id='m'><rect width='100%' height='100%' fill='url(#g)'/></mask></defs>" +
+    "<rect width='100%' height='100%' fill='url(#p)' mask='url(#m)' opacity='0.15'/></svg>"
+)}`;
+
+/**
  * 연말 응원 카드 스토리 이미지 (1080×1920) — 시안 v3 를 이미지로.
  *
- * 파란 무대 + 맨 아래 빨강·흰 띠 + 종이 카드. 무늬는 넣지 않는다 — 인스타가 이미지를 한 번 더
- * 압축하면 옅은 선 무늬는 얼룩처럼 보인다. 위아래 250px 안전 영역은 다른 스토리 카드와 같다.
+ * 파란 무대 + 은은한 흰 선 무늬 + 맨 아래 빨강·흰 띠 + 종이 카드. 위아래 250px 안전 영역은 다른 스토리 카드와 같다.
+ * 무늬는 화면(CheerScene.module.css .stage::before)과 같은 그림·같은 규칙이다 — 위 24% 는 비우고
+ * 아래로 갈수록 보이게(HJ 시안 v3 확정, 11/27 "은은하게 배경 깔기로 했잖아"). 글자 뒤라 진하게 하지 않는다.
  */
 export const CheerStoryCard = ({
   year,
@@ -69,6 +91,15 @@ export const CheerStoryCard = ({
         fontFamily: 'Pretendard',
       }}
     >
+      {/* 은은한 흰 선 무늬 — 맨 뒤에 깐다 */}
+      {/* eslint-disable-next-line @next/next/no-img-element -- satori 는 img 만 그린다 */}
+      <img
+        src={CHEER_PATTERN_SRC}
+        width={STORY_SIZE.width}
+        height={STORY_SIZE.height}
+        alt=''
+        style={{ position: 'absolute', top: 0, left: 0 }}
+      />
       {/* 윗줄 */}
       <div
         style={{
