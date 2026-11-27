@@ -64,4 +64,34 @@ describe('toStory', () => {
       toStory({ ...row, map_image: null, lead_stat: { value: 'x' } }).leadStat
     ).toBeNull();
   });
+
+  it('대표 이미지·위치·글 종류 — 없으면 기본값(마이그레이션 전 행도 그대로)', () => {
+    const story = toStory({ ...row, map_image: null });
+    expect(story.coverImage).toBeNull();
+    expect(story.coverPosition).toBe('50% 50%');
+    expect(story.isReview).toBe(true);
+  });
+
+  it('대표 이미지·위치를 읽고, 틀린 위치는 가운데로', () => {
+    const cover = {
+      src: '/images/stories/c.webp',
+      width: 1200,
+      height: 630,
+      alt: '표지',
+    };
+    const story = toStory({
+      ...row,
+      map_image: null,
+      cover_image: cover,
+      cover_position: '20% 0%',
+      is_review: false,
+    });
+    expect(story.coverImage).toEqual(cover);
+    expect(story.coverPosition).toBe('20% 0%');
+    expect(story.isReview).toBe(false);
+    expect(
+      toStory({ ...row, map_image: null, cover_position: 'left; color: red' })
+        .coverPosition
+    ).toBe('50% 50%');
+  });
 });

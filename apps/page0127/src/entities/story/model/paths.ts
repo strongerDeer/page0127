@@ -42,6 +42,17 @@ export const formatStoryShortDate = (iso: string) => {
   return parts.replaceAll('-', '.');
 };
 
-/** 목록·공유 카드의 글 종류 — 따로 칸을 두지 않고 "책이 연결됐나"로 가른다(HJ 2026-11-24) */
-export const storyKindLabel = (story: { bookId: string | null }) =>
-  story.bookId ? '책 한 권' : '독서 이야기';
+/**
+ * 책 한 권의 독후감인가 — 책이 연결됐고, 독후감으로 고른 글(HJ 2026-11-27).
+ * 책을 연결해도 필사 소개처럼 독후감이 아닌 글은 "독서 이야기"다.
+ */
+export const isBookReview = (story: {
+  bookId: string | null;
+  isReview: boolean;
+}) => Boolean(story.bookId) && story.isReview;
+
+/** 목록·공유 카드의 글 종류 */
+export const storyKindLabel = (story: {
+  bookId: string | null;
+  isReview: boolean;
+}) => (isBookReview(story) ? '책 한 권' : '독서 이야기');

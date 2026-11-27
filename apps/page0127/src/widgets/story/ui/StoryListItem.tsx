@@ -13,8 +13,9 @@ import type { StorySummary } from '@/entities/story';
 /**
  * 책 이야기 목록 한 줄 (리스트형, HJ 2026-11-24) — 제목·소개·날짜가 주인공.
  *
- * 썸네일을 따로 만들지 않는다. 오른쪽 작은 그림은 글에 이미 있는 것에서 고른다:
- *   ① 관계도 그림 윗부분  ② 본문 첫 차트의 큰 숫자(lead_stat)  ③ 둘 다 없으면 칸 없음
+ * 오른쪽 작은 그림은 이 순서로 고른다:
+ *   ① 대표 이미지(어드민에서 고른 위치로 정사각형 자르기, HJ 2026-11-27)
+ *   ② 관계도 그림 윗부분  ③ 본문 첫 차트의 큰 숫자(lead_stat)  ④ 모두 없으면 칸 없음
  */
 const SIDE =
   'size-[84px] shrink-0 overflow-hidden rounded-xl border border-line-soft sm:size-28';
@@ -90,7 +91,20 @@ export const StoryListItem = ({
         )}
         <p className='text-sm text-text-subtle'>{meta}</p>
       </div>
-      {story.mapImage ? (
+      {story.coverImage ? (
+        <div className={SIDE}>
+          <Image
+            src={story.coverImage.src}
+            width={story.coverImage.width}
+            height={story.coverImage.height}
+            alt=''
+            unoptimized
+            className='size-full object-cover'
+            // 위치는 DB CHECK·toCoverPosition 이 "가로% 세로%"만 통과시킨 값이다
+            style={{ objectPosition: story.coverPosition }}
+          />
+        </div>
+      ) : story.mapImage ? (
         <div className={SIDE}>
           <Image
             src={story.mapImage.src}

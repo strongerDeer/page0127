@@ -1,3 +1,4 @@
+import { loadImage } from '@/shared/lib/og/loadImage';
 import { renderOg } from '@/shared/lib/og/render';
 import {
   BrandStage,
@@ -8,8 +9,9 @@ import {
   StageBookTitle,
   StageCard,
 } from '@/shared/lib/og/StageCard';
-import { OG_COLORS, truncate } from '@/shared/lib/og/theme';
+import { OG_COLORS, OG_SIZE, truncate } from '@/shared/lib/og/theme';
 
+import { absoluteImageUrl } from '@/entities/story';
 import { formatChartValue } from '@/entities/story/model/chartBlock';
 import { getPublishedStory } from '@/entities/story/server';
 
@@ -26,6 +28,7 @@ import type { StoryLeadStat } from '@/entities/story';
 //
 // 다른 공유 카드와 같은 "파란 무대 + 흰 띠" 틀을 쓴다. 카톡은 이미지 아래에 글 제목을 또 보여 주므로
 // 무대에는 제목 대신 그 아래에 없는 것을 세운다:
+//   대표 이미지  → 그 그림을 카드 전체에 그대로(가운데 기준으로 1200×630 에 맞춰 자른다, HJ 2026-11-27)
 //   책 한 권 글  → 책 표지 + 책 제목·저자
 //   독서 이야기  → 본문 첫 차트의 큰 숫자(38.5%)와 사람 그림
 //   둘 다 없으면 → 브랜드 카드
@@ -38,6 +41,8 @@ import type { StoryLeadStat } from '@/entities/story';
 type Context = {
   params: Promise<{ slug: string }>;
 };
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
 const CTA_BOOK = '책 이야기 읽기';
 const CTA_TALK = '독서 이야기 읽기';
@@ -136,6 +141,28 @@ export const GET = async (_request: Request, { params }: Context) => {
   });
 
   if (!story) return renderOg(<BrandStage cta={CTA_BOOK} />);
+
+  // 대표 이미지 — 받아서 data URI 로 넘긴다(업로드한 WEBP 도 이 카드는 PNG 로 나가 카톡이 읽는다).
+  // 못 받으면 loadImage 가 null 을 주고 아래 자동 그림으로 넘어간다(공유 미리보기가 비지 않게)
+  if (story.coverImage) {
+    const cover = await loadImage(
+      absoluteImageUrl(story.coverImage.src, siteUrl)
+    );
+    if (cover)
+      return renderOg(
+        <div style={{ display: 'flex', width: '100%', height: '100%' }}>
+          {/* satori 는 next/image 를 렌더하지 못한다 — 이 파일은 브라우저로 나가지 않는다 */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={cover.src}
+            alt=''
+            width={OG_SIZE.width}
+            height={OG_SIZE.height}
+            style={{ objectFit: 'cover' }}
+          />
+        </div>
+      );
+  }
 
   if (story.bookId) {
     const book = await getStoryBook(story.bookId);

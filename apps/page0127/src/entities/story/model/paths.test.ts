@@ -4,6 +4,8 @@ import {
   absoluteImageUrl,
   formatStoryDate,
   formatStoryShortDate,
+  isBookReview,
+  storyKindLabel,
   storyShareImagePath,
 } from './paths';
 
@@ -36,5 +38,25 @@ describe('storyShareImagePath', () => {
 
   it('시각을 못 읽으면 버전 없이', () => {
     expect(storyShareImagePath('a', '')).toBe('/blog/a/share-image');
+  });
+});
+
+describe('글 종류', () => {
+  it('책을 연결한 독후감만 "책 한 권"', () => {
+    expect(storyKindLabel({ bookId: 'b', isReview: true })).toBe('책 한 권');
+    expect(isBookReview({ bookId: 'b', isReview: true })).toBe(true);
+  });
+
+  it('책을 연결해도 독후감이 아니면 "독서 이야기"(필사 소개 글)', () => {
+    expect(storyKindLabel({ bookId: 'b', isReview: false })).toBe(
+      '독서 이야기'
+    );
+    expect(isBookReview({ bookId: 'b', isReview: false })).toBe(false);
+  });
+
+  it('책 없는 글은 늘 "독서 이야기"', () => {
+    expect(storyKindLabel({ bookId: null, isReview: true })).toBe(
+      '독서 이야기'
+    );
   });
 });

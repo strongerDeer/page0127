@@ -3,11 +3,17 @@ export {
   absoluteImageUrl,
   formatStoryDate,
   formatStoryShortDate,
+  isBookReview,
   storyKindLabel,
   storyPath,
   storyShareImagePath,
 } from './model/paths';
-export { toCharacterGroups, toStoryImage } from './model/toStory';
+export {
+  DEFAULT_COVER_POSITION,
+  toCharacterGroups,
+  toCoverPosition,
+  toStoryImage,
+} from './model/toStory';
 export type {
   Story,
   StoryCharacterGroup,

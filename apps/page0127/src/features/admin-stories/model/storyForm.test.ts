@@ -21,6 +21,9 @@ const input = (over: Partial<StoryInput> = {}): StoryInput => ({
   rating: 0,
   mapImage: null,
   mapCards: [],
+  coverImage: null,
+  coverPosition: '50% 50%',
+  isReview: true,
   charactersText: '',
   isPublished: false,
   ...over,
@@ -183,5 +186,47 @@ describe('validateStoryInput', () => {
       label: '성인',
       people: null,
     });
+  });
+});
+
+describe('대표 이미지·위치·글 종류', () => {
+  const cover = { src: BUCKET_SRC, width: 1200, height: 630, alt: '' };
+
+  it('대표 이미지는 우리 버킷만, 대체 글이 비면 글 제목', () => {
+    const ok = validateStoryInput(input({ coverImage: cover }), SUPABASE, '책');
+    expect(ok.ok && ok.value.cover_image).toEqual({
+      ...cover,
+      alt: '대온실 수리 보고서 독후감과 인물관계도',
+    });
+    const bad = validateStoryInput(
+      input({ coverImage: { ...cover, src: 'https://evil.com/x.webp' } }),
+      SUPABASE,
+      '책'
+    );
+    expect(bad.ok).toBe(false);
+  });
+
+  it('위치는 "가로% 세로%" 정수만', () => {
+    const ok = validateStoryInput(
+      input({ coverPosition: '0% 100%' }),
+      SUPABASE,
+      '책'
+    );
+    expect(ok.ok && ok.value.cover_position).toBe('0% 100%');
+    for (const coverPosition of ['101% 0%', 'left top', '50%', '1.5% 2%'])
+      expect(
+        validateStoryInput(input({ coverPosition }), SUPABASE, '책').ok
+      ).toBe(false);
+  });
+
+  it('책 글은 독후감 여부를 그대로, 책 없는 글은 늘 true', () => {
+    const essay = validateStoryInput(
+      input({ isReview: false }),
+      SUPABASE,
+      '책'
+    );
+    expect(essay.ok && essay.value.is_review).toBe(false);
+    const noBook = validateStoryInput(input({ isReview: false }), SUPABASE, '');
+    expect(noBook.ok && noBook.value.is_review).toBe(true);
   });
 });
