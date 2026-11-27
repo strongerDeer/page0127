@@ -5,6 +5,7 @@ import { renderOg } from '@/shared/lib/og/render';
 import {
   COVER_OVERHANG,
   STAGE_GUTTER,
+  STAGE_HEIGHT,
   StageCard,
 } from '@/shared/lib/og/StageCard';
 import { OG_COLORS, OG_SIZE } from '@/shared/lib/og/theme';
@@ -25,7 +26,7 @@ export const alt = '『어린 왕자』 온라인 필사 | page0127.';
 export const size = OG_SIZE;
 export const contentType = 'image/png';
 
-/** 원본 720×227 — 오른쪽 아래. 슬로건(위 56~220px)과 그림(267px~)이 무대 480 안에서 안 겹친다 */
+/** 원본 720×227 — 오른쪽 아래, 책상 밑면이 무대 바닥선에 걸친다 */
 const HERO = { width: 720, height: 227 } as const;
 
 const readHero = () =>
@@ -36,14 +37,19 @@ const readHero = () =>
 const Image = () =>
   renderOg(
     <StageCard cta='온라인 필사 시작하기'>
-      {/* 슬로건 — 왼쪽 위. 아래 그림과 겹치지 않게 무대 위쪽 절반에 둔다 */}
+      {/*
+        슬로건 — 왼쪽, 무대 안에서 세로 가운데(HJ 2026-11-27). 홈 카드(BrandStage)와 같은 자리다.
+        오른쪽 아래 그림은 왼쪽 위가 투명이라 글자 끝(x≈530)과 목도리(x≈590)가 겹치지 않는다.
+      */}
       <div
         style={{
           display: 'flex',
           flexDirection: 'column',
+          justifyContent: 'center',
           position: 'absolute',
           left: STAGE_GUTTER,
-          top: 56,
+          top: 0,
+          height: STAGE_HEIGHT,
           fontSize: 68,
           fontWeight: 800,
           color: OG_COLORS.paper,
@@ -56,7 +62,7 @@ const Image = () =>
       </div>
 
       {/* 타자 치는 아이 — 책상 밑면이 무대 바닥선에 살짝 걸치게 */}
-      { }
+      {}
       <img
         src={readHero()}
         alt=''
