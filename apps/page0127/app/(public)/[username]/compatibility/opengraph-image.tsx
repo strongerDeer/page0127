@@ -61,34 +61,47 @@ const ScoreRing = () => {
           strokeWidth={RING.stroke}
         />
         {/* 12시 방향에서 시계 방향으로 채운다 */}
+        <defs>
+          {/* 하늘색 → 민트 — 무대 파랑 위에서 색이 돌게. 민트는 선으로만 쓴다(큰 면 X) */}
+          <linearGradient id='arc' x1='0' y1='0' x2='1' y2='1'>
+            <stop offset='0%' stopColor='#bfdbfe' />
+            <stop offset='100%' stopColor={OG_COLORS.mint} />
+          </linearGradient>
+        </defs>
         <circle
           cx={RING.size / 2}
           cy={RING.size / 2}
           r={r}
           fill='none'
-          stroke={OG_COLORS.paper}
+          stroke='url(#arc)'
           strokeWidth={RING.stroke}
           strokeLinecap='round'
           strokeDasharray={`${c * FILL} ${c}`}
           transform={`rotate(-90 ${RING.size / 2} ${RING.size / 2})`}
         />
       </svg>
+      {/* "?"를 원 정가운데에 두고, "%"는 그 오른쪽에 따로 붙인다 */}
       <div
         style={{
           display: 'flex',
-          alignItems: 'flex-end',
+          position: 'relative',
           color: OG_COLORS.paper,
           fontWeight: 800,
+          fontSize: 150,
+          lineHeight: 1,
         }}
       >
-        <div style={{ display: 'flex', fontSize: 140, lineHeight: 1 }}>?</div>
+        ?
         <div
           style={{
             display: 'flex',
-            marginLeft: 6,
-            marginBottom: 14,
+            position: 'absolute',
+            left: '100%',
+            bottom: 12,
+            marginLeft: 8,
             fontSize: 56,
             lineHeight: 1,
+            color: OG_COLORS.mint,
           }}
         >
           %
