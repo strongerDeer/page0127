@@ -1,5 +1,6 @@
+import { getDemoOwnerClient } from '@/shared/lib/demo/demoOwnerClient';
 import { BookStoryCard } from '@/shared/lib/og/BookStoryCard';
-import { renderOg } from '@/shared/lib/og/render';
+import { PRIVATE_IMAGE_CACHE_CONTROL, renderOg } from '@/shared/lib/og/render';
 import { STORY_SIZE } from '@/shared/lib/og/theme';
 
 import { isRated } from '@/entities/book';
@@ -20,16 +21,23 @@ type Context = { params: Promise<{ username: string; bookId: string }> };
 export const GET = async (_request: Request, { params }: Context) => {
   const { username, bookId } = await params;
 
-  // 익명 조회만 쓴다 — 소유자가 불러도 비공개 기록은 그리지 않는다(getPublicBookRecord 주석)
+  // 익명 조회가 기본 — 소유자가 불러도 비공개 기록은 그리지 않는다(getPublicBookRecord 주석).
+  // 체험 계정 본인만 자기 세션으로 조회한다(체험 책은 RLS 로 본인에게만 보인다, is_public 은 그대로)
   let name: string | null = null;
   let photoUrl: string | null = null;
   let book: Awaited<ReturnType<typeof getPublicBookRecord>> = null;
+  let demoClient: Awaited<ReturnType<typeof getDemoOwnerClient>> = null;
   try {
     const profile = await getPublicProfileByUsername(username);
     if (profile) {
       name = toDisplayName(profile);
       photoUrl = profile.photo_url;
-      book = await getPublicBookRecord(profile.id, bookId);
+      demoClient = await getDemoOwnerClient(profile.id);
+      book = await getPublicBookRecord(
+        profile.id,
+        bookId,
+        demoClient ?? undefined
+      );
     }
   } catch (error) {
     console.error('책 스토리 이미지 조회 실패:', error);
@@ -50,6 +58,8 @@ export const GET = async (_request: Request, { params }: Context) => {
       isLifeBook={book.is_life_book}
       review={book.one_line_review?.trim() || null}
     />,
-    STORY_SIZE
+    STORY_SIZE,
+    // 체험 본인 세션으로 그린 그림은 CDN 에 올리지 않는다
+    demoClient ? PRIVATE_IMAGE_CACHE_CONTROL : undefined
   );
 };

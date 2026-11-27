@@ -1,8 +1,10 @@
-import { renderOg } from '@/shared/lib/og/render';
+import { getDemoOwnerClient } from '@/shared/lib/demo/demoOwnerClient';
+import { PRIVATE_IMAGE_CACHE_CONTROL, renderOg } from '@/shared/lib/og/render';
 import { StoryCard } from '@/shared/lib/og/StoryCard';
 import { STORY_SIZE } from '@/shared/lib/og/theme';
 
 import { getPublicReadingCovers } from '@/entities/book/api/getPublicReadingCovers';
+import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProfileByUsername';
 
 import { getReaderShareData } from '@/widgets/public-library/api/getReaderShareData';
 import { resolveStoryShelf } from '@/widgets/public-library/api/resolveStoryShelf';
@@ -21,8 +23,12 @@ export const GET = async (_request: Request, { params }: Context) => {
 
   // OG 와 달리 크롤러가 아니라 서재 화면의 버튼이 부른다 — 없는 서재면 그릴 것이 없다
   let data: Awaited<ReturnType<typeof getReaderShareData>> = null;
+  // 체험 계정 본인만 자기 세션으로 조회한다(체험 책은 RLS 로 본인에게만 보인다) — demoOwnerClient 주석
+  let demoClient: Awaited<ReturnType<typeof getDemoOwnerClient>> = null;
   try {
-    data = await getReaderShareData(username);
+    const owner = await getPublicProfileByUsername(username);
+    demoClient = await getDemoOwnerClient(owner?.id);
+    data = await getReaderShareData(username, demoClient ?? undefined);
   } catch (error) {
     console.error('서재 스토리 이미지 조회 실패:', error);
     return new Response('조회 실패', { status: 500 });
@@ -31,7 +37,9 @@ export const GET = async (_request: Request, { params }: Context) => {
 
   // 완독 표지가 하나도 없으면 읽는 중인 책으로 흰 면을 채운다 — 완독이 있으면 묻지 않는다
   const readingCovers =
-    data.covers.length === 0 ? await getPublicReadingCovers(data.userId) : [];
+    data.covers.length === 0
+      ? await getPublicReadingCovers(data.userId, demoClient ?? undefined)
+      : [];
 
   const props = toStoryCardProps(
     data,
@@ -42,5 +50,10 @@ export const GET = async (_request: Request, { params }: Context) => {
   // 책등을 미리 받아 실제 폭으로 단을 나눈다 — 추정으로 나누면 빈 둘째 단이 섰다
   const shelf = props.shelf && (await resolveStoryShelf(props.shelf));
 
-  return renderOg(<StoryCard {...props} shelf={shelf} />, STORY_SIZE);
+  return renderOg(
+    <StoryCard {...props} shelf={shelf} />,
+    STORY_SIZE,
+    // 체험 본인 세션으로 그린 그림은 CDN 에 올리지 않는다
+    demoClient ? PRIVATE_IMAGE_CACHE_CONTROL : undefined
+  );
 };

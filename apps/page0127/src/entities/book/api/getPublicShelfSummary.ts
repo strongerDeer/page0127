@@ -8,6 +8,7 @@ import {
 } from '../model/shelfCounts';
 
 import type { Book } from '../types';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 /** 공유 이미지의 책장에 세울 한 권 — 서재 책장과 같은 칸(표지·책등·두께·인생책·별점) */
 export type PublicShelfBook = Pick<
@@ -58,9 +59,14 @@ export const COVER_LIMIT = 5;
  * 카드가 깨지는 것보다 빈 선반이 낫지만, 아는 숫자까지 버릴 이유는 없다.
  */
 export const getPublicShelfSummary = async (
-  userId: string
+  userId: string,
+  /**
+   * 조회에 쓸 클라이언트. 기본은 익명 — 체험 계정 본인만 자기 세션으로 부른다
+   * (체험 책은 RLS 로 본인에게만 보여서 익명으로는 0권이 된다. is_public 조건은 그대로다)
+   */
+  client?: SupabaseClient
 ): Promise<PublicShelfSummary> => {
-  const supabase = createAnonClient();
+  const supabase = client ?? createAnonClient();
 
   // count 대신 id·isbn 을 받아 와서 '서로 다른 책' 수를 센다. 카드에 필요한 건
   // 숫자 두 개뿐이지만, 재독을 걸러내려면 어떤 책인지 알아야 한다.
