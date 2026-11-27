@@ -443,6 +443,34 @@
     color 0.15s;
 }
 
+/*
+ * 띠지 배경 그림(2026-11-27 HJ "높이 꽉 차게 / 오른쪽으로") — 글자 뒤, 책갈피 앞에 깐다.
+ * 왼쪽 끝을 투명하게 흐려 글자 쪽으로 갈수록 띠지 색이 드러나게 한다(글자 뒤 무늬는 가독성을 해친다).
+ */
+.beltArt {
+  position: absolute;
+  inset: 0 0 0 auto;
+  z-index: 0;
+  height: 100%;
+  width: auto;
+  max-width: 70%;
+  object-fit: cover;
+  object-position: right center;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 40%);
+  mask-image: linear-gradient(to right, transparent, #000 40%);
+  pointer-events: none;
+}
+
+/* 글자는 그림 위, 책갈피는 맨 위 */
+.beltCustom > span {
+  position: relative;
+  z-index: 1;
+}
+
+.beltCustom .bookmark {
+  z-index: 2;
+}
+
 /* 띠지 어디를 눌러도 링크라, 올려 두면 버튼이 채워져 "여기가 눌린다"를 보여 준다 */
 .beltLink:hover .beltFoot,
 .beltLink:focus-visible .beltFoot {

@@ -12,6 +12,7 @@ import {
 import { SlideCard } from '@/features/admin-banners/ui/SlideCard';
 
 import type { HeroSlideRow } from '@/entities/banner/types';
+import type { SlideEvent } from '@/features/admin-banners/lib/slideEvents';
 
 const STATUS_LABEL: Record<SlideStatus, string> = {
   live: '게시 중',
@@ -56,6 +57,8 @@ type SlideRowProps = {
   onHome: { guest: boolean; member: boolean };
   open: boolean;
   onToggle: () => void;
+  /** 이 배너의 수정 기록(최신순) */
+  events: SlideEvent[];
   /** 게시 중·예약 목록만 끌어서 순서를 바꾼다 */
   sortable?: boolean;
 };
@@ -70,6 +73,7 @@ export const SlideRow = ({
   onHome,
   open,
   onToggle,
+  events,
   sortable = false,
 }: SlideRowProps) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
@@ -146,7 +150,7 @@ export const SlideRow = ({
           />
         </button>
       </div>
-      {open && <SlideCard slide={slide} />}
+      {open && <SlideCard slide={slide} events={events} />}
     </li>
   );
 };

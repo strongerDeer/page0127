@@ -17,8 +17,10 @@ import {
 import { isoToKstInput } from '@/features/admin-banners/lib/kstTime';
 import { BeltFields } from '@/features/admin-banners/ui/BeltFields';
 import { CoverPreview } from '@/features/admin-banners/ui/CoverPreview';
+import { SlideHistory } from '@/features/admin-banners/ui/SlideHistory';
 
 import type { HeroSlideRow } from '@/entities/banner/types';
+import type { SlideEvent } from '@/features/admin-banners/lib/slideEvents';
 
 const AUDIENCE_OPTIONS = [
   { value: 'all', label: '모두' },
@@ -67,7 +69,14 @@ const Segmented = <T extends string>({
   </div>
 );
 
-export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
+export const SlideCard = ({
+  slide,
+  events,
+}: {
+  slide: HeroSlideRow;
+  /** 이 배너의 수정 기록(최신순) */
+  events: SlideEvent[];
+}) => {
   const [fields, setFields] = useState<SlideFields>({
     eyebrow: slide.eyebrow,
     line1: slide.line1,
@@ -91,6 +100,7 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
     art_x: slide.art_x,
     art_y: slide.art_y,
     art_w: slide.art_w,
+    belt_art_url: slide.belt_art_url ?? '',
   });
   const fileRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -120,7 +130,11 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
   };
 
   // 그림은 브라우저에서 600px WEBP 로 줄여 보낸 뒤, 돌아온 주소만 폼에 담는다(저장은 따로)
-  const onPickArt = (file: File | undefined) => {
+  // 표지 그림(art_url)과 띠지 배경 그림(belt_art_url)이 같은 버킷·같은 방식으로 올라간다
+  const onPickArt = (
+    file: File | undefined,
+    key: 'art_url' | 'belt_art_url' = 'art_url'
+  ) => {
     if (!file) return;
     run(async () => {
       const resized = await resizeAvatarFile(file, {
@@ -130,8 +144,8 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
       const body = new FormData();
       body.set('file', resized);
       const url = await uploadBannerArt(body);
-      set('art_url', url);
-    });
+      set(key, url);
+    }, '그림을 올렸어요. 저장을 눌러야 홈에 반영돼요');
     if (fileRef.current) fileRef.current.value = '';
   };
 
@@ -223,7 +237,12 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
               disabled={isPending}
             />
             {fields.belt_style === 'custom' ? (
-              <BeltFields fields={fields} set={set} disabled={isPending} />
+              <BeltFields
+                fields={fields}
+                set={set}
+                disabled={isPending}
+                onPickArt={(file) => onPickArt(file, 'belt_art_url')}
+              />
             ) : (
               <p className='text-xs text-text-subtle'>
                 홈 기본 띠지 문구를 그대로 보여 줘요. 띠지 글자를 바꾸려면 “직접
@@ -427,6 +446,17 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
         </button>
       </div>
       {error && <p className='mt-2 text-sm text-destructive'>{error}</p>}
+
+      {/* 이 배너의 수정 기록 — 저장하면 새로고침된 목록에 한 줄 더해진다 */}
+      <details className='mt-4 border-t border-line pt-3'>
+        <summary className='cursor-pointer text-xs font-semibold'>
+          이 배너의 수정 기록{' '}
+          <span className='text-text-subtle'>{events.length}</span>
+        </summary>
+        <div className='mt-2'>
+          <SlideHistory events={events} />
+        </div>
+      </details>
     </div>
   );
 };

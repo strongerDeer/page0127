@@ -26,9 +26,11 @@ import {
   slideStatus,
   slideTitle,
 } from '@/features/admin-banners/lib/slideStatus';
+import { SlideHistory } from '@/features/admin-banners/ui/SlideHistory';
 import { SlideRow } from '@/features/admin-banners/ui/SlideRow';
 
 import type { HeroSlideRow } from '@/entities/banner/types';
+import type { SlideEvent } from '@/features/admin-banners/lib/slideEvents';
 
 /**
  * 메인 배너 관리 — 목록 + 편집 분리(2026-11-27 HJ "히스토리나 리스트 없이 관리되는 거 맞아?")
@@ -40,7 +42,14 @@ import type { HeroSlideRow } from '@/entities/banner/types';
  * 3) 지난·꺼진 배너 — 접어 둔 히스토리. 복제해서 다시 쓸 수 있다
  * 줄을 누르면 그 아래에 편집 칸(SlideCard)이 열린다. 한 번에 하나만.
  */
-export const BannerManager = ({ initial }: { initial: HeroSlideRow[] }) => {
+export const BannerManager = ({
+  initial,
+  events,
+}: {
+  initial: HeroSlideRow[];
+  /** 수정 기록(최신순) — 배너별 기록과 맨 아래 "최근 기록"에 나눠 쓴다 */
+  events: SlideEvent[];
+}) => {
   const [slides, setSlides] = useState(initial);
 
   // 서버액션의 revalidatePath 후 새로 전달되는 initial을 로컬 상태에 반영한다.
@@ -113,6 +122,7 @@ export const BannerManager = ({ initial }: { initial: HeroSlideRow[] }) => {
       member: home.member?.id === s.id,
     },
     open: openId === s.id,
+    events: events.filter((e) => e.slide_id === s.id),
     onToggle: () => setOpenId((id) => (id === s.id ? null : s.id)),
   });
 
@@ -194,6 +204,16 @@ export const BannerManager = ({ initial }: { initial: HeroSlideRow[] }) => {
             ))}
           </ol>
         )}
+      </details>
+      {/* ── 최근 기록 — 지운 배너까지 포함한 전체 수정 기록 ── */}
+      <details className='flex flex-col gap-2'>
+        <summary className='cursor-pointer text-sm font-semibold'>
+          최근 수정 기록{' '}
+          <span className='text-text-subtle'>{events.length}</span>
+        </summary>
+        <div className='mt-2 rounded border border-line bg-white p-4'>
+          <SlideHistory events={events.slice(0, 30)} showTitle />
+        </div>
       </details>
     </div>
   );
