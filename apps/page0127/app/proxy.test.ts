@@ -113,6 +113,8 @@ describe('proxy matcher — 정적 파일에는 proxy(세션 확인)를 태우�
     '/_next/static/chunks/main.js',
     '/sw.js',
     '/llms.txt',
+    // IndexNow 키 파일 — 검색엔진이 주인 확인용으로 가져간다
+    '/41e1f9d61044d2c4939d00316430426a.txt',
     // 책 정보는 CDN 캐시 페이지 — proxy 가 돌면 캐시를 줘도 함수가 깨어난다
     '/books/info/abc-123',
     '/books/info/abc-123/opengraph-image-1ram65',
