@@ -49,15 +49,27 @@ const PATTERN_TILE =
   "<circle cx='50' cy='32' r='1.4' fill='#fff'/><circle cx='8' cy='46' r='1.2' fill='#fff'/>" +
   "<circle cx='46' cy='86' r='1.4' fill='#fff'/><circle cx='90' cy='88' r='1.2' fill='#fff'/>";
 
-export const CHEER_PATTERN_SRC = `data:image/svg+xml;utf8,${encodeURIComponent(
-  `<svg xmlns='http://www.w3.org/2000/svg' width='${STORY_SIZE.width}' height='${STORY_SIZE.height}'>` +
-    "<defs><pattern id='p' width='96' height='96' patternUnits='userSpaceOnUse' patternTransform='scale(2.2)'>" +
-    `<g fill='none' stroke='#fff' stroke-width='1.6' stroke-linecap='round'>${PATTERN_TILE}</g></pattern>` +
-    "<linearGradient id='g' x1='0' y1='0' x2='0' y2='1'>" +
-    "<stop offset='0.24' stop-color='#fff' stop-opacity='0'/><stop offset='0.5' stop-color='#fff' stop-opacity='1'/>" +
-    "</linearGradient><mask id='m'><rect width='100%' height='100%' fill='url(#g)'/></mask></defs>" +
-    "<rect width='100%' height='100%' fill='url(#p)' mask='url(#m)' opacity='0.15'/></svg>"
-)}`;
+/** 무늬 한 장을 크기·배율에 맞춰 만든다 — 스토리(1080×1920)·링크 미리보기(1200×630)가 같이 쓴다 */
+export const toCheerPatternSrc = (
+  width: number,
+  height: number,
+  scale: number
+): string =>
+  `data:image/svg+xml;utf8,${encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}'>` +
+      `<defs><pattern id='p' width='96' height='96' patternUnits='userSpaceOnUse' patternTransform='scale(${scale})'>` +
+      `<g fill='none' stroke='#fff' stroke-width='1.6' stroke-linecap='round'>${PATTERN_TILE}</g></pattern>` +
+      "<linearGradient id='g' x1='0' y1='0' x2='0' y2='1'>" +
+      "<stop offset='0.24' stop-color='#fff' stop-opacity='0'/><stop offset='0.5' stop-color='#fff' stop-opacity='1'/>" +
+      "</linearGradient><mask id='m'><rect width='100%' height='100%' fill='url(#g)'/></mask></defs>" +
+      "<rect width='100%' height='100%' fill='url(#p)' mask='url(#m)' opacity='0.15'/></svg>"
+  )}`;
+
+export const CHEER_PATTERN_SRC = toCheerPatternSrc(
+  STORY_SIZE.width,
+  STORY_SIZE.height,
+  2.2
+);
 
 /**
  * 연말 응원 카드 스토리 이미지 (1080×1920) — 시안 v3 를 이미지로.
