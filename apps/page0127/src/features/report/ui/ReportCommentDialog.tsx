@@ -28,6 +28,8 @@ import {
 
 type ReportCommentDialogProps = {
   commentId: string;
+  /** 어느 표의 댓글인지 — 책 댓글(기본) 또는 책 이야기 댓글 */
+  commentType?: 'book' | 'story';
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
@@ -43,6 +45,7 @@ type ReportCommentDialogProps = {
  */
 export const ReportCommentDialog = ({
   commentId,
+  commentType = 'book',
   open,
   onOpenChange,
 }: ReportCommentDialogProps) => {
@@ -56,7 +59,12 @@ export const ReportCommentDialog = ({
 
   const reportMutation = useMutation({
     mutationFn: async () =>
-      apiClient.post('/reports', { commentId, reason, detail: detail.trim() }),
+      apiClient.post('/reports', {
+        commentId,
+        commentType,
+        reason,
+        detail: detail.trim(),
+      }),
     onSuccess: (response) => {
       // 이미 신고한 건도 성공으로 받는다 — 사용자에겐 접수된 상태 그대로다
       const alreadyReported = Boolean(

@@ -142,9 +142,10 @@ export function buildCommentTree(
     else roots.push(node);
   }
 
-  // 루트 댓글은 최신이 위(내림차순) — 새 댓글을 보러 스크롤을 내리지 않아도 된다.
-  // 대댓글은 부모 아래에서 시간순(오름차순)을 지킨다. 답글은 대화라 위에서 아래로 읽힌다.
-  roots.sort((a, b) => byCreatedAt(b, a));
+  // 루트·대댓글 모두 시간순(오름차순) — 위에서 아래로 대화처럼 읽고, 입력칸은 맨 아래에 둔다.
+  // (HJ, 2026-11-27) 피드·책 정보·책 이야기가 같은 순서를 쓴다. 최신이 위인 배치는
+  // 댓글이 수천 개 달리는 서비스에 맞고, page0127. 은 "앞 사람 말을 읽고 이어 쓰기"가 먼저다.
+  roots.sort(byCreatedAt);
   for (const root of roots) root.replies.sort(byCreatedAt);
 
   return roots;

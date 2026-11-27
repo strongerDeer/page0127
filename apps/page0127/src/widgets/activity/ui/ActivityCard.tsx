@@ -1,8 +1,12 @@
+'use client';
+
+import { useState } from 'react';
+
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { BookCover, isPreOptimizedImageSrc } from '@repo/ui';
-import { Star } from 'lucide-react';
+import { BookCover, Button, isPreOptimizedImageSrc } from '@repo/ui';
+import { MessageSquare, Star } from 'lucide-react';
 
 import { RelativeTime } from '@/shared/ui/RelativeTime';
 
@@ -10,7 +14,11 @@ import { Activity } from '@/entities/activity';
 import { isRated, toCoverSource } from '@/entities/book';
 import { ProfileLink } from '@/entities/profile/ui/ProfileLink';
 
-import { CommentSection } from '@/features/comment';
+import {
+  CommentThread,
+  countComments,
+  useCommentCount,
+} from '@/features/comment';
 import { BookRecordLikeButton } from '@/features/like';
 
 /**
@@ -93,7 +101,17 @@ export const ActivityCard = ({
   initialCommentsOpen = false,
   hideBook = false,
 }: ActivityCardProps) => {
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  // 훅은 조건문 앞에서 — 책이 없으면(이론상) 빈 id 로 구독만 하고 아래에서 끝낸다
+  const target = { type: 'book', id: activity.book?.id ?? '' } as const;
+  const commentCount = useCommentCount(
+    target,
+    activity.comments ? countComments(activity.comments) : activity.commentCount
+  );
+
   if (!activity.book) return null;
+
+  const showComments = initialCommentsOpen || commentCount > 0 || commentsOpen;
 
   return (
     // 테두리 카드가 아니라 구분선 리스트의 한 항목 — 부모(ActivityFeed)가 divide-y를 건다
@@ -204,26 +222,53 @@ export const ActivityCard = ({
         </p>
       )}
 
-      {/* 액션 바 — 좋아요·댓글 한 줄. 댓글 패널은 w-full로 줄바꿈해 전체 폭 사용.
-          리스트 구분선과 겹치므로 자체 border는 두지 않는다 */}
-      <div className='mt-3 flex flex-wrap items-center gap-1'>
+      {/* 액션 바 — 좋아요·댓글 수 한 줄 */}
+      <div className='mt-3 flex items-center gap-1'>
         <BookRecordLikeButton
           bookId={activity.book.id}
           count={activity.likes.count}
           isLiked={activity.likes.isLiked}
         />
-        <CommentSection
-          target={{ type: 'book', id: activity.book.id }}
-          initialOpen={initialCommentsOpen}
-          initialCount={activity.commentCount}
-        />
-        {/* 마지막으로 이 스레드를 본 뒤 남이 단 댓글 — 열면 사라진다 */}
-        {activity.newCommentCount > 0 && (
-          <span className='rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground'>
-            새 댓글 {activity.newCommentCount}
+        <Button
+          variant='ghost'
+          size='sm'
+          className='gap-2'
+          onClick={() => setCommentsOpen(true)}
+          aria-expanded={showComments}
+        >
+          <MessageSquare className='size-4' aria-hidden='true' />
+          {/* 화면엔 숫자만, 스크린리더엔 "댓글 4개, 새 댓글 1개" — 보이는 글자가 이름 안에 들어가야 한다 */}
+          <span className='text-sm text-muted-foreground tabular-nums'>
+            <span className='sr-only'>댓글 </span>
+            {commentCount}
+            <span className='sr-only'>
+              개
+              {activity.newCommentCount > 0 &&
+                `, 새 댓글 ${activity.newCommentCount}개`}
+            </span>
           </span>
-        )}
+          {/* 마지막으로 이 스레드를 본 뒤 남이 단 댓글 — 숫자 옆 점 하나 */}
+          {activity.newCommentCount > 0 && (
+            <span
+              aria-hidden='true'
+              className='-ml-1 size-1.5 self-start rounded-full bg-primary'
+            />
+          )}
+        </Button>
       </div>
+
+      {/* 댓글은 펼친 채로 — 최근 2개 + 입력칸. 더 있으면 "이전 댓글 N개 보기".
+          댓글이 하나도 없으면 입력칸만 20줄 늘어서지 않게, "댓글"을 눌렀을 때만 연다 */}
+      {showComments && (
+        <div className='mt-3 border-t border-line-soft pt-4'>
+          <CommentThread
+            target={target}
+            initialComments={activity.comments}
+            visibleCount={initialCommentsOpen ? 20 : 2}
+            autoFocus={commentsOpen && commentCount === 0}
+          />
+        </div>
+      )}
     </article>
   );
 };

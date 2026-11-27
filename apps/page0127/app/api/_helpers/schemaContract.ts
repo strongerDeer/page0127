@@ -64,8 +64,18 @@ export const SCHEMA_CONTRACT: SchemaProbe[] = [
   },
   {
     table: 'reports',
-    columns: ['reporter_id', 'comment_id', 'status'],
+    columns: ['reporter_id', 'comment_id', 'story_comment_id', 'status'],
     breaks: '신고 접수와 어드민 신고 처리 화면',
+  },
+  {
+    table: 'story_comments',
+    columns: ['story_id', 'parent_comment_id', 'is_hidden'],
+    breaks: '책 이야기(/blog) 댓글',
+  },
+  {
+    table: 'story_likes',
+    columns: ['story_id', 'user_id'],
+    breaks: '책 이야기(/blog) 좋아요',
   },
   {
     table: 'taste_analyses',

@@ -57,6 +57,11 @@ export const ReportList = ({ reports }: ReportListProps) => {
             <span className='text-xs text-text-subtle'>
               {STATUS_LABEL[report.status]}
             </span>
+            {report.comment && (
+              <span className='text-xs text-text-subtle'>
+                {report.comment.source === 'story' ? '책 이야기 댓글' : '책 댓글'}
+              </span>
+            )}
             {report.comment?.isHidden && (
               <span className='rounded bg-destructive/10 px-2 py-0.5 text-xs text-destructive'>
                 숨김 상태
@@ -92,7 +97,11 @@ export const ReportList = ({ reports }: ReportListProps) => {
                   disabled={isPending}
                   onClick={() =>
                     startTransition(() =>
-                      unhideComment(report.id, report.comment!.id)
+                      unhideComment(
+                        report.id,
+                        report.comment!.id,
+                        report.comment!.source
+                      )
                     )
                   }
                   className='inline-flex items-center gap-1.5 rounded border border-line px-3 py-1.5 text-xs hover:bg-accent disabled:opacity-50'
@@ -106,7 +115,11 @@ export const ReportList = ({ reports }: ReportListProps) => {
                   disabled={isPending}
                   onClick={() =>
                     startTransition(() =>
-                      hideComment(report.id, report.comment!.id)
+                      hideComment(
+                        report.id,
+                        report.comment!.id,
+                        report.comment!.source
+                      )
                     )
                   }
                   className='inline-flex items-center gap-1.5 rounded border border-line px-3 py-1.5 text-xs text-destructive hover:bg-accent disabled:opacity-50'

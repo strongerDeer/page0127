@@ -16,7 +16,10 @@
  *   구별 유니온으로 표현한다.
  */
 export type CommentTarget =
-  { type: 'book'; id: string } | { type: 'globalBook'; id: string };
+  | { type: 'book'; id: string }
+  | { type: 'globalBook'; id: string }
+  /** 책 이야기(/blog) 글 — 책 댓글과 테이블이 따로다(story_comments) */
+  | { type: 'story'; id: string };
 
 export type Comment = {
   id: string;

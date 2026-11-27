@@ -21,6 +21,9 @@ export const toCheerQuoteSize = (lines: string[]): number => {
   if (longest <= 12) return 60;
   if (longest <= 16) return 50;
   if (longest <= 20) return 42;
+  // 요즘 책 문장은 줄이 길다 — 어절 단위로 접혀도 카드 안에 들어오게 한 단계 더 줄인다
+  const total = lines.reduce((sum, line) => sum + line.length, 0);
+  if (longest > 30 || total > 90) return 34;
   return 38;
 };
 
@@ -29,8 +32,8 @@ export type CheerStoryCardProps = {
   name: string;
   firstLine: string;
   lines: string[];
-  author: string;
-  work: string;
+  /** 출처 한 줄 — 「작가, 『책』 「글」 · 옮긴이 옮김」 */
+  source: string;
   /** 명조 글꼴을 받았는가 — 못 받았으면 Pretendard 로 그린다 */
   serif: boolean;
 };
@@ -46,8 +49,7 @@ export const CheerStoryCard = ({
   name,
   firstLine,
   lines,
-  author,
-  work,
+  source,
   serif,
 }: CheerStoryCardProps) => {
   const quoteSize = toCheerQuoteSize(lines);
@@ -159,7 +161,7 @@ export const CheerStoryCard = ({
             color: SOFT,
           }}
         >
-          {author}, 「{work}」
+          {source}
         </div>
       </div>
 
