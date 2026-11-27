@@ -1,7 +1,6 @@
 import { BrandSymbol } from '@/shared/lib/brand/BrandSymbol';
 import { renderOg } from '@/shared/lib/og/render';
 import {
-  COVER_OVERHANG,
   STAGE_GUTTER,
   STAGE_HEIGHT,
   StageCard,
@@ -13,19 +12,26 @@ import { OG_COLORS, OG_SIZE } from '@/shared/lib/og/theme';
 // 홈 카드(BrandStage)와 같은 틀 — 파란 무대 + 왼쪽 슬로건 + 흰 띠 — 에서
 // 오른쪽 책 무리 대신 **랜딩의 당근 꽂힌 책**(크림 문고판 + 위로 삐죽 나온 당근)을 세운다(HJ 2026-11-27).
 // 받는 사람이 미리보기만 보고도 "책에서 당근을 뽑는 곳"으로 알아보게.
-// 랜딩 표지(SentenceBook.module.css)의 색·문구를 옮겼다. 책은 무대 바닥선에 걸쳐 선다(표지 카드와 같은 문법).
+// 랜딩 표지(SentenceBook.module.css)의 색·문구를 옮겼다. 책은 크게 키워 윗부분만 보이고, 아래는 무대 바닥선(흰 띠)에서 잘린다.
 // runtime 을 지정하지 않는다(= Node.js) — 이유는 app/opengraph-image.tsx 참조.
 
 export const alt = '오늘의 문장 | page0127.';
 export const size = OG_SIZE;
 export const contentType = 'image/png';
 
-/** 문고판 판형 — 무대(480) 안에 당근까지 들어가는 높이 */
-const BOOK = { width: 300, height: 400 } as const;
-/** 책 오른쪽 끝 — 무대 오른쪽 여백과 맞춘다 */
-const BOOK_RIGHT = STAGE_GUTTER + 40;
+/**
+ * 책을 확대해 윗부분만 보여 준다(HJ 2026-11-27 "확대해서, 흰 띠에서 잘리게").
+ * 책 아래쪽은 무대 바닥선(흰 띠 경계)에서 잘린다 — 표지 윗부분 + 당근만 크게 보인다.
+ */
+const SCALE = 1.5;
+/** 문고판 판형(3:4) — 무대보다 길어서 아래가 잘린다 */
+const BOOK = { width: 300 * SCALE, height: 400 * SCALE } as const;
+/** 책 윗변 — 무대 위에서부터. 위로 당근 머리가 들어갈 자리를 남긴다 */
+const BOOK_TOP = 130;
+/** 책 오른쪽 끝 — 흰 띠 워드마크의 오른쪽 선과 맞춘다 */
+const BOOK_RIGHT = STAGE_GUTTER;
 /** 당근 — 책 위 오른쪽에서 몸통 절반이 책 뒤로 숨는다 */
-const CARROT = { width: 84, height: 137 } as const;
+const CARROT = { width: 84 * SCALE, height: 137 * SCALE } as const;
 
 const COLORS = {
   cream: '#f6efe2',
@@ -74,100 +80,114 @@ const Carrot = () => (
 
 /** 랜딩 표지 — 왼쪽 책등 띠 + 제목 두 줄('한 줄'만 파랑) + 부제 + 오른쪽 위 심볼 */
 const CarrotBook = () => (
+  // 무대 크기의 창 — overflow: hidden 으로 책 아래쪽을 무대 바닥선에서 자른다
   <div
     style={{
       display: 'flex',
       position: 'absolute',
-      right: BOOK_RIGHT,
-      bottom: -COVER_OVERHANG,
-      width: BOOK.width,
-      height: BOOK.height + CARROT.height / 2,
+      left: 0,
+      top: 0,
+      width: '100%',
+      height: STAGE_HEIGHT,
+      overflow: 'hidden',
     }}
   >
-    {/* 당근 먼저 — satori 는 뒤에 그린 것이 위에 온다. 아래 절반은 책에 가려진다 */}
     <div
       style={{
         display: 'flex',
         position: 'absolute',
-        top: 0,
-        right: 38,
-      }}
-    >
-      <Carrot />
-    </div>
-
-    <div
-      style={{
-        display: 'flex',
-        position: 'absolute',
-        left: 0,
-        bottom: 0,
+        right: BOOK_RIGHT,
+        top: BOOK_TOP - CARROT.height / 2,
         width: BOOK.width,
-        height: BOOK.height,
-        borderRadius: 6,
-        background: COLORS.cream,
-        boxShadow: '0 14px 30px rgba(4, 30, 80, 0.35)',
-        overflow: 'hidden',
+        height: BOOK.height + CARROT.height / 2,
       }}
     >
-      {/* 책등 쪽 띠 */}
+      {/* 당근 먼저 — satori 는 뒤에 그린 것이 위에 온다. 아래 절반은 책에 가려진다 */}
       <div
         style={{
           display: 'flex',
-          width: 22,
-          height: '100%',
-          background: COLORS.spine,
-          borderRight: '1px solid rgba(20, 41, 78, 0.08)',
-        }}
-      />
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          flex: 1,
-          padding: '30px 22px 0 22px',
-          color: COLORS.ink,
+          position: 'absolute',
+          top: 0,
+          right: 38 * SCALE,
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <BrandSymbol size={40} />
-        </div>
+        <Carrot />
+      </div>
+
+      <div
+        style={{
+          display: 'flex',
+          position: 'absolute',
+          left: 0,
+          bottom: 0,
+          width: BOOK.width,
+          height: BOOK.height,
+          borderRadius: 9,
+          background: COLORS.cream,
+          overflow: 'hidden',
+        }}
+      >
+        {/* 책등 쪽 띠 */}
+        <div
+          style={{
+            display: 'flex',
+            width: 22 * SCALE,
+            height: '100%',
+            background: COLORS.spine,
+            borderRight: '1px solid rgba(20, 41, 78, 0.08)',
+          }}
+        />
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
-            marginTop: 6,
-            fontSize: 32,
-            fontWeight: 800,
-            lineHeight: 1.3,
-            letterSpacing: -1,
+            flex: 1,
+            padding: `${30 * SCALE}px ${26 * SCALE}px 0 ${26 * SCALE}px`,
+            color: COLORS.ink,
           }}
         >
-          <div style={{ display: 'flex' }}>책 사이에 끼워 둔</div>
-          <div style={{ display: 'flex' }}>
-            오늘의
-            <span style={{ color: COLORS.blue, marginLeft: 9 }}>한 줄</span>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <BrandSymbol size={40 * SCALE} />
           </div>
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            marginTop: 14,
-            fontSize: 17,
-            fontWeight: 500,
-            color: COLORS.muted,
-          }}
-        >
           <div
             style={{
               display: 'flex',
-              width: 20,
-              marginRight: 10,
-              borderTop: `1.5px solid ${COLORS.muted}`,
+              flexDirection: 'column',
+              marginTop: 6 * SCALE,
+              fontSize: 32 * SCALE,
+              fontWeight: 800,
+              lineHeight: 1.3,
+              letterSpacing: -1.5,
             }}
-          />
-          하루 한 번, 당근을 뽑아요
+          >
+            <div style={{ display: 'flex' }}>책 사이에 끼워 둔</div>
+            <div style={{ display: 'flex' }}>
+              오늘의
+              <span style={{ color: COLORS.blue, marginLeft: 9 * SCALE }}>
+                한 줄
+              </span>
+            </div>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              marginTop: 14 * SCALE,
+              fontSize: 17 * SCALE,
+              fontWeight: 500,
+              color: COLORS.muted,
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                width: 20 * SCALE,
+                marginRight: 10 * SCALE,
+                borderTop: `2px solid ${COLORS.muted}`,
+              }}
+            />
+            하루 한 번, 당근을 뽑아요
+          </div>
         </div>
       </div>
     </div>
