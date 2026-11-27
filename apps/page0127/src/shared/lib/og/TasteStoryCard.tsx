@@ -36,8 +36,24 @@ const lineWidth = (fontSize: number) =>
 /** 근거 책 한 줄 — 표지(2:3) 옆에 제목·태그 */
 const EVIDENCE_COVER = { width: 104, height: 156 } as const;
 const EVIDENCE_GAP = 22;
+/** 근거 책 한 줄의 폭 — 표지 + 가장 긴 제목(15자) 정도. 본문 폭(904)보다 좁혀 가운데에 둔다 */
+const EVIDENCE_ROW_WIDTH = 720;
 const TITLE_MAX_WIDTH = 15;
 const TOPIC_MAX_WIDTH = 8;
+
+/**
+ * 가운데 정렬 문단 줄 나누기 — 줄 수는 그대로 두고 가장 좁은 폭으로 다시 나눠 줄 길이를 고르게(text-wrap: balance).
+ * 왼쪽 정렬과 달리 가운데 정렬은 마지막 줄만 짧으면 모양이 무너진다.
+ */
+const balancedWrap = (text: string, maxWidth: number, maxLines: number) => {
+  const lines = wrapLines(text, maxWidth, maxLines);
+  if (lines.length <= 1 || lines.length >= maxLines) return lines;
+  for (let width = maxWidth / 2; width < maxWidth; width += 0.5) {
+    const candidate = wrapLines(text, width, Infinity);
+    if (candidate.length <= lines.length) return candidate;
+  }
+  return lines;
+};
 
 export type TasteStoryEvidence = {
   title: string;
@@ -82,7 +98,7 @@ export const TasteStoryCard = ({
   );
   const desc =
     evidence.length > 0 ? DESCRIPTION.withEvidence : DESCRIPTION.alone;
-  const descLines = wrapLines(description, lineWidth(desc.size), desc.lines);
+  const descLines = balancedWrap(description, lineWidth(desc.size), desc.lines);
 
   return (
     <div
@@ -179,6 +195,8 @@ export const TasteStoryCard = ({
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
+          // 가운데 정렬(HJ 11/27) — 설명·"이렇게 본 이유"·근거 책 묶음 모두 가운데 축에
+          alignItems: 'center',
           position: 'absolute',
           top: PANEL_TOP,
           left: 0,
@@ -192,6 +210,7 @@ export const TasteStoryCard = ({
           style={{
             display: 'flex',
             flexDirection: 'column',
+            alignItems: 'center',
             fontSize: desc.size,
             fontWeight: 500,
             lineHeight: 1.5,
@@ -207,7 +226,12 @@ export const TasteStoryCard = ({
 
         {evidence.length > 0 && (
           <div
-            style={{ display: 'flex', flexDirection: 'column', marginTop: 52 }}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              marginTop: 52,
+            }}
           >
             <div
               style={{
@@ -225,6 +249,8 @@ export const TasteStoryCard = ({
                 style={{
                   display: 'flex',
                   alignItems: 'center',
+                  // 줄마다 제목 길이가 달라도 표지가 한 세로줄에 서도록 묶음 폭을 고정하고 그 묶음을 가운데에
+                  width: EVIDENCE_ROW_WIDTH,
                   marginTop: i === 0 ? 24 : EVIDENCE_GAP,
                 }}
               >

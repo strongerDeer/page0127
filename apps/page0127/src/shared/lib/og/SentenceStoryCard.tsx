@@ -1,19 +1,19 @@
 import { toQuoteLines } from './QuoteStoryCard';
 import { STORY_GUTTER, STORY_SAFE_Y, StoryFooter } from './StoryCard';
 import { truncate } from './theme';
+import { wrapLines } from './wrapLines';
 
 /**
- * 오늘의 문장 결과 카드 색 — /sentence 결과 화면의 크림 종이(SentenceBook.module.css)와 같은 값.
+ * 오늘의 문장 결과 화면(SentenceBook 의 .leaf) 색 — SentenceBook.module.css 라이트 값과 같다.
  * 이미지는 테마와 무관한 그림이라 라이트 값으로 고정한다.
  */
 const SENTENCE_COLORS = {
-  cream: '#fbf3e6',
+  page: '#f3f5f9',
   ink: '#14294e',
-  /** 머리글·출처 — 종이 위의 옅은 갈색 */
-  muted: '#8a7a5c',
-  /** 독서운 상자 */
-  box: '#fffefb',
-  boxLine: '#e6dcc6',
+  sub: '#5b6b85',
+  line: '#dbe3ee',
+  blue: '#2d78db',
+  chip: '#ffffff',
 } as const;
 
 /** 점수 구간 색 — 결과 화면 원형 게이지와 같다(90↑ 파랑 · 80대 민트 · 70대 보라) */
@@ -22,46 +22,76 @@ const toneColor = (score: number) =>
 
 const SOURCE_MAX_WIDTH = 30;
 
+/** 원형 게이지 — 화면의 ScoreArc 를 2.5배로(56px → 140px). 12시에서 시계 방향으로 찬다 */
+const RING = { size: 140, radius: 60, stroke: 12 } as const;
+
+const ScoreRing = ({ score }: { score: number }) => {
+  const c = RING.size / 2;
+  const length = 2 * Math.PI * RING.radius;
+  return (
+    <div
+      style={{
+        display: 'flex',
+        position: 'relative',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: RING.size,
+        height: RING.size,
+        flexShrink: 0,
+      }}
+    >
+      <svg
+        width={RING.size}
+        height={RING.size}
+        viewBox={`0 0 ${RING.size} ${RING.size}`}
+        style={{ position: 'absolute', top: 0, left: 0 }}
+      >
+        <circle
+          cx={c}
+          cy={c}
+          r={RING.radius}
+          fill='none'
+          stroke={SENTENCE_COLORS.line}
+          strokeWidth={RING.stroke}
+        />
+        <circle
+          cx={c}
+          cy={c}
+          r={RING.radius}
+          fill='none'
+          stroke={toneColor(score)}
+          strokeWidth={RING.stroke}
+          strokeLinecap='round'
+          strokeDasharray={`${length}`}
+          strokeDashoffset={length * (1 - score / 100)}
+          transform={`rotate(-90 ${c} ${c})`}
+        />
+      </svg>
+      <div style={{ display: 'flex', fontSize: 46, fontWeight: 800 }}>
+        {score}
+      </div>
+    </div>
+  );
+};
+
 /**
- * 당근 — features/daily-sentence/ui/CarrotSvg 의 평면 그림을 옮겨 왔다.
- * shared 레이어는 features 를 import 할 수 없고, satori 는 className 이 아니라 width/height 로 크기를 잡는다.
- * 홈은 장식이라 빼고 잎 셋 + 몸통 + 광 한 줄만.
+ * 문장 줄 나누기 — 화면처럼 가운데 정렬 + 줄 폭을 고르게(text-wrap: balance).
+ * 줄 수를 정한 뒤 그 줄 수로 들어가는 가장 좁은 폭을 찾아 다시 나눈다 — 마지막 줄만 짧게 남지 않는다.
  */
-const Carrot = ({ height }: { height: number }) => (
-  <svg width={(height * 60) / 98} height={height} viewBox='0 0 60 98'>
-    <rect
-      x='11'
-      y='11'
-      width='18'
-      height='29'
-      rx='9'
-      transform='rotate(-12 20 38)'
-      fill='#2f8f4e'
-    />
-    <rect
-      x='31'
-      y='11'
-      width='18'
-      height='29'
-      rx='9'
-      transform='rotate(12 40 38)'
-      fill='#2f8f4e'
-    />
-    <rect x='21' y='5' width='18' height='35' rx='9' fill='#38a05a' />
-    <path
-      d='M30 30 C49 30 57 38 57 51 C57 68 46 82 38 89 C34 92.5 26 92.5 22 89 C14 82 3 68 3 51 C3 38 11 30 30 30 Z'
-      fill='#f2862b'
-    />
-    <path
-      d='M14 41 C16 37.5 19 35.5 23 35'
-      stroke='#ffffff'
-      strokeWidth='2.6'
-      fill='none'
-      strokeLinecap='round'
-      opacity='0.4'
-    />
-  </svg>
-);
+const toBalancedQuote = (text: string) => {
+  const quote = toQuoteLines(text);
+  if (quote.lines.length <= 1) return quote;
+  const full = quote.lines.join(' ');
+  let lines = quote.lines;
+  for (let width = 4; width < 40; width += 0.5) {
+    const candidate = wrapLines(full, width, Infinity);
+    if (candidate.length <= quote.lines.length) {
+      lines = candidate;
+      break;
+    }
+  }
+  return { ...quote, lines };
+};
 
 export type SentenceStoryCardProps = {
   /** 머리글 날짜 ("11월 27일") */
@@ -77,9 +107,9 @@ export type SentenceStoryCardProps = {
 /**
  * 오늘의 문장 스토리 이미지 (1080×1920) — /sentence 결과 화면의 공유 버튼(HJ B안, 2026-11-27).
  *
- * 결과 화면의 크림 종이를 그대로 옮긴다: 위 머리글(날짜 · page0127.) → 가운데 문장 + 출처 →
- * 당근 독서운 상자 → 맨 아래 "page0127.com/sentence 에서 나도 뽑기".
- * 문장 카드(A)와 달리 당근·점수를 보여 줘서 받는 사람이 "나도 뽑아 볼래"가 되게 한다.
+ * 결과 화면(SentenceBook 결과 쪽)을 그대로 옮긴다(HJ 11/27 "기존 오늘의 문장 디자인 따르기 · 가운데 정렬"):
+ * 위 머리글(page0127. 오늘의 문장 | 날짜 · 오늘의 독서운) → 가운데 "오늘의 한 줄" + 굵은 문장 + 출처 →
+ * 원형 게이지 독서운 → 맨 아래 "page0127.com/sentence 에서 나도 뽑기".
  * 누구의 결과인지(프로필)는 없다 — 비회원도 공유하는 화면이라 그릴 사람이 없다.
  * 위아래 250px 은 인스타가 덮는 자리라 비워 둔다.
  */
@@ -91,7 +121,7 @@ export const SentenceStoryCard = ({
   comment,
 }: SentenceStoryCardProps) => {
   // 문장 안 줄바꿈은 결과 화면에서도 한 문단으로 읽힌다 → 공백으로 잇고 이미지 폭에 맞춰 다시 나눈다
-  const quote = toQuoteLines(text.replace(/\s*\n\s*/g, ' '));
+  const quote = toBalancedQuote(text.replace(/\s*\n\s*/g, ' '));
 
   return (
     <div
@@ -102,40 +132,68 @@ export const SentenceStoryCard = ({
         flexDirection: 'column',
         position: 'relative',
         padding: `${STORY_SAFE_Y}px ${STORY_GUTTER}px ${STORY_SAFE_Y}px`,
-        background: SENTENCE_COLORS.cream,
+        background: SENTENCE_COLORS.page,
         color: SENTENCE_COLORS.ink,
       }}
     >
-      {/* 머리글 — 책의 쪽 머리처럼 작게 */}
+      {/* 머리글 — 화면의 .runhead: 왼쪽 파랑, 오른쪽 옅게 */}
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
-          fontSize: 32,
+          fontSize: 30,
           fontWeight: 500,
-          color: SENTENCE_COLORS.muted,
         }}
       >
-        <div style={{ display: 'flex' }}>{`${dateLabel} · 오늘의 문장`}</div>
-        <div style={{ display: 'flex', fontWeight: 800 }}>page0127.</div>
+        <div style={{ display: 'flex', color: SENTENCE_COLORS.blue }}>
+          page0127. 오늘의 문장
+        </div>
+        <div
+          style={{ display: 'flex', color: SENTENCE_COLORS.sub }}
+        >{`${dateLabel} · 오늘의 독서운`}</div>
       </div>
 
-      {/* 가운데 — 문장 + 출처 + 독서운 한 덩어리 */}
+      {/* 가운데 — 화면의 .body: 모두 가운데 정렬 */}
       <div
         style={{
           display: 'flex',
           flexDirection: 'column',
+          alignItems: 'center',
           justifyContent: 'center',
           flex: 1,
+          textAlign: 'center',
         }}
       >
+        {/* "오늘의 한 줄" + 오른쪽 짧은 선 */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            fontSize: 30,
+            fontWeight: 500,
+            color: SENTENCE_COLORS.sub,
+          }}
+        >
+          오늘의 한 줄
+          <div
+            style={{
+              display: 'flex',
+              width: 80,
+              marginLeft: 22,
+              borderTop: `2px solid ${SENTENCE_COLORS.line}`,
+            }}
+          />
+        </div>
+
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
+            alignItems: 'center',
+            marginTop: 44,
             fontSize: quote.size,
-            fontWeight: 500,
-            lineHeight: 1.6,
+            fontWeight: 800,
+            lineHeight: 1.5,
             letterSpacing: -1,
           }}
         >
@@ -149,27 +207,28 @@ export const SentenceStoryCard = ({
         <div
           style={{
             display: 'flex',
-            marginTop: 36,
+            marginTop: 40,
             fontSize: 30,
             fontWeight: 500,
-            color: SENTENCE_COLORS.muted,
+            color: SENTENCE_COLORS.sub,
           }}
         >
-          {truncate(source, SOURCE_MAX_WIDTH)}
+          {`— ${truncate(source, SOURCE_MAX_WIDTH)}`}
         </div>
 
+        {/* 독서운 — 화면의 .fortune: 흰 알약 안에 원형 게이지 + 두 줄 */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
-            marginTop: 72,
-            padding: '36px 44px',
-            borderRadius: 28,
-            background: SENTENCE_COLORS.box,
-            border: `2px solid ${SENTENCE_COLORS.boxLine}`,
+            marginTop: 64,
+            padding: '22px 52px 22px 22px',
+            borderRadius: 999,
+            background: SENTENCE_COLORS.chip,
+            border: `2px solid ${SENTENCE_COLORS.line}`,
           }}
         >
-          <Carrot height={124} />
+          <ScoreRing score={score} />
           <div
             style={{
               display: 'flex',
@@ -180,9 +239,9 @@ export const SentenceStoryCard = ({
             <div
               style={{
                 display: 'flex',
-                fontSize: 28,
+                fontSize: 27,
                 fontWeight: 500,
-                color: SENTENCE_COLORS.muted,
+                color: SENTENCE_COLORS.sub,
               }}
             >
               오늘의 독서운
@@ -190,26 +249,13 @@ export const SentenceStoryCard = ({
             <div
               style={{
                 display: 'flex',
-                fontSize: 92,
-                fontWeight: 800,
-                lineHeight: 1.05,
-                color: toneColor(score),
+                marginTop: 6,
+                fontSize: 34,
+                fontWeight: 700,
               }}
             >
-              {score}
+              {comment}
             </div>
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              flex: 1,
-              marginLeft: 36,
-              fontSize: 32,
-              fontWeight: 700,
-              lineHeight: 1.4,
-            }}
-          >
-            {comment}
           </div>
         </div>
       </div>
