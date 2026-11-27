@@ -40,6 +40,7 @@ import {
   ShareVisual,
 } from '@/widgets/about';
 import { getRecentBooks } from '@/widgets/about/api/getRecentBooks';
+import { SERVICE_TAGLINE } from '@/widgets/about/model/serviceIntro';
 import {
   BackCover,
   buildChapters,
@@ -87,8 +88,8 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 const webSiteJsonLd = buildWebSiteJsonLd({
   name: 'page0127.',
   url: siteUrl,
-  description:
-    '읽은 책으로 내 책장을 만들어 앱 설치 없이 링크 하나로 보여 주는 무료 웹 독서 기록 서비스',
+  // /about 정의 문장(SERVICE_DEFINITION)과 같은 원문을 쓴다 — 소개를 바꾸면 여기도 같이 바뀐다.
+  description: SERVICE_TAGLINE,
 });
 
 // 브랜드 정보(JSON-LD) — sameAs로 공식 인스타그램 계정을 이 사이트와 같은 브랜드로 묶는다.
