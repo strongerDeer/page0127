@@ -73,7 +73,7 @@ const Image = () =>
       {/* 타자 치는 아이 — 뒤집고 키워서, 책상 아래는 무대 바닥선에서 자른다 */}
       <StageCrop>
         {/* satori 는 next/image 를 렌더하지 못한다 — 이 파일은 브라우저로 나가지 않는다 */}
-        { }
+        {}
         <img
           src={readHero()}
           alt=''

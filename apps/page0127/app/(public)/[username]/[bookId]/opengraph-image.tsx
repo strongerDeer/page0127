@@ -1,3 +1,4 @@
+import { balancedWrap } from '@/shared/lib/og/balanceLines';
 import { RatingStars } from '@/shared/lib/og/RatingStars';
 import { renderOg } from '@/shared/lib/og/render';
 import {
@@ -33,7 +34,9 @@ type Props = {
 };
 
 /** 폭 기준 상한 (한글 글자 수). 한줄평은 글자 칸에서 두 줄 안쪽이다 */
-const REVIEW_MAX_WIDTH = 36;
+/** 한줄평 한 줄 폭(한글 글자 수) — 글자 칸 784px ÷ 50px. 세 줄까지 고르게, 넘치면 말줄임 */
+const REVIEW_LINE_WIDTH = 15;
+const REVIEW_LINES = 3;
 const NAME_MAX_WIDTH = 10;
 
 const Image = async ({ params }: Props) => {
@@ -74,7 +77,7 @@ const Image = async ({ params }: Props) => {
             {score !== null ? (
               <RatingStars
                 score={score}
-                size={40}
+                size={48}
                 onColor={OG_COLORS.paper}
                 offColor='rgba(255, 255, 255, 0.3)'
               />
@@ -89,7 +92,7 @@ const Image = async ({ params }: Props) => {
                   // brand/accent — 카드에서 유일한 비(非)블루라 "특별하다"가 색으로 읽힌다
                   background: OG_COLORS.mint,
                   color: OG_COLORS.ink,
-                  fontSize: 24,
+                  fontSize: 28,
                   fontWeight: 700,
                 }}
               >
@@ -103,14 +106,22 @@ const Image = async ({ params }: Props) => {
           <div
             style={{
               display: 'flex',
+              flexDirection: 'column',
               marginTop: hasBadgeRow ? 28 : 0,
               width: FEATURE_COLUMN_WIDTH,
-              fontSize: 40,
-              fontWeight: 700,
-              lineHeight: 1.45,
+              fontSize: 50,
+              fontWeight: 800,
+              letterSpacing: -1,
+              lineHeight: 1.35,
             }}
           >
-            {`“${truncate(review, REVIEW_MAX_WIDTH)}”`}
+            {balancedWrap(`“${review}”`, REVIEW_LINE_WIDTH, REVIEW_LINES).map(
+              (line, i) => (
+                <div key={i} style={{ display: 'flex' }}>
+                  {line}
+                </div>
+              )
+            )}
           </div>
         ) : (
           // 한줄평이 없으면 무대가 비므로 그때만 책 제목을 쓴다

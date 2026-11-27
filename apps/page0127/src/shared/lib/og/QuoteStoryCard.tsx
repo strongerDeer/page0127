@@ -1,3 +1,4 @@
+import { balancedWrap } from './balanceLines';
 import { PlainCover } from './BookStoryCard';
 import { Cover, STAGE_BACKGROUND } from './StageCard';
 import {
@@ -72,7 +73,12 @@ export const toQuoteLines = (
   for (const [i, step] of QUOTE_STEPS.entries()) {
     const lines = wrapLines(text, lineWidth(step.size), Infinity);
     if (lines.length <= step.lines) {
-      return { size: step.size, lines, long: i === QUOTE_STEPS.length - 1 };
+      // 줄 수는 그대로, 줄 길이를 고르게(text-wrap: balance) — "…눈에 보이지 / 않아."처럼 한 어절만 떨어지지 않게
+      return {
+        size: step.size,
+        lines: balancedWrap(text, lineWidth(step.size), lines.length),
+        long: i === QUOTE_STEPS.length - 1,
+      };
     }
   }
   const last = QUOTE_STEPS[QUOTE_STEPS.length - 1];

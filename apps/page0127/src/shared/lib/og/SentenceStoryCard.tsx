@@ -1,7 +1,6 @@
 import { toQuoteLines } from './QuoteStoryCard';
 import { STORY_GUTTER, STORY_SAFE_Y, StoryFooter } from './StoryCard';
 import { truncate } from './theme';
-import { wrapLines } from './wrapLines';
 
 /**
  * 오늘의 문장 결과 화면(SentenceBook 의 .leaf) 색 — SentenceBook.module.css 라이트 값과 같다.
@@ -84,25 +83,6 @@ const ChapLine = () => (
   />
 );
 
-/**
- * 문장 줄 나누기 — 화면처럼 가운데 정렬 + 줄 폭을 고르게(text-wrap: balance).
- * 줄 수를 정한 뒤 그 줄 수로 들어가는 가장 좁은 폭을 찾아 다시 나눈다 — 마지막 줄만 짧게 남지 않는다.
- */
-const toBalancedQuote = (text: string) => {
-  const quote = toQuoteLines(text);
-  if (quote.lines.length <= 1) return quote;
-  const full = quote.lines.join(' ');
-  let lines = quote.lines;
-  for (let width = 4; width < 40; width += 0.5) {
-    const candidate = wrapLines(full, width, Infinity);
-    if (candidate.length <= quote.lines.length) {
-      lines = candidate;
-      break;
-    }
-  }
-  return { ...quote, lines };
-};
-
 export type SentenceStoryCardProps = {
   /** 머리글 날짜 ("11월 27일") */
   dateLabel: string;
@@ -131,7 +111,7 @@ export const SentenceStoryCard = ({
   comment,
 }: SentenceStoryCardProps) => {
   // 문장 안 줄바꿈은 결과 화면에서도 한 문단으로 읽힌다 → 공백으로 잇고 이미지 폭에 맞춰 다시 나눈다
-  const quote = toBalancedQuote(text.replace(/\s*\n\s*/g, ' '));
+  const quote = toQuoteLines(text.replace(/\s*\n\s*/g, ' '));
 
   return (
     <div

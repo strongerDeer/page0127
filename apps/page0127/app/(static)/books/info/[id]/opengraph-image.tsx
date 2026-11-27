@@ -51,7 +51,7 @@ const Image = async ({ params }: Props) => {
               <div
                 style={{
                   display: 'flex',
-                  fontSize: 96,
+                  fontSize: 128,
                   fontWeight: 700,
                   lineHeight: 1,
                 }}
@@ -61,9 +61,10 @@ const Image = async ({ params }: Props) => {
               <div
                 style={{
                   display: 'flex',
-                  marginLeft: 12,
-                  marginBottom: 8,
-                  fontSize: 36,
+                  marginLeft: 14,
+                  marginBottom: 12,
+                  fontSize: 48,
+                  fontWeight: 700,
                   color: STAGE_TEXT_SOFT,
                 }}
               >
@@ -82,7 +83,7 @@ const Image = async ({ params }: Props) => {
               >
                 <RatingStars
                   score={Math.round(book.avgRating)}
-                  size={36}
+                  size={46}
                   onColor={OG_COLORS.paper}
                   offColor='rgba(255, 255, 255, 0.3)'
                 />
@@ -90,7 +91,7 @@ const Image = async ({ params }: Props) => {
                   style={{
                     display: 'flex',
                     marginLeft: 16,
-                    fontSize: 32,
+                    fontSize: 42,
                     fontWeight: 700,
                   }}
                 >

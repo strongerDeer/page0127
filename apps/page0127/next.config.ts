@@ -79,6 +79,8 @@ const nextConfig: NextConfig = {
     '/**/*': ['./public/brand/*.png'],
     // 온라인 필사 공유 그림(타자 치는 아이) — 이 카드만 읽는다
     '/typing/little-prince/opengraph-image*': ['./public/og/typing-hero.png'],
+    // 배지 책장 공유 그림(배지 책 표지 세 권) — 이 카드만 읽는다
+    '/[username]/badges/opengraph-image*': ['./public/og/badge-*.jpg'],
   },
   // sharp(이미지 변환 엔진)를 서버 함수 묶음에서 뺀다.
   // next 가 sharp 를 의존성으로 갖고 있어 모든 함수에 따라 실리는데, 함수 하나 약 55MB 중
