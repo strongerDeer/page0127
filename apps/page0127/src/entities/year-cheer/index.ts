@@ -6,4 +6,5 @@ export {
   CHEER_SENTENCES,
   findCheerSentence,
   pickCheerSentence,
+  toCheerSource,
 } from './model/sentences';

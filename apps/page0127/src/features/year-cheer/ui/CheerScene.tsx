@@ -9,7 +9,11 @@ import { toast } from 'sonner';
 
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
-import { CHEER_YEAR, type CheerSentence } from '@/entities/year-cheer';
+import {
+  CHEER_YEAR,
+  type CheerSentence,
+  toCheerSource,
+} from '@/entities/year-cheer';
 
 import { ShareButton, ShareSheetButton } from '@/features/share';
 
@@ -226,7 +230,7 @@ export const CheerScene = ({
                     ))}
                   </blockquote>
                   <figcaption className='mt-3 text-[13px] text-[#55627a]'>
-                    {sentence.author}, 「{sentence.work}」
+                    {toCheerSource(sentence)}
                   </figcaption>
                 </figure>
               )}
