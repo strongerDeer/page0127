@@ -475,3 +475,53 @@ export const StageBookTitle = ({
     ) : null}
   </div>
 );
+
+/**
+ * 무대 크기의 창 — 안에 둔 그림을 무대 바닥선(흰 띠 경계)에서 자른다.
+ *
+ * 오늘의 문장·소개·새 소식·책 이야기 카드는 물건 하나를 크게 키워 윗부분만 보여 준다
+ * (HJ 2026-11-27 "확대해서, 흰 띠에서 잘리게"). 아래쪽이 잘려야 "더 있다"로 읽힌다.
+ * ⚠️ satori 는 overflow 로 boxShadow 를 자르지 못한다 — 안쪽 그림에 그림자를 아래로 주면 흰 띠에 번진다.
+ */
+export const StageCrop = ({ children }: { children: React.ReactNode }) => (
+  <div
+    style={{
+      display: 'flex',
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      width: '100%',
+      height: STAGE_HEIGHT,
+      overflow: 'hidden',
+    }}
+  >
+    {children}
+  </div>
+);
+
+/** 확대한 그림의 윗변 — 무대 위에서부터. 오늘의 문장 당근 책과 같은 높이 */
+export const CROP_TOP = 130;
+
+/** 큰 슬로건 — 왼쪽, 무대 안에서 세로 가운데. 홈 카드(BrandStage)와 같은 자리·크기 */
+export const StageSlogan = ({ lines }: { lines: readonly string[] }) => (
+  <div
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      position: 'absolute',
+      left: STAGE_GUTTER,
+      top: 0,
+      height: STAGE_HEIGHT,
+      fontSize: 80,
+      fontWeight: 800,
+      color: OG_COLORS.paper,
+      letterSpacing: -2.5,
+      lineHeight: 1.2,
+    }}
+  >
+    {lines.map((line) => (
+      <div key={line}>{line}</div>
+    ))}
+  </div>
+);
