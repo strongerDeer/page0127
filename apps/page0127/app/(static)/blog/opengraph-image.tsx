@@ -22,77 +22,32 @@ export const size = OG_SIZE;
 export const contentType = 'image/png';
 
 const PAPER = { width: 470, height: 600 } as const;
-const CREAM = '#f6efe2';
-/** 스켈레톤 막대 — 크림 종이 위에서 보이는 옅은 갈색 */
-const SKELETON = '#e2d7c2';
-/** 관계 이름표 자리 — 선 색을 옅게 */
-const LABEL = '#c9d6ea';
-const LINE = '#2d4f8f';
+/** 색은 파랑 한 갈래만 — 종이는 흰색, 사람은 옅은 파랑, 주인공만 한 단계 진하게 */
+const PAPER_BG = '#ffffff';
+const NODE = '#d6e6fd';
+const MAIN = '#93c0fb';
+const SKELETON = '#e6ecf5';
 
 type Person = {
-  name: string;
   /** 관계도 종이 안 중심 좌표 */
   x: number;
   y: number;
   r: number;
-  bg: string;
+  /** 주인공만 진하게 */
+  main?: boolean;
 };
 
-/** 가운데 주인공과 둘레 사람들 — 참고 관계도에서 가까운 사이만 골랐다 */
-const PEOPLE = {
-  center: { name: '강영두', x: 235, y: 145, r: 42, bg: '#d6e6fd' },
-  eunhye: { name: '은혜', x: 72, y: 115, r: 28, bg: '#f2dcc6' },
-  sana: { name: '산아', x: 72, y: 235, r: 28, bg: '#ead9ee' },
-  sechang: { name: '은세창', x: 398, y: 125, r: 28, bg: '#dfe6d2' },
-  munja: { name: '안문자', x: 235, y: 285, r: 36, bg: '#ead9ee' },
-  risa: { name: '리사', x: 398, y: 285, r: 28, bg: '#d6e6fd' },
-} satisfies Record<string, Person>;
-
-/** 선 + 가운데 이름표 */
-const LINKS: readonly {
-  from: keyof typeof PEOPLE;
-  to: keyof typeof PEOPLE;
-  label: string;
-  /** 이름표를 선 가운데에서 아래로 내리는 거리 — 위 사람 이름과 겹칠 때 */
-  dy?: number;
-}[] = [
-  { from: 'center', to: 'eunhye', label: '소꿉친구' },
-  { from: 'center', to: 'sana', label: '이야기 친구' },
-  { from: 'center', to: 'sechang', label: '동료' },
-  { from: 'center', to: 'munja', label: '하숙집', dy: 14 },
-  { from: 'munja', to: 'risa', label: '손녀' },
-];
-
 /**
- * 수채 번짐 대신 옅은 색 타원 — 참고 관계도의 무리(동네)를 색 면으로만 남긴다.
- * radial-gradient 로 번지게 하면 satori 가 가장자리를 검게 섞어 얼룩이 진다.
+ * 가운데 주인공 + 네 사람. 위치를 좌우 대칭으로 맞추고 종이 가장자리에 여백을 넉넉히 둔다
+ * (HJ 2026-11-27 "여백 고려, 다이어그램 좀 더 단순하게, 컬러 단순화"). 관계 이름표·무리 색면은 뺐다.
  */
-const Wash = ({
-  x,
-  y,
-  w,
-  h,
-  color,
-}: {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  color: string;
-}) => (
-  <div
-    style={{
-      display: 'flex',
-      position: 'absolute',
-      left: x - w / 2,
-      top: y - h / 2,
-      width: w,
-      height: h,
-      borderRadius: '50%',
-      background: color,
-    }}
-  />
-);
+const PEOPLE: readonly Person[] = [
+  { x: 235, y: 205, r: 44, main: true },
+  { x: 105, y: 150, r: 30 },
+  { x: 365, y: 150, r: 30 },
+  { x: 105, y: 290, r: 30 },
+  { x: 365, y: 290, r: 30 },
+];
 
 const Node = ({ p }: { p: Person }) => (
   <div
@@ -112,21 +67,18 @@ const Node = ({ p }: { p: Person }) => (
         width: p.r * 2,
         height: p.r * 2,
         borderRadius: p.r,
-        background: p.bg,
-        border: '3px solid #ffffff',
+        background: p.main ? MAIN : NODE,
       }}
     />
-    {/* 이름 자리 — 막대 뒤에 종이색 테두리를 둘러 지나가는 선을 가린다 */}
+    {/* 이름 자리 */}
     <div
       style={{
         display: 'flex',
-        width: p.r > 30 ? 64 : 48,
-        height: 14,
-        marginTop: 8,
-        borderRadius: 7,
+        width: p.main ? 60 : 44,
+        height: 12,
+        marginTop: 10,
+        borderRadius: 6,
         background: SKELETON,
-        border: `4px solid ${CREAM}`,
-        boxSizing: 'content-box',
       }}
     />
   </div>
@@ -141,85 +93,51 @@ const RelationMap = () => (
       top: CROP_TOP,
       width: PAPER.width,
       height: PAPER.height,
-      borderRadius: 14,
-      background: CREAM,
-      overflow: 'hidden',
+      borderRadius: 18,
+      background: PAPER_BG,
     }}
   >
-    <Wash x={400} y={140} w={170} h={150} color='rgba(196, 214, 240, 0.5)' />
-    <Wash x={300} y={310} w={320} h={150} color='rgba(214, 222, 196, 0.55)' />
-
-    {/* 선 — 사람 동그라미 중심끼리 잇는다. 동그라미가 위에 덮여 끝이 가려진다 */}
+    {/* 선 — 주인공에서 네 사람으로. 동그라미가 위에 덮여 끝이 가려진다 */}
     <svg
       width={PAPER.width}
       height={PAPER.height}
       viewBox={`0 0 ${PAPER.width} ${PAPER.height}`}
       style={{ position: 'absolute', left: 0, top: 0 }}
     >
-      {LINKS.map(({ from, to }) => (
+      {PEOPLE.slice(1).map((p) => (
         <line
-          key={`${from}-${to}`}
-          x1={PEOPLE[from].x}
-          y1={PEOPLE[from].y}
-          x2={PEOPLE[to].x}
-          y2={PEOPLE[to].y}
-          stroke={LINE}
-          strokeWidth='2'
+          key={`${p.x}-${p.y}`}
+          x1={PEOPLE[0].x}
+          y1={PEOPLE[0].y}
+          x2={p.x}
+          y2={p.y}
+          stroke={NODE}
+          strokeWidth='3'
         />
       ))}
     </svg>
 
-    {Object.values(PEOPLE).map((p) => (
-      <Node key={p.name} p={p} />
+    {PEOPLE.map((p) => (
+      <Node key={`${p.x}-${p.y}`} p={p} />
     ))}
 
-    {/* 관계 이름표 자리 — 선 가운데 작은 알약 */}
-    {LINKS.map(({ from, to, dy = 0 }) => (
-      <div
-        key={`${from}-${to}-label`}
-        style={{
-          display: 'flex',
-          position: 'absolute',
-          left: (PEOPLE[from].x + PEOPLE[to].x) / 2 - 22,
-          top: (PEOPLE[from].y + PEOPLE[to].y) / 2 - 8 + dy,
-          width: 44,
-          height: 16,
-          borderRadius: 8,
-          background: LABEL,
-          border: `3px solid ${CREAM}`,
-          boxSizing: 'content-box',
-        }}
-      />
-    ))}
-
-    {/* 머리 — 제목·부제 자리 */}
+    {/* 머리 — 제목 자리 */}
     <div
       style={{
         display: 'flex',
-        flexDirection: 'column',
         position: 'absolute',
         left: 0,
-        top: 28,
+        top: 44,
         width: PAPER.width,
-        alignItems: 'center',
+        justifyContent: 'center',
       }}
     >
       <div
         style={{
           display: 'flex',
-          width: 190,
-          height: 22,
-          borderRadius: 11,
-          background: '#c9d6ea',
-        }}
-      />
-      <div
-        style={{
-          display: 'flex',
-          width: 90,
-          height: 12,
-          marginTop: 10,
-          borderRadius: 6,
+          width: 160,
+          height: 20,
+          borderRadius: 10,
           background: SKELETON,
         }}
       />
