@@ -74,6 +74,16 @@ const ScoreRing = ({ score }: { score: number }) => {
   );
 };
 
+const ChapLine = () => (
+  <div
+    style={{
+      display: 'flex',
+      width: 80,
+      borderTop: `2px solid ${SENTENCE_COLORS.line}`,
+    }}
+  />
+);
+
 /**
  * 문장 줄 나누기 — 화면처럼 가운데 정렬 + 줄 폭을 고르게(text-wrap: balance).
  * 줄 수를 정한 뒤 그 줄 수로 들어가는 가장 좁은 폭을 찾아 다시 나눈다 — 마지막 줄만 짧게 남지 않는다.
@@ -164,7 +174,7 @@ export const SentenceStoryCard = ({
           textAlign: 'center',
         }}
       >
-        {/* "오늘의 한 줄" + 오른쪽 짧은 선 */}
+        {/* "— 오늘의 한 줄 —" — 화면의 .chap 처럼 양옆에 같은 길이의 선, 가운데 축(HJ 11/27) */}
         <div
           style={{
             display: 'flex',
@@ -174,15 +184,9 @@ export const SentenceStoryCard = ({
             color: SENTENCE_COLORS.sub,
           }}
         >
-          오늘의 한 줄
-          <div
-            style={{
-              display: 'flex',
-              width: 80,
-              marginLeft: 22,
-              borderTop: `2px solid ${SENTENCE_COLORS.line}`,
-            }}
-          />
+          <ChapLine />
+          <div style={{ display: 'flex', margin: '0 22px' }}>오늘의 한 줄</div>
+          <ChapLine />
         </div>
 
         <div
