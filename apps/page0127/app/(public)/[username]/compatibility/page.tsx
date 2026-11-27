@@ -3,10 +3,16 @@ import { notFound, redirect } from 'next/navigation';
 import { createClient } from '@/shared/config/supabase/server';
 import { checkUsageLimit } from '@/shared/lib/aiUsage';
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
+import { buildShareMetadata } from '@/shared/lib/seo/shareMetadata';
 
 import { getProfileByUsername } from '@/entities/profile/api/getProfileByUsername';
+import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProfileByUsername';
+import { toDisplayName } from '@/entities/profile/model/displayName';
 
-import { CompatibilityView } from '@/features/compatibility';
+import {
+  CompatibilityGuest,
+  CompatibilityView,
+} from '@/features/compatibility';
 
 import type { MutualRecommendation } from '@/entities/compatibility/types';
 import type { Metadata } from 'next';
@@ -31,19 +37,23 @@ const CompatibilityPage = async ({ params }: PageProps) => {
   // 1. 로그인 필수 — 궁합은 "나"와 상대의 비교이므로
   const user = await getCurrentUser();
 
-  // 공개 서재의 "독서 케미"를 누르고 온 방문자가 가입을 마치면 이 화면으로 돌아오게
-  // 목적지를 남긴다 (안 남기면 가입 후 본인 서재로만 가서 케미를 보러 온 맥락을 잃는다)
-  if (!user) {
-    redirect(
-      `/login?redirect=${encodeURIComponent(`/${username}/compatibility`)}`
-    );
-  }
-
   // 2. 상대방 프로필 조회
   const profile = await getProfileByUsername(username);
 
   if (!profile) {
     notFound();
+  }
+
+  // 비로그인은 안내 화면 — 예전엔 /login 으로 바로 보냈는데, 미리보기 봇도 비로그인이라
+  // 링크 미리보기가 로그인 화면(홈 문구)으로 나갔다(2026-11-27). 로그인 버튼이 이 주소를
+  // redirect 로 남겨, 가입을 마치면 케미를 보러 온 맥락으로 돌아온다.
+  if (!user) {
+    return (
+      <CompatibilityGuest
+        targetName={toDisplayName(profile)}
+        username={username}
+      />
+    );
   }
   if (profile.id === user.id) {
     // 자기 자신과의 궁합은 없다 — 본인 서재로 돌려보낸다
@@ -116,6 +126,29 @@ const CompatibilityPage = async ({ params }: PageProps) => {
 
 export default CompatibilityPage;
 
-export const metadata: Metadata = {
-  robots: { index: false, follow: true },
+/**
+ * 링크 미리보기 — 케미 결과의 공유 버튼이 이 주소를 보낸다.
+ * openGraph 를 안 적으면 루트(홈) 문구가 실린다. 그림은 같은 폴더 opengraph-image.tsx.
+ * 쿠키를 읽지 않는 조회라 받는 사람·봇 모두에게 같은 제목이 나간다.
+ */
+export const generateMetadata = async ({
+  params,
+}: PageProps): Promise<Metadata> => {
+  const { username } = await params;
+  const profile = await getPublicProfileByUsername(username);
+  const name = profile ? toDisplayName(profile) : username;
+  const title = `${name}님과 나의 독서 케미 | page0127.`;
+  const description = `${name}님과 내 책장을 나란히 놓고, 겹치는 관심사와 서로 다른 결, 서로에게 건네줄 책을 찾아 드려요.`;
+
+  return {
+    title,
+    description,
+    // 사람마다 결과가 다른 화면이라 검색에는 올리지 않는다
+    robots: { index: false, follow: true },
+    ...buildShareMetadata({
+      path: `/${username}/compatibility`,
+      title,
+      description,
+    }),
+  };
 };

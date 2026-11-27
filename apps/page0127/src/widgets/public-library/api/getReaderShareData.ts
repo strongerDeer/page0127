@@ -10,6 +10,7 @@ import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTa
 import { type ReaderCard, toReaderCard } from '../model/readerCard';
 
 import type { ReadingGoal } from '@/entities/profile/types';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export type ReaderShareData = {
   /** 서재 주인 id — 스토리 라우트가 더 읽을 것이 있을 때(읽는 중 표지) */
@@ -38,13 +39,15 @@ export type ReaderShareData = {
  * 공개된 칸만 쓴다(공개 프로필·공개 완독 책·공개 취향 이력) — 미리보기는 링크를 받은 사람이 볼 것과 같아야 한다.
  */
 export const getReaderShareData = async (
-  username: string
+  username: string,
+  /** 체험 계정 본인이 자기 스토리 이미지를 부를 때만 넘긴다(getPublicShelfSummary 참고) */
+  client?: SupabaseClient
 ): Promise<ReaderShareData | null> => {
   const profile = await getPublicProfileByUsername(username);
   if (!profile) return null;
 
   const [summary, history] = await Promise.all([
-    getPublicShelfSummary(profile.id),
+    getPublicShelfSummary(profile.id, client),
     getPublicTasteHistory(profile.id),
   ]);
   const latest = history[0];

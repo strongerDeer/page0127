@@ -25,12 +25,25 @@ test('비로그인 케미 안내는 조건을 채운 서재에서만 보이고 �
     const chemi = chemiBanner.getByRole('link', { name: /케미 보기/ });
     await expect(chemi).toHaveAttribute('href', `${path}/compatibility`);
     await chemi.click();
+    // 비로그인은 로그인 화면으로 바로 가지 않고 케미 안내 화면이 먼저 선다(2026-11-27) —
+    // 링크 미리보기 봇도 비로그인이라, 바로 보내면 미리보기가 로그인 화면(홈 문구)이 됐다
+    await expect(page).toHaveURL(new RegExp(`${path}/compatibility$`));
+    await expect(
+      page.getByRole('heading', { name: /나의 독서 케미/ })
+    ).toBeVisible();
+    const login = page.getByRole('link', { name: '로그인하고 케미 보기' });
+    await expect(login).toHaveAttribute(
+      'href',
+      `/login?redirect=${encodeURIComponent(`${path}/compatibility`)}`
+    );
+    await login.click();
     await expect(page).toHaveURL(
       new RegExp(
         `/login\\?redirect=${encodeURIComponent(`${path}/compatibility`)}`
       )
     );
-    await page.goBack();
+    // 안내 화면 → 로그인 두 번 이동했으니 서재로 바로 돌아간다
+    await page.goto(path!);
   }
 
   // 페이지 끝 배너

@@ -1,5 +1,7 @@
 import { createAnonClient } from '@/shared/config/supabase/anon';
 
+import type { SupabaseClient } from '@supabase/supabase-js';
+
 /** 공유 카드·메타데이터에 쓰는 책 기록의 최소 필드 */
 export type PublicBookRecord = {
   title: string;
@@ -27,13 +29,18 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const getPublicBookRecord = async (
   userId: string,
-  bookId: string
+  bookId: string,
+  /**
+   * 조회에 쓸 클라이언트. 기본은 익명 — 체험 계정 본인만 자기 세션으로 부른다
+   * (체험 책은 RLS 로 본인에게만 보여서, 익명으로는 0권이 된다. is_public 조건은 그대로다)
+   */
+  client?: SupabaseClient
 ): Promise<PublicBookRecord | null> => {
   // /{username}/{bookId} 자리에 아무 글자나 올 수 있다(크롤러가 붙인 경로 등).
   // 어차피 없는 기록이므로 묻지 않고 null — 오류 로그가 Sentry 이슈로 쌓이지 않게 한다(PAGE0127-1W)
   if (!UUID.test(bookId)) return null;
 
-  const supabase = createAnonClient();
+  const supabase = client ?? createAnonClient();
 
   const { data, error } = await supabase
     .from('books')
