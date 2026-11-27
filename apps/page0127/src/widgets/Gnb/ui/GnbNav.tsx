@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/shared/lib/utils';
 import { IntentPrefetchLink } from '@/shared/ui/IntentPrefetchLink';
 
+import { NewsDot, useUnseenNews } from '@/widgets/news-notice';
+
 // GNB 주 메뉴 — 활성 표시에 usePathname이 필요해서 이 부분만 Client
 type GnbNavProps = {
   isLoggedIn: boolean;
@@ -24,6 +26,8 @@ const isUnder = (pathname: string, base: string) =>
 
 export const GnbNav = ({ isLoggedIn, username }: GnbNavProps) => {
   const pathname = usePathname();
+  // 안 본 책 이야기 새 글이 있으면 그 칸에 빨간 점(2026-11-27 HJ A안)
+  const { stories: unseenStories } = useUnseenNews();
 
   const myLibrary = isLoggedIn && username ? `/${username}` : null;
 
@@ -63,13 +67,16 @@ export const GnbNav = ({ isLoggedIn, username }: GnbNavProps) => {
             href={link.href}
             aria-current={active ? 'page' : undefined}
             className={cn(
-              'whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-colors',
+              'relative whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium transition-colors',
               active
                 ? 'text-text-strong'
                 : 'text-text-subtle hover:text-text-strong'
             )}
           >
             {link.label}
+            {link.href === '/blog' && unseenStories > 0 && (
+              <NewsDot label='새 글' className='right-1 top-1.5' />
+            )}
           </IntentPrefetchLink>
         );
       })}

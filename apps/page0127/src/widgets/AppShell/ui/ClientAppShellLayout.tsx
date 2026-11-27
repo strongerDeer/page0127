@@ -9,6 +9,7 @@ import { useCurrentUserContext, userKeys } from '@/entities/user';
 import { AppShellLayout } from './AppShellLayout';
 
 import type { ShellUser } from '../api/getShellUser';
+import type { NewsStamp } from '@/widgets/news-notice';
 
 /**
  * 서버에서 로그인을 읽지 않는 셸 — CDN 에 미리 만들어 두는(ISR) 공개 페이지용.
@@ -23,8 +24,11 @@ import type { ShellUser } from '../api/getShellUser';
  * 3. 받기 전까지는 비로그인 모양으로 그린다 — 0.2초쯤 "로그인" 버튼이 보였다가 바뀔 수 있다
  */
 export const ClientAppShellLayout = ({
+  news,
   children,
 }: {
+  /** 최근 소식 — 로그인과 상관없는 공용 값이라 서버 레이아웃이 읽어 넘긴다(ISR 그대로) */
+  news: NewsStamp[];
   children: React.ReactNode;
 }) => {
   const { currentUser } = useCurrentUserContext();
@@ -40,7 +44,7 @@ export const ClientAppShellLayout = ({
   });
 
   return (
-    <AppShellLayout user={currentUser ? (shellUser ?? null) : null}>
+    <AppShellLayout user={currentUser ? (shellUser ?? null) : null} news={news}>
       {children}
     </AppShellLayout>
   );

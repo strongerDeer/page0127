@@ -39,9 +39,46 @@ export type ChangelogEntry = {
   date: string;
   title: string;
   description?: string;
+  /**
+   * 소식을 직접 써 볼 수 있는 곳 — 서재 새 소식 카드의 "바로 가기"가 여기로 간다.
+   * 없으면 카드는 /updates 로 보낸다(widgets/news-notice).
+   */
+  href?: string;
 };
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    date: '2026.11.26',
+    title: '메뉴를 PC와 폰 모두 같은 네 칸으로 맞췄어요',
+    description:
+      '내 서재·라운지·전체 도서·책 이야기 네 칸이에요. 오늘의 문장·온라인 필사·공지는 오른쪽 위 ☰ 목차에서 찾을 수 있어요.',
+  },
+  {
+    date: '2026.11.26',
+    title: '독서 캘린더에 오늘의 문장이 남아요',
+    description:
+      '오늘의 문장을 펼친 날은 캘린더에 당근이 꽂혀요. 달력 바로 아래에서 문장 서랍으로 들어갈 수 있어요.',
+  },
+  {
+    date: '2026.11.25',
+    title: '『어린 왕자』 온라인 필사가 열렸어요',
+    description:
+      '27장 전문을 한 문장씩 따라 써요. 명문장만 골라 쓸 수도 있고, 타수 랭킹도 있어요.',
+    href: '/typing/little-prince',
+  },
+  {
+    date: '2026.11.25',
+    title: '독서 케미 결과를 상대에게 알릴 수 있어요',
+    description:
+      '케미를 본 뒤 원하면 상대에게 결과를 알려요. 기본은 나만 보기예요.',
+  },
+  {
+    date: '2026.11.23',
+    title: '책 이야기가 생겼어요',
+    description:
+      '독후감과 인물 관계도, 독서 통계 같은 책 이야기를 모아 읽어요. 메뉴의 책 이야기에서 볼 수 있어요.',
+    href: '/blog',
+  },
   {
     date: '2026.11.22',
     title: '개인정보처리방침을 고쳤어요',

@@ -37,6 +37,7 @@ import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTa
 import { getBadgeActivity } from '@/features/badge/api/getBadgeActivity';
 import { CarrotSproutSvg, DailySentenceCard } from '@/features/daily-sentence';
 
+import { LibraryNewsCard } from '@/widgets/news-notice';
 import { LIBRARY_BOOK_COLUMNS } from '@/widgets/public-library/model/libraryBookColumns';
 import { toReaderCard } from '@/widgets/public-library/model/readerCard';
 import { PublicLibraryContent } from '@/widgets/public-library/PublicLibraryContent';
@@ -361,6 +362,8 @@ const LibraryContent = async ({
       sentenceDraws={sentenceDraws}
       sentenceMonthCounts={sentenceMonthCounts}
       readingGoals={readingGoals}
+      // 새 소식 카드 — 회원은 홈 대신 서재로 오므로 회원 창구를 여기 둔다(2026-11-27 HJ C안 ①자동)
+      newsSlot={isOwnProfile ? <LibraryNewsCard /> : null}
       // 서재 위쪽 카드 셋(오늘의 문장·주간 회상·내가 모은 문장)은 독서 캘린더 패널로 옮겼다(HJ B안, 2026-11-10).
       // 오늘의 문장 — 오늘 칸 패널. 풀이 비었고 오늘 펼친 것도 없으면 넣지 않는다
       calendarTodaySlot={

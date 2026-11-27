@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/shared/lib/utils';
 import { IntentPrefetchLink } from '@/shared/ui/IntentPrefetchLink';
 
+import { NewsDot, useUnseenNews } from '@/widgets/news-notice';
+
 import { isNavItemActive, navItems, resolveNavHref } from '../model/navItems';
 
 /**
@@ -18,6 +20,8 @@ type BottomTabBarProps = {
 
 export const BottomTabBar = ({ username }: BottomTabBarProps) => {
   const pathname = usePathname();
+  // 안 본 책 이야기 새 글이 있으면 그 탭 아이콘 오른쪽 위에 빨간 점(2026-11-27 HJ A안)
+  const { stories: unseenStories } = useUnseenNews();
   // '내 서재' 탭은 username이 아직 없는 드문 과도 상태에서는 아예 감춘다
   // (링크가 '/'로 잘못 뜨는 것보다 안 보이는 게 낫다)
   const items = navItems.filter(
@@ -45,7 +49,12 @@ export const BottomTabBar = ({ username }: BottomTabBarProps) => {
               active ? 'text-primary' : 'text-muted-foreground'
             )}
           >
-            <Icon aria-hidden='true' className='size-5' />
+            <span className='relative'>
+              <Icon aria-hidden='true' className='size-5' />
+              {item.href === '/blog' && unseenStories > 0 && (
+                <NewsDot label='새 글' className='-right-1 -top-0.5' />
+              )}
+            </span>
             {item.label}
           </IntentPrefetchLink>
         );

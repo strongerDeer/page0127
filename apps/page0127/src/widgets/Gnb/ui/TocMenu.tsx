@@ -32,6 +32,8 @@ import { nameInitials } from '@/entities/profile/model/displayName';
 
 import { useLogout } from '@/features/auth/api/useLogout';
 
+import { NewsDot, useUnseenNews } from '@/widgets/news-notice';
+
 import { getTocGroups, isTocLinkActive } from '../model/tocLinks';
 
 import type { TocIcon, TocLink } from '../model/tocLinks';
@@ -115,6 +117,27 @@ export const TocMenu = ({ user }: TocMenuProps) => {
     setOpen(false);
   }
 
+  // 새 소식(2026-11-27 HJ A안) — 공지는 ☰ 안에만 있으니 ☰ 에 점을 찍는다.
+  // 책 이야기는 메뉴 칸(PC 상단·폰 하단 탭)에 점이 찍히고, 하단 탭이 없는 비로그인 폰만 ☰ 안에 있다.
+  const { updates: unseenUpdates, stories: unseenStories } = useUnseenNews();
+  const showTriggerDot =
+    unseenUpdates > 0 || (!isLoggedIn && unseenStories > 0);
+  // 줄 오른쪽 작은 글자 — "새 소식 2"
+  const newsCountFor = (href: string) => {
+    if (href === '/updates' && unseenUpdates > 0)
+      return `새 소식 ${unseenUpdates}`;
+    if (href === '/blog' && unseenStories > 0) return `새 글 ${unseenStories}`;
+    return null;
+  };
+  const renderNewsCount = (href: string) => {
+    const text = newsCountFor(href);
+    return text ? (
+      <span className='ml-auto pl-3 text-xs font-semibold text-destructive'>
+        {text}
+      </span>
+    ) : null;
+  };
+
   const { account, main, daily, sub } = getTocGroups({
     isLoggedIn,
     username,
@@ -147,6 +170,7 @@ export const TocMenu = ({ user }: TocMenuProps) => {
             )}
             <LinkIcon link={link} size={size} />
             {link.label}
+            {renderNewsCount(link.href)}
           </a>
         ) : (
           <IntentPrefetchLink
@@ -171,6 +195,7 @@ export const TocMenu = ({ user }: TocMenuProps) => {
             )}
             <LinkIcon link={link} size={size} />
             {link.label}
+            {renderNewsCount(link.href)}
           </IntentPrefetchLink>
         )}
       </li>
@@ -183,9 +208,10 @@ export const TocMenu = ({ user }: TocMenuProps) => {
         <button
           type='button'
           aria-label='메뉴 열기'
-          className='flex size-9 items-center justify-center rounded-full text-text-subtle transition-colors hover:bg-sunken hover:text-text-strong'
+          className='relative flex size-9 items-center justify-center rounded-full text-text-subtle transition-colors hover:bg-sunken hover:text-text-strong'
         >
           <Menu aria-hidden='true' className='size-5' />
+          {showTriggerDot && <NewsDot className='right-1 top-1' />}
         </button>
       </DialogPrimitive.Trigger>
 

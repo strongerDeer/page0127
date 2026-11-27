@@ -1,6 +1,7 @@
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
 import { AppShellLayout, getShellUser } from '@/widgets/AppShell';
+import { getNewsStamps } from '@/widgets/news-notice/server';
 
 /**
  * 공개 페이지 레이아웃 (모두 접근 가능)
@@ -17,12 +18,12 @@ const PublicLayout = async ({
   /** @modal 칸 — 사이트 안에서 연 /sentence 를 모달로 띄운다(Intercepting Route). 평소엔 비어 있다 */
   modal: React.ReactNode;
 }) => {
-  const user = await getCurrentUser();
+  const [user, news] = await Promise.all([getCurrentUser(), getNewsStamps()]);
 
   const shellUser = user ? await getShellUser(user) : null;
 
   return (
-    <AppShellLayout user={shellUser}>
+    <AppShellLayout user={shellUser} news={news}>
       {children}
       {modal}
     </AppShellLayout>
