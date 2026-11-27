@@ -110,6 +110,10 @@ export const toStorySummary = (row: StoryRow): StorySummary => ({
   rating: row.rating ?? 0,
   mapImage: toStoryImage(row.map_image),
   coverImage: toStoryImage(row.cover_image),
+  // 대표 이미지가 있을 때만 공유 그림도 읽는다(cover_image.share)
+  shareImage: isRecord(row.cover_image)
+    ? toStoryImage(row.cover_image.share)
+    : null,
   coverPosition: toCoverPosition(row.cover_position),
   isReview: row.is_review ?? true,
   leadStat: toLeadStat(row.lead_stat),

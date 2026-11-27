@@ -53,6 +53,11 @@ export type StorySummary = {
    * 없으면 목록은 관계도 윗부분·첫 차트 숫자, 공유는 자동 그림(share-image)
    */
   coverImage: StoryImage | null;
+  /**
+   * 공유 미리보기 전용 가로 그림(1200×630 권장) — 목록은 정사각형, 카톡은 가로라 한 장으로 둘 다 맞추기 어렵다
+   * (HJ 2026-11-27 B안). DB 에는 cover_image.share 로 함께 저장한다(새 칸 X). 없으면 대표 이미지를 가운데 기준으로 자른다
+   */
+  shareImage: StoryImage | null;
   /** 목록 정사각형 썸네일에서 보일 곳 — CSS object-position("가로% 세로%") */
   coverPosition: string;
   /**

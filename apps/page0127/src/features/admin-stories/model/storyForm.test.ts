@@ -250,3 +250,26 @@ describe('본문 그림', () => {
     });
   });
 });
+
+describe('공유용 그림', () => {
+  const cover = { src: BUCKET_SRC, width: 1600, height: 1600, alt: '표지' };
+  const share = { src: BUCKET_SRC, width: 1200, height: 630, alt: '' };
+
+  it('대표 이미지 안에 share 로 함께 저장한다', () => {
+    const ok = validateStoryInput(
+      input({ coverImage: cover, shareImage: share }),
+      SUPABASE,
+      '책'
+    );
+    expect(ok.ok && ok.value.cover_image).toEqual({
+      ...cover,
+      share: { ...share, alt: '대온실 수리 보고서 독후감과 인물관계도' },
+    });
+  });
+
+  it('대표 이미지 없이 공유용 그림만은 안 된다', () => {
+    expect(
+      validateStoryInput(input({ shareImage: share }), SUPABASE, '책').ok
+    ).toBe(false);
+  });
+});

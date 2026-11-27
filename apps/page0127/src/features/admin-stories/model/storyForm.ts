@@ -44,6 +44,8 @@ export type StoryInput = {
   mapCards: StoryImage[];
   /** 대표 이미지 — 목록 썸네일·공유 미리보기 */
   coverImage: StoryImage | null;
+  /** 공유 미리보기 전용 가로 그림 — 대표 이미지가 있을 때만 */
+  shareImage?: StoryImage | null;
   /** 목록 정사각형 썸네일에서 보일 곳 "가로% 세로%" */
   coverPosition: string;
   /** 책을 연결한 글이 독후감인가 — 책 없는 글은 저장할 때 true 로 둔다(뜻 없음) */
@@ -61,7 +63,8 @@ export type ValidStory = {
   rating: number;
   map_image: StoryImage | null;
   map_cards: StoryImage[];
-  cover_image: StoryImage | null;
+  /** 대표 이미지 + 공유 그림(share) — 새 DB 칸 없이 jsonb 안에 함께 둔다 */
+  cover_image: (StoryImage & { share?: StoryImage }) | null;
   cover_position: string;
   is_review: boolean;
   characters: StoryCharacterGroup[];
@@ -256,6 +259,17 @@ export const validateStoryInput = (
     if (!checked.ok) return checked;
     coverImage = checked.value;
   }
+  let shareImage: StoryImage | null = null;
+  if (input.shareImage) {
+    if (!coverImage)
+      return {
+        ok: false,
+        message: '공유용 그림은 대표 이미지가 있을 때만 쓸 수 있어요.',
+      };
+    const checked = sanitizeImage(input.shareImage, supabaseUrl, title);
+    if (!checked.ok) return checked;
+    shareImage = checked.value;
+  }
   const coverPosition = input.coverPosition?.trim() || '50% 50%';
   if (!COVER_POSITION.test(coverPosition))
     return { ok: false, message: '대표 이미지 위치를 다시 골라 주세요.' };
@@ -276,7 +290,9 @@ export const validateStoryInput = (
       rating: bookTitle ? rating : 0,
       map_image: mapImage,
       map_cards: mapCards,
-      cover_image: coverImage,
+      cover_image: coverImage
+        ? { ...coverImage, ...(shareImage ? { share: shareImage } : {}) }
+        : null,
       cover_position: coverPosition,
       // 책 없는 글은 종류를 고르지 않는다 — 기본값(true)으로 둬서 나중에 책을 붙이면 독후감부터
       is_review: bookTitle ? input.isReview !== false : true,

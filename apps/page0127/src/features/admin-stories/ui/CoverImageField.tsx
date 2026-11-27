@@ -27,6 +27,10 @@ const pct = (value: number) => `${value * 100}%`;
 
 type Props = {
   image: StoryImage | null;
+  /** 공유 미리보기 전용 가로 그림 — 있으면 공유 카드는 이 그림을 쓴다 */
+  shareImage: StoryImage | null;
+  onShareUpload: (files: FileList | null) => void;
+  onShareRemove: () => void;
   /** "가로% 세로%" */
   position: string;
   busy: boolean;
@@ -42,11 +46,17 @@ type Props = {
  *
  * 원본 위에 두 테두리를 겹쳐 "어디가 잘려 보이는지"를 보여 준다:
  *   - 실선: 목록 정사각형 썸네일 — 그림을 누르거나 아래 버튼으로 위치를 옮긴다
- *   - 점선: 공유 미리보기(1200×630) — 늘 가운데 기준
+ *   - 점선: 공유 미리보기(1200×630) — 늘 가운데 기준. 공유용 그림을 따로 올리면 점선은 사라진다
+ *
+ * 공유용 그림(HJ 2026-11-27 B안): 목록은 정사각형, 카톡은 가로라 한 장으로 둘 다 맞추기 어렵다.
+ * 정사각형 대표 이미지 + 1200×630 공유용 그림을 따로 올릴 수 있게 한다.
  * 옆에는 실제 목록 크기의 썸네일을 같은 object-position 으로 그린다.
  */
 export const CoverImageField = ({
   image,
+  shareImage,
+  onShareUpload,
+  onShareRemove,
   position,
   busy,
   uploading,
@@ -87,17 +97,19 @@ export const CoverImageField = ({
               {/* 어드민 미리보기 — 원본 주소를 그대로 그린다 */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={image.src} alt='' className='block w-full' />
-              {/* 공유 미리보기 영역(가운데 기준) */}
-              <span
-                aria-hidden
-                className='pointer-events-none absolute border-2 border-dashed border-white/90 mix-blend-difference'
-                style={{
-                  left: pct(frames.og.left),
-                  top: pct(frames.og.top),
-                  width: pct(frames.og.width),
-                  height: pct(frames.og.height),
-                }}
-              />
+              {/* 공유 미리보기 영역(가운데 기준) — 공유용 그림이 따로 있으면 그리지 않는다 */}
+              {!shareImage && (
+                <span
+                  aria-hidden
+                  className='pointer-events-none absolute border-2 border-dashed border-white/90 mix-blend-difference'
+                  style={{
+                    left: pct(frames.og.left),
+                    top: pct(frames.og.top),
+                    width: pct(frames.og.width),
+                    height: pct(frames.og.height),
+                  }}
+                />
+              )}
               {/* 목록 썸네일 영역 — 바깥은 어둡게 */}
               <span
                 aria-hidden
@@ -117,7 +129,9 @@ export const CoverImageField = ({
               />
             </button>
             <span className={HINT}>
-              실선 = 목록 썸네일, 점선 = 공유 미리보기 · 그림을 눌러 위치 고르기
+              {shareImage
+                ? '실선 = 목록 썸네일 · 그림을 눌러 위치 고르기'
+                : '실선 = 목록 썸네일, 점선 = 공유 미리보기 · 그림을 눌러 위치 고르기'}
             </span>
           </div>
 
@@ -158,6 +172,49 @@ export const CoverImageField = ({
               <span className='text-xs text-text-subtle tabular-nums'>
                 {position}
               </span>
+            </div>
+
+            {/* 공유용 그림 */}
+            <div className='flex flex-col gap-2 rounded-md border border-dashed border-line p-3'>
+              <span className='text-sm'>공유용 그림(선택)</span>
+              <span className={HINT}>
+                카톡·SNS 미리보기에만 쓰여요. 1200×630 가로 그림이면 딱 맞아요.
+                없으면 위 대표 이미지를 가운데 기준으로 잘라 써요.
+              </span>
+              {shareImage && (
+                // 공유 카드와 같은 비율·같은 자르기(가운데)
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={shareImage.src}
+                  alt=''
+                  className='aspect-[1200/630] w-72 rounded-md border border-line object-cover'
+                />
+              )}
+              <div className='flex flex-wrap gap-2'>
+                <label className='inline-flex cursor-pointer items-center gap-1 rounded-md border border-line px-3 py-1.5 text-xs hover:bg-accent'>
+                  <ImagePlus className='size-3.5' aria-hidden />
+                  {shareImage ? '공유용 그림 바꾸기' : '공유용 그림 올리기'}
+                  <input
+                    type='file'
+                    accept='image/png,image/webp,image/jpeg'
+                    className='sr-only'
+                    disabled={busy}
+                    onChange={(e) => {
+                      onShareUpload(e.target.files);
+                      e.target.value = '';
+                    }}
+                  />
+                </label>
+                {shareImage && (
+                  <button
+                    type='button'
+                    onClick={onShareRemove}
+                    className='rounded-md border border-line px-3 py-1.5 text-xs text-destructive hover:bg-accent'
+                  >
+                    빼기
+                  </button>
+                )}
+              </div>
             </div>
 
             <label className='flex flex-col gap-1 text-sm'>

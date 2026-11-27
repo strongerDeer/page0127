@@ -110,6 +110,9 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
   const [coverImage, setCoverImage] = useState<StoryImage | null>(
     story?.coverImage ?? null
   );
+  const [shareImage, setShareImage] = useState<StoryImage | null>(
+    story?.shareImage ?? null
+  );
   const [coverPosition, setCoverPosition] = useState(
     story?.coverPosition ?? DEFAULT_COVER_POSITION
   );
@@ -124,13 +127,15 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
 
   const onUpload = async (
     files: FileList | null,
-    target: 'map' | 'cards' | 'cover'
+    target: 'map' | 'cards' | 'cover' | 'share'
   ) => {
     if (!files?.length) return;
     setUploading(true);
     setMessage(null);
     try {
-      if (target === 'cover') {
+      if (target === 'share') {
+        setShareImage(await uploadStoryImageFile(files[0], title));
+      } else if (target === 'cover') {
         const image = await uploadStoryImageFile(
           files[0],
           coverImage?.alt || title
@@ -215,6 +220,7 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
       mapImage,
       mapCards,
       coverImage,
+      shareImage: coverImage ? shareImage : null,
       coverPosition,
       isReview,
       charactersText,
@@ -402,12 +408,16 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
       {/* 대표 이미지 */}
       <CoverImageField
         image={coverImage}
+        shareImage={shareImage}
+        onShareUpload={(files) => void onUpload(files, 'share')}
+        onShareRemove={() => setShareImage(null)}
         position={coverPosition}
         busy={busy}
         uploading={uploading}
         onUpload={(files) => void onUpload(files, 'cover')}
         onRemove={() => {
           setCoverImage(null);
+          setShareImage(null);
           setCoverPosition(DEFAULT_COVER_POSITION);
         }}
         onAltChange={(alt) =>
