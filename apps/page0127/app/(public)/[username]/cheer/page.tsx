@@ -5,6 +5,7 @@ import { ChevronLeft } from 'lucide-react';
 
 import { createClient } from '@/shared/config/supabase/server';
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
+import { buildShareMetadata } from '@/shared/lib/seo/shareMetadata';
 
 import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProfileByUsername';
 import { toDisplayName } from '@/entities/profile/model/displayName';
@@ -33,10 +34,13 @@ export const generateMetadata = async ({
   const title = profile
     ? `${name}님에게 온 ${CHEER_YEAR} 응원 | page0127.`
     : `${CHEER_YEAR} 연말 응원 | page0127.`;
+  const description = `${CHEER_YEAR}년을 보낸 ${name}님에게 도착한 응원 문장 선물이에요.`;
   return {
     title,
-    description: `${CHEER_YEAR}년을 보낸 ${name}님에게 도착한 응원 문장 선물이에요.`,
+    description,
     robots: { index: false, follow: false },
+    // og:title·그림이 홈·책장 것을 물려받지 않게 — 그림은 같은 폴더 opengraph-image.tsx
+    ...buildShareMetadata({ path: `/${username}/cheer`, title, description }),
   };
 };
 
