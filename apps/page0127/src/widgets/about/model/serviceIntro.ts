@@ -12,9 +12,16 @@
 
 export const SERVICE_NAME = 'page0127.';
 
+/**
+ * 한 줄 소개 — 정의 문장의 앞부분(주어·서술어 없이 명사로 끝남).
+ * 홈 WebSite JSON-LD description 처럼 "이름 없이 무엇인지"만 필요한 곳에 쓴다.
+ * 아래 SERVICE_DEFINITION 이 이 값을 그대로 품으므로, 여기만 고치면 둘이 같이 바뀐다.
+ */
+export const SERVICE_TAGLINE =
+  '읽은 책으로 내 책장을 만들어 앱 설치 없이 링크 하나로 보여 주는 무료 웹 독서 기록 서비스';
+
 /** 정의 문장 — 메타 설명·JSON-LD·llms.txt 첫 줄에 그대로 쓴다 */
-export const SERVICE_DEFINITION =
-  'page0127.은 읽은 책으로 내 책장을 만들어 앱 설치 없이 링크 하나로 보여 주는 무료 웹 독서 기록 서비스입니다. 책장이 쌓이면 AI가 독서 취향을 분석하고 다음 책을 추천합니다.';
+export const SERVICE_DEFINITION = `${SERVICE_NAME}은 ${SERVICE_TAGLINE}입니다. 책장이 쌓이면 AI가 독서 취향을 분석하고 다음 책을 추천합니다.`;
 
 export type ServiceFact = {
   label: string;
