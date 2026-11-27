@@ -1,3 +1,5 @@
+import type { Comment } from '@/entities/comment';
+
 /**
  * 활동 피드 엔티티 타입 정의
  *
@@ -40,6 +42,11 @@ export type Activity = {
   commentCount: number;
   /** 마지막 열람 이후 남이 단 댓글 수 — 0이면 배지를 감춘다 */
   newCommentCount: number;
+  /**
+   * 이 책 스레드의 댓글 트리(시간순). 피드는 댓글을 펼친 채 보여 주므로 목록 API 가
+   * 같이 내려 준다. 없으면(책 타임라인 등) 댓글 칸이 직접 조회한다.
+   */
+  comments?: Comment[];
   /** 중복 제거로 접힌 상태 변화들 — "담음 7/01 · 완독 7/20" */
   bookEvents: {
     activityType: ActivityType;

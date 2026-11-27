@@ -83,11 +83,14 @@ export async function GET(request: NextRequest) {
         .from('book_record_likes')
         .select('book_id, user_id')
         .in('book_id', bookIds),
-      // 본문은 필요 없다 — 개수와 배지 계산에 쓰는 세 컬럼만 받는다
+      // 피드는 댓글을 펼친 채 보여 준다 — 카드마다 /comments 를 부르지 않게 본문까지 한 번에 받는다
       supabase
         .from('book_comments')
-        .select('book_id, user_id, created_at')
-        .in('book_id', bookIds),
+        .select(
+          'id, book_id, user_id, parent_comment_id, content, created_at, updated_at'
+        )
+        .in('book_id', bookIds)
+        .order('created_at', { ascending: true }),
       // 열람 시각은 내 것만 본다(RLS 도 본인 행만 허용한다)
       supabase
         .from('book_thread_reads')
@@ -100,6 +103,23 @@ export async function GET(request: NextRequest) {
         .in('book_id', bookIds),
     ]);
 
+    // 댓글 쓴 사람 중 활동 작성자 프로필에 없는 사람만 더 받는다
+    const knownProfileIds = new Set((profiles ?? []).map((p) => p.id));
+    const commenterIds = [
+      ...new Set(
+        (comments ?? [])
+          .map((c) => c.user_id)
+          .filter((id): id is string => !!id && !knownProfileIds.has(id))
+      ),
+    ];
+    const { data: commenterProfiles } =
+      commenterIds.length > 0
+        ? await supabase
+            .from('profiles')
+            .select('id, nickname, username, photo_url')
+            .in('id', commenterIds)
+        : { data: [] };
+
     const feed = buildActivityItems({
       activities,
       profiles: profiles ?? [],
@@ -109,6 +129,10 @@ export async function GET(request: NextRequest) {
       threadReads: threadReads ?? [],
       bookEvents: bookEvents ?? [],
       currentUserId: user!.id,
+      commentProfiles: [
+        ...(profiles ?? []).map((p) => ({ ...p, username: p.username ?? null })),
+        ...(commenterProfiles ?? []),
+      ],
     });
 
     return successResponse(feed);

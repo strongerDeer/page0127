@@ -121,7 +121,7 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
   staticRoutes.push(...getStoryRoutes(stories, lastModified));
 
   // 등록된 책들의 정보 페이지 — 볼 게 있는 책만(model/bookIndexing.ts, HJ A안 2026-11-23).
-  // 리더 2명 이상, 또는 "이 책 이야기" 댓글·블로그 책 이야기가 있는 책. 나머지는 페이지에도 noindex 가 붙는다.
+  // 리더 2명 이상, 또는 "이 책에 남긴 말" 댓글·블로그 책 이야기가 있는 책. 나머지는 페이지에도 noindex 가 붙는다.
   // DB 조회에 실패해도 sitemap 자체는 살아야 한다 (정적 경로는 항상 나간다)
   try {
     const supabase = await createClient();

@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { StatePanel } from '@repo/ui';
-import { Button } from '@repo/ui';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 
@@ -13,11 +12,16 @@ import { API_ENDPOINTS } from '@/shared/config/endpoints';
 import { commentKeys } from '@/entities/comment';
 import { useCurrentUserContext } from '@/entities/user';
 
-import { CommentForm, CommentItem } from '@/features/comment';
+import {
+  commentAuthorName,
+  CommentComposer,
+  CommentItem,
+} from '@/features/comment';
 
 import { BookStreamEvent } from './BookStreamEvent';
 
 import type { Comment, CommentTarget } from '@/entities/comment';
+import type { ReplyTarget } from '@/features/comment';
 
 type StreamActivity = {
   kind: 'activity';
@@ -68,6 +72,7 @@ export const BookStreamSection = ({
 }: BookStreamSectionProps) => {
   const { currentUser } = useCurrentUserContext();
   const target: CommentTarget = { type: 'book', id: bookId };
+  const [replyTo, setReplyTo] = useState<ReplyTarget | null>(null);
 
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
@@ -97,14 +102,14 @@ export const BookStreamSection = ({
       for (const item of page.items) byId.set(item.id, item);
     }
 
-    // 최신이 위(내림차순) — 서버와 같은 규칙이다
+    // 오래된 것이 위(오름차순) — 대화처럼 위에서 아래로 읽고, 입력칸은 맨 아래(HJ, 2026-11-27).
+    // 서버는 페이지를 최신부터 잘라 주므로(커서) 화면에서만 뒤집는다.
     return [...byId.values()].sort((a, b) => {
-      const diff = compareIsoTime(b.createdAt, a.createdAt);
+      const diff = compareIsoTime(a.createdAt, b.createdAt);
       if (diff !== 0) return diff;
-      // 같은 시각이면 활동을 아래에 — 위에서 아래로 과거를 향하므로,
-      // "완독했어요"가 그에 달린 댓글보다 아래에 오는 게 자연스럽다
+      // 같은 시각이면 활동을 위에 — "완독했어요" 다음에 그에 달린 댓글이 온다
       if (a.kind === b.kind) return 0;
-      return a.kind === 'activity' ? 1 : -1;
+      return a.kind === 'activity' ? -1 : 1;
     });
   }, [data]);
 
@@ -129,56 +134,66 @@ export const BookStreamSection = ({
       ) : items.length === 0 ? (
         <StatePanel message='아직 이 책의 기록이 없어요.' />
       ) : (
-        <div className='space-y-3 border-t border-line-soft pt-4'>
-          {items.map((item) =>
-            item.kind === 'activity' ? (
-              <BookStreamEvent
-                key={item.id}
-                activityType={item.activityType}
-                content={item.content}
-                createdAt={item.createdAt}
-                rating={rating}
-                isLifeBook={isLifeBook}
-              />
-            ) : (
-              <div key={item.id} className='space-y-3'>
-                <CommentItem comment={item} target={target} />
-                {item.replies?.map((reply) => (
-                  <CommentItem
-                    key={reply.id}
-                    comment={reply}
-                    target={target}
-                    isReply
-                  />
-                ))}
-              </div>
-            )
-          )}
-
-          {/* 최신이 위에 오므로, 과거로 내려가는 더보기는 목록 맨 아래에 둔다 */}
+        <ul className='flex flex-col gap-4 border-t border-line-soft pt-4'>
+          {/* 오래된 것이 위라, 과거로 가는 더보기는 목록 맨 위에 둔다 */}
           {hasNextPage && (
-            <div className='flex justify-center pt-2'>
-              <Button
-                variant='ghost'
-                size='sm'
+            <li>
+              <button
+                type='button'
                 onClick={() => fetchNextPage()}
                 disabled={isFetchingNextPage}
+                className='inline-flex items-center text-sm font-medium text-text-subtle hover:text-text-strong'
               >
                 {isFetchingNextPage && (
                   <Loader2 className='mr-2 size-4 animate-spin' />
                 )}
-                이전 댓글 더보기
-              </Button>
-            </div>
+                이전 기록 더 보기
+              </button>
+            </li>
           )}
-        </div>
+          {items.map((item) =>
+            item.kind === 'activity' ? (
+              <li key={item.id}>
+                <BookStreamEvent
+                  activityType={item.activityType}
+                  content={item.content}
+                  createdAt={item.createdAt}
+                  rating={rating}
+                  isLifeBook={isLifeBook}
+                />
+              </li>
+            ) : (
+              <li key={item.id}>
+                <CommentItem
+                  comment={item}
+                  target={target}
+                  onReply={(c) =>
+                    setReplyTo({ commentId: c.id, name: commentAuthorName(c) })
+                  }
+                />
+                {item.replies && item.replies.length > 0 && (
+                  <ul className='mt-3 ml-4 flex flex-col gap-3 border-l-2 border-line-soft pl-4'>
+                    {item.replies.map((reply) => (
+                      <li key={reply.id}>
+                        <CommentItem comment={reply} target={target} isReply />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            )
+          )}
+        </ul>
       )}
 
-      {currentUser && (
-        <div className='mt-4 border-t border-line-soft pt-4'>
-          <CommentForm target={target} placeholder='이 책에 댓글 남기기…' />
-        </div>
-      )}
+      <div className='mt-4'>
+        <CommentComposer
+          target={target}
+          replyTo={replyTo}
+          onCancelReply={() => setReplyTo(null)}
+          placeholder='이 책에 댓글 남기기…'
+        />
+      </div>
     </section>
   );
 };

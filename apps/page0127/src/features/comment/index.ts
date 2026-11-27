@@ -1,4 +1,6 @@
-export { CommentForm } from './ui/CommentForm';
-export { CommentItem } from './ui/CommentItem';
-export { CommentList } from './ui/CommentList';
-export { CommentSection } from './ui/CommentSection';
+export { countComments } from './model/optimisticCache';
+export { useCommentCount } from './model/useCommentCount';
+export type { ReplyTarget } from './ui/CommentComposer';
+export { CommentComposer } from './ui/CommentComposer';
+export { commentAuthorName,CommentItem } from './ui/CommentItem';
+export { CommentThread } from './ui/CommentThread';
