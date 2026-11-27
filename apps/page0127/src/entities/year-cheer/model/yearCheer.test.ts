@@ -6,6 +6,7 @@ import {
   CHEER_SENTENCES,
   findCheerSentence,
   pickCheerSentence,
+  toCheerSource,
 } from './sentences';
 
 describe('응원 문장 목록', () => {
@@ -15,18 +16,43 @@ describe('응원 문장 목록', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('줄·작가·작품이 비어 있지 않다', () => {
+  it('줄·작가·책 제목이 비어 있지 않다', () => {
     for (const s of CHEER_SENTENCES) {
       expect(s.lines.length).toBeGreaterThan(0);
       for (const line of s.lines) expect(line.trim()).not.toBe('');
       expect(s.author.trim()).not.toBe('');
-      expect(s.work.trim()).not.toBe('');
+      expect(s.book.trim()).not.toBe('');
     }
   });
 
+  it('한 작가에 한 문장 — 같은 작가가 몰리지 않는다', () => {
+    const authors = CHEER_SENTENCES.map((s) => s.author);
+    const counts = new Map<string, number>();
+    for (const a of authors) counts.set(a, (counts.get(a) ?? 0) + 1);
+    const crowded = [...counts].filter(([, n]) => n > 2);
+    expect(crowded).toEqual([]);
+  });
+
   it('id 로 찾고, 없는 id 는 undefined', () => {
-    expect(findCheerSentence('yun-new-road')?.author).toBe('윤동주');
+    const first = CHEER_SENTENCES[0];
+    expect(findCheerSentence(first.id)).toBe(first);
     expect(findCheerSentence('nope')).toBeUndefined();
+  });
+
+  it('출처 한 줄: 작가·책, 글 제목·옮긴이는 있을 때만', () => {
+    expect(
+      toCheerSource({ id: 'a', lines: ['x'], author: '정세랑', book: '책' })
+    ).toBe('정세랑, 『책』');
+    expect(
+      toCheerSource({
+        id: 'b',
+        lines: ['x'],
+        author: '메리 올리버',
+        book: '천 개의 아침',
+        piece: '시',
+        translator: '민승남',
+      })
+    ).toBe('메리 올리버, 『천 개의 아침』 「시」 · 민승남 옮김');
   });
 
   it('무작위 값 0 이상 1 미만이 늘 목록 안의 문장을 고른다', () => {

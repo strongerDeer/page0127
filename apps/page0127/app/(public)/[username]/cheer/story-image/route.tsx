@@ -8,7 +8,7 @@ import { STORY_SIZE } from '@/shared/lib/og/theme';
 
 import { getPublicProfileByUsername } from '@/entities/profile/api/getPublicProfileByUsername';
 import { toDisplayName } from '@/entities/profile/model/displayName';
-import { CHEER_YEAR, toCheerLine } from '@/entities/year-cheer';
+import { CHEER_YEAR, toCheerLine, toCheerSource } from '@/entities/year-cheer';
 import { getYearCheer } from '@/entities/year-cheer/server';
 
 import { getCheerBookCount } from '@/features/year-cheer/server';
@@ -54,8 +54,7 @@ export const GET = async (_request: Request, { params }: Context) => {
         name={toDisplayName(profile)}
         firstLine={toCheerLine(books)}
         lines={sentence.lines}
-        author={sentence.author}
-        work={sentence.work}
+        source={toCheerSource(sentence)}
         serif={serif !== null}
       />,
       STORY_SIZE,
