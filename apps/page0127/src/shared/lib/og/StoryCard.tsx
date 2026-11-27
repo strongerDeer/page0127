@@ -177,9 +177,15 @@ export const STORY_FOOTER_BOTTOM = 172;
 
 export const StoryFooter = ({
   tone = 'dark',
+  address = 'page0127.com',
+  cta = '에서 내 책장 만들기',
 }: {
   /** 'dark' = 흰 면 위(파란 주소 + 옅은 남색), 'light' = 짙은 바탕 위(흰 주소 + 옅은 흰색) */
   tone?: 'dark' | 'light';
+  /** 굵게 적는 주소 — 오늘의 문장처럼 들어갈 곳이 따로 있으면 그 주소("page0127.com/sentence") */
+  address?: string;
+  /** 주소 뒤 한 줄 — 이미지마다 "나도 해 볼 것"이 다르다(책장 만들기·취향 분석받기·나도 뽑기) */
+  cta?: string;
 }) => (
   <div
     style={{
@@ -201,7 +207,7 @@ export const StoryFooter = ({
         color: tone === 'dark' ? OG_COLORS.brand : '#ffffff',
       }}
     >
-      page0127.com
+      {address}
     </div>
     {/* 조사(에서)는 주소에 붙여 쓴다 — 띄우면 "page0127.com 에서"로 끊겨 읽힌다 */}
     <div
@@ -211,7 +217,7 @@ export const StoryFooter = ({
         color: tone === 'dark' ? OG_COLORS.inkSoft : 'rgba(255, 255, 255, 0.8)',
       }}
     >
-      에서 내 책장 만들기
+      {cta}
     </div>
   </div>
 );

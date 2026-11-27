@@ -2,7 +2,11 @@
 export { getBookInfoId } from './api/getBookInfoId';
 export { getDailySentences, hasDailySentences } from './api/getDailySentences';
 export type { DailyScore, DailyScoreItem } from './model/dailyScore';
-export { dailyScore } from './model/dailyScore';
+export {
+  commentFor,
+  dailyScore,
+  isDailyScoreTotal,
+} from './model/dailyScore';
 export { sentenceBookHref } from './model/sentenceBookHref';
 export { formatSentenceSource } from './model/sentenceSource';
 export type { DailySentence } from './model/types';

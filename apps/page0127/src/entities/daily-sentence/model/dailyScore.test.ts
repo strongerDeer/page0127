@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { dailyScore } from './dailyScore';
+import { dailyScore, isDailyScoreTotal } from './dailyScore';
 
 describe('dailyScore', () => {
   it('같은 날·같은 사람이면 늘 같은 점수', () => {
@@ -48,5 +48,14 @@ describe('dailyScore', () => {
   it('총점에 맞는 한 줄이 붙는다', () => {
     const { comment } = dailyScore('2026-11-24', 'user-1');
     expect(comment.length).toBeGreaterThan(0);
+  });
+
+  it('공유 주소의 점수는 70~99 정수만 받는다', () => {
+    expect(isDailyScoreTotal(70)).toBe(true);
+    expect(isDailyScoreTotal(99)).toBe(true);
+    expect(isDailyScoreTotal(69)).toBe(false);
+    expect(isDailyScoreTotal(100)).toBe(false);
+    expect(isDailyScoreTotal(85.5)).toBe(false);
+    expect(isDailyScoreTotal(Number.NaN)).toBe(false);
   });
 });
