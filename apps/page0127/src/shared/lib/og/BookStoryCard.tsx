@@ -84,7 +84,7 @@ export const PlainCover = ({
       boxShadow: '0 12px 28px rgba(4, 30, 80, 0.35)',
     }}
   >
-    {wrapLines(title, 7, 5).map((line, i) => (
+    {balancedWrap(title, 7, 5).map((line, i) => (
       <div key={i} style={{ display: 'flex' }}>
         {line}
       </div>
@@ -153,8 +153,9 @@ export const BookStoryCard = ({
     : [];
   const reviewStyle =
     largeLines.length <= REVIEW_LARGE.lines ? REVIEW_LARGE : REVIEW_SMALL;
+  // 줄 길이를 고르게(text-wrap: balance) — 넘치면 말줄임
   const reviewLines = review
-    ? wrapLines(review, lineWidth(reviewStyle.size), reviewStyle.lines)
+    ? balancedWrap(review, lineWidth(reviewStyle.size), reviewStyle.lines)
     : [];
 
   const byline = author ? `${title} · ${author}` : title;
