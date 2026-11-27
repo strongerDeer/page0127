@@ -74,7 +74,9 @@ export const StandaloneShell = async ({
             {shellUser ? '내 서재' : '로그인'}
           </Link>
           {/* 사이트 다른 화면과 같은 목차(PC·폰 모두) */}
+          {/* standalone: 여긴 상단 메뉴·하단 탭이 없어 목차에 메뉴 네 칸까지 넣는다 */}
           <TocMenu
+            standalone
             user={
               shellUser
                 ? {

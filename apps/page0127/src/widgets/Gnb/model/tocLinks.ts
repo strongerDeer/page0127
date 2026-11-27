@@ -17,6 +17,7 @@ import type { MyLibraryLinkKey } from '@/entities/profile/model/myLibraryLinks';
 export type TocIcon =
   | MyLibraryLinkKey
   | 'settings'
+  | 'lounge'
   | 'allBooks'
   | 'stories'
   | 'sentence'
@@ -41,7 +42,11 @@ export type TocLink = {
 export type TocGroups = {
   /** 로그인했을 때만 — 내 서재에 딸린 곳(폰 목차 맨 위, PC 는 프로필 메뉴가 같은 일을 한다) */
   account: TocLink[];
-  /** 비로그인 폰만 — 하단 탭이 없어 여기서 둘러볼 곳으로 간다 */
+  /**
+   * 메뉴 칸이 없는 곳에서 둘러볼 곳으로 가는 길
+   * - 보통 화면: 비로그인 폰만(하단 탭이 없어서) 전체 도서·책 이야기
+   * - 단독 페이지(standalone): PC·폰 모두 메뉴 네 칸(비로그인은 전체 도서·책 이야기)
+   */
   main: TocLink[];
   /** 누구에게나 — 하루 한 번 하는 놀이(오늘의 문장·온라인 필사) */
   daily: TocLink[];
@@ -53,11 +58,38 @@ type GetTocGroupsParams = {
   isLoggedIn: boolean;
   /** 로그인한 사람의 아이디 — 문장 서랍(/{username}/quotes) 같은 주소에 쓴다 */
   username?: string | null;
+  /**
+   * 상단 메뉴·하단 탭이 없는 단독 페이지(/sentence·/typing — StandaloneShell)인가.
+   * 이 목차는 "메뉴 칸이 바깥에 있다"는 전제로 네 칸을 빼 두는데, 단독 페이지엔 그 바깥이 없다
+   * → 목차가 유일한 길이라 네 칸을 넣는다(2026-11-27 HJ A안).
+   */
+  standalone?: boolean;
+};
+
+/** 메뉴 네 칸(navItems 와 같은 순서) — 단독 페이지 목차 맨 위에 쓴다 */
+const getMenuLinks = (
+  isLoggedIn: boolean,
+  username: string | null
+): TocLink[] => {
+  const browse: TocLink[] = [
+    { href: '/books/all', label: '전체 도서', icon: 'allBooks' },
+    { href: '/blog', label: '책 이야기', icon: 'stories' },
+  ];
+  if (!isLoggedIn) return browse;
+  return [
+    // 아이디를 아직 모르면(가입 직후) 내 서재 주소를 만들 수 없다 → 뺀다
+    ...(username
+      ? [{ href: `/${username}`, label: '내 서재', icon: 'library' as const }]
+      : []),
+    { href: '/feed', label: '라운지', icon: 'lounge' },
+    ...browse,
+  ];
 };
 
 export const getTocGroups = ({
   isLoggedIn,
   username = null,
+  standalone = false,
 }: GetTocGroupsParams): TocGroups => ({
   // 내 서재는 폰 하단 탭 첫 칸이라 빼고, 나머지는 PC 프로필 메뉴와 같은 목록
   account: isLoggedIn
@@ -68,12 +100,11 @@ export const getTocGroups = ({
         { href: '/settings', label: '설정', icon: 'settings' },
       ]
     : [],
-  main: isLoggedIn
-    ? []
-    : [
-        { href: '/books/all', label: '전체 도서', icon: 'allBooks' },
-        { href: '/blog', label: '책 이야기', icon: 'stories' },
-      ],
+  main: standalone
+    ? getMenuLinks(isLoggedIn, username)
+    : isLoggedIn
+      ? []
+      : getMenuLinks(false, username),
   daily: [
     {
       href: '/sentence',

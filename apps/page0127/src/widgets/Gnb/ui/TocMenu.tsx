@@ -22,6 +22,7 @@ import {
   Quote,
   Settings,
   Sparkles,
+  UsersRound,
   X,
 } from 'lucide-react';
 
@@ -47,6 +48,7 @@ const TOC_ICONS: Record<TocIcon, LucideIcon> = {
   badges: Award,
   taste: Sparkles,
   settings: Settings,
+  lounge: UsersRound,
   allBooks: LibraryBig,
   stories: BookText,
   sentence: Carrot,
@@ -79,6 +81,11 @@ type TocUser = {
 type TocMenuProps = {
   /** null 이면 비로그인 방문자 */
   user: TocUser | null;
+  /**
+   * 상단 메뉴·하단 탭·프로필 메뉴가 없는 단독 페이지(StandaloneShell)에서 true.
+   * 목차가 유일한 길이라 메뉴 네 칸과 내 공간·로그아웃을 PC 에서도 보여 준다(2026-11-27 HJ A안).
+   */
+  standalone?: boolean;
 };
 
 /**
@@ -100,7 +107,7 @@ const LinkIcon = ({ link, size }: { link: TocLink; size: 'main' | 'sub' }) => {
   );
 };
 
-export const TocMenu = ({ user }: TocMenuProps) => {
+export const TocMenu = ({ user, standalone = false }: TocMenuProps) => {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const { logout } = useLogout();
@@ -141,7 +148,10 @@ export const TocMenu = ({ user }: TocMenuProps) => {
   const { account, main, daily, sub } = getTocGroups({
     isLoggedIn,
     username,
+    standalone,
   });
+  // 보통 화면의 PC 는 상단 메뉴·프로필 메뉴가 같은 일을 해서 숨긴다. 단독 페이지엔 그게 없다.
+  const pcHidden = standalone ? '' : 'md:hidden';
 
   const renderLink = (link: TocLink, size: 'main' | 'sub') => {
     const active = isTocLinkActive(pathname, link, username);
@@ -246,7 +256,7 @@ export const TocMenu = ({ user }: TocMenuProps) => {
           >
             {user && (
               // PC 에선 프로필 메뉴가 같은 목록을 보여 준다 → 폰에서만
-              <div className='border-b border-line pb-4 md:hidden'>
+              <div className={cn('border-b border-line pb-4', pcHidden)}>
                 {/* 누구로 로그인했는지 — 데스크톱 드롭다운의 이름 줄과 같은 역할 */}
                 <div className='mb-2 flex items-center gap-3 px-3'>
                   <Avatar className='size-9'>
@@ -262,9 +272,9 @@ export const TocMenu = ({ user }: TocMenuProps) => {
                 <ul>{account.map((link) => renderLink(link, 'main'))}</ul>
               </div>
             )}
-            {/* 비로그인 폰만 — PC 는 상단 메뉴에 같은 칸이 있다 */}
+            {/* 메뉴 칸으로 가는 길 — 보통은 비로그인 폰만(PC 는 상단 메뉴에 같은 칸), 단독 페이지는 PC·폰 모두 */}
             {main.length > 0 && (
-              <ul className='border-b border-line pb-4 md:hidden'>
+              <ul className={cn('border-b border-line pb-4', pcHidden)}>
                 {main.map((link) => renderLink(link, 'main'))}
               </ul>
             )}
@@ -290,7 +300,10 @@ export const TocMenu = ({ user }: TocMenuProps) => {
                   setOpen(false);
                   logout();
                 }}
-                className='mt-auto flex h-10 items-center gap-2 rounded-md px-3 text-sm text-destructive transition-colors hover:bg-sunken md:hidden'
+                className={cn(
+                  'mt-auto flex h-10 items-center gap-2 rounded-md px-3 text-sm text-destructive transition-colors hover:bg-sunken',
+                  pcHidden
+                )}
               >
                 <LogOut aria-hidden='true' className='size-4' />
                 로그아웃
