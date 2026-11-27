@@ -1,10 +1,16 @@
 import { PageContainer } from '@repo/ui';
 
+import { buildShareMetadata } from '@/shared/lib/seo/shareMetadata';
+
 import { getPublishedStories } from '@/entities/story/server';
 
 import { StoryListItem } from '@/widgets/story';
 
 import type { Metadata } from 'next';
+
+const BLOG_TITLE = '책 이야기 | page0127.';
+const BLOG_DESCRIPTION =
+  '읽은 책 이야기와 독서에 관한 글을 모았어요. 독후감과 인물관계도, 숫자로 보는 한국 독서 통계까지.';
 
 /**
  * 글이 하나도 없을 때는 noindex — "첫 이야기를 준비하고 있어요" 한 줄짜리 빈 목록이
@@ -14,10 +20,14 @@ import type { Metadata } from 'next';
 export async function generateMetadata(): Promise<Metadata> {
   const stories = await getPublishedStories();
   return {
-    title: '책 이야기 | page0127.',
-    description:
-      '읽은 책 이야기와 독서에 관한 글을 모았어요. 독후감과 인물관계도, 숫자로 보는 한국 독서 통계까지.',
+    title: BLOG_TITLE,
+    description: BLOG_DESCRIPTION,
     alternates: { canonical: '/blog' },
+    ...buildShareMetadata({
+      path: '/blog',
+      title: BLOG_TITLE,
+      description: BLOG_DESCRIPTION,
+    }),
     ...(stories.length === 0 && { robots: { index: false, follow: true } }),
   };
 }

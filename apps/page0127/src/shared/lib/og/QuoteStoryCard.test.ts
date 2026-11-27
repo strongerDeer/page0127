@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { toQuoteLines } from './QuoteStoryCard';
+import { stripWrappingQuotes, toQuoteLines } from './QuoteStoryCard';
 
 describe('toQuoteLines (문장 카드 글자 크기·줄)', () => {
   it('짧은 문장은 가장 큰 글자로', () => {
@@ -18,5 +18,33 @@ describe('toQuoteLines (문장 카드 글자 크기·줄)', () => {
     const text = '가나다라마 바사아자차 '.repeat(18).trim().slice(0, 200);
     const { lines } = toQuoteLines(text);
     expect(lines.at(-1)?.endsWith('…')).toBe(false);
+  });
+});
+
+describe('stripWrappingQuotes (카드가 붙이는 따옴표와 겹치지 않게)', () => {
+  it.each([
+    ['“길들인다는 게 뭐야?”', '길들인다는 게 뭐야?'],
+    ['"길들인다는 게 뭐야?"', '길들인다는 게 뭐야?'],
+    ['  ‘중요한 건 눈에 보이지 않아.’ ', '중요한 건 눈에 보이지 않아.'],
+    ['「안녕」', '안녕'],
+  ])('%s → %s', (input, expected) => {
+    expect(stripWrappingQuotes(input)).toBe(expected);
+  });
+
+  it('따옴표 없는 문장은 그대로', () => {
+    expect(stripWrappingQuotes('읽는 사람은 자란다.')).toBe(
+      '읽는 사람은 자란다.'
+    );
+  });
+
+  it('대사가 둘 이상이면 벗기지 않는다', () => {
+    const text = '"가자." 그가 말했다. "지금."';
+    expect(stripWrappingQuotes(text)).toBe(text);
+  });
+
+  it('카드 줄에 따옴표가 두 겹으로 들어가지 않는다', () => {
+    expect(toQuoteLines('“읽는 사람은 자란다.”').lines).toEqual([
+      '읽는 사람은 자란다.',
+    ]);
   });
 });

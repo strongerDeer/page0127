@@ -31,10 +31,44 @@ const QUOTE_STEPS = [
 const lineWidth = (fontSize: number) =>
   Math.floor((STORY_CONTENT_WIDTH / fontSize) * 1.04 * 10) / 10 - 1;
 
+/** 문장 앞뒤를 감쌀 수 있는 따옴표 짝 — [여는 것, 닫는 것] */
+const WRAPPING_QUOTES = [
+  ['“', '”'],
+  ['"', '"'],
+  ['‘', '’'],
+  ["'", "'"],
+  ['「', '」'],
+  ['『', '』'],
+] as const;
+
+/**
+ * 문장 전체를 감싼 따옴표 한 겹을 벗긴다 — 카드가 “ ” 를 직접 붙이기 때문이다.
+ *
+ * 책 속 대사를 옮겨 적으면 문장 자체에 따옴표가 있어 카드에 ““…”” 로 겹쳐 나왔다
+ * (2026-11-27 공유 점검). 안쪽에 같은 따옴표가 또 있으면("A" 하고 말했다. "B")
+ * 한 겹으로 감싼 문장이 아니므로 그대로 둔다.
+ */
+export const stripWrappingQuotes = (text: string): string => {
+  const trimmed = text.trim();
+  for (const [open, close] of WRAPPING_QUOTES) {
+    if (
+      trimmed.length > 2 &&
+      trimmed.startsWith(open) &&
+      trimmed.endsWith(close)
+    ) {
+      const inner = trimmed.slice(open.length, -close.length);
+      if (inner.includes(open) || inner.includes(close)) return trimmed;
+      return inner.trim();
+    }
+  }
+  return trimmed;
+};
+
 /** 문장 → 크기와 줄. 줄 수 안에 들어가는 가장 큰 단계를 고르고, 마지막 단계는 넘치면 말줄임 */
 export const toQuoteLines = (
-  text: string
+  rawText: string
 ): { size: number; lines: string[]; long: boolean } => {
+  const text = stripWrappingQuotes(rawText);
   for (const [i, step] of QUOTE_STEPS.entries()) {
     const lines = wrapLines(text, lineWidth(step.size), Infinity);
     if (lines.length <= step.lines) {

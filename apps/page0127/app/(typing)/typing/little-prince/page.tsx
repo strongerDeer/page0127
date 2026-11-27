@@ -1,4 +1,5 @@
 import { JsonLd } from '@/shared/lib/seo/JsonLd';
+import { buildShareMetadata } from '@/shared/lib/seo/shareMetadata';
 import { buildFaqPageJsonLd } from '@/shared/lib/seo/structuredData';
 
 import { LITTLE_PRINCE_FAQ } from '@/entities/typing';
@@ -54,17 +55,8 @@ export const metadata: Metadata = {
     '생텍쥐페리',
   ],
   alternates: { canonical: PATH },
-  openGraph: {
-    type: 'website',
-    url: PATH,
-    title: TITLE,
-    description: DESCRIPTION,
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: TITLE,
-    description: DESCRIPTION,
-  },
+  // 그림은 같은 폴더 opengraph-image.tsx — openGraph 를 적으면 루트 그림이 지워진다
+  ...buildShareMetadata({ path: PATH, title: TITLE, description: DESCRIPTION }),
 };
 
 /**

@@ -1,3 +1,5 @@
+import { buildShareMetadata } from '@/shared/lib/seo/shareMetadata';
+
 import { SentenceBook } from '@/features/daily-sentence';
 import { getTodaySentenceState } from '@/features/daily-sentence/api/getTodaySentenceState';
 
@@ -15,11 +17,19 @@ import type { Metadata } from 'next';
  * 비회원도 뽑는다. 페이지는 색인하되 문장 본문은 HTML 에 넣지 않는다(펼친 뒤 브라우저가 받아 온다) —
  * 권리자 요청이 오면 문장을 끄기 쉽게, 검색 결과에 문장이 쌓이지 않게.
  */
+const SENTENCE_DESCRIPTION =
+  '하루에 한 번, 책 사이 당근을 뽑으면 베스트셀러·스테디셀러 속 한 문장과 오늘의 독서운이 나와요. 로그인하지 않아도 뽑을 수 있어요.';
+
 export const metadata: Metadata = {
   title: '오늘의 문장 뽑기',
-  description:
-    '하루에 한 번, 책 사이 당근을 뽑으면 베스트셀러·스테디셀러 속 한 문장과 오늘의 독서운이 나와요. 로그인하지 않아도 뽑을 수 있어요.',
+  description: SENTENCE_DESCRIPTION,
   alternates: { canonical: '/sentence' },
+  // "복사" 글에 /sentence 링크가 붙는다 — 미리보기 제목에는 서비스 이름까지 단다
+  ...buildShareMetadata({
+    path: '/sentence',
+    title: '오늘의 문장 뽑기 | page0127.',
+    description: SENTENCE_DESCRIPTION,
+  }),
 };
 
 const SentencePage = async () => {
