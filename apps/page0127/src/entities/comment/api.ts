@@ -17,15 +17,24 @@ import {
  * - apiClient(axios)로 통일: 응답 본문은 response.data, 에러는 인터셉터/AxiosError로 일원화
  */
 
+/** 대상 종류 → 엔드포인트 묶음. 대상이 늘면 여기 한 줄만 는다(switch 누락은 타입이 잡는다) */
+const ENDPOINTS_BY_TYPE = {
+  book: API_ENDPOINTS.books,
+  globalBook: API_ENDPOINTS.globalBooks,
+  story: API_ENDPOINTS.stories,
+} satisfies Record<
+  CommentTarget['type'],
+  {
+    comments: (id: string) => string;
+    commentDetail: (id: string, commentId: string) => string;
+  }
+>;
+
 const resolve = {
   list: (target: CommentTarget) =>
-    target.type === 'book'
-      ? API_ENDPOINTS.books.comments(target.id)
-      : API_ENDPOINTS.globalBooks.comments(target.id),
+    ENDPOINTS_BY_TYPE[target.type].comments(target.id),
   detail: (target: CommentTarget, commentId: string) =>
-    target.type === 'book'
-      ? API_ENDPOINTS.books.commentDetail(target.id, commentId)
-      : API_ENDPOINTS.globalBooks.commentDetail(target.id, commentId),
+    ENDPOINTS_BY_TYPE[target.type].commentDetail(target.id, commentId),
 };
 
 export const commentApi = {

@@ -20,6 +20,7 @@ import {
 } from '@/entities/story/server';
 
 import { MyRecordBlock } from '@/features/story-my-record';
+import { StoryReactions } from '@/features/story-reactions';
 
 import {
   CharacterList,
@@ -217,6 +218,9 @@ export default async function StoryPage({ params }: PageProps) {
             book={book}
           />
         )}
+
+        {/* 좋아요·댓글 — 로그인에 따라 달라지므로 브라우저가 따로 받는다(ISR 유지) */}
+        <StoryReactions storyId={story.id} />
 
         <MoreStories currentId={story.id} />
       </article>

@@ -29,6 +29,12 @@ export const API_ENDPOINTS = {
     commentDetail: (id: string, commentId: string) =>
       `/global-books/${id}/comments/${commentId}`, // PATCH/DELETE
   },
+  stories: {
+    comments: (id: string) => `/stories/${id}/comments`, // GET/POST: 책 이야기 댓글
+    commentDetail: (id: string, commentId: string) =>
+      `/stories/${id}/comments/${commentId}`, // PATCH/DELETE
+    likes: (id: string) => `/stories/${id}/likes`, // GET/POST/DELETE: 좋아요
+  },
   follows: {
     follow: '/follows', // POST: 팔로우하기
     unfollow: (userId: string) => `/follows/${userId}`, // DELETE: 언팔로우하기

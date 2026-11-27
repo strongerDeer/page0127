@@ -39,8 +39,10 @@ export async function POST(request: NextRequest) {
       return errorResponse('잘못된 요청입니다.', 400);
     }
 
-    const { commentId, reason, detail } = body as {
+    const { commentId, commentType, reason, detail } = body as {
       commentId?: unknown;
+      /** 'story' 면 책 이야기 댓글(story_comments), 없거나 그 밖이면 책 댓글 */
+      commentType?: unknown;
       reason?: unknown;
       detail?: unknown;
     };
@@ -63,7 +65,10 @@ export async function POST(request: NextRequest) {
     const supabase = await getSupabaseClient();
     const { error } = await supabase.from('reports').insert({
       reporter_id: user.id,
-      comment_id: commentId,
+      // 대상 칸은 정확히 하나만 채운다(reports_one_target CHECK)
+      ...(commentType === 'story'
+        ? { story_comment_id: commentId }
+        : { comment_id: commentId }),
       reason,
       detail: trimmedDetail || null,
     });

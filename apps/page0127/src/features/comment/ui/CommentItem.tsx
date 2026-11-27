@@ -296,6 +296,7 @@ export const CommentItem = ({
       {!isAuthor && (
         <ReportCommentDialog
           commentId={comment.id}
+          commentType={target.type === 'story' ? 'story' : 'book'}
           open={isReportOpen}
           onOpenChange={setIsReportOpen}
         />
