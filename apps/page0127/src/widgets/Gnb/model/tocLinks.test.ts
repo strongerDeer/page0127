@@ -49,6 +49,31 @@ describe('getTocGroups', () => {
   });
 });
 
+describe('getTocGroups — 단독 페이지(/sentence·/typing)', () => {
+  it('로그인: 상단 메뉴·하단 탭이 없으니 메뉴 네 칸을 목차에 넣는다', () => {
+    const { main } = getTocGroups({
+      isLoggedIn: true,
+      username: 'hj',
+      standalone: true,
+    });
+    expect(hrefs(main)).toEqual(['/hj', '/feed', '/books/all', '/blog']);
+  });
+
+  it('비로그인: 전체 도서·책 이야기(내 서재·라운지는 로그인 뒤)', () => {
+    const { main } = getTocGroups({ isLoggedIn: false, standalone: true });
+    expect(hrefs(main)).toEqual(['/books/all', '/blog']);
+  });
+
+  it('아이디를 아직 모르면 내 서재는 뺀다', () => {
+    const { main } = getTocGroups({
+      isLoggedIn: true,
+      username: null,
+      standalone: true,
+    });
+    expect(hrefs(main)).toEqual(['/feed', '/books/all', '/blog']);
+  });
+});
+
 describe('isTocLinkActive', () => {
   it('하위 경로도 같은 칸으로 본다 (책 이야기 글 → 책 이야기)', () => {
     expect(
