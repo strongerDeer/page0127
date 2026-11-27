@@ -2,9 +2,6 @@
 
 import { useRef, useState, useTransition } from 'react';
 
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { resizeAvatarFile } from '@/shared/lib/resizeAvatar';
@@ -71,8 +68,6 @@ const Segmented = <T extends string>({
 );
 
 export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: slide.id });
   const [fields, setFields] = useState<SlideFields>({
     eyebrow: slide.eyebrow,
     line1: slide.line1,
@@ -140,27 +135,10 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
     if (fileRef.current) fileRef.current.value = '';
   };
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className='rounded border border-line bg-white p-4 text-text-strong'
-    >
-      <div className='mb-2 flex items-center justify-between'>
-        <button
-          {...attributes}
-          {...listeners}
-          className='cursor-grab'
-          aria-label='순서 이동 핸들'
-          type='button'
-        >
-          <GripVertical className='h-4 w-4' aria-hidden />
-        </button>
+    // 목록 줄(SlideRow)을 누르면 그 아래에 열리는 편집 칸 — 순서 끌기는 목록 줄이 맡는다
+    <div className='rounded-b border border-t-0 border-line bg-white p-4 text-text-strong'>
+      <div className='mb-2 flex items-center justify-end'>
         <div className='flex items-center gap-3'>
           {/* 클릭 수 — 무엇이 먹히는지 여기서 바로 비교한다.
               0 도 정보다("아무도 안 누른다")이므로 감추지 않는다 */}
