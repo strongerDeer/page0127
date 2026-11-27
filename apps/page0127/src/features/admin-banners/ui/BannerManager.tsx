@@ -15,6 +15,7 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
+import { toast } from 'sonner';
 
 import {
   createSlide,
@@ -47,7 +48,18 @@ export const BannerManager = ({ initial }: { initial: HeroSlideRow[] }) => {
     const newIndex = slides.findIndex((s) => s.id === over.id);
     const next = arrayMove(slides, oldIndex, newIndex);
     setSlides(next); // 낙관적 갱신
-    startTransition(() => reorderSlides(next.map((s) => s.id)));
+    startTransition(async () => {
+      try {
+        await reorderSlides(next.map((s) => s.id));
+        // 홈엔 맨 위 배너 하나만 나오므로 순서가 곧 "무엇이 보이나"다
+        toast.success('순서를 바꿨어요. 홈엔 맨 위 배너가 나와요');
+      } catch (e) {
+        setSlides(slides); // 낙관적 갱신 되돌리기
+        toast.error(
+          e instanceof Error ? e.message : '순서를 저장하지 못했어요'
+        );
+      }
+    });
   };
 
   return (
@@ -55,7 +67,18 @@ export const BannerManager = ({ initial }: { initial: HeroSlideRow[] }) => {
       <div className='flex items-center justify-between'>
         <button
           type='button'
-          onClick={() => startTransition(() => createSlide())}
+          onClick={() =>
+            startTransition(async () => {
+              try {
+                await createSlide();
+                toast.success('새 배너를 만들었어요. 맨 아래에서 고쳐 주세요');
+              } catch (e) {
+                toast.error(
+                  e instanceof Error ? e.message : '배너를 만들지 못했어요'
+                );
+              }
+            })
+          }
           disabled={isPending}
           className='rounded border border-line px-3 py-1.5 text-sm hover:bg-accent disabled:opacity-50'
         >

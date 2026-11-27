@@ -5,6 +5,7 @@ import { useRef, useState, useTransition } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { resizeAvatarFile } from '@/shared/lib/resizeAvatar';
 
@@ -103,15 +104,22 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
   const set = <K extends keyof SlideFields>(k: K, v: SlideFields[K]) =>
     setFields((f) => ({ ...f, [k]: v }));
 
-  const run = (fn: () => Promise<void>) => {
+  /**
+   * 서버 액션을 실행하고 결과를 토스트로 알린다(2026-11-27 HJ "저장 피드백 필요").
+   * success 를 비우면 성공 토스트는 띄우지 않는다(그림 올리기처럼 저장 전 중간 단계).
+   * 실패는 카드 아래 문구와 토스트 둘 다 — 토스트는 사라지므로 이유를 카드에 남긴다.
+   */
+  const run = (fn: () => Promise<void>, success?: string) => {
     setError(null);
     startTransition(async () => {
       try {
         await fn();
+        if (success) toast.success(success);
       } catch (e) {
-        setError(
-          e instanceof Error ? e.message : '처리 중 오류가 발생했습니다.'
-        );
+        const message =
+          e instanceof Error ? e.message : '처리 중 오류가 발생했습니다.';
+        setError(message);
+        toast.error(message);
       }
     });
   };
@@ -164,7 +172,12 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
               type='checkbox'
               checked={slide.is_active}
               onChange={(e) =>
-                run(() => toggleActive(slide.id, e.target.checked))
+                run(
+                  () => toggleActive(slide.id, e.target.checked),
+                  e.target.checked
+                    ? '노출을 켰어요. 홈에 바로 반영돼요'
+                    : '노출을 껐어요'
+                )
               }
               disabled={isPending}
             />
@@ -396,7 +409,14 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
       <div className='mt-4 flex gap-2'>
         <button
           type='button'
-          onClick={() => run(() => updateSlide(slide.id, fields))}
+          onClick={() =>
+            run(
+              () => updateSlide(slide.id, fields),
+              slide.is_active
+                ? '저장했어요. 홈에 바로 반영돼요'
+                : '저장했어요. 노출을 켜면 홈에 나와요'
+            )
+          }
           disabled={isPending}
           className='rounded border border-line bg-white px-3 py-1.5 text-sm text-text-strong hover:bg-accent disabled:opacity-50'
         >
@@ -405,7 +425,12 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
         {/* 복제본은 꺼진 채 맨 끝에 생긴다 — 날짜만 바꿔 내년에 다시 쓰기 */}
         <button
           type='button'
-          onClick={() => run(() => duplicateSlide(slide.id))}
+          onClick={() =>
+            run(
+              () => duplicateSlide(slide.id),
+              '복제했어요. 맨 아래에 꺼진 채로 생겼어요'
+            )
+          }
           disabled={isPending}
           className='rounded border border-line bg-white px-3 py-1.5 text-sm text-text-strong hover:bg-accent disabled:opacity-50'
         >
@@ -415,7 +440,7 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
           type='button'
           onClick={() => {
             if (confirm('이 슬라이드를 삭제할까요?'))
-              run(() => deleteSlide(slide.id));
+              run(() => deleteSlide(slide.id), '삭제했어요');
           }}
           disabled={isPending}
           className='rounded border border-line bg-white px-3 py-1.5 text-sm text-destructive hover:bg-accent disabled:opacity-50'
