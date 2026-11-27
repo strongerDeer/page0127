@@ -1,4 +1,5 @@
 import { ClientAppShellLayout } from '@/widgets/AppShell/ui/ClientAppShellLayout';
+import { getNewsStamps } from '@/widgets/news-notice/server';
 
 /**
  * 캐시되는 공개 페이지 레이아웃 — 책 정보·소개·약관·업데이트·문의
@@ -10,8 +11,14 @@ import { ClientAppShellLayout } from '@/widgets/AppShell/ui/ClientAppShellLayout
  * ⚠️ 이 그룹의 페이지에서 cookies()·headers()·getCurrentUser()·서버 createClient() 를 쓰면
  * 그 페이지는 다시 매 요청 렌더링으로 돌아간다. 공용 데이터는 createAnonClient 로 읽을 것.
  */
-const StaticPublicLayout = ({ children }: { children: React.ReactNode }) => (
-  <ClientAppShellLayout>{children}</ClientAppShellLayout>
-);
+const StaticPublicLayout = async ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  // 공용 캐시(unstable_cache)만 읽는다 — 쿠키를 안 읽으니 ISR 이 그대로 유지된다
+  const news = await getNewsStamps();
+  return <ClientAppShellLayout news={news}>{children}</ClientAppShellLayout>;
+};
 
 export default StaticPublicLayout;

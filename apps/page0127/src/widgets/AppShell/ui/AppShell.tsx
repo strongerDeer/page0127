@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation';
 
 import { getCurrentUser } from '@/shared/lib/auth/getCurrentUser';
 
+import { getNewsStamps } from '@/widgets/news-notice/server';
+
 import { getShellUser } from '../api/getShellUser';
 import { AppShellLayout } from './AppShellLayout';
 
@@ -15,7 +17,14 @@ export const AppShell = async ({ children }: { children: React.ReactNode }) => {
     redirect('/login');
   }
 
-  const shellUser = await getShellUser(user);
+  const [shellUser, news] = await Promise.all([
+    getShellUser(user),
+    getNewsStamps(),
+  ]);
 
-  return <AppShellLayout user={shellUser}>{children}</AppShellLayout>;
+  return (
+    <AppShellLayout user={shellUser} news={news}>
+      {children}
+    </AppShellLayout>
+  );
 };

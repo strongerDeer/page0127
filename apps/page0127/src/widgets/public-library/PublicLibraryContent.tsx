@@ -73,6 +73,8 @@ type PublicLibraryContentProps = {
   calendarFooterSlot?: ReactNode;
   /** 달력 아래 완독 줄 오른쪽 — 주인 서재의 문장 서랍·주간 회상 바로가기 */
   calendarSummaryLinks?: ReactNode;
+  /** 연도 탭 바로 아래 — 주인에게만 넣는 새 소식 카드(widgets/news-notice) */
+  newsSlot?: ReactNode;
   /** 방문자에게만 — 달마다 모은 문장 개수(글은 나만 보기) */
   sentenceMonthCounts?: SentenceMonthCounts;
   /** 해마다 정한 목표 — 전체 보기의 연도별 완독 추이에 겹쳐 그린다 */
@@ -107,6 +109,7 @@ export const PublicLibraryContent = ({
   calendarTodaySlot,
   calendarFooterSlot,
   calendarSummaryLinks,
+  newsSlot,
   sentenceMonthCounts,
   readingGoals = [],
 }: PublicLibraryContentProps) => {
@@ -310,6 +313,7 @@ export const PublicLibraryContent = ({
           calendarTodaySlot={calendarTodaySlot}
           calendarFooterSlot={calendarFooterSlot}
           calendarSummaryLinks={calendarSummaryLinks}
+          newsSlot={newsSlot}
           sentenceMonthCounts={sentenceMonthCounts}
           readingGoals={readingGoals}
           // 뱃지 — 통계와 같은 공개 책으로 계산해 주인·방문자가 같은 뱃지를 본다. 전부는 상세 페이지에서.

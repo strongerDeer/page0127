@@ -126,6 +126,8 @@ type LibraryViewProps = {
   calendarFooterSlot?: ReactNode;
   /** 달력 아래 완독 줄 오른쪽(주인: 문장 서랍·주간 회상 바로가기) */
   calendarSummaryLinks?: ReactNode;
+  /** 연도 탭 바로 아래 — 새 소식 카드(주인만). 어느 보기(전체·연도·읽고 싶어요)에서든 같은 자리 */
+  newsSlot?: ReactNode;
   /** 방문자 캘린더의 "N월에 모은 문장 N개" — 개수만 */
   sentenceMonthCounts?: SentenceMonthCounts;
   /** 해마다 정한 목표 — 연도별 완독 추이에 겹쳐 그린다 */
@@ -186,6 +188,7 @@ export const LibraryView = ({
   calendarTodaySlot,
   calendarFooterSlot,
   calendarSummaryLinks,
+  newsSlot,
   sentenceMonthCounts,
   readingGoals = [],
   badgeSlot,
@@ -425,6 +428,8 @@ export const LibraryView = ({
           isWishlistView={isWishlistView}
           goalYear={onSetGoal ? currentYear : undefined}
         />
+
+        {newsSlot}
 
         {isWishlistView ? (
           /* ── 읽고 싶어요(위시리스트) 뷰 ── 서재와 분리된 별도 목록 */

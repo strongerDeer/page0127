@@ -5,11 +5,13 @@ import { SignupTracker } from '@/features/onboarding';
 import { PendingShelfClaimer } from '@/features/shelf-preview/ui/PendingShelfClaimer';
 
 import { Gnb } from '@/widgets/Gnb';
+import { NewsProvider, NewsSeenTracker } from '@/widgets/news-notice';
 
 import { BottomTabBar } from './BottomTabBar';
 import { SiteFooter } from './SiteFooter';
 
 import type { ShellUser } from '../api/getShellUser';
+import type { NewsStamp } from '@/widgets/news-notice';
 
 // 프레젠테이션 전용 셸 (인증 게이트 없음)
 // - 인증/리디렉션은 호출하는 레이아웃이 책임지고, 여기선 화면 구성만 한다
@@ -18,50 +20,63 @@ import type { ShellUser } from '../api/getShellUser';
 type AppShellLayoutProps = {
   /** null이면 비로그인 방문자 */
   user: ShellUser | null;
+  /**
+   * 최근 소식(공지 기록·책 이야기) — 메뉴 빨간 점과 서재 소식 카드가 쓴다.
+   * 레이아웃이 서버에서 getNewsStamps() 로 읽어 넘긴다(widgets/news-notice).
+   */
+  news: NewsStamp[];
   children: React.ReactNode;
 };
 
-export const AppShellLayout = ({ user, children }: AppShellLayoutProps) => {
+export const AppShellLayout = ({
+  user,
+  news,
+  children,
+}: AppShellLayoutProps) => {
   return (
-    <div className='flex min-h-screen flex-col'>
-      {/*
+    <NewsProvider stamps={news}>
+      <div className='flex min-h-screen flex-col'>
+        {/*
         스킵 링크: 키보드 사용자가 반복되는 GNB를 건너뛰고 본문으로 바로 이동.
         sr-only로 평소엔 숨기고, 포커스되면(focus:) 좌상단에 드러난다.
       */}
-      <a
-        href='#main-content'
-        className='sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground'
-      >
-        본문 바로가기
-      </a>
-      {/* 리뷰어용 체험 계정 — 지금 체험 중이고 저장은 안 된다는 것을 늘 보여 준다 */}
-      {user?.isDemo && <DemoBanner />}
-      <Gnb user={user} />
-      {/*
+        <a
+          href='#main-content'
+          className='sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground'
+        >
+          본문 바로가기
+        </a>
+        {/* 리뷰어용 체험 계정 — 지금 체험 중이고 저장은 안 된다는 것을 늘 보여 준다 */}
+        {user?.isDemo && <DemoBanner />}
+        <Gnb user={user} />
+        {/*
         탭바 높이 확보는 이제 푸터가 맡는다 — 본문 다음에 푸터가 오므로
         여기서도 pb 를 주면 본문과 푸터 사이에 빈 띠가 두 번 생긴다.
       */}
-      <main id='main-content' className='flex-1'>
-        {children}
-      </main>
-      {/*
+        <main id='main-content' className='flex-1'>
+          {children}
+        </main>
+        {/*
         푸터는 로그인 여부와 상관없이 붙인다. 문의·개인정보처리방침·이용약관은
         쓰다가 막힌 사람(=로그인한 사람)이 가장 필요로 하는 것들이다.
         탭바가 있는 모바일에서는 푸터 끝이 가리므로 그만큼 아래 여백을 더한다.
       */}
-      <SiteFooter className={user ? 'pb-16 md:pb-0' : undefined} />
-      {/* 하단 탭 메뉴는 전부 로그인 전용 라우트 → 비로그인에겐 숨긴다 */}
-      {user && <BottomTabBar username={user.username} />}
-      {/* 홈 맛보기에서 고른 책·목표를 로그인 직후 서재에 담는다 (보관분이 없으면 아무 일도 안 한다).
+        <SiteFooter className={user ? 'pb-16 md:pb-0' : undefined} />
+        {/* 하단 탭 메뉴는 전부 로그인 전용 라우트 → 비로그인에겐 숨긴다 */}
+        {user && <BottomTabBar username={user.username} />}
+        {/* 홈 맛보기에서 고른 책·목표를 로그인 직후 서재에 담는다 (보관분이 없으면 아무 일도 안 한다).
           온보딩을 마친 뒤에만 — 온보딩 중 주소창으로 홈에 와도 미리 담기지 않게 한다 */}
-      {user?.onboarded && (
-        <>
-          <Suspense fallback={null}>
-            <SignupTracker />
-          </Suspense>
-          <PendingShelfClaimer />
-        </>
-      )}
-    </div>
+        {user?.onboarded && (
+          <>
+            <Suspense fallback={null}>
+              <SignupTracker />
+            </Suspense>
+            <PendingShelfClaimer />
+          </>
+        )}
+        {/* /updates·/blog 같은 소식 페이지를 열면 그 소식을 "봤다"로 남긴다(빨간 점 끄기) */}
+        <NewsSeenTracker />
+      </div>
+    </NewsProvider>
   );
 };
