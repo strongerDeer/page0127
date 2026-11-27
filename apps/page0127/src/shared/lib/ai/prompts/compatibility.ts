@@ -108,3 +108,54 @@ ${formatBooks(user2Books)}
 - 차이점은 단점이 아니라 "서로를 넓혀줄 부분"으로 표현해주세요
 - 사용자가 몰랐던 연결고리를 발견하게 해주세요 — 단순 통계 나열은 피해주세요`;
 }
+
+const strictObject = (properties: Record<string, unknown>) => ({
+  type: 'object',
+  properties,
+  required: Object.keys(properties),
+  additionalProperties: false,
+});
+const stringArray = { type: 'array', items: { type: 'string' } };
+const recommendationList = {
+  type: 'array',
+  items: strictObject({
+    title: { type: 'string' },
+    author: { type: 'string' },
+    reason: { type: 'string' },
+  }),
+};
+
+/**
+ * 독서 케미 응답 JSON 스키마 — 위 프롬프트의 "다음 형식" 과 키·순서가 같아야 한다.
+ * (점수 0~100 범위는 스키마로 강제할 수 없어 라우트가 잘라 낸다)
+ */
+export const COMPATIBILITY_SCHEMA: Record<string, unknown> = strictObject({
+  compatibility_score: { type: 'integer' },
+  compatibility_description: { type: 'string' },
+  similarity_analysis: strictObject({
+    common_interests: stringArray,
+    reading_patterns: strictObject({
+      user1: { type: 'string' },
+      user2: { type: 'string' },
+    }),
+    rating_similarity: { type: 'number' },
+    commonalities: stringArray,
+    differences: stringArray,
+  }),
+  recommendations_for_user1: recommendationList,
+  recommendations_for_user2: recommendationList,
+});
+
+/** 케미 응답에서 진행률을 재는 이정표 — 스키마 키 순서와 맞춘다 */
+export const COMPATIBILITY_PROGRESS = {
+  milestones: [
+    ['compatibility_score', 0.03],
+    ['compatibility_description', 0.08],
+    ['similarity_analysis', 0.4],
+    ['recommendations_for_user1', 0.6],
+  ],
+  // 상호 추천은 두 사람 3권씩, 제목 6개
+  repeatKey: 'title',
+  from: 0.6,
+  to: 0.98,
+} as const;

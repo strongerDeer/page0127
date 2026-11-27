@@ -195,3 +195,76 @@ ${personalityTypeList}
 - 예시 톤: "책장에 사람의 마음을 들여다보는 책이 많네요. 빠르게 많이 읽기보다, 좋았던 한 권을 오래 곱씹는 분입니다."
 - 평가하거나 단정하는 말투(~해야 합니다)보다 발견을 건네는 말투를 사용하세요`;
 }
+
+/** 스키마 조각 — 모든 객체는 additionalProperties: false·required 가 있어야 한다(structured outputs 규칙) */
+const strictObject = (properties: Record<string, unknown>) => ({
+  type: 'object',
+  properties,
+  required: Object.keys(properties),
+  additionalProperties: false,
+});
+const stringArray = { type: 'array', items: { type: 'string' } };
+const likedOrDisliked = strictObject({
+  topics: stringArray,
+  styles: stringArray,
+  structures: stringArray,
+});
+
+/**
+ * 취향 분석 응답 JSON 스키마 — 위 프롬프트의 "다음 형식" 과 키·순서가 같아야 한다.
+ *
+ * 키 순서가 곧 쓰는 순서다: 화면 진행률(estimateJsonProgress)이 이 순서로 이정표를 센다.
+ * personality_type 을 enum 으로 묶어 카탈로그 밖 이름이 오지 않게 한다.
+ *
+ * @param personalityTypeNames 성향 타입 카탈로그 이름들 (entities 에서 주입)
+ */
+export function createTasteAnalysisSchema(
+  personalityTypeNames: readonly string[]
+): Record<string, unknown> {
+  return strictObject({
+    personality_type: { type: 'string', enum: [...personalityTypeNames] },
+    personality_description: { type: 'string' },
+    preference_profile: strictObject({
+      liked: likedOrDisliked,
+      disliked: likedOrDisliked,
+      patterns: strictObject({
+        page_count_preference: { type: 'string' },
+        author_type: { type: 'string' },
+        publication_period: { type: 'string' },
+      }),
+    }),
+    evidence: {
+      type: 'array',
+      items: strictObject({
+        book: { type: 'string' },
+        reason: { type: 'string' },
+        topics: stringArray,
+      }),
+    },
+    recommendations: {
+      type: 'array',
+      items: strictObject({
+        type: { type: 'string', enum: ['match', 'expand', 'challenge'] },
+        title: { type: 'string' },
+        author: { type: 'string' },
+        reason: { type: 'string' },
+        display_order: { type: 'integer' },
+      }),
+    },
+  });
+}
+
+/** 취향 분석 응답에서 진행률을 재는 이정표 — 스키마 키 순서와 맞춘다 */
+export const TASTE_ANALYSIS_PROGRESS = {
+  milestones: [
+    ['personality_type', 0.03],
+    ['personality_description', 0.08],
+    ['preference_profile', 0.3],
+    ['evidence', 0.42],
+    ['recommendations', 0.55],
+  ],
+  // 추천 책은 제목 하나가 나올 때마다 막대가 한 칸씩 찬다
+  repeatKey: 'title',
+  from: 0.55,
+  to: 0.98,
+} as const;

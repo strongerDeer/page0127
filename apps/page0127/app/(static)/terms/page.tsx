@@ -72,8 +72,8 @@ const TermsPage = () => {
         </p>
         <p className='text-sm text-text-subtle'>
           분석을 위해 완독한 책의 정보(제목·저자·분류·책 소개·목차)와 별점이
-          OpenAI로 전달됩니다. 이름이나 이메일, 직접 쓴 메모는 보내지 않습니다.
-          자세한 내용은{' '}
+          Anthropic(Claude)으로 전달됩니다. 이름이나 이메일, 직접 쓴 메모는
+          보내지 않습니다. 자세한 내용은{' '}
           <Link
             href='/privacy'
             className='underline underline-offset-2 hover:text-text-strong'

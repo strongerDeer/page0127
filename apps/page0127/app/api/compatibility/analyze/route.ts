@@ -1,17 +1,27 @@
-import { after, NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { createClient } from '@/shared/config/supabase/server';
+import { estimateJsonProgress } from '@/shared/lib/ai/analysisEvents';
+import { streamAnalysis } from '@/shared/lib/ai/analysisStream';
+import {
+  AiIncompleteError,
+  calculateAiCostCents,
+  streamClaudeJson,
+} from '@/shared/lib/ai/claude';
+import {
+  COMPATIBILITY_PROGRESS,
+  COMPATIBILITY_SCHEMA,
+  createCompatibilityPrompt,
+} from '@/shared/lib/ai/prompts/compatibility';
 import {
   BUDGET_EXCEEDED_ERROR,
-  isUnbilledOpenAiFailure,
+  isUnbilledAiFailure,
   refundUsage,
   reserveUsage,
   USAGE_LIMIT_EXCEEDED_ERROR,
 } from '@/shared/lib/aiUsage';
 import { notifyBudgetIfCrossed } from '@/shared/lib/kakao-alert/notifyBudget';
-import { AI_MODEL, MAX_TOKENS, openai, TEMPERATURE } from '@/shared/lib/openai';
-import { createCompatibilityPrompt } from '@/shared/lib/openai/prompts/compatibility';
 
 import { isRated } from '@/entities/book';
 import { COMPATIBILITY_MIN_BOOKS as MIN_BOOKS } from '@/entities/compatibility/model/analysisGate';
@@ -20,9 +30,23 @@ import { mapRecommendations } from '@/entities/compatibility/model/mutualRecomme
 
 import type { Book } from '@/entities/book';
 
-// gpt-4o + max_tokens 4000 응답은 경우에 따라 수십 초가 걸릴 수 있어
-// 배포 플랫폼 기본 함수 타임아웃(짧으면 10초)에 걸려 강제 종료되는 것을 방지
+// AI 답을 기다리는 데 수십 초가 걸릴 수 있어 플랫폼 기본 타임아웃(짧으면 10초)보다 길게 둔다.
+// 스트리밍이어도 이 상한은 스트림 전체(답 쓰기 + 저장)에 그대로 걸린다.
 export const maxDuration = 60;
+
+const ANALYSIS_ERROR_MESSAGE = '케미 분석 중 오류가 발생했습니다.';
+
+/** 상호 추천은 한 사람당 3권 — 진행률이 제목 6개를 센다 */
+const RECOMMENDATIONS_PER_USER = 3;
+
+/** AI 응답 모양 — COMPATIBILITY_SCHEMA 와 같다 */
+type CompatibilityResponse = {
+  compatibility_score: number;
+  compatibility_description: string;
+  similarity_analysis: Record<string, unknown>;
+  recommendations_for_user1: unknown;
+  recommendations_for_user2: unknown;
+};
 
 /**
  * 독서 궁합 분석 API
@@ -32,306 +56,301 @@ export const maxDuration = 60;
  * - 캐싱 우선: 같은 쌍의 기존 결과가 있으면 재분석하지 않는다 (force로 재분석)
  * - 상대방 책 목록은 RLS가 is_public=true만 돌려주므로 별도 필터 불필요
  * - 추천 도서는 AI 응답의 제목을 실제 book 레코드와 매칭해 표지·ISBN을 확보
+ * - 미리 알 수 있는 실패·캐시 히트는 평소 JSON 으로, AI 분석부터는 NDJSON 스트림으로 보낸다
  *
  * POST /api/compatibility/analyze
  * Body: { targetUserId: string, force?: boolean }
  */
 export async function POST(request: NextRequest) {
-  // 예약된 usage 행 id — 환불(삭제) 대상.
-  let reservedUsageId: string | null = null;
-  // OpenAI 요청을 시작하면 비용이 발생할 수 있으므로 이후 실패는 환불하지 않는다.
-  let aiRequestStarted = false;
-  // 단, OpenAI가 과금 없이 반려한 경우(잘못된 키·한도 초과 등)는 예외적으로 환불한다.
-  let refundableRejection = false;
+  // 1. 인증 확인
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  try {
-    // 1. 인증 확인
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json(
-        { error: '로그인이 필요합니다.' },
-        { status: 401 }
-      );
-    }
-
-    // 2. 요청 검증
-    const body: unknown = await request.json().catch(() => null);
-    const targetUserId =
-      body && typeof body === 'object' && 'targetUserId' in body
-        ? String((body as { targetUserId: unknown }).targetUserId)
-        : null;
-    const force =
-      body && typeof body === 'object' && 'force' in body
-        ? Boolean((body as { force: unknown }).force)
-        : false;
-
-    if (!targetUserId) {
-      return NextResponse.json(
-        { error: 'targetUserId가 필요합니다.' },
-        { status: 400 }
-      );
-    }
-    if (targetUserId === user.id) {
-      return NextResponse.json(
-        { error: '자기 자신과는 케미를 볼 수 없습니다.' },
-        { status: 400 }
-      );
-    }
-
-    // 3. 쌍 정렬 — DB 제약(user_id_1 < user_id_2)과 동일한 순서로 저장/조회
-    const [userId1, userId2] =
-      user.id < targetUserId
-        ? [user.id, targetUserId]
-        : [targetUserId, user.id];
-
-    // 4. 캐시 확인 — 같은 쌍의 기존 분석이 있으면 그대로 사용
-    if (!force) {
-      const { data: cached } = await supabase
-        .from('compatibility_analyses')
-        .select('id')
-        .eq('user_id_1', userId1)
-        .eq('user_id_2', userId2)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (cached) {
-        return NextResponse.json({
-          success: true,
-          analysis_id: cached.id,
-          cached: true,
-        });
-      }
-    }
-
-    // 5. 두 사용자의 완독 목록 조회 (병렬)
-    //    상대방 책은 RLS가 공개(is_public) 책만 반환한다
-    const fetchCompletedBooks = (userId: string) =>
-      supabase
-        .from('books')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('status', 'completed')
-        .not('rating', 'is', null)
-        .order('completed_date', { ascending: false });
-
-    const [{ data: books1 }, { data: books2 }] = await Promise.all([
-      fetchCompletedBooks(userId1),
-      fetchCompletedBooks(userId2),
-    ]);
-
-    const myBooks = user.id === userId1 ? books1 : books2;
-    const targetBooks = user.id === userId1 ? books2 : books1;
-
-    if (!myBooks || myBooks.length < MIN_BOOKS) {
-      return NextResponse.json(
-        {
-          error: `케미 분석을 위해 내 완독 책(별점 포함)이 ${MIN_BOOKS}권 이상 필요합니다.`,
-        },
-        { status: 400 }
-      );
-    }
-    if (!targetBooks || targetBooks.length < MIN_BOOKS) {
-      return NextResponse.json(
-        {
-          error: `상대방의 공개된 완독 책(별점 포함)이 ${MIN_BOOKS}권 이상일 때 분석할 수 있습니다.`,
-        },
-        { status: 400 }
-      );
-    }
-
-    // 이번 달 슬롯을 원자적으로 예약한다 (OpenAI 호출 전). 동시 요청 초과 호출 차단.
-    // 캐시 히트는 이 지점보다 앞에서 이미 응답을 반환하므로 예약도 하지 않는다.
-    const reservation = await reserveUsage(supabase, 'compatibility');
-    if (!reservation.allowed) {
-      // 개인 한도와 전역 예산은 사용자에게 다른 말을 해야 한다 — 횟수가 남아
-      // 있는데 "횟수를 다 썼다"고 하면 자기 화면(3/3 남음)과 어긋나 고장으로 읽힌다.
-      return NextResponse.json(
-        {
-          error:
-            reservation.reason === 'budget'
-              ? BUDGET_EXCEEDED_ERROR
-              : USAGE_LIMIT_EXCEEDED_ERROR,
-        },
-        { status: 429 }
-      );
-    }
-    reservedUsageId = reservation.usageId;
-
-    // 6. AI 분석 실행 — 토큰 절약을 위해 최근 30권까지만 전달
-    const MAX_BOOKS_FOR_PROMPT = 30;
-    // 0("평가 안 함")은 점수가 아니므로 null 로 프롬프트에 넘긴다.
-    // 인생책은 별도 컬럼(is_life_book)이라 여기서는 rating 그대로 쓴다.
-    const toPromptBooks = (books: Book[]) =>
-      books.slice(0, MAX_BOOKS_FOR_PROMPT).map((book) => ({
-        title: book.title,
-        author: book.author,
-        category: book.category,
-        score: isRated(book.rating) ? book.rating : null,
-      }));
-
-    const prompt = createCompatibilityPrompt({
-      user1Books: toPromptBooks(books1 as Book[]),
-      user2Books: toPromptBooks(books2 as Book[]),
-    });
-
-    aiRequestStarted = true;
-    const completion = await openai.chat.completions.create({
-      model: AI_MODEL,
-      messages: [
-        {
-          role: 'system',
-          content:
-            '당신은 독서 케미(두 사람의 독서 취향이 얼마나 잘 맞는지) 분석 전문가입니다. JSON 형식으로 응답하세요.',
-        },
-        { role: 'user', content: prompt },
-      ],
-      max_tokens: MAX_TOKENS,
-      temperature: TEMPERATURE,
-      response_format: { type: 'json_object' },
-    });
-
-    const responseText = completion.choices[0]?.message?.content;
-    if (!responseText) {
-      throw new Error('AI 응답이 없습니다.');
-    }
-
-    const aiResponse = JSON.parse(responseText);
-
-    // 7. 점수 정규화 + 타입은 점수 구간으로 서버가 결정 (AI 드리프트 방지)
-    const score = Math.max(
-      0,
-      Math.min(100, Math.round(Number(aiResponse.compatibility_score) || 0))
+  if (!user) {
+    return NextResponse.json(
+      { error: '로그인이 필요합니다.' },
+      { status: 401 }
     );
-    const typeBand = getCompatibilityTypeByScore(score);
+  }
 
-    // 8. 분석 결과 저장
-    const costInCents = calculateCost(
-      completion.usage?.prompt_tokens || 0,
-      completion.usage?.completion_tokens || 0
+  // 2. 요청 검증
+  const body: unknown = await request.json().catch(() => null);
+  const targetUserId =
+    body && typeof body === 'object' && 'targetUserId' in body
+      ? String((body as { targetUserId: unknown }).targetUserId)
+      : null;
+  const force =
+    body && typeof body === 'object' && 'force' in body
+      ? Boolean((body as { force: unknown }).force)
+      : false;
+
+  if (!targetUserId) {
+    return NextResponse.json(
+      { error: 'targetUserId가 필요합니다.' },
+      { status: 400 }
     );
-    // 결과는 서버만 쓴다(service_role). 사용자 키로 쓰게 두면 두 사람 중 한 명이 AI 를 거치지 않고
-    // 점수·설명을 직접 넣어 상대에게 보여 줄 수 있다 — 사용자 INSERT 정책은 마이그레이션에서 지운다.
-    // user_id_1·2 는 위에서 로그인 사용자와 검증한 상대 id 로 정했으니 서버가 정한 값이다.
-    const admin = createAdminClient();
-    const { data: analysis, error: analysisError } = await admin
+  }
+  if (targetUserId === user.id) {
+    return NextResponse.json(
+      { error: '자기 자신과는 케미를 볼 수 없습니다.' },
+      { status: 400 }
+    );
+  }
+
+  // 3. 쌍 정렬 — DB 제약(user_id_1 < user_id_2)과 동일한 순서로 저장/조회
+  const [userId1, userId2] =
+    user.id < targetUserId ? [user.id, targetUserId] : [targetUserId, user.id];
+
+  // 4. 캐시 확인 — 같은 쌍의 기존 분석이 있으면 그대로 사용
+  if (!force) {
+    const { data: cached } = await supabase
       .from('compatibility_analyses')
-      .insert({
-        user_id_1: userId1,
-        user_id_2: userId2,
-        // 분석한 사람만 본다 — 상대에게는 결과 화면의 "알리기"를 눌러야 보인다(shared_at)
-        requested_by: user.id,
-        compatibility_score: score,
-        compatibility_type: typeBand.name,
-        compatibility_description: aiResponse.compatibility_description,
-        similarity_analysis: aiResponse.similarity_analysis,
-        analyzed_books_count_1: Math.min(books1!.length, MAX_BOOKS_FOR_PROMPT),
-        analyzed_books_count_2: Math.min(books2!.length, MAX_BOOKS_FOR_PROMPT),
-        analysis_model: AI_MODEL,
-        cost_in_cents: costInCents,
-      })
-      .select()
-      .single();
+      .select('id')
+      .eq('user_id_1', userId1)
+      .eq('user_id_2', userId2)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-    if (analysisError) {
-      console.error('궁합 분석 저장 실패:', analysisError);
-      return NextResponse.json(
-        { error: '분석 결과를 저장할 수 없습니다.' },
-        { status: 500 }
-      );
+    if (cached) {
+      return NextResponse.json({
+        success: true,
+        analysis_id: cached.id,
+        cached: true,
+      });
     }
+  }
 
-    // 8-1. 이번 호출로 월 예산 80%·100% 를 건넜으면 운영자에게 카톡 — 응답 뒤에 처리한다
-    after(async () => {
+  // 5. 두 사용자의 완독 목록 조회 (병렬)
+  //    상대방 책은 RLS가 공개(is_public) 책만 반환한다
+  const fetchCompletedBooks = (userId: string) =>
+    supabase
+      .from('books')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('status', 'completed')
+      .not('rating', 'is', null)
+      .order('completed_date', { ascending: false });
+
+  const [{ data: books1 }, { data: books2 }] = await Promise.all([
+    fetchCompletedBooks(userId1),
+    fetchCompletedBooks(userId2),
+  ]);
+
+  const myBooks = user.id === userId1 ? books1 : books2;
+  const targetBooks = user.id === userId1 ? books2 : books1;
+
+  if (!myBooks || myBooks.length < MIN_BOOKS) {
+    return NextResponse.json(
+      {
+        error: `케미 분석을 위해 내 완독 책(별점 포함)이 ${MIN_BOOKS}권 이상 필요합니다.`,
+      },
+      { status: 400 }
+    );
+  }
+  if (!targetBooks || targetBooks.length < MIN_BOOKS) {
+    return NextResponse.json(
+      {
+        error: `상대방의 공개된 완독 책(별점 포함)이 ${MIN_BOOKS}권 이상일 때 분석할 수 있습니다.`,
+      },
+      { status: 400 }
+    );
+  }
+
+  // 이번 달 슬롯을 원자적으로 예약한다 (AI 호출 전). 동시 요청 초과 호출 차단.
+  // 캐시 히트는 이 지점보다 앞에서 이미 응답을 반환하므로 예약도 하지 않는다.
+  const reservation = await reserveUsage(supabase, 'compatibility');
+  if (!reservation.allowed) {
+    // 개인 한도와 전역 예산은 사용자에게 다른 말을 해야 한다 — 횟수가 남아
+    // 있는데 "횟수를 다 썼다"고 하면 자기 화면(3/3 남음)과 어긋나 고장으로 읽힌다.
+    return NextResponse.json(
+      {
+        error:
+          reservation.reason === 'budget'
+            ? BUDGET_EXCEEDED_ERROR
+            : USAGE_LIMIT_EXCEEDED_ERROR,
+      },
+      { status: 429 }
+    );
+  }
+  const reservedUsageId = reservation.usageId;
+
+  // 여기서부터는 스트림 — 실패는 { type: 'error' } 줄로 보낸다
+  return streamAnalysis(async (send) => {
+    // AI 요청을 시작하면 비용이 발생할 수 있으므로 이후 실패는 환불하지 않는다.
+    let aiRequestStarted = false;
+    // 단, AI 가 과금 없이 반려한 경우(잘못된 키·한도 초과 등)는 예외적으로 환불한다.
+    let refundableRejection = false;
+
+    try {
+      // 6. AI 분석 실행 — 토큰 절약을 위해 최근 30권까지만 전달
+      const MAX_BOOKS_FOR_PROMPT = 30;
+      // 0("평가 안 함")은 점수가 아니므로 null 로 프롬프트에 넘긴다.
+      // 인생책은 별도 컬럼(is_life_book)이라 여기서는 rating 그대로 쓴다.
+      const toPromptBooks = (books: Book[]) =>
+        books.slice(0, MAX_BOOKS_FOR_PROMPT).map((book) => ({
+          title: book.title,
+          author: book.author,
+          category: book.category,
+          score: isRated(book.rating) ? book.rating : null,
+        }));
+
+      const prompt = createCompatibilityPrompt({
+        user1Books: toPromptBooks(books1 as Book[]),
+        user2Books: toPromptBooks(books2 as Book[]),
+      });
+
+      send({ type: 'stage', stage: 'analyzing' });
+      aiRequestStarted = true;
+      const {
+        data: aiResponse,
+        usage,
+        model,
+      } = await streamClaudeJson<CompatibilityResponse>({
+        system:
+          '당신은 독서 케미(두 사람의 독서 취향이 얼마나 잘 맞는지) 분석 전문가입니다. JSON 형식으로 응답하세요.',
+        prompt,
+        schema: COMPATIBILITY_SCHEMA,
+        onText: (snapshot) =>
+          send({
+            type: 'progress',
+            ratio: estimateJsonProgress(
+              snapshot,
+              COMPATIBILITY_PROGRESS.milestones,
+              {
+                key: COMPATIBILITY_PROGRESS.repeatKey,
+                expected: RECOMMENDATIONS_PER_USER * 2,
+                from: COMPATIBILITY_PROGRESS.from,
+                to: COMPATIBILITY_PROGRESS.to,
+              }
+            ),
+          }),
+      });
+
+      send({ type: 'stage', stage: 'saving' });
+
+      // 7. 점수 정규화 + 타입은 점수 구간으로 서버가 결정 (AI 드리프트 방지)
+      const score = Math.max(
+        0,
+        Math.min(100, Math.round(Number(aiResponse.compatibility_score) || 0))
+      );
+      const typeBand = getCompatibilityTypeByScore(score);
+
+      // 8. 분석 결과 저장
+      const costInCents = calculateAiCostCents(usage);
+      // 결과는 서버만 쓴다(service_role). 사용자 키로 쓰게 두면 두 사람 중 한 명이 AI 를 거치지 않고
+      // 점수·설명을 직접 넣어 상대에게 보여 줄 수 있다 — 사용자 INSERT 정책은 마이그레이션에서 지운다.
+      // user_id_1·2 는 위에서 로그인 사용자와 검증한 상대 id 로 정했으니 서버가 정한 값이다.
+      const admin = createAdminClient();
+      const { data: analysis, error: analysisError } = await admin
+        .from('compatibility_analyses')
+        .insert({
+          user_id_1: userId1,
+          user_id_2: userId2,
+          // 분석한 사람만 본다 — 상대에게는 결과 화면의 "알리기"를 눌러야 보인다(shared_at)
+          requested_by: user.id,
+          compatibility_score: score,
+          compatibility_type: typeBand.name,
+          compatibility_description: aiResponse.compatibility_description,
+          similarity_analysis: aiResponse.similarity_analysis,
+          analyzed_books_count_1: Math.min(
+            books1!.length,
+            MAX_BOOKS_FOR_PROMPT
+          ),
+          analyzed_books_count_2: Math.min(
+            books2!.length,
+            MAX_BOOKS_FOR_PROMPT
+          ),
+          analysis_model: model,
+          cost_in_cents: costInCents,
+        })
+        .select()
+        .single();
+
+      if (analysisError) {
+        console.error('궁합 분석 저장 실패:', analysisError);
+        send({ type: 'error', message: '분석 결과를 저장할 수 없습니다.' });
+        return;
+      }
+
+      // 9. 상호 추천 도서 저장 — AI가 고른 제목을 실제 책 레코드와 매칭
+      //    받는 사람이 이미 가진 책(완독·읽는 중, 별점 유무 무관)은 뺀다.
+      //    분석에 쓴 목록(별점 있는 완독)만으로는 별점 없이 완독한 책·읽는 중인 책이 빠진다.
+      //    상대방 책은 RLS 가 공개 책만 준다 — 비공개로 읽은 책까지는 거를 수 없다.
+      const fetchShelf = (userId: string) =>
+        supabase
+          .from('books')
+          .select('title, isbn')
+          .eq('user_id', userId)
+          .in('status', ['completed', 'reading']);
+      const [{ data: shelf1 }, { data: shelf2 }] = await Promise.all([
+        fetchShelf(userId1),
+        fetchShelf(userId2),
+      ]);
+
+      const recommendations = [
+        // user1이 받는 추천 = user2의 책장에서 고른 책
+        ...mapRecommendations(
+          aiResponse.recommendations_for_user1,
+          books2 as Book[],
+          shelf1 ?? [],
+          { fromUserId: userId2, toUserId: userId1, analysisId: analysis.id }
+        ),
+        ...mapRecommendations(
+          aiResponse.recommendations_for_user2,
+          books1 as Book[],
+          shelf2 ?? [],
+          { fromUserId: userId1, toUserId: userId2, analysisId: analysis.id }
+        ),
+      ];
+
+      if (recommendations.length > 0) {
+        const { error: recError } = await admin
+          .from('mutual_recommendations')
+          .insert(recommendations);
+
+        if (recError) {
+          // 추천 저장 실패는 분석 자체를 무효화하지 않는다 — 로그만 남긴다
+          console.error('상호 추천 저장 실패:', recError);
+        }
+      }
+
+      // 10. 완료 — 화면은 이 줄을 받으면 결과를 새로 그린다
+      send({ type: 'done', analysisId: analysis.id });
+
+      // 10-1. 응답 뒤: 이번 호출로 월 예산 80%·100% 를 건넜으면 운영자에게 카톡
       try {
         await notifyBudgetIfCrossed(costInCents, request.nextUrl.origin);
       } catch (err: unknown) {
         console.error('AI 예산 알림 발송 실패:', err);
       }
-    });
-
-    // 9. 상호 추천 도서 저장 — AI가 고른 제목을 실제 책 레코드와 매칭
-    //    받는 사람이 이미 가진 책(완독·읽는 중, 별점 유무 무관)은 뺀다.
-    //    분석에 쓴 목록(별점 있는 완독)만으로는 별점 없이 완독한 책·읽는 중인 책이 빠진다.
-    //    상대방 책은 RLS 가 공개 책만 준다 — 비공개로 읽은 책까지는 거를 수 없다.
-    const fetchShelf = (userId: string) =>
-      supabase
-        .from('books')
-        .select('title, isbn')
-        .eq('user_id', userId)
-        .in('status', ['completed', 'reading']);
-    const [{ data: shelf1 }, { data: shelf2 }] = await Promise.all([
-      fetchShelf(userId1),
-      fetchShelf(userId2),
-    ]);
-
-    const recommendations = [
-      // user1이 받는 추천 = user2의 책장에서 고른 책
-      ...mapRecommendations(
-        aiResponse.recommendations_for_user1,
-        books2 as Book[],
-        shelf1 ?? [],
-        { fromUserId: userId2, toUserId: userId1, analysisId: analysis.id }
-      ),
-      ...mapRecommendations(
-        aiResponse.recommendations_for_user2,
-        books1 as Book[],
-        shelf2 ?? [],
-        { fromUserId: userId1, toUserId: userId2, analysisId: analysis.id }
-      ),
-    ];
-
-    if (recommendations.length > 0) {
-      const { error: recError } = await admin
-        .from('mutual_recommendations')
-        .insert(recommendations);
-
-      if (recError) {
-        // 추천 저장 실패는 분석 자체를 무효화하지 않는다 — 로그만 남긴다
-        console.error('상호 추천 저장 실패:', recError);
+    } catch (error) {
+      console.error('궁합 분석 실패:', error);
+      refundableRejection = isUnbilledAiFailure(error);
+      send({ type: 'error', message: toAnalysisErrorMessage(error) });
+    } finally {
+      // 환불 조건 두 가지:
+      // (1) AI 요청을 시작하기 전에 실패한 경우
+      // (2) AI 가 토큰을 쓰지 않고 반려한 경우 (401·429·400 등)
+      // 그 밖의 실패는 비용이 발생했을 수 있으므로 사용량을 유지한다.
+      // 환불 정리가 스트림을 깨뜨리지 않도록 자체 try로 감싼다.
+      if ((!aiRequestStarted || refundableRejection) && reservedUsageId) {
+        try {
+          await refundUsage(createAdminClient(), reservedUsageId);
+        } catch (refundError) {
+          console.error('AI 사용량 환불 처리 실패:', refundError);
+        }
       }
     }
-
-    return NextResponse.json({
-      success: true,
-      analysis_id: analysis.id,
-      cached: false,
-    });
-  } catch (error) {
-    console.error('궁합 분석 실패:', error);
-    refundableRejection = isUnbilledOpenAiFailure(error);
-    return NextResponse.json(
-      { error: '케미 분석 중 오류가 발생했습니다.' },
-      { status: 500 }
-    );
-  } finally {
-    // 환불 조건 두 가지:
-    // (1) OpenAI 요청을 시작하기 전에 실패한 경우
-    // (2) OpenAI가 토큰을 쓰지 않고 반려한 경우 (401·429·400 등)
-    // 그 밖의 실패는 비용이 발생했을 수 있으므로 사용량을 유지한다.
-    // 환불 정리가 응답을 깨뜨리지 않도록 자체 try로 감싼다.
-    if ((!aiRequestStarted || refundableRejection) && reservedUsageId) {
-      try {
-        await refundUsage(createAdminClient(), reservedUsageId);
-      } catch (refundError) {
-        console.error('AI 사용량 환불 처리 실패:', refundError);
-      }
-    }
-  }
+  }, ANALYSIS_ERROR_MESSAGE);
 }
 
-/**
- * 토큰 사용량 기반 비용 계산 (센트 단위) — taste-analysis와 동일 기준
- * gpt-4o 단가: 입력 $2.50 / 100만 토큰, 출력 $10.00 / 100만 토큰
- */
-function calculateCost(promptTokens: number, completionTokens: number): number {
-  const inputCostPerToken = 2.5 / 1_000_000;
-  const outputCostPerToken = 10.0 / 1_000_000;
-  const cost =
-    promptTokens * inputCostPerToken + completionTokens * outputCostPerToken;
-  return Math.ceil(cost * 100);
+/** 실패 종류 → 사용자 문구 */
+function toAnalysisErrorMessage(error: unknown): string {
+  if (error instanceof AiIncompleteError && error.reason === 'refusal') {
+    return '두 책장으로는 분석을 마치지 못했어요. 잠시 후 다시 시도해주세요.';
+  }
+  return ANALYSIS_ERROR_MESSAGE;
 }

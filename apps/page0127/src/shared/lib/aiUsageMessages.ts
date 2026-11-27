@@ -1,8 +1,8 @@
 /**
  * AI 분석 사용 한도·문구 상수
  *
- * aiUsage.ts 와 나눈 이유: aiUsage.ts 는 서버 전용 로직이라 `openai`(APIError)를 import 한다.
- * 클라이언트 컴포넌트가 상수 하나 때문에 aiUsage.ts 를 import 하면 OpenAI SDK 전체
+ * aiUsage.ts 와 나눈 이유: aiUsage.ts 는 서버 전용 로직이라 `@anthropic-ai/sdk`(APIError)를 import 한다.
+ * 클라이언트 컴포넌트가 상수 하나 때문에 aiUsage.ts 를 import 하면 AI SDK 전체
  * (압축 약 80KB)가 그 페이지 JS 에 실린다 — 2026-10 프로필 페이지 JS 가 다른 페이지보다
  * 250KB 많았던 원인. 클라이언트는 이 파일만 import 한다.
  */
