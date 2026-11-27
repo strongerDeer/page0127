@@ -41,15 +41,36 @@ export const OG_FONT_FAMILY = 'Pretendard';
 
 let fontsPromise: Promise<OgFont[]> | null = null;
 
+/**
+ * 받은 바이트가 온전한 WOFF 인가 — 머리(서명 'wOFF')와 머리에 적힌 전체 길이를 본다.
+ *
+ * 2026-11-27 CI 빌드가 "invalid length/literal"로 멈췄다. satori(opentype.js)가 WOFF 를
+ * 풀다(inflate) 깨진 바이트를 만난 것이다 — 응답은 200 인데 몸통이 덜 왔거나 어긋난 경우다.
+ * 정적 공유 그림 여러 장을 빌드 때 동시에 그리면서 폰트를 받는 일이 늘었다.
+ * 깨진 폰트로 그리면 카드 한 장이 아니라 **빌드 전체**가 죽으므로, 미리 걸러 기본 폰트로 간다.
+ */
+export const isCompleteWoff = (data: ArrayBuffer): boolean => {
+  if (data.byteLength < 44) return false; // WOFF 머리 크기
+  const view = new DataView(data);
+  const signature = view.getUint32(0); // 'wOFF' = 0x774f4646
+  const declaredLength = view.getUint32(8);
+  return signature === 0x774f4646 && declaredLength === data.byteLength;
+};
+
 const fetchFonts = async (): Promise<OgFont[]> =>
   Promise.all(
     FONT_FACES.map(async ({ file, weight }) => {
       const res = await fetch(`${FONT_BASE}/${file}`, { cache: 'force-cache' });
       if (!res.ok) throw new Error(`${file} ${res.status}`);
 
+      const data = await res.arrayBuffer();
+      if (!isCompleteWoff(data)) {
+        throw new Error(`${file} 바이트가 온전하지 않음(${data.byteLength}B)`);
+      }
+
       return {
         name: OG_FONT_FAMILY,
-        data: await res.arrayBuffer(),
+        data,
         weight,
         style: 'normal' as const,
       };
