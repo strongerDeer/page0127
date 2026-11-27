@@ -10,6 +10,7 @@ import { buildStoryArticleJsonLd } from '@/shared/lib/seo/structuredData';
 import {
   absoluteImageUrl,
   formatStoryDate,
+  isBookReview,
   StoryMarkdown,
   storyPath,
   storyShareImagePath,
@@ -44,6 +45,8 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
  * 두 가지 글:
  * - 책 한 권 글: 책 카드 + 독후감 + 인물관계도 + 등장인물 (전과 같다)
  * - 독서 이야기(bookId 없음): 책 카드·별점·"독후감" 제목 없이 본문(차트 블록 포함)만
+ * - 책을 연결했지만 독후감이 아닌 글(isReview false, 필사 소개 등): 책 카드는 두고 "독후감" 제목만 뺀다
+ *   (HJ 2026-11-27). 본문 소제목이 곧 h2 가 된다
  * 본문 속 "내 기록" 블록만 브라우저에서 채운다(MyRecordBlock) — 페이지는 계속 정적이다.
  *
  * 글은 어드민(/admin/stories)에서 쓰고 stories 테이블에 저장한다(HJ 2026-11-23 C안).
@@ -69,7 +72,7 @@ export async function generateMetadata({
 
   const path = storyPath(story.slug);
   const title = `${story.title} | page0127.`;
-  // 공유 이미지는 share-image/route.tsx 가 그린다(책 표지·첫 차트 숫자). 주소에 수정 시각을 붙여
+  // 공유 이미지는 share-image/route.tsx 가 그린다(대표 이미지·책 표지·첫 차트 숫자). 주소에 수정 시각을 붙여
   // 글을 저장하면 카톡·CDN 이 새 그림을 받게 한다
   const image = {
     url: storyShareImagePath(story.slug, story.updatedAt),
@@ -104,22 +107,28 @@ export default async function StoryPage({ params }: PageProps) {
   const story = await getPublishedStory(slug);
   if (!story) notFound();
 
-  const { bookId, mapImage } = story;
+  const { bookId, mapImage, coverImage } = story;
   const book = bookId ? await getStoryBook(bookId) : null;
+  // "독후감" h2 를 달지 — 책 글이라도 독후감으로 고르지 않았으면 달지 않는다
+  const isReview = isBookReview(story);
   const hasCharacters = story.characters.length > 0;
   // 목차는 칸이 둘 이상일 때만 뜻이 있다 — 본문만 있는 독서 이야기는 그리지 않는다
   const toc = [
-    ['#review', bookId ? '독후감' : '본문'],
+    ['#review', isReview ? '독후감' : '본문'],
     ...(mapImage ? [['#character-map', '인물관계도']] : []),
     ...(hasCharacters ? [['#characters', '등장인물']] : []),
   ];
   const mapTitle = story.bookTitle || story.title;
 
+  // 대표 이미지가 글을 가장 잘 나타낸다 — 없으면 관계도
+  const articleImage = coverImage ?? mapImage;
   const jsonLd = buildStoryArticleJsonLd({
     title: story.title,
     description: story.description,
     url: `${siteUrl}${storyPath(story.slug)}`,
-    image: mapImage ? absoluteImageUrl(mapImage.src, siteUrl) : undefined,
+    image: articleImage
+      ? absoluteImageUrl(articleImage.src, siteUrl)
+      : undefined,
     datePublished: story.publishedAt,
     dateModified: story.updatedAt,
     siteName: 'page0127.',
@@ -182,11 +191,11 @@ export default async function StoryPage({ params }: PageProps) {
         )}
 
         <section id='review' className='scroll-mt-20'>
-          {bookId && <h2 className='heading-2 mb-5'>독후감</h2>}
+          {isReview && <h2 className='heading-2 mb-5'>독후감</h2>}
           <StoryMarkdown
             body={story.body}
-            // 책 글은 위 "독후감" h2 아래라 h3, 책 없는 글은 본문 소제목이 곧 h2
-            headingLevel={bookId ? 3 : 2}
+            // 독후감은 위 "독후감" h2 아래라 h3, 그 밖의 글은 본문 소제목이 곧 h2
+            headingLevel={isReview ? 3 : 2}
             renderMyRecord={() => <MyRecordBlock />}
           />
         </section>

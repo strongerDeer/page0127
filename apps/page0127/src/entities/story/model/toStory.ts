@@ -25,6 +25,10 @@ export type StoryRow = {
   rating: number | null;
   map_image: unknown;
   lead_stat?: unknown;
+  /** 20261127004000 — 마이그레이션 전 행(테스트 픽스처 등)엔 없을 수 있다 */
+  cover_image?: unknown;
+  cover_position?: string | null;
+  is_review?: boolean | null;
   published_at: string | null;
   updated_at: string;
   created_at?: string;
@@ -34,7 +38,7 @@ export type StoryRow = {
 };
 
 export const STORY_SUMMARY_COLUMNS =
-  'id, slug, book_id, book_title, book_author, title, description, rating, map_image, lead_stat, published_at, updated_at';
+  'id, slug, book_id, book_title, book_author, title, description, rating, map_image, lead_stat, cover_image, cover_position, is_review, published_at, updated_at';
 export const STORY_COLUMNS = `${STORY_SUMMARY_COLUMNS}, body, map_cards, characters`;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -48,6 +52,14 @@ export const toStoryImage = (value: unknown): StoryImage | null => {
   if (width <= 0 || height <= 0) return null;
   return { src, width, height, alt: typeof alt === 'string' ? alt : '' };
 };
+
+/** "가로% 세로%"(0~100 정수)만 받는다 — DB CHECK 와 같은 규칙. 틀리면 가운데 */
+const POSITION = /^(100|[1-9]?[0-9])% (100|[1-9]?[0-9])%$/;
+export const DEFAULT_COVER_POSITION = '50% 50%';
+export const toCoverPosition = (value: unknown): string =>
+  typeof value === 'string' && POSITION.test(value)
+    ? value
+    : DEFAULT_COVER_POSITION;
 
 export const toLeadStat = (value: unknown): StoryLeadStat | null => {
   if (!isRecord(value)) return null;
@@ -97,6 +109,9 @@ export const toStorySummary = (row: StoryRow): StorySummary => ({
   description: row.description ?? '',
   rating: row.rating ?? 0,
   mapImage: toStoryImage(row.map_image),
+  coverImage: toStoryImage(row.cover_image),
+  coverPosition: toCoverPosition(row.cover_position),
+  isReview: row.is_review ?? true,
   leadStat: toLeadStat(row.lead_stat),
   publishedAt: row.published_at ?? row.created_at ?? row.updated_at,
   updatedAt: row.updated_at,

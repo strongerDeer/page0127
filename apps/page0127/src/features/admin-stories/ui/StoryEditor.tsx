@@ -8,7 +8,11 @@ import { useRouter } from 'next/navigation';
 import { BookCover } from '@repo/ui';
 import { ExternalLink, ImagePlus, Trash2, X } from 'lucide-react';
 
-import { StoryMarkdown, storyPath } from '@/entities/story';
+import {
+  DEFAULT_COVER_POSITION,
+  StoryMarkdown,
+  storyPath,
+} from '@/entities/story';
 
 import { BookPicker } from '@/features/admin-sentences/ui/BookPicker';
 
@@ -19,6 +23,7 @@ import {
   TITLE_MAX,
   validateSlug,
 } from '../model/storyForm';
+import { CoverImageField } from './CoverImageField';
 import { uploadStoryImageFile } from './uploadStoryImageFile';
 
 import type { AdminStory } from '../api/getAdminStories';
@@ -100,18 +105,38 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
     story ? formatCharactersText(story.characters) : ''
   );
   const [isPublished, setIsPublished] = useState(story?.isPublished ?? false);
+  const [coverImage, setCoverImage] = useState<StoryImage | null>(
+    story?.coverImage ?? null
+  );
+  const [coverPosition, setCoverPosition] = useState(
+    story?.coverPosition ?? DEFAULT_COVER_POSITION
+  );
+  const [isReview, setIsReview] = useState(story?.isReview ?? true);
 
   const bookTitle =
     book?.kind === 'linked' ? book.title : (book?.book.book_title ?? '');
   const slugError = slug ? validateSlug(slug) : null;
   const busy = isPending || uploading;
+  // 공개 페이지와 같은 규칙 — 책이 있고 독후감으로 고른 글만 "독후감" h2 아래(h3)
+  const showsReviewHeading = Boolean(book) && isReview;
 
-  const onUpload = async (files: FileList | null, target: 'map' | 'cards') => {
+  const onUpload = async (
+    files: FileList | null,
+    target: 'map' | 'cards' | 'cover'
+  ) => {
     if (!files?.length) return;
     setUploading(true);
     setMessage(null);
     try {
-      if (target === 'map') {
+      if (target === 'cover') {
+        const image = await uploadStoryImageFile(
+          files[0],
+          coverImage?.alt || title
+        );
+        setCoverImage(image);
+        // 새 그림은 가운데부터 — 앞 그림의 위치가 새 그림에 맞을 리 없다
+        setCoverPosition(DEFAULT_COVER_POSITION);
+      } else if (target === 'map') {
         const image = await uploadStoryImageFile(
           files[0],
           mapImage?.alt || (bookTitle ? `${bookTitle} 인물관계도` : '')
@@ -153,6 +178,9 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
       rating,
       mapImage,
       mapCards,
+      coverImage,
+      coverPosition,
+      isReview,
       charactersText,
       isPublished,
     };
@@ -239,6 +267,36 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
           책과 상관없는 글이면 고르지 않아도 돼요(목록에 &quot;독서
           이야기&quot;로 나와요).
         </p>
+        {book && (
+          <fieldset className='flex flex-col gap-1.5'>
+            <legend className='text-sm'>글 종류</legend>
+            <div className='flex flex-wrap gap-4 text-sm'>
+              <label className='flex items-center gap-2'>
+                <input
+                  type='radio'
+                  name='story-kind'
+                  checked={isReview}
+                  onChange={() => setIsReview(true)}
+                />
+                독후감
+              </label>
+              <label className='flex items-center gap-2'>
+                <input
+                  type='radio'
+                  name='story-kind'
+                  checked={!isReview}
+                  onChange={() => setIsReview(false)}
+                />
+                독서 이야기
+              </label>
+            </div>
+            <p className={HINT}>
+              독서 이야기를 고르면 책 카드는 그대로 두고 &quot;독후감&quot;
+              제목만 빠져요. 본문 ## 소제목이 페이지의 큰 제목이 돼요(필사 소개
+              글처럼 책은 있지만 독후감이 아닌 글).
+            </p>
+          </fieldset>
+        )}
       </section>
 
       {/* 기본 정보 */}
@@ -305,6 +363,23 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
         </label>
       </section>
 
+      {/* 대표 이미지 */}
+      <CoverImageField
+        image={coverImage}
+        position={coverPosition}
+        busy={busy}
+        uploading={uploading}
+        onUpload={(files) => void onUpload(files, 'cover')}
+        onRemove={() => {
+          setCoverImage(null);
+          setCoverPosition(DEFAULT_COVER_POSITION);
+        }}
+        onAltChange={(alt) =>
+          setCoverImage((current) => (current ? { ...current, alt } : current))
+        }
+        onPositionChange={setCoverPosition}
+      />
+
       {/* 본문 */}
       <section className='flex flex-col gap-2'>
         <div className='flex items-center justify-between'>
@@ -366,7 +441,7 @@ export const StoryEditor = ({ story }: { story: AdminStory | null }) => {
               <StoryMarkdown
                 body={body}
                 preview
-                headingLevel={book?.kind === 'linked' ? 3 : 2}
+                headingLevel={showsReviewHeading ? 3 : 2}
                 renderMyRecord={() => <MyRecordPreview />}
               />
             ) : (

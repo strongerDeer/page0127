@@ -16,6 +16,12 @@ export const StoryLinkCard = async ({ bookId }: { bookId: string }) => {
   if (!story) return null;
 
   const hasMap = Boolean(story.mapImage);
+  // 독후감이 아닌 글(필사 소개 등)은 "독후감"이라 부르지 않고 글 제목만 크게
+  const heading = !story.isReview
+    ? story.title
+    : hasMap
+      ? '독후감과 인물관계도'
+      : '독후감';
 
   return (
     <Link
@@ -25,11 +31,13 @@ export const StoryLinkCard = async ({ bookId }: { bookId: string }) => {
       <div className='min-w-0'>
         <p className='text-xs font-semibold text-primary'>책 이야기</p>
         <p className='mt-0.5 font-semibold break-keep text-text-strong'>
-          {hasMap ? '독후감과 인물관계도' : '독후감'}
+          {heading}
         </p>
-        <p className='mt-0.5 text-sm break-keep text-text-subtle'>
-          {story.title}
-        </p>
+        {story.isReview && (
+          <p className='mt-0.5 text-sm break-keep text-text-subtle'>
+            {story.title}
+          </p>
+        )}
       </div>
       <ArrowRight
         aria-hidden='true'

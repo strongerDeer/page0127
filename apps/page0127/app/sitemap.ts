@@ -49,8 +49,11 @@ const getStoryRoutes = (
       lastModified: new Date(story.updatedAt),
       changeFrequency: 'monthly' as const,
       priority: 0.7,
-      ...(story.mapImage && {
-        images: [absoluteImageUrl(story.mapImage.src, siteUrl)],
+      // 대표 이미지·관계도 — 있는 것만 이미지 검색에 알린다
+      ...((story.coverImage || story.mapImage) && {
+        images: [story.coverImage, story.mapImage].flatMap((image) =>
+          image ? [absoluteImageUrl(image.src, siteUrl)] : []
+        ),
       }),
     })),
   ];

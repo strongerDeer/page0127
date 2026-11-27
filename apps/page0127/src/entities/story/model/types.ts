@@ -49,6 +49,18 @@ export type StorySummary = {
   /** 관계도 전체 그림. 없으면 관계도 칸을 그리지 않는다 */
   mapImage: StoryImage | null;
   /**
+   * 대표 이미지 — 목록 썸네일·공유 미리보기(og:image)에 쓴다. 본문에는 그리지 않는다(HJ 2026-11-27).
+   * 없으면 목록은 관계도 윗부분·첫 차트 숫자, 공유는 자동 그림(share-image)
+   */
+  coverImage: StoryImage | null;
+  /** 목록 정사각형 썸네일에서 보일 곳 — CSS object-position("가로% 세로%") */
+  coverPosition: string;
+  /**
+   * 책을 연결한 글이 독후감인가. false 면 책 카드는 두고 "독후감" 제목만 뺀다(필사 소개 글 등).
+   * 책 없는 글은 보지 않는다
+   */
+  isReview: boolean;
+  /**
    * 본문의 첫 숫자 차트(```chart) 요약 — 목록 오른쪽 작은 그림·공유 이미지에 쓴다.
    * 목록은 본문을 읽지 않으므로(캐시 크기) 어드민이 저장할 때 본문에서 뽑아 stories.lead_stat 에 둔다.
    */

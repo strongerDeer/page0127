@@ -34,6 +34,12 @@ export type StoryInput = {
   rating: number;
   mapImage: StoryImage | null;
   mapCards: StoryImage[];
+  /** 대표 이미지 — 목록 썸네일·공유 미리보기 */
+  coverImage: StoryImage | null;
+  /** 목록 정사각형 썸네일에서 보일 곳 "가로% 세로%" */
+  coverPosition: string;
+  /** 책을 연결한 글이 독후감인가 — 책 없는 글은 저장할 때 true 로 둔다(뜻 없음) */
+  isReview: boolean;
   /** 등장인물 — 사람이 쓰기 쉬운 글자 형식(parseCharactersText) */
   charactersText: string;
   isPublished: boolean;
@@ -47,6 +53,9 @@ export type ValidStory = {
   rating: number;
   map_image: StoryImage | null;
   map_cards: StoryImage[];
+  cover_image: StoryImage | null;
+  cover_position: string;
+  is_review: boolean;
   characters: StoryCharacterGroup[];
   /** 본문 첫 숫자 차트 — 목록·공유 이미지용(서버가 계산) */
   lead_stat: StoryLeadStat | null;
@@ -56,6 +65,8 @@ export type ValidStory = {
 type Result<T> = { ok: true; value: T } | { ok: false; message: string };
 
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+/** DB CHECK(stories.cover_position)와 같은 규칙 — 0~100 정수 % 두 개 */
+const COVER_POSITION = /^(100|[1-9]?[0-9])% (100|[1-9]?[0-9])%$/;
 export const SLUG_MAX = 80;
 export const TITLE_MAX = 120;
 export const DESCRIPTION_MAX = 300;
@@ -239,6 +250,16 @@ export const validateStoryInput = (
       message: '모바일 카드는 관계도 전체 그림이 있을 때만 쓸 수 있어요.',
     };
 
+  let coverImage: StoryImage | null = null;
+  if (input.coverImage) {
+    const checked = sanitizeImage(input.coverImage, supabaseUrl, title);
+    if (!checked.ok) return checked;
+    coverImage = checked.value;
+  }
+  const coverPosition = input.coverPosition?.trim() || '50% 50%';
+  if (!COVER_POSITION.test(coverPosition))
+    return { ok: false, message: '대표 이미지 위치를 다시 골라 주세요.' };
+
   if (input.isPublished && !body && !mapImage)
     return {
       ok: false,
@@ -255,6 +276,10 @@ export const validateStoryInput = (
       rating: bookTitle ? rating : 0,
       map_image: mapImage,
       map_cards: mapCards,
+      cover_image: coverImage,
+      cover_position: coverPosition,
+      // 책 없는 글은 종류를 고르지 않는다 — 기본값(true)으로 둬서 나중에 책을 붙이면 독후감부터
+      is_review: bookTitle ? input.isReview !== false : true,
       characters: parseCharactersText(input.charactersText),
       lead_stat: findLeadStat(body),
       is_published: Boolean(input.isPublished),
