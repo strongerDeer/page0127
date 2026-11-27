@@ -17,20 +17,10 @@ import {
   uploadBannerArt,
 } from '@/features/admin-banners/api/slideActions';
 import { isoToKstInput } from '@/features/admin-banners/lib/kstTime';
+import { BeltFields } from '@/features/admin-banners/ui/BeltFields';
 import { CoverPreview } from '@/features/admin-banners/ui/CoverPreview';
 
 import type { HeroSlideRow } from '@/entities/banner/types';
-
-type TextKey = 'eyebrow' | 'line1' | 'line2' | 'sub' | 'cta' | 'href';
-
-const FIELD_LABELS: { key: TextKey; label: string }[] = [
-  { key: 'eyebrow', label: '라벨' },
-  { key: 'line1', label: '1줄' },
-  { key: 'line2', label: '2줄' },
-  { key: 'sub', label: '서브' },
-  { key: 'cta', label: '버튼' },
-  { key: 'href', label: '링크' },
-];
 
 const AUDIENCE_OPTIONS = [
   { value: 'all', label: '모두' },
@@ -241,40 +231,13 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
               onChange={(v) => set('belt_style', v)}
               disabled={isPending}
             />
-            {fields.belt_style === 'custom' && (
-              <div className='grid gap-2 sm:grid-cols-2'>
-                {FIELD_LABELS.map(({ key, label }) => (
-                  <label key={key} className='text-xs'>
-                    {label}
-                    <input
-                      value={fields[key]}
-                      onChange={(e) => set(key, e.target.value)}
-                      disabled={isPending}
-                      className={INPUT_CLASS}
-                    />
-                  </label>
-                ))}
-                <label className='text-xs'>
-                  띠지 색
-                  <input
-                    type='color'
-                    value={fields.bg}
-                    onChange={(e) => set('bg', e.target.value)}
-                    disabled={isPending}
-                    className='mt-0.5 block h-8 w-16 disabled:opacity-50'
-                  />
-                </label>
-                <label className='text-xs'>
-                  띠지 글자색
-                  <input
-                    type='color'
-                    value={fields.fg}
-                    onChange={(e) => set('fg', e.target.value)}
-                    disabled={isPending}
-                    className='mt-0.5 block h-8 w-16 disabled:opacity-50'
-                  />
-                </label>
-              </div>
+            {fields.belt_style === 'custom' ? (
+              <BeltFields fields={fields} set={set} disabled={isPending} />
+            ) : (
+              <p className='text-xs text-text-subtle'>
+                홈 기본 띠지 문구를 그대로 보여 줘요. 띠지 글자를 바꾸려면 “직접
+                쓰기”를 고르세요.
+              </p>
             )}
           </fieldset>
 
