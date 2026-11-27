@@ -6,10 +6,16 @@ import { createAdminClient } from '@/shared/config/supabase/admin';
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 
 import { HERO_SLIDES_CACHE_TAG } from '@/entities/banner/api/getActiveHeroSlides';
+import {
+  type BeltStyle,
+  type CoverStyle,
+  HERO_SLIDE_COLUMNS,
+  type HeroSlideRow,
+} from '@/entities/banner/types';
 
 import { kstInputToIso } from '../lib/kstTime';
-
-import type { BeltStyle, CoverStyle } from '@/entities/banner/types';
+import { diffSlide, type SlideEventAction } from '../lib/slideEvents';
+import { slideTitle } from '../lib/slideStatus';
 
 export type SlideFields = {
   eyebrow: string;
@@ -41,6 +47,8 @@ export type SlideFields = {
   art_y: number;
   /** 그림 너비(표지 너비 대비 %) */
   art_w: number;
+  /** 띠지 배경 그림 — banner-art 버킷 공개 URL. 비우면 그림 없음 */
+  belt_art_url: string;
 };
 
 const BANNER_ART_BUCKET = 'banner-art';
@@ -106,6 +114,7 @@ const toRow = (fields: SlideFields) => ({
   art_x: clamp(fields.art_x, 0, 100),
   art_y: clamp(fields.art_y, 0, 100),
   art_w: clamp(fields.art_w, 10, 60),
+  belt_art_url: artUrlOrNull(fields.belt_art_url),
 });
 
 /** 맨 끝 순서 번호. 읽기 실패 시 0 으로 떨어져 기존 슬라이드와 겹칠 수 있으므로 던진다 */
@@ -129,27 +138,78 @@ function revalidate() {
   revalidatePath('/');
 }
 
+type AdminClient = ReturnType<typeof createAdminClient>;
+
+/**
+ * 수정 기록 한 줄 남기기(hero_slide_events, 2026-11-27 HJ ②안).
+ *
+ * 기록이 실패해도 저장 자체는 이미 끝났으므로 던지지 않는다 — 기록 때문에 배너 저장이
+ * 막히면 주객이 바뀐다. 대신 서버 로그(Sentry)로 남겨 빠진 기록을 알 수 있게 한다.
+ */
+async function logEvent(
+  supabase: AdminClient,
+  event: {
+    slideId: string | null;
+    title: string;
+    action: SlideEventAction;
+    actorId: string;
+    changes?: Record<string, { from: unknown; to: unknown }>;
+  }
+): Promise<void> {
+  const { error } = await supabase.from('hero_slide_events').insert({
+    slide_id: event.slideId,
+    slide_title: event.title,
+    action: event.action,
+    changes: event.changes ?? {},
+    actor_id: event.actorId,
+  });
+  if (error) console.error('[banner] 수정 기록 저장 실패:', error.message);
+}
+
+/** 기록에 이름을 남기려고 지우기·켜기 전 행을 읽는다. 못 읽으면 이름 없이 남긴다 */
+async function readSlide(
+  supabase: AdminClient,
+  id: string
+): Promise<HeroSlideRow | null> {
+  const { data } = await supabase
+    .from('hero_slides')
+    .select(HERO_SLIDE_COLUMNS)
+    .eq('id', id)
+    .maybeSingle();
+  return (data as HeroSlideRow | null) ?? null;
+}
+
 export async function createSlide(): Promise<void> {
-  await assertAdmin();
+  const admin = await assertAdmin();
   const supabase = createAdminClient();
 
   // 새 슬라이드는 맨 끝 순서로
   const nextOrder = await nextSortOrder(supabase);
 
-  const { error } = await supabase.from('hero_slides').insert({
-    eyebrow: '',
-    line1: '새 배너',
-    line2: '문구를 입력하세요',
-    sub: '',
-    href: '/login',
-    cta: '자세히',
-    // 띠지 기본색(크림 종이·남색 글자) — AboutHero 의 --belt 와 같다
-    bg: '#f6efe2',
-    fg: '#14294e',
-    sort_order: nextOrder,
-    is_active: false, // 기본은 꺼둔 채 생성(편집 후 켜기)
-  });
+  const { data: created, error } = await supabase
+    .from('hero_slides')
+    .insert({
+      eyebrow: '',
+      line1: '새 배너',
+      line2: '문구를 입력하세요',
+      sub: '',
+      href: '/login',
+      cta: '자세히',
+      // 띠지 기본색(크림 종이·남색 글자) — AboutHero 의 --belt 와 같다
+      bg: '#f6efe2',
+      fg: '#14294e',
+      sort_order: nextOrder,
+      is_active: false, // 기본은 꺼둔 채 생성(편집 후 켜기)
+    })
+    .select('id')
+    .single();
   if (error) throw new Error(`슬라이드 생성 실패: ${error.message}`);
+  await logEvent(supabase, {
+    slideId: created.id,
+    title: '새 배너 문구를 입력하세요',
+    action: 'create',
+    actorId: admin.id,
+  });
   revalidate();
 }
 
@@ -157,11 +217,14 @@ export async function updateSlide(
   id: string,
   fields: SlideFields
 ): Promise<void> {
-  await assertAdmin();
+  const admin = await assertAdmin();
   const supabase = createAdminClient();
+  // 바뀐 칸만 기록하려고 저장 전 값을 읽어 둔다
+  const before = await readSlide(supabase, id);
+  const row = toRow(fields);
   const { error } = await supabase
     .from('hero_slides')
-    .update({ ...toRow(fields), updated_at: new Date().toISOString() })
+    .update({ ...row, updated_at: new Date().toISOString() })
     .eq('id', id);
   if (error) {
     // 기간이 거꾸로면 DB CHECK 이 막는다 — 그 뜻을 운영자 말로 옮긴다
@@ -169,6 +232,17 @@ export async function updateSlide(
       throw new Error('종료 시각이 시작 시각보다 앞설 수 없습니다.');
     }
     throw new Error(`슬라이드 저장 실패: ${error.message}`);
+  }
+  const changes = before ? diffSlide(before, row) : {};
+  // 아무것도 안 바꾸고 저장만 누른 건 기록하지 않는다
+  if (!before || Object.keys(changes).length > 0) {
+    await logEvent(supabase, {
+      slideId: id,
+      title: slideTitle(row),
+      action: 'update',
+      actorId: admin.id,
+      changes,
+    });
   }
   revalidate();
 }
@@ -178,7 +252,7 @@ export async function updateSlide(
  * 복제본은 **꺼진 채** 맨 끝에 생긴다(같은 기간에 둘이 동시에 뜨지 않게). 클릭 수는 0부터.
  */
 export async function duplicateSlide(id: string): Promise<void> {
-  await assertAdmin();
+  const admin = await assertAdmin();
   const supabase = createAdminClient();
   const { data: source, error: readErr } = await supabase
     .from('hero_slides')
@@ -192,12 +266,22 @@ export async function duplicateSlide(id: string): Promise<void> {
   const copy: Record<string, unknown> = { ...source };
   for (const key of ['id', 'created_at', 'updated_at', 'click_count'])
     delete copy[key];
-  const { error } = await supabase.from('hero_slides').insert({
-    ...copy,
-    sort_order: await nextSortOrder(supabase),
-    is_active: false,
-  });
+  const { data: created, error } = await supabase
+    .from('hero_slides')
+    .insert({
+      ...copy,
+      sort_order: await nextSortOrder(supabase),
+      is_active: false,
+    })
+    .select('id')
+    .single();
   if (error) throw new Error(`슬라이드 복제 실패: ${error.message}`);
+  await logEvent(supabase, {
+    slideId: created.id,
+    title: slideTitle(source as HeroSlideRow),
+    action: 'duplicate',
+    actorId: admin.id,
+  });
   revalidate();
 }
 
@@ -233,27 +317,42 @@ export async function uploadBannerArt(formData: FormData): Promise<string> {
 }
 
 export async function deleteSlide(id: string): Promise<void> {
-  await assertAdmin();
+  const admin = await assertAdmin();
   const supabase = createAdminClient();
+  // 지운 뒤에도 무엇을 지웠는지 보이게 이름을 먼저 읽는다(기록의 slide_id 는 SET NULL 이 된다)
+  const before = await readSlide(supabase, id);
   const { error } = await supabase.from('hero_slides').delete().eq('id', id);
   if (error) throw new Error(`슬라이드 삭제 실패: ${error.message}`);
+  await logEvent(supabase, {
+    slideId: null,
+    title: before ? slideTitle(before) : '',
+    action: 'delete',
+    actorId: admin.id,
+  });
   revalidate();
 }
 
 export async function toggleActive(id: string, active: boolean): Promise<void> {
-  await assertAdmin();
+  const admin = await assertAdmin();
   const supabase = createAdminClient();
   const { error } = await supabase
     .from('hero_slides')
     .update({ is_active: active, updated_at: new Date().toISOString() })
     .eq('id', id);
   if (error) throw new Error(`상태 변경 실패: ${error.message}`);
+  const slide = await readSlide(supabase, id);
+  await logEvent(supabase, {
+    slideId: id,
+    title: slide ? slideTitle(slide) : '',
+    action: active ? 'activate' : 'deactivate',
+    actorId: admin.id,
+  });
   revalidate();
 }
 
 // 배열 인덱스를 각 행의 sort_order로 저장한다.
 export async function reorderSlides(orderedIds: string[]): Promise<void> {
-  await assertAdmin();
+  const admin = await assertAdmin();
   const supabase = createAdminClient();
   for (let i = 0; i < orderedIds.length; i++) {
     const { error } = await supabase
@@ -262,5 +361,13 @@ export async function reorderSlides(orderedIds: string[]): Promise<void> {
       .eq('id', orderedIds[i]);
     if (error) throw new Error(`순서 저장 실패: ${error.message}`);
   }
+  // 순서는 "홈에 무엇이 나오나"를 바꾸므로 맨 위가 된 배너를 이름으로 남긴다
+  const top = orderedIds[0] ? await readSlide(supabase, orderedIds[0]) : null;
+  await logEvent(supabase, {
+    slideId: top?.id ?? null,
+    title: top ? slideTitle(top) : '',
+    action: 'reorder',
+    actorId: admin.id,
+  });
   revalidate();
 }

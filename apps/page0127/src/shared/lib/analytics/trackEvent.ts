@@ -38,7 +38,7 @@ declare global {
  *   활성화  book_add → book_complete      ← 비어 있던 구간
  *   차별화  taste_analysis_run
  *   확산    share_click
- *   새 기능  daily_sentence_* · typing_*      ← 어드민 유입분석 '이벤트 현황'(eventTimeline.ts EVENT_GROUPS)에 함께 적는다
+ *   새 기능  daily_sentence_* · typing_* · year_cheer_*      ← 어드민 유입분석 '이벤트 현황'(eventTimeline.ts EVENT_GROUPS)에 함께 적는다
  *   홈 책    home_page_turn · home_book_jump · home_sound_toggle
  *   케미     chemistry_run · chemistry_notify
  *   다시 오게 push_enable · push_disable · install_guide_open · install_prompt · recap_view · badge_earn
@@ -76,6 +76,10 @@ export type AnalyticsEvent =
   | 'typing_chapter_complete'
   /** 타수 랭킹에 이름을 올렸다 — 비회원 닉네임 등록 또는 회원 순위 참여 켜기. member */
   | 'typing_rank_join'
+  /** 연말 응원 카드(/아이디/cheer)에서 선물 리본을 풀었다. owner: 주인인지(false 면 링크를 받은 친구) */
+  | 'year_cheer_open'
+  /** 친구가 받은 응원 카드에서 "나도 서재 만들기"를 눌렀다(비회원) */
+  | 'year_cheer_signup_click'
   /**
    * 홈 "책 넘김"(HomeBook)에서 이번 방문 중 가장 깊은 쪽에 닿았다 — 더 깊이 갈 때만 한 번씩.
    * page: 닿은 쪽(0부터), total: 전체 넘김 수, via: 'turn'(직접 넘김) | 'jump'(목차·건너뛰기로 지나감)

@@ -89,8 +89,15 @@ export const SCHEMA_CONTRACT: SchemaProbe[] = [
     // audience 가 없으면 대상 필터가 통째로 사라져 비로그인용 배너("지금
     // 가입하세요")가 로그인 사용자에게도 뜬다 — 화면은 안 깨지고 문구만
     // 거짓말이 되는, 조용한 종류의 고장이다.
-    columns: ['audience', 'starts_at', 'ends_at', 'click_count'],
-    breaks: '랜딩 히어로 배너 — 대상·기간 필터와 클릭 집계',
+    // belt_art_url(2026-11-27)은 HERO_SLIDE_COLUMNS 가 읽는다 — 없으면 배너 조회가
+    // 통째로 실패해 띠지가 기본 문구로 떨어진다.
+    columns: ['audience', 'starts_at', 'ends_at', 'click_count', 'belt_art_url'],
+    breaks: '랜딩 히어로 배너 — 대상·기간 필터·클릭 집계·띠지 배경 그림',
+  },
+  {
+    table: 'hero_slide_events',
+    columns: ['slide_id', 'action', 'changes', 'created_at'],
+    breaks: '어드민 배너 수정 기록',
   },
 ];
 

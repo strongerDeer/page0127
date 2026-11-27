@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 import {
   Button,
+  cn,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -35,6 +36,8 @@ type ShareSheetButtonProps = {
   loadingMessages?: LoadingMessages;
   /** 있으면 아이콘 옆에 글자를 붙인 버튼 — 없으면 아이콘만(헤더처럼 자리가 좁은 곳) */
   triggerLabel?: string;
+  /** 글자 버튼의 모양을 바꿀 때 — 파란 무대 위 연말 응원 카드처럼 배경이 다른 곳 */
+  triggerClassName?: string;
   /** true면 글자 버튼을 큰 보조 버튼으로 — 홈 첫 화면처럼 큰 버튼 옆에 나란히 설 때 */
   prominent?: boolean;
   /** true면 아이콘 버튼을 작은 고스트 버튼으로 — 문장 한 줄 옆의 고치기·지우기 버튼과 나란히 설 때 */
@@ -113,6 +116,7 @@ export const ShareSheetButton = ({
   sheetTitle,
   loadingMessages = SHELF_LOADING,
   triggerLabel,
+  triggerClassName,
   prominent = false,
   compact = false,
   description = '이미지는 스토리·게시물에, 링크는 메시지로 보내기 좋아요.',
@@ -209,7 +213,7 @@ export const ShareSheetButton = ({
         <Button
           variant={prominent ? 'secondary' : 'outline'}
           size={prominent ? 'lg' : 'sm'}
-          className='gap-1.5 shadow-none'
+          className={cn('gap-1.5 shadow-none', triggerClassName)}
           onClick={() => setOpen(true)}
         >
           <Share2

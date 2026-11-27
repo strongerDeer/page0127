@@ -2,9 +2,7 @@
 
 import { useRef, useState, useTransition } from 'react';
 
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { resizeAvatarFile } from '@/shared/lib/resizeAvatar';
 
@@ -19,8 +17,10 @@ import {
 import { isoToKstInput } from '@/features/admin-banners/lib/kstTime';
 import { BeltFields } from '@/features/admin-banners/ui/BeltFields';
 import { CoverPreview } from '@/features/admin-banners/ui/CoverPreview';
+import { SlideHistory } from '@/features/admin-banners/ui/SlideHistory';
 
 import type { HeroSlideRow } from '@/entities/banner/types';
+import type { SlideEvent } from '@/features/admin-banners/lib/slideEvents';
 
 const AUDIENCE_OPTIONS = [
   { value: 'all', label: '모두' },
@@ -69,9 +69,14 @@ const Segmented = <T extends string>({
   </div>
 );
 
-export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: slide.id });
+export const SlideCard = ({
+  slide,
+  events,
+}: {
+  slide: HeroSlideRow;
+  /** 이 배너의 수정 기록(최신순) */
+  events: SlideEvent[];
+}) => {
   const [fields, setFields] = useState<SlideFields>({
     eyebrow: slide.eyebrow,
     line1: slide.line1,
@@ -95,6 +100,7 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
     art_x: slide.art_x,
     art_y: slide.art_y,
     art_w: slide.art_w,
+    belt_art_url: slide.belt_art_url ?? '',
   });
   const fileRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -103,21 +109,32 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
   const set = <K extends keyof SlideFields>(k: K, v: SlideFields[K]) =>
     setFields((f) => ({ ...f, [k]: v }));
 
-  const run = (fn: () => Promise<void>) => {
+  /**
+   * 서버 액션을 실행하고 결과를 토스트로 알린다(2026-11-27 HJ "저장 피드백 필요").
+   * success 를 비우면 성공 토스트는 띄우지 않는다(그림 올리기처럼 저장 전 중간 단계).
+   * 실패는 카드 아래 문구와 토스트 둘 다 — 토스트는 사라지므로 이유를 카드에 남긴다.
+   */
+  const run = (fn: () => Promise<void>, success?: string) => {
     setError(null);
     startTransition(async () => {
       try {
         await fn();
+        if (success) toast.success(success);
       } catch (e) {
-        setError(
-          e instanceof Error ? e.message : '처리 중 오류가 발생했습니다.'
-        );
+        const message =
+          e instanceof Error ? e.message : '처리 중 오류가 발생했습니다.';
+        setError(message);
+        toast.error(message);
       }
     });
   };
 
   // 그림은 브라우저에서 600px WEBP 로 줄여 보낸 뒤, 돌아온 주소만 폼에 담는다(저장은 따로)
-  const onPickArt = (file: File | undefined) => {
+  // 표지 그림(art_url)과 띠지 배경 그림(belt_art_url)이 같은 버킷·같은 방식으로 올라간다
+  const onPickArt = (
+    file: File | undefined,
+    key: 'art_url' | 'belt_art_url' = 'art_url'
+  ) => {
     if (!file) return;
     run(async () => {
       const resized = await resizeAvatarFile(file, {
@@ -127,32 +144,15 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
       const body = new FormData();
       body.set('file', resized);
       const url = await uploadBannerArt(body);
-      set('art_url', url);
-    });
+      set(key, url);
+    }, '그림을 올렸어요. 저장을 눌러야 홈에 반영돼요');
     if (fileRef.current) fileRef.current.value = '';
   };
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className='rounded border border-line bg-white p-4 text-text-strong'
-    >
-      <div className='mb-2 flex items-center justify-between'>
-        <button
-          {...attributes}
-          {...listeners}
-          className='cursor-grab'
-          aria-label='순서 이동 핸들'
-          type='button'
-        >
-          <GripVertical className='h-4 w-4' aria-hidden />
-        </button>
+    // 목록 줄(SlideRow)을 누르면 그 아래에 열리는 편집 칸 — 순서 끌기는 목록 줄이 맡는다
+    <div className='rounded-b border border-t-0 border-line bg-white p-4 text-text-strong'>
+      <div className='mb-2 flex items-center justify-end'>
         <div className='flex items-center gap-3'>
           {/* 클릭 수 — 무엇이 먹히는지 여기서 바로 비교한다.
               0 도 정보다("아무도 안 누른다")이므로 감추지 않는다 */}
@@ -164,7 +164,12 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
               type='checkbox'
               checked={slide.is_active}
               onChange={(e) =>
-                run(() => toggleActive(slide.id, e.target.checked))
+                run(
+                  () => toggleActive(slide.id, e.target.checked),
+                  e.target.checked
+                    ? '노출을 켰어요. 홈에 바로 반영돼요'
+                    : '노출을 껐어요'
+                )
               }
               disabled={isPending}
             />
@@ -232,7 +237,12 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
               disabled={isPending}
             />
             {fields.belt_style === 'custom' ? (
-              <BeltFields fields={fields} set={set} disabled={isPending} />
+              <BeltFields
+                fields={fields}
+                set={set}
+                disabled={isPending}
+                onPickArt={(file) => onPickArt(file, 'belt_art_url')}
+              />
             ) : (
               <p className='text-xs text-text-subtle'>
                 홈 기본 띠지 문구를 그대로 보여 줘요. 띠지 글자를 바꾸려면 “직접
@@ -396,7 +406,14 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
       <div className='mt-4 flex gap-2'>
         <button
           type='button'
-          onClick={() => run(() => updateSlide(slide.id, fields))}
+          onClick={() =>
+            run(
+              () => updateSlide(slide.id, fields),
+              slide.is_active
+                ? '저장했어요. 홈에 바로 반영돼요'
+                : '저장했어요. 노출을 켜면 홈에 나와요'
+            )
+          }
           disabled={isPending}
           className='rounded border border-line bg-white px-3 py-1.5 text-sm text-text-strong hover:bg-accent disabled:opacity-50'
         >
@@ -405,7 +422,12 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
         {/* 복제본은 꺼진 채 맨 끝에 생긴다 — 날짜만 바꿔 내년에 다시 쓰기 */}
         <button
           type='button'
-          onClick={() => run(() => duplicateSlide(slide.id))}
+          onClick={() =>
+            run(
+              () => duplicateSlide(slide.id),
+              '복제했어요. 맨 아래에 꺼진 채로 생겼어요'
+            )
+          }
           disabled={isPending}
           className='rounded border border-line bg-white px-3 py-1.5 text-sm text-text-strong hover:bg-accent disabled:opacity-50'
         >
@@ -415,7 +437,7 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
           type='button'
           onClick={() => {
             if (confirm('이 슬라이드를 삭제할까요?'))
-              run(() => deleteSlide(slide.id));
+              run(() => deleteSlide(slide.id), '삭제했어요');
           }}
           disabled={isPending}
           className='rounded border border-line bg-white px-3 py-1.5 text-sm text-destructive hover:bg-accent disabled:opacity-50'
@@ -424,6 +446,17 @@ export const SlideCard = ({ slide }: { slide: HeroSlideRow }) => {
         </button>
       </div>
       {error && <p className='mt-2 text-sm text-destructive'>{error}</p>}
+
+      {/* 이 배너의 수정 기록 — 저장하면 새로고침된 목록에 한 줄 더해진다 */}
+      <details className='mt-4 border-t border-line pt-3'>
+        <summary className='cursor-pointer text-xs font-semibold'>
+          이 배너의 수정 기록{' '}
+          <span className='text-text-subtle'>{events.length}</span>
+        </summary>
+        <div className='mt-2'>
+          <SlideHistory events={events} />
+        </div>
+      </details>
     </div>
   );
 };

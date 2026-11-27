@@ -28,6 +28,7 @@ const ALLOWED: Record<string, string> = {
     '가입 경로 — 가입 때 서버가 쓴다(체험 계정은 가입하지 않는다)',
   typing_guest_scores:
     '비회원 필사 점수 — 서버(service_role)만 쓰고 로그인 사용자와 무관',
+  hero_slide_events: '메인 배너 수정 기록 — 어드민(service_role)만 쓴다',
 };
 
 const migrations = readdirSync(MIGRATIONS_DIR)

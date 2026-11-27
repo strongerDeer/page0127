@@ -34,6 +34,14 @@ export const EVENT_GROUPS: {
     ],
   },
   {
+    key: 'year-cheer',
+    label: '연말 응원 카드',
+    events: [
+      { name: 'year_cheer_open', label: '선물 열기' },
+      { name: 'year_cheer_signup_click', label: '친구 가입 클릭' },
+    ],
+  },
+  {
     key: 'home',
     label: '홈 책·케미',
     events: [

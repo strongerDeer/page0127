@@ -18,6 +18,8 @@ export type HeroSlide = {
   fg: string;
   /** default=기본 띠지 문구, custom=이 슬라이드의 문구·색 */
   beltStyle: BeltStyle;
+  /** 띠지 배경 그림(높이 꽉 차게·오른쪽 붙임). custom 띠지에서만 쓴다 */
+  beltArt: string | null;
   /** 홈 앞표지 — 기본 파란 표지이거나 기념일용으로 갈아입힌 표지 */
   cover: HeroCover;
 };
@@ -59,7 +61,7 @@ export type HeroCover =
  * 생길 자리를 없앤다.
  */
 export const HERO_SLIDE_COLUMNS =
-  'id, eyebrow, line1, line2, sub, href, cta, bg, fg, sort_order, is_active, audience, starts_at, ends_at, click_count, belt_style, cover_style, cover_bg, cover_fg, cover_title, show_number, art_url, art_x, art_y, art_w';
+  'id, eyebrow, line1, line2, sub, href, cta, bg, fg, sort_order, is_active, audience, starts_at, ends_at, click_count, belt_style, cover_style, cover_bg, cover_fg, cover_title, show_number, art_url, art_x, art_y, art_w, belt_art_url';
 
 export type HeroSlideRow = {
   id: string;
@@ -90,4 +92,6 @@ export type HeroSlideRow = {
   art_x: number;
   art_y: number;
   art_w: number;
+  /** 띠지 배경 그림 — banner-art 버킷 공개 주소. null 이면 그림 없음 */
+  belt_art_url: string | null;
 };
