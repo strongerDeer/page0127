@@ -143,17 +143,8 @@ export const CoverPreview = ({
             }}
           />
         )}
-        {/* 배너 띠지는 홈처럼 윗줄=알약 태그, 아랫줄=테두리 버튼(AboutHero.module.css .beltCustom) */}
-        <span
-          className={
-            isCustomBelt
-              ? 'self-start rounded-full px-1.5 py-px text-[6px] font-bold tracking-wider'
-              : 'text-[7px] font-bold tracking-widest opacity-80'
-          }
-          style={
-            isCustomBelt ? { background: belt.fg, color: belt.bg } : undefined
-          }
-        >
+        {/* 배너 띠지는 홈처럼 윗줄=글자만, 아랫줄=테두리 버튼(AboutHero.module.css .beltCustom) */}
+        <span className='text-[7px] font-bold tracking-widest opacity-80'>
           {belt.eyebrow}
         </span>
         <span className='whitespace-pre-line text-[10px] font-extrabold leading-tight'>

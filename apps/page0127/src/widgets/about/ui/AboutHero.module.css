@@ -407,27 +407,12 @@
 
 /*
  * 배너 띠지 — 기본 띠지와 생김새가 같아 "누르는 배너"인지 알아채기 어려웠다(2026-11-27 HJ).
- * 윗줄은 알약 태그(띠지 글자색 면 + 띠지 색 글자, 민트 점 하나), 아랫줄은 테두리 버튼으로 바꿔
- * 누를 수 있다는 신호를 준다. 색은 어드민이 고른 --belt·--belt-ink 를 뒤집어 쓰므로 어떤 색이든 맞는다.
+ * 아랫줄만 테두리 버튼으로 바꿔 누를 수 있다는 신호를 준다. 윗줄은 글자만(같은 날 HJ "라벨 형태 말고
+ * 그냥 텍스트만") — 어드민이 고른 글자색을 조금 옅게 쓴다.
  */
 .beltCustom .beltEyebrow {
-  display: inline-flex;
-  align-self: flex-start;
-  align-items: center;
-  gap: 0.45em;
-  padding: 0.38em 0.85em;
-  border-radius: 999px;
-  background: var(--belt-ink);
-  color: var(--belt);
-  letter-spacing: 0.06em;
-}
-
-.beltCustom .beltEyebrow::before {
-  content: "";
-  width: 0.45em;
-  height: 0.45em;
-  border-radius: 50%;
-  background: var(--mint);
+  color: inherit;
+  opacity: 0.78;
 }
 
 .beltCustom .beltFoot {
@@ -469,6 +454,8 @@
 
 .beltCustom .bookmark {
   z-index: 2;
+  /* 배너 띠지는 오른쪽에 그림이 붙으므로 책갈피를 짧게 — 그림 속 얼굴을 가리지 않게(2026-11-27 HJ) */
+  height: 34%;
 }
 
 /* 띠지 어디를 눌러도 링크라, 올려 두면 버튼이 채워져 "여기가 눌린다"를 보여 준다 */
@@ -478,7 +465,7 @@
   color: var(--belt);
 }
 
-/* 배너를 단 띠지 — 링크다(누를 수 있다는 신호는 위 태그·버튼이 맡는다) */
+/* 배너를 단 띠지 — 링크다(누를 수 있다는 신호는 아랫줄 버튼이 맡는다) */
 .beltLink {
   text-decoration: none;
   cursor: pointer;
