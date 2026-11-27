@@ -6,13 +6,15 @@ import {
   StageCrop,
   StageSlogan,
 } from '@/shared/lib/og/StageCard';
-import { OG_COLORS, OG_SIZE } from '@/shared/lib/og/theme';
+import { OG_SIZE } from '@/shared/lib/og/theme';
 
 // 책 이야기(/blog) 공유 그림 (2026-11-27)
 //
 // 홈과 같은 틀(파란 무대 + 왼쪽 슬로건 + 흰 띠)에서 오른쪽에 **인물 관계도 한 장**을 크게 세운다
 // (HJ 2026-11-27 "인물 관계도 이미지로, 참고 이미지 심플하게"). 첫 글 『대온실 수리 보고서』 관계도를
-// 동그라미·선·관계 이름표만 남겨 줄였다 — 얼굴 그림 대신 이름 첫 글자. 아래쪽은 흰 띠에서 잘린다.
+// 동그라미·선·관계 이름표 자리만 남겼다. 글자는 모두 빼고 스켈레톤(막대)으로 —
+// 작아서 안 읽히는 이름보다 "관계도 모양"이 먼저 읽히게(HJ 2026-11-27 "실제 텍스트는 빼고 스켈레톤").
+// 아래쪽은 흰 띠에서 잘린다.
 // runtime 을 지정하지 않는다(= Node.js) — 이유는 app/opengraph-image.tsx 참조.
 
 export const alt = '책 이야기 | page0127.';
@@ -21,7 +23,10 @@ export const contentType = 'image/png';
 
 const PAPER = { width: 470, height: 600 } as const;
 const CREAM = '#f6efe2';
-const MUTED = '#7c6f58';
+/** 스켈레톤 막대 — 크림 종이 위에서 보이는 옅은 갈색 */
+const SKELETON = '#e2d7c2';
+/** 관계 이름표 자리 — 선 색을 옅게 */
+const LABEL = '#c9d6ea';
 const LINE = '#2d4f8f';
 
 type Person = {
@@ -54,7 +59,7 @@ const LINKS: readonly {
   { from: 'center', to: 'eunhye', label: '소꿉친구' },
   { from: 'center', to: 'sana', label: '이야기 친구' },
   { from: 'center', to: 'sechang', label: '동료' },
-  { from: 'center', to: 'munja', label: '하숙집', dy: 22 },
+  { from: 'center', to: 'munja', label: '하숙집', dy: 14 },
   { from: 'munja', to: 'risa', label: '손녀' },
 ];
 
@@ -104,36 +109,26 @@ const Node = ({ p }: { p: Person }) => (
     <div
       style={{
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         width: p.r * 2,
         height: p.r * 2,
         borderRadius: p.r,
         background: p.bg,
         border: '3px solid #ffffff',
-        fontSize: p.r * 0.8,
-        fontWeight: 800,
-        color: OG_COLORS.ink,
       }}
-    >
-      {p.name[0]}
-    </div>
+    />
+    {/* 이름 자리 — 막대 뒤에 종이색 테두리를 둘러 지나가는 선을 가린다 */}
     <div
       style={{
         display: 'flex',
-        marginTop: 4,
-        // 이름 뒤에 종이색을 깔아, 이름을 지나가는 선을 가린다
-        padding: '0 6px',
-        borderRadius: 6,
-        background: CREAM,
-        fontSize: p.r > 30 ? 23 : 19,
-        fontWeight: 800,
-        color: OG_COLORS.ink,
-        letterSpacing: -0.5,
+        width: p.r > 30 ? 64 : 48,
+        height: 14,
+        marginTop: 8,
+        borderRadius: 7,
+        background: SKELETON,
+        border: `4px solid ${CREAM}`,
+        boxSizing: 'content-box',
       }}
-    >
-      {p.name}
-    </div>
+    />
   </div>
 );
 
@@ -178,43 +173,33 @@ const RelationMap = () => (
       <Node key={p.name} p={p} />
     ))}
 
-    {/* 관계 이름표 — 선 가운데 */}
-    {LINKS.map(({ from, to, label, dy = 0 }) => (
+    {/* 관계 이름표 자리 — 선 가운데 작은 알약 */}
+    {LINKS.map(({ from, to, dy = 0 }) => (
       <div
-        key={label}
+        key={`${from}-${to}-label`}
         style={{
           display: 'flex',
           position: 'absolute',
-          left: (PEOPLE[from].x + PEOPLE[to].x) / 2 - 60,
-          top: (PEOPLE[from].y + PEOPLE[to].y) / 2 - 14 + dy,
-          width: 120,
-          justifyContent: 'center',
+          left: (PEOPLE[from].x + PEOPLE[to].x) / 2 - 22,
+          top: (PEOPLE[from].y + PEOPLE[to].y) / 2 - 8 + dy,
+          width: 44,
+          height: 16,
+          borderRadius: 8,
+          background: LABEL,
+          border: `3px solid ${CREAM}`,
+          boxSizing: 'content-box',
         }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            padding: '3px 10px',
-            borderRadius: 12,
-            background: CREAM,
-            fontSize: 15,
-            fontWeight: 700,
-            color: LINE,
-          }}
-        >
-          {label}
-        </div>
-      </div>
+      />
     ))}
 
-    {/* 머리 — 책 제목 + 인물 관계도 */}
+    {/* 머리 — 제목·부제 자리 */}
     <div
       style={{
         display: 'flex',
         flexDirection: 'column',
         position: 'absolute',
         left: 0,
-        top: 22,
+        top: 28,
         width: PAPER.width,
         alignItems: 'center',
       }}
@@ -222,25 +207,22 @@ const RelationMap = () => (
       <div
         style={{
           display: 'flex',
-          fontSize: 24,
-          fontWeight: 800,
-          color: OG_COLORS.accentDeep,
-          letterSpacing: -0.5,
+          width: 190,
+          height: 22,
+          borderRadius: 11,
+          background: '#c9d6ea',
         }}
-      >
-        대온실 수리 보고서
-      </div>
+      />
       <div
         style={{
           display: 'flex',
-          marginTop: 2,
-          fontSize: 16,
-          fontWeight: 600,
-          color: MUTED,
+          width: 90,
+          height: 12,
+          marginTop: 10,
+          borderRadius: 6,
+          background: SKELETON,
         }}
-      >
-        인물 관계도
-      </div>
+      />
     </div>
   </div>
 );
