@@ -16,6 +16,7 @@ const base: HeroSlide = {
   bg: '#fff8ec',
   fg: '#8a1c1c',
   beltStyle: 'custom',
+  beltArt: null,
   cover: { style: 'default' },
 };
 
@@ -26,6 +27,18 @@ describe('기념일 표지 — 어드민 배너로 홈 표지를 갈아입힌다
     expect(html).toContain('--belt:#fff8ec');
     expect(html).toContain('0127');
     expect(html).not.toContain('--cover:');
+  });
+
+  it('띠지 배경 그림: 직접 띠지에서만 그린다(기본 띠지면 무시)', () => {
+    const art = 'https://x/belt.webp';
+    expect(
+      renderToStaticMarkup(<AboutHero belt={{ ...base, beltArt: art }} />)
+    ).toContain(`src="${art}"`);
+    expect(
+      renderToStaticMarkup(
+        <AboutHero belt={{ ...base, beltStyle: 'default', beltArt: art }} />
+      )
+    ).not.toContain(`src="${art}"`);
   });
 
   it('기본 띠지를 고르면 기본 문구, 링크 없음', () => {

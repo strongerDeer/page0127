@@ -56,6 +56,8 @@ type BeltFieldsProps = {
   fields: SlideFields;
   set: <K extends keyof SlideFields>(k: K, v: SlideFields[K]) => void;
   disabled?: boolean;
+  /** 띠지 배경 그림 고르기 — 올리기는 SlideCard 가 표지 그림과 같은 방식으로 한다 */
+  onPickArt: (file: File | undefined) => void;
 };
 
 /**
@@ -66,7 +68,12 @@ type BeltFieldsProps = {
  * 1) 띠지 지도에 ①~④ 번호를 달고, 2) 입력 칸을 같은 번호·같은 순서로 세우고,
  * 3) 화면에 안 보이는 값(통계 이름)은 맨 아래 따로 떼어 둔다.
  */
-export const BeltFields = ({ fields, set, disabled }: BeltFieldsProps) => (
+export const BeltFields = ({
+  fields,
+  set,
+  disabled,
+  onPickArt,
+}: BeltFieldsProps) => (
   <div className='flex flex-col gap-4'>
     <BeltMap fields={fields} />
 
@@ -114,6 +121,42 @@ export const BeltFields = ({ fields, set, disabled }: BeltFieldsProps) => (
         </span>
       </span>
     </label>
+
+    {/* ── 배경 그림 — 높이 꽉 차게·오른쪽 붙임(위치·크기 조절 없음) ── */}
+    <div className='grid grid-cols-[1.5rem_1fr] items-center gap-2 text-xs sm:grid-cols-[1.5rem_7.5rem_1fr]'>
+      <span aria-hidden='true' className='text-base text-text-subtle'>
+        🖼️
+      </span>
+      <span className='font-medium'>배경 그림</span>
+      <div className='col-span-2 flex flex-wrap items-center gap-2 sm:col-span-1'>
+        <label className='cursor-pointer rounded border border-line px-2 py-1 hover:bg-accent'>
+          {fields.belt_art_url ? '그림 바꾸기' : '그림 올리기'}
+          <input
+            type='file'
+            accept='image/png,image/webp,image/jpeg'
+            onChange={(e) => {
+              onPickArt(e.target.files?.[0]);
+              e.target.value = '';
+            }}
+            disabled={disabled}
+            className='sr-only'
+          />
+        </label>
+        {fields.belt_art_url && (
+          <button
+            type='button'
+            onClick={() => set('belt_art_url', '')}
+            disabled={disabled}
+            className='rounded border border-line px-2 py-1 text-destructive hover:bg-accent disabled:opacity-50'
+          >
+            그림 빼기
+          </button>
+        )}
+        <span className='text-text-subtle'>
+          띠지 오른쪽에 높이 꽉 차게 붙어요. 왼쪽 끝은 띠지 색으로 흐려져요
+        </span>
+      </div>
+    </div>
 
     {/* ── 색 ── */}
     <div className='grid grid-cols-[1.5rem_1fr] sm:grid-cols-[1.5rem_7.5rem_1fr] items-center gap-2 text-xs'>
@@ -187,9 +230,21 @@ const BeltMap = ({ fields }: { fields: SlideFields }) => (
       띠지 지도 — 번호가 아래 칸과 이어져요
     </figcaption>
     <div
-      className='flex flex-col gap-1 rounded border border-line px-4 py-3 shadow-sm'
+      className='relative isolate flex flex-col gap-1 overflow-hidden rounded border border-line px-4 py-3 shadow-sm'
       style={{ background: fields.bg, color: fields.fg }}
     >
+      {fields.belt_art_url && (
+        // 홈 띠지와 같은 배치: 높이 꽉 차게·오른쪽 붙임·왼쪽 끝 흐림(AboutHero.module.css .beltArt)
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={fields.belt_art_url}
+          alt=''
+          className='absolute inset-y-0 right-0 -z-10 h-full w-auto max-w-[70%] object-cover object-right'
+          style={{
+            maskImage: 'linear-gradient(to right, transparent, #000 40%)',
+          }}
+        />
+      )}
       {BELT_LINES.map(({ key, mark, placeholder }) => {
         const value = fields[key].trim();
         const isBig = key === 'line1' || key === 'line2';

@@ -29,6 +29,7 @@ export function rowToHeroSlide(row: HeroSlideRow): HeroSlide {
     bg: row.bg,
     fg: row.fg,
     beltStyle: row.belt_style === 'default' ? 'default' : 'custom',
+    beltArt: row.belt_art_url ?? null,
     cover: rowToCover(row),
   };
 }

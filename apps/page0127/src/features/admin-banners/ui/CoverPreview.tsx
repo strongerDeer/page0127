@@ -124,7 +124,7 @@ export const CoverPreview = ({
         {title}
       </p>
       <div
-        className='absolute inset-x-0 bottom-0 flex flex-col justify-center gap-0.5'
+        className='absolute inset-x-0 bottom-0 isolate flex flex-col justify-center gap-0.5 overflow-hidden'
         style={{
           height: '31%',
           padding: '0 22% 0 13%',
@@ -132,13 +132,43 @@ export const CoverPreview = ({
           color: belt.fg,
         }}
       >
-        <span className='text-[7px] font-bold tracking-widest opacity-80'>
+        {isCustomBelt && fields.belt_art_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={fields.belt_art_url}
+            alt=''
+            className='absolute inset-y-0 right-0 -z-10 h-full w-auto max-w-[70%] object-cover object-right'
+            style={{
+              maskImage: 'linear-gradient(to right, transparent, #000 40%)',
+            }}
+          />
+        )}
+        {/* 배너 띠지는 홈처럼 윗줄=알약 태그, 아랫줄=테두리 버튼(AboutHero.module.css .beltCustom) */}
+        <span
+          className={
+            isCustomBelt
+              ? 'self-start rounded-full px-1.5 py-px text-[6px] font-bold tracking-wider'
+              : 'text-[7px] font-bold tracking-widest opacity-80'
+          }
+          style={
+            isCustomBelt ? { background: belt.fg, color: belt.bg } : undefined
+          }
+        >
           {belt.eyebrow}
         </span>
         <span className='whitespace-pre-line text-[10px] font-extrabold leading-tight'>
           {belt.head}
         </span>
-        <span className='text-[7px] opacity-80'>{belt.foot}</span>
+        <span
+          className={
+            isCustomBelt
+              ? 'mt-0.5 self-start rounded-full border px-1.5 py-px text-[6px] font-bold'
+              : 'text-[7px] opacity-80'
+          }
+          style={isCustomBelt ? { borderColor: belt.fg } : undefined}
+        >
+          {belt.foot}
+        </span>
       </div>
     </div>
   );

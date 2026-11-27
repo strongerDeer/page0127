@@ -29,7 +29,7 @@ const FONT_FACES = [
   { file: 'Pretendard-ExtraBold.woff', weight: 800 },
 ] as const;
 
-type OgFont = {
+export type OgFont = {
   name: string;
   data: ArrayBuffer;
   weight: 500 | 700 | 800;
@@ -104,9 +104,11 @@ export const renderOg = async (
   // 공유 카드는 OG 크기, 스토리 이미지는 STORY_SIZE — 폰트 규칙은 같다
   size: { width: number; height: number } = OG_SIZE,
   // 기본은 공개 캐시(1시간). 로그인한 사람만 보는 이미지는 PRIVATE_IMAGE_CACHE_CONTROL
-  cacheControl: string = OG_CACHE_CONTROL
+  cacheControl: string = OG_CACHE_CONTROL,
+  // 이 카드만 쓰는 글꼴(연말 응원 카드의 명조 등) — 기본 Pretendard 에 더한다
+  extraFonts: OgFont[] = []
 ) => {
-  const fonts = await loadFonts();
+  const fonts = [...(await loadFonts()), ...extraFonts];
 
   return new ImageResponse(element, {
     ...size,

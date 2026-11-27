@@ -42,7 +42,8 @@ export const fnv1a = (input: string): number => {
   return hash >>> 0;
 };
 
-const commentFor = (total: number): string => {
+/** 총점에 맞춘 한 줄 — 공유 이미지도 점수만 받아 같은 말을 다시 고른다 */
+export const commentFor = (total: number): string => {
   if (total >= 92) return '오래 미뤄 둔 책을 펼치기 좋은 날';
   if (total >= 85) return '한 챕터만 읽어도 마음이 정리되는 날';
   if (total >= 78) return '짧은 문장이 오래 남는 날';
@@ -64,3 +65,7 @@ export const dailyScore = (dateKey: string, seed: string): DailyScore => {
   );
   return { total, items, comment: commentFor(total) };
 };
+
+/** 점수가 될 수 있는 범위(70~99) — 공유 이미지 주소의 score 처럼 밖에서 온 값을 거를 때 */
+export const isDailyScoreTotal = (value: number): boolean =>
+  Number.isInteger(value) && value >= MIN && value < MIN + SPAN;

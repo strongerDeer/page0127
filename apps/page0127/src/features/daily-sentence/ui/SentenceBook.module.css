@@ -718,6 +718,8 @@
   color: var(--sub);
 }
 
+/* 양옆에 같은 길이의 선 — "— 오늘의 한 줄 —" 로 가운데 축에 선다(HJ 11/27) */
+.chap::before,
 .chap::after {
   content: "";
   width: 36px;

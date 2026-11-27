@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 import {
   Button,
+  cn,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -16,6 +17,8 @@ import { toast } from 'sonner';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 
 import { ShareButton } from './ShareButton';
+
+import type { ReactNode } from 'react';
 
 type ShareSheetButtonProps = {
   /**
@@ -35,12 +38,19 @@ type ShareSheetButtonProps = {
   loadingMessages?: LoadingMessages;
   /** 있으면 아이콘 옆에 글자를 붙인 버튼 — 없으면 아이콘만(헤더처럼 자리가 좁은 곳) */
   triggerLabel?: string;
+  /** 글자 버튼의 모양을 바꿀 때 — 파란 무대 위 연말 응원 카드처럼 배경이 다른 곳 */
+  triggerClassName?: string;
   /** true면 글자 버튼을 큰 보조 버튼으로 — 홈 첫 화면처럼 큰 버튼 옆에 나란히 설 때 */
   prominent?: boolean;
   /** true면 아이콘 버튼을 작은 고스트 버튼으로 — 문장 한 줄 옆의 고치기·지우기 버튼과 나란히 설 때 */
   compact?: boolean;
   /** 시트 설명 — 기본은 이미지·링크 둘 다 있을 때의 문구 */
   description?: string;
+  /**
+   * 버튼을 직접 그릴 때 — 오늘의 문장처럼 화면만의 버튼 모양(종이 위 알약)이 따로 있는 곳.
+   * 받은 open 을 누를 때 부르면 같은 시트가 열린다. 주면 triggerLabel·prominent·compact 는 쓰지 않는다.
+   */
+  renderTrigger?: (open: () => void) => ReactNode;
 };
 
 type LoadingMessages = {
@@ -113,9 +123,11 @@ export const ShareSheetButton = ({
   sheetTitle,
   loadingMessages = SHELF_LOADING,
   triggerLabel,
+  triggerClassName,
   prominent = false,
   compact = false,
   description = '이미지는 스토리·게시물에, 링크는 메시지로 보내기 좋아요.',
+  renderTrigger,
 }: ShareSheetButtonProps) => {
   // 지표의 path — 링크가 없는 공유(문장 카드)는 이미지 경로로 센다
   const trackPath = path ?? imagePath;
@@ -205,11 +217,13 @@ export const ShareSheetButton = ({
 
   return (
     <>
-      {triggerLabel ? (
+      {renderTrigger ? (
+        renderTrigger(() => setOpen(true))
+      ) : triggerLabel ? (
         <Button
           variant={prominent ? 'secondary' : 'outline'}
           size={prominent ? 'lg' : 'sm'}
-          className='gap-1.5 shadow-none'
+          className={cn('gap-1.5 shadow-none', triggerClassName)}
           onClick={() => setOpen(true)}
         >
           <Share2

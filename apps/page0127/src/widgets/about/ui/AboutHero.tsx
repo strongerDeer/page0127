@@ -138,6 +138,17 @@ export const AboutHero = ({
                     } as CSSProperties
                   }
                 >
+                  {customBelt.beltArt && (
+                    // 띠지 배경 그림 — 높이 꽉 차게·오른쪽 붙임, 왼쪽 끝은 띠지 색으로 흐린다.
+                    // 장식이라 alt 는 비운다(문구가 링크 이름). 이미 600px WEBP 라 변환 없이 쓴다
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={customBelt.beltArt}
+                      alt=''
+                      decoding='async'
+                      className={styles.beltArt}
+                    />
+                  )}
                   <span className={styles.beltEyebrow}>
                     {customBelt.eyebrow}
                   </span>
