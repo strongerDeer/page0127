@@ -46,12 +46,18 @@ const Image = async ({ params }: Props) => {
     <StageCard cta={read ? '읽은 사람들의 기록 보기' : '이 책 첫 기록 남기기'}>
       <FeatureStage cover={book.cover_image}>
         {read ? (
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
             <div style={{ display: 'flex', alignItems: 'flex-end' }}>
               <div
                 style={{
                   display: 'flex',
-                  fontSize: 128,
+                  fontSize: 84,
                   fontWeight: 700,
                   lineHeight: 1,
                 }}
@@ -61,9 +67,9 @@ const Image = async ({ params }: Props) => {
               <div
                 style={{
                   display: 'flex',
-                  marginLeft: 14,
-                  marginBottom: 12,
-                  fontSize: 48,
+                  marginLeft: 10,
+                  marginBottom: 8,
+                  fontSize: 36,
                   fontWeight: 700,
                   color: STAGE_TEXT_SOFT,
                 }}
@@ -78,20 +84,20 @@ const Image = async ({ params }: Props) => {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  marginTop: 28,
+                  marginTop: 14,
                 }}
               >
                 <RatingStars
                   score={Math.round(book.avgRating)}
-                  size={46}
+                  size={34}
                   onColor={OG_COLORS.paper}
                   offColor='rgba(255, 255, 255, 0.3)'
                 />
                 <div
                   style={{
                     display: 'flex',
-                    marginLeft: 16,
-                    fontSize: 42,
+                    marginLeft: 12,
+                    fontSize: 30,
                     fontWeight: 700,
                   }}
                 >

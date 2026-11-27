@@ -3,12 +3,13 @@ import { join } from 'node:path';
 
 import { renderOg } from '@/shared/lib/og/render';
 import {
-  STAGE_GUTTER,
+  STAGE_CENTER,
   STAGE_HEIGHT,
   StageCard,
   StageCrop,
+  StageSlogan,
 } from '@/shared/lib/og/StageCard';
-import { OG_COLORS, OG_SIZE } from '@/shared/lib/og/theme';
+import { OG_SIZE } from '@/shared/lib/og/theme';
 
 // 온라인 필사(/typing/little-prince)의 공유 그림 (2026-11-27)
 //
@@ -27,15 +28,14 @@ export const size = OG_SIZE;
 export const contentType = 'image/png';
 
 /**
- * 원본 720×227 을 좌우로 뒤집고 1.7배 키워 책상 아래를 흰 띠에서 자른다
- * (HJ 2026-11-27 "좌우 반전, 확대해서 잘라서" → 2.1배는 도트가 깨져 보여 1.7배로, 전등은 지움). 뒤집으면 아이가 오른쪽에 온다. 전등은 원본 PNG 에서 지웠다(슬로건과 부딪쳤다).
+ * 원본 720×227 을 그대로(반전·자르기 없이) 책상 전체가 보이게 깐다
+ * (HJ 2026-11-27 "자르지 말고 쭉 깔자" + 원본 그림). 책상 아랫변이 무대 바닥선에 닿는다.
+ * 도트가 깨지지 않게 1.2배까지만 키운다.
  */
-const SCALE = 1.7;
+const SCALE = 1.2;
 const HERO = { width: 720 * SCALE, height: 227 * SCALE } as const;
-/** 그림 왼쪽 끝 — 아이가 오른쪽 절반 가운데쯤, 머플러·책은 오른쪽 끝에서 잘린다 */
-const HERO_LEFT = 300;
-/** 그림 윗변 — 책상 윗면이 무대 바닥선 조금 위에 오고, 그 아래는 잘린다 */
-const HERO_TOP = 135;
+/** 원본에서 책상 아랫변의 y — 그 아래는 투명이라 무대 바닥선에 이 줄을 맞춘다 */
+const DESK_BOTTOM = 222;
 
 const readHero = () =>
   `data:image/png;base64,${readFileSync(
@@ -45,31 +45,9 @@ const readHero = () =>
 const Image = () =>
   renderOg(
     <StageCard cta='온라인 필사 시작하기'>
-      {/*
-        슬로건 — 왼쪽, 무대 안에서 세로 가운데(HJ 2026-11-27). 홈 카드(BrandStage)와 같은 자리다.
-        오른쪽 아래 그림은 왼쪽 위가 투명이라 글자 끝(x≈530)과 목도리(x≈590)가 겹치지 않는다.
-      */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          position: 'absolute',
-          left: STAGE_GUTTER,
-          top: 0,
-          height: STAGE_HEIGHT,
-          fontSize: 68,
-          fontWeight: 800,
-          color: OG_COLORS.paper,
-          letterSpacing: -2,
-          lineHeight: 1.2,
-        }}
-      >
-        <div>『어린 왕자』를</div>
-        <div>한 쪽씩 따라 치기</div>
-      </div>
+      <StageSlogan lines={['『어린 왕자』를', '한 쪽씩 따라 치기']} />
 
-      {/* 타자 치는 아이 — 뒤집고 키워서, 책상 아래는 무대 바닥선에서 자른다 */}
+      {/* 타자 치는 아이 — 책상 전체를 가운데에 깔고, 책상 아랫변을 무대 바닥선에 맞춘다 */}
       <StageCrop>
         {/* satori 는 next/image 를 렌더하지 못한다 — 이 파일은 브라우저로 나가지 않는다 */}
         {}
@@ -80,9 +58,8 @@ const Image = () =>
           height={HERO.height}
           style={{
             position: 'absolute',
-            left: HERO_LEFT,
-            top: HERO_TOP,
-            transform: 'scaleX(-1)',
+            left: STAGE_CENTER - HERO.width / 2,
+            top: STAGE_HEIGHT - DESK_BOTTOM * SCALE,
           }}
         />
       </StageCrop>

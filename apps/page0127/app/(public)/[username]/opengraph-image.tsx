@@ -50,9 +50,9 @@ const ReaderBand = ({
       <div
         style={{
           display: 'flex',
-          width: 8,
-          height: 34,
-          marginRight: 16,
+          width: 6,
+          height: 24,
+          marginRight: 10,
           borderRadius: 4,
           background: identity.color,
         }}
@@ -62,9 +62,9 @@ const ReaderBand = ({
     <div
       style={{
         display: 'flex',
-        marginTop: 6,
-        marginLeft: 24,
-        fontSize: 26,
+        marginTop: 4,
+        marginLeft: 16,
+        fontSize: 18,
         fontWeight: 500,
         color: OG_COLORS.inkSoft,
       }}

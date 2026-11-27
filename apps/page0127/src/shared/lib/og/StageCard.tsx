@@ -1,16 +1,21 @@
 import { BrandSymbol } from '@/shared/lib/brand/BrandSymbol';
 
 import { balancedWrap } from './balanceLines';
+import { BookShelf } from './BookShelf';
 import { OG_FONT_FAMILY } from './render';
-import { OG_COLORS, OG_SIZE, truncate } from './theme';
+import { OG_COLORS, OG_SIZE, textWidth, truncate } from './theme';
 
 /**
  * 공유 카드(OG 이미지)의 공통 틀 — ⚠️ satori(next/og) 전용, 브라우저로 나가지 않는다
  *
  * 모든 카드가 **파란 무대 + 흰 띠 한 줄** 구조다.
- * - 무대: 소개 페이지(/about) `.stage-blue` 와 같은 그라데이션. 카드마다 다른 주인공
- *   (표지 줄·표지 한 장·슬로건)이 여기 선다.
- * - 흰 띠: 왼쪽에 "누르면 무엇을 보게 되는지" 한 줄, 오른쪽에 `page0127.` 워드마크.
+ * - 무대: 소개 페이지(/about) `.stage-blue` 와 같은 그라데이션. 위 가운데에 슬로건,
+ *   그 아래 가운데에 카드마다 다른 주인공(책장·표지·그림)이 선다.
+ * - 흰 띠: 가운데에 `page0127. │ 누르면 무엇을 보게 되는지 →` 한 덩어리.
+ *
+ * 왜 전부 가운데인가(HJ 2026-11-27): 카톡·DM·메신저가 같은 1200×630 그림을 제각각
+ * 정사각형·작은 썸네일로 잘라 쓴다. 가운데 630×630 안에 슬로건·그림·로고가 다 들어가야
+ * 어디서 잘려도 무슨 링크인지 읽힌다(업계에서 '안전 영역'이라 부르는 방식).
  *
  * 왜 글자를 한 줄로 줄였나: 카톡·슬랙은 이미지 바로 아래에 페이지 제목과 설명을
  * 또 붙인다. 이미지 안에 이름·제목을 다시 쓰면 같은 말이 두 번 나온다(2026-10-07).
@@ -23,14 +28,24 @@ import { OG_COLORS, OG_SIZE, truncate } from './theme';
 /** 무대 높이. 남은 630 − 480 = 150px 가 흰 띠다 */
 export const STAGE_HEIGHT = 480;
 
-/** 좌우 여백 — 표지 줄 5장(200×5 + 20×4 = 1080)이 정확히 들어가는 값 */
+/** 좌우 여백 — 글 칸이 카드 끝에 붙지 않게 하는 최소 간격 */
 export const STAGE_GUTTER = 60;
+
+/** 무대 가로 가운데 — 주인공 그림은 이 선에 가운데를 맞춘다 */
+export const STAGE_CENTER = OG_SIZE.width / 2;
+
+/** 슬로건 윗변(HJ 2026-11-27 "글자 위 여백 두 배")과 글자 크기 */
+export const SLOGAN_TOP = 80;
+const SLOGAN_SIZE = 46;
+
+/** 슬로건 아래 주인공 그림의 윗변 — 흰 띠에서 잘리는 그림(StageCrop)이 여기서 시작한다 */
+export const OBJECT_TOP = 236;
 
 /**
  * 표지가 무대 바닥선 아래로 내려오는 깊이.
  * 소개 카드의 `-mb-1.5` 처럼 살짝 걸치게 해야 "선반에 꽂힌" 느낌이 난다.
  */
-export const COVER_OVERHANG = 14;
+export const COVER_OVERHANG = 11;
 
 /**
  * 무대 배경 — 블루 토큰(blue/300~800)으로 만든 메시 그라데이션.
@@ -60,12 +75,12 @@ export const STAGE_TEXT_SOFT = 'rgba(255, 255, 255, 0.85)';
 /** 흰 띠 오른쪽 워드마크 — 이름은 끝의 점까지다(page0127. = 페이지 읽다) */
 const BrandMark = () => (
   <div style={{ display: 'flex', alignItems: 'center' }}>
-    <BrandSymbol size={36} />
+    <BrandSymbol size={28} />
     <div
       style={{
         display: 'flex',
-        marginLeft: 10,
-        fontSize: 27,
+        marginLeft: 8,
+        fontSize: 21,
         fontWeight: 800,
         // 워드마크는 글자가 촘촘해야 한 덩어리 로고로 읽힌다
         letterSpacing: -0.5,
@@ -81,11 +96,22 @@ type StageCardProps = {
   /** 무대 위에 세울 것. 무대는 position: relative 라 absolute 배치도 된다 */
   children: React.ReactNode;
   /**
-   * 흰 띠 왼쪽 — "누르면 무엇을 보게 되는지". 보통 한 줄 문자열이고,
-   * 공개 서재처럼 두 줄(독서 명함)을 세울 때는 노드를 넘긴다(글자 크기 38 · 굵게를 물려받는다).
+   * 흰 띠 — "누르면 무엇을 보게 되는지". 보통 한 줄 문자열이고,
+   * 공개 서재처럼 두 줄(독서 명함)을 세울 때는 노드를 넘긴다(글자 크기 26 · 굵게를 물려받는다).
    */
   cta: React.ReactNode;
 };
+
+/**
+ * 흰 띠 문구 크기 — 로고까지 합쳐 가운데 630 폭 안에 들게, 긴 문구는 조금 줄인다.
+ * 노드(독서 명함)는 26 그대로 — 그쪽이 줄 수를 스스로 정한다.
+ */
+const CTA_MAX_SIZE = 26;
+const CTA_MAX_WIDTH = 290;
+const ctaFontSize = (cta: React.ReactNode): number =>
+  typeof cta === 'string'
+    ? Math.min(CTA_MAX_SIZE, Math.floor(CTA_MAX_WIDTH / textWidth(cta)))
+    : CTA_MAX_SIZE;
 
 export const StageCard = ({ children, cta }: StageCardProps) => (
   <div
@@ -112,27 +138,36 @@ export const StageCard = ({ children, cta }: StageCardProps) => (
     </div>
 
     {/*
-      흰 띠 — 왼쪽 정렬 한 줄. 무대에서 내려온 표지가 걸친 만큼 위를 띄운다.
+      흰 띠 — 로고와 한 줄을 묶어 가운데에 둔다. 정사각형으로 잘려도 둘이 같이 남는다.
       띠에 배경색을 주지 않는다: 주면 무대 밖으로 걸친 표지 끝을 덮어 버린다.
     */}
     <div
       style={{
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         flex: 1,
         paddingTop: COVER_OVERHANG,
-        paddingLeft: STAGE_GUTTER,
-        paddingRight: STAGE_GUTTER,
       }}
     >
+      <BrandMark />
+      {/* 로고와 문구 사이 세로 줄 */}
+      <div
+        style={{
+          display: 'flex',
+          width: 2,
+          height: 22,
+          margin: '0 18px',
+          background: OG_COLORS.line,
+        }}
+      />
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
-          fontSize: 38,
+          fontSize: ctaFontSize(cta),
           fontWeight: 700,
-          letterSpacing: -0.5,
+          letterSpacing: -0.4,
         }}
       >
         {cta}
@@ -140,14 +175,13 @@ export const StageCard = ({ children, cta }: StageCardProps) => (
         <div
           style={{
             display: 'flex',
-            marginLeft: 14,
+            marginLeft: 8,
             color: OG_COLORS.accentDeep,
           }}
         >
           →
         </div>
       </div>
-      <BrandMark />
     </div>
   </div>
 );
@@ -196,23 +230,25 @@ export const Cover = ({
   </div>
 );
 
-/** 표지 줄의 한 장 크기 (2:3 판형) — 5장이면 무대 폭을 여백 빼고 꽉 채운다 */
-export const ROW_COVER = { width: 200, height: 300 } as const;
-const ROW_GAP = 20;
+/** 표지 줄의 한 장 크기 (2:3 판형) — 5장이 가운데에 모인다(0.8배, HJ 2026-11-27) */
+export const ROW_COVER = { width: 160, height: 240 } as const;
+const ROW_GAP = 16;
 
 /**
- * 표지 줄 — 무대 바닥선에 붙여 왼쪽부터 세운다.
+ * 표지 줄 — 무대 바닥선에 붙여 가운데에 세운다.
  *
  * 5장보다 적으면 **있는 만큼만** 세운다. 빈 판형으로 칸을 채우던 때가 있었는데,
  * 카톡 썸네일에서 "이미지가 덜 불러와졌다"로 보였다(2026-10-07).
- * 왼쪽부터 세우는 이유: 흰 띠의 한 줄과 같은 선에서 시작해야 한 장으로 읽힌다.
+ * 가운데에 모으는 이유: 정사각형으로 잘려도 가운데 서너 장은 남는다.
  */
 export const CoverRow = ({ covers }: { covers: readonly string[] }) => (
   <div
     style={{
       display: 'flex',
+      justifyContent: 'center',
       position: 'absolute',
-      left: STAGE_GUTTER,
+      left: 0,
+      width: '100%',
       bottom: -COVER_OVERHANG,
     }}
   >
@@ -227,84 +263,6 @@ export const CoverRow = ({ covers }: { covers: readonly string[] }) => (
   </div>
 );
 
-/**
- * 무대 오른쪽에 꽂힌 책 몇 권 — 크기·색을 하나하나 정해 둔다.
- *
- * 처음에는 카드 폭을 꽉 채운 책장(반투명 → 불투명 + 장식 띠)이었는데, 막대그래프처럼
- * 보였고 슬로건과 자리를 다퉜다(2026-10-07 피드백). 지금은 글자는 왼쪽, 책은 오른쪽에
- * 몇 권만 둔다. 권수가 적으니 규칙으로 돌리지 않고 직접 적는다 — 높이·폭이 들쭉날쭉해야
- * 실제 책장처럼 보인다.
- *
- * 색은 불투명. 진한 남색·흰색·옅은 파랑을 번갈아 세워 이웃끼리 색이 겹치지 않게 하고,
- * 민트는 한 권만 — "한 권이 특별하다"는 브랜드 강조다.
- */
-const BOOKS = [
-  { w: 46, h: 250, c: '#0a2f6e' },
-  { w: 38, h: 300, c: '#ffffff' },
-  { w: 54, h: 270, c: '#93c0fb' },
-  { w: 40, h: 320, c: '#14294e' },
-  { w: 50, h: 285, c: '#6ee7b7' },
-  { w: 36, h: 240, c: '#d6e6fd' },
-  // 무대 바탕(blue/700)과 같은 색이면 묻힌다 — 바탕보다 확실히 어두운 남색
-  { w: 48, h: 305, c: '#0f1f3d' },
-] as const;
-
-/** 책 사이 틈 — 실제 책장에서 책은 거의 맞닿아 있다 */
-const BOOK_GAP = 4;
-
-/** 마지막에 비스듬히 기댄 책 — 줄 세운 막대가 아니라 "꽂아 둔 책"으로 읽히게 한다 */
-const LEANING_BOOK = { w: 44, h: 270, c: '#ffffff', angle: 14 } as const;
-
-/**
- * 기댄 책을 오른쪽으로 띄우는 거리 — 위 모서리가 왼쪽 책에 닿게 하는 값.
- * 아래 오른쪽 모서리를 축으로 돌리면 위 왼쪽 모서리가 h·sin(각도) 만큼 왼쪽으로 온다.
- */
-const LEAN_OFFSET = Math.round(
-  LEANING_BOOK.h * Math.sin((LEANING_BOOK.angle * Math.PI) / 180)
-);
-
-/**
- * 오른쪽 책 무리 — 무대 바닥선에 세운다. 오른쪽 끝은 흰 띠의 워드마크와 같은 선이다.
- */
-export const StageBooks = () => (
-  <div
-    style={{
-      display: 'flex',
-      alignItems: 'flex-end',
-      position: 'absolute',
-      right: STAGE_GUTTER + 40,
-      bottom: 0,
-    }}
-  >
-    {BOOKS.map((b, i) => (
-      <div
-        key={`${b.c}-${b.h}`}
-        style={{
-          display: 'flex',
-          width: b.w,
-          height: b.h,
-          marginLeft: i === 0 ? 0 : BOOK_GAP,
-          borderRadius: '5px 5px 0 0',
-          background: b.c,
-        }}
-      />
-    ))}
-    {/* 기댄 책 — 아래 오른쪽 모서리를 축으로 왼쪽 책 쪽으로 눕힌다 */}
-    <div
-      style={{
-        display: 'flex',
-        width: LEANING_BOOK.w,
-        height: LEANING_BOOK.h,
-        marginLeft: LEAN_OFFSET,
-        borderRadius: '5px 5px 0 0',
-        background: LEANING_BOOK.c,
-        transform: `rotate(-${LEANING_BOOK.angle}deg)`,
-        transformOrigin: 'bottom right',
-      }}
-    />
-  </div>
-);
-
 /** 홈 슬로건 — 다른 문구를 안 넘기면 이 두 줄이 선다 */
 const HOME_SLOGAN = ['책장을 보면,', '그 사람이 보인다'] as const;
 
@@ -312,9 +270,8 @@ type BrandStageProps = {
   /** 흰 띠 한 줄 */
   cta: string;
   /**
-   * 무대 위 큰 글자(줄마다 한 항목, 두 줄 권장). 소개·책 이야기·오늘의 문장처럼
-   * 자기 그림이 없는 페이지가 홈과 다른 카드로 읽히게 바꿔 단다(2026-11-27).
-   * ⚠️ 한 줄은 띄어쓰기 포함 9자 안쪽 — 더 길면 오른쪽 책 무리와 겹친다.
+   * 무대 위 큰 글자(줄마다 한 항목, 두 줄 권장). 소개·책 이야기처럼 자기 그림이 없는
+   * 페이지가 홈과 다른 카드로 읽히게 바꿔 단다(2026-11-27). 한 줄은 띄어쓰기 포함 9자 안쪽.
    */
   slogan?: readonly string[];
 };
@@ -322,58 +279,36 @@ type BrandStageProps = {
 /**
  * 브랜드 카드 — 표지가 없는 모든 경우의 기본 카드.
  * 홈·소개·로그인 등 루트 OG, 없는 사용자, 아직 책이 없는 책장, 비공개 기록이 쓴다.
+ *
+ * 그림은 **선반 위 책장**(BookShelf) — 홈·소개가 같은 그림이고 글자만 다르다
+ * (HJ 2026-11-27 "디자인 같게, 텍스트만 다르게"). 예전 색 막대 책 무리는 막대그래프처럼 보여 뺐다.
  */
 export const BrandStage = ({ cta, slogan = HOME_SLOGAN }: BrandStageProps) => (
   <StageCard cta={cta}>
-    {/* 슬로건 — 왼쪽, 무대 안에서 세로 가운데. 흰 띠의 한 줄과 같은 왼쪽 선이다 */}
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        position: 'absolute',
-        left: STAGE_GUTTER,
-        top: 0,
-        height: STAGE_HEIGHT,
-        fontSize: 80,
-        fontWeight: 800,
-        color: OG_COLORS.paper,
-        // 큰 글자는 자간을 좁혀야 단어가 한 덩어리로 읽힌다
-        letterSpacing: -2.5,
-        lineHeight: 1.2,
-      }}
-    >
-      {/* satori 는 <br/> 을 못 다룬다 — 줄마다 div 로 쌓는다 */}
-      {slogan.map((line) => (
-        <div key={line}>{line}</div>
-      ))}
-    </div>
-    <StageBooks />
+    <StageSlogan lines={slogan} />
+    <BookShelf />
   </StageCard>
 );
 
-/** 표지 한 장이 주인공인 카드의 표지 크기 (2:3) — 무대 480 안에 위 여백을 두고 선다 */
-const FEATURE_COVER = { width: 240, height: 360 } as const;
+/** 표지 한 장이 주인공인 카드의 표지 크기 (2:3) — 글 아래 가운데에 서고 흰 띠에서 잘린다 */
+const FEATURE_COVER = { width: 208, height: 312 } as const;
 
-/** 표지와 글자 칸 사이 */
-const FEATURE_GAP = 56;
+/** 표지 윗변 — 위의 글(별점·한줄평 두 줄)과 겹치지 않는 높이 */
+const FEATURE_COVER_TOP = 268;
 
-/** 글자 칸의 왼쪽 끝과 폭 — 정해 두지 않으면 긴 글에서 칸이 한 글자 폭으로 쪼그라든다 */
-const COLUMN_LEFT = STAGE_GUTTER + FEATURE_COVER.width + FEATURE_GAP;
-export const FEATURE_COLUMN_WIDTH = OG_SIZE.width - COLUMN_LEFT - STAGE_GUTTER;
+/** 글 칸 폭 — 가운데 정렬이라 넉넉히 둔다. 줄 나눔은 글자 수(balancedWrap)로 정한다 */
+export const FEATURE_COLUMN_WIDTH = 900;
 
 type FeatureStageProps = {
   /** 표지 URL. 없으면 같은 크기의 빈 판형을 세운다 */
   cover: string | null;
-  /** 표지 오른쪽 글자 칸 — 무대 안에서 세로 가운데에 놓인다 */
+  /** 표지 위 글(별점·한줄평·완독 수) — 무대 위 가운데에 쌓인다 */
   children: React.ReactNode;
 };
 
 /**
- * 표지 한 장 + 글자 칸 — 책 기록·도서 상세 카드의 무대.
- *
- * 이전 책 기록 카드는 글자 칸의 폭을 flex 에 맡겼다가, 제목이 긴 책에서 칸이
- * 쪼그라들어 글자가 세로로 쏟아졌다(2026-10-07 점검). 그래서 위치와 폭을 숫자로 못박는다.
+ * 글 + 표지 한 장 — 책 기록·도서 상세 카드의 무대.
+ * 위 가운데에 글, 그 아래 가운데에 표지를 세우고 표지 아래쪽은 흰 띠에서 자른다.
  */
 export const FeatureStage = ({ cover, children }: FeatureStageProps) => (
   <div
@@ -389,46 +324,47 @@ export const FeatureStage = ({ cover, children }: FeatureStageProps) => (
     <div
       style={{
         display: 'flex',
-        position: 'absolute',
-        left: STAGE_GUTTER,
-        bottom: -COVER_OVERHANG,
-      }}
-    >
-      {cover ? (
-        <Cover src={cover} {...FEATURE_COVER} />
-      ) : (
-        <div
-          style={{
-            display: 'flex',
-            ...FEATURE_COVER,
-            borderRadius: 8,
-            background: 'rgba(255, 255, 255, 0.15)',
-          }}
-        />
-      )}
-    </div>
-
-    <div
-      style={{
-        display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
+        alignItems: 'center',
         position: 'absolute',
-        left: COLUMN_LEFT,
-        top: 0,
+        left: (OG_SIZE.width - FEATURE_COLUMN_WIDTH) / 2,
+        top: SLOGAN_TOP - 6,
         width: FEATURE_COLUMN_WIDTH,
-        height: STAGE_HEIGHT,
         color: OG_COLORS.paper,
       }}
     >
       {children}
     </div>
+
+    <StageCrop>
+      <div
+        style={{
+          display: 'flex',
+          position: 'absolute',
+          left: STAGE_CENTER - FEATURE_COVER.width / 2,
+          top: FEATURE_COVER_TOP,
+        }}
+      >
+        {cover ? (
+          // 그림자 없음 — satori 는 흰 띠에서 그림자를 자르지 못한다(StageCrop 참조)
+          <Cover src={cover} {...FEATURE_COVER} shadow='none' />
+        ) : (
+          <div
+            style={{
+              display: 'flex',
+              ...FEATURE_COVER,
+              borderRadius: 8,
+              background: 'rgba(255, 255, 255, 0.15)',
+            }}
+          />
+        )}
+      </div>
+    </StageCrop>
   </div>
 );
 
-/** 제목·저자 칸의 폭 상한 (한글 글자 수) */
-/** 제목 한 줄 폭(한글 글자 수) — 글자 칸 784px ÷ 64px. 두 줄까지 고르게 나누고 넘치면 말줄임 */
-const TITLE_LINE_WIDTH = 12;
+/** 제목 한 줄 폭(한글 글자 수)·줄 수 — 두 줄까지 고르게 나누고 넘치면 말줄임 */
+const TITLE_LINE_WIDTH = 14;
 const TITLE_LINES = 2;
 const AUTHOR_MAX_WIDTH = 24;
 
@@ -440,7 +376,7 @@ type StageBookTitleProps = {
 };
 
 /**
- * 무대 위 책 제목·저자 — 표지 옆에 다른 할 말이 없을 때만 쓴다.
+ * 무대 위 책 제목·저자 — 표지 위에 다른 할 말이 없을 때만 쓴다.
  * 제목은 카톡이 이미지 아래에도 보여 주므로, 카드의 주인공이 될 정보가 있으면 그쪽을 쓴다.
  */
 export const StageBookTitle = ({
@@ -452,19 +388,19 @@ export const StageBookTitle = ({
     style={{
       display: 'flex',
       flexDirection: 'column',
+      alignItems: 'center',
       marginTop,
-      width: FEATURE_COLUMN_WIDTH,
     }}
   >
     <div
       style={{
         display: 'flex',
         flexDirection: 'column',
-        // 무대 왼쪽 슬로건(80)과 나란히 놓여도 작아 보이지 않는 크기(HJ 2026-11-27 "글자 키워야")
-        fontSize: 64,
+        alignItems: 'center',
+        fontSize: SLOGAN_SIZE,
         fontWeight: 800,
-        letterSpacing: -1.5,
-        lineHeight: 1.25,
+        letterSpacing: -1.2,
+        lineHeight: 1.22,
       }}
     >
       {/* 부제(' - ' 뒤)는 버린다 — 카드에서는 본 제목만으로 충분하다 */}
@@ -480,8 +416,8 @@ export const StageBookTitle = ({
       <div
         style={{
           display: 'flex',
-          marginTop: 16,
-          fontSize: 34,
+          marginTop: 10,
+          fontSize: 26,
           color: STAGE_TEXT_SOFT,
         }}
       >
@@ -494,9 +430,9 @@ export const StageBookTitle = ({
 /**
  * 무대 크기의 창 — 안에 둔 그림을 무대 바닥선(흰 띠 경계)에서 자른다.
  *
- * 오늘의 문장·소개·새 소식·책 이야기 카드는 물건 하나를 크게 키워 윗부분만 보여 준다
- * (HJ 2026-11-27 "확대해서, 흰 띠에서 잘리게"). 아래쪽이 잘려야 "더 있다"로 읽힌다.
- * ⚠️ satori 는 overflow 로 boxShadow 를 자르지 못한다 — 안쪽 그림에 그림자를 아래로 주면 흰 띠에 번진다.
+ * 소개·새 소식·책 이야기·오늘의 문장 카드는 물건 하나를 세워 윗부분만 보여 준다
+ * (HJ 2026-11-27 "흰 띠에서 잘리게"). 아래쪽이 잘려야 "더 있다"로 읽힌다.
+ * ⚠️ satori 는 overflow 로 boxShadow·회전한 요소를 자르지 못한다 — 안쪽 그림엔 아래 그림자·회전 X.
  */
 export const StageCrop = ({ children }: { children: React.ReactNode }) => (
   <div
@@ -514,29 +450,30 @@ export const StageCrop = ({ children }: { children: React.ReactNode }) => (
   </div>
 );
 
-/** 확대한 그림의 윗변 — 무대 위에서부터. 오늘의 문장 당근 책과 같은 높이 */
-export const CROP_TOP = 130;
-
-/** 큰 슬로건 — 왼쪽, 무대 안에서 세로 가운데. 홈 카드(BrandStage)와 같은 자리·크기 */
+/** 큰 슬로건 — 무대 위 가운데. 모든 카드가 같은 자리·크기다 */
 export const StageSlogan = ({ lines }: { lines: readonly string[] }) => (
   <div
     style={{
       display: 'flex',
       flexDirection: 'column',
-      justifyContent: 'center',
+      alignItems: 'center',
       position: 'absolute',
-      left: STAGE_GUTTER,
-      top: 0,
-      height: STAGE_HEIGHT,
-      fontSize: 80,
+      left: 0,
+      top: SLOGAN_TOP,
+      width: '100%',
+      fontSize: SLOGAN_SIZE,
       fontWeight: 800,
       color: OG_COLORS.paper,
-      letterSpacing: -2.5,
-      lineHeight: 1.2,
+      // 큰 글자는 자간을 좁혀야 단어가 한 덩어리로 읽힌다
+      letterSpacing: -1.4,
+      lineHeight: 1.22,
     }}
   >
+    {/* satori 는 <br/> 을 못 다룬다 — 줄마다 div 로 쌓는다 */}
     {lines.map((line) => (
-      <div key={line}>{line}</div>
+      <div key={line} style={{ display: 'flex' }}>
+        {line}
+      </div>
     ))}
   </div>
 );
