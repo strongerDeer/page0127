@@ -3,10 +3,10 @@ import { join } from 'node:path';
 
 import { renderOg } from '@/shared/lib/og/render';
 import {
-  COVER_OVERHANG,
   STAGE_GUTTER,
   STAGE_HEIGHT,
   StageCard,
+  StageCrop,
 } from '@/shared/lib/og/StageCard';
 import { OG_COLORS, OG_SIZE } from '@/shared/lib/og/theme';
 
@@ -26,8 +26,17 @@ export const alt = '『어린 왕자』 온라인 필사 | page0127.';
 export const size = OG_SIZE;
 export const contentType = 'image/png';
 
-/** 원본 720×227 — 오른쪽 아래, 책상 밑면이 무대 바닥선에 걸친다 */
-const HERO = { width: 720, height: 227 } as const;
+/**
+ * 원본 720×227 을 좌우로 뒤집고 1.4배 키워 책상 아래를 흰 띠에서 자른다
+ * (HJ 2026-11-27 "좌우 반전, 확대해서 잘라서"). 뒤집으면 아이가 오른쪽, 등불이 왼쪽에 온다.
+ * 도트 그림이라 1.4배 정도는 뭉개지지 않는다 — 더 키우면 계단이 보인다.
+ */
+const SCALE = 1.4;
+const HERO = { width: 720 * SCALE, height: 227 * SCALE } as const;
+/** 그림 왼쪽 끝 — 뒤집힌 등불이 슬로건 끝(x≈530)을 넘지 않는 자리 */
+const HERO_LEFT = 330;
+/** 그림 윗변 — 책상 윗면이 무대 바닥선 조금 위에 오고, 그 아래는 잘린다 */
+const HERO_TOP = 210;
 
 const readHero = () =>
   `data:image/png;base64,${readFileSync(
@@ -61,19 +70,23 @@ const Image = () =>
         <div>한 쪽씩 따라 치기</div>
       </div>
 
-      {/* 타자 치는 아이 — 책상 밑면이 무대 바닥선에 살짝 걸치게 */}
-      {}
-      <img
-        src={readHero()}
-        alt=''
-        width={HERO.width}
-        height={HERO.height}
-        style={{
-          position: 'absolute',
-          right: STAGE_GUTTER - 20,
-          bottom: -COVER_OVERHANG,
-        }}
-      />
+      {/* 타자 치는 아이 — 뒤집고 키워서, 책상 아래는 무대 바닥선에서 자른다 */}
+      <StageCrop>
+        {/* satori 는 next/image 를 렌더하지 못한다 — 이 파일은 브라우저로 나가지 않는다 */}
+        { }
+        <img
+          src={readHero()}
+          alt=''
+          width={HERO.width}
+          height={HERO.height}
+          style={{
+            position: 'absolute',
+            left: HERO_LEFT,
+            top: HERO_TOP,
+            transform: 'scaleX(-1)',
+          }}
+        />
+      </StageCrop>
     </StageCard>
   );
 
