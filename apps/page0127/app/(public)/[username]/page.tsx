@@ -33,9 +33,12 @@ import { toDisplayName } from '@/entities/profile/model/displayName';
 import { libraryRobots } from '@/entities/profile/model/searchIndexable';
 import { getSentenceMonthCounts } from '@/entities/quote/server';
 import { getPublicTasteHistory } from '@/entities/taste-analysis/api/getPublicTasteHistory';
+import { CHEER_YEAR, isCheerSeason } from '@/entities/year-cheer';
+import { getYearCheer } from '@/entities/year-cheer/server';
 
 import { getBadgeActivity } from '@/features/badge/api/getBadgeActivity';
 import { CarrotSproutSvg, DailySentenceCard } from '@/features/daily-sentence';
+import { CheerEntryCard } from '@/features/year-cheer';
 
 import { LibraryNewsCard } from '@/widgets/news-notice';
 import { LIBRARY_BOOK_COLUMNS } from '@/widgets/public-library/model/libraryBookColumns';
@@ -250,6 +253,7 @@ const LibraryContent = async ({
   const today = getSeoulToday();
 
   const isOwnProfile = currentUser?.id === profile.id;
+  const showCheerEntry = isOwnProfile && isCheerSeason(today);
 
   // 통계는 소유자여도 항상 공개된 책만 집계한다 — 책장(visibleBooks)이
   // 보관된 책을 안 보여주는데 통계 숫자만 보관분까지 세면 서로 어긋나 보인다.
@@ -271,6 +275,7 @@ const LibraryContent = async ({
     hasSentencePool,
     sentenceMonthCounts,
     readingGoals,
+    yearCheer,
   ] = await Promise.all([
     getBooks(profile.id, !isOwnProfile),
     isOwnProfile ? Promise.resolve([]) : getMaskedPrivateBooks(profile.id),
@@ -289,6 +294,10 @@ const LibraryContent = async ({
       : getSentenceMonthCounts(profile.id),
     // 연도별 추이의 목표는 주인에게만 그린다(HJ, 2026-11-24) — 방문자면 조회하지 않는다
     isOwnProfile ? getReadingGoals(profile.id) : Promise.resolve([]),
+    // 연말 응원 카드 입구 — 12월에 주인에게만. 열었는지에 따라 문구만 바뀐다
+    showCheerEntry
+      ? getYearCheer(profile.id, CHEER_YEAR)
+      : Promise.resolve(null),
   ]);
   const todaySentence =
     sentenceDraws.find((sentence) => sentence.draw_date === today) ?? null;
@@ -363,7 +372,17 @@ const LibraryContent = async ({
       sentenceMonthCounts={sentenceMonthCounts}
       readingGoals={readingGoals}
       // 새 소식 카드 — 회원은 홈 대신 서재로 오므로 회원 창구를 여기 둔다(2026-11-27 HJ C안 ①자동)
-      newsSlot={isOwnProfile ? <LibraryNewsCard /> : null}
+      // 12월에는 연말 응원 카드 입구를 그 위에 함께 둔다(2026-11-27 HJ)
+      newsSlot={
+        isOwnProfile ? (
+          <>
+            {showCheerEntry && (
+              <CheerEntryCard username={username} opened={yearCheer !== null} />
+            )}
+            <LibraryNewsCard />
+          </>
+        ) : null
+      }
       // 서재 위쪽 카드 셋(오늘의 문장·주간 회상·내가 모은 문장)은 독서 캘린더 패널로 옮겼다(HJ B안, 2026-11-10).
       // 오늘의 문장 — 오늘 칸 패널. 풀이 비었고 오늘 펼친 것도 없으면 넣지 않는다
       calendarTodaySlot={
