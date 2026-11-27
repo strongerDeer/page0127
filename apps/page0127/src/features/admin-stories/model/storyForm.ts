@@ -1,4 +1,8 @@
 import {
+  findBodyImageSrcs,
+  isAllowedImageSrc,
+} from '@/entities/story/model/bodyImage';
+import {
   extractChartBlocks,
   findLeadStat,
   parseChartBlock,
@@ -17,7 +21,11 @@ import type {
  * 저장 전에 같은 메시지를 보여 준다.
  */
 
-export const STORY_IMAGE_BUCKET = 'story-images';
+// 그림 주소 규칙은 공개 페이지 본문 그림과 같이 쓰려고 entities 로 옮겼다(2026-11-27)
+export {
+  isAllowedImageSrc,
+  STORY_IMAGE_BUCKET,
+} from '@/entities/story/model/bodyImage';
 
 /** 클라이언트 → 서버 액션으로 보내는 값 */
 export type StoryInput = {
@@ -81,22 +89,6 @@ export const validateSlug = (slug: string): string | null => {
   if (!SLUG.test(slug))
     return '주소는 영문 소문자·숫자와 하이픈(-)만 쓸 수 있어요. 예: daeonsil-repair-report';
   return null;
-};
-
-/**
- * 그림 주소는 두 곳만 받는다 — 이 화면에서 올린 story-images 버킷, 리포의 public/images/stories.
- * 아무 외부 주소나 공개 페이지에 뜨지 않게 하고, 늘 미리 줄인 파일만 그리게 한다(변환 한도 X).
- */
-export const isAllowedImageSrc = (
-  src: string,
-  supabaseUrl: string | undefined
-): boolean => {
-  if (/^\/images\/stories\/[a-z0-9/_-]+\.(webp|png|jpe?g)$/i.test(src))
-    return true;
-  if (!supabaseUrl) return false;
-  return src.startsWith(
-    `${supabaseUrl}/storage/v1/object/public/${STORY_IMAGE_BUCKET}/`
-  );
 };
 
 const toSize = (value: unknown) =>
@@ -224,6 +216,14 @@ export const validateStoryInput = (
     return { ok: false, message: '본문이 너무 길어요.' };
   const chartError = validateChartBlocks(body);
   if (chartError) return { ok: false, message: chartError };
+  // 본문 그림은 "그림 넣기"로 올린 것만 — 공개 페이지는 다른 주소를 그리지 않으므로 저장 때 알려 준다
+  if (
+    findBodyImageSrcs(body).some((src) => !isAllowedImageSrc(src, supabaseUrl))
+  )
+    return {
+      ok: false,
+      message: '본문 그림은 "그림 넣기" 버튼으로 올린 것만 쓸 수 있어요.',
+    };
 
   const rating = Number(input.rating);
   if (!Number.isInteger(rating) || rating < 0 || rating > 5)

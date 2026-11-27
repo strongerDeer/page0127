@@ -230,3 +230,23 @@ describe('대표 이미지·위치·글 종류', () => {
     expect(noBook.ok && noBook.value.is_review).toBe(true);
   });
 });
+
+describe('본문 그림', () => {
+  it('우리 버킷 그림은 저장되고, 다른 주소 그림은 막는다', () => {
+    const ok = validateStoryInput(
+      input({ body: `글\n\n![장면](${BUCKET_SRC}#1200x630)` }),
+      SUPABASE,
+      '책'
+    );
+    expect(ok.ok).toBe(true);
+    const bad = validateStoryInput(
+      input({ body: '글\n\n![장면](https://evil.com/x.png)' }),
+      SUPABASE,
+      '책'
+    );
+    expect(bad).toEqual({
+      ok: false,
+      message: '본문 그림은 "그림 넣기" 버튼으로 올린 것만 쓸 수 있어요.',
+    });
+  });
+});
