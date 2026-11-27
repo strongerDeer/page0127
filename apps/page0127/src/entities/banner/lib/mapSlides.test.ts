@@ -35,6 +35,7 @@ const row: HeroSlideRow = {
   art_x: 50,
   art_y: 70,
   art_w: 40,
+  belt_art_url: null,
 };
 
 describe('rowToHeroSlide', () => {
@@ -49,6 +50,7 @@ describe('rowToHeroSlide', () => {
       bg: '#000',
       fg: '#fff',
       beltStyle: 'custom',
+      beltArt: null,
       cover: { style: 'default' },
     });
   });
@@ -103,6 +105,7 @@ describe('slidesOrFallback', () => {
       bg: '#1',
       fg: '#2',
       beltStyle: 'custom',
+      beltArt: null,
       cover: { style: 'default' },
     },
   ];
