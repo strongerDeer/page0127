@@ -20,7 +20,7 @@ export const alt = '공지·업데이트 | page0127.';
 export const size = OG_SIZE;
 export const contentType = 'image/png';
 
-/** 서재 창(LibraryWindow)과 같은 폭 — 브랜드 카드들이 같은 크기로 읽히게 */
+/** 쪽지 폭 — 다른 카드 그림과 비슷한 크기로 읽히게 */
 const NOTE_WIDTH = 414;
 const BAR = '#e6ecf5';
 const CHIP = '#dbe7fb';

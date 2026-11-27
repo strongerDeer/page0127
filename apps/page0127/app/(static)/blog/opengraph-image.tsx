@@ -21,7 +21,7 @@ export const alt = '책 이야기 | page0127.';
 export const size = OG_SIZE;
 export const contentType = 'image/png';
 
-/** 서재 창(LibraryWindow)과 같은 폭 */
+/** 쪽지 폭 — 다른 카드 그림과 비슷한 크기로 읽히게 */
 const PAPER = { width: 414, height: 600 } as const;
 /** 색은 파랑 한 갈래만 — 종이는 흰색, 사람은 옅은 파랑, 주인공만 한 단계 진하게 */
 const PAPER_BG = '#ffffff';

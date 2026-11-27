@@ -1,7 +1,7 @@
 import { BrandSymbol } from '@/shared/lib/brand/BrandSymbol';
 
 import { balancedWrap } from './balanceLines';
-import { LibraryWindow } from './LibraryWindow';
+import { BookShelf } from './BookShelf';
 import { OG_FONT_FAMILY } from './render';
 import { OG_COLORS, OG_SIZE, textWidth, truncate } from './theme';
 
@@ -10,7 +10,7 @@ import { OG_COLORS, OG_SIZE, textWidth, truncate } from './theme';
  *
  * 모든 카드가 **파란 무대 + 흰 띠 한 줄** 구조다.
  * - 무대: 소개 페이지(/about) `.stage-blue` 와 같은 그라데이션. 위 가운데에 슬로건,
- *   그 아래 가운데에 카드마다 다른 주인공(서재 창·표지·그림)이 선다.
+ *   그 아래 가운데에 카드마다 다른 주인공(책장·표지·그림)이 선다.
  * - 흰 띠: 가운데에 `page0127. │ 누르면 무엇을 보게 되는지 →` 한 덩어리.
  *
  * 왜 전부 가운데인가(HJ 2026-11-27): 카톡·DM·메신저가 같은 1200×630 그림을 제각각
@@ -280,16 +280,13 @@ type BrandStageProps = {
  * 브랜드 카드 — 표지가 없는 모든 경우의 기본 카드.
  * 홈·소개·로그인 등 루트 OG, 없는 사용자, 아직 책이 없는 책장, 비공개 기록이 쓴다.
  *
- * 그림은 소개 카드와 같은 **서재 창**이다(HJ 2026-11-27 "디자인 같게, 텍스트만 다르게").
- * 예전의 색 막대 책 무리는 막대그래프처럼 보여 뺐다.
+ * 그림은 **선반 위 책장**(BookShelf) — 홈·소개가 같은 그림이고 글자만 다르다
+ * (HJ 2026-11-27 "디자인 같게, 텍스트만 다르게"). 예전 색 막대 책 무리는 막대그래프처럼 보여 뺐다.
  */
 export const BrandStage = ({ cta, slogan = HOME_SLOGAN }: BrandStageProps) => (
   <StageCard cta={cta}>
     <StageSlogan lines={slogan} />
-    {/* 창 아래쪽은 흰 띠에서 자른다 — 흰 창이 흰 띠로 이어지면 경계가 사라진다 */}
-    <StageCrop>
-      <LibraryWindow />
-    </StageCrop>
+    <BookShelf />
   </StageCard>
 );
 
