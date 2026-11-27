@@ -1,0 +1,165 @@
+/*
+ * 연말 응원 카드 — 시안 v3(HJ 2026-11-27 "오 좋아") 그대로.
+ * 파란 무대 + 맨 아래 빨강·흰 띠 + 흰 선 무늬(아주 옅게, 제목 영역은 비움).
+ * 큰 민트 면은 쓰지 않는다(브랜드 규칙). 글자 뒤 무늬는 마스크로 지워 가독성을 지킨다.
+ */
+.stage {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  color: #fff;
+  background: linear-gradient(180deg, #1e69cb 0%, #0b4fae 100%);
+  box-shadow: 0 18px 44px rgb(20 41 78 / 0.22);
+  isolation: isolate;
+}
+
+/* 흰 선 무늬 — 위 24% 는 비우고 아래로 갈수록 보이게 */
+.stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96' fill='none' stroke='%23fff' stroke-width='1.6' stroke-linecap='round'%3E%3Cpath d='M20 10v16M12 18h16M14.5 12.5l11 11M25.5 12.5l-11 11'/%3E%3Cpath d='M70 52l9 15H61z' stroke-linejoin='round'/%3E%3Cpath d='M70 67v4'/%3E%3Cpath d='M76 14v8M72 18h8'/%3E%3Cpath d='M26 66v8M22 70h8'/%3E%3Ccircle cx='50' cy='32' r='1.4' fill='%23fff'/%3E%3Ccircle cx='8' cy='46' r='1.2' fill='%23fff'/%3E%3Ccircle cx='46' cy='86' r='1.4' fill='%23fff'/%3E%3Ccircle cx='90' cy='88' r='1.2' fill='%23fff'/%3E%3C/svg%3E");
+  background-size: 96px 96px;
+  opacity: 0.15;
+  mask-image: linear-gradient(180deg, transparent 0 24%, #000 50%);
+}
+
+/* 맨 아래 빨강·흰 띠 */
+.stage::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 10px;
+  background: repeating-linear-gradient(90deg, #d64554 0 16px, #fff 16px 32px);
+}
+
+.wordmarkDot {
+  color: #6ee7b7;
+}
+
+/* ── 선물(앞) ↔ 카드(뒤) 뒤집기 ── */
+.scene {
+  perspective: 1000px;
+}
+
+.flip {
+  display: grid;
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.3, 1.2, 0.5, 1);
+}
+
+.opened .flip {
+  transform: rotateY(180deg);
+}
+
+/* 앞·뒤를 같은 칸에 겹친다 — 높이는 둘 중 큰 쪽 */
+.face {
+  grid-area: 1 / 1;
+  border-radius: 18px;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow: 0 14px 30px rgb(0 0 0 / 0.22);
+}
+
+.front {
+  position: relative;
+  min-height: 280px;
+  background: #fff;
+}
+
+.back {
+  transform: rotateY(180deg);
+  background: #fffdf8;
+  color: #1b2333;
+}
+
+/* 리본 — 풀리면 줄어들고 매듭은 위로 사라진다 */
+.ribbonV,
+.ribbonH {
+  position: absolute;
+  background: #d64554;
+  transition: transform 0.4s ease;
+}
+
+.ribbonV {
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 28px;
+  margin-left: -14px;
+}
+
+.ribbonH {
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 28px;
+  margin-top: -14px;
+}
+
+.bow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 84px;
+  height: 56px;
+  margin: -42px 0 0 -42px;
+  transition:
+    transform 0.4s ease,
+    opacity 0.4s ease;
+}
+
+.untied .ribbonV {
+  transform: scaleY(0);
+}
+
+.untied .ribbonH {
+  transform: scaleX(0);
+}
+
+.untied .bow {
+  transform: translateY(-50px);
+  opacity: 0;
+}
+
+/* 아직 안 열었을 때 살짝 들썩 — 누를 수 있다는 신호 */
+.wiggle {
+  animation: wiggle 2.4s ease-in-out infinite;
+}
+
+@keyframes wiggle {
+  0%,
+  86%,
+  100% {
+    transform: rotate(0);
+  }
+  90% {
+    transform: rotate(-2deg);
+  }
+  95% {
+    transform: rotate(2deg);
+  }
+}
+
+/* 기기의 명조 — 웹폰트를 새로 받지 않는다(오늘의 문장과 같은 규칙) */
+.serif {
+  font-family:
+    "AppleMyungjo", "Nanum Myeongjo", "Noto Serif KR", "Batang", serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flip,
+  .ribbonV,
+  .ribbonH,
+  .bow {
+    transition: none;
+  }
+  .wiggle {
+    animation: none;
+  }
+}
