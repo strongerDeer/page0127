@@ -1,10 +1,14 @@
 'use server';
 
+import { after } from 'next/server';
+
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 import { revalidateStoryPages } from '@/shared/lib/cache/revalidateStoryPages';
+import { submitToIndexNow } from '@/shared/lib/seo/indexNow';
 
 import { ensureProviderCatalog } from '@/entities/book/api/ensureProviderCatalog';
+import { storyPath } from '@/entities/story';
 
 import { STORY_IMAGE_BUCKET, validateStoryInput } from '../model/storyForm';
 
@@ -64,6 +68,25 @@ async function resolveBook(
   return null;
 }
 
+type StoryPageRef = { slug: string; book_id: string | null };
+
+/**
+ * 글이 나오는 공개 페이지 주소 — 목록, 글 본문, 연결된 책 정보 페이지.
+ * 검색엔진(IndexNow)에 "다시 봐 주세요" 하고 알릴 대상이다. 지운 글 주소도 알리면 404 를 보고 색인에서 뺀다.
+ */
+const storyPagePaths = (stories: StoryPageRef[]): string[] => [
+  '/blog',
+  ...stories.flatMap((story) => [
+    storyPath(story.slug),
+    ...(story.book_id ? [`/books/info/${story.book_id}`] : []),
+  ]),
+];
+
+/** 응답을 보낸 뒤 IndexNow 핑 — 저장 속도에 영향이 없고, 실패해도 저장은 그대로다. */
+const notifySearchEngines = (stories: StoryPageRef[]) => {
+  after(() => submitToIndexNow(storyPagePaths(stories)));
+};
+
 export async function saveStory(input: StoryInput): Promise<StoryActionResult> {
   await assertAdmin();
   if (input.id && !UUID.test(input.id)) return fail('잘못된 요청입니다.');
@@ -82,14 +105,20 @@ export async function saveStory(input: StoryInput): Promise<StoryActionResult> {
 
   // 처음 공개할 때만 날짜를 찍는다 — 공개를 껐다 켜도 글 날짜가 바뀌지 않게
   let publishedAt: string | null = null;
+  // 고치기 전 주소·책 — slug 나 책을 바꿨으면 옛 주소도 검색엔진에 알린다(옛 주소는 404 가 된다)
+  let previous: StoryPageRef | null = null;
   if (input.id) {
     const { data: existing, error } = await supabase
       .from('stories')
-      .select('published_at')
+      .select('published_at, slug, book_id')
       .eq('id', input.id)
       .maybeSingle();
     if (error || !existing) return fail('고칠 글을 찾지 못했어요.');
     publishedAt = existing.published_at as string | null;
+    previous = {
+      slug: existing.slug as string,
+      book_id: existing.book_id as string | null,
+    };
   }
   if (checked.value.is_published && !publishedAt)
     publishedAt = new Date().toISOString();
@@ -121,21 +150,38 @@ export async function saveStory(input: StoryInput): Promise<StoryActionResult> {
   }
 
   revalidateStoryPages();
+  // 한 번이라도 공개된 글만 알린다 — 공개 중이면 새 내용, 공개를 껐으면 404 를 보고 색인에서 뺀다.
+  // 한 번도 공개 안 한 임시 글은 검색엔진이 알 필요가 없다.
+  if (publishedAt) {
+    notifySearchEngines([
+      { slug: row.slug, book_id: row.book_id },
+      ...(previous ? [previous] : []),
+    ]);
+  }
   return { ok: true, id: data.id as string };
 }
 
 export async function deleteStory(id: string): Promise<StoryActionResult> {
   await assertAdmin();
   if (!UUID.test(id)) return fail('잘못된 요청입니다.');
-  const { error } = await createAdminClient()
+  const { data: deleted, error } = await createAdminClient()
     .from('stories')
     .delete()
-    .eq('id', id);
+    .eq('id', id)
+    .select('slug, book_id, published_at');
   if (error) {
     console.error('[admin] 책 이야기 삭제 실패:', error.message);
     return fail('지우지 못했어요. 다시 시도해 주세요.');
   }
   revalidateStoryPages();
+  const published = (deleted ?? []).filter((story) => story.published_at);
+  if (published.length > 0)
+    notifySearchEngines(
+      published.map((story) => ({
+        slug: story.slug as string,
+        book_id: story.book_id as string | null,
+      }))
+    );
   return { ok: true, id };
 }
 

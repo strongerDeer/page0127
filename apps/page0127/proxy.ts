@@ -156,6 +156,7 @@ export const config = {
      *   sw.js 는 브라우저가 수시로 갱신 확인을 해서, 태우면 그때마다 Supabase 인증 호출이 나간다)
      * - llms.txt (AI용 사이트 요약 — 빌드 때 만든 정적 텍스트. 크롤러가 가져갈 때마다
      *   세션을 확인할 이유가 없다)
+     * - {32자}.txt (IndexNow 키 파일 — 검색엔진이 사이트 주인 확인용으로 가져가는 정적 텍스트, seo/indexNow.ts)
      * - public 폴더의 파일들 (.svg, .png, .avif, .woff2 등)
      *   avif·woff2 가 빠져 있어서 배지 그림(avif)·배지 글꼴(woff2)을 받을 때마다 proxy 가 돌아
      *   Supabase 세션까지 확인했다(2026-11-11 운영에서 페이지당 3~4번 확인 → Vercel CPU 한도).
@@ -163,6 +164,6 @@ export const config = {
      *   태우면 캐시된 페이지를 줄 때도 매번 서버 함수가 깨어난다. 이 페이지는 서버에서
      *   로그인을 읽지 않으니 세션 갱신이 필요 없다 — 갱신은 다른 페이지·API 에서 된다)
      */
-    '/((?!_next/static|_next/image|favicon.ico|monitoring|sw\\.js|offline\\.html|llms\\.txt|icons/|books/info/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|woff2?)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|monitoring|sw\\.js|offline\\.html|llms\\.txt|[a-f0-9]{32}\\.txt|icons/|books/info/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|woff2?)$).*)',
   ],
 };
