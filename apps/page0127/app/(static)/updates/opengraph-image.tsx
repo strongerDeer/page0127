@@ -1,3 +1,4 @@
+import { balancedWrap } from '@/shared/lib/og/balanceLines';
 import { renderOg } from '@/shared/lib/og/render';
 import {
   CROP_TOP,
@@ -6,7 +7,7 @@ import {
   StageCrop,
   StageSlogan,
 } from '@/shared/lib/og/StageCard';
-import { OG_COLORS, OG_SIZE, truncate } from '@/shared/lib/og/theme';
+import { OG_COLORS, OG_SIZE } from '@/shared/lib/og/theme';
 
 import { CHANGELOG } from '@/widgets/landing/model/siteInfo';
 
@@ -23,8 +24,9 @@ export const contentType = 'image/png';
 
 const NOTE_WIDTH = 460;
 const ITEMS = 3;
-/** 제목 상한(한글 글자 수) — 두 줄 안에 들어가는 길이. 넘으면 말줄임 */
-const TITLE_MAX = 26;
+/** 제목 한 줄 폭(한글 글자 수) — 날짜 칩 옆 칸 약 300px ÷ 22px. 두 줄까지 고르게, 넘치면 말줄임 */
+const TITLE_LINE_WIDTH = 13;
+const TITLE_LINES = 2;
 
 /** '2026.11.25' → '11.25' */
 const shortDate = (date: string) => date.split('.').slice(1).join('.');
@@ -99,6 +101,7 @@ const NewsNote = () => (
         <div
           style={{
             display: 'flex',
+            flexDirection: 'column',
             flex: 1,
             marginLeft: 14,
             fontSize: 22,
@@ -110,7 +113,13 @@ const NewsNote = () => (
             letterSpacing: -0.5,
           }}
         >
-          {truncate(entry.title, TITLE_MAX)}
+          {balancedWrap(entry.title, TITLE_LINE_WIDTH, TITLE_LINES).map(
+            (line) => (
+              <div key={line} style={{ display: 'flex' }}>
+                {line}
+              </div>
+            )
+          )}
         </div>
       </div>
     ))}
