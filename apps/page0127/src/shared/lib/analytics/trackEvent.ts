@@ -114,7 +114,7 @@ export type AnalyticsEvent =
   | 'follow_remove'
   /** 좋아요를 눌렀다(취소는 세지 않는다) */
   | 'like_add'
-  /** 댓글을 남겼다. on: 'book' | 'globalBook', reply: 답글인지. 내용은 보내지 않는다 */
+  /** 댓글을 남겼다. on: 'book' | 'globalBook' | 'story', reply: 답글인지. 내용은 보내지 않는다 */
   | 'comment_post'
   /** 리그에서 "다른 리더와 비교하기"를 눌러 추천 리더를 열었다 */
   | 'league_discover'

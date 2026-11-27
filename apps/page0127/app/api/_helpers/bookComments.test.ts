@@ -69,7 +69,7 @@ describe('buildCommentTree', () => {
     expect(result.map((c) => c.id)).toEqual(['c2']);
   });
 
-  it('루트 댓글은 최신이 위(내림차순)로 온다', () => {
+  it('루트 댓글도 시간순(오름차순)으로 온다 — 입력칸이 맨 아래라 대화처럼 읽힌다', () => {
     const result = buildCommentTree(
       [
         row({ id: 'late', created_at: '2026-07-05T00:00:00Z' }),
@@ -78,7 +78,7 @@ describe('buildCommentTree', () => {
       profiles
     );
 
-    expect(result.map((c) => c.id)).toEqual(['late', 'early']);
+    expect(result.map((c) => c.id)).toEqual(['early', 'late']);
   });
 
   it('대댓글은 부모 아래에서 시간순(오름차순)을 지킨다', () => {
@@ -113,8 +113,8 @@ describe('buildCommentTree', () => {
       profiles
     );
 
-    // 루트는 내림차순이므로 나중에 달린 것이 위에 온다
-    expect(result.map((c) => c.id)).toEqual(['나중', '먼저']);
+    // 루트는 오름차순이므로 먼저 달린 것이 위에 온다
+    expect(result.map((c) => c.id)).toEqual(['먼저', '나중']);
   });
 });
 

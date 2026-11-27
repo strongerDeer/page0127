@@ -76,7 +76,7 @@ describe('sitemap', () => {
   });
 
   it('책 정보와 공개 책이 있는 서재의 검색용 URL을 유지한다', async () => {
-    // book-1: 리더 2명 → 색인 / book-2: 리더 1명 → 제외 / book-3: 리더 0명이지만 "이 책 이야기" 댓글 → 색인
+    // book-1: 리더 2명 → 색인 / book-2: 리더 1명 → 제외 / book-3: 리더 0명이지만 "이 책에 남긴 말" 댓글 → 색인
     const publicOnly = vi.fn().mockReturnValue({
       limit: vi.fn().mockResolvedValue({
         data: [

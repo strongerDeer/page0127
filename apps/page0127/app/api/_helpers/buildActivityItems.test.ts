@@ -278,4 +278,52 @@ describe('buildActivityItems', () => {
 
     expect(item.user.username).toBeNull();
   });
+  it('commentProfiles 를 주면 책마다 댓글 트리(시간순)를 붙인다 — 피드가 카드마다 조회하지 않게', () => {
+    const full = (id: string, parent: string | null, at: string, user = 'u2') => ({
+      id,
+      book_id: 'b1',
+      user_id: user,
+      parent_comment_id: parent,
+      content: id,
+      created_at: at,
+      updated_at: at,
+    });
+    const [item] = buildActivityItems({
+      activities,
+      profiles,
+      books,
+      likes: [],
+      comments: [
+        full('c2', null, '2026-07-22T00:00:00+00:00'),
+        full('c1', null, '2026-07-21T00:00:00+00:00'),
+        full('r1', 'c1', '2026-07-23T00:00:00+00:00', 'u1'),
+      ],
+      threadReads: [],
+      bookEvents: [],
+      currentUserId: 'u1',
+      commentProfiles: [
+        ...profiles,
+        { id: 'u2', nickname: null, username: 'jieun', photo_url: null },
+      ],
+    });
+
+    expect(item.comments?.map((c) => c.id)).toEqual(['c1', 'c2']);
+    expect(item.comments?.[0].replies?.map((r) => r.id)).toEqual(['r1']);
+    expect(item.comments?.[1].user?.nickname).toBe('jieun');
+    expect(item.commentCount).toBe(3);
+  });
+
+  it('commentProfiles 가 없으면 댓글 트리를 싣지 않는다(카드가 직접 조회)', () => {
+    const [item] = buildActivityItems({
+      activities,
+      profiles,
+      books,
+      likes: [],
+      comments: [],
+      threadReads: [],
+      bookEvents: [],
+      currentUserId: 'u1',
+    });
+    expect(item.comments).toBeUndefined();
+  });
 });

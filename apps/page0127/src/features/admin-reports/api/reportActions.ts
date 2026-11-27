@@ -5,6 +5,14 @@ import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 
+import type { CommentSource } from './getReports';
+
+/** 댓글 출처 → 표와 신고의 대상 칸 */
+const TABLES = {
+  book: { table: 'book_comments', reportColumn: 'comment_id' },
+  story: { table: 'story_comments', reportColumn: 'story_comment_id' },
+} as const satisfies Record<CommentSource, { table: string; reportColumn: string }>;
+
 /**
  * 신고 처리 — 숨김/해제와 신고 상태를 함께 쓴다.
  *
@@ -15,13 +23,15 @@ import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 /** 댓글을 가리고 신고를 처리 완료로 넘긴다 */
 export async function hideComment(
   reportId: string,
-  commentId: string
+  commentId: string,
+  source: CommentSource = 'book'
 ): Promise<void> {
   const admin = await assertAdmin();
   const supabase = createAdminClient();
+  const { table, reportColumn } = TABLES[source];
 
   const { error: hideError } = await supabase
-    .from('book_comments')
+    .from(table)
     .update({ is_hidden: true })
     .eq('id', commentId);
   if (hideError) throw new Error(`댓글 숨김 실패: ${hideError.message}`);
@@ -35,7 +45,7 @@ export async function hideComment(
       handled_by: admin.id,
       handled_at: new Date().toISOString(),
     })
-    .eq('comment_id', commentId)
+    .eq(reportColumn, commentId)
     .eq('status', 'pending');
   if (statusError)
     throw new Error(`신고 상태 갱신 실패: ${statusError.message}`);
@@ -48,13 +58,14 @@ export async function hideComment(
 /** 숨김을 되돌린다. 신고는 '반려'로 남긴다 — 지우지 않아야 이력이 남는다 */
 export async function unhideComment(
   reportId: string,
-  commentId: string
+  commentId: string,
+  source: CommentSource = 'book'
 ): Promise<void> {
   const admin = await assertAdmin();
   const supabase = createAdminClient();
 
   const { error: unhideError } = await supabase
-    .from('book_comments')
+    .from(TABLES[source].table)
     .update({ is_hidden: false })
     .eq('id', commentId);
   if (unhideError) throw new Error(`숨김 해제 실패: ${unhideError.message}`);

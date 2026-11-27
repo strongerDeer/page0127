@@ -1,5 +1,6 @@
-import { compareIsoTime } from './bookComments';
+import { buildCommentTree, compareIsoTime } from './bookComments';
 
+import type { CommentRow, ProfileRow } from './bookComments';
 import type { Activity } from '@/entities/activity';
 
 // 조회 결과 원본 타입 — Supabase에서 그대로 받은 행 모양
@@ -32,12 +33,15 @@ export type RawBook = {
 };
 /** 책 단위 좋아요 — activity_id 가 아니라 book_id 로 센다 */
 export type RawLike = { book_id: string; user_id: string };
-/** 배지·개수 계산에 필요한 최소 컬럼만 받는다(본문은 피드에 필요 없다) */
+/**
+ * 배지·개수 계산에는 세 컬럼이면 된다. 피드는 댓글을 펼친 채 보여 주므로(HJ, 2026-11-27)
+ * 본문 컬럼까지 받아 `commentTree` 를 켠다 — 카드마다 /comments 를 부르는 N+1 대신 한 번에.
+ */
 export type RawComment = {
   book_id: string;
   user_id: string | null;
   created_at: string;
-};
+} & Partial<Omit<CommentRow, 'user_id' | 'created_at'>>;
 export type RawThreadRead = { book_id: string; last_read_at: string };
 export type RawBookEvent = {
   book_id: string;
@@ -54,7 +58,19 @@ type BuildInput = {
   threadReads: RawThreadRead[];
   bookEvents: RawBookEvent[];
   currentUserId: string | null;
+  /**
+   * 주면 카드마다 댓글 트리(`comments`)를 만들어 붙인다 — 댓글 쓴 사람들의 프로필.
+   * comments 행에 id·content·parent_comment_id·updated_at 이 있어야 한다.
+   */
+  commentProfiles?: ProfileRow[];
 };
+
+/** 본문 컬럼까지 받은 댓글 행인지 — 트리를 만들 수 있는지 */
+const isFullCommentRow = (c: RawComment): c is RawComment & CommentRow =>
+  typeof c.id === 'string' &&
+  typeof c.content === 'string' &&
+  typeof c.updated_at === 'string' &&
+  c.parent_comment_id !== undefined;
 
 /** book_id 로 묶는다 — 배치 조회 결과를 책마다 처음부터 훑지 않기 위한 준비 */
 const groupByBook = <T extends { book_id: string }>(rows: T[]) => {
@@ -85,6 +101,7 @@ export function buildActivityItems({
   threadReads,
   bookEvents,
   currentUserId,
+  commentProfiles,
 }: BuildInput): Activity[] {
   const profileMap = new Map(profiles.map((p) => [p.id, p]));
   const bookMap = new Map(books.map((b) => [b.id, b]));
@@ -145,6 +162,13 @@ export function buildActivityItems({
       },
       commentCount: bookComments.length,
       newCommentCount,
+      // 트리를 켠 화면(피드)만 — 없으면 카드가 펼칠 때 직접 받는다
+      ...(commentProfiles && {
+        comments: buildCommentTree(
+          bookComments.filter(isFullCommentRow),
+          commentProfiles
+        ),
+      }),
       // 중복 제거로 잃은 맥락을 되살린다 — "담음 7/01 · 완독 7/20"
       bookEvents: (eventsByBook.get(a.book_id) ?? [])
         .map((e) => ({

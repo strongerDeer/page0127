@@ -116,7 +116,7 @@ export async function generateMetadata({
     ratingCount: stats.ratingCount,
   });
 
-  // 리더 2명 이상, 또는 "이 책 이야기" 댓글·블로그 책 이야기가 있는 책만 검색 결과에 올린다
+  // 리더 2명 이상, 또는 "이 책에 남긴 말" 댓글·블로그 책 이야기가 있는 책만 검색 결과에 올린다
   // (sitemap 과 같은 기준). 조회가 깨졌으면(null) 판단을 미루고 색인을 막지 않는다 —
   // 일시 장애로 noindex 가 ISR 캐시에 1시간 굳으면 안 된다
   const indexable =
@@ -199,7 +199,7 @@ const getBookStats = cache(async (isbn: string) => {
 });
 
 /**
- * "이 책 이야기"(책 정보 댓글) 수 — 색인 판단용. 목록 자체는 브라우저가 따로 받는다.
+ * "이 책에 남긴 말"(책 정보 댓글) 수 — 색인 판단용. 목록 자체는 브라우저가 따로 받는다.
  * RLS 가 가려진 댓글(is_hidden)을 이미 뺀다. 실패하면 null.
  */
 const getBookCommentCount = async (

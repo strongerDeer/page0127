@@ -1,6 +1,8 @@
 import { createAdminClient } from '@/shared/config/supabase/admin';
 import { assertAdmin } from '@/shared/lib/admin/assertAdmin';
 
+export type CommentSource = 'book' | 'story';
+
 /** 어드민 신고 목록 한 줄 */
 export type ReportRow = {
   id: string;
@@ -13,6 +15,8 @@ export type ReportRow = {
   reporterName: string | null;
   comment: {
     id: string;
+    /** 어느 표의 댓글인지 — 책 댓글(book_comments) / 책 이야기 댓글(story_comments) */
+    source: CommentSource;
     content: string;
     isHidden: boolean;
     authorName: string | null;
@@ -29,6 +33,7 @@ type RawReport = {
   handled_at: string | null;
   reporter_id: string | null;
   comment_id: string | null;
+  story_comment_id: string | null;
 };
 
 type RawComment = {
@@ -56,7 +61,9 @@ export const getReports = async (): Promise<ReportRow[]> => {
 
   const { data: reports, error } = await supabase
     .from('reports')
-    .select('id, reason, detail, status, created_at, handled_at, reporter_id, comment_id')
+    .select(
+      'id, reason, detail, status, created_at, handled_at, reporter_id, comment_id, story_comment_id'
+    )
     // 미처리를 위로: pending < rejected < resolved 가 아니라 명시적으로 status 정렬
     .order('status', { ascending: true })
     .order('created_at', { ascending: false })
@@ -70,24 +77,39 @@ export const getReports = async (): Promise<ReportRow[]> => {
   const rows = (reports ?? []) as RawReport[];
   if (rows.length === 0) return [];
 
-  // 댓글 본문 — 가려진 것도 함께 가져온다(service_role 은 RLS 를 우회한다)
-  const commentIds = [
-    ...new Set(rows.map((r) => r.comment_id).filter((id): id is string => !!id)),
+  // 댓글 본문 — 가려진 것도 함께 가져온다(service_role 은 RLS 를 우회한다).
+  // 책 댓글과 책 이야기 댓글은 표가 달라서 각각 받는다(HJ, 2026-11-27 B안).
+  const idsOf = (pick: (r: RawReport) => string | null) => [
+    ...new Set(rows.map(pick).filter((id): id is string => !!id)),
   ];
-  const { data: comments } = await supabase
-    .from('book_comments')
-    .select('id, content, is_hidden, user_id')
-    .in('id', commentIds);
-  const commentById = new Map(
-    ((comments ?? []) as RawComment[]).map((c) => [c.id, c])
-  );
+  const bookCommentIds = idsOf((r) => r.comment_id);
+  const storyCommentIds = idsOf((r) => r.story_comment_id);
+  const [{ data: bookComments }, { data: storyComments }] = await Promise.all([
+    bookCommentIds.length > 0
+      ? supabase
+          .from('book_comments')
+          .select('id, content, is_hidden, user_id')
+          .in('id', bookCommentIds)
+      : Promise.resolve({ data: [] }),
+    storyCommentIds.length > 0
+      ? supabase
+          .from('story_comments')
+          .select('id, content, is_hidden, user_id')
+          .in('id', storyCommentIds)
+      : Promise.resolve({ data: [] }),
+  ]);
+  const comments = [
+    ...((bookComments ?? []) as RawComment[]),
+    ...((storyComments ?? []) as RawComment[]),
+  ];
+  const commentById = new Map(comments.map((c) => [c.id, c]));
 
   // 신고자·작성자 이름
   const userIds = [
     ...new Set(
       [
         ...rows.map((r) => r.reporter_id),
-        ...((comments ?? []) as RawComment[]).map((c) => c.user_id),
+        ...comments.map((c) => c.user_id),
       ].filter((id): id is string => !!id)
     ),
   ];
@@ -103,7 +125,9 @@ export const getReports = async (): Promise<ReportRow[]> => {
   );
 
   return rows.map((r) => {
-    const comment = r.comment_id ? commentById.get(r.comment_id) : undefined;
+    const source: CommentSource = r.story_comment_id ? 'story' : 'book';
+    const commentId = r.story_comment_id ?? r.comment_id;
+    const comment = commentId ? commentById.get(commentId) : undefined;
     return {
       id: r.id,
       reason: r.reason,
@@ -115,6 +139,7 @@ export const getReports = async (): Promise<ReportRow[]> => {
       comment: comment
         ? {
             id: comment.id,
+            source,
             content: comment.content,
             isHidden: comment.is_hidden,
             authorId: comment.user_id,
