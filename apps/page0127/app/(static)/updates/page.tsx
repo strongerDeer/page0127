@@ -1,12 +1,22 @@
+import { buildShareMetadata } from '@/shared/lib/seo/shareMetadata';
+
 import { UpdatesTimeline } from '@/widgets/about';
 
 import type { Metadata } from 'next';
 
+const UPDATES_TITLE = '공지·업데이트 | page0127.';
+const UPDATES_DESCRIPTION =
+  'page0127.에 새로 생긴 기능과 바뀐 점을 날짜순으로 모아 둔 공지·업데이트 기록이에요.';
+
 export const metadata: Metadata = {
-  title: '공지·업데이트 | page0127.',
-  description:
-    'page0127.에 새로 생긴 기능과 바뀐 점을 날짜순으로 모아 둔 공지·업데이트 기록이에요.',
+  title: UPDATES_TITLE,
+  description: UPDATES_DESCRIPTION,
   alternates: { canonical: '/updates' },
+  ...buildShareMetadata({
+    path: '/updates',
+    title: UPDATES_TITLE,
+    description: UPDATES_DESCRIPTION,
+  }),
 };
 
 /**

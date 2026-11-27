@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 
 import { JsonLd } from '@/shared/lib/seo/JsonLd';
+import { buildShareMetadata } from '@/shared/lib/seo/shareMetadata';
 import {
   buildFaqPageJsonLd,
   buildWebApplicationJsonLd,
@@ -35,6 +36,11 @@ export const metadata: Metadata = {
   title: '서비스 소개 | page0127.',
   description: SERVICE_DEFINITION,
   alternates: { canonical: '/about' },
+  ...buildShareMetadata({
+    path: '/about',
+    title: '서비스 소개 | page0127.',
+    description: SERVICE_DEFINITION,
+  }),
 };
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';

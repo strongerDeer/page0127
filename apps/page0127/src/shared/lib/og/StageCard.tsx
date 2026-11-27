@@ -301,16 +301,25 @@ export const StageBooks = () => (
   </div>
 );
 
+/** 홈 슬로건 — 다른 문구를 안 넘기면 이 두 줄이 선다 */
+const HOME_SLOGAN = ['책장을 보면,', '그 사람이 보인다'] as const;
+
 type BrandStageProps = {
   /** 흰 띠 한 줄 */
   cta: string;
+  /**
+   * 무대 위 큰 글자(줄마다 한 항목, 두 줄 권장). 소개·책 이야기·오늘의 문장처럼
+   * 자기 그림이 없는 페이지가 홈과 다른 카드로 읽히게 바꿔 단다(2026-11-27).
+   * ⚠️ 한 줄은 띄어쓰기 포함 9자 안쪽 — 더 길면 오른쪽 책 무리와 겹친다.
+   */
+  slogan?: readonly string[];
 };
 
 /**
  * 브랜드 카드 — 표지가 없는 모든 경우의 기본 카드.
  * 홈·소개·로그인 등 루트 OG, 없는 사용자, 아직 책이 없는 책장, 비공개 기록이 쓴다.
  */
-export const BrandStage = ({ cta }: BrandStageProps) => (
+export const BrandStage = ({ cta, slogan = HOME_SLOGAN }: BrandStageProps) => (
   <StageCard cta={cta}>
     {/* 슬로건 — 왼쪽, 무대 안에서 세로 가운데. 흰 띠의 한 줄과 같은 왼쪽 선이다 */}
     <div
@@ -331,8 +340,9 @@ export const BrandStage = ({ cta }: BrandStageProps) => (
       }}
     >
       {/* satori 는 <br/> 을 못 다룬다 — 줄마다 div 로 쌓는다 */}
-      <div>책장을 보면,</div>
-      <div>그 사람이 보인다</div>
+      {slogan.map((line) => (
+        <div key={line}>{line}</div>
+      ))}
     </div>
     <StageBooks />
   </StageCard>
