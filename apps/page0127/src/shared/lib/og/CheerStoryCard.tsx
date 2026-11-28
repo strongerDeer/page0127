@@ -1,4 +1,10 @@
-import { STORY_GUTTER, STORY_SAFE_Y, StoryFooter } from './StoryCard';
+import {
+  STORY_GUTTER,
+  STORY_HEADER_DROP,
+  STORY_HEADER_TOP,
+  STORY_SAFE_Y,
+  StoryFooter,
+} from './StoryCard';
 import { STORY_SIZE } from './theme';
 
 /** 연말 응원 카드의 명조 — 스토리 라우트가 loadGoogleFont 로 받아 넘긴다 */
@@ -97,7 +103,7 @@ export const CheerStoryCard = ({
         width: STORY_SIZE.width,
         height: STORY_SIZE.height,
         // 아래는 주소 줄(StoryFooter) 자리까지 비운다 — 카드는 남은 칸 가운데에 선다
-        padding: `${STORY_SAFE_Y}px ${STORY_GUTTER}px ${STORY_SAFE_Y + 80}px`,
+        padding: `${STORY_HEADER_TOP}px ${STORY_GUTTER}px ${STORY_SAFE_Y + 80}px`,
         background: `linear-gradient(180deg, ${BLUE} 0%, ${BLUE_DEEP} 100%)`,
         color: '#ffffff',
         fontFamily: 'Pretendard',
@@ -133,7 +139,7 @@ export const CheerStoryCard = ({
         style={{
           display: 'flex',
           flexDirection: 'column',
-          marginTop: 64,
+          marginTop: 64 + STORY_HEADER_DROP,
           marginBottom: 72,
           fontSize: 76,
           fontWeight: 800,

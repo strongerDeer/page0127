@@ -5,6 +5,8 @@ import {
   PANEL_RADIUS,
   STORY_CONTENT_WIDTH,
   STORY_GUTTER,
+  STORY_HEADER_DROP,
+  STORY_HEADER_TOP,
   STORY_SAFE_Y,
   StoryFooter,
   StoryProfile,
@@ -195,13 +197,17 @@ export const BookStoryCard = ({
           left: 0,
           right: 0,
           bottom: 0,
-          padding: `${STORY_SAFE_Y}px ${STORY_GUTTER}px ${STORY_SAFE_Y}px`,
+          padding: `${STORY_HEADER_TOP}px ${STORY_GUTTER}px ${STORY_SAFE_Y}px`,
         }}
       >
         <StoryProfile photoUrl={photoUrl} name={name} address={address} />
 
         <div
-          style={{ display: 'flex', justifyContent: 'center', marginTop: 64 }}
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginTop: 64 + STORY_HEADER_DROP,
+          }}
         >
           {cover ? (
             <Cover src={cover} {...COVER} />

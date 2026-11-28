@@ -6,7 +6,8 @@ import {
   STORY_CONTENT_BOTTOM,
   STORY_CONTENT_WIDTH,
   STORY_GUTTER,
-  STORY_SAFE_Y,
+  STORY_HEADER_DROP,
+  STORY_HEADER_TOP,
   StoryFooter,
   StoryProfile,
 } from './StoryCard';
@@ -121,14 +122,14 @@ export const TasteStoryCard = ({
           top: 0,
           left: 0,
           right: 0,
-          padding: `${STORY_SAFE_Y}px ${STORY_GUTTER}px 0`,
+          padding: `${STORY_HEADER_TOP}px ${STORY_GUTTER}px 0`,
           color: '#ffffff',
         }}
       >
         <StoryProfile photoUrl={photoUrl} name={name} address={address} />
 
         {/* 라벨은 흰 칩 — 서재 스토리와 같다(성향 색은 파란 계열이라 칩 안의 점으로) */}
-        <div style={{ display: 'flex', marginTop: 64 }}>
+        <div style={{ display: 'flex', marginTop: 64 + STORY_HEADER_DROP }}>
           <div
             style={{
               display: 'flex',

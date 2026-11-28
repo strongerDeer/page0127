@@ -4,6 +4,8 @@ import {
   PANEL_RADIUS,
   STORY_CONTENT_WIDTH,
   STORY_GUTTER,
+  STORY_HEADER_DROP,
+  STORY_HEADER_TOP,
   STORY_SAFE_Y,
   StoryFooter,
 } from './StoryCard';
@@ -137,7 +139,7 @@ export const CompatibilityStoryCard = ({
           flexDirection: 'column',
           flexShrink: 0,
           height: PANEL_TOP + PANEL_RADIUS,
-          padding: `${STORY_SAFE_Y}px ${STORY_GUTTER}px 0`,
+          padding: `${STORY_HEADER_TOP}px ${STORY_GUTTER}px 0`,
           color: '#ffffff',
         }}
       >
@@ -175,7 +177,7 @@ export const CompatibilityStoryCard = ({
           style={{
             display: 'flex',
             flexDirection: 'column',
-            marginTop: 72,
+            marginTop: 72 + STORY_HEADER_DROP,
             fontSize: HEADLINE_SIZE,
             fontWeight: 800,
             lineHeight: 1.18,

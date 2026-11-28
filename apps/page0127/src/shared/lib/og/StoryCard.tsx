@@ -24,6 +24,13 @@ export const STORY_SAFE_Y = 250;
  */
 export const FEED_CROP_Y = (STORY_SIZE.height - (STORY_SIZE.width * 5) / 4) / 2;
 export const STORY_CONTENT_BOTTOM = FEED_CROP_Y + 40;
+/**
+ * 맨 위 머리줄(프로필·"오늘의 문장"·"연말 선물")의 위치 — 4:5 로 자르는 선(285)에 반쯤 걸리면
+ * 이름이 잘려 보였다(HJ 11/28) → 잘리는 칸 안으로 통째로 올린다(프로필 112px 이 262 에서 끝난다).
+ * 본문 자리는 그대로 두려고, 머리줄 바로 다음 요소에 STORY_HEADER_DROP 만큼 간격을 더한다.
+ */
+export const STORY_HEADER_TOP = 150;
+export const STORY_HEADER_DROP = STORY_SAFE_Y - STORY_HEADER_TOP;
 export const STORY_GUTTER = 88;
 export const STORY_CONTENT_WIDTH = STORY_SIZE.width - STORY_GUTTER * 2;
 const CONTENT_WIDTH = STORY_CONTENT_WIDTH;
@@ -431,7 +438,7 @@ export const StoryCard = ({
           flexDirection: 'column',
           flexShrink: 0,
           height: PANEL_TOP + PANEL_RADIUS,
-          padding: `${STORY_SAFE_Y}px ${STORY_GUTTER}px 0`,
+          padding: `${STORY_HEADER_TOP}px ${STORY_GUTTER}px 0`,
           color: '#ffffff',
         }}
       >
@@ -440,7 +447,7 @@ export const StoryCard = ({
 
         {/* 라벨은 흰 칩 — 성향 색은 대부분 파란 계열이라 파란 바탕에 점만 두면 속 빈 테두리로 보인다 */}
         {label && (
-          <div style={{ display: 'flex', marginTop: 64 }}>
+          <div style={{ display: 'flex', marginTop: 64 + STORY_HEADER_DROP }}>
             <div
               style={{
                 display: 'flex',
@@ -474,7 +481,7 @@ export const StoryCard = ({
           style={{
             display: 'flex',
             flexDirection: 'column',
-            marginTop: label ? 24 : 64,
+            marginTop: label ? 24 : 64 + STORY_HEADER_DROP,
             fontSize: headlineSize,
             fontWeight: 800,
             lineHeight: 1.18,
