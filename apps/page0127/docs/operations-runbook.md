@@ -199,7 +199,7 @@ launchctl unload ~/Library/LaunchAgents/com.stronger.page0127-backup.plist   # �
 - [ ] uptime 모니터가 살아있고 알림이 실제로 오는지 (일부러 실패시켜 테스트)
 - [ ] Supabase 백업이 최신인지
 - [ ] Sentry에 방치된 미해결 이슈가 쌓였는지
-- [ ] 만료 임박한 키/토큰 확인 (`OPENAI_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `SENTRY_AUTH_TOKEN`)
+- [ ] 만료 임박한 키/토큰 확인 (`ANTHROPIC_API_KEY`, `ANTHROPIC_ADMIN_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `SENTRY_AUTH_TOKEN`)
 
 ## 5. 배포 환경 필수 설정
 

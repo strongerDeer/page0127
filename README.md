@@ -104,7 +104,7 @@ npm ci
 # 3. 환경 변수 — apps/page0127/.env.local 생성
 #    (아래 키가 필요합니다)
 #    NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY
-#    YES24_API_KEY / OPENAI_API_KEY
+#    YES24_API_KEY / ANTHROPIC_API_KEY
 #    NEXT_PUBLIC_SITE_URL / NEXT_PUBLIC_GA_ID / CRON_SECRET
 
 # 4. Run
