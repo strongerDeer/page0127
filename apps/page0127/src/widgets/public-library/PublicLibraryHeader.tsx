@@ -24,7 +24,6 @@ import {
   type AnalysisProgress,
   postAnalysisStream,
 } from '@/shared/api/postAnalysisStream';
-import { ANALYSIS_STAGE_LABELS } from '@/shared/lib/ai/analysisEvents';
 import { USAGE_LIMIT_EXCEEDED_MESSAGE } from '@/shared/lib/aiUsageMessages';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { IntentPrefetchLink } from '@/shared/ui/IntentPrefetchLink';
@@ -39,6 +38,7 @@ import { FollowButton, FollowListModal, FollowStats } from '@/features/follow';
 import { coachTarget } from '@/features/onboarding';
 import { toLockedAnalysisMessage } from '@/features/rating-nudge';
 import { ShareButton, ShareSheetButton } from '@/features/share';
+import { TasteAnalysisLoading } from '@/features/taste-analysis/ui/TasteAnalysisLoading';
 
 import { LibraryFeatureBanner } from './LibraryFeatureBanner';
 import { toTasteBannerDescription } from './model/featureBanner';
@@ -477,40 +477,10 @@ export const PublicLibraryHeader = ({
       )}
 
       {isAnalyzing && (
-        <div className='fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-background/80 backdrop-blur-sm'>
-          <Loader2 className='h-10 w-10 animate-spin text-primary' />
-          <div className='w-full max-w-xs px-4 text-center'>
-            <p className='text-lg font-medium'>취향을 분석하고 있어요~</p>
-            {/* 진행률은 서버가 실시간으로 보낸다(AI 가 답을 얼마나 썼는지) */}
-            <div
-              role='progressbar'
-              aria-label='취향 분석 진행률'
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.round(
-                (analysisProgress?.progress ?? 0) * 100
-              )}
-              className='mt-4 h-2 w-full overflow-hidden rounded-full bg-line'
-            >
-              <div
-                className='h-full rounded-full bg-primary transition-[width] duration-500 ease-out motion-reduce:transition-none'
-                style={{
-                  width: `${Math.round((analysisProgress?.progress ?? 0) * 100)}%`,
-                }}
-              />
-            </div>
-            <p
-              role='status'
-              aria-live='polite'
-              className='mt-2 text-sm text-muted-foreground tabular-nums'
-            >
-              {analysisProgress
-                ? `${ANALYSIS_STAGE_LABELS[analysisProgress.stage]}… ${Math.round(analysisProgress.progress * 100)}%`
-                : '분석을 준비하는 중…'}
-            </p>
-            <p className='mt-1 text-xs text-muted-foreground'>
-              이 화면을 벗어나지 말고 잠시만 기다려주세요.
-            </p>
+        // 서재 위를 덮고 가운데에 케미와 같은 책장 그림을 띄운다 — 분석 중 다른 버튼을 못 누르게
+        <div className='fixed inset-0 z-50 flex items-center justify-center bg-background/80 px-4 backdrop-blur-sm'>
+          <div className='w-full max-w-md'>
+            <TasteAnalysisLoading progress={analysisProgress?.progress ?? 0} />
           </div>
         </div>
       )}
