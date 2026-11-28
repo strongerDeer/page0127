@@ -58,7 +58,12 @@ export function createTasteAnalysisPrompt(
    * 화면에 노출할 권수보다 크게 잡는다 — 실재하지 않는 책은 서점 대조 단계에서
    * 탈락하므로, 여유분 없이 딱 맞춰 받으면 섹션이 비어 보인다.
    */
-  recommendationsPerType: number
+  recommendationsPerType: number,
+  /**
+   * 위 분석 목록 밖에 있는, 이미 책장에 있는 책 "제목 - 저자".
+   * AI는 분석용 책(최근 40권+인생책 10권)만 보므로, 이걸 안 주면 읽은 책을 추천한다(2026-11-28 HJ).
+   */
+  otherShelfBooks: readonly string[] = []
 ): string {
   // 평가 안 함(score = null)은 높은 점수도 낮은 점수도 아니다 → 두 목록에서 모두 뺀다.
   // 전에는 0점 책이 "낮은 점수를 준 책들"로 모델에 전달돼 취향을 거꾸로 읽혔다.
@@ -98,6 +103,15 @@ ${formatBooks(lastingBooks)}
 - "오래 남은 책"은 오래 이어져 온 뿌리 취향을 확인하는 참고로만 써 주세요. 요즘 책과 결이 다르면 요즘 쪽을 따르고, 그 차이를 취향의 변화로 설명해도 좋아요`
       : '';
 
+  // 제목만 짧게 — 소개·목차를 붙이면 책이 많은 사람의 프롬프트가 크게 불어난다
+  const shelfSection =
+    otherShelfBooks.length > 0
+      ? `
+### 이미 책장에 있는 그 밖의 책 (${otherShelfBooks.length}권, 추천 제외용)
+${otherShelfBooks.join(' / ')}
+`
+      : '';
+
   // 타입 카탈로그를 "이름: 판단 기준" 목록으로 변환
   const personalityTypeList = personalityTypes
     .map((t) => `- "${t.name}": ${t.criteria}`)
@@ -117,7 +131,7 @@ ${formatBooks(middleRatedBooks)}
 
 #### 낮은 점수를 준 책 (3점 미만, ${lowRatedBooks.length}권)
 ${formatBooks(lowRatedBooks)}
-${lastingSection}
+${lastingSection}${shelfSection}
 ## 분석 방법
 - 성향 타입과 좋아하는 주제는 "요즘 읽은 책"을 중심으로 판단해 주세요. 지금의 취향을 보여 주는 게 목적이에요${lastingGuide}
 - "보통이었던 책"은 끝까지 읽었지만 마음에 깊이 남지는 않은 책이에요. 좋아하는 것과 피하는 것의 경계를 가늠하는 데 써 주세요
@@ -141,6 +155,8 @@ ${personalityTypeList}
 - match: 지금 취향에 꼭 맞는 책
 - expand: 결은 비슷하지만 새로운 영역으로 한 걸음 넓혀 주는 책
 - challenge: 평소와 전혀 다르지만 이 사람이라면 좋아할 만한 책
+
+이미 읽었거나 책장에 담아 둔 책은 추천하지 말아 주세요. 위 "분석 데이터"에 나온 책${otherShelfBooks.length > 0 ? '과 "이미 책장에 있는 그 밖의 책"' : ''}이 모두 여기에 해당해요. 같은 책의 개정판·다른 번역본도 피해 주세요.
 
 추천한 책은 실제 서점 데이터와 대조하고, 찾지 못한 제목은 화면에서 빠져요. 그래서:
 - 제목과 저자를 확실히 아는, 지금 한국에서 구할 수 있는 책만 골라 주세요. 조금이라도 헷갈리면 확실히 아는 다른 책으로 바꿔 주세요
