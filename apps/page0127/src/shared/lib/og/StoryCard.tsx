@@ -17,6 +17,13 @@ export type { StoryShelfItem } from './storyShelfLayout';
  * 중요한 것은 이 둘 사이에만 둔다(인스타 권장 안전 영역 ≈ 위아래 250px).
  */
 export const STORY_SAFE_Y = 250;
+/**
+ * 피드(4:5)로 올릴 때 가운데 1080×1350 만 남는다 — 위아래 285px 씩 잘린다.
+ * 프로필 줄·맨 아래 한 줄(STORY_FOOTER)은 잘려도 괜찮지만(HJ 11/28), 본문(책장·숫자·근거 책)은
+ * 이 칸 안에서 숨 쉴 틈(40px)을 두고 끝나야 한다 → 아래로 붙는 본문은 STORY_CONTENT_BOTTOM 위에서 끝낸다.
+ */
+export const FEED_CROP_Y = (STORY_SIZE.height - (STORY_SIZE.width * 5) / 4) / 2;
+export const STORY_CONTENT_BOTTOM = FEED_CROP_Y + 40;
 export const STORY_GUTTER = 88;
 export const STORY_CONTENT_WIDTH = STORY_SIZE.width - STORY_GUTTER * 2;
 const CONTENT_WIDTH = STORY_CONTENT_WIDTH;
@@ -506,7 +513,7 @@ export const StoryCard = ({
       {/*
         아래 — 흰 면. 위 모서리를 둥글게 해 파란 무대 위로 올라온 카드처럼.
         책장과 권수는 한 덩어리(책장 + 캡션)라 둘 다 가운데 — 책만 가운데고 숫자가 왼쪽이면 어긋나 보인다.
-        세로도 가운데: 아래 250px(인스타 답장창 자리)을 뺀 남은 칸의 한가운데
+        세로도 가운데: 아래 STORY_CONTENT_BOTTOM(피드 4:5 로 잘리는 자리 + 틈)을 뺀 남은 칸의 한가운데
       */}
       <div
         style={{
@@ -516,7 +523,7 @@ export const StoryCard = ({
           alignItems: 'center',
           flex: 1,
           marginTop: -PANEL_RADIUS,
-          padding: `64px ${STORY_GUTTER}px ${STORY_SAFE_Y}px`,
+          padding: `64px ${STORY_GUTTER}px ${STORY_CONTENT_BOTTOM}px`,
           borderTopLeftRadius: PANEL_RADIUS,
           borderTopRightRadius: PANEL_RADIUS,
           background: OG_COLORS.paper,
@@ -552,7 +559,7 @@ export const StoryCard = ({
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              marginTop: 56,
+              marginTop: 40,
             }}
           >
             <div
@@ -569,7 +576,7 @@ export const StoryCard = ({
               <div
                 style={{
                   display: 'flex',
-                  fontSize: 140,
+                  fontSize: 120,
                   fontWeight: 800,
                   lineHeight: 1,
                   letterSpacing: -4,

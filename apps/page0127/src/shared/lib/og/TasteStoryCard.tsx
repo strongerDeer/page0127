@@ -3,6 +3,7 @@ import { balancedWrap } from './balanceLines';
 import { STAGE_BACKGROUND } from './StageCard';
 import {
   PANEL_RADIUS,
+  STORY_CONTENT_BOTTOM,
   STORY_CONTENT_WIDTH,
   STORY_GUTTER,
   STORY_SAFE_Y,
@@ -34,8 +35,8 @@ const lineWidth = (fontSize: number) =>
   Math.floor((STORY_CONTENT_WIDTH / fontSize) * 1.04 * 10) / 10;
 
 /** 근거 책 한 줄 — 표지(2:3) 옆에 제목·태그 */
-const EVIDENCE_COVER = { width: 104, height: 156 } as const;
-const EVIDENCE_GAP = 22;
+const EVIDENCE_COVER = { width: 92, height: 138 } as const;
+const EVIDENCE_GAP = 16;
 /** 근거 책 한 줄의 폭 — 표지 + 가장 긴 제목(15자) 정도. 본문 폭(904)보다 좁혀 가운데에 둔다 */
 const EVIDENCE_ROW_WIDTH = 720;
 const TITLE_MAX_WIDTH = 15;
@@ -187,7 +188,7 @@ export const TasteStoryCard = ({
           top: PANEL_TOP,
           left: 0,
           right: 0,
-          bottom: STORY_SAFE_Y,
+          bottom: STORY_CONTENT_BOTTOM,
           padding: `56px ${STORY_GUTTER}px 0`,
           color: OG_COLORS.ink,
         }}
@@ -216,7 +217,7 @@ export const TasteStoryCard = ({
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              marginTop: 52,
+              marginTop: 44,
             }}
           >
             <div
