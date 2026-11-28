@@ -13,8 +13,8 @@ import {
 } from '@/shared/lib/admin/dateRange';
 
 import { getGaEventTotals } from '@/features/admin-analytics/api/getGaEventTotals';
+import { getAiCosts } from '@/features/admin-costs/api/getAiCosts';
 import { getCostSummary } from '@/features/admin-costs/api/getCostSummary';
-import { getOpenAiCosts } from '@/features/admin-costs/api/getOpenAiCosts';
 import {
   budgetBasisCents,
   computeBudgetUsage,
@@ -62,7 +62,7 @@ const OverviewSection = async () => {
       return null;
     }),
     // 예산 경고는 AI 비용 화면과 같은 기준 — 실제 청구(로컬·테스트 포함)와 앱 기록 중 큰 쪽
-    getOpenAiCosts(),
+    getAiCosts(),
   ]);
 
   const attention = buildAttention({

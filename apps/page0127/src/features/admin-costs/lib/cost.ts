@@ -7,7 +7,7 @@ export function sumCents(rows: CostRow[]): number {
 
 /**
  * 예산 게이지가 기준으로 삼을 금액(USD 센트).
- * - OpenAI 실제 청구액(조직 전체 — 로컬·테스트 포함)을 읽었으면 앱 기록과 비교해 큰 쪽.
+ * - Anthropic 실제 청구액(조직 전체 — 로컬·테스트 포함)을 읽었으면 앱 기록과 비교해 큰 쪽.
  *   실제 청구는 반영이 몇 시간~하루 늦어 방금 쓴 운영 비용이 아직 없을 수 있다.
  * - 못 읽었으면(null) 운영 앱 기록만.
  */
@@ -48,7 +48,7 @@ export type DailyCostRow = {
   date: string;
   /** 운영 앱 기록(USD 센트) — 그날 운영 DB 에 남은 분석 비용 */
   appCents: number;
-  /** OpenAI 실제 청구(USD 센트). null = 청구액을 못 읽음 */
+  /** Anthropic 실제 청구(USD 센트). null = 청구액을 못 읽음 */
   actualCents: number | null;
 };
 
@@ -57,7 +57,7 @@ export type DailyCostRow = {
  *
  * 실제 청구만 보여 주면 오늘처럼 청구 반영이 늦은 날은 운영에서 돌린 분석이 통째로 안 보인다
  * (2026-10-25: 오늘 돌린 취향 분석이 일별 목록에 없었다). 둘 중 한쪽에만 있는 날도 남긴다.
- * 실제 청구 버킷은 UTC 하루 단위라 날짜 경계가 KST 와 9시간 어긋날 수 있다 — 하루 단위 추이로만 본다.
+ * 실제 청구는 시간 단위로 받아 KST 날짜로 묶었으니 앱 기록과 날짜 경계가 같다.
  */
 export function mergeDailyCosts(
   app: { date: string; cents: number }[],

@@ -13,26 +13,26 @@ import {
   mergeDailyCosts,
 } from '@/features/admin-costs/lib/cost';
 
-import type { CostSummary } from '@/features/admin-costs/api/getCostSummary';
 import type {
-  OpenAiCostsFailure,
-  OpenAiCostsResult,
-} from '@/features/admin-costs/api/getOpenAiCosts';
+  AiCostsFailure,
+  AiCostsResult,
+} from '@/features/admin-costs/api/getAiCosts';
+import type { CostSummary } from '@/features/admin-costs/api/getCostSummary';
 
 type CostDashboardProps = {
   summary: CostSummary;
-  /** OpenAI 조직 실제 청구액(로컬·운영·테스트 합산) — 못 읽으면 실패 사유 */
-  actual: OpenAiCostsResult;
+  /** Anthropic 조직 실제 청구액(로컬·운영·테스트 합산) — 못 읽으면 실패 사유 */
+  actual: AiCostsResult;
 };
 
 /** 실제 청구액을 못 읽었을 때, 화면의 숫자에서 무엇이 빠졌는지 한 줄로 */
-const FAILURE_NOTICE: Record<OpenAiCostsFailure['kind'], string> = {
+const FAILURE_NOTICE: Record<AiCostsFailure['kind'], string> = {
   'no-key':
-    'OpenAI 관리자 키(OPENAI_ADMIN_KEY)가 없어 운영 앱 기록만 보여요. 로컬·테스트 비용은 빠져 있어요.',
+    'Anthropic 관리자 키(ANTHROPIC_ADMIN_KEY)가 없어 운영 앱 기록만 보여요. 로컬·테스트 비용은 빠져 있어요.',
   forbidden:
-    'OpenAI 실제 청구액을 읽을 권한이 없어요. OPENAI_ADMIN_KEY 가 관리자 키(sk-admin-)인지 확인해 주세요. 로컬·테스트 비용은 빠져 있어요.',
+    'Anthropic 실제 청구액을 읽을 권한이 없어요. ANTHROPIC_ADMIN_KEY 가 관리자 키(sk-ant-admin-)인지 확인해 주세요. 로컬·테스트 비용은 빠져 있어요.',
   error:
-    'OpenAI 실제 청구액을 불러오지 못해 운영 앱 기록만 보여요. 로컬·테스트 비용은 빠져 있어요.',
+    'Anthropic 실제 청구액을 불러오지 못해 운영 앱 기록만 보여요. 로컬·테스트 비용은 빠져 있어요.',
 };
 
 export const CostDashboard = ({ summary, actual }: CostDashboardProps) => {
@@ -119,7 +119,7 @@ export const CostDashboard = ({ summary, actual }: CostDashboardProps) => {
         </p>
         <p className='mt-2 text-xs text-text-subtle'>
           {actual.ok
-            ? `운영 앱 기록 ${formatUsd(summary.monthTotalCents / 100)} · 그 밖(로컬·테스트 등) ${formatUsd(otherCents / 100)}. OpenAI 청구는 반영이 몇 시간 늦을 수 있어 앱 기록보다 작으면 앱 기록으로 계산해요.`
+            ? `운영 앱 기록 ${formatUsd(summary.monthTotalCents / 100)} · 그 밖(로컬·테스트 등) ${formatUsd(otherCents / 100)}. 실제 청구는 반영이 몇 시간 늦을 수 있어 앱 기록보다 작으면 앱 기록으로 계산해요.`
             : FAILURE_NOTICE[actual.failure.kind]}
         </p>
       </section>

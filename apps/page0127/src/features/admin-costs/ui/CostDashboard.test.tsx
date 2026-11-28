@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
 
 import { CostDashboard } from './CostDashboard';
 
+import type { AiCostsResult } from '../api/getAiCosts';
 import type { CostSummary } from '../api/getCostSummary';
-import type { OpenAiCostsResult } from '../api/getOpenAiCosts';
 
 // 운영 앱 기록: 취향 분석 1회 $0.04
 const summary: CostSummary = {
@@ -18,7 +18,7 @@ const summary: CostSummary = {
   topUsers: [],
 };
 
-const actual = (totalCents: number): OpenAiCostsResult => ({
+const actual = (totalCents: number): AiCostsResult => ({
   ok: true,
   costs: {
     totalCents,
@@ -66,7 +66,7 @@ describe('CostDashboard', () => {
     );
     expect(html).toContain('운영 앱 기록');
     expect(html).toContain('$0.04');
-    expect(html).toContain('OPENAI_ADMIN_KEY');
+    expect(html).toContain('ANTHROPIC_ADMIN_KEY');
     expect(html).toContain('로컬·테스트 비용은 빠져 있어요');
     expect(html).not.toContain('실제 청구 (로컬·운영·테스트 합산)');
   });
@@ -78,6 +78,6 @@ describe('CostDashboard', () => {
         actual={{ ok: false, failure: { kind: 'forbidden' } }}
       />
     );
-    expect(html).toContain('관리자 키(sk-admin-)인지');
+    expect(html).toContain('관리자 키(sk-ant-admin-)인지');
   });
 });
