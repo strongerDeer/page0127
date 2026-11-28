@@ -6,8 +6,9 @@ import {
   STORY_CONTENT_BOTTOM,
   STORY_CONTENT_WIDTH,
   STORY_GUTTER,
-  STORY_HEADER_DROP,
   STORY_HEADER_TOP,
+  STORY_HEADLINE_GAP,
+  STORY_PANEL_TOP,
   StoryFooter,
   StoryProfile,
 } from './StoryCard';
@@ -19,12 +20,8 @@ const HEADLINE_MAX_WIDTH = 18;
 const HEADLINE_LINE_WIDTH =
   Math.floor((STORY_CONTENT_WIDTH / HEADLINE_SIZE) * 10) / 10 - 0.3;
 
-/**
- * 파랑·흰 면 경계 — 고정. 성향 이름이 한 줄이든 두 줄이든 같은 자리여야 같은 틀로 읽힌다.
- * 위 면에서 가장 긴 경우(이름 두 줄)가 ≈730px 에서 끝난다. 서재 스토리(900)보다 높은 건
- * 아래 흰 면에 설명 + 근거 책 세 권이 들어가야 해서다.
- */
-const PANEL_TOP = 800;
+/** 파랑·흰 면 경계 — 스토리 이미지 전부 같은 자리(STORY_PANEL_TOP) */
+const PANEL_TOP = STORY_PANEL_TOP;
 
 /** 설명 한 문장 — 근거 책이 있으면 세 줄, 없으면(옛 분석) 흰 면을 혼자 채우니 크게 여섯 줄 */
 const DESCRIPTION = {
@@ -129,7 +126,7 @@ export const TasteStoryCard = ({
         <StoryProfile photoUrl={photoUrl} name={name} address={address} />
 
         {/* 라벨은 흰 칩 — 서재 스토리와 같다(성향 색은 파란 계열이라 칩 안의 점으로) */}
-        <div style={{ display: 'flex', marginTop: 64 + STORY_HEADER_DROP }}>
+        <div style={{ display: 'flex', marginTop: STORY_HEADLINE_GAP }}>
           <div
             style={{
               display: 'flex',
@@ -218,7 +215,7 @@ export const TasteStoryCard = ({
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              marginTop: 44,
+              marginTop: 36,
             }}
           >
             <div

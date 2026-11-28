@@ -4,18 +4,16 @@ import {
   PANEL_RADIUS,
   STORY_CONTENT_WIDTH,
   STORY_GUTTER,
-  STORY_HEADER_DROP,
   STORY_HEADER_TOP,
+  STORY_HEADLINE_GAP,
+  STORY_PANEL_TOP,
   STORY_SAFE_Y,
   StoryFooter,
 } from './StoryCard';
 import { OG_COLORS, truncate } from './theme';
 
-/**
- * 파랑·흰 면의 경계 — 위 면엔 사진 줄과 타입 이름(최대 두 줄)뿐이라 서재 스토리(900)보다 위다.
- * 가장 긴 경우(이름 두 줄)가 ≈670px 에서 끝난다. 고정이라 누구의 케미든 같은 자리에 선다.
- */
-const PANEL_TOP = 780;
+/** 파랑·흰 면의 경계 — 스토리 이미지 전부 같은 자리(STORY_PANEL_TOP) */
+const PANEL_TOP = STORY_PANEL_TOP;
 
 const AVATAR = 132;
 /** 두 사진이 겹치는 폭 — 둘이 나란히 붙어 "한 쌍"으로 읽힌다 */
@@ -177,7 +175,7 @@ export const CompatibilityStoryCard = ({
           style={{
             display: 'flex',
             flexDirection: 'column',
-            marginTop: 72 + STORY_HEADER_DROP,
+            marginTop: STORY_HEADLINE_GAP,
             fontSize: HEADLINE_SIZE,
             fontWeight: 800,
             lineHeight: 1.18,

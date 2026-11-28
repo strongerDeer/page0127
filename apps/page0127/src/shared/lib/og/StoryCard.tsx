@@ -63,10 +63,14 @@ const FEW_COVER_SIZE: Record<number, { width: number; height: number }> = {
 /** 흰 면 위로 올라온 카드의 둥근 위 모서리 */
 export const PANEL_RADIUS = 56;
 /**
- * 파랑·흰 면의 경계 — 고정이다. 성향 이름이 한 줄이든 두 줄이든 경계가 같은 자리에 서야
- * 누구의 서재든 같은 틀로 읽힌다. 위 면에서 가장 긴 경우(이름 두 줄 + 태그)가 ≈800px 에서 끝난다.
+ * 파랑·흰 면의 경계 — **스토리 이미지 전부 같은 자리**(서재·목표·책 기록·문장·케미·취향).
+ * 예전엔 카드마다 780~900 으로 달라 나란히 보면 뒤죽박죽이었다(HJ 11/28).
+ * 위 면에서 가장 긴 경우(서재: 라벨 + 이름 두 줄 + 태그)가 ≈745px 에서 끝난다.
  */
-const PANEL_TOP = 900;
+export const STORY_PANEL_TOP = 820;
+const PANEL_TOP = STORY_PANEL_TOP;
+/** 머리줄(프로필) 아래 첫 요소(라벨·제목)까지 — 머리줄을 올린 만큼 벌리되, 흰 면 경계와 겹치지 않게 */
+export const STORY_HEADLINE_GAP = 104;
 
 /**
  * 책등 이미지가 없는 책의 색 — 흰 면 위라 흰색은 쓰지 않는다. 남색·브랜드 파랑·옅은 파랑을 번갈아 세운다
@@ -447,7 +451,7 @@ export const StoryCard = ({
 
         {/* 라벨은 흰 칩 — 성향 색은 대부분 파란 계열이라 파란 바탕에 점만 두면 속 빈 테두리로 보인다 */}
         {label && (
-          <div style={{ display: 'flex', marginTop: 64 + STORY_HEADER_DROP }}>
+          <div style={{ display: 'flex', marginTop: STORY_HEADLINE_GAP }}>
             <div
               style={{
                 display: 'flex',
@@ -481,7 +485,7 @@ export const StoryCard = ({
           style={{
             display: 'flex',
             flexDirection: 'column',
-            marginTop: label ? 24 : 64 + STORY_HEADER_DROP,
+            marginTop: label ? 24 : STORY_HEADLINE_GAP,
             fontSize: headlineSize,
             fontWeight: 800,
             lineHeight: 1.18,

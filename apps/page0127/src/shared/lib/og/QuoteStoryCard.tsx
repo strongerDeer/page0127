@@ -5,8 +5,8 @@ import {
   PANEL_RADIUS,
   STORY_CONTENT_WIDTH,
   STORY_GUTTER,
-  STORY_HEADER_DROP,
   STORY_HEADER_TOP,
+  STORY_PANEL_TOP,
   STORY_SAFE_Y,
   StoryFooter,
   StoryProfile,
@@ -98,11 +98,6 @@ export const toQuoteLines = (
 const COVER = { width: 400, height: 600 } as const;
 const COVER_FOR_LONG = { width: 320, height: 480 } as const;
 
-/**
- * 프로필 줄과 표지 사이 — 표지가 프로필에 붙으면 둘 다 작아 보인다.
- * 넉넉히 띄워 표지가 무대 한가운데에 "놓인" 것처럼 보이게 한다(HJ, 2026-11-16).
- */
-const PROFILE_GAP = 112;
 /** 표지 아래쪽이 흰 면에 이만큼 걸친다 — "책이 카드 위에 놓인" 모양 */
 const COVER_OVERLAP = 0.32;
 /** 프로필 줄의 높이 — 사진(112px)이 줄의 높이를 정한다(StoryProfile) */
@@ -143,10 +138,11 @@ export const QuoteStoryCard = ({
 }: QuoteStoryCardProps) => {
   const quote = toQuoteLines(text);
   const coverSize = quote.long ? COVER_FOR_LONG : COVER;
-  const coverTop = STORY_SAFE_Y + PROFILE_HEIGHT + PROFILE_GAP;
-  // 경계는 표지 높이의 위쪽 68% 지점 — 표지 크기가 바뀌어도 걸치는 비율이 같다
-  const panelTop = Math.round(
-    coverTop + coverSize.height * (1 - COVER_OVERLAP)
+  // 경계는 모든 스토리 이미지가 같은 자리(STORY_PANEL_TOP) — 표지를 거기서 거꾸로 세워
+  // 표지 크기가 바뀌어도 아래 32% 가 흰 면에 걸친다
+  const panelTop = STORY_PANEL_TOP;
+  const coverTop = Math.round(
+    panelTop - coverSize.height * (1 - COVER_OVERLAP)
   );
   const meta = [author, page ? `p. ${page}` : null].filter(Boolean).join(' · ');
 
@@ -194,7 +190,8 @@ export const QuoteStoryCard = ({
           style={{
             display: 'flex',
             justifyContent: 'center',
-            marginTop: PROFILE_GAP + STORY_HEADER_DROP,
+            // 표지는 흰 면 경계에서 거꾸로 세운 자리(coverTop) — 프로필 줄 끝에서 그만큼 띄운다
+            marginTop: coverTop - STORY_HEADER_TOP - PROFILE_HEIGHT,
           }}
         >
           {cover ? (

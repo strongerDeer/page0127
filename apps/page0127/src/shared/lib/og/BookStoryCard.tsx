@@ -5,8 +5,8 @@ import {
   PANEL_RADIUS,
   STORY_CONTENT_WIDTH,
   STORY_GUTTER,
-  STORY_HEADER_DROP,
   STORY_HEADER_TOP,
+  STORY_PANEL_TOP,
   STORY_SAFE_Y,
   StoryFooter,
   StoryProfile,
@@ -17,10 +17,16 @@ import { wrapLines } from './wrapLines';
 /** 표지 한 장 (2:3) — 이미지의 주인공이다. 파란 면과 흰 면의 경계에 걸쳐 세운다 */
 const COVER = { width: 400, height: 600 } as const;
 /**
- * 파랑·흰 면의 경계 — 서재 스토리(StoryCard)보다 위다. 표지 아래쪽이 흰 면에 걸쳐
- * "책이 카드 위에 놓인" 모양이 되고, 아래 흰 면에 한줄평이 앉을 자리가 넉넉해진다.
+ * 파랑·흰 면의 경계 — 스토리 이미지 전부 같은 자리(STORY_PANEL_TOP). 표지 아래쪽이 흰 면에 걸쳐
+ * "책이 카드 위에 놓인" 모양이 된다.
  */
-const PANEL_TOP = 820;
+const PANEL_TOP = STORY_PANEL_TOP;
+/** 표지 아래쪽이 흰 면에 걸치는 비율 — 문장 카드(QuoteStoryCard)와 같다 */
+const COVER_OVERLAP = 0.32;
+/** 프로필 줄의 높이 — 사진(112px)이 줄의 높이를 정한다(StoryProfile) */
+const PROFILE_HEIGHT = 112;
+/** 표지 위치 — 흰 면 경계에서 거꾸로 세워 아래 32% 가 흰 면에 걸친다 */
+const COVER_TOP = Math.round(PANEL_TOP - COVER.height * (1 - COVER_OVERLAP));
 
 /**
  * 한줄평 글자 크기 — 짧으면 크게, 길면 작게 해서 더 많은 줄을 싣는다.
@@ -206,7 +212,7 @@ export const BookStoryCard = ({
           style={{
             display: 'flex',
             justifyContent: 'center',
-            marginTop: 64 + STORY_HEADER_DROP,
+            marginTop: COVER_TOP - STORY_HEADER_TOP - PROFILE_HEIGHT,
           }}
         >
           {cover ? (
