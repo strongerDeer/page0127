@@ -21,8 +21,10 @@ const SCAN_DIRS = ['src', 'app'];
 /** 클라이언트 번들에 들어가면 안 되는 import 경로 */
 const SERVER_ONLY_IMPORTS = [
   "from 'openai'",
+  "from '@anthropic-ai/sdk'",
+  "from '@/shared/lib/ai/claude'",
+  "from '@/shared/lib/ai/analysisStream'",
   "from '@/shared/lib/aiUsage'",
-  "from '@/shared/lib/openai/client'",
 ];
 
 const collectFiles = (dir: string): string[] => {
@@ -48,7 +50,7 @@ describe('클라이언트 컴포넌트의 서버 전용 import', () => {
     expect(clientFiles.length).toBeGreaterThan(0);
   });
 
-  it('openai·aiUsage 를 import 하지 않는다', () => {
+  it('AI SDK·aiUsage 를 import 하지 않는다', () => {
     const offenders = clientFiles
       .filter((file) => {
         const source = readFileSync(file, 'utf8');

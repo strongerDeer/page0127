@@ -1,4 +1,4 @@
-import { APIError } from 'openai';
+import { APIError } from '@anthropic-ai/sdk';
 
 import { MONTHLY_BUDGET_CENTS } from '@/shared/lib/admin/config';
 
@@ -6,7 +6,7 @@ import { MONTHLY_LIMIT } from './aiUsageMessages';
 
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-// 문구·한도 상수는 클라이언트 컴포넌트도 쓰므로 openai 를 import 하지 않는 파일에 따로 둔다.
+// 문구·한도 상수는 클라이언트 컴포넌트도 쓰므로 AI SDK 를 import 하지 않는 파일에 따로 둔다.
 // 여기서 그대로 꺼내 쓰던 서버 코드를 위해 다시 내보낸다.
 export {
   BUDGET_EXCEEDED_ERROR,
@@ -40,10 +40,10 @@ function getStartOfMonthKst(): Date {
 
 /**
  * 이번 달(KST 달력 기준 1일 00:00~) 사용 횟수를 세어 한도 초과 여부를 반환한다.
- * 실제 OpenAI 호출 직전에만 호출해야 한다 (캐시 히트·입력값 검증 통과 이후).
+ * 실제 AI 호출 직전에만 호출해야 한다 (캐시 히트·입력값 검증 통과 이후).
  *
  * DB 조회 오류 시 fail-closed: { allowed: false, remaining: 0 }을 반환해
- * OpenAI 호출을 차단한다 (사용량 제한 기능이 DB 장애로 무력화되는 것을 방지).
+ * AI 호출을 차단한다 (사용량 제한 기능이 DB 장애로 무력화되는 것을 방지).
  */
 export async function checkUsageLimit(
   supabase: SupabaseClient,
@@ -73,19 +73,19 @@ export async function checkUsageLimit(
 }
 
 /**
- * OpenAI 호출 "전에" 이번 달 슬롯 1건을 원자적으로 예약한다.
+ * AI 호출 "전에" 이번 달 슬롯 1건을 원자적으로 예약한다.
  *
  * reserve_ai_usage RPC가 카운트 확인 + 로그 insert를 한 트랜잭션에서 수행하고,
  * 같은 사용자+기능 동시 요청은 advisory lock으로 직렬화하므로 한도 초과 호출이
- * 원천 차단된다. (기존 checkUsageLimit → OpenAI → recordUsage 구조는 조회와
- * 기록 사이에 OpenAI가 끼어 동시 요청이 중복 호출될 수 있었다.)
+ * 원천 차단된다. (기존 checkUsageLimit → AI → recordUsage 구조는 조회와
+ * 기록 사이에 AI 호출이 끼어 동시 요청이 중복 호출될 수 있었다.)
  *
  * 반환:
  * - allowed: 예약 성공 여부 (false면 이번 달 한도 소진)
  * - remaining: 예약 반영 후 남은 횟수
  * - usageId: 예약된 로그 행 id (분석 실패 시 refund 대상). allowed=false면 null.
  *
- * RPC/조회 오류 시 fail-closed: { allowed: false } 로 OpenAI 호출을 차단한다.
+ * RPC/조회 오류 시 fail-closed: { allowed: false } 로 AI 호출을 차단한다.
  */
 /**
  * 이번 달(KST) 지금까지 쓴 금액을 USD 센트로 돌려준다.
@@ -149,7 +149,7 @@ export async function reserveUsage(
 
   if (error) {
     console.error('AI 사용량 예약 실패:', error);
-    // fail-closed: 예약 실패 시 OpenAI 호출 차단
+    // fail-closed: 예약 실패 시 AI 호출 차단
     return { allowed: false, remaining: 0, usageId: null, reason: 'error' };
   }
 
@@ -180,10 +180,10 @@ export async function reserveUsage(
 }
 
 /**
- * OpenAI가 "과금 없이" 요청을 반려했는지 판정한다.
+ * AI 제공자(Claude)가 "과금 없이" 요청을 반려했는지 판정한다.
  *
  * 4xx는 요청이 모델에 닿기 전에 반려된 것이라 토큰 비용이 발생하지 않는다.
- * (잘못된 API 키 401, 잔액 부족·요청 한도 429, 잘못된 파라미터 400 등)
+ * (잘못된 API 키 401, 크레딧 부족·요청 한도 429, 잘못된 파라미터 400 등)
  * 이런 실패까지 사용 횟수를 차감하면, 서비스 쪽 설정 실수의 대가를 사용자가
  * 월 한도로 치르게 된다.
  *
@@ -191,7 +191,7 @@ export async function reserveUsage(
  * 판정이 애매할 때는 "차감 유지" 쪽이 안전하다 — 잘못 환불하면 유료 호출을
  * 한도 없이 반복할 수 있기 때문이다.
  */
-export function isUnbilledOpenAiFailure(error: unknown): boolean {
+export function isUnbilledAiFailure(error: unknown): boolean {
   if (!(error instanceof APIError)) return false;
 
   const { status } = error;
@@ -202,7 +202,7 @@ export function isUnbilledOpenAiFailure(error: unknown): boolean {
 
 /**
  * 예약했던 슬롯 1건을 되돌린다.
- * (OpenAI 호출 시작 전 실패 또는 위 isUnbilledOpenAiFailure에 해당하는 실패)
+ * (AI 호출 시작 전 실패 또는 위 isUnbilledAiFailure에 해당하는 실패)
  *
  * ⚠️ 반드시 service-role(admin) 클라이언트로 호출해야 한다.
  *   일반 사용자에게 ai_usage_logs 삭제 권한을 열면, 자기 사용 기록을 지워

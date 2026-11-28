@@ -36,6 +36,7 @@ import { toast } from 'sonner';
 
 import { apiClient } from '@/shared/api/client';
 import { toastApiError } from '@/shared/api/demoReadOnly';
+import { postAnalysisStream } from '@/shared/api/postAnalysisStream';
 import {
   MONTHLY_LIMIT,
   USAGE_LIMIT_EXCEEDED_MESSAGE,
@@ -99,6 +100,8 @@ export const CompatibilityView = ({
 }: CompatibilityViewProps) => {
   const router = useRouter();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  // 서버 스트림이 알려 주는 전체 진행률(0~1) — 로딩 책장이 이만큼 찬다
+  const [progress, setProgress] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const hasEnoughBooks =
@@ -107,11 +110,13 @@ export const CompatibilityView = ({
 
   const runAnalysis = async (force: boolean) => {
     setIsAnalyzing(true);
+    setProgress(0);
     try {
-      await apiClient.post('/compatibility/analyze', {
-        targetUserId,
-        force,
-      });
+      await postAnalysisStream(
+        '/compatibility/analyze',
+        { targetUserId, force },
+        ({ progress: next }) => setProgress(next)
+      );
       toast.success('케미 분석이 완료되었습니다!');
       trackEvent('chemistry_run', { rerun: force });
       router.refresh();
@@ -137,7 +142,7 @@ export const CompatibilityView = ({
 
       {/* 분석 중에는 인트로·결과 대신 책장 로딩 화면 — 처음 분석이든 다시 분석이든 같다 */}
       {isAnalyzing ? (
-        <ChemistryLoading targetName={targetName} />
+        <ChemistryLoading targetName={targetName} progress={progress} />
       ) : analysis ? (
         <CompatibilityResult
           analysis={analysis}

@@ -4,7 +4,7 @@ import { createAdminClient } from '@/shared/config/supabase/admin';
 
 import type { AuthUser } from '@/shared/lib/auth/getVerifiedUser';
 
-// OpenAI를 호출하는 라우트 — 호출 자체가 비싸고 UI에도 재시도 유도가 없어 가장 엄격하게 제한
+// AI(Claude)를 호출하는 라우트 — 호출 자체가 비싸고 UI에도 재시도 유도가 없어 가장 엄격하게 제한
 const STRICT_PATHS = [
   '/api/taste-analysis/analyze',
   '/api/compatibility/analyze',

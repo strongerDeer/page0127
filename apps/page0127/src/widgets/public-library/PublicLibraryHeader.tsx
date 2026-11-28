@@ -19,8 +19,12 @@ import {
 import { ArrowRight, ChevronRight, Loader2, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { apiClient } from '@/shared/api/client';
 import { toastApiError } from '@/shared/api/demoReadOnly';
+import {
+  type AnalysisProgress,
+  postAnalysisStream,
+} from '@/shared/api/postAnalysisStream';
+import { ANALYSIS_STAGE_LABELS } from '@/shared/lib/ai/analysisEvents';
 import { USAGE_LIMIT_EXCEEDED_MESSAGE } from '@/shared/lib/aiUsageMessages';
 import { trackEvent } from '@/shared/lib/analytics/trackEvent';
 import { IntentPrefetchLink } from '@/shared/ui/IntentPrefetchLink';
@@ -94,6 +98,9 @@ export const PublicLibraryHeader = ({
   const [followersModalOpen, setFollowersModalOpen] = useState(false);
   const [followingModalOpen, setFollowingModalOpen] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  // 서버 스트림이 알려 주는 단계·전체 진행률 — 분석 중 화면의 막대와 문구
+  const [analysisProgress, setAnalysisProgress] =
+    useState<AnalysisProgress | null>(null);
   const [isAnalyzeDialogOpen, setIsAnalyzeDialogOpen] = useState(false);
   const displayName = profile.nickname || username;
 
@@ -137,7 +144,12 @@ export const PublicLibraryHeader = ({
     setIsAnalyzing(true);
 
     try {
-      await apiClient.post('/taste-analysis/analyze');
+      setAnalysisProgress(null);
+      await postAnalysisStream(
+        '/taste-analysis/analyze',
+        undefined,
+        setAnalysisProgress
+      );
       // 성공한 것만 센다 — 월 한도 초과나 실패는 "실행"이 아니다
       trackEvent('taste_analysis_run');
       toast.success('취향 분석이 완료되었습니다!');
@@ -166,7 +178,7 @@ export const PublicLibraryHeader = ({
     >
       {isAnalyzing && <Loader2 className='h-4 w-4 animate-spin' />}
       {isAnalyzing
-        ? '분석 중… (최대 1분)'
+        ? '분석 중…'
         : isTasteAnalysisUnlocked
           ? // 남은 횟수는 배너 설명 줄("이번 달 n번 남음")로 옮겼다
             analysisHistory.length > 0
@@ -467,10 +479,37 @@ export const PublicLibraryHeader = ({
       {isAnalyzing && (
         <div className='fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-background/80 backdrop-blur-sm'>
           <Loader2 className='h-10 w-10 animate-spin text-primary' />
-          <div className='text-center'>
+          <div className='w-full max-w-xs px-4 text-center'>
             <p className='text-lg font-medium'>취향을 분석하고 있어요~</p>
-            <p className='mt-1 text-sm text-muted-foreground'>
-              최대 1분 정도 걸려요. 이 화면을 벗어나지 말고 잠시만 기다려주세요.
+            {/* 진행률은 서버가 실시간으로 보낸다(AI 가 답을 얼마나 썼는지) */}
+            <div
+              role='progressbar'
+              aria-label='취향 분석 진행률'
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(
+                (analysisProgress?.progress ?? 0) * 100
+              )}
+              className='mt-4 h-2 w-full overflow-hidden rounded-full bg-line'
+            >
+              <div
+                className='h-full rounded-full bg-primary transition-[width] duration-500 ease-out motion-reduce:transition-none'
+                style={{
+                  width: `${Math.round((analysisProgress?.progress ?? 0) * 100)}%`,
+                }}
+              />
+            </div>
+            <p
+              role='status'
+              aria-live='polite'
+              className='mt-2 text-sm text-muted-foreground tabular-nums'
+            >
+              {analysisProgress
+                ? `${ANALYSIS_STAGE_LABELS[analysisProgress.stage]}… ${Math.round(analysisProgress.progress * 100)}%`
+                : '분석을 준비하는 중…'}
+            </p>
+            <p className='mt-1 text-xs text-muted-foreground'>
+              이 화면을 벗어나지 말고 잠시만 기다려주세요.
             </p>
           </div>
         </div>

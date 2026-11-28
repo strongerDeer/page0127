@@ -97,7 +97,7 @@ export type TasteAnalysis = {
   /** 분석에 사용된 책 권수 */
   analyzed_books_count: number;
 
-  /** 사용한 AI 모델 (예: "gpt-4o-mini") */
+  /** 사용한 AI 모델 (예: "claude-sonnet-5-5", 예전 분석은 "gpt-4o") */
   analysis_model: string;
 
   /** 분석 비용 (센트 단위) */

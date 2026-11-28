@@ -35,7 +35,7 @@ const ExternalLink = ({ href }: { href: string }) => (
  *    app/auth/callback/route.ts, entities/profile/model/identityDefaults.ts)
  * - 저장: Supabase(Postgres, Storage)
  * - 호스팅: Vercel
- * - AI 분석: OpenAI
+ * - AI 분석: Anthropic Claude API (2026-11-27 OpenAI 에서 옮김 — shared/lib/ai/claude.ts)
  * - 도서 정보: YES24 Open API
  * - 사용 통계: Google Analytics 4 (NEXT_PUBLIC_GA_ID 설정 시)
  * - 화면 이용 기록(히트맵·세션 녹화): Microsoft Clarity (NEXT_PUBLIC_CLARITY_ID 설정 시,
@@ -151,7 +151,7 @@ const PrivacyPage = () => {
                 <td className='py-2.5'>접속 기록</td>
               </tr>
               <tr className='border-b border-line-soft'>
-                <td className='py-2.5 pr-4'>OpenAI</td>
+                <td className='py-2.5 pr-4'>Anthropic</td>
                 <td className='py-2.5 pr-4'>독서 취향·케미 분석</td>
                 <td className='py-2.5'>
                   완독한 책의 제목·저자·분류·책 소개·목차와 별점
@@ -232,11 +232,11 @@ const PrivacyPage = () => {
             </thead>
             <tbody className='text-text-body'>
               <tr className='border-b border-line-soft'>
-                <td className='py-2.5 pr-4'>OpenAI (미국)</td>
+                <td className='py-2.5 pr-4'>Anthropic (미국)</td>
                 <td className='py-2.5 pr-4'>완독한 책의 정보와 별점</td>
                 <td className='py-2.5 pr-4'>독서 취향·케미 분석</td>
                 <td className='py-2.5'>
-                  <ExternalLink href='https://openai.com/policies/privacy-policy' />
+                  <ExternalLink href='https://www.anthropic.com/legal/privacy' />
                 </td>
               </tr>
               <tr className='border-b border-line-soft'>
@@ -295,8 +295,8 @@ const PrivacyPage = () => {
         <DocList
           items={[
             '언제, 어떻게 — 서비스를 이용할 때마다 암호화된 인터넷 통신으로 전송됩니다.',
-            '얼마나 보관 — 각 회사의 보관 정책에 따른 기간 동안 보관된 뒤 삭제됩니다. OpenAI는 API로 받은 내용을 학습에 쓰지 않고, 남용 감시를 위해 최대 30일 보관한 뒤 지웁니다.',
-            '거부하려면 — AI 분석을 쓰지 않으면 OpenAI로는, 알림을 끄면 푸시 서비스로는 아무것도 전송되지 않습니다. 나머지는 서비스 운영에 꼭 필요한 처리라 거부하려면 서비스 이용을 멈추고 탈퇴해야 합니다. 브라우저 설정으로 통계 쿠키는 막을 수 있습니다.',
+            '얼마나 보관 — 각 회사의 보관 정책에 따른 기간 동안 보관된 뒤 삭제됩니다. Anthropic은 API로 받은 내용을 학습에 쓰지 않고, 30일 안에 지웁니다(이용 정책 위반으로 확인된 내용은 더 오래 보관될 수 있습니다).',
+            '거부하려면 — AI 분석을 쓰지 않으면 Anthropic으로는, 알림을 끄면 푸시 서비스로는 아무것도 전송되지 않습니다. 나머지는 서비스 운영에 꼭 필요한 처리라 거부하려면 서비스 이용을 멈추고 탈퇴해야 합니다. 브라우저 설정으로 통계 쿠키는 막을 수 있습니다.',
           ]}
         />
       </DocSection>
