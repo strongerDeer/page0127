@@ -1,8 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { mapToMainCategory } from '@/shared/lib/categoryMapper';
 
-import { mapYes24Book, mapYes24ItemList, unwrapYes24Response } from './yes24';
+import {
+  mapYes24Book,
+  mapYes24ItemList,
+  unwrapYes24Response,
+  yes24Provider,
+} from './yes24';
 
 import type { Yes24Item } from '@/shared/types/yes24';
 
@@ -270,5 +275,36 @@ describe('unwrapYes24Response', () => {
         errorCode: null,
       })
     ).toThrow();
+  });
+});
+
+describe('yes24Provider.search', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it('결과 0건의 404 는 빈 목록 — 장애로 알리지 않는다(취향 분석 추천 책 검색)', async () => {
+    vi.stubEnv('YES24_API_KEY', 'test-key');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('', { status: 404 }))
+    );
+    expect(await yes24Provider.search('없는 책', { page: 2 })).toEqual({
+      items: [],
+      totalResults: 0,
+      page: 2,
+    });
+  });
+
+  it('500 은 그대로 던진다 — 진짜 장애는 알림이 가야 한다', async () => {
+    vi.stubEnv('YES24_API_KEY', 'test-key');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('', { status: 500 }))
+    );
+    await expect(yes24Provider.search('소년이 온다')).rejects.toThrow(
+      'YES24 API 오류: 500'
+    );
   });
 });
