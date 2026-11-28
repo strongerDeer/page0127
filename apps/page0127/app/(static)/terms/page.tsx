@@ -7,7 +7,8 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: '이용약관 | page0127.',
-  description: 'page0127.을 이용할 때의 약속을 안내합니다.',
+  description:
+    'page0127. 이용약관이에요. 계정, 내가 올린 기록의 권리, 하지 말아 주셨으면 하는 일, AI 분석, 서비스를 끝내야 할 때까지 서로 지킬 약속을 쉬운 말로 정리했어요.',
   alternates: { canonical: '/terms' },
 };
 

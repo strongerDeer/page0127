@@ -112,9 +112,13 @@ export const generateMetadata = async ({
     totalBooks > 0
       ? `${name}님이 기록한 책 ${totalBooks}권`
       : `${name}님이 막 책장을 열었어요`;
+  // 검색 결과 소개 문장 — 80~150자를 목표로 "여기서 무엇을 볼 수 있나"를 한 문장 덧붙인다
+  // (Bing "meta description too short" 2026-11-27, 예전엔 35~50자)
   const description = bio
-    ? `${bio} — ${shelfLine}`
-    : `${shelfLine}. 책장을 보면, 그 사람이 보입니다.`;
+    ? `${bio} — ${shelfLine}. 어떤 책을 읽어 왔는지 page0127. 책장에서 둘러보세요.`
+    : totalBooks > 0
+      ? `${shelfLine}이 꽂힌 책장이에요. 어떤 책을 읽어 왔는지, 어떤 독서 취향을 가졌는지 앱 설치 없이 링크 하나로 둘러보세요. 책장을 보면, 그 사람이 보입니다.`
+      : `${shelfLine}. 읽은 책이 한 권씩 꽂히면 이 책장에 쌓여요. page0127.에서는 앱 설치 없이 링크 하나로 누구의 책장이든 구경할 수 있어요.`;
 
   return {
     title,

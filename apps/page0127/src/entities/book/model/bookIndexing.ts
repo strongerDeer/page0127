@@ -82,5 +82,5 @@ export const buildBookMetaDescription = ({
   }
 
   const rating = ratingCount > 0 ? `, 평균 ★${avgRating.toFixed(1)}` : '';
-  return `${head} | 리더 ${readerCount}명이 읽은 책${rating}. page0127.에서 이 책을 읽은 사람들의 기록을 만나 보세요.`;
+  return `${head} | 리더 ${readerCount}명이 읽은 책${rating}. page0127.에서 이 책을 읽은 사람들의 별점과 기록, 남긴 문장을 만나 보고 내 책장에도 꽂아 보세요.`;
 };
