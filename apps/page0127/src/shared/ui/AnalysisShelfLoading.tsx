@@ -122,7 +122,7 @@ export const AnalysisShelfLoading = ({
                     {shelf.label}
                   </p>
                 )}
-                <div className='flex h-10 items-end justify-center gap-0.5 border-b-2 border-text-strong px-1'>
+                <div className='flex h-10 items-end justify-center gap-0.5 border-b-2 border-text-subtle/30 px-1'>
                   {shelf.heights.map((height, i) => {
                     const isVisible = i < visible;
                     const isLit = isVisible && litIndexes.has(i);
@@ -158,7 +158,7 @@ export const AnalysisShelfLoading = ({
                     );
                   })}
                   {/* 북엔드 — 책장 끝을 닫아 '여기까지 차면 끝'이 읽힌다 */}
-                  <span className='ml-1 h-[45%] w-1 rounded-t-[1px] bg-text-strong' />
+                  <span className='ml-1 h-[45%] w-1 rounded-t-[1px] bg-text-subtle/40' />
                 </div>
               </div>
             );
