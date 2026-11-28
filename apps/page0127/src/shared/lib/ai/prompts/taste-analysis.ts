@@ -3,7 +3,8 @@
  *
  * 학습 포인트:
  * - AI에게 명확한 역할과 작업 지시
- * - JSON 응답 형식 지정
+ * - 응답 모양은 프롬프트가 아니라 JSON 스키마(createTasteAnalysisSchema)가 정한다
+ * - 규칙마다 이유를 함께 적는다 — 최신 모델은 강조(⚠️·굵게)보다 이유를 알 때 더 잘 따른다
  * - 책 데이터를 구조화하여 전달
  */
 
@@ -67,6 +68,10 @@ export function createTasteAnalysisPrompt(
   const recentBooks = ratedBooks.filter((book) => book.period === 'recent');
   const lastingBooks = ratedBooks.filter((book) => book.period === 'lasting');
   const highRatedBooks = recentBooks.filter((book) => book.score >= 4);
+  // 3점대(3 이상 4 미만) — 전에는 두 칸 어디에도 안 들어가 분석에서 통째로 빠졌다(2026-11-28 HJ)
+  const middleRatedBooks = recentBooks.filter(
+    (book) => book.score >= 3 && book.score < 4
+  );
   const lowRatedBooks = recentBooks.filter((book) => book.score < 3);
 
   // 책 정보를 텍스트로 변환
@@ -90,7 +95,7 @@ ${formatBooks(lastingBooks)}
   const lastingGuide =
     lastingBooks.length > 0
       ? `
-- "오래 남은 책"은 오래 이어져 온 뿌리 취향을 확인하는 참고로만 쓰세요. 요즘 책과 결이 다르면 요즘 쪽을 따르고, 그 차이를 취향의 변화로 설명해도 좋습니다`
+- "오래 남은 책"은 오래 이어져 온 뿌리 취향을 확인하는 참고로만 써 주세요. 요즘 책과 결이 다르면 요즘 쪽을 따르고, 그 차이를 취향의 변화로 설명해도 좋아요`
       : '';
 
   // 타입 카탈로그를 "이름: 판단 기준" 목록으로 변환
@@ -98,103 +103,64 @@ ${formatBooks(lastingBooks)}
     .map((t) => `- "${t.name}": ${t.criteria}`)
     .join('\n');
 
-  return `당신은 독서 취향 분석 전문가입니다. 사용자의 독서 기록을 분석하여 깊이 있는 인사이트를 제공해주세요.
+  return `사용자의 독서 기록을 읽고, 본인도 미처 몰랐던 취향을 찾아 정리해 주세요.
 
 ## 분석 데이터
 
 ### 요즘 읽은 책 — 최근 완독한 순서
 
-#### 높은 점수를 준 책들 (${SCORE_MAX}점 만점 중 4점 이상, ${highRatedBooks.length}권):
+#### 높은 점수를 준 책 (${SCORE_MAX}점 만점 중 4점 이상, ${highRatedBooks.length}권)
 ${formatBooks(highRatedBooks)}
 
-#### 낮은 점수를 준 책들 (${SCORE_MAX}점 만점 중 3점 미만, ${lowRatedBooks.length}권):
+#### 보통이었던 책 (3점대, ${middleRatedBooks.length}권)
+${formatBooks(middleRatedBooks)}
+
+#### 낮은 점수를 준 책 (3점 미만, ${lowRatedBooks.length}권)
 ${formatBooks(lowRatedBooks)}
 ${lastingSection}
-## 분석 요청사항
+## 분석 방법
+- 성향 타입과 좋아하는 주제는 "요즘 읽은 책"을 중심으로 판단해 주세요. 지금의 취향을 보여 주는 게 목적이에요${lastingGuide}
+- "보통이었던 책"은 끝까지 읽었지만 마음에 깊이 남지는 않은 책이에요. 좋아하는 것과 피하는 것의 경계를 가늠하는 데 써 주세요
+- 책 소개와 목차에 담긴 의미를 읽고, 겉으로 드러나지 않는 패턴을 찾아 주세요. 권수나 분류를 세는 통계보다 사용자가 "맞아, 나 이런 사람이지" 하고 알아볼 만한 발견이 더 반가워요
+- 추천 이유는 사용자의 독서 패턴과 이어서 설명해 주세요
 
-다음 형식의 JSON으로 응답해주세요:
-
-{
-  "personality_type": "아래 [성향 타입 목록]에서 가장 잘 맞는 것 하나를 이름 그대로 사용",
-  "personality_description": "성향에 대한 깊이 있는 설명 (300-500자)",
-  "preference_profile": {
-    "liked": {
-      "topics": ["좋아하는 주제 5개"],
-      "styles": ["좋아하는 스타일 3개"],
-      "structures": ["좋아하는 구조 3개"]
-    },
-    "disliked": {
-      "topics": ["피하는 주제 3개"],
-      "styles": ["피하는 스타일 2개"],
-      "structures": ["피하는 구조 2개"]
-    },
-    "patterns": {
-      "page_count_preference": "선호 페이지 수 범위",
-      "author_type": "선호 저자 유형",
-      "publication_period": "선호 출판 시기"
-    }
-  },
-  "evidence": [
-    {
-      "book": "B3",
-      "reason": "이 책에서 읽어 낸 취향의 결 한 줄",
-      "topics": ["liked.topics 중 이 책이 근거가 된 주제"]
-    }
-    // ... 3~5권
-  ],
-  "recommendations": [
-    {
-      "type": "match",
-      "title": "책 제목 (실제 존재하는 한국 도서)",
-      "author": "저자명",
-      "reason": "추천 이유 (왜 이 책이 사용자의 취향에 맞는지 구체적으로 설명)",
-      "display_order": 1
-    }
-    // ... match ${recommendationsPerType}권, expand ${recommendationsPerType}권, challenge ${recommendationsPerType}권 (총 ${recommendationsPerType * 3}권)
-  ]
-}
-
-## 추천 도서 생성 지침 ⚠️ 매우 중요
-- **반드시 실제로 존재하는 한국 출판 도서**만 추천하세요
-- 제목과 저자를 정확하게 기재하세요 (오타 금지)
-- 각 타입별로 정확히 ${recommendationsPerType}권씩 추천 (총 ${recommendationsPerType * 3}권)
-  - type: "match" - 기존 취향에 완벽히 맞는 책
-  - type: "expand" - 비슷하지만 새로운 영역
-  - type: "challenge" - 전혀 다르지만 좋아할 만한 책
-- display_order는 각 타입 내에서 1부터 ${recommendationsPerType}까지
-- reason은 구체적이고 개인화된 추천 이유 (100-150자)
-- **실재 확인이 최우선**: 제목과 저자를 확실히 아는 책만 쓰세요.
-  조금이라도 확신이 없으면 그 자리를 확실히 아는 다른 책으로 바꾸세요.
-  추천한 책은 실제 서점 데이터로 대조하므로, 지어낸 제목은 그대로 탈락합니다.
-- **제목은 표지에 적힌 그대로**: 부제·시리즈명·번역서 원제를 임의로 덧붙이거나 줄이지 마세요.
-- 최신간을 억지로 고르지 마세요. 지금도 서점에서 구할 수 있는 책이면 출간 연도는 상관없습니다.
-
-## 근거 책(evidence) 지침 ⚠️ 매우 중요
-- 성향과 좋아하는 주제를 그렇게 판단한 **근거가 된 책 3~5권**을 고르세요
-- book 에는 위 분석 데이터에 적힌 **책 번호(예: "B3")를 그대로** 쓰세요. 목록에 없는 책은 쓰지 마세요
-- 가능하면 요즘 읽은 책 중 높은 점수를 준 책에서 고르세요
-- reason 은 그 책에서 읽어 낸 취향을 **40자 이내 한 줄**로, 명사형으로 끝내세요
-  (예: "일의 현장에서 바로 쓰는 실전 지식을 찾는 시선")
-- topics 에는 이 책이 근거가 된 주제를 liked.topics 에 쓴 이름 **그대로** 1~2개 넣으세요
-- 근거 책들이 liked.topics 의 주제를 고르게 덮도록 고르세요
-
-## 성향 타입 목록 ⚠️ 매우 중요
-personality_type은 반드시 아래 목록 중 하나를 **이름 그대로(글자 하나 바꾸지 말 것)** 선택하세요:
+## 성향 타입
+아래 목록에서 가장 잘 맞는 하나를 골라 주세요. 화면이 이 이름으로 그림과 설명을 찾기 때문에, 목록의 이름을 글자 그대로 써야 해요.
 ${personalityTypeList}
 
-## 분석 지침
-- **성향 타입과 좋아하는 주제는 "요즘 읽은 책"을 중심으로** 판단하세요. 지금의 취향을 보여 주는 게 목적입니다${lastingGuide}
-- 책 소개와 목차의 **의미**를 깊이 분석하여 숨겨진 패턴을 찾아주세요
-- 단순 통계가 아닌, 사용자가 모르는 자신의 취향을 발견하게 해주세요
-- 추천 이유는 사용자의 독서 패턴과 연결하여 설명하세요
+## 근거 책 (evidence)
+성향과 좋아하는 주제를 그렇게 판단한 근거가 된 책 3~5권을 골라 주세요. 결과 화면에 "이 책들을 보고 이렇게 읽었어요"로 표지와 함께 나가요.
+- book 에는 위 목록의 책 번호(예: "B3")를 그대로 써 주세요. 화면이 이 번호로 실제 책을 찾아서, 목록에 없는 번호는 버려져요
+- 가능하면 요즘 읽은 책 중 높은 점수를 준 책에서 골라 주세요
+- reason 은 그 책에서 읽어 낸 취향을 40자 안쪽 한 줄로, 명사형으로 끝내 주세요 (예: "일의 현장에서 바로 쓰는 실전 지식을 찾는 시선")
+- topics 에는 이 책이 근거가 된 주제를 liked.topics 에 쓴 이름 그대로 1~2개 넣어 주세요. 화면이 이름을 맞춰서 주제와 책을 이어 보여 줘요
+- 근거 책들이 liked.topics 의 주제를 고르게 덮도록 골라 주세요
 
-## 문체 지침
-- personality_description과 reason은 **부드러운 해요체**로 따뜻하게 말해주세요
-- ⚠️ **2인칭 "당신"을 쓰지 마세요.** 한국어 서비스에서 "당신"은 번역투로 읽힙니다.
-  주어를 생략하거나 "이 책장에는", "~하는 편이네요"처럼 자연스럽게 쓰세요.
+## 추천 도서 (recommendations)
+종류마다 ${recommendationsPerType}권씩, 모두 ${recommendationsPerType * 3}권을 추천해 주세요. display_order 는 종류 안에서 1부터 ${recommendationsPerType}까지예요.
+- match: 지금 취향에 꼭 맞는 책
+- expand: 결은 비슷하지만 새로운 영역으로 한 걸음 넓혀 주는 책
+- challenge: 평소와 전혀 다르지만 이 사람이라면 좋아할 만한 책
+
+추천한 책은 실제 서점 데이터와 대조하고, 찾지 못한 제목은 화면에서 빠져요. 그래서:
+- 제목과 저자를 확실히 아는, 지금 한국에서 구할 수 있는 책만 골라 주세요. 조금이라도 헷갈리면 확실히 아는 다른 책으로 바꿔 주세요
+- 제목은 표지에 적힌 그대로 써 주세요. 부제·시리즈명·원제를 덧붙이거나 줄이면 대조에 실패해요
+- 출간 연도는 상관없어요. 최신간을 억지로 고르지 않아도 돼요
+- reason 은 이 사람의 책장과 이어지는 구체적인 이유로 100~150자 정도 써 주세요
+
+## 문체
+- personality_description(300~500자)과 reason 은 부드러운 해요체로 따뜻하게 써 주세요
+- "당신"은 쓰지 말아 주세요. 한국어 화면에서는 번역투로 읽혀요. 주어를 빼거나 "이 책장에는", "~하는 편이네요"처럼 써 주세요
 - 예시 톤: "책장에 사람의 마음을 들여다보는 책이 많네요. 빠르게 많이 읽기보다, 좋았던 한 권을 오래 곱씹는 분입니다."
-- 평가하거나 단정하는 말투(~해야 합니다)보다 발견을 건네는 말투를 사용하세요`;
+- 평가하거나 단정하는 말투(~해야 합니다)보다 발견을 건네는 말투가 좋아요`;
 }
+
+/**
+ * 역할 설명(system) — 서비스와 결과가 어디에 나가는지 알려 준다.
+ * "전문가입니다" 같은 역할 이름보다, 누가 읽는 글인지 아는 편이 톤을 잘 맞춘다.
+ */
+export const TASTE_ANALYSIS_SYSTEM =
+  'page0127.은 읽은 책을 책장처럼 쌓아 두는 독서 기록 서비스예요. 사용자의 책장을 읽고 독서 취향을 정리해 주세요. 쓴 글은 사용자 본인이 보는 결과 화면에 그대로 나가요.';
 
 /** 스키마 조각 — 모든 객체는 additionalProperties: false·required 가 있어야 한다(structured outputs 규칙) */
 const strictObject = (properties: Record<string, unknown>) => ({
@@ -203,15 +169,23 @@ const strictObject = (properties: Record<string, unknown>) => ({
   required: Object.keys(properties),
   additionalProperties: false,
 });
-const stringArray = { type: 'array', items: { type: 'string' } };
-const likedOrDisliked = strictObject({
-  topics: stringArray,
-  styles: stringArray,
-  structures: stringArray,
+const stringArray = (description?: string) => ({
+  type: 'array',
+  items: { type: 'string' },
+  ...(description && { description }),
 });
+const text = (description: string) => ({ type: 'string', description });
+/** 좋아하는/피하는 주제·스타일·구조 — 권수는 화면 칸 수에 맞춘다 */
+const tasteAxes = (verb: string, [topics, styles, structures]: number[]) =>
+  strictObject({
+    topics: stringArray(`${verb} 주제 ${topics}개`),
+    styles: stringArray(`${verb} 문체·스타일 ${styles}개`),
+    structures: stringArray(`${verb} 책의 구성·구조 ${structures}개`),
+  });
 
 /**
- * 취향 분석 응답 JSON 스키마 — 위 프롬프트의 "다음 형식" 과 키·순서가 같아야 한다.
+ * 취향 분석 응답 JSON 스키마 — 응답 모양과 칸별 설명(description)은 여기가 단일 출처다.
+ * (예전엔 프롬프트에 JSON 예시를 따로 적었는데, 스키마가 모양을 강제하니 겹쳐서 뺐다)
  *
  * 키 순서가 곧 쓰는 순서다: 화면 진행률(estimateJsonProgress)이 이 순서로 이정표를 센다.
  * personality_type 을 enum 으로 묶어 카탈로그 밖 이름이 오지 않게 한다.
@@ -222,33 +196,42 @@ export function createTasteAnalysisSchema(
   personalityTypeNames: readonly string[]
 ): Record<string, unknown> {
   return strictObject({
-    personality_type: { type: 'string', enum: [...personalityTypeNames] },
-    personality_description: { type: 'string' },
+    personality_type: {
+      type: 'string',
+      enum: [...personalityTypeNames],
+      description: '성향 타입 목록에서 고른 이름',
+    },
+    personality_description: text('성향 설명, 해요체 300~500자'),
     preference_profile: strictObject({
-      liked: likedOrDisliked,
-      disliked: likedOrDisliked,
+      liked: tasteAxes('좋아하는', [5, 3, 3]),
+      disliked: tasteAxes('피하는', [3, 2, 2]),
       patterns: strictObject({
-        page_count_preference: { type: 'string' },
-        author_type: { type: 'string' },
-        publication_period: { type: 'string' },
+        page_count_preference: text('선호하는 쪽수 범위'),
+        author_type: text('선호하는 저자 유형'),
+        publication_period: text('선호하는 출판 시기'),
       }),
     }),
     evidence: {
       type: 'array',
+      description: '판단의 근거가 된 책 3~5권',
       items: strictObject({
-        book: { type: 'string' },
-        reason: { type: 'string' },
-        topics: stringArray,
+        book: text('분석 데이터의 책 번호 (예: "B3")'),
+        reason: text('이 책에서 읽어 낸 취향, 40자 안쪽 명사형 한 줄'),
+        topics: stringArray('liked.topics 에 쓴 이름 그대로 1~2개'),
       }),
     },
     recommendations: {
       type: 'array',
+      description: '종류마다 같은 권수씩 추천',
       items: strictObject({
         type: { type: 'string', enum: ['match', 'expand', 'challenge'] },
-        title: { type: 'string' },
-        author: { type: 'string' },
-        reason: { type: 'string' },
-        display_order: { type: 'integer' },
+        title: text('표지에 적힌 그대로의 제목'),
+        author: text('저자'),
+        reason: text('이 책장과 이어지는 추천 이유, 해요체 100~150자'),
+        display_order: {
+          type: 'integer',
+          description: '종류 안에서 1부터 매기는 순서',
+        },
       }),
     },
   });

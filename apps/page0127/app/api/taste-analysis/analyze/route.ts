@@ -14,6 +14,7 @@ import {
   createTasteAnalysisPrompt,
   createTasteAnalysisSchema,
   TASTE_ANALYSIS_PROGRESS,
+  TASTE_ANALYSIS_SYSTEM,
 } from '@/shared/lib/ai/prompts/taste-analysis';
 import {
   BUDGET_EXCEEDED_ERROR,
@@ -174,7 +175,7 @@ export async function POST(request: NextRequest) {
         usage,
         model,
       } = await streamClaudeJson<TasteAnalysisResponse>({
-        system: '당신은 독서 취향 분석 전문가입니다. JSON 형식으로 응답하세요.',
+        system: TASTE_ANALYSIS_SYSTEM,
         prompt,
         schema: createTasteAnalysisSchema(
           READING_PERSONALITY_TYPES.map((type) => type.name)

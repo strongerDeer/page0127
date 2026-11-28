@@ -38,10 +38,36 @@ describe('createTasteAnalysisPrompt — 근거 책', () => {
     expect(prompt).not.toContain('[B3]');
   });
 
-  it('evidence 형식과 지침을 요구한다', () => {
-    expect(prompt).toContain('"evidence"');
+  it('근거 책 지침을 이유와 함께 적는다', () => {
+    expect(prompt).toContain('## 근거 책 (evidence)');
     expect(prompt).toContain('책 번호(예: "B3")를 그대로');
-    expect(prompt).toContain('liked.topics 에 쓴 이름 **그대로**');
+    expect(prompt).toContain('liked.topics 에 쓴 이름 그대로');
+  });
+
+  it('응답 모양은 스키마가 정하니 프롬프트에 JSON 예시를 적지 않는다', () => {
+    expect(prompt).not.toContain('"personality_type":');
+    expect(prompt).not.toContain('⚠️');
+  });
+});
+
+describe('createTasteAnalysisPrompt — 점수 칸', () => {
+  const prompt = createTasteAnalysisPrompt(
+    [
+      book('B1', '좋은 책', 5),
+      book('B2', '보통 책', 3),
+      book('B3', '별로인 책', 1),
+    ],
+    [{ name: '이야기에 사는 사람', criteria: '소설 중심' }],
+    4
+  );
+
+  it('3점 책은 "보통이었던 책" 칸에 들어간다 — 전에는 분석에서 통째로 빠졌다', () => {
+    const middleAt = prompt.indexOf('#### 보통이었던 책');
+    const lowAt = prompt.indexOf('#### 낮은 점수를 준 책');
+    expect(middleAt).toBeGreaterThan(prompt.indexOf('#### 높은 점수를 준 책'));
+    expect(prompt.indexOf('[B2]')).toBeGreaterThan(middleAt);
+    expect(prompt.indexOf('[B2]')).toBeLessThan(lowAt);
+    expect(prompt.indexOf('[B3]')).toBeGreaterThan(lowAt);
   });
 });
 

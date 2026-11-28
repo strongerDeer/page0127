@@ -12,6 +12,7 @@ import {
 import {
   COMPATIBILITY_PROGRESS,
   COMPATIBILITY_SCHEMA,
+  COMPATIBILITY_SYSTEM,
   createCompatibilityPrompt,
 } from '@/shared/lib/ai/prompts/compatibility';
 import {
@@ -209,8 +210,7 @@ export async function POST(request: NextRequest) {
         usage,
         model,
       } = await streamClaudeJson<CompatibilityResponse>({
-        system:
-          '당신은 독서 케미(두 사람의 독서 취향이 얼마나 잘 맞는지) 분석 전문가입니다. JSON 형식으로 응답하세요.',
+        system: COMPATIBILITY_SYSTEM,
         prompt,
         schema: COMPATIBILITY_SCHEMA,
         onText: (snapshot) =>
