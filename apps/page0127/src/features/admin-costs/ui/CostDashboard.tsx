@@ -39,7 +39,8 @@ const FAILURE_NOTICE: Record<AiCostsFailure['kind'], string> = {
   error:
     'Anthropic 실제 청구액을 불러오지 못해 운영 앱 기록만 보여요. 실제 청구액은',
 };
-const CONSOLE_URL = 'https://platform.claude.com/';
+// 이번 달(month to date) 비용 화면 — 2026-11-28 HJ가 Console 주소창에서 확인
+const CONSOLE_URL = 'https://platform.claude.com/cost?range=mtd';
 
 export const CostDashboard = ({ summary, actual }: CostDashboardProps) => {
   const actualCents = actual.ok ? actual.costs.totalCents : null;

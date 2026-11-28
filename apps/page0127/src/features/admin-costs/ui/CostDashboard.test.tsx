@@ -67,7 +67,7 @@ describe('CostDashboard', () => {
     expect(html).toContain('운영 앱 기록');
     expect(html).toContain('$0.04');
     expect(html).toContain('로컬·테스트까지 합친 실제 청구액은');
-    expect(html).toContain('https://platform.claude.com/');
+    expect(html).toContain('https://platform.claude.com/cost?range=mtd');
     // 개인 계정은 관리자 키를 못 만든다 — 설정이 빠진 것처럼 읽히면 안 된다
     expect(html).not.toContain('ANTHROPIC_ADMIN_KEY');
     expect(html).not.toContain('실제 청구 (로컬·운영·테스트 합산)');
