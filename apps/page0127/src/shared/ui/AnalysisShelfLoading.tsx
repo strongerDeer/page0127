@@ -34,6 +34,33 @@ const SLOW_AFTER_SECONDS = 40;
 const SLOW_TEXT = '생각보다 오래 걸리고 있어요. 조금만 더 기다려 주세요';
 const TICK_MS = 500;
 
+/**
+ * 책등 장식(2026-11-28 HJ "책 디테일만 조금") — 두께와 무늬를 자리마다 고정 배열로 돌린다.
+ * 색은 그대로 두고 흰 반투명 선만 얹어서, 남색·파랑 어느 책등 위에서도 납작하게 보인다.
+ */
+const SPINE_WIDTHS = ['w-2', 'w-2.5', 'w-2', 'w-3', 'w-2', 'w-2.5', 'w-2'];
+type SpineMark = 'bands' | 'title' | 'dot' | 'none';
+const SPINE_MARKS: readonly SpineMark[] = ['bands', 'title', 'dot', 'bands', 'title', 'none', 'dot'];
+const MARK = 'absolute inset-x-0 h-px bg-white/55';
+
+const SpineDetail = ({ mark }: { mark: SpineMark }) => {
+  if (mark === 'none') return null;
+  return (
+    <>
+      {/* 위쪽 띠 — 양장본 머리띠 자리 */}
+      <i className={`${MARK} top-[12%]`} />
+      {mark === 'bands' && <i className={`${MARK} top-[18%]`} />}
+      {mark === 'title' && (
+        <i className='absolute inset-x-[25%] top-[30%] h-[30%] rounded-[1px] bg-white/45' />
+      )}
+      {mark === 'dot' && (
+        <i className='absolute bottom-[12%] left-1/2 size-0.5 -translate-x-1/2 rounded-full bg-white/70' />
+      )}
+      {mark !== 'dot' && <i className={`${MARK} bottom-[10%]`} />}
+    </>
+  );
+};
+
 type AnalysisShelfLoadingProps = {
   title: string;
   shelves: readonly AnalysisShelf[];
@@ -106,7 +133,8 @@ export const AnalysisShelfLoading = ({
                         key={i}
                         style={{ height: `${height}%` }}
                         className={[
-                          'w-2 origin-bottom-right rounded-t-[1px] transition-all duration-500 motion-reduce:transition-none',
+                          SPINE_WIDTHS[i % SPINE_WIDTHS.length],
+                          'relative overflow-hidden origin-bottom-right rounded-t-[1px] transition-all duration-500 motion-reduce:transition-none',
                           isLeaning && '-rotate-12',
                           // 브랜드 색만, 납작하게(2026-11-28 HJ): 남색 두 톤 + 결이 맞는 책만 파랑.
                           // 빈 자리는 옅은 윤곽만 — 남은 칸이 보여야 '얼마나 남았나'가 읽힌다
@@ -120,9 +148,17 @@ export const AnalysisShelfLoading = ({
                         ]
                           .filter(Boolean)
                           .join(' ')}
-                      />
+                      >
+                        {isVisible && (
+                          <SpineDetail
+                            mark={SPINE_MARKS[i % SPINE_MARKS.length] ?? 'none'}
+                          />
+                        )}
+                      </span>
                     );
                   })}
+                  {/* 북엔드 — 책장 끝을 닫아 '여기까지 차면 끝'이 읽힌다 */}
+                  <span className='ml-1 h-[45%] w-1 rounded-t-[1px] bg-text-strong' />
                 </div>
               </div>
             );
