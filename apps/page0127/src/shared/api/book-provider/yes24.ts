@@ -189,10 +189,14 @@ export const yes24Provider: BookProvider = {
     });
 
     // 같은 검색어+페이지 조합은 1시간 캐시 (일 20,000건 한도를 아낀다)
-    const data = await callYes24(SEARCH_URL, params, 3600);
+    // 검색 결과가 0건이어도 404 가 온다(2026-11-28, 취향 분석 추천 책 검색에서 Sentry 알림).
+    // ISBN 조회와 같이 "그런 책이 없다" 로 보고 빈 목록을 돌려준다 — 500·429 는 그대로 던진다.
+    const data = await callYes24(SEARCH_URL, params, 3600, {
+      notFoundAsNull: true,
+    });
 
-    // 검색에는 notFoundAsNull 을 쓰지 않으므로 null 이 올 수 없다
-    return mapYes24ItemList(data!);
+    if (!data) return { items: [], totalResults: 0, page };
+    return mapYes24ItemList(data);
   },
 
   getByIsbn: async (isbn) => {
