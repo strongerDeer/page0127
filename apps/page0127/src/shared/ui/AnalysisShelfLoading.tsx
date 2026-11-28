@@ -95,23 +95,31 @@ export const AnalysisShelfLoading = ({
                     {shelf.label}
                   </p>
                 )}
-                <div className='flex h-10 items-end justify-center gap-0.5 border-b-2 border-line px-1'>
+                <div className='flex h-10 items-end justify-center gap-0.5 border-b-2 border-text-strong px-1'>
                   {shelf.heights.map((height, i) => {
                     const isVisible = i < visible;
                     const isLit = isVisible && litIndexes.has(i);
+                    // 막 꽂은 책은 살짝 기대 세운다 — '지금 꽂는 중'. 다 차면 바로 세운다
+                    const isLeaning = i === visible - 1 && visible < count;
                     return (
                       <span
                         key={i}
                         style={{ height: `${height}%` }}
                         className={[
-                          'w-2 rounded-t-[1px] transition-all duration-500 motion-reduce:transition-none',
+                          'w-2 origin-bottom-right rounded-t-[1px] transition-all duration-500 motion-reduce:transition-none',
+                          isLeaning && '-rotate-12',
+                          // 브랜드 색만, 납작하게(2026-11-28 HJ): 남색 두 톤 + 결이 맞는 책만 파랑.
                           // 빈 자리는 옅은 윤곽만 — 남은 칸이 보여야 '얼마나 남았나'가 읽힌다
                           isVisible
                             ? isLit
                               ? 'bg-primary'
-                              : 'bg-text-subtle/35'
+                              : i % 2
+                                ? 'bg-text-subtle/70'
+                                : 'bg-text-subtle/40'
                             : 'border border-dashed border-line',
-                        ].join(' ')}
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
                       />
                     );
                   })}
