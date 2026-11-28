@@ -57,7 +57,7 @@ describe('CostDashboard', () => {
     expect(html).toContain('2026-10-25');
   });
 
-  it('관리자 키가 없으면 앱 기록만, 무엇이 빠졌는지 알린다', () => {
+  it('관리자 키가 없으면 앱 기록이라고만 알리고 실제 청구는 Console 로 안내한다', () => {
     const html = renderToStaticMarkup(
       <CostDashboard
         summary={summary}
@@ -66,18 +66,21 @@ describe('CostDashboard', () => {
     );
     expect(html).toContain('운영 앱 기록');
     expect(html).toContain('$0.04');
-    expect(html).toContain('ANTHROPIC_ADMIN_KEY');
-    expect(html).toContain('로컬·테스트 비용은 빠져 있어요');
+    expect(html).toContain('로컬·테스트까지 합친 실제 청구액은');
+    expect(html).toContain('https://platform.claude.com/');
+    // 개인 계정은 관리자 키를 못 만든다 — 설정이 빠진 것처럼 읽히면 안 된다
+    expect(html).not.toContain('ANTHROPIC_ADMIN_KEY');
     expect(html).not.toContain('실제 청구 (로컬·운영·테스트 합산)');
   });
 
-  it('권한 오류면 키를 다시 확인하라고 — 일반 키를 넣은 경우', () => {
+  it('권한 오류도 같은 안내 — 개인 계정 키는 비용 API 권한이 없다', () => {
     const html = renderToStaticMarkup(
       <CostDashboard
         summary={summary}
         actual={{ ok: false, failure: { kind: 'forbidden' } }}
       />
     );
-    expect(html).toContain('관리자 키(sk-ant-admin-)인지');
+    expect(html).toContain('로컬·테스트까지 합친 실제 청구액은');
+    expect(html).not.toContain('sk-ant-admin');
   });
 });
