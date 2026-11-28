@@ -107,3 +107,29 @@ describe('createTasteAnalysisPrompt — 요즘 읽은 책 / 오래 남은 책', 
     expect(prompt).not.toContain('뿌리 취향');
   });
 });
+
+describe('createTasteAnalysisPrompt — 이미 책장에 있는 책', () => {
+  const types = [{ name: '이야기에 사는 사람', criteria: '소설 중심' }];
+
+  it('분석 목록 밖의 책장 책을 제목으로 알려 주고 추천하지 말라고 한다', () => {
+    const prompt = createTasteAnalysisPrompt(
+      [book('B1', '모순', 5)],
+      types,
+      4,
+      ['소년이 온다 - 한강', '채식주의자 - 한강']
+    );
+    expect(prompt).toContain('이미 책장에 있는 그 밖의 책 (2권, 추천 제외용)');
+    expect(prompt).toContain('소년이 온다 - 한강 / 채식주의자 - 한강');
+    expect(prompt).toContain(
+      '이미 읽었거나 책장에 담아 둔 책은 추천하지 말아 주세요'
+    );
+  });
+
+  it('그 밖의 책이 없어도 분석 목록의 책은 추천하지 말라고 한다', () => {
+    const prompt = createTasteAnalysisPrompt([book('B1', '모순', 5)], types, 4);
+    expect(prompt).not.toContain('이미 책장에 있는 그 밖의 책');
+    expect(prompt).toContain(
+      '이미 읽었거나 책장에 담아 둔 책은 추천하지 말아 주세요'
+    );
+  });
+});

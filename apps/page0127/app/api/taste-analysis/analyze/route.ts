@@ -165,7 +165,12 @@ export async function POST(request: NextRequest) {
           toc: book.toc,
         })),
         READING_PERSONALITY_TYPES,
-        RECOMMENDATIONS_REQUEST_COUNT
+        RECOMMENDATIONS_REQUEST_COUNT,
+        await loadOtherShelfBooks(
+          supabase,
+          user.id,
+          books.map((book) => book.id)
+        )
       );
 
       send({ type: 'stage', stage: 'analyzing' });
@@ -380,6 +385,37 @@ async function selectBooksForAnalysis(
   if (lastingError) return { error: lastingError };
 
   return { recentBooks, lastingBooks: (lasting ?? []) as Book[] };
+}
+
+/** 추천 제외용으로 AI에게 넘기는 책장 책 수 상한 — 제목만이라 400권이면 수천 토큰 */
+const OTHER_SHELF_BOOKS_LIMIT = 400;
+
+/**
+ * 분석 목록에 없는 나머지 책장 책(읽은 책·읽는 중·읽고 싶은 책) — "제목 - 저자".
+ * AI가 이미 가진 책을 추천하지 않게 프롬프트에 넣는다. 읽기 실패면 빈 목록으로 진행한다.
+ */
+async function loadOtherShelfBooks(
+  supabase: SupabaseClient,
+  userId: string,
+  analyzedBookIds: string[]
+): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('books')
+    .select('id, title, author')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(OTHER_SHELF_BOOKS_LIMIT + analyzedBookIds.length);
+  if (error) {
+    console.warn('책장 목록 조회 실패 — 읽은 책 목록 없이 분석:', error);
+    return [];
+  }
+  const analyzed = new Set(analyzedBookIds);
+  return (data ?? [])
+    .filter((book) => !analyzed.has(book.id) && book.title)
+    .slice(0, OTHER_SHELF_BOOKS_LIMIT)
+    .map((book) =>
+      book.author ? `${book.title} - ${book.author}` : book.title
+    );
 }
 
 /**
