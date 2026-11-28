@@ -52,7 +52,7 @@ export const generateMetadata = async (props: {
   return {
     title: '전체 도서 | page0127.',
     description:
-      'page0127.에 기록된 책을 한눈에 둘러보세요. 누가 이 책을 읽었고 어떤 문장을 남겼는지 볼 수 있어요.',
+      'page0127.에 기록된 책을 최신순·제목순으로 한눈에 둘러보세요. 책마다 누가 읽었고 어떤 문장을 남겼는지 볼 수 있고, 마음에 드는 책은 내 책장에 꽂아 둘 수 있어요.',
     alternates: { canonical },
     openGraph: {
       title: '전체 도서 | page0127.',

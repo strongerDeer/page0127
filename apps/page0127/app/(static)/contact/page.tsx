@@ -6,7 +6,7 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: '문의 | page0127.',
   description:
-    'page0127. 이용 중 궁금하거나 불편한 점을 카카오톡으로 편하게 문의하세요.',
+    'page0127.을 쓰다가 궁금하거나 불편한 점, 고쳤으면 하는 점이 있으면 카카오톡으로 편하게 남겨 주세요. 혼자 만드는 서비스라 답이 조금 늦을 수 있어요.',
   alternates: { canonical: '/contact' },
 };
 

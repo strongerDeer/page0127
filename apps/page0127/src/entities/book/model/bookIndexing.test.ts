@@ -48,7 +48,7 @@ describe('buildBookMetaDescription', () => {
         ratingCount: 2,
       })
     ).toBe(
-      '불편한 편의점 - 김호연 | 리더 3명이 읽은 책, 평균 ★4.3. page0127.에서 이 책을 읽은 사람들의 기록을 만나 보세요.'
+      '불편한 편의점 - 김호연 | 리더 3명이 읽은 책, 평균 ★4.3. page0127.에서 이 책을 읽은 사람들의 별점과 기록, 남긴 문장을 만나 보고 내 책장에도 꽂아 보세요.'
     );
   });
 
@@ -62,7 +62,7 @@ describe('buildBookMetaDescription', () => {
         ratingCount: 0,
       })
     ).toBe(
-      '책 | 리더 1명이 읽은 책. page0127.에서 이 책을 읽은 사람들의 기록을 만나 보세요.'
+      '책 | 리더 1명이 읽은 책. page0127.에서 이 책을 읽은 사람들의 별점과 기록, 남긴 문장을 만나 보고 내 책장에도 꽂아 보세요.'
     );
     expect(
       buildBookMetaDescription({
