@@ -172,6 +172,34 @@ export const ShareSheetButton = ({
     typeof navigator !== 'undefined' &&
     Boolean(navigator.canShare?.({ files: [image.file] }));
 
+  /**
+   * 이미지를 파일로 내려받는다.
+   * 맥 사파리·크롬처럼 파일 공유가 "되는" 데스크톱에선 공유 버튼만 있으면 저장할 길이 없었다 →
+   * 공유 버튼과 별개로 항상 부를 수 있게 따로 뺐다.
+   */
+  const downloadImage = (method: 'image_download' | 'image_save') => {
+    if (image.status !== 'ready') return;
+    try {
+      const link = document.createElement('a');
+      link.href = image.url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      try {
+        link.click();
+      } finally {
+        link.remove();
+      }
+      trackEvent('share_click', { method, path: trackPath });
+      toast.success(
+        method === 'image_save'
+          ? '이미지를 저장했어요.'
+          : '이미지를 저장했어요. 저장한 이미지를 공유해 주세요.'
+      );
+    } catch {
+      toast.error('이미지를 저장하지 못했어요. 링크로 공유해 주세요.');
+    }
+  };
+
   const handleImage = async () => {
     if (image.status !== 'ready' || isSharing) return;
     setIsSharing(true);
@@ -194,22 +222,8 @@ export const ShareSheetButton = ({
         }
       }
 
-      const link = document.createElement('a');
-      link.href = image.url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      try {
-        link.click();
-      } finally {
-        link.remove();
-      }
-      trackEvent('share_click', {
-        method: 'image_download',
-        path: trackPath,
-      });
-      toast.success('이미지를 저장했어요. 저장한 이미지를 공유해 주세요.');
-    } catch {
-      toast.error('이미지를 저장하지 못했어요. 링크로 공유해 주세요.');
+      // 파일 공유를 못 하는 곳(대부분의 데스크톱)·공유가 실패한 곳은 저장으로 떨어진다
+      downloadImage('image_download');
     } finally {
       setIsSharing(false);
     }
@@ -302,6 +316,18 @@ export const ShareSheetButton = ({
                 </>
               )}
             </Button>
+            {/* 공유가 되는 기기에도 저장 버튼을 따로 — 맥에서는 공유 창만 뜨고 저장할 길이 없었다.
+                공유가 안 되는 기기는 위 버튼이 이미 "이미지 저장하기"라 겹치지 않게 그리지 않는다 */}
+            {canShareFile && (
+              <Button
+                variant='outline'
+                onClick={() => downloadImage('image_save')}
+                className='w-full gap-2 shadow-none'
+              >
+                <Download aria-hidden='true' className='h-4 w-4' />
+                이미지 저장
+              </Button>
+            )}
             {path && (
               <ShareButton
                 path={path}
