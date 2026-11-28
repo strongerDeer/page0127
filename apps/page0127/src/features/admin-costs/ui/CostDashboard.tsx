@@ -25,15 +25,21 @@ type CostDashboardProps = {
   actual: AiCostsResult;
 };
 
-/** 실제 청구액을 못 읽었을 때, 화면의 숫자에서 무엇이 빠졌는지 한 줄로 */
+/**
+ * 실제 청구액을 못 읽었을 때, 화면의 숫자에서 무엇이 빠졌는지 한 줄로.
+ *
+ * 키 없음·권한 없음은 고장이 아니다 — 개인 Console 계정은 Admin API 를 쓸 수 없어서
+ * (2026-11-28 확인, 서비스 계정 키도 forbidden) 앞으로도 이 상태가 기본이다.
+ * 그래서 "설정이 빠졌다"가 아니라 "실제 청구는 Console 에서"로 안내한다.
+ */
+const CONSOLE_NOTICE = '운영 앱 기록이에요. 로컬·테스트까지 합친 실제 청구액은';
 const FAILURE_NOTICE: Record<AiCostsFailure['kind'], string> = {
-  'no-key':
-    'Anthropic 관리자 키(ANTHROPIC_ADMIN_KEY)가 없어 운영 앱 기록만 보여요. 로컬·테스트 비용은 빠져 있어요.',
-  forbidden:
-    'Anthropic 실제 청구액을 읽을 권한이 없어요. ANTHROPIC_ADMIN_KEY 가 관리자 키(sk-ant-admin-)인지 확인해 주세요. 로컬·테스트 비용은 빠져 있어요.',
+  'no-key': CONSOLE_NOTICE,
+  forbidden: CONSOLE_NOTICE,
   error:
-    'Anthropic 실제 청구액을 불러오지 못해 운영 앱 기록만 보여요. 로컬·테스트 비용은 빠져 있어요.',
+    'Anthropic 실제 청구액을 불러오지 못해 운영 앱 기록만 보여요. 실제 청구액은',
 };
+const CONSOLE_URL = 'https://platform.claude.com/';
 
 export const CostDashboard = ({ summary, actual }: CostDashboardProps) => {
   const actualCents = actual.ok ? actual.costs.totalCents : null;
@@ -118,9 +124,22 @@ export const CostDashboard = ({ summary, actual }: CostDashboardProps) => {
           </span>
         </p>
         <p className='mt-2 text-xs text-text-subtle'>
-          {actual.ok
-            ? `운영 앱 기록 ${formatUsd(summary.monthTotalCents / 100)} · 그 밖(로컬·테스트 등) ${formatUsd(otherCents / 100)}. 실제 청구는 반영이 몇 시간 늦을 수 있어 앱 기록보다 작으면 앱 기록으로 계산해요.`
-            : FAILURE_NOTICE[actual.failure.kind]}
+          {actual.ok ? (
+            `운영 앱 기록 ${formatUsd(summary.monthTotalCents / 100)} · 그 밖(로컬·테스트 등) ${formatUsd(otherCents / 100)}. 실제 청구는 반영이 몇 시간 늦을 수 있어 앱 기록보다 작으면 앱 기록으로 계산해요.`
+          ) : (
+            <>
+              {FAILURE_NOTICE[actual.failure.kind]}{' '}
+              <a
+                href={CONSOLE_URL}
+                target='_blank'
+                rel='noreferrer'
+                className='underline underline-offset-2'
+              >
+                Claude Console → 비용
+              </a>
+              에서 볼 수 있어요.
+            </>
+          )}
         </p>
       </section>
 
