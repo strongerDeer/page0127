@@ -1,5 +1,11 @@
 import { toQuoteLines } from './QuoteStoryCard';
-import { STORY_GUTTER, STORY_SAFE_Y, StoryFooter } from './StoryCard';
+import {
+  STORY_GUTTER,
+  STORY_HEADER_DROP,
+  STORY_HEADER_TOP,
+  STORY_SAFE_Y,
+  StoryFooter,
+} from './StoryCard';
 import { truncate } from './theme';
 
 /**
@@ -121,7 +127,7 @@ export const SentenceStoryCard = ({
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
-        padding: `${STORY_SAFE_Y}px ${STORY_GUTTER}px ${STORY_SAFE_Y}px`,
+        padding: `${STORY_HEADER_TOP}px ${STORY_GUTTER}px ${STORY_SAFE_Y}px`,
         background: SENTENCE_COLORS.page,
         color: SENTENCE_COLORS.ink,
       }}
@@ -151,6 +157,8 @@ export const SentenceStoryCard = ({
           alignItems: 'center',
           justifyContent: 'center',
           flex: 1,
+          // 머리글만 위로 올렸다 — 본문 가운데 자리는 그대로
+          paddingTop: STORY_HEADER_DROP,
           textAlign: 'center',
         }}
       >

@@ -17,6 +17,20 @@ export type { StoryShelfItem } from './storyShelfLayout';
  * 중요한 것은 이 둘 사이에만 둔다(인스타 권장 안전 영역 ≈ 위아래 250px).
  */
 export const STORY_SAFE_Y = 250;
+/**
+ * 피드(4:5)로 올릴 때 가운데 1080×1350 만 남는다 — 위아래 285px 씩 잘린다.
+ * 프로필 줄·맨 아래 한 줄(STORY_FOOTER)은 잘려도 괜찮지만(HJ 11/28), 본문(책장·숫자·근거 책)은
+ * 이 칸 안에서 숨 쉴 틈(40px)을 두고 끝나야 한다 → 아래로 붙는 본문은 STORY_CONTENT_BOTTOM 위에서 끝낸다.
+ */
+export const FEED_CROP_Y = (STORY_SIZE.height - (STORY_SIZE.width * 5) / 4) / 2;
+export const STORY_CONTENT_BOTTOM = FEED_CROP_Y + 40;
+/**
+ * 맨 위 머리줄(프로필·"오늘의 문장"·"연말 선물")의 위치 — 4:5 로 자르는 선(285)에 반쯤 걸리면
+ * 이름이 잘려 보였다(HJ 11/28) → 잘리는 칸 안으로 통째로 올린다(프로필 112px 이 262 에서 끝난다).
+ * 본문 자리는 그대로 두려고, 머리줄 바로 다음 요소에 STORY_HEADER_DROP 만큼 간격을 더한다.
+ */
+export const STORY_HEADER_TOP = 150;
+export const STORY_HEADER_DROP = STORY_SAFE_Y - STORY_HEADER_TOP;
 export const STORY_GUTTER = 88;
 export const STORY_CONTENT_WIDTH = STORY_SIZE.width - STORY_GUTTER * 2;
 const CONTENT_WIDTH = STORY_CONTENT_WIDTH;
@@ -49,10 +63,14 @@ const FEW_COVER_SIZE: Record<number, { width: number; height: number }> = {
 /** 흰 면 위로 올라온 카드의 둥근 위 모서리 */
 export const PANEL_RADIUS = 56;
 /**
- * 파랑·흰 면의 경계 — 고정이다. 성향 이름이 한 줄이든 두 줄이든 경계가 같은 자리에 서야
- * 누구의 서재든 같은 틀로 읽힌다. 위 면에서 가장 긴 경우(이름 두 줄 + 태그)가 ≈800px 에서 끝난다.
+ * 파랑·흰 면의 경계 — **스토리 이미지 전부 같은 자리**(서재·목표·책 기록·문장·케미·취향).
+ * 예전엔 카드마다 780~900 으로 달라 나란히 보면 뒤죽박죽이었다(HJ 11/28).
+ * 위 면에서 가장 긴 경우(서재: 라벨 + 이름 두 줄 + 태그)가 ≈745px 에서 끝난다.
  */
-const PANEL_TOP = 900;
+export const STORY_PANEL_TOP = 820;
+const PANEL_TOP = STORY_PANEL_TOP;
+/** 머리줄(프로필) 아래 첫 요소(라벨·제목)까지 — 머리줄을 올린 만큼 벌리되, 흰 면 경계와 겹치지 않게 */
+export const STORY_HEADLINE_GAP = 104;
 
 /**
  * 책등 이미지가 없는 책의 색 — 흰 면 위라 흰색은 쓰지 않는다. 남색·브랜드 파랑·옅은 파랑을 번갈아 세운다
@@ -424,7 +442,7 @@ export const StoryCard = ({
           flexDirection: 'column',
           flexShrink: 0,
           height: PANEL_TOP + PANEL_RADIUS,
-          padding: `${STORY_SAFE_Y}px ${STORY_GUTTER}px 0`,
+          padding: `${STORY_HEADER_TOP}px ${STORY_GUTTER}px 0`,
           color: '#ffffff',
         }}
       >
@@ -433,7 +451,7 @@ export const StoryCard = ({
 
         {/* 라벨은 흰 칩 — 성향 색은 대부분 파란 계열이라 파란 바탕에 점만 두면 속 빈 테두리로 보인다 */}
         {label && (
-          <div style={{ display: 'flex', marginTop: 64 }}>
+          <div style={{ display: 'flex', marginTop: STORY_HEADLINE_GAP }}>
             <div
               style={{
                 display: 'flex',
@@ -467,7 +485,7 @@ export const StoryCard = ({
           style={{
             display: 'flex',
             flexDirection: 'column',
-            marginTop: label ? 24 : 64,
+            marginTop: label ? 24 : STORY_HEADLINE_GAP,
             fontSize: headlineSize,
             fontWeight: 800,
             lineHeight: 1.18,
@@ -506,7 +524,7 @@ export const StoryCard = ({
       {/*
         아래 — 흰 면. 위 모서리를 둥글게 해 파란 무대 위로 올라온 카드처럼.
         책장과 권수는 한 덩어리(책장 + 캡션)라 둘 다 가운데 — 책만 가운데고 숫자가 왼쪽이면 어긋나 보인다.
-        세로도 가운데: 아래 250px(인스타 답장창 자리)을 뺀 남은 칸의 한가운데
+        세로도 가운데: 아래 STORY_CONTENT_BOTTOM(피드 4:5 로 잘리는 자리 + 틈)을 뺀 남은 칸의 한가운데
       */}
       <div
         style={{
@@ -516,7 +534,7 @@ export const StoryCard = ({
           alignItems: 'center',
           flex: 1,
           marginTop: -PANEL_RADIUS,
-          padding: `64px ${STORY_GUTTER}px ${STORY_SAFE_Y}px`,
+          padding: `64px ${STORY_GUTTER}px ${STORY_CONTENT_BOTTOM}px`,
           borderTopLeftRadius: PANEL_RADIUS,
           borderTopRightRadius: PANEL_RADIUS,
           background: OG_COLORS.paper,
@@ -552,7 +570,7 @@ export const StoryCard = ({
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              marginTop: 56,
+              marginTop: 40,
             }}
           >
             <div
@@ -569,7 +587,7 @@ export const StoryCard = ({
               <div
                 style={{
                   display: 'flex',
-                  fontSize: 140,
+                  fontSize: 120,
                   fontWeight: 800,
                   lineHeight: 1,
                   letterSpacing: -4,

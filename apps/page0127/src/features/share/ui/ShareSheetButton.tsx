@@ -102,18 +102,18 @@ const ImageLoading = ({ messages }: { messages: LoadingMessages }) => {
 
 type ImageState =
   | { status: 'loading' }
-  | { status: 'ready'; file: File; url: string }
+  | { status: 'ready'; url: string }
   | { status: 'error' };
 
 /**
- * 공유 버튼 하나 → 작은 공유 시트(미리보기 · 이미지 공유 · 링크 공유).
+ * 공유 버튼 하나 → 작은 공유 시트(미리보기 · 이미지 저장 · 링크 공유).
  *
  * 학습 포인트:
- * - 플랫폼별 버튼(인스타·카톡)을 두지 않는다. 어느 앱으로 보낼지는 휴대폰 공유 시트가 정한다.
- * - 이미지는 **시트가 열릴 때 미리 받는다.** iOS 사파리는 navigator.share 를 "누른 직후"에만
- *   허락한다(transient activation). 누른 뒤에 이미지를 받으면 그 사이 허락이 사라져
- *   NotAllowedError 가 난다. 그래서 버튼을 누르는 순간엔 파일이 이미 손에 있어야 한다.
- * - 파일 공유를 못 하는 곳(대부분의 데스크톱)은 저장(다운로드)으로 떨어진다.
+ * - 플랫폼별 버튼(인스타·카톡)을 두지 않는다. 링크는 휴대폰 공유 시트가 보낼 앱을 정한다.
+ * - 이미지는 **저장(다운로드)만** 한다. 예전엔 navigator.share 로 파일을 보냈는데,
+ *   맥에선 저장할 길이 없었고 공유 → 붙여넣기 하면 이미지가 두 장 붙었다(2026-11-28 HJ).
+ *   저장한 그림을 사용자가 원하는 곳에 직접 올리는 쪽이 예측 가능하다.
+ * - 이미지는 **시트가 열릴 때 미리 받는다.** 미리보기도 보여 주고, 누르면 기다림 없이 바로 저장된다.
  */
 export const ShareSheetButton = ({
   path,
@@ -126,14 +126,13 @@ export const ShareSheetButton = ({
   triggerClassName,
   prominent = false,
   compact = false,
-  description = '이미지는 스토리·게시물에, 링크는 메시지로 보내기 좋아요.',
+  description = '이미지는 저장해서 스토리·게시물에, 링크는 메시지로 보내기 좋아요.',
   renderTrigger,
 }: ShareSheetButtonProps) => {
   // 지표의 path — 링크가 없는 공유(문장 카드)는 이미지 경로로 센다
   const trackPath = path ?? imagePath;
   const [open, setOpen] = useState(false);
   const [image, setImage] = useState<ImageState>({ status: 'loading' });
-  const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -148,11 +147,7 @@ export const ShareSheetButton = ({
         if (!res.ok) throw new Error(String(res.status));
         const blob = await res.blob();
         objectUrl = URL.createObjectURL(blob);
-        setImage({
-          status: 'ready',
-          file: new File([blob], fileName, { type: blob.type || 'image/png' }),
-          url: objectUrl,
-        });
+        setImage({ status: 'ready', url: objectUrl });
       })
       .catch((error: unknown) => {
         if (controller.signal.aborted) return;
@@ -165,35 +160,12 @@ export const ShareSheetButton = ({
       controller.abort();
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [open, imagePath, fileName]);
+  }, [open, imagePath]);
 
-  const canShareFile =
-    image.status === 'ready' &&
-    typeof navigator !== 'undefined' &&
-    Boolean(navigator.canShare?.({ files: [image.file] }));
-
-  const handleImage = async () => {
-    if (image.status !== 'ready' || isSharing) return;
-    setIsSharing(true);
-
+  /** 받아 둔 이미지를 파일로 내려받는다 — PC는 다운로드 폴더, 폰은 브라우저가 묻는 저장 위치로 */
+  const downloadImage = () => {
+    if (image.status !== 'ready') return;
     try {
-      if (canShareFile) {
-        try {
-          // 파일만 보낸다 — 링크를 같이 넣으면 앱마다 하나를 버린다.
-          await navigator.share({ files: [image.file], title });
-          trackEvent('share_click', {
-            method: 'image_share',
-            path: trackPath,
-          });
-          return;
-        } catch (error) {
-          // 취소는 존중한다. 권한·플랫폼 오류일 때만 저장으로 이어간다.
-          if (error instanceof DOMException && error.name === 'AbortError') {
-            return;
-          }
-        }
-      }
-
       const link = document.createElement('a');
       link.href = image.url;
       link.download = fileName;
@@ -203,15 +175,10 @@ export const ShareSheetButton = ({
       } finally {
         link.remove();
       }
-      trackEvent('share_click', {
-        method: 'image_download',
-        path: trackPath,
-      });
-      toast.success('이미지를 저장했어요. 저장한 이미지를 공유해 주세요.');
+      trackEvent('share_click', { method: 'image_download', path: trackPath });
+      toast.success('이미지를 저장했어요.');
     } catch {
       toast.error('이미지를 저장하지 못했어요. 링크로 공유해 주세요.');
-    } finally {
-      setIsSharing(false);
     }
   };
 
@@ -276,11 +243,20 @@ export const ShareSheetButton = ({
             )}
           </div>
 
-          <div className='flex flex-col gap-2'>
+          {/* 한 줄에 반반 — 링크가 없는 공유(문장 카드)는 저장 버튼 하나가 꽉 찬다.
+              이미지 저장이 이 시트의 주 동작이라 오른쪽(사이트 규칙: 주 버튼 오른쪽) */}
+          <div className={cn('grid gap-2', path && 'grid-cols-2')}>
+            {path && (
+              <ShareButton
+                path={path}
+                title={title}
+                label='링크 공유'
+                className='w-full'
+              />
+            )}
             <Button
-              onClick={handleImage}
+              onClick={downloadImage}
               disabled={image.status !== 'ready'}
-              loading={isSharing}
               className='w-full gap-2'
             >
               {image.status === 'loading' ? (
@@ -289,27 +265,15 @@ export const ShareSheetButton = ({
                     aria-hidden='true'
                     className='h-4 w-4 animate-spin motion-reduce:animate-none'
                   />
-                  이미지 준비 중…
+                  준비 중…
                 </>
               ) : (
                 <>
-                  {canShareFile ? (
-                    <Share2 aria-hidden='true' className='h-4 w-4' />
-                  ) : (
-                    <Download aria-hidden='true' className='h-4 w-4' />
-                  )}
-                  {canShareFile ? '이미지 공유하기' : '이미지 저장하기'}
+                  <Download aria-hidden='true' className='h-4 w-4' />
+                  이미지 저장하기
                 </>
               )}
             </Button>
-            {path && (
-              <ShareButton
-                path={path}
-                title={title}
-                label='링크 공유하기'
-                className='w-full'
-              />
-            )}
           </div>
         </DialogContent>
       </Dialog>

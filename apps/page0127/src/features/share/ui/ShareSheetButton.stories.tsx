@@ -36,12 +36,12 @@ export const Open: Story = {
     await expect(
       await dialog.findByRole('img', { name: '혜진님의 책장 미리보기' })
     ).toBeInTheDocument();
-    // 파일 공유가 안 되는 브라우저(테스트의 데스크톱 크로미움)에서는 저장으로 떨어진다
+    // 이미지는 어느 기기든 저장(다운로드) 하나 — 공유는 링크만
     await expect(
-      dialog.getByRole('button', { name: /이미지 (공유|저장)하기/ })
+      dialog.getByRole('button', { name: '이미지 저장하기' })
     ).toBeEnabled();
     await expect(
-      dialog.getByRole('button', { name: '링크 공유하기' })
+      dialog.getByRole('button', { name: '링크 공유' })
     ).toBeEnabled();
   },
 };
@@ -57,10 +57,10 @@ export const ImageFailed: Story = {
       await dialog.findByText(/이미지를 만들지 못했어요/)
     ).toBeInTheDocument();
     await expect(
-      dialog.getByRole('button', { name: /이미지 (공유|저장)하기/ })
+      dialog.getByRole('button', { name: '이미지 저장하기' })
     ).toBeDisabled();
     await expect(
-      dialog.getByRole('button', { name: '링크 공유하기' })
+      dialog.getByRole('button', { name: '링크 공유' })
     ).toBeEnabled();
   },
 };
